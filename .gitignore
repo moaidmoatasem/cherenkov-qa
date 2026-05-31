@@ -16,3 +16,7 @@ target/.venv/
 
 # big specs (keep these out of git — they're huge)
 stripe_spec.json
+stub/results.json
+stub/test-results/
+stub/node_modules/
+*.trace.zip
