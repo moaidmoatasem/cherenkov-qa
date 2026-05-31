@@ -1,0 +1,18 @@
+# python
+__pycache__/
+*.pyc
+.venv/
+
+# node
+node_modules/
+
+# generated / local
+.cherenkov/
+*.log
+stub/generated-types.ts
+stub/stripe-types.ts
+stub/*_tests/
+target/.venv/
+
+# big specs (keep these out of git — they're huge)
+stripe_spec.json
