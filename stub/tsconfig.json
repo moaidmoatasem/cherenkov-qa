@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": [
+    "client.ts",
+    "generated-types.ts",
+    "generated_tests/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "stripe_tests"
+  ]
+}

@@ -61,6 +61,14 @@ class GenerateStage:
         instruction: str
     ) -> str:
         """Constructs a recency-anchored prompt payload, placing strict openapi-fetch rules at the absolute end to override model semantic bias."""
+        validation_extra = ""
+        if scenario.case_type == "validation":
+            validation_extra = (
+                "- For validation tests that deliberately violate request shapes (like omitting required fields or sending invalid types), "
+                "you MUST cast the body or the violated field 'as any' (e.g. `body: { password: '...' } as any`) to ensure that TypeScript "
+                "compiles successfully without type errors while still executing the invalid payload at runtime.\n"
+            )
+
         return (
             "ENDPOINT SLICE (the only schema you need):\n"
             + json.dumps(
@@ -87,6 +95,7 @@ class GenerateStage:
             + "- Do NOT use standard Playwright 'request' directly. Do NOT use default imports for 'client'.\n"
             + "- Every test MUST assert the specific HTTP status code: expect(response.status).toBe(expected_status) (status is a PROPERTY, not a function!).\n"
             + "- Every test MUST assert the response body shape: expect(data).toHaveProperty('property_name') (body shape is in the destructured 'data' object!).\n"
+            + validation_extra
             + "- Output ONLY the TypeScript code block starting with the imports. No prose, no explanations, no markdown fences.\n"
             + "\nEXAMPLE OF CORRECT USAGE:\n"
             + "import { client } from '../client';\n"

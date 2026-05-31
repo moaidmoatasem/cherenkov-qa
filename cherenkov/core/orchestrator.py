@@ -129,7 +129,7 @@ class OrchestrationEngine:
         )
 
     # ── Stage 4: REVIEW Stage ──────────────────────────────────────────────
-    def run_review(self, generate: GenerateOutput, simulate_malformed: bool = False) -> ReviewOutput:
+    def run_review(self, generate: GenerateOutput, spec_path: str, simulate_malformed: bool = False) -> ReviewOutput:
         self.log.info("stage run", stage="REVIEW", scenario_id=generate.scenario_id)
         
         if simulate_malformed:
@@ -139,7 +139,8 @@ class OrchestrationEngine:
                 "quality_score": 0.0
             } # type: ignore
 
-        return ReviewStage(self.run_id).run(generate)
+        return ReviewStage(self.run_id).run(generate, spec_path)
+
 
     # ── The Retry Ladder & Boundary Validator Wrapper ───────────────────────
     def _execute_stage_with_retry(
@@ -241,50 +242,134 @@ class OrchestrationEngine:
             print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
             return False
 
-        # 3. GENERATE (Runs on the first scenario generated from PLAN)
+        # 3 & 4. GENERATE and REVIEW with D2 Planner Feedback loop (distinct from simple retry ladder)
         if not plan.scenarios:
             self.log.warning("no scenarios available", stage="PLAN")
             print("  GENERATE[ SKIPPED ]")
             print("  REVIEW  [ SKIPPED ]")
             return True
 
+        replans_per_endpoint = {}
+        fails_per_case_type = {}
+        
         scenario = plan.scenarios[0]
-        print("  GENERATE[ Running... ]")
-        generate = self._execute_stage_with_retry(
-            "GENERATE",
-            lambda: self.run_generate(scenario, simulate_malformed=(simulate_fail_stage == "GENERATE")),
-            lambda: GenerateOutput(
-                scenario_id=scenario.mutation_id or "unknown",
-                test_code="",
-                imports=[],
-                status=Status.FAILED,
-                errors=[StageError(code="GENERATE_FALLBACK", detail="Failed after retry ladder.")],
-                metadata=StageMeta(stage="GENERATE", duration_ms=0)
+        current_scenario = scenario
+        generate = None
+        review = None
+        
+        while True:
+            print("  GENERATE[ Running... ]")
+            generate = self._execute_stage_with_retry(
+                "GENERATE",
+                lambda: self.run_generate(current_scenario, simulate_malformed=(simulate_fail_stage == "GENERATE")),
+                lambda: GenerateOutput(
+                    scenario_id=current_scenario.mutation_id or "unknown",
+                    test_code="",
+                    imports=[],
+                    status=Status.FAILED,
+                    errors=[StageError(code="GENERATE_FALLBACK", detail="Failed after retry ladder.")],
+                    metadata=StageMeta(stage="GENERATE", duration_ms=0)
+                )
             )
-        )
-        print(f"\033[F  GENERATE[ {generate.status.upper()} ] ({generate.metadata.duration_ms}ms)")
+            print(f"\033[F  GENERATE[ {generate.status.upper()} ] ({generate.metadata.duration_ms}ms)")
 
-        if self.breaker.tripped:
-            self.log.error("pipeline aborted", reason="circuit breaker tripped")
-            print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
-            return False
+            if self.breaker.tripped:
+                self.log.error("pipeline aborted", reason="circuit breaker tripped")
+                print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
+                return False
 
-        # 4. REVIEW
-        print("  REVIEW  [ Running... ]")
-        review = self._execute_stage_with_retry(
-            "REVIEW",
-            lambda: self.run_review(generate, simulate_malformed=(simulate_fail_stage == "REVIEW")),
-            lambda: ReviewOutput(
-                scenario_id=generate.scenario_id,
-                gates=[],
-                quality_score=0.0,
-                verdict=Verdict.REGENERATE,
-                status=Status.FAILED,
-                errors=[StageError(code="REVIEW_FALLBACK", detail="Failed after retry ladder.")],
-                metadata=StageMeta(stage="REVIEW", duration_ms=0)
+            print("  REVIEW  [ Running... ]")
+            review = self._execute_stage_with_retry(
+                "REVIEW",
+                lambda: self.run_review(generate, spec_path, simulate_malformed=(simulate_fail_stage == "REVIEW")),
+                lambda: ReviewOutput(
+                    scenario_id=generate.scenario_id,
+                    gates=[],
+                    quality_score=0.0,
+                    verdict=Verdict.REGENERATE,
+                    status=Status.FAILED,
+                    errors=[StageError(code="REVIEW_FALLBACK", detail="Failed after retry ladder.")],
+                    metadata=StageMeta(stage="REVIEW", duration_ms=0)
+                )
             )
-        )
-        print(f"\033[F  REVIEW  [ {review.status.upper()} ] ({review.metadata.duration_ms}ms)\n")
+            print(f"\033[F  REVIEW  [ {review.status.upper()} ] ({review.metadata.duration_ms}ms)")
+
+            if self.breaker.tripped:
+                self.log.error("pipeline aborted", reason="circuit breaker tripped")
+                print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
+                return False
+
+            # D2 Planner Feedback loop: if the prism dynamic dry-run fails, trigger dynamic re-planning
+            prism_failed = any(g.gate == "prism-dryrun" and not g.passed for g in review.gates)
+            if prism_failed:
+                endpoint = current_scenario.endpoint
+                case_type = current_scenario.case_type
+                
+                replans_per_endpoint[endpoint] = replans_per_endpoint.get(endpoint, 0) + 1
+                fails_per_case_type[(endpoint, case_type)] = fails_per_case_type.get((endpoint, case_type), 0) + 1
+                
+                self.log.warning(
+                    "D2 Planner Feedback loop triggered due to Prism dry-run failure",
+                    endpoint=endpoint,
+                    case_type=case_type,
+                    failed_mutation=current_scenario.mutation_id,
+                    replan_count=replans_per_endpoint[endpoint],
+                    case_failures=fails_per_case_type[(endpoint, case_type)]
+                )
+                
+                # Dynamic circuit breakers
+                if fails_per_case_type[(endpoint, case_type)] >= 2:
+                    self.log.error(
+                        "D2 Circuit Breaker: dropping case type due to 2 failures",
+                        endpoint=endpoint,
+                        case_type=case_type
+                    )
+                    break
+                    
+                if replans_per_endpoint[endpoint] >= 3:
+                    self.log.error(
+                        "D2 Circuit Breaker: maximum 3 re-plans reached per endpoint",
+                        endpoint=endpoint
+                    )
+                    break
+                    
+                # Select next untried mutation of same case type from menu
+                endpoint_slice = None
+                if self.last_ingest:
+                    for ep in self.last_ingest.endpoints:
+                        if ep.path == endpoint and ep.method.upper() == current_scenario.method.upper():
+                            endpoint_slice = ep
+                            break
+                            
+                next_mutation = None
+                if endpoint_slice:
+                    tried_ids = {current_scenario.mutation_id}
+                    for mut in endpoint_slice.mutations:
+                        if mut.case_type == case_type and mut.id not in tried_ids:
+                            next_mutation = mut
+                            break
+                            
+                if next_mutation:
+                    self.log.info(
+                        "D2 feedback: selecting next untried mutation from menu",
+                        new_mutation=next_mutation.id
+                    )
+                    current_scenario = Scenario(
+                        endpoint=endpoint,
+                        method=current_scenario.method,
+                        case_type=case_type,
+                        priority=current_scenario.priority,
+                        mutation_id=next_mutation.id,
+                        expected_status=next_mutation.expected_status
+                    )
+                    # Advance cursor print dynamically
+                    print("")
+                    continue
+                else:
+                    self.log.warning("no alternative mutations available", endpoint=endpoint, case_type=case_type)
+                    break
+            else:
+                break
 
         print("================= PIPELINE RESULT =================")
         total_duration = (
@@ -297,3 +382,4 @@ class OrchestrationEngine:
         print(f"  Total Duration: {total_duration}ms")
         print("===================================================\n")
         return review.status == Status.OK
+
