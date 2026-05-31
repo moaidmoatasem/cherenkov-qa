@@ -1,0 +1,50 @@
+name: CI — Invariant Checks
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  docs-drift-gate:
+    name: Documentation Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run docs-drift checker
+        run: PYTHONPATH=. python3 scripts/ci_docs_check.py
+
+  healing-invariant:
+    name: Healing Suggest-Only
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run healing smoke test
+        run: PYTHONPATH=. python3 smoke_test_healing.py
+
+  polish-invariant:
+    name: CLI Help + Docs Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run polish smoke test
+        run: PYTHONPATH=. python3 smoke_test_polish.py
