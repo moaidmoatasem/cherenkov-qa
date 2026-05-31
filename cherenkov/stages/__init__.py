@@ -1,0 +1,1 @@
+# CHERENKOV pipeline stages package.

@@ -1,8 +1,8 @@
 """
-CHERENKOV core/orchestrator.py — skeletal orchestration engine.
+CHERENKOV core/orchestrator.py — real orchestration engine.
 Authority: v3.1 + delta.
 
-Wires the skeleton E2E flow: INGEST -> PLAN -> GENERATE -> REVIEW.
+Wires the real E2E flow: INGEST -> PLAN -> GENERATE -> REVIEW.
 Includes:
   - Versioned Pydantic contract validation at each stage boundary.
   - A retry ladder that attempts stage recovery on contract/logical errors.
@@ -23,6 +23,10 @@ from cherenkov.core.contracts import (
     EndpointSlice, Mutation, Scenario, GateResult, Verdict, Status, StageMeta, StageError
 )
 from cherenkov.core.errors import get_logger, ContractError
+from cherenkov.stages.ingest import IngestStage
+from cherenkov.stages.plan import PlanStage
+from cherenkov.stages.generate import GenerateStage
+from cherenkov.stages.review import ReviewStage
 
 
 class CircuitBreaker:
@@ -50,128 +54,90 @@ class OrchestrationEngine:
         self.run_id = run_id or str(uuid.uuid4())[:8]
         self.log = get_logger("orchestrator", self.run_id)
         self.breaker = CircuitBreaker(threshold=error_threshold)
+        self.last_ingest: IngestOutput | None = None
 
-    # ── Stage 1: INGEST Stub ──────────────────────────────────────────────
+    # ── Stage 1: INGEST Stage ──────────────────────────────────────────────
     def run_ingest(self, spec_path: str, simulate_malformed: bool = False) -> IngestOutput:
-        t0 = time.time()
-        self.log.info("stage start", stage="INGEST", spec_path=spec_path)
-        
-        # Simulating standard OpenAPI spec slicing
-        mutations = [
-            Mutation(id="email_too_long", case_type="validation", expected_status=400, instruction="email > 50 chars"),
-            Mutation(id="happy_path", case_type="happy_path", expected_status=201, instruction="valid request payload")
-        ]
-        endpoints = [
-            EndpointSlice(
-                path="/users",
-                method="POST",
-                operation={"summary": "Create user"},
-                schemas={"UserCreate": {}, "UserResponse": {}},
-                richness=0.8,
-                mutations=mutations
-            )
-        ]
+        self.log.info("stage run", stage="INGEST", spec_path=spec_path)
         
         # Test Mutation Trigger: return dict lacking required Fields (fails Pydantic schema validation)
         if simulate_malformed:
-            # Emitting dict lacking required StageMeta metadata
             return {
-                "endpoints": endpoints,
+                "endpoints": [],
                 "client_stub_path": "stub/client.ts"
             } # type: ignore
             
-        dt = int((time.time() - t0) * 1000)
-        return IngestOutput(
-            endpoints=endpoints,
-            client_stub_path="stub/client.ts",
-            status=Status.OK,
-            metadata=StageMeta(stage="INGEST", duration_ms=dt, tokens=0)
-        )
+        ingest_output = IngestStage(self.run_id).run(spec_path)
+        self.last_ingest = ingest_output
+        return ingest_output
 
-    # ── Stage 2: PLAN Stub ────────────────────────────────────────────────
+    # ── Stage 2: PLAN Stage ────────────────────────────────────────────────
     def run_plan(self, ingest: IngestOutput, simulate_malformed: bool = False) -> PlanOutput:
-        t0 = time.time()
-        self.log.info("stage start", stage="PLAN", endpoints_count=len(ingest.endpoints))
+        self.log.info("stage run", stage="PLAN", endpoints_count=len(ingest.endpoints))
         
-        scenarios = []
-        for ep in ingest.endpoints:
-            for mut in ep.mutations:
-                scenarios.append(
-                    Scenario(
-                        endpoint=ep.path,
-                        method=ep.method,
-                        case_type=mut.case_type,
-                        mutation_id=mut.id,
-                        expected_status=mut.expected_status
-                    )
-                )
-
         if simulate_malformed:
             return {
-                "scenarios": scenarios
+                "scenarios": []
             } # type: ignore
 
-        dt = int((time.time() - t0) * 1000)
-        return PlanOutput(
-            scenarios=scenarios,
-            status=Status.OK,
-            metadata=StageMeta(stage="PLAN", duration_ms=dt, tokens=150)
-        )
+        return PlanStage(self.run_id).run(ingest)
 
-    # ── Stage 3: GENERATE Stub ────────────────────────────────────────────
+    # ── Stage 3: GENERATE Stage ────────────────────────────────────────────
     def run_generate(self, scenario: Scenario, simulate_malformed: bool = False) -> GenerateOutput:
-        t0 = time.time()
-        self.log.info("stage start", stage="GENERATE", scenario_id=scenario.mutation_id)
+        self.log.info("stage run", stage="GENERATE", scenario_id=scenario.mutation_id)
         
-        test_code = (
-            f"import { { 'client' } } from '../client';\n"
-            f"test('{scenario.mutation_id} test', async () => {{\n"
-            f"  const response = await client.{scenario.method}('{scenario.endpoint}');\n"
-            f"  expect(response.status).toBe({scenario.expected_status});\n"
-            f"}});"
-        )
-
         if simulate_malformed:
             return {
                 "scenario_id": scenario.mutation_id or "unknown",
-                "test_code": test_code
+                "test_code": ""
             } # type: ignore
 
-        dt = int((time.time() - t0) * 1000)
-        return GenerateOutput(
-            scenario_id=scenario.mutation_id or "unknown",
-            test_code=test_code,
-            imports=["@playwright/test", "../client"],
-            status=Status.OK,
-            metadata=StageMeta(stage="GENERATE", duration_ms=dt, tokens=400)
+        # Look up corresponding EndpointSlice from Stage 1 to obtain resolved operation & schemas
+        endpoint_slice = None
+        if self.last_ingest:
+            for ep in self.last_ingest.endpoints:
+                if ep.path == scenario.endpoint and ep.method.upper() == scenario.method.upper():
+                    endpoint_slice = ep
+                    break
+
+        if not endpoint_slice:
+            endpoint_slice = EndpointSlice(
+                path=scenario.endpoint,
+                method=scenario.method,
+                operation={},
+                schemas={},
+                richness=0.5,
+                mutations=[]
+            )
+
+        # Look up mutation instruction
+        instruction = "Provide valid request payload."
+        for mut in endpoint_slice.mutations:
+            if mut.id == scenario.mutation_id:
+                instruction = mut.instruction
+                break
+
+        return GenerateStage(self.run_id).run(
+            scenario=scenario,
+            path=endpoint_slice.path,
+            method=endpoint_slice.method,
+            operation=endpoint_slice.operation,
+            schemas=endpoint_slice.schemas,
+            instruction=instruction
         )
 
-    # ── Stage 4: REVIEW Stub ──────────────────────────────────────────────
+    # ── Stage 4: REVIEW Stage ──────────────────────────────────────────────
     def run_review(self, generate: GenerateOutput, simulate_malformed: bool = False) -> ReviewOutput:
-        t0 = time.time()
-        self.log.info("stage start", stage="REVIEW", scenario_id=generate.scenario_id)
+        self.log.info("stage run", stage="REVIEW", scenario_id=generate.scenario_id)
         
-        gates = [
-            GateResult(gate="syntax", passed=True),
-            GateResult(gate="openapi-fetch", passed=True)
-        ]
-
         if simulate_malformed:
             return {
                 "scenario_id": generate.scenario_id,
-                "gates": gates,
-                "quality_score": 0.95
+                "gates": [],
+                "quality_score": 0.0
             } # type: ignore
 
-        dt = int((time.time() - t0) * 1000)
-        return ReviewOutput(
-            scenario_id=generate.scenario_id,
-            gates=gates,
-            quality_score=0.95,
-            verdict=Verdict.AUTO_APPROVE,
-            status=Status.OK,
-            metadata=StageMeta(stage="REVIEW", duration_ms=dt, tokens=100)
-        )
+        return ReviewStage(self.run_id).run(generate)
 
     # ── The Retry Ladder & Boundary Validator Wrapper ───────────────────────
     def _execute_stage_with_retry(
@@ -241,7 +207,7 @@ class OrchestrationEngine:
                 client_stub_path="stub/client.ts",
                 status=Status.FAILED,
                 errors=[StageError(code="INGEST_FALLBACK", detail="Failed after retry ladder.")],
-                metadata=StageMeta(stage="INGEST", duration_ms=0, tokens=0)
+                metadata=StageMeta(stage="INGEST", duration_ms=0)
             )
         )
         print(f"\033[F\033[F\033[F\033[F  INGEST  [ {ingest.status.upper()} ] ({ingest.metadata.duration_ms}ms)")
@@ -261,7 +227,7 @@ class OrchestrationEngine:
                 scenarios=[],
                 status=Status.FAILED,
                 errors=[StageError(code="PLAN_FALLBACK", detail="Failed after retry ladder.")],
-                metadata=StageMeta(stage="PLAN", duration_ms=0, tokens=0)
+                metadata=StageMeta(stage="PLAN", duration_ms=0)
             )
         )
         print(f"\033[F  PLAN    [ {plan.status.upper()} ] ({plan.metadata.duration_ms}ms)")
@@ -289,7 +255,7 @@ class OrchestrationEngine:
                 imports=[],
                 status=Status.FAILED,
                 errors=[StageError(code="GENERATE_FALLBACK", detail="Failed after retry ladder.")],
-                metadata=StageMeta(stage="GENERATE", duration_ms=0, tokens=0)
+                metadata=StageMeta(stage="GENERATE", duration_ms=0)
             )
         )
         print(f"\033[F  GENERATE[ {generate.status.upper()} ] ({generate.metadata.duration_ms}ms)")
@@ -311,7 +277,7 @@ class OrchestrationEngine:
                 verdict=Verdict.REGENERATE,
                 status=Status.FAILED,
                 errors=[StageError(code="REVIEW_FALLBACK", detail="Failed after retry ladder.")],
-                metadata=StageMeta(stage="REVIEW", duration_ms=0, tokens=0)
+                metadata=StageMeta(stage="REVIEW", duration_ms=0)
             )
         )
         print(f"\033[F  REVIEW  [ {review.status.upper()} ] ({review.metadata.duration_ms}ms)\n")
@@ -321,8 +287,9 @@ class OrchestrationEngine:
             ingest.metadata.duration_ms + plan.metadata.duration_ms + 
             generate.metadata.duration_ms + review.metadata.duration_ms
         )
-        print(f"  Status: SUCCESS")
+        status_str = "SUCCESS" if review.status == Status.OK else "FAILED"
+        print(f"  Status: {status_str}")
         print(f"  Verdicts: {review.verdict.upper()}")
         print(f"  Total Duration: {total_duration}ms")
         print("===================================================\n")
-        return True
+        return review.status == Status.OK

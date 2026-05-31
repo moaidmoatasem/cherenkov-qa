@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-smoke_test.py — E2E contract, retry, and skeleton integration tests for CHERENKOV.
-Proves happy path execution and deliberate contract boundary failure safety.
+smoke_test.py — E2E contract, retry, and real stages integration tests for CHERENKOV.
+Proves real Happy Path test generation and deliberate contract boundary failure safety.
 """
 from cherenkov.core.orchestrator import OrchestrationEngine
 
 
 def run_happy_path():
-    print("=== PASS 1: E2E Happy Path (Stubbed Stages) ===")
+    print("=== PASS 1: E2E Happy Path (Real Stages with Qwen Coder) ===")
     engine = OrchestrationEngine(run_id="happy")
-    success = engine.run_pipeline("stripe_spec.json")
+    # We use the target_spec.json to run extremely fast E2E real test generation
+    success = engine.run_pipeline("stub/target_spec.json")
     assert success, "Happy path execution failed."
     print("✓ E2E Happy Path verification: PASS\n")
 
@@ -22,7 +23,7 @@ def run_failure_path():
     engine = OrchestrationEngine(run_id="failure", error_threshold=1)
     
     # Running pipeline simulating a malformed INGEST stage
-    success = engine.run_pipeline("stripe_spec.json", simulate_fail_stage="INGEST")
+    success = engine.run_pipeline("stub/target_spec.json", simulate_fail_stage="INGEST")
     
     # The pipeline must abort gracefully (trip the circuit breaker) and return False,
     # rather than crashing with a raw python stack trace!
@@ -34,14 +35,14 @@ def run_failure_path():
 
 def main():
     print("=======================================================")
-    print("     CHERENKOV WEEK 1 SKELETON E2E SMOKE TESTS")
+    print("     CHERENKOV WEEK 1 REAL STAGES E2E SMOKE TESTS")
     print("=======================================================\n")
     
     run_happy_path()
     run_failure_path()
     
     print("=======================================================")
-    print("  ALL SKELETON E2E VERIFICATIONS PASSED SUCCESSFULLY!")
+    print("  ALL REAL STAGES E2E VERIFICATIONS PASSED SUCCESSFULLY!")
     print("=======================================================")
 
 
