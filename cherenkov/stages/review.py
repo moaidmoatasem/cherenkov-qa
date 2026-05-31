@@ -8,12 +8,14 @@ import os
 import re
 import subprocess
 import time
+import json
 
 from cherenkov.core.contracts import ReviewOutput, GenerateOutput, GateResult, Verdict, Status, StageMeta
 from cherenkov.core.errors import get_logger
 from cherenkov.execution.prism_mock import PrismMockServer
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.trace_reader import TraceReader
+from cherenkov.healing import Diagnoser, FailureClass, AuthExpiryHealer, ContractDriftHealer
 
 class ReviewStage:
     """Enforces 6 static and dynamic quality gates (syntax, structure, AST, assertions, TSC, and Prism mock dry-run) on generated tests."""
@@ -131,7 +133,29 @@ class ReviewStage:
                         api_url=f"http://localhost:{prism_port}"
                     )
                     
-                    if not run_result["passed"]:
+                    if run_result["passed"]:
+                        # Capture passing snapshot for healing reference
+                        trace_path = run_result.get("trace_path", "")
+                        if trace_path:
+                            reader = TraceReader(run_id=self.run_id)
+                            method_match = re.search(r"client\.(GET|POST|PUT|DELETE|PATCH)\('([^']+)'", code)
+                            if method_match:
+                                target_method = method_match.group(1)
+                                target_url_path = method_match.group(2)
+                                response_info = reader.extract_http_response(trace_path, target_url_path, target_method)
+                                if response_info:
+                                    try:
+                                        body_data = {}
+                                        if response_info.get("body_raw"):
+                                            body_data = json.loads(response_info["body_raw"])
+                                        Diagnoser(self.run_id).record_passing_snapshot(
+                                            scenario_id=scenario_id,
+                                            status=response_info["status"],
+                                            body=body_data
+                                        )
+                                    except Exception as e:
+                                        self.log.warning("failed to record passing snapshot", error=str(e))
+                    else:
                         prism_passed = False
                         prism_detail = f"Test execution failed against Prism dynamic mock: {run_result['failure_message'][:200]}"
                         
@@ -144,7 +168,42 @@ class ReviewStage:
                             if method_match:
                                 target_method = method_match.group(1)
                                 target_url_path = method_match.group(2)
-                                reader.extract_http_response(trace_path, target_url_path, target_method)
+                                response_info = reader.extract_http_response(trace_path, target_url_path, target_method)
+                                
+                                if response_info:
+                                    # Diagnose failure
+                                    diagnoser = Diagnoser(self.run_id)
+                                    body_data = {}
+                                    try:
+                                        if response_info.get("body_raw"):
+                                            body_data = json.loads(response_info["body_raw"])
+                                    except Exception:
+                                        pass
+                                    
+                                    diag = diagnoser.diagnose_failure(
+                                        scenario_id=scenario_id,
+                                        current_status=response_info["status"],
+                                        current_body=body_data,
+                                        test_name=scenario_id
+                                    )
+                                    
+                                    # Run Healers (Suggest-only!)
+                                    suggestion = ""
+                                    if diag.failure_class == FailureClass.AUTH_EXPIRY:
+                                        suggestion = AuthExpiryHealer(self.run_id).suggest_heal(scenario_id, target_url_path)
+                                    elif diag.failure_class == FailureClass.CONTRACT_DRIFT:
+                                        suggestion = ContractDriftHealer(self.run_id).suggest_heal(
+                                            scenario_id=scenario_id,
+                                            endpoint=target_url_path,
+                                            method=target_method,
+                                            missing_fields=diag.missing_fields,
+                                            added_fields=diag.added_fields
+                                        )
+                                    
+                                    if suggestion:
+                                        # Print suggestion loudly on the console!
+                                        print(suggestion)
+                                        self.log.info("generated healing suggestion", failure_class=diag.failure_class.value)
                 except Exception as e:
                     prism_passed = False
                     prism_detail = f"Exception occurred during Prism dry-run: {e}"

@@ -12,7 +12,7 @@ def run_happy_path():
     # We use the target_spec.json to run extremely fast E2E real test generation
     success = engine.run_pipeline("stub/target_spec.json")
     assert success, "Happy path execution failed."
-    print("✓ E2E Happy Path verification: PASS\n")
+    print("[OK] E2E Happy Path verification: PASS\n")
 
 
 def run_failure_path():
@@ -30,7 +30,7 @@ def run_failure_path():
     assert not success, "Pipeline did not abort as expected under tripped circuit breaker."
     assert engine.breaker.tripped, "Circuit breaker failed to trip after failure limit was reached."
     assert engine.breaker.error_count == 1, f"Expected 1 failure on circuit breaker, got {engine.breaker.error_count}"
-    print("✓ E2E Failure Path & Retry Ladder verification: PASS\n")
+    print("[OK] E2E Failure Path & Retry Ladder verification: PASS\n")
 
 
 def main():
