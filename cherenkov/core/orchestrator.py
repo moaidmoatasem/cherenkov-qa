@@ -27,6 +27,8 @@ from cherenkov.stages.ingest import IngestStage
 from cherenkov.stages.plan import PlanStage
 from cherenkov.stages.generate import GenerateStage
 from cherenkov.stages.review import ReviewStage
+from cherenkov.core.config import Config
+
 
 
 class CircuitBreaker:
@@ -189,6 +191,8 @@ class OrchestrationEngine:
     # ── E2E Orchestration DAG ─────────────────────────────────────────────
     def run_pipeline(self, spec_path: str, simulate_fail_stage: str | None = None) -> bool:
         """Runs E2E pipeline, tracking progress on the CLI. Returns True on success."""
+        # Dynamic GPU/CPU device detection health check at startup
+        Config.detect_ollama_device(self.run_id)
         
         print(f"\n================ CHERENKOV PIPELINE RUN [{self.run_id}] ================")
         print("  INGEST  [ Waiting... ]")
