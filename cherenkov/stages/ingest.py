@@ -95,6 +95,14 @@ class IngestStage:
                 # 3. Generate deterministic mutation menu
                 mutations: list[Mutation] = []
                 
+                # Determine validation status code from responses (e.g. 422 if defined in spec, else 400)
+                responses = op.get("responses", {})
+                validation_status = 400
+                if "422" in responses:
+                    validation_status = 422
+                elif "400" in responses:
+                    validation_status = 400
+
                 # Always generate happy path
                 expected_happy = 201 if method.lower() == "post" else 200
                 mutations.append(
@@ -138,7 +146,7 @@ class IngestStage:
                                 Mutation(
                                     id=f"missing_{req_field}",
                                     case_type="validation",
-                                    expected_status=400,
+                                    expected_status=validation_status,
                                     instruction=f"Omit the required property '{req_field}' from the request body."
                                 )
                             )
@@ -156,7 +164,7 @@ class IngestStage:
                                         Mutation(
                                             id=f"{prop}_too_long",
                                             case_type="validation",
-                                            expected_status=400,
+                                            expected_status=validation_status,
                                             instruction=f"Provide a string value for '{prop}' exceeding the max length of {max_l} characters."
                                         )
                                     )
@@ -166,7 +174,7 @@ class IngestStage:
                                         Mutation(
                                             id=f"{prop}_too_short",
                                             case_type="validation",
-                                            expected_status=400,
+                                            expected_status=validation_status,
                                             instruction=f"Provide a string value for '{prop}' shorter than the min length of {min_l} characters."
                                         )
                                     )
@@ -178,7 +186,7 @@ class IngestStage:
                                         Mutation(
                                             id=f"{prop}_exceeds_max",
                                             case_type="validation",
-                                            expected_status=400,
+                                            expected_status=validation_status,
                                             instruction=f"Provide a numeric value for '{prop}' exceeding the maximum allowed limit of {max_v}."
                                         )
                                     )
@@ -188,7 +196,7 @@ class IngestStage:
                                         Mutation(
                                             id=f"{prop}_below_min",
                                             case_type="validation",
-                                            expected_status=400,
+                                            expected_status=validation_status,
                                             instruction=f"Provide a numeric value for '{prop}' below the minimum allowed limit of {min_v}."
                                         )
                                     )
