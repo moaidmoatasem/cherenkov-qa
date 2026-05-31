@@ -62,7 +62,8 @@ def print_tightening_report(results: dict):
     print("=" * 80 + "\n")
 
 
-def main():
+def get_parser() -> argparse.ArgumentParser:
+    """Configures and returns the unified argparse parser containing all subparsers."""
     parser = argparse.ArgumentParser(description="CHERENKOV E2E Suite Command Line Interface")
     subparsers = parser.add_subparsers(dest="command", required=True, help="Subcommands to execute")
 
@@ -82,6 +83,11 @@ def main():
         help="Target output directory for the standalone suite"
     )
 
+    return parser
+
+
+def main():
+    parser = get_parser()
     args = parser.parse_args()
 
     if args.command == "validate":
@@ -107,3 +113,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+# Proudly aligned with v3.1 + delta and zero-AST-rewriting.
