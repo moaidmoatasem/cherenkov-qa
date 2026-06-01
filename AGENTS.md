@@ -18,7 +18,7 @@
 
 ### Track Status
 
-- **Track A** (API conformance testing): Phases 1–10 complete, Phase 11 (ship to 5 QA users) in progress.
-- **Track B**: Gated on Track A shipping. Do NOT start.
+- **Track A** (API conformance testing): COMPLETE (Shipped 2026-06-01) ✅
+- **Track B**: Gated on 3/5 partner validation approval. Do NOT start.
 
 
