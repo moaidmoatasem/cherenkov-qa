@@ -91,12 +91,16 @@ class UIGenerateStage:
                 lines = code.splitlines()
                 for i, line in enumerate(lines):
                     if "@playwright/test" in line and "expect" not in line:
-                        if "test" in line:
+                        if "{ test }" in line:
+                            lines[i] = line.replace("{ test }", "{ test, expect }")
+                        elif "test" in line and "{" in line and "}" in line:
+                            # Handle other brace spacing variations, e.g. {test} or {  test  }
                             lines[i] = line.replace("test", "test, expect")
                         else:
-                            # Fallback if somehow test is not there
+                            # Fallback if somehow braces are not matching standard shape
                             lines[i] = "import { test, expect } from '@playwright/test';"
                 code = "\n".join(lines)
+
 
             
         except Exception as e:
