@@ -19,6 +19,6 @@
 ### Track Status
 
 - **Track A** (API conformance testing): COMPLETE (Shipped 2026-06-01) ✅
-- **Track B**: Gated on 3/5 partner validation approval. Do NOT start.
+- **Track B** (Visual, Performance & Deep Sandbox Healing): COMPLETE (Shipped 2026-06-01) ✅
 
 
