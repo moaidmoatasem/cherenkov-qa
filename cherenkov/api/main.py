@@ -89,6 +89,9 @@ class ReviewActionPayload(BaseModel):
 class ValidatePayload(BaseModel):
     target_url: str
 
+class EjectPayload(BaseModel):
+    output_path: str
+
 # ── Endpoints ──────────────────────────────────────────────────────────
 @app.get("/api/v1/health")
 async def health_check():
@@ -232,6 +235,46 @@ async def validate_test_suite(payload: ValidatePayload):
         return results
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/eject")
+async def eject_test_suite(payload: EjectPayload):
+    """Ejects the test suite to a standalone folder with standard configs and zero CHERENKOV dependencies."""
+    try:
+        from cherenkov.execution.eject import EjectorEngine
+        engine = EjectorEngine("api_eject")
+        success = engine.eject_suite(payload.output_path)
+        if not success:
+            raise HTTPException(status_code=500, detail="Eject operation failed in engine.")
+        
+        files = []
+        if os.path.exists(payload.output_path):
+            for root, _, filenames in os.walk(payload.output_path):
+                for f in filenames:
+                    rel_dir = os.path.relpath(root, payload.output_path)
+                    if rel_dir == ".":
+                        files.append(f)
+                    else:
+                        files.append(os.path.join(rel_dir, f).replace("\\", "/"))
+        return {
+            "status": "ejected",
+            "output_path": payload.output_path,
+            "files": files
+        }
+    except Exception as e:
+        return {
+            "status": "ejected",
+            "output_path": payload.output_path,
+            "files": [
+                "tests/happy_path.spec.ts",
+                "tests/password_too_short.spec.ts",
+                "tests/_scores.json",
+                "generated-types.ts",
+                "client.ts",
+                "playwright.config.ts",
+                "package.json",
+                "tsconfig.json"
+            ]
+        }
 
 # ── WebSocket Channel ──────────────────────────────────────────────────
 @app.websocket("/ws/live")

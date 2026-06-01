@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { FailingTest } from '../types';
 import { INITIAL_FAILURES } from '../mockData';
+import { validateSuite, editTestScenario } from '../lib/api';
 import CherenkovLogo from './CherenkovLogo';
 
 interface HealingScreenProps {
@@ -33,6 +34,17 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
   const handleApply = (id: string) => {
     setConfirmingId(null);
     setAppliedIds(prev => [...prev, id]);
+    
+    const item = failures.find(f => f.id === id);
+    if (item) {
+      // Fire real API call to replace the file content with the proposed healed code (best-effort)
+      editTestScenario(id, item.proposedCode)
+        .then(() => {
+          // Trigger a backend validation sweep as well (best-effort)
+          validateSuite('http://localhost:8080/v2').catch(err => console.warn('Validate API failed', err));
+        })
+        .catch(err => console.warn('API edit failed for healing', err));
+    }
     
     // remove failure or flag resolved after animation delay
     setTimeout(() => {

@@ -163,3 +163,25 @@ export async function validateSuite(targetUrl: string): Promise<ValidationRespon
 
   return res.json();
 }
+
+
+export interface EjectResponse {
+  status: string;
+  output_path: string;
+  files: string[];
+}
+
+export async function ejectSuite(outputPath: string): Promise<EjectResponse> {
+  const res = await fetch(`${API_BASE}/eject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ output_path: outputPath }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Eject operation failed: ${res.status}`);
+  }
+
+  return res.json();
+}

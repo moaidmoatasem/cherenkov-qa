@@ -21,7 +21,7 @@ import CherenkovLogo from './CherenkovLogo';
 import { ingestSpec } from '../lib/api';
 
 interface SetupScreenProps {
-  onStartPipeline: (endpoints: EndpointRichness[], specPath: string) => void;
+  onStartPipeline: (endpoints: EndpointRichness[], specPath: string, targetUrl: string, authHeader: string) => void;
 }
 
 export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
@@ -125,7 +125,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
 
   const handleStartGeneration = () => {
     if (endpoints.length > 0 && ingestedSpecPath) {
-      onStartPipeline(endpoints, ingestedSpecPath);
+      onStartPipeline(endpoints, ingestedSpecPath, serverUrl, serverAuth);
     }
   };
 

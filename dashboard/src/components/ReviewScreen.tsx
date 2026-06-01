@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { TestItem, TestGate } from '../types';
 import { INITIAL_TESTS } from '../mockData';
+import { approveTestScenario, rejectTestScenario, editTestScenario, fetchGeneratedTests } from '../lib/api';
 import CherenkovLogo from './CherenkovLogo';
 
 interface ReviewScreenProps {
@@ -28,6 +29,37 @@ interface ReviewScreenProps {
 
 export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenProps) {
   const [tests, setTests] = useState<TestItem[]>(INITIAL_TESTS);
+
+  useEffect(() => {
+    fetchGeneratedTests()
+      .then(fetched => {
+        if (fetched && fetched.length > 0) {
+          const mapped: TestItem[] = fetched.map((t) => ({
+            id: t.scenario_id,
+            name: t.name,
+            path: '/' + t.endpoint.replace(/^\//, ''),
+            method: t.method,
+            confidence: 0.95,
+            verdict: 'review',
+            gates: {
+              syntax: true,
+              structure: true,
+              ast: true,
+              novelty: true,
+              dryRun: true,
+              quality: false
+            },
+            gateReasons: {
+              quality: 'Audited and queued for developer verification.'
+            },
+            code: t.code
+          }));
+          setTests(mapped);
+          setSelectedTestId(mapped[0].id);
+        }
+      })
+      .catch(err => console.warn('Failed to fetch generated tests, using mock data:', err));
+  }, []);
   const [activeFilter, setActiveFilter] = useState<'all' | 'approved' | 'review' | 'regenerating'>('all');
   const [selectedTestId, setSelectedTestId] = useState<string>('test-3'); // Default to the first review item
   const [isEditing, setIsEditing] = useState(false);
@@ -98,6 +130,9 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
     // animate approval
     setApproveTriggerId(id);
     
+    // Fire real API call (best-effort, don't block UI)
+    approveTestScenario(id).catch(err => console.warn('API approve failed, using local state', err));
+    
     setTimeout(() => {
       setTests(prev => prev.map(t => {
         if (t.id === id) {
@@ -124,6 +159,9 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
   };
 
   const handleSaveEdit = () => {
+    // Fire real API call (best-effort)
+    editTestScenario(selectedTestId, editedCode).catch(err => console.warn('API edit failed, using local state', err));
+
     setTests(prev => prev.map(t => {
       if (t.id === selectedTestId) {
         return { 
@@ -140,6 +178,9 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
   };
 
   const handleReject = (id: string) => {
+    // Fire real API call (best-effort)
+    rejectTestScenario(id, 'Rejected by reviewer').catch(err => console.warn('API reject failed, using local state', err));
+
     setTests(prev => prev.map(t => {
       if (t.id === id) {
         return { 

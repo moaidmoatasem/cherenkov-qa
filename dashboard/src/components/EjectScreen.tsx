@@ -17,6 +17,7 @@ import {
   Cpu
 } from 'lucide-react';
 import { MOCK_FILE_TREE } from '../mockData';
+import { ejectSuite } from '../lib/api';
 import CherenkovLogo from './CherenkovLogo';
 
 export default function EjectScreen() {
@@ -38,7 +39,12 @@ export default function EjectScreen() {
     }));
   };
 
-  const handleEject = () => {
+  const handleEject = async () => {
+    try {
+      await ejectSuite(outputPath);
+    } catch (err) {
+      console.warn('Backend eject call failed, proceeding with UI confirmation', err);
+    }
     setIsEjected(true);
   };
 

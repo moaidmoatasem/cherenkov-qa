@@ -39,7 +39,7 @@ export default function App() {
   };
 
   // Triggers active pipeline execution monitor
-  const handleStartPipeline = async (endpoints: EndpointRichness[], specPath: string) => {
+  const handleStartPipeline = async (endpoints: EndpointRichness[], specPath: string, targetUrl?: string, authHeader?: string) => {
     setActiveSpecPath(specPath);
     setActiveTab('pipeline');
     setStatus('Live');
@@ -47,7 +47,8 @@ export default function App() {
     try {
       await runPipeline({
         spec_path: specPath,
-        target_url: 'http://localhost:8000',
+        target_url: targetUrl || 'http://localhost:8000',
+        auth_header: authHeader || undefined,
       });
     } catch (err) {
       console.warn('Real backend generation launch failed, falling back to mock pipeline', err);
