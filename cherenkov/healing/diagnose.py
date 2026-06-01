@@ -166,3 +166,23 @@ class Diagnoser:
             self.log.info("recorded passing snapshot", path=snapshot_path, keys=body_keys)
         except Exception as e:
             self.log.error("failed to write snapshot", path=snapshot_path, error=str(e))
+
+    def run_sandbox_repair(
+        self,
+        scenario_id: str,
+        original_test_filename: str,
+        failure_log: str,
+        api_url: str,
+        max_attempts: int = 3
+    ) -> dict:
+        """Invokes SandboxHealer deep self-healing isolated loop to resolve the failing test scenario."""
+        self.log.info("initiating isolated sandbox repair cycle via diagnoser", scenario_id=scenario_id)
+        from cherenkov.healing.sandbox_healer import SandboxHealer
+        healer = SandboxHealer(self.run_id)
+        return healer.run_deep_healing(
+            scenario_id=scenario_id,
+            original_test_filename=original_test_filename,
+            failure_log=failure_log,
+            api_url=api_url,
+            max_attempts=max_attempts
+        )
