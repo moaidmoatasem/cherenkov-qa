@@ -18,8 +18,7 @@ import time
 import requests
 
 from cherenkov.core.errors import OllamaJSONError, get_logger
-
-OLLAMA_GENERATE = "http://localhost:11434/api/generate"
+from cherenkov.core.config import Config
 
 _THINK = re.compile(r"<think\b[^>]*>.*?</think>", re.DOTALL)
 
@@ -64,7 +63,7 @@ def complete_json(
     while attempt <= max_reprompts:
         t0 = time.time()
         resp = requests.post(
-            OLLAMA_GENERATE,
+            Config.OLLAMA_URL,
             json={
                 "model": model,
                 "system": system_prompt,     # static -> cached prefix
@@ -107,7 +106,7 @@ def complete_code(
     log = get_logger("ollama", run_id)
     t0 = time.time()
     resp = requests.post(
-        OLLAMA_GENERATE,
+        Config.OLLAMA_URL,
         json={
             "model": model,
             "system": system_prompt,

@@ -104,7 +104,7 @@ class RAGIndex:
 
     def query_similar_incidents(self, error_message: str, limit: int = 3) -> list[dict]:
         """Queries the vector index to find top-K closest past incidents based on cosine similarity."""
-        self.log.info("querying similar failure incidents", error=error_message)
+        self.log.info("querying similar failure incidents", query_error=error_message)
         
         query_vector = self._get_embedding(error_message)
         if not query_vector:
