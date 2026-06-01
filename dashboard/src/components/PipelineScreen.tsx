@@ -38,7 +38,9 @@ export default function PipelineScreen({
     { id: 'ingest', name: 'INGEST', status: 'done', summary: '20 endpoints indexed' },
     { id: 'plan', name: 'PLAN', status: 'done', summary: 'Contract & validation plans complete' },
     { id: 'generate', name: 'GENERATE', status: 'running', summary: 'Synthesizing Playwright specs' },
-    { id: 'review', name: 'REVIEW', status: 'queued', summary: 'HITL checklist pending' }
+    { id: 'review', name: 'REVIEW', status: 'queued', summary: 'HITL checklist pending' },
+    { id: 'visual', name: 'VISUAL E2E', status: 'queued', summary: 'UI screenshot verification' },
+    { id: 'perf', name: 'PERFORMANCE', status: 'queued', summary: 'Statistical latency analysis' }
   ]);
 
   const [activeStageId, setActiveStageId] = useState<StageId>('generate');
@@ -78,6 +80,9 @@ export default function PipelineScreen({
         if (s.id === stage.toLowerCase()) return { ...s, status: 'running', summary: 'Stage execution active' };
         if (s.id === 'ingest' && stage === 'PLAN') return { ...s, status: 'done' };
         if (s.id === 'plan' && stage === 'GENERATE') return { ...s, status: 'done' };
+        if (s.id === 'generate' && stage === 'REVIEW') return { ...s, status: 'done' };
+        if (s.id === 'review' && stage === 'VISUAL') return { ...s, status: 'done' };
+        if (s.id === 'visual' && stage === 'PERF') return { ...s, status: 'done' };
         return s;
       }));
       setActiveStageId(stage.toLowerCase() as StageId);

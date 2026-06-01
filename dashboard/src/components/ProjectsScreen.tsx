@@ -170,6 +170,12 @@ export default function ProjectsScreen({
                       <span className={`w-2.5 h-2.5 rounded-full ${statusColorMap[project.pipelineStatus.plan]}`} title="Plan" />
                       <span className={`w-2.5 h-2.5 rounded-full ${statusColorMap[project.pipelineStatus.generate]}`} title="Generate" />
                       <span className={`w-2.5 h-2.5 rounded-full ${statusColorMap[project.pipelineStatus.review]}`} title="Review" />
+                      {project.pipelineStatus.visual && (
+                        <span className={`w-2.5 h-2.5 rounded-full ${statusColorMap[project.pipelineStatus.visual]}`} title="Visual E2E" />
+                      )}
+                      {project.pipelineStatus.perf && (
+                        <span className={`w-2.5 h-2.5 rounded-full ${statusColorMap[project.pipelineStatus.perf]}`} title="Performance" />
+                      )}
                     </div>
                   </div>
 

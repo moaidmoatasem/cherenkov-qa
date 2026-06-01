@@ -12,6 +12,8 @@ export interface Project {
     plan: 'done' | 'running' | 'queued' | 'failed';
     generate: 'done' | 'running' | 'queued' | 'failed';
     review: 'done' | 'running' | 'queued' | 'failed';
+    visual?: 'done' | 'running' | 'queued' | 'failed';
+    perf?: 'done' | 'running' | 'queued' | 'failed';
   };
   stats: {
     testsCount: number;
@@ -34,7 +36,7 @@ export interface EndpointRichness {
   missingElements: string[];
 }
 
-export type StageId = 'ingest' | 'plan' | 'generate' | 'review';
+export type StageId = 'ingest' | 'plan' | 'generate' | 'review' | 'visual' | 'perf';
 
 export interface PipelineStage {
   id: StageId;
