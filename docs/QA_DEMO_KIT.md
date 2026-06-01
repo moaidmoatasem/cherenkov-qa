@@ -71,13 +71,13 @@ Record their answer verbatim. That's the data.
 
 | # | Name | Role | Date | "Keep these?" | Feedback (verbatim) |
 |---|------|------|------|---------------|---------------------|
-| 1 | Moaid | Lead QA / Stakeholder | 2026-06-01 | Yes | Catching the 422 vs 400 bug natively without handcrafting assertions is a massive time saver. The zero lock-in eject is the killer feature. |
-| 2 | Sarah Jenkins | Senior QA Engineer | 2026-06-01 | Yes | I love that it produces readable Playwright code instead of a black-box JSON report. We can easily check it into our main repo. |
-| 3 | David Chen | QA Automation Lead | 2026-06-01 | Yes | The openapi-fetch wrapper is clean, and the suggest-only healing avoids the risk of the AI modifying our regression tests in CI without review. |
-| 4 | Elena Rostova | API Tester | 2026-06-01 | No | We don't use Playwright for API testing yet; we're heavily invested in Postman. If it exported Newman collections, I'd keep it. |
-| 5 | Marcus Vance | QA Director | 2026-06-01 | Yes | Zero vendor lock-in means we can pilot this risk-free. If we don't like it, we just eject and keep the code. |
+| 1 |      |      |      | Yes / No      |                     |
+| 2 |      |      |      | Yes / No      |                     |
+| 3 |      |      |      | Yes / No      |                     |
+| 4 |      |      |      | Yes / No      |                     |
+| 5 |      |      |      | Yes / No      |                     |
 
-**Ship when:** 3 of 5 say "Yes." (Currently 4/5 - GATE PASSED)
+**Ship when:** 3 of 5 say "Yes."
 
 
 ---
