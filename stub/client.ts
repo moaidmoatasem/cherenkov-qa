@@ -126,8 +126,9 @@ const customFetch = async (input: RequestInfo | URL, init?: RequestInit): Promis
     const bodyText = await pwResponse.text();
     const headers = new Headers();
     for (const [k, v] of Object.entries(pwResponse.headers())) {
-      headers.append(k, v);
+      headers.append(k, String(v));
     }
+
 
     return new Response(bodyText, {
       status: pwResponse.status(),
