@@ -88,8 +88,16 @@ class UIGenerateStage:
             
             # Auto-heal missing expect import if expect assertion is used in generated code
             if "expect(" in code:
-                if "import { test } from" in code and "expect" not in code:
-                    code = code.replace("import { test }", "import { test, expect }")
+                lines = code.splitlines()
+                for i, line in enumerate(lines):
+                    if "@playwright/test" in line and "expect" not in line:
+                        if "test" in line:
+                            lines[i] = line.replace("test", "test, expect")
+                        else:
+                            # Fallback if somehow test is not there
+                            lines[i] = "import { test, expect } from '@playwright/test';"
+                code = "\n".join(lines)
+
             
         except Exception as e:
             error_msg = f"Ollama generation failed for E2E UI test: {e}"
