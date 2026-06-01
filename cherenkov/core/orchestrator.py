@@ -52,11 +52,12 @@ class CircuitBreaker:
 class OrchestrationEngine:
     """The central execution engine orchestrating stages E2E."""
 
-    def __init__(self, run_id: str | None = None, error_threshold: int = 2):
+    def __init__(self, run_id: str | None = None, error_threshold: int = 2, event_callback: Callable[[str, dict], None] | None = None):
         self.run_id = run_id or str(uuid.uuid4())[:8]
         self.log = get_logger("orchestrator", self.run_id)
         self.breaker = CircuitBreaker(threshold=error_threshold)
         self.last_ingest: IngestOutput | None = None
+        self.event_callback = event_callback
 
     # ── Stage 1: INGEST Stage ──────────────────────────────────────────────
     def run_ingest(self, spec_path: str, simulate_malformed: bool = False) -> IngestOutput:
@@ -202,6 +203,9 @@ class OrchestrationEngine:
         print("  REVIEW  [ Waiting... ]")
         print("========================================================\n")
         
+        if self.event_callback:
+            self.event_callback("stage_start", {"stage": "INGEST"})
+
         # 1. INGEST
         print("\033[F\033[F\033[F\033[F\033[F  INGEST  [ Running... ]")
         ingest = self._execute_stage_with_retry(
@@ -217,11 +221,23 @@ class OrchestrationEngine:
         )
         print(f"\033[F\033[F\033[F\033[F  INGEST  [ {ingest.status.upper()} ] ({ingest.metadata.duration_ms}ms)")
 
+        if self.event_callback:
+            self.event_callback("stage_success", {
+                "stage": "INGEST",
+                "summary": f"{len(ingest.endpoints)} endpoints indexed",
+                "duration_ms": ingest.metadata.duration_ms
+            })
+
         # Circuit Breaker check
         if self.breaker.tripped:
             self.log.error("pipeline aborted", reason="circuit breaker tripped")
             print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
+            if self.event_callback:
+                self.event_callback("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
             return False
+
+        if self.event_callback:
+            self.event_callback("stage_start", {"stage": "PLAN"})
 
         # 2. PLAN
         print("  PLAN    [ Running... ]")
@@ -237,9 +253,18 @@ class OrchestrationEngine:
         )
         print(f"\033[F  PLAN    [ {plan.status.upper()} ] ({plan.metadata.duration_ms}ms)")
 
+        if self.event_callback:
+            self.event_callback("stage_success", {
+                "stage": "PLAN",
+                "summary": f"{len(plan.scenarios)} scenarios planned",
+                "duration_ms": plan.metadata.duration_ms
+            })
+
         if self.breaker.tripped:
             self.log.error("pipeline aborted", reason="circuit breaker tripped")
             print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
+            if self.event_callback:
+                self.event_callback("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
             return False
 
         # 3 & 4. GENERATE and REVIEW with D2 Planner Feedback loop (distinct from simple retry ladder)
@@ -247,6 +272,8 @@ class OrchestrationEngine:
             self.log.warning("no scenarios available", stage="PLAN")
             print("  GENERATE[ SKIPPED ]")
             print("  REVIEW  [ SKIPPED ]")
+            if self.event_callback:
+                self.event_callback("pipeline_complete", {"success": True})
             return True
 
         replans_per_endpoint = {}
@@ -257,6 +284,9 @@ class OrchestrationEngine:
         generate = None
         review = None
         
+        if self.event_callback:
+            self.event_callback("stage_start", {"stage": "GENERATE"})
+
         while True:
             print("  GENERATE[ Running... ]")
             generate = self._execute_stage_with_retry(
@@ -273,10 +303,23 @@ class OrchestrationEngine:
             )
             print(f"\033[F  GENERATE[ {generate.status.upper()} ] ({generate.metadata.duration_ms}ms)")
 
+            if generate.status == Status.OK and self.event_callback:
+                self.event_callback("test_generated", {
+                    "endpoint": current_scenario.endpoint,
+                    "method": current_scenario.method,
+                    "code": generate.test_code,
+                    "agent": "qwen2.5-coder:7b"
+                })
+
             if self.breaker.tripped:
                 self.log.error("pipeline aborted", reason="circuit breaker tripped")
                 print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
+                if self.event_callback:
+                    self.event_callback("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
                 return False
+
+            if self.event_callback:
+                self.event_callback("stage_start", {"stage": "REVIEW"})
 
             print("  REVIEW  [ Running... ]")
             review = self._execute_stage_with_retry(
@@ -294,9 +337,18 @@ class OrchestrationEngine:
             )
             print(f"\033[F  REVIEW  [ {review.status.upper()} ] ({review.metadata.duration_ms}ms)")
 
+            if self.event_callback:
+                self.event_callback("stage_success", {
+                    "stage": "REVIEW",
+                    "summary": f"Review complete with verdict: {review.verdict.upper()}",
+                    "duration_ms": review.metadata.duration_ms
+                })
+
             if self.breaker.tripped:
                 self.log.error("pipeline aborted", reason="circuit breaker tripped")
                 print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
+                if self.event_callback:
+                    self.event_callback("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
                 return False
 
             # D2 Planner Feedback loop: if the prism dynamic dry-run fails, trigger dynamic re-planning
@@ -317,6 +369,14 @@ class OrchestrationEngine:
                     case_failures=fails_per_case_type[(endpoint, case_type)]
                 )
                 
+                if self.event_callback:
+                    self.event_callback("replan_trigger", {
+                        "endpoint": endpoint,
+                        "case_type": case_type,
+                        "failed_mutation": current_scenario.mutation_id,
+                        "replan_count": replans_per_endpoint[endpoint]
+                    })
+
                 # Dynamic circuit breakers
                 if fails_per_case_type[(endpoint, case_type)] >= 2:
                     self.log.error(
@@ -381,5 +441,12 @@ class OrchestrationEngine:
         print(f"  Verdicts: {review.verdict.upper()}")
         print(f"  Total Duration: {total_duration}ms")
         print("===================================================\n")
+
+        if self.event_callback:
+            self.event_callback("pipeline_complete", {
+                "success": review.status == Status.OK,
+                "total_duration_ms": total_duration
+            })
+
         return review.status == Status.OK
 

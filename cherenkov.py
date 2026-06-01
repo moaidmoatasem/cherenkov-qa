@@ -83,6 +83,20 @@ def get_parser() -> argparse.ArgumentParser:
         help="Target output directory for the standalone suite"
     )
 
+    # 3. dashboard subcommand
+    dashboard_parser = subparsers.add_parser("dashboard", help="Start the CHERENKOV E2E Dashboard API server")
+    dashboard_parser.add_argument(
+        "--port", "-p",
+        type=int,
+        default=8000,
+        help="Port to bind the dashboard API server (default: 8000)"
+    )
+    dashboard_parser.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="Host address to bind (default: 127.0.0.1)"
+    )
+
     return parser
 
 
@@ -110,6 +124,13 @@ def main():
         else:
             print("\n🛑 Error: Standalone test suite ejection failed.\n")
             sys.exit(1)
+
+    elif args.command == "dashboard":
+        import uvicorn
+        print(f"\n🚀 Starting CHERENKOV E2E Observability Dashboard Server on {args.host}:{args.port}...")
+        print("💡 Open http://localhost:3000 in your browser to view the premium dashboard.\n")
+        uvicorn.run("cherenkov.api.main:app", host=args.host, port=args.port, reload=True)
+        sys.exit(0)
 
 if __name__ == "__main__":
     main()

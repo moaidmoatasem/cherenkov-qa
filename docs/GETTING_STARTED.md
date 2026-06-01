@@ -82,6 +82,28 @@ npx playwright test
 
 ---
 
+### Command 3: `dashboard`
+Starts the CHERENKOV E2E Observability Dashboard backend server, exposing real-time WebSocket state streaming of the generation, validation, and healing pipeline stages.
+
+#### Command Help:
+```bash
+./bin/cherenkov dashboard --help
+```
+
+#### Standard Usage:
+Start the API and Event server:
+```bash
+./bin/cherenkov dashboard --host 127.0.0.1 --port 8000
+```
+Then, run the React Vite frontend dashboard:
+```bash
+cd dashboard
+npm run dev
+```
+Open http://localhost:3000 in your browser to view the premium dashboard and trace streams.
+
+---
+
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client. 
 
