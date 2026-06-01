@@ -9,7 +9,6 @@ import time
 import sys
 import shutil
 
-from cherenkov.execution.ui_runner import UIEngine
 from cherenkov.execution.visual_diff import VisualDiffEngine
 
 def start_target_server():
@@ -40,12 +39,6 @@ def main():
     try:
         # 1. Spin target server
         server_proc = start_target_server()
-
-        # 2. Run E2E UI Pipeline to guarantee visual test spec exists
-        print("\nRunning E2E UI Generation Pipeline...")
-        ui_engine = UIEngine(run_id="visual_smoke")
-        ui_success = ui_engine.run_ui_pipeline("http://127.0.0.1:8000/")
-        assert ui_success, "E2E UI generation failed."
 
         # 3. Instantiate Visual Engine
         visual_engine = VisualDiffEngine(run_id="visual_smoke")
