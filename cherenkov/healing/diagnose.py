@@ -8,14 +8,18 @@ import os
 import json
 import time
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Callable
 
 from cherenkov.core.errors import get_logger
 
 class FailureClass(str, Enum):
     AUTH_EXPIRY = "AUTH_EXPIRY"
     CONTRACT_DRIFT = "CONTRACT_DRIFT"
+    STATE_SEQUENCE = "STATE_SEQUENCE"
+    FLAKY_SUCCESS = "FLAKY_SUCCESS"
+    DETERMINISTIC_FAILURE = "DETERMINISTIC_FAILURE"
     GENERIC_FAILURE = "GENERIC_FAILURE"
+
 
 class DiagnosisResult:
     """Represents the classified diagnostic output of a failed test run."""
@@ -102,7 +106,17 @@ class Diagnoser:
                     snapshot_existed=True
                 )
 
-        # 3. GENERIC_FAILURE: Default fallback
+        # 3. STATE_SEQUENCE: resource not found (404) or bad request due to state dependencies
+        if current_status == 404 or (current_status == 400 and "not found" in str(current_body).lower()):
+            detail = f"State sequencing dependency issue detected (404/400 Not Found). Ensure prerequisite resources are created before executing this test."
+            self.log.info("diagnosed STATE_SEQUENCE", detail=detail)
+            return DiagnosisResult(
+                failure_class=FailureClass.STATE_SEQUENCE,
+                detail=detail,
+                snapshot_existed=snapshot_existed
+            )
+
+        # 4. GENERIC_FAILURE: Default fallback
         detail = f"Generic test assertion failure. Status code: {current_status}."
         self.log.info("diagnosed GENERIC_FAILURE", detail=detail)
         return DiagnosisResult(
@@ -110,6 +124,23 @@ class Diagnoser:
             detail=detail,
             snapshot_existed=snapshot_existed
         )
+
+    def verify_flake_status(self, run_test_func: Callable[[], bool], max_retries: int = 2) -> FailureClass:
+        """Retries a failing test run using backoff to classify it as FLAKY_SUCCESS vs DETERMINISTIC_FAILURE."""
+        self.log.info("starting transient flake verification via retries")
+        
+        for attempt in range(1, max_retries + 1):
+            time.sleep(attempt * 0.1)  # Backoff delay
+            self.log.info("retrying test run", attempt=attempt)
+            
+            passed = run_test_func()
+            if passed:
+                self.log.info("test passed on retry - classified as FLAKY_SUCCESS")
+                return FailureClass.FLAKY_SUCCESS
+                
+        self.log.warning("test consistently failed across all retries - classified as DETERMINISTIC_FAILURE")
+        return FailureClass.DETERMINISTIC_FAILURE
+
 
     def record_passing_snapshot(self, scenario_id: str, status: int, body: Any) -> None:
         """Stores the response status and shape keys of a successful test execution for subsequent diffing."""
