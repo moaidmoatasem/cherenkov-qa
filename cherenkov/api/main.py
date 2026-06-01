@@ -97,7 +97,7 @@ class EjectPayload(BaseModel):
 async def health_check():
     return {
         "status": "online",
-        "device": "GPU" if "cuda" in Config.OLLAMA_DEVICE.lower() else "CPU",
+        "device": Config.detect_ollama_device(),
         "gen_model": Config.GEN_MODEL,
         "active_connections": len(manager.active_connections),
         "workspace_root": os.getcwd()
