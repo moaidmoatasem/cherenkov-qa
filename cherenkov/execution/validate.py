@@ -13,6 +13,8 @@ from typing import Any, Dict, List
 from cherenkov.core.errors import get_logger
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.trace_reader import TraceReader
+from cherenkov.stages.diagnostics_stage import DiagnosticsStage
+from cherenkov.validate.jira_exporter import JiraExporter
 
 class TighteningAnalyzer:
     """Compares sent request bodies vs received response bodies to suggest stronger value assertions."""
@@ -113,13 +115,87 @@ class ValidationEngine:
                         # Generate tightening suggestions
                         suggestions = TighteningAnalyzer.analyze(req_body_str, resp_body_str)
 
+            ticket_path = ""
+            if not passed:
+                failure_message = result.get("failure_message", "")
+                
+                # Guess failure class
+                failure_class = "CONTRACT_DRIFT"
+                if "401" in failure_message or "Unauthorized" in failure_message:
+                    failure_class = "AUTH_EXPIRY"
+                elif "404" in failure_message or "Not Found" in failure_message:
+                    failure_class = "STATE_SEQUENCE"
+
+                # Parse expected status from code or message
+                expected_status = None
+                received_status = None
+                expected_match = re.search(r"expect\(response\.status\)\.toBe\((\d+)\)", code)
+                if expected_match:
+                    expected_status = int(expected_match.group(1))
+                else:
+                    expected_match = re.search(r"Expected: (\d+)", failure_message)
+                    if expected_match:
+                        expected_status = int(expected_match.group(1))
+
+                received_match = re.search(r"Received: (\d+)", failure_message)
+                if received_match:
+                    received_status = int(received_match.group(1))
+
+                # 1. Run local AI Diagnostics synthesis
+                self.log.info("running local AI diagnostics for failed scenario", scenario_id=scenario_id)
+                diag_stage = DiagnosticsStage(self.run_id)
+                try:
+                    diag_output = diag_stage.run(
+                        scenario_id=scenario_id,
+                        failure_class=failure_class,
+                        error_message=failure_message
+                    )
+                    hypothesis = diag_output.hypothesis
+                    res_steps = diag_output.resolution_steps
+                    similar_cases = diag_output.similar_cases_found
+                except Exception as e:
+                    self.log.warning("failed to run AI diagnostics", error=str(e))
+                    hypothesis = f"Failed scenario: suspected {failure_class}."
+                    res_steps = ["Review test execution logs."]
+                    similar_cases = 0
+
+                # 2. Get compliance score from report if exists
+                compliance_score = None
+                report_path = os.path.abspath(os.path.join(self.stub_dir, "../.cherenkov/mena_compliance_report.json"))
+                if os.path.exists(report_path):
+                    try:
+                        with open(report_path, "r", encoding="utf-8") as rf:
+                            rep = json.load(rf)
+                            compliance_score = rep.get("overall_compliance_score")
+                    except Exception:
+                        pass
+
+                # 3. Export suggest-only Jira ticket
+                exporter = JiraExporter(self.run_id)
+                try:
+                    ticket_path = exporter.export_ticket(
+                        scenario_id=scenario_id,
+                        failure_class=failure_class,
+                        error_message=failure_message,
+                        expected_status=expected_status,
+                        received_status=received_status,
+                        hypothesis=hypothesis,
+                        resolution_steps=res_steps,
+                        similar_cases_count=similar_cases,
+                        compliance_score=compliance_score
+                    )
+                    self.log.info("exported Jira ticket for scenario failure", scenario_id=scenario_id, path=ticket_path)
+                except Exception as e:
+                    self.log.error("failed to export Jira ticket", error=str(e))
+
             reports.append({
                 "scenario_id": scenario_id,
                 "passed": passed,
                 "request_body": req_body_str,
                 "response_body": resp_body_str,
                 "suggestions": suggestions,
-                "error": result.get("failure_message", "") if not passed else ""
+                "error": result.get("failure_message", "") if not passed else "",
+                "jira_ticket_path": ticket_path
             })
 
         return {
@@ -127,3 +203,4 @@ class ValidationEngine:
             "target_url": target_url,
             "reports": reports
         }
+

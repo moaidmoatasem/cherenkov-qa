@@ -64,11 +64,17 @@ Track C equips CHERENKOV with cognitive semantic context, root-cause hypotheses,
   - **SAMA CCSF Domain 3.1 & 3.2**: Access Control Policies and Data-in-Transit Protection.
   - **CBE Cyber Security Framework Section 4.2 & 4.5**: Secure Software Development Lifecycle and Boundary Protection.
 
+### 4. Suggest-Only Jira Integration (`validate/jira_exporter.py`)
+- **Isolation Sandbox**: Implements a strict zero-egress sandboxed reporting utility. Prevents corporate lock-in and complies with financial security bounds by avoiding unexpected external HTTP calls.
+- **Payload Aggregation**:
+  - Compiles comprehensive, copy-ready GFM and Jira Markdown files under `.cherenkov/jira_tickets/` automatically on validation failure.
+  - Consolidates failed scenario ID, error trace, status conformance codes, local RAG cosine similarity findings, local LLM synthesized root-cause hypothesis, resolution steps, and MENA cybersecurity compliance scores.
+
 ---
 
 ## 🛠️ Verification Execution Commands
 
-CHERENKOV E2E UI, Visual, Performance, and RAG systems are verified in CI using clean integration smoke tests:
+CHERENKOV E2E UI, Visual, Performance, RAG, and Jira exporter systems are verified in CI using clean integration smoke tests:
 
 ```bash
 # Verify E2E UI Discovery and TypeScript Code Compilation
@@ -89,6 +95,10 @@ python3 smoke_test_diagnostics.py
 # Verify CBE & SAMA Compliance Scanner Auditing
 python3 smoke_test_compliance.py
 
+# Verify Suggest-Only Jira Ticket Exporter Output Formatting
+python3 smoke_test_jira.py
+
 # Verify Advanced Healing sequence & transient retry checks
 python3 smoke_test_healing_advanced.py
 ```
+
