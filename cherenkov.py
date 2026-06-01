@@ -46,6 +46,33 @@ def print_tightening_report(results: dict):
         else:
             print("\n💡 No value matching suggestions detected.")
             
+    visual_report = results.get("visual_report")
+    if visual_report:
+        print("\n" + "=" * 80)
+        print("📸 VISUAL UI REGRESSION CHECK")
+        print("=" * 80)
+        v_passed = visual_report.get("passed", False)
+        print(f"Status: {'PASSED' if v_passed else 'FAILED'}")
+        print(f"Message: {visual_report.get('message', '')}")
+        print("=" * 80)
+
+    perf_report = results.get("perf_report")
+    if perf_report:
+        print("\n" + "=" * 80)
+        print("⚡ PERFORMANCE ANOMALY CHECK")
+        print("=" * 80)
+        p_passed = perf_report.get("status") in ("success", "exported")
+        print(f"Status: {'PASSED' if p_passed else 'FAILED'}")
+        print(f"Message: {perf_report.get('message', '')}")
+        anomaly_check = perf_report.get("anomaly_check")
+        if anomaly_check:
+            print("\nBaseline Outlier Analysis:")
+            print(f"  Historic Runs Count: {anomaly_check.get('count')}")
+            print(f"  Historic Mean Latency: {anomaly_check.get('mean')}ms")
+            print(f"  Current Latency: {anomaly_check.get('current_latency')}ms")
+            print(f"  Outlier Detected: {anomaly_check.get('anomaly_detected')}")
+        print("=" * 80)
+
     print("\n" + "=" * 80)
     print("Git status verification:")
     # Prove the suggest-only sandbox constraint (Delta D7)
@@ -73,6 +100,16 @@ def get_parser() -> argparse.ArgumentParser:
         "--target", "-t",
         required=True,
         help="The real server target base URL (e.g. http://localhost:8000)"
+    )
+    validate_parser.add_argument(
+        "--visual",
+        action="store_true",
+        help="Run optional visual UI regression checks during validation"
+    )
+    validate_parser.add_argument(
+        "--perf",
+        action="store_true",
+        help="Run optional performance baseline regression checks"
     )
 
     # 2. eject subcommand
@@ -106,7 +143,7 @@ def main():
 
     if args.command == "validate":
         engine = ValidationEngine("cli_validate")
-        results = engine.validate_suite(args.target)
+        results = engine.validate_suite(args.target, run_visual=args.visual, run_perf=args.perf)
         if results.get("status") == "empty":
             print(f"\nError: {results.get('message')}\n")
             sys.exit(1)

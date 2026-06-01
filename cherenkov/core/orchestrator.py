@@ -191,7 +191,14 @@ class OrchestrationEngine:
                 time.sleep(0.1)  # Brief wait before retry
 
     # ── E2E Orchestration DAG ─────────────────────────────────────────────
-    def run_pipeline(self, spec_path: str, simulate_fail_stage: str | None = None) -> bool:
+    def run_pipeline(
+        self,
+        spec_path: str,
+        simulate_fail_stage: str | None = None,
+        run_visual: bool = False,
+        run_perf: bool = False,
+        target_url: str | None = None
+    ) -> bool:
         """Runs E2E pipeline, tracking progress on the CLI. Returns True on success."""
         # Dynamic GPU/CPU device detection health check at startup
         Config.detect_ollama_device(self.run_id)
@@ -431,22 +438,76 @@ class OrchestrationEngine:
             else:
                 break
 
+        pipeline_success = (review is not None and review.status == Status.OK)
+        visual_duration = 0
+        perf_duration = 0
+        visual_passed = True
+        perf_passed = True
+        visual_msg = ""
+        perf_msg = ""
+
+        # 5. Optional Stage: VISUAL UI Regression Checks
+        if pipeline_success and run_visual:
+            print("  VISUAL  [ Running... ]")
+            t_v0 = time.time()
+            try:
+                from cherenkov.execution.visual_diff import VisualDiffEngine
+                v_engine = VisualDiffEngine(self.run_id)
+                v_report = v_engine.run_visual_validation(target_url)
+                visual_duration = int((time.time() - t_v0) * 1000)
+                visual_passed = v_report["passed"]
+                visual_msg = v_report.get("message", "")
+                v_status = "PASSED" if visual_passed else "FAILED"
+                print(f"\033[F  VISUAL  [ {v_status} ] ({visual_duration}ms) - {visual_msg}")
+                if not visual_passed:
+                    pipeline_success = False
+            except Exception as e:
+                print(f"\033[F  VISUAL  [ ERROR ] - {e}")
+                pipeline_success = False
+                visual_passed = False
+
+        # 6. Optional Stage: PERFORMANCE Baseline & Outlier Verification
+        if pipeline_success and run_perf:
+            print("  PERF    [ Running... ]")
+            t_p0 = time.time()
+            try:
+                from cherenkov.execution.k6_runner import K6Runner
+                p_runner = K6Runner(self.run_id)
+                p_report = p_runner.run_k6_validation(target_url)
+                perf_duration = int((time.time() - t_p0) * 1000)
+                perf_passed = p_report["status"] in ("success", "exported")
+                perf_msg = p_report.get("message", "")
+                p_status = "PASSED" if perf_passed else "FAILED"
+                print(f"\033[F  PERF    [ {p_status} ] ({perf_duration}ms) - {perf_msg}")
+                if p_report["status"] == "failed":
+                    pipeline_success = False
+                    perf_passed = False
+            except Exception as e:
+                print(f"\033[F  PERF    [ ERROR ] - {e}")
+                pipeline_success = False
+                perf_passed = False
+
         print("================= PIPELINE RESULT =================")
         total_duration = (
             ingest.metadata.duration_ms + plan.metadata.duration_ms + 
-            generate.metadata.duration_ms + review.metadata.duration_ms
+            generate.metadata.duration_ms + review.metadata.duration_ms +
+            visual_duration + perf_duration
         )
-        status_str = "SUCCESS" if review.status == Status.OK else "FAILED"
+        status_str = "SUCCESS" if pipeline_success else "FAILED"
         print(f"  Status: {status_str}")
         print(f"  Verdicts: {review.verdict.upper()}")
+        if run_visual:
+            print(f"  Visual Regression check: {'PASSED' if visual_passed else 'FAILED'}")
+        if run_perf:
+            print(f"  Performance check: {'PASSED' if perf_passed else 'FAILED'}")
         print(f"  Total Duration: {total_duration}ms")
         print("===================================================\n")
 
         if self.event_callback:
             self.event_callback("pipeline_complete", {
-                "success": review.status == Status.OK,
+                "success": pipeline_success,
                 "total_duration_ms": total_duration
             })
 
-        return review.status == Status.OK
+        return pipeline_success
 

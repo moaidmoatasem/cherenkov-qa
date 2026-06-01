@@ -60,7 +60,7 @@ class ValidationEngine:
         self.stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
         self.tests_dir = os.path.join(self.stub_dir, "generated_tests")
 
-    def validate_suite(self, target_url: str) -> Dict[str, Any]:
+    def validate_suite(self, target_url: str, run_visual: bool = False, run_perf: bool = False) -> Dict[str, Any]:
         """Runs all spec tests in generated_tests against target_url and parses trace files for tightening suggestions."""
         self.log.info("starting suite validation", target_url=target_url)
 
@@ -198,9 +198,33 @@ class ValidationEngine:
                 "jira_ticket_path": ticket_path
             })
 
+        visual_report = None
+        if run_visual:
+            self.log.info("triggering optional visual validation checks")
+            from cherenkov.execution.visual_diff import VisualDiffEngine
+            v_engine = VisualDiffEngine(self.run_id)
+            try:
+                visual_report = v_engine.run_visual_validation(target_url)
+            except Exception as e:
+                self.log.error("visual validation check crashed", error=str(e))
+                visual_report = {"passed": False, "message": f"Visual validation check encountered error: {e}"}
+
+        perf_report = None
+        if run_perf:
+            self.log.info("triggering optional performance validation checks")
+            from cherenkov.execution.k6_runner import K6Runner
+            p_runner = K6Runner(self.run_id)
+            try:
+                perf_report = p_runner.run_k6_validation(target_url)
+            except Exception as e:
+                self.log.error("performance validation check crashed", error=str(e))
+                perf_report = {"status": "failed", "message": f"Performance validation check encountered error: {e}"}
+
         return {
             "status": "success",
             "target_url": target_url,
-            "reports": reports
+            "reports": reports,
+            "visual_report": visual_report,
+            "perf_report": perf_report
         }
 
