@@ -34,6 +34,26 @@ class StageError(BaseModel):
     where: str | None = None # endpoint / scenario id, if applicable
 
 
+# ── SUBSTRATE ─────────────────────────────────────────────────────────────
+class ReasoningRequest(BaseModel):
+    task: str
+    output_schema: dict | None = None
+    capability_tier: str
+    max_cost: float = 0.0
+    max_latency: int = 0
+    sensitivity: str = "standard"
+
+
+class ReasoningResult(BaseModel):
+    content: str | dict
+    provider: str
+    model: str
+    cost_usd: float = 0.0
+    latency_ms: int = 0
+    cached: bool = False
+    schema_version: int = SCHEMA_VERSION
+
+
 # ── INGEST ────────────────────────────────────────────────────────────────
 class Mutation(BaseModel):
     """Deterministic, built in Stage 0. PLAN selects by id; it never invents these."""
