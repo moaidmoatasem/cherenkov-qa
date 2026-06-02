@@ -13,6 +13,14 @@ def main():
     print("     CHERENKOV WEEK 1 PHASE 10 POLISH SMOKE TESTS")
     print("=======================================================\n")
 
+    # Defensive auto-restore: if a previous run was aborted/crashed
+    src_py = "cherenkov.py"
+    backup_py = "cherenkov.py.bak"
+    if os.path.exists(backup_py):
+        print("⚠️ Warning: cherenkov.py.bak found from a previous aborted run. Auto-restoring...")
+        shutil.copy2(backup_py, src_py)
+        os.remove(backup_py)
+
     # 1. Verify bin/cherenkov wrapper executable
     print("Testing bin/cherenkov wrapper...")
     wrapper_path = "./bin/cherenkov"
