@@ -1,0 +1,11 @@
+name: "Cherenkov QA — CodeQL Config"
+
+queries:
+  - uses: security-and-quality
+
+paths-ignore:
+  - "docs/**"
+  - "notebook/**"
+  - "**/*.md"
+  - "stub/node_modules/**"
+  - "target/node_modules/**"
