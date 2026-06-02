@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 cherenkov.py — Unified CLI for CHERENKOV E2E Suite operations.
-Authority: v3.1 + delta.
+Authority: v3.1 + delta. Track A surface only.
 """
 import sys
 import argparse
@@ -14,9 +14,9 @@ def print_tightening_report(results: dict):
     """Outputs a highly detailed, professional assertion tightening report to the CLI."""
     target_url = results.get("target_url", "N/A")
     reports = results.get("reports", [])
-    
+
     print("\n" + "=" * 80)
-    print("🔍 CHERENKOV VALUE ASSERTION TIGHTENING REPORT")
+    print("CHERENKOV VALUE ASSERTION TIGHTENING REPORT")
     print("=" * 80)
     print(f"Target Server URL: {target_url}")
     print(f"Scenarios Verified: {len(reports)}")
@@ -27,51 +27,23 @@ def print_tightening_report(results: dict):
         status_str = "PASSED" if r["passed"] else "FAILED"
         print(f"\nScenario: {scenario} [{status_str}]")
         print("-" * 80)
-        
+
         if not r["passed"]:
-            print(f"🛑 Failure Error: {r['error']}")
+            print(f"Failure Error: {r['error']}")
             continue
 
         print("Captured HTTP Exchange:")
         print(f"  Sent Payload:     {r['request_body']}")
         print(f"  Received Response: {r['response_body']}")
-        
+
         suggestions = r.get("suggestions", [])
         if suggestions:
-            print("\n💡 Suggested Assertion Tightening (Suggest-only):")
-            # De-duplicate suggestions
+            print("\nSuggested Assertion Tightening (Suggest-only):")
             unique_sugs = list(set(suggestions))
             for sug in unique_sugs:
                 print(f"  consider -> {sug}")
         else:
-            print("\n💡 No value matching suggestions detected.")
-            
-    visual_report = results.get("visual_report")
-    if visual_report:
-        print("\n" + "=" * 80)
-        print("📸 VISUAL UI REGRESSION CHECK")
-        print("=" * 80)
-        v_passed = visual_report.get("passed", False)
-        print(f"Status: {'PASSED' if v_passed else 'FAILED'}")
-        print(f"Message: {visual_report.get('message', '')}")
-        print("=" * 80)
-
-    perf_report = results.get("perf_report")
-    if perf_report:
-        print("\n" + "=" * 80)
-        print("⚡ PERFORMANCE ANOMALY CHECK")
-        print("=" * 80)
-        p_passed = perf_report.get("status") in ("success", "exported")
-        print(f"Status: {'PASSED' if p_passed else 'FAILED'}")
-        print(f"Message: {perf_report.get('message', '')}")
-        anomaly_check = perf_report.get("anomaly_check")
-        if anomaly_check:
-            print("\nBaseline Outlier Analysis:")
-            print(f"  Historic Runs Count: {anomaly_check.get('count')}")
-            print(f"  Historic Mean Latency: {anomaly_check.get('mean')}ms")
-            print(f"  Current Latency: {anomaly_check.get('current_latency')}ms")
-            print(f"  Outlier Detected: {anomaly_check.get('anomaly_detected')}")
-        print("=" * 80)
+            print("\nNo value matching suggestions detected.")
 
     print("\n" + "=" * 80)
     print("Git status verification:")
@@ -83,9 +55,9 @@ def print_tightening_report(results: dict):
     )
     test_files_modified = any("generated_tests" in line for line in git_status.stdout.splitlines())
     if test_files_modified:
-        print("🛑 WARNING: Git status reports test files were modified! (Trust rule violated)")
+        print("WARNING: Git status reports test files were modified! (Trust rule violated)")
     else:
-        print("✓ Git status is 100% clean — zero test files were auto-modified by validation. Suggest-only constraint honored.")
+        print("Git status is clean — zero test files were auto-modified by validation. Suggest-only constraint honored.")
     print("=" * 80 + "\n")
 
 
@@ -101,16 +73,6 @@ def get_parser() -> argparse.ArgumentParser:
         required=True,
         help="The real server target base URL (e.g. http://localhost:8000)"
     )
-    validate_parser.add_argument(
-        "--visual",
-        action="store_true",
-        help="Run optional visual UI regression checks during validation"
-    )
-    validate_parser.add_argument(
-        "--perf",
-        action="store_true",
-        help="Run optional performance baseline regression checks"
-    )
 
     # 2. eject subcommand
     eject_parser = subparsers.add_parser("eject", help="Eject generated tests to a standalone Playwright suite")
@@ -118,20 +80,6 @@ def get_parser() -> argparse.ArgumentParser:
         "--output", "-o",
         required=True,
         help="Target output directory for the standalone suite"
-    )
-
-    # 3. dashboard subcommand
-    dashboard_parser = subparsers.add_parser("dashboard", help="Start the CHERENKOV E2E Dashboard API server")
-    dashboard_parser.add_argument(
-        "--port", "-p",
-        type=int,
-        default=8000,
-        help="Port to bind the dashboard API server (default: 8000)"
-    )
-    dashboard_parser.add_argument(
-        "--host",
-        default="127.0.0.1",
-        help="Host address to bind (default: 127.0.0.1)"
     )
 
     return parser
@@ -143,7 +91,7 @@ def main():
 
     if args.command == "validate":
         engine = ValidationEngine("cli_validate")
-        results = engine.validate_suite(args.target, run_visual=args.visual, run_perf=args.perf)
+        results = engine.validate_suite(args.target)
         if results.get("status") == "empty":
             print(f"\nError: {results.get('message')}\n")
             sys.exit(1)
@@ -154,21 +102,13 @@ def main():
         ejector = EjectorEngine("cli_eject")
         success = ejector.eject_suite(args.output)
         if success:
-            print(f"\n✓ CHERENKOV E2E suite ejected successfully to: {args.output}")
-            print("✓ All CHERENKOV metadata and hooks stripped successfully.")
-            print("✓ Ejected folder is 100% standard and runs standalone.\n")
+            print(f"\nCHERENKOV E2E suite ejected successfully to: {args.output}")
+            print("All CHERENKOV metadata and hooks stripped successfully.")
+            print("Ejected folder is 100% standard and runs standalone.\n")
             sys.exit(0)
         else:
-            print("\n🛑 Error: Standalone test suite ejection failed.\n")
+            print("\nError: Standalone test suite ejection failed.\n")
             sys.exit(1)
-
-    elif args.command == "dashboard":
-        import uvicorn
-        print(f"\n🚀 Starting CHERENKOV E2E Observability Dashboard Server on {args.host}:{args.port}...")
-        print("💡 Open http://localhost:3000 in your browser to view the premium dashboard.\n")
-        uvicorn.run("cherenkov.api.main:app", host=args.host, port=args.port, reload=True)
-        sys.exit(0)
 
 if __name__ == "__main__":
     main()
-# Proudly aligned with v3.1 + delta and zero-AST-rewriting.

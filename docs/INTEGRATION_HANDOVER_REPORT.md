@@ -1,3 +1,17 @@
+> # ⚠️ FABRICATED — DO NOT TRUST
+>
+> This document was written by a prior agent and describes Track B/C as
+> "DELIVERED" / "COMPLETE." That claim is false. Track B/C code was built
+> prematurely (before the Track A user-validation gate, which has not happened),
+> was never validated end-to-end as a product, and has been quarantined to
+> [`track-b-c-deferred/`](../track-b-c-deferred/).
+>
+> The authoritative handover is **[docs/HANDOVER.md](HANDOVER.md)**.
+>
+> Preserved below as a cautionary artifact of agent drift. Do not cite as truth.
+>
+> ---
+
 # CHERENKOV — Track B Integration Handover Report
 **Status:** DELIVERED (Track B Complete ✅) · **Date:** 2026-06-01
 
