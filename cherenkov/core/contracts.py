@@ -217,6 +217,89 @@ class PerfReport(BaseModel):
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# E3 DIVERGENCE ENGINE — Epoch 3 contracts (L2)
+# Skeptic emits DivergenceHypothesis; Witness emits ReproductionResult;
+# confirmed divergences are sealed into a DivergenceReport.
+# ════════════════════════════════════════════════════════════════════════════
+
+class DivergenceClass(str, Enum):
+    """The five-way divergence space (see docs/vision/01_ARCHITECTURE.md §6)."""
+    D1_SPEC_CODE = "D1_spec_code"   # spec says X, code accepts/returns Y
+    D2_CODE_PROD = "D2_code_prod"   # code does X, prod silently returns Y
+    D3_UI_SPEC   = "D3_ui_spec"     # UI/client sends X, spec expects Y
+    D4_DB_CODE   = "D4_db_code"     # DB constraint vs code enforcement gap
+    D5_SPEC_PROD = "D5_spec_prod"   # spec defines endpoint/shape, prod doesn't
+
+
+class Severity(str, Enum):
+    LOW      = "low"
+    MEDIUM   = "medium"
+    HIGH     = "high"
+    CRITICAL = "critical"
+
+
+class DivergenceHypothesis(BaseModel):
+    """A single testable claim that two sources disagree. Emitted by the Skeptic."""
+    id: str
+    divergence_class: DivergenceClass
+    claim_a: str                              # what source A asserts
+    claim_b: str                              # what source B likely does instead
+    predicted_evidence: str                   # observable signal if divergence exists
+    severity: Severity
+    endpoint: str | None = None               # "{METHOD} {path}" or None
+    repro_steps: list[str] = Field(default_factory=list)
+
+
+class DivergenceEvidence(BaseModel):
+    """Raw evidence captured by the Witness during a reproduction attempt."""
+    request_summary: str                      # "{METHOD} {url} → {status} ({ms}ms)"
+    response_actual: str | dict               # real response body or text
+    response_expected: str | dict             # what the spec/claim_b predicted
+    diff: str                                 # human-readable delta
+
+
+class ReproductionResult(BaseModel):
+    """Outcome of one Witness reproduction attempt. Independent of the Skeptic."""
+    hypothesis_id: str
+    reproduced: bool
+    evidence: DivergenceEvidence | None = None
+    rejection_reason: str | None = None
+
+
+class DivergenceReport(BaseModel):
+    """
+    Sealed artifact for a confirmed divergence.
+    Contract: {claim_a, claim_b, evidence, repro_steps, severity} — typed, serialisable.
+    """
+    id: str
+    divergence_class: DivergenceClass
+    claim_a: str
+    claim_b: str
+    evidence: DivergenceEvidence
+    repro_steps: list[str]
+    severity: Severity
+    endpoint: str | None = None
+    status: Status = Status.OK
+    errors: list[StageError] = Field(default_factory=list)
+    metadata: StageMeta
+
+    def render(self) -> str:
+        """Human-readable summary."""
+        lines = [
+            f"[{self.severity.upper()}] {self.divergence_class.value}"
+            f" — {self.endpoint or 'unknown endpoint'}",
+            f"  Claim A : {self.claim_a}",
+            f"  Claim B : {self.claim_b}",
+            f"  Evidence: {self.evidence.request_summary}",
+            f"  Diff    : {self.evidence.diff}",
+            "  Repro:",
+        ]
+        for i, step in enumerate(self.repro_steps, 1):
+            lines.append(f"    {i}. {step}")
+        return "\n".join(lines)
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # E1-5 Response/prefix cache + cost & latency accounting contracts
 # ════════════════════════════════════════════════════════════════════════════
 
