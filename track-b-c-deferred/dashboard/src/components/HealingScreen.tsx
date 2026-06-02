@@ -10,7 +10,7 @@ import {
   AlertTriangle, 
   CheckCircle, 
   Terminal, 
-  Trash2, 
+  X, 
   Check, 
   ArrowRight,
   Eye,
@@ -272,7 +272,7 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
               onClick={() => setActiveTraceLog(null)}
               className="absolute top-4 right-4 text-[#7D8DA1] hover:text-[#E6EDF3] p-1 rounded"
             >
-              <Trash2 className="w-4 h-4 text-red-400" />
+              <X className="w-4 h-4 text-[#7D8DA1]" />
             </button>
             
             <h3 className="font-display font-bold text-lg text-text-primary tracking-tight mb-2">
