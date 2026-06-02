@@ -129,6 +129,18 @@ def get_parser() -> argparse.ArgumentParser:
     perf_parser.add_argument("--vus", type=int, default=5, help="Virtual users (default: 5)")
     perf_parser.add_argument("--duration", type=int, default=5, help="Test duration in seconds (default: 5)")
 
+    # ── Epoch 5: Experience + Configuration ────────────────────────────────
+    init_parser = subparsers.add_parser('init', help='Zero-config project setup (E5-1)')
+    init_parser.add_argument('--profile', '-p', default=None,
+                            choices=['laptop', 'ci', 'enterprise-vpc', 'frontier-cloud'],
+                            help='Configuration profile (default: autodetect)')
+    init_parser.add_argument('--force', '-f', action='store_true',
+                            help='Overwrite existing cherenkov.toml')
+
+    doctor_parser = subparsers.add_parser('doctor', help='System health check (E5-3)')
+
+    dashboard_parser = subparsers.add_parser('dashboard', help='Visualise Truth Model + divergences (E5-4, defer-first)')
+
     return parser
 
 
@@ -179,6 +191,19 @@ def main():
         print_perf_report(args.target, reports)
         any_failed = any(r.status != "ok" for r in reports)
         sys.exit(1 if any_failed else 0)
+
+    # ── Epoch 5 subcommands ────────────────────────────────────────────────
+    elif args.command == 'init':
+        from cherenkov.stages.init_cmd import run_init
+        sys.exit(run_init(profile=args.profile, force=args.force))
+
+    elif args.command == 'doctor':
+        from cherenkov.stages.doctor_cmd import run_doctor
+        sys.exit(run_doctor())
+
+    elif args.command == 'dashboard':
+        from cherenkov.dashboard.render import run_dashboard
+        sys.exit(run_dashboard())
 
 
 if __name__ == "__main__":

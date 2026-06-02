@@ -37,6 +37,10 @@ class Config:
     CACHE_ENABLED: bool = os.getenv("CACHE_ENABLED", "true").lower() in ("1", "true", "yes")
     CACHE_MAX_SIZE: int = int(os.getenv("CACHE_MAX_SIZE", "100"))
     CACHE_TTL_SECONDS: int = int(os.getenv("CACHE_TTL_SECONDS", "3600"))
+    
+    # -- E6 Federation Corpus --
+    CORPUS_OPT_IN: bool = os.getenv("CHERENKOV_CORPUS_OPT_IN", "false").lower() == "true"
+    CORPUS_PATH: str = os.getenv("CHERENKOV_CORPUS_PATH", os.path.expanduser("~/.cherenkov/corpus.jsonl"))
 
     @classmethod
     def to_dict(cls) -> dict[str, str | int | bool]:
@@ -58,6 +62,8 @@ class Config:
             "CACHE_ENABLED": cls.CACHE_ENABLED,
             "CACHE_MAX_SIZE": cls.CACHE_MAX_SIZE,
             "CACHE_TTL_SECONDS": cls.CACHE_TTL_SECONDS,
+            "CORPUS_OPT_IN": cls.CORPUS_OPT_IN,
+            "CORPUS_PATH": cls.CORPUS_PATH,
         }
 
     @classmethod

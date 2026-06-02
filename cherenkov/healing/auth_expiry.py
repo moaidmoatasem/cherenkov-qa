@@ -1,5 +1,5 @@
 """
-CHERENKOV healing/auth_expiry.py — suggest-only auth-expiry failure healing module.
+CHERENKOV healing/auth_expiry.py -- suggest-only auth-expiry failure healing module.
 Authority: v3.1 + delta.
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ class AuthExpiryHealer:
         suggestion = (
             "\n"
             "========================================================================\n"
-            "⚠️  [HEALING SUGGESTION] - AUTHENTICATION EXPIRY / UNAUTHORIZED (401)\n"
+            "  [HEALING SUGGESTION] - AUTHENTICATION EXPIRY / UNAUTHORIZED (401)\n"
             "========================================================================\n"
             f"Scenario '{scenario_id}' returned 401 Unauthorized against endpoint: {endpoint}\n\n"
             "To heal this honestly without manual code edits, configure your test client\n"

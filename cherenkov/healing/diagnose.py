@@ -1,5 +1,5 @@
 """
-CHERENKOV healing/diagnose.py — core diagnostics component for classifying stage failures.
+CHERENKOV healing/diagnose.py -- core diagnostics component for classifying stage failures.
 Authority: v3.1 + delta.
 """
 from __future__ import annotations

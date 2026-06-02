@@ -1,5 +1,5 @@
 """
-CHERENKOV healing/sandbox_healer.py — premium isolated deep self-healing sandbox engine.
+CHERENKOV healing/sandbox_healer.py -- premium isolated deep self-healing sandbox engine.
 Authority: v3.1 + delta.
 """
 from __future__ import annotations

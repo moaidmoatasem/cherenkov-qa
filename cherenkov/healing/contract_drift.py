@@ -1,5 +1,5 @@
 """
-CHERENKOV healing/contract_drift.py — suggest-only contract-drift diffing and suggestion module.
+CHERENKOV healing/contract_drift.py -- suggest-only contract-drift diffing and suggestion module.
 Authority: v3.1 + delta.
 """
 from __future__ import annotations
@@ -22,7 +22,7 @@ class ContractDriftHealer:
         suggestion = (
             "\n"
             "========================================================================\n"
-            "⚠️  [HEALING SUGGESTION] - CONTRACT DRIFT DETECTED\n"
+            "  [HEALING SUGGESTION] - CONTRACT DRIFT DETECTED\n"
             "========================================================================\n"
             f"Endpoint: {method} {endpoint} (Scenario '{scenario_id}')\n"
         )
@@ -31,7 +31,7 @@ class ContractDriftHealer:
         if missing_fields:
             suggestion += (
                 "\n"
-                "🛑 [RED REGRESSION] - CRITICAL: Fields were REMOVED from the API response!\n"
+                " [RED REGRESSION] - CRITICAL: Fields were REMOVED from the API response!\n"
                 f"  Missing fields: {missing_fields}\n"
                 "  Impact: Unhealed clients relying on these properties will CRASH at runtime.\n"
             )
@@ -40,7 +40,7 @@ class ContractDriftHealer:
         if added_fields:
             suggestion += (
                 "\n"
-                "⚠️ [YELLOW WARNING] - REVIEW NEEDED: New fields were ADDED to the API response!\n"
+                " [YELLOW WARNING] - REVIEW NEEDED: New fields were ADDED to the API response!\n"
                 f"  Added fields: {added_fields}\n"
                 "  [LOUD ALERT] is this intended? Please confirm if the API contract expanded.\n"
             )
