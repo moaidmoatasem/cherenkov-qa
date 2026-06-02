@@ -81,7 +81,9 @@ def test_cache_ttl():
     cache.set("m", "s", "u", {"val": 42})
     assert cache.get("m", "s", "u") == {"val": 42}, "Should be cached immediately"
 
-    time.sleep(1.5)
+    t_start = time.time()
+    while time.time() - t_start < 1.2:
+        time.sleep(0.1)
     result = cache.get("m", "s", "u")
     assert result is None, "Should have expired after TTL"
     print("[OK] Test 3 PASS\n")
