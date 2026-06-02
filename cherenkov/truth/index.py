@@ -29,9 +29,24 @@ def _normalise(v: np.ndarray) -> np.ndarray:
 
 def embed_text(text: str, model: str = "nomic-embed-text") -> list[float]:
     """Embed a single text string via Ollama's nomic-embed-text model."""
+    base_url = Config.OLLAMA_URL.rsplit("/api/generate", 1)[0]
+    
+    try:
+        resp = requests.post(
+            f"{base_url}/api/embed",
+            json={"model": model, "input": [text]},
+            timeout=30,
+        )
+        if resp.status_code == 200:
+            embeddings = resp.json().get("embeddings", [])
+            if embeddings:
+                return embeddings[0]
+    except Exception:
+        pass
+
     resp = requests.post(
-        Config.OLLAMA_URL,
-        json={"model": model, "prompt": text, "stream": False},
+        f"{base_url}/api/embeddings",
+        json={"model": model, "prompt": text},
         timeout=30,
     )
     resp.raise_for_status()
