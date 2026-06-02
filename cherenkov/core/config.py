@@ -33,6 +33,11 @@ class Config:
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
+    # ── E1-5 Cache & Accounting ──────────────────────────────────────────
+    CACHE_ENABLED: bool = os.getenv("CACHE_ENABLED", "true").lower() in ("1", "true", "yes")
+    CACHE_MAX_SIZE: int = int(os.getenv("CACHE_MAX_SIZE", "100"))
+    CACHE_TTL_SECONDS: int = int(os.getenv("CACHE_TTL_SECONDS", "3600"))
+
     @classmethod
     def to_dict(cls) -> dict[str, str | int | bool]:
         return {
@@ -50,6 +55,9 @@ class Config:
             "FALLBACK_ENABLED": cls.FALLBACK_ENABLED,
             "FALLBACK_PROVIDER": cls.FALLBACK_PROVIDER,
             "OPENAI_MODEL": cls.OPENAI_MODEL,
+            "CACHE_ENABLED": cls.CACHE_ENABLED,
+            "CACHE_MAX_SIZE": cls.CACHE_MAX_SIZE,
+            "CACHE_TTL_SECONDS": cls.CACHE_TTL_SECONDS,
         }
 
     @classmethod
