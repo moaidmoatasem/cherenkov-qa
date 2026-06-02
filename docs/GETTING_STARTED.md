@@ -102,6 +102,26 @@ Override the baseline-directory label:
 
 ---
 
+### Command 4: `perf` (optional Track B capability layer)
+Runs performance baseline checks against an API endpoint using k.  Records latency per run in a local SQLite store (`.cherenkov/perf_metrics.db`) and flags standard-deviation outlier regressions once >= 3 runs exist. If `k6` is not installed, the stage degrades to a simulated baseline tick (HITL verdict) so it still runs in any env.
+
+#### Command Help:
+```bash
+./bin/cherenkov perf --help
+```
+
+#### Standard Usage:
+```bash
+./bin/cherenkov perf --target http://localhost:8000 --endpoint /health --method GET
+```
+
+Tune load profile:
+```bash
+./bin/cherenkov perf --target http://localhost:8000 --endpoint /users --method POST --vus 10 --duration 10
+```
+
+---
+
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client. 
 
