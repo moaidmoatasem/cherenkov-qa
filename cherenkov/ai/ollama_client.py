@@ -23,31 +23,6 @@ from cherenkov.core.config import Config
 from cherenkov.ai.interface import InferenceClient
 
 
-class InferenceClient(Protocol):
-    def complete_json(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        model: str,
-        *,
-        max_reprompts: int = 2,
-        temperature: float = 0.1,
-        run_id: str | None = None,
-    ) -> dict:
-        ...
-
-    def complete_code(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        model: str,
-        *,
-        temperature: float = 0.1,
-        run_id: str | None = None,
-    ) -> str:
-        ...
-
-
 class OllamaClient(InferenceClient):
     def complete_json(
         self,

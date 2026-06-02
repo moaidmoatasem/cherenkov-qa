@@ -214,3 +214,36 @@ class PerfReport(BaseModel):
     status: Status = Status.OK
     errors: list[StageError] = Field(default_factory=list)
     metadata: StageMeta
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# E1-5 Response/prefix cache + cost & latency accounting contracts
+# ════════════════════════════════════════════════════════════════════════════
+
+class CacheStats(BaseModel):
+    """Cache performance statistics for a run."""
+    hits: int = 0
+    misses: int = 0
+    size: int = 0
+    max_size: int = 0
+    hit_ratio: float = 0.0
+
+
+class CostEntry(BaseModel):
+    """A single cost & latency record for one inference request."""
+    model: str
+    provider: str = "ollama"
+    duration_ms: int = 0
+    tokens: int = 0
+    cost: float = 0.0
+    cache_hit: bool = False
+
+
+class AccountingReport(BaseModel):
+    """Per-run cost and latency summary."""
+    entries: list[CostEntry] = Field(default_factory=list)
+    total_duration_ms: int = 0
+    total_tokens: int = 0
+    total_cost: float = 0.0
+    request_count: int = 0
+    cache_stats: CacheStats = Field(default_factory=CacheStats)

@@ -10,7 +10,8 @@ from typing import Any
 
 from cherenkov.core.contracts import GenerateOutput, Scenario, Status, StageMeta, StageError
 from cherenkov.core.config import Config
-from cherenkov.ai.ollama_client import complete_code, strip_think
+from cherenkov.ai import get_client
+from cherenkov.ai.ollama_client import strip_think
 from cherenkov.core.errors import get_logger
 
 SYSTEM_PROMPT = """You are an expert QA automation engineer writing Playwright API tests in TypeScript. You write ONE test per request.
@@ -128,8 +129,9 @@ class GenerateStage:
         )
 
         try:
-            # 1. Complete raw code generation via local model
-            raw_code = complete_code(
+            # 1. Complete raw code generation via configured provider
+            client = get_client()
+            raw_code = client.complete_code(
                 system_prompt=SYSTEM_PROMPT,
                 user_prompt=user_prompt,
                 model=Config.GEN_MODEL,

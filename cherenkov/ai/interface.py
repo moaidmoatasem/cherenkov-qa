@@ -24,7 +24,7 @@ class InferenceClient(abc.ABC):
         temperature: float = 0.1,
         run_id: str | None = None,
     ) -> dict:
-        """Return a parsed JSON object from the model, or raise OllamaJSONError."""
+        """Return a parsed JSON object from the model, or raise ProviderJSONError."""
         pass
 
     @abc.abstractmethod
