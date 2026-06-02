@@ -126,3 +126,34 @@ class OpenAIInferenceClient(InferenceClient):
         text = re.sub(r"\n?```$", "", text)
         log.info("code ok", model=model, duration_ms=int((time.time() - t0) * 1000))
         return text.strip()
+
+    def chat(
+        self,
+        messages: list[dict],
+        model: str,
+        *,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> str:
+        log = get_logger("openai-chat", run_id)
+        t0 = time.time()
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        body = {
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
+        }
+        resp = requests.post(
+            f"{self.base_url}/chat/completions",
+            headers=headers,
+            json=body,
+            timeout=300,
+        )
+        resp.raise_for_status()
+        text = resp.json()["choices"][0]["message"]["content"].strip()
+        log.info("chat ok", model=model, duration_ms=int((time.time() - t0) * 1000))
+        return text
+
