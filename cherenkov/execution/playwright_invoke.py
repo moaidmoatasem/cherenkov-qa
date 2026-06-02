@@ -18,7 +18,7 @@ class PlaywrightRunner:
         self.stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
         self.tests_dir = os.path.join(self.stub_dir, "generated_tests")
 
-    def execute_test(self, scenario_id: str, test_code: str, api_url: str) -> dict:
+    def execute_test(self, scenario_id: str, test_code: str, api_url: str, update_snapshots: bool = False) -> dict:
         """Writes the generated TypeScript test code, executes Playwright natively, and parses the JSON results."""
         os.makedirs(self.tests_dir, exist_ok=True)
         test_file_path = os.path.join(self.tests_dir, f"{scenario_id}.spec.ts")
@@ -44,6 +44,8 @@ class PlaywrightRunner:
         # But we only want trace on failure -> config has "on-first-retry". However, we can enforce --trace on
         # to ensure we capture trace.zip on any failure for analysis (pure Playwright D3).
         cmd.append("--trace=on")
+        if update_snapshots:
+            cmd.append("--update-snapshots")
 
         self.log.info("invoking playwright runner", command=" ".join(cmd), api_url=api_url)
         

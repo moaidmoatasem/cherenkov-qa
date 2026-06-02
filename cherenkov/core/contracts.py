@@ -109,3 +109,42 @@ class ReviewOutput(BaseModel):
     status: Status = Status.OK
     errors: list[StageError] = Field(default_factory=list)
     metadata: StageMeta
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# B1 VISUAL REGRESSION — optional capability layer (Track B build-over)
+# Reuses Track A Verdict/Status/StageMeta/StageError. Never replaces Track A.
+# ════════════════════════════════════════════════════════════════════════════
+
+class VisualSlice(BaseModel):
+    """A single visual target: a URL rendered at a specific viewport."""
+    name: str
+    url: str
+    viewport_w: int = 1280
+    viewport_h: int = 800
+
+
+class VisualScenario(BaseModel):
+    """A planned visual check binding a slice to a baseline + tolerance."""
+    slice_id: str
+    baseline_path: str
+    threshold_pixels: int = 100
+
+
+class VisualGateResult(BaseModel):
+    """One gate verdict on a visual comparison."""
+    gate: str                              # e.g. 'pixel_diff'
+    passed: bool
+    diff_pixels: int = 0
+    baseline_path: str = ''
+    actual_path: str = ''
+
+
+class VisualReport(BaseModel):
+    """VisualStage output: one report per slice processed."""
+    scenario_id: str
+    gates: list[VisualGateResult]
+    verdict: Verdict
+    status: Status = Status.OK
+    errors: list[StageError] = Field(default_factory=list)
+    metadata: StageMeta
