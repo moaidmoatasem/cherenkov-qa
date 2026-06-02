@@ -41,6 +41,17 @@ class SpecTooThinError(CherenkovError):
     code = "SPEC_TOO_THIN"
 
 
+class EgressError(CherenkovError):
+    """A provider requires egress but the current policy forbids it."""
+    code = "EGRESS_BLOCKED"
+
+
+class AllProvidersFailedError(CherenkovError):
+    """All providers (primary + fallback) failed for a request."""
+    code = "ALL_PROVIDERS_FAILED"
+
+
+
 # ── structured logging (JSONL, one event per line) ──────────────────────────
 class StructuredLogger:
     """Minimal structured logger. One logger per stage. JSONL to stderr (and
