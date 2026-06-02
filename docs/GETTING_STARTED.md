@@ -82,6 +82,26 @@ npx playwright test
 
 ---
 
+### Command 3: `visual` (optional Track B capability layer)
+Runs visual-regression checks against a rendered URL. Auto-initializes a baseline on first run; compares against it on subsequent runs. Reuses Track A contracts (`VisualSlice`, `VisualReport`) and the Track A `PlaywrightRunner` — never replaces API conformance.
+
+#### Command Help:
+```bash
+./bin/cherenkov visual --help
+```
+
+#### Standard Usage:
+```bash
+./bin/cherenkov visual --target http://localhost:3000/checkout
+```
+
+Override the baseline-directory label:
+```bash
+./bin/cherenkov visual --target http://localhost:3000/checkout --baseline-dir stub/visual_baselines
+```
+
+---
+
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client. 
 
