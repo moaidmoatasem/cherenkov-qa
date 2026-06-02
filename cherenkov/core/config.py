@@ -11,6 +11,7 @@ from cherenkov.core.errors import get_logger
 class Config:
     """Strongly-typed central configuration parser loading environment variables with safe defaults."""
     
+    PROVIDER: str = os.getenv("PROVIDER", "ollama")
     OLLAMA_URL: str = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
     GEN_MODEL: str = os.getenv("GEN_MODEL", "qwen2.5-coder:7b")
     API_URL: str = os.getenv("API_URL", "http://localhost:8000")
@@ -35,6 +36,7 @@ class Config:
     @classmethod
     def to_dict(cls) -> dict[str, str | int | bool]:
         return {
+            "PROVIDER": cls.PROVIDER,
             "OLLAMA_URL": cls.OLLAMA_URL,
             "GEN_MODEL": cls.GEN_MODEL,
             "API_URL": cls.API_URL,
