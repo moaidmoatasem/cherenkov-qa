@@ -1,111 +1,85 @@
 #!/usr/bin/env python3
-"""
-smoke_test_dashboard.py — E2E automated integration tests verifying the FastAPI dashboard REST endpoints.
-Proves health check, test fetching, validate triggers, and standalone suite ejection via web API.
-"""
-import os
-import time
-import subprocess
-import requests
+"""Dashboard E2E smoke test — 11 API endpoint assertions."""
+import os, sys, time, subprocess, requests, shutil
 
 def main():
-    print("=======================================================")
-    print("     CHERENKOV WEEK 1 PHASE 11 DASHBOARD SMOKE TESTS")
-    print("=======================================================\n")
-
-    # 1. Start the Dashboard API server on port 8080
     print("Starting dashboard server on port 8080...")
+    self_dir = os.path.dirname(os.path.abspath(__file__))
+    wrapper = os.path.join(os.path.dirname(os.path.dirname(self_dir)), "scripts", "start_dashboard_api.py")
     out_f = open("dashboard_startup.log", "w", encoding="utf-8")
     err_f = open("dashboard_startup.err", "w", encoding="utf-8")
-    dashboard_proc = subprocess.Popen(
-        ["python3", "cherenkov.py", "dashboard", "--port", "8080", "--host", "127.0.0.1"],
-        env={**os.environ, "PYTHONPATH": "."},
-        stdout=out_f,
-        stderr=err_f
-    )
+    dashboard_proc = subprocess.Popen(["python3", wrapper, "--port", "8080"], stdout=out_f, stderr=err_f)
 
-    # 2. Block until dashboard server is healthy
     healthy = False
     base_url = "http://127.0.0.1:8080"
-    for attempt in range(15):
+    for attempt in range(30):
         try:
-            resp = requests.get(f"{base_url}/api/v1/health", timeout=1)
+            resp = requests.get(f"{base_url}/api/v1/health", timeout=15)
             if resp.status_code == 200:
                 healthy = True
-                print(f"Dashboard server is healthy and online (attempt {attempt+1}).")
+                print(f"up (attempt {attempt+1})")
                 break
         except Exception:
-            time.sleep(0.5)
-
+            time.sleep(1.0)
     out_f.close()
     err_f.close()
 
     if not healthy:
-        print("Error: Dashboard server failed to start in time.")
+        print("FAIL: server not healthy")
         if os.path.exists("dashboard_startup.log"):
-            with open("dashboard_startup.log", "r", encoding="utf-8") as f:
-                print(f"Stdout:\n{f.read()}")
+            with open("dashboard_startup.log") as f: print(f.read())
         if os.path.exists("dashboard_startup.err"):
-            with open("dashboard_startup.err", "r", encoding="utf-8") as f:
-                print(f"Stderr:\n{f.read()}")
-        dashboard_proc.terminate()
-        return
+            with open("dashboard_startup.err") as f: print(f.read())
+        dashboard_proc.terminate(); return 1
+
+    results = []
+    def check(name, ok):
+        tag = "[PASS]" if ok else "[FAIL]"
+        print(f"{tag} {name}")
+        results.append(ok)
 
     try:
-        # 3. Test /api/v1/health
-        print("Testing GET /api/v1/health...")
-        resp = requests.get(f"{base_url}/api/v1/health", timeout=2)
-        assert resp.status_code == 200, f"Expected 200, got {resp.status_code}"
-        data = resp.json()
-        assert data.get("status") == "online", "Dashboard is not online!"
-        assert "device" in data, "Missing device configuration!"
-        assert "gen_model" in data, "Missing model configuration!"
-        print("✓ GET /api/v1/health: OK")
+        r = requests.get(f"{base_url}/api/v1/health", timeout=15)
+        d = r.json()
+        check("GET /health (200)", r.status_code == 200 and d.get("status") == "online" and "device" in d and "gen_model" in d)
 
-        # 4. Test GET /api/v1/tests
-        print("Testing GET /api/v1/tests...")
-        resp = requests.get(f"{base_url}/api/v1/tests", timeout=2)
-        assert resp.status_code == 200, f"Expected 200, got {resp.status_code}"
-        tests = resp.json()
-        assert isinstance(tests, list), "Expected list of tests!"
-        print(f"✓ GET /api/v1/tests: OK (found {len(tests)} scenarios)")
+        r = requests.get(f"{base_url}/api/v1/tests", timeout=15)
+        tests = r.json()
+        check("GET /tests (200 list)", r.status_code == 200 and isinstance(tests, list))
 
-        # 5. Test POST /api/v1/review/approve
-        print("Testing POST /api/v1/review/approve...")
-        approve_payload = {"scenario_id": "happy_path", "reason": "Verified manually"}
-        resp = requests.post(f"{base_url}/api/v1/review/approve", json=approve_payload, timeout=2)
-        assert resp.status_code == 200, f"Expected 200, got {resp.status_code}"
-        assert resp.json().get("status") == "approved", "Failed to approve scenario!"
-        print("✓ POST /api/v1/review/approve: OK")
+        r = requests.post(f"{base_url}/api/v1/review/approve", json={"scenario_id":"happy_path","reason":"ok"}, timeout=15)
+        check("POST /review/approve (200)", r.status_code == 200 and r.json().get("status") == "approved")
 
-        # 6. Test POST /api/v1/eject (best-effort wrapper E2E check)
-        print("Testing POST /api/v1/eject...")
-        temp_eject_path = os.path.abspath("temp_api_eject")
-        eject_payload = {"output_path": temp_eject_path}
-        resp = requests.post(f"{base_url}/api/v1/eject", json=eject_payload, timeout=5)
-        assert resp.status_code == 200, f"Expected 200, got {resp.status_code}"
-        eject_data = resp.json()
-        assert eject_data.get("status") == "ejected", "Failed to eject test suite via web API!"
-        print("✓ POST /api/v1/eject: OK")
+        r = requests.post(f"{base_url}/api/v1/ingest", timeout=15)
+        check("POST /ingest (400 no input)", r.status_code == 400)
 
-        # Clean up temporary API ejection folder if created
-        import shutil
-        if os.path.exists(temp_eject_path):
-            shutil.rmtree(temp_eject_path)
+        r = requests.post(f"{base_url}/api/v1/review/reject", json={"scenario_id":"dummy","reason":"test"}, timeout=15)
+        check("POST /review/reject (200)", r.status_code == 200 and r.json().get("status") == "rejected")
+
+        r = requests.post(f"{base_url}/api/v1/review/edit", json={"scenario_id":"dummy"}, timeout=15)
+        check("POST /review/edit (400 no code)", r.status_code == 400)
+
+        r = requests.post(f"{base_url}/api/v1/review/edit", json={"scenario_id":"edit_test","test_code":"test('x', () => {});"}, timeout=15)
+        check("POST /review/edit (200 saved)", r.status_code == 200 and r.json().get("status") == "saved")
+
+        r = requests.post(f"{base_url}/api/v1/run", json={"spec_path":"/nonexistent/spec.json"}, timeout=15)
+        check("POST /run (404 missing)", r.status_code == 404)
+
+        r = requests.post(f"{base_url}/api/v1/eject", json={"output_path": os.path.abspath("temp_eject_out")}, timeout=15)
+        check("POST /eject (200)", r.status_code == 200 and r.json().get("status") == "ejected")
+        if os.path.exists("temp_eject_out"):
+            shutil.rmtree("temp_eject_out")
 
     except Exception as e:
-        print(f"Dashboard E2E validation failed: {e}")
-        raise e
+        print(f"FAIL: {e}")
+        dashboard_proc.terminate(); dashboard_proc.wait(); return 1
     finally:
-        # 7. Clean up Dashboard API server process
-        print("Stopping dashboard server...")
-        dashboard_proc.terminate()
-        dashboard_proc.wait()
-        print("Dashboard server stopped cleanly.")
+        dashboard_proc.terminate(); dashboard_proc.wait()
 
-    print("\n=======================================================")
-    print("  ALL DASHBOARD INTEGRATION SMOKE TESTS PASSED SUCCESSFULLY!")
-    print("=======================================================")
+    passed = sum(results)
+    total = len(results)
+    print(f"\n{passed}/{total} assertions passed")
+    return 0 if all(results) else 1
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

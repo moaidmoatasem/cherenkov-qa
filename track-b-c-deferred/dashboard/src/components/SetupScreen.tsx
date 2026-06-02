@@ -425,7 +425,12 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
                   type="button"
                   id="btn-launch-generation"
                   onClick={handleStartGeneration}
-                  className="w-full mt-4 py-3 rounded-xl bg-glow-blue hover:bg-opacity-95 text-slate-950 uppercase tracking-wider font-bold text-xs transition duration-300 shadow-lg shadow-cyan-500/20"
+                  disabled={endpoints.length === 0}
+                  className={`w-full mt-4 py-3 rounded-xl uppercase tracking-wider font-bold text-xs transition duration-300 shadow-lg shadow-cyan-500/20 ${
+                    endpoints.length === 0
+                      ? 'bg-gray-brand/30 text-text-muted cursor-not-allowed'
+                      : 'bg-glow-blue hover:bg-opacity-95 text-slate-950'
+                  }`}
                 >
                   Generate {endpoints.length} API Test Suites
                 </button>
