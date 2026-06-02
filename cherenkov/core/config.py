@@ -16,15 +16,38 @@ class Config:
     API_URL: str = os.getenv("API_URL", "http://localhost:8000")
     SCHEMA_DEPTH: int = int(os.getenv("SCHEMA_DEPTH", "1"))
     ERROR_THRESHOLD: int = int(os.getenv("ERROR_THRESHOLD", "2"))
-    
+
+    # ── Substrate Router (Epoch 1) ────────────────────────────────────────
+    EGRESS: str = os.getenv("CHERENKOV_EGRESS", "internal")
+
+    TIER_SMALL_PROVIDER: str = os.getenv("CHERENKOV_TIER_SMALL_PROVIDER", "ollama")
+    TIER_SMALL_MODEL: str = os.getenv("CHERENKOV_TIER_SMALL_MODEL", "qwen2.5-coder:7b")
+    TIER_DEEP_PROVIDER: str = os.getenv("CHERENKOV_TIER_DEEP_PROVIDER", "ollama")
+    TIER_DEEP_MODEL: str = os.getenv("CHERENKOV_TIER_DEEP_MODEL", "deepseek-r1:8b")
+
+    FALLBACK_ENABLED: bool = os.getenv("CHERENKOV_FALLBACK_ENABLED", "true").lower() == "true"
+    FALLBACK_PROVIDER: str = os.getenv("CHERENKOV_FALLBACK_PROVIDER", "openai")
+
+    OPENAI_URL: str = os.getenv("OPENAI_URL", "https://api.openai.com/v1/chat/completions")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
     @classmethod
-    def to_dict(cls) -> dict[str, str | int]:
+    def to_dict(cls) -> dict[str, str | int | bool]:
         return {
             "OLLAMA_URL": cls.OLLAMA_URL,
             "GEN_MODEL": cls.GEN_MODEL,
             "API_URL": cls.API_URL,
             "SCHEMA_DEPTH": cls.SCHEMA_DEPTH,
             "ERROR_THRESHOLD": cls.ERROR_THRESHOLD,
+            "EGRESS": cls.EGRESS,
+            "TIER_SMALL_PROVIDER": cls.TIER_SMALL_PROVIDER,
+            "TIER_SMALL_MODEL": cls.TIER_SMALL_MODEL,
+            "TIER_DEEP_PROVIDER": cls.TIER_DEEP_PROVIDER,
+            "TIER_DEEP_MODEL": cls.TIER_DEEP_MODEL,
+            "FALLBACK_ENABLED": cls.FALLBACK_ENABLED,
+            "FALLBACK_PROVIDER": cls.FALLBACK_PROVIDER,
+            "OPENAI_MODEL": cls.OPENAI_MODEL,
         }
 
     @classmethod

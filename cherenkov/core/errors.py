@@ -16,8 +16,13 @@ class CherenkovError(Exception):
     code = "CHERENKOV_ERROR"
 
 
-class OllamaJSONError(CherenkovError):
-    """Model output failed JSON validation after the full retry ladder."""
+class ProviderJSONError(CherenkovError):
+    """Provider output failed JSON validation after the full retry ladder."""
+    code = "PROVIDER_JSON_ERROR"
+
+
+class OllamaJSONError(ProviderJSONError):
+    """Ollama-specific model output failed JSON validation after the full retry ladder."""
     code = "INVALID_JSON"
 
 
