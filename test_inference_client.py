@@ -184,7 +184,8 @@ class TestOpenAIInferenceClient(unittest.TestCase):
         try:
             Config.PROVIDER = "openai"
             client = get_client()
-            self.assertIsInstance(client, OpenAIInferenceClient)
+            wrapped = client.wrapped_client if hasattr(client, "wrapped_client") else client
+            self.assertIsInstance(wrapped, OpenAIInferenceClient)
         finally:
             Config.PROVIDER = original
 
