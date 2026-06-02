@@ -19,6 +19,7 @@ from typing import Callable, Any
 from pydantic import ValidationError
 
 from cherenkov.core.contracts import (
+    VisualSlice, VisualReport,
     IngestOutput, PlanOutput, GenerateOutput, ReviewOutput,
     EndpointSlice, Mutation, Scenario, GateResult, Verdict, Status, StageMeta, StageError
 )
@@ -456,3 +457,53 @@ class OrchestrationEngine:
 
         return pipeline_success
 
+
+
+    # ── Optional capability: VISUAL Stage (Track B, ejectable) ─────────────
+    def run_visual_stage(self, slices: list[VisualSlice], baseline_dir: str = 'stub/visual_baselines') -> list[VisualReport]:
+        """Run the optional VisualStage over a list of VisualSlice inputs.
+
+        Uses the SAME retry-ladder pattern as _execute_stage_with_retry for each slice:
+        up to 2 retries on contract errors, then a synthetic FAILED VisualReport
+        fallback that records a circuit-breaker failure. Does NOT modify run_pipeline.
+        """
+        # Import locally so Track A core stays importable when Track B layer is absent.
+        from cherenkov.stages.visual.visual_stage import VisualStage
+
+        stage = VisualStage(self.run_id)
+        results: list[VisualReport] = []
+
+        for sl in slices:
+            attempts = 0
+            max_attempts = 3
+            report: VisualReport | None = None
+
+            while attempts < max_attempts:
+                try:
+                    candidate = stage.run(sl, baseline_dir=baseline_dir)
+                    if not isinstance(candidate, VisualReport):
+                        raise ContractError(f'VisualStage returned unvalidated type for slice {sl.name}')
+                    self.log.info('stage success', stage='VISUAL', slice=sl.name, duration_ms=candidate.metadata.duration_ms)
+                    report = candidate
+                    break
+                except (ValidationError, ContractError, Exception) as e:
+                    attempts += 1
+                    self.log.warning('stage boundary violation', stage='VISUAL', slice=sl.name, attempt=attempts, error=str(e))
+                    if attempts >= max_attempts:
+                        self.log.error('retry ladder exhausted', stage='VISUAL', slice=sl.name, detail='triggering fallback VisualReport')
+                        self.breaker.record_failure()
+                        report = VisualReport(
+                            scenario_id=sl.name,
+                            gates=[],
+                            verdict=Verdict.REGENERATE,
+                            status=Status.FAILED,
+                            errors=[StageError(code='VISUAL_FALLBACK', detail='Failed after retry ladder.')],
+                            metadata=StageMeta(stage='VISUAL', duration_ms=0),
+                        )
+                        break
+                    time.sleep(0.1)
+
+            if report is not None:
+                results.append(report)
+
+        return results
