@@ -48,12 +48,12 @@ gantt
 ## Epoch 1 — Substrate Router (L0)
 **Goal:** intelligence is swappable per call, bounded by policy. The keystone.
 
-- [ ] E1-1 Define `ReasoningRequest` / `ReasoningResult` contracts (`{task, output_schema, capability_tier, max_cost, max_latency, sensitivity}`).
-- [ ] E1-2 `Model Provider SPI` + Ollama provider (wraps existing client).
-- [ ] E1-3 Add a second provider (OpenAI **or** Anthropic) to prove agnosticism.
-- [ ] E1-4 Router: route by `capability_tier` + `egress` policy; fallback/spillover on failure.
-- [ ] E1-5 Response/prefix cache + per-request cost & latency accounting.
-- [ ] E1-6 `egress: none|internal|any` sovereignty dial enforced at the router.
+- [x] E1-1 Define `ReasoningRequest` / `ReasoningResult` contracts (`{task, output_schema, capability_tier, max_cost, max_latency, sensitivity}`).
+- [x] E1-2 `Model Provider SPI` + Ollama provider (wraps existing client).
+- [x] E1-3 Add a second provider (OpenAI **or** Anthropic) to prove agnosticism.
+- [x] E1-4 Router: route by `capability_tier` + `egress` policy; fallback/spillover on failure.
+- [x] E1-5 Response/prefix cache + per-request cost & latency accounting.
+- [x] E1-6 `egress: none|internal|any` sovereignty dial enforced at the router.
 
 **Exit:** the same generation runs unchanged on a local model *and* a cloud model by config alone.
 
