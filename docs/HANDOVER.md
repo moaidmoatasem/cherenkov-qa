@@ -122,6 +122,9 @@ owner to recruit 5 QA people and run the demo.
 - Track A smokes re-run green after quarantine.
 - **E0-2 Stabilise CI**: Added standard dependency installation steps to the `.github/workflows/ci.yml` file, refactored `smoke_test_healing.py` to prevent local change pollution, and implemented auto-restoration in `smoke_test_polish.py` (ALL tests verified fully green).
 
+- **Epoch 1 (L0 Substrate Router) Complete**: Implemented core SPI for model providers, integrated OpenAI alongside Ollama, developed routing logic matching capability tiers with egress policies, created response caching, cost/latency accounting, and enforced sovereignty dials (`none`/`internal`/`any`). Fully covered by unit tests and smoke tests.
+
+
 ### 6.2 — THE REAL FINISH LINE (owner task, not an agent)
 Recruit 5 QA people. Run the demo from [QA_DEMO_KIT.md](QA_DEMO_KIT.md).
 Count yeses. [QA_OUTREACH_TEMPLATES.md](QA_OUTREACH_TEMPLATES.md) exists to
