@@ -14,6 +14,14 @@ stub/stripe-types.ts
 stub/*_tests/
 target/.venv/
 
+# generated project config (from `cherenkov init`)
+cherenkov.toml
+
+# temporary / adhoc
+scratch/
+fetch_issues.py
+simple_test.py
+
 # big specs (keep these out of git — they're huge)
 stripe_spec.json
 stub/results.json

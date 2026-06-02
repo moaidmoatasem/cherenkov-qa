@@ -102,7 +102,57 @@ Override the baseline-directory label:
 
 ---
 
-### Command 4: `perf` (optional Track B capability layer)
+### Command 4: `init` (E5-1 — zero-config project setup)
+Auto-detects OpenAPI specs and generates a sensible `cherenkov.toml` with defaults that are offline, free, and deterministic.
+
+#### Command Help:
+```bash
+./bin/cherenkov init --help
+```
+
+#### Standard Usage:
+```bash
+./bin/cherenkov init
+```
+
+Override profile and force overwrite existing config:
+```bash
+./bin/cherenkov init --profile ci --force
+```
+
+---
+
+### Command 5: `doctor` (E5-3 — system health check)
+Reports effective configuration, device health (GPU vs CPU), model availability, egress policy consistency, and environmental dependencies (Node, Playwright, Docker/Prism).
+
+#### Command Help:
+```bash
+./bin/cherenkov doctor --help
+```
+
+#### Standard Usage:
+```bash
+./bin/cherenkov doctor
+```
+
+---
+
+### Command 6: `dashboard` (E5-4 — Truth Model + divergences view)
+Displays the Truth Model claim graph and any open divergences. Uses mock data when no Truth Model has been built.
+
+#### Command Help:
+```bash
+./bin/cherenkov dashboard --help
+```
+
+#### Standard Usage:
+```bash
+./bin/cherenkov dashboard
+```
+
+---
+
+### Command 7: `perf` (optional Track B capability layer)
 Runs performance baseline checks against an API endpoint using k.  Records latency per run in a local SQLite store (`.cherenkov/perf_metrics.db`) and flags standard-deviation outlier regressions once >= 3 runs exist. If `k6` is not installed, the stage degrades to a simulated baseline tick (HITL verdict) so it still runs in any env.
 
 #### Command Help:

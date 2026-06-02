@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ci_docs_check.py — programmatically validates that all argparse subcommands have corresponding documentation sections.
+ci_docs_check.py -- programmatically validates that all argparse subcommands have corresponding documentation sections.
 Authority: v3.1 + delta.
 """
 from __future__ import annotations
@@ -26,7 +26,7 @@ def main():
 
     docs_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "../docs/GETTING_STARTED.md"))
     if not os.path.exists(docs_file):
-        print(f"🛑 Error: GETTING_STARTED.md is missing at: {docs_file}")
+        print(f"[FAIL] Error: GETTING_STARTED.md is missing at: {docs_file}")
         sys.exit(1)
 
     with open(docs_file, "r", encoding="utf-8") as f:
@@ -54,11 +54,11 @@ def main():
             missing_docs.append(cmd)
 
     if missing_docs:
-        print(f"\n🛑 Error: Documentation drift detected! Undocumented subcommands found: {missing_docs}")
+        print(f"\n[FAIL] Error: Documentation drift detected! Undocumented subcommands found: {missing_docs}")
         print("Please add documentation sections in docs/GETTING_STARTED.md.")
         sys.exit(1)
 
-    print("\n✓ SUCCESS: All CLI subcommands are programmatically fully documented inside docs/GETTING_STARTED.md!")
+    print("\n[PASS] SUCCESS: All CLI subcommands are programmatically fully documented inside docs/GETTING_STARTED.md!")
     sys.exit(0)
 
 if __name__ == "__main__":

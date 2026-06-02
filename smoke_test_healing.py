@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-smoke_test_healing.py — E2E integration tests for CHERENKOV Phase 7 HEALING.
+smoke_test_healing.py -- E2E integration tests for CHERENKOV Phase 7 HEALING.
 Proves AUTH_EXPIRY and CONTRACT_DRIFT suggestion generation without auto-committing/altering files.
 """
 import os
@@ -42,7 +42,7 @@ def test_auth_expiry_detection():
     )
     
     assert diag.failure_class == FailureClass.AUTH_EXPIRY, f"Expected AUTH_EXPIRY, got {diag.failure_class}"
-    print("✓ Diagnoser correctly classified FailureClass.AUTH_EXPIRY")
+    print("[PASS] Diagnoser correctly classified FailureClass.AUTH_EXPIRY")
     
     # 3. Generate suggestion
     suggestion = AuthExpiryHealer("test_healing").suggest_heal(scenario_id, "/users")
@@ -71,7 +71,7 @@ def test_contract_drift_detection():
     
     assert diag.failure_class == FailureClass.CONTRACT_DRIFT, f"Expected CONTRACT_DRIFT, got {diag.failure_class}"
     assert "email" in diag.missing_fields, "Failed to identify missing field 'email'"
-    print("✓ Diagnoser correctly classified FailureClass.CONTRACT_DRIFT and isolated missing field")
+    print("[PASS] Diagnoser correctly classified FailureClass.CONTRACT_DRIFT and isolated missing field")
     
     # 3. Generate suggestion
     suggestion = ContractDriftHealer("test_healing").suggest_heal(
@@ -95,7 +95,7 @@ def verify_suggest_only_trust_rule(initial_modified):
     new_modified = current_modified - initial_modified
     
     assert len(new_modified) == 0, f"Violation: Test files were auto-modified during run: {new_modified}"
-    print("✓ Git status is 100% clean relative to run start — zero files were auto-modified by healing! Suggest-only trust rule honored.\n")
+    print("[PASS] Git status is 100% clean relative to run start -- zero files were auto-modified by healing! Suggest-only trust rule honored.\n")
 
 
 def main():

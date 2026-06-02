@@ -76,10 +76,10 @@ class SubstrateRouter:
                 f"Provider '{provider_name}' requires egress but "
                 f"EGRESS policy is '{policy}'"
             )
-        if policy == "internal" and provider_name not in ("ollama",):
+        if policy == "internal":
             raise EgressError(
                 f"Provider '{provider_name}' requires egress but "
-                f"EGRESS policy is '{policy}' (only Ollama allowed)"
+                f"EGRESS policy is '{policy}' (only local providers allowed)"
             )
 
 
