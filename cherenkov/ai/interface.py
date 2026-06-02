@@ -131,13 +131,14 @@ class CachedInferenceClient(InferenceClient):
 
     @property
     def accounting_report(self) -> AccountingReport:
-        return self._accountant.report
+        rep = self._accountant.report
+        rep.cache_stats = self._cache.stats
+        return rep
 
     @property
     def wrapped_client(self) -> InferenceClient:
         return self._client
 
-    @abc.abstractmethod
     def chat(
         self,
         messages: list[dict],
@@ -146,19 +147,9 @@ class CachedInferenceClient(InferenceClient):
         temperature: float = 0.1,
         run_id: str | None = None,
     ) -> str:
-        """Send a chat completion (message list) and return the raw text response.
-        Used by providers with message-based APIs (OpenAI, Anthropic)."""
-        pass
-
-    @abc.abstractmethod
-    def complete_code(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        model: str,
-        *,
-        temperature: float = 0.1,
-        run_id: str | None = None,
-    ) -> str:
-        """For the GENERATE stage: we want raw TS code, not JSON."""
-        pass
+        return self._client.chat(
+            messages=messages,
+            model=model,
+            temperature=temperature,
+            run_id=run_id,
+        )
