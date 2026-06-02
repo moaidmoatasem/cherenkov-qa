@@ -114,12 +114,13 @@ owner to recruit 5 QA people and run the demo.
 
 ## 6. What to do next (priority order)
 
-### 6.1 — RECONCILE (DONE 2026-06-02, branch `chore/reconcile-to-track-a`)
+### 6.1 — RECONCILE & STABILISE CI (DONE 2026-06-02, branches `chore/reconcile-to-track-a` and `epoch0/stabilise-ci-green-on-main`)
 - `docs/INTEGRATION_HANDOVER_REPORT.md` banner'd as fabricated.
 - Track B/C modules moved to `track-b-c-deferred/`.
 - `cherenkov.py`, `cherenkov/execution/validate.py`, `cherenkov/core/orchestrator.py`
   stripped of Track B/C call sites (--visual, --perf, dashboard, diagnostics, jira).
-- Track A smokes re-run green after quarantine — see commit body for raw output.
+- Track A smokes re-run green after quarantine.
+- **E0-2 Stabilise CI**: Added standard dependency installation steps to the `.github/workflows/ci.yml` file, refactored `smoke_test_healing.py` to prevent local change pollution, and implemented auto-restoration in `smoke_test_polish.py` (ALL tests verified fully green).
 
 ### 6.2 — THE REAL FINISH LINE (owner task, not an agent)
 Recruit 5 QA people. Run the demo from [QA_DEMO_KIT.md](QA_DEMO_KIT.md).
