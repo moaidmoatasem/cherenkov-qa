@@ -24,6 +24,7 @@ from cherenkov.core.contracts import (
     EndpointSlice, Mutation, Scenario, GateResult, Verdict, Status, StageMeta, StageError
 )
 from cherenkov.core.errors import get_logger, ContractError
+from cherenkov.ai import get_accounting_report, get_cache_stats
 from cherenkov.stages.ingest import IngestStage
 from cherenkov.stages.plan import PlanStage
 from cherenkov.stages.generate import GenerateStage
@@ -447,6 +448,19 @@ class OrchestrationEngine:
         print(f"  Status: {status_str}")
         print(f"  Verdicts: {review.verdict.upper()}")
         print(f"  Total Duration: {total_duration}ms")
+
+        # ── E1-5 Cache Stats & Cost/Latency Accounting ────────────────
+        cache_stats = get_cache_stats()
+        if cache_stats:
+            print(f"  Cache — hits: {cache_stats.hits}, misses: {cache_stats.misses}, "
+                  f"size: {cache_stats.size}/{cache_stats.max_size}, "
+                  f"hit ratio: {cache_stats.hit_ratio:.2%}")
+        accounting = get_accounting_report()
+        if accounting and accounting.request_count > 0:
+            print(f"  Accounting — requests: {accounting.request_count}, "
+                  f"total tokens: {accounting.total_tokens}, "
+                  f"total latency: {accounting.total_duration_ms}ms, "
+                  f"total cost: \${accounting.total_cost:.6f}")
         print("===================================================\n")
 
         if self.event_callback:
