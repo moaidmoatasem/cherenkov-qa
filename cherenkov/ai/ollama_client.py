@@ -60,6 +60,21 @@ class OllamaClient(InferenceClient):
             run_id=run_id
         )
 
+    def chat(
+        self,
+        messages: list[dict],
+        model: str,
+        *,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> str:
+        return _DEFAULT_CLIENT.chat(
+            messages=messages,
+            model=model,
+            temperature=temperature,
+            run_id=run_id
+        )
+
 _THINK = re.compile(r"<think\b[^>]*>.*?</think>", re.DOTALL)
 
 
@@ -166,6 +181,34 @@ class OllamaInferenceClient(InferenceClient):
         text = re.sub(r"\n?```$", "", text)
         log.info("code ok", model=model, duration_ms=int((time.time() - t0) * 1000))
         return text.strip()
+
+    def chat(
+        self,
+        messages: list[dict],
+        model: str,
+        *,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> str:
+        """Send a chat completion (message list) and return the raw text response."""
+        log = get_logger("ollama-chat", run_id)
+        t0 = time.time()
+        base_url = Config.OLLAMA_URL.rsplit("/api/generate", 1)[0]
+        chat_url = f"{base_url}/api/chat"
+        resp = requests.post(
+            chat_url,
+            json={
+                "model": model,
+                "messages": messages,
+                "stream": False,
+                "options": {"temperature": temperature},
+            },
+            timeout=300,
+        )
+        resp.raise_for_status()
+        text = resp.json().get("message", {}).get("content", "").strip()
+        log.info("chat ok", model=model, duration_ms=int((time.time() - t0) * 1000))
+        return text
 
 
 _DEFAULT_CLIENT = OllamaInferenceClient()

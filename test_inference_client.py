@@ -111,5 +111,99 @@ class TestInferenceClient(unittest.TestCase):
         self.assertEqual(res_code, "const x = 5;")
 
 
+class TestOpenAIInferenceClient(unittest.TestCase):
+    """Same conformance tests applied to the OpenAI provider (E1-3)."""
+
+    def test_openai_client_implements_interface(self):
+        """Verify OpenAIInferenceClient is a subclass of InferenceClient."""
+        client = OpenAIInferenceClient()
+        self.assertTrue(isinstance(client, InferenceClient))
+
+    @patch.object(OpenAIInferenceClient, "_chat_completion")
+    def test_openai_client_complete_json_success(self, mock_chat):
+        """Verify complete_json successfully returns parsed JSON."""
+        mock_chat.return_value = '{"key": "value"}'
+
+        client = OpenAIInferenceClient()
+        result = client.complete_json(
+            system_prompt="sys",
+            user_prompt="user",
+            model="gpt-4o-mini"
+        )
+        self.assertEqual(result, {"key": "value"})
+        mock_chat.assert_called_once()
+
+    @patch.object(OpenAIInferenceClient, "_chat_completion")
+    def test_openai_client_complete_json_failure_then_repair(self, mock_chat):
+        """Verify complete_json handles invalid JSON by attempting repair."""
+        mock_chat.return_value = 'Some prose here {"key": "value"} other prose'
+
+        client = OpenAIInferenceClient()
+        result = client.complete_json(
+            system_prompt="sys",
+            user_prompt="user",
+            model="gpt-4o-mini"
+        )
+        self.assertEqual(result, {"key": "value"})
+
+    @patch.object(OpenAIInferenceClient, "_chat_completion")
+    def test_openai_client_complete_json_exhausted_raises_error(self, mock_chat):
+        """Verify complete_json raises ProviderJSONError after reprompts exhausted."""
+        mock_chat.return_value = "completely invalid non-json text"
+
+        client = OpenAIInferenceClient()
+        with self.assertRaises(ProviderJSONError):
+            client.complete_json(
+                system_prompt="sys",
+                user_prompt="user",
+                model="gpt-4o-mini",
+                max_reprompts=1
+            )
+        self.assertEqual(mock_chat.call_count, 2)
+
+    @patch.object(OpenAIInferenceClient, "_chat_completion")
+    def test_openai_client_complete_code_strips_markdown(self, mock_chat):
+        """Verify complete_code successfully strips markdown fences."""
+        mock_chat.return_value = "```typescript\nconst a = 1;\n```"
+
+        client = OpenAIInferenceClient()
+        result = client.complete_code(
+            system_prompt="sys",
+            user_prompt="user",
+            model="gpt-4o-mini"
+        )
+        self.assertEqual(result, "const a = 1;")
+
+    @patch.object(OpenAIInferenceClient, "_chat_completion")
+    def test_openai_client_get_client_factory(self, mock_chat):
+        """Verify get_client() returns OpenAIInferenceClient when configured."""
+        from cherenkov.ai import get_client
+        from cherenkov.core.config import Config
+
+        original = Config.PROVIDER
+        try:
+            Config.PROVIDER = "openai"
+            client = get_client()
+            self.assertIsInstance(client, OpenAIInferenceClient)
+        finally:
+            Config.PROVIDER = original
+
+    @patch.object(OpenAIInferenceClient, "_chat_completion")
+    def test_openai_client_api_request_failure(self, mock_chat):
+        """Verify complete_json raises ProviderJSONError on API failure."""
+        from requests import RequestException
+
+        mock_chat.side_effect = RequestException("Connection error")
+
+        client = OpenAIInferenceClient()
+        with self.assertRaises(ProviderJSONError):
+            client.complete_json(
+                system_prompt="sys",
+                user_prompt="user",
+                model="gpt-4o-mini",
+                max_reprompts=0
+            )
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -11,6 +11,7 @@ from cherenkov.core.errors import get_logger
 class Config:
     """Strongly-typed central configuration parser loading environment variables with safe defaults."""
     
+    PROVIDER: str = os.getenv("PROVIDER", "ollama")
     OLLAMA_URL: str = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
     GEN_MODEL: str = os.getenv("GEN_MODEL", "qwen2.5-coder:7b")
     API_URL: str = os.getenv("API_URL", "http://localhost:8000")
@@ -32,9 +33,15 @@ class Config:
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
+    # ── E1-5 Cache & Accounting ──────────────────────────────────────────
+    CACHE_ENABLED: bool = os.getenv("CACHE_ENABLED", "true").lower() in ("1", "true", "yes")
+    CACHE_MAX_SIZE: int = int(os.getenv("CACHE_MAX_SIZE", "100"))
+    CACHE_TTL_SECONDS: int = int(os.getenv("CACHE_TTL_SECONDS", "3600"))
+
     @classmethod
     def to_dict(cls) -> dict[str, str | int | bool]:
         return {
+            "PROVIDER": cls.PROVIDER,
             "OLLAMA_URL": cls.OLLAMA_URL,
             "GEN_MODEL": cls.GEN_MODEL,
             "API_URL": cls.API_URL,
@@ -48,6 +55,9 @@ class Config:
             "FALLBACK_ENABLED": cls.FALLBACK_ENABLED,
             "FALLBACK_PROVIDER": cls.FALLBACK_PROVIDER,
             "OPENAI_MODEL": cls.OPENAI_MODEL,
+            "CACHE_ENABLED": cls.CACHE_ENABLED,
+            "CACHE_MAX_SIZE": cls.CACHE_MAX_SIZE,
+            "CACHE_TTL_SECONDS": cls.CACHE_TTL_SECONDS,
         }
 
     @classmethod
