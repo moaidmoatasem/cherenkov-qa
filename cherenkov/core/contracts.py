@@ -330,3 +330,28 @@ class AccountingReport(BaseModel):
     total_cost: float = 0.0
     request_count: int = 0
     cache_stats: CacheStats = Field(default_factory=CacheStats)
+
+
+# ── TRUTH MODEL / SOURCE ADAPTER SPI ──────────────────────────────────────────
+
+class ProvenanceType(str, Enum):
+    SPEC = "spec"
+    CODE = "code"
+    TRAFFIC = "traffic"
+    DB = "db"
+
+
+class Provenance(BaseModel):
+    source_type: ProvenanceType
+    source_uri: str
+    details: dict = Field(default_factory=dict)
+
+
+class Claim(BaseModel):
+    id: str
+    category: str  # e.g., "endpoint" | "request" | "response" | "mutation"
+    subject: str   # e.g., "POST /users" | "POST /users -> body -> email"
+    value: dict | str | list | None = None
+    provenance: Provenance
+    schema_version: int = SCHEMA_VERSION
+
