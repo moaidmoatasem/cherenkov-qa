@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Check, 
   X, 
@@ -29,6 +29,8 @@ interface ReviewScreenProps {
 
 export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenProps) {
   const [tests, setTests] = useState<TestItem[]>(INITIAL_TESTS);
+  const testsRef = useRef(tests);
+  testsRef.current = tests;
 
   useEffect(() => {
     fetchGeneratedTests()
@@ -134,27 +136,20 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
     approveTestScenario(id).catch(err => console.warn('API approve failed, using local state', err));
     
     setTimeout(() => {
-      setTests(prev => prev.map(t => {
-        if (t.id === id) {
-          return { ...t, verdict: 'approved' };
+      setTests(prev => {
+        const updated = prev.map(t => t.id === id ? { ...t, verdict: 'approved' as const } : t);
+        setApproveTriggerId(null);
+        const visible = updated.filter(t => activeFilter === 'all' || t.verdict === activeFilter);
+        const idx = visible.findIndex(t => t.id === id);
+        if (idx < visible.length - 1) {
+          setSelectedTestId(visible[idx + 1].id);
+        } else if (idx > 0) {
+          setSelectedTestId(visible[idx - 1].id);
         }
-        return t;
-      }));
-      setApproveTriggerId(null);
-      
-      // select next item in list if possible
-      const visible = tests.filter(t => activeFilter === 'all' || t.verdict === activeFilter);
-      const index = visible.findIndex(t => t.id === id);
-      if (index < visible.length - 1) {
-        setSelectedTestId(visible[index + 1].id);
-      } else if (index > 0) {
-        setSelectedTestId(visible[index - 1].id);
-      }
-
-      // calculate pass rate metrics for parent layout
-      const updatedTests = tests.map(t => t.id === id ? { ...t, verdict: 'approved' as const } : t);
-      const approvedCount = updatedTests.filter(t => t.verdict === 'approved').length;
-      onUpdatePassRateAndCount(updatedTests.length, approvedCount);
+        const approvedCount = updated.filter(t => t.verdict === 'approved').length;
+        onUpdatePassRateAndCount(updated.length, approvedCount);
+        return updated;
+      });
     }, 400);
   };
 

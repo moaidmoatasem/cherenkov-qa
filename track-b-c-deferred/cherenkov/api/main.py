@@ -95,9 +95,16 @@ class EjectPayload(BaseModel):
 # ── Endpoints ──────────────────────────────────────────────────────────
 @app.get("/api/v1/health")
 async def health_check():
+    try:
+        device = await asyncio.wait_for(
+            asyncio.to_thread(Config.detect_ollama_device),
+            timeout=5.0
+        )
+    except Exception:
+        device = "unknown"
     return {
         "status": "online",
-        "device": Config.detect_ollama_device(),
+        "device": device,
         "gen_model": Config.GEN_MODEL,
         "active_connections": len(manager.active_connections),
         "workspace_root": os.getcwd()
@@ -114,31 +121,34 @@ async def ingest_spec_file(
     os.makedirs(temp_dir, exist_ok=True)
     spec_path = os.path.join(temp_dir, f"spec_{run_id}.json" if (file and file.filename and file.filename.endswith('.json')) else f"spec_{run_id}.yaml")
 
+    if not file and not url:
+        raise HTTPException(status_code=400, detail="Either file upload or URL must be provided.")
+
     try:
         if file:
             with open(spec_path, "wb") as f:
                 shutil.copyfileobj(file.file, f)
         elif url:
-            # Simple remote fetch fallback
             import requests
             resp = requests.get(url, timeout=15)
             resp.raise_for_status()
             with open(spec_path, "w", encoding="utf-8") as f:
                 f.write(resp.text)
-        else:
-            raise HTTPException(status_code=400, detail="Either file upload or URL must be provided.")
 
-        # Run real IngestStage
         ingest_stage = IngestStage(run_id)
         ingest_output = ingest_stage.run(spec_path)
 
         endpoints = []
         for ep in ingest_output.endpoints:
+            missing = []
+            for m in (ep.mutations or []):
+                if hasattr(m, 'instruction') and m.instruction:
+                    missing.append(m.instruction)
             endpoints.append({
                 "path": ep.path,
                 "method": ep.method,
                 "richness": ep.richness,
-                "missing_elements": ep.mutations[0].instruction if ep.mutations else []
+                "missing_elements": missing
             })
 
         return {
@@ -146,10 +156,13 @@ async def ingest_spec_file(
             "endpoints": endpoints,
             "richness": sum(ep["richness"] for ep in endpoints) / len(endpoints) if endpoints else 0.0
         }
+    except HTTPException:
+        raise
     except Exception as e:
         if os.path.exists(spec_path):
             os.remove(spec_path)
-        raise HTTPException(status_code=500, detail=f"Parsing error: {e}")
+        err_msg = getattr(e, 'detail', str(e)) if hasattr(e, 'status_code') else str(e)
+        raise HTTPException(status_code=500, detail=f"Parsing error: {err_msg}")
 
 def run_pipeline_thread(spec_path: str, run_id: str):
     """Executes E2E pipeline run inside background worker thread."""
@@ -210,6 +223,7 @@ async def approve_scenario(payload: ReviewActionPayload):
 async def reject_scenario(payload: ReviewActionPayload):
     # Remove from disk
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
+    os.makedirs(tests_dir, exist_ok=True)
     file_path = os.path.join(tests_dir, f"{payload.scenario_id}.spec.ts")
     if os.path.exists(file_path):
         os.remove(file_path)
@@ -221,6 +235,7 @@ async def edit_scenario(payload: ReviewActionPayload):
         raise HTTPException(status_code=400, detail="Missing updated test code content.")
     
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
+    os.makedirs(tests_dir, exist_ok=True)
     file_path = os.path.join(tests_dir, f"{payload.scenario_id}.spec.ts")
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(payload.test_code)
