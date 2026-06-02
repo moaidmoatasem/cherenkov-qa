@@ -8,7 +8,8 @@ from unittest.mock import patch, MagicMock
 
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient, complete_json, complete_code
-from cherenkov.core.errors import OllamaJSONError
+from cherenkov.core.errors import OllamaJSONError, ProviderJSONError
+from cherenkov.ai.openai_client import OpenAIInferenceClient
 
 
 class TestInferenceClient(unittest.TestCase):
