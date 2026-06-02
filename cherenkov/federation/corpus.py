@@ -1,6 +1,6 @@
 import hashlib, json, os
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from cherenkov.federation.protocol import DivergenceEnvelope
 
 class CorpusOptInError(Exception):
@@ -22,7 +22,7 @@ class Corpus:
         if not self.opt_in:
             raise CorpusOptInError("Opt-in disabled")
         anon = self._anon(envelope)
-        entry = CorpusEntry(envelope.divergence.id, datetime.utcnow().isoformat() + "Z", anon)
+        entry = CorpusEntry(envelope.divergence.id, datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), anon)
         with open(self.path, "a") as f:
             f.write(json.dumps({"id": entry.id, "timestamp": entry.timestamp, "payload": anon}) + "\n")
         return entry
