@@ -507,3 +507,53 @@ class OrchestrationEngine:
                 results.append(report)
 
         return results
+
+
+    # ── Optional capability: PERF Stage (Track B, ejectable) ───────────────
+    def run_perf_stage(self, slices, db_path=None):
+        """Run the optional PerfStage over a list of PerfSlice inputs.
+
+        Same retry-ladder + circuit-breaker pattern as run_visual_stage. Does
+        NOT modify run_pipeline. Returns a list of PerfReport (one per slice).
+        """
+        from cherenkov.stages.perf.perf_stage import PerfStage
+        from cherenkov.core.contracts import PerfReport
+
+        stage = PerfStage(self.run_id, db_path=db_path)
+        results = []
+
+        for sl in slices:
+            attempts = 0
+            max_attempts = 3
+            report = None
+
+            while attempts < max_attempts:
+                try:
+                    candidate = stage.run(sl)
+                    if not isinstance(candidate, PerfReport):
+                        raise ContractError(f"PerfStage returned unvalidated type for slice {sl.name}")
+                    self.log.info("stage success", stage="PERF", slice=sl.name,
+                                  duration_ms=candidate.metadata.duration_ms)
+                    report = candidate
+                    break
+                except (ValidationError, ContractError, Exception) as e:
+                    attempts += 1
+                    self.log.warning("stage boundary violation", stage="PERF",
+                                     slice=sl.name, attempt=attempts, error=str(e))
+                    if attempts >= max_attempts:
+                        self.log.error("retry ladder exhausted", stage="PERF",
+                                       slice=sl.name, detail="triggering fallback PerfReport")
+                        self.breaker.record_failure()
+                        report = PerfReport(
+                            scenario_id=sl.name, gates=[], verdict=Verdict.REGENERATE,
+                            status=Status.FAILED,
+                            errors=[StageError(code="PERF_FALLBACK", detail="Failed after retry ladder.")],
+                            metadata=StageMeta(stage="PERF", duration_ms=0),
+                        )
+                        break
+                    time.sleep(0.1)
+
+            if report is not None:
+                results.append(report)
+
+        return results
