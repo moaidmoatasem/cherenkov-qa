@@ -79,6 +79,35 @@ def print_visual_report(target_url: str, reports):
     print('\n' + '=' * 80 + '\n')
 
 
+
+
+def print_perf_report(target_url, reports):
+    print(chr(10) + "=" * 80)
+    print("CHERENKOV PERFORMANCE BASELINE REPORT (B2 - optional Track B layer)")
+    print("=" * 80)
+    print("Target URL:", target_url)
+    print("Slices Verified:", len(reports))
+    print("=" * 80)
+    for r in reports:
+        status_str = "OK" if r.status == "ok" else "FAILED"
+        verdict_str = r.verdict.upper() if hasattr(r.verdict, "upper") else str(r.verdict).upper()
+        print(chr(10) + "Slice:", r.scenario_id, "[" + status_str + "]  Verdict:", verdict_str)
+        print("-" * 80)
+        if r.errors:
+            for err in r.errors:
+                print("  Error [" + err.code + "]:", err.detail)
+        if not r.gates:
+            print("  (no gates evaluated)")
+            continue
+        for g in r.gates:
+            pass_str = "PASS" if g.passed else "FAIL"
+            print("  Gate " + g.gate + ": [" + pass_str + "]")
+            print("    latency_ms=" + str(g.latency_ms) + "  k6_available=" + str(g.k6_available))
+            print("    baseline: count=" + str(g.baseline_count) + " mean=" + str(g.baseline_mean_ms) + "ms stddev=" + str(g.baseline_stddev_ms) + "ms")
+            if g.threshold_limit_ms:
+                print("    threshold_limit_ms=" + str(g.threshold_limit_ms) + "  anomaly_detected=" + str(g.anomaly_detected))
+    print(chr(10) + "=" * 80 + chr(10))
+
 def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description='CHERENKOV E2E Suite Command Line Interface')
     subparsers = parser.add_subparsers(dest='command', required=True, help='Subcommands to execute')
@@ -92,6 +121,13 @@ def get_parser() -> argparse.ArgumentParser:
     visual_parser = subparsers.add_parser('visual', help='Run optional visual-regression checks against a rendered URL (Track B layer)')
     visual_parser.add_argument('--target', '-t', required=True, help='Absolute URL of the page to snapshot')
     visual_parser.add_argument('--baseline-dir', default='stub/visual_baselines', help='Baseline directory label (default: stub/visual_baselines)')
+
+    perf_parser = subparsers.add_parser("perf", help="Run optional performance baseline checks against an API endpoint (Track B layer)")
+    perf_parser.add_argument("--target", "-t", required=True, help="Base URL of the API to load test")
+    perf_parser.add_argument("--endpoint", default="/", help="Endpoint path appended to --target (default: /)")
+    perf_parser.add_argument("--method", default="GET", help="HTTP method (default: GET)")
+    perf_parser.add_argument("--vus", type=int, default=5, help="Virtual users (default: 5)")
+    perf_parser.add_argument("--duration", type=int, default=5, help="Test duration in seconds (default: 5)")
 
     return parser
 
@@ -132,5 +168,18 @@ def main():
         sys.exit(0 if all_ok else 1)
 
 
-if __name__ == '__main__':
+    elif args.command == "perf":
+        from cherenkov.core.orchestrator import OrchestrationEngine
+        from cherenkov.core.contracts import PerfSlice
+        slices = [PerfSlice(name="cli_default", target_url=args.target,
+                            endpoint=args.endpoint, method=args.method,
+                            vus=args.vus, duration_sec=args.duration)]
+        engine = OrchestrationEngine(run_id="cli_perf")
+        reports = engine.run_perf_stage(slices)
+        print_perf_report(args.target, reports)
+        any_failed = any(r.status != "ok" for r in reports)
+        sys.exit(1 if any_failed else 0)
+
+
+if __name__ == "__main__":
     main()

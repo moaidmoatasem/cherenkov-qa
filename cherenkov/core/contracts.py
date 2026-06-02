@@ -148,3 +148,49 @@ class VisualReport(BaseModel):
     status: Status = Status.OK
     errors: list[StageError] = Field(default_factory=list)
     metadata: StageMeta
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# B2 PERF BASELINES — optional capability layer (Track B build-over)
+# Reuses Track A Verdict/Status/StageMeta/StageError. Never replaces Track A.
+# Records run latencies in local SQLite (.cherenkov/perf_metrics.db) and flags
+# statistical-outlier regressions vs historical mean+stddev (>= 3 runs).
+# ════════════════════════════════════════════════════════════════════════════
+
+class PerfSlice(BaseModel):
+    """A single perf target: endpoint+method on a base URL with a load profile."""
+    name: str
+    target_url: str
+    endpoint: str = "/"
+    method: str = "GET"
+    vus: int = 5
+    duration_sec: int = 5
+
+
+class PerfScenario(BaseModel):
+    """A planned perf check binding a slice to a baseline metrics table."""
+    slice_id: str
+    baseline_db_path: str = ".cherenkov/perf_metrics.db"
+
+
+class PerfGateResult(BaseModel):
+    """One gate verdict on a perf measurement."""
+    gate: str                              # e.g. latency_baseline
+    passed: bool
+    latency_ms: float = 0.0
+    baseline_count: int = 0
+    baseline_mean_ms: float = 0.0
+    baseline_stddev_ms: float = 0.0
+    threshold_limit_ms: float = 0.0
+    anomaly_detected: bool = False
+    k6_available: bool = True
+
+
+class PerfReport(BaseModel):
+    """PerfStage output: one report per slice processed."""
+    scenario_id: str
+    gates: list[PerfGateResult]
+    verdict: Verdict
+    status: Status = Status.OK
+    errors: list[StageError] = Field(default_factory=list)
+    metadata: StageMeta
