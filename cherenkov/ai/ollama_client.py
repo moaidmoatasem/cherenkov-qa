@@ -14,11 +14,75 @@ from __future__ import annotations
 import json
 import re
 import time
+from typing import Protocol
 
 import requests
 
 from cherenkov.core.errors import OllamaJSONError, get_logger
 from cherenkov.core.config import Config
+
+
+class InferenceClient(Protocol):
+    def complete_json(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        model: str,
+        *,
+        max_reprompts: int = 2,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> dict:
+        ...
+
+    def complete_code(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        model: str,
+        *,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> str:
+        ...
+
+
+class OllamaClient(InferenceClient):
+    def complete_json(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        model: str,
+        *,
+        max_reprompts: int = 2,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> dict:
+        return complete_json(
+            system_prompt,
+            user_prompt,
+            model,
+            max_reprompts=max_reprompts,
+            temperature=temperature,
+            run_id=run_id
+        )
+
+    def complete_code(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        model: str,
+        *,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> str:
+        return complete_code(
+            system_prompt,
+            user_prompt,
+            model,
+            temperature=temperature,
+            run_id=run_id
+        )
 
 _THINK = re.compile(r"<think\b[^>]*>.*?</think>", re.DOTALL)
 
