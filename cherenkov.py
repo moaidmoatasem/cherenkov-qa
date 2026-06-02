@@ -141,6 +141,10 @@ def get_parser() -> argparse.ArgumentParser:
 
     dashboard_parser = subparsers.add_parser('dashboard', help='Visualise Truth Model + divergences (E5-4, defer-first)')
 
+    # ── Epoch 2: Truth Model ───────────────────────────────────────────────
+    map_parser = subparsers.add_parser('map', help='Build + inspect the Truth Model from configured sources (E2-6)')
+    map_parser.add_argument('--detailed', '-d', action='store_true', help='Show full claim details')
+
     return parser
 
 
@@ -204,6 +208,11 @@ def main():
     elif args.command == 'dashboard':
         from cherenkov.dashboard.render import run_dashboard
         sys.exit(run_dashboard())
+
+    # ── Epoch 2 subcommands ────────────────────────────────────────────────
+    elif args.command == 'map':
+        from cherenkov.stages.map_cmd import run_map
+        sys.exit(run_map(detailed=args.detailed))
 
 
 if __name__ == "__main__":
