@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-smoke_test_provider.py — smoke test to verify ModelProvider SPI.
+smoke_test_provider.py -- smoke test to verify ModelProvider SPI.
 """
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.ai.ollama_client import InferenceClient
@@ -36,7 +36,7 @@ def test_ollama_provider_conformance():
     assert round_trip.provider == result.provider
     assert round_trip.model == result.model
 
-    print("✓ OllamaProvider conformance test passed.")
+    print("[PASS] OllamaProvider conformance test passed.")
 
 if __name__ == "__main__":
     test_ollama_provider_conformance()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-smoke_test_polish.py — E2E automated smoke tests for Phase 10 POLISH + DOCS.
+smoke_test_polish.py -- E2E automated smoke tests for Phase 10 POLISH + DOCS.
 Proves help systems, bash wrappers, and CI docs checkers work E2E.
 """
 import os
@@ -17,7 +17,7 @@ def main():
     src_py = "cherenkov.py"
     backup_py = "cherenkov.py.bak"
     if os.path.exists(backup_py):
-        print("⚠️ Warning: cherenkov.py.bak found from a previous aborted run. Auto-restoring...")
+        print("[WARN] Warning: cherenkov.py.bak found from a previous aborted run. Auto-restoring...")
         shutil.copy2(backup_py, src_py)
         os.remove(backup_py)
 
@@ -25,14 +25,19 @@ def main():
     print("Testing bin/cherenkov wrapper...")
     wrapper_path = "./bin/cherenkov"
     assert os.path.exists(wrapper_path), "CLI wrapper bin/cherenkov is missing!"
-    print("✓ CLI wrapper binary exists.")
+    import platform as _pf
+    if _pf.system() == "Windows":
+        wrapper_cmd = ["bash.exe", wrapper_path]
+    else:
+        wrapper_cmd = [wrapper_path]
+    print("[PASS] CLI wrapper binary exists.")
 
     # 2. Verify help screens
     print("Testing help outputs...")
     commands_to_test = [
-        [wrapper_path, "--help"],
-        [wrapper_path, "validate", "--help"],
-        [wrapper_path, "eject", "--help"]
+        wrapper_cmd + ["--help"],
+        wrapper_cmd + ["validate", "--help"],
+        wrapper_cmd + ["eject", "--help"]
     ]
     for cmd in commands_to_test:
         proc = subprocess.run(
@@ -42,7 +47,7 @@ def main():
         )
         assert proc.returncode == 0, f"Command failed: {' '.join(cmd)}"
         assert "usage:" in proc.stdout.lower() or "help" in proc.stdout.lower(), f"Output missing help keywords: {' '.join(cmd)}"
-        print(f"✓ Help screen works for: {' '.join(cmd)}")
+        print(f"[PASS] Help screen works for: {' '.join(cmd)}")
 
     # 3. Verify documentation coverage check passes on fully documented files
     print("\nTesting CI Docs Drift Checker (Pass Case)...")
@@ -55,7 +60,7 @@ def main():
     print("Docs checker stdout:")
     print(docs_proc.stdout)
     assert docs_proc.returncode == 0, "Docs checker failed unexpectedly!"
-    print("✓ Docs checker passed successfully on standard documented files.")
+    print("[PASS] Docs checker passed successfully on standard documented files.")
 
     # 4. Verify documentation coverage check FAILS on undocumented commands
     print("Testing CI Docs Drift Checker (Fail Case)...")
@@ -99,7 +104,7 @@ def main():
         
         assert fail_proc.returncode == 1, "Docs checker failed to catch undocumented command choice!"
         assert "undocumented subcommands found" in fail_proc.stdout.lower(), "Docs checker output did not specify missing subcommands!"
-        print("✓ Docs checker correctly caught the undocumented subcommand and failed CI successfully!")
+        print("[PASS] Docs checker correctly caught the undocumented subcommand and failed CI successfully!")
 
     finally:
         # Restore backup cherenkov.py
