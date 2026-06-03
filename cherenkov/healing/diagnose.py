@@ -6,11 +6,17 @@ from __future__ import annotations
 
 import os
 import json
+import hashlib
 import time
 from enum import Enum
 from typing import Any, Dict, List, Optional, Callable
 
 from cherenkov.core.errors import get_logger
+
+
+def hash_test_content(test_content: str) -> str:
+    """Returns a stable SHA-256 hash of test source, ignoring surrounding whitespace."""
+    return hashlib.sha256(test_content.strip().encode("utf-8")).hexdigest()
 
 class FailureClass(str, Enum):
     AUTH_EXPIRY = "AUTH_EXPIRY"
@@ -30,13 +36,17 @@ class DiagnosisResult:
         detail: str,
         missing_fields: Optional[list[str]] = None,
         added_fields: Optional[list[str]] = None,
-        snapshot_existed: bool = False
+        snapshot_existed: bool = False,
+        stale_snapshot: bool = False
     ):
         self.failure_class = failure_class
         self.detail = detail
         self.missing_fields = missing_fields or []
         self.added_fields = added_fields or []
         self.snapshot_existed = snapshot_existed
+        # True when the test source changed since the snapshot was captured, so a
+        # contract diff would be misleading: the snapshot is flagged stale, not auto-diffed.
+        self.stale_snapshot = stale_snapshot
 
 class Diagnoser:
     """Diagnoses test failures before any repair is suggested, ensuring high-quality classifications."""
@@ -51,16 +61,18 @@ class Diagnoser:
         scenario_id: str,
         current_status: int,
         current_body: Any,
-        test_name: str
+        test_name: str,
+        test_content: Optional[str] = None
     ) -> DiagnosisResult:
         """Determines the exact failure cause by comparing against historical snapshots."""
         self.log.info("diagnosing failure", scenario_id=scenario_id, status=current_status)
 
         snapshot_path = os.path.join(self.snapshots_dir, f"{scenario_id}.json")
         snapshot_existed = os.path.exists(snapshot_path)
-        
+
         previous_status = None
         previous_keys = []
+        previous_test_hash = None
 
         if snapshot_existed:
             try:
@@ -68,8 +80,21 @@ class Diagnoser:
                     snapshot = json.load(f)
                     previous_status = snapshot.get("status")
                     previous_keys = snapshot.get("body_keys", [])
+                    previous_test_hash = snapshot.get("test_hash")
             except Exception as e:
                 self.log.warning("failed to read snapshot", path=snapshot_path, error=str(e))
+
+        # Detect a stale snapshot: the test source changed since the snapshot was
+        # captured, so any body-shape diff reflects the rewritten test, not real drift.
+        stale_snapshot = False
+        if snapshot_existed and previous_test_hash and test_content is not None:
+            if hash_test_content(test_content) != previous_test_hash:
+                stale_snapshot = True
+                self.log.warning(
+                    "stale snapshot flagged, not auto-diffed",
+                    scenario_id=scenario_id,
+                    detail="test content changed since snapshot was recorded",
+                )
 
         # 1. AUTH_EXPIRY: was 200/201 (success), now 401
         if current_status == 401:
@@ -80,7 +105,8 @@ class Diagnoser:
                 return DiagnosisResult(
                     failure_class=FailureClass.AUTH_EXPIRY,
                     detail=detail,
-                    snapshot_existed=snapshot_existed
+                    snapshot_existed=snapshot_existed,
+                    stale_snapshot=stale_snapshot
                 )
 
         # Parse current body shape keys
@@ -90,8 +116,10 @@ class Diagnoser:
         elif isinstance(current_body, list) and len(current_body) > 0 and isinstance(current_body[0], dict):
             current_keys = list(current_body[0].keys())
 
-        # 2. CONTRACT_DRIFT: Snapshot exists, and keys differ
-        if snapshot_existed and previous_keys:
+        # 2. CONTRACT_DRIFT: Snapshot exists, and keys differ.
+        # Skipped when the snapshot is stale: the test itself changed, so a key diff
+        # would be noise rather than genuine contract drift.
+        if snapshot_existed and previous_keys and not stale_snapshot:
             missing = [k for k in previous_keys if k not in current_keys]
             added = [k for k in current_keys if k not in previous_keys]
 
@@ -103,7 +131,8 @@ class Diagnoser:
                     detail=detail,
                     missing_fields=missing,
                     added_fields=added,
-                    snapshot_existed=True
+                    snapshot_existed=True,
+                    stale_snapshot=stale_snapshot
                 )
 
         # 3. STATE_SEQUENCE: resource not found (404) or bad request due to state dependencies
@@ -113,7 +142,8 @@ class Diagnoser:
             return DiagnosisResult(
                 failure_class=FailureClass.STATE_SEQUENCE,
                 detail=detail,
-                snapshot_existed=snapshot_existed
+                snapshot_existed=snapshot_existed,
+                stale_snapshot=stale_snapshot
             )
 
         # 4. GENERIC_FAILURE: Default fallback
@@ -122,7 +152,8 @@ class Diagnoser:
         return DiagnosisResult(
             failure_class=FailureClass.GENERIC_FAILURE,
             detail=detail,
-            snapshot_existed=snapshot_existed
+            snapshot_existed=snapshot_existed,
+            stale_snapshot=stale_snapshot
         )
 
     def verify_flake_status(self, run_test_func: Callable[[], bool], max_retries: int = 2) -> FailureClass:
@@ -142,8 +173,14 @@ class Diagnoser:
         return FailureClass.DETERMINISTIC_FAILURE
 
 
-    def record_passing_snapshot(self, scenario_id: str, status: int, body: Any) -> None:
-        """Stores the response status and shape keys of a successful test execution for subsequent diffing."""
+    def record_passing_snapshot(
+        self, scenario_id: str, status: int, body: Any, test_content: Optional[str] = None
+    ) -> None:
+        """Stores the response status and shape keys of a successful test execution for subsequent diffing.
+
+        When the test source is provided, its content hash is stored so a later run can
+        detect a modified test and flag the snapshot as stale rather than auto-diffing it.
+        """
         os.makedirs(self.snapshots_dir, exist_ok=True)
         snapshot_path = os.path.join(self.snapshots_dir, f"{scenario_id}.json")
 
@@ -157,6 +194,7 @@ class Diagnoser:
             "scenario_id": scenario_id,
             "status": status,
             "body_keys": body_keys,
+            "test_hash": hash_test_content(test_content) if test_content is not None else None,
             "timestamp": int(time.time()) if 'time' in globals() else 0
         }
 
