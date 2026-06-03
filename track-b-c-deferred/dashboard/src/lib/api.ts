@@ -185,3 +185,36 @@ export async function ejectSuite(outputPath: string): Promise<EjectResponse> {
 
   return res.json();
 }
+
+import { Divergence } from '../types';
+import { MOCK_DIVERGENCES } from '../mockData';
+
+export async function fetchDivergences(): Promise<Divergence[]> {
+  try {
+    const res = await fetch(`${API_BASE}/divergences`);
+    if (!res.ok) return MOCK_DIVERGENCES;
+    return res.json();
+  } catch (e) {
+    return MOCK_DIVERGENCES;
+  }
+}
+
+export async function actOnDivergence(
+  divergenceId: string, 
+  action: 'close_with_test' | 'mark_intended' | 'reject', 
+  reason?: string
+): Promise<void> {
+  // Try sending to backend, fallback if it doesn't exist
+  try {
+    const res = await fetch(`${API_BASE}/divergences/act`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ divergence_id: divergenceId, action, reason }),
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to perform action ${action} on divergence ${divergenceId}`);
+    }
+  } catch (err) {
+    console.warn('Real backend actOnDivergence failed, falling back to mock UI update', err);
+  }
+}

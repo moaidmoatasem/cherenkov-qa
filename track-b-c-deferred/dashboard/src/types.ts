@@ -80,3 +80,16 @@ export interface FailingTest {
   proposedCode: string;
   hasAssertionWarning?: boolean;
 }
+
+export interface Divergence {
+  id: string;
+  divergenceClass: 'D1' | 'D2' | 'D3' | 'D4' | 'D5';
+  endpoint: string;
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+  status: 'reproduced' | 'pending' | 'rejected' | 'live';
+  claimA: string;
+  claimB: string;
+  evidence: string;
+  reproSteps: string;
+  confidence?: number;
+}
