@@ -20,6 +20,7 @@ from cherenkov.core.config import Config
 from cherenkov.stages.ingest import IngestStage
 from cherenkov.core.orchestrator import OrchestrationEngine
 from cherenkov.execution.validate import ValidationEngine
+from cherenkov.api import divergences as divergence_store
 
 app = FastAPI(
     title="CHERENKOV QA Observability Dashboard Server",
@@ -91,6 +92,11 @@ class ValidatePayload(BaseModel):
 
 class EjectPayload(BaseModel):
     output_path: str
+
+class DivergenceActionPayload(BaseModel):
+    divergence_id: str
+    action: str
+    reason: str | None = None
 
 # ── Endpoints ──────────────────────────────────────────────────────────
 @app.get("/api/v1/health")
@@ -290,6 +296,27 @@ async def eject_test_suite(payload: EjectPayload):
                 "tsconfig.json"
             ]
         }
+
+@app.get("/api/v1/divergences")
+async def list_divergences():
+    """Returns the divergence corpus rendered for the dashboard Divergences screen."""
+    return divergence_store.list_divergences()
+
+@app.post("/api/v1/divergences/act")
+async def act_on_divergence(payload: DivergenceActionPayload):
+    """Records a review action (close_with_test | mark_intended | reject) against a divergence."""
+    try:
+        new_status = divergence_store.apply_action(payload.divergence_id, payload.action)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Unknown divergence id: {payload.divergence_id}")
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Unknown action: {payload.action}")
+    return {
+        "status": "ok",
+        "divergence_id": payload.divergence_id,
+        "action": payload.action,
+        "new_status": new_status,
+    }
 
 # ── WebSocket Channel ──────────────────────────────────────────────────
 @app.websocket("/ws/live")
