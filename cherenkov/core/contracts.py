@@ -9,6 +9,7 @@ can't quietly break a downstream consumer.
 from __future__ import annotations
 
 from enum import Enum
+from typing import Literal
 from pydantic import BaseModel, Field
 
 SCHEMA_VERSION = 1
@@ -282,6 +283,7 @@ class DivergenceReport(BaseModel):
     status: Status = Status.OK
     errors: list[StageError] = Field(default_factory=list)
     metadata: StageMeta
+    scope: Literal["intra", "cross"] = "intra"
 
     def render(self) -> str:
         """Human-readable summary."""
