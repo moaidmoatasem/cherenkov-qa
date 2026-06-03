@@ -493,8 +493,8 @@ class RiskDigest(BaseModel):
     def render(self) -> str:
         """Human-readable digest, highest risk first."""
         if not self.items:
-            return f"Second pair of eyes — {self.target}: nothing notable surfaced."
-        lines = [f"Second pair of eyes — {self.target} ({len(self.items)} item(s)):"]
+            return f"Second pair of eyes - {self.target}: nothing notable surfaced."
+        lines = [f"Second pair of eyes - {self.target} ({len(self.items)} item(s)):"]
         for i, item in enumerate(self.items, 1):
             where = f" [{item.endpoint}]" if item.endpoint else ""
             lines.append(

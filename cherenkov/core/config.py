@@ -42,6 +42,11 @@ class Config:
     CORPUS_OPT_IN: bool = os.getenv("CHERENKOV_CORPUS_OPT_IN", "false").lower() == "true"
     CORPUS_PATH: str = os.getenv("CHERENKOV_CORPUS_PATH", os.path.expanduser("~/.cherenkov/corpus.jsonl"))
 
+    # ── E10 Copilot (Explorer + manual-QA pillar) ─────────────────────────
+    # Autonomy ladder; E10 ships "assisted". E13 grows it (augmented/agentic/predictive).
+    COPILOT_AUTONOMY: str = os.getenv("CHERENKOV_COPILOT_AUTONOMY", "assisted")
+    EXPLORER_SLOW_MS: int = int(os.getenv("CHERENKOV_EXPLORER_SLOW_MS", "2000"))
+
     @classmethod
     def to_dict(cls) -> dict[str, str | int | bool]:
         return {
@@ -64,6 +69,8 @@ class Config:
             "CACHE_TTL_SECONDS": cls.CACHE_TTL_SECONDS,
             "CORPUS_OPT_IN": cls.CORPUS_OPT_IN,
             "CORPUS_PATH": cls.CORPUS_PATH,
+            "COPILOT_AUTONOMY": cls.COPILOT_AUTONOMY,
+            "EXPLORER_SLOW_MS": cls.EXPLORER_SLOW_MS,
         }
 
     @classmethod

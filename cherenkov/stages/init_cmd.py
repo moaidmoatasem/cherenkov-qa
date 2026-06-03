@@ -118,6 +118,11 @@ kind = "spec+prism"
 [continuity]
 mode = "one-shot"             # one-shot | daemon
 behavioral_diff_on_pr = false
+
+[copilot]
+# Manual-QA pillar (E10). Autonomy ladder grows in E13.
+autonomy = "assisted"         # assisted | augmented | agentic | predictive
+explorer_slow_ms = 2000       # crawl latency budget before a slow-response finding
 """
 
 
