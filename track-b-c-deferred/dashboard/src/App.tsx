@@ -15,6 +15,7 @@ import EjectScreen from './components/EjectScreen';
 import SettingsScreen from './components/SettingsScreen';
 import UiKitScreen from './components/UiKitScreen';
 import CommandPalette from './components/CommandPalette';
+import DivergencesScreen from './components/DivergencesScreen';
 import { ToastProvider, Drawer, EmptyState } from './components/ui';
 
 import { Project, EndpointRichness } from './types';
@@ -251,16 +252,7 @@ export default function App() {
             )}
 
             {activeTab === 'divergences' && (
-              <div className="p-6">
-                <EmptyState
-                  title="Divergences Triage"
-                  description="Coming in this milestone. This flagship triage view will list confirmed API drifts, request/response diffs, and validation status updates."
-                  primaryAction={{
-                    label: 'Inspect Active Mismatches',
-                    onClick: () => {}
-                  }}
-                />
-              </div>
+              <DivergencesScreen />
             )}
 
             {activeTab === 'explore' && (
