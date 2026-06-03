@@ -404,3 +404,123 @@ class Claim(BaseModel):
     provenance: Provenance
     schema_version: int = SCHEMA_VERSION
 
+
+# ════════════════════════════════════════════════════════════════════════════
+# E10 EXPLORER + COPILOT v1 — Epoch 10 contracts (the manual-QA pillar)
+#
+# Explorer crawls a live app/API and surfaces anomalies as ExplorerFindings,
+# which convert into Skeptic-shaped DivergenceHypotheses. The Copilot turns a
+# plain-language IntentSpec into an ejectable artifact (no selectors authored by
+# a human), assembles a "second pair of eyes" RiskDigest before a session, and
+# triages failures into the four classes a manual tester actually cares about.
+# ════════════════════════════════════════════════════════════════════════════
+
+class ExplorerFindingKind(str, Enum):
+    """What the Explorer observed while crawling a live surface."""
+    SERVER_ERROR = "server_error"     # 5xx from an endpoint
+    CLIENT_ERROR = "client_error"     # unexpected 4xx (e.g. 404 on a linked route)
+    JS_ERROR     = "js_error"         # uncaught console/page error in the UI
+    VISUAL_BREAK = "visual_break"     # layout/render anomaly (overflow, blank, etc.)
+    SLOW_RESPONSE = "slow_response"   # latency far above the crawl budget
+    UNREACHABLE  = "unreachable"      # connection refused / timeout
+
+
+class ExplorerFinding(BaseModel):
+    """One anomaly observed by the Explorer during a crawl.
+
+    Findings are evidence, not yet hypotheses — they carry enough context for
+    the Skeptic to reason about (url, observed signal) and for a human to read.
+    """
+    id: str
+    kind: ExplorerFindingKind
+    url: str
+    method: str = "GET"
+    status: int | None = None         # HTTP status if applicable
+    latency_ms: int = 0
+    detail: str = ""                  # human-readable summary of the signal
+    evidence: str = ""                # raw snippet (body excerpt, console line)
+    severity: Severity = Severity.MEDIUM
+
+
+class IntentStep(BaseModel):
+    """A single ordered step parsed from a tester's plain-language intent."""
+    action: str                       # "navigate" | "click" | "fill" | "expect" | "request"
+    target: str = ""                  # human description of the element/route (role+name, not a selector)
+    value: str = ""                   # data to enter, expected text, or URL
+    note: str = ""                    # free-form clarification
+
+
+class IntentSpec(BaseModel):
+    """A plain-language test intent, structured. The human never writes a selector.
+
+    Produced by the Copilot's intent parser (Substrate Router, deep tier) from a
+    sentence like "check guest checkout with a discount and confirm the email".
+    Consumed by the artifact author to emit an ejectable Playwright test.
+    """
+    id: str
+    raw_intent: str                   # verbatim text the tester typed/spoke
+    title: str                        # short human title for the test
+    target_url: str = ""              # base URL the flow runs against
+    kind: Literal["ui", "api"] = "ui"
+    steps: list[IntentStep] = Field(default_factory=list)
+    data_hints: dict = Field(default_factory=dict)  # e.g. {"discount_code": "SAVE10"}
+    status: Status = Status.OK
+    errors: list[StageError] = Field(default_factory=list)
+
+
+class RiskItem(BaseModel):
+    """One entry in the pre-session 'second pair of eyes' digest."""
+    title: str
+    score: float                      # 0.0–1.0 ranked risk weight
+    severity: Severity
+    source: str                       # "explorer" | "skeptic" | "idiom" | "reflector"
+    detail: str = ""
+    endpoint: str | None = None
+    hypothesis_id: str | None = None  # link back to a DivergenceHypothesis, if any
+
+
+class RiskDigest(BaseModel):
+    """Ranked risk list shown to a tester BEFORE they start a session.
+
+    The "second pair of eyes": what a careful colleague would tell you to check
+    first, assembled from Explorer findings, Skeptic hypotheses, and idioms.
+    """
+    target: str
+    generated_for: str = ""           # optional session/intent label
+    items: list[RiskItem] = Field(default_factory=list)
+    status: Status = Status.OK
+
+    def render(self) -> str:
+        """Human-readable digest, highest risk first."""
+        if not self.items:
+            return f"Second pair of eyes — {self.target}: nothing notable surfaced."
+        lines = [f"Second pair of eyes — {self.target} ({len(self.items)} item(s)):"]
+        for i, item in enumerate(self.items, 1):
+            where = f" [{item.endpoint}]" if item.endpoint else ""
+            lines.append(
+                f"  {i}. [{item.severity.upper()}] {item.title}{where}"
+                f"  (risk={item.score:.2f}, via {item.source})"
+            )
+            if item.detail:
+                lines.append(f"       {item.detail}")
+        return "\n".join(lines)
+
+
+class TriageCategory(str, Enum):
+    """The four buckets a manual tester sorts a failure into."""
+    BUG      = "bug"        # a real product defect worth filing
+    FLAKY    = "flaky"      # non-deterministic; passed on retry
+    ENV      = "env"        # environment/infra/auth, not the product
+    INTENDED = "intended"   # behaviour changed on purpose; update the test
+
+
+class TriageResult(BaseModel):
+    """Copilot's pre-classification of a failure, with a recommended action."""
+    scenario_id: str
+    category: TriageCategory
+    confidence: float = 0.5           # 0.0–1.0
+    failure_class: str | None = None  # the healing/diagnose FailureClass it came from
+    rationale: str = ""
+    suggested_action: str = ""
+    evidence: str = ""                # screenshot path, diverging claim, etc.
+
