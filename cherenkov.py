@@ -145,6 +145,11 @@ def get_parser() -> argparse.ArgumentParser:
     map_parser = subparsers.add_parser('map', help='Build + inspect the Truth Model from configured sources (E2-6)')
     map_parser.add_argument('--detailed', '-d', action='store_true', help='Show full claim details')
 
+    # ── Epoch 4: Continuity ────────────────────────────────────────────────
+    daemon_parser = subparsers.add_parser('daemon', help='Continuously watch sources and rebuild Truth Model (E4-4)')
+    daemon_parser.add_argument('--interval', '-i', type=int, default=60, help='Poll interval in seconds (default: 60)')
+    daemon_parser.add_argument('--max-loops', '-n', type=int, default=0, help='Max rebuild iterations (0=infinite)')
+
     return parser
 
 
@@ -213,6 +218,10 @@ def main():
     elif args.command == 'map':
         from cherenkov.stages.map_cmd import run_map
         sys.exit(run_map(detailed=args.detailed))
+
+    elif args.command == 'daemon':
+        from cherenkov.stages.daemon_cmd import run_daemon
+        sys.exit(run_daemon(interval_seconds=args.interval, max_loops=args.max_loops))
 
 
 if __name__ == "__main__":
