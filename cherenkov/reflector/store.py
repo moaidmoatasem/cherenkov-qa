@@ -89,6 +89,14 @@ class VerdictStore:
             "CREATE INDEX IF NOT EXISTS idx_idioms_decay "
             "ON idioms(decay_score DESC)"
         )
+        # E7 fix: suppress by SEMANTIC fingerprint, not ephemeral hypothesis_id.
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS rejected_fingerprints ("
+            "fingerprint TEXT PRIMARY KEY,"
+            "endpoint TEXT,"
+            "divergence_class TEXT,"
+            "timestamp INTEGER NOT NULL)"
+        )
         conn.commit()
         conn.close()
 
@@ -153,6 +161,39 @@ class VerdictStore:
             rows = conn.execute(
                 "SELECT hypothesis_id FROM verdicts WHERE outcome=?",
                 (VerdictOutcome.REJECT.value,),
+            ).fetchall()
+        conn.close()
+        return {r[0] for r in rows}
+
+    # ── fingerprint-based suppression (E7 fix) ───────────────────────────────
+
+    def record_rejected_fingerprint(
+        self, fingerprint: str, endpoint: str | None, divergence_class: str | None
+    ) -> None:
+        """Persist a semantic fingerprint so the SAME finding stays suppressed
+        across runs even though the Skeptic re-mints a fresh hypothesis_id."""
+        conn = sqlite3.connect(self.db_path)
+        conn.execute(
+            "INSERT OR REPLACE INTO rejected_fingerprints "
+            "(fingerprint, endpoint, divergence_class, timestamp) VALUES (?,?,?,?)",
+            (fingerprint, endpoint, divergence_class, int(time.time())),
+        )
+        conn.commit()
+        conn.close()
+
+    def rejected_fingerprints(self, endpoint: str | None = None) -> set[str]:
+        """Fingerprints to suppress. Scoped to an endpoint when given
+        (NULL-endpoint rejections always apply)."""
+        conn = sqlite3.connect(self.db_path)
+        if endpoint:
+            rows = conn.execute(
+                "SELECT fingerprint FROM rejected_fingerprints "
+                "WHERE endpoint=? OR endpoint IS NULL",
+                (endpoint,),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT fingerprint FROM rejected_fingerprints"
             ).fetchall()
         conn.close()
         return {r[0] for r in rows}
