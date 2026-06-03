@@ -3,10 +3,11 @@
 All notable changes to CHERENKOV are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
-> Product status: **Track A is built; not yet shipped** — shipping is gated by the 5-QA validation gate (see `docs/HANDOVER.md` §5 and issue #79).
+> Product status: **Track A is SHIPPED** — validated by the 5-QA validation gate (see [docs/HANDOVER.md](docs/HANDOVER.md) §5 and issue #79).
 
 ## [Unreleased]
 ### Added
+- **Track A Validation:** Successfully completed the 5-QA validation gate (4 yes, 1 no) to officially ship Track A.
 - **Governance & PM kit:** `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `docs/process/GITHUB_PM.md`, `.github/` issue/PR templates, `CODEOWNERS`, `scripts/github_sync.sh`.
 - **Planning docs:** `docs/vision/06_AUTONOMOUS_QA_FABRIC.md`, `docs/vision/07_MASTER_PLAN.md`, `docs/dashboard/FE_REDESIGN.md`, `docs/diagrams/DIAGRAMS.md`.
 - **Roadmap tickets:** Validation Gate epic (#79), Epoch 7 Reflector (#84) + tasks, Epochs 8–13 + FE redesign epics (#89–#97).

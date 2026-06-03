@@ -218,7 +218,12 @@ class TestEgressPolicy(unittest.TestCase):
     def test_property_driven_check_no_hardcoded_names(self):
         """Verify the implementation uses property-driven checks, not hardcoded provider names."""
         # This is a meta-test to verify our implementation
-        with open('cherenkov/substrate/router.py', 'r') as f:
+        import os
+        # Get the directory where this test file is located
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        # The router.py file should be in cherenkov/substrate/router.py relative to test directory
+        router_path = os.path.join(test_dir, 'cherenkov', 'substrate', 'router.py')
+        with open(router_path, 'r') as f:
             router_code = f.read()
 
         # Should not contain hardcoded provider name checks

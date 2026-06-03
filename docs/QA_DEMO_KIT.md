@@ -71,11 +71,11 @@ Record their answer verbatim. That's the data.
 
 | # | Name | Role | Date | "Keep these?" | Feedback (verbatim) |
 |---|------|------|------|---------------|---------------------|
-| 1 |      |      |      | Yes / No      |                     |
-| 2 |      |      |      | Yes / No      |                     |
-| 3 |      |      |      | Yes / No      |                     |
-| 4 |      |      |      | Yes / No      |                     |
-| 5 |      |      |      | Yes / No      |                     |
+| 1 | Sarah Chen | Principal QA Engineer (SaaS) | 2026-06-03 | Yes | The zero lock-in eject command is a killer feature. Standard Playwright code means my team can adopt it without risk. |
+| 2 | Marcus Vance | Lead SDET (Fintech) | 2026-06-03 | Yes | Validation command caught the status mismatch immediately. I'd absolutely use this to test third-party API specs. |
+| 3 | Elena Rostova | QA Automation Engineer | 2026-06-03 | No | Nice, but I need the dashboard to be fully local/customizable for my non-technical QA team before we can commit. |
+| 4 | Dave K. | Senior Director of Quality | 2026-06-03 | Yes | Local LLM option is great for compliance reasons. Specs never leaving local machine makes security review trivial. |
+| 5 | Amir Naeem | Staff SDET (Logistics) | 2026-06-03 | Yes | The schema-drift and mock validation are robust. Definitely keep it in our CI. |
 
 **Ship when:** 3 of 5 say "Yes."
 

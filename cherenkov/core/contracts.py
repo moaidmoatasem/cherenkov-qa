@@ -334,6 +334,53 @@ class AccountingReport(BaseModel):
     cache_stats: CacheStats = Field(default_factory=CacheStats)
 
 
+# ════════════════════════════════════════════════════════════════════════════
+# E7 REFLECTOR / VERDICT MEMORY — Epoch 7 contracts
+# VerdictRecord persists every accept/reject/escaped-defect decision.
+# Idiom captures per-system patterns that keep being confirmed.
+# ════════════════════════════════════════════════════════════════════════════
+
+class VerdictOutcome(str, Enum):
+    ACCEPT = "accept"
+    REJECT = "reject"
+    ESCAPED_DEFECT = "escaped_defect"
+
+
+class VerdictRecord(BaseModel):
+    """Persistent record of one accept/reject/escaped-defect decision."""
+    id: str
+    hypothesis_id: str
+    outcome: VerdictOutcome
+    divergence_class: DivergenceClass | None = None
+    endpoint: str | None = None
+    failure_class: str | None = None
+    source: str = "skeptic"          # "skeptic" | "healing" | "human"
+    detail: str = ""
+    timestamp: int = 0
+    schema_version: int = SCHEMA_VERSION
+
+
+class Idiom(BaseModel):
+    """Per-system pattern that keeps being confirmed by verdicts.
+    Decay score falls toward 0 over time; re-confirmation resets it.
+    """
+    id: str
+    pattern: str
+    divergence_class: DivergenceClass
+    endpoint: str | None = None
+    confirm_count: int = 1
+    last_confirmed: int = 0
+    decay_score: float = 1.0
+    schema_version: int = SCHEMA_VERSION
+
+
+class ReflectorConfig(BaseModel):
+    """Configuration for the Reflector module."""
+    enabled: bool = True
+    store_path: str = ".cherenkov/verdicts.db"
+    decay_half_life_hours: float = 168.0  # 7 days
+
+
 # ── TRUTH MODEL / SOURCE ADAPTER SPI ──────────────────────────────────────────
 
 class ProvenanceType(str, Enum):

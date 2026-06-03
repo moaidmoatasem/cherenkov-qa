@@ -59,14 +59,18 @@ class TestDivergenceQueue(unittest.TestCase):
 
 class TestRunDaemon(unittest.TestCase):
     @unittest.mock.patch("cherenkov.core.config_loader.load_effective_config")
-    def test_run_daemon_zero_loops(self, mock_cfg):
+    @unittest.mock.patch("cherenkov.stages.daemon_cmd.DivergenceQueue")
+    def test_run_daemon_zero_loops(self, mock_queue, mock_cfg):
         mock_cfg.return_value.autodetect_spec.return_value = []
+        mock_queue.return_value = unittest.mock.MagicMock()
         result = run_daemon(interval_seconds=1, max_loops=1)
         self.assertEqual(result, 0)
 
     @unittest.mock.patch("cherenkov.core.config_loader.load_effective_config")
-    def test_run_daemon_multiple_loops(self, mock_cfg):
+    @unittest.mock.patch("cherenkov.stages.daemon_cmd.DivergenceQueue")
+    def test_run_daemon_multiple_loops(self, mock_queue, mock_cfg):
         mock_cfg.return_value.autodetect_spec.return_value = []
+        mock_queue.return_value = unittest.mock.MagicMock()
         result = run_daemon(interval_seconds=1, max_loops=2)
         self.assertEqual(result, 0)
 
