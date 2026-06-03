@@ -74,10 +74,19 @@ class SkepticAgent:
 
     Uses ReasoningRequest via the Substrate Router — never names a model directly.
     The router decides capability tier → provider by org policy.
+
+    When a Reflector is attached, hypothesise() applies verdict-memory reranking:
+    previously rejected hypotheses are suppressed, and patterns matching active
+    Idioms are boosted (E7-2).
     """
 
-    def __init__(self, router: SubstrateRouter | None = None) -> None:
+    def __init__(
+        self,
+        router: SubstrateRouter | None = None,
+        reflector: Any | None = None,
+    ) -> None:
         self.router = router or SubstrateRouter("skeptic")
+        self.reflector = reflector
 
     def hypothesise(
         self,
@@ -106,7 +115,14 @@ class SkepticAgent:
             capability_tier="deep",
         )
         result = self.router.route(request)
-        return self._parse(result.content, endpoint, method)
+        hypotheses = self._parse(result.content, endpoint, method)
+
+        if self.reflector is not None and hypotheses:
+            hypotheses = self.reflector.rerank(
+                hypotheses, endpoint=hypotheses[0].endpoint
+            )
+
+        return hypotheses
 
     # ── private ───────────────────────────────────────────────────────────
 

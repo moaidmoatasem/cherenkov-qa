@@ -5,6 +5,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   hoverable?: boolean;
   className?: string;
   key?: any;
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
 }
 
 export function Card({ children, hoverable = false, className = '', ...props }: CardProps) {
