@@ -150,6 +150,17 @@ def get_parser() -> argparse.ArgumentParser:
     daemon_parser.add_argument('--interval', '-i', type=int, default=60, help='Poll interval in seconds (default: 60)')
     daemon_parser.add_argument('--max-loops', '-n', type=int, default=0, help='Max rebuild iterations (0=infinite)')
 
+    # ── Epoch 10: Explorer + Copilot (manual-QA pillar) ────────────────────
+    explore_parser = subparsers.add_parser('explore', help="Crawl a live surface and print a 'second pair of eyes' risk digest (E10)")
+    explore_parser.add_argument('--target', '-t', required=True, help='Base URL of the app/API to crawl')
+    explore_parser.add_argument('--path', '-p', action='append', dest='paths', help='Route to probe (repeatable); default: /')
+    explore_parser.add_argument('--method', '-m', default='GET', help='HTTP method to probe with (default: GET)')
+
+    author_parser = subparsers.add_parser('author', help='Turn plain-language intent into an ejectable Playwright test (E10)')
+    author_parser.add_argument('intent', help='Plain-language test intent, e.g. "check guest checkout with a discount"')
+    author_parser.add_argument('--output', '-o', required=True, help='Directory to write the .spec.ts test into')
+    author_parser.add_argument('--target', '-t', default='', help='Base URL the flow runs against')
+
     return parser
 
 
@@ -222,6 +233,15 @@ def main():
     elif args.command == 'daemon':
         from cherenkov.stages.daemon_cmd import run_daemon
         sys.exit(run_daemon(interval_seconds=args.interval, max_loops=args.max_loops))
+
+    # ── Epoch 10 subcommands ───────────────────────────────────────────────
+    elif args.command == 'explore':
+        from cherenkov.stages.copilot_cmd import run_explore
+        sys.exit(run_explore(args.target, paths=args.paths, method=args.method))
+
+    elif args.command == 'author':
+        from cherenkov.stages.copilot_cmd import run_author
+        sys.exit(run_author(args.intent, output=args.output, target=args.target))
 
 
 if __name__ == "__main__":
