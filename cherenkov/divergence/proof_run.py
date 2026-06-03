@@ -449,6 +449,17 @@ def _cli() -> None:
         help="Use hand-crafted hypotheses instead of the LLM Skeptic",
     )
     parser.add_argument(
+        "--reflector",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Enable/disable the Reflector verdict-memory loop (default: enabled)",
+    )
+    parser.add_argument(
+        "--reflector-stats",
+        action="store_true",
+        help="Print reflector statistics after the run",
+    )
+    parser.add_argument(
         "--output",
         help="Write divergence reports to this JSON file",
     )
@@ -462,14 +473,21 @@ def _cli() -> None:
             sys.exit(1)
         spec = json.loads(spec_path.read_text())
 
+    reflector: Reflector | None = None
+    if args.reflector:
+        store = VerdictStore()
+        reflector = Reflector(store=store)
+
     print(f"CHERENKOV Proof Run")
     print(f"  Target : {args.base_url}")
     print(f"  Mode   : {'offline (hand-crafted)' if args.offline else 'LLM Skeptic'}")
+    print(f"  Reflector : {'enabled' if reflector else 'disabled'}")
 
     reports = run_proof(
         base_url=args.base_url,
         spec=spec,
         use_llm=not args.offline,
+        reflector=reflector,
     )
 
     print(f"\n{'═' * 60}")
@@ -478,6 +496,13 @@ def _cli() -> None:
 
     for i, report in enumerate(reports, 1):
         print(f"[{i}] {report.render()}\n")
+
+    if reflector and args.reflector_stats:
+        stats = reflector.get_stats()
+        print(f"Reflector stats:")
+        print(f"  Verdicts stored : {stats['verdict_count']}")
+        print(f"  Idioms active   : {stats['idiom_count']}")
+        print(f"  Store path      : {stats['store_path']}")
 
     if args.output:
         out_path = Path(args.output)
