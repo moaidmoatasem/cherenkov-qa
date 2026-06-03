@@ -43,12 +43,13 @@ def _parse_create_table(sql: str) -> list[dict[str, Any]]:
                 constraints.append({"raw": line, "type": upper})
             else:
                 col: dict[str, Any] = {"name": tokens[0], "type": tokens[1] if len(tokens) > 1 else "UNKNOWN"}
-                rest = " ".join(tokens[2:]).upper()
-                col["nullable"] = "NOT NULL" not in rest
-                col["primary_key"] = "PRIMARY KEY" in rest
-                col["unique"] = "UNIQUE" in rest
+                rest_raw = " ".join(tokens[2:])
+                rest_upper = rest_raw.upper()
+                col["nullable"] = "NOT NULL" not in rest_upper
+                col["primary_key"] = "PRIMARY KEY" in rest_upper
+                col["unique"] = "UNIQUE" in rest_upper
                 col["default"] = None
-                default_match = re.search(r"DEFAULT\s+(\S+)", rest, re.IGNORECASE)
+                default_match = re.search(r"DEFAULT\s+(\S+)", rest_raw, re.IGNORECASE)
                 if default_match:
                     col["default"] = default_match.group(1)
                 columns.append(col)
