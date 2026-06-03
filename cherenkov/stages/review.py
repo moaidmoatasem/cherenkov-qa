@@ -151,7 +151,8 @@ class ReviewStage:
                                         Diagnoser(self.run_id).record_passing_snapshot(
                                             scenario_id=scenario_id,
                                             status=response_info["status"],
-                                            body=body_data
+                                            body=body_data,
+                                            test_content=code
                                         )
                                     except Exception as e:
                                         self.log.warning("failed to record passing snapshot", error=str(e))
@@ -184,8 +185,15 @@ class ReviewStage:
                                         scenario_id=scenario_id,
                                         current_status=response_info["status"],
                                         current_body=body_data,
-                                        test_name=scenario_id
+                                        test_name=scenario_id,
+                                        test_content=code
                                     )
+
+                                    if diag.stale_snapshot:
+                                        self.log.warning(
+                                            "healing snapshot is stale; skipping auto-diff",
+                                            scenario_id=scenario_id,
+                                        )
                                     
                                     # Run Healers (Suggest-only!)
                                     suggestion = ""
