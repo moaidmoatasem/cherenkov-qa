@@ -1,7 +1,6 @@
 import React from 'react';
 import { useReducedMotion } from '../../lib/useReducedMotion';
-
-export type StatusType = 'reproduced' | 'pending' | 'rejected' | 'live';
+import { StatusType } from '../../types';
 
 interface StatusDotProps {
   status: StatusType;

@@ -81,12 +81,15 @@ export interface FailingTest {
   hasAssertionWarning?: boolean;
 }
 
+export type SeverityType = 'critical' | 'high' | 'medium' | 'low' | 'info';
+export type StatusType = 'reproduced' | 'pending' | 'rejected' | 'live';
+
 export interface Divergence {
   id: string;
   divergenceClass: 'D1' | 'D2' | 'D3' | 'D4' | 'D5';
   endpoint: string;
-  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
-  status: 'reproduced' | 'pending' | 'rejected' | 'live';
+  severity: SeverityType;
+  status: StatusType;
   claimA: string;
   claimB: string;
   evidence: string;

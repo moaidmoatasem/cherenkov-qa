@@ -1,6 +1,5 @@
 import React from 'react';
-
-export type SeverityType = 'critical' | 'high' | 'medium' | 'low' | 'info';
+import { SeverityType } from '../../types';
 
 interface SeverityPillProps {
   severity: SeverityType;
