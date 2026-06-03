@@ -25,10 +25,9 @@ The core CHERENKOV Track A API conformance engine is highly functional and clean
 ## Detailed Gap Analysis by Phase
 
 ### Phase 1 — Week 1 — Generator Hardening
-* **Status:** `PARTIAL`
+* **Status:** `WORKS` (gap closed — #100)
 * **Raw Evidence & Code References:**
-  - **Works:** `SYSTEM_PROMPT` is defined inside [cherenkov/stages/generate.py](file:///wsl.localhost/Ubuntu-24.04/home/moaid/cherenkov-qa/cherenkov/stages/generate.py#L16-L45) as a static constant to ensure prefix-cache optimization on Ollama (Delta D10 / V1).
-  - **Incomplete/Missing:** The plan states: *"The tuned prompt is committed to `prompts/generator_system.txt`"*. The `prompts/` directory and `generator_system.txt` file are entirely missing from the repository. The prompt remains embedded in the Python generation stage code.
+  - **Works:** The tuned generator prompt is committed to [prompts/generator_system.txt](file:///wsl.localhost/Ubuntu-24.04/home/moaid/cherenkov-qa/prompts/generator_system.txt) and loaded once at import in [cherenkov/stages/generate.py](file:///wsl.localhost/Ubuntu-24.04/home/moaid/cherenkov-qa/cherenkov/stages/generate.py) into the `SYSTEM_PROMPT` static constant (preserving the prefix-cache optimization on Ollama, Delta D10 / V1). An optional `CHERENKOV_GENERATOR_PROMPT` env var overrides the path.
 
 ### Phase 2 — Weeks 2-3 — Core Infrastructure
 * **Status:** `PARTIAL`
@@ -68,10 +67,10 @@ The core CHERENKOV Track A API conformance engine is highly functional and clean
   - **Incomplete/Missing:** Gate 4 Novelty (using `nomic-embed-text` embeddings to block redundant duplicates) and Gate 6 Quality (LLM review) are entirely missing. The HITL queue is not stored in SQLite (only returned as a Pydantic enum verdict).
 
 ### Phase 8 — Weeks 14-15 — HEALING (2 types, suggest-only)
-* **Status:** `PARTIAL`
+* **Status:** `WORKS` (gap closed — #100)
 * **Raw Evidence & Code References:**
   - **Works:** [cherenkov/healing/diagnose.py](file:///wsl.localhost/Ubuntu-24.04/home/moaid/cherenkov-qa/cherenkov/healing/diagnose.py) reads/writes passing snapshots under `.cherenkov/snapshots/`, classifies failure classes (`AUTH_EXPIRY`, `CONTRACT_DRIFT`), and prints suggestions without auto-committing code alterations. Isolated sandbox healer is supported.
-  - **Incomplete/Missing:** The plan states: *"Test-content hash detects a modified test -> stale snapshot flagged, not auto-diffed."* There is no hashing or stale snapshot validation logic implemented.
+  - **Works:** `record_passing_snapshot` now persists a SHA-256 `test_hash` of the test source. `diagnose_failure` compares the current test content's hash against the snapshot; when it differs the snapshot is flagged stale (`DiagnosisResult.stale_snapshot`) and the contract-drift auto-diff is skipped — *"Test-content hash detects a modified test -> stale snapshot flagged, not auto-diffed."*
 
 ### Phase 9 — Week 16 — VALIDATE Command
 * **Status:** `STRUCTURAL DIFFERENCE / WORKS`

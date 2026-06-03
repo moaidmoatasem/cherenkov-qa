@@ -5,6 +5,7 @@ Authority: v3.1 + delta.
 from __future__ import annotations
 
 import json
+import os
 import time
 from typing import Any
 
@@ -14,36 +15,24 @@ from cherenkov.ai import get_client
 from cherenkov.ai.ollama_client import strip_think
 from cherenkov.core.errors import get_logger
 
-SYSTEM_PROMPT = """You are an expert QA automation engineer writing Playwright API tests in TypeScript. You write ONE test per request.
 
-STRICT RULES:
-- Use ONLY the provided openapi-fetch client (client.GET/POST/PUT/DELETE). NEVER use fetch, axios, or Playwright's raw request context directly.
-- Always import the client using: import { client } from '../client';
-- Always import 'test' and 'expect' from '@playwright/test'.
-- Every test MUST assert the SPECIFIC expected HTTP status code (e.g. expect(response.status).toBe(201)) — never a range like toBeLessThan(500).
-- Every test MUST assert the response body SHAPE: the specific named properties that should exist and their types (e.g. expect(data).toHaveProperty('id')).
-- Do NOT assert specific string values (the mock returns placeholder values).
-- Use the test runner's assertion mechanisms (expect(...)). Do NOT throw custom errors (e.g. if (!res.ok) throw new Error()). The runner must see the assertion to report pass/fail correctly.
-- Output ONLY the test code. No prose, no markdown fences, no explanation.
+def _load_system_prompt() -> str:
+    """Loads the tuned generator system prompt committed to prompts/generator_system.txt.
 
-EXAMPLE OF CORRECT USAGE:
-import { client } from '../client';
-import { test, expect } from '@playwright/test';
+    Read once at import so it remains a static constant (prefix-cache optimization on
+    Ollama, per Delta D10 / V1). Resolved relative to the repo root, with the
+    CHERENKOV_GENERATOR_PROMPT env var as an override.
+    """
+    override = os.getenv("CHERENKOV_GENERATOR_PROMPT")
+    prompt_path = override or os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../../prompts/generator_system.txt")
+    )
+    with open(prompt_path, "r", encoding="utf-8") as f:
+        return f.read().strip()
 
-test('create user happy path', async () => {
-  const { data, response } = await client.POST('/users', {
-    body: { email: 'test@example.com', password: 'password123' }
-  });
-  expect(response.status).toBe(201);
-  expect(data).toHaveProperty('id');
-});
 
-test('get health happy path', async () => {
-  const { data, response } = await client.GET('/health');
-  expect(response.status).toBe(200);
-  expect(data).toHaveProperty('status');
-});
-"""
+# Tuned generator prompt committed to prompts/generator_system.txt (loaded once at import).
+SYSTEM_PROMPT = _load_system_prompt()
 
 class GenerateStage:
     """Invokes local LLM qwen2.5-coder to write compile-ready Playwright TypeScript tests."""
