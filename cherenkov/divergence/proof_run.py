@@ -32,6 +32,8 @@ from cherenkov.core.contracts import (
 )
 from cherenkov.divergence.skeptic import SkepticAgent
 from cherenkov.divergence.witness import WitnessAgent
+from cherenkov.reflector.reflector import Reflector
+from cherenkov.reflector.store import VerdictStore
 
 # ── default target ────────────────────────────────────────────────────────
 
@@ -281,14 +283,20 @@ def run_proof(
     base_url: str,
     spec: dict | None = None,
     use_llm: bool = True,
+    reflector: Reflector | None = None,
 ) -> list[DivergenceReport]:
     """
     Run the Skeptic → Witness loop against *base_url*.
+
+    When a Reflector is provided, each reproduction result is ingested as a
+    VerdictRecord (E7-1) and previously rejected hypotheses are suppressed
+    from re-surfacing (E7-2 / E7-4 exit criterion).
 
     Args:
         base_url:  Live server base URL (e.g. "https://petstore3.swagger.io/api/v3")
         spec:      OpenAPI spec dict; defaults to the bundled Petstore subset
         use_llm:   If False, use hand-crafted hypotheses (offline / CI mode)
+        reflector: Optional Reflector instance for verdict-memory learning loop.
 
     Returns:
         List of confirmed DivergenceReport instances.
@@ -296,7 +304,7 @@ def run_proof(
     if spec is None:
         spec = PETSTORE_SPEC_SUBSET
 
-    skeptic = SkepticAgent() if use_llm else None
+    skeptic = SkepticAgent(reflector=reflector) if use_llm else None
     witness = WitnessAgent(base_url=base_url)
 
     reports: list[DivergenceReport] = []
@@ -317,6 +325,11 @@ def run_proof(
             result = witness.reproduce(h)
             status = "REPRODUCED" if result.reproduced else "rejected"
             print(f"  [{status}] {h.divergence_class.value}: {h.claim_a[:80]}")
+
+            # Feed every result into the Reflector (E7-1 / E7-4)
+            if reflector is not None:
+                reflector.ingest_from_reproduction(h, result)
+
             if result.reproduced and result.evidence:
                 report = _make_report(h, result, t0_ms)
                 reports.append(report)
