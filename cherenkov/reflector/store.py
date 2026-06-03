@@ -23,6 +23,10 @@ from cherenkov.core.contracts import (
 )
 from cherenkov.core.errors import get_logger
 
+# Local SQLite is shared across concurrent runs (daemon, proof_run, CLI inspect).
+# Wait for a busy writer instead of failing fast with "database is locked".
+_BUSY_TIMEOUT_S = 30.0
+
 
 def _default_db_path() -> str:
     repo_root = os.path.abspath(
@@ -48,7 +52,7 @@ class VerdictStore:
     # ── schema ────────────────────────────────────────────────────────────
 
     def _init_tables(self) -> None:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         conn.execute(
             "CREATE TABLE IF NOT EXISTS verdicts ("
             "id TEXT PRIMARY KEY,"
@@ -103,7 +107,7 @@ class VerdictStore:
     # ── verdict CRUD ──────────────────────────────────────────────────────
 
     def record_verdict(self, record: VerdictRecord) -> None:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         conn.execute(
             "INSERT OR REPLACE INTO verdicts "
             "(id, hypothesis_id, outcome, divergence_class, endpoint, "
@@ -126,7 +130,7 @@ class VerdictStore:
         conn.close()
 
     def get_verdict(self, verdict_id: str) -> VerdictRecord | None:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         row = conn.execute(
             "SELECT * FROM verdicts WHERE id=?", (verdict_id,)
         ).fetchone()
@@ -138,7 +142,7 @@ class VerdictStore:
     def get_verdicts_for_hypothesis(
         self, hypothesis_id: str
     ) -> list[VerdictRecord]:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         rows = conn.execute(
             "SELECT * FROM verdicts WHERE hypothesis_id=? ORDER BY timestamp DESC",
             (hypothesis_id,),
@@ -150,7 +154,7 @@ class VerdictStore:
         self, endpoint: str | None = None
     ) -> set[str]:
         """Return hypothesis IDs that were rejected (so they can be suppressed)."""
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         if endpoint:
             rows = conn.execute(
                 "SELECT hypothesis_id FROM verdicts "
@@ -172,7 +176,7 @@ class VerdictStore:
     ) -> None:
         """Persist a semantic fingerprint so the SAME finding stays suppressed
         across runs even though the Skeptic re-mints a fresh hypothesis_id."""
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         conn.execute(
             "INSERT OR REPLACE INTO rejected_fingerprints "
             "(fingerprint, endpoint, divergence_class, timestamp) VALUES (?,?,?,?)",
@@ -184,7 +188,7 @@ class VerdictStore:
     def rejected_fingerprints(self, endpoint: str | None = None) -> set[str]:
         """Fingerprints to suppress. Scoped to an endpoint when given
         (NULL-endpoint rejections always apply)."""
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         if endpoint:
             rows = conn.execute(
                 "SELECT fingerprint FROM rejected_fingerprints "
@@ -201,7 +205,7 @@ class VerdictStore:
     def get_recent_verdicts(
         self, limit: int = 50
     ) -> list[VerdictRecord]:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         rows = conn.execute(
             "SELECT * FROM verdicts ORDER BY timestamp DESC LIMIT ?",
             (limit,),
@@ -212,7 +216,7 @@ class VerdictStore:
     # ── idiom CRUD ────────────────────────────────────────────────────────
 
     def upsert_idiom(self, idiom: Idiom) -> None:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         conn.execute(
             "INSERT OR REPLACE INTO idioms "
             "(id, pattern, divergence_class, endpoint, confirm_count, "
@@ -235,7 +239,7 @@ class VerdictStore:
     def get_idioms(
         self, min_decay: float = 0.3, limit: int = 20
     ) -> list[Idiom]:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         rows = conn.execute(
             "SELECT * FROM idioms WHERE decay_score >= ? "
             "ORDER BY decay_score DESC, confirm_count DESC LIMIT ?",
@@ -245,7 +249,7 @@ class VerdictStore:
         return [self._row_to_idiom(r) for r in rows]
 
     def get_idiom_by_pattern(self, pattern: str) -> Idiom | None:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         row = conn.execute(
             "SELECT * FROM idioms WHERE pattern=?", (pattern,)
         ).fetchone()
@@ -260,7 +264,7 @@ class VerdictStore:
         decay_score *= 0.5 ^ (hours_elapsed / half_life_hours)
         """
         now = int(time.time())
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         rows = conn.execute(
             "SELECT id, last_confirmed, decay_score FROM idioms"
         ).fetchall()
@@ -278,13 +282,13 @@ class VerdictStore:
         conn.close()
 
     def idiom_count(self) -> int:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         count = conn.execute("SELECT COUNT(*) FROM idioms").fetchone()[0]
         conn.close()
         return count
 
     def verdict_count(self) -> int:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         count = conn.execute("SELECT COUNT(*) FROM verdicts").fetchone()[0]
         conn.close()
         return count
