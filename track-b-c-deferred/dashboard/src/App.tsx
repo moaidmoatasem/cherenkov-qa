@@ -14,7 +14,8 @@ import HealingScreen from './components/HealingScreen';
 import EjectScreen from './components/EjectScreen';
 import SettingsScreen from './components/SettingsScreen';
 import UiKitScreen from './components/UiKitScreen';
-import { ToastProvider } from './components/ui';
+import CommandPalette from './components/CommandPalette';
+import { ToastProvider, Drawer, EmptyState } from './components/ui';
 
 import { Project, EndpointRichness } from './types';
 import { INITIAL_PROJECTS } from './mockData';
@@ -27,6 +28,20 @@ export default function App() {
   const [status, setStatus] = useState<'Live' | 'Idle'>('Idle');
   const [activeSpecPath, setActiveSpecPath] = useState<string>('');
   
+  // Autonomy settings with local storage persistence
+  const [autonomy, setAutonomyState] = useState<'Assisted' | 'Augmented' | 'Agentic'>(() => {
+    const saved = localStorage.getItem('[copilot] autonomy');
+    return (saved === 'Assisted' || saved === 'Augmented' || saved === 'Agentic') ? saved : 'Assisted';
+  });
+
+  const setAutonomy = (val: 'Assisted' | 'Augmented' | 'Agentic') => {
+    setAutonomyState(val);
+    localStorage.setItem('[copilot] autonomy', val);
+  };
+
+  // State to manage context live drawer visibility
+  const [isLiveDrawerOpen, setIsLiveDrawerOpen] = useState(false);
+
   // Observability Token pool metric simulations
   const [tokenUsagePercent, setTokenUsagePercent] = useState(43);
   const [totalSpentEstimated, setTotalSpentEstimated] = useState(0.14);
@@ -127,6 +142,14 @@ export default function App() {
         <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] bg-cyan-500/15 rounded-full blur-[120px] pointer-events-none z-0" />
         <div className="absolute bottom-[-100px] right-[-100px] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px] pointer-events-none z-0" />
         
+        {/* Global Reachability Layer: Command Palette */}
+        <CommandPalette
+          onNavigate={setActiveTab}
+          onNewRun={handleNewRun}
+          projects={projects}
+          onSelectProject={handleSelectProject}
+        />
+
         {/* LEFT SIDEBAR CONTROLS */}
         <Sidebar
           activeTab={activeTab}
@@ -134,6 +157,9 @@ export default function App() {
           onNewRun={handleNewRun}
           status={status}
           tokenUsagePercent={tokenUsagePercent}
+          projects={projects}
+          selectedProjectId={selectedProjectId}
+          onSelectProject={handleSelectProject}
         />
 
         {/* RIGHT DISPLAY VIEWPORT PANEL FRAME */}
@@ -144,6 +170,9 @@ export default function App() {
             status={status}
             activeTab={activeTab}
             totalSpentEstimated={totalSpentEstimated}
+            autonomy={autonomy}
+            setAutonomy={setAutonomy}
+            onLiveClick={() => setIsLiveDrawerOpen(true)}
           />
 
           {/* MAIN BODY SWITCHBOARD SECTION */}
@@ -193,8 +222,130 @@ export default function App() {
             {activeTab === 'ui-kit' && (
               <UiKitScreen />
             )}
+
+            {/* PLACEHOLDER SCREENS */}
+            {activeTab === 'overview' && (
+              <div className="p-6">
+                <EmptyState
+                  title="Overview (Landing)"
+                  description="Coming in this milestone. This screen will display Release Readiness KPIs, top active divergences, and Reflector learning activity feeds."
+                  primaryAction={{
+                    label: 'Run Discovery Scan',
+                    onClick: handleNewRun
+                  }}
+                />
+              </div>
+            )}
+
+            {activeTab === 'truth-map' && (
+              <div className="p-6">
+                <EmptyState
+                  title="Truth Map"
+                  description="Coming in this milestone. This screen will display the endpoint claims graph generated from traffic, specifications, and databases."
+                  primaryAction={{
+                    label: 'Define Claims Mapping',
+                    onClick: () => {}
+                  }}
+                />
+              </div>
+            )}
+
+            {activeTab === 'divergences' && (
+              <div className="p-6">
+                <EmptyState
+                  title="Divergences Triage"
+                  description="Coming in this milestone. This flagship triage view will list confirmed API drifts, request/response diffs, and validation status updates."
+                  primaryAction={{
+                    label: 'Inspect Active Mismatches',
+                    onClick: () => {}
+                  }}
+                />
+              </div>
+            )}
+
+            {activeTab === 'explore' && (
+              <div className="p-6">
+                <EmptyState
+                  title="Explore Crawler"
+                  description="Coming in this milestone. This autonomous crawler will perform automated page crawling to discover runtime anomalies and browser logs."
+                  primaryAction={{
+                    label: 'Configure Scope & Targets',
+                    onClick: () => {}
+                  }}
+                />
+              </div>
+            )}
+
+            {activeTab === 'author' && (
+              <div className="p-6">
+                <EmptyState
+                  title="Author by Intent"
+                  description="Coming in this milestone. This natural language dialog copilot interface will let you write Playwright test scenarios with Mentor idiom recommendations."
+                  primaryAction={{
+                    label: 'Compose Test Scenario',
+                    onClick: () => {}
+                  }}
+                />
+              </div>
+            )}
+
+            {activeTab === 'signals' && (
+              <div className="p-6">
+                <EmptyState
+                  title="Telemetry Signals"
+                  description="Coming in this milestone. This view will organize test coverage, visual comparison regressions, and API endpoint performance graphs in tabs."
+                  primaryAction={{
+                    label: 'Connect Telemetry Streams',
+                    onClick: () => {}
+                  }}
+                />
+              </div>
+            )}
+
+            {activeTab === 'governance' && (
+              <div className="p-6">
+                <EmptyState
+                  title="Governance & certification"
+                  description="Coming in this milestone. This board will track model faithfulness certifications, prompt regression checks, and compliance compliance reports."
+                  primaryAction={{
+                    label: 'Download Audit Log',
+                    onClick: () => {}
+                  }}
+                />
+              </div>
+            )}
+
+            {activeTab === 'memory' && (
+              <div className="p-6">
+                <EmptyState
+                  title="Reflector Memory & Pairing"
+                  description="Coming in this milestone. This screen will visualize accumulated senior testing idioms and Mentor pairing guidelines for junior developers."
+                  primaryAction={{
+                    label: 'Manage Verdict Memory',
+                    onClick: () => {}
+                  }}
+                />
+              </div>
+            )}
           </main>
         </div>
+
+        {/* Live-Run Execution Drawer contextually hosting PipelineScreen */}
+        <Drawer 
+          isOpen={isLiveDrawerOpen} 
+          onClose={() => setIsLiveDrawerOpen(false)} 
+          title="Live Execution Pipeline Monitor"
+        >
+          <div className="h-[75vh] flex flex-col">
+            <PipelineScreen
+              onCompletePipeline={() => {
+                handleCompletePipeline();
+                setIsLiveDrawerOpen(false);
+              }}
+              onUpdateTokensSpent={handleUpdateTokensSpent}
+            />
+          </div>
+        </Drawer>
 
       </div>
     </ToastProvider>

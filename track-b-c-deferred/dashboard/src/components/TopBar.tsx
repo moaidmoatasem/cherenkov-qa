@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Layers, HelpCircle, HardDrive, DollarSign } from 'lucide-react';
+import { Layers, HelpCircle, DollarSign, Cpu } from 'lucide-react';
 import { Project } from '../types';
 
 interface TopBarProps {
@@ -12,13 +12,19 @@ interface TopBarProps {
   status: 'Live' | 'Idle';
   activeTab: string;
   totalSpentEstimated: number;
+  autonomy: 'Assisted' | 'Augmented' | 'Agentic';
+  setAutonomy: (val: 'Assisted' | 'Augmented' | 'Agentic') => void;
+  onLiveClick: () => void;
 }
 
 export default function TopBar({ 
   currentProject, 
   status, 
   activeTab,
-  totalSpentEstimated
+  totalSpentEstimated,
+  autonomy,
+  setAutonomy,
+  onLiveClick
 }: TopBarProps) {
   
   const getTabLabel = (tab: string) => {
@@ -29,6 +35,15 @@ export default function TopBar({
       case 'review': return 'HITL Gate Review';
       case 'healing': return 'API drift self-repair suggestions';
       case 'eject': return 'Playwright Eject Config';
+      case 'overview': return 'Release Readiness Overview';
+      case 'truth-map': return 'Truth Map Claim Graph';
+      case 'divergences': return 'Divergence Engine Star';
+      case 'explore': return 'Autonomous Explore anomaly list';
+      case 'author': return 'Author by Intent manual-QA';
+      case 'signals': return 'Telemetry Signals Monitor';
+      case 'governance': return 'KPI Certification & Traceability';
+      case 'memory': return 'Reflector Memory Pairing';
+      case 'ui-kit': return 'UI consistency gallery';
       default: return 'Cherenkov Console';
     }
   };
@@ -47,6 +62,30 @@ export default function TopBar({
         </span>
       </div>
 
+      {/* Autonomy Level Control Segmented Control */}
+      <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg p-0.5" title="Autonomy Level Control">
+        <span className="text-[10px] font-bold font-mono tracking-wider text-text-muted px-2.5 flex items-center gap-1">
+          <Cpu className="w-3 h-3 text-glow-blue" />
+          AUTONOMY:
+        </span>
+        {(['Assisted', 'Augmented', 'Agentic'] as const).map((level) => {
+          const isActive = autonomy === level;
+          return (
+            <button
+              key={level}
+              onClick={() => setAutonomy(level)}
+              className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer focus:outline-none
+                ${isActive 
+                  ? 'bg-glow-blue text-bg-base shadow-[0_0_8px_rgba(34,211,238,0.35)]' 
+                  : 'text-text-muted hover:text-text-primary hover:bg-white/5'
+                }`}
+            >
+              {level}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Observability Telemetry Indicators */}
       <div className="flex items-center gap-6">
         {/* Token Cost Summary */}
@@ -60,10 +99,14 @@ export default function TopBar({
           <span className="text-[#7D8DA1]/80 text-[10px]">Cloud equivalent: ${(totalSpentEstimated * 3.4).toFixed(3)}</span>
         </div>
 
-        {/* Local Node Status */}
-        <div className="flex items-center gap-2">
-          <span className="text-[#7D8DA1] uppercase text-[10px] tracking-wider font-mono">NODE STATE:</span>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded bg-white/5 border border-white/10">
+        {/* Local Node Status (Clickable to open live-run drawer) */}
+        <div 
+          onClick={onLiveClick}
+          className="flex items-center gap-2 cursor-pointer group"
+          title="Click to view live executing pipeline monitor"
+        >
+          <span className="text-[#7D8DA1] group-hover:text-glow-bright uppercase text-[10px] tracking-wider font-mono transition-colors">NODE STATE:</span>
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded bg-white/5 border border-white/10 group-hover:border-glow-blue/45 transition-colors">
             <span className={`w-2 h-2 rounded-full ${status === 'Live' ? 'bg-[#3FB950] animate-pulse' : 'bg-[#7D8DA1]'}`} />
             <span className="text-xs font-mono font-medium text-text-primary uppercase">{status}</span>
           </div>
