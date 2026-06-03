@@ -37,6 +37,7 @@ KNOWN_KEYS: set[str] = {
     "artifacts.emitters", "artifacts.eject",
     "oracle.kind",
     "continuity.mode", "continuity.behavioral_diff_on_pr",
+    "reflector.enabled", "reflector.store_path", "reflector.decay_half_life_hours",
 }
 
 # ── Profile defaults ─────────────────────────────────────────────────────
@@ -134,6 +135,9 @@ BUILTIN_DEFAULTS: dict[str, Any] = {
     "oracle.kind": "spec+prism",
     "continuity.mode": "one-shot",
     "continuity.behavioral_diff_on_pr": False,
+    "reflector.enabled": True,
+    "reflector.store_path": ".cherenkov/verdicts.db",
+    "reflector.decay_half_life_hours": 168.0,
 }
 
 

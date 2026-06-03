@@ -409,3 +409,90 @@ export const MOCK_FILE_TREE = {
     { name: 'README.md' }
   ]
 };
+
+export const MOCK_DIVERGENCES = [
+  {
+    id: 'D-01',
+    divergenceClass: 'D1' as const,
+    endpoint: 'GET /pet/findByStatus',
+    severity: 'medium' as const,
+    status: 'reproduced' as const,
+    claimA: 'schema:\n  type: string\n  enum: [available, pending, sold]',
+    claimB: 'Reference server accepts arbitrary status strings and returns 200 OK.',
+    evidence: 'Request:  GET /pet/findByStatus?status=CHERENKOV_INVALID_XYZ_9\nResponse: 200 OK\nBody:     []',
+    reproSteps: 'curl -s -o /dev/null -w "%{http_code}" \\\n  "https://petstore3.swagger.io/api/v3/pet/findByStatus?status=CHERENKOV_INVALID_XYZ_9"\n# Expected: 400\n# Actual:   200',
+    confidence: 0.95
+  },
+  {
+    id: 'D-02',
+    divergenceClass: 'D1' as const,
+    endpoint: 'POST /pet',
+    severity: 'high' as const,
+    status: 'reproduced' as const,
+    claimA: 'required:\n  - name\n  - photoUrls',
+    claimB: 'Server accepts request missing photoUrls field and coerces value to empty list.',
+    evidence: 'Request:  POST /pet\nBody:     {"name": "cherenkov-probe", "status": "available"}\nResponse: 200 OK\nBody:     {"id": 9223372036, "name": "cherenkov-probe", "photoUrls": [], "status": "available"}',
+    reproSteps: 'curl -s -X POST "https://petstore3.swagger.io/api/v3/pet" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"name": "cherenkov-probe", "status": "available"}\'\n# Expected: 400 (missing required field)\n# Actual:   200 with photoUrls: []',
+    confidence: 0.99
+  },
+  {
+    id: 'D-03',
+    divergenceClass: 'D5' as const,
+    endpoint: 'GET /pet/{petId}',
+    severity: 'low' as const,
+    status: 'reproduced' as const,
+    claimA: '400: Invalid ID supplied\n404: Pet not found',
+    claimB: 'Query petId=0 returns 404 error rather than 400 bad request.',
+    evidence: 'Request:  GET /pet/0\nResponse: 404 Not Found\nBody:     {"code": 1, "type": "error", "message": "Pet not found"}',
+    reproSteps: 'curl -s -o /dev/null -w "%{http_code}" "https://petstore3.swagger.io/api/v3/pet/0"\n# Expected: 400\n# Actual:   404',
+    confidence: 0.92
+  },
+  {
+    id: 'D-04',
+    divergenceClass: 'D2' as const,
+    endpoint: 'GET /store/inventory',
+    severity: 'medium' as const,
+    status: 'reproduced' as const,
+    claimA: 'schema:\n  type: object\n  additionalProperties:\n    type: integer',
+    claimB: 'Live server returns extra keys like "string" corresponding to internal test data leak.',
+    evidence: 'Request:  GET /store/inventory\nResponse: 200 OK\nBody:     {"sold": 3, "string": 605, "available": 149}',
+    reproSteps: 'curl -s "https://petstore3.swagger.io/api/v3/store/inventory"\n# Observe key "string" leaks internal state.',
+    confidence: 0.88
+  },
+  {
+    id: 'D-05',
+    divergenceClass: 'D5' as const,
+    endpoint: 'GET /user/login',
+    severity: 'medium' as const,
+    status: 'reproduced' as const,
+    claimA: 'Response Headers:\n  X-Rate-Limit: integer\n  X-Expires-After: date-time',
+    claimB: 'Successful login returns 200 OK but completely omits both required response headers.',
+    evidence: 'Request:  GET /user/login?username=test&password=abc123\nResponse Headers:\n  Content-Type: application/json\n  (X-Rate-Limit: ABSENT)\n  (X-Expires-After: ABSENT)',
+    reproSteps: 'curl -sI "https://petstore3.swagger.io/api/v3/user/login?username=test&password=abc123" \\\n  | grep -i "x-rate\\|x-expires"',
+    confidence: 0.90
+  },
+  {
+    id: 'D-06',
+    divergenceClass: 'D3' as const,
+    endpoint: 'UI /checkout',
+    severity: 'critical' as const,
+    status: 'pending' as const,
+    claimA: 'Button click triggers checkout callback with order payload',
+    claimB: 'Button is visually covered by floating coupon advertisement banner, preventing mouse click event.',
+    evidence: 'Visual regression snapshot: 34% pixel discrepancy on selector button element.',
+    reproSteps: 'Pilot execution click fails at step: click("#confirm-checkout") due to Ads container overlap.',
+    confidence: 0.85
+  },
+  {
+    id: 'D-07',
+    divergenceClass: 'D4' as const,
+    endpoint: 'POST /user/createWithList',
+    severity: 'high' as const,
+    status: 'rejected' as const,
+    claimA: 'Inserts list payload records into Postgres DB user table',
+    claimB: 'Inserts records but fails to hash passwords, storing them in plaintext.',
+    evidence: 'DB Query: SELECT password FROM users WHERE username = \'probe\';\nReturned plaintext: \'foo123\'',
+    reproSteps: 'Execute post request, fetch user table credentials from test sandbox container db.',
+    confidence: 0.97
+  }
+];
