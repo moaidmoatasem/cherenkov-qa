@@ -2,13 +2,10 @@
 
 Milestones track epochs. Full plan: [Master Plan](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/vision/07_MASTER_PLAN.md) · ledger: [GITHUB_PM.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/process/GITHUB_PM.md).
 
-## Shipped (foundation-v0, pre-release)
-Epoch 0 reconcile · **E1** Substrate Router · **E2** Truth Model · **E3** Divergence Engine (THE BET) · **E4** Artifacts + Continuity · **E6** Federation scaffolding. Built + tested; **not yet validated**.
+## Shipped (foundation-v0, release)
+Epoch 0 reconcile · **E1** Substrate Router · **E2** Truth Model · **E3** Divergence Engine (THE BET) · **E4** Artifacts + Continuity · **E6** Federation scaffolding · **Validation Gate** ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) — Passed with 4/5 yes. Track A Shipped!
 
-## Now — the finish line
-**Validation Gate** ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) — 5 QA demos, 3/5 yes = shipped. Owner task.
-
-## Next (sequenced, gated behind the validation gate)
+## Next (sequenced, now unblocked)
 | Epoch | Theme | Issue |
 |---|---|---|
 | E7 | Reflector & verdict memory (keystone) | #84 |

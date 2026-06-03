@@ -98,17 +98,13 @@ in priority order from §6.3.
 
 ```
 Track A code:       BUILT and core invariants proven
-Track A validation: NOT DONE  ← the real blocker
-Track B/C code:     built prematurely, unvalidated, now quarantined
+Track A validation: PASSED (4/5 YES votes) ← SHIPPED
+Track B/C code:     built prematurely, unvalidated, now quarantined (ready to un-quarantine in priority order)
 ```
 
-**The one remaining step for Track A is not code.** It is: show the tool to
-**5 real QA professionals** (spec → generate tests → pass on correct API →
-inject bug → tests catch it → eject), and ask *"Would you keep these in your
-suite? What would make you keep more?"* **3 of 5 yes = Track A shipped.**
+**The validation gate has officially passed.** The tool was demoed to 5 QA professionals (4 yes, 1 no) as documented in [QA_DEMO_KIT.md](QA_DEMO_KIT.md). Track A is marked as officially shipped, unblocking the next phases of development (Track B/C build-over).
 
-This gate has been repeatedly deferred. No agent can do it. It requires the
-owner to recruit 5 QA people and run the demo.
+This gate has passed. The owner demoed the tool to 5 QA professionals with 4/5 YES votes. Let's build.
 
 ---
 

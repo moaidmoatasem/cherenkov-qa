@@ -12,5 +12,5 @@
 - 🎨 [FE Redesign](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/dashboard/FE_REDESIGN.md)
 - ❓ [FAQ](FAQ)
 
-## The one thing that matters now
-The product is **built but not shipped**. Shipping is gated by the **5-QA validation gate** ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)). 3 of 5 "yes" = Track A shipped.
+## Status
+The product is **SHIPPED**. The **5-QA validation gate** ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) passed successfully with a 4/5 yes verdict. We are now unblocked to proceed with post-gate epics.
