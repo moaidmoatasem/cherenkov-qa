@@ -70,6 +70,16 @@ def main():
         if os.path.exists("temp_eject_out"):
             shutil.rmtree("temp_eject_out")
 
+        r = requests.get(f"{base_url}/api/v1/divergences", timeout=15)
+        divs = r.json()
+        check("GET /divergences (200 list)", r.status_code == 200 and isinstance(divs, list) and len(divs) > 0)
+
+        r = requests.post(f"{base_url}/api/v1/divergences/act", json={"divergence_id": divs[0]["id"], "action": "mark_intended"}, timeout=15)
+        check("POST /divergences/act (200 rejected)", r.status_code == 200 and r.json().get("new_status") == "rejected")
+
+        r = requests.post(f"{base_url}/api/v1/divergences/act", json={"divergence_id": "D-99", "action": "reject"}, timeout=15)
+        check("POST /divergences/act (404 unknown id)", r.status_code == 404)
+
     except Exception as e:
         print(f"FAIL: {e}")
         dashboard_proc.terminate(); dashboard_proc.wait(); return 1
