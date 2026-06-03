@@ -87,6 +87,7 @@ Each epoch: **Goal · Grows · Key tasks · New contracts/config · Exit metric 
 - **New contract/config:** `CoverageTarget`; `[sdet] threshold, max_iters`.
 - **Exit:** raises real line coverage with tests that **fail a deliberately broken impl** and pass the correct one.
 - **Effort:** M · **Risk:** tautological tests → the broken-impl gate is non-optional.
+- **Landed (#92):** tasks (2)+(3)+(4) — `cherenkov/sdet/coverage_loop.py` (bounded generate→run→read-trace→repair, `threshold` + `max_repairs` convergence) and `cherenkov/sdet/assertion_gate.py` (meaningful-assertion gate over `divergence/self_play`). Contracts `CoverageItem`/`CoverageReport`/`AssertionGateResult` in `core/contracts.py`; unit tests `test_sdet_coverage.py` (14). Remaining: task (1) unit-test emitter in `truth/emitters/`.
 
 ### E12 — Model Certification + Governance (trust at scale)
 - **Goal:** model-agnosticism never silently degrades; autonomy is auditable.
