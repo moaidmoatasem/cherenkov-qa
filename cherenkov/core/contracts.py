@@ -524,3 +524,74 @@ class TriageResult(BaseModel):
     suggested_action: str = ""
     evidence: str = ""                # screenshot path, diverging claim, etc.
 
+
+# ── COVERAGE SDET (E11) ────────────────────────────────────────────────────
+class AssertionGateResult(BaseModel):
+    """Verdict from the meaningful-assertion gate (E11-2).
+
+    A test is *meaningful* only if it passes a spec-conforming mock AND fails a
+    deliberately-broken implementation (delegates to AdversarialSelfPlay). A
+    test that passes both has vacuous assertions and is rejected.
+    """
+    test_id: str
+    meaningful: bool
+    passed_correct: bool
+    failed_broken: bool
+    reason: str = ""
+
+
+class CoverageItemState(str, Enum):
+    """Lifecycle of a single coverage target within the SDET loop."""
+    PENDING   = "pending"     # not yet attempted
+    COVERED   = "covered"     # passing + meaningful test exists
+    UNMET     = "unmet"       # budget exhausted without a meaningful, passing test
+
+
+class CoverageItem(BaseModel):
+    """One unit of coverage (typically an endpoint+case) tracked by the loop."""
+    target_id: str
+    state: CoverageItemState = CoverageItemState.PENDING
+    attempts: int = 0                 # generate/repair cycles spent
+    passed: bool = False              # the test passed against the correct mock
+    meaningful: bool = False          # cleared the assertion gate
+    detail: str = ""
+
+
+class CoverageReport(BaseModel):
+    """Outcome of a bounded generate→run→read-trace→repair SDET run (E11-1)."""
+    target: str
+    threshold: float                  # 0.0–1.0 desired coverage
+    items: list[CoverageItem] = Field(default_factory=list)
+    status: Status = Status.OK
+
+    @property
+    def total(self) -> int:
+        return len(self.items)
+
+    @property
+    def covered(self) -> int:
+        return sum(1 for i in self.items if i.state == CoverageItemState.COVERED)
+
+    @property
+    def coverage(self) -> float:
+        return self.covered / self.total if self.total else 0.0
+
+    @property
+    def threshold_met(self) -> bool:
+        return self.coverage >= self.threshold
+
+    def render(self) -> str:
+        lines = [
+            f"Coverage SDET - {self.target}: "
+            f"{self.covered}/{self.total} covered "
+            f"({self.coverage:.0%}, threshold {self.threshold:.0%}) "
+            f"{'MET' if self.threshold_met else 'UNMET'}"
+        ]
+        for item in self.items:
+            lines.append(
+                f"  [{item.state.value:7}] {item.target_id} "
+                f"(attempts={item.attempts})"
+                + (f" — {item.detail}" if item.detail else "")
+            )
+        return "\n".join(lines)
+
