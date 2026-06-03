@@ -39,6 +39,7 @@ export default function Sidebar({
     { id: 'healing', label: 'Healing Options', icon: Sparkles, desc: 'API Drift & Self-Repair' },
     { id: 'eject', label: 'Eject Suite', icon: Download, desc: 'Export plain Playwright' },
     { id: 'settings', label: 'Settings', icon: Settings, desc: 'Local token & runner budget' },
+    { id: 'ui-kit', label: 'UI Kit Gallery', icon: CircleDot, desc: 'Consistency & styling check' },
   ];
 
   return (
