@@ -13,6 +13,8 @@ import ReviewScreen from './components/ReviewScreen';
 import HealingScreen from './components/HealingScreen';
 import EjectScreen from './components/EjectScreen';
 import SettingsScreen from './components/SettingsScreen';
+import UiKitScreen from './components/UiKitScreen';
+import { ToastProvider } from './components/ui';
 
 import { Project, EndpointRichness } from './types';
 import { INITIAL_PROJECTS } from './mockData';
@@ -119,76 +121,82 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-bg-base text-text-primary font-sans antialiased relative" id="cherenkov-app-core">
-      {/* Mesh Background Decoration */}
-      <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] bg-cyan-500/15 rounded-full blur-[120px] pointer-events-none z-0" />
-      <div className="absolute bottom-[-100px] right-[-100px] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px] pointer-events-none z-0" />
-      
-      {/* LEFT SIDEBAR CONTROLS */}
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onNewRun={handleNewRun}
-        status={status}
-        tokenUsagePercent={tokenUsagePercent}
-      />
-
-      {/* RIGHT DISPLAY VIEWPORT PANEL FRAME */}
-      <div className="flex-1 flex flex-col overflow-hidden h-full">
-        {/* TOP STATUS CONTROL BAR */}
-        <TopBar
-          currentProject={currentProject}
-          status={status}
+    <ToastProvider>
+      <div className="flex h-screen w-screen overflow-hidden bg-bg-base text-text-primary font-sans antialiased relative" id="cherenkov-app-core">
+        {/* Mesh Background Decoration */}
+        <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] bg-cyan-500/15 rounded-full blur-[120px] pointer-events-none z-0" />
+        <div className="absolute bottom-[-100px] right-[-100px] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px] pointer-events-none z-0" />
+        
+        {/* LEFT SIDEBAR CONTROLS */}
+        <Sidebar
           activeTab={activeTab}
-          totalSpentEstimated={totalSpentEstimated}
+          setActiveTab={setActiveTab}
+          onNewRun={handleNewRun}
+          status={status}
+          tokenUsagePercent={tokenUsagePercent}
         />
 
-        {/* MAIN BODY SWITCHBOARD SECTION */}
-        <main className="flex-1 overflow-hidden h-full">
-          {activeTab === 'projects' && (
-            <ProjectsScreen
-              projects={projects}
-              selectedProjectId={selectedProjectId}
-              onSelectProject={handleSelectProject}
-              onNewRun={handleNewRun}
-            />
-          )}
+        {/* RIGHT DISPLAY VIEWPORT PANEL FRAME */}
+        <div className="flex-1 flex flex-col overflow-hidden h-full">
+          {/* TOP STATUS CONTROL BAR */}
+          <TopBar
+            currentProject={currentProject}
+            status={status}
+            activeTab={activeTab}
+            totalSpentEstimated={totalSpentEstimated}
+          />
 
-          {activeTab === 'setup' && (
-            <SetupScreen
-              onStartPipeline={handleStartPipeline}
-            />
-          )}
+          {/* MAIN BODY SWITCHBOARD SECTION */}
+          <main className="flex-1 overflow-hidden h-full">
+            {activeTab === 'projects' && (
+              <ProjectsScreen
+                projects={projects}
+                selectedProjectId={selectedProjectId}
+                onSelectProject={handleSelectProject}
+                onNewRun={handleNewRun}
+              />
+            )}
 
-          {activeTab === 'pipeline' && (
-            <PipelineScreen
-              onCompletePipeline={handleCompletePipeline}
-              onUpdateTokensSpent={handleUpdateTokensSpent}
-            />
-          )}
+            {activeTab === 'setup' && (
+              <SetupScreen
+                onStartPipeline={handleStartPipeline}
+              />
+            )}
 
-          {activeTab === 'review' && (
-            <ReviewScreen
-              onUpdatePassRateAndCount={handleUpdatePassRateAndCount}
-            />
-          )}
+            {activeTab === 'pipeline' && (
+              <PipelineScreen
+                onCompletePipeline={handleCompletePipeline}
+                onUpdateTokensSpent={handleUpdateTokensSpent}
+              />
+            )}
 
-          {activeTab === 'healing' && (
-            <HealingScreen
-              onSuggestResolveCount={handleSuggestResolveCount}
-            />
-          )}
+            {activeTab === 'review' && (
+              <ReviewScreen
+                onUpdatePassRateAndCount={handleUpdatePassRateAndCount}
+              />
+            )}
 
-          {activeTab === 'eject' && (
-            <EjectScreen />
-          )}
+            {activeTab === 'healing' && (
+              <HealingScreen
+                onSuggestResolveCount={handleSuggestResolveCount}
+              />
+            )}
 
-          {activeTab === 'settings' && (
-            <SettingsScreen />
-          )}
-        </main>
+            {activeTab === 'eject' && (
+              <EjectScreen />
+            )}
+
+            {activeTab === 'settings' && (
+              <SettingsScreen />
+            )}
+
+            {activeTab === 'ui-kit' && (
+              <UiKitScreen />
+            )}
+          </main>
+        </div>
+
       </div>
-
-    </div>
+    </ToastProvider>
   );
 }
