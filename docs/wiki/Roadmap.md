@@ -11,7 +11,7 @@ Epoch 0 reconcile · **E1** Substrate Router · **E2** Truth Model · **E3** Div
 | E7 | Reflector & verdict memory (keystone) | #84 |
 | E8 | Perf intelligence | #89 |
 | E9 | Vision perception | #90 |
-| E10 | Explorer + Copilot (manual-QA) | #91 |
+| E10 | Explorer + Copilot (manual-QA) — **machinery landed** ([#91](https://github.com/moaidmoatasem/cherenkov-qa/issues/91)): Explorer crawl→Skeptic, NL-intent→ejectable test, second-pair-of-eyes digest, triage | #91 |
 | E11 | Coverage SDET | #92 |
 | E12 | Certification + governance | #93 |
 | E13 | Copilot v2 + pairing | #94 |
