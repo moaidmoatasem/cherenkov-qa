@@ -1,7 +1,7 @@
 import os, tempfile, pytest
 from cherenkov.core.contracts import DivergenceReport, DivergenceClass, Severity, DivergenceEvidence, StageMeta
 from cherenkov.federation.protocol import DivergenceEnvelope
-from cherenkov.federation.corpus import Corpus, CorpusOptInError
+from cherenkov.federation.corpus import Corpus, CorpusOptInError, CorpusEntry, CorpusBackend
 
 def make_divergence():
     return DivergenceReport(
@@ -80,3 +80,31 @@ def test_query_round_trip():
         assert len(entries) == 1
         assert entries[0].id == "div-1"
         os.environ.pop("CHERENKOV_CORPUS_OPT_IN")
+
+class InMemoryBackend:
+    """Fake CorpusBackend for testing the abstraction."""
+    def __init__(self):
+        self._store = []
+
+    def submit(self, entry: CorpusEntry) -> None:
+        self._store.append(entry)
+
+    def query(self, **filters) -> list[CorpusEntry]:
+        return list(self._store)
+
+def test_corpus_backend_protocol():
+    """Prove the CorpusBackend Protocol works with an in-memory fake."""
+    backend = InMemoryBackend()
+    corpus = Corpus(backend=backend)
+    corpus.opt_in = True
+    envelope = DivergenceEnvelope(
+        from_service="a",
+        to_service="b",
+        correlation_id="c1",
+        divergence=make_divergence(),
+    )
+    entry = corpus.submit(envelope)
+    assert entry.id == "div-1"
+    entries = corpus.query()
+    assert len(entries) == 1
+    assert entries[0] is entry
