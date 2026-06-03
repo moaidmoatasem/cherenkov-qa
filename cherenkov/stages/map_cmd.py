@@ -8,14 +8,35 @@ Build + inspect the Truth Model for a target from all configured sources.
 from __future__ import annotations
 
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
-from cherenkov.core.contracts import Claim, Provenance, ProvenanceType
-from cherenkov.core.truth_model import TruthModel, GraphNode, NodeType, GraphEdge, EdgeType
+from cherenkov.core.contracts import ProvenanceType
+from cherenkov.core.truth_model import (
+    TruthModel, GraphNode, NodeType, GraphEdge, EdgeType,
+    Claim as TMClaim, Provenance as TMProvenance,
+)
 from cherenkov.truth.sources.interface import SourceAdapter
 from cherenkov.truth.sources.openapi import OpenAPISourceAdapter
 from cherenkov.truth.sources.traffic import TrafficSourceAdapter
 from cherenkov.truth.sources.db_schema import DBSchemaSourceAdapter
+
+
+def _to_tm_claim(contract_claim) -> TMClaim:
+    """Convert a contracts.Claim to a truth_model.Claim."""
+    prov = contract_claim.provenance
+    return TMClaim(
+        predicate=f"{contract_claim.category}:{contract_claim.subject}",
+        value=contract_claim.value,
+            provenance=TMProvenance(
+                source_id=prov.source_uri,
+                source_type=prov.source_type.value,
+                source_location=prov.source_uri,
+                extracted_at=datetime.now(timezone.utc),
+            confidence=1.0,
+            detail=prov.details.get("type", ""),
+        ),
+    )
 
 
 def _adapter_for_source_type(source_type: str) -> SourceAdapter:
@@ -68,12 +89,13 @@ def build_truth_model(sources: dict[str, list[str]]) -> TruthModel:
                 elif claim.category in ("observed_status", "observed_latency", "observed_headers", "observed_request_body"):
                     node_type = NodeType.ENDPOINT
 
+                tm_claim = _to_tm_claim(claim)
                 claim_node = GraphNode(
                     id=node_id,
                     type=node_type,
                     label=claim.subject,
                     properties={"category": claim.category},
-                    claims=[claim],
+                    claims=[tm_claim],
                 )
                 tm.add_node(claim_node)
 
@@ -113,15 +135,15 @@ def render_truth_model(tm: TruthModel, detailed: bool = False) -> str:
         for ep in endpoints:
             lines.append(f"    {ep.label}")
             for c in ep.claims:
-                lines.append(f"      [{c.category}] {c.subject} = {c.value}")
-                lines.append(f"        provenance: {c.provenance.source_type.value} @ {c.provenance.source_uri}")
+                lines.append(f"      [{c.predicate}]  = {c.value}")
+                lines.append(f"        provenance: {c.provenance.source_type} @ {c.provenance.source_location}")
 
     lines.append(f"\n  Constraints:  {len(constraints)}")
     if detailed and constraints:
         for cn in constraints:
             lines.append(f"    {cn.label}")
             for c in cn.claims:
-                lines.append(f"      [{c.category}] {c.subject} = {c.value}")
+                lines.append(f"      [{c.predicate}]  = {c.value}")
 
     lines.append(f"\n  Shapes:       {len(shapes)}")
     lines.append(f"  Edges:        {len(tm.edges)}")
