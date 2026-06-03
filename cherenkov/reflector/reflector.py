@@ -12,6 +12,8 @@ Then:
 """
 from __future__ import annotations
 
+import hashlib
+import re
 import time
 import uuid
 from typing import Any
@@ -36,6 +38,24 @@ def _divergence_class_from_str(s: str | None) -> DivergenceClass | None:
         return DivergenceClass(s)
     except ValueError:
         return None
+
+
+def _norm(s: str | None) -> str:
+    return re.sub(r"\s+", " ", (s or "").strip().lower())
+
+
+def fingerprint_of(hypothesis: DivergenceHypothesis) -> str:
+    """Stable SEMANTIC identity of a finding, independent of its random id.
+
+    Two hypotheses with the same class + endpoint + (normalized) claims share a
+    fingerprint — so a rejected finding stays rejected across Skeptic runs even
+    though each run mints a fresh hypothesis.id. (E7 behavioural-exit fix.)
+    """
+    cls = hypothesis.divergence_class.value if hypothesis.divergence_class else ""
+    basis = "|".join(
+        [cls, _norm(hypothesis.endpoint), _norm(hypothesis.claim_a), _norm(hypothesis.claim_b)]
+    )
+    return hashlib.sha256(basis.encode()).hexdigest()[:16]
 
 
 class Reflector:
@@ -103,9 +123,16 @@ class Reflector:
             endpoint=hypothesis.endpoint,
         )
 
-        # If accepted, strengthen or create an Idiom
         if outcome == VerdictOutcome.ACCEPT:
+            # strengthen or create an Idiom
             self._reinforce_idiom(hypothesis)
+        elif outcome == VerdictOutcome.REJECT:
+            # suppress by semantic fingerprint so it cannot resurface (E7 fix)
+            self.store.record_rejected_fingerprint(
+                fingerprint_of(hypothesis),
+                hypothesis.endpoint,
+                hypothesis.divergence_class.value if hypothesis.divergence_class else None,
+            )
 
         return record
 
@@ -151,18 +178,29 @@ class Reflector:
         outcome: VerdictOutcome,
         detail: str = "",
         endpoint: str | None = None,
+        hypothesis: DivergenceHypothesis | None = None,
     ) -> VerdictRecord:
-        """Record a human-supplied verdict (overrides automated ones)."""
+        """Record a human-supplied verdict (overrides automated ones).
+
+        Pass the full `hypothesis` when rejecting so the rejection is recorded
+        as a semantic fingerprint and stays suppressed across runs (E7 fix).
+        """
         record = VerdictRecord(
             id=str(uuid.uuid4()),
             hypothesis_id=hypothesis_id,
             outcome=outcome,
-            endpoint=endpoint,
+            endpoint=endpoint or (hypothesis.endpoint if hypothesis else None),
             source="human",
             detail=detail,
             timestamp=int(time.time()),
         )
         self.store.record_verdict(record)
+        if outcome == VerdictOutcome.REJECT and hypothesis is not None:
+            self.store.record_rejected_fingerprint(
+                fingerprint_of(hypothesis),
+                hypothesis.endpoint,
+                hypothesis.divergence_class.value if hypothesis.divergence_class else None,
+            )
         self.log.info(
             "recorded human verdict",
             hypothesis_id=hypothesis_id,
@@ -192,9 +230,14 @@ class Reflector:
         if not hypotheses:
             return hypotheses
 
-        # 1. Suppress previously rejected hypotheses
+        # 1. Suppress previously rejected hypotheses — by ephemeral id (legacy)
+        #    AND by semantic fingerprint (E7 fix: survives id re-minting).
         rejected = self.store.get_rejected_hypothesis_ids(endpoint)
-        filtered = [h for h in hypotheses if h.id not in rejected]
+        rejected_fps = self.store.rejected_fingerprints(endpoint)
+        filtered = [
+            h for h in hypotheses
+            if h.id not in rejected and fingerprint_of(h) not in rejected_fps
+        ]
 
         if len(filtered) < len(hypotheses):
             self.log.info(
