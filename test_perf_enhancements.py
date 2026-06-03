@@ -138,7 +138,7 @@ def test_traffic_load_profile():
                     "headers": [],
                     "postData": {
                         "mimeType": "application/json",
-                        "text": "{\"message\": \"hello\"}"
+                        "text": "hello world"
                     }
                 },
                 "response": {
