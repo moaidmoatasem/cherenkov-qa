@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Operating rules (read first)
+    url: https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/HANDOVER.md
+    about: Authoritative project state. The handover wins over any other doc.
+  - name: Way of work
+    url: https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CONTRIBUTING.md
+    about: How humans and agents contribute, git flow, restrictions.

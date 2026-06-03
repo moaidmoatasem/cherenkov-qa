@@ -1,0 +1,13 @@
+# Default owner — every change needs owner review until maintainers are added.
+*                       @moaidmoatasem
+
+# Critical surfaces — keep an extra eye here
+/docs/HANDOVER.md       @moaidmoatasem
+/AGENTS.md              @moaidmoatasem
+/CONTRIBUTING.md        @moaidmoatasem
+/cherenkov/core/        @moaidmoatasem
+/cherenkov/substrate/   @moaidmoatasem
+/.github/               @moaidmoatasem
+
+# Quarantined — should not change pre-gate
+/track-b-c-deferred/    @moaidmoatasem
