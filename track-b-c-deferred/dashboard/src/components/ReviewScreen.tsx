@@ -62,12 +62,14 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
       })
       .catch(err => console.warn('Failed to fetch generated tests, using mock data:', err));
   }, []);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'approved' | 'review' | 'regenerating'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'approved' | 'review' | 'regenerating' | 'rejected'>('all');
   const [selectedTestId, setSelectedTestId] = useState<string>('test-3'); // Default to the first review item
   const [isEditing, setIsEditing] = useState(false);
   const [editedCode, setEditedCode] = useState('');
   const [approveTriggerId, setApproveTriggerId] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   // Sync edited code when selected test changes
   const activeTest = tests.find(t => t.id === selectedTestId) || tests[0];
@@ -115,7 +117,8 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
           break;
         case 'r': // Reject
           if (activeTest && activeTest.verdict !== 'rejected') {
-            handleReject(activeTest.id);
+            setRejectingId(activeTest.id);
+            setRejectReason('');
           }
           break;
         default:
@@ -172,21 +175,22 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
     setIsEditing(false);
   };
 
-  const handleReject = (id: string) => {
+  const handleReject = (id: string, reason: string) => {
     // Fire real API call (best-effort)
-    rejectTestScenario(id, 'Rejected by reviewer').catch(err => console.warn('API reject failed, using local state', err));
+    rejectTestScenario(id, reason).catch(err => console.warn('API reject failed, using local state', err));
 
     setTests(prev => prev.map(t => {
       if (t.id === id) {
         return { 
           ...t, 
-          verdict: 'review', // toggles back
+          verdict: 'rejected' as const,
           gates: { ...t.gates, quality: false } 
         };
       }
       return t;
     }));
-    setToastMsg(`Rejected ${id}. Negative AST sample cached. Proceeding to trigger synthetic regeneration logic.`);
+    setToastMsg(`Rejected ${id}. Negative AST sample cached. Reason: "${reason}". Proceeding to trigger synthetic regeneration logic.`);
+    setRejectingId(null);
     setTimeout(() => setToastMsg(null), 4000);
   };
 
@@ -253,7 +257,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
         <div className="lg:col-span-2 flex flex-col bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden h-full">
           {/* Tabs Filter Header */}
           <div className="flex border-b border-white/5 bg-black/40 p-2 gap-1 justify-between shrink-0 select-none">
-            {(['all', 'approved', 'review', 'regenerating'] as const).map((filter) => {
+            {(['all', 'approved', 'review', 'regenerating', 'rejected'] as const).map((filter) => {
               const count = filter === 'all' 
                 ? tests.length 
                 : tests.filter(t => t.verdict === filter).length;
@@ -495,7 +499,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
                   <>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => handleReject(activeTest.id)}
+                        onClick={() => setRejectingId(activeTest.id)}
                         className="px-4 py-2 text-red-400 border border-red-500/20 bg-red-500/5 hover:bg-red-500 hover:text-slate-950 text-xs font-mono font-bold tracking-wider rounded-xl uppercase transition cursor-pointer"
                       >
                         REJECT & RUN REGEN
@@ -527,6 +531,40 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
         </div>
 
       </div>
+
+      {/* Rejection Reason Modal */}
+      {rejectingId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#131d31] border border-white/10 p-6 rounded-2xl w-full max-w-md shadow-2xl space-y-4">
+            <h3 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted">
+              Specify Rejection Reason (Feeds Reflector)
+            </h3>
+            <p className="text-xs text-[#7D8DA1]">
+              Provide instructions to guide the model rewrite and update negative verdict weights.
+            </p>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="e.g. Assertion values are hardcoded incorrectly. Must verify dynamic IDs..."
+              className="w-full h-24 p-3 font-sans text-xs text-[#E6EDF3] bg-black/30 border border-white/10 rounded-xl focus:outline-none focus:border-glow-blue transition"
+            />
+            <div className="flex justify-end gap-3 text-xs">
+              <button
+                onClick={() => setRejectingId(null)}
+                className="px-4 py-2 border border-white/10 text-[#7D8DA1] rounded-xl font-mono hover:text-[#E6EDF3] hover:bg-white/5 transition"
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={() => handleReject(rejectingId, rejectReason || 'Rejected by reviewer')}
+                className="px-4 py-2 bg-red-500 hover:bg-opacity-95 text-slate-950 font-bold rounded-xl font-mono uppercase transition"
+              >
+                CONFIRM REJECT
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

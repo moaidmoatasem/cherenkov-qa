@@ -182,6 +182,36 @@ class OllamaInferenceClient(InferenceClient):
         log.info("code ok", model=model, duration_ms=int((time.time() - t0) * 1000))
         return text.strip()
 
+    def complete_vision(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        image_data: str,
+        model: str,
+        *,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> str:
+        """Vision request: send image as base64 to Ollama's /api/generate."""
+        log = get_logger("ollama-vision", run_id)
+        t0 = time.time()
+        resp = requests.post(
+            Config.OLLAMA_URL,
+            json={
+                "model": model,
+                "system": system_prompt,
+                "prompt": user_prompt,
+                "images": [image_data],
+                "stream": False,
+                "options": {"temperature": temperature},
+            },
+            timeout=300,
+        )
+        resp.raise_for_status()
+        text = resp.json().get("response", "").strip()
+        log.info("vision ok", model=model, duration_ms=int((time.time() - t0) * 1000))
+        return text
+
     def chat(
         self,
         messages: list[dict],

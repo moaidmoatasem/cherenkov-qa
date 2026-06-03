@@ -99,6 +99,10 @@ model = "qwen2.5-coder:7b"
 provider = "ollama"
 model = "deepseek-r1:8b"
 
+[substrate.tiers.vision]
+provider = "ollama"
+model = "qwen2.5-vl:7b"        # local VLM; set provider=openai + model=gpt-4o for cloud
+
 [substrate.budgets]
 max_cost_usd_per_run = 0.0    # 0 = local only
 max_latency_ms = 120000
@@ -123,6 +127,12 @@ behavioral_diff_on_pr = false
 # Manual-QA pillar (E10). Autonomy ladder grows in E13.
 autonomy = "assisted"         # assisted | augmented | agentic | predictive
 explorer_slow_ms = 2000       # crawl latency budget before a slow-response finding
+mentor_enabled = true         # E13: Mentor surfaces senior idioms to juniors
+
+[certification]
+# E12: Model Certification + Governance
+gold_set_path = ".cherenkov/gold_set.json"
+min_faithfulness = 0.8
 """
 
 

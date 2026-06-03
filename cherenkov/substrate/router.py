@@ -10,20 +10,34 @@ import time
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.config import Config
-from cherenkov.core.errors import EgressError, AllProvidersFailedError, get_logger
+from cherenkov.core.errors import EgressError, AllProvidersFailedError, CertificationError, get_logger
 from cherenkov.substrate.provider import provider_for_tier, get_provider
+from cherenkov.substrate.certification import ModelCertificationManager
 
 
 class SubstrateRouter:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("ROUTER", run_id)
+        self._certified_tiers: dict[str, bool] = {}
+        self._cert_manager = ModelCertificationManager(run_id=run_id)
 
     def route(self, request: ReasoningRequest) -> ReasoningResult:
         t0 = time.time()
 
         primary = provider_for_tier(request.capability_tier)
         primary_name = primary.capabilities().provider_name
+
+        # Enforce model certification (E12 Gold-Set gate)
+        if Config.CERTIFICATION_ENABLED and request.capability_tier not in self._certified_tiers:
+            cert_res = self._cert_manager.certify_tier(request.capability_tier, primary)
+            if not cert_res.certified:
+                raise CertificationError(
+                    f"Model certification failed for tier '{request.capability_tier}' on provider '{primary_name}': {cert_res.detail}"
+                )
+            self._certified_tiers[request.capability_tier] = True
+
+
 
         self._enforce_egress(primary.capabilities().requires_egress, primary_name)
 
