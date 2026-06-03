@@ -524,3 +524,20 @@ class TriageResult(BaseModel):
     suggested_action: str = ""
     evidence: str = ""                # screenshot path, diverging claim, etc.
 
+
+class GoldSetItem(BaseModel):
+    prompt: str
+    expected_contains: list[str] = Field(default_factory=list)
+
+
+class GoldSet(BaseModel):
+    items: list[GoldSetItem] = Field(default_factory=list)
+
+
+class CertResult(BaseModel):
+    certified: bool
+    faithfulness_score: float
+    detail: str = ""
+    schema_version: int = SCHEMA_VERSION
+
+

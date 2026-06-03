@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Settings, 
   Cpu, 
@@ -12,7 +12,10 @@ import {
   CheckCircle,
   Database,
   Shield,
-  Activity
+  Activity,
+  Layers,
+  Unlock,
+  Coins
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
 
@@ -23,7 +26,25 @@ export default function SettingsScreen() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [apiSecret, setApiSecret] = useState('');
 
+  // Added Redesign Configurations
+  const [tier, setTier] = useState<'small' | 'deep' | 'vision' | 'ml'>('deep');
+  const [egress, setEgress] = useState<'none' | 'internal' | 'any'>('internal');
+  const [budget, setBudget] = useState(15.00);
+  const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable');
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    // Load local storage values if present
+    const savedDensity = localStorage.getItem('[copilot] density');
+    if (savedDensity === 'compact') setDensity('compact');
+    
+    const savedMotion = localStorage.getItem('[copilot] reduced-motion');
+    if (savedMotion === 'true') setReducedMotion(true);
+  }, []);
+
   const handleSave = () => {
+    localStorage.setItem('[copilot] density', density);
+    localStorage.setItem('[copilot] reduced-motion', reducedMotion ? 'true' : 'false');
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 2000);
   };
@@ -39,7 +60,7 @@ export default function SettingsScreen() {
             System Settings & Credentials
           </h1>
           <p className="text-sm text-text-muted mt-1 leading-relaxed">
-            Configure the underlying Ollama local runners, prompt budgets, and API telemetry relays.
+            Configure target copilot execution settings, egress network policies, and user preferences.
           </p>
         </div>
       </div>
@@ -91,7 +112,79 @@ export default function SettingsScreen() {
               </div>
             </div>
 
-            {/* Prompt Budgets Slider */}
+            {/* Substrate Capability Tiers */}
+            <div className="space-y-4 pt-4 border-t border-white/5">
+              <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
+                <Layers className="w-4 h-4 text-glow-blue" />
+                <span>Substrate Router Capability Tier</span>
+              </h2>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs font-mono">
+                {(['small', 'deep', 'vision', 'ml'] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setTier(t)}
+                    className={`py-2 px-3 rounded-xl border transition cursor-pointer uppercase ${
+                      tier === t
+                        ? 'bg-glow-blue/10 border-glow-blue text-glow-bright font-bold'
+                        : 'bg-black/25 border-white/5 text-[#7D8DA1] hover:text-[#E6EDF3]'
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Egress Network Policies */}
+            <div className="space-y-4 pt-4 border-t border-white/5">
+              <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
+                <Unlock className="w-4 h-4 text-glow-blue" />
+                <span>API Sandbox Egress Policy Dial</span>
+              </h2>
+
+              <div className="grid grid-cols-3 gap-2 text-xs font-mono">
+                {(['none', 'internal', 'any'] as const).map((e) => (
+                  <button
+                    key={e}
+                    onClick={() => setEgress(e)}
+                    className={`py-2 px-3 rounded-xl border transition cursor-pointer uppercase ${
+                      egress === e
+                        ? 'bg-glow-blue/10 border-glow-blue text-glow-bright font-bold'
+                        : 'bg-black/25 border-white/5 text-[#7D8DA1] hover:text-[#E6EDF3]'
+                    }`}
+                  >
+                    {e === 'none' ? 'Sovereign' : e}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* LLM Run Budgets */}
+            <div className="space-y-4 pt-4 border-t border-white/5">
+              <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
+                <Coins className="w-4 h-4 text-glow-blue" />
+                <span>Maximum Run Spend Budget ($)</span>
+              </h2>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center text-xs font-mono text-[#E6EDF3]">
+                  <span>SPEND BUDGET LIMIT:</span>
+                  <span className="text-glow-bright font-bold">${budget.toFixed(2)} USD</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  step="0.5"
+                  value={budget}
+                  onChange={(e) => setBudget(Number(e.target.value))}
+                  className="w-full accent-glow-bright"
+                />
+              </div>
+            </div>
+
+            {/* Thread limit */}
             <div className="space-y-4 pt-4 border-t border-white/5">
               <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4 text-glow-blue" />
@@ -112,31 +205,45 @@ export default function SettingsScreen() {
                   id="threads-range-slider"
                   className="w-full accent-glow-bright"
                 />
-                <p className="text-[10px] text-text-muted font-mono leading-normal">
-                  ⚠️ High parallel counts utilize significant local GPU memory. Trims runtimes but may bottleneck AST tracing speeds.
-                </p>
               </div>
             </div>
 
-            {/* Log Density Select input */}
-            <div className="space-y-3 pt-4 border-t border-white/5">
-              <label htmlFor="log-density-select" className="text-xs font-semibold font-mono uppercase tracking-wider text-text-muted block">Diagnostic log density</label>
-              <select
-                id="log-density-select"
-                value={logDensity}
-                onChange={(e) => setLogDensity(e.target.value)}
-                className="w-full bg-black/30 text-text-primary text-xs p-3 rounded-xl border border-white/10 focus:outline-none focus:border-glow-blue transition"
-              >
-                <option value="compact">COMPACT (Exceptions only)</option>
-                <option value="verbose">VERBOSE (Full trace AST checks & API codes)</option>
-                <option value="silent">SILENT (Zero telemetry output writes)</option>
-              </select>
+            {/* Accessibility & UI Densities */}
+            <div className="space-y-4 pt-4 border-t border-white/5">
+              <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
+                <Activity className="w-4 h-4 text-glow-blue" />
+                <span>Interface & Accessibility Settings</span>
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                {/* Density Switch */}
+                <div className="flex items-center justify-between p-3 rounded-xl bg-black/25 border border-white/5">
+                  <span className="text-[#7D8DA1]">Compact View Mode</span>
+                  <input
+                    type="checkbox"
+                    checked={density === 'compact'}
+                    onChange={(e) => setDensity(e.target.checked ? 'compact' : 'comfortable')}
+                    className="w-4 h-4 accent-glow-bright"
+                  />
+                </div>
+
+                {/* Reduced Motion Switch */}
+                <div className="flex items-center justify-between p-3 rounded-xl bg-black/25 border border-white/5">
+                  <span className="text-[#7D8DA1]">Reduce Motion Animations</span>
+                  <input
+                    type="checkbox"
+                    checked={reducedMotion}
+                    onChange={(e) => setReducedMotion(e.target.checked)}
+                    className="w-4 h-4 accent-glow-bright"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Save Buttons */}
             <div className="pt-4 border-t border-white/5 flex items-center justify-end gap-3 shrink-0">
               {saveSuccess && (
-                <span className="text-xs text-success-custom font-mono flex items-center gap-1 animate-fadeIn">
+                <span className="text-xs text-[#3FB950] font-mono flex items-center gap-1 animate-fadeIn">
                   <CheckCircle className="w-4 h-4" />
                   Configurations saved successfully!
                 </span>
@@ -172,7 +279,7 @@ export default function SettingsScreen() {
                 onChange={(e) => setApiSecret(e.target.value)}
                 className="w-full bg-black/30 text-text-primary p-2.5 rounded-xl border border-white/10 focus:outline-none focus:border-glow-blue text-xs font-mono"
               />
-              <span className="block text-[9px] text-text-muted leading-relaxed font-mono">
+              <span className="block text-[9px] text-[#7D8DA1]/60 leading-relaxed font-mono">
                 🔒 Environment credentials are piped relative to target workspace containers only. They are never transmitted or processed on public domains.
               </span>
             </div>

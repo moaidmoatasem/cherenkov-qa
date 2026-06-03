@@ -45,6 +45,23 @@ class InferenceClient(abc.ABC):
         """For the GENERATE stage: we want raw TS code, not JSON."""
         pass
 
+    def complete_vision(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        image_data: str,
+        model: str,
+        *,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> str:
+        """Vision-Language: send an image and get a text description.
+
+        `image_data` is a base64-encoded image string (no data URI prefix).
+        Default implementation raises NotImplementedError.
+        """
+        raise NotImplementedError("Vision not supported by this provider")
+
 
 class CachedInferenceClient(InferenceClient):
     """Transparent wrapper that adds response caching + cost/latency accounting
@@ -138,6 +155,37 @@ class CachedInferenceClient(InferenceClient):
     @property
     def wrapped_client(self) -> InferenceClient:
         return self._client
+
+    def complete_vision(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        image_data: str,
+        model: str,
+        *,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> str:
+        cached = self._cache.get(model, system_prompt, user_prompt + image_data[:80])
+        if cached is not None:
+            self._accountant.record(model=model, duration_ms=0, tokens=0, cache_hit=True)
+            return str(cached)
+
+        t0 = time.time()
+        result = self._client.complete_vision(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            image_data=image_data,
+            model=model,
+            temperature=temperature,
+            run_id=run_id,
+        )
+        dt_ms = int((time.time() - t0) * 1000)
+
+        self._cache.set(model, system_prompt, user_prompt + image_data[:80], result)
+        self._accountant.record_code(model=model, duration_ms=dt_ms, output=result, cache_hit=False)
+
+        return result
 
     def chat(
         self,

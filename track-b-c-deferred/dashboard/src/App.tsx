@@ -16,7 +16,13 @@ import SettingsScreen from './components/SettingsScreen';
 import UiKitScreen from './components/UiKitScreen';
 import CommandPalette from './components/CommandPalette';
 import DivergencesScreen from './components/DivergencesScreen';
-import { ToastProvider, Drawer, EmptyState } from './components/ui';
+import OverviewScreen from './components/OverviewScreen';
+import TruthMapScreen from './components/TruthMapScreen';
+import AuthorScreen from './components/AuthorScreen';
+import SignalsScreen from './components/SignalsScreen';
+import MemoryScreen from './components/MemoryScreen';
+import GovernanceScreen from './components/GovernanceScreen';
+import { ToastProvider, Drawer } from './components/ui';
 
 import { Project, EndpointRichness } from './types';
 import { INITIAL_PROJECTS } from './mockData';
@@ -224,31 +230,17 @@ export default function App() {
               <UiKitScreen />
             )}
 
-            {/* PLACEHOLDER SCREENS */}
             {activeTab === 'overview' && (
-              <div className="p-6">
-                <EmptyState
-                  title="Overview (Landing)"
-                  description="Coming in this milestone. This screen will display Release Readiness KPIs, top active divergences, and Reflector learning activity feeds."
-                  primaryAction={{
-                    label: 'Run Discovery Scan',
-                    onClick: handleNewRun
-                  }}
-                />
-              </div>
+              <OverviewScreen
+                onNewRun={handleNewRun}
+                onNavigate={setActiveTab}
+              />
             )}
 
             {activeTab === 'truth-map' && (
-              <div className="p-6">
-                <EmptyState
-                  title="Truth Map"
-                  description="Coming in this milestone. This screen will display the endpoint claims graph generated from traffic, specifications, and databases."
-                  primaryAction={{
-                    label: 'Define Claims Mapping',
-                    onClick: () => {}
-                  }}
-                />
-              </div>
+              <TruthMapScreen
+                onNavigate={setActiveTab}
+              />
             )}
 
             {activeTab === 'divergences' && (
@@ -257,67 +249,35 @@ export default function App() {
 
             {activeTab === 'explore' && (
               <div className="p-6">
-                <EmptyState
-                  title="Explore Crawler"
-                  description="Coming in this milestone. This autonomous crawler will perform automated page crawling to discover runtime anomalies and browser logs."
-                  primaryAction={{
-                    label: 'Configure Scope & Targets',
-                    onClick: () => {}
-                  }}
-                />
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-8 max-w-lg mx-auto text-center space-y-4">
+                  <h3 className="font-display font-semibold text-lg text-text-primary">Explore Crawler</h3>
+                  <p className="text-xs text-[#7D8DA1] leading-relaxed">
+                    This autonomous crawler parses specifications to execute live crawling runs, diagnosing anomalies and front-end errors.
+                  </p>
+                  <button
+                    onClick={handleNewRun}
+                    className="px-6 py-2 bg-glow-blue hover:bg-opacity-95 text-slate-950 font-bold text-xs rounded-xl uppercase font-mono tracking-wider transition cursor-pointer"
+                  >
+                    Configure Scope & Target
+                  </button>
+                </div>
               </div>
             )}
 
             {activeTab === 'author' && (
-              <div className="p-6">
-                <EmptyState
-                  title="Author by Intent"
-                  description="Coming in this milestone. This natural language dialog copilot interface will let you write Playwright test scenarios with Mentor idiom recommendations."
-                  primaryAction={{
-                    label: 'Compose Test Scenario',
-                    onClick: () => {}
-                  }}
-                />
-              </div>
+              <AuthorScreen />
             )}
 
             {activeTab === 'signals' && (
-              <div className="p-6">
-                <EmptyState
-                  title="Telemetry Signals"
-                  description="Coming in this milestone. This view will organize test coverage, visual comparison regressions, and API endpoint performance graphs in tabs."
-                  primaryAction={{
-                    label: 'Connect Telemetry Streams',
-                    onClick: () => {}
-                  }}
-                />
-              </div>
+              <SignalsScreen />
             )}
 
             {activeTab === 'governance' && (
-              <div className="p-6">
-                <EmptyState
-                  title="Governance & certification"
-                  description="Coming in this milestone. This board will track model faithfulness certifications, prompt regression checks, and compliance compliance reports."
-                  primaryAction={{
-                    label: 'Download Audit Log',
-                    onClick: () => {}
-                  }}
-                />
-              </div>
+              <GovernanceScreen />
             )}
 
             {activeTab === 'memory' && (
-              <div className="p-6">
-                <EmptyState
-                  title="Reflector Memory & Pairing"
-                  description="Coming in this milestone. This screen will visualize accumulated senior testing idioms and Mentor pairing guidelines for junior developers."
-                  primaryAction={{
-                    label: 'Manage Verdict Memory',
-                    onClick: () => {}
-                  }}
-                />
-              </div>
+              <MemoryScreen />
             )}
           </main>
         </div>

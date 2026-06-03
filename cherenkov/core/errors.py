@@ -51,6 +51,12 @@ class AllProvidersFailedError(CherenkovError):
     code = "ALL_PROVIDERS_FAILED"
 
 
+class CertificationError(CherenkovError):
+    """A model tier failed its certification gold set."""
+    code = "CERTIFICATION_FAILED"
+
+
+
 
 # ── structured logging (JSONL, one event per line) ──────────────────────────
 class StructuredLogger:

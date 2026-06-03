@@ -8,6 +8,7 @@ from cherenkov.core.config import Config
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient
 from cherenkov.ai.openai_client import OpenAIInferenceClient
+from cherenkov.substrate.vlm_provider import VLMProvider
 
 
 class ProviderCapabilities(BaseModel):
@@ -117,6 +118,7 @@ class OpenAIProvider:
 
 
 _PROVIDER_CACHE: dict[str, OllamaProvider | OpenAIProvider] = {}
+_VLM_CACHE: dict[str, VLMProvider] = {}
 
 
 def get_provider(name: str) -> OllamaProvider | OpenAIProvider:
@@ -132,10 +134,26 @@ def get_provider(name: str) -> OllamaProvider | OpenAIProvider:
     return p
 
 
-def provider_for_tier(tier: str) -> OllamaProvider | OpenAIProvider:
+def get_vlm_provider(name: str | None = None) -> VLMProvider:
+    provider_name = name or Config.TIER_VISION_PROVIDER
+    if provider_name in _VLM_CACHE:
+        return _VLM_CACHE[provider_name]
+    if provider_name == "ollama":
+        p = VLMProvider(OllamaInferenceClient())
+    elif provider_name == "openai":
+        p = VLMProvider(OpenAIInferenceClient())
+    else:
+        raise ValueError(f"Unknown VLM provider '{provider_name}'. Expected 'ollama' or 'openai'.")
+    _VLM_CACHE[provider_name] = p
+    return p
+
+
+def provider_for_tier(tier: str) -> OllamaProvider | OpenAIProvider | VLMProvider:
     if tier == "small":
         return get_provider(Config.TIER_SMALL_PROVIDER)
     elif tier == "deep":
         return get_provider(Config.TIER_DEEP_PROVIDER)
+    elif tier == "vision":
+        return get_vlm_provider()
     else:
-        raise ValueError(f"Unknown capability tier '{tier}'. Expected 'small' or 'deep'.")
+        raise ValueError(f"Unknown capability tier '{tier}'. Expected 'small', 'deep', or 'vision'.")

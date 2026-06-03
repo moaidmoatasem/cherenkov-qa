@@ -496,3 +496,102 @@ export const MOCK_DIVERGENCES = [
     confidence: 0.97
   }
 ];
+
+export const MOCK_TRUTH_MAP = [
+  {
+    endpoint: 'POST /pets',
+    hasDivergence: true,
+    claims: [
+      { id: 'c-1', provenance: 'spec' as const, claim: 'Requires property "name" and "photoUrls"' },
+      { id: 'c-2', provenance: 'code' as const, claim: 'Schema validation checks fields on incoming requests' },
+      { id: 'c-3', provenance: 'traffic' as const, claim: 'Observed POST requests lacking photoUrls succeeding with 200 OK' }
+    ]
+  },
+  {
+    endpoint: 'GET /pet/findByStatus',
+    hasDivergence: true,
+    claims: [
+      { id: 'c-4', provenance: 'spec' as const, claim: 'Accepts query parameters enum: [available, pending, sold]' },
+      { id: 'c-5', provenance: 'traffic' as const, claim: 'Observed 200 OK responses with empty list for arbitrary status strings' }
+    ]
+  },
+  {
+    endpoint: 'GET /store/inventory',
+    hasDivergence: true,
+    claims: [
+      { id: 'c-6', provenance: 'spec' as const, claim: 'Returns object mapping status tags to integer counts' },
+      { id: 'c-7', provenance: 'db' as const, claim: 'Querying store inventory shows internal test state leaks' }
+    ]
+  },
+  {
+    endpoint: 'GET /user/login',
+    hasDivergence: true,
+    claims: [
+      { id: 'c-8', provenance: 'spec' as const, claim: 'Spec requires rate limit and expiration headers on 200 OK' },
+      { id: 'c-9', provenance: 'traffic' as const, claim: 'API responses do not contain X-Rate-Limit or X-Expires-After headers' }
+    ]
+  }
+];
+
+export const MOCK_MENTOR_IDIOMS = [
+  { id: 'i-1', title: 'Verify Tenant Isolation', desc: 'Checks that user data cannot be accessed by another authenticated user session.' },
+  { id: 'i-2', title: 'SQL Injection on Search', desc: 'Checks input sanitization on query filters by injecting classic SQL escaping sequences.' },
+  { id: 'i-3', title: 'Rate Limiting / Backoff', desc: 'Ensures that 429 Too Many Requests is triggered under high burst requests.' }
+];
+
+export const MOCK_PILOT_STEPS = [
+  { step: '1. Navigating to Petstore UI checkout page', status: 'done' as const },
+  { step: '2. Attempting to locate Checkout Action button', status: 'done' as const },
+  { step: '3. Checking for overlapping promotional banners', status: 'running' as const },
+  { step: '4. Clicking Checkout and verifying coupon discount application', status: 'pending' as const }
+];
+
+export const MOCK_SIGNALS = {
+  performance: [
+    { time: '10:00', latency: 120, baseline: 110, anomaly: false },
+    { time: '10:05', latency: 130, baseline: 112, anomaly: false },
+    { time: '10:10', latency: 250, baseline: 115, anomaly: true },
+    { time: '10:15', latency: 140, baseline: 118, anomaly: false }
+  ],
+  visual: [
+    { id: 'v-1', name: 'Checkout Form Desktop', difference: '3.4% pixel shift', status: 'warning' as const },
+    { id: 'v-2', name: 'Header Navigation Bar', difference: '0.0% match', status: 'success' as const }
+  ],
+  coverage: [
+    { path: '/pets', sdet: 95, cherenkov: 100 },
+    { path: '/store/order', sdet: 70, cherenkov: 85 },
+    { path: '/user/login', sdet: 80, cherenkov: 95 }
+  ]
+};
+
+export const MOCK_IDIOMS = [
+  { id: 'idm-1', text: 'Confirm CORS policy is strictly defined for API origins', count: 14, decay: 'Active' },
+  { id: 'idm-2', text: 'Validate OAuth state token integrity validation', count: 9, decay: 'Slightly Decayed' }
+];
+
+export const MOCK_PAIRING = [
+  { context: 'OAuth redirect', explanation: 'A senior developer checks that redirect URIs are strictly validated and that the auth flow utilizes PKCE validation to prevent authorization code interception attacks.' }
+];
+
+export const MOCK_GOVERNANCE = {
+  defectEscapeRate: 1.2,
+  falsePositiveRate: 0.05,
+  modelCertification: [
+    { tier: 'Small (Fast)', passRate: 98, status: 'success' as const },
+    { tier: 'Deep (Precise)', passRate: 99, status: 'success' as const },
+    { tier: 'Vision (UI)', passRate: 95, status: 'success' as const }
+  ],
+  traceability: [
+    { artifact: 'test-1.spec.ts', prompt: 'Generate standard CRUD pets assertions', model: 'qwen2.5-coder:7b', claimsVerified: 3 }
+  ]
+};
+
+export const MOCK_OVERVIEW = {
+  releaseReadiness: 94,
+  falsePositiveRate: 1.5,
+  recentLearnings: [
+    { id: 'l-1', text: 'Stopped re-surfacing 4 known-noise findings on POST /user/login redirects.' },
+    { id: 'l-2', text: 'Accrued 3 senior testing idioms regarding cross-tenant resource verification.' }
+  ]
+};
+

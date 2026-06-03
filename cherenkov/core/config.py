@@ -26,6 +26,9 @@ class Config:
     TIER_DEEP_PROVIDER: str = os.getenv("CHERENKOV_TIER_DEEP_PROVIDER", "ollama")
     TIER_DEEP_MODEL: str = os.getenv("CHERENKOV_TIER_DEEP_MODEL", "deepseek-r1:8b")
 
+    TIER_VISION_PROVIDER: str = os.getenv("CHERENKOV_TIER_VISION_PROVIDER", "ollama")
+    TIER_VISION_MODEL: str = os.getenv("CHERENKOV_TIER_VISION_MODEL", "qwen2.5-vl:7b")
+
     FALLBACK_ENABLED: bool = os.getenv("CHERENKOV_FALLBACK_ENABLED", "true").lower() == "true"
     FALLBACK_PROVIDER: str = os.getenv("CHERENKOV_FALLBACK_PROVIDER", "openai")
 
@@ -46,6 +49,12 @@ class Config:
     # Autonomy ladder; E10 ships "assisted". E13 grows it (augmented/agentic/predictive).
     COPILOT_AUTONOMY: str = os.getenv("CHERENKOV_COPILOT_AUTONOMY", "assisted")
     EXPLORER_SLOW_MS: int = int(os.getenv("CHERENKOV_EXPLORER_SLOW_MS", "2000"))
+    COPILOT_MENTOR_ENABLED: bool = os.getenv("CHERENKOV_COPILOT_MENTOR_ENABLED", "true").lower() == "true"
+    CERTIFICATION_ENABLED: bool = os.getenv("CHERENKOV_CERTIFICATION_ENABLED", "false").lower() == "true"
+    CERTIFICATION_GOLD_SET_PATH: str = os.getenv("CHERENKOV_CERTIFICATION_GOLD_SET_PATH", ".cherenkov/gold_set.json")
+    CERTIFICATION_MIN_FAITHFULNESS: float = float(os.getenv("CHERENKOV_CERTIFICATION_MIN_FAITHFULNESS", "0.8"))
+
+
 
     @classmethod
     def to_dict(cls) -> dict[str, str | int | bool]:
@@ -61,6 +70,8 @@ class Config:
             "TIER_SMALL_MODEL": cls.TIER_SMALL_MODEL,
             "TIER_DEEP_PROVIDER": cls.TIER_DEEP_PROVIDER,
             "TIER_DEEP_MODEL": cls.TIER_DEEP_MODEL,
+            "TIER_VISION_PROVIDER": cls.TIER_VISION_PROVIDER,
+            "TIER_VISION_MODEL": cls.TIER_VISION_MODEL,
             "FALLBACK_ENABLED": cls.FALLBACK_ENABLED,
             "FALLBACK_PROVIDER": cls.FALLBACK_PROVIDER,
             "OPENAI_MODEL": cls.OPENAI_MODEL,
@@ -71,6 +82,10 @@ class Config:
             "CORPUS_PATH": cls.CORPUS_PATH,
             "COPILOT_AUTONOMY": cls.COPILOT_AUTONOMY,
             "EXPLORER_SLOW_MS": cls.EXPLORER_SLOW_MS,
+            "COPILOT_MENTOR_ENABLED": cls.COPILOT_MENTOR_ENABLED,
+            "CERTIFICATION_ENABLED": cls.CERTIFICATION_ENABLED,
+            "CERTIFICATION_GOLD_SET_PATH": cls.CERTIFICATION_GOLD_SET_PATH,
+            "CERTIFICATION_MIN_FAITHFULNESS": cls.CERTIFICATION_MIN_FAITHFULNESS,
         }
 
     @classmethod
