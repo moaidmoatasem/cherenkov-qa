@@ -1,0 +1,31 @@
+name: "Epic"
+description: "A milestone-sized body of work decomposed into tasks."
+title: "EPIC Exx · <theme>"
+labels: ["type:epic"]
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome (what becomes true when this is done)
+    validations:
+      required: true
+  - type: input
+    id: grows
+    attributes:
+      label: Primary module(s) it scales up
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Task breakdown (will become child issues)
+      placeholder: "- [ ] Exx-1 …\n- [ ] Exx-2 …"
+    validations:
+      required: true
+  - type: input
+    id: exit
+    attributes:
+      label: Exit / kill-criteria (how we know it worked)
+  - type: textarea
+    id: gating
+    attributes:
+      label: Gating
+      placeholder: "BLOCKED by #GATE (Track A validation). Captured for visibility only."

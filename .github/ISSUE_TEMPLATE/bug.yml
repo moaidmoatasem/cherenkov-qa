@@ -1,0 +1,27 @@
+name: "Bug"
+description: "Something is broken in Track A."
+title: "bug: <summary>"
+labels: ["type:bug", "status:ready"]
+body:
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce (with command + raw output)
+    validations:
+      required: true
+  - type: input
+    id: scope
+    attributes:
+      label: Affected module
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Raw evidence (terminal/log)
+    validations:
+      required: true

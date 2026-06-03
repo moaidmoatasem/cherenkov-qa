@@ -1,0 +1,41 @@
+name: "Task"
+description: "A single, shippable unit of work (one PR)."
+title: "Exx-y: <concise task>"
+labels: ["type:task", "status:ready"]
+body:
+  - type: input
+    id: epic
+    attributes:
+      label: Parent epic / milestone
+      placeholder: "EPIC E7 · Reflector  —  Milestone M2"
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal (one sentence)
+    validations:
+      required: true
+  - type: input
+    id: grows
+    attributes:
+      label: Module it grows (real path)
+      placeholder: "cherenkov/stages/perf/perf_stage.py"
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria (the exit / kill-criteria)
+      description: Concrete, testable. The PR must show raw evidence meeting these.
+      placeholder: "- [ ] …\n- [ ] unit + smoke green\n- [ ] docs updated"
+    validations:
+      required: true
+  - type: textarea
+    id: deps
+    attributes:
+      label: Dependencies / blocked-by
+      placeholder: "Blocked by #GATE (Track A validation) — see docs/process/GITHUB_PM.md §0"
+  - type: checkboxes
+    id: invariants
+    attributes:
+      label: Invariant check
+      options:
+        - label: Respects design invariants (D7, anti-lock-in, suggest-only, spec-derived, model-agnostic)
+        - label: Does not import from track-b-c-deferred/
