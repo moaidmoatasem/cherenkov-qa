@@ -172,6 +172,66 @@ Tune load profile:
 
 ---
 
+### Command 8: `map` (E11 — claims mapping)
+Generates the static truth graph map connecting specifications with code and active traces.
+
+#### Command Help:
+```bash
+./bin/cherenkov map --help
+```
+
+#### Standard Usage:
+```bash
+./bin/cherenkov map
+```
+
+---
+
+### Command 9: `daemon` (background observability daemon)
+Starts the background websocket server monitoring traffic and coordination logic.
+
+#### Command Help:
+```bash
+./bin/cherenkov daemon --help
+```
+
+#### Standard Usage:
+```bash
+./bin/cherenkov daemon --port 8080
+```
+
+---
+
+### Command 10: `explore` (autonomous exploration crawler)
+Crawls targets to inspect anomalies, console/network exceptions, and visual baselines.
+
+#### Command Help:
+```bash
+./bin/cherenkov explore --help
+```
+
+#### Standard Usage:
+```bash
+./bin/cherenkov explore --target http://localhost:3000
+```
+
+---
+
+### Command 11: `author` (intent-driven test generator)
+Enables NL-to-Playwright E2E interactive testing loops.
+
+#### Command Help:
+```bash
+./bin/cherenkov author --help
+```
+
+#### Standard Usage:
+```bash
+./bin/cherenkov author --intent "Register new test user"
+```
+
+---
+
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client. 
 
