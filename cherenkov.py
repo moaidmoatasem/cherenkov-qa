@@ -161,6 +161,29 @@ def get_parser() -> argparse.ArgumentParser:
     author_parser.add_argument('--output', '-o', required=True, help='Directory to write the .spec.ts test into')
     author_parser.add_argument('--target', '-t', default='', help='Base URL the flow runs against')
 
+    # ── Epoch 12: Governance KPI panel (C12 #127) ─────────────────────────
+    governance_parser = subparsers.add_parser('governance', help='E12 Governance KPI panel (escape/FP/coverage/maintenance)')
+    governance_parser.add_argument('--json', dest='json_out', action='store_true',
+                                   help='Emit machine-readable JSON report')
+    governance_parser.add_argument('--trend', '-t', metavar='METRIC', default=None,
+                                   help='Show trend for a metric (health_score, escape_rate, coverage, etc.)')
+
+    # ── Epoch 12: Certification gate (C11 #126) ────────────────────────────
+    certify_parser = subparsers.add_parser('certify', help='E12 Gold-Set + RAG-Triad model tier certification')
+    certify_parser.add_argument('--tier', '-T', default='small', choices=['small', 'deep', 'vision'],
+                                help='Capability tier to certify (default: small)')
+    certify_parser.add_argument('--rag-report', '-r', action='store_true',
+                                help='Show per-item RAG-Triad metrics')
+
+    # ── E13: Autonomy profile (C14 #129) & Mentor (C13 #128) ──────────────
+    profile_parser = subparsers.add_parser('profile', help='E13 Autonomy-ladder profile (assisted/augmented/agentic/predictive)')
+    profile_parser.add_argument('action', nargs='?', default='show',
+                                choices=['show', 'set'],
+                                help='Show current profile or set a new one (default: show)')
+    profile_parser.add_argument('--level', '-l', default=None,
+                                choices=['assisted', 'augmented', 'agentic', 'predictive'],
+                                help='Autonomy level to set')
+
     # ── HITL terminal queue (A1 #109) ─────────────────────────────────────────
     hitl_parser = subparsers.add_parser('hitl', help='Human-in-the-loop review queue (list/show/approve/reject)')
     hitl_sub = hitl_parser.add_subparsers(dest='hitl_command', required=True)
@@ -276,6 +299,20 @@ def main():
     elif args.command == 'author':
         from cherenkov.stages.copilot_cmd import run_author
         sys.exit(run_author(args.intent, output=args.output, target=args.target))
+
+    # ── Epoch 12 subcommands ────────────────────────────────────────────────
+    elif args.command == 'governance':
+        from cherenkov.stages.governance_cmd import run_governance
+        sys.exit(run_governance(json_out=args.json_out, trend=args.trend))
+
+    elif args.command == 'certify':
+        from cherenkov.stages.certify_cmd import run_certify
+        sys.exit(run_certify(tier=args.tier, rag_report=args.rag_report))
+
+    # ── E13 subcommands ────────────────────────────────────────────────────
+    elif args.command == 'profile':
+        from cherenkov.stages.profile_cmd import run_profile
+        sys.exit(run_profile(action=args.action, level=args.level))
 
     # ── HITL terminal queue (A1 #109) ─────────────────────────────────────────
     elif args.command == 'hitl':

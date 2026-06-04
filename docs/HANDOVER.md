@@ -126,6 +126,8 @@ This gate has passed. The owner demoed the tool to 5 QA professionals with 4/5 Y
   - **A4 (#112)**: Implemented `cherenkov/validate/` Validation Gate criteria and evidence collection contracts.
   - **A5 (#115)**: Created the 5-QA validation runbook and standalone scripts/collect_evidence.py script.
   - **A6/A7 (#113, #114)**: Wired Reflector reranking into proof_run loop & created E7 behavioral exit demo proving fingerprint-based suppression.
+  - **Epoch 10 Explorer & Copilot (Issues #123-#125)**: Created the `smoke_test_copilot_e10.py` exit demo verifying C8 (Explorer crawl/hypotheses), C9 (NL intent to ejectable role-locator Playwright TS), and C10 (SecondPairOfEyes pre-session digest & triage UX).
+
 
 
 ### 6.2 — THE REAL FINISH LINE (owner task, not an agent)
