@@ -131,7 +131,7 @@ class OllamaInferenceClient(InferenceClient):
                     "stream": False,
                     "options": {"temperature": temperature},
                 },
-                timeout=300,
+                timeout=Config.OLLAMA_TIMEOUT,
             )
             resp.raise_for_status()
             last_raw = resp.json().get("response", "")
@@ -173,7 +173,7 @@ class OllamaInferenceClient(InferenceClient):
                 "stream": False,
                 "options": {"temperature": temperature},
             },
-            timeout=300,
+            timeout=Config.OLLAMA_TIMEOUT,
         )
         resp.raise_for_status()
         text = resp.json().get("response", "").strip()
@@ -205,7 +205,7 @@ class OllamaInferenceClient(InferenceClient):
                 "stream": False,
                 "options": {"temperature": temperature},
             },
-            timeout=300,
+            timeout=Config.OLLAMA_TIMEOUT,
         )
         resp.raise_for_status()
         text = resp.json().get("response", "").strip()
@@ -233,7 +233,7 @@ class OllamaInferenceClient(InferenceClient):
                 "stream": False,
                 "options": {"temperature": temperature},
             },
-            timeout=300,
+            timeout=Config.OLLAMA_TIMEOUT,
         )
         resp.raise_for_status()
         text = resp.json().get("message", {}).get("content", "").strip()
