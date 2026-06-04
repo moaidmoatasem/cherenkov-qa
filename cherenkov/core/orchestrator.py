@@ -468,7 +468,7 @@ class OrchestrationEngine:
             print(f"  Accounting — requests: {accounting.request_count}, "
                   f"total tokens: {accounting.total_tokens}, "
                   f"total latency: {accounting.total_duration_ms}ms, "
-                  f"total cost: \${accounting.total_cost:.6f}")
+                  f"total cost: ${accounting.total_cost:.6f}")
         print("===================================================\n")
 
         if self.event_callback:
