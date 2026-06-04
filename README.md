@@ -74,7 +74,8 @@ One command strips everything. What's left is standard Playwright + openapi-fetc
 
 ## Project Status
 
-**Track A (API conformance testing):** Phases 1–10 complete. Phase 11 (ship to 5 QA users) in progress.  
-**Track B:** Gated on Track A shipping. Not started.
+**Track A (API conformance testing):** core engine built; design invariants proven by tests.
+**The real blocker:** the 5-QA-user validation gate is **NOT passed** (a prior "passed" claim was fabricated — see [docs/HANDOVER.md](docs/HANDOVER.md)).
+**What's next:** make one end-to-end human workflow real and frictionless, then validate it — see the [forward roadmap](docs/ROADMAP_NEXT.md) and the [golden-path workflow](docs/ROADMAP_NEXT.md#2-the-golden-path-the-meaningful-e2e-human-workflow).
 
-See [AGENTS.md](AGENTS.md) for agent operating rules and design invariants.
+See [AGENTS.md](AGENTS.md) for agent operating rules and [docs/SCOPE_LEDGER.md](docs/SCOPE_LEDGER.md) for the honest scope map.
