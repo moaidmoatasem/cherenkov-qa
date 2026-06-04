@@ -120,6 +120,13 @@ This gate has passed. The owner demoed the tool to 5 QA professionals with 4/5 Y
 
 - **Epoch 1 (L0 Substrate Router) Complete**: Implemented core SPI for model providers, integrated OpenAI alongside Ollama, developed routing logic matching capability tiers with egress policies, created response caching, cost/latency accounting, and enforced sovereignty dials (`none`/`internal`/`any`). Fully covered by unit tests and smoke tests.
 
+- **Phase A Validation Gate Complete (Issues #109-#115)**:
+  - **A1/A2 (#109, #110)**: Built `cherenkov hitl list|show|approve|reject` terminal CLI & REVIEW stage bridge to enqueue Verdict.HITL items.
+  - **A3 (#111)**: Documented HITL flow in GETTING_STARTED.md & CLI_DEMO.md.
+  - **A4 (#112)**: Implemented `cherenkov/validate/` Validation Gate criteria and evidence collection contracts.
+  - **A5 (#115)**: Created the 5-QA validation runbook and standalone scripts/collect_evidence.py script.
+  - **A6/A7 (#113, #114)**: Wired Reflector reranking into proof_run loop & created E7 behavioral exit demo proving fingerprint-based suppression.
+
 
 ### 6.2 — THE REAL FINISH LINE (owner task, not an agent)
 Recruit 5 QA people. Run the demo from [QA_DEMO_KIT.md](QA_DEMO_KIT.md).
