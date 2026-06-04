@@ -476,6 +476,54 @@ Valid levels: `assisted`, `augmented`, `agentic`, `predictive`.
 
 ---
 
+#### `mcp` — X4 MCP server (`mcp serve`, Model Context Protocol)
+
+Exposes CHERENKOV over the [Model Context Protocol](https://modelcontextprotocol.io)
+(JSON-RPC 2.0 over stdio) so Claude Desktop, Cursor, and other MCP clients can read
+the HITL queue and run the Validation Gate without leaving their IDE.
+
+```bash
+# Start the MCP server (blocks until stdin closes)
+./bin/cherenkov mcp serve
+```
+
+**Resources exposed (read-only):**
+
+| URI | Description |
+|-----|-------------|
+| `cherenkov://hitl/pending` | Pending HITL items (`hitl/v1` envelope) |
+| `cherenkov://hitl/item/{id}` | Single HITL item detail |
+| `cherenkov://validate/latest` | Latest `validate/v1` ValidationReport |
+| `cherenkov://validate/evidence` | Evidence directory listing |
+
+**Tools exposed:**
+
+| Tool | Description |
+|------|-------------|
+| `hitl_list` | List HITL queue items by status |
+| `hitl_approve` | Approve a pending item (atomic SQL gatekeeper) |
+| `hitl_reject` | Reject a pending item (atomic SQL gatekeeper) |
+| `validate_run_gate` | Run the Validation Gate in report-only mode (suggest-only, D7 honored) |
+
+**Claude Desktop config** (add to `claude_desktop_config.json → mcpServers`):
+
+```json
+{
+  "cherenkov": {
+    "command": "python3",
+    "args": ["/home/you/cherenkov-qa/cherenkov.py", "mcp", "serve"],
+    "cwd": "/home/you/cherenkov-qa"
+  }
+}
+```
+
+> **Trust model:** MCP peers are untrusted. All tool arguments are validated with
+> Pydantic before reaching the HITL queue. Writes go through the existing atomic SQL
+> gatekeeper — the same path as `hitl approve` in the terminal. The server never
+> reads secrets or env vars from client input.
+
+---
+
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client. 
 
