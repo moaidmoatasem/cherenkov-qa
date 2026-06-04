@@ -153,6 +153,23 @@ class HitlQueue:
         con.close()
         return env
 
+    def optimistic_lock(self, item_id: str, reviewer: str) -> bool:
+        """Try to acquire an optimistic lock on a pending item.
+
+        Sets the item's approved_by to the reviewer as a lock marker.
+        Returns True if lock acquired, False if already locked/resolved.
+        """
+        con = self._connect()
+        cur = con.execute(
+            "UPDATE hitl_queue SET approved_by=?, approved_at=? "
+            "WHERE id=? AND status='pending' AND approved_by IS NULL",
+            (reviewer, _now(), item_id),
+        )
+        locked = cur.rowcount == 1
+        con.commit()
+        con.close()
+        return locked
+
     def approve(self, item_id: str, actor: str, source: str = "cli") -> HitlEnvelope:
         return self._resolve("hitl.approve", item_id, actor, source,
                              HitlStatus.APPROVED, "", ())

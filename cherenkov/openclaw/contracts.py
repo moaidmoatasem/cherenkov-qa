@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 
@@ -20,3 +20,11 @@ class TriggerRequest(BaseModel):
     method: str | None = None
     reason: str = "manual_trigger"
     params: dict[str, Any] = Field(default_factory=dict)
+
+
+class ClassificationRequest(BaseModel):
+    """Tier-2 healing feedback classification request."""
+    item_id: str
+    classification: Literal["regression", "intended", "ignore"]
+    actor: str = "unknown"
+    detail: str = ""
