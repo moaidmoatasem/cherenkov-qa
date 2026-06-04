@@ -117,7 +117,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt httpx
 
       - name: Run E10 copilot unit tests
         run: PYTHONPATH=. python3 -m unittest test_copilot_e10.py
@@ -186,7 +186,16 @@ jobs:
           fi
 
       - name: Run eject smoke test (E2E Playwright)
-        run: PYTHONPATH=. python3 smoke_test_eject.py
+        # Hosted runners advertise IPv6 routes they can't actually reach, so
+        # npm's registry fetch inside the ejected suite died with
+        # `connect ENETUNREACH <ipv6>:443`. Force IPv4-first DNS resolution
+        # for every node/npm subprocess spawned during the eject + install.
+        env:
+          NODE_OPTIONS: --dns-result-order=ipv4first
+        run: |
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          PYTHONPATH=. python3 smoke_test_eject.py
 
   # Provisions k6 so smoke_test_perf.py can run a real load-test pass
   # (previously the k6-missing path was tolerated as HITL/skip).
@@ -206,13 +215,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt fastapi uvicorn
 
-      # Install k6 from the official Grafana/k6 apt repository
+      # Install k6 from the official Grafana/k6 apt repository.
+      # Fetch the signing key over HTTPS and dearmor it directly — the previous
+      # `gpg --keyserver` approach failed on hosted runners with
+      # `keyserver receive failed: No dirmngr` (no dirmngr / no ~/.gnupg).
       - name: Install k6
         run: |
-          sudo gpg --no-default-keyring \
-               --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
-               --keyserver hkp://keyserver.ubuntu.com:80 \
-               --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          sudo apt-get update
+          sudo apt-get install -y curl gnupg
+          curl -fsSL https://dl.k6.io/key.gpg \
+            | sudo gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg
           echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
                | sudo tee /etc/apt/sources.list.d/k6.list
           sudo apt-get update

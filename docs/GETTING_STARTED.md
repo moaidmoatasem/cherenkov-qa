@@ -535,6 +535,26 @@ the HITL queue and run the Validation Gate without leaving their IDE.
 
 ---
 
+#### `review` — Horizon V review UI server
+
+Serves the prebuilt web review surface (the HITL/validation review UI) over HTTP
+so verdicts can be inspected and actioned from the browser instead of the terminal.
+
+```bash
+# Serve the prebuilt web UI on the default port (8000)
+./bin/cherenkov review --web
+
+# Bind a custom port
+./bin/cherenkov review --port 8080
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--web`, `-w` | `True` | Serve the prebuilt web UI |
+| `--port`, `-p` | `8000` | Port to bind |
+
+---
+
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client. 
 
