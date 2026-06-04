@@ -1,0 +1,5 @@
+# CHERENKOV core Python dependencies (CI + local dev).
+# Single source of truth for the deps every CI job needs — referenced via
+# `pip install -r requirements.txt` so the version set is defined in one place.
+pydantic==2.7.1
+requests
