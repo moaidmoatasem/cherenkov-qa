@@ -91,7 +91,17 @@ def run_dashboard() -> int:
 
     Returns exit code (0 = success).
     """
+    from cherenkov.governance.kpi import GovernanceCollector
+
     print(render_dashboard())
+
+    try:
+        collector = GovernanceCollector(run_id="dashboard")
+        report = collector.collect()
+        print("\n" + report.render())
+    except Exception as e:
+        print(f"\n  (Governance KPIs unavailable: {e})")
+
     print("\n  Note: Dashboard uses mock data when Truth Model is not loaded.")
     print("  Run `cherenkov map` to build from real sources.")
     return 0
