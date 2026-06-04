@@ -1,6 +1,7 @@
 # CHERENKOV — Consolidated Delivery Plan (across-the-board status of record)
 
-**Status:** Active plan of record · **Date:** 2026-06-04
+**Status:** ✅ Delivered (E0–E13 shipped, 5-QA gate passed 4/5) · **Date:** 2026-06-04
+**Live plan has moved on:** see [`10_HORIZON_2.md`](10_HORIZON_2.md) and EPIC #147. This file is kept as the record of how the gate was reached.
 **Supersedes** the open-question framing in [`07_MASTER_PLAN.md`](07_MASTER_PLAN.md) §9 (kept as the strategic rationale).
 **Purpose:** one document that reconciles **code reality ↔ GitHub ↔ sequencing** so any agent or human can pick up the next shippable slice without re-deriving context.
 
@@ -145,8 +146,27 @@ Mapped to existing milestones + labels. `agent-ready` = self-contained, an agent
 - [x] Code reality reconciled against `main` (§1).
 - [x] Critical path sequenced by the Validation Gate (§2).
 - [x] Open backlog defined and mapped to milestones/labels (§3).
-- [ ] Backlog opened as GitHub issues (Phase-A `agent-ready`, Phase-C `blocked:validation-gate`).
-- [ ] HITL backend PR opened + merged.
-- [ ] This doc cross-linked from `02_ROADMAP.md` and `07_MASTER_PLAN.md`.
+- [x] Backlog opened as GitHub issues (#109–#129) and **all shipped**.
+- [x] HITL backend PR opened + merged (#136).
+- [x] Validation Gate passed (4/5 QA yeses; see HANDOVER §5).
+- [ ] Cross-link finalised + older roadmap docs reconciled → tracked as #155.
+
+---
+
+## 7. What's next — Horizon 2
+
+The vision (E0–E13) is built and the gate is passed, so this plan is complete.
+The live roadmap is now **[`10_HORIZON_2.md`](10_HORIZON_2.md)** (EPIC #147), which
+turns a proven prototype into a tool a team uses daily, across three bets:
+
+1. **Prove it in the wild** — divergences on real production APIs, not just the
+   Petstore reference (#148).
+2. **Finish the voice** — OpenClaw Tier-2/3: approve HITL from chat, healing
+   notifications + feedback loop, read-only AI triage (#149, #150, #151).
+3. **Make it boring** — federation cross-check (#152), auditable gate evidence
+   (#153), a week of unattended dogfooding (#154), and one honest roadmap
+   reconciliation (#155).
+
+Still-open cross-cutting from the gate era stays under X1–X4 (#130–#133).
 </content>
 </invoke>
