@@ -63,3 +63,64 @@ jobs:
 
       - name: Run polish smoke test
         run: PYTHONPATH=. python3 smoke_test_polish.py
+
+  certification-gate:
+    name: E12 Certification Gate (C11)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pydantic==2.7.1 requests
+
+      - name: Run certification smoke test
+        run: PYTHONPATH=. python3 smoke_test_certification.py
+
+  governance-kpi:
+    name: E12 Governance KPI (C12)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pydantic==2.7.1 requests
+
+      - name: Run governance smoke test
+        run: PYTHONPATH=. python3 smoke_test_governance.py
+
+  copilot-e10:
+    name: E10 Explorer + Copilot (C8-C10)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pydantic==2.7.1 requests
+
+      - name: Run E10 copilot unit tests
+        run: PYTHONPATH=. python3 -m unittest test_copilot_e10.py
+
+      - name: Run E10 copilot smoke test
+        run: PYTHONPATH=. python3 smoke_test_copilot_e10.py
+
