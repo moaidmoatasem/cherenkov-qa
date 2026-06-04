@@ -206,5 +206,69 @@ class TestOpenAIInferenceClient(unittest.TestCase):
             )
 
 
+class TestClientMemoization(unittest.TestCase):
+    """get_client() must reuse one client per provider so cache/accounting persist."""
+
+    def setUp(self):
+        import cherenkov.ai as ai_mod
+        ai_mod.reset_client()
+
+    def tearDown(self):
+        import cherenkov.ai as ai_mod
+        ai_mod.reset_client()
+
+    def test_get_client_is_memoized_per_provider(self):
+        """Repeated get_client() calls with the same provider return the SAME object."""
+        from cherenkov.ai import get_client
+        from cherenkov.core.config import Config
+
+        original = Config.PROVIDER
+        try:
+            Config.PROVIDER = "ollama"
+            first = get_client()
+            second = get_client()
+            self.assertIs(first, second,
+                          "get_client() rebuilt the client — cache/accounting would reset")
+        finally:
+            Config.PROVIDER = original
+
+    def test_provider_change_rebuilds(self):
+        """Switching Config.PROVIDER yields a different client for the new provider."""
+        from cherenkov.ai import get_client
+        from cherenkov.core.config import Config
+
+        original = Config.PROVIDER
+        try:
+            Config.PROVIDER = "ollama"
+            ollama_client = get_client()
+            Config.PROVIDER = "openai"
+            openai_client = get_client()
+            self.assertIsNot(ollama_client, openai_client)
+            wrapped = getattr(openai_client, "wrapped_client", openai_client)
+            self.assertIsInstance(wrapped, OpenAIInferenceClient)
+        finally:
+            Config.PROVIDER = original
+
+    def test_set_and_reset_client(self):
+        """set_client() injects; reset_client() clears so get_client() rebuilds."""
+        import cherenkov.ai as ai_mod
+        from cherenkov.ai import set_client, reset_client, CachedInferenceClient
+        from cherenkov.core.config import Config
+
+        original = Config.PROVIDER
+        try:
+            injected = CachedInferenceClient(OllamaInferenceClient())
+            set_client(injected)
+            self.assertIs(ai_mod._current_client, injected)
+            reset_client()
+            self.assertIsNone(ai_mod._current_client)
+            Config.PROVIDER = "ollama"
+            rebuilt = ai_mod.get_client()
+            self.assertIsNot(rebuilt, injected)
+        finally:
+            Config.PROVIDER = original
+            reset_client()
+
+
 if __name__ == "__main__":
     unittest.main()
