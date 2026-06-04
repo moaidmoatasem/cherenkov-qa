@@ -218,6 +218,30 @@ def get_parser() -> argparse.ArgumentParser:
     hitl_reject.add_argument('--json', dest='json_out', action='store_true',
                              help='Emit machine-readable hitl/v1 JSON envelope')
 
+    # ── Tier-2: classify (#150) ───────────────────────────────────────────────
+    hitl_classify = hitl_sub.add_parser('classify', help='Classify a HITL item as regression, intended, or ignore (Tier-2)')
+    hitl_classify.add_argument('item_id', help='The HITL item ID to classify')
+    hitl_classify.add_argument('--classification', '-c', required=True,
+                               choices=['regression', 'intended', 'ignore'],
+                               help='Classification label')
+    hitl_classify.add_argument('--actor', default=None,
+                               help='Reviewer identity (default: $USER env var)')
+    hitl_classify.add_argument('--detail', '-d', default='',
+                               help='Free-text detail (not used in LLM prompts)')
+    hitl_classify.add_argument('--json', dest='json_out', action='store_true',
+                               help='Emit machine-readable hitl/v1 JSON envelope')
+
+    # ── X4: MCP server (#133) — post-gate, treat peers as untrusted ──────────
+    mcp_parser = subparsers.add_parser(
+        'mcp',
+        help='Expose CHERENKOV over Model Context Protocol (stdio, mcp/v1)',
+    )
+    mcp_sub = mcp_parser.add_subparsers(dest='mcp_command', required=True)
+    mcp_sub.add_parser(
+        'serve',
+        help='Start the MCP server over stdio (connect Claude Desktop, Cursor, etc.)',
+    )
+
     return parser
 
 
@@ -327,6 +351,19 @@ def main():
         elif args.hitl_command == 'reject':
             sys.exit(run_reject(item_id=args.item_id, reason=args.reason,
                                 actor=args.actor, json_out=args.json_out))
+        elif args.hitl_command == 'classify':
+            from cherenkov.hitl.cmd import run_classify
+            sys.exit(run_classify(item_id=args.item_id, classification=args.classification,
+                                  actor=args.actor, detail=args.detail,
+                                  json_out=args.json_out))
+
+
+    # ── X4: MCP server (issue #133) ─────────────────────────────────────────
+    elif args.command == 'mcp':
+        from cherenkov.mcp.server import run_mcp_server
+        if args.mcp_command == 'serve':
+            run_mcp_server()
+            sys.exit(0)
 
 
 if __name__ == "__main__":
