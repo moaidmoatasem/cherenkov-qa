@@ -1,0 +1,6 @@
+{
+  "name": "Cherenkov QA",
+  "description": "Cherenkov radiation-themed observability dashboard for a localhost AI tool that generates API tests.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
