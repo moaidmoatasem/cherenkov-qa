@@ -232,6 +232,198 @@ Enables NL-to-Playwright E2E interactive testing loops.
 
 ---
 
+### Command 12: `hitl` (Human-In-The-Loop review queue)
+
+When a `REVIEW` stage yields `Verdict.HITL`, the finding is persisted in a durable
+SQLite queue (`.cherenkov/hitl.db`). The `hitl` command lets any reviewer inspect,
+approve, or reject pending items entirely from the terminal — no dashboard required.
+
+All subcommands accept a `--json` flag that emits a versioned **`hitl/v1` envelope**:
+
+```json
+{
+  "schema_version": "hitl/v1",
+  "ok": true,
+  "command": "hitl.approve",
+  "payload": { ... },
+  "error": null
+}
+```
+
+#### Command Help:
+```bash
+./bin/cherenkov hitl --help
+./bin/cherenkov hitl list --help
+./bin/cherenkov hitl approve --help
+```
+
+---
+
+#### Subcommand: `hitl list`
+List items in the queue (defaults to `pending` only).
+
+```bash
+# Show pending items (default)
+./bin/cherenkov hitl list
+
+# Show all statuses
+./bin/cherenkov hitl list --all
+
+# Filter by a specific status
+./bin/cherenkov hitl list --status approved
+
+# Machine-readable hitl/v1 JSON output
+./bin/cherenkov hitl list --json
+./bin/cherenkov hitl list --all --json
+```
+
+**Human output example:**
+```
+HITL queue — pending (1 item(s))
+  id                                    status      info
+  ------------------------------------  ----------  ----
+  ck_abc123-...                         pending     conf=0.72  gate=gate_3_ast  POST /orders
+```
+
+**JSON envelope example (`--json`):**
+```json
+{
+  "schema_version": "hitl/v1",
+  "ok": true,
+  "command": "hitl.list",
+  "payload": {
+    "status_filter": "pending",
+    "count": 1,
+    "items": [
+      {
+        "id": "ck_abc123-...",
+        "status": "pending",
+        "endpoint": "/orders",
+        "method": "POST",
+        "confidence": 0.72,
+        "review_gate_failed": "gate_3_ast",
+        "created_at": "2026-06-04T08:00:00+00:00"
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+---
+
+#### Subcommand: `hitl show <id>`
+Display full details of a single queue item.
+
+```bash
+# Human-readable detail view
+./bin/cherenkov hitl show ck_abc123-...
+
+# JSON envelope
+./bin/cherenkov hitl show ck_abc123-... --json
+```
+
+**Human output example:**
+```
+HITL item: ck_abc123-...
+  id              : ck_abc123-...
+  status          : pending
+  endpoint        : POST /orders
+  mutation_id     : mut_42
+  mutation_label  : Omit required field: email
+  confidence      : 0.72
+  review_gate_failed: gate_3_ast
+  run_id          : run_20260604_001
+  created_at      : 2026-06-04T08:00:00+00:00
+  approved_by     : None
+```
+
+---
+
+#### Subcommand: `hitl approve <id>`
+Approve a **pending** item. Atomic: only one approver can win on a race; the loser
+receives a truthful `conflict` error (see error codes below).
+
+```bash
+# Approve (actor defaults to $USER env var)
+./bin/cherenkov hitl approve ck_abc123-...
+
+# Approve with explicit actor identity
+./bin/cherenkov hitl approve ck_abc123-... --actor @alice
+
+# Approve and emit JSON envelope
+./bin/cherenkov hitl approve ck_abc123-... --actor @alice --json
+```
+
+**JSON success envelope:**
+```json
+{
+  "schema_version": "hitl/v1",
+  "ok": true,
+  "command": "hitl.approve",
+  "payload": {
+    "id": "ck_abc123-...",
+    "action": "approve",
+    "previous_status": "pending",
+    "current_status": "approved",
+    "actor": "@alice",
+    "actor_at": "2026-06-04T08:05:00Z",
+    "rows_affected": 1
+  },
+  "error": null
+}
+```
+
+**JSON conflict envelope** (item already resolved):
+```json
+{
+  "schema_version": "hitl/v1",
+  "ok": false,
+  "command": "hitl.approve",
+  "payload": null,
+  "error": {
+    "code": "conflict",
+    "message": "ck_abc123-... no longer pending. Already approved by @alice.",
+    "detail": {
+      "current_status": "approved",
+      "current_actor": "@alice",
+      "current_actor_at": "2026-06-04T08:05:00Z"
+    }
+  }
+}
+```
+
+---
+
+#### Subcommand: `hitl reject <id>`
+Reject a **pending** item with a mandatory reason string.
+
+```bash
+# Reject with reason (required)
+./bin/cherenkov hitl reject ck_abc123-... --reason "incorrect_spec"
+
+# Reject with explicit actor
+./bin/cherenkov hitl reject ck_abc123-... --reason "flaky_endpoint" --actor @bob
+
+# Reject and emit JSON envelope
+./bin/cherenkov hitl reject ck_abc123-... --reason "flaky_endpoint" --actor @bob --json
+```
+
+---
+
+#### `hitl/v1` Error Codes
+
+| Code | Meaning |
+|------|---------|
+| `conflict` | Item was already resolved by another actor |
+| `not_found` | Item ID does not exist in the queue |
+| `forbidden` | Actor is not authorized to act on this item |
+| `invalid_input` | Malformed arguments |
+| `db_locked` | SQLite busy-timeout exceeded |
+| `llm_unavailable` | LLM backend unavailable (voice path only) |
+
+---
+
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client. 
 
