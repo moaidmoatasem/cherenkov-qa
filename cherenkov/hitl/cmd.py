@@ -177,3 +177,26 @@ def run_reject(item_id: str, reason: str, actor: str | None = None,
     env = q.reject(item_id=item_id, actor=resolved_actor, reason=reason, source="cli")
     _emit(env, json_out)
     return 0 if env.ok else 1
+
+
+def run_classify(item_id: str, classification: str, actor: str | None = None,
+                 detail: str = "", json_out: bool = False,
+                 db_path: str | None = None) -> int:
+    """
+    Classify a HITL item as regression, intended, or ignore (Tier-2 #150).
+
+    Uses the OpenClaw adapter's classify_envelope for CQRS threshold tracking.
+    """
+    from cherenkov.openclaw.adapter import OpenClawAdapter
+    from cherenkov.openclaw.contracts import ClassificationRequest
+    resolved_actor = actor or _default_actor()
+    adapter = OpenClawAdapter()
+    req = ClassificationRequest(
+        item_id=item_id,
+        classification=classification,
+        actor=resolved_actor,
+        detail=detail,
+    )
+    env = adapter.classify_envelope(req)
+    _emit(env, json_out)
+    return 0 if env.ok else 1

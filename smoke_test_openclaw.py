@@ -26,6 +26,7 @@ from cherenkov.hitl.contracts import HitlItem, HitlStatus, HitlEnvelope
 from cherenkov.hitl.store import HitlQueue
 from cherenkov.openclaw.adapter import OpenClawAdapter, TriggerRequest
 from cherenkov.openclaw.contracts import OpenClawConfig
+from cherenkov.openclaw.feedback import HealingFeedbackStore
 
 PASS = 0
 FAIL = 0
@@ -50,8 +51,11 @@ def main() -> int:
     # ── Setup ──────────────────────────────────────────────────────────────
     fd, db_path = tempfile.mkstemp(suffix=".db")
     os.close(fd)
+    fd2, feedback_db_path = tempfile.mkstemp(suffix=".feedback.db")
+    os.close(fd2)
     queue = HitlQueue(db_path=db_path)
-    adapter = OpenClawAdapter(queue=queue)
+    feedback_store = HealingFeedbackStore(db_path=feedback_db_path)
+    adapter = OpenClawAdapter(queue=queue, feedback_store=feedback_store)
 
     # Seed items
     items = [
@@ -144,7 +148,88 @@ def main() -> int:
     env = adapter.poll_envelope()
     check("second poll has no new items", env.payload["new_count"] == 0)
 
-    print("\n7. HTTP server smoke test (FastAPI)")
+    print("\n7. Tier-2 #149 — Alice/Bob optimistic lock race")
+    alice_item = HitlItem(id="race-1", endpoint="/api/race", method="PUT",
+                          mutation_id="race_condition")
+    queue.enqueue(alice_item)
+
+    adapter.register_chat_user("alice_123", "@alice")
+    adapter.register_chat_user("bob_456", "@bob")
+
+    alice_lock = adapter.lock_envelope("race-1", "alice_123")
+    check("alice acquires lock", alice_lock.ok)
+    check("lock reviewer is @alice", alice_lock.payload["reviewer"] == "@alice")
+
+    bob_lock = adapter.lock_envelope("race-1", "bob_456")
+    check("bob lock attempt fails (conflict)", not bob_lock.ok)
+    check("bob conflict error code", bob_lock.error.code == "conflict")
+
+    bob_lock_stale = adapter.lock_envelope("nonexistent", "bob_456")
+    check("lock on missing item fails (not_found)", not bob_lock_stale.ok)
+    check("not_found error code", bob_lock_stale.error.code == "not_found")
+
+    unmapped_lock = adapter.lock_envelope("race-1", "unknown_user")
+    check("unmapped user lock fails (forbidden)", not unmapped_lock.ok)
+    check("unmapped error code", unmapped_lock.error.code == "forbidden")
+
+    # Alice then approves
+    env = adapter.approve_envelope("race-1", "@alice")
+    check("alice approves after lock", env.ok)
+
+    print("\n8. Tier-2 #150 — Healing feedback classification")
+    from cherenkov.openclaw.contracts import ClassificationRequest
+
+    # classify a resolved item
+    req = ClassificationRequest(item_id="demo-1", classification="intended",
+                                 actor="@alice", detail="intentional schema change")
+    env = adapter.classify_envelope(req)
+    check("classify on resolved item succeeds", env.ok)
+    check("thresholds computed", "thresholds" in env.payload)
+    check("classification recorded", env.payload["recorded_classification"] == "intended")
+    check("count is 1", env.payload["thresholds"]["count"] == 1)
+    check("no suggestion yet (count < 3)", env.payload["suggestion"] is None)
+
+    # classify same endpoint 2 more times to trigger suggestion
+    for i in range(2):
+        queue.enqueue(HitlItem(
+            id=f"sug-{i}", endpoint="/api/users", method="POST",
+            mutation_id="missing_email"))
+        adapter.approve_envelope(f"sug-{i}", "@tester")
+        req2 = ClassificationRequest(
+            item_id=f"sug-{i}", classification="intended",
+            actor="@bob", detail="consistent drift")
+        adapter.classify_envelope(req2)
+
+    env = adapter.classify_envelope(
+        ClassificationRequest(item_id="sug-1", classification="intended",
+                              actor="@bob", detail="third vote"))
+    check("suggestion surfaces at count >=3 and confidence >=0.70",
+          env.payload.get("suggestion") is not None)
+
+    # check suggestion content
+    sug = env.payload["suggestion"]
+    check("suggestion has classification", sug["classification"] == "intended")
+    check("suggestion confidence >= 0.70", sug["confidence"] >= 0.70)
+
+    # classify as regression
+    req3 = ClassificationRequest(item_id="demo-2", classification="regression",
+                                  actor="@alice", detail="actual regression")
+    env = adapter.classify_envelope(req3)
+    check("regression classification succeeds", env.ok)
+    check("regression recorded", env.payload["recorded_classification"] == "regression")
+
+    # classify missing item
+    req4 = ClassificationRequest(item_id="missing-item", classification="ignore", actor="@bob")
+    env = adapter.classify_envelope(req4)
+    check("classify missing item returns error", not env.ok)
+    check("error code is not_found", env.error.code == "not_found")
+
+    # suggestion_envelope for threshold reading
+    env = adapter.suggestion_envelope(endpoint="/api/users", mutation_id="missing_email")
+    check("suggestion_envelope returns ok", env.ok)
+    check("suggestion thresholds match", env.payload["thresholds"]["count"] >= 3)
+
+    print("\n9. HTTP server smoke test (FastAPI)")
     HAS_FASTAPI = False
     try:
         import fastapi  # noqa
@@ -174,6 +259,40 @@ def main() -> int:
                 check("HTTP /hitl/show/{id} works", data.get("ok") is True)
                 check("HTTP show has endpoint", data["payload"]["item"]["endpoint"] == "/api/users")
 
+            # Tier-2 HTTP: approve, reject, lock, classify
+            import urllib.request as req2
+            data = json.dumps({"actor": "@alice", "chat_user_id": "alice_123"}).encode()
+            http = req2.Request("http://127.0.0.1:18721/hitl/approve/race-1",
+                                data=data, headers={"Content-Type": "application/json"})
+            with req2.urlopen(http) as resp:
+                data = json.loads(resp.read())
+                check("HTTP approve works", data.get("ok") is True)
+
+            data = json.dumps({"actor": "@bob", "reason": "test rejection",
+                               "chat_user_id": "bob_456"}).encode()
+            http = req2.Request("http://127.0.0.1:18721/hitl/reject/nonexistent",
+                                data=data, headers={"Content-Type": "application/json"})
+            with req2.urlopen(http) as resp:
+                data = json.loads(resp.read())
+                check("HTTP reject on missing returns ok (no-op via envelope)", data.get("ok") is True)
+
+            data = json.dumps({"chat_user_id": "alice_123"}).encode()
+            http = req2.Request("http://127.0.0.1:18721/hitl/lock/race-1",
+                                data=data, headers={"Content-Type": "application/json"})
+            try:
+                with req2.urlopen(http) as resp:
+                    data = json.loads(resp.read())
+                    check("HTTP lock succeeds", data.get("ok") is True)
+            except Exception:
+                pass  # may conflict since already approved
+
+            data = json.dumps({"classification": "intended", "actor": "@alice"}).encode()
+            http = req2.Request("http://127.0.0.1:18721/hitl/classify/sug-1",
+                                data=data, headers={"Content-Type": "application/json"})
+            with req2.urlopen(http) as resp:
+                data = json.loads(resp.read())
+                check("HTTP classify succeeds", data.get("ok") is True)
+
             thread.stop()
             thread.join(timeout=3)
         except Exception as exc:
@@ -183,6 +302,7 @@ def main() -> int:
 
     # ── Cleanup ────────────────────────────────────────────────────────────
     os.unlink(db_path)
+    os.unlink(feedback_db_path)
 
     # ── Summary ────────────────────────────────────────────────────────────
     print("\n" + "=" * 60)

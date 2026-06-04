@@ -10,7 +10,7 @@ from typing import Any
 from cherenkov.core.errors import get_logger
 from cherenkov.hitl.contracts import HitlEnvelope
 from cherenkov.openclaw.adapter import OpenClawAdapter
-from cherenkov.openclaw.contracts import OpenClawConfig, TriggerRequest
+from cherenkov.openclaw.contracts import OpenClawConfig, TriggerRequest, ClassificationRequest
 
 _HAS_FASTAPI = False
 try:
@@ -63,14 +63,33 @@ def create_app(
     async def hitl_approve(item_id: str, request: Request):
         body = await request.json() if request.headers.get("content-type") == "application/json" else {}
         actor = body.get("actor", os.environ.get("USER", "openclaw"))
-        return _to_json_response(adp.approve_envelope(item_id, actor))
+        chat_user_id = body.get("chat_user_id")
+        return _to_json_response(adp.approve_envelope(item_id, actor, chat_user_id=chat_user_id))
 
     @app.post("/hitl/reject/{item_id}")
     async def hitl_reject(item_id: str, request: Request):
         body = await request.json() if request.headers.get("content-type") == "application/json" else {}
         actor = body.get("actor", os.environ.get("USER", "openclaw"))
         reason = body.get("reason", "rejected via openclaw")
-        return _to_json_response(adp.reject_envelope(item_id, actor, reason))
+        chat_user_id = body.get("chat_user_id")
+        return _to_json_response(adp.reject_envelope(item_id, actor, reason, chat_user_id=chat_user_id))
+
+    @app.post("/hitl/lock/{item_id}")
+    async def hitl_lock(item_id: str, request: Request):
+        body = await request.json()
+        chat_user_id = body.get("chat_user_id", "")
+        return _to_json_response(adp.lock_envelope(item_id, chat_user_id))
+
+    @app.post("/hitl/classify/{item_id}")
+    async def hitl_classify(item_id: str, request: Request):
+        body = await request.json()
+        req = ClassificationRequest(
+            item_id=item_id,
+            classification=body.get("classification", "intended"),
+            actor=body.get("actor", os.environ.get("USER", "openclaw")),
+            detail=body.get("detail", ""),
+        )
+        return _to_json_response(adp.classify_envelope(req))
 
     @app.post("/hitl/trigger")
     async def hitl_trigger(request: Request):
