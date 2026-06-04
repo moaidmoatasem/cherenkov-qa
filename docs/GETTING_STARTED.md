@@ -539,3 +539,22 @@ the HITL queue and run the Validation Gate without leaving their IDE.
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client. 
 
 Running `eject` strips all CHERENKOV-specific trace monkey-patching and hooks cleanly, leaving you with a standard open-source suite.
+
+---
+
+## ✅ Verifying the core claim against a real model
+
+Every automated test mocks the LLM, so the default suite cannot prove "spec in,
+compilable Playwright test out" end-to-end. One opt-in smoke does, by driving the
+**real** model through the GENERATE stage:
+
+```bash
+# Requires a running Ollama with the generation model pulled (qwen2.5-coder:7b).
+CHERENKOV_LIVE_LLM=1 PYTHONPATH=. python3 smoke_test_generate_live.py
+```
+
+It **skips cleanly** (exit 0) when `CHERENKOV_LIVE_LLM` is unset, and **fails loudly**
+if the flag is set but the model produces empty or structurally invalid output —
+the exact silent-failure mode that mocked tests miss. In CI it runs only via manual
+dispatch on a self-hosted GPU runner (the `live-llm-generate` job in
+`.github/workflows/ci.yml`); hosted runners have no GPU and never fake a pass.
