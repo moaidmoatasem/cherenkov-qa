@@ -274,7 +274,7 @@ async def home_page():
       submitBtn.disabled = true;
       submitBtn.innerText = 'Registering...';
       feedback.className = 'message';
-      feedback.style.display = 'none';
+      feedback.style.display = '';
       
       try {
         const response = await fetch('/users', {
