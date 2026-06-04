@@ -124,3 +124,90 @@ jobs:
       - name: Run E10 copilot smoke test
         run: PYTHONPATH=. python3 smoke_test_copilot_e10.py
 
+  # ── X3 (#132): CI runners for env-dependent smokes ────────────────────────
+  # Provisions node/npm/playwright so smoke_test_eject.py can run the
+  # ejected Playwright suite natively (previously skipped on plain runners).
+  smoke-eject-node:
+    name: Eject + Playwright E2E (node/npm)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Python (for cherenkov CLI + target API) ──
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pydantic==2.7.1 requests fastapi uvicorn
+
+      # ── Node.js (for npm install + npx playwright inside ejected suite) ──
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Install Playwright + Chromium browser binaries system-wide so that
+      # the ejected suite's `npx playwright test` can find them.
+      - name: Install Playwright CLI + Chromium
+        run: |
+          npm install -g playwright
+          npx playwright install --with-deps chromium
+
+      # Set up the target API's own venv (smoke_test_eject starts it via .venv/bin/uvicorn)
+      - name: Set up target API venv
+        run: |
+          if [ -d target ]; then
+            python -m venv target/.venv
+            target/.venv/bin/pip install --upgrade pip fastapi uvicorn pydantic==2.7.1
+          fi
+
+      - name: Run eject smoke test (E2E Playwright)
+        run: PYTHONPATH=. python3 smoke_test_eject.py
+
+  # Provisions k6 so smoke_test_perf.py can run a real load-test pass
+  # (previously the k6-missing path was tolerated as HITL/skip).
+  smoke-perf-k6:
+    name: Perf Baseline (k6 load test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pydantic==2.7.1 requests fastapi uvicorn
+
+      # Install k6 from the official Grafana/k6 apt repository
+      - name: Install k6
+        run: |
+          sudo gpg --no-default-keyring \
+               --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
+               --keyserver hkp://keyserver.ubuntu.com:80 \
+               --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+               | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: Verify k6 installation
+        run: k6 version
+
+      # Set up the target API venv (smoke_test_perf starts it via .venv/bin/uvicorn)
+      - name: Set up target API venv
+        run: |
+          if [ -d target ]; then
+            python -m venv target/.venv
+            target/.venv/bin/pip install --upgrade pip fastapi uvicorn pydantic==2.7.1
+          fi
+
+      - name: Run perf baseline smoke test
+        run: PYTHONPATH=. python3 smoke_test_perf.py
