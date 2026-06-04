@@ -13,6 +13,7 @@ class Config:
     
     PROVIDER: str = os.getenv("PROVIDER", "ollama")
     OLLAMA_URL: str = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
+    OLLAMA_TIMEOUT: int = int(os.getenv("OLLAMA_TIMEOUT", "300"))
     GEN_MODEL: str = os.getenv("GEN_MODEL", "qwen2.5-coder:7b")
     API_URL: str = os.getenv("API_URL", "http://localhost:8000")
     SCHEMA_DEPTH: int = int(os.getenv("SCHEMA_DEPTH", "1"))
@@ -62,6 +63,7 @@ class Config:
         return {
             "PROVIDER": cls.PROVIDER,
             "OLLAMA_URL": cls.OLLAMA_URL,
+            "OLLAMA_TIMEOUT": cls.OLLAMA_TIMEOUT,
             "GEN_MODEL": cls.GEN_MODEL,
             "API_URL": cls.API_URL,
             "SCHEMA_DEPTH": cls.SCHEMA_DEPTH,

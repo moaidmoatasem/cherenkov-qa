@@ -173,10 +173,10 @@ top of Track A boundaries rather than re-importing wholesale.
 
 ```
 OpenAPI spec → INGEST → PLAN → GENERATE → REVIEW → tests/
-               (no LLM) (deepseek) (qwen)   (6 gates)
+               (no LLM) (deterministic) (qwen)   (6 gates)
 
 INGEST   parse + depth-1 slice per endpoint, openapi-fetch stub, mutation menu, richness
-PLAN     deepseek selects mutation_id from menu (never invents), strips <think>
+PLAN     deterministic mapping (no LLM): maps endpoints to mutation scenarios (e.g. happy_path)
 GENERATE qwen writes test w/ openapi-fetch, static system prompt (prefix cache)
 REVIEW   syntax → structure → AST → assertions → tsc --noEmit → Prism dry-run
          verdict: auto_approve (>0.9) / hitl (0.7-0.9) / regenerate

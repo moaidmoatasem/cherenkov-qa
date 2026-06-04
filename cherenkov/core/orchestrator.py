@@ -56,6 +56,14 @@ class OrchestrationEngine:
 
     def __init__(self, run_id: str | None = None, error_threshold: int = 2, event_callback: Callable[[str, dict], None] | None = None):
         self.run_id = run_id or str(uuid.uuid4())[:8]
+        
+        # Setup run directory and events log (Issue 186)
+        import os
+        from cherenkov.core.errors import LoggerConfig
+        run_dir = os.path.abspath(f".cherenkov/runs/{self.run_id}")
+        os.makedirs(run_dir, exist_ok=True)
+        LoggerConfig.events_file = open(os.path.join(run_dir, "events.jsonl"), "a", encoding="utf-8")
+        
         self.log = get_logger("orchestrator", self.run_id)
         self.breaker = CircuitBreaker(threshold=error_threshold)
         self.last_ingest: IngestOutput | None = None
