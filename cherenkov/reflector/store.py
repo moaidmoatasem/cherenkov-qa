@@ -46,7 +46,10 @@ class VerdictStore:
     def __init__(self, db_path: str | None = None, run_id: str | None = None):
         self.db_path = db_path or _default_db_path()
         self.log = get_logger("REFLECTOR", run_id)
-        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        if self.db_path != ":memory:":
+            dirname = os.path.dirname(self.db_path)
+            if dirname:
+                os.makedirs(dirname, exist_ok=True)
         self._init_tables()
 
     # ── schema ────────────────────────────────────────────────────────────
