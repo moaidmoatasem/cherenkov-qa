@@ -5,6 +5,8 @@ import time
 from typing import Any, Callable
 
 from cherenkov.core.errors import get_logger
+from cherenkov.core.contracts import ReasoningRequest
+from cherenkov.substrate.router import route
 from cherenkov.hitl.contracts import (
     HitlEnvelope,
     HitlItem,
@@ -306,3 +308,53 @@ class OpenClawAdapter:
             "mutation_id": mutation_id,
             "thresholds": thresholds,
         })
+
+    def explain_envelope(self, item_id: str) -> HitlEnvelope:
+        """Get an AI explanation for why the test failed, without recommending action."""
+        item = self._queue.get(item_id)
+        if item is None:
+            return err_envelope("openclaw.explain", "not_found", f"{item_id} not found.", {"id": item_id})
+
+        try:
+            thresholds = self._feedback.compute_thresholds(item.endpoint or "", item.mutation_id or "")
+        except Exception:
+            thresholds = {}
+
+        xml_context = (
+            f"<item_id>{item.id}</item_id>\n"
+            f"<endpoint>{item.endpoint or ''}</endpoint>\n"
+            f"<method>{item.method or ''}</method>\n"
+            f"<mutation_id>{item.mutation_id or ''}</mutation_id>\n"
+            f"<review_gate_failed>{item.review_gate_failed or ''}</review_gate_failed>\n"
+            f"<confidence>{item.confidence or ''}</confidence>\n"
+            f"<dominant_classification>{thresholds.get('dominant_classification') or ''}</dominant_classification>\n"
+            f"<historical_votes_count>{thresholds.get('count') or 0}</historical_votes_count>\n"
+        )
+
+        prompt = (
+            "You are an expert failure triage AI. Explain why this API conformance test was flagged for human review "
+            "based strictly on the metadata parameters provided below. Do NOT recommend approval/rejection and do NOT suggest code fixes.\n\n"
+            f"Context:\n{xml_context}\n"
+            "Format your explanation clearly and prefix it with [AI 🤖]."
+        )
+
+        req = ReasoningRequest(
+            task=prompt,
+            capability_tier="small"
+        )
+
+        try:
+            res = route(req)
+            explanation = str(res.content).strip()
+            if not explanation.startswith("[AI 🤖]"):
+                explanation = f"[AI 🤖] {explanation}"
+            return ok_envelope("openclaw.explain", {
+                "id": item_id,
+                "explanation": explanation
+            })
+        except Exception as exc:
+            return err_envelope(
+                "openclaw.explain",
+                "llm_unavailable",
+                f"Offline path: Local model is down or unreachable. Error: {str(exc)}"
+            )

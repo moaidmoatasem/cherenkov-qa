@@ -70,6 +70,13 @@ def run_author(
     author = IntentAuthor(run_id="cli_author")
     spec, path = author.author(intent, output_dir=output, target_url=target)
 
+    unsupported = author._unsupported_actions
+    if unsupported:
+        print("  ⚠ WARNING: Some actions were not supported and could not be rendered.")
+        for action in sorted(set(unsupported)):
+            print(f"    - {action!r} (supported: navigate, click, fill, expect, request)")
+        print()
+
     print(f"  Title:  {spec.title}")
     print(f"  Steps:  {len(spec.steps)}  (kind={spec.kind}, status={spec.status.value})")
     for i, step in enumerate(spec.steps, 1):
@@ -79,7 +86,7 @@ def run_author(
     print(f"\n  [OK] Wrote standard Playwright test: {path}")
     print("  This file is yours - runs standalone, no CHERENKOV runtime required.")
     print("=" * 72)
-    return 0
+    return 1 if unsupported else 0
 
 
 def _maybe_reflector():

@@ -60,6 +60,56 @@ class Corpus:
     def query(self, **kw) -> list[CorpusEntry]:
         return self._backend.query(**kw)
 
+    def export_feedback(self, feedback_store: Any) -> list[dict[str, Any]]:
+        policy = Config.EGRESS
+        if policy == "none":
+            raise PermissionError("Egress policy is 'none': federation export forbidden.")
+        
+        con = feedback_store._connect()
+        rows = con.execute("SELECT item_id, endpoint, mutation_id, classification, actor, detail, timestamp FROM healing_feedback_log").fetchall()
+        con.close()
+        
+        exported = []
+        for r in rows:
+            if policy == "internal":
+                h = lambda v: hashlib.sha256(v.encode()).hexdigest()[:12] if v else ""
+                exported.append({
+                    "item_id": h(r["item_id"]),
+                    "endpoint": h(r["endpoint"]),
+                    "mutation_id": h(r["mutation_id"]),
+                    "classification": r["classification"],
+                    "actor": "anonymized",
+                    "detail": "",
+                    "timestamp": r["timestamp"]
+                })
+            else:
+                exported.append({
+                    "item_id": r["item_id"],
+                    "endpoint": r["endpoint"],
+                    "mutation_id": r["mutation_id"],
+                    "classification": r["classification"],
+                    "actor": r["actor"],
+                    "detail": r["detail"],
+                    "timestamp": r["timestamp"]
+                })
+        return exported
+
+    def import_feedback(self, feedback_store: Any, data: list[dict[str, Any]]) -> None:
+        policy = Config.EGRESS
+        if policy == "none":
+            raise PermissionError("Egress policy is 'none': federation import forbidden.")
+            
+        con = feedback_store._connect()
+        for item in data:
+            actor = "peer" if policy == "internal" else item.get("actor", "peer")
+            con.execute(
+                "INSERT INTO healing_feedback_log (item_id, endpoint, mutation_id, classification, actor, detail, timestamp) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (item["item_id"], item["endpoint"], item["mutation_id"], item["classification"], actor, item.get("detail", ""), item["timestamp"])
+            )
+        con.commit()
+        con.close()
+
     @staticmethod
     def _anon(e: DivergenceEnvelope) -> dict:
         h = lambda v: hashlib.sha256(v.encode()).hexdigest()[:12]

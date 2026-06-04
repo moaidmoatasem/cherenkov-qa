@@ -56,6 +56,10 @@ _INTENT_SCHEMA: dict = {
 }
 
 
+# Actions that _render_step can convert to Playwright code.
+SUPPORTED_ACTIONS: tuple[str, ...] = ("navigate", "click", "fill", "expect", "request")
+
+
 class IntentAuthor:
     """Turns plain-language intent into an IntentSpec and an ejectable test."""
 
@@ -67,6 +71,7 @@ class IntentAuthor:
         self.router = router or SubstrateRouter("copilot_author")
         self.run_id = run_id
         self.log = get_logger("COPILOT_AUTHOR", run_id)
+        self._unsupported_actions: list[str] = []
 
     # ── parse ────────────────────────────────────────────────────────────────
 
@@ -208,8 +213,13 @@ class IntentAuthor:
             if step.value:
                 return [f"await expect(page.getByText({json.dumps(step.value)})).toBeVisible();"]
             return ["await expect(page).toHaveURL(/.*/);"]
-        # Unknown action: leave a readable, non-failing breadcrumb.
-        return [f"// TODO: unsupported action {step.action!r} — {step.note}"]
+        # Unsupported action: surface loudly, don't bury a TODO.
+        self._unsupported_actions.append(step.action)
+        self.log.warning("unsupported action", action=step.action, note=step.note)
+        return [
+            f"// UNSUPPORTED: action {step.action!r} not yet rendered — {step.note}",
+            "// Supported actions: " + ", ".join(SUPPORTED_ACTIONS),
+        ]
 
     @staticmethod
     def _locator(target: str) -> str:

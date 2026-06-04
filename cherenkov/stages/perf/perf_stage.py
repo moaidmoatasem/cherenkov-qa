@@ -266,18 +266,14 @@ class PerfStage:
             k6_output: Output from k6 run containing performance data
 
         Returns:
-            Dictionary with extracted LLM metrics or None if not found
+            Dictionary with extracted LLM metrics or None if not available
         """
-        try:
-            # This would be enhanced with actual LLM metric extraction logic
-            # For now, return simulated values to demonstrate the concept
-            return {
-                'ttft_ms': 150.0 + (50.0 * (hash(k6_output) % 10) / 10),  # Simulated TTFT: 150-200ms
-                'itl_ms': 20.0 + (10.0 * (hash(k6_output) % 5) / 5),        # Simulated ITL: 20-30ms
-                'cost_usd': 0.001 + (0.0005 * (hash(k6_output) % 3))        # Simulated cost: $0.001-$0.0025
-            }
-        except Exception:
-            return None
+        self.log.warning(
+            "LLM metric extraction not yet implemented; "
+            "TTFT/ITL/cost metrics will not be available for this run. "
+            "See https://github.com/moaidmoatasem/cherenkov-qa/issues/157"
+        )
+        return None
 
     def _update_with_llm_metrics(self, endpoint: str, method: str, ttft_ms: float,
                                itl_ms: float, cost_usd: float) -> bool:
