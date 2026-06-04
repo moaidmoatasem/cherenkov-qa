@@ -1,5 +1,7 @@
 # CHERENKOV — Master Development Plan & Roadmap (definitive)
 
+> **Execution status & open GitHub backlog:** [`08_DELIVERY_PLAN.md`](08_DELIVERY_PLAN.md) is the across-the-board plan of record (verified code state, Validation-Gate-first sequencing, the live issue backlog). This file remains the strategic rationale for E7→E13.
+
 **Status:** Approved-candidate plan · **Supersedes:** the scale-up framing in [`06_AUTONOMOUS_QA_FABRIC.md`](06_AUTONOMOUS_QA_FABRIC.md) (kept as the research-mapping appendix)
 **Grounded in:** the actual codebase (real modules, contracts in `core/contracts.py`, config in `cherenkov.toml`) — every task names the file it grows.
 **Reading order:** this is the plan of record. [`00_VISION.md`](00_VISION.md) is the why; [`01_ARCHITECTURE.md`](01_ARCHITECTURE.md) is the trunk; [`02_ROADMAP.md`](02_ROADMAP.md) E0–E6 is done/in-flight; this defines **E7→E13**.

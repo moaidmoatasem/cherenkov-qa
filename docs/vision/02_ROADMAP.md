@@ -1,6 +1,7 @@
 # CHERENKOV — Roadmap
 
 Companion to [`00_VISION.md`](00_VISION.md) / [`01_ARCHITECTURE.md`](01_ARCHITECTURE.md).
+> **Current execution status & open backlog:** see [`08_DELIVERY_PLAN.md`](08_DELIVERY_PLAN.md) — the plan of record reconciling code ↔ GitHub ↔ sequencing.
 Each **Epoch** is a GitHub **milestone**. Each task below is (or becomes) a GitHub **issue** labelled `agent-ready`. See [`04_AGENT_WORKBOOK.md`](04_AGENT_WORKBOOK.md).
 
 ---
