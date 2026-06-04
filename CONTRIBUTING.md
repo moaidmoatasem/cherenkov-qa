@@ -32,7 +32,7 @@ State is tracked on the GitHub Project board via `status:` labels — see [`docs
 
 ## 3. Git flow, commits, PRs
 
-- **Trunk-based:** `main` is protected and always releasable; `develop` optional for batching.
+- **Trunk-based:** `main` is protected and always releasable. The `develop` branch was deleted (stale, 57 behind main).
 - **Conventional Commits:** `feat(scope): … (#NN)`, `fix(scope): …`, `docs:`, `chore:`, `test:`. Imperative, issue-referenced.
 - **Co-author trailer** for agent work where applicable.
 - **PRs:** one concern, small, template-complete, evidence attached, squash-merged.
@@ -82,4 +82,6 @@ State is tracked on the GitHub Project board via `status:` labels — see [`docs
 
 ## 8. Local setup (quick)
 
-WSL2 Ubuntu, Python 3.10+, Node (openapi-typescript + Playwright), Docker (Prism), Ollama (`qwen2.5-coder:7b`, `deepseek-r1:8b`). Keep the repo on the WSL filesystem. Run the Track A smokes (`smoke_test.py`, `smoke_test_healing.py`, `smoke_test_validate.py`, `smoke_test_eject.py`, `smoke_test_polish.py`) before opening a PR.
+WSL2 Ubuntu, Python 3.10+, Node (openapi-typescript + Playwright), Docker (Prism), Ollama (`qwen2.5-coder:7b`, `deepseek-r1:8b`). Keep the repo on the WSL filesystem.
+
+**Note on test layout:** Smoke tests live flat at the repo root (e.g., `smoke_test_*.py`, `test_*.py`), not under a `tests/` directory. This is a deliberate choice to keep discovery simple and each file independently runnable. See [#159](https://github.com/moaidmoatasem/cherenkov-qa/issues/159) for context was considered but deferred.

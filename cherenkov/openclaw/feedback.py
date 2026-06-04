@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import sqlite3
 import time
+import hashlib
 from typing import Any
 
 from cherenkov.core.errors import get_logger
@@ -94,11 +95,16 @@ class HealingFeedbackStore:
         Returns:
             count, dominant_classification, confidence, votes per classification.
         """
+        h = lambda v: hashlib.sha256(v.encode()).hexdigest()[:12] if v else ""
+        hashed_ep = h(endpoint)
+        hashed_mut = h(mutation_id)
+
         con = self._connect()
         rows = con.execute(
             "SELECT classification, COUNT(*) as cnt FROM healing_feedback_log "
-            "WHERE endpoint=? AND mutation_id=? GROUP BY classification",
-            (endpoint, mutation_id),
+            "WHERE (endpoint=? OR endpoint=?) AND (mutation_id=? OR mutation_id=?) "
+            "GROUP BY classification",
+            (endpoint, hashed_ep, mutation_id, hashed_mut),
         ).fetchall()
         con.close()
 

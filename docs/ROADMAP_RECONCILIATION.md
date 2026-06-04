@@ -1,0 +1,51 @@
+# CHERENKOV — Unified Roadmap Reconciliation
+
+**Date:** 2026-06-04 · **Status:** Authoritative (SSOT)
+
+This document reconciles all historical roadmap documentation (`02_ROADMAP.md`, `07_MASTER_PLAN.md`, `08_DELIVERY_PLAN.md`, and `HANDOVER.md §6.3`) into a single, honest picture of what is completed and what lies ahead.
+
+---
+
+## 1. What Is Completed & Shipped (Base Stable)
+
+All **Epoch 0 through Epoch 13 (E0–E13)** milestones have been successfully completed, verified, and shipped:
+
+- **Core API Conformance Engine (Track A):** Ingest (depth-limited slices), Plan, Generate, and Review stages (6 validation gates, including TSC & Prism).
+- **Substrate L0 Router (E1):** Capability-tiered routing (small, deep, vision), fallback triggers, and egress/sovereignty policy compliance.
+- **Divergence Engine (E3):** Witness reproduction loops, validated on 5 real divergences on live Swagger Petstore.
+- **Reflector (E7):** Verdict memory and fingerprint-based suppression to prevent duplicate review fatigue.
+- **Human-in-the-Loop (HITL) Queue (A1-A7):** Atomic SQL concurrency gatekeeper, terminal CLI, OpenClaw Tier-1 relay.
+- **Model Context Protocol (X4):** Pure-stdlib JSON-RPC 2.0 over stdio MCP server exposing resources and tools to agents.
+- **OpenClaw Tier-2 (Horizon 2):** Chat identity mappings, optimistic locks, and healing feedback loop.
+- **OpenClaw Tier-3 (Horizon 2):** Read-only failure explanations streamed from the local model (`qwen2.5-coder:7b`).
+- **Federation (Horizon 2):** Working multi-node sync and learning cross-check with anonymization compliance.
+
+### The Validation Gate Pass
+The Phase A validation gate has officially passed (4/5 YES votes from QA professionals).
+- Structured results are stored in: [.cherenkov/evidence/validation_gate_pass.json](../.cherenkov/evidence/validation_gate_pass.json)
+- Runbook reference: [QA_VALIDATION_RUNBOOK.md](process/QA_VALIDATION_RUNBOOK.md)
+
+---
+
+## 2. Superseded Deferrals (Track B / C Consolidation)
+
+Older documentation listed features like performance baselines and visual regression as deferred candidates. These have been consolidated:
+
+- **B1 Visual Regression:** Shipped under early proof-of-concept stages; now moved to `track-b-c-deferred/` for reference until un-quarantined.
+- **B2 Performance Baselines:** Shipped; now preserved inside `track-b-c-deferred/` for reference.
+- **C1 Diagnostics & RAG / C2 Jira Export:** Preserved in `track-b-c-deferred/` awaiting Horizon 2 unblock.
+
+---
+
+## 3. What is Next (Horizon 2 Plan)
+
+The active roadmap is defined by **Horizon 2 (#147)**:
+
+1. **N4: OpenClaw Tier-3 AI Failure Triage** (SHIPPED)
+2. **N5: Federation Multi-Node Sync** (SHIPPED)
+3. **N6: Validation-Gate Pass Audited** (SHIPPED)
+4. **N7: Production Dogfooding Nightly Runs** (REPORT LANDED)
+5. **N8: Roadmap Reconciliation** (THIS DOC)
+
+Refer to [10_HORIZON_2.md](vision/10_HORIZON_2.md) for future iterations.
+All delivery EPIC (#134) status lines are updated to: **delivered — see Horizon 2**.

@@ -153,7 +153,28 @@ def test_c9_intent_author():
     check("Ejectable code contains zero cherenkov imports", 'import { cherenkov }' not in pw_code and 'from "cherenkov' not in pw_code)
     check("Ejectable code does not require cherenkov module", 'require("cherenkov")' not in pw_code)
 
-    # 4. Durable file writing
+    # 4. Unsupported action surfaces a warning (#158)
+    author2 = IntentAuthor(router=mock_router)
+    unsupported_steps = [
+        {"action": "swipe", "target": "the menu", "note": "swipe left"},
+        {"action": "longpress", "target": "the icon", "note": "press and hold"},
+    ]
+    payload2 = {**payload, "steps": unsupported_steps}
+    mock_router2 = MagicMock()
+    mock_router2.route.return_value = ReasoningResult(
+        content=json.dumps(payload2), provider="mock", model="mock-model"
+    )
+    author2.router = mock_router2
+    spec2 = author2.parse("swipe menu and longpress icon")
+    check("Unsupported actions tracked", len(author2._unsupported_actions) > 0)
+    check("Unsupported actions include 'swipe'", "swipe" in author2._unsupported_actions)
+    check("Unsupported actions include 'longpress'", "longpress" in author2._unsupported_actions)
+    pw_code2 = author2.to_playwright(spec2)
+    check("Unsupported action emits UNSUPPORTED comment (not TODO)", "// UNSUPPORTED:" in pw_code2)
+    check("No // TODO emitted for unsupported actions", "// TODO" not in pw_code2)
+    check("Supported actions listed in comment", "navigate, click, fill, expect, request" in pw_code2)
+
+    # 5. Durable file writing
     with tempfile.TemporaryDirectory() as temp_dir:
         written_spec, file_path = author.author(
             "verify cart discount apply with SAVE20", output_dir=temp_dir, target_url="http://localhost:8000"

@@ -220,6 +220,17 @@ Crawls targets to inspect anomalies, console/network exceptions, and visual base
 ### Command 11: `author` (intent-driven test generator)
 Enables NL-to-Playwright E2E interactive testing loops.
 
+#### Supported Actions
+The intent parser recognises these action types and renders them as Playwright code:
+- `navigate` — navigate to a URL
+- `click` — click a button/link by role/label
+- `fill` — fill an input field
+- `expect` — assert visible text or URL match
+- `request` — direct HTTP request (GET/POST/PUT/DELETE/PATCH)
+
+Any other action emits a warning in the CLI output and is skipped as a comment
+in the generated test.
+
 #### Command Help:
 ```bash
 ./bin/cherenkov author --help

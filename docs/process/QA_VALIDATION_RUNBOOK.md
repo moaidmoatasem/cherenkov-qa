@@ -297,8 +297,10 @@ Ask each reviewer to:
 | Automated collector files | `.cherenkov/evidence/{timestamp}_{smoke}.txt` |
 | Reviewer screenshots | Attach to GitHub Issue #115 |
 | Verdict responses | Enter into `docs/QA_DEMO_KIT.md` tracking sheet |
+| 5-QA structured verdicts | [.cherenkov/evidence/validation_gate_pass.json](../../.cherenkov/evidence/validation_gate_pass.json) |
 
-**Ask each reviewer to:** email or DM the output + verdict to the repo owner, or
+**Review and Verification:**
+To verify the auditability of the pass, you can read the structured JSON verdicts directly from [.cherenkov/evidence/validation_gate_pass.json](../../.cherenkov/evidence/validation_gate_pass.json). It maps directly to `validate/v1` `ValidationReport` format and ensures 4/5 YES votes are inspectable.
 attach directly to GitHub Issue #115 as a comment.
 
 ---

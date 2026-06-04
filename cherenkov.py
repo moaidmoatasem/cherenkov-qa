@@ -231,6 +231,12 @@ def get_parser() -> argparse.ArgumentParser:
     hitl_classify.add_argument('--json', dest='json_out', action='store_true',
                                help='Emit machine-readable hitl/v1 JSON envelope')
 
+    # ── Tier-3: explain (#151) ────────────────────────────────────────────────
+    hitl_explain = hitl_sub.add_parser('explain', help='Get an AI explanation for why the HITL item was flagged (Tier-3)')
+    hitl_explain.add_argument('item_id', help='The HITL item ID to explain')
+    hitl_explain.add_argument('--json', dest='json_out', action='store_true',
+                              help='Emit machine-readable hitl/v1 JSON envelope')
+
     # ── X4: MCP server (#133) — post-gate, treat peers as untrusted ──────────
     mcp_parser = subparsers.add_parser(
         'mcp',
@@ -356,6 +362,9 @@ def main():
             sys.exit(run_classify(item_id=args.item_id, classification=args.classification,
                                   actor=args.actor, detail=args.detail,
                                   json_out=args.json_out))
+        elif args.hitl_command == 'explain':
+            from cherenkov.hitl.cmd import run_explain
+            sys.exit(run_explain(item_id=args.item_id, json_out=args.json_out))
 
 
     # ── X4: MCP server (issue #133) ─────────────────────────────────────────
