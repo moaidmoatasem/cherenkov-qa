@@ -239,6 +239,41 @@ class ReviewStage:
         else:
             verdict = Verdict.REGENERATE
 
+        # A2 #110 — bridge: Verdict.HITL → HitlQueue.enqueue
+        # Only fires on HITL (0.7–0.9 quality band), never on REGENERATE or AUTO_APPROVE.
+        # Lazy import avoids circular imports at module load time.
+        if verdict == Verdict.HITL:
+            try:
+                from cherenkov.hitl import HitlItem, HitlQueue  # lazy import
+                first_failing_gate = next(
+                    (g.gate for g in gates if not g.passed), None
+                )
+                confidence_reason = (
+                    f"Quality score {quality_score:.2f} — gate '{first_failing_gate}' failed"
+                    if first_failing_gate
+                    else f"Quality score {quality_score:.2f} — all gates passed (low-confidence)"
+                )
+                hitl_item = HitlItem(
+                    id=scenario_id,
+                    endpoint=getattr(generate, "endpoint", None),
+                    method=getattr(generate, "method", None),
+                    mutation_id=getattr(generate, "mutation_id", None),
+                    mutation_label=getattr(generate, "mutation_label", None),
+                    confidence=round(quality_score, 4),
+                    confidence_reason=confidence_reason,
+                    review_gate_failed=first_failing_gate,
+                    run_id=self.run_id,
+                )
+                HitlQueue().enqueue(hitl_item)
+                self.log.info(
+                    "hitl item enqueued",
+                    scenario_id=scenario_id,
+                    confidence=round(quality_score, 4),
+                    review_gate_failed=first_failing_gate,
+                )
+            except Exception as exc:  # never let HITL bridging break REVIEW
+                self.log.warning("hitl enqueue failed (non-fatal)", error=str(exc))
+
         dt = int((time.time() - t0) * 1000)
         self.log.info("stage success", quality_score=quality_score, verdict=verdict.value, duration_ms=dt)
 

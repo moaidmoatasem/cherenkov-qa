@@ -161,6 +161,40 @@ def get_parser() -> argparse.ArgumentParser:
     author_parser.add_argument('--output', '-o', required=True, help='Directory to write the .spec.ts test into')
     author_parser.add_argument('--target', '-t', default='', help='Base URL the flow runs against')
 
+    # ── HITL terminal queue (A1 #109) ─────────────────────────────────────────
+    hitl_parser = subparsers.add_parser('hitl', help='Human-in-the-loop review queue (list/show/approve/reject)')
+    hitl_sub = hitl_parser.add_subparsers(dest='hitl_command', required=True)
+
+    hitl_list = hitl_sub.add_parser('list', help='List HITL queue items (default: pending)')
+    hitl_list.add_argument('--status', '-s', default='pending',
+                           choices=['pending', 'approved', 'rejected', 'ignored'],
+                           help='Filter by status (default: pending)')
+    hitl_list.add_argument('--all', '-a', dest='list_all', action='store_true',
+                           help='Show all statuses (overrides --status)')
+    hitl_list.add_argument('--json', dest='json_out', action='store_true',
+                           help='Emit machine-readable hitl/v1 JSON envelope')
+
+    hitl_show = hitl_sub.add_parser('show', help='Show details of a single HITL item')
+    hitl_show.add_argument('item_id', help='The HITL item ID to show')
+    hitl_show.add_argument('--json', dest='json_out', action='store_true',
+                           help='Emit machine-readable hitl/v1 JSON envelope')
+
+    hitl_approve = hitl_sub.add_parser('approve', help='Approve a pending HITL item')
+    hitl_approve.add_argument('item_id', help='The HITL item ID to approve')
+    hitl_approve.add_argument('--actor', default=None,
+                              help='Reviewer identity (default: $USER env var)')
+    hitl_approve.add_argument('--json', dest='json_out', action='store_true',
+                              help='Emit machine-readable hitl/v1 JSON envelope')
+
+    hitl_reject = hitl_sub.add_parser('reject', help='Reject a pending HITL item')
+    hitl_reject.add_argument('item_id', help='The HITL item ID to reject')
+    hitl_reject.add_argument('--reason', '-r', required=True,
+                             help='Rejection reason (required)')
+    hitl_reject.add_argument('--actor', default=None,
+                             help='Reviewer identity (default: $USER env var)')
+    hitl_reject.add_argument('--json', dest='json_out', action='store_true',
+                             help='Emit machine-readable hitl/v1 JSON envelope')
+
     return parser
 
 
@@ -242,6 +276,20 @@ def main():
     elif args.command == 'author':
         from cherenkov.stages.copilot_cmd import run_author
         sys.exit(run_author(args.intent, output=args.output, target=args.target))
+
+    # ── HITL terminal queue (A1 #109) ─────────────────────────────────────────
+    elif args.command == 'hitl':
+        from cherenkov.hitl.cmd import run_list, run_show, run_approve, run_reject
+        if args.hitl_command == 'list':
+            status_filter = None if getattr(args, 'list_all', False) else args.status
+            sys.exit(run_list(status=status_filter, json_out=args.json_out))
+        elif args.hitl_command == 'show':
+            sys.exit(run_show(item_id=args.item_id, json_out=args.json_out))
+        elif args.hitl_command == 'approve':
+            sys.exit(run_approve(item_id=args.item_id, actor=args.actor, json_out=args.json_out))
+        elif args.hitl_command == 'reject':
+            sys.exit(run_reject(item_id=args.item_id, reason=args.reason,
+                                actor=args.actor, json_out=args.json_out))
 
 
 if __name__ == "__main__":
