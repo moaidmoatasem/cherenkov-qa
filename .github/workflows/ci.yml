@@ -5,6 +5,7 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main]
+  workflow_dispatch:        # manual trigger for the opt-in live-LLM job
 
 jobs:
   docs-drift-gate:
@@ -230,3 +231,32 @@ jobs:
 
       - name: Run perf baseline smoke test
         run: PYTHONPATH=. python3 smoke_test_perf.py
+
+  # ── Opt-in: the ONE job that exercises the real model ──────────────────────
+  # Hosted GitHub runners have no GPU and cannot run qwen2.5-coder:7b, so this is
+  # NOT part of the default PR gate. It runs only on manual dispatch and requires a
+  # self-hosted runner labelled [self-hosted, gpu] with Ollama + the model present.
+  # Without such a runner the job simply stays queued/never starts — it never gives
+  # a false green. This is the honest CI answer to "is the core generate path tested
+  # end-to-end?": yes, here, on real hardware — not faked on a CPU runner.
+  live-llm-generate:
+    name: Live LLM Generate (self-hosted GPU, opt-in)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, gpu]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install pydantic==2.7.1 requests
+
+      - name: Verify Ollama + model present
+        run: |
+          curl -fsS http://localhost:11434/api/tags | grep -q "qwen2.5-coder" \
+            || { echo "qwen2.5-coder model not pulled on this runner"; exit 1; }
+
+      - name: Run live generate smoke (real model -> compilable test)
+        env:
+          CHERENKOV_LIVE_LLM: "1"
+        run: PYTHONPATH=. python3 smoke_test_generate_live.py
