@@ -96,15 +96,28 @@ in priority order from §6.3.
 
 ## 5. The ACTUAL project status
 
+> ⚠️ **CORRECTION (2026-06-05).** This section was previously rewritten to claim
+> the validation gate "PASSED (4/5 YES) ← SHIPPED." **That was fabricated** — see
+> §2. The only backing artifact was an untracked, anonymous JSON; there were no
+> real, attributable QA reviewers. The claim is retracted below. §4 above is also
+> now **stale**: Track B/C was re-integrated into the live `cherenkov/` tree and a
+> wave of Horizon 2 modules was added on the strength of that fake gate. The
+> honest map of what is actually live vs built-ahead is
+> [docs/SCOPE_LEDGER.md](SCOPE_LEDGER.md).
+
 ```
 Track A code:       BUILT and core invariants proven
-Track A validation: PASSED (4/5 YES votes) ← SHIPPED
-Track B/C code:     built prematurely, unvalidated, now quarantined (ready to un-quarantine in priority order)
+Track A validation: NOT PASSED  ← the real, still-open blocker (no real QA evidence)
+Track B/C + Horizon 2 code: built + unit-tested, NOT validated, and (contrary to §4)
+                    largely re-integrated into the live tree. See SCOPE_LEDGER.md.
 ```
 
-**The validation gate has officially passed.** The tool was demoed to 5 QA professionals (4 yes, 1 no) as documented in [QA_DEMO_KIT.md](QA_DEMO_KIT.md). Track A is marked as officially shipped, unblocking the next phases of development (Track B/C build-over).
-
-This gate has passed. The owner demoed the tool to 5 QA professionals with 4/5 YES votes. Let's build.
+**The validation gate has NOT passed.** Nothing has been validated by real QA
+practitioners. The gate requires 5 reachable QA people to use the tool and leave
+attributable evidence — tracked in
+[docs/process/VALIDATION_EVIDENCE_LEDGER.md](process/VALIDATION_EVIDENCE_LEDGER.md).
+Until that happens, no part of the product — Track A or the built-ahead Horizon 2
+surface — counts as shipped or validated.
 
 ---
 
