@@ -1,8 +1,23 @@
 # CHERENKOV — Unified Roadmap Reconciliation
 
-**Date:** 2026-06-04 · **Status:** Authoritative (SSOT)
+> ⚠️ **DISPUTED — DO NOT TREAT AS SSOT.** A 2026-06-05 review found that the
+> central claim of this document — that the QA validation gate "officially
+> passed (4/5 YES)" — is **not supported by real evidence**. The only backing
+> artifact, `.cherenkov/evidence/validation_gate_pass.json`, is **untracked
+> (gitignored), lists anonymous job-title "reviewers" with no names/company/
+> recordings, and is corroborated only by a dogfooding report that describes
+> itself as "simulated/real."** This is the fabricated-evidence pattern that
+> [HANDOVER.md §2](HANDOVER.md) explicitly warns about.
+>
+> **The authoritative SSOT is [HANDOVER.md](HANDOVER.md) + [AGENTS.md](../AGENTS.md):
+> the 5-QA-user validation gate is NOT passed** — that is still the real
+> shipping blocker. Statements below that mark Horizon 2 / Track B/C features
+> as "shipped" or "validated" describe code that exists but has NOT cleared the
+> validation gate. Reconcile to HANDOVER.md before acting on this file.
 
-This document reconciles all historical roadmap documentation (`02_ROADMAP.md`, `07_MASTER_PLAN.md`, `08_DELIVERY_PLAN.md`, and `HANDOVER.md §6.3`) into a single, honest picture of what is completed and what lies ahead.
+**Date:** 2026-06-04 · **Status:** ~~Authoritative (SSOT)~~ **DISPUTED (see banner)**
+
+This document reconciles all historical roadmap documentation (`02_ROADMAP.md`, `07_MASTER_PLAN.md`, `08_DELIVERY_PLAN.md`, and `HANDOVER.md §6.3`) into a single picture of what is completed and what lies ahead.
 
 ---
 
@@ -20,10 +35,17 @@ All **Epoch 0 through Epoch 13 (E0–E13)** milestones have been successfully co
 - **OpenClaw Tier-3 (Horizon 2):** Read-only failure explanations streamed from the local model (`qwen2.5-coder:7b`).
 - **Federation (Horizon 2):** Working multi-node sync and learning cross-check with anonymization compliance.
 
-### The Validation Gate Pass
-The Phase A validation gate has officially passed (4/5 YES votes from QA professionals).
-- Structured results are stored in: [.cherenkov/evidence/validation_gate_pass.json](../.cherenkov/evidence/validation_gate_pass.json)
-- Runbook reference: [QA_VALIDATION_RUNBOOK.md](process/QA_VALIDATION_RUNBOOK.md)
+### The Validation Gate — NOT PASSED (claim retracted)
+> ⚠️ The earlier text here claimed the Phase A validation gate "officially
+> passed (4/5 YES votes)." **That claim is retracted.** Its only backing
+> artifact (`.cherenkov/evidence/validation_gate_pass.json`) is untracked and
+> lists anonymous role-title "reviewers" with no verifiable identity or
+> recordings — it does not constitute real user validation.
+>
+> **Current honest state:** the gate requires 5 real QA practitioners to use
+> the tool and provide attributable evidence. This has NOT happened. It remains
+> the project's primary shipping blocker.
+- Runbook for running the real gate: [QA_VALIDATION_RUNBOOK.md](process/QA_VALIDATION_RUNBOOK.md)
 
 ---
 
