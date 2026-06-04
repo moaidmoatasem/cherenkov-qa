@@ -101,6 +101,11 @@ def create_app(
     async def hitl_poll():
         return _to_json_response(adp.poll_envelope())
 
+    @app.get("/hitl/explain/{item_id}")
+    @app.post("/hitl/explain/{item_id}")
+    async def hitl_explain(item_id: str):
+        return _to_json_response(adp.explain_envelope(item_id))
+
     return app
 
 

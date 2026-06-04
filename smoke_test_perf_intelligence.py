@@ -70,6 +70,10 @@ def main() -> int:
     check("Non-LLM endpoint returns zero LLM stats",
            non_llm_stats["llm_request_count"] == 0)
 
+    # Extraction returns None (honest absence, #157)
+    llm_extracted = stage._extract_llm_metrics_from_response("some k6 output")
+    check("LLM extraction returns None (not hash-derived)", llm_extracted is None)
+
     # LLM endpoint detection
     check("/api/chat/completions detected as LLM",
            stage._is_llm_endpoint("/api/chat/completions"))

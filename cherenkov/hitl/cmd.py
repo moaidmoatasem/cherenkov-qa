@@ -200,3 +200,27 @@ def run_classify(item_id: str, classification: str, actor: str | None = None,
     env = adapter.classify_envelope(req)
     _emit(env, json_out)
     return 0 if env.ok else 1
+
+
+def run_explain(item_id: str, json_out: bool = False, db_path: str | None = None) -> int:
+    """
+    Get an AI explanation for why the HITL item was flagged.
+    """
+    from cherenkov.openclaw.adapter import OpenClawAdapter
+    from cherenkov.openclaw.feedback import HealingFeedbackStore
+    q = HitlQueue(db_path=db_path)
+    if db_path:
+        feedback_store = HealingFeedbackStore(db_path=":memory:")
+        adapter = OpenClawAdapter(queue=q, feedback_store=feedback_store)
+    else:
+        adapter = OpenClawAdapter(queue=q)
+
+    env = adapter.explain_envelope(item_id)
+    if json_out:
+        print(json.dumps(env.model_dump(), indent=2, default=str))
+    else:
+        if env.ok:
+            print(env.payload["explanation"])
+        else:
+            print(f"[ERROR] {env.error.message}", file=sys.stderr)
+    return 0 if env.ok else 1
