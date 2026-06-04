@@ -61,17 +61,23 @@ def test_model_certification(tmp_path):
     try:
         manager = ModelCertificationManager()
         
+        # certify_tier now reports a RAG-Triad *composite* score in
+        # faithfulness_score (faithfulness*0.6 + rag_overall*0.4), certified when
+        # composite >= Config.CERTIFICATION_MIN_FAITHFULNESS. Assert on the
+        # contract (certified flag + threshold band), not brittle exact floats.
+        threshold = Config.CERTIFICATION_MIN_FAITHFULNESS
+
         # Test passing provider
         passing_prov = DummyProvider("Here is the HELLO word.")
         res = manager.certify_tier("small", passing_prov)
         assert res.certified is True
-        assert res.faithfulness_score == 1.0
+        assert res.faithfulness_score >= threshold
 
         # Test failing provider
         failing_prov = DummyProvider("No matching keyword.")
         res_fail = manager.certify_tier("small", failing_prov)
         assert res_fail.certified is False
-        assert res_fail.faithfulness_score == 0.0
+        assert res_fail.faithfulness_score < threshold
 
     finally:
         Config.CERTIFICATION_GOLD_SET_PATH = old_path

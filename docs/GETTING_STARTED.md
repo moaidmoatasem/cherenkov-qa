@@ -424,6 +424,58 @@ Reject a **pending** item with a mandatory reason string.
 
 ---
 
+### Frontier commands (post-gate surfaces)
+
+> These CLI surfaces are wired but governed by the Validation Gate — full
+> behaviour is labelled `blocked:validation-gate` until Track A passes the 5-QA
+> gate. They are documented here so the CLI and docs stay drift-free.
+
+#### `governance` — E12 Governance KPI panel
+
+Surfaces escape-rate, false-positive, coverage, and maintenance KPIs over the
+verdict/audit history.
+
+```bash
+# Show the governance KPI panel
+./bin/cherenkov governance
+
+# Machine-readable report
+./bin/cherenkov governance --json
+
+# Trend for a single metric (health_score, escape_rate, coverage, ...)
+./bin/cherenkov governance --trend escape_rate
+```
+
+#### `certify` — E12 Gold-Set + RAG-Triad certification
+
+Certifies a capability tier against the gold set using RAG-Triad metrics.
+
+```bash
+# Certify the default (small) tier
+./bin/cherenkov certify
+
+# Certify a specific tier with per-item RAG-Triad detail
+./bin/cherenkov certify --tier deep --rag-report
+```
+
+Valid tiers: `small`, `deep`, `vision`.
+
+#### `profile` — E13 Autonomy-ladder profile
+
+Shows or sets the autonomy level the pipeline operates at.
+
+```bash
+# Show the current autonomy profile
+./bin/cherenkov profile
+
+# Set the autonomy level
+./bin/cherenkov profile set --level augmented
+```
+
+Valid levels: `assisted`, `augmented`, `agentic`, `predictive`.
+
+---
+
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client. 
 

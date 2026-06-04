@@ -9,6 +9,14 @@ import importlib.util
 import os
 import sys
 
+# Make the checker self-sufficient regardless of invocation cwd: ensure the
+# repo root (parent of scripts/) is importable so `cherenkov.*` resolves even
+# when run as `python3 scripts/ci_docs_check.py` without PYTHONPATH set.
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
+
 def load_cherenkov_cli():
     """Load cherenkov.py as a module directly (not the cherenkov/ package)."""
     cli_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "cherenkov.py"))
