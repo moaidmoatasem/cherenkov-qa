@@ -321,6 +321,14 @@ def run_proof(
             hypotheses = _offline_hypotheses(endpoint, method)
             print(f"  Offline: {len(hypotheses)} hypothesis(es)")
 
+        # A7 #114 — live rerank: suppress rejected fingerprints before witness loop
+        if reflector is not None and hypotheses:
+            before = len(hypotheses)
+            hypotheses = reflector.rerank(hypotheses, endpoint=f"{method} {endpoint}")
+            suppressed = before - len(hypotheses)
+            if suppressed:
+                print(f"  Reflector: suppressed {suppressed} rejected hypothesis(es)")
+
         for h in hypotheses:
             result = witness.reproduce(h)
             status = "REPRODUCED" if result.reproduced else "rejected"
