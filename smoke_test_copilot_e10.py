@@ -166,10 +166,12 @@ def test_c9_intent_author():
     )
     author2.router = mock_router2
     spec2 = author2.parse("swipe menu and longpress icon")
+    # Unsupported actions are tracked during rendering (to_playwright), where each
+    # step's action is mapped to Playwright code — so assert after rendering.
+    pw_code2 = author2.to_playwright(spec2)
     check("Unsupported actions tracked", len(author2._unsupported_actions) > 0)
     check("Unsupported actions include 'swipe'", "swipe" in author2._unsupported_actions)
     check("Unsupported actions include 'longpress'", "longpress" in author2._unsupported_actions)
-    pw_code2 = author2.to_playwright(spec2)
     check("Unsupported action emits UNSUPPORTED comment (not TODO)", "// UNSUPPORTED:" in pw_code2)
     check("No // TODO emitted for unsupported actions", "// TODO" not in pw_code2)
     check("Supported actions listed in comment", "navigate, click, fill, expect, request" in pw_code2)
