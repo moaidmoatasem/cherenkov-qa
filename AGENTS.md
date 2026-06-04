@@ -20,5 +20,5 @@
 
 ### Track Status
 
-- **Track A** (API conformance testing): code BUILT, core invariants proven. **User-validation gate (5 QA demos) NOT PASSED** — this is the real blocker.
-- **Track B/C** (visual, perf, RAG, compliance, jira, dashboard): code present in `track-b-c-deferred/` but **NOT shipped, NOT validated**. Built prematurely before the Track A validation gate. Do not extend until Track A validates. Roadmap order in [docs/HANDOVER.md §6.3](docs/HANDOVER.md).
+- **Track A** (API conformance testing): code BUILT, core invariants proven. **User-validation gate (5 QA demos) NOT PASSED** — this is the real blocker. A prior "4/5 YES passed" claim was **fabricated** (untracked, anonymous evidence); see [docs/HANDOVER.md §5](docs/HANDOVER.md). Real evidence, when collected, goes in [docs/process/VALIDATION_EVIDENCE_LEDGER.md](docs/process/VALIDATION_EVIDENCE_LEDGER.md).
+- **Track B/C + Horizon 2** (visual, perf, dashboard, openclaw, mcp, federation, divergence, governance, copilot, etc.): **built + unit-tested but NOT validated.** Contrary to older docs that call them "quarantined," much of this was **re-integrated into the live `cherenkov/` tree** ahead of the validation gate. This contradicts the "no build-ahead-of-validation" rule; it is documented honestly (not blessed) in [docs/SCOPE_LEDGER.md](docs/SCOPE_LEDGER.md). **Do not treat any of it as shipped/validated, and do not build more of it, until the Track A gate passes with real evidence.**
