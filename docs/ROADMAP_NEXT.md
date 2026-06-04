@@ -120,5 +120,55 @@ rejection-reason data, not a pre-written epoch list.
 
 ## 8. Tickets
 
-Phase 0 / Phase 1 tickets are filed as GitHub issues labelled `agent-ready` and reference this doc.
-See the milestone "Horizon V — Validation-First."
+Phase 0 / Phase 1 tickets are filed as GitHub issues labelled `agent-ready` and reference this doc
+(#173–#182). Triaged backlog from teammate reviews is filed as #183+.
+
+---
+
+## 9. Triaged backlog from teammate-agent reviews (2026-06-05)
+
+Three teammate-agent reviews were assessed (archived in [reviews/](reviews/README.md)). Strong
+corroboration: one independently recommended a **lightweight local HITL triage UI** — exactly the
+golden-path FE in §2/§3. Triage rule: **validation-first** — adopt what makes the golden path real,
+frictionless, or credible; defer anything that assumes the (still-unpassed) gate.
+
+### 9a. Already done this session
+TS `^6.0.3`→`^5.0.0` and LICENSE (#165); live-LLM CI smoke (#167); client memoization / state fix
+(#168); HITL web review UI (#173–#177); rejection-reason feedback loop (#182, WIP `cherenkov/core/feedback_store.py`).
+**Note:** a teammate has begun Phase 0 — untracked WIP `cherenkov/web/api.py` (wired to the *real*
+`HitlQueue`, not mock) + `cherenkov/web/divergences.py`. Land it via its own reviewed PR.
+
+### 9b. Adopt now — credibility & golden-path hardening (tickets #183+)
+| Item | Source | Why now |
+|------|--------|---------|
+| **YAML spec support** (`yaml.safe_load` for `.yaml/.yml`) | F4 | real bug — ingest is JSON-only today; blocks real specs |
+| **`cherenkov report --output report.json`** (+ `--diff`) | F3 | structured results enable CI, diffing, the review UI |
+| **`cherenkov self-test`** (mini-spec → generate → tsc) | F1 | proves the core claim on demand; complements #167 |
+| **Per-run `events.jsonl` + `--verbose/--quiet`** | E10/E11 | observability; separates logs from user output |
+| **Generation timeout + retry-on-non-compiling-output** | E7/E8 | directly kills the premortem's silent-fail mode |
+| **Golden-output snapshot test for `generate`** | E9 | catches prompt drift in CI |
+| **Consolidate validate entrypoints** (drop `cherenkov_validate.py`) | E3 | one CLI surface |
+| **Spec coverage-gap report** (skipped endpoints / response codes) | F8 | answers "did it cover my API?" |
+| **Document PlanStage as deterministic-by-design** (or ticket the LLM planner) | E4 | ends a spec-vs-reality gap |
+| **Mutation test for the validation engine** (break a test → validate catches it) | E13 | proves the detector works E2E |
+
+### 9c. Meaningful-workflow innovation — Phase 3+ (the "real human workflows" the owner asked for)
+These make the tool matter for *real* APIs, but they widen scope, so they land **after** the gate.
+| Bet | Source | Note |
+|-----|--------|------|
+| **Chained / stateful CRUD journeys** (POST→capture id→PATCH→DELETE via OpenAPI links) | Doc3 A, F-stateful | the biggest "meaningful workflow" gap; spike ticket now, build post-gate |
+| **Robust test-data management** (unique-constraint / 409 handling, fixtures) | Doc3 | pairs with chained tests |
+| **Lightweight DAST** (OWASP payloads in the mutation menu; assert safe-reject, no 500) | Doc3 B, F7 | natural extension of existing mutation testing |
+| **Semantic chunking / RAG for huge specs** (`nomic-embed-text`, keep prefix cache hot) | Doc3 #3 | the bundled `stripe_spec.json` is 7.8 MB — real need |
+| **Auto-PR of tightening suggestions** (GitHub/GitLab one-click) | Doc3 | closes the suggest→apply loop without violating D7 (human merges) |
+| **Advanced Auth Vault** (OAuth2 code flow, mTLS, multi-tenant JWT) | Doc3 C | unblocks real enterprise specs |
+| **GraphQL / gRPC / WebSocket** ingestion | Doc1, Doc3 | long-horizon market expansion |
+| **Novelty Gate 4 + LLM Quality Gate 6** | dev plan | complete the 6-gate design |
+| ⚠️ **Safe-list opt-in auto-healing** | Doc3 #2 | **tension with invariant D7** (suggest-only). Only as a strict, user-opt-in policy engine, carefully gated — do NOT erode D7 by default |
+
+### 9d. Rejected / deferred (predicated on the fabricated gate)
+**Do not action until the real gate passes.** "Ready to ship / open-source launch now", the B+ 88.5
+score, **un-quarantining Track B/C now**, and all pricing / Pro / Enterprise / SaaS / monetization
+plans (Doc2 §2.3–2.5) rest on the fabricated "4/5 passed" claim. Security items Doc2 marks **P0**
+(HITL auth, SQLite encryption) are real but **over-prioritised for a localhost-first, single-user,
+pre-validation tool** — captured as a security backlog ticket, not a launch blocker.
