@@ -54,9 +54,13 @@ class IngestStage:
 
         try:
             with open(path, "r", encoding="utf-8") as f:
-                spec = json.load(f)
+                if path.suffix in [".yaml", ".yml"]:
+                    import yaml
+                    spec = yaml.safe_load(f)
+                else:
+                    spec = json.load(f)
         except Exception as e:
-            error_msg = f"Failed to parse OpenAPI spec JSON: {e}"
+            error_msg = f"Failed to parse OpenAPI spec (JSON/YAML): {e}"
             self.log.error(error_msg)
             return IngestOutput(
                 endpoints=[],

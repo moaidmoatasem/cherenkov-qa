@@ -58,6 +58,10 @@ class CertificationError(CherenkovError):
 
 
 
+class LoggerConfig:
+    suppress_stderr = False
+    events_file = None
+
 # ── structured logging (JSONL, one event per line) ──────────────────────────
 class StructuredLogger:
     """Minimal structured logger. One logger per stage. JSONL to stderr (and
@@ -78,7 +82,11 @@ class StructuredLogger:
             **fields,
         }
         line = json.dumps(record)
-        print(line, file=sys.stderr)
+        if not LoggerConfig.suppress_stderr:
+            print(line, file=sys.stderr)
+        if LoggerConfig.events_file:
+            LoggerConfig.events_file.write(line + "\n")
+            LoggerConfig.events_file.flush()
         if self._file:
             self._file.write(line + "\n")
             self._file.flush()

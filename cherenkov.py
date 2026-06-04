@@ -110,10 +110,19 @@ def print_perf_report(target_url, reports):
 
 def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description='CHERENKOV E2E Suite Command Line Interface')
+    parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose output')
+    parser.add_argument('--quiet', '-q', action='store_true', help='Suppress all output (including JSONL from stderr)')
     subparsers = parser.add_subparsers(dest='command', required=True, help='Subcommands to execute')
 
     validate_parser = subparsers.add_parser('validate', help='Validate E2E test suite against a real server')
     validate_parser.add_argument('--target', '-t', required=True, help='The real server target base URL')
+
+    self_test_parser = subparsers.add_parser('self-test', help='Run a deterministic dry-run of the pipeline (mocking Ollama and the server)')
+
+
+    report_parser = subparsers.add_parser('report', help='Generate test coverage and diff reports from run logs')
+    report_parser.add_argument('--output', '-o', help='JSON output file path (e.g. report.json)')
+    report_parser.add_argument('--diff', '-d', help='Path to previous report.json for diff comparison')
 
     eject_parser = subparsers.add_parser("eject", help='Eject generated tests to a standalone Playwright suite')
     eject_parser.add_argument('--output', '-o', required=True, help='Target output directory for the standalone suite')
@@ -262,6 +271,14 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
+    from cherenkov.core.errors import LoggerConfig
+    if args.quiet:
+        LoggerConfig.suppress_stderr = True
+        
+    # Setup for verbose (e.g. if we want to change standard output logic)
+    # The JSONL logs always go to events.jsonl now via OrchestrationEngine
+    # If not quiet, they also go to stderr.
+
     if args.command == 'validate':
         engine = ValidationEngine('cli_validate')
         results = engine.validate_suite(args.target)
@@ -270,6 +287,14 @@ def main():
             sys.exit(1)
         print_tightening_report(results)
         sys.exit(0)
+
+    elif args.command == 'self-test':
+        from cherenkov.stages.self_test_cmd import run_self_test
+        sys.exit(run_self_test())
+
+    elif args.command == 'report':
+        from cherenkov.stages.report_cmd import run_report
+        sys.exit(run_report(output=args.output, diff=args.diff))
 
     elif args.command == 'eject':
         ejector = EjectorEngine('cli_eject')

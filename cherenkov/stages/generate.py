@@ -117,27 +117,62 @@ class GenerateStage:
             instruction=instruction
         )
 
-        try:
-            # 1. Complete raw code generation via configured provider
-            client = get_client()
-            raw_code = client.complete_code(
-                system_prompt=SYSTEM_PROMPT,
-                user_prompt=user_prompt,
-                model=Config.GEN_MODEL,
-                run_id=self.run_id
-            )
-            
-            # 2. Brutal DeepSeek <think> strip (if any)
-            code = strip_think(raw_code)
-            
-        except Exception as e:
-            error_msg = f"Ollama generation failed: {e}"
-            self.log.error(error_msg)
+        temperatures = [0.1, 0.3, 0.5]
+        code = ""
+        last_error = ""
+
+        # Make temp directory for tsc check
+        stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
+        temp_dir = os.path.join(stub_dir, "generated_tests")
+        os.makedirs(temp_dir, exist_ok=True)
+        temp_file = os.path.join(temp_dir, f"temp_{scenario.mutation_id}.spec.ts")
+
+        for temp in temperatures:
+            try:
+                # 1. Complete raw code generation via configured provider
+                client = get_client()
+                raw_code = client.complete_code(
+                    system_prompt=SYSTEM_PROMPT,
+                    user_prompt=user_prompt,
+                    model=Config.GEN_MODEL,
+                    temperature=temp,
+                    run_id=self.run_id
+                )
+                
+                # 2. Brutal DeepSeek <think> strip (if any)
+                code = strip_think(raw_code)
+
+                # 3. Write temp file and check tsc --noEmit
+                with open(temp_file, "w", encoding="utf-8") as f:
+                    f.write(code)
+                
+                import subprocess
+                process = subprocess.run(
+                    ["npx", "tsc", "--noEmit"],
+                    cwd=stub_dir,
+                    capture_output=True,
+                    text=True,
+                    timeout=30
+                )
+                if process.returncode == 0:
+                    break
+                else:
+                    last_error = f"TSC failed: {process.stderr[:100]}"
+                    self.log.warning("tsc compilation failed, retrying with higher temperature", temperature=temp, error=last_error)
+            except Exception as e:
+                last_error = f"Ollama generation failed: {e}"
+                self.log.warning("generation exception, retrying with higher temperature", temperature=temp, error=last_error)
+
+        if os.path.exists(temp_file):
+            os.remove(temp_file)
+
+        if not code or (last_error and "TSC failed" not in last_error and "Ollama" in last_error):
+            self.log.error(last_error)
             return GenerateOutput(
                 scenario_id=scenario.mutation_id or "unknown",
                 test_code="",
                 status=Status.FAILED,
-                errors=[StageError(code="OLLAMA_GENERATION_FAILED", detail=error_msg)],
+                errors=[StageError(code="OLLAMA_GENERATION_FAILED", detail=last_error)],
                 metadata=StageMeta(stage="GENERATE", duration_ms=0)
             )
 
