@@ -17,6 +17,37 @@ class EjectorEngine:
         self.log = get_logger("EJECT", self.run_id)
         self.stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
         self.tests_src_dir = os.path.join(self.stub_dir, "generated_tests")
+        # Tracked reference specs. `stub/generated_tests/` is gitignored, so on a
+        # fresh checkout (e.g. CI) it is empty; fall back to these committed
+        # fixtures so the eject path stays exercisable end-to-end.
+        self.fixtures_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../tests/eject_fixtures")
+        )
+
+    @staticmethod
+    def _spec_files_in(directory: str) -> list[str]:
+        """Returns the ejectable spec/score filenames in a directory (empty if none/missing)."""
+        if not os.path.isdir(directory):
+            return []
+        return [
+            f for f in os.listdir(directory)
+            if f.endswith(".spec.ts") and os.path.getsize(os.path.join(directory, f)) > 0
+            or f == "_scores.json"
+        ]
+
+    def _resolve_tests_src(self) -> tuple[str | None, list[str]]:
+        """Picks the generated-tests dir, falling back to tracked fixtures when empty."""
+        primary = self._spec_files_in(self.tests_src_dir)
+        if primary:
+            return self.tests_src_dir, primary
+        fallback = self._spec_files_in(self.fixtures_dir)
+        if fallback:
+            self.log.warning(
+                "no generated specs found; falling back to tracked eject fixtures",
+                fixtures_dir=self.fixtures_dir,
+            )
+            return self.fixtures_dir, fallback
+        return None, []
 
     def eject_suite(self, output_dir: str) -> bool:
         """Ejects the test suite to a standalone folder with standard configs and zero CHERENKOV dependencies."""
@@ -33,30 +64,28 @@ class EjectorEngine:
             
             os.makedirs(tests_dest_dir, exist_ok=True)
 
-            # 2. Copy generated test files (.spec.ts)
-            if not os.path.exists(self.tests_src_dir):
-                self.log.warning("no generated tests source directory found")
-                return False
-
-            spec_files = [f for f in os.listdir(self.tests_src_dir) if f.endswith(".spec.ts") or f == "_scores.json"]
-            if not spec_files:
-                self.log.warning("no spec files found to eject")
+            # 2. Copy generated test files (.spec.ts), falling back to tracked fixtures
+            tests_src_dir, spec_files = self._resolve_tests_src()
+            if not tests_src_dir:
+                self.log.warning("no spec files found to eject (generated dir and fixtures both empty)")
                 return False
 
             for f in spec_files:
-                src_file = os.path.join(self.tests_src_dir, f)
+                src_file = os.path.join(tests_src_dir, f)
                 dest_file = os.path.join(tests_dest_dir, f)
                 shutil.copy2(src_file, dest_file)
                 self.log.info("copied test file", filename=f)
 
-            # 3. Copy generated types file
+            # 3. Copy generated types file (fall back to tracked fixture if stub copy is absent)
             types_src = os.path.join(self.stub_dir, "generated-types.ts")
+            if not os.path.exists(types_src):
+                types_src = os.path.join(self.fixtures_dir, "generated-types.ts")
             types_dest = os.path.join(output_path, "generated-types.ts")
             if os.path.exists(types_src):
                 shutil.copy2(types_src, types_dest)
-                self.log.info("copied generated types")
+                self.log.info("copied generated types", source=types_src)
             else:
-                self.log.warning("generated-types.ts not found in stub folder")
+                self.log.warning("generated-types.ts not found in stub folder or fixtures")
 
             # 4. Emit a clean, standard client.ts without any CHERENKOV trace or monkeypatching hooks
             clean_client_content = """// Standalone openapi-fetch client configuration
