@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import sys
 import subprocess
 from cherenkov.core.errors import get_logger
@@ -57,11 +58,11 @@ class PlaywrightRunner:
         # We override baseURL via API_URL env variable which playwright config picks up
 
         if self._use_wsl:
-            stdout, stderr, exit_code, failure_msg, trace_path = self._exec_via_wsl(
+            exit_code, failure_msg, trace_path = self._exec_via_wsl(
                 scenario_id, api_url, update_snapshots
             )
         else:
-            stdout, stderr, exit_code, failure_msg, trace_path = self._exec_native(
+            exit_code, failure_msg, trace_path = self._exec_native(
                 scenario_id, api_url, update_snapshots
             )
 
@@ -118,7 +119,10 @@ class PlaywrightRunner:
             cmd_parts.append("--update-snapshots")
 
         # API_URL must be exported inside the WSL bash session
-        shell_cmd = f"export API_URL='{api_url}'; cd {linux_stub} && " + " ".join(cmd_parts)
+        shell_cmd = (
+            f"export API_URL={shlex.quote(api_url)}; "
+            f"cd {shlex.quote(linux_stub)} && " + " ".join(cmd_parts)
+        )
         wsl_cmd = ["wsl.exe", "-e", "bash", "-c", shell_cmd]
 
         self.log.info("invoking playwright runner (wsl)", command=" ".join(wsl_cmd), api_url=api_url)
@@ -161,4 +165,4 @@ class PlaywrightRunner:
             if exit_code != 0:
                 failure_msg = stderr or stdout or str(e)
 
-        return stdout, stderr, exit_code, failure_msg, trace_path
+        return exit_code, failure_msg, trace_path

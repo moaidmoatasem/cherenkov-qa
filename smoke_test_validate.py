@@ -8,16 +8,24 @@ import time
 import subprocess
 import requests
 
+def _to_wsl_path(windows_path: str) -> str:
+    """Convert a \\\\wsl.localhost\\<distro>\\foo\\bar path to a WSL Linux path (/foo/bar)."""
+    parts = windows_path.replace("/", "\\").split("\\")
+    # parts: ['', '', 'wsl.localhost', '<distro>', 'home', 'moaid', ...]
+    linux_parts = parts[4:]
+    return "/" + "/".join(linux_parts)
+
 def _start_target_api():
     """Start the target API and return (proc_or_none, base_url)."""
     target_dir = os.path.abspath("target")
     if sys.platform == "win32" and (target_dir.startswith("\\\\") or target_dir.startswith("//")):
+        linux_target = _to_wsl_path(target_dir)
         subprocess.run(["wsl.exe", "-e", "bash", "-c",
             "tmux kill-session -t ck_target 2>/dev/null; echo done"],
             capture_output=True, timeout=10)
         subprocess.Popen(["wsl.exe", "-e", "bash", "-c",
             "tmux new-session -d -s ck_target "
-            "'cd /home/moaid/cherenkov-qa/target && "
+            f"'cd {linux_target} && "
             "uvicorn target_api:app --host 0.0.0.0 --port 8000'"],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         try:
@@ -103,8 +111,8 @@ def main():
         assert "password_too_short [FAILED]" in stdout, "Failed to capture password_too_short spec conformance drift!"
         print("[OK] Successfully verified spec-to-implementation conformance failure (RED) report.")
 
-        assert "Git status verification" in stdout or "zero test files were auto-modified" in stdout, "Suggest-only trust constraint check missing!"
-        print("[OK] Successfully verified suggest-only sandbox constraint assertion (Git status reported).")
+        assert "zero test files were auto-modified by validation" in stdout, "Suggest-only trust constraint violated (test files were modified)!"
+        print("[OK] Successfully verified suggest-only sandbox constraint assertion (no files modified).")
 
     except subprocess.CalledProcessError as e:
         print(f"Validation CLI execution failed: {e}")

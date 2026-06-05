@@ -9,17 +9,25 @@ import shutil
 import subprocess
 import requests
 
+def _to_wsl_path(windows_path: str) -> str:
+    """Convert a \\\\wsl.localhost\\<distro>\\foo\\bar path to a WSL Linux path (/foo/bar)."""
+    parts = windows_path.replace("/", "\\").split("\\")
+    # parts: ['', '', 'wsl.localhost', '<distro>', 'home', 'moaid', ...]
+    linux_parts = parts[4:]
+    return "/" + "/".join(linux_parts)
+
 def _start_target_api():
     """Start the target API and return (proc_or_none, base_url)."""
     target_dir = os.path.abspath("target")
     if sys.platform == "win32" and (target_dir.startswith("\\\\") or target_dir.startswith("//")):
+        linux_target = _to_wsl_path(target_dir)
         # Kill any leftover uvicorn, start fresh via tmux in WSL
         subprocess.run(["wsl.exe", "-e", "bash", "-c",
             "tmux kill-session -t ck_target 2>/dev/null; echo done"],
             capture_output=True, timeout=10)
         subprocess.Popen(["wsl.exe", "-e", "bash", "-c",
             "tmux new-session -d -s ck_target "
-            "'cd /home/moaid/cherenkov-qa/target && "
+            f"'cd {linux_target} && "
             "uvicorn target_api:app --host 0.0.0.0 --port 8000'"],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         # Find WSL guest IP for Windows-side health checks
