@@ -133,6 +133,8 @@ export default function CommandPalette({
           <Search className="w-5 h-5 text-glow-blue shrink-0" />
           <input
             ref={inputRef}
+            id="command-palette-input"
+            name="command-palette"
             type="text"
             placeholder="Type page name or action command (e.g. 'author', 'setup', 'divergences')..."
             value={search}

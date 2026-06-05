@@ -1,0 +1,7 @@
+# Normalize line endings to avoid CRLF/LF churn on Windows + WSL checkouts.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.zip binary
