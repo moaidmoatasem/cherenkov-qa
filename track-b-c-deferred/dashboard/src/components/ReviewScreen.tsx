@@ -139,20 +139,22 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
     approveTestScenario(id).catch(err => console.warn('API approve failed, using local state', err));
     
     setTimeout(() => {
-      setTests(prev => {
-        const updated = prev.map(t => t.id === id ? { ...t, verdict: 'approved' as const } : t);
-        setApproveTriggerId(null);
-        const visible = updated.filter(t => activeFilter === 'all' || t.verdict === activeFilter);
-        const idx = visible.findIndex(t => t.id === id);
-        if (idx < visible.length - 1) {
-          setSelectedTestId(visible[idx + 1].id);
-        } else if (idx > 0) {
-          setSelectedTestId(visible[idx - 1].id);
-        }
-        const approvedCount = updated.filter(t => t.verdict === 'approved').length;
-        onUpdatePassRateAndCount(updated.length, approvedCount);
-        return updated;
-      });
+      // Compute next state from the ref (kept in sync) so the setTests updater stays
+      // pure. Performing setState / parent-callbacks inside an updater runs them during
+      // React's render phase and triggers "setState while rendering" warnings.
+      const updated = testsRef.current.map(t => t.id === id ? { ...t, verdict: 'approved' as const } : t);
+      const visible = updated.filter(t => activeFilter === 'all' || t.verdict === activeFilter);
+      const idx = visible.findIndex(t => t.id === id);
+      const approvedCount = updated.filter(t => t.verdict === 'approved').length;
+
+      setTests(updated);
+      setApproveTriggerId(null);
+      if (idx < visible.length - 1) {
+        setSelectedTestId(visible[idx + 1].id);
+      } else if (idx > 0) {
+        setSelectedTestId(visible[idx - 1].id);
+      }
+      onUpdatePassRateAndCount(updated.length, approvedCount);
     }, 400);
   };
 

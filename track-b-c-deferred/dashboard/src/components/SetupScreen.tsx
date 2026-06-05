@@ -34,6 +34,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
   const [serverAuth, setServerAuth] = useState('');
   const [loading, setLoading] = useState(false);
   const [ingestedSpecPath, setIngestedSpecPath] = useState<string | null>(null);
+  const [ingestError, setIngestError] = useState<string | null>(null);
   
   // Tooltip details state
   const [hoveredEndpoint, setHoveredEndpoint] = useState<EndpointRichness | null>(null);
@@ -55,6 +56,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
   const loadRealOrMockSpec = async (name: string, file: File | null, url: string | null) => {
     setLoading(true);
     setFileName(name);
+    setIngestError(null);
     try {
       const data = await ingestSpec(file, url);
       const mapped = data.endpoints.map((ep: any, idx: number) => ({
@@ -68,7 +70,10 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
       setEndpoints(mapped);
       setIngestedSpecPath(data.spec_path);
     } catch (err) {
-      console.warn('Real backend spec ingestion failed, falling back to mock data', err);
+      // Surface the failure instead of silently passing mock data off as a real ingest.
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn('Spec ingestion failed:', err);
+      setIngestError(`Ingest failed: ${msg}. Showing sample endpoints below (not your spec).`);
       setEndpoints(MOCK_ENDPOINTS);
       setIngestedSpecPath('stub/stripe_spec.json'); // standard workspace spec fallback
     } finally {
@@ -338,6 +343,11 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
               <span>Spec Richness Analyzer</span>
             </h2>
 
+            {ingestError && (
+              <div className="mb-3 px-3 py-2 rounded-md border border-red-500/40 bg-red-500/10 text-red-300 text-[11px] font-mono">
+                {ingestError}
+              </div>
+            )}
             {loading ? (
               <div className="h-[220px] flex flex-col items-center justify-center text-center font-mono space-y-3">
                 <span className="relative flex h-5 w-5">
