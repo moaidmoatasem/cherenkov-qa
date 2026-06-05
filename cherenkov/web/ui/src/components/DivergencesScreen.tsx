@@ -118,6 +118,8 @@ export default function DivergencesScreen() {
         <div className="relative w-full md:max-w-xs">
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-text-muted" />
           <input
+            id="divergences-search"
+            name="divergences-search"
             type="text"
             placeholder="Search endpoints or details..."
             value={searchQuery}
