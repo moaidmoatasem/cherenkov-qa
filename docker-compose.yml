@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  prism:
+    image: stoplight/prism:5
+    command: mock -h 0.0.0.0 stub/petstore.json
+    ports:
+      - "4010:4010"
+    volumes:
+      - ./stub:/usr/src/prism/packages/cli/stub
+    
+  cherenkov:
+    build:
+      context: .
+    volumes:
+      - ./output:/app/output
+      - openapi_cache:/root/.cache/openapi-fetch
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - PRISM_HOST=http://prism:4010
+    depends_on:
+      - prism
+
+  cherenkov-demo:
+    build:
+      context: .
+    profiles:
+      - demo
+    command: ["review", "--web", "--demo"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./demo_fixture:/app/demo_fixture
+      - ./output:/app/output
+    environment:
+      - DEMO_MODE=1
+    
+  ollama:
+    image: ollama/ollama
+    profiles:
+      - full
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  ollama-init:
+    image: curlimages/curl
+    profiles:
+      - full
+    depends_on:
+      - ollama
+    entrypoint: >
+      sh -c "
+      echo 'Waiting for Ollama to be ready...';
+      until curl -s -f http://ollama:11434/api/tags > /dev/null; do sleep 1; done;
+      echo 'Pulling qwen2.5-coder:7b...';
+      curl -X POST http://ollama:11434/api/pull -d '{\"name\":\"qwen2.5-coder:7b\"}';
+      echo 'Pulling deepseek-r1:8b...';
+      curl -X POST http://ollama:11434/api/pull -d '{\"name\":\"deepseek-r1:8b\"}';
+      echo 'Models pulled successfully.';
+      "
+
+volumes:
+  openapi_cache:
+  ollama_models:
