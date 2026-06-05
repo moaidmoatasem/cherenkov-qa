@@ -162,10 +162,10 @@ def main() -> int:
         return 1
 
     print(f"\n[PASS] All {len(checks)} checks passed — HITL CLI kill criterion met.")
-    print("       cherenkov hitl list|show|approve|reject --json ✓")
-    print("       hitl/v1 envelope shape invariant ✓")
-    print("       atomic conflict detection ✓")
-    print("       actor defaulting via $USER ✓")
+    print("       cherenkov hitl list|show|approve|reject --json [OK]")
+    print("       hitl/v1 envelope shape invariant [OK]")
+    print("       atomic conflict detection [OK]")
+    print("       actor defaulting via $USER [OK]")
     return 0
 
 
