@@ -39,7 +39,12 @@ def main():
         proc.terminate()
         return
 
-    # 3. Execute cherenkov_validate.py against target API
+    # 3. Ensure git tree is clean for generated_tests so the suggest-only constraint check works
+    print("Restoring and cleaning stub/generated_tests to pristine state...")
+    subprocess.run(["git", "restore", "stub/generated_tests/"], cwd=os.path.abspath("."), check=False)
+    subprocess.run(["git", "clean", "-fd", "stub/generated_tests/"], cwd=os.path.abspath("."), check=False)
+
+    # 4. Execute cherenkov_validate.py against target API
     print("Executing validation subcommand CLI against target API...")
     try:
         val_proc = subprocess.run(

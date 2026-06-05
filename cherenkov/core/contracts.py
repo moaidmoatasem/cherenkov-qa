@@ -59,7 +59,7 @@ class ReasoningResult(BaseModel):
 class Mutation(BaseModel):
     """Deterministic, built in Stage 0. PLAN selects by id; it never invents these."""
     id: str                            # "omit_email", "email_too_long"
-    case_type: str                     # "validation" | "happy_path" | "auth"
+    case_type: str                     # "validation" | "happy_path" | "auth" | "security"
     expected_status: int
     instruction: str                   # given verbatim to the generator
     value: object | None = None
