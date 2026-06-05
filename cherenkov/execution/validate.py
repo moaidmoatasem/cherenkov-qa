@@ -79,8 +79,8 @@ class ValidationEngine:
 
             result = runner.execute_test(
                 scenario_id=scenario_id,
-                test_code=code,
-                api_url=target_url
+                api_url=target_url,
+                test_code=None
             )
 
             trace_path = result.get("trace_path", "")

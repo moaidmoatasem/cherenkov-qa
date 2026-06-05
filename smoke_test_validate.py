@@ -7,6 +7,7 @@ import sys
 import time
 import subprocess
 import requests
+import hashlib
 
 def _to_wsl_path(windows_path: str) -> str:
     """Convert a \\\\wsl.localhost\\<distro>\\foo\\bar path to a WSL Linux path (/foo/bar)."""
@@ -86,6 +87,19 @@ def main():
     subprocess.run(["git", "restore", "stub/generated_tests/"], cwd=os.path.abspath("."), check=False)
     subprocess.run(["git", "clean", "-fd", "stub/generated_tests/"], cwd=os.path.abspath("."), check=False)
 
+    def _get_tests_hash():
+        tests_dir = os.path.abspath("stub/generated_tests")
+        h = hashlib.sha256()
+        if os.path.exists(tests_dir):
+            for f in sorted(os.listdir(tests_dir)):
+                if f.endswith(".spec.ts"):
+                    with open(os.path.join(tests_dir, f), "rb") as file:
+                        h.update(file.read())
+        return h.hexdigest()
+
+    print("Calculating pre-run hash of generated_tests...")
+    pre_hash = _get_tests_hash()
+
     # 4. Execute cherenkov_validate.py against target API
     print("Executing validation subcommand CLI against target API...")
     try:
@@ -112,7 +126,10 @@ def main():
         print("[OK] Successfully verified spec-to-implementation conformance failure (RED) report.")
 
         assert "zero test files were auto-modified by validation" in stdout, "Suggest-only trust constraint violated (test files were modified)!"
-        print("[OK] Successfully verified suggest-only sandbox constraint assertion (no files modified).")
+        
+        post_hash = _get_tests_hash()
+        assert pre_hash == post_hash, f"Hash-guard regression: test files were modified on disk! Pre: {pre_hash}, Post: {post_hash}"
+        print("[OK] Successfully verified suggest-only sandbox constraint assertion (no files modified, hashes match).")
 
     except subprocess.CalledProcessError as e:
         print(f"Validation CLI execution failed: {e}")
