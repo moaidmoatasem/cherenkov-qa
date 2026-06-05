@@ -23,6 +23,7 @@ import CherenkovLogo from './CherenkovLogo';
 export default function EjectScreen() {
   const [outputPath, setOutputPath] = useState('./playwright-suite');
   const [isEjected, setIsEjected] = useState(false);
+  const [ejectError, setEjectError] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState<{ [key: string]: boolean }>({
     'playwright-suite': true,
@@ -40,12 +41,16 @@ export default function EjectScreen() {
   };
 
   const handleEject = async () => {
+    setEjectError(null);
     try {
       await ejectSuite(outputPath);
+      // Only claim success when the backend actually wrote the files.
+      setIsEjected(true);
     } catch (err) {
-      console.warn('Backend eject call failed, proceeding with UI confirmation', err);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn('Backend eject call failed', err);
+      setEjectError(`Eject failed: ${msg}`);
     }
-    setIsEjected(true);
   };
 
   const handleCopy = () => {
@@ -176,6 +181,11 @@ export default function EjectScreen() {
                   <Download className="w-4 h-4 stroke-[2.5px]" />
                   <span>Eject and Write Directories</span>
                 </button>
+                {ejectError && (
+                  <div className="mt-3 px-3 py-2 rounded-md border border-red-500/40 bg-red-500/10 text-red-300 text-[11px] font-mono">
+                    {ejectError}
+                  </div>
+                )}
               </div>
             ) : (
               // Stage 2: Successful copy instructions after eject
