@@ -165,6 +165,23 @@ this ticket; do not vendor mock data into the image.
 - `cherenkov review --web --demo` loads that fixture into the real `HitlQueue` and serves the UI.
 - Clearly badge the UI as "Demo data" so it's never mistaken for a live run (anti-drift).
 
+---
+
+## 4. Next Horizon: Distribution Channels (Spike Findings)
+
+For future releases, we will expand distribution beyond local source checkouts and Docker:
+
+### 4.1 PyPI Distribution
+- **Strategy**: Migrate `requirements.txt` to `pyproject.toml` or `setup.py`.
+- **UI Bundling**: The pre-built React UI (`cherenkov/web/ui/dist`) must be included in the Python wheel via `MANIFEST.in`.
+- **CI Action**: Implement `.github/workflows/publish-pypi.yml` triggering on `refs/tags/v*` using PyPA's `gh-action-pypi-publish`.
+- **Challenge**: Playwright requires browser binaries. Running `cherenkov validate` from a `pip install` environment will either require a post-install hook or a runtime check to prompt the user to run `playwright install`.
+
+### 4.2 Docker Hub Distribution
+- **Strategy**: Leverage the existing multi-stage `Dockerfile`.
+- **CI Action**: Implement `.github/workflows/publish-docker.yml` triggering on tags, using Docker's official `build-push-action`.
+- **Multi-arch**: The Node UI build and Python slim base support both `amd64` and `arm64`, but Playwright binaries on ARM can sometimes be tricky. This requires QEMU setup in the GitHub Action and explicit multi-arch tags (`cherenkov:latest-amd64`, `cherenkov:latest-arm64`).
+
 **Acceptance (raw evidence):**
 - On a machine with **no GPU**: `docker compose --profile demo up` → Findings queue with real
   petstore drift in < 2 min, no model download. Screen recording from a clean Docker install.

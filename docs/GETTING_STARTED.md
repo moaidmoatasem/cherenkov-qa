@@ -26,6 +26,18 @@ npx playwright install
 cd ..
 ```
 
+### 2. Docker Setup (Recommended)
+You can run CHERENKOV in a fully containerized environment using Docker Compose. This packages the Python engine, the pre-built React dashboard, the target API, and the Ollama model server automatically.
+
+```bash
+# Run the complete environment (requires GPU)
+make full
+
+# Or run the offline Demo mode (no GPU, no model download)
+make demo
+```
+When running `make demo`, you can view the mock findings in the dashboard at `http://localhost:8000`.
+
 ---
 
 ## 🚀 CLI Commands & Usage
@@ -82,7 +94,41 @@ npx playwright test
 
 ---
 
-### Command 3: `visual` (optional Track B capability layer)
+### Command 3: `self-test`
+Run a deterministic dry-run of the pipeline (mocking Ollama and the server).
+
+#### Command Help:
+```bash
+./bin/cherenkov self-test --help
+```
+
+#### Standard Usage:
+```bash
+./bin/cherenkov self-test
+```
+
+---
+
+### Command 4: `report`
+Generate test coverage and diff reports from run logs.
+
+#### Command Help:
+```bash
+./bin/cherenkov report --help
+```
+
+#### Standard Usage:
+```bash
+# Generate report
+./bin/cherenkov report --output report.json
+
+# Generate report with diff
+./bin/cherenkov report --output report.json --diff prev_report.json
+```
+
+---
+
+### Command 5: `visual` (optional Track B capability layer)
 Runs visual-regression checks against a rendered URL. Auto-initializes a baseline on first run; compares against it on subsequent runs. Reuses Track A contracts (`VisualSlice`, `VisualReport`) and the Track A `PlaywrightRunner` — never replaces API conformance.
 
 #### Command Help:

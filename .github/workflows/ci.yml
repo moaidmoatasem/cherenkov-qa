@@ -144,6 +144,16 @@ jobs:
       - name: Run InferenceClient interface unit tests
         run: PYTHONPATH=. python3 -m unittest test_inference_client.py
 
+  docker-build-check:
+    name: Verify Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build Docker Image
+        run: docker build -t cherenkov:ci .
+
+
   # ── X3 (#132): CI runners for env-dependent smokes ────────────────────────
   # Provisions node/npm/playwright so smoke_test_eject.py can run the
   # ejected Playwright suite natively (previously skipped on plain runners).

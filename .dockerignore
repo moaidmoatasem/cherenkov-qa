@@ -1,0 +1,13 @@
+track-b-c-deferred/
+**/node_modules
+.git
+__pycache__
+.pytest_cache
+*.pyc
+*.pyo
+venv/
+env/
+.env
+.cherenkov/
+scratch/
+docs/

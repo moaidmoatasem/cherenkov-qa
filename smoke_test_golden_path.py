@@ -9,7 +9,6 @@ from __future__ import annotations
 import os, sys, json
 from fastapi.testclient import TestClient
 
-# Use a clean in-process approach: create a temp dir for the DB file.
 import tempfile
 _db_dir = tempfile.mkdtemp()
 _db_path = os.path.join(_db_dir, "gp.db")
