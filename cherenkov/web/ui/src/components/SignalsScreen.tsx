@@ -23,6 +23,11 @@ export default function SignalsScreen() {
         title="Telemetry Signals"
         description="Verify performance, visual changes, and functional coverage profiles from live test suite telemetry."
       />
+      <div className="flex justify-end -mt-4 mb-2">
+        <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border bg-amber-500/10 text-amber-400 border-amber-500/30">
+          MOCK DATA
+        </span>
+      </div>
 
       <div className="border-b border-white/5 pb-2">
         <Tabs items={tabs} activeId={activeTab} onChange={setActiveTab} />
