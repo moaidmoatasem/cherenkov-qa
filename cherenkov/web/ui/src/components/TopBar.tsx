@@ -70,7 +70,7 @@ export default function TopBar({
       </div>
 
       {/* Autonomy Level Control Segmented Control */}
-      <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg p-0.5" title="Autonomy Level Control">
+      <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg p-0.5" role="radiogroup" aria-label="Autonomy Level Control">
         <span className="text-[10px] font-bold font-mono tracking-wider text-text-muted px-2.5 flex items-center gap-1">
           <Cpu className="w-3 h-3 text-glow-blue" />
           AUTONOMY:
@@ -80,8 +80,10 @@ export default function TopBar({
           return (
             <button
               key={level}
+              role="radio"
+              aria-checked={isActive}
               onClick={() => setAutonomy(level)}
-              className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer focus:outline-none
+              className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-glow-blue focus:outline-none
                 ${isActive 
                   ? 'bg-glow-blue text-bg-base shadow-[0_0_8px_rgba(34,211,238,0.35)]' 
                   : 'text-text-muted hover:text-text-primary hover:bg-white/5'
@@ -120,9 +122,13 @@ export default function TopBar({
         </div>
 
         {/* Dev Reference Utility */}
-        <div className="p-1 rounded hover:bg-white/10 cursor-pointer text-[#7D8DA1] hover:text-glow-bright transition" title="Help Guide">
+        <button
+          type="button"
+          aria-label="Help Guide"
+          className="p-1 rounded hover:bg-white/10 cursor-pointer text-[#7D8DA1] hover:text-glow-bright transition focus-visible:ring-2 focus-visible:ring-glow-blue focus:outline-none"
+        >
           <HelpCircle className="w-4.5 h-4.5" />
-        </div>
+        </button>
       </div>
     </header>
   );

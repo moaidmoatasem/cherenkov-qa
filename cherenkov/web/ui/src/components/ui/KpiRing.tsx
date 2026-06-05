@@ -30,7 +30,15 @@ export function KpiRing({
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
-      <div className="relative" style={{ width: size, height: size }}>
+      <div
+        className="relative"
+        style={{ width: size, height: size }}
+        role="progressbar"
+        aria-valuenow={value}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={title}
+      >
         <svg className="w-full h-full transform -rotate-90">
           {/* Background circle */}
           <circle

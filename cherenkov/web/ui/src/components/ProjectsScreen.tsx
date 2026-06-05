@@ -64,7 +64,7 @@ export default function ProjectsScreen({
   return (
     <div className="p-8 h-full overflow-y-auto space-y-8 grid-bg bg-transparent flex flex-col relative z-10" id="projects-screen">
       {/* Intro Header Row */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
           <CherenkovLogo variant="icon" size={42} />
           <div>
