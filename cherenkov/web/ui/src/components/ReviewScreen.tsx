@@ -74,6 +74,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
           setTests(mapped);
           setSelectedTestId(mapped[0].id);
         }
+        setIsLoading(false);
       })
       .catch(err => {
         addToast('Failed to load review items from server.', 'error');
