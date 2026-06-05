@@ -204,17 +204,16 @@ export async function actOnDivergence(
   action: 'close_with_test' | 'mark_intended' | 'reject', 
   reason?: string
 ): Promise<void> {
-  // Try sending to backend, fallback if it doesn't exist
-  try {
-    const res = await fetch(`${API_BASE}/divergences/act`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ divergence_id: divergenceId, action, reason }),
-    });
-    if (!res.ok) {
-      throw new Error(`Failed to perform action ${action} on divergence ${divergenceId}`);
-    }
-  } catch (err) {
-    console.warn('Real backend actOnDivergence failed, falling back to mock UI update', err);
+  // Propagate failures so callers can surface them. Silently swallowing a failed
+  // write makes the UI report success on a write that never happened — unacceptable
+  // for an audit/compliance tool.
+  const res = await fetch(`${API_BASE}/divergences/act`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ divergence_id: divergenceId, action, reason }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to perform action ${action} on divergence ${divergenceId}: ${res.status}`);
   }
 }
