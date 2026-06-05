@@ -252,6 +252,8 @@ def get_parser() -> argparse.ArgumentParser:
                                help='Serve the prebuilt web UI (default: True)')
     review_parser.add_argument('--port', '-p', type=int, default=8000,
                                help='Port to bind (default: 8000)')
+    review_parser.add_argument('--demo', action='store_true',
+                               help='Load demo fixture data into HITL queue on startup')
 
     # ── X4: MCP server (#133) — post-gate, treat peers as untrusted ──────────
     mcp_parser = subparsers.add_parser(
@@ -401,11 +403,16 @@ def main():
 
     # ── Horizon V: review dashboard web UI (Issues 175-176) ─────────────────
     elif args.command == 'review':
+        if getattr(args, 'demo', False) or os.environ.get('DEMO_MODE') == '1':
+            from cherenkov.execution.demo_mode import generate_demo_findings
+            print("Loading demo findings into HITL queue...")
+            generate_demo_findings()
+            
         import uvicorn
         from cherenkov.web.api import app
-        print(f"\nCHERENKOV review dashboard starting on http://127.0.0.1:{args.port}")
+        print(f"\nCHERENKOV review dashboard starting on http://0.0.0.0:{args.port}")
         print("Hit Ctrl+C to stop.\n")
-        uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="info")
+        uvicorn.run(app, host="0.0.0.0", port=args.port, log_level="info")
 
     # ── X4: MCP server (issue #133) ─────────────────────────────────────────
     elif args.command == 'mcp':
