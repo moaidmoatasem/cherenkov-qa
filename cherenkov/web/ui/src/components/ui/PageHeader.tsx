@@ -28,7 +28,7 @@ export function PageHeader({ title, description, primaryAction, tabs }: PageHead
 
   return (
     <div className="border-b border-border-custom bg-bg-panel px-6 pt-6 pb-4 flex flex-col gap-4 z-10 relative">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold font-display text-text-primary tracking-tight">
             {title}
