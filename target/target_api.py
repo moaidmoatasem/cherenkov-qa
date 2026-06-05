@@ -54,7 +54,9 @@ async def create_user(user: UserCreate):
     if REGRESSION_MODE:
         # BUG 2 — body shape: returns 'user_id' instead of 'id'.
         # A test asserting toHaveProperty('id') will FAIL.
-        return {"user_id": 42, "email": user.email}
+        # Use JSONResponse to bypass FastAPI's response_model validator so the
+        # intentionally wrong shape reaches the client (not a 500 internal error).
+        return JSONResponse(status_code=201, content={"user_id": 42, "email": user.email})
     return UserResponse(id=42, email=user.email)
 
 
