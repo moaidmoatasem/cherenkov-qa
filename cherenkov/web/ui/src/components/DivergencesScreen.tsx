@@ -34,12 +34,22 @@ export default function DivergencesScreen() {
 
   // Filter logic
   const filtered = divergences.filter((d) => {
-    const matchesClass = classFilter === 'ALL' || d.divergenceClass === classFilter;
-    const matchesSeverity = severityFilter === 'ALL' || d.severity === severityFilter;
-    const matchesStatus = statusFilter === 'ALL' || d.status === statusFilter;
-    const matchesSearch = searchQuery === '' || 
-      d.endpoint.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      d.claimB.toLowerCase().includes(searchQuery.toLowerCase());
+    const safeDClass = d.divergenceClass ? String(d.divergenceClass).trim().toUpperCase() : '';
+    const safeCFilter = classFilter ? classFilter.trim().toUpperCase() : 'ALL';
+    const matchesClass = safeCFilter === 'ALL' || safeDClass === safeCFilter;
+    
+    const safeDSeverity = d.severity ? String(d.severity).trim().toLowerCase() : '';
+    const safeSFilter = severityFilter ? severityFilter.trim().toLowerCase() : 'all';
+    const matchesSeverity = safeSFilter === 'all' || safeDSeverity === safeSFilter;
+    
+    const safeDStatus = d.status ? String(d.status).trim().toLowerCase() : '';
+    const safeStFilter = statusFilter ? statusFilter.trim().toLowerCase() : 'all';
+    const matchesStatus = safeStFilter === 'all' || safeDStatus === safeStFilter;
+    
+    const matchesSearch = !searchQuery || searchQuery.trim() === '' || 
+      (d.endpoint && d.endpoint.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (d.claimB && d.claimB.toLowerCase().includes(searchQuery.toLowerCase()));
+      
     return matchesClass && matchesSeverity && matchesStatus && matchesSearch;
   });
 
