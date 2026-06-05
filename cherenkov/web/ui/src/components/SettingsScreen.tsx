@@ -18,6 +18,9 @@ import {
   Coins
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
+import { fetchSettings, updateSettings, SystemSettings } from '../lib/api';
+import { useToast } from './ui/Toast';
+import { Skeleton } from './ui';
 
 export default function SettingsScreen() {
   const [model, setModel] = useState('qwen-coder');
@@ -33,21 +36,63 @@ export default function SettingsScreen() {
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable');
   const [reducedMotion, setReducedMotion] = useState(false);
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [targetSettings, setTargetSettings] = useState({ url: '', auth_header: '' });
+  const { addToast } = useToast();
+
   useEffect(() => {
-    // Load local storage values if present
-    const savedDensity = localStorage.getItem('[copilot] density');
-    if (savedDensity === 'compact') setDensity('compact');
-    
-    const savedMotion = localStorage.getItem('[copilot] reduced-motion');
-    if (savedMotion === 'true') setReducedMotion(true);
+    fetchSettings().then(data => {
+      setTargetSettings(data.target || { url: '', auth_header: '' });
+      setTier(data.engine.model_tier as any);
+      setBudget(data.engine.execution_budget);
+      setThreadLimit(data.engine.workers);
+      setEgress(data.security.egress_policy as any);
+      setApiSecret(data.security.auth_secret || '');
+      setDensity(data.ui.density as any);
+      setReducedMotion(data.ui.reduced_motion);
+      setIsLoading(false);
+    }).catch(err => {
+      addToast(`Failed to load settings: ${(err as Error).message}`, 'error');
+      setIsLoading(false);
+    });
   }, []);
 
-  const handleSave = () => {
-    localStorage.setItem('[copilot] density', density);
-    localStorage.setItem('[copilot] reduced-motion', reducedMotion ? 'true' : 'false');
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 2000);
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await updateSettings({
+        target: targetSettings,
+        engine: {
+          model_tier: tier,
+          enable_demo_mode: true,
+          execution_budget: budget,
+          workers: threadLimit
+        },
+        security: {
+          egress_policy: egress,
+          auth_secret: apiSecret
+        },
+        ui: {
+          density,
+          reduced_motion: reducedMotion
+        }
+      });
+      localStorage.setItem('[copilot] density', density);
+      localStorage.setItem('[copilot] reduced-motion', reducedMotion ? 'true' : 'false');
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+      addToast('Settings saved successfully.', 'success');
+    } catch (err) {
+      addToast(`Failed to save settings: ${(err as Error).message}`, 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return <div className="p-6 h-full space-y-6"><Skeleton className="h-64 w-full" /></div>;
+  }
 
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="settings-screen">
@@ -251,10 +296,11 @@ export default function SettingsScreen() {
               <button
                 type="button"
                 onClick={handleSave}
+                disabled={isSaving}
                 id="btn-settings-save"
-                className="px-6 py-2 bg-glow-blue hover:bg-opacity-95 text-slate-950 font-bold text-xs rounded-xl uppercase tracking-wider transition-all duration-300 pointer shadow-lg shadow-cyan-500/10"
+                className="px-6 py-2 bg-glow-blue hover:bg-opacity-95 text-slate-950 font-bold text-xs rounded-xl uppercase tracking-wider transition-all duration-300 pointer shadow-lg shadow-cyan-500/10 disabled:opacity-50"
               >
-                Apply Parameters
+                {isSaving ? 'Saving...' : 'Apply Parameters'}
               </button>
             </div>
 

@@ -16,6 +16,7 @@ export interface RunPipelinePayload {
   spec_path: string;
   target_url?: string;
   auth_header?: string;
+  demo_mode?: boolean;
 }
 
 export interface RunPipelineResponse {
@@ -145,6 +146,21 @@ export async function rejectTestScenario(scenarioId: string, reason: string): Pr
 }
 
 /**
+ * Request an AI explanation for why a test was flagged in the review gate
+ */
+export async function explainTestScenario(scenarioId: string): Promise<{ explanation: string }> {
+  const res = await fetch(`${API_BASE}/review/explain`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scenario_id: scenarioId }),
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to explain scenario ${scenarioId}`);
+  }
+  return res.json();
+}
+
+/**
  * Handles saving custom manual edits to a generated test file
  */
 export async function editTestScenario(scenarioId: string, testCode: string): Promise<void> {
@@ -229,5 +245,40 @@ export async function fetchReviewQueue(status?: string): Promise<ReviewQueueItem
   if (!res.ok) {
     throw new Error(`Failed to fetch review queue: ${res.status}`);
   }
+  return res.json();
+}
+
+export interface SystemSettings {
+  target: { url: string; auth_header?: string };
+  engine: { model_tier: string; enable_demo_mode: boolean; execution_budget: number; workers: number };
+  security: { egress_policy: string; auth_secret?: string };
+  ui: { density: string; reduced_motion: boolean };
+}
+
+export async function fetchSettings(): Promise<SystemSettings> {
+  const res = await fetch(`${API_BASE}/settings`);
+  if (!res.ok) throw new Error('Failed to load settings');
+  return res.json();
+}
+
+export async function updateSettings(settings: SystemSettings): Promise<void> {
+  const res = await fetch(`${API_BASE}/settings`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(settings),
+  });
+  if (!res.ok) throw new Error('Failed to save settings');
+}
+
+export interface DoctorCheck {
+  id: string;
+  name: string;
+  status: 'passed' | 'failed' | 'warning' | 'pending';
+  message?: string;
+}
+
+export async function fetchDoctor(): Promise<{ checks: DoctorCheck[], ready: boolean }> {
+  const res = await fetch(`${API_BASE}/doctor`);
+  if (!res.ok) throw new Error('Failed to run doctor checks');
   return res.json();
 }

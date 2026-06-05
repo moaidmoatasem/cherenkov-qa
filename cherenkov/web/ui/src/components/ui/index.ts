@@ -8,6 +8,7 @@ export * from './EmptyState';
 export * from './Skeleton';
 export * from './Tabs';
 export * from './Drawer';
+export * from './MockBadge';
 export * from './KpiRing';
 export * from './Toast';
 export { default as OfflineOverlay } from './OfflineOverlay';

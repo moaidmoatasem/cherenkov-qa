@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Shield, Award, CheckCircle, Download, FileText } from 'lucide-react';
-import { Card, PageHeader, StatusDot } from './ui';
+import { Card, PageHeader, StatusDot, MockBadge } from './ui';
 import { MOCK_GOVERNANCE } from '../mockData';
 import { useToast } from './ui/Toast';
 
@@ -18,6 +18,7 @@ export default function GovernanceScreen() {
 
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="governance-screen">
+      <MockBadge />
       <PageHeader
         title="Governance & Model Certification"
         description="Verify LLM model performance tier bounds, audit compliance reports, and trace generated Playwright files to original intents."

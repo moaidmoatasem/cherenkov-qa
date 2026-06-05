@@ -5,12 +5,13 @@
 
 import React from 'react';
 import { Brain, GraduationCap, CheckCircle } from 'lucide-react';
-import { Card, PageHeader } from './ui';
+import { Card, PageHeader, MockBadge } from './ui';
 import { MOCK_IDIOMS, MOCK_PAIRING } from '../mockData';
 
 export default function MemoryScreen() {
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="memory-screen">
+      <MockBadge />
       <PageHeader
         title="Reflector Memory & Pairing"
         description="Verify stored testing idioms and view context-specific guidelines explained by the Mentor assistant agent."

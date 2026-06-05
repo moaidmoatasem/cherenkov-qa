@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { Network, AlertCircle, ArrowRight } from 'lucide-react';
-import { Card, PageHeader, ProvenanceChip } from './ui';
+import { Card, PageHeader, ProvenanceChip, MockBadge } from './ui';
 import { MOCK_TRUTH_MAP } from '../mockData';
 
 interface TruthMapScreenProps {
@@ -18,6 +18,7 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
 
   return (
     <div className="p-6 h-full overflow-hidden flex flex-col justify-between grid-bg bg-transparent relative z-10" id="truth-map-screen">
+      <MockBadge />
       <PageHeader
         title="Endpoint Truth Graph"
         description="Unified claims graph mapping the alignment between OpenAPI specifications, server source code, and live HTTP database footprints."

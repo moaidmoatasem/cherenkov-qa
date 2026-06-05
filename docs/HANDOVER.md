@@ -119,6 +119,17 @@ attributable evidence — tracked in
 Until that happens, no part of the product — Track A or the built-ahead Horizon 2
 surface — counts as shipped or validated.
 
+> **Forward plan (2026-06-06).** The authoritative forward roadmap is
+> [docs/ROADMAP_NEXT.md](ROADMAP_NEXT.md) ("Validation-First / Horizon V"), with a full
+> wave-by-wave ticket breakdown in its §8 and a current status snapshot in its §0.
+> **Where we stand:** the golden path (init→generate→validate→review→eject) works
+> **from the CLI**; Phase 0 spike + Phase 1a friction foundations are landed. The open
+> frontier is making the **whole loop drivable from the dashboard with no terminal**
+> (EPIC #241) and **one-click install** — this is what unblocks the 5-QA gate. Immediate
+> next work, in order: **Wave 2 honesty debt** (#222 toasts, #223 wire Pilot Run, #224/#239
+> kill mock screens / add MOCK badges) → **Wave 3 UI-only loop** (#234 P0, #235, #237, #238,
+> #240) → **Wave 4 one-click install** (#232, #233, #230, #231) → **Wave 5 the gate.**
+
 ---
 
 ## 6. What to do next (priority order)
@@ -140,6 +151,15 @@ surface — counts as shipped or validated.
   - **A5 (#115)**: Created the 5-QA validation runbook and standalone scripts/collect_evidence.py script.
   - **A6/A7 (#113, #114)**: Wired Reflector reranking into proof_run loop & created E7 behavioral exit demo proving fingerprint-based suppression.
   - **Epoch 10 Explorer & Copilot (Issues #123-#125)**: Created the `smoke_test_copilot_e10.py` exit demo verifying C8 (Explorer crawl/hypotheses), C9 (NL intent to ejectable role-locator Playwright TS), and C10 (SecondPairOfEyes pre-session digest & triage UX).
+
+- **Horizon V — Golden Path + Friction Kill (2026-06 in progress)**: Phase 0 spike landed
+  (review API wired to real `HitlQueue`; `cherenkov.py review` serves prebuilt
+  `cherenkov/web/ui/dist` — #173–#177). Phase 1a foundations landed: prebuilt dist (#178),
+  `doctor` preflight (#179), no-Ollama demo mode (#181/#204), rejection-reason capture (#182),
+  offline overlay (#221), a11y (#225), responsive CTA (#226), Divergences triage drawer
+  (#227/#236), Docker packaging (#200–#206), correctness fixes (#219/#220/#228). **Open frontier:**
+  Wave 2 honesty debt (#222–#224/#239), Wave 3 UI-only loop + Wave 4 one-click install under
+  EPIC #241. See [ROADMAP_NEXT.md §0/§8](ROADMAP_NEXT.md).
 
 
 
