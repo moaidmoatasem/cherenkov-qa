@@ -281,21 +281,12 @@ async def eject_test_suite(payload: EjectPayload):
             "output_path": payload.output_path,
             "files": files
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        return {
-            "status": "ejected",
-            "output_path": payload.output_path,
-            "files": [
-                "tests/happy_path.spec.ts",
-                "tests/password_too_short.spec.ts",
-                "tests/_scores.json",
-                "generated-types.ts",
-                "client.ts",
-                "playwright.config.ts",
-                "package.json",
-                "tsconfig.json"
-            ]
-        }
+        # Fail honestly. Previously this returned status="ejected" with a hardcoded
+        # file list, claiming success on a failed eject — a fabricated result.
+        raise HTTPException(status_code=500, detail=f"Eject operation failed: {e}")
 
 @app.get("/api/v1/divergences")
 async def list_divergences():
