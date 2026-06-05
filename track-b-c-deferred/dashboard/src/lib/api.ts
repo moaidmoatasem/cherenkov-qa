@@ -187,15 +187,16 @@ export async function ejectSuite(outputPath: string): Promise<EjectResponse> {
 }
 
 import { Divergence } from '../types';
-import { MOCK_DIVERGENCES } from '../mockData';
 
 export async function fetchDivergences(): Promise<Divergence[]> {
+  // Return an empty set on failure rather than fabricating MOCK divergences —
+  // a forensic tool must never present invented findings as real.
   try {
     const res = await fetch(`${API_BASE}/divergences`);
-    if (!res.ok) return MOCK_DIVERGENCES;
+    if (!res.ok) return [];
     return res.json();
   } catch (e) {
-    return MOCK_DIVERGENCES;
+    return [];
   }
 }
 
