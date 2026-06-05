@@ -63,7 +63,7 @@ function ToastContainer({ toasts, dismiss }: { toasts: ToastItem[]; dismiss: (id
   return (
     <div 
       className="fixed bottom-6 right-6 flex flex-col gap-3 z-50 pointer-events-none max-w-sm w-full"
-      role="live"
+      role="status"
       aria-live="assertive"
     >
       {toasts.map((item) => (

@@ -3,6 +3,7 @@
 cherenkov.py — Unified CLI for CHERENKOV E2E Suite operations.
 Authority: v3.1 + delta. Track A surface + optional B1 visual capability.
 """
+import os
 import sys
 import argparse
 import subprocess

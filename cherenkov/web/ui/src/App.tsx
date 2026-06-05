@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import ProjectsScreen from './components/ProjectsScreen';
@@ -22,11 +22,12 @@ import AuthorScreen from './components/AuthorScreen';
 import SignalsScreen from './components/SignalsScreen';
 import MemoryScreen from './components/MemoryScreen';
 import GovernanceScreen from './components/GovernanceScreen';
-import { ToastProvider, Drawer } from './components/ui';
+import { ToastProvider, Drawer, OfflineOverlay } from './components/ui';
 
 import { Project, EndpointRichness } from './types';
 import { INITIAL_PROJECTS } from './mockData';
 import { runPipeline } from './lib/api';
+import { useHealth } from './lib/useHealth';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('projects');
@@ -34,17 +35,10 @@ export default function App() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>('proj-petstore');
   const [status, setStatus] = useState<'Live' | 'Idle'>('Idle');
   const [activeSpecPath, setActiveSpecPath] = useState<string>('');
-  const [demoMode, setDemoMode] = useState<boolean>(false);
-  
-  useEffect(() => {
-    fetch('/api/v1/health')
-      .then(res => res.json())
-      .then(data => {
-        if (data.demo_mode) setDemoMode(true);
-      })
-      .catch(() => {});
-  }, []);
-  
+
+  // Backend liveness — single source of truth for the honest offline state (#221).
+  const { online, demoMode, checking, refresh } = useHealth();
+
   // Autonomy settings with local storage persistence
   const [autonomy, setAutonomyState] = useState<'Assisted' | 'Augmented' | 'Agentic'>(() => {
     const saved = localStorage.getItem('[copilot] autonomy');
@@ -166,6 +160,9 @@ export default function App() {
           projects={projects}
           onSelectProject={handleSelectProject}
         />
+
+        {/* Honest backend-offline state (#221) — blocks interaction on stale/missing data */}
+        {!online && <OfflineOverlay checking={checking} onRetry={refresh} />}
 
         {/* LEFT SIDEBAR CONTROLS */}
         <Sidebar
