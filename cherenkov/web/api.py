@@ -111,7 +111,7 @@ _queue: HitlQueue | None = None
 def get_queue() -> HitlQueue:
     global _queue
     if _queue is None:
-        _queue = HitlQueue(db_path=os.environ.get("CHERENKOV_HITL_DB"))
+        _queue = HitlQueue(db_path=os.getenv("CHERENKOV_HITL_DB"))
     return _queue
 
 # ── Endpoints ──────────────────────────────────────────────────────────

@@ -481,6 +481,40 @@ Reject a **pending** item with a mandatory reason string.
 
 ---
 
+### Command 13: `self-test` (deterministic pipeline dry-run)
+Runs a fully mocked, offline dry-run of the INGEST → PLAN → GENERATE → REVIEW pipeline with no Ollama or live server required. Useful for verifying the installation is wired correctly.
+
+#### Command Help:
+```bash
+./bin/cherenkov self-test --help
+```
+
+#### Standard Usage:
+```bash
+./bin/cherenkov self-test
+```
+
+---
+
+### Command 14: `report` (test coverage + diff reports)
+Generates a test coverage and verdict report from the most recent pipeline run logs. Supports diffing two report files to surface regressions between runs.
+
+#### Command Help:
+```bash
+./bin/cherenkov report --help
+```
+
+#### Standard Usage:
+```bash
+# Generate a report from the latest run
+./bin/cherenkov report --output report.json
+
+# Diff two reports to detect regressions
+./bin/cherenkov report --diff previous_report.json --output report.json
+```
+
+---
+
 ### Frontier commands (post-gate surfaces)
 
 > These CLI surfaces are wired but governed by the Validation Gate — full
