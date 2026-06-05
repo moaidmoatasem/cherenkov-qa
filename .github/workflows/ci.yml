@@ -244,6 +244,57 @@ jobs:
       - name: Run perf baseline smoke test
         run: PYTHONPATH=. python3 smoke_test_perf.py
 
+  # ── Validate smoke: CLI validate command against the target API ─────────────
+  validate-smoke:
+    name: Validate CLI Smoke (E2E against target API)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt fastapi uvicorn
+
+      # Node.js + Playwright are needed because cherenkov validate runs npx playwright test
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright CLI + Chromium
+        run: |
+          npm install -g playwright
+          npx playwright install --with-deps chromium
+
+      # Install stub npm packages (openapi-fetch, @playwright/test) so the
+      # committed test fixtures can be compiled and executed by the validator.
+      - name: Install stub npm packages
+        env:
+          NODE_OPTIONS: --dns-result-order=ipv4first
+        run: |
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm install --prefix stub
+
+      # Set up the target API venv (smoke_test_validate starts it via .venv/bin/uvicorn)
+      - name: Set up target API venv
+        run: |
+          if [ -d target ]; then
+            python -m venv target/.venv
+            target/.venv/bin/pip install --upgrade pip fastapi uvicorn pydantic==2.7.1
+          fi
+
+      - name: Run validate CLI smoke test
+        env:
+          NODE_OPTIONS: --dns-result-order=ipv4first
+        run: PYTHONPATH=. python3 smoke_test_validate.py
+
   # ── Opt-in: the ONE job that exercises the real model ──────────────────────
   # Hosted GitHub runners have no GPU and cannot run qwen2.5-coder:7b, so this is
   # NOT part of the default PR gate. It runs only on manual dispatch and requires a
