@@ -12,6 +12,7 @@ import uuid
 import difflib
 from cherenkov.core.errors import get_logger
 from cherenkov.core.config import Config
+from cherenkov.core.compat import npx as _npx
 from cherenkov.ai.ollama_client import complete_code, strip_think
 
 SYSTEM_PROMPT = """You are an expert QA automation engineer specializing in fixing failing Playwright TypeScript E2E API tests.
@@ -87,7 +88,7 @@ class SandboxHealer:
         env["API_URL"] = api_url
 
         process = subprocess.run(
-            ["npx", "playwright", "test", spec_path, "--reporter=json"],
+            [_npx(), "playwright", "test", spec_path, "--reporter=json"],
             cwd=sandbox_dir,
             env=env,
             capture_output=True,

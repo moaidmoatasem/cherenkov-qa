@@ -8,6 +8,7 @@ import json
 import os
 import subprocess
 from cherenkov.core.errors import get_logger
+from cherenkov.core.compat import npx as _npx
 
 class PlaywrightRunner:
     """Invokes pure Playwright test command line in the stub workspace and parses native JSON results."""
@@ -35,7 +36,7 @@ class PlaywrightRunner:
         env["API_URL"] = api_url
 
         cmd = [
-            "npx", "playwright", "test",
+            _npx(), "playwright", "test",
             f"generated_tests/{scenario_id}.spec.ts",
             "--reporter=json"
         ]
