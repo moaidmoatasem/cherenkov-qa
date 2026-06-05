@@ -10,3 +10,4 @@ export * from './Tabs';
 export * from './Drawer';
 export * from './KpiRing';
 export * from './Toast';
+export { default as OfflineOverlay } from './OfflineOverlay';
