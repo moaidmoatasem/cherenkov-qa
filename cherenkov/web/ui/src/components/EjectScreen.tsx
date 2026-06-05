@@ -155,6 +155,7 @@ export default function EjectScreen() {
                     <span className="absolute left-3.5 font-mono text-xs text-[#7D8DA1]">/home/workspace/</span>
                     <input
                       id="eject-path"
+                      name="eject-path"
                       type="text"
                       value={outputPath}
                       onChange={(e) => setOutputPath(e.target.value)}

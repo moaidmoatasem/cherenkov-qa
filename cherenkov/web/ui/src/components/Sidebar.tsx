@@ -173,12 +173,15 @@ export default function Sidebar({
       <div className="p-3 lg:p-4 border-t border-white/10 bg-black/30 backdrop-blur-md space-y-4 shrink-0">
         {/* Project Switcher Selector */}
         <div className="flex flex-col gap-1.5">
-          <span className="hidden lg:block text-[9px] font-bold font-mono tracking-wider uppercase text-[#7D8DA1]">
+          <label htmlFor="project-selector" className="hidden lg:block text-[9px] font-bold font-mono tracking-wider uppercase text-[#7D8DA1]">
             Active Workspace
-          </span>
+          </label>
           <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg p-1.5 lg:p-2">
             <FolderGit2 className="w-4 h-4 text-glow-blue shrink-0" />
             <select
+              id="project-selector"
+              name="project-selector"
+              aria-label="Active Workspace"
               value={selectedProjectId || ''}
               onChange={(e) => onSelectProject(e.target.value)}
               className="hidden lg:block bg-transparent text-xs text-text-primary focus:outline-none w-full cursor-pointer font-sans"
