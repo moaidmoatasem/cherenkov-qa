@@ -43,16 +43,16 @@ class PlaywrightRunner:
         # Detect Windows UNC path — cmd.exe cannot use UNC as cwd
         self._use_wsl = sys.platform == "win32" and _is_unc_path(self.stub_dir)
 
-    def execute_test(self, scenario_id: str, test_code: str, api_url: str, update_snapshots: bool = False) -> dict:
+    def execute_test(self, scenario_id: str, api_url: str, test_code: str | None = None, update_snapshots: bool = False) -> dict:
         """Writes the generated TypeScript test code, executes Playwright natively, and parses the JSON results."""
         os.makedirs(self.tests_dir, exist_ok=True)
         test_file_path = os.path.join(self.tests_dir, f"{scenario_id}.spec.ts")
         
-        # 1. Write pure Playwright TS test code
-        with open(test_file_path, "w", encoding="utf-8") as f:
-            f.write(test_code)
-            
-        self.log.info("wrote generated test file", path=test_file_path)
+        # 1. Write pure Playwright TS test code if provided
+        if test_code is not None:
+            with open(test_file_path, "w", encoding="utf-8") as f:
+                f.write(test_code)
+            self.log.info("wrote generated test file", path=test_file_path)
 
         # 2. Run npx playwright test (pure runner) with json reporter and trace enabled on failure
         # We override baseURL via API_URL env variable which playwright config picks up
