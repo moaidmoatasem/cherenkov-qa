@@ -1,9 +1,29 @@
 # CHERENKOV — Forward Roadmap: "Validation-First" (Horizon V)
 
-**Date:** 2026-06-05 · **Status:** Authoritative for *what's next* (supersedes the disputed
+**Date:** 2026-06-05 (status snapshot refreshed 2026-06-06) · **Status:** Authoritative for *what's next* (supersedes the disputed
 [ROADMAP_RECONCILIATION.md](ROADMAP_RECONCILIATION.md) for forward planning). Pairs with
 [HANDOVER.md](HANDOVER.md) (status), [SCOPE_LEDGER.md](SCOPE_LEDGER.md) (scope), and
 [process/VALIDATION_EVIDENCE_LEDGER.md](process/VALIDATION_EVIDENCE_LEDGER.md) (the gate).
+
+---
+
+## 0. Status snapshot (2026-06-06)
+
+Where we actually stand against the phases below. Anchored to closed GitHub issues, not claims.
+
+| Phase | State | Evidence |
+|-------|-------|----------|
+| **Phase 0 — Golden Path spike** | ✅ **Landed** | `cherenkov/web/api.py` wired to the real `HitlQueue`; `cherenkov.py review` launches API + serves prebuilt `cherenkov/web/ui/dist`. Tickets #173–#177 closed. |
+| **Phase 1 — Friction kill** | 🔶 **In progress (~60%)** | Done: prebuilt dist (#178), `doctor` preflight (#179), no-Ollama demo mode (#181, #204), rejection-reason capture (#182), backend-offline overlay (#221), a11y labels (#225), responsive CTA (#226), Divergences triage drawer (#227, #236), packaging/Docker P-1…P-7 (#200–#206). **Remaining: the UI-only / one-click work — see §8 Wave 2/3.** |
+| **Phase 2 — Real validation gate (5 QA users)** | ⛔ **Not started** | THE milestone. Still 0 attributable QA reviewers. Blocked on Phase 1 finishing the friction kill. |
+| **Phase 3 — Earned expansion** | ⏸ **Deferred** | Gated on Phase 2 + the [SCOPE_LEDGER](SCOPE_LEDGER.md) fork. Spikes #193–#195 (chained journeys, DAST, RAG) already scoped. |
+
+**Headline:** the golden path *works from the CLI*; the open frontier is making the **whole loop drivable
+from the dashboard with no terminal** (EPIC [#241]) and **one-click install** — that is what unblocks the gate.
+
+**Honesty debt still open (must close before the gate):** 10/17 dashboard surfaces still render `mockData.ts`
+(#224/#239); silent `catch(console.warn)` instead of toasts (#222); "Initialize Pilot Run" not wired to
+`POST /run` (#223). These make demos misleading and are gate-blockers, not polish.
 
 ---
 
@@ -118,10 +138,82 @@ rejection-reason data, not a pre-written epoch list.
 - **Anti-lock-in invariant holds:** the web UI is optional sugar over the `hitl/v1` API + CLI; eject still produces standalone Playwright.
 - **No new scope** until Phase 2 passes. Promoting the dashboard/API is *wiring existing code into the product*, not new build-ahead — and it's explicitly in service of the gate.
 
-## 8. Tickets
+## 8. The full roadmap (tickets, by wave)
 
-Phase 0 / Phase 1 tickets are filed as GitHub issues labelled `agent-ready` and reference this doc
-(#173–#182). Triaged backlog from teammate reviews is filed as #183+.
+All tickets are filed as GitHub issues. Legend: ✅ closed · 🔶 open/in-flight · ⏸ deferred (post-gate).
+`P0` = gate-blocker, `P1` = needed for a credible gate, `P2` = nice-to-have. Sequenced into delivery
+**waves**: ship a wave, re-verify the golden path end to end with raw evidence, then start the next.
+
+### Wave 0 — Golden Path spike ✅ (Phase 0, done)
+| # | Ticket | State |
+|---|--------|-------|
+| #173 | Wire review API to the real `HitlQueue` | ✅ |
+| #174 | Replace dashboard mock data with live API calls (review/divergences) | ✅ |
+| #175 | `cherenkov review` — launch API + serve prebuilt FE | ✅ |
+| #176 | Promote dashboard + review API to supported `cherenkov/web/` | ✅ |
+| #177 | Golden-path E2E smoke with recorded evidence | ✅ |
+
+### Wave 1 — Friction kill: foundations ✅ (Phase 1a, done)
+| # | Ticket | Pri | State |
+|---|--------|-----|-------|
+| #178 | Ship prebuilt FE `dist/` so users need no `npm` | P1 | ✅ |
+| #179 | `doctor` preflight gates the golden path with actionable fixes | P1 | ✅ |
+| #181 / #204 | No-Ollama demo mode (cached run on bundled petstore) | P1 | ✅ |
+| #182 | Capture rejection reasons in FE to seed the learning loop | P1 | ✅ |
+| #221 | Backend-offline overlay + health-poll context | P1 | ✅ |
+| #225 | a11y labels on autonomy toggle / help / KPI ring + focus roles | P1 | ✅ |
+| #226 | Responsive: primary CTA renders off-screen below ~360px | P1 | ✅ |
+| #227 / #236 | Divergences triage in UI (filters, detail drawer, act-with-feedback) | P1 | ✅ |
+| #200–#206 | Packaging: Dockerfile, compose, Ollama+GPU profile, bundled UI, demo mode, quickstart, scaling spike | P1 | ✅ |
+| #219 #220 #228 | Correctness: validate suggest-only violation, `review` crash, FastAPI lifespan | P0/chore | ✅ |
+
+### Wave 2 — Honesty debt (Phase 1b, **DO FIRST — gate-blocking**) 🔶
+The dashboard must never show fake data to a real QA reviewer. Close these before any new surface.
+| # | Ticket | Pri | State |
+|---|--------|-----|-------|
+| #222 | Honest error/loading states — replace silent `catch(console.warn)` with toasts | P1 | 🔶 |
+| #223 | Wire "Initialize Pilot Run" (Author-by-Intent) to `POST /api/v1/run` | P1 | 🔶 |
+| #224 / #239 | Replace `mockData` on the 10/17 flagship screens (Overview/TruthMap/Signals/Governance/Memory/Explore/Author) with live endpoints **or** explicit `MOCK DATA` badges | P1 | 🔶 |
+
+### Wave 3 — UI-only workflow loop (Phase 1c — EPIC #241, the heart of "one-click QA") 🔶
+Goal: a non-technical QA engineer completes spec → generate → review → eject **without a terminal**.
+| # | Ticket | Pri | State |
+|---|--------|-----|-------|
+| #234 | Full Setup→Run→Pipeline→Review loop driven entirely from the UI + live `WS /ws/live` progress | **P0** | 🔶 |
+| #235 | Review Queue: complete HITL in UI + rejection-reason capture + "Why flagged?" AI explanation | P1 | 🔶 |
+| #237 | Eject suite from the UI — in-browser folder picker / zip download, no terminal | P1 | 🔶 |
+| #238 | Settings: real server-side persistence + editable engine config (target, model tier, egress) | P1 | 🔶 |
+| #240 | Honest empty/loading/error states + 60-sec guided tour across all tabs | P2 | 🔶 |
+
+### Wave 4 — One-click install & onboarding (Phase 1d — EPIC #241 Track A) 🔶
+Goal: install in one click; never touch a package manager or CLI.
+| # | Ticket | Pri | State |
+|---|--------|-----|-------|
+| #232 | First-run wizard in the UI (doctor-in-UI, engine/model detection, demo-vs-real, sample spec) | P1 | 🔶 |
+| #233 | In-app engine + model manager (status, start/stop/restart, Ollama detect + pull progress, demo toggle) | P1 | 🔶 |
+| #230 | Desktop launcher (one-file binary) — double-click starts engine + opens dashboard | P1 | 🔶 |
+| #231 | Tauri desktop app + native installers (.msi/.dmg/.AppImage) — *needs-human signing/notarization* | P2 | 🔶 |
+
+### Wave 5 — THE GATE (Phase 2, owner-led) ⛔
+Run **5 real QA practitioners** through the UI golden path; record attributable evidence in the
+[evidence ledger](process/VALIDATION_EVIDENCE_LEDGER.md). **Nothing in Wave 6 starts until ≥3 say yes.**
+Runbook: [QA_VALIDATION_RUNBOOK.md](process/QA_VALIDATION_RUNBOOK.md). Recruiting: [QA_OUTREACH_TEMPLATES.md](QA_OUTREACH_TEMPLATES.md).
+
+### Wave 6 — Earned expansion (Phase 3, post-gate, demand-driven) ⏸
+Resolve the [SCOPE_LEDGER](SCOPE_LEDGER.md) fork (re-quarantine vs adopt §B built-ahead) **first**, then
+build the *next adjacent* users actually asked for. Pre-scoped spikes ready to promote:
+| # | Spike | Note |
+|---|-------|------|
+| #193 | Chained / stateful CRUD journeys (POST→capture id→PATCH→DELETE via OpenAPI links) | biggest "meaningful workflow" gap |
+| #194 | Lightweight DAST mutation profile (OWASP payloads; assert safe-reject, no 500) | extends existing mutation testing |
+| #195 | Semantic chunking / RAG for large specs (`nomic-embed-text`) | the 7.8 MB stripe spec is a real need |
+| #196 | Security hardening: HITL auth + at-rest encryption | real, but over-prioritised pre-gate — backlog |
+
+Further Phase 3+ bets (visual regression, perf baselines, diagnostics+RAG, Jira/compliance, auto-PR of
+tightening suggestions, GraphQL/gRPC ingest) remain catalogued in §9c and gated on demand signal.
+
+> **Anti-pattern guard (HANDOVER.md §2):** a ticket is "done" only with **raw evidence** (terminal output +
+> screenshots from the running dashboard), never a summary. Phase 2 exits only on **attributable real-user** evidence.
 
 ---
 

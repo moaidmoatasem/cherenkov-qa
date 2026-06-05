@@ -168,15 +168,25 @@ export default function EjectScreen() {
                 </div>
 
                 {/* Deploy Button */}
-                <button
-                  type="button"
-                  id="btn-confirm-eject"
-                  onClick={handleEject}
-                  className="w-full h-11 bg-glow-blue hover:bg-opacity-95 text-slate-950 font-bold text-xs rounded-xl uppercase tracking-wider transition duration-300 shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Download className="w-4 h-4 stroke-[2.5px]" />
-                  <span>Eject and Write Directories</span>
-                </button>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    id="btn-confirm-eject"
+                    onClick={handleEject}
+                    className="flex-1 h-11 bg-glow-blue hover:bg-opacity-95 text-slate-950 font-bold text-xs rounded-xl uppercase tracking-wider transition duration-300 shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <HardDrive className="w-4 h-4 stroke-[2.5px]" />
+                    <span>Eject to Path</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { window.location.href = '/api/v1/eject/download'; }}
+                    className="flex-1 h-11 bg-[#3FB950] hover:bg-opacity-95 text-[#FFFFFF] font-bold text-xs rounded-xl uppercase tracking-wider transition duration-300 shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4 stroke-[2.5px]" />
+                    <span>Download .ZIP</span>
+                  </button>
+                </div>
               </div>
             ) : (
               // Stage 2: Successful copy instructions after eject

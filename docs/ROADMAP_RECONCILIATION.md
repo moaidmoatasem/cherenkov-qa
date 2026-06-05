@@ -14,6 +14,11 @@
 > shipping blocker. Statements below that mark Horizon 2 / Track B/C features
 > as "shipped" or "validated" describe code that exists but has NOT cleared the
 > validation gate. Reconcile to HANDOVER.md before acting on this file.
+>
+> **For *forward* planning, the authoritative doc is
+> [ROADMAP_NEXT.md](ROADMAP_NEXT.md)** ("Validation-First / Horizon V") — see its
+> §0 status snapshot and §8 wave-by-wave ticket roadmap. §3 below is **superseded**
+> by it (and rests on the retracted gate claim — do not action).
 
 **Date:** 2026-06-04 · **Status:** ~~Authoritative (SSOT)~~ **DISPUTED (see banner)**
 
@@ -59,7 +64,12 @@ Older documentation listed features like performance baselines and visual regres
 
 ---
 
-## 3. What is Next (Horizon 2 Plan)
+## 3. What is Next (Horizon 2 Plan) — ⛔ SUPERSEDED
+
+> **Do not action this section.** It predates the Validation-First reframe and lists the
+> retracted gate as "SHIPPED." The live forward roadmap is
+> [ROADMAP_NEXT.md §8](ROADMAP_NEXT.md) (waves 2–6: honesty debt → UI-only loop →
+> one-click install → the real 5-QA gate → earned expansion).
 
 The active roadmap is defined by **Horizon 2 (#147)**:
 

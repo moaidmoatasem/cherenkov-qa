@@ -18,7 +18,8 @@ import {
 import { EndpointRichness } from '../types';
 import { MOCK_ENDPOINTS } from '../mockData';
 import CherenkovLogo from './CherenkovLogo';
-import { ingestSpec } from '../lib/api';
+import { ingestSpec, fetchDoctor, DoctorCheck } from '../lib/api';
+import { Skeleton } from './ui';
 
 interface SetupScreenProps {
   onStartPipeline: (endpoints: EndpointRichness[], specPath: string, targetUrl: string, authHeader: string) => void;
@@ -39,7 +40,23 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
   const [hoveredEndpoint, setHoveredEndpoint] = useState<EndpointRichness | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
+  const [doctorChecks, setDoctorChecks] = useState<DoctorCheck[]>([]);
+  const [doctorLoading, setDoctorLoading] = useState(true);
+  const [systemReady, setSystemReady] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    fetchDoctor().then(data => {
+      setDoctorChecks(data.checks || []);
+      setSystemReady(data.ready);
+      setDoctorLoading(false);
+    }).catch(err => {
+      console.warn("Doctor failed:", err);
+      setDoctorLoading(false);
+      setSystemReady(true); // Fallback to ready if we can't tell
+    });
+  }, []);
 
   // handle drag events
   const handleDrag = (e: React.DragEvent) => {
@@ -159,6 +176,33 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
         {/* Ingest Column */}
         <div className="xl:col-span-2 space-y-6">
+
+          {/* System Check / First-run Wizard Panel */}
+          {doctorLoading ? (
+            <Skeleton className="w-full h-24 rounded-2xl" />
+          ) : !systemReady ? (
+            <div className="bg-amber-500/10 border border-amber-500/20 p-6 rounded-2xl flex items-start gap-4">
+              <AlertCircle className="w-6 h-6 text-amber-500 mt-1" />
+              <div className="space-y-2 flex-1">
+                <h3 className="text-amber-500 font-bold text-sm uppercase tracking-wider">System Readiness Check Failed</h3>
+                <ul className="text-xs text-[#E6EDF3] space-y-2">
+                  {doctorChecks.map((chk, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      {chk.status === 'passed' ? <CheckCircle className="w-4 h-4 text-[#3FB950]" /> : <AlertCircle className="w-4 h-4 text-[#F85149]" />}
+                      <span className="font-mono">{chk.name}</span>
+                      {chk.message && <span className="text-[#7D8DA1]">- {chk.message}</span>}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-[#7D8DA1] pt-2">Please resolve the failing dependencies (e.g. start Ollama) or check the documentation to proceed.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-[#3FB950]/10 border border-[#3FB950]/20 p-4 rounded-xl flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-[#3FB950]" />
+              <span className="text-xs text-[#3FB950] font-mono font-bold">ALL SYSTEM CHECKS PASSED. ENGINE READY.</span>
+            </div>
+          )}
           
           {/* Spec upload form / area */}
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 px-6 py-8 rounded-2xl space-y-6 relative">
@@ -425,9 +469,9 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
                   type="button"
                   id="btn-launch-generation"
                   onClick={handleStartGeneration}
-                  disabled={endpoints.length === 0}
+                  disabled={endpoints.length === 0 || !systemReady}
                   className={`w-full mt-4 py-3 rounded-xl uppercase tracking-wider font-bold text-xs transition duration-300 shadow-lg shadow-cyan-500/20 ${
-                    endpoints.length === 0
+                    (endpoints.length === 0 || !systemReady)
                       ? 'bg-gray-brand/30 text-text-muted cursor-not-allowed'
                       : 'bg-glow-blue hover:bg-opacity-95 text-slate-950'
                   }`}

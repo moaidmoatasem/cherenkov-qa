@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { TrendingUp, Activity, Image, Percent, AlertTriangle, CheckCircle } from 'lucide-react';
-import { Card, PageHeader, Tabs } from './ui';
+import { Card, PageHeader, MockBadge, Tabs } from './ui';
 import { MOCK_SIGNALS } from '../mockData';
 
 export default function SignalsScreen() {
@@ -19,6 +19,7 @@ export default function SignalsScreen() {
 
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="signals-screen">
+      <MockBadge />
       <PageHeader
         title="Telemetry Signals"
         description="Verify performance, visual changes, and functional coverage profiles from live test suite telemetry."
