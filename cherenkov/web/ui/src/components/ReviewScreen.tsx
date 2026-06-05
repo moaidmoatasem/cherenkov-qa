@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { TestItem, TestGate } from '../types';
 import { approveTestScenario, rejectTestScenario, editTestScenario, fetchGeneratedTests, fetchReviewQueue, ReviewQueueItem } from '../lib/api';
+import { useToast } from './ui/Toast';
 import CherenkovLogo from './CherenkovLogo';
 
 interface ReviewScreenProps {
@@ -27,11 +28,16 @@ interface ReviewScreenProps {
 }
 
 export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenProps) {
+  const { addToast } = useToast();
   const [tests, setTests] = useState<TestItem[]>([]);
   const testsRef = useRef(tests);
   testsRef.current = tests;
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
+    setIsLoading(true);
+    setLoadError(null);
     Promise.all([
       fetchReviewQueue('pending'),
       fetchGeneratedTests()
@@ -67,15 +73,19 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
           setTests(mapped);
           setSelectedTestId(mapped[0].id);
         }
+        setIsLoading(false);
       })
-      .catch(err => console.warn('Failed to fetch review items:', err));
+      .catch(err => {
+        addToast('Failed to load review items from server.', 'error');
+        setLoadError(err instanceof Error ? err.message : 'Failed to load review items.');
+        setIsLoading(false);
+      });
   }, []);
   const [activeFilter, setActiveFilter] = useState<'all' | 'approved' | 'review' | 'regenerating' | 'rejected'>('all');
   const [selectedTestId, setSelectedTestId] = useState<string>('test-3'); // Default to the first review item
   const [isEditing, setIsEditing] = useState(false);
   const [editedCode, setEditedCode] = useState('');
   const [approveTriggerId, setApproveTriggerId] = useState<string | null>(null);
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
@@ -139,13 +149,18 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
   }, [tests, selectedTestId, activeFilter, activeTest]);
 
   // Actions
-  const handleApprove = (id: string) => {
-    // animate approval
+  const handleApprove = async (id: string) => {
     setApproveTriggerId(id);
-    
-    // Fire real API call (best-effort, don't block UI)
-    approveTestScenario(id).catch(err => console.warn('API approve failed, using local state', err));
-    
+
+    try {
+      await approveTestScenario(id);
+      addToast(`Approved test scenario ${id}`, 'success');
+    } catch (err) {
+      setApproveTriggerId(null);
+      addToast(`Failed to approve: ${(err as Error).message}`, 'error');
+      return;
+    }
+
     setTimeout(() => {
       setTests(prev => {
         const updated = prev.map(t => t.id === id ? { ...t, verdict: 'approved' as const } : t);
@@ -164,16 +179,20 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
     }, 400);
   };
 
-  const handleSaveEdit = () => {
-    // Fire real API call (best-effort)
-    editTestScenario(selectedTestId, editedCode).catch(err => console.warn('API edit failed, using local state', err));
+  const handleSaveEdit = async () => {
+    try {
+      await editTestScenario(selectedTestId, editedCode);
+      addToast('Edit saved successfully.', 'success');
+    } catch (err) {
+      addToast(`Failed to save edit: ${(err as Error).message}`, 'error');
+      return;
+    }
 
     setTests(prev => prev.map(t => {
       if (t.id === selectedTestId) {
         return { 
           ...t, 
           code: editedCode,
-          // Since it has been audited and edited, update quality gate to true
           gates: { ...t.gates, quality: true },
           verdict: 'approved' 
         };
@@ -183,9 +202,14 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
     setIsEditing(false);
   };
 
-  const handleReject = (id: string, reason: string) => {
-    // Fire real API call (best-effort)
-    rejectTestScenario(id, reason).catch(err => console.warn('API reject failed, using local state', err));
+  const handleReject = async (id: string, reason: string) => {
+    try {
+      await rejectTestScenario(id, reason);
+      addToast(`Rejected ${id}. "${reason}"`, 'success');
+    } catch (err) {
+      addToast(`Failed to reject: ${(err as Error).message}`, 'error');
+      return;
+    }
 
     setTests(prev => prev.map(t => {
       if (t.id === id) {
@@ -197,9 +221,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
       }
       return t;
     }));
-    setToastMsg(`Rejected ${id}. Negative AST sample cached. Reason: "${reason}". Proceeding to trigger synthetic regeneration logic.`);
     setRejectingId(null);
-    setTimeout(() => setToastMsg(null), 4000);
   };
 
   const filteredTests = tests.filter(t => {
@@ -221,16 +243,6 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
   return (
     <div className="p-6 h-full overflow-hidden flex flex-col justify-between grid-bg bg-transparent relative z-10" id="review-screen">
       
-      {/* Toast Notification Banner */}
-      {toastMsg && (
-        <div className="fixed top-20 right-6 z-50 bg-[#131d31] border border-amber-500/20 backdrop-blur-2xl p-4 rounded-2xl shadow-2xl text-xs text-amber-200 flex items-center gap-3 max-w-md animate-fadeIn">
-          <div className="p-2 bg-amber-500/10 text-amber-400 rounded-full shrink-0">
-            <AlertTriangle className="w-4 h-4" />
-          </div>
-          <span>{toastMsg}</span>
-        </div>
-      )}
-
       {/* Page Header */}
       <div className="flex items-center justify-between border-b border-white/5 pb-4 shrink-0">
         <div className="flex items-center gap-4">
@@ -290,7 +302,18 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
 
           {/* Test items lists */}
           <div className="flex-1 overflow-y-auto divide-y divide-white/5 p-4 space-y-2.5">
-            {filteredTests.length === 0 ? (
+            {isLoading ? (
+              <div className="h-full flex flex-col items-center justify-center text-center font-sans space-y-1.5 py-24">
+                <div className="w-8 h-8 border-2 border-glow-blue border-t-transparent rounded-full animate-spin" />
+                <p className="text-text-muted text-xs font-semibold">Loading review queue...</p>
+              </div>
+            ) : loadError ? (
+              <div className="h-full flex flex-col items-center justify-center text-center font-sans space-y-1.5 py-24">
+                <AlertTriangle className="w-12 h-12 text-amber-400 animate-pulse font-bold" />
+                <p className="text-text-muted text-xs font-semibold">Failed to load review items</p>
+                <p className="text-[11px] text-text-muted/60">{loadError}</p>
+              </div>
+            ) : filteredTests.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center font-sans space-y-1.5 py-24">
                 <FolderCheck className="w-12 h-12 text-[#7D8DA1] animate-pulse font-bold" />
                 <p className="text-text-muted text-xs font-semibold">No tests match this audit filter</p>

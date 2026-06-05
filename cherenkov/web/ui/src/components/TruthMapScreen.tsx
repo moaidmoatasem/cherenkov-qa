@@ -22,6 +22,11 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
         title="Endpoint Truth Graph"
         description="Unified claims graph mapping the alignment between OpenAPI specifications, server source code, and live HTTP database footprints."
       />
+      <div className="flex justify-end -mt-4 mb-2">
+        <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border bg-amber-500/10 text-amber-400 border-amber-500/30">
+          MOCK DATA
+        </span>
+      </div>
 
       <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-5 gap-6 mt-6 items-stretch">
         {/* Endpoint List Panel (2/5) */}

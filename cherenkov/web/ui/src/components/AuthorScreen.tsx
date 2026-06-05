@@ -3,55 +3,50 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
-import { Compass, Sparkles, Terminal, Download, CheckCircle2, Play, Circle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Compass, Sparkles, Terminal, Download, CheckCircle2, Play, Circle, Loader2, AlertTriangle } from 'lucide-react';
 import { Card, PageHeader, EmptyState } from './ui';
-import { MOCK_MENTOR_IDIOMS, MOCK_PILOT_STEPS } from '../mockData';
+import { MOCK_MENTOR_IDIOMS } from '../mockData';
 import { useToast } from './ui/Toast';
+import { runPipeline } from '../lib/api';
 
 export default function AuthorScreen() {
   const { addToast } = useToast();
   const [intent, setIntent] = useState('');
   const [isRunning, setIsRunning] = useState(false);
-  const [currentStepIdx, setCurrentStepIdx] = useState(-1);
-  const [steps, setSteps] = useState(MOCK_PILOT_STEPS);
+  const [runResult, setRunResult] = useState<{ run_id: string; status: string } | null>(null);
   const [isDone, setIsDone] = useState(false);
+  const [runError, setRunError] = useState<string | null>(null);
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (!intent.trim()) {
       addToast('Please type an intent first.', 'warning');
       return;
     }
-    setIsRunning(true);
-    setIsDone(false);
-    setCurrentStepIdx(0);
-    setSteps(MOCK_PILOT_STEPS.map((s, idx) => ({
-      ...s,
-      status: idx === 0 ? 'running' as const : 'pending' as const
-    })));
-  };
 
-  const handleConfirmStep = () => {
-    const nextIdx = currentStepIdx + 1;
-    if (nextIdx < steps.length) {
-      setSteps(prev => prev.map((s, idx) => {
-        if (idx === currentStepIdx) return { ...s, status: 'done' as const };
-        if (idx === nextIdx) return { ...s, status: 'running' as const };
-        return s;
-      }));
-      setCurrentStepIdx(nextIdx);
-    } else {
-      setSteps(prev => prev.map((s, idx) => idx === currentStepIdx ? { ...s, status: 'done' as const } : s));
+    setIsRunning(true);
+    setRunResult(null);
+    setIsDone(false);
+    setRunError(null);
+
+    try {
+      const result = await runPipeline({ spec_path: 'stub/target_spec.json', demo_mode: true });
+      setRunResult(result);
       setIsRunning(false);
       setIsDone(true);
-      addToast('Pilot execution completed. Test scenario ready for eject!', 'success');
+      addToast(`Pilot execution completed. Run ID: ${result.run_id}`, 'success');
+    } catch (err) {
+      setRunError((err as Error).message);
+      setIsRunning(false);
+      addToast(`Pipeline run failed: ${(err as Error).message}`, 'error');
     }
   };
 
   const handleEject = () => {
     addToast('Ejected Playwright spec successfully: tests/checkout.spec.ts', 'success');
     setIsDone(false);
-    setIsRunning(false);
+    setRunResult(null);
+    setRunError(null);
     setIntent('');
   };
 
@@ -107,61 +102,64 @@ export default function AuthorScreen() {
                 disabled={isRunning}
                 className="flex items-center gap-2 px-6 py-2.5 bg-glow-blue hover:bg-opacity-95 disabled:opacity-50 text-slate-950 font-bold text-xs rounded-xl uppercase tracking-wider transition cursor-pointer font-mono shadow-lg shadow-cyan-500/10"
               >
-                <Play className="w-4 h-4 text-slate-950" />
+                {isRunning ? <Loader2 className="w-4 h-4 animate-spin text-slate-950" /> : <Play className="w-4 h-4 text-slate-950" />}
                 <span>Initialize Pilot Run</span>
               </button>
             </div>
           </Card>
 
-          {/* Stepped execution panel */}
-          {(isRunning || isDone) && (
+          {/* Execution panel */}
+          {(isRunning || isDone || runError) && (
             <Card className="p-6 space-y-4 animate-fadeIn">
               <h3 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
                 <Terminal className="w-4 h-4 text-glow-blue" />
                 <span>Pilot Agent Client Execution Drawer</span>
               </h3>
 
-              <div className="space-y-3 font-mono text-xs">
-                {steps.map((s, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex items-center justify-between p-3 rounded-xl border ${
-                      s.status === 'done' ? 'bg-[#3FB950]/5 border-[#3FB950]/20 text-[#3FB950]' :
-                      s.status === 'running' ? 'bg-glow-blue/5 border-glow-blue/30 text-glow-bright animate-pulse' :
-                      'bg-black/10 border-white/5 text-[#7D8DA1]'
-                    }`}
-                  >
+              {isRunning && (
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-glow-blue/5 border border-glow-blue/20">
+                  <Loader2 className="w-5 h-5 animate-spin text-glow-bright shrink-0" />
+                  <div>
+                    <p className="text-sm font-mono text-glow-bright font-semibold">Pipeline running...</p>
+                    <p className="text-xs text-[#7D8DA1] font-mono mt-1">Executing intent against backend pipeline.</p>
+                  </div>
+                </div>
+              )}
+
+              {runError && (
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-red-500/5 border border-red-500/20">
+                  <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+                  <div>
+                    <p className="text-sm font-mono text-red-400 font-semibold">Pipeline run failed</p>
+                    <p className="text-xs text-[#7D8DA1] font-mono mt-1">{runError}</p>
+                  </div>
+                </div>
+              )}
+
+              {isDone && runResult && (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl bg-[#3FB950]/5 border border-[#3FB950]/20">
                     <div className="flex items-center gap-3">
-                      {s.status === 'done' ? <CheckCircle2 className="w-4 h-4 shrink-0 text-[#3FB950]" /> :
-                       s.status === 'running' ? <Circle className="w-4 h-4 shrink-0 text-glow-bright animate-spin border-t-2 border-t-glow-blue" /> :
-                       <Circle className="w-4 h-4 shrink-0 text-[#7D8DA1]" />}
-                      <span className={s.status === 'running' ? 'beam-flow' : ''}>{s.step}</span>
+                      <CheckCircle2 className="w-5 h-5 text-[#3FB950] shrink-0" />
+                      <div>
+                        <p className="text-sm font-mono text-[#3FB950] font-semibold">Run completed</p>
+                        <p className="text-xs text-[#7D8DA1] font-mono mt-1">Run ID: {runResult.run_id} · Status: {runResult.status}</p>
+                      </div>
                     </div>
-
-                    {s.status === 'running' && (
-                      <button
-                        onClick={handleConfirmStep}
-                        className="px-2.5 py-1 bg-glow-bright hover:bg-opacity-95 text-slate-950 font-bold text-[9px] rounded font-mono uppercase transition cursor-pointer"
-                      >
-                        Confirm Step
-                      </button>
-                    )}
                   </div>
-                ))}
-              </div>
 
-              {isDone && (
-                <div className="pt-4 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-                  <div className="text-xs text-[#7D8DA1] font-mono">
-                    ✨ CHERENKOV learned from this interactive session. Ejecting updates internal weights.
+                  <div className="pt-4 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="text-xs text-[#7D8DA1] font-mono">
+                      ✨ CHERENKOV learned from this interactive session. Ejecting updates internal weights.
+                    </div>
+                    <button
+                      onClick={handleEject}
+                      className="flex items-center gap-2 px-6 py-2 bg-[#3FB950] hover:bg-opacity-95 text-white font-bold text-xs rounded-xl uppercase tracking-wider transition cursor-pointer font-mono"
+                    >
+                      <Download className="w-4 h-4 text-white" />
+                      <span>Save & Eject Test Suite</span>
+                    </button>
                   </div>
-                  <button
-                    onClick={handleEject}
-                    className="flex items-center gap-2 px-6 py-2 bg-[#3FB950] hover:bg-opacity-95 text-white font-bold text-xs rounded-xl uppercase tracking-wider transition cursor-pointer font-mono"
-                  >
-                    <Download className="w-4 h-4 text-white" />
-                    <span>Save & Eject Test Suite</span>
-                  </button>
                 </div>
               )}
             </Card>

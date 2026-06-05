@@ -16,6 +16,7 @@ export interface RunPipelinePayload {
   spec_path: string;
   target_url?: string;
   auth_header?: string;
+  demo_mode?: boolean;
 }
 
 export interface RunPipelineResponse {
