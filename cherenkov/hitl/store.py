@@ -9,12 +9,16 @@ voice layer is bypassed and a human uses the terminal.
 Dedicated `.cherenkov/hitl.db` — follows the repo's one-DB-per-concern convention
 (perf_metrics.db, verdicts.db), not a risky single-state.db big-bang. WAL +
 busy-timeout so it survives concurrent runs (same hardening as reflector/store).
+
+[Issue #196] At-rest encryption: set CHERENKOV_DB_KEY to enable SQLCipher-based
+encryption. Falls back to plain SQLite if pysqlcipher3 is not available.
 """
 from __future__ import annotations
 
 import os
 import sqlite3
 import time
+import logging
 
 from cherenkov.hitl.contracts import (
     HitlEnvelope,
@@ -25,6 +29,35 @@ from cherenkov.hitl.contracts import (
 )
 
 _BUSY_TIMEOUT_S = 30.0
+
+# ── Issue #196: At-rest encryption ─────────────────────────────────────────
+_DB_KEY = os.getenv("CHERENKOV_DB_KEY", "")
+
+def _get_connection(db_path: str) -> sqlite3.Connection:
+    """Open a SQLite connection, optionally with encryption if CHERENKOV_DB_KEY is set."""
+    if _DB_KEY:
+        try:
+            import pysqlcipher3.dbapi2 as sqlcipher
+            con = sqlcipher.connect(db_path, timeout=_BUSY_TIMEOUT_S)
+            con.execute(f"PRAGMA key='{_DB_KEY}'")
+            con.execute("PRAGMA cipher_page_size=4096")
+            con.execute("PRAGMA kdf_iter=64000")
+            con.row_factory = sqlite3.Row
+            con.execute("PRAGMA journal_mode=WAL")
+            return con
+        except ImportError:
+            logging.getLogger("HITL").warning(
+                "CHERENKOV_DB_KEY is set but pysqlcipher3 is not installed. "
+                "Falling back to plain SQLite. Install with: pip install pysqlcipher3-binary"
+            )
+        except Exception as e:
+            logging.getLogger("HITL").warning(
+                "SQLCipher init failed, falling back to plain SQLite", exc_info=e
+            )
+    con = sqlite3.connect(db_path, timeout=_BUSY_TIMEOUT_S)
+    con.row_factory = sqlite3.Row
+    con.execute("PRAGMA journal_mode=WAL")
+    return con
 
 
 def _default_db_path() -> str:
@@ -40,10 +73,7 @@ class HitlQueue:
         self._init()
 
     def _connect(self) -> sqlite3.Connection:
-        con = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
-        con.row_factory = sqlite3.Row
-        con.execute("PRAGMA journal_mode=WAL")
-        return con
+        return _get_connection(self.db_path)
 
     def _init(self) -> None:
         con = self._connect()

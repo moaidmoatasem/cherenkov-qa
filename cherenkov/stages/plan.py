@@ -23,7 +23,7 @@ class PlanStage:
 
         for ep in ingest.endpoints:
             for mut in ep.mutations:
-                # Prioritization: happy path & auth are P1, validation mutations are P2
+                # Prioritization: happy path & auth are P1, validation and security mutations are P2
                 priority = "P1" if mut.case_type in ("happy_path", "auth") else "P2"
                 
                 scenarios.append(

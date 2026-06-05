@@ -5,6 +5,7 @@ Authority: v3.1 + delta.
 from __future__ import annotations
 
 import json
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -12,6 +13,26 @@ from typing import Any
 from cherenkov.core.contracts import IngestOutput, EndpointSlice, Mutation, Status, StageMeta, StageError
 from cherenkov.core.config import Config
 from cherenkov.core.errors import get_logger, SpecTooThinError
+
+# ── Issue #194: Lightweight DAST Mutation Profile ──────────────────────────
+# Curated OWASP payload set for security mutation testing.
+# One representative payload per class to prove the safe-rejection contract.
+DAST_PAYLOADS: list[tuple[str, str]] = [
+    ("sqli_tautology",     "' OR '1'='1"),
+    ("sqli_stacked",       "'; DROP TABLE users;--"),
+    ("xss_reflected",      "<script>alert(1)</script>"),
+    ("xss_attribute",      "\" onmouseover=\"alert(1)"),
+    ("path_traversal",     "../../../../etc/passwd"),
+    ("template_injection", "${{7*7}}"),
+]
+
+# Toggle env var — security mutations are opt-in to keep default runs focused
+def _dast_enabled() -> bool:
+    return Config.DAST_ENABLED
+
+# [Issue #195] RAG toggle — schema-level semantic retrieval for large specs
+def _rag_enabled() -> bool:
+    return Config.RAG_ENABLED
 
 def resolve_refs_depth(node: Any, schemas: dict[str, Any], resolved: dict[str, Any], depth: int, max_depth: int) -> None:
     """Recursively resolve OpenAPI component schemas up to max_depth to prevent context blowup."""
@@ -81,6 +102,41 @@ class IngestStage:
                 # 1. Depth-limited reference resolution
                 resolved_schemas: dict[str, Any] = {}
                 resolve_refs_depth(op, components, resolved_schemas, 1, Config.SCHEMA_DEPTH)
+
+                # [Issue #195] RAG-based schema enrichment — retrieves semantically relevant schemas
+                if _rag_enabled():
+                    try:
+                        from cherenkov.rag.schema_index import SchemaIndex
+                        _rag_index: SchemaIndex | None = getattr(IngestStage, "_rag", None)
+                        if _rag_index is None:
+                            _rag_index = SchemaIndex()
+                            _rag_index.index_spec(spec)
+                            IngestStage._rag = _rag_index
+                        # Build query text from operation summary + parameter names
+                        query_parts = [url_path, method.upper()]
+                        if "summary" in op:
+                            query_parts.append(op["summary"])
+                        if "description" in op:
+                            query_parts.append(op["description"])
+                        for param in op.get("parameters", []):
+                            if isinstance(param, dict):
+                                query_parts.append(param.get("name", ""))
+                        explicit_refs = set(resolved_schemas.keys())
+                        rag_schemas = _rag_index.retrieve(
+                            query_text=" | ".join(query_parts),
+                            explicit_refs=explicit_refs,
+                            top_k=5,
+                        )
+                        # Merge: RAG augments, doesn't replace depth-limited refs
+                        resolved_schemas.update(rag_schemas)
+                        self.log.info(
+                            "rag enrichment",
+                            endpoint=url_path,
+                            before=len(explicit_refs),
+                            after=len(resolved_schemas),
+                        )
+                    except Exception as e:
+                        self.log.warning("rag enrichment failed, falling back to depth-limited only", error=str(e))
 
                 # 2. Richness score calculation
                 # Richness is a mathematical metric (0.0 to 1.0) based on fields in schemas + parameters.
@@ -182,6 +238,22 @@ class IngestStage:
                                             instruction=f"Provide a string value for '{prop}' shorter than the min length of {min_l} characters."
                                         )
                                     )
+                                # [Issue #194] DAST security mutations — opt-in via CHERENKOV_DAST_ENABLED
+                                if _dast_enabled():
+                                    for pid, payload in DAST_PAYLOADS:
+                                        mutations.append(
+                                            Mutation(
+                                                id=f"{prop}_{pid}",
+                                                case_type="security",
+                                                expected_status=validation_status,
+                                                instruction=(
+                                                    f"Set '{prop}' to the literal hostile payload {payload!r}. "
+                                                    f"Assert the response status is 4xx (NOT 5xx, NOT 2xx) and "
+                                                    f"the response body does NOT echo the payload verbatim."
+                                                ),
+                                                value=payload,
+                                            )
+                                        )
                             # Number value violation
                             elif prop_schema.get("type") in ("number", "integer"):
                                 if "maximum" in prop_schema:
