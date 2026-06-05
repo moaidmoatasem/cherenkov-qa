@@ -56,6 +56,16 @@ class Config:
     CERTIFICATION_GOLD_SET_PATH: str = os.getenv("CHERENKOV_CERTIFICATION_GOLD_SET_PATH", ".cherenkov/gold_set.json")
     CERTIFICATION_MIN_FAITHFULNESS: float = float(os.getenv("CHERENKOV_CERTIFICATION_MIN_FAITHFULNESS", "0.8"))
 
+    # ── Issue #194: DAST security mutation profile ────────────────────────
+    DAST_ENABLED: bool = os.getenv("CHERENKOV_DAST_ENABLED", "false").lower() in ("1", "true", "yes")
+
+    # ── Issue #195: Semantic chunking / RAG for large specs ──────────────
+    RAG_ENABLED: bool = os.getenv("CHERENKOV_RAG_ENABLED", "false").lower() in ("1", "true", "yes")
+
+    # ── Issue #196: HITL auth API key + at-rest encryption ───────────────
+    HITL_API_KEY: str = os.getenv("CHERENKOV_HITL_API_KEY", "")
+    DB_KEY: str = os.getenv("CHERENKOV_DB_KEY", "")
+
 
 
     @classmethod
@@ -90,6 +100,10 @@ class Config:
             "CERTIFICATION_ENABLED": cls.CERTIFICATION_ENABLED,
             "CERTIFICATION_GOLD_SET_PATH": cls.CERTIFICATION_GOLD_SET_PATH,
             "CERTIFICATION_MIN_FAITHFULNESS": cls.CERTIFICATION_MIN_FAITHFULNESS,
+            "DAST_ENABLED": cls.DAST_ENABLED,
+            "RAG_ENABLED": cls.RAG_ENABLED,
+            "HITL_API_KEY": bool(cls.HITL_API_KEY),
+            "DB_KEY_ENABLED": bool(cls.DB_KEY),
         }
 
     @classmethod

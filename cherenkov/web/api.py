@@ -12,7 +12,7 @@ import shutil
 import threading
 from typing import List, Dict, Any
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException, UploadFile, File, Form, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -40,6 +40,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Issue #196: HITL Auth — API key authentication ──────────────────────
+# Only active when CHERENKOV_HITL_API_KEY is set (single-user by default).
+# Clients provide the key via X-API-Key header or Authorization: Bearer <key>.
+
+async def verify_api_key(x_api_key: str | None = Header(None), authorization: str | None = Header(None)):
+    configured_key = Config.HITL_API_KEY
+    if not configured_key:
+        return  # no auth configured — allow all
+    if x_api_key and x_api_key == configured_key:
+        return
+    if authorization and authorization.startswith("Bearer ") and authorization[7:] == configured_key:
+        return
+    raise HTTPException(status_code=401, detail="Missing or invalid API key. Set CHERENKOV_HITL_API_KEY env var.")
 
 # ── WebSocket Manager ──────────────────────────────────────────────────
 class ConnectionManager:
@@ -204,7 +218,7 @@ def run_pipeline_thread(spec_path: str, run_id: str):
         ws_event_callback("pipeline_error", {"detail": str(e)})
 
 @app.post("/api/v1/run")
-async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: BackgroundTasks):
+async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: BackgroundTasks, _auth=Depends(verify_api_key)):
     from cherenkov.stages.doctor_cmd import run_doctor
     
     # 1. Doctor Preflight Check (Issue 179)
@@ -264,7 +278,7 @@ async def list_generated_tests():
 # Review — wired to real HitlQueue (Issue 173)
 #
 @app.get("/api/v1/review/queue")
-async def list_review_queue(status: str | None = "pending"):
+async def list_review_queue(status: str | None = "pending", _auth=Depends(verify_api_key)):
     """List HITL queue items from the live SQLite queue."""
     queue = get_queue()
     items = queue.list(status=status)
@@ -284,7 +298,7 @@ async def list_review_queue(status: str | None = "pending"):
     ]
 
 @app.post("/api/v1/review/approve")
-async def approve_review_item(payload: ReviewActionPayload):
+async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
     """Approve a pending HITL item via HitlQueue."""
     queue = get_queue()
     actor = os.environ.get("USER", "dashboard")
@@ -298,7 +312,7 @@ async def approve_review_item(payload: ReviewActionPayload):
     return {"status": "approved", "scenario_id": payload.scenario_id}
 
 @app.post("/api/v1/review/reject")
-async def reject_review_item(payload: ReviewActionPayload):
+async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
     """Reject a pending HITL item via HitlQueue."""
     queue = get_queue()
     actor = os.environ.get("USER", "dashboard")
@@ -319,7 +333,7 @@ async def reject_review_item(payload: ReviewActionPayload):
     return {"status": "rejected", "scenario_id": payload.scenario_id}
 
 @app.post("/api/v1/review/edit")
-async def edit_review_item(payload: ReviewActionPayload):
+async def edit_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
     """Save edited test code (filesystem, not in queue)."""
     if not payload.test_code:
         raise HTTPException(status_code=400, detail="Missing updated test code content.")
@@ -331,7 +345,7 @@ async def edit_review_item(payload: ReviewActionPayload):
     return {"status": "saved", "scenario_id": payload.scenario_id}
 
 @app.post("/api/v1/review/classify")
-async def classify_review_item(payload: ClassifyPayload):
+async def classify_review_item(payload: ClassifyPayload, _auth=Depends(verify_api_key)):
     """Classify a HITL item as regression, intended, or ignore."""
     queue = get_queue()
     actor = payload.actor or os.environ.get("USER", "dashboard")
