@@ -77,16 +77,18 @@ class PlaywrightRunner:
                     for spec in suite.get("specs", []):
                         for test in spec.get("tests", []):
                             for result in test.get("results", []):
+                                # --trace=on saves traces for ALL tests (pass & fail).
+                                # Always collect the trace path so TighteningAnalyzer
+                                # can run on passing tests to suggest stronger assertions.
+                                attachments = result.get("attachments", [])
+                                for att in attachments:
+                                    if att.get("name") == "trace":
+                                        trace_path = att.get("path", "")
                                 if result.get("status") != "expected":
-                                    # Collect error details
+                                    # Collect error details for failing tests
                                     errors = result.get("errors", [])
                                     if errors:
                                         failure_msg += "\n".join([err.get("message", "") for err in errors])
-                                    # Look for trace file attachment
-                                    attachments = result.get("attachments", [])
-                                    for att in attachments:
-                                        if att.get("name") == "trace":
-                                            trace_path = att.get("path", "")
             else:
                 if not passed:
                     failure_msg = stderr or stdout or "Unknown execution failure."
