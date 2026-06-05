@@ -34,7 +34,7 @@ def run_profile(action: str = "show", level: str | None = None) -> int:
     print()
     print("  Available profiles:")
     for name, p in PROFILE_LEVELS.items():
-        marker = " ← current" if name == profile.level else ""
+        marker = " <- current" if name == profile.level else ""
         print(f"    {name:14} {p.label}{marker}")
     print()
     print(f"  Set via:  cherenkov profile set --level <name>")

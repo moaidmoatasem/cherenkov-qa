@@ -11,6 +11,7 @@ from typing import Any
 
 from cherenkov.core.contracts import GenerateOutput, Scenario, Status, StageMeta, StageError
 from cherenkov.core.config import Config
+from cherenkov.core.compat import npx as _npx
 from cherenkov.ai import get_client
 from cherenkov.ai.ollama_client import strip_think
 from cherenkov.core.errors import get_logger
@@ -148,7 +149,7 @@ class GenerateStage:
                 
                 import subprocess
                 process = subprocess.run(
-                    ["npx", "tsc", "--noEmit"],
+                    [_npx(), "tsc", "--noEmit"],
                     cwd=stub_dir,
                     capture_output=True,
                     text=True,

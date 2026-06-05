@@ -3,6 +3,7 @@ import time
 import subprocess
 import requests
 from cherenkov.core.config import Config
+from cherenkov.core.compat import npx as _npx
 from cherenkov.ai import get_client
 from cherenkov.ai.ollama_client import strip_think
 
@@ -69,7 +70,7 @@ def run_self_test() -> int:
             
         t0 = time.time()
         process = subprocess.run(
-            ["npx", "tsc", "--noEmit"],
+            [_npx(), "tsc", "--noEmit"],
             cwd=stub_dir,
             capture_output=True,
             text=True,

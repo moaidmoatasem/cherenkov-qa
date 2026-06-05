@@ -12,6 +12,7 @@ import json
 
 from cherenkov.core.contracts import ReviewOutput, GenerateOutput, GateResult, Verdict, Status, StageMeta
 from cherenkov.core.errors import get_logger
+from cherenkov.core.compat import npx as _npx
 from cherenkov.execution.prism_mock import PrismMockServer
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.trace_reader import TraceReader
@@ -96,7 +97,7 @@ class ReviewStage:
         try:
             # We run tsc --noEmit in the stub folder
             process = subprocess.run(
-                ["npx", "tsc", "--noEmit"],
+                [_npx(), "tsc", "--noEmit"],
                 cwd=self.stub_dir,
                 capture_output=True,
                 text=True,
