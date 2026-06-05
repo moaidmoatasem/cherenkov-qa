@@ -15,6 +15,11 @@ export default function MemoryScreen() {
         title="Reflector Memory & Pairing"
         description="Verify stored testing idioms and view context-specific guidelines explained by the Mentor assistant agent."
       />
+      <div className="flex justify-end -mt-4 mb-2">
+        <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border bg-amber-500/10 text-amber-400 border-amber-500/30">
+          MOCK DATA
+        </span>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-stretch">
         {/* Idioms List Panel (3/5) */}
