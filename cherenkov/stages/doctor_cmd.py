@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 from cherenkov.core.config import Config
+from cherenkov.core.compat import npx as _npx
 from cherenkov.core.config_loader import (
     LayeredConfig,
     KNOWN_KEYS,
@@ -77,7 +78,7 @@ def check_node() -> tuple[bool, str]:
 def check_npx_playwright() -> tuple[bool, str]:
     try:
         result = subprocess.run(
-            ["npx", "playwright", "--version"],
+            [_npx(), "playwright", "--version"],
             capture_output=True, text=True, timeout=30,
         )
         if result.returncode == 0:
