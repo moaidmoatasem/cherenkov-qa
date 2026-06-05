@@ -19,6 +19,12 @@ target/.venv/
 # generated project config (from `cherenkov init`)
 cherenkov.toml
 
+# local harness / editor config
+.claude/
+
+# playbook screenshot output (regenerate via tests/capture_screens.spec.ts)
+track-b-c-deferred/dashboard/playbook/
+
 # temporary / adhoc
 scratch/
 fetch_issues.py
