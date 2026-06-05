@@ -20,38 +20,43 @@ import { FailingTest } from '../types';
 import { INITIAL_FAILURES } from '../mockData';
 import { validateSuite, editTestScenario } from '../lib/api';
 import CherenkovLogo from './CherenkovLogo';
+import { useToast } from './ui/Toast';
 
 interface HealingScreenProps {
   onSuggestResolveCount: (count: number) => void;
 }
 
 export default function HealingScreen({ onSuggestResolveCount }: HealingScreenProps) {
+  const { addToast } = useToast();
   const [failures, setFailures] = useState<FailingTest[]>(INITIAL_FAILURES);
   const [appliedIds, setAppliedIds] = useState<string[]>([]);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [activeTraceLog, setActiveTraceLog] = useState<string | null>(null);
 
-  const handleApply = (id: string) => {
+  const handleApply = async (id: string) => {
     setConfirmingId(null);
-    setAppliedIds(prev => [...prev, id]);
-    
     const item = failures.find(f => f.id === id);
-    if (item) {
-      // Fire real API call to replace the file content with the proposed healed code (best-effort)
-      editTestScenario(id, item.proposedCode)
-        .then(() => {
-          // Trigger a backend validation sweep as well (best-effort)
-          validateSuite('http://localhost:8080/v2').catch(err => console.warn('Validate API failed', err));
-        })
-        .catch(err => console.warn('API edit failed for healing', err));
+    if (!item) return;
+
+    try {
+      await editTestScenario(id, item.proposedCode);
+      addToast(`Successfully applied healing to ${item.name}`, 'success');
+      
+      setAppliedIds(prev => [...prev, id]);
+      
+      validateSuite('http://localhost:8080/v2').catch(() => {
+        addToast('Validation suite trigger failed.', 'warning');
+      });
+
+      // remove failure or flag resolved after animation delay
+      setTimeout(() => {
+        const remaining = failures.filter(f => f.id !== id);
+        setFailures(remaining);
+        onSuggestResolveCount(remaining.length);
+      }, 1500);
+    } catch (err) {
+      addToast(`Failed to apply healing: ${(err as Error).message}`, 'error');
     }
-    
-    // remove failure or flag resolved after animation delay
-    setTimeout(() => {
-      const remaining = failures.filter(f => f.id !== id);
-      setFailures(remaining);
-      onSuggestResolveCount(remaining.length);
-    }, 1500);
   };
 
   const handleDismiss = (id: string) => {
