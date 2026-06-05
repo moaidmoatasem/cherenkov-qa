@@ -105,14 +105,13 @@ class ClassifyPayload(BaseModel):
     detail: str | None = None
     actor: str | None = None
 
-# Singleton HitlQueue — backed by .cherenkov/hitl.db
+# Singleton HitlQueue — backed by .cherenkov/hitl.db (or $CHERENKOV_HITL_DB)
 _queue: HitlQueue | None = None
 
 def get_queue() -> HitlQueue:
     global _queue
     if _queue is None:
-        db_path = os.getenv("CHERENKOV_HITL_DB")
-        _queue = HitlQueue(db_path=db_path)
+        _queue = HitlQueue(db_path=os.getenv("CHERENKOV_HITL_DB"))
     return _queue
 
 # ── Endpoints ──────────────────────────────────────────────────────────
@@ -134,7 +133,8 @@ async def health_check():
         "device": device,
         "gen_model": Config.GEN_MODEL,
         "active_connections": len(manager.active_connections),
-        "workspace_root": os.getcwd()
+        "workspace_root": os.getcwd(),
+        "demo_mode": os.environ.get("DEMO_MODE") == "1"
     }
 
 #

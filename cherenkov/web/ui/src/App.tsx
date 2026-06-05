@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import ProjectsScreen from './components/ProjectsScreen';
@@ -34,6 +34,16 @@ export default function App() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>('proj-petstore');
   const [status, setStatus] = useState<'Live' | 'Idle'>('Idle');
   const [activeSpecPath, setActiveSpecPath] = useState<string>('');
+  const [demoMode, setDemoMode] = useState<boolean>(false);
+  
+  useEffect(() => {
+    fetch('/api/v1/health')
+      .then(res => res.json())
+      .then(data => {
+        if (data.demo_mode) setDemoMode(true);
+      })
+      .catch(() => {});
+  }, []);
   
   // Autonomy settings with local storage persistence
   const [autonomy, setAutonomyState] = useState<'Assisted' | 'Augmented' | 'Agentic'>(() => {
@@ -180,6 +190,7 @@ export default function App() {
             autonomy={autonomy}
             setAutonomy={setAutonomy}
             onLiveClick={() => setIsLiveDrawerOpen(true)}
+            demoMode={demoMode}
           />
 
           {/* MAIN BODY SWITCHBOARD SECTION */}

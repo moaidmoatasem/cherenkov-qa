@@ -27,39 +27,48 @@ interface ReviewScreenProps {
 }
 
 export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenProps) {
-  const [tests, setTests] = useState<TestItem[]>(INITIAL_TESTS);
+  const [tests, setTests] = useState<TestItem[]>([]);
   const testsRef = useRef(tests);
   testsRef.current = tests;
 
   useEffect(() => {
-    fetchGeneratedTests()
-      .then(fetched => {
-        if (fetched && fetched.length > 0) {
-          const mapped: TestItem[] = fetched.map((t) => ({
-            id: t.scenario_id,
-            name: t.name,
-            path: '/' + t.endpoint.replace(/^\//, ''),
-            method: t.method,
-            confidence: 0.95,
-            verdict: 'review',
-            gates: {
-              syntax: true,
-              structure: true,
-              ast: true,
-              novelty: true,
-              dryRun: true,
-              quality: false
-            },
-            gateReasons: {
-              quality: 'Audited and queued for developer verification.'
-            },
-            code: t.code
-          }));
+    Promise.all([
+      fetchReviewQueue('pending'),
+      fetchGeneratedTests()
+    ])
+      .then(([queueItems, generatedTests]) => {
+        const testMap = new Map<string, string>();
+        for (const gt of generatedTests) {
+          testMap.set(gt.scenario_id, gt.code);
+        }
+
+        const mapped: TestItem[] = queueItems.map((item: ReviewQueueItem) => ({
+          id: item.id,
+          name: `${item.method} ${item.endpoint}`,
+          path: '/' + (item.endpoint || '').replace(/^\//, ''),
+          method: item.method || 'GET',
+          confidence: item.confidence ?? 0.5,
+          verdict: item.status === 'approved' ? 'approved' : 'review',
+          gates: {
+            syntax: true,
+            structure: true,
+            ast: true,
+            novelty: true,
+            dryRun: true,
+            quality: item.review_gate_failed !== 'quality',
+          },
+          gateReasons: {
+            quality: item.confidence_reason || item.review_gate_failed || 'Awaiting review.',
+          },
+          code: testMap.get(item.id) || `// Generated test for ${item.method} ${item.endpoint}\n`
+        }));
+
+        if (mapped.length > 0) {
           setTests(mapped);
           setSelectedTestId(mapped[0].id);
         }
       })
-      .catch(err => console.warn('Failed to fetch generated tests, using mock data:', err));
+      .catch(err => console.warn('Failed to fetch review items:', err));
   }, []);
   const [activeFilter, setActiveFilter] = useState<'all' | 'approved' | 'review' | 'regenerating' | 'rejected'>('all');
   const [selectedTestId, setSelectedTestId] = useState<string>('test-3'); // Default to the first review item
