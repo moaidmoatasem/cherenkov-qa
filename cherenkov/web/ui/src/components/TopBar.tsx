@@ -15,6 +15,7 @@ interface TopBarProps {
   autonomy: 'Assisted' | 'Augmented' | 'Agentic';
   setAutonomy: (val: 'Assisted' | 'Augmented' | 'Agentic') => void;
   onLiveClick: () => void;
+  demoMode?: boolean;
 }
 
 export default function TopBar({ 
@@ -24,7 +25,8 @@ export default function TopBar({
   totalSpentEstimated,
   autonomy,
   setAutonomy,
-  onLiveClick
+  onLiveClick,
+  demoMode
 }: TopBarProps) {
   
   const getTabLabel = (tab: string) => {
@@ -60,6 +62,11 @@ export default function TopBar({
         <span className="text-xs font-semibold text-text-primary px-2.5 py-1 rounded bg-white/5 border border-white/5 uppercase tracking-wider font-sans">
           {getTabLabel(activeTab)}
         </span>
+        {demoMode && (
+          <span className="ml-2 text-[10px] font-bold px-2 py-1 bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 rounded uppercase animate-pulse">
+            Demo data
+          </span>
+        )}
       </div>
 
       {/* Autonomy Level Control Segmented Control */}
