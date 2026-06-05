@@ -261,6 +261,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt fastapi uvicorn
 
+      # Node.js + Playwright are needed because cherenkov validate runs npx playwright test
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright CLI + Chromium
+        run: |
+          npm install -g playwright
+          npx playwright install --with-deps chromium
+
+      # Install stub npm packages (openapi-fetch, @playwright/test) so the
+      # committed test fixtures can be compiled and executed by the validator.
+      - name: Install stub npm packages
+        env:
+          NODE_OPTIONS: --dns-result-order=ipv4first
+        run: |
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm install --prefix stub
+
       # Set up the target API venv (smoke_test_validate starts it via .venv/bin/uvicorn)
       - name: Set up target API venv
         run: |
@@ -270,6 +291,8 @@ jobs:
           fi
 
       - name: Run validate CLI smoke test
+        env:
+          NODE_OPTIONS: --dns-result-order=ipv4first
         run: PYTHONPATH=. python3 smoke_test_validate.py
 
   # ── Opt-in: the ONE job that exercises the real model ──────────────────────

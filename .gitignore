@@ -9,9 +9,10 @@ node_modules/
 # generated / local
 .cherenkov/
 *.log
-stub/generated-types.ts
 stub/stripe-types.ts
-stub/*_tests/
+# ignore generated test run artefacts, but allow committed fixtures
+stub/generated_tests/test-results/
+stub/generated_tests/*.trace.zip
 target/.venv/
 
 # generated project config (from `cherenkov init`)
