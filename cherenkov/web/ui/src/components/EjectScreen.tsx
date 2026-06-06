@@ -17,7 +17,7 @@ import {
   Cpu,
   AlertCircle
 } from 'lucide-react';
-import { MOCK_FILE_TREE } from '../mockData';
+
 import { ejectSuite } from '../lib/api';
 import CherenkovLogo from './CherenkovLogo';
 import { useToast } from './ui/Toast';
@@ -258,7 +258,7 @@ export default function EjectScreen() {
 
             {/* Tree canvas background */}
             <div className="bg-black/30 border border-white/5 p-4 rounded-xl overflow-y-auto max-h-[360px] scrollbar-thin">
-              {renderTree(MOCK_FILE_TREE)}
+              {const [files, setFiles] = useState<FileNode[]>([]);}
             </div>
 
             <p className="text-[10px] text-text-muted leading-relaxed font-sans text-center">
