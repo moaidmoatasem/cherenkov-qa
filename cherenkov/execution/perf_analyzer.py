@@ -16,7 +16,7 @@ class PerformanceAnalyzer:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("PERF_ANALYZER", run_id)
-        self.db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.cherenkov/rag_store.db"))
+        self.db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.cherenkov/perf_store.db"))
         self._initialize_db()
 
     def _initialize_db(self):
