@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, Award, CheckCircle, Download, FileText } from 'lucide-react';
 import { Card, PageHeader, StatusDot, MockBadge } from './ui';
 import { fetchGovernance } from '../lib/api';

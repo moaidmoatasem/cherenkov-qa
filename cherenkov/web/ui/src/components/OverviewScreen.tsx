@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { LayoutDashboard, ArrowRight, Zap, GraduationCap, CheckCircle } from 'lucide-react';
 import { Card, PageHeader, KpiRing, Skeleton, EmptyState } from './ui';
 import { fetchOverview, fetchDivergences } from '../lib/api';
+import { Divergence } from '../types';
 
 interface OverviewScreenProps {
   onNewRun: () => void;
@@ -98,7 +99,7 @@ export default function OverviewScreen({ onNewRun, onNavigate }: OverviewScreenP
             )}
           </div>
           <div className="w-full flex items-center justify-between border-t border-white/5 pt-4 text-xs font-mono text-[#7D8DA1]">
-            <span>FP Rate: {MOCK_OVERVIEW.falsePositiveRate}%</span>
+            <span>FP Rate: {overview.falsePositiveRate}%</span>
             <span className="text-glow-bright">99.9% Target</span>
           </div>
         </Card>
@@ -160,7 +161,7 @@ export default function OverviewScreen({ onNewRun, onNavigate }: OverviewScreenP
               <span>Reflector Verdict Memory</span>
             </h3>
             <div className="mt-4 space-y-4">
-              {MOCK_OVERVIEW.recentLearnings.map((item, idx) => (
+              {overview.recentLearnings.map((item, idx) => (
                 <div key={idx} className="flex gap-3 text-xs">
                   <div className="mt-0.5 p-1 bg-glow-blue/10 text-glow-bright rounded-full h-fit">
                     <CheckCircle className="w-3.5 h-3.5" />

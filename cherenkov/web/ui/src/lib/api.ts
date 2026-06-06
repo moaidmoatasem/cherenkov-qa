@@ -282,3 +282,45 @@ export async function fetchDoctor(): Promise<{ checks: DoctorCheck[], ready: boo
   if (!res.ok) throw new Error('Failed to run doctor checks');
   return res.json();
 }
+
+export async function fetchProjects() {
+  const res = await fetch(`${API_BASE}/projects`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function fetchTruthMap() {
+  const res = await fetch(`${API_BASE}/truth-map`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function fetchFailures() {
+  const res = await fetch(`${API_BASE}/failures`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function fetchGovernance() {
+  const res = await fetch(`${API_BASE}/governance`);
+  if (!res.ok) return { score: 100, issues: [] };
+  return res.json();
+}
+
+export async function fetchMemory() {
+  const res = await fetch(`${API_BASE}/memory`);
+  if (!res.ok) return { idioms: [], pairing: [] };
+  return res.json();
+}
+
+export async function fetchSignals() {
+  const res = await fetch(`${API_BASE}/signals`);
+  if (!res.ok) return { performance: [], visual: [], coverage: {} };
+  return res.json();
+}
+
+export async function fetchOverview() {
+  const res = await fetch(`${API_BASE}/overview`);
+  if (!res.ok) return { falsePositiveRate: 0, recentLearnings: [] };
+  return res.json();
+}

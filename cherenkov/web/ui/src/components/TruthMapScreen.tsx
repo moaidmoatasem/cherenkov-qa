@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Network, AlertCircle, ArrowRight } from 'lucide-react';
 import { Card, PageHeader, ProvenanceChip, MockBadge } from './ui';
 import { fetchTruthMap } from '../lib/api';
@@ -40,7 +40,7 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
             Monitored Endpoint Claims
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {MOCK_TRUTH_MAP.map((item, idx) => (
+            {nodes.map((node, idx) => (
               <div
                 key={idx}
                 onClick={() => setSelectedIdx(idx)}
@@ -51,12 +51,12 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
                 }`}
               >
                 <div>
-                  <span className="block font-mono text-xs text-[#E6EDF3] font-semibold">{item.endpoint}</span>
+                  <span className="block font-mono text-xs text-[#E6EDF3] font-semibold">{node.endpoint}</span>
                   <span className="text-[10px] text-[#7D8DA1]/85 font-mono block mt-1">
-                    {item.claims.length} Multi-source Claims
+                    {node.claims.length} Multi-source Claims
                   </span>
                 </div>
-                {item.hasDivergence && (
+                {node.hasDivergence && (
                   <span className="flex items-center gap-1 text-[9px] font-mono font-bold text-red-400 border border-red-500/20 bg-red-500/5 px-2 py-0.5 rounded animate-pulse">
                     <AlertCircle className="w-3 h-3" />
                     DIVERGENT
