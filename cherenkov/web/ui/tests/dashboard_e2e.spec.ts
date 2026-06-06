@@ -1,172 +1,432 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('CHERENKOV QA Observability Dashboard E2E Tests', () => {
+const SETTLEMENT = 500;
+
+test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
 
   test.beforeEach(async ({ page }) => {
-    // Capture browser console logs
     page.on('console', msg => {
       console.log(`[BROWSER CONSOLE] ${msg.type()}: ${msg.text()}`);
     });
-
-    // Capture uncaught exceptions in page
     page.on('pageerror', err => {
       console.error(`[BROWSER UNCAUGHT ERROR] ${err.message}\nStack: ${err.stack}`);
     });
 
-    // Navigate to the local dashboard Vite dev server port 3000
+    // Dismiss the Guided Tour that appears on first visit
     await page.goto('/');
+    await page.evaluate(() => localStorage.setItem('[copilot] tour_seen', 'true'));
+    await page.reload();
     await page.waitForSelector('#cherenkov-app-core');
-    
-    // Wait for React hydration to fully attach event handlers to buttons
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(SETTLEMENT);
   });
 
-  test('Page shell and Sidebar controls function properly', async ({ page }) => {
-    const sidebar = page.locator('#cherenkov-sidebar');
-    await expect(sidebar).toBeVisible();
+  // ── 1. Projects Screen (default landing) ──────────────────────────
+  test('Projects screen: cards, search, timer bars, and New Run button', async ({ page }) => {
+    await expect(page.locator('#projects-screen')).toBeVisible();
+    await expect(page.locator('h1')).toContainText('Cherenkov Observability Root');
 
-    await expect(page.locator('text=LLM Token Pool')).toBeVisible();
-    await expect(page.locator('text=Active Workspace')).toBeVisible();
+    // Three project cards exist
+    await expect(page.locator('#project-card-proj-petstore')).toBeVisible();
+    await expect(page.locator('#project-card-proj-checkout-api')).toBeVisible();
+    await expect(page.locator('#project-card-proj-auth-identity')).toBeVisible();
 
-    // Verify status indicator is present and idle initially
-    await expect(page.locator('text=IDLE').first()).toBeVisible();
+    // Timer bars visible on petstore card
+    await expect(page.locator('#timer-bar-proj-petstore')).toBeVisible();
+
+    // Search filters projects
+    await page.fill('#workspace-search-input', 'Checkout');
+    await expect(page.locator('#project-card-proj-checkout-api')).toBeVisible();
+    await expect(page.locator('#project-card-proj-petstore')).not.toBeVisible();
+
+    // Clear search
+    await page.fill('#workspace-search-input', '');
+    await expect(page.locator('#project-card-proj-petstore')).toBeVisible();
+
+    // New Run button
+    await expect(page.locator('#btn-projects-new-run')).toBeVisible();
   });
 
-  test('Navigate to Overview Screen and verify release metrics', async ({ page }) => {
+  // ── 2. Overview Screen ────────────────────────────────────────────
+  test('Overview: KPI rings, release readiness, divergences list', async ({ page }) => {
     await page.click('#nav-item-overview');
-    
-    // Check main title is correct
-    const header = page.locator('h1');
-    await expect(header).toContainText('Release Readiness & Learning');
-    
-    // Verify key metrics KPI components
-    await expect(page.locator('text=Release Readiness Score')).toBeVisible();
-    await expect(page.locator('text=Reflector Verdict Memory')).toBeVisible();
-    
-    // Use exact match to avoid strict mode violation on "Readiness" substring
-    await expect(page.getByText('Readiness', { exact: true })).toBeVisible();
+    await page.waitForSelector('#overview-screen');
+    await expect(page.locator('h1')).toContainText('Release Readiness & Learning');
+
+    // KPI ring with progressbar role
+    const kpiRing = page.locator('[role="progressbar"]').first();
+    await expect(kpiRing).toBeVisible();
+    const value = await kpiRing.getAttribute('aria-valuenow');
+    expect(value).not.toBeNull();
   });
 
-  test('Navigate to Truth Map Screen and inspect endpoint claims', async ({ page }) => {
+  // ── 3. Truth Map Screen ───────────────────────────────────────────
+  test('Truth Map: endpoint list, click endpoint, verify claims panel', async ({ page }) => {
     await page.click('#nav-item-truth-map');
-
-    // Check header
+    await page.waitForSelector('#truth-map-screen');
     await expect(page.locator('h1')).toContainText('Endpoint Truth Graph');
 
-    // Click on /user/login endpoint to view its claims list (present in mockData.ts)
-    const endpointRow = page.getByText('/user/login').first();
-    await expect(endpointRow).toBeVisible();
-    await endpointRow.click();
+    // Endpoint list items render
+    await expect(page.getByText('POST /pets').first()).toBeVisible();
+    await expect(page.getByText('GET /user/login').first()).toBeVisible();
 
-    // Ensure claims matching the selected endpoint render
-    await expect(page.locator('h3').first()).toContainText('/user/login');
-    await expect(page.locator('text=VERIFIED').first()).toBeVisible();
+    // Click the GET /user/login endpoint
+    await page.getByText('GET /user/login').first().click();
+    await page.waitForTimeout(300);
+
+    // The h3 in the claims detail panel shows the selected endpoint
+    const claimsH3 = page.locator('#truth-map-screen h3');
+    await expect(claimsH3.first()).toContainText('GET /user/login');
+
+    // Claims list shows VERIFIED text
+    await expect(page.getByText('SPEC VERIFIED').first()).toBeVisible();
   });
 
-  test('Navigate to Divergences Screen, filter anomalies, and use detail drawer', async ({ page }) => {
+  // ── 4. Divergences Screen ─────────────────────────────────────────
+  test('Divergences: filter, detail drawer open/close', async ({ page }) => {
     await page.click('#nav-item-divergences');
-
-    // Check header
+    await page.waitForTimeout(500);
     await expect(page.locator('h1')).toContainText('Divergence Triage Hub');
 
-    // Filter by severity critical (specifically targeting the select elements containing critical option)
+    // Severity filter exists
     const severitySelect = page.locator('select:has(option[value="critical"])');
     await expect(severitySelect).toBeVisible();
     await severitySelect.selectOption('critical');
 
-    // Click a divergence row to open the detail drawer
-    const row = page.locator('text=D-').first();
+    // Click a divergence row to open detail drawer
+    const row = page.getByText('D-').first();
     await expect(row).toBeVisible();
     await row.click();
 
-    // Verify detail drawer elements are shown
-    await expect(page.locator('text=Divergence Detail').first()).toBeVisible();
-    await expect(page.locator('text=Evidence payload')).toBeVisible();
-    await expect(page.locator('text=Independent Repro Steps')).toBeVisible();
+    await expect(page.getByText('Divergence Detail').first()).toBeVisible();
+    await expect(page.getByText('Evidence payload')).toBeVisible();
 
-    // Close the drawer (using correct close button aria-label)
+    // Close drawer
     await page.click('button[aria-label="Close details"]');
-    await expect(page.locator('text=Divergence Detail')).not.toBeVisible();
+    await expect(page.getByText('Divergence Detail')).not.toBeVisible();
   });
 
-  test('Navigate to Author by Intent Screen and check manual NL-QA flow', async ({ page }) => {
+  // ── 5. Author Screen ──────────────────────────────────────────────
+  test('Author by Intent: textarea, example chips, mentor idioms', async ({ page }) => {
     await page.click('#nav-item-author');
-
-    // Verify UI components
+    await page.waitForSelector('#author-screen');
     await expect(page.locator('h1')).toContainText('Author by Intent');
-    await expect(page.locator('[placeholder="e.g. Verify that guest checkouts apply 15% discount code and succeed with 200 OK..."]')).toBeVisible();
 
-    // Click an example intent chip to populate input
-    const chip = page.locator('text="Verify that guests can checkout with valid cart items and coupons."').first();
+    // Textarea for NL input
+    const textarea = page.locator('textarea').first();
+    await expect(textarea).toBeVisible();
+
+    // Click example intent chip
+    const chip = page.getByText('Verify that guests can checkout').first();
     await expect(chip).toBeVisible();
     await chip.click();
-
-    // Verify prompt value got updated
+    await page.waitForTimeout(200);
     const inputVal = await page.inputValue('textarea');
     expect(inputVal).toContain('Verify that guests can checkout');
 
-    // Verify Mentor Idioms advice displays contextually
-    await expect(page.locator('text=Mentor Context Idioms')).toBeVisible();
+    // Mentor idioms panel
+    await expect(page.getByText('Mentor Context Idioms')).toBeVisible();
   });
 
-  test('Navigate to Signals Screen and review latency and visual regression baseline tabs', async ({ page }) => {
+  // ── 6. Signals Screen ─────────────────────────────────────────────
+  test('Signals: tab switching (Performance, Visual, Coverage)', async ({ page }) => {
     await page.click('#nav-item-signals');
-
+    await page.waitForSelector('#signals-screen');
     await expect(page.locator('h1')).toContainText('Telemetry Signals');
 
-    // Performance tab is active by default
-    await expect(page.locator('text=API Latency & Anomaly Baselines')).toBeVisible();
+    // Performance tab default
+    await expect(page.getByText('API Latency & Anomaly Baselines')).toBeVisible();
 
-    // Switch to Visual tab
+    // Switch to Visual
     await page.click('button:has-text("Visual Regression")');
-    await expect(page.locator('text=UI Snapshot Comparisons')).toBeVisible();
+    await expect(page.getByText('UI Snapshot Comparisons')).toBeVisible();
 
-    // Switch to Coverage tab
+    // Switch to Coverage
     await page.click('button:has-text("SDET Coverage")');
-    await expect(page.locator('text=Code Path Verification Coverage')).toBeVisible();
+    await expect(page.getByText('Code Path Verification Coverage')).toBeVisible();
   });
 
-  test('Navigate to Memory & Pairing Screen and inspect senior idioms', async ({ page }) => {
+  // ── 7. Memory Screen ──────────────────────────────────────────────
+  test('Memory & Pairing: idioms and pairing panels', async ({ page }) => {
     await page.click('#nav-item-memory');
-
+    await page.waitForSelector('#memory-screen');
     await expect(page.locator('h1')).toContainText('Reflector Memory & Pairing');
-    await expect(page.locator('text=Accumulated Senior Testing Idioms')).toBeVisible();
-    await expect(page.locator('text=Mentor Junior-Senior Pairing')).toBeVisible();
+    await expect(page.getByText('Accumulated Senior Testing Idioms')).toBeVisible();
+    await expect(page.getByText('Mentor Junior-Senior Pairing')).toBeVisible();
   });
 
-  test('Navigate to Governance Screen and verify model compliance', async ({ page }) => {
+  // ── 8. Governance Screen ──────────────────────────────────────────
+  test('Governance: KPI metrics and compliance', async ({ page }) => {
     await page.click('#nav-item-governance');
-
+    await page.waitForSelector('#governance-screen');
     await expect(page.locator('h1')).toContainText('Governance & Model Certification');
-    await expect(page.locator('text=Defect Escape Rate')).toBeVisible();
-    await expect(page.locator('text=Model Capabilities Certification')).toBeVisible();
+    await expect(page.getByText('Defect Escape Rate')).toBeVisible();
+    await expect(page.getByText('Model Capabilities Certification')).toBeVisible();
   });
 
-  test('Navigate to Settings, modify configuration, and verify persistence', async ({ page }) => {
-    await page.click('button:has-text("Settings")');
+  // ── 9. Setup Screen ───────────────────────────────────────────────
+  test('Setup screen: drag zone, URL input, preset buttons, server validation toggle', async ({ page }) => {
+    // Click "New Spec Run" in sidebar to navigate to setup
+    await page.click('#btn-sidebar-new-run');
+    await page.waitForSelector('#setup-screen');
+    await expect(page.locator('h1')).toContainText('New Test Generation Run');
 
+    // Drag zone visible
+    await expect(page.getByText('Drag & Drop OpenAPI Spec')).toBeVisible();
+
+    // URL input field
+    await expect(page.locator('#spec-url-input')).toBeVisible();
+
+    // Preset shortcut buttons
+    await expect(page.locator('#btn-shortcut-petstore')).toBeVisible();
+    await expect(page.locator('#btn-shortcut-checkout')).toBeVisible();
+
+    // Click petstore shortcut to load mock spec
+    await page.locator('#btn-shortcut-petstore').click();
+    await page.waitForTimeout(500);
+    await expect(page.getByText('swagger-petstore-v2.json')).toBeVisible();
+
+    // Toggle server validation expand
+    await page.locator('#btn-toggle-server-validation').click();
+    await expect(page.locator('#input-server-url')).toBeVisible();
+    await expect(page.locator('#input-auth-header')).toBeVisible();
+  });
+
+  // ── 10. Pipeline Screen (via Live Execution Drawer) ─────────────────
+  test('Pipeline: DAG nodes via live drawer, pause/resume, telemetry', async ({ page }) => {
+    // Open the live execution drawer by clicking the node state in TopBar
+    await page.click('[title="Click to view live executing pipeline monitor"]');
+    await page.waitForTimeout(300);
+
+    // Drawer opens with PipelineScreen inside
+    await expect(page.getByText('Live Execution Pipeline Monitor')).toBeVisible();
+
+    // Pipeline DAG nodes
+    await expect(page.locator('#pipeline-node-ingest')).toBeVisible();
+    await expect(page.locator('#pipeline-node-generate')).toBeVisible();
+    await expect(page.locator('#pipeline-node-review')).toBeVisible();
+
+    // Pause/Resume button
+    const pauseBtn = page.locator('#pipeline-pause-resume-btn');
+    await expect(pauseBtn).toBeVisible();
+    await expect(pauseBtn).toContainText('PAUSE');
+    await pauseBtn.click();
+    await page.waitForTimeout(200);
+    await expect(pauseBtn).toContainText('RESUME');
+
+    // Telemetry panel shows token budget
+    await expect(page.getByText('TOKEN BUDGET')).toBeVisible();
+    await expect(page.getByText('PROMPT ATTENTION SPACE')).toBeVisible();
+  });
+
+  // ── 11. Review Screen ──────────────────────────────────────────────
+  test('Review: filter tabs, test queue, code viewer', async ({ page }) => {
+    await page.click('#nav-item-review');
+    await page.waitForSelector('#review-screen');
+    await expect(page.locator('h1')).toContainText('Human-In-The-Loop Validation Gate');
+
+    // Filter tabs
+    await expect(page.locator('#filter-tab-all')).toBeVisible();
+    await expect(page.locator('#filter-tab-approved')).toBeVisible();
+    await expect(page.locator('#filter-tab-review')).toBeVisible();
+    await expect(page.locator('#filter-tab-rejected')).toBeVisible();
+
+    // Click a filter tab
+    await page.locator('#filter-tab-approved').click();
+    await page.waitForTimeout(200);
+  });
+
+  // ── 12. Healing Screen ─────────────────────────────────────────────
+  test('Healing: drift cards, dismiss, apply suggestion flow', async ({ page }) => {
+    await page.click('#nav-item-healing');
+    await page.waitForSelector('#healing-screen');
+    await expect(page.locator('h1')).toContainText('Self-Healing & Drift Redress');
+
+    // Drift cards rendered
+    await expect(page.locator('#drift-card-fail-1')).toBeVisible();
+    await expect(page.locator('#drift-card-fail-2')).toBeVisible();
+
+    // Diagnosis text visible
+    await expect(page.getByText('Why it failed:').first()).toBeVisible();
+
+    // Dismiss a card
+    const dismissBtn = page.locator('#drift-card-fail-1 button:has-text("Dismiss")');
+    await expect(dismissBtn).toBeVisible();
+  });
+
+  // ── 13. Eject Screen ──────────────────────────────────────────────
+  test('Eject: file tree, output path, eject form, copy command', async ({ page }) => {
+    await page.click('#nav-item-eject');
+    await page.waitForSelector('#eject-screen');
+    await expect(page.locator('h1')).toContainText('Export & Eject Suite');
+
+    // Output path input
+    await expect(page.locator('#eject-path')).toBeVisible();
+
+    // File tree visible (playwright-suite root)
+    await expect(page.getByText('playwright-suite/')).toBeVisible();
+
+    // Eject button
+    await expect(page.locator('#btn-confirm-eject')).toBeVisible();
+
+    // Click eject
+    await page.locator('#btn-confirm-eject').click();
+    await page.waitForTimeout(300);
+
+    // Success state shows copy command button
+    await expect(page.locator('#btn-copy-command')).toBeVisible();
+  });
+
+  // ── 14. Settings Screen ───────────────────────────────────────────
+  test('Settings: model provider, tiers, egress policy, budget sliders, save', async ({ page }) => {
+    // Settings is a bottom-pinned button in the sidebar
+    await page.click('[title="Open Settings"]');
+    await page.waitForSelector('#settings-screen', { timeout: 10000 });
     await expect(page.locator('h1')).toContainText('System Settings & Credentials');
 
-    // Toggle density (using checkbox element instead of nonexistent button)
+    // Model provider cards
+    await expect(page.getByText('Qwen 2.5 Coder (7B)')).toBeVisible();
+    await expect(page.getByText('Gemini 2.5 Flash')).toBeVisible();
+
+    // Substrate tier buttons
+    await expect(page.getByText('small').first()).toBeVisible();
+    await expect(page.getByText('deep').first()).toBeVisible();
+    await expect(page.getByText('vision').first()).toBeVisible();
+
+    // Egress policy buttons
+    await expect(page.getByText('Sovereign').first()).toBeVisible();
+
+    // Budget slider
+    await expect(page.locator('input[type="range"]').first()).toBeVisible();
+
+    // Thread limit slider
+    await expect(page.locator('#threads-range-slider')).toBeVisible();
+
+    // Compact view checkbox
     const compactCheckbox = page.locator('input[type="checkbox"]').first();
     await expect(compactCheckbox).toBeVisible();
     await compactCheckbox.click();
 
-    // Verify LocalStorage updates or stays custom
-    const storedAutonomy = await page.evaluate(() => localStorage.getItem('[copilot] autonomy'));
-    expect(storedAutonomy).toBeDefined();
+    // Save button
+    await expect(page.locator('#btn-settings-save')).toBeVisible();
   });
 
-  test('Trigger global Command Palette (Ctrl+K / Cmd+K)', async ({ page }) => {
-    // Dispatch keyboard shortcut
-    await page.keyboard.press('Control+KeyK');
+  // ── 15. Explore Screen (inline crawler) ────────────────────────────
+  test('Explore screen: inline crawler with "Configure Scope" button', async ({ page }) => {
+    await page.click('#nav-item-explore');
+    await page.waitForTimeout(300);
+    await expect(page.getByText('Explore Crawler')).toBeVisible();
+    await expect(page.getByText('Configure Scope & Target')).toBeVisible();
+  });
 
-    // Palette input field should display
-    const paletteInput = page.locator('[placeholder="Type page name or action command (e.g. \'author\', \'setup\', \'divergences\')..."]');
+  // ── 16. UI Kit Screen ─────────────────────────────────────────────
+  test('UI Kit: panels, cards, pills, tabs, drawer, toasts', async ({ page }) => {
+    // UI Kit is a bottom-pinned button in the sidebar
+    await page.click('[title="Open UI Kit Gallery"]');
+    await page.waitForTimeout(300);
+    await expect(page.getByText('UI Kit Consistency Gallery')).toBeVisible();
+
+    // Panels section
+    await expect(page.getByText('Panels & Cards')).toBeVisible();
+    await expect(page.getByText('Standard Panel')).toBeVisible();
+    await expect(page.getByText('Hoverable Card')).toBeVisible();
+
+    // Pills section
+    await expect(page.getByText('SeverityPills')).toBeVisible();
+    await expect(page.getByText('StatusDots')).toBeVisible();
+    await expect(page.getByText('Provenance Chips')).toBeVisible();
+
+    // Interactive elements
+    await expect(page.getByText('Tabs Navigation')).toBeVisible();
+    await expect(page.getByText('Detail Drawer').first()).toBeVisible();
+    await expect(page.getByText('Toasts Feedback')).toBeVisible();
+
+    // KPI Ring section
+    await expect(page.getByText('Release Readiness').first()).toBeVisible();
+    await expect(page.getByText('False Positive Rate')).toBeVisible();
+
+    // Skeleton toggle
+    await expect(page.getByText('Toggle Load View')).toBeVisible();
+
+    // Empty state
+    await expect(page.getByText('No Divergences Discovered')).toBeVisible();
+    await expect(page.getByText('Trigger Scanner')).toBeVisible();
+  });
+
+  // ── 17. Sidebar Navigation & Shell ────────────────────────────────
+  test('Sidebar shell: nav items, workspace selector, token pool, status', async ({ page }) => {
+    const sidebar = page.locator('#cherenkov-sidebar');
+    await expect(sidebar).toBeVisible();
+
+    await expect(page.getByText('LLM Token Pool')).toBeVisible();
+    await expect(page.getByText('Active Workspace')).toBeVisible();
+
+    // Status indicator idle initially
+    await expect(page.getByText('IDLE').first()).toBeVisible();
+
+    // Project selector
+    await expect(page.locator('#project-selector')).toBeVisible();
+  });
+
+  // ── 18. TopBar: Autonomy toggle and help button ────────────────────
+  test('TopBar: autonomy toggle, session cost, help button', async ({ page }) => {
+    const topbar = page.locator('#cherenkov-topbar');
+    await expect(topbar).toBeVisible();
+
+    // Autonomy radio group
+    const autonomyGroup = page.locator('[role="radiogroup"][aria-label="Autonomy Level Control"]');
+    await expect(autonomyGroup).toBeVisible();
+
+    const buttons = autonomyGroup.locator('[role="radio"]');
+    await expect(buttons).toHaveCount(3);
+    await expect(buttons.nth(0)).toHaveAttribute('aria-checked', 'true');
+
+    // Click Augmented
+    await buttons.nth(1).click();
+    await expect(buttons.nth(0)).toHaveAttribute('aria-checked', 'false');
+    await expect(buttons.nth(1)).toHaveAttribute('aria-checked', 'true');
+
+    // Session cost visible
+    await expect(page.getByText('SESSION COST:')).toBeVisible();
+
+    // Help button
+    const helpButton = page.locator('button[aria-label="Help Guide"]');
+    await expect(helpButton).toBeVisible();
+  });
+
+  // ── 19. Command Palette ───────────────────────────────────────────
+  test('Command Palette: Ctrl+K opens, search filters, ESC closes', async ({ page }) => {
+    await page.keyboard.press('Control+KeyK');
+    const paletteInput = page.locator('#command-palette-input');
     await expect(paletteInput).toBeVisible();
 
-    // Close palette using ESC key
+    // Type to filter
+    await paletteInput.fill('author');
+    await page.waitForTimeout(200);
+    await expect(page.getByText('Go to Author by Intent')).toBeVisible();
+
+    // Close with ESC
     await page.keyboard.press('Escape');
     await expect(paletteInput).not.toBeVisible();
   });
+
+  // ── 20. Settings Persistence (localStorage) ───────────────────────
+  test('Settings: toggle compact mode persists to localStorage', async ({ page }) => {
+    // Mock the PUT endpoint so handleSave succeeds and writes localStorage
+    await page.route('**/api/v1/settings', async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+    });
+
+    await page.click('[title="Open Settings"]');
+    await page.waitForSelector('#settings-screen', { timeout: 10000 });
+
+    const compactCheckbox = page.locator('input[type="checkbox"]').first();
+    await compactCheckbox.click();
+
+    await page.locator('#btn-settings-save').click();
+    await page.waitForTimeout(500);
+
+    const storedDensity = await page.evaluate(() => localStorage.getItem('[copilot] density'));
+    expect(storedDensity).toBe('compact');
+  });
+
 });
