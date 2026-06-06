@@ -21,7 +21,6 @@ import { INITIAL_FAILURES } from '../mockData';
 import { validateSuite, editTestScenario } from '../lib/api';
 import { useToast } from './ui/Toast';
 import CherenkovLogo from './CherenkovLogo';
-import { useToast } from './ui/Toast';
 
 interface HealingScreenProps {
   onSuggestResolveCount: (count: number) => void;

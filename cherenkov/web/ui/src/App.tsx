@@ -22,6 +22,7 @@ import AuthorScreen from './components/AuthorScreen';
 import SignalsScreen from './components/SignalsScreen';
 import MemoryScreen from './components/MemoryScreen';
 import GovernanceScreen from './components/GovernanceScreen';
+import GuidedTour from './components/GuidedTour';
 import { ToastProvider, Drawer, OfflineOverlay } from './components/ui';
 
 import { Project, EndpointRichness } from './types';
@@ -56,6 +57,16 @@ export default function App() {
   // Observability Token pool metric simulations
   const [tokenUsagePercent, setTokenUsagePercent] = useState(43);
   const [totalSpentEstimated, setTotalSpentEstimated] = useState(0.14);
+
+  // Guided Tour state
+  const [showTour, setShowTour] = useState(() => {
+    return localStorage.getItem('[copilot] tour_seen') !== 'true';
+  });
+
+  const handleCloseTour = () => {
+    setShowTour(false);
+    localStorage.setItem('[copilot] tour_seen', 'true');
+  };
 
   // Retrieve current active project configuration
   const currentProject = projects.find(p => p.id === selectedProjectId) || null;
@@ -160,6 +171,13 @@ export default function App() {
           projects={projects}
           onSelectProject={handleSelectProject}
         />
+
+        {showTour && (
+          <GuidedTour 
+            onClose={handleCloseTour} 
+            onNavigate={setActiveTab} 
+          />
+        )}
 
         {/* Honest backend-offline state (#221) — blocks interaction on stale/missing data */}
         {!online && <OfflineOverlay checking={checking} onRetry={refresh} />}
