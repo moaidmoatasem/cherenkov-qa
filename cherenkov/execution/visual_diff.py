@@ -16,7 +16,7 @@ class VisualDiffEngine:
         self.run_id = run_id
         self.log = get_logger("VISUAL_DIFF", run_id)
         self.stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
-        self.snapshots_dir = os.path.join(self.stub_dir, "generated_tests", "visual_regression_baseline_ui.spec.ts-snapshots")
+        self.snapshots_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.cherenkov/snapshots"))
 
     def run_visual_validation(self, api_url: str | None = None) -> dict:
         """Executes the visual E2E test. If baseline snapshots are absent, initializes them via --update-snapshots."""
@@ -76,7 +76,10 @@ class VisualDiffEngine:
 
         if passed:
             self.log.info("visual verification passed - layout matches baseline snapshot")
-            report["message"] = "Visual verification passed successfully. No UI layout deviations detected."
+            if not snapshots_exist:
+                report["message"] = "Visual baseline initialized successfully. No prior snapshot to compare against."
+            else:
+                report["message"] = "Visual verification passed successfully. No UI layout deviations detected."
         else:
             self.log.warning("visual mismatch detected - UI layout deviates from baseline snapshot")
             report["message"] = "Visual verification failed. Mismatch detected between live UI and baseline snapshot."

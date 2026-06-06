@@ -18,7 +18,7 @@ class DiagnosticsOutput(BaseModel):
     scenario_id: str
     failure_class: str
     error_message: str
-    hypothesis: str
+    suggested_hypothesis: str
     resolution_steps: list[str] = Field(default_factory=list)
     similar_cases_found: int = 0
     status: Status = Status.OK
@@ -57,7 +57,7 @@ class DiagnosticsStage:
             + "PAST SIMILAR INCIDENTS RETRIEVED FROM RAG:\n"
             + json.dumps(similar_incidents, indent=2)
             + "\n\nFormulate a root-cause hypothesis and resolution steps. "
-            + "Return a JSON object with keys: 'hypothesis' (string) and 'resolution_steps' (array of strings)."
+            + "Return a JSON object with keys: 'suggested_hypothesis' (string) and 'resolution_steps' (array of strings)."
         )
 
     def run(
@@ -75,7 +75,7 @@ class DiagnosticsStage:
 
         user_prompt = self._build_user_prompt(scenario_id, failure_class, error_message, similar_incidents)
 
-        hypothesis = ""
+        suggested_hypothesis = ""
         resolution_steps = []
         errors = []
 
@@ -87,13 +87,13 @@ class DiagnosticsStage:
                 model=Config.GEN_MODEL,
                 run_id=self.run_id
             )
-            hypothesis = parsed.get("hypothesis", "Could not formulate definitive hypothesis.")
+            suggested_hypothesis = parsed.get("suggested_hypothesis", parsed.get("hypothesis", "Could not formulate definitive hypothesis."))
             resolution_steps = parsed.get("resolution_steps", [])
             self.log.info("successfully synthesized root-cause hypothesis")
         except Exception as e:
             # Resilient fallback: return local heuristic diagnostic if model is offline or returns malformed JSON
             self.log.warning("Ollama synthesis failed, using local fallback heuristics", error=str(e))
-            hypothesis = f"Suspected {failure_class} incident based on test failure stack."
+            suggested_hypothesis = f"SUGGESTION: Suspected {failure_class} incident based on test failure stack."
             resolution_steps = [
                 "Verify target API endpoint configuration.",
                 "Review recent database schema change logs.",
@@ -108,7 +108,7 @@ class DiagnosticsStage:
             scenario_id=scenario_id,
             failure_class=failure_class,
             error_message=error_message,
-            hypothesis=hypothesis,
+            suggested_hypothesis=suggested_hypothesis,
             resolution_steps=resolution_steps,
             similar_cases_found=len(similar_incidents),
             status=Status.OK if not errors else Status.DEGRADED,
