@@ -20,6 +20,8 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
   }, []);
   const currentEndpoint = nodes[selectedIdx] || nodes[0];
 
+  if (!currentEndpoint) return null;
+
   return (
     <div className="p-6 h-full overflow-hidden flex flex-col justify-between grid-bg bg-transparent relative z-10" id="truth-map-screen">
       <MockBadge />

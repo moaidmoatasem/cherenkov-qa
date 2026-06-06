@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { setupApiMocks } from './api_mocks';
 
 const SETTLEMENT = 500;
 
@@ -12,6 +13,8 @@ test.describe('CHERENKOV QA Accessibility — Structural & ARIA Audit', () => {
     page.on('pageerror', err => {
       console.error(`[BROWSER UNCAUGHT ERROR] ${err.message}\nStack: ${err.stack}`);
     });
+
+    await setupApiMocks(page);
 
     // Dismiss the Guided Tour
     await page.goto('/');

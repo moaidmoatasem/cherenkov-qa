@@ -64,7 +64,7 @@ export default function GovernanceScreen() {
           </h3>
 
           <div className="space-y-3 font-mono text-xs text-[#7D8DA1]">
-            {MOCK_GOVERNANCE.modelCertification.map((cert, idx) => (
+            {MOCK_GOVERNANCE.modelCertification?.map((cert: any, idx: number) => (
               <div key={idx} className="flex justify-between items-center p-2.5 rounded border border-white/5 bg-black/10">
                 <span className="text-text-primary font-semibold">{cert.tier} Capability Tier</span>
                 <div className="flex items-center gap-3">
@@ -85,7 +85,7 @@ export default function GovernanceScreen() {
         </h3>
 
         <div className="space-y-3 font-mono text-xs">
-          {MOCK_GOVERNANCE.traceability.map((log, idx) => (
+          {MOCK_GOVERNANCE.traceability?.map((log: any, idx: number) => (
             <div key={idx} className="p-4 rounded-xl border border-white/5 bg-black/20 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-glow-bright font-semibold">{log.artifact}</span>
