@@ -39,11 +39,15 @@ def _start_target_api():
         except Exception:
             wsl_ip = "localhost"
         return None, f"http://{wsl_ip}:8000"
+    # Free port 8000 of any stale/orphaned listener before binding, so a leftover
+    # process from an interrupted run can't make this look like a tool failure.
+    subprocess.run(["fuser", "-k", "8000/tcp"], capture_output=True, timeout=5)
     proc = subprocess.Popen(
         ["uvicorn", "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
-        cwd=target_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        cwd=target_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
     )
     return proc, "http://localhost:8000"
+
 
 def _stop_target_api(proc):
     """Stop the target API."""
