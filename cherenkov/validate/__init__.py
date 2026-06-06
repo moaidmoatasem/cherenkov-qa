@@ -7,6 +7,7 @@ from __future__ import annotations
 from cherenkov.validate.contracts import GateCriteria, GateEvidence, ValidationReport
 from cherenkov.validate.evidence import EvidenceCollector
 from cherenkov.validate.gate import ValidationGate
+from cherenkov.validate.jira_exporter import JiraExporter
 
 __all__ = [
     "EvidenceCollector",
@@ -14,4 +15,5 @@ __all__ = [
     "GateEvidence",
     "ValidationGate",
     "ValidationReport",
+    "JiraExporter",
 ]

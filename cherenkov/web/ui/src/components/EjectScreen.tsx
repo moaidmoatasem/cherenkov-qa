@@ -14,11 +14,13 @@ import {
   Copy, 
   Share2, 
   HardDrive,
-  Cpu
+  Cpu,
+  AlertCircle
 } from 'lucide-react';
 import { MOCK_FILE_TREE } from '../mockData';
 import { ejectSuite } from '../lib/api';
 import CherenkovLogo from './CherenkovLogo';
+import { useToast } from './ui/Toast';
 
 export default function EjectScreen() {
   const [outputPath, setOutputPath] = useState('./playwright-suite');
@@ -29,6 +31,7 @@ export default function EjectScreen() {
     'playwright-suite/tests': true,
     'playwright-suite/clients': true,
   });
+  const { toast } = useToast();
 
   const runCommandText = `cd playwright-suite && npm install && npx playwright test`;
 
@@ -42,10 +45,13 @@ export default function EjectScreen() {
   const handleEject = async () => {
     try {
       await ejectSuite(outputPath);
+      setIsEjected(true);
+      toast('Eject successful — files written to ' + outputPath, 'success');
     } catch (err) {
-      console.warn('Backend eject call failed, proceeding with UI confirmation', err);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn('Backend eject call failed', err);
+      toast(`Eject failed: ${msg}`, 'danger');
     }
-    setIsEjected(true);
   };
 
   const handleCopy = () => {
