@@ -50,8 +50,10 @@ export default function OverviewScreen({ onNewRun, onNavigate }: OverviewScreenP
           icon={<Zap />}
           title="Failed to load Overview"
           description={`Could not fetch live divergences: ${error}`}
-          actionLabel="Retry"
-          onAction={() => window.location.reload()}
+          primaryAction={{
+            label: "Retry",
+            onClick: () => window.location.reload()
+          }}
         />
       </div>
     );
@@ -91,7 +93,7 @@ export default function OverviewScreen({ onNewRun, onNavigate }: OverviewScreenP
                 title="Readiness"
                 size={160}
                 strokeWidth={12}
-                glowColor={readinessScore > 80 ? "green" : readinessScore > 50 ? "yellow" : "red"}
+                glowColor={readinessScore > 80 ? "success" : readinessScore > 50 ? "warning" : "danger"}
               />
             )}
           </div>

@@ -235,8 +235,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
       const data = await explainTestScenario(id);
       setAiExplanation(data.explanation);
     } catch (err) {
-      setToastMsg(`Failed to get AI explanation: ${(err as Error).message}`);
-      setTimeout(() => setToastMsg(null), 4000);
+      addToast(`Failed to get AI explanation: ${(err as Error).message}`, 'error');
     } finally {
       setIsExplaining(false);
     }
