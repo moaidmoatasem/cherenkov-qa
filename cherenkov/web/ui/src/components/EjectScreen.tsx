@@ -258,7 +258,7 @@ export default function EjectScreen() {
 
             {/* Tree canvas background */}
             <div className="bg-black/30 border border-white/5 p-4 rounded-xl overflow-y-auto max-h-[360px] scrollbar-thin">
-              {const [files, setFiles] = useState<FileNode[]>([]);}
+              {renderTree({name: 'playwright-suite', children: []})}
             </div>
 
             <p className="text-[10px] text-text-muted leading-relaxed font-sans text-center">

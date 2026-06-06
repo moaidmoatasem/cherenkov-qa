@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Compass, Sparkles, Terminal, Download, CheckCircle2, Play, Loader2, AlertTriangle } from 'lucide-react';
 import { Card, PageHeader, EmptyState, MockBadge } from './ui';
 import { fetchMemory } from '../lib/api';

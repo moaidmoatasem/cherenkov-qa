@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Brain, GraduationCap, CheckCircle } from 'lucide-react';
 import { Card, PageHeader, MockBadge } from './ui';
 import { fetchMemory } from '../lib/api';

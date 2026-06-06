@@ -20,6 +20,7 @@ import { EndpointRichness } from '../types';
 import CherenkovLogo from './CherenkovLogo';
 import { ingestSpec, fetchDoctor, DoctorCheck } from '../lib/api';
 import { Skeleton } from './ui';
+import { useToast } from './ui/Toast';
 
 interface SetupScreenProps {
   onStartPipeline: (endpoints: EndpointRichness[], specPath: string, targetUrl: string, authHeader: string) => void;
@@ -35,6 +36,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
   const [serverAuth, setServerAuth] = useState('');
   const [loading, setLoading] = useState(false);
   const [ingestedSpecPath, setIngestedSpecPath] = useState<string | null>(null);
+  const { addToast } = useToast();
   
   // Tooltip details state
   const [hoveredEndpoint, setHoveredEndpoint] = useState<EndpointRichness | null>(null);
@@ -85,7 +87,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
       setEndpoints(mapped);
       setIngestedSpecPath(data.spec_path);
     } catch (err) {
-      toast("Real backend spec ingestion failed.", "danger");
+      addToast("Real backend spec ingestion failed.", "danger");
       setEndpoints([]);
     } finally {
       setLoading(false);

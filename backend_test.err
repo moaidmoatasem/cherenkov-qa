@@ -1,0 +1,99 @@
+INFO:     Started server process [557745]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+{"ts": 1780743586.068, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743586.993, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743591.818, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743593.488, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743598.537, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743597.276, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743597.798, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743598.135, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743603.154, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743604.287, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743605.233, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743607.242, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743608.231, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743609.686, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743610.336, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743610.731, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743612.103, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743612.894, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743613.484, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743613.86, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743618.856, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743620.43, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743621.113, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743621.41, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743626.424, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743628.162, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743626.149, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743631.177, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743633.317, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743634.076, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743639.085, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743640.57, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743640.822, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743641.157, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743646.164, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743647.942, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743648.524, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743648.786, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743653.799, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743654.884, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743655.843, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743657.933, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+{"ts": 1780743659.414, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743659.646, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743660.026, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743665.034, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743667.37, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743667.745, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743668.107, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743673.116, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743676.329, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743677.042, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743677.294, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743682.304, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743683.227, "level": "INFO", "stage": "EJECT", "run_id": "api_eject", "msg": "starting test suite ejection", "output_dir": "./playwright-suite"}
+{"ts": 1780743683.227, "level": "INFO", "stage": "EJECT", "run_id": "api_eject", "msg": "cleaning existing output directory", "path": "/home/moaid/cherenkov-qa/playwright-suite"}
+{"ts": 1780743683.266, "level": "INFO", "stage": "EJECT", "run_id": "api_eject", "msg": "copied test file", "filename": "_scores.json"}
+{"ts": 1780743683.267, "level": "INFO", "stage": "EJECT", "run_id": "api_eject", "msg": "copied test file", "filename": "happy_path.spec.ts"}
+{"ts": 1780743683.267, "level": "INFO", "stage": "EJECT", "run_id": "api_eject", "msg": "copied test file", "filename": "password_too_short.spec.ts"}
+{"ts": 1780743683.267, "level": "INFO", "stage": "EJECT", "run_id": "api_eject", "msg": "copied test file", "filename": "golden_edit.spec.ts"}
+{"ts": 1780743683.268, "level": "INFO", "stage": "EJECT", "run_id": "api_eject", "msg": "copied generated types", "source": "/home/moaid/cherenkov-qa/stub/generated-types.ts"}
+{"ts": 1780743683.271, "level": "INFO", "stage": "EJECT", "run_id": "api_eject", "msg": "emitted clean standalone client.ts"}
+{"ts": 1780743683.272, "level": "INFO", "stage": "EJECT", "run_id": "api_eject", "msg": "emitted standard playwright.config.ts"}
+{"ts": 1780743683.275, "level": "INFO", "stage": "EJECT", "run_id": "api_eject", "msg": "emitted standalone package.json"}
+{"ts": 1780743683.275, "level": "INFO", "stage": "EJECT", "run_id": "api_eject", "msg": "emitted standard tsconfig.json"}
+{"ts": 1780743683.275, "level": "INFO", "stage": "EJECT", "run_id": "api_eject", "msg": "standalone test suite ejection completed successfully"}
+{"ts": 1780743684.189, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743684.866, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743686.908, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743688.712, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743689.231, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743689.519, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743694.744, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743696.242, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743697.297, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743702.303, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743703.934, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743704.891, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743709.897, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743711.452, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743712.027, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743712.352, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743714.445, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743716.384, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743717.33, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743718.655, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743718.929, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+{"ts": 1780743719.307, "level": "WARN", "stage": "SYSTEM", "run_id": null, "msg": "device status", "details": "CPU mode \u2014 generation ~10x slower, GPU recommended.", "processor": "CPU", "size_vram": 0}
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [557745]
