@@ -6,11 +6,15 @@
 import React, { useState } from 'react';
 import { Compass, Sparkles, Terminal, Download, CheckCircle2, Play, Loader2, AlertTriangle } from 'lucide-react';
 import { Card, PageHeader, EmptyState, MockBadge } from './ui';
-import { MOCK_MENTOR_IDIOMS } from '../mockData';
+import { fetchMemory } from '../lib/api';
 import { useToast } from './ui/Toast';
 import { runPipeline } from '../lib/api';
 
 export default function AuthorScreen() {
+  const [MOCK_MENTOR_IDIOMS, setIdioms] = useState<any[]>([]);
+  useEffect(() => {
+    fetchMemory().then(d => setIdioms(d.idioms));
+  }, []);
   const { addToast } = useToast();
   const [intent, setIntent] = useState('');
   const [isRunning, setIsRunning] = useState(false);

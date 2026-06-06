@@ -6,9 +6,15 @@
 import React from 'react';
 import { Brain, GraduationCap, CheckCircle } from 'lucide-react';
 import { Card, PageHeader, MockBadge } from './ui';
-import { MOCK_IDIOMS, MOCK_PAIRING } from '../mockData';
+import { fetchMemory } from '../lib/api';
 
 export default function MemoryScreen() {
+  const [mem, setMem] = useState<any>({ idioms: [], pairing: [] });
+  useEffect(() => {
+    fetchMemory().then(setMem);
+  }, []);
+  const MOCK_IDIOMS = mem.idioms;
+  const MOCK_PAIRING = mem.pairing;
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="memory-screen">
       <MockBadge />
