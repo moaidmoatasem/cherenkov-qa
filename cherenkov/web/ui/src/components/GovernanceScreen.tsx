@@ -6,10 +6,14 @@
 import React from 'react';
 import { Shield, Award, CheckCircle, Download, FileText } from 'lucide-react';
 import { Card, PageHeader, StatusDot, MockBadge } from './ui';
-import { MOCK_GOVERNANCE } from '../mockData';
+import { fetchGovernance } from '../lib/api';
 import { useToast } from './ui/Toast';
 
 export default function GovernanceScreen() {
+  const [MOCK_GOVERNANCE, setGov] = useState<any>({ score: 100, issues: [] });
+  useEffect(() => {
+    fetchGovernance().then(setGov);
+  }, []);
   const { addToast } = useToast();
 
   const handleExport = () => {

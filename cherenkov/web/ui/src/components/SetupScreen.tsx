@@ -16,7 +16,7 @@ import {
   Layers
 } from 'lucide-react';
 import { EndpointRichness } from '../types';
-import { MOCK_ENDPOINTS } from '../mockData';
+
 import CherenkovLogo from './CherenkovLogo';
 import { ingestSpec, fetchDoctor, DoctorCheck } from '../lib/api';
 import { Skeleton } from './ui';
@@ -85,9 +85,8 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
       setEndpoints(mapped);
       setIngestedSpecPath(data.spec_path);
     } catch (err) {
-      console.warn('Real backend spec ingestion failed, falling back to mock data', err);
-      setEndpoints(MOCK_ENDPOINTS);
-      setIngestedSpecPath('stub/stripe_spec.json'); // standard workspace spec fallback
+      toast("Real backend spec ingestion failed.", "danger");
+      setEndpoints([]);
     } finally {
       setLoading(false);
     }

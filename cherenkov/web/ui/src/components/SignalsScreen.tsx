@@ -6,9 +6,13 @@
 import React, { useState } from 'react';
 import { TrendingUp, Activity, Image, Percent, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Card, PageHeader, MockBadge, Tabs } from './ui';
-import { MOCK_SIGNALS } from '../mockData';
+import { fetchSignals } from '../lib/api';
 
 export default function SignalsScreen() {
+  const [MOCK_SIGNALS, setSignals] = useState<any>({ performance: [], visual: [], coverage: {} });
+  useEffect(() => {
+    fetchSignals().then(setSignals);
+  }, []);
   const [activeTab, setActiveTab] = useState('performance');
 
   const tabs = [
