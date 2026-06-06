@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { Network, AlertCircle, ArrowRight } from 'lucide-react';
 import { Card, PageHeader, ProvenanceChip, MockBadge } from './ui';
-import { MOCK_TRUTH_MAP } from '../mockData';
+import { fetchTruthMap } from '../lib/api';
 
 interface TruthMapScreenProps {
   onNavigate: (tab: string) => void;
@@ -14,7 +14,11 @@ interface TruthMapScreenProps {
 
 export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
-  const currentEndpoint = MOCK_TRUTH_MAP[selectedIdx] || MOCK_TRUTH_MAP[0];
+  const [nodes, setNodes] = useState<any[]>([]);
+  useEffect(() => {
+    fetchTruthMap().then(setNodes);
+  }, []);
+  const currentEndpoint = nodes[selectedIdx] || nodes[0];
 
   return (
     <div className="p-6 h-full overflow-hidden flex flex-col justify-between grid-bg bg-transparent relative z-10" id="truth-map-screen">

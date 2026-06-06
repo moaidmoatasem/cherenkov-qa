@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { LayoutDashboard, ArrowRight, Zap, GraduationCap, CheckCircle } from 'lucide-react';
 import { Card, PageHeader, KpiRing, Skeleton, EmptyState } from './ui';
-import { fetchDivergences } from '../lib/api';
-import { Divergence } from '../types';
-import { MOCK_OVERVIEW } from '../mockData';
+import { fetchOverview, fetchDivergences } from '../lib/api';
 
 interface OverviewScreenProps {
   onNewRun: () => void;
@@ -11,11 +9,13 @@ interface OverviewScreenProps {
 }
 
 export default function OverviewScreen({ onNewRun, onNavigate }: OverviewScreenProps) {
+  const [overview, setOverview] = useState<any>({ falsePositiveRate: 0, recentLearnings: [] });
   const [divergences, setDivergences] = useState<Divergence[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    fetchOverview().then(setOverview);
     async function loadData() {
       try {
         setIsLoading(true);

@@ -23,19 +23,27 @@ import SignalsScreen from './components/SignalsScreen';
 import MemoryScreen from './components/MemoryScreen';
 import GovernanceScreen from './components/GovernanceScreen';
 import GuidedTour from './components/GuidedTour';
-import { ToastProvider, Drawer, OfflineOverlay } from './components/ui';
+import { Drawer, OfflineOverlay } from './components/ui';
+import { useToast } from './components/ui/Toast';
 
 import { Project, EndpointRichness } from './types';
-import { INITIAL_PROJECTS } from './mockData';
-import { runPipeline } from './lib/api';
+import { runPipeline, fetchProjects } from './lib/api';
 import { useHealth } from './lib/useHealth';
 
 export default function App() {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<string>('projects');
-  const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>('proj-petstore');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [status, setStatus] = useState<'Live' | 'Idle'>('Idle');
   const [activeSpecPath, setActiveSpecPath] = useState<string>('');
+
+  React.useEffect(() => {
+    fetchProjects().then(data => {
+      setProjects(data);
+      if (data.length > 0 && !selectedProjectId) setSelectedProjectId(data[0].id);
+    });
+  }, []);
 
   // Backend liveness — single source of truth for the honest offline state (#221).
   const { online, demoMode, checking, refresh } = useHealth();
@@ -90,7 +98,7 @@ export default function App() {
         auth_header: authHeader || undefined,
       });
     } catch (err) {
-      console.warn('Real backend generation launch failed, falling back to mock pipeline', err);
+      toast('Real backend generation launch failed, falling back to mock pipeline.', 'danger');
     }
   };
 
@@ -158,7 +166,6 @@ export default function App() {
   };
 
   return (
-    <ToastProvider>
       <div className="flex h-screen w-screen overflow-hidden bg-bg-base text-text-primary font-sans antialiased relative" id="cherenkov-app-core">
         {/* Mesh Background Decoration */}
         <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] bg-cyan-500/15 rounded-full blur-[120px] pointer-events-none z-0" />
@@ -326,6 +333,5 @@ export default function App() {
         </Drawer>
 
       </div>
-    </ToastProvider>
   );
 }

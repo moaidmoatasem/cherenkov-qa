@@ -18,7 +18,7 @@ import {
   Code
 } from 'lucide-react';
 import { PipelineStage, StageId } from '../types';
-import { PIPELINE_STREAMING_TESTS } from '../mockData';
+
 import CherenkovLogo from './CherenkovLogo';
 import { useLiveEvents } from '../hooks/useLiveEvents';
 
@@ -111,7 +111,7 @@ export default function PipelineScreen({
   // Keep track of current test object (real queue gets priority)
   const currentTest = realTestQueue.length > 0 && currentTestIndex < realTestQueue.length
     ? realTestQueue[currentTestIndex]
-    : PIPELINE_STREAMING_TESTS[currentTestIndex] || PIPELINE_STREAMING_TESTS[0];
+    : { endpoint: 'Waiting for stream...', code: '', agent: 'System' };
 
   // 1. Elapsed timer
   useEffect(() => {
@@ -162,7 +162,7 @@ export default function PipelineScreen({
         
         setCompletedTests(prev => [...prev, `${currentTest.endpoint} · fully compiled ✓`]);
 
-        const limit = realTestQueue.length > 0 ? realTestQueue.length : PIPELINE_STREAMING_TESTS.length;
+        const limit = realTestQueue.length > 0 ? realTestQueue.length : 1;
 
         setTimeout(() => {
           if (currentTestIndex < limit - 1) {

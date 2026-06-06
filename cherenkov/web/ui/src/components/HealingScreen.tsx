@@ -17,7 +17,7 @@ import {
   Settings
 } from 'lucide-react';
 import { FailingTest } from '../types';
-import { INITIAL_FAILURES } from '../mockData';
+import { fetchFailures } from '../lib/api';
 import { validateSuite, editTestScenario } from '../lib/api';
 import { useToast } from './ui/Toast';
 import CherenkovLogo from './CherenkovLogo';
@@ -28,7 +28,11 @@ interface HealingScreenProps {
 
 export default function HealingScreen({ onSuggestResolveCount }: HealingScreenProps) {
   const { addToast } = useToast();
-  const [failures, setFailures] = useState<FailingTest[]>(INITIAL_FAILURES);
+  const [failures, setFailures] = useState<FailingTest[]>([]);
+
+  useEffect(() => {
+    fetchFailures().then(setFailures);
+  }, []);
   const [appliedIds, setAppliedIds] = useState<string[]>([]);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [activeTraceLog, setActiveTraceLog] = useState<string | null>(null);
