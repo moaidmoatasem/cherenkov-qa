@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+import { setupApiMocks } from './api_mocks';
+
 const SETTLEMENT = 500;
 
 test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
@@ -11,6 +13,8 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     page.on('pageerror', err => {
       console.error(`[BROWSER UNCAUGHT ERROR] ${err.message}\nStack: ${err.stack}`);
     });
+
+    await setupApiMocks(page);
 
     // Dismiss the Guided Tour that appears on first visit
     await page.goto('/');

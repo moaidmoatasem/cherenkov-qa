@@ -18,7 +18,7 @@ class DiagnosticsOutput(BaseModel):
     scenario_id: str
     failure_class: str
     error_message: str
-    suggested_hypothesis: str
+    hypothesis: str
     resolution_steps: list[str] = Field(default_factory=list)
     similar_cases_found: int = 0
     status: Status = Status.OK
@@ -75,7 +75,7 @@ class DiagnosticsStage:
 
         user_prompt = self._build_user_prompt(scenario_id, failure_class, error_message, similar_incidents)
 
-        suggested_hypothesis = ""
+        hypothesis = ""
         resolution_steps = []
         errors = []
 
@@ -87,13 +87,13 @@ class DiagnosticsStage:
                 model=Config.GEN_MODEL,
                 run_id=self.run_id
             )
-            suggested_hypothesis = parsed.get("suggested_hypothesis", parsed.get("hypothesis", "Could not formulate definitive hypothesis."))
+            hypothesis = parsed.get("hypothesis", parsed.get("suggested_hypothesis", "Could not formulate definitive hypothesis."))
             resolution_steps = parsed.get("resolution_steps", [])
             self.log.info("successfully synthesized root-cause hypothesis")
         except Exception as e:
             # Resilient fallback: return local heuristic diagnostic if model is offline or returns malformed JSON
             self.log.warning("Ollama synthesis failed, using local fallback heuristics", error=str(e))
-            suggested_hypothesis = f"SUGGESTION: Suspected {failure_class} incident based on test failure stack."
+            hypothesis = f"SUGGESTION: Suspected {failure_class} incident based on test failure stack."
             resolution_steps = [
                 "Verify target API endpoint configuration.",
                 "Review recent database schema change logs.",
@@ -108,7 +108,7 @@ class DiagnosticsStage:
             scenario_id=scenario_id,
             failure_class=failure_class,
             error_message=error_message,
-            suggested_hypothesis=suggested_hypothesis,
+            hypothesis=hypothesis,
             resolution_steps=resolution_steps,
             similar_cases_found=len(similar_incidents),
             status=Status.OK if not errors else Status.DEGRADED,
