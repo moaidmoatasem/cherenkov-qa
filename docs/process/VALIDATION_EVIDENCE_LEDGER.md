@@ -1,6 +1,7 @@
 # CHERENKOV — Validation Gate Evidence Ledger
 
 > **Status:** OPEN — gate NOT passed. 0 / 5 attributable reviews recorded.
+> **Dev policy (2026-06-06):** the gate is **no longer a development blocker** (owner decision) — agents may build all tracks. It remains **unrun**; this ledger must reach ≥3 real Yes before anything is described to users as "validated." Removing the block ≠ passing the gate.
 > **Gate target:** ≥ 3 of 5 reviewers answer **"Yes"** to the gate question.
 > **Authority:** This ledger + [HANDOVER.md](../HANDOVER.md) are the SSOT for gate status.
 
