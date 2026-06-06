@@ -2,6 +2,7 @@
 from cherenkov.ai.interface import InferenceClient, CachedInferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient
 from cherenkov.ai.openai_client import OpenAIInferenceClient
+from cherenkov.ai.rag_index import RAGIndex
 from cherenkov.core.config import Config
 from cherenkov.core.contracts import AccountingReport, CacheStats
 
@@ -77,6 +78,7 @@ __all__ = [
     "CachedInferenceClient",
     "OllamaInferenceClient",
     "OpenAIInferenceClient",
+    "RAGIndex",
     "get_client",
     "set_client",
     "reset_client",
