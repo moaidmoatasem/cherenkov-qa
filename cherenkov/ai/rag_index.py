@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 from cherenkov.core.errors import get_logger
 from cherenkov.core.config import Config
 
+
 class RAGIndex:
     """Manages local SQLite database storing incident embeddings for vector-similarity diagnostics."""
 

@@ -72,20 +72,13 @@ export default function () {{
         k6_bin = shutil.which("k6")
         if not k6_bin:
             self.log.warning("k6 binary is not installed locally. Skipping performance runner execution.")
-            # Trigger PerformanceAnalyzer simulation to ensure database tracking and baseline verification operate flawlessly!
-            from cherenkov.execution.perf_analyzer import PerformanceAnalyzer
-            analyzer = PerformanceAnalyzer(self.run_id)
-            simulated_latency = 45.0
-            analyzer.record_latency(endpoint="/users", method="POST", latency_ms=simulated_latency)
-            analysis = analyzer.analyze_anomaly(endpoint="/users", method="POST", current_latency_ms=simulated_latency)
-            
             return {
-                "status": "exported",
-                "message": f"Performance test script successfully generated. k6 runner skipped (k6 binary not found in PATH). Simulated baseline check: {analysis.get('message')}",
+                "status": "degraded",
+                "message": "Performance test script successfully generated, but execution was skipped because the k6 binary is not installed locally in PATH. Measured metrics could not be collected.",
                 "script_path": self.k6_script_path,
                 "api_url": url,
                 "instructions": "Install k6 (https://grafana.com/docs/k6/latest/set-up/install-k6/) and run: k6 run " + self.k6_script_path,
-                "anomaly_check": analysis
+                "anomaly_check": None
             }
 
         self.log.info("invoking k6 performance runner", bin=k6_bin, script=self.k6_script_path)
