@@ -39,7 +39,7 @@ export default function SettingsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [targetSettings, setTargetSettings] = useState({ url: '', auth_header: '' });
-  const { addToast } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchSettings().then(data => {
@@ -53,7 +53,7 @@ export default function SettingsScreen() {
       setReducedMotion(data.ui.reduced_motion);
       setIsLoading(false);
     }).catch(err => {
-      addToast(`Failed to load settings: ${(err as Error).message}`, 'error');
+      toast(`Failed to load settings: ${(err as Error).message}`, 'error');
       setIsLoading(false);
     });
   }, []);
@@ -82,9 +82,9 @@ export default function SettingsScreen() {
       localStorage.setItem('[copilot] reduced-motion', reducedMotion ? 'true' : 'false');
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2000);
-      addToast('Settings saved successfully.', 'success');
+      toast('Settings saved successfully.', 'success');
     } catch (err) {
-      addToast(`Failed to save settings: ${(err as Error).message}`, 'error');
+      toast(`Failed to save settings: ${(err as Error).message}`, 'error');
     } finally {
       setIsSaving(false);
     }
