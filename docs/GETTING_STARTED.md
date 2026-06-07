@@ -52,244 +52,118 @@ To view all supported commands and options:
 
 ---
 
-### Command 1: `validate`
+### Track A Core
+
+Core API conformance testing and pipeline operations. These commands are fully
+built, validated, and governed by the CHERENKOV design invariants (D7, anti-lock-in,
+suggest-only, spec-derived).
+
+---
+
+#### `validate`
 Executes your Playwright test suite against a real server, programmatically parses trace files, compares request vs response payloads, and suggests value assertions.
 
-#### Command Help:
 ```bash
+# Command help
 ./bin/cherenkov validate --help
+
+# Standard usage
+cd target && uvicorn target_api:app --host 127.0.0.1 --port 8000
+./bin/cherenkov validate --target http://localhost:8000
 ```
 
-#### Standard Usage:
-1. Ensure your Target API is healthy and online:
-   ```bash
-   cd target && uvicorn target_api:app --host 127.0.0.1 --port 8000
-   ```
-2. Execute validation:
-   ```bash
-   ./bin/cherenkov validate --target http://localhost:8000
-   ```
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--target`, `-t` | *(required)* | The real server target base URL |
 
 ---
 
-### Command 2: `eject`
-Copies all your generated specs and TypeScript compilation files, emits a clean `client.ts` completely stripped of trace interception metadata, and generates standard Playwright and package settings.
-
-#### Command Help:
-```bash
-./bin/cherenkov eject --help
-```
-
-#### Standard Usage:
-Eject the suite to a standalone folder with ZERO tool dependencies:
-```bash
-./bin/cherenkov eject --output ejected_suite
-```
-The ejected folder `ejected_suite/` is 100% clean and can be executed natively with vanilla Playwright commands:
-```bash
-cd ejected_suite
-npm install
-npx playwright test
-```
-
----
-
-### Command 3: `self-test`
+#### `self-test`
 Run a deterministic dry-run of the pipeline (mocking Ollama and the server).
 
-#### Command Help:
 ```bash
 ./bin/cherenkov self-test --help
-```
-
-#### Standard Usage:
-```bash
 ./bin/cherenkov self-test
 ```
 
 ---
 
-### Command 4: `report`
+#### `report`
 Generate test coverage and diff reports from run logs.
 
-#### Command Help:
 ```bash
-./bin/cherenkov report --help
-```
-
-#### Standard Usage:
-```bash
-# Generate report
+# Generate a report from the latest run
 ./bin/cherenkov report --output report.json
 
-# Generate report with diff
-./bin/cherenkov report --output report.json --diff prev_report.json
+# Diff two reports to detect regressions
+./bin/cherenkov report --diff previous_report.json --output report.json
 ```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--output`, `-o` | *(none)* | JSON output file path (e.g. report.json) |
+| `--diff`, `-d` | *(none)* | Path to previous report.json for diff comparison |
 
 ---
 
-### Command 5: `visual` (optional Track B capability layer)
-Runs visual-regression checks against a rendered URL. Auto-initializes a baseline on first run; compares against it on subsequent runs. Reuses Track A contracts (`VisualSlice`, `VisualReport`) and the Track A `PlaywrightRunner` — never replaces API conformance.
+#### `eject`
+Copies all your generated specs and TypeScript compilation files, emits a clean `client.ts` completely stripped of trace interception metadata, and generates standard Playwright and package settings.
 
-#### Command Help:
 ```bash
-./bin/cherenkov visual --help
+# Eject the suite to a standalone folder
+./bin/cherenkov eject --output ejected_suite
+
+# The ejected folder runs with vanilla Playwright
+cd ejected_suite
+npm install
+npx playwright test
 ```
 
-#### Standard Usage:
-```bash
-./bin/cherenkov visual --target http://localhost:3000/checkout
-```
-
-Override the baseline-directory label:
-```bash
-./bin/cherenkov visual --target http://localhost:3000/checkout --baseline-dir stub/visual_baselines
-```
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--output`, `-o` | *(required)* | Target output directory for the standalone suite |
 
 ---
 
-### Command 6: `init` (E5-1 — zero-config project setup)
+#### `init` (E5-1 — zero-config project setup)
 Auto-detects OpenAPI specs and generates a sensible `cherenkov.toml` with defaults that are offline, free, and deterministic.
 
-#### Command Help:
 ```bash
-./bin/cherenkov init --help
-```
-
-#### Standard Usage:
-```bash
+# Auto-detect and generate config
 ./bin/cherenkov init
-```
 
-Override profile and force overwrite existing config:
-```bash
+# Override profile and force overwrite
 ./bin/cherenkov init --profile ci --force
 ```
 
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--profile`, `-p` | `autodetect` | Configuration profile: `laptop`, `ci`, `enterprise-vpc`, `frontier-cloud` |
+| `--force`, `-f` | `false` | Overwrite existing cherenkov.toml |
+
 ---
 
-### Command 7: `doctor` (E5-3 — system health check)
+#### `doctor` (E5-3 — system health check)
 Reports effective configuration, device health (GPU vs CPU), model availability, egress policy consistency, and environmental dependencies (Node, Playwright, Docker/Prism).
 
-#### Command Help:
 ```bash
 ./bin/cherenkov doctor --help
-```
-
-#### Standard Usage:
-```bash
 ./bin/cherenkov doctor
 ```
 
 ---
 
-### Command 8: `dashboard` (E5-4 — Truth Model + divergences view)
+#### `dashboard` (E5-4 — Truth Model + divergences view)
 Displays the Truth Model claim graph and any open divergences. Uses mock data when no Truth Model has been built.
 
-#### Command Help:
 ```bash
 ./bin/cherenkov dashboard --help
-```
-
-#### Standard Usage:
-```bash
 ./bin/cherenkov dashboard
 ```
 
 ---
 
-### Command 9: `perf` (optional Track B capability layer)
-Runs performance baseline checks against an API endpoint using k.  Records latency per run in a local SQLite store (`.cherenkov/perf_metrics.db`) and flags standard-deviation outlier regressions once >= 3 runs exist. If `k6` is not installed, the stage degrades to a simulated baseline tick (HITL verdict) so it still runs in any env.
-
-#### Command Help:
-```bash
-./bin/cherenkov perf --help
-```
-
-#### Standard Usage:
-```bash
-./bin/cherenkov perf --target http://localhost:8000 --endpoint /health --method GET
-```
-
-Tune load profile:
-```bash
-./bin/cherenkov perf --target http://localhost:8000 --endpoint /users --method POST --vus 10 --duration 10
-```
-
----
-
-### Command 10: `map` (E11 — claims mapping)
-Generates the static truth graph map connecting specifications with code and active traces.
-
-#### Command Help:
-```bash
-./bin/cherenkov map --help
-```
-
-#### Standard Usage:
-```bash
-./bin/cherenkov map
-```
-
----
-
-### Command 11: `daemon` (background observability daemon)
-Starts the background websocket server monitoring traffic and coordination logic.
-
-#### Command Help:
-```bash
-./bin/cherenkov daemon --help
-```
-
-#### Standard Usage:
-```bash
-./bin/cherenkov daemon --port 8080
-```
-
----
-
-### Command 12: `explore` (autonomous exploration crawler)
-Crawls targets to inspect anomalies, console/network exceptions, and visual baselines.
-
-#### Command Help:
-```bash
-./bin/cherenkov explore --help
-```
-
-#### Standard Usage:
-```bash
-./bin/cherenkov explore --target http://localhost:3000
-```
-
----
-
-### Command 13: `author` (intent-driven test generator)
-Enables NL-to-Playwright E2E interactive testing loops.
-
-#### Supported Actions
-The intent parser recognises these action types and renders them as Playwright code:
-- `navigate` — navigate to a URL
-- `click` — click a button/link by role/label
-- `fill` — fill an input field
-- `expect` — assert visible text or URL match
-- `request` — direct HTTP request (GET/POST/PUT/DELETE/PATCH)
-
-Any other action emits a warning in the CLI output and is skipped as a comment
-in the generated test.
-
-#### Command Help:
-```bash
-./bin/cherenkov author --help
-```
-
-#### Standard Usage:
-```bash
-./bin/cherenkov author --intent "Register new test user"
-```
-
----
-
-### Command 14: `hitl` (Human-In-The-Loop review queue)
+#### `hitl` (Human-In-The-Loop review queue)
 
 When a `REVIEW` stage yields `Verdict.HITL`, the finding is persisted in a durable
 SQLite queue (`.cherenkov/hitl.db`). The `hitl` command lets any reviewer inspect,
@@ -307,16 +181,11 @@ All subcommands accept a `--json` flag that emits a versioned **`hitl/v1` envelo
 }
 ```
 
-#### Command Help:
 ```bash
 ./bin/cherenkov hitl --help
-./bin/cherenkov hitl list --help
-./bin/cherenkov hitl approve --help
 ```
 
----
-
-#### Subcommand: `hitl list`
+##### `hitl list`
 List items in the queue (defaults to `pending` only).
 
 ```bash
@@ -367,9 +236,7 @@ HITL queue — pending (1 item(s))
 }
 ```
 
----
-
-#### Subcommand: `hitl show <id>`
+##### `hitl show <id>`
 Display full details of a single queue item.
 
 ```bash
@@ -395,11 +262,9 @@ HITL item: ck_abc123-...
   approved_by     : None
 ```
 
----
-
-#### Subcommand: `hitl approve <id>`
+##### `hitl approve <id>`
 Approve a **pending** item. Atomic: only one approver can win on a race; the loser
-receives a truthful `conflict` error (see error codes below).
+receives a truthful `conflict` error.
 
 ```bash
 # Approve (actor defaults to $USER env var)
@@ -450,9 +315,7 @@ receives a truthful `conflict` error (see error codes below).
 }
 ```
 
----
-
-#### Subcommand: `hitl reject <id>`
+##### `hitl reject <id>`
 Reject a **pending** item with a mandatory reason string.
 
 ```bash
@@ -466,9 +329,30 @@ Reject a **pending** item with a mandatory reason string.
 ./bin/cherenkov hitl reject ck_abc123-... --reason "flaky_endpoint" --actor @bob --json
 ```
 
----
+##### `hitl classify <id>` (Tier-2)
+Classify a HITL item as `regression`, `intended`, or `ignore`.
 
-#### `hitl/v1` Error Codes
+```bash
+./bin/cherenkov hitl classify ck_abc123-... --classification regression --actor @alice
+./bin/cherenkov hitl classify ck_abc123-... --classification intended --detail "Known flaky endpoint" --json
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--classification`, `-c` | *(required)* | One of: `regression`, `intended`, `ignore` |
+| `--actor` | `$USER` | Reviewer identity |
+| `--detail`, `-d` | `""` | Free-text detail |
+| `--json` | `false` | Emit hitl/v1 JSON envelope |
+
+##### `hitl explain <id>` (Tier-3)
+Get an AI explanation for why the HITL item was flagged.
+
+```bash
+./bin/cherenkov hitl explain ck_abc123-...
+./bin/cherenkov hitl explain ck_abc123-... --json
+```
+
+##### `hitl/v1` Error Codes
 
 | Code | Meaning |
 |------|---------|
@@ -481,48 +365,127 @@ Reject a **pending** item with a mandatory reason string.
 
 ---
 
-### Command 15: `self-test` (deterministic pipeline dry-run)
-Runs a fully mocked, offline dry-run of the INGEST → PLAN → GENERATE → REVIEW pipeline with no Ollama or live server required. Useful for verifying the installation is wired correctly.
+### Horizon 2 / Experimental
 
-#### Command Help:
-```bash
-./bin/cherenkov self-test --help
-```
-
-#### Standard Usage:
-```bash
-./bin/cherenkov self-test
-```
+These commands extend CHERENKOV beyond core API conformance into visual testing,
+performance benchmarking, truth model management, autonomous exploration, intent-
+driven authoring, governance, certification, autonomy profiling, IDE integration
+(MCP), and the review web UI. They are built and unit-tested but not externally
+validated — see [docs/SCOPE_LEDGER.md](docs/SCOPE_LEDGER.md).
 
 ---
 
-### Command 16: `report` (test coverage + diff reports)
-Generates a test coverage and verdict report from the most recent pipeline run logs. Supports diffing two report files to surface regressions between runs.
+#### `visual` (Track B — visual regression)
+Runs visual-regression checks against a rendered URL. Auto-initializes a baseline
+on first run; compares against it on subsequent runs.
 
-#### Command Help:
 ```bash
-./bin/cherenkov report --help
+./bin/cherenkov visual --target http://localhost:3000/checkout
+./bin/cherenkov visual --target http://localhost:3000/checkout --baseline-dir stub/visual_baselines
 ```
 
-#### Standard Usage:
-```bash
-# Generate a report from the latest run
-./bin/cherenkov report --output report.json
-
-# Diff two reports to detect regressions
-./bin/cherenkov report --diff previous_report.json --output report.json
-```
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--target`, `-t` | *(required)* | Absolute URL of the page to snapshot |
+| `--baseline-dir` | `stub/visual_baselines` | Baseline directory label |
 
 ---
 
-## 🔭 Horizon 2 / Track B Commands (post-gate surfaces)
+#### `perf` (Track B — performance baseline)
+Runs performance baseline checks against an API endpoint using k6. Records latency
+in a local SQLite store (`.cherenkov/perf_metrics.db`) and flags standard-deviation
+outlier regressions once >= 3 runs exist. Degrades gracefully without k6.
 
-> These CLI surfaces are wired but governed by the Validation Gate — full
-> behaviour is labelled `blocked:validation-gate` until Track A passes the 5-QA
-> gate. They are documented here so the CLI and docs stay drift-free.
+```bash
+./bin/cherenkov perf --target http://localhost:8000 --endpoint /health --method GET
+./bin/cherenkov perf --target http://localhost:8000 --endpoint /users --method POST --vus 10 --duration 10
+```
 
-#### `governance` — E12 Governance KPI panel
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--target`, `-t` | *(required)* | Base URL of the API to load test |
+| `--endpoint` | `/` | Endpoint path |
+| `--method` | `GET` | HTTP method |
+| `--vus` | `5` | Virtual users |
+| `--duration` | `5` | Test duration in seconds |
 
+---
+
+#### `map` (E2-6 — Truth Model builder)
+Build and inspect the Truth Model from configured sources (OpenAPI specs, traffic
+logs, etc.). Produces a claim graph connecting specifications with code and traces.
+
+```bash
+./bin/cherenkov map
+./bin/cherenkov map --detailed
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--detailed`, `-d` | `false` | Show full claim details |
+
+---
+
+#### `daemon` (E4-4 — continuous watcher)
+Continuously watches configured sources and rebuilds the Truth Model on change.
+
+```bash
+# Poll every 60 seconds indefinitely
+./bin/cherenkov daemon
+
+# Poll every 30 seconds, max 10 iterations
+./bin/cherenkov daemon --interval 30 --max-loops 10
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--interval`, `-i` | `60` | Poll interval in seconds |
+| `--max-loops`, `-n` | `0` | Max rebuild iterations (`0` = infinite) |
+
+---
+
+#### `explore` (E10 — autonomous risk crawl)
+Crawl a live surface and print a "second pair of eyes" risk digest. Probes
+endpoints for anomalies, console/network exceptions, and security headers.
+
+```bash
+# Crawl a target with default settings
+./bin/cherenkov explore --target http://localhost:3000
+
+# Probe multiple routes with a custom HTTP method
+./bin/cherenkov explore --target http://localhost:3000 --path /api/users --path /api/orders --method POST
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--target`, `-t` | *(required)* | Base URL of the app/API to crawl |
+| `--path`, `-p` | `["/"]` | Route to probe (repeatable) |
+| `--method`, `-m` | `GET` | HTTP method to probe with |
+
+---
+
+#### `author` (E10 — intent-driven test generator)
+Turn plain-language intent into an ejectable Playwright test. The intent parser
+recognises these action types: `navigate`, `click`, `fill`, `expect`, `request`.
+Any unrecognised action emits a warning and is skipped as a comment in the output.
+
+```bash
+# Generate a Playwright test from plain-language intent
+./bin/cherenkov author "Register new test user" --output generated_tests
+
+# Specify a target base URL
+./bin/cherenkov author "Check guest checkout with a discount" --output generated_tests --target http://localhost:8000
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `intent` | *(positional, required)* | Plain-language test intent |
+| `--output`, `-o` | *(required)* | Directory to write the `.spec.ts` test into |
+| `--target`, `-t` | `""` | Base URL the flow runs against |
+
+---
+
+#### `governance` (E12 — Governance KPI panel)
 Surfaces escape-rate, false-positive, coverage, and maintenance KPIs over the
 verdict/audit history.
 
@@ -533,12 +496,18 @@ verdict/audit history.
 # Machine-readable report
 ./bin/cherenkov governance --json
 
-# Trend for a single metric (health_score, escape_rate, coverage, ...)
+# Trend for a single metric
 ./bin/cherenkov governance --trend escape_rate
 ```
 
-#### `certify` — E12 Gold-Set + RAG-Triad certification
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--json` | `false` | Emit machine-readable JSON report |
+| `--trend`, `-t` | *(none)* | Metric to trend (`health_score`, `escape_rate`, `coverage`, etc.) |
 
+---
+
+#### `certify` (E12 — Gold-Set + RAG-Triad certification)
 Certifies a capability tier against the gold set using RAG-Triad metrics.
 
 ```bash
@@ -549,10 +518,14 @@ Certifies a capability tier against the gold set using RAG-Triad metrics.
 ./bin/cherenkov certify --tier deep --rag-report
 ```
 
-Valid tiers: `small`, `deep`, `vision`.
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--tier`, `-T` | `small` | Capability tier: `small`, `deep`, `vision` |
+| `--rag-report`, `-r` | `false` | Show per-item RAG-Triad metrics |
 
-#### `profile` — E13 Autonomy-ladder profile
+---
 
+#### `profile` (E13 — Autonomy-ladder profile)
 Shows or sets the autonomy level the pipeline operates at.
 
 ```bash
@@ -563,12 +536,14 @@ Shows or sets the autonomy level the pipeline operates at.
 ./bin/cherenkov profile set --level augmented
 ```
 
-Valid levels: `assisted`, `augmented`, `agentic`, `predictive`.
+| Flag | Default | Description |
+|------|---------|-------------|
+| `action` | `show` | Sub-action: `show` or `set` |
+| `--level`, `-l` | *(none)* | Autonomy level: `assisted`, `augmented`, `agentic`, `predictive` |
 
 ---
 
-#### `mcp` — X4 MCP server (`mcp serve`, Model Context Protocol)
-
+#### `mcp serve` (X4 — Model Context Protocol server)
 Exposes CHERENKOV over the [Model Context Protocol](https://modelcontextprotocol.io)
 (JSON-RPC 2.0 over stdio) so Claude Desktop, Cursor, and other MCP clients can read
 the HITL queue and run the Validation Gate without leaving their IDE.
@@ -615,23 +590,26 @@ the HITL queue and run the Validation Gate without leaving their IDE.
 
 ---
 
-#### `review` — Horizon V review UI server
-
+#### `review` (Horizon V — review dashboard web UI)
 Serves the prebuilt web review surface (the HITL/validation review UI) over HTTP
 so verdicts can be inspected and actioned from the browser instead of the terminal.
 
 ```bash
 # Serve the prebuilt web UI on the default port (8000)
-./bin/cherenkov review --web
+./bin/cherenkov review
 
 # Bind a custom port
 ./bin/cherenkov review --port 8080
+
+# Load demo fixture data on startup
+./bin/cherenkov review --demo
 ```
 
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--web`, `-w` | `True` | Serve the prebuilt web UI |
 | `--port`, `-p` | `8000` | Port to bind |
+| `--demo` | `false` | Load demo fixture data into HITL queue on startup |
 
 ---
 
