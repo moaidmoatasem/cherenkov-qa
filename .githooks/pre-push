@@ -1,0 +1,65 @@
+#!/bin/sh
+#
+# CHERENKOV pre-push hook — Snyk vulnerability gate.
+# Installed by `git config core.hooksPath .githooks`.
+#
+# Blocks push if Snyk finds critical/high vulnerabilities that have not been
+# remediated. Install Snyk CLI first: https://snyk.io/download
+
+set -e
+
+PYTHON=python3
+BRIDGE="cherenkov/security/snyk_bridge.py"
+REPORT_FILE="/tmp/snyk-pre-push-report.json"
+
+echo "[snyk-gate] Scanning dependencies for vulnerabilities..."
+
+# Skip if Snyk CLI is not installed
+if ! command -v snyk >/dev/null 2>&1; then
+    echo "[snyk-gate] WARNING: snyk CLI not found — skipping vulnerability gate"
+    echo "[snyk-gate] Install from https://snyk.io/download to enable"
+    exit 0
+fi
+
+# Run scan
+snyk test --json > "$REPORT_FILE" 2>/dev/null || true
+
+# Parse and write findings
+if [ -f "$REPORT_FILE" ] && [ -s "$REPORT_FILE" ]; then
+    PYTHONPATH=. $PYTHON -m cherenkov.security.snyk_bridge "$REPORT_FILE" 2>&1
+else
+    echo "[snyk-gate] No scan results (empty or error)"
+    exit 0
+fi
+
+# Quick check: count critical + high vulnerabilities via python
+CRIT_HIGH_COUNT=$(
+    $PYTHON -c "
+import json, sys
+try:
+    d = json.load(open('$REPORT_FILE'))
+except Exception:
+    sys.exit(0)
+count = 0
+for v in d.get('vulnerabilities', []):
+    if v.get('severity','').lower() in ('critical','high'):
+        count += 1
+print(count)
+" 2>/dev/null || echo "0"
+)
+
+if [ "$CRIT_HIGH_COUNT" -gt 0 ] && [ "$CRIT_HIGH_COUNT" != "0" ]; then
+    echo ""
+    echo "[snyk-gate] BLOCKING PUSH: $CRIT_HIGH_COUNT critical/high vulnerabilities found."
+    echo "[snyk-gate] Run the agent workflow to fix:"
+    echo "[snyk-gate]   1. Read agent_memory/snyk-findings.md"
+    echo "[snyk-gate]   2. Follow skills/snyk-remediation.md"
+    echo "[snyk-gate]   3. Re-scan to verify fixes"
+    echo "[snyk-gate]   4. Retry the push"
+    echo ""
+    echo "[snyk-gate] To bypass (not recommended): git push --no-verify"
+    exit 1
+fi
+
+echo "[snyk-gate] No critical/high vulnerabilities — push allowed."
+exit 0

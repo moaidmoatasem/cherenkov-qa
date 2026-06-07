@@ -76,7 +76,88 @@ Append a row to the Remediation Log in `agent_memory/snyk-findings.md`:
 | YYYY-MM-DD | SNYK-ID | package-name | upgraded to X.Y.Z | agent-name |
 ```
 
+## Pre-Push / Pre-Merge Workflow (Agent Automation)
+
+Before any push or merge, agents MUST run this gate. This is enforced by
+`.githooks/pre-push` but agents should also follow it manually.
+
+### Workflow
+
+```
+push/merge requested
+       │
+       ▼
+┌──────────────────┐
+│ Run Snyk scan    │  snyk test --json | python -m cherenkov.security.snyk_bridge
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────────────────┐
+│ Read agent_memory/           │  parse the findings table
+│ snyk-findings.md             │
+└────────┬─────────────────────┘
+         │
+         ▼
+┌──────────────────────────────┐
+│ Any critical/high vulns?     │───no───▶ push/merge allowed
+└────────┬─────────────────────┘
+         │ yes
+         ▼
+┌──────────────────────────────┐
+│ Apply fixes per Classify     │  one issue at a time
+│ table above                  │
+└────────┬─────────────────────┘
+         │
+         ▼
+┌──────────────────────────────┐
+│ Re-scan to verify fixes      │  snyk test --json | python -m cherenkov.security.snyk_bridge
+└────────┬─────────────────────┘
+         │
+         ▼
+┌──────────────────────────────┐
+│ Vulns remain?                │───yes──▶ loop back to fix
+└────────┬─────────────────────┘
+         │ no
+         ▼
+┌──────────────────────────────┐
+│ Log fixes in Remediation Log │  append row to snyk-findings.md
+└────────┬─────────────────────┘
+         │
+         ▼
+┌──────────────────────────────┐
+│ Commit fixes + push/merge    │  git add; git commit; git push
+└──────────────────────────────┘
+```
+
+### Blocking Rules
+
+| Severity | Blocks Push? | Action |
+|----------|--------------|--------|
+| Critical | YES | Must be fixed before push |
+| High | YES | Must be fixed before push |
+| Medium | NO | Fix if time permits |
+| Low | NO | Log and defer |
+
+### Git Hook
+
+The project has a pre-push hook at `.githooks/pre-push`. Activate it:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+This automatically runs Snyk scan before every push and blocks if
+critical/high vulns remain unfixed.
+
+### CI Integration
+
+The CI pipeline (`snyk-scan` job in `.github/workflows/ci.yml`) also runs
+Snyk on every PR push and reports findings. PRs with critical/high vulns
+will show a warning in the CI summary.
+
 ## References
 
 - `cherenkov/security/snyk_bridge.py` — report parser
 - `agent_memory/snyk-findings.md` — live findings
+- `.githooks/pre-push` — git hook script
+- `.github/workflows/ci.yml` — CI pipeline
