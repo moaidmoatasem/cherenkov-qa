@@ -160,3 +160,24 @@ HITL queue — all (1 item(s))
 
  [1;32m$ # 100% SUCCESS: HITL review items correctly listed, inspected, and approved! [0m
 ```
+
+
+---
+
+## ⏺️ Horizon V Review Web UI (Demo Mode)
+
+This terminal recording shows starting the local web review interface to triage HITL queue items via the browser instead of the terminal.
+
+```ansi
+ [1;36m$ ./bin/cherenkov review --web --demo [0m
+
+================================================================================
+🌐 CHERENKOV HORIZON V REVIEW SERVER
+================================================================================
+Starting Review UI Server in DEMO mode...
+Loaded 5 mock HITL findings for demonstration.
+Server is running on http://localhost:8000
+Open this URL in your browser to triage pending items.
+Press CTRL+C to quit.
+```
+

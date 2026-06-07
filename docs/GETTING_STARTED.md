@@ -148,7 +148,7 @@ Override the baseline-directory label:
 
 ---
 
-### Command 4: `init` (E5-1 — zero-config project setup)
+### Command 6: `init` (E5-1 — zero-config project setup)
 Auto-detects OpenAPI specs and generates a sensible `cherenkov.toml` with defaults that are offline, free, and deterministic.
 
 #### Command Help:
@@ -168,7 +168,7 @@ Override profile and force overwrite existing config:
 
 ---
 
-### Command 5: `doctor` (E5-3 — system health check)
+### Command 7: `doctor` (E5-3 — system health check)
 Reports effective configuration, device health (GPU vs CPU), model availability, egress policy consistency, and environmental dependencies (Node, Playwright, Docker/Prism).
 
 #### Command Help:
@@ -183,7 +183,7 @@ Reports effective configuration, device health (GPU vs CPU), model availability,
 
 ---
 
-### Command 6: `dashboard` (E5-4 — Truth Model + divergences view)
+### Command 8: `dashboard` (E5-4 — Truth Model + divergences view)
 Displays the Truth Model claim graph and any open divergences. Uses mock data when no Truth Model has been built.
 
 #### Command Help:
@@ -198,7 +198,7 @@ Displays the Truth Model claim graph and any open divergences. Uses mock data wh
 
 ---
 
-### Command 7: `perf` (optional Track B capability layer)
+### Command 9: `perf` (optional Track B capability layer)
 Runs performance baseline checks against an API endpoint using k.  Records latency per run in a local SQLite store (`.cherenkov/perf_metrics.db`) and flags standard-deviation outlier regressions once >= 3 runs exist. If `k6` is not installed, the stage degrades to a simulated baseline tick (HITL verdict) so it still runs in any env.
 
 #### Command Help:
@@ -218,7 +218,7 @@ Tune load profile:
 
 ---
 
-### Command 8: `map` (E11 — claims mapping)
+### Command 10: `map` (E11 — claims mapping)
 Generates the static truth graph map connecting specifications with code and active traces.
 
 #### Command Help:
@@ -233,7 +233,7 @@ Generates the static truth graph map connecting specifications with code and act
 
 ---
 
-### Command 9: `daemon` (background observability daemon)
+### Command 11: `daemon` (background observability daemon)
 Starts the background websocket server monitoring traffic and coordination logic.
 
 #### Command Help:
@@ -248,7 +248,7 @@ Starts the background websocket server monitoring traffic and coordination logic
 
 ---
 
-### Command 10: `explore` (autonomous exploration crawler)
+### Command 12: `explore` (autonomous exploration crawler)
 Crawls targets to inspect anomalies, console/network exceptions, and visual baselines.
 
 #### Command Help:
@@ -263,7 +263,7 @@ Crawls targets to inspect anomalies, console/network exceptions, and visual base
 
 ---
 
-### Command 11: `author` (intent-driven test generator)
+### Command 13: `author` (intent-driven test generator)
 Enables NL-to-Playwright E2E interactive testing loops.
 
 #### Supported Actions
@@ -289,7 +289,7 @@ in the generated test.
 
 ---
 
-### Command 12: `hitl` (Human-In-The-Loop review queue)
+### Command 14: `hitl` (Human-In-The-Loop review queue)
 
 When a `REVIEW` stage yields `Verdict.HITL`, the finding is persisted in a durable
 SQLite queue (`.cherenkov/hitl.db`). The `hitl` command lets any reviewer inspect,
@@ -481,7 +481,7 @@ Reject a **pending** item with a mandatory reason string.
 
 ---
 
-### Command 13: `self-test` (deterministic pipeline dry-run)
+### Command 15: `self-test` (deterministic pipeline dry-run)
 Runs a fully mocked, offline dry-run of the INGEST → PLAN → GENERATE → REVIEW pipeline with no Ollama or live server required. Useful for verifying the installation is wired correctly.
 
 #### Command Help:
@@ -496,7 +496,7 @@ Runs a fully mocked, offline dry-run of the INGEST → PLAN → GENERATE → REV
 
 ---
 
-### Command 14: `report` (test coverage + diff reports)
+### Command 16: `report` (test coverage + diff reports)
 Generates a test coverage and verdict report from the most recent pipeline run logs. Supports diffing two report files to surface regressions between runs.
 
 #### Command Help:
@@ -515,7 +515,7 @@ Generates a test coverage and verdict report from the most recent pipeline run l
 
 ---
 
-### Frontier commands (post-gate surfaces)
+## 🔭 Horizon 2 / Track B Commands (post-gate surfaces)
 
 > These CLI surfaces are wired but governed by the Validation Gate — full
 > behaviour is labelled `blocked:validation-gate` until Track A passes the 5-QA

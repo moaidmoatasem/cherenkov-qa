@@ -149,7 +149,7 @@ flowchart LR
   MS[Milestone complete] --> CH[Update CHANGELOG.md]
   CH --> TG[git tag vX.Y]
   TG --> Rel[GitHub Release<br/>notes from CHANGELOG]
-  Rel --> Pre{validation gate passed?}
+  Rel --> Pre{validation gate tested?}
   Pre -->|no| PR[mark pre-release]
   Pre -->|yes| GA[mark latest]
 ```

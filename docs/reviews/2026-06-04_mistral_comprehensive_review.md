@@ -2,7 +2,7 @@
 
 **Version**: 1.0  
 **Date**: 2026-06-04  
-**Status**: Track A SHIPPED, Track B/C Quarantined  
+**Status**: Track A BUILT, Track B/C Quarantined  
 **Reviewer**: Mistral Vibe CLI Agent  
 
 ---
@@ -36,7 +36,7 @@
 - **Medium**: No license file
 
 ### 🎯 Recommendation
-**Ready for open-source release** after addressing P0 critical issues. Track A is production-grade and can be shipped immediately with minor refinements.
+**Ready for open-source release** after addressing P0 critical issues. Track A is production-grade and can be validated immediately with minor refinements.
 
 ---
 
@@ -514,7 +514,7 @@ Perf Baselines → SQLite database
 
 ### 2.2 Product & Features
 
-#### Core Features (Track A - ✅ **SHIPPED**)
+#### Core Features (Track A - ⏳ **BUILT (Pending Validation)**)
 | Feature | Description | Status | Differentiation |
 |---------|-------------|--------|----------------|
 | **OpenAPI Ingestion** | Parse any OpenAPI 3.x spec | ✅ Complete | Standard |

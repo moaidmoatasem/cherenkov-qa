@@ -333,3 +333,12 @@ jobs:
         env:
           CHERENKOV_LIVE_LLM: "1"
         run: PYTHONPATH=. python3 smoke_test_generate_live.py
+
+
+  docs-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check CLI Docs Parity
+        run: python scripts/check_cli_docs.py
+

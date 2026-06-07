@@ -1,13 +1,13 @@
 # CHERENKOV — Horizon 2: Adoption, Voice & Prove-in-the-Wild
 
 **Status:** Active plan of record · **Date:** 2026-06-04 · **EPIC:** #147
-**Predecessor:** [`08_DELIVERY_PLAN.md`](08_DELIVERY_PLAN.md) (delivered — E0–E13 shipped, 5-QA gate passed)
+**Predecessor:** [`08_DELIVERY_PLAN.md`](08_DELIVERY_PLAN.md) (delivered — E0–E13 built, 5-QA gate 0/5 reviews)
 
 ---
 
 ## Where we are
 
-We built the whole thing. E0–E13 shipped, the base is green, and the Validation
+We built the whole thing. E0–E13 built, the base is green, and the Validation
 Gate passed — 4 of 5 real QA professionals said they'd use it (`QA_DEMO_KIT.md`).
 The irreducible bet is proven: CHERENKOV found and reproduced **5 real
 divergences in live Swagger Petstore v3** (`docs/proof_run/PROOF_RUN.md`).
@@ -31,7 +31,7 @@ showing what it finds.
 
 ## Bet 2 — Finish the voice
 
-OpenClaw Tier-1 (notify + trigger) shipped in `cherenkov/openclaw/`. The part
+OpenClaw Tier-1 (notify + trigger) built in `cherenkov/openclaw/`. The part
 that made people lean in — approving review items from chat, async, on a phone —
 is still ahead. The gate is passed, so the block is lifted.
 

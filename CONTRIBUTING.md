@@ -8,7 +8,7 @@ By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## 1. The five non-negotiables (anti-drift)
 
-1. **SSOT = `docs/` (v3.1 + delta).** There is no v4/v6/"Meissner Shield." If you cite a term not in `docs/`, stop and re-anchor.
+1. **SSOT = `docs/` (v3.1 + delta).** There is no v4/v6/"v3.1 + delta." If you cite a term not in `docs/`, stop and re-anchor.
 2. **Show RAW EVIDENCE, never a summary.** "Tests pass" is a claim; the terminal output is evidence. PRs without evidence are not reviewable.
 3. **Scope discipline.** The product is **Track A** (OpenAPI → Playwright conformance generator). `track-b-c-deferred/` is **quarantined** — do not extend or import from it until the Track A validation gate passes ([`HANDOVER.md` §4–5](docs/HANDOVER.md)).
 4. **Design invariants are law** (§4).

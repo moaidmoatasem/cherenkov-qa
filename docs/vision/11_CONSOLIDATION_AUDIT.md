@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-04 · **Against:** `main` @ green (426 tests, gate `pass`)
 **Why:** a single evidence-based pass over everything built, so the headline
-("E0–E13 shipped") is backed by what's actually in the tree — and the gaps are
+("E0–E13 built") is backed by what's actually in the tree — and the gaps are
 named, not buried. Per `AGENTS.md`: raw evidence, never claims.
 
 ---
