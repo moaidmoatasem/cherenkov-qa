@@ -73,9 +73,9 @@ Older documentation listed features like performance baselines and visual regres
 
 The active roadmap is defined by **Horizon 2 (#147)**:
 
-1. **N4: OpenClaw Tier-3 AI Failure Triage** (SHIPPED)
-2. **N5: Federation Multi-Node Sync** (SHIPPED)
-3. **N6: Validation-Gate Pass Audited** (SHIPPED)
+1. **N4: OpenClaw Tier-3 AI Failure Triage** (Built + unit-tested, NOT externally validated)
+2. **N5: Federation Multi-Node Sync** (Built + unit-tested, NOT externally validated)
+3. **N6: Validation-Gate Pass Audited** (Built + unit-tested, NOT externally validated)
 4. **N7: Production Dogfooding Nightly Runs** (REPORT LANDED)
 5. **N8: Roadmap Reconciliation** (THIS DOC)
 

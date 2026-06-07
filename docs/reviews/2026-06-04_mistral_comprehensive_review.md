@@ -14,11 +14,11 @@
 | Metric | Status |
 |--------|--------|
 | **Overall Score** | **B+ (88.5/100)** |
-| **Track A (Core)** | ✅ **100% Complete** |
+| **Track A (Core)** | ✅ **Built + unit-tested, NOT externally validated** |
 | **Track B (Visual/Perf)** | ⏸️ Quarantined (70% Complete) |
 | **Track C (RAG/Compliance)** | ⏸️ Quarantined (50% Complete) |
-| **QA Validation Gates** | ✅ **4/5 Passed** |
-| **Production Readiness** | ✅ **Ready (with P0 fixes)** |
+| **QA Validation Gates** | ❌ **0/5 Passed** |
+| **Production Readiness** | ❌ **Built + unit-tested, NOT externally validated** |
 
 ### ✅ Key Strengths
 - **A+ Anti-lock-in**: Eject produces 100% vanilla Playwright + openapi-fetch
@@ -1091,8 +1091,8 @@ While the technical foundation is **excellent (A-)**, there are **critical gaps*
 
 | Condition | Status | Recommendation |
 |-----------|--------|----------------|
-| Track A completeness | ✅ **100% Complete** | Ship as-is |
-| QA validation | ✅ **4/5 Gates Passed** | Ship as-is |
+| Track A completeness | ✅ **Built + unit-tested, NOT externally validated** | Ship as-is |
+| QA validation | ❌ **0/5 Gates Passed** | Must be run |
 | P0 issues | ❌ **6 Critical Issues** | **Fix before shipping** |
 | P1 issues | ❌ **9 High Priority Issues** | Fix before Track B/C |
 | Documentation | ⚠️ **Partial** | Complete before open-source |
