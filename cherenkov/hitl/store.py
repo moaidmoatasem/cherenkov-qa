@@ -39,7 +39,8 @@ def _get_connection(db_path: str) -> sqlite3.Connection:
         try:
             import pysqlcipher3.dbapi2 as sqlcipher
             con = sqlcipher.connect(db_path, timeout=_BUSY_TIMEOUT_S)
-            con.execute(f"PRAGMA key='{_DB_KEY}'")
+            safe_key = _DB_KEY.replace("'", "''")
+            con.execute(f"PRAGMA key='{safe_key}'")
             con.execute("PRAGMA cipher_page_size=4096")
             con.execute("PRAGMA kdf_iter=64000")
             con.row_factory = sqlite3.Row
@@ -143,11 +144,13 @@ class HitlQueue:
                  new_status: HitlStatus, extra_sql: str, extra_vals: tuple) -> HitlEnvelope:
         con = self._connect()
         try:
-            cur = con.execute(
-                f"UPDATE hitl_queue SET status=?, approved_by=?, approved_at=?{extra_sql} "
-                "WHERE id=? AND status='pending'",
-                (new_status.value, actor, _now(), *extra_vals, item_id),
-            )
+            sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=? WHERE id=? AND status='pending'"
+            vals = (new_status.value, actor, _now(), item_id)
+            if extra_sql:
+                sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=?, reject_reason=? WHERE id=? AND status='pending'"
+                vals = (new_status.value, actor, _now(), extra_vals[0], item_id)
+            
+            cur = con.execute(sql, vals)
             rows = cur.rowcount
             if rows == 1:
                 outcome = "success"

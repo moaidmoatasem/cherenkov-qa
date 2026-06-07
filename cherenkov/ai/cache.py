@@ -28,7 +28,7 @@ class ResponseCache:
 
     @staticmethod
     def _hash(text: str) -> str:
-        return hashlib.md5(text.encode("utf-8")).hexdigest()
+        return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
     def _make_key(self, model: str, system_prompt: str, user_prompt: str) -> str:
         return f"{model}::{self._hash(system_prompt)}::{self._hash(user_prompt)}"

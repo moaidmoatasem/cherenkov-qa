@@ -96,6 +96,7 @@ class RunPipelinePayload(BaseModel):
     target_url: str | None = None
     auth_header: str | None = None
     demo_mode: bool = False
+    intent: str | None = None
 
 class ReviewActionPayload(BaseModel):
     scenario_id: str
@@ -215,6 +216,10 @@ async def ingest_spec_file(
                 shutil.copyfileobj(file.file, f)
         elif url:
             import requests
+            from urllib.parse import urlparse
+            parsed_url = urlparse(url)
+            if parsed_url.scheme not in ('http', 'https'):
+                raise HTTPException(status_code=400, detail="Invalid URL scheme. Only HTTP and HTTPS are allowed.")
             resp = requests.get(url, timeout=15)
             resp.raise_for_status()
             with open(spec_path, "w", encoding="utf-8") as f:
@@ -465,6 +470,25 @@ async def act_on_divergence(payload: DivergenceActionPayload):
         "action": payload.action,
         "new_status": new_status,
     }
+
+#
+# Mock endpoints & Metrics
+#
+@app.get("/api/v1/overview")
+async def get_overview():
+    return {"falsePositiveRate": 0, "recentLearnings": []}
+
+@app.get("/api/v1/truth-map")
+async def get_truth_map():
+    return []
+
+@app.get("/api/v1/failures")
+async def get_failures():
+    return []
+
+@app.get("/api/v1/metrics")
+async def get_metrics():
+    return {"status": "ok", "metrics": {}}
 
 #
 # WebSocket
