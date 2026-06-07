@@ -143,6 +143,14 @@ class HitlListInput(BaseModel):
     status: Literal["pending", "approved", "rejected", "ignored"] | None = "pending"
 
 
+class ValidateRunGateInput(BaseModel):
+    provider: str | None = Field(
+        default=None,
+        description='Sandbox provider: "filesystem" (default) or "docker"',
+    )
+    target_url: str | None = Field(default=None, description="Optional target API URL")
+
+
 # ── JSON-RPC error codes (MCP uses standard JSON-RPC + MCP extensions) ───────
 PARSE_ERROR      = -32700
 INVALID_REQUEST  = -32600

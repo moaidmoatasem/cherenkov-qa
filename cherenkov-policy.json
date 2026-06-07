@@ -1,0 +1,62 @@
+{
+  "version": "1.0",
+  "profiles": {
+    "full-dev": {
+      "servers": {
+        "cherenkov": {
+          "tools": ["hitl_list", "hitl_approve", "hitl_reject", "validate_run_gate"],
+          "allow_network": [],
+          "allow_filesystem": false
+        },
+        "github-official": {
+          "tools": [
+            "list_issues", "search_code", "get_file_contents",
+            "list_pull_requests", "pull_request_read",
+            "create_branch", "create_pull_request", "push_files"
+          ],
+          "blocked_tools": [
+            "delete_file", "create_repository", "fork_repository"
+          ],
+          "allow_network": ["api.github.com:443"]
+        },
+        "context7": {
+          "tools": ["resolve_library_id", "get_library_docs"],
+          "allow_network": ["*"]
+        },
+        "sequentialthinking": {
+          "tools": ["sequentialthinking"],
+          "allow_network": [],
+          "allow_filesystem": false
+        },
+        "atlassian-remote": {
+          "tools": ["*"],
+          "allow_network": ["mcp.atlassian.com:443"]
+        }
+      }
+    },
+    "ai_coding": {
+      "servers": {
+        "cherenkov": { "tools": ["*"], "allow_network": [] },
+        "context7": { "tools": ["*"], "allow_network": ["*"] },
+        "sequentialthinking": { "tools": ["*"], "allow_network": [] }
+      }
+    }
+  },
+  "invariants": {
+    "d7_suggest_only": {
+      "enabled": true,
+      "enforcement": "governance",
+      "message": "Never auto-edit test code. All heal suggestions are diff-only."
+    },
+    "anti_lock_in": {
+      "enabled": true,
+      "enforcement": "convention",
+      "message": "Every component has a non-Docker fallback."
+    },
+    "egress_sovereignty": {
+      "enabled": true,
+      "enforcement": "policy",
+      "message": "Egress dial must be respected by all MCP servers."
+    }
+  }
+}
