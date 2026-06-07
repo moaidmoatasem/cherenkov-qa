@@ -1,38 +1,73 @@
-﻿# Known Bugs
+---
+last_updated: 2026-06-07
+source: smoke_test.py, smoke_test_validate.py, smoke_test_healing.py, tests/eject_fixtures/password_too_short.spec.ts
+scope: Conformance drift patterns discovered by CHERENKOV smoke tests and validation
+---
 
-Documented conformance drift and regression patterns caught by CHERENKOV.
-Source: `smoke_test.py`, `smoke_test_validate.py`, `smoke_test_generate_live.py`
+# Known Bugs
 
-## Critical Bug: 422 vs 400 Conformance Drift
+## 1. Spec-to-Implementation Conformance Drift (422 vs 400) [CANONICAL]
 
-### Pattern
-- **Spec says**: `POST /users` with invalid data returns HTTP 422 (Validation Error)
-- **Server returns**: HTTP 400 (Bad Request)
-- **Impact**: The generated test expects `expect(response.status).toBe(422)` but receives 400
-- **Detection**: Track A `validate` command catches this automatically
-- **Evidence**: `smoke_test.py` line 72-85 documents the exact failure
+**Source:** `smoke_test_validate.py`, `tests/eject_fixtures/password_too_short.spec.ts`
 
-### How to reproduce
-```bash
-export REGRESSION_MODE=true
-# restart target API with regression mode
-./bin/cherenkov validate --target http://localhost:8000
+The OpenAPI spec declares `422 Unprocessable Entity` for validation errors (POST /users), but the target API normalizes validation errors to `400 Bad Request`.
+
+```typescript
+// Test asserts 422 (per spec) - goes RED against live target
+expect(response.status).toBe(422);  // actual: 400
 ```
-Expected: `password_too_short [FAILED] — Expected: 422, Received: 400`
 
-## Auth Token Expiry
-- **Pattern**: Expired auth tokens cause 401 responses on otherwise valid requests
-- **Detection**: `cherenkov/healing/auth_expiry.py` suggests token refresh
-- **Status**: Suggest-only — never auto-modifies test headers
+This is the **canonical bug** that CHERENKOV exists to catch - the core demo scenario in `docs/QA_DEMO_KIT.md`.
 
-## Contract Drift
-- **Pattern**: Server response schema changes without spec update
-- **Detection**: `cherenkov/healing/contract_drift.py` compares actual vs spec-expected response shape
-- **Suggestion**: Reports the drift as a suggestion; user decides whether to update spec or fix server
+## 2. Status Code Regression - Auth Expiry (201 -> 401)
 
-## Known Flaky Endpoints
-- (None documented yet — agents should record discovered flakiness here)
+**Source:** `smoke_test_healing.py:test_auth_expiry_detection()`
 
-## Cross-references
-- See `endpoints.md` for endpoint schemas
-- See `test-patterns.md` for test templates that expose these bugs
+A historically-passing endpoint that returned `201` begins returning `401` due to expired authentication tokens.
+
+- **Classification:** `FailureClass.AUTH_EXPIRY`
+- **Detection:** Snapshot comparison (prior pass: status=201, body={id, email} vs. current: status=401, body={})
+- **Suggestion:** Renew `BEARER_TOKEN` in test headers
+
+## 3. Response Body Contract Drift (Missing Fields)
+
+**Source:** `smoke_test_healing.py:test_contract_drift_detection()`
+
+HTTP status stays `201` but the response body is missing a previously-present field (`email`).
+
+- **Classification:** `FailureClass.CONTRACT_DRIFT`
+- **Detection:** Snapshot `{id: 42, email: "test@example.com"}` vs. current `{id: 42}`
+- **Flagged as:** `[RED REGRESSION]`
+- **Suggestion:** Add `expect(data).toHaveProperty("email")` assertions
+
+## 4. Value Tightening Opportunities
+
+**Source:** `smoke_test_validate.py`
+
+Tests pass but could be more precise. Validation suggests:
+- Literal string assertions: `expect(data.email).toBe('test@example.com')`
+- Payload-reflective assertions: `expect(data.email).toBe(body.email)`
+
+## 5. Circuit Breaker / Graceful Degradation
+
+**Source:** `smoke_test.py:run_failure_path()`
+
+When a stage (e.g. INGEST) produces malformed output, the pipeline:
+1. Retries via the retry ladder
+2. Trips the circuit breaker after `error_threshold` failures
+3. Returns `False` (graceful abort) instead of crashing with a raw Python stack trace
+
+Invariant: `engine.breaker.tripped == True` and `engine.breaker.error_count == threshold`.
+
+## 6. Suggest-Only / No Auto-Modification (D7)
+
+**Source:** All three smoke tests
+
+Files in `stub/generated_tests/` must **never** be auto-edited by validation or healing.
+- Validate enforces via SHA-256 hash comparison (pre-run vs. post-run)
+- Healing enforces via `git status --porcelain` diff
+- **Invariant D7:** Healing and validation produce reports/suggestions only - zero files modified on disk
+
+---
+
+*Cross-ref: [endpoints.md](endpoints.md) for affected endpoints, [test-patterns.md](test-patterns.md) for test code exhibiting these patterns, [validation-gate.md](validation-gate.md) for demo context*
