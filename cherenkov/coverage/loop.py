@@ -227,13 +227,16 @@ class CoverageLoop:
         """Execute generated tests and collect results."""
         if test_command is None:
             if framework == "pytest":
-                test_command = f"python3 -m pytest {output_dir} -v --tb=short 2>&1"
+                cmd = ["python3", "-m", "pytest", output_dir, "-v", "--tb=short"]
             else:
-                test_command = f"npx jest {output_dir} --verbose 2>&1"
+                cmd = ["npx", "jest", output_dir, "--verbose"]
+        else:
+            import shlex
+            cmd = shlex.split(test_command)
 
         try:
             import shutil
-            runner_bin = test_command.split()[0]
+            runner_bin = cmd[0]
             if not shutil.which(runner_bin.replace("python3", "python").replace("npx", "").strip()):
                 if runner_bin in ("python3", "python", "python.exe"):
                     pass
@@ -241,8 +244,8 @@ class CoverageLoop:
                     self.log.warning("runner not found", detail=f"'{runner_bin}' not on PATH")
                     return {"passed": 0, "failed": 0, "exit_code": -1, "stdout": "", "stderr": "runner not found", "details": []}
             proc = subprocess.run(
-                test_command,
-                shell=True,
+                cmd,
+                shell=False,
                 capture_output=True,
                 text=True,
                 timeout=30,
