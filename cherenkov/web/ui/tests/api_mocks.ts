@@ -95,7 +95,7 @@ import { client } from '../clients/api';
 test.describe('POST /pets - Creates a Pet', () => {
   test('should successfully create a new pet in the inventory', async () => {
     const payload = {
-      id: Math.floor(Math.random() * 100000),
+      id: Date.now() + Math.floor(Math.random() * 100000),
       name: 'Cerberus',
       category: { id: 1, name: 'Guard Dogs' },
       photoUrls: ['https://example.com/images/cerberus.jpg'],
