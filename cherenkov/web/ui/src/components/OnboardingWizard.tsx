@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button } from './ui';
+import { Card } from './ui';
 import { fetchHealth } from '../lib/api';
 
 interface OnboardingWizardProps {
