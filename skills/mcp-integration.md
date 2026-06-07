@@ -60,23 +60,44 @@ Add to `claude_desktop_config.json → mcpServers`:
 
 ### Docker MCP Gateway Integration
 
-The project also supports the [Docker MCP Gateway](https://github.com/docker/mcp-gateway) (Docker Desktop 4.59+). This runs containerized MCP servers and provides a unified gateway endpoint.
+The project supports the [Docker MCP Gateway](https://github.com/docker/mcp-gateway) (Docker Desktop 4.59+). It runs containerized MCP servers and provides a unified gateway endpoint for all AI clients.
 
-The `ai_coding` profile bundles three servers:
+#### Available Profiles
 
-| Server | Image | Tools |
+| Profile | Servers | Tools | Auth Required |
+|---------|---------|-------|---------------|
+| **full-dev** (recommended) | cherenkov, context7, sequentialthinking, github-official, atlassian-remote | ~48 (see below) | GitHub PAT + Atlassian OAuth |
+| **ai_coding** | cherenkov, context7, sequentialthinking | 7 | None |
+| **dev_workflow** | github-official, atlassian-remote | ~41 | GitHub PAT + Atlassian OAuth |
+
+**Full-dev tool counts:**
+| Server | Tools | Notes |
 |--------|-------|-------|
-| **cherenkov** | `cherenkov-mcp:latest` (built from `Dockerfile.mcp`) | `hitl_list`, `hitl_approve`, `hitl_reject`, `validate_run_gate` + 4 resources |
-| **context7** | `mcp/context7` (Docker MCP Catalog) | `resolve-library-id`, `get-library-docs` |
-| **sequentialthinking** | `mcp/sequentialthinking` (Docker MCP Catalog) | `sequentialthinking` |
+| cherenkov | 4 tools + 4 resources | `hitl_list`, `hitl_approve`, `hitl_reject`, `validate_run_gate` |
+| context7 | 2 | `resolve-library-id`, `get-library-docs` |
+| sequentialthinking | 1 | Structured problem-solving |
+| github-official | 41 + 2 prompts + 5 resource templates | Issue/PR/repo management (requires PAT) |
+| atlassian-remote | remote SSE | Jira/Confluence (requires OAuth) |
 
 #### Setup (already configured on this machine)
 
+The gateway is configured system-wide. All listed clients connect automatically on next launch:
+
 ```bash
-docker mcp client connect opencode --profile ai_coding --global
+docker mcp client connect opencode --profile full-dev --global
 ```
 
-This writes a config entry to `%USERPROFILE%\.config\opencode\opencode.json` that launches `docker mcp gateway run --profile ai_coding` as an opencode MCP subprocess.
+This writes a config entry to `%USERPROFILE%\.config\opencode\opencode.json` that launches `docker mcp gateway run --profile full-dev` as an opencode MCP subprocess.
+
+#### Authenticating GitHub and Atlassian
+
+```bash
+# Configure GitHub Personal Access Token
+docker mcp secret set github.personal_access_token
+
+# Authorize Atlassian (opens browser for OAuth)
+docker mcp oauth authorize atlassian-remote
+```
 
 #### Adding CHERENKOV to Another Profile
 
