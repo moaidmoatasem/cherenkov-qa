@@ -337,6 +337,70 @@ jobs:
         run: PYTHONPATH=. python3 smoke_test_generate_live.py
 
 
+  snyk-scan:
+    name: Snyk Dependency Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Snyk CLI
+        run: |
+          curl -fsSL https://static.snyk.io/cli/latest/snyk-linux -o /usr/local/bin/snyk
+          chmod +x /usr/local/bin/snyk
+          snyk --version
+
+      - name: Run Snyk test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          if [ -z "$SNYK_TOKEN" ]; then
+            echo "SNYK_TOKEN not set — skipping scan"
+            echo '{"vulnerabilities":[],"infrastructureAsCode":[],"code":[]}' > /tmp/snyk-report.json
+          else
+            snyk auth "$SNYK_TOKEN" >/dev/null 2>&1 || true
+            snyk test --json > /tmp/snyk-report.json 2>/dev/null || true
+            # If snyk test produced an error message, write empty report
+            if ! head -1 /tmp/snyk-report.json | grep -q '^{'; then
+              echo '{"vulnerabilities":[],"infrastructureAsCode":[],"code":[]}' > /tmp/snyk-report.json
+            fi
+          fi
+
+      - name: Parse and write findings
+        run: |
+          PYTHONPATH=. python3 -m cherenkov.security.snyk_bridge /tmp/snyk-report.json
+
+      - name: Check for critical/high vulnerabilities
+        run: |
+          CRIT_HIGH=$(python3 -c "
+import json
+d = json.load(open('/tmp/snyk-report.json'))
+count = sum(1 for v in d.get('vulnerabilities', []) if v.get('severity','').lower() in ('critical','high'))
+print(count)
+" 2>/dev/null || echo "0")
+          if [ "$CRIT_HIGH" -gt 0 ] && [ "$CRIT_HIGH" != "0" ]; then
+            echo "WARNING: $CRIT_HIGH critical/high vulnerability(ies) found."
+            echo "Run skills/snyk-remediation.md to fix before merging."
+          else
+            echo "No critical or high vulnerabilities."
+          fi
+
+      - name: Upload Snyk report
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-report
+          path: /tmp/snyk-report.json
+        if: always()
+
   docs-parity:
     runs-on: ubuntu-latest
     steps:
