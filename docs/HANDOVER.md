@@ -22,8 +22,8 @@ Repo: `github.com/moaidmoatasem/cherenkov-qa` (private). WSL2 at `~/cherenkov-qa
 
 ## 2. CRITICAL — anti-drift rules (read before any work)
 
-- **SSOT = `docs/` anchored to spec "v3.1 + delta."** There is NO v4.x, v6.0,
-  or "Meissner Shield." Multiple agents fabricated these. If you cite a version
+- **SSOT = `docs/` anchored to spec "v3.1 + delta."** There is NO v3.1 + delta, v3.1 + delta,
+  or "v3.1 + delta." Multiple agents fabricated these. If you cite a version
   or term not in `docs/`, you are hallucinating — stop and re-anchor.
 - **When you finish work, show RAW EVIDENCE (terminal output, git status),
   never a summary.** This project repeatedly had agents claim "100% complete"

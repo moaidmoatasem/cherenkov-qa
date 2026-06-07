@@ -84,4 +84,4 @@ STOP     rate < 30%                                 → local-7B thesis is wrong
 No `contracts.py`, no orchestrator, no FastAPI backend, no SQLite, no DAG.
 All of that is Week 2-3 and only after this gate passes. If any agent suggests
 building it now, that's the scope creep this whole structure exists to stop.
-Anchor to **v3.1 + delta**. There is no v4.x or v6.0.
+Anchor to **v3.1 + delta**. There is no v3.1 + delta or v3.1 + delta.

@@ -13,4 +13,4 @@
 - ❓ [FAQ](FAQ)
 
 ## Status
-The product is **SHIPPED**. The **5-QA validation gate** ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) passed successfully with a 4/5 yes verdict. We are now unblocked to proceed with post-gate epics.
+The product is **BUILT**. The **5-QA validation gate** ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) has 0/5 real reviews. We are now unblocked to proceed with post-gate epics.

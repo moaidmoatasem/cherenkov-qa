@@ -3,7 +3,7 @@
 > [!WARNING]
 > **This document is deprecated.** For the single source of truth on active roadmap progress, completed milestones, and upcoming tasks, please refer to the unified [ROADMAP_RECONCILIATION.md](../ROADMAP_RECONCILIATION.md).
 
-**Status:** ✅ Delivered (E0–E13 shipped, 5-QA gate passed 4/5) · **Date:** 2026-06-04
+**Status:** ✅ Built (E0–E13 built, 5-QA gate 0/5 reviews) · **Date:** 2026-06-04
 **Live plan has moved on:** see [`10_HORIZON_2.md`](10_HORIZON_2.md) and EPIC #147. This file is kept as the record of how the gate was reached.
 **Supersedes** the open-question framing in [`07_MASTER_PLAN.md`](07_MASTER_PLAN.md) §9 (kept as the strategic rationale).
 **Purpose:** one document that reconciles **code reality ↔ GitHub ↔ sequencing** so any agent or human can pick up the next shippable slice without re-deriving context.
@@ -149,9 +149,9 @@ Mapped to existing milestones + labels. `agent-ready` = self-contained, an agent
 - [x] Code reality reconciled against `main` (§1).
 - [x] Critical path sequenced by the Validation Gate (§2).
 - [x] Open backlog defined and mapped to milestones/labels (§3).
-- [x] Backlog opened as GitHub issues (#109–#129) and **all shipped**.
+- [x] Backlog opened as GitHub issues (#109–#129) and **all built**.
 - [x] HITL backend PR opened + merged (#136).
-- [x] Validation Gate passed (4/5 QA yeses; see HANDOVER §5).
+- [ ] Validation Gate pending (0/5 QA reviews; see HANDOVER §5).
 - [ ] Cross-link finalised + older roadmap docs reconciled → tracked as #155.
 
 ---
