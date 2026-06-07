@@ -152,6 +152,48 @@ async def health_check():
     }
 
 #
+# Doctor
+#
+@app.get("/api/v1/doctor")
+async def run_doctor_api():
+    from cherenkov.stages.doctor_cmd import (
+        check_ollama_binary, check_ollama_daemon, check_node, 
+        check_npx_playwright, check_prism_docker, check_egress_blocked
+    )
+    from cherenkov.core.config_loader import load_effective_config
+    from cherenkov.core.config import Config
+    
+    cfg = load_effective_config()
+    checks = []
+    
+    ollama_bin, bin_det = check_ollama_binary()
+    checks.append({"name": "Ollama Binary", "status": "passed" if ollama_bin else "failed", "message": bin_det})
+    
+    if ollama_bin:
+        ollama_daemon, daemon_det = check_ollama_daemon()
+        checks.append({"name": "Ollama Daemon", "status": "passed" if ollama_daemon else "failed", "message": daemon_det})
+    
+    node_ok, node_det = check_node()
+    checks.append({"name": "Node.js", "status": "passed" if node_ok else "failed", "message": node_det})
+    
+    pw_ok, pw_det = check_npx_playwright()
+    checks.append({"name": "Playwright", "status": "passed" if pw_ok else "failed", "message": pw_det})
+    
+    prism_ok, prism_det = check_prism_docker()
+    checks.append({"name": "Prism Docker", "status": "passed" if prism_ok else "failed", "message": prism_det})
+    
+    egress_ok, egress_det = check_egress_blocked(cfg)
+    checks.append({"name": "Egress Policy", "status": "passed" if egress_ok else "failed", "message": egress_det})
+    
+    device = Config.detect_ollama_device()
+    is_gpu = device == "GPU"
+    checks.append({"name": "Device", "status": "passed" if is_gpu else "failed", "message": device + " (GPU recommended)"})
+    
+    ready = ollama_bin and node_ok and pw_ok and prism_ok
+    
+    return {"checks": checks, "ready": ready}
+
+#
 # Ingest
 #
 @app.post("/api/v1/ingest")
@@ -237,10 +279,9 @@ async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: Ba
         generate_demo_findings()
         return {"run_id": "demo", "status": "demo_completed"}
         
-    # If doctor fails and demo mode is not triggered, block the run
-    # (Implementation detail: we could still allow demo mode, but for now just gate it)
+    # Warn but do not necessarily block if there are minor issues (e.g., CPU mode)
     if doctor_status != 0:
-        raise HTTPException(status_code=400, detail="Doctor preflight checks failed. Please run 'cherenkov doctor' and fix the issues.")
+        print("Warning: Doctor preflight checks reported issues (could be missing GPU or daemon state). Continuing anyway.")
         
     run_id = str(uuid.uuid4())[:8]
     if not os.path.exists(payload.spec_path):

@@ -320,7 +320,9 @@ export default function SettingsScreen() {
               <form onSubmit={(e) => e.preventDefault()} className="m-0 p-0">
                 <input
                   id="input-settings-key"
+                  name="apiSecret"
                   type="password"
+                  autoComplete="current-password"
                   placeholder="Enter secrets identifier..."
                   value={apiSecret}
                   onChange={(e) => setApiSecret(e.target.value)}
