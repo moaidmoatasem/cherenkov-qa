@@ -16,9 +16,12 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
 
     await setupApiMocks(page);
 
-    // Dismiss the Guided Tour that appears on first visit
+    // Dismiss the Guided Tour and Onboarding Wizard that appear on first visit
     await page.goto('/');
-    await page.evaluate(() => localStorage.setItem('[copilot] tour_seen', 'true'));
+    await page.evaluate(() => {
+      localStorage.setItem('[copilot] tour_seen', 'true');
+      localStorage.setItem('[cherenkov] onboarding_seen', 'true');
+    });
     await page.reload();
     await page.waitForSelector('#cherenkov-app-core');
     await page.waitForTimeout(SETTLEMENT);
