@@ -1,0 +1,8 @@
+name: cherenkov
+title: CHERENKOV QA
+type: server
+image: cherenkov-mcp:latest
+description: API conformance testing framework with HITL review queue and Validation Gate tools.
+env:
+  - name: MCP_TRANSPORT
+    value: stdio
