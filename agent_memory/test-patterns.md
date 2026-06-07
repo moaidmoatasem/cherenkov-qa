@@ -1,61 +1,113 @@
-﻿# Test Patterns
+---
+last_updated: 2026-06-07
+source: stub/generated_tests/, tests/eject_fixtures/, stub/target_spec.json
+scope: Test generation patterns used by CHERENKOV across generated and ejected test suites
+---
 
-Generated test patterns and common mutation scenarios produced by CHERENKOV's GENERATE stage.
-Source: `stub/generated_tests/*.spec.ts`
+# Test Patterns
 
-## Happy Path Pattern (P1)
+## Generated Tests (`stub/generated_tests/`)
+
+### Happy Path (POST /users -> 201)
+
+```typescript
+import { client } from '../client';
+import { test, expect } from '@playwright/test';
+
+test('happy_path', async () => {
+    const body = { email: 'test@example.com', password: 'password123' };
+    const { response, data } = await client.POST('/users', { body });
+    expect(response.status).toBe(201);
+    expect(data).toHaveProperty('id');
+    expect(data).toHaveProperty('email');
+});
+```
+
+### Validation Failure (password_too_short -> 422)
+
+```typescript
+test('password_too_short', async () => {
+    const body = { email: 'test@example.com', password: 'short' };
+    const { response } = await client.POST('/users', { body });
+    expect(response.status).toBe(422);
+});
+```
+
+### Visual Regression Baseline
 
 ```typescript
 import { test, expect } from '@playwright/test';
-import createClient from '../client';
 
-test('POST /users happy path', async () => {
-  const client = createClient();
-  const { data, response } = await client.POST('/users', {
-    body: { email: 'test@example.com', password: 'password123' }
-  });
-  expect(response.status).toBe(201);
-  expect(data).toBeDefined();
-  expect(data.email).toBe('test@example.com');
+test('visual regression baseline UI', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto(process.env.API_URL || 'http://127.0.0.1:8000/');
+  await expect(page).toHaveScreenshot('baseline.png');
 });
 ```
 
-## Validation Error Pattern (P2)
+### K6 Performance Script
+
+```javascript
+export const options = {
+  vus: 5,
+  duration: '3s',
+  thresholds: {
+    http_req_duration: ['p(95)<500'],
+    http_req_failed: ['rate<0.05'],
+  },
+};
+export default function () {
+  const res = http.post(url, payload, params);
+  check(res, { 'status is 201': (r) => r.status === 201 });
+  sleep(0.1);
+}
+```
+
+## Ejected Test Fixtures (`tests/eject_fixtures/`)
+
+Anti-lock-in verified: **zero CHERENKOV imports** - vanilla Playwright + openapi-fetch.
+
+### Happy Path (ejected)
 
 ```typescript
-test('POST /users password too short', async () => {
-  const client = createClient();
-  const { response } = await client.POST('/users', {
-    body: { email: 'test@example.com', password: 'short' }
+import { client } from '../client';
+import { test, expect } from '@playwright/test';
+
+test('create user happy path returns 201 with id', async () => {
+  const { data, response } = await client.POST('/users', {
+    body: { email: 'test@example.com', password: 'longenough123' }
   });
-  expect(response.status).toBe(422);  // spec-derived
+  expect(response.status).toBe(201);
+  expect(data).toHaveProperty('id');
+  expect(data?.email).toBe('test@example.com');
 });
 ```
 
-## Client Usage Rules
-- Must use `openapi-fetch` `createClient()` — no `fetch()` or `axios`
-- Import path: `'../client'`
-- Response destructuring: `const { data, error, response } = await client.<METHOD>(...)`
-- Status assertions use spec-derived values (never hardcoded)
+### Validation Failure (ejected, annotated)
 
-## Mutation Categories
+```typescript
+// NOTE: this spec asserts 422 (the OpenAPI-declared validation status). The
+// target API normalizes validation errors to 400, so this test is EXPECTED to
+// go RED against the live target - it is the canonical "catches a status
+// conformance bug" example.
+```
 
-| Category | Pattern | Expected Status |
-|----------|---------|-----------------|
-| happy_path | Valid request body | 200/201 |
-| validation_error | Invalid field constraints | 422 (spec-derived) |
-| edge_case | Boundary values | 422 or 400 |
-| auth_no_token | Missing auth header | 401 |
-| auth_invalid_token | Malformed auth token | 401 |
-| dast_sqli | SQL injection payload | 400/422 (safe reject) |
-| dast_xss | XSS payload | 400/422 (safe reject) |
+## Common Patterns
 
-## Assertion Patterns
-- `expect(response.status).toBe(<spec-derived>)` — status check
-- `expect(data).toBeDefined()` — response body exists
-- `expect(data.<field>).toBe(<value>)` — field-level assertion (suggested by validate)
-- `request_body` vs `response_body` comparison — tightening suggestions
+| Pattern | Library | Convention |
+|---------|---------|------------|
+| HTTP client | `openapi-fetch` | `const { response, data } = await client.<METHOD>(path, options)` |
+| Test framework | `@playwright/test` | `test/expect` syntax |
+| Status assertion | Standard | `expect(response.status).toBe(NNN)` |
+| Body shape assertion | Standard | `expect(data).toHaveProperty('key')` |
+| Eject output | Standalone | Zero CHERENKOV references, self-contained types |
 
-## Cross-references
-- See `endpoints.md` for endpoint schemas
-- See `known-bugs.md` for conformance drift patterns (e.g., 422 vs 400)
+## Scoring Metadata
+
+Generated tests scored on: `uses_openapi_fetch_client`, `no_forbidden_http`, `asserts_specific_status`, `asserts_body_shape`, `would_fail_on_wrong_output`, `compiles_likely`, `meaningful`.
+
+Ejected fixtures: all 7/7 scoring criteria pass.
+
+---
+
+*Cross-ref: [endpoints.md](endpoints.md) for endpoint definitions, [known-bugs.md](known-bugs.md) for the 422-vs-400 pattern this code catches*
