@@ -68,6 +68,31 @@ services:
       echo 'Models pulled successfully.';
       "
 
+  explorer-agent:
+    profiles: ["agents"]
+    build: .
+    command: python -m cherenkov explore --daemon
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
+
+  healer-agent:
+    profiles: ["agents"]
+    build: .
+    command: python -m cherenkov heal --daemon --provider docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - ollama
+
+  daemon-agent:
+    profiles: ["agents"]
+    build: .
+    command: python -m cherenkov daemon --watch
+    depends_on:
+      - ollama
+
 volumes:
   openapi_cache:
   ollama_models:

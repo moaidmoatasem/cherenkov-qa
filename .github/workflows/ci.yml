@@ -408,3 +408,70 @@ print(count)
       - name: Check CLI Docs Parity
         run: python scripts/check_cli_docs.py
 
+  sandbox-provider-unit:
+    name: Sandbox Provider Unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run sandbox provider unit tests
+        run: PYTHONPATH=. python3 -m unittest test_sandbox_providers.py
+
+  policy-engine-unit:
+    name: MCP Policy Engine Unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run policy engine unit tests
+        run: PYTHONPATH=. python3 -m unittest test_mcp_policy.py
+
+  model-runner-unit:
+    name: Model Runner Adapter Unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run model runner unit tests
+        run: PYTHONPATH=. python3 -m unittest test_model_runner_client.py
+
+  sandbox-heal-docker:
+    name: Sandbox Heal Docker (opt-in)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Build Docker MCP image
+        run: docker build -t cherenkov-mcp:ci -f Dockerfile.mcp .
+      - name: Run sandbox smoke with Docker provider
+        run: PYTHONPATH=. python3 -m unittest test_sandbox_providers.TestDockerSandboxProvider
+
