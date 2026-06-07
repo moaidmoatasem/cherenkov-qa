@@ -1,0 +1,24 @@
+name: Docs Parity
+on:
+  pull_request:
+    paths:
+      - 'cherenkov.py'
+      - 'docs/GETTING_STARTED.md'
+      - 'scripts/check_cli_docs.py'
+  push:
+    branches: [main]
+    paths:
+      - 'cherenkov.py'
+      - 'docs/GETTING_STARTED.md'
+      - 'scripts/check_cli_docs.py'
+
+jobs:
+  check-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Check CLI ↔ docs parity
+        run: python3 scripts/check_cli_docs.py
