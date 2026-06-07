@@ -49,7 +49,6 @@ export default function EjectScreen() {
       toast('Eject successful — files written to ' + outputPath, 'success');
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.warn('Backend eject call failed', err);
       toast(`Eject failed: ${msg}`, 'danger');
     }
   };

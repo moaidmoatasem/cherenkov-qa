@@ -29,7 +29,7 @@ interface ReviewScreenProps {
 }
 
 export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenProps) {
-  const { addToast } = useToast();
+  const { toast } = useToast();
   const [tests, setTests] = useState<TestItem[]>([]);
   const testsRef = useRef(tests);
   testsRef.current = tests;
@@ -77,7 +77,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
         setIsLoading(false);
       })
       .catch(err => {
-        addToast('Failed to load review items from server.', 'error');
+        toast('Failed to load review items from server.', 'error');
         setLoadError(err instanceof Error ? err.message : 'Failed to load review items.');
       })
       .finally(() => setIsLoading(false));
@@ -91,6 +91,12 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
   const [rejectReason, setRejectReason] = useState('');
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [isExplaining, setIsExplaining] = useState(false);
+
+  // Update pass rate on tests change
+  useEffect(() => {
+    const approvedCount = tests.filter(t => t.verdict === 'approved').length;
+    onUpdatePassRateAndCount(tests.length, approvedCount);
+  }, [tests, onUpdatePassRateAndCount]);
 
   // Sync edited code when selected test changes
   const activeTest = tests.find(t => t.id === selectedTestId) || tests[0];
@@ -159,10 +165,10 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
 
     try {
       await approveTestScenario(id);
-      addToast(`Approved test scenario ${id}`, 'success');
+      toast(`Approved test scenario ${id}`, 'success');
     } catch (err) {
       setApproveTriggerId(null);
-      addToast(`Failed to approve: ${(err as Error).message}`, 'error');
+      toast(`Failed to approve: ${(err as Error).message}`, 'error');
       return;
     }
 
@@ -177,8 +183,6 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
         } else if (idx > 0) {
           setSelectedTestId(visible[idx - 1].id);
         }
-        const approvedCount = updated.filter(t => t.verdict === 'approved').length;
-        onUpdatePassRateAndCount(updated.length, approvedCount);
         return updated;
       });
     }, 400);
@@ -187,9 +191,9 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
   const handleSaveEdit = async () => {
     try {
       await editTestScenario(selectedTestId, editedCode);
-      addToast('Edit saved successfully.', 'success');
+      toast('Edit saved successfully.', 'success');
     } catch (err) {
-      addToast(`Failed to save edit: ${(err as Error).message}`, 'error');
+      toast(`Failed to save edit: ${(err as Error).message}`, 'error');
       return;
     }
 
@@ -210,9 +214,9 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
   const handleReject = async (id: string, reason: string) => {
     try {
       await rejectTestScenario(id, reason);
-      addToast(`Rejected ${id}. "${reason}"`, 'success');
+      toast(`Rejected ${id}. "${reason}"`, 'success');
     } catch (err) {
-      addToast(`Failed to reject: ${(err as Error).message}`, 'error');
+      toast(`Failed to reject: ${(err as Error).message}`, 'error');
       return;
     }
 
@@ -235,7 +239,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
       const data = await explainTestScenario(id);
       setAiExplanation(data.explanation);
     } catch (err) {
-      addToast(`Failed to get AI explanation: ${(err as Error).message}`, 'error');
+      toast(`Failed to get AI explanation: ${(err as Error).message}`, 'error');
     } finally {
       setIsExplaining(false);
     }

@@ -54,7 +54,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
       setSystemReady(data.ready);
       setDoctorLoading(false);
     }).catch(err => {
-      console.warn("Doctor failed:", err);
+      addToast("System Readiness Check failed to connect.", "danger");
       setDoctorLoading(false);
       setSystemReady(true); // Fallback to ready if we can't tell
     });
@@ -87,7 +87,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
       setEndpoints(mapped);
       setIngestedSpecPath(data.spec_path);
     } catch (err) {
-      addToast("Real backend spec ingestion failed.", "danger");
+      addToast("Real backend spec ingestion failed.", "error");
       setEndpoints([]);
     } finally {
       setLoading(false);
