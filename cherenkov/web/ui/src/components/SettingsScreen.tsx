@@ -317,14 +317,16 @@ export default function SettingsScreen() {
 
             <div className="space-y-2 text-xs">
               <label htmlFor="input-settings-key" className="text-[#7D8DA1] font-mono text-[9px] uppercase font-semibold">Local API Gateway Secrets Key</label>
-              <input
-                id="input-settings-key"
-                type="password"
-                placeholder="Enter secrets identifier..."
-                value={apiSecret}
-                onChange={(e) => setApiSecret(e.target.value)}
-                className="w-full bg-black/30 text-text-primary p-2.5 rounded-xl border border-white/10 focus:outline-none focus:border-glow-blue text-xs font-mono"
-              />
+              <form onSubmit={(e) => e.preventDefault()} className="m-0 p-0">
+                <input
+                  id="input-settings-key"
+                  type="password"
+                  placeholder="Enter secrets identifier..."
+                  value={apiSecret}
+                  onChange={(e) => setApiSecret(e.target.value)}
+                  className="w-full bg-black/30 text-text-primary p-2.5 rounded-xl border border-white/10 focus:outline-none focus:border-glow-blue text-xs font-mono"
+                />
+              </form>
               <span className="block text-[9px] text-[#7D8DA1]/60 leading-relaxed font-mono">
                 🔒 Environment credentials are piped relative to target workspace containers only. They are never transmitted or processed on public domains.
               </span>
