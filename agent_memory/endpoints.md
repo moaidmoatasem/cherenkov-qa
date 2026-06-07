@@ -64,6 +64,18 @@ From `track-b-c-deferred/smoke_tests/smoke_test_dashboard.py`:
 
 Generated tests use `openapi-fetch` client from `stub/client.ts` (referenced as `client_stub_path` in `IngestOutput`).
 
+## AI Diagnostics Stage (Track B)
+
+The AI Diagnostics stage integrates with the Orchestrator to analyze HTTP 500s or timeouts.
+It receives contextual parameters:
+- `endpoint`: The failed URL path.
+- `method`: HTTP method used.
+- `payload`: The JSON payload (if any).
+- `response_text`: Server traceback or error message.
+- `status_code`: The HTTP status code received.
+
+It heuristically determines the root cause (e.g. database disconnect, null pointer, syntax error) using the local Ollama model.
+
 ---
 
 *Cross-ref: [test-patterns.md](test-patterns.md) for generated test code, [known-bugs.md](known-bugs.md) for conformance drift patterns*
