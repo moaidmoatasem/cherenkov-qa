@@ -40,7 +40,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     type: ToastType = 'info', 
     options?: { actionLabel?: string; onAction?: () => void }
   ) => {
-    const id = Math.random().toString(36).substring(2, 9);
+    const id = crypto.randomUUID();
     setToasts((prev) => {
       const next = [...prev, { id, message, type, ...options }];
       // Keep max 3 stacked
