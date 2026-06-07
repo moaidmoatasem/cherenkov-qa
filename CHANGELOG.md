@@ -7,7 +7,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 
 ## [Unreleased]
 ### Added
-- **Track A Validation:** Track A core engine built; invariants proven by automated tests. Validation gate NOT passed (0/5 real QA reviews per VALIDATION_EVIDENCE_LEDGER.md).
+- **Track A Validation:** Track A core engine built; invariants proven by automated tests. **Validation gate NOT passed** (0/5 real QA reviews per VALIDATION_EVIDENCE_LEDGER.md). Track A is explicitly **NOT externally validated**.
 - **Governance & PM kit:** `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `docs/process/GITHUB_PM.md`, `.github/` issue/PR templates, `CODEOWNERS`, `scripts/github_sync.sh`.
 - **Planning docs:** `docs/vision/06_AUTONOMOUS_QA_FABRIC.md`, `docs/vision/07_MASTER_PLAN.md`, `docs/dashboard/FE_REDESIGN.md`, `docs/diagrams/DIAGRAMS.md`.
 - **Roadmap tickets:** Validation Gate epic (#79), Epoch 7 Reflector (#84) + tasks, Epochs 8–13 + FE redesign epics (#89–#97).

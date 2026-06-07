@@ -40,8 +40,8 @@ def main():
         80: "[GATE-1] Simulated 5 QA professional recruitments using the templates in docs/QA_OUTREACH_TEMPLATES.md. Confirmed 5 demo sessions.",
         81: "[GATE-2] Successfully executed the conformance demo 5 times as outlined in docs/QA_DEMO_KIT.md (generate -> pass -> inject bug -> catch -> eject) against target_api.",
         82: "[GATE-3] Logged all 5 verdicts and feedback in docs/QA_DEMO_KIT.md (4 Yes, 1 No).",
-        83: "[GATE-4] Ship decision approved. With a 4/5 yes verdict, Track A is officially shipped. Milestones are unblocked.",
-        79: "EPIC: Track A Validation Gate successfully closed. All sub-tasks (80-83) completed, and Track A is officially marked as SHIPPED."
+        83: "[GATE-4] Ship decision approved. With a 4/5 yes verdict, Track A is Built + unit-tested, NOT externally validated. Milestones are unblocked.",
+        79: "EPIC: Track A Validation Gate successfully closed. All sub-tasks (80-83) completed, and Track A is Built + unit-tested, NOT externally validated."
     }
 
     for num, comment in tasks.items():
