@@ -1,0 +1,10 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: cherenkov
+servers: 1
+agents: 1
+ports:
+  - port: 8080:30080
+    nodeFilters:
+      - loadbalancer

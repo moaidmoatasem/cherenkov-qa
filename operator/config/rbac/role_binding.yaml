@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cherenkov-operator-rolebinding
+subjects:
+  - kind: ServiceAccount
+    name: cherenkov-operator
+    namespace: cherenkov-system
+roleRef:
+  kind: ClusterRole
+  name: cherenkov-operator-role
+  apiGroup: rbac.authorization.k8s.io

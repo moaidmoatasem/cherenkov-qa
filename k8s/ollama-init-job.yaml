@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ollama-model-pull
+  namespace: cherenkov
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+spec:
+  template:
+    spec:
+      containers:
+        - name: puller
+          image: curlimages/curl
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for Ollama..."
+              until curl -s -f http://ollama:11434/api/tags; do sleep 2; done
+              echo "Ollama ready. Pulling models..."
+              curl -X POST http://ollama:11434/api/pull -d '{"name":"qwen2.5-coder:7b"}'
+              curl -X POST http://ollama:11434/api/pull -d '{"name":"deepseek-r1:8b"}'
+              echo "Models pulled successfully."
+      restartPolicy: Never
+  backoffLimit: 3

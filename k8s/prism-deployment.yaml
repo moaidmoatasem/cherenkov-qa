@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prism
+  namespace: cherenkov
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prism
+  template:
+    metadata:
+      labels:
+        app: prism
+    spec:
+      containers:
+        - name: prism
+          image: stoplight/prism:5
+          args:
+            - mock
+            - -h
+            - 0.0.0.0
+            - -m
+            - "false"
+            - /spec/petstore.json
+          ports:
+            - containerPort: 4010
+              name: http
+          volumeMounts:
+            - name: spec
+              mountPath: /spec
+              readOnly: true
+          resources:
+            limits:
+              cpu: "0.5"
+              memory: 256Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          readinessProbe:
+            tcpSocket:
+              port: 4010
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 4010
+            initialDelaySeconds: 15
+            periodSeconds: 30
+      volumes:
+        - name: spec
+          configMap:
+            name: petstore-spec
