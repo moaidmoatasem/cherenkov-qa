@@ -1,3 +1,9 @@
+---
+scope: API Test Generation
+invariants: [D7, Spec-derived]
+related_contracts: [Track A]
+---
+
 # API Test Generation Skill
 
 - INGEST depth-1 slicing
