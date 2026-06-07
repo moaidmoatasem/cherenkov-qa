@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { LayoutDashboard, ArrowRight, Zap, GraduationCap, CheckCircle } from 'lucide-react';
-import { Card, PageHeader, KpiRing, Skeleton, EmptyState } from './ui';
+import { Card, PageHeader, KpiRing, Skeleton, EmptyState, MockBadge } from './ui';
 import { fetchOverview, fetchDivergences } from '../lib/api';
 import { Divergence } from '../types';
 
@@ -70,11 +70,7 @@ export default function OverviewScreen({ onNewRun, onNavigate }: OverviewScreenP
           onClick: onNewRun,
         }}
       />
-      <div className="flex justify-end -mt-4 mb-2">
-        <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border bg-amber-500/10 text-amber-400 border-amber-500/30">
-          MOCK DATA
-        </span>
-      </div>
+      <MockBadge />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         {/* Release Readiness KPI Ring */}

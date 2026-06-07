@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 import { X, CheckCircle2, AlertTriangle, AlertCircle, Info } from 'lucide-react';
 import { useReducedMotion } from '../../lib/useReducedMotion';
 
-export type ToastType = 'success' | 'warning' | 'danger' | 'info';
+export type ToastType = 'success' | 'warning' | 'danger' | 'error' | 'info';
 
 export interface ToastItem {
   id: string;
@@ -104,6 +104,7 @@ function ToastComponent({ item, dismiss }: { item: ToastItem; dismiss: (id: stri
     success: <CheckCircle2 className="w-5 h-5 text-success-custom" />,
     warning: <AlertTriangle className="w-5 h-5 text-warning-custom" />,
     danger: <AlertCircle className="w-5 h-5 text-danger-custom" />,
+    error: <AlertCircle className="w-5 h-5 text-danger-custom" />,
     info: <Info className="w-5 h-5 text-glow-blue" />,
   };
 
@@ -111,6 +112,7 @@ function ToastComponent({ item, dismiss }: { item: ToastItem; dismiss: (id: stri
     success: 'border-success-custom/30 shadow-[0_0_10px_rgba(16,185,129,0.1)]',
     warning: 'border-warning-custom/30 shadow-[0_0_10px_rgba(245,158,11,0.1)]',
     danger: 'border-danger-custom/30 shadow-[0_0_10px_rgba(239,68,68,0.1)]',
+    error: 'border-danger-custom/30 shadow-[0_0_10px_rgba(239,68,68,0.1)]',
     info: 'border-glow-blue/30 shadow-[0_0_10px_rgba(34,211,238,0.1)]',
   };
 

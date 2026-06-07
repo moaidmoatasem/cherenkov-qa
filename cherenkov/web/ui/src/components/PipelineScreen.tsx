@@ -15,7 +15,8 @@ import {
   ChevronRight, 
   X,
   Compass,
-  Code
+  Code,
+  AlertTriangle
 } from 'lucide-react';
 import { PipelineStage, StageId } from '../types';
 
@@ -319,7 +320,16 @@ export default function PipelineScreen({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         
         {/* REGION B: LIVE MONOSPACE STREAM CODE PANEL (COL-SPAN 2) */}
-        <div className="lg:col-span-2 flex flex-col bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden min-h-[380px] h-[440px]">
+        <div className="lg:col-span-2 flex flex-col bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden min-h-[380px] h-[440px] relative">
+          
+          {!connected && (
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center z-10 text-center space-y-3">
+              <AlertTriangle className="w-10 h-10 text-amber-500 animate-pulse" />
+              <div className="text-text-primary font-semibold text-sm">Connection Lost or Initializing</div>
+              <p className="text-xs text-[#7D8DA1] max-w-sm">Waiting for live generator socket. If this persists, verify the backend is running.</p>
+            </div>
+          )}
+
           {/* Editor Header panel */}
           <div className="flex items-center justify-between bg-white/5 border-b border-white/10 px-4 py-3 shrink-0">
             <div className="flex items-center gap-2">
