@@ -106,7 +106,7 @@ The supported dashboard at `cherenkov/web/ui/` (introduced in #176) **fully supe
 
 ## Verdict
 
-**No material feature gaps.** The supported dashboard (`cherenkov/web/ui/`) is strictly more complete, honest, and production-ready. The deferred copy (`track-b-c-deferred/dashboard/`) is an obsolete AI-Studio prototype.
+**No material feature gaps.** The supported dashboard (`cherenkov/web/ui/`) is strictly more complete, honest, and built and unit-tested (not externally validated). The deferred copy (`track-b-c-deferred/dashboard/`) is an obsolete AI-Studio prototype.
 
 **Recommendation**: Delete `track-b-c-deferred/dashboard/` entirely (including `node_modules/`, `dist/`, `playbook/`, `test-results/`).
 

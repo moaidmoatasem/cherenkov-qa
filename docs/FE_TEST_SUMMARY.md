@@ -575,7 +575,7 @@ npx playwright test --debug
 3. No blocking issues in production
 4. Pass rate > 95% for full regression
 5. All screens covered with at least one test
-6. All workflows validated
+6. All workflows prepared for validation (pending QA gate)
 
 ---
 
@@ -591,8 +591,8 @@ npx playwright test --debug
 ### Test Review Process
 
 1. **Code Review:** All new tests reviewed for quality
-2. **Peer Testing:** Tests validated by another team member
-3. **CI Validation:** Tests pass in CI pipeline
+2. **Peer Testing:** Tests prepared for validation by another team member (pending)
+3. **CI Validation:** Tests configured for CI pipeline (pending validation)
 4. **Regression Check:** No existing tests broken by new tests
 
 ### Test Updates
@@ -610,7 +610,7 @@ This comprehensive test suite provides **100% coverage** of the Cherenkov QA Das
 
 - ✅ **All 16 screens** with complete functionality testing
 - ✅ **All 20+ components** with interaction testing
-- ✅ **All 8 major workflows** with end-to-end validation
+- ⏳ **All 8 major workflows** pending end-to-end validation
 - ✅ **All 8 business flows** with real-world scenarios
 - ✅ **All 10 API endpoints** with integration testing
 - ✅ **Non-functional requirements** (Accessibility, Performance, Error Handling)
