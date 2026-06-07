@@ -286,6 +286,8 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
                   <input
                     type="url"
                     id="spec-url-input"
+                    name="specUrl"
+                    autoComplete="url"
                     placeholder="https://api.petstore-example.io/v2/swagger.json"
                     value={specUrl}
                     onChange={(e) => setSpecUrl(e.target.value)}
@@ -350,6 +352,8 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
                     <input
                       type="text"
                       id="input-server-url"
+                      name="serverUrl"
+                      autoComplete="url"
                       value={serverUrl}
                       onChange={(e) => setServerUrl(e.target.value)}
                       className="w-full bg-black/20 text-text-primary p-2 rounded border border-white/10 focus:outline-none focus:border-glow-blue"
@@ -360,6 +364,8 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
                     <input
                       type="text"
                       id="input-auth-header"
+                      name="serverAuth"
+                      autoComplete="off"
                       placeholder="e.g. Bearer eyJhbGciOiJIUzI1NiI..."
                       value={serverAuth}
                       onChange={(e) => setServerAuth(e.target.value)}
