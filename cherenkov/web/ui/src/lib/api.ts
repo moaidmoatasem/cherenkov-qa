@@ -63,6 +63,16 @@ export async function checkBackendHealth(): Promise<boolean> {
 }
 
 /**
+ * Fetches the backend health info and determines if Ollama is available
+ */
+export async function fetchHealth(): Promise<{ ollama_available: boolean }> {
+  const res = await fetch(`${API_BASE}/health`, { method: 'GET' });
+  if (!res.ok) throw new Error(`Health endpoint failed: ${res.status}`);
+  const data = await res.json();
+  return { ollama_available: data.device !== 'unknown' };
+}
+
+/**
  * Ingests an OpenAPI spec file or URL to parse richness coverage segments
  */
 export async function ingestSpec(
