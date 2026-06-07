@@ -16,6 +16,7 @@ Welcome to the Agent Memory Wiki (`agent_memory/`). This directory solves "AI am
 | [known-bugs.md](known-bugs.md) | Conformance drift patterns (422 vs 400, auth expiry, contract drift) | `smoke_test*.py`, `tests/eject_fixtures/` |
 | [test-patterns.md](test-patterns.md) | Generated test code, ejected fixtures, scoring metadata | `stub/generated_tests/`, `tests/eject_fixtures/` |
 | [dashboard-states.md](dashboard-states.md) | UI component inventory, screen states, E2E test coverage | `cherenkov/web/ui/src/components/`, `dashboard_e2e.spec.ts` |
+| [snyk-findings.md](snyk-findings.md) | Snyk vulnerability scan results for agent remediation | `cherenkov/security/snyk_bridge.py` |
 | [validation-gate.md](validation-gate.md) | Gate status (0/5), demo kit, evidence ledger | `docs/QA_DEMO_KIT.md`, `docs/process/VALIDATION_EVIDENCE_LEDGER.md` |
 
 ## Global Context
