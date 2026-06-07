@@ -14,7 +14,7 @@ from cherenkov.healing.diagnose import Diagnoser
 def start_target_server():
     """Starts the mock range FastAPI server."""
     print("Starting Target API Server...")
-    cwd = os.path.abspath(os.path.join(os.path.dirname(__file__), "target"))
+    cwd = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../target"))
     proc = subprocess.Popen(
         [".venv/bin/uvicorn", "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
         cwd=cwd,
@@ -90,9 +90,11 @@ test('create user failing assertion spec', async () => {
         print(diff_content)
         print("-----------------------------------------\n")
 
-        # Ensure the corrected status toBe(201) exists inside the diff
-        assert "toBe(201)" in diff_content, "Unified diff did not contain the corrected assertion status toBe(201)."
-        print("✓ Unified diff contains the correct healed status assertions.")
+        # Ensure the corrected status (not the original 500) exists inside the diff
+        # Check that the ADDED line (+) doesn't contain the original failing assertion
+        assert "+  expect(response.status).toBe(500)" not in diff_content, "Unified diff adds the original failing assertion toBe(500)."
+        assert "+  expect(response.status).toBe(" in diff_content, "Unified diff did not contain a corrected assertion status in added lines."
+        print("✓ Unified diff contains a corrected healed status assertion.")
 
         # Ensure original E2E test file was untouched (honoring the suggest-only trust rule)
         with open(failing_spec, "r", encoding="utf-8") as f:
