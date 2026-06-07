@@ -32,7 +32,11 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
   const { toast } = useToast();
   const [tests, setTests] = useState<TestItem[]>([]);
   const testsRef = useRef(tests);
-  testsRef.current = tests;
+  
+  useEffect(() => {
+    testsRef.current = tests;
+  }, [tests]);
+  
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -81,7 +85,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
         setLoadError(err instanceof Error ? err.message : 'Failed to load review items.');
       })
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [toast]);
   const [activeFilter, setActiveFilter] = useState<'all' | 'approved' | 'review' | 'regenerating' | 'rejected'>('all');
   const [selectedTestId, setSelectedTestId] = useState<string>('test-3'); // Default to the first review item
   const [isEditing, setIsEditing] = useState(false);
@@ -108,7 +112,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
       setAiExplanation(null);
       setIsExplaining(false);
     }
-  }, [selectedTestId]);
+  }, [selectedTestId, activeTest]);
 
   // Keyboard Navigation & Actions
   useEffect(() => {

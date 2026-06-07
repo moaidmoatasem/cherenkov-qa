@@ -12,6 +12,8 @@ export type HealthState = {
   checking: boolean;
   /** force an immediate re-probe (e.g. from a Retry button) */
   refresh: () => void;
+  /** timestamp of the last health check */
+  lastCheckedAt: Date | null;
 };
 
 /**
@@ -27,6 +29,7 @@ export function useHealth(intervalMs = 10000): HealthState {
   const [demoMode, setDemoMode] = useState(false);
   const [genModel, setGenModel] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
+  const [lastCheckedAt, setLastCheckedAt] = useState<Date | null>(null);
   const tick = useRef(0);
 
   const probe = useCallback(async () => {
@@ -41,6 +44,7 @@ export function useHealth(intervalMs = 10000): HealthState {
       setOnline(false);
     } finally {
       setChecking(false);
+      setLastCheckedAt(new Date());
     }
   }, []);
 
@@ -58,5 +62,5 @@ export function useHealth(intervalMs = 10000): HealthState {
     return () => { cancelled = true; window.clearInterval(id); };
   }, [probe, intervalMs, tick.current]);
 
-  return { online, demoMode, genModel, checking, refresh };
+  return { online, demoMode, genModel, checking, refresh, lastCheckedAt };
 }

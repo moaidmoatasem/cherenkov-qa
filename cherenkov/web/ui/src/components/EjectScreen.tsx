@@ -25,6 +25,7 @@ import { useToast } from './ui/Toast';
 export default function EjectScreen() {
   const [outputPath, setOutputPath] = useState('./playwright-suite');
   const [isEjected, setIsEjected] = useState(false);
+  const [ejectError, setEjectError] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState<{ [key: string]: boolean }>({
     'playwright-suite': true,
@@ -43,12 +44,17 @@ export default function EjectScreen() {
   };
 
   const handleEject = async () => {
+    setEjectError(null);
     try {
-      await ejectSuite(outputPath);
+      const res = await ejectSuite(outputPath);
+      if (res.status === 'error' || res.status === 'failed') {
+        throw new Error(res.status || 'Unknown backend error');
+      }
       setIsEjected(true);
       toast('Eject successful — files written to ' + outputPath, 'success');
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
+      setEjectError(msg);
       toast(`Eject failed: ${msg}`, 'danger');
     }
   };
@@ -136,6 +142,16 @@ export default function EjectScreen() {
                     Ejected test files do not include external calls or black-box API requirements. Ejecution complies strictly with global Playwright frameworks using plain <span className="font-mono text-glow-bright bg-black/35 px-1 py-0.5 rounded">npx playwright test</span>. Your tests belong to you.
                   </p>
                 </div>
+
+                {ejectError && (
+                  <div className="p-4 rounded-2xl bg-danger-custom/10 border border-danger-custom/30 text-xs text-danger-custom space-y-2">
+                    <div className="flex items-center gap-2 font-bold font-mono uppercase text-[10px]">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>Eject Operation Failed</span>
+                    </div>
+                    <p className="font-mono">{ejectError}</p>
+                  </div>
+                )}
 
                 {/* File summary telemetry check */}
                 <div className="grid grid-cols-3 gap-2 bg-black/30 p-4 rounded-xl border border-white/5 text-xs text-center font-mono text-[#E6EDF3]">

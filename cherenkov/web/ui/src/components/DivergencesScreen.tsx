@@ -78,7 +78,8 @@ export default function DivergencesScreen() {
 
   // Actions
   const handleAction = async (id: string, action: 'close_with_test' | 'mark_intended' | 'reject', reason?: string) => {
-    // Optimistic UI updates
+    // Capture previous state for rollback
+    const previousState = divergences.find(d => d.id === id)?.status;
     const targetStatus: StatusType = action === 'mark_intended' ? 'rejected' : 'pending';
     
     setDivergences((prev) =>
@@ -100,8 +101,12 @@ export default function DivergencesScreen() {
       setSelectedDiv(null);
     } catch (err) {
       toast(`Action failed: unable to update divergence state.`, 'danger');
-      // Revert is done by re-fetching
-      fetchDivergences().then(setDivergences);
+      if (previousState) {
+        // Rollback state immediately
+        setDivergences((prev) =>
+          prev.map((d) => (d.id === id ? { ...d, status: previousState } : d))
+        );
+      }
     }
   };
 

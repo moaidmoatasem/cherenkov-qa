@@ -5,6 +5,8 @@ interface OfflineOverlayProps {
   checking: boolean;
   /** user asked to retry */
   onRetry: () => void;
+  /** timestamp of the last health check */
+  lastCheckedAt?: Date | null;
 }
 
 /**
@@ -15,7 +17,7 @@ interface OfflineOverlayProps {
  * so a QA user never acts on stale or missing data without knowing the engine
  * is offline.
  */
-export default function OfflineOverlay({ checking, onRetry }: OfflineOverlayProps) {
+export default function OfflineOverlay({ checking, onRetry, lastCheckedAt }: OfflineOverlayProps) {
   return (
     <div
       role="alertdialog"
@@ -40,9 +42,16 @@ export default function OfflineOverlay({ checking, onRetry }: OfflineOverlayProp
             : 'The FastAPI review engine is unreachable, so live data cannot load. Start it, then retry:'}
         </p>
         {!checking && (
-          <pre className="text-left text-[11px] font-mono bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-text-primary overflow-x-auto">
-            python3 cherenkov.py review --port 8000
-          </pre>
+          <div className="space-y-4">
+            <pre className="text-left text-[11px] font-mono bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-text-primary overflow-x-auto">
+              python3 cherenkov.py review --port 8000
+            </pre>
+            {lastCheckedAt && (
+              <p className="text-[10px] text-[#7D8DA1] font-mono">
+                Last checked at: {lastCheckedAt.toLocaleTimeString()}
+              </p>
+            )}
+          </div>
         )}
         <button
           onClick={onRetry}

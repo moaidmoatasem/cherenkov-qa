@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Layers, HelpCircle, DollarSign, Cpu } from 'lucide-react';
+import { Layers, HelpCircle, DollarSign, Cpu, Clock } from 'lucide-react';
 import { Project } from '../types';
 
 interface TopBarProps {
@@ -28,6 +28,20 @@ export default function TopBar({
   onLiveClick,
   demoMode
 }: TopBarProps) {
+  
+  const [sessionTime, setSessionTime] = React.useState(0);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => setSessionTime(t => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
   
   const getTabLabel = (tab: string) => {
     switch (tab) {
@@ -99,9 +113,9 @@ export default function TopBar({
       <div className="flex items-center gap-6">
         {/* Token Cost Summary */}
         <div className="flex items-center gap-4 bg-black/30 border border-white/10 px-3.5 py-1.5 rounded-md font-mono text-xs">
-          <div className="flex items-center gap-1 text-[#7D8DA1]">
+          <div className="flex items-center gap-1 text-[#7D8DA1]" title="Demo telemetry display">
             <DollarSign className="w-3 h-3 text-[#3FB950]" />
-            <span>SESSION COST:</span>
+            <span>SESSION COST (DEMO):</span>
           </div>
           <span className="text-glow-bright font-semibold">${totalSpentEstimated.toFixed(2)}</span>
           <span className="text-white/10">|</span>
@@ -120,6 +134,14 @@ export default function TopBar({
             <span className="text-xs font-mono font-medium text-text-primary uppercase">{status}</span>
           </div>
         </div>
+
+        {/* Session Timer */}
+        <div className="flex items-center gap-1.5 text-xs font-mono text-[#7D8DA1]">
+          <Clock className="w-3.5 h-3.5" />
+          <span>{formatTime(sessionTime)}</span>
+        </div>
+
+        {/* Notifications - Removed to maintain D7 honesty (no fake text) */}
 
         {/* Dev Reference Utility */}
         <button
