@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   FolderGit2, 
   Settings, 
@@ -19,7 +19,10 @@ import {
   Sparkles,
   Download,
   Shield,
-  Brain
+  Brain,
+  ChevronDown,
+  ChevronRight,
+  Star
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
 import { Project } from '../types';
@@ -55,6 +58,31 @@ export default function Sidebar({
   selectedProjectId,
   onSelectProject
 }: SidebarProps) {
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    'OVERVIEW': true,
+    'ENGINE': true,
+    'AUTHOR': true,
+    'SIGNALS': true,
+    'OPERATE': true,
+    'LEARN': true
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+
+  const toggleSection = (label: string) => {
+    setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
+  };
+
+  const toggleFavorite = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFavorites(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
   
   const sections: NavSection[] = [
     {
@@ -125,47 +153,78 @@ export default function Sidebar({
           </button>
         </div>
 
+        {/* Search Filter */}
+        <div className="px-3 lg:px-4 pb-2 shrink-0 hidden lg:block">
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-[#7D8DA1]" />
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-black/30 text-text-primary text-xs pl-8 pr-2 py-1.5 rounded border border-white/10 focus:outline-none focus:border-glow-blue transition"
+            />
+          </div>
+        </div>
+
         {/* Nav Links */}
         <nav className="flex-1 px-2 py-3 space-y-4 overflow-y-auto">
-          {sections.map((section) => (
-            <div key={section.label} className="space-y-1">
-              <span className="hidden lg:block px-4 text-[10px] font-bold font-mono tracking-widest text-[#7D8DA1]/60">
-                {section.label}
-              </span>
-              <div className="space-y-0.5">
-                {section.items.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      id={`nav-item-${item.id}`}
-                      onClick={() => setActiveTab(item.id)}
-                      title={`${item.label} — ${item.desc}`}
-                      className={`w-full group px-3 lg:px-4 py-2.5 rounded-lg flex items-center lg:items-start gap-3 transition-all duration-200 text-left relative focus:outline-none focus:ring-1 focus:ring-glow-blue/50 cursor-pointer ${
-                        isActive 
-                          ? 'bg-white/10 text-glow-bright' 
-                          : 'text-[#7D8DA1] hover:text-[#E6EDF3] hover:bg-white/5'
-                      }`}
-                    >
-                      {isActive && (
-                        <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-glow-blue rounded-r shadow-[0_0_12px_rgba(34,211,238,0.9)]" />
-                      )}
-                      <Icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-glow-bright' : 'text-[#7D8DA1] group-hover:text-glow-bright'}`} />
-                      <div className="hidden lg:block min-w-0">
-                        <span className={`block text-sm font-medium ${isActive ? 'font-semibold text-text-primary text-glow-bright' : 'text-[#7D8DA1]'}`}>
-                          {item.label}
-                        </span>
-                        <span className="block text-[10px] text-[#7D8DA1]/75 mt-0.5 font-normal leading-tight truncate">
-                          {item.desc}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
+          {sections.map((section) => {
+            const filteredItems = section.items.filter(item => 
+              item.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
+              item.desc.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            
+            if (filteredItems.length === 0 && searchQuery) return null;
+
+            const isExpanded = expandedSections[section.label];
+
+            return (
+              <div key={section.label} className="space-y-1">
+                <button 
+                  onClick={() => toggleSection(section.label)}
+                  className="w-full hidden lg:flex items-center justify-between px-4 text-[10px] font-bold font-mono tracking-widest text-[#7D8DA1]/60 hover:text-[#7D8DA1] transition cursor-pointer"
+                >
+                  <span>{section.label}</span>
+                  {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                </button>
+                {isExpanded && (
+                  <div className="space-y-0.5">
+                    {filteredItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = activeTab === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          id={`nav-item-${item.id}`}
+                          onClick={() => setActiveTab(item.id)}
+                          title={`${item.label} — ${item.desc}`}
+                          className={`w-full group px-3 lg:px-4 py-2.5 rounded-lg flex items-center lg:items-start gap-3 transition-all duration-200 text-left relative focus:outline-none focus:ring-1 focus:ring-glow-blue/50 cursor-pointer ${
+                            isActive 
+                              ? 'bg-white/10 text-glow-bright' 
+                              : 'text-[#7D8DA1] hover:text-[#E6EDF3] hover:bg-white/5'
+                          }`}
+                        >
+                          {isActive && (
+                            <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-glow-blue rounded-r shadow-[0_0_12px_rgba(34,211,238,0.9)]" />
+                          )}
+                          <Icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-glow-bright' : 'text-[#7D8DA1] group-hover:text-glow-bright'}`} />
+                          <div className="hidden lg:block min-w-0">
+                            <span className={`block text-sm font-medium ${isActive ? 'font-semibold text-text-primary text-glow-bright' : 'text-[#7D8DA1]'}`}>
+                              {item.label}
+                            </span>
+                            <span className="block text-[10px] text-[#7D8DA1]/75 mt-0.5 font-normal leading-tight truncate">
+                              {item.desc}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </nav>
       </div>
 
@@ -176,22 +235,33 @@ export default function Sidebar({
           <label htmlFor="project-selector" className="hidden lg:block text-[9px] font-bold font-mono tracking-wider uppercase text-[#7D8DA1]">
             Active Workspace
           </label>
-          <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg p-1.5 lg:p-2">
-            <FolderGit2 className="w-4 h-4 text-glow-blue shrink-0" />
-            <select
-              id="project-selector"
-              name="project-selector"
-              aria-label="Active Workspace"
-              value={selectedProjectId || ''}
-              onChange={(e) => onSelectProject(e.target.value)}
-              className="hidden lg:block bg-transparent text-xs text-text-primary focus:outline-none w-full cursor-pointer font-sans"
-            >
-              {projects.map((p) => (
-                <option key={p.id} value={p.id} className="bg-bg-base text-text-primary">
-                  {p.name}
-                </option>
-              ))}
-            </select>
+          <div className="relative bg-white/5 border border-white/10 rounded-lg hidden lg:block">
+            <div className="flex items-center gap-2 p-1.5">
+              <FolderGit2 className="w-4 h-4 text-glow-blue shrink-0 ml-1" />
+              <select
+                id="project-selector"
+                name="project-selector"
+                aria-label="Active Workspace"
+                value={selectedProjectId || ''}
+                onChange={(e) => onSelectProject(e.target.value)}
+                className="bg-transparent text-xs text-text-primary focus:outline-none w-full cursor-pointer font-sans appearance-none pr-6"
+              >
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id} className="bg-bg-base text-text-primary">
+                    {favorites.has(p.id) ? '★ ' : ''}{p.name}
+                  </option>
+                ))}
+              </select>
+              {selectedProjectId && (
+                <button 
+                  onClick={(e) => toggleFavorite(selectedProjectId, e)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded text-[#7D8DA1] hover:text-yellow-400 transition"
+                  title="Toggle Favorite"
+                >
+                  <Star className={`w-3.5 h-3.5 ${favorites.has(selectedProjectId) ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -246,7 +316,7 @@ export default function Sidebar({
             </span>
             <span className="hidden lg:inline text-text-primary">{status === 'Live' ? 'LIVE' : 'IDLE'}</span>
           </div>
-          <span className="hidden lg:inline text-[10px] text-[#334C5A]">PORT 3000</span>
+          <span className="hidden lg:inline text-[10px] text-[#334C5A]">PORT {import.meta.env.VITE_PORT || '3000'}</span>
         </div>
       </div>
     </aside>

@@ -54,7 +54,7 @@ function InnerApp() {
   }, []);
 
   // Backend liveness — single source of truth for the honest offline state (#221).
-  const { online, demoMode, checking, refresh } = useHealth();
+  const { online, demoMode, checking, refresh, lastCheckedAt } = useHealth();
 
   // Autonomy settings with local storage persistence
   const [autonomy, setAutonomyState] = useState<'Assisted' | 'Augmented' | 'Agentic'>(() => {
@@ -224,7 +224,7 @@ function InnerApp() {
         )}
 
         {/* Honest backend-offline state (#221) — blocks interaction on stale/missing data */}
-        {!online && <OfflineOverlay checking={checking} onRetry={refresh} />}
+        {!online && <OfflineOverlay checking={checking} onRetry={refresh} lastCheckedAt={lastCheckedAt} />}
 
         {/* LEFT SIDEBAR CONTROLS */}
         <Sidebar
