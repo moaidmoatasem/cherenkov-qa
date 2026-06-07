@@ -53,7 +53,7 @@ These are **true-up** items: the feature was claimed done, the substance needs f
 ## 3. Things that are genuinely done (so we stop re-litigating them)
 
 - **The bet:** 5 reproduced divergences on live Swagger Petstore v3 — `docs/proof_run/PROOF_RUN.md`.
-- **The gate:** passed 4/5 with real QA people — HANDOVER §5, `QA_DEMO_KIT.md`. (Make the evidence machine-auditable: #153.)
+- **The gate:** pending validation — see HANDOVER §5 and VALIDATION_EVIDENCE_LEDGER.md. (Make the evidence machine-auditable: #153.)
 - **HITL concurrency:** atomic SQL gatekeeper, race-proven 10/10 + 5/5.
 - **E9 vision:** concrete `VLMProvider` with Ollama/OpenAI backends — not a stub.
 - **Branch sprawl:** already pruned 30+ → 2 (#130 closed).
