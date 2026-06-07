@@ -95,7 +95,7 @@ export default function App() {
         body: JSON.stringify({ mode: 'demo' })
       });
     } catch(e) {
-      console.warn("Demo enable failed", e);
+      toast(`Demo enable failed: ${(e as Error).message}`, 'danger');
     }
   };
 
