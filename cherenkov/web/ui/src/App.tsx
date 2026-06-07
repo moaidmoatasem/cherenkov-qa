@@ -30,10 +30,17 @@ import OnboardingWizard from './components/OnboardingWizard';
 import { Project, EndpointRichness } from './types';
 import { runPipeline, fetchProjects } from './lib/api';
 import { useHealth } from './lib/useHealth';
+import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
+import { useAppStore } from './stores/useAppStore';
 
-export default function App() {
+function InnerApp() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>('projects');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const activeTab = (location.pathname === '/' || location.pathname === '/index.html') ? 'projects' : location.pathname.replace(/^[/]+/, '');
+  const setActiveTab = (tab: string) => {
+    navigate(tab === 'projects' ? '/' : `/${tab}`);
+  };
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [status, setStatus] = useState<'Live' | 'Idle'>('Idle');
@@ -209,7 +216,7 @@ export default function App() {
           />
         )}
 
-        {showTour && (
+        {showTour && !showOnboarding && (
           <GuidedTour 
             onClose={handleCloseTour} 
             onNavigate={setActiveTab} 
@@ -363,5 +370,13 @@ export default function App() {
         </Drawer>
 
       </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <InnerApp />
+    </BrowserRouter>
   );
 }
