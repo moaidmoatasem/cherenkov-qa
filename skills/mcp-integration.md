@@ -113,3 +113,4 @@ The YAML definition at `cherenkov-mcp.yaml` references the `cherenkov-mcp:latest
 - `docs/GETTING_STARTED.md` — user-facing MCP docs
 - `Dockerfile.mcp` — Slim MCP server Docker image
 - `cherenkov-mcp.yaml` — MCP server entry spec for gateway profiles
+- `docs/vision/12_DOCKER_AI_HORIZON.md` — Strategic Docker AI integration plan (sandboxes, governance, model runner, Compose agents)
