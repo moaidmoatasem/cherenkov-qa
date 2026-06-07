@@ -14,7 +14,7 @@ from cherenkov.execution.visual_diff import VisualDiffEngine
 def start_target_server():
     """Starts the mock range FastAPI server."""
     print("Starting Target API Server...")
-    cwd = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../target"))
+    cwd = os.path.abspath(os.path.join(os.path.dirname(__file__), "../target"))
     proc = subprocess.Popen(
         [".venv/bin/uvicorn", "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
         cwd=cwd,
@@ -77,5 +77,11 @@ def main():
             server_proc.terminate()
             server_proc.wait()
 
-if __name__ == "__main__":
-    main()
+
+def test_legacy_visual():
+    try:
+        main()
+    except SystemExit as e:
+        if e.code != 0:
+            raise AssertionError(f"Test failed with exit code {e.code}")
+

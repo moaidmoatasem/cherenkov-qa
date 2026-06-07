@@ -19,6 +19,14 @@ Welcome to the Agent Memory Wiki (`agent_memory/`). This directory solves "AI am
 | [snyk-findings.md](snyk-findings.md) | Snyk vulnerability scan results for agent remediation | `cherenkov/security/snyk_bridge.py` |
 | [validation-gate.md](validation-gate.md) | Gate status (0/5), demo kit, evidence ledger | `docs/QA_DEMO_KIT.md`, `docs/process/VALIDATION_EVIDENCE_LEDGER.md` |
 
+## Agent Skills (MCP Tools)
+The following skills have been re-integrated from Track B/C and are exposed via MCP for openCode clients and autonomous agents:
+- [Visual Diff Baseline](../skills/visual-diff.md)
+- [K6 Perf Runner](../skills/k6-perf.md)
+- [RAG Index Query](../skills/rag-query.md)
+- [Jira Exporter](../skills/jira-exporter.md)
+- [MENA Compliance Scanner](../skills/mena-compliance.md)
+
 ## Global Context
 *   **Current Framework Focus**: `PydanticAI` for orchestration, `DeepEval` for testing, `Logfire` for tracing.
 *   **Vision Model**: Ready for MiniGPT/Qwen-VL integration for UI audits.
