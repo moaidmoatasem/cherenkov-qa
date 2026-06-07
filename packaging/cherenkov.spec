@@ -9,6 +9,9 @@ a = Analysis(
     datas=[
         ('../cherenkov/web/ui/dist', 'cherenkov/web/ui/dist'),
         ('../cherenkov', 'cherenkov'),
+        ('../prompts', 'prompts'),
+        ('../stub', 'stub'),
+        ('../tests', 'tests'),
     ],
     hiddenimports=[
         'uvicorn',
