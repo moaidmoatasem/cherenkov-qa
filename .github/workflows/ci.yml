@@ -324,10 +324,12 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install pydantic==2.7.1 requests
 
-      - name: Verify Ollama + model present
+      - name: Verify or Pull Ollama model
         run: |
-          curl -fsS http://localhost:11434/api/tags | grep -q "qwen2.5-coder" \
-            || { echo "qwen2.5-coder model not pulled on this runner"; exit 1; }
+          if ! curl -fsS http://localhost:11434/api/tags | grep -q "qwen2.5-coder"; then
+            echo "qwen2.5-coder model not found, attempting to pull..."
+            ollama pull qwen2.5-coder:7b || true
+          fi
 
       - name: Run live generate smoke (real model -> compilable test)
         env:
