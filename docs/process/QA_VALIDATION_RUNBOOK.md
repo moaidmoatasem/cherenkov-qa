@@ -300,7 +300,7 @@ Ask each reviewer to:
 | 5-QA structured verdicts | [.cherenkov/evidence/validation_gate_pass.json](../../.cherenkov/evidence/validation_gate_pass.json) |
 
 **Review and Verification:**
-To verify the auditability of the pass, you can read the structured JSON verdicts directly from [.cherenkov/evidence/validation_gate_pass.json](../../.cherenkov/evidence/validation_gate_pass.json). It maps directly to `validate/v1` `ValidationReport` format and ensures 4/5 YES votes are inspectable.
+To verify the auditability of the pass, you can read the structured JSON verdicts directly from [.cherenkov/evidence/validation_gate_pass.json](../../.cherenkov/evidence/validation_gate_pass.json). It maps directly to `validate/v1` `ValidationReport` format and ensures validation votes are inspectable.
 attach directly to GitHub Issue #115 as a comment.
 
 ---

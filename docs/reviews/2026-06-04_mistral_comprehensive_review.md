@@ -36,7 +36,7 @@
 - **Medium**: No license file
 
 ### 🎯 Recommendation
-**Ready for open-source release** after addressing P0 critical issues. Track A is production-grade and can be validated immediately with minor refinements.
+**Ready for open-source release** after addressing P0 critical issues. Track A is built and unit-tested and can be externally validated immediately with minor refinements.
 
 ---
 
@@ -699,7 +699,7 @@ Perf Baselines → SQLite database
 | Milestone | Status | Timeframe |
 |-----------|--------|-----------|
 | Track A complete | ✅ Done | 0 months |
-| QA validation | ✅ 4/5 passed | 0 months |
+| QA validation | ❌ Pending validation | 0 months |
 | Track B un-quarantine | ⏳ Planned | 3-6 months |
 | Track C un-quarantine | ⏳ Planned | 6-12 months |
 | First revenue | ⏳ | 6-12 months |
@@ -1057,7 +1057,7 @@ Perf Baselines → SQLite database
 
 ### ✅ What's Great
 
-CHERENKOV QA is a **well-architected, production-ready API conformance test generator** with several **unique differentiators** that set it apart from competitors:
+CHERENKOV QA is a **well-architected API conformance test generator (built and unit-tested)** with several **unique differentiators** that set it apart from competitors:
 
 1. **🏆 Anti-Lock-In Design**: The eject feature produces **100% vanilla Playwright + openapi-fetch** tests with zero CHERENKOV dependency. This is a **major selling point** for enterprises concerned about vendor lock-in.
 
@@ -1117,7 +1117,7 @@ While the technical foundation is **excellent (A-)**, there are **critical gaps*
 - Low operating costs, excellent margins
 
 **Time-to-Market**: ⭐⭐⭐⭐⭐ **Immediate**
-- Track A is **production-ready now**
+- Track A is **built and unit-tested, pending external validation**
 - Can ship within **1 month** after P0 fixes
 
 ### 🎯 Final Recommendation
