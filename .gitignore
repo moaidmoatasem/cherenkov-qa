@@ -36,3 +36,5 @@ stub/results.json
 stub/test-results/
 stub/node_modules/
 *.trace.zip
+packaging/build/
+packaging/dist/
