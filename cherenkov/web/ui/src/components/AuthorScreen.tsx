@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Compass, Sparkles, Terminal, Download, CheckCircle2, Play, Loader2, AlertTriangle } from 'lucide-react';
-import { Card, PageHeader, EmptyState, MockBadge } from './ui';
+import { Card, PageHeader } from './ui';
 import { fetchMemory } from '../lib/api';
 import { useToast } from './ui/Toast';
 import { runPipeline } from '../lib/api';
@@ -33,7 +33,7 @@ export default function AuthorScreen() {
     setRunError(null);
 
     try {
-      const result = await runPipeline({ spec_path: 'stub/target_spec.json', demo_mode: true });
+      const result = await runPipeline({ spec_path: 'stub/target_spec.json', intent });
       setRunResult(result);
       setIsRunning(false);
       setIsDone(true);
@@ -61,7 +61,6 @@ export default function AuthorScreen() {
 
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="author-screen">
-      <MockBadge />
       <PageHeader
         title="Author by Intent"
         description="Transform natural language test goals into active client browser runs and eject standalone Playwright specifications."
