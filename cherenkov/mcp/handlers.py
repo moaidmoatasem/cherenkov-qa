@@ -21,16 +21,19 @@ Suggest-only: validate_run_gate returns a report, never auto-applies anything.
 from __future__ import annotations
 
 import json
+import os
 from typing import Any
 
 from pydantic import ValidationError
 
 from cherenkov.hitl.store import HitlQueue
 from cherenkov.validate.gate import ValidationGate
+from cherenkov.mcp.policy import PolicyEngine
 from cherenkov.mcp.contracts import (
     HitlApproveInput,
     HitlListInput,
     HitlRejectInput,
+    ValidateRunGateInput,
     INVALID_PARAMS,
     MCPContent,
     MCPResource,
@@ -43,6 +46,10 @@ from cherenkov.mcp.contracts import (
     MCPToolListResult,
     MCPToolParam,
 )
+
+
+# ── Policy engine instance ─────────────────────────────────────────────────────
+_policy = PolicyEngine()
 
 
 # ── Resource catalogue ────────────────────────────────────────────────────────
@@ -123,7 +130,36 @@ TOOLS: list[MCPTool] = [
         name="validate_run_gate",
         description=(
             "Run the Validation Gate in report-only mode. Returns a validate/v1 "
-            "ValidationReport. Suggest-only: never auto-commits or auto-applies anything."
+            "ValidationReport. Suggest-only: never auto-commits or auto-applies anything. "
+            "Optional provider param selects sandbox backend."
+        ),
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "provider": MCPToolParam(
+                    type="string",
+                    description='Sandbox provider: "filesystem" (default) or "docker"',
+                ),
+                "target_url": MCPToolParam(
+                    type="string",
+                    description="Optional target API URL",
+                ),
+            },
+            required=[],
+        ),
+    ),
+    MCPTool(
+        name="policy_list",
+        description=(
+            "List current policy allow/block rules for all servers and profiles. "
+            "Reads from cherenkov-policy.json."
+        ),
+        inputSchema=MCPToolInputSchema(properties={}, required=[]),
+    ),
+    MCPTool(
+        name="policy_reload",
+        description=(
+            "Reload cherenkov-policy.json from disk. "
+            "Updates policy rules without restarting the server."
         ),
         inputSchema=MCPToolInputSchema(properties={}, required=[]),
     ),
@@ -255,9 +291,17 @@ def handle_tools_list(params: dict[str, Any]) -> dict[str, Any]:
 
 
 def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
-    """Route a tools/call request to the correct handler."""
+    """Route a tools/call request to the correct handler with policy enforcement."""
     name: str = params.get("name", "")
     arguments: dict[str, Any] = params.get("arguments", {}) or {}
+    server_name: str = params.get("server", "cherenkov")
+    profile: str = os.environ.get("MCP_PROFILE", "full-dev")
+
+    if name not in ("policy_list", "policy_reload"):
+        if not _policy.is_tool_allowed(profile, server_name, name):
+            return _err_content(
+                f"Tool '{name}' blocked by policy for server '{server_name}' in profile '{profile}'."
+            ).model_dump()
 
     try:
         if name == "hitl_list":
@@ -278,6 +322,10 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_export_jira(arguments).model_dump()
         if name == "scan_mena_compliance":
             return _tool_scan_mena(arguments).model_dump()
+        if name == "policy_list":
+            return _tool_policy_list(arguments).model_dump()
+        if name == "policy_reload":
+            return _tool_policy_reload(arguments).model_dump()
     except ValidationError as exc:
         return _err_content(f"Invalid input: {exc}").model_dump()
     except Exception as exc:
@@ -319,15 +367,33 @@ def _tool_hitl_reject(args: dict[str, Any]) -> MCPToolCallResult:
 def _tool_validate_gate(args: dict[str, Any]) -> MCPToolCallResult:
     """
     Runs ValidationGate in report-only mode.
+    Supports optional provider param for sandbox backend selection.
     Suggest-only: returns a report dict; never auto-commits or auto-applies.
     D7: does not touch any test file.
     """
     try:
+        inp = ValidateRunGateInput.model_validate(args)
         gate = ValidationGate()
         report = gate.run()
-        return _ok_content(report.model_dump())
+        result = report.model_dump()
+        if inp.provider:
+            result["sandbox_provider"] = inp.provider
+        return _ok_content(result)
     except Exception as exc:
         return _err_content(f"ValidationGate error: {exc}")
+
+
+# ── Policy tools ──────────────────────────────────────────────────────────────
+
+def _tool_policy_list(args: dict[str, Any]) -> MCPToolCallResult:
+    """Return current policy rules for all profiles."""
+    return _ok_content(_policy.list_policy())
+
+
+def _tool_policy_reload(args: dict[str, Any]) -> MCPToolCallResult:
+    """Reload policy from cherenkov-policy.json."""
+    _policy.reload()
+    return _ok_content({"status": "reloaded", "policy": _policy.list_policy()})
 
 
 # ── Track B/C tools ───────────────────────────────────────────────────────────
