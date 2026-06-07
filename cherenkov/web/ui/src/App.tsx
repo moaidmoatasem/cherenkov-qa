@@ -25,6 +25,7 @@ import GovernanceScreen from './components/GovernanceScreen';
 import GuidedTour from './components/GuidedTour';
 import { Drawer, OfflineOverlay } from './components/ui';
 import { useToast } from './components/ui/Toast';
+import OnboardingWizard from './components/OnboardingWizard';
 
 import { Project, EndpointRichness } from './types';
 import { runPipeline, fetchProjects } from './lib/api';
@@ -74,6 +75,28 @@ export default function App() {
   const handleCloseTour = () => {
     setShowTour(false);
     localStorage.setItem('[copilot] tour_seen', 'true');
+  };
+
+  // Onboarding Wizard state
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return localStorage.getItem('[cherenkov] onboarding_seen') !== 'true';
+  });
+
+  const handleCompleteOnboarding = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('[cherenkov] onboarding_seen', 'true');
+  };
+
+  const handleEnableDemo = async () => {
+    try {
+      await fetch('http://localhost:8000/api/v1/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'demo' })
+      });
+    } catch(e) {
+      console.warn("Demo enable failed", e);
+    }
   };
 
   // Retrieve current active project configuration
@@ -178,6 +201,13 @@ export default function App() {
           projects={projects}
           onSelectProject={handleSelectProject}
         />
+
+        {showOnboarding && (
+          <OnboardingWizard
+            onComplete={handleCompleteOnboarding}
+            onEnableDemo={handleEnableDemo}
+          />
+        )}
 
         {showTour && (
           <GuidedTour 
