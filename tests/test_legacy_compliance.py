@@ -15,7 +15,7 @@ def start_target_server():
     print("Starting Target API Server...")
     cwd = os.path.abspath(os.path.join(os.path.dirname(__file__), "../target"))
     proc = subprocess.Popen(
-        [".venv/bin/uvicorn", "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
+        [sys.executable, "-m", "uvicorn", "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
         cwd=cwd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE

@@ -31,8 +31,9 @@ class VisualDiffEngine:
         if not snapshots_exist:
             self.log.info("visual baseline snapshot not found, initializing baseline using --update-snapshots")
             # Enforce snapshot generation via Playwright --update-snapshots
+            npx_cmd = "npx.cmd" if os.name == "nt" else "npx"
             cmd = [
-                "npx", "playwright", "test",
+                npx_cmd, "playwright", "test",
                 "generated_tests/visual_regression_baseline_ui.spec.ts",
                 "--update-snapshots"
             ]
@@ -49,8 +50,9 @@ class VisualDiffEngine:
             self.log.info("visual baseline snapshot successfully initialized", path=self.snapshots_dir)
 
         # Run validation
+        npx_cmd = "npx.cmd" if os.name == "nt" else "npx"
         cmd = [
-            "npx", "playwright", "test",
+            npx_cmd, "playwright", "test",
             "generated_tests/visual_regression_baseline_ui.spec.ts",
             "--reporter=json"
         ]
