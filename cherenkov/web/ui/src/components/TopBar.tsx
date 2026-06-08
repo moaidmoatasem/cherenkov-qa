@@ -6,6 +6,7 @@
 import React from 'react';
 import { Layers, HelpCircle, DollarSign, Cpu, Clock } from 'lucide-react';
 import { Project } from '../types';
+import HealthWidget from './HealthWidget';
 
 interface TopBarProps {
   currentProject: Project | null;
@@ -134,6 +135,9 @@ export default function TopBar({
             <span className="text-xs font-mono font-medium text-text-primary uppercase">{status}</span>
           </div>
         </div>
+
+        {/* Health Widget */}
+        <HealthWidget />
 
         {/* Session Timer */}
         <div className="flex items-center gap-1.5 text-xs font-mono text-[#7D8DA1]">

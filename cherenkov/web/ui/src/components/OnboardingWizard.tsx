@@ -19,7 +19,7 @@ export default function OnboardingWizard({ onComplete, onEnableDemo }: Onboardin
         const h = await fetchHealth();
         if (mounted) {
           setEngineStatus('online');
-          setOllamaStatus(h.ollama_available ? 'found' : 'missing');
+          setOllamaStatus(h.device !== 'unknown' ? 'found' : 'missing');
         }
       } catch (e) {
         if (mounted) setEngineStatus('offline');

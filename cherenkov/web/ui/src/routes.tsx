@@ -14,8 +14,10 @@ export const ROUTES = {
   governance: '/governance',
   memory: '/memory',
   chat: '/chat',
+  knowledge: '/knowledge',
   settings: '/settings',
   uiKit: '/ui-kit',
+  devices: '/devices',
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
