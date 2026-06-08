@@ -3,13 +3,16 @@ import { LayoutDashboard, ArrowRight, Zap, GraduationCap, CheckCircle } from 'lu
 import { Card, PageHeader, KpiRing, Skeleton, EmptyState, MockBadge } from './ui';
 import { fetchOverview, fetchDivergences } from '../lib/api';
 import { Divergence } from '../types';
+import { useToast } from './ui/Toast';
 
 interface OverviewScreenProps {
   onNewRun: () => void;
+  onPilotRun: () => void;
   onNavigate: (tab: string) => void;
 }
 
-export default function OverviewScreen({ onNewRun, onNavigate }: OverviewScreenProps) {
+export default function OverviewScreen({ onNewRun, onPilotRun, onNavigate }: OverviewScreenProps) {
+  const { toast } = useToast();
   const [overview, setOverview] = useState<any>({ falsePositiveRate: 0, recentLearnings: [] });
   const [divergences, setDivergences] = useState<Divergence[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,6 +38,11 @@ export default function OverviewScreen({ onNewRun, onNavigate }: OverviewScreenP
   const topDivergences = useMemo(() => {
     return divergences.slice(0, 3);
   }, [divergences]);
+
+  const handleNewRunClick = () => {
+    toast('Initiating discovery scan...', 'info');
+    onNewRun();
+  };
 
   const readinessScore = useMemo(() => {
     if (divergences.length === 0) return 100;
@@ -67,9 +75,18 @@ export default function OverviewScreen({ onNewRun, onNavigate }: OverviewScreenP
         description="Core metrics tracking API safety, active divergences, and Reflector self-healing optimizations."
         primaryAction={{
           label: 'Run Discovery Scan',
-          onClick: onNewRun,
+          onClick: handleNewRunClick,
         }}
       />
+      <div className="flex justify-end mt-2">
+        <button
+          onClick={onPilotRun}
+          id="btn-pilot-run"
+          className="px-4 py-1.5 rounded-md border border-white/10 text-xs font-mono font-semibold text-[#7D8DA1] hover:text-[#E6EDF3] hover:bg-white/5 transition cursor-pointer"
+        >
+          Pilot Run
+        </button>
+      </div>
       <MockBadge />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">

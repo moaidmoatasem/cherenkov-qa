@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Project } from '../types';
 import CherenkovLogo from './CherenkovLogo';
+import { MockBadge } from './ui';
 
 interface ProjectsScreenProps {
   projects: Project[];
@@ -63,6 +64,8 @@ export default function ProjectsScreen({
 
   return (
     <div className="p-8 h-full overflow-y-auto space-y-8 grid-bg bg-transparent flex flex-col relative z-10" id="projects-screen">
+      <MockBadge />
+
       {/* Intro Header Row */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">

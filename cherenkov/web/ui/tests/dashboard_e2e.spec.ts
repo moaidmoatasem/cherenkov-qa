@@ -482,7 +482,65 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     await expect(page.getByText('idiom').first()).toBeVisible();
   });
 
-  // ── 23. Chat Screen ──────────────────────────────────────────────
+  // ── 24. Pilot Run Button (Overview) ───────────────────────────────
+  test('Overview: Pilot Run button triggers POST /api/v1/run with demo intent', async ({ page }) => {
+    // Setup route tracking for the run POST
+    let runPayload: any = null;
+    await page.route('**/api/v1/run', async (route) => {
+      if (route.request().method() === 'POST') {
+        runPayload = JSON.parse(route.request().postData() || '{}');
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ run_id: 'pilot-run-id', status: 'started' }) });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+      }
+    });
+
+    await page.click('#nav-item-overview');
+    await page.waitForSelector('#overview-screen');
+
+    const pilotBtn = page.locator('#btn-pilot-run');
+    await expect(pilotBtn).toBeVisible();
+    await expect(pilotBtn).toContainText('Pilot Run');
+    await pilotBtn.click();
+
+    await page.waitForTimeout(300);
+    expect(runPayload).not.toBeNull();
+    expect(runPayload.spec_path).toBe('stub/openapi.yaml');
+    expect(runPayload.demo_mode).toBe(true);
+  });
+
+  // ── 26. Toast Notifications ────────────────────────────────────────
+  test('Toast notifications on user actions across screens', async ({ page }) => {
+    // Eject screen: clicking eject shows success toast
+    await page.click('#nav-item-eject');
+    await page.waitForSelector('#eject-screen');
+    await page.locator('#btn-confirm-eject').click();
+    await page.waitForTimeout(300);
+    const ejectToast = page.locator('[role="status"]').first();
+    await expect(ejectToast).toBeVisible();
+    await expect(ejectToast).toContainText('Eject successful');
+
+    // Overview screen: click Run Discovery Scan shows info toast
+    await page.click('#nav-item-overview');
+    await page.waitForSelector('#overview-screen');
+    await page.locator('button:has-text("Run Discovery Scan")').first().click();
+    await page.waitForSelector('#setup-screen');
+    await page.waitForTimeout(200);
+    const navToast = page.locator('[role="status"]').first();
+    await expect(navToast).toBeVisible();
+    await expect(navToast).toContainText('Initiating discovery scan');
+
+    // Setup screen: load presets then generate shows info toast
+    await page.locator('#btn-shortcut-petstore').click();
+    await page.waitForTimeout(500);
+    await page.locator('#btn-launch-generation').click();
+    await page.waitForTimeout(200);
+    const genToast = page.locator('[role="status"]').first();
+    await expect(genToast).toBeVisible();
+    await expect(genToast).toContainText('Starting generation');
+  });
+
+  // ── 27. Chat Screen ──────────────────────────────────────────────
   test('Chat: session creation, message input, SSE streaming response', async ({ page }) => {
     await page.click('#nav-item-chat');
     await page.waitForSelector('#chat-screen');
