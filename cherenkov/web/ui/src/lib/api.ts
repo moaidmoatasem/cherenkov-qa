@@ -64,13 +64,12 @@ export async function checkBackendHealth(): Promise<boolean> {
 }
 
 /**
- * Fetches the backend health info and determines if Ollama is available
+ * Fetches the full backend health status
  */
-export async function fetchHealth(): Promise<{ ollama_available: boolean }> {
+export async function fetchHealth(): Promise<{ status: string; device: string; gen_model: string; demo_mode: boolean }> {
   const res = await fetch(`${API_BASE}/health`, { method: 'GET' });
   if (!res.ok) throw new Error(`Health endpoint failed: ${res.status}`);
-  const data = await res.json();
-  return { ollama_available: data.device !== 'unknown' };
+  return res.json();
 }
 
 /**
@@ -345,5 +344,11 @@ export async function createChatSession(): Promise<{ session_id: string; persona
 export async function fetchChatMessages(sessionId: string): Promise<{ messages: Array<{ role: string; content: string }> }> {
   const res = await fetch(`${API_BASE}/chat/sessions/${sessionId}/messages`);
   if (!res.ok) throw new Error(`Failed to fetch chat messages: ${res.status}`);
+  return res.json();
+}
+
+export async function queryKnowledge(query: string): Promise<any> {
+  const res = await fetch(`${API_BASE}/knowledge/query?q=${encodeURIComponent(query)}`);
+  if (!res.ok) throw new Error(`Knowledge query failed: ${res.status}`);
   return res.json();
 }

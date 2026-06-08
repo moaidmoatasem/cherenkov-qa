@@ -631,10 +631,14 @@ export async function setupApiMocks(page: any) {
     }) });
   });
   await page.route('**/api/v1/doctor', async (route: any) => {
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ checks: [], ready: true }) });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ checks: [
+      { id: 'd1', name: 'Device Connectivity', status: 'passed', message: 'VLM host reachable' },
+      { id: 'd2', name: 'Model Availability', status: 'passed', message: 'qwen2.5-coder:7b ready' },
+      { id: 'd3', name: 'Provider Status', status: 'passed', message: 'LocalAI responding' },
+    ], ready: true })});
   });
   await page.route('**/api/v1/health', async (route: any) => {
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'online', version: '1.0' }) });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'online', device: 'cpu', gen_model: 'qwen2.5-coder:7b', demo_mode: false, version: '1.0' }) });
   });
   await page.route('**/api/v1/ingest', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ spec_path: 'spec.yaml', endpoints: [], richness: 1.0 }) });
@@ -647,6 +651,12 @@ export async function setupApiMocks(page: any) {
   });
   await page.route('**/api/v1/eject', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'success', path: '/out' }) });
+  });
+  await page.route('**/api/v1/knowledge/query*', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
+      { id: 'k-1', source: 'reflector', confidence: 0.92, data: { text: 'Stopped re-surfacing known-noise findings on POST /user/login redirects after third occurrence.' }, metadata: { endpoint: 'POST /user/login', timestamp: '2026-06-07T10:00:00Z' } },
+      { id: 'k-2', source: 'idiom', confidence: 0.85, data: { text: 'Accrued senior testing idiom regarding cross-tenant resource verification.' }, metadata: { timestamp: '2026-06-06T14:30:00Z' } },
+    ]) });
   });
   await page.route('**/api/v1/chat/sessions', async (route: any) => {
     if (route.request().method() === 'POST') {
