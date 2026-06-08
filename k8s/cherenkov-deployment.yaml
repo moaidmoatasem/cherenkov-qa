@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cherenkov
+  namespace: cherenkov
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cherenkov
+  template:
+    metadata:
+      labels:
+        app: cherenkov
+    spec:
+      containers:
+        - name: cherenkov
+          image: cherenkov/engine:latest
+          imagePullPolicy: IfNotPresent
+          command: ["cherenkov", "doctor"]
+          env:
+            - name: OLLAMA_HOST
+              value: http://ollama:11434
+            - name: PRISM_HOST
+              value: http://prism:4010
+          resources:
+            limits:
+              cpu: "0.5"
+              memory: 256Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi

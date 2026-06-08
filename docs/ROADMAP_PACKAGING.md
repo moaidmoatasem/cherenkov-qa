@@ -22,6 +22,8 @@ eject) into a `docker compose up`-grade experience, plus a no-GPU demo mode.
 - ❌ **No Kubernetes.** Local LLMs are GPU/VRAM-bound; pods don't multiply GPUs. K8s solves load
   we do not have and would become a second product. Revisit only on real multi-node GPU demand,
   and even then a worker-pool (Celery/RQ + Redis) likely beats K8s. Recorded, not scheduled.
+
+  **✅ OVERRIDDEN by Phase 0 operator spike** — owner: @moaid, date: 2026-06-07, rationale: GitOps + multi-tenant demand + K8s-native conformance validator innovation. This spike is scoped to k3d (single-node, no multi-node complexity) and does not replace the Compose-based validation gate. Track A continues unchanged. See [Phase 0 Plan](../k8s/README.md) and [K8s Vision](vision/14_KUBERNETES_CONSIDERATIONS.md).
 - ❌ **No new product scope.** No new backend epochs, no un-quarantining Track B/C. This wires
   *existing* surfaces into a container.
 - ❌ **No autoscaling / parallel-agent fan-out infra.** Out of altitude until post-gate.

@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: cherenkov
+
+resources:
+  - namespace.yaml
+  - petstore-configmap.yaml
+  - ollama-pvc.yaml
+  - ollama-service.yaml
+  - ollama-statefulset.yaml
+  - ollama-init-job.yaml
+  - prism-service.yaml
+  - prism-deployment.yaml
+  - cherenkov-service.yaml
+  - cherenkov-deployment.yaml
+  - operator-rbac.yaml
+  - operator-deployment.yaml
+  - crd-conformancecheck.yaml

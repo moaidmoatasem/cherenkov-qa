@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cherenkov-operator-role
+rules:
+  - apiGroups: ["validation.cherenkov.io"]
+    resources: ["conformancechecks", "conformancechecks/status"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/exec", "configmaps", "events"]
+    verbs: ["get", "list", "create", "update", "patch"]

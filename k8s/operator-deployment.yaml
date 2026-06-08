@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cherenkov-operator
+  namespace: cherenkov
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cherenkov-operator
+  template:
+    metadata:
+      labels:
+        app: cherenkov-operator
+    spec:
+      serviceAccountName: cherenkov-operator
+      containers:
+        - name: operator
+          image: cherenkov-operator:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MAX_CONCURRENT_LLM_TASKS
+              value: "2"
+          ports:
+            - containerPort: 8080
+              name: metrics
+            - containerPort: 8081
+              name: health
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: "0.5"
+              memory: 256Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
