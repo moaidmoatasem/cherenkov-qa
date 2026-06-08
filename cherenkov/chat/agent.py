@@ -45,19 +45,18 @@ class QAChatAgent:
         return self._fallback_llm(messages)
 
     def _fallback_llm(self, messages: list[dict]) -> str:
-        logger.warning("No substrate router available, using mock LLM response")
+        logger.warning("No substrate router available, using [MOCK] fallback LLM response")
         last = messages[-1] if messages else {}
         user_text = last.get("content", "")
         if "verdict" in user_text.lower():
-            return "Based on the available data, I found 3 verdicts for /api/users. The most common issue is a 422 vs 400 status code mismatch."
+            return "[MOCK] Based on the available data, I found 3 verdicts for /api/users. The most common issue is a 422 vs 400 status code mismatch."
         if "idiom" in user_text.lower():
-            return "I found 2 idioms related to authentication: 'auth_token_expired' and 'missing_auth_header'."
+            return "[MOCK] I found 2 idioms related to authentication: 'auth_token_expired' and 'missing_auth_header'."
         if "divergence" in user_text.lower():
-            return "The divergence for GET /api/users shows the spec expects 200 but the implementation returns 401 when no auth header is provided."
-        return f"I understand your question about '{user_text[:50]}'. Use the available tools to get specific data."
+            return "[MOCK] The divergence for GET /api/users shows the spec expects 200 but the implementation returns 401 when no auth header is provided."
+        return f"[MOCK] I understand your question about '{user_text[:50]}'. Use the available tools to get specific data."
 
-    def chat(self, session_id: str, user_message: str) -> Message:
-        self.add_user_message(session_id, user_message)
+    def _prepare_llm_context(self, session_id: str) -> list[dict]:
         history = self.memory.get_messages(session_id)
         session = self.memory.get_session(session_id)
         persona_id = session.persona_id if session else "qa_assistant"
@@ -70,6 +69,11 @@ class QAChatAgent:
         llm_messages = [{"role": "system", "content": system_prompt}]
         for msg in history:
             llm_messages.append({"role": msg.role, "content": msg.content})
+        return llm_messages
+
+    def chat(self, session_id: str, user_message: str) -> Message:
+        self.add_user_message(session_id, user_message)
+        llm_messages = self._prepare_llm_context(session_id)
         response_content = self._call_llm(llm_messages)
         assistant_msg = Message(
             role="assistant", content=response_content, session_id=session_id
@@ -81,18 +85,7 @@ class QAChatAgent:
         self, session_id: str, user_message: str
     ) -> AsyncGenerator[str, None]:
         self.add_user_message(session_id, user_message)
-        history = self.memory.get_messages(session_id)
-        session = self.memory.get_session(session_id)
-        persona_id = session.persona_id if session else "qa_assistant"
-        persona = self.persona_registry.get(persona_id)
-        context = self._build_context(session_id)
-        system_prompt = self.persona_registry.compose_prompt(
-            persona.persona_id if persona else "qa_assistant",
-            context,
-        )
-        llm_messages = [{"role": "system", "content": system_prompt}]
-        for msg in history:
-            llm_messages.append({"role": msg.role, "content": msg.content})
+        llm_messages = self._prepare_llm_context(session_id)
         full_content = self._call_llm(llm_messages)
         words = full_content.split()
         for i, word in enumerate(words):
@@ -110,6 +103,6 @@ class QAChatAgent:
             r = get_reflector()
             stats = r.get_stats()
             context["idioms"] = stats.get("recent_idioms", [])[:10]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Could not build reflector context for session %s: %s", session_id, e)
         return context
