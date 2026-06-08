@@ -45,3 +45,20 @@ scripts/k8s-run
 scripts/k3d
 # k8s-run binary — build via make k8s-run-build
 scripts/k8s-run
+
+# coverage artifacts
+.coverage.*
+
+# PR body drafts
+.github/pr-body*
+
+# one-time migration scripts
+migrate_tests.py
+
+# local project docs (not part of the codebase)
+ORIGINAL_REQUEST.md
+PROJECT.md
+issue*.json
+
+# temp artifacts
+nul
