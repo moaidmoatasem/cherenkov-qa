@@ -9,6 +9,7 @@ import {
   Settings, 
   Terminal,
   CircleDot,
+  Cpu,
   LayoutDashboard,
   Network,
   Zap,
@@ -117,6 +118,7 @@ export default function Sidebar({
       label: 'OPERATE',
       items: [
         { id: 'healing', label: 'Healing Options', icon: Sparkles, desc: 'API Drift & Self-Repair' },
+        { id: 'devices', label: 'Devices', icon: Cpu, desc: 'VLM device management' },
         { id: 'eject', label: 'Eject Suite', icon: Download, desc: 'Export plain Playwright' },
         { id: 'governance', label: 'Governance', icon: Shield, desc: 'KPI cert & model compliance' },
       ]
@@ -125,6 +127,7 @@ export default function Sidebar({
       label: 'LEARN',
       items: [
         { id: 'memory', label: 'Memory & Pairing', icon: Brain, desc: 'Reflector senior idioms' },
+        { id: 'knowledge', label: 'Knowledge', icon: Brain, desc: 'Second Brain knowledge mesh' },
         { id: 'chat', label: 'Chat', icon: MessageSquare, desc: 'SSE streaming assistant' },
       ]
     }

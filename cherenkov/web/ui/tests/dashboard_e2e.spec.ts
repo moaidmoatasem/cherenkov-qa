@@ -400,7 +400,22 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     await expect(helpButton).toBeVisible();
   });
 
-  // ── 19. Command Palette ───────────────────────────────────────────
+  // ── 19. Health Widget ─────────────────────────────────────────────
+  test('Health widget renders backend status in TopBar', async ({ page }) => {
+    const topbar = page.locator('#cherenkov-topbar');
+    await expect(topbar).toBeVisible();
+
+    // Widget shows device chip
+    await expect(page.getByText('cpu').first()).toBeVisible();
+
+    // Widget shows gen model chip
+    await expect(page.getByText('qwen2.5-coder:7b').first()).toBeVisible();
+
+    // Widget shows seconds-ago text
+    await expect(page.getByText(/\d+s ago/).first()).toBeVisible();
+  });
+
+  // ── 20. Command Palette ───────────────────────────────────────────
   test('Command Palette: Ctrl+K opens, search filters, ESC closes', async ({ page }) => {
     await page.keyboard.press('Control+KeyK');
     const paletteInput = page.locator('#command-palette-input');
@@ -416,7 +431,7 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     await expect(paletteInput).not.toBeVisible();
   });
 
-  // ── 20. Settings Persistence (localStorage) ───────────────────────
+  // ── 21. Settings Persistence (localStorage) ───────────────────────
   test('Settings: toggle compact mode persists to localStorage', async ({ page }) => {
     // Mock the PUT endpoint so handleSave succeeds and writes localStorage
     await page.route('**/api/v1/settings', async route => {
@@ -436,7 +451,38 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     expect(storedDensity).toBe('compact');
   });
 
-  // ── 21. Chat Screen ──────────────────────────────────────────────
+  // ── 22. Knowledge Explorer Screen ──────────────────────────────────
+  test('Knowledge: enter query, submit, verify results grid', async ({ page }) => {
+    await page.click('#nav-item-devices');
+    await page.waitForSelector('#devices-screen');
+    await expect(page.locator('h1')).toContainText('Device & Provider Manager');
+    await expect(page.getByText('Device Connectivity')).toBeVisible();
+    await expect(page.getByText('Model Availability')).toBeVisible();
+    await expect(page.getByText('Provider Status')).toBeVisible();
+    await expect(page.getByText('LocalAI').first()).toBeVisible();
+    await expect(page.getByText('Ollama').first()).toBeVisible();
+  });
+
+  // ── 22. Knowledge Explorer Screen ──────────────────────────────────
+  test('Knowledge: enter query, submit, verify results grid', async ({ page }) => {
+    await page.click('#nav-item-knowledge');
+    await page.waitForSelector('#knowledge-screen');
+    await expect(page.locator('h1')).toContainText('Knowledge Explorer');
+
+    const input = page.locator('#knowledge-screen input[type="text"]');
+    await expect(input).toBeVisible();
+    await input.fill('login redirect');
+
+    const submitBtn = page.locator('#knowledge-screen button[type="submit"]');
+    await expect(submitBtn).toBeVisible();
+    await submitBtn.click();
+
+    await page.waitForTimeout(500);
+    await expect(page.getByText('reflector').first()).toBeVisible();
+    await expect(page.getByText('idiom').first()).toBeVisible();
+  });
+
+  // ── 23. Chat Screen ──────────────────────────────────────────────
   test('Chat: session creation, message input, SSE streaming response', async ({ page }) => {
     await page.click('#nav-item-chat');
     await page.waitForSelector('#chat-screen');
