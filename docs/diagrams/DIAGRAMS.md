@@ -153,3 +153,229 @@ flowchart LR
   Pre -->|no| PR[mark pre-release]
   Pre -->|yes| GA[mark latest]
 ```
+
+---
+
+## 9. Second Brain Architecture (Phase 1)
+
+```mermaid
+flowchart TB
+  subgraph KB[KnowledgeRepository Protocol]
+    Q[query]
+    S[store]
+    SR[search]
+    G[get_by_id]
+  end
+  
+  subgraph Stores[Separate Stores]
+    V[verdicts.db]
+    H[hitl.db]
+    F[feedback.json]
+    AM[agent_memory/]
+    I[incidents/]
+    ID[idioms/]
+  end
+  
+  subgraph Adapters[Adapters]
+    SQL[SQLiteKnowledgeRepository]
+    RED[RedisKnowledgeRepository]
+  end
+  
+  subgraph Bridges[Event Bridges]
+    HB[HITL → Reflector]
+    FB[Feedback → RAG]
+    AB[agent_memory → RAG]
+  end
+  
+  KB --> Adapters
+  Adapters --> Stores
+  Bridges --> KB
+  
+  CLI[cherenkov knowledge query] --> KB
+  API[/api/v1/knowledge/query] --> KB
+  Chat[Chat Agent] --> KB
+```
+
+## 10. Event Bus Flow (Phase 0b)
+
+```mermaid
+sequenceDiagram
+  participant HITL as HITL Queue
+  participant EB as EventBus
+  participant R as Reflector
+  participant KB as KnowledgeRepository
+  
+  HITL->>EB: emit(HITLDecisionMade)
+  EB->>R: subscribe("HITLDecisionMade")
+  R->>R: ingest_human_verdict()
+  R->>KB: store(verdict)
+  
+  Note over EB: Fallback chain:<br/>asyncio.Queue → Redis Streams
+```
+
+## 11. Clean Architecture Module (Phase 0b)
+
+```mermaid
+flowchart TB
+  subgraph Domain[domain/]
+    M[models.py<br/>Pydantic models, enums]
+  end
+  
+  subgraph Ports[ports/]
+    P1[repository.py<br/>Protocol interfaces]
+    P2[event_bus.py]
+  end
+  
+  subgraph Adapters[adapters/]
+    A1[sqlite_{module}.py<br/>Default adapter]
+    A2[redis_{module}.py<br/>Upgrade adapter]
+  end
+  
+  subgraph UseCases[use_cases/]
+    UC[{action}.py<br/>Orchestration]
+  end
+  
+  subgraph API[api/]
+    API1[routes.py<br/>FastAPI routes]
+  end
+  
+  Domain --> Ports
+  Ports --> Adapters
+  Adapters --> UseCases
+  UseCases --> API
+  
+  Note over Domain,API: Dependency rule:<br/>Arrows point inward<br/>Outer layers depend on inner layers
+```
+
+## 12. Desktop Host IPC (Phase 3)
+
+```mermaid
+sequenceDiagram
+  participant UI as Tauri 2 UI (React)
+  participant Rust as Tauri 2 (Rust)
+  participant IPC as NDJSON IPC
+  participant CLI as CHERENKOV CLI (PyInstaller)
+  
+  UI->>Rust: invoke("start_sidecar")
+  Rust->>CLI: spawn child process
+  CLI-->>Rust: stdout: {"event":"ready"}
+  Rust-->>UI: emit("sidecar_ready")
+  
+  UI->>Rust: invoke("run", {spec_path: "..."})
+  Rust->>IPC: stdin: {"command":"run","args":{...}}
+  IPC->>CLI: forward command
+  CLI-->>IPC: stdout: {"event":"progress","data":{...}}
+  IPC-->>Rust: forward event
+  Rust-->>UI: emit("progress", {...})
+  
+  Note over IPC: Commands: run, stop, status, config_set, config_get<br/>Events: progress, result, error, health_change
+```
+
+## 13. Chat Agent Flow (Phase 4)
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant UI as ChatPanel (React)
+  participant API as /api/v1/chat/sessions/{id}/stream
+  participant Agent as QAChatAgent
+  participant Mem as ConversationMemory
+  participant KB as KnowledgeRepository
+  participant LLM as SubstrateRouter (LLM)
+  
+  U->>UI: "Why was this test rejected?"
+  UI->>API: GET /stream?message=...
+  API->>Agent: chat(session_id, message)
+  Agent->>Mem: get_messages(session_id)
+  Mem-->>Agent: conversation history
+  Agent->>KB: query("idioms", limit=5)
+  KB-->>Agent: top idioms
+  Agent->>LLM: chat(messages + system_prompt)
+  LLM-->>Agent: tool_call: explain_divergence
+  Agent->>KB: explain_divergence(endpoint, method)
+  KB-->>Agent: divergence explanation
+  Agent->>LLM: chat(messages + tool_result)
+  LLM-->>Agent: final response (streaming)
+  Agent-->>API: yield tokens
+  API-->>UI: SSE: {"event":"token","data":{"token":"..."}}
+  UI-->>U: display streaming response
+```
+
+## 14. Mobile Testing Tiers (Phase 5-6)
+
+```mermaid
+flowchart TB
+  subgraph Tier1[Tier 1: Browser Emulation]
+    B1[Chromium]
+    B2[Firefox]
+    B3[WebKit]
+  end
+  
+  subgraph Tier2[Tier 2: Android Emulator]
+    A1[Android Studio AVD]
+    A2[Genymotion]
+  end
+  
+  subgraph Tier3[Tier 3: iOS Simulator]
+    I1[Xcode Simulator]
+  end
+  
+  subgraph Tier4[Tier 4: Physical Device]
+    P1[Android (ADB)]
+    P2[iOS (libimobiledevice)]
+  end
+  
+  subgraph Execution[Execution]
+    M[Maestro YAML]
+    AP[Appium Python]
+  end
+  
+  Tier1 --> Execution
+  Tier2 --> Execution
+  Tier3 --> Execution
+  Tier4 --> Execution
+  
+  Note over Tier1,Tier4: Device selection based on DeviceClass:<br/>GPU_WORKSTATION → Tier 2<br/>CPU_HIGH_END → Tier 3<br/>CPU_STANDARD → Tier 1
+```
+
+## 15. Updated System Context (Consolidated Plan)
+
+```mermaid
+flowchart TB
+  Dev([Developer / QA]); Agent([Autonomous Agent]); CI([CI/CD])
+  
+  subgraph CK[CHERENKOV-QA Extended]
+    Core[Core Pipeline<br/>Track A]
+    KB[Second Brain<br/>Phase 1]
+    VLM[VLM + LocalAI<br/>Phase 2]
+    DH[Desktop Host<br/>Phase 3]
+    Chat[Chat Agents<br/>Phase 4]
+    Mob[Mobile Testing<br/>Phase 5-6]
+    Dash[Dashboard<br/>Phase 7]
+    K8s[K8s + Cloud<br/>Phase 8]
+  end
+  
+  subgraph Src[Sources]
+    S1[OpenAPI]; S2[Traffic/OTel]; S3[DB schema]; S4[Code/UI]
+    S5[APK/HAR/HIL<br/>Mobile]
+  end
+  
+  subgraph Mod[Models via Substrate Router]
+    M1[Local Ollama/vLLM]; M2[Cloud OpenAI/Anthropic]
+    M3[LocalAI<br/>VLM]
+  end
+  
+  subgraph Out[Artifacts]
+    O1[Playwright]; O2[Spec patch]; O3[PR comment/report]
+    O4[Maestro YAML<br/>Mobile]
+    O5[Appium Python<br/>Mobile]
+  end
+  
+  Dev-->CK; Agent-->CK; CI-->CK
+  Src-->CK; CK<-->Mod; CK-->Out; Out-->CI
+  
+  KB -.-> Chat
+  VLM -.-> Mob
+  DH -.-> CK
+  Dash -.-> KB
+```

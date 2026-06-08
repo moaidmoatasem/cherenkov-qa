@@ -77,8 +77,104 @@ flowchart TD
 | **hitl/v1** | `hitl/v1` | `hitl/contracts.py` | `hitl/store.py`, CLI | OpenClaw, dashboard | `HitlEnvelope{ok,command,payload,error}` |
 | **validate/v1** | `validate/v1` | `validate/contracts.py` | `validate/gate.py` | CI, 5-QA runbook | `ValidationReport{result,gates[],evidence_dir}` |
 | **substrate tiers** | — | `[substrate.tiers.*]` config | router | tier providers (incl. future `vision`) | tier selection + egress/cost dials |
+| **knowledge/v1** | `knowledge/v1` | `knowledge/ports/repository.py` | `knowledge/adapters/` | Chat, Dashboard, CLI | `KnowledgeResult{data,source,confidence,metadata}` |
+| **chat/v1** | `chat/v1` | `chat/ports/memory.py` | `chat/adapters/` | Chat agent, ChatPanel | `Session{session_id,messages,metadata}` |
+| **mobile/eject/v1** | `mobile/eject/v1` | `execution/mobile_eject_*.py` | Mobile stages | Maestro, Appium | Maestro YAML / Appium Python (ZERO CHERENKOV imports) |
+| **vlm/v1** | `vlm/v1` | `substrate/ports/vlm_provider.py` | `substrate/providers/` | Visual oracle, Chat | `VLMResponse{text,confidence,model}` |
 
 **Rule:** a new capability (e.g. VLM) joins by registering a *tier* and emitting through an *existing* seam — never by forking `core/contracts.py`.
+
+### New Seams (Consolidated Plan)
+
+#### knowledge/v1 (Phase 1: Second Brain)
+
+```python
+# cherenkov/knowledge/ports/repository.py
+class KnowledgeRepository(Protocol):
+    def query(self, query: KnowledgeQuery) -> KnowledgeResult: ...
+    def store(self, item: KnowledgeItem) -> str: ...
+    def search(self, pattern: str, limit: int = 10) -> list[KnowledgeResult]: ...
+    def get_by_id(self, item_id: str) -> KnowledgeResult | None: ...
+
+# cherenkov/knowledge/domain/models.py
+@dataclass
+class KnowledgeResult:
+    data: Any
+    source: str  # "verdicts", "idioms", "incidents", "hitl", "feedback", "agent_memory"
+    confidence: float
+    metadata: dict[str, Any]
+```
+
+**Consumers:** Chat agent (`query_verdicts`, `explain_divergence`), Dashboard (`/api/v1/knowledge/query`), CLI (`cherenkov knowledge query`)
+
+**Adapters:** `SQLiteKnowledgeRepository` (default), `RedisKnowledgeRepository` (upgrade with vector search)
+
+#### chat/v1 (Phase 4: Chat Agents)
+
+```python
+# cherenkov/chat/ports/memory.py
+class ConversationMemory(Protocol):
+    def create_session(self) -> str: ...
+    def add_message(self, session_id: str, message: Message) -> None: ...
+    def get_messages(self, session_id: str, limit: int = 20) -> list[Message]: ...
+    def close_session(self, session_id: str) -> None: ...
+
+# cherenkov/chat/domain/models.py
+@dataclass
+class Message:
+    message_id: str
+    role: Literal["user", "assistant", "system", "tool"]
+    content: str
+    timestamp: datetime
+    metadata: dict
+```
+
+**Consumers:** QAChatAgent (tool orchestration), ChatPanel React component (SSE streaming)
+
+**Adapters:** `SQLiteConversationMemory` (default), `RedisConversationMemory` (upgrade with pub/sub)
+
+#### mobile/eject/v1 (Phase 5: Mobile Testing)
+
+```python
+# cherenkov/execution/mobile_eject_maestro.py
+class MaestroEjector:
+    def eject(self, yaml_content: str, output_dir: str) -> Path:
+        # Generates standalone Maestro YAML with ZERO CHERENKOV imports
+        pass
+
+# cherenkov/execution/mobile_eject_appium.py
+class AppiumEjector:
+    def eject(self, yaml_content: str, output_dir: str) -> Path:
+        # Generates standalone Appium Python with ZERO CHERENKOV imports
+        pass
+```
+
+**Consumers:** Maestro CLI (`maestro test .`), Appium (`pytest`)
+
+**Anti-lock-in invariant:** Ejected tests have ZERO CHERENKOV imports. User can run `maestro test` or `pytest` without CHERENKOV installed.
+
+#### vlm/v1 (Phase 2: VLM + LocalAI)
+
+```python
+# cherenkov/substrate/ports/vlm_provider.py
+class VLMProvider(Protocol):
+    def analyze(self, image: bytes, prompt: str) -> VLMResponse: ...
+    def is_available(self) -> bool: ...
+    def get_tier(self) -> str: ...
+
+# cherenkov/substrate/domain/models.py
+@dataclass
+class VLMResponse:
+    text: str
+    confidence: float
+    model: str
+```
+
+**Consumers:** SemanticVisualOracle (mobile screenshot analysis), Chat agent (image understanding)
+
+**Adapters:** `LocalAIVLMProvider` (default, Docker-native), `OllamaVLMProvider` (fallback, no Docker), `OpenAIVLMProvider` (opt-in, cloud)
+
+**Fallback chain:** LocalAI → Ollama → OpenAI → None (pixel_diff_only)
 
 ### hitl/v1 envelope (frozen)
 ```

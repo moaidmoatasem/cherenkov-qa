@@ -4,7 +4,7 @@ The tenets every design and PR is judged against. They are **non-negotiable defa
 
 ---
 
-## The ten tenets
+## The thirteen tenets
 
 1. **The model is a dependency, not the product.** No agent code names a model. All intelligence flows through the Substrate Router as a `ReasoningRequest`. (Enforced by CI — see [WAYS_OF_WORKING](WAYS_OF_WORKING.md).)
 
@@ -25,6 +25,12 @@ The tenets every design and PR is judged against. They are **non-negotiable defa
 9. **Eject-able, vendor-neutral output.** Emitted artifacts run with their native tool (`npx playwright test`) with zero CHERENKOV dependency. We add value, we don't lock in.
 
 10. **Small, reversible steps.** Keep the old path green while introducing a seam; migrate behind it. Prefer many verifiable PRs over one big bang.
+
+11. **Graceful degradation.** Never crash on infrastructure failure, always degrade. Every external dependency has a fallback chain (LocalAI → Ollama → Demo, Redis → SQLite, VLM → pixel_diff_only). The system works in L0 mode (bare CLI, no Docker, no Redis, no LLM) on any laptop. (See [../ERROR_HANDLING.md](../ERROR_HANDLING.md).)
+
+12. **Open for extension, closed for modification.** New testing types (accessibility, security, performance, GraphQL, gRPC) plug in via Source Adapter SPI without core modifications. Each new source type implements `SourceAdapter` protocol, adds corresponding stages and oracles. No changes to `core/` required. (See [../PHASE_PLAN.md](../PHASE_PLAN.md) §Extension Points.)
+
+13. **Knowledge mesh, not monolith.** Each data store (verdicts, idioms, incidents, HITL, feedback, agent_memory) keeps its schema. `KnowledgeRepository` provides a unified query interface. All queries return `KnowledgeResult` envelope. Anti-lock-in: each store is independently useful (can eject any one). (See [../adr/ADR-006-knowledge-mesh.md](../adr/ADR-006-knowledge-mesh.md).)
 
 ---
 
@@ -60,5 +66,8 @@ Principles that aren't enforced rot. These run in CI:
 | No hidden egress (#6) | network calls only via the router; `egress=none` integration test |
 | Eject-able (#9) | ejected sample runs with zero CHERENKOV imports |
 | Provenance (#5) | claims/findings schema requires a non-empty `source` field |
+| Graceful degradation (#11) | remove LocalAI container → system falls back to Ollama, not crash |
+| Open for extension (#12) | new `SourceAdapter` implementation works without `core/` changes |
+| Knowledge mesh (#13) | `KnowledgeRepository` contract test passes for both SQLite and Redis adapters |
 
 A PR that fails a fitness function is rejected the same as a failing unit test.
