@@ -622,13 +622,21 @@ export async function setupApiMocks(page: any) {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_DIVERGENCES) });
   });
   await page.route('**/api/v1/review/queue*', async (route: any) => {
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
+      { id: 'test-3', method: 'PUT', endpoint: '/pets', status: 'review', confidence: 0.81, review_gate_failed: 'quality', confidence_reason: 'Assertion checks shape but not descriptive name' },
+      { id: 'test-4', method: 'DELETE', endpoint: '/store/order/{orderId}', status: 'review', confidence: 0.45, review_gate_failed: 'quality', confidence_reason: 'No clean pre-setup sequencing' },
+    ])});
   });
   await page.route('**/api/v1/settings', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
       target: { url: 'http://localhost' }, engine: { model_tier: 'high', enable_demo_mode: false, execution_budget: 100, workers: 2 },
       security: { egress_policy: 'strict' }, ui: { density: 'comfortable', reduced_motion: false }
     }) });
+  });
+  await page.route('**/api/v1/metrics', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      status: 'ok', metrics: { requestCount: 142, totalTokens: 128000, totalCost: 0.42, totalDurationMs: 32400, defectEscapeCount: 2, falsePositiveRate: 1.2, maintenanceEfficiency: 0.88 }
+    })});
   });
   await page.route('**/api/v1/doctor', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ checks: [
@@ -641,7 +649,13 @@ export async function setupApiMocks(page: any) {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'online', device: 'cpu', gen_model: 'qwen2.5-coder:7b', demo_mode: false, version: '1.0' }) });
   });
   await page.route('**/api/v1/ingest', async (route: any) => {
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ spec_path: 'spec.yaml', endpoints: [], richness: 1.0 }) });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ spec_path: 'spec.yaml', endpoints: MOCK_ENDPOINTS.slice(0, 3), richness: 1.0 }) });
+  });
+  await page.route('**/api/v1/review/approve', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+  await page.route('**/api/v1/review/reject', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
   });
   await page.route('**/api/v1/run', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ run_id: 'test-run-id', status: 'started' }) });

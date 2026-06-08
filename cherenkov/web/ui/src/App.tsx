@@ -109,6 +109,15 @@ function InnerApp() {
     }
   };
 
+  const handlePilotRun = async () => {
+    try {
+      await runPipeline({ spec_path: 'stub/openapi.yaml', demo_mode: true });
+      toast('Pilot run started', 'info');
+    } catch (err) {
+      toast('Pilot run failed: ' + (err as Error).message, 'danger');
+    }
+  };
+
   // Retrieve current active project configuration
   const currentProject = projects.find(p => p.id === selectedProjectId) || null;
 
@@ -306,6 +315,7 @@ function InnerApp() {
             {activeTab === 'overview' && (
               <OverviewScreen
                 onNewRun={handleNewRun}
+                onPilotRun={handlePilotRun}
                 onNavigate={setActiveTab}
               />
             )}
