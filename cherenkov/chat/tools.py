@@ -1,29 +1,34 @@
 from __future__ import annotations
 
-from typing import Any
+import logging
+from typing import Any, Callable
+
+logger = logging.getLogger(__name__)
 
 
-def query_verdicts(endpoint: str | None = None, status_code: int | None = None, limit: int = 10) -> dict:
+def query_verdicts(endpoint: str | None = None, status_code: int | None = None, limit: int = 10) -> dict[str, Any]:
     try:
         from cherenkov.reflector.reflector import get_reflector
         r = get_reflector()
         stats = r.get_stats()
         return {"verdicts": stats.get("recent_verdicts", [])[:limit], "total": stats.get("total_verdicts", 0)}
     except Exception as e:
+        logger.error("query_verdicts failed", exc_info=e)
         return {"error": str(e), "verdicts": []}
 
 
-def query_idioms(pattern: str | None = None, limit: int = 10) -> dict:
+def query_idioms(pattern: str | None = None, limit: int = 10) -> dict[str, Any]:
     try:
         from cherenkov.reflector.reflector import get_reflector
         r = get_reflector()
         stats = r.get_stats()
         return {"idioms": stats.get("recent_idioms", [])[:limit], "total": stats.get("total_idioms", 0)}
     except Exception as e:
+        logger.error("query_idioms failed", exc_info=e)
         return {"error": str(e), "idioms": []}
 
 
-def explain_divergence(endpoint: str, method: str = "GET") -> dict:
+def explain_divergence(endpoint: str, method: str = "GET") -> dict[str, Any]:
     try:
         from cherenkov.knowledge.graph_rag import GraphRAG
         from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
@@ -32,21 +37,35 @@ def explain_divergence(endpoint: str, method: str = "GET") -> dict:
         result = graph.explain_divergence(endpoint, method)
         return result.data
     except Exception as e:
+        logger.error("explain_divergence failed: endpoint=%s method=%s", endpoint, method, exc_info=e)
         return {"error": str(e)}
 
 
-def run_test(endpoint: str, method: str = "GET", spec_path: str | None = None) -> dict:
+def run_test(endpoint: str, method: str = "GET", spec_path: str | None = None) -> dict[str, Any]:
     try:
-        from cherenkov.core.orchestrator import Orchestrator
-        o = Orchestrator()
-        plan = o.create_plan(spec_path or "stub/openapi.yaml")
-        result = o.run_pipeline(plan)
-        return {"status": "completed" if result else "failed", "scenarios": len(plan.scenarios) if hasattr(plan, "scenarios") else 0}
+        from cherenkov.stages.ingest import IngestStage
+        from cherenkov.stages.plan import PlanStage
+        import os
+        effective_spec = spec_path or "stub/openapi.yaml"
+        if not os.path.exists(effective_spec):
+            return {"error": f"Spec file not found: {effective_spec}", "status": "error"}
+        ingest = IngestStage("chat-tool").run(effective_spec)
+        plan = PlanStage("chat-tool").run(ingest)
+        matching = [s for s in plan.scenarios if s.endpoint == endpoint and s.method == method]
+        return {
+            "status": "planned",
+            "endpoint": endpoint,
+            "method": method,
+            "scenarios": len(matching),
+            "total_scenarios": len(plan.scenarios),
+            "note": "Use the full pipeline to execute. This tool only plans scenarios for the given endpoint.",
+        }
     except Exception as e:
+        logger.error("run_test failed: endpoint=%s method=%s", endpoint, method, exc_info=e)
         return {"error": str(e), "status": "error"}
 
 
-TOOL_REGISTRY: dict[str, callable] = {
+TOOL_REGISTRY: dict[str, Callable[..., dict[str, Any]]] = {
     "query_verdicts": query_verdicts,
     "query_idioms": query_idioms,
     "explain_divergence": explain_divergence,
@@ -54,7 +73,7 @@ TOOL_REGISTRY: dict[str, callable] = {
 }
 
 
-def execute_tool(name: str, **kwargs) -> dict:
+def execute_tool(name: str, **kwargs: Any) -> dict[str, Any]:
     tool = TOOL_REGISTRY.get(name)
     if not tool:
         return {"error": f"Unknown tool '{name}'"}

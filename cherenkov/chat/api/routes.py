@@ -1,83 +1,118 @@
 from __future__ import annotations
 
-import asyncio
 import json
-import uuid
-from typing import AsyncGenerator
+from functools import lru_cache
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field
 
 from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
 from cherenkov.chat.agent import QAChatAgent
+from cherenkov.chat.ports.memory import ConversationMemory
 
 router = APIRouter()
-_memory = SQLiteConversationMemory()
-_agent = QAChatAgent(memory=_memory)
+
+
+class ChatMessageRequest(BaseModel):
+    content: str = Field(..., min_length=1, description="Message content")
+
+
+class CreateSessionRequest(BaseModel):
+    persona_id: str = Field(default="qa_assistant", description="Persona to use for this session")
+
+
+@lru_cache(maxsize=1)
+def get_memory() -> ConversationMemory:
+    return SQLiteConversationMemory()
+
+
+def get_agent(memory: ConversationMemory = Depends(get_memory)) -> QAChatAgent:
+    return QAChatAgent(memory=memory)
 
 
 @router.post("/api/v1/chat/sessions")
-async def create_session(persona_id: str = "qa_assistant"):
-    session = _agent.create_session(persona_id)
+async def create_session(
+    body: CreateSessionRequest,
+    agent: QAChatAgent = Depends(get_agent),
+):
+    session = agent.create_session(body.persona_id)
     return {"session_id": session.session_id, "persona_id": session.persona_id}
 
 
 @router.get("/api/v1/chat/sessions")
-async def list_sessions(limit: int = 20):
-    sessions = _memory.list_sessions(limit)
+async def list_sessions(
+    limit: int = 20,
+    memory: ConversationMemory = Depends(get_memory),
+):
+    sessions = memory.list_sessions(limit)
     return {"sessions": [s.to_dict() for s in sessions]}
 
 
 @router.get("/api/v1/chat/sessions/{session_id}")
-async def get_session(session_id: str):
-    session = _agent.get_session(session_id)
+async def get_session(
+    session_id: str,
+    agent: QAChatAgent = Depends(get_agent),
+):
+    session = agent.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     return session.to_dict()
 
 
 @router.post("/api/v1/chat/sessions/{session_id}/messages")
-async def send_message(session_id: str, body: dict):
-    content = body.get("content", "")
-    if not content:
-        raise HTTPException(status_code=400, detail="Missing 'content' field")
-    session = _agent.get_session(session_id)
+async def send_message(
+    session_id: str,
+    body: ChatMessageRequest,
+    agent: QAChatAgent = Depends(get_agent),
+):
+    session = agent.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    assistant_msg = _agent.chat(session_id, content)
+    assistant_msg = agent.chat(session_id, body.content)
     return {"role": "assistant", "content": assistant_msg.content}
 
 
 @router.get("/api/v1/chat/sessions/{session_id}/messages")
-async def get_messages(session_id: str, limit: int = 50):
-    session = _agent.get_session(session_id)
+async def get_messages(
+    session_id: str,
+    limit: int = 50,
+    agent: QAChatAgent = Depends(get_agent),
+    memory: ConversationMemory = Depends(get_memory),
+):
+    session = agent.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    messages = _memory.get_messages(session_id, limit)
+    messages = memory.get_messages(session_id, limit)
     return {"messages": [m.to_dict() for m in messages]}
 
 
 @router.post("/api/v1/chat/sessions/{session_id}/stream")
-async def stream_chat(session_id: str, body: dict):
-    content = body.get("content", "")
-    if not content:
-        raise HTTPException(status_code=400, detail="Missing 'content' field")
-    session = _agent.get_session(session_id)
+async def stream_chat(
+    session_id: str,
+    body: ChatMessageRequest,
+    agent: QAChatAgent = Depends(get_agent),
+):
+    session = agent.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
     async def event_stream():
-        async for token in _agent.chat_stream(session_id, content):
-            yield f"data: {json.dumps({'event': 'token', 'data': {'token': token}})}\n\n"
-        yield f"data: {json.dumps({'event': 'complete', 'data': {}})}\n\n"
+        async for token in agent.chat_stream(session_id, body.content):
+            yield f"event: token\ndata: {json.dumps({'token': token})}\n\n"
+        yield f"event: complete\ndata: {json.dumps({})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 @router.post("/api/v1/chat/sessions/{session_id}/close")
-async def close_session(session_id: str):
-    session = _agent.get_session(session_id)
+async def close_session(
+    session_id: str,
+    agent: QAChatAgent = Depends(get_agent),
+    memory: ConversationMemory = Depends(get_memory),
+):
+    session = agent.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    _memory.close_session(session_id)
+    memory.close_session(session_id)
     return {"status": "closed"}
