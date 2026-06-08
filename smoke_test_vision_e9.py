@@ -204,7 +204,7 @@ def test_visual_healer():
         metadata=StageMeta(stage="visual", duration_ms=10),
     )
     suggestion = healer.suggest_heal(report_pass)
-    check("Auto-approve: no healing", "No healing needed" in suggestion)
+    check("Auto-approve: no healing", "No healing needed" in suggestion["suggestion"])
 
     report_no_gate = VisualReport(
         scenario_id="test", gates=[], verdict=Verdict.REGENERATE,
@@ -213,7 +213,7 @@ def test_visual_healer():
         metadata=StageMeta(stage="visual", duration_ms=10),
     )
     suggestion = healer.suggest_heal(report_no_gate)
-    check("No pixel_diff gate returns info", "No pixel_diff gate" in suggestion)
+    check("No pixel_diff gate returns info", "No pixel_diff gate" in suggestion["suggestion"])
 
     with patch("cherenkov.healing.visual_heal.VisualOracle.evaluate") as mock_oracle:
         mock_oracle.return_value = type("Result", (), {
@@ -232,10 +232,10 @@ def test_visual_healer():
             metadata=StageMeta(stage="visual", duration_ms=50),
         )
         suggestion = healer.suggest_heal(report_fail)
-        check("Healer produces SUGGESTION", "SUGGESTION" in suggestion)
+        check("Healer produces SUGGESTION", "SUGGESTION" in suggestion["suggestion"])
         check("Healer never auto-modifies",
-               "No files were modified" in suggestion or
-               "SUGGESTION" in suggestion)
+               "No files were modified" in suggestion["suggestion"] or
+               "SUGGESTION" in suggestion["suggestion"])
 
 
 def test_vision_confirm():

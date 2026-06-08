@@ -209,9 +209,8 @@ class ReviewStage:
                                             added_fields=diag.added_fields
                                         )
                                     
-                                    if suggestion:
-                                        # Print suggestion loudly on the console!
-                                        print(suggestion)
+                                    if suggestion and suggestion.get("suggestion"):
+                                        print(suggestion["suggestion"])
                                         self.log.info("generated healing suggestion", failure_class=diag.failure_class.value)
                 except Exception as e:
                     prism_passed = False

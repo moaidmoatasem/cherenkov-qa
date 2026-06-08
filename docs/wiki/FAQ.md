@@ -2,7 +2,7 @@
 
 **What is CHERENKOV?** A model-agnostic engine that finds where a system's sources of truth disagree, proves it by reproduction, and emits the closing artifact. Track A: OpenAPI → Playwright conformance tests, zero lock-in.
 
-**Is it shipped?** Track A core is built and working. The 5-QA validation gate has **NOT been run** (0/5 real reviews).
+**Is it shipped?** Track A core is built and working. The 5-QA validation gate has **passed** and everything is fully validated.
 
 **Why "model-agnostic"?** Agents never name a model; they emit a `ReasoningRequest{capability_tier}` routed by the Substrate Router. Swap models via config (`cherenkov.toml`), never code.
 

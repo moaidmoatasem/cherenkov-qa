@@ -211,7 +211,7 @@ class TestVisualHealer(unittest.TestCase):
             metadata=StageMeta(stage="visual", duration_ms=10),
         )
         suggestion = self.healer.suggest_heal(report)
-        self.assertIn("No healing needed", suggestion)
+        self.assertIn("No healing needed", suggestion["suggestion"])
 
     def test_no_pixel_diff_gate(self):
         report = VisualReport(
@@ -223,7 +223,7 @@ class TestVisualHealer(unittest.TestCase):
             metadata=StageMeta(stage="visual", duration_ms=10),
         )
         suggestion = self.healer.suggest_heal(report)
-        self.assertIn("No pixel_diff gate", suggestion)
+        self.assertIn("No pixel_diff gate", suggestion["suggestion"])
 
     def test_healing_is_suggest_only_no_files_modified(self):
         report = VisualReport(
@@ -234,8 +234,8 @@ class TestVisualHealer(unittest.TestCase):
             metadata=StageMeta(stage="visual", duration_ms=10),
         )
         suggestion = self.healer.suggest_heal(report)
-        self.assertIn("SUGGESTION", suggestion)
-        self.assertIn("No files were modified", suggestion)
+        self.assertIn("SUGGESTION", suggestion["suggestion"])
+        self.assertIn("No files were modified", suggestion["suggestion"])
 
 
 class TestVisionConfirmPilot(unittest.TestCase):

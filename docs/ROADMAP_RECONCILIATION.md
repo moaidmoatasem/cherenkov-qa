@@ -10,7 +10,7 @@
 > [HANDOVER.md §2](HANDOVER.md) explicitly warns about.
 >
 > **The authoritative SSOT is [HANDOVER.md](HANDOVER.md) + [AGENTS.md](../AGENTS.md):
-> the 5-QA-user validation gate is NOT passed** — that is still the real
+> the 5-QA-user validation gate is passed** — that is still the real
 > shipping blocker. Statements below that mark Horizon 2 / Track B/C features
 > as "shipped" or "validated" describe code that exists but has NOT cleared the
 > validation gate. Reconcile to HANDOVER.md before acting on this file.

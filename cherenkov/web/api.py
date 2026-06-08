@@ -10,6 +10,7 @@ import uuid
 import asyncio
 import shutil
 import threading
+import logging
 from typing import List, Dict, Any
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException, UploadFile, File, Form, Depends, Header
@@ -345,7 +346,7 @@ async def list_review_queue(status: str | None = "pending", _auth=Depends(verify
 
 @app.post("/api/v1/review/approve")
 async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
-    """Approve a pending HITL item via HitlQueue."""
+    """Approve a pending HITL item via HitlQueue and feed positive verdict to Reflector."""
     queue = get_queue()
     actor = os.environ.get("USER", "dashboard")
     envelope = queue.approve(payload.scenario_id, actor=actor, source="web")
@@ -355,11 +356,32 @@ async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify
             status_code=409 if envelope.error and envelope.error.code == "conflict" else 404,
             detail=envelope.error.message if envelope.error else "approve failed",
         )
+
+    store = FeedbackStore()
+    store.record_feedback(FeedbackEntry(
+        hitl_item_id=payload.scenario_id,
+        action="approve",
+        reason=payload.reason or "Approved by reviewer",
+    ))
+
+    # Feed positive human verdict to Reflector
+    try:
+        from cherenkov.reflector.reflector import Reflector
+        from cherenkov.core.contracts import VerdictOutcome
+        reflector = Reflector(run_id="web")
+        reflector.ingest_human_verdict(
+            hypothesis_id=payload.scenario_id,
+            outcome=VerdictOutcome.ACCEPT,
+            detail=payload.reason or "Approved via review dashboard",
+        )
+    except Exception as e:
+        logging.getLogger("HITL").warning("failed to feed approve verdict to Reflector", exc_info=e)
+
     return {"status": "approved", "scenario_id": payload.scenario_id}
 
 @app.post("/api/v1/review/reject")
 async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
-    """Reject a pending HITL item via HitlQueue."""
+    """Reject a pending HITL item via HitlQueue and feed negative verdict to Reflector."""
     queue = get_queue()
     actor = os.environ.get("USER", "dashboard")
     reason = payload.reason or "Rejected by reviewer"
@@ -369,13 +391,27 @@ async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_
             status_code=409 if envelope.error and envelope.error.code == "conflict" else 404,
             detail=envelope.error.message if envelope.error else "reject failed",
         )
-        
+
     store = FeedbackStore()
     store.record_feedback(FeedbackEntry(
         hitl_item_id=payload.scenario_id, 
         action="reject", 
         reason=reason
     ))
+
+    # Feed negative human verdict to Reflector
+    try:
+        from cherenkov.reflector.reflector import Reflector
+        from cherenkov.core.contracts import VerdictOutcome
+        reflector = Reflector(run_id="web")
+        reflector.ingest_human_verdict(
+            hypothesis_id=payload.scenario_id,
+            outcome=VerdictOutcome.REJECT,
+            detail=reason,
+        )
+    except Exception as e:
+        logging.getLogger("HITL").warning("failed to feed reject verdict to Reflector", exc_info=e)
+
     return {"status": "rejected", "scenario_id": payload.scenario_id}
 
 @app.post("/api/v1/review/edit")
@@ -472,23 +508,97 @@ async def act_on_divergence(payload: DivergenceActionPayload):
     }
 
 #
-# Mock endpoints & Metrics
+# Dashboard data endpoints (backed by real stores)
 #
 @app.get("/api/v1/overview")
 async def get_overview():
-    return {"falsePositiveRate": 0, "recentLearnings": []}
+    """Return overview with false-positive rate and recent learnings."""
+    from cherenkov.ai.accounting import CostAccountant
+    from cherenkov.reflector.store import VerdictStore
+    from cherenkov.core.feedback_store import FeedbackStore
+    from cherenkov.core.contracts import VerdictOutcome
+
+    accountant = CostAccountant()
+    kpi = accountant.get_governance_kpis()
+    feedback = FeedbackStore()
+    recent = feedback.get_all()[-10:] if feedback.get_all() else []
+
+    return {
+        "falsePositiveRate": kpi["false_positive_rate"],
+        "maintenanceEfficiency": kpi["maintenance_efficiency"],
+        "defectEscapeCount": kpi["defect_escape_count"],
+        "totalVerdicts": kpi["total_verdicts"],
+        "recentLearnings": [
+            {"id": f.id, "action": f.action, "reason": f.reason, "timestamp": getattr(f, "timestamp", "")}
+            for f in recent
+        ],
+    }
 
 @app.get("/api/v1/truth-map")
 async def get_truth_map():
-    return []
+    """Return learned idiom patterns from the VerdictStore."""
+    from cherenkov.reflector.store import VerdictStore
+
+    store = VerdictStore()
+    try:
+        idioms = store.list_idioms(limit=50)
+    except Exception:
+        idioms = []
+    return [
+        {
+            "id": i.id,
+            "pattern": i.pattern,
+            "divergence_class": i.divergence_class.value if i.divergence_class else "unknown",
+            "endpoint": i.endpoint,
+            "confirm_count": i.confirm_count,
+            "decay_score": i.decay_score,
+        }
+        for i in idioms
+    ]
 
 @app.get("/api/v1/failures")
 async def get_failures():
-    return []
+    """Return recent failure verdicts from the VerdictStore."""
+    from cherenkov.reflector.store import VerdictStore
+    from cherenkov.core.contracts import VerdictOutcome
+
+    store = VerdictStore()
+    conn = sqlite3.connect(store.db_path, timeout=10.0)
+    conn.row_factory = sqlite3.Row
+    try:
+        cursor = conn.execute(
+            "SELECT id, endpoint, outcome, failure_class, detail, timestamp "
+            "FROM verdicts WHERE outcome IN (?, ?) "
+            "ORDER BY timestamp DESC LIMIT 50",
+            (VerdictOutcome.REJECT.value, VerdictOutcome.ESCAPED_DEFECT.value)
+        )
+        rows = [dict(r) for r in cursor.fetchall()]
+    except Exception:
+        rows = []
+    finally:
+        conn.close()
+    return rows
 
 @app.get("/api/v1/metrics")
 async def get_metrics():
-    return {"status": "ok", "metrics": {}}
+    """Return aggregated cost and latency metrics."""
+    from cherenkov.ai.accounting import CostAccountant
+
+    accountant = CostAccountant()
+    report = accountant.report
+    kpi = accountant.get_governance_kpis()
+    return {
+        "status": "ok",
+        "metrics": {
+            "requestCount": report.request_count,
+            "totalTokens": report.total_tokens,
+            "totalCost": report.total_cost,
+            "totalDurationMs": report.total_duration_ms,
+            "defectEscapeCount": kpi["defect_escape_count"],
+            "falsePositiveRate": kpi["false_positive_rate"],
+            "maintenanceEfficiency": kpi["maintenance_efficiency"],
+        },
+    }
 
 #
 # WebSocket
