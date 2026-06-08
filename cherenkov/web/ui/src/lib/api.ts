@@ -448,6 +448,42 @@ export async function fetchChatMessages(sessionId: string): Promise<{ messages: 
 }
 
 export async function queryKnowledge(query: string): Promise<any> {
+  const res = await fetch(`${API_BASE}/chat/knowledge/query`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query }),
+  });
+  if (!res.ok) throw new Error(`Knowledge query failed: ${res.status}`);
+  return res.json();
+}
+
+export interface PilotStep {
+  step_id: string;
+  action: string;
+  target: string;
+  expected: string;
+  actual: string;
+  status: string;
+}
+
+export interface PilotStatus {
+  status: 'idle' | 'running' | 'done' | 'failed';
+  current_step: number;
+  total_steps: number;
+  steps: PilotStep[];
+}
+
+export async function fetchMobilePilotStatus(): Promise<PilotStatus> {
+  const res = await fetch(`${API_BASE}/mobile/pilot/status`);
+  if (!res.ok) throw new Error(`Failed to fetch pilot status: ${res.status}`);
+  return res.json();
+}
+
+export async function startMobilePilot(): Promise<{ status: string }> {
+  const res = await fetch(`${API_BASE}/mobile/pilot/start`, { method: 'POST' });
+  if (!res.ok) throw new Error(`Failed to start pilot: ${res.status}`);
+  return res.json();
+}
   const res = await fetch(`${API_BASE}/knowledge/query?q=${encodeURIComponent(query)}`);
   if (!res.ok) throw new Error(`Knowledge query failed: ${res.status}`);
   return res.json();

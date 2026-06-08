@@ -124,6 +124,22 @@ class SkepticAgent:
 
         return hypotheses
 
+    def mobile_hypothesize(self, app_id: str, screen_name: str, element_id: str) -> dict:
+        from cherenkov.agents.pilot import PilotAgent, InMemoryRunner
+
+        runner = InMemoryRunner()
+        pilot = PilotAgent(runner)
+        intent = f"Verify {element_id} on {screen_name} in {app_id}"
+        steps = pilot.run(intent)
+
+        return {
+            "app_id": app_id,
+            "screen": screen_name,
+            "element": element_id,
+            "pilot_steps": [vars(s) for s in steps],
+            "conclusion": "passed" if all(s.status == "done" for s in steps) else "failed",
+        }
+
     # ── private ───────────────────────────────────────────────────────────
 
     def _build_task(

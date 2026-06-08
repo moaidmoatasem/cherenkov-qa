@@ -8,6 +8,7 @@ Pattern copied from stages/perf/perf_stage.py:_BaselineDB:
 """
 from __future__ import annotations
 
+import json
 import os
 import sqlite3
 import time
@@ -325,3 +326,57 @@ class VerdictStore:
             decay_score=row[6],
             schema_version=row[7],
         )
+
+
+class ReflectorStore:
+    """Generic SQLite-backed store for arbitrary mobile/reflector entries.
+
+    Each entry is a dict with at least a 'type' key for filtering.
+    """
+
+    def __init__(self, db_path: str | None = None):
+        self.db_path = db_path or _default_db_path().replace("verdicts.db", "reflector.db")
+        if self.db_path != ":memory:":
+            dirname = os.path.dirname(self.db_path)
+            if dirname:
+                os.makedirs(dirname, exist_ok=True)
+        self._init_table()
+
+    def _init_table(self) -> None:
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS entries ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            "type TEXT NOT NULL,"
+            "data TEXT NOT NULL,"
+            "timestamp INTEGER NOT NULL)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_entries_type ON entries(type)"
+        )
+        conn.commit()
+        conn.close()
+
+    def append(self, entry: dict) -> None:
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn.execute(
+            "INSERT INTO entries (type, data, timestamp) VALUES (?,?,?)",
+            (entry.get("type", "unknown"), json.dumps(entry), int(time.time())),
+        )
+        conn.commit()
+        conn.close()
+
+    def query(self, type: str | None = None, limit: int = 100) -> list[dict]:
+        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        if type:
+            rows = conn.execute(
+                "SELECT data FROM entries WHERE type=? ORDER BY timestamp DESC LIMIT ?",
+                (type, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT data FROM entries ORDER BY timestamp DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
+        conn.close()
+        return [json.loads(r[0]) for r in rows]

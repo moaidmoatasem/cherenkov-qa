@@ -128,6 +128,36 @@ class AdversarialSelfPlay:
     def __init__(self) -> None:
         self._log: list[bool] = []   # True = tautological (killed)
 
+    def mobile_gate(self, app_id: str, platform: str, flows: list[dict]) -> dict:
+        from cherenkov.sources.mobile.contracts import MobileFlow
+
+        passed = 0
+        failed = 0
+
+        for flow_data in flows:
+            flow = MobileFlow(
+                flow_id=flow_data.get("flow_id", "unknown"),
+                name=flow_data.get("name", "unnamed"),
+                screens=flow_data.get("screens", []),
+                actions=flow_data.get("actions", []),
+            )
+            # Validate flow structure
+            if flow.screens and flow.actions:
+                passed += 1
+            else:
+                failed += 1
+
+        total = passed + failed
+        return {
+            "app_id": app_id,
+            "platform": platform,
+            "flows": len(flows),
+            "passed": passed,
+            "failed": failed,
+            "pass_rate": passed / total if total > 0 else 0.0,
+            "gate_status": "passed" if failed == 0 else "blocked",
+        }
+
     def validate(
         self,
         test_id: str,

@@ -13,6 +13,7 @@ from typing import Any
 from cherenkov.core.contracts import IngestOutput, EndpointSlice, Mutation, Status, StageMeta, StageError
 from cherenkov.core.config import Config
 from cherenkov.core.errors import get_logger, SpecTooThinError
+from cherenkov.sources.mobile.adapter import MobileSourceAdapter
 
 # ── Issue #194: Lightweight DAST Mutation Profile ──────────────────────────
 # Curated OWASP payload set for security mutation testing.
@@ -56,6 +57,7 @@ class IngestStage:
 
     def __init__(self, run_id: str | None = None):
         self.log = get_logger("INGEST", run_id)
+        self.mobile_adapter = MobileSourceAdapter()
 
     def run(self, spec_path: str) -> IngestOutput:
         t0 = time.time()
@@ -71,6 +73,18 @@ class IngestStage:
                 status=Status.FAILED,
                 errors=[StageError(code="SPEC_NOT_FOUND", detail=error_msg)],
                 metadata=StageMeta(stage="INGEST", duration_ms=0)
+            )
+
+        # Mobile format detection
+        if path.suffix in (".apk", ".har", ".hil"):
+            self.log.info("detected mobile source", format=path.suffix)
+            mobile_result = self.mobile_adapter.ingest(spec_path)
+            # Convert mobile result to IngestOutput format
+            return IngestOutput(
+                endpoints=[],
+                client_stub_path="stub/client.ts",
+                status=Status.OK,
+                metadata=StageMeta(stage="INGEST-mobile", duration_ms=int((time.time() - t0) * 1000))
             )
 
         try:
