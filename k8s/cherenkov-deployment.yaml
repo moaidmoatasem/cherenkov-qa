@@ -15,9 +15,9 @@ spec:
     spec:
       containers:
         - name: cherenkov
-          image: cherenkov/engine:latest
+          image: cherenkov-engine:latest
           imagePullPolicy: IfNotPresent
-          command: ["cherenkov", "doctor"]
+          command: ["python", "cherenkov.py", "doctor"]
           env:
             - name: OLLAMA_HOST
               value: http://ollama:11434
