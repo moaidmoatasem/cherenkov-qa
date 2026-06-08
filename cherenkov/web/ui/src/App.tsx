@@ -24,6 +24,7 @@ import MemoryScreen from './components/MemoryScreen';
 import GovernanceScreen from './components/GovernanceScreen';
 import ChatScreen from './components/ChatScreen';
 import DeviceManagerScreen from './components/DeviceManagerScreen';
+import MobileScreen from './components/MobileScreen';
 import KnowledgeExplorerScreen from './components/KnowledgeExplorerScreen';
 import GlobalShortcuts from './components/GlobalShortcuts';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -369,6 +370,10 @@ function InnerApp() {
 
             {activeTab === 'devices' && (
               <DeviceManagerScreen />
+            )}
+
+            {activeTab === 'mobile' && (
+              <MobileScreen />
             )}
 
             {activeTab === 'chat' && (

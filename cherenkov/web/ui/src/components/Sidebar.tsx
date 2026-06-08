@@ -24,7 +24,8 @@ import {
   ChevronDown,
   ChevronRight,
   Star,
-  MessageSquare
+  MessageSquare,
+  Smartphone
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
 import { Project } from '../types';
@@ -119,6 +120,7 @@ export default function Sidebar({
       items: [
         { id: 'healing', label: 'Healing Options', icon: Sparkles, desc: 'API Drift & Self-Repair' },
         { id: 'devices', label: 'Devices', icon: Cpu, desc: 'VLM device management' },
+        { id: 'mobile', label: 'Mobile', icon: Smartphone, desc: 'Mobile device testing' },
         { id: 'eject', label: 'Eject Suite', icon: Download, desc: 'Export plain Playwright' },
         { id: 'governance', label: 'Governance', icon: Shield, desc: 'KPI cert & model compliance' },
       ]

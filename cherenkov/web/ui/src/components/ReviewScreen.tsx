@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { 
+import {
   Check, 
   X, 
   AlertTriangle, 
@@ -16,7 +16,13 @@ import {
   Code,
   CheckCircle,
   HelpCircle,
-  Clock
+  Clock,
+  MessageSquare,
+  Smartphone,
+  Send,
+  Bot,
+  User,
+  Loader2
 } from 'lucide-react';
 import { TestItem, TestGate } from '../types';
 import { approveTestScenario, rejectTestScenario, editTestScenario, fetchGeneratedTests, fetchReviewQueue, ReviewQueueItem, explainTestScenario } from '../lib/api';
@@ -95,6 +101,10 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
   const [rejectReason, setRejectReason] = useState('');
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [isExplaining, setIsExplaining] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatStreaming, setIsChatStreaming] = useState(false);
 
   // Update pass rate on tests change
   useEffect(() => {
@@ -445,9 +455,21 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
                     <p className="text-[11px] font-mono text-[#7D8DA1] mt-0.5">PLAYWRIGHT COMPONENT SPEC · PATH: {activeTest.path}</p>
                   </div>
 
-                  <div className="text-right">
+                  <div className="flex items-center gap-2">
                     <span className="block text-[10px] font-mono uppercase text-[#7D8DA1]">Confidence metrics</span>
                     <span className="text-base font-bold text-glow-bright font-mono">{activeTest.confidence * 100}%</span>
+                    <div className="w-px h-6 bg-white/10 mx-1" />
+                    <button
+                      onClick={() => setShowChat(!showChat)}
+                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[9px] font-mono uppercase font-bold tracking-wider border transition cursor-pointer ${
+                        showChat
+                          ? 'bg-glow-blue/20 border-glow-blue/40 text-glow-bright'
+                          : 'border-white/10 text-[#7D8DA1] hover:text-glow-bright hover:border-glow-blue/30'
+                      }`}
+                    >
+                      <MessageSquare className="w-3 h-3" />
+                      Chat
+                    </button>
                   </div>
                 </div>
               </div>
@@ -560,6 +582,97 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
                   </div>
                 )}
               </div>
+
+              {/* Chat Panel for current test context */}
+              {showChat && (
+                <div className="border-t border-white/5 bg-black/30 shrink-0">
+                  <div className="flex items-center justify-between px-4 py-2 bg-white/5">
+                    <span className="text-[10px] font-mono text-[#7D8DA1] uppercase tracking-wider">
+                      Chat about: {activeTest?.name}
+                    </span>
+                    <button
+                      onClick={() => setShowChat(false)}
+                      className="text-[#7D8DA1] hover:text-text-primary text-xs transition"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="h-40 overflow-y-auto p-3 space-y-2">
+                    {chatMessages.length === 0 && (
+                      <p className="text-xs text-[#7D8DA1] text-center pt-8">
+                        Ask a question about this test scenario.
+                      </p>
+                    )}
+                    {chatMessages.map((msg, idx) => (
+                      <div key={idx} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        {msg.role === 'assistant' && (
+                          <div className="shrink-0 w-5 h-5 rounded-full bg-glow-blue/10 border border-glow-blue/30 flex items-center justify-center">
+                            <Bot className="w-3 h-3 text-glow-bright" />
+                          </div>
+                        )}
+                        <div className={`rounded-xl px-3 py-1.5 text-xs max-w-[80%] ${
+                          msg.role === 'user'
+                            ? 'bg-glow-blue/20 border border-glow-blue/30 text-text-primary'
+                            : 'bg-white/5 border border-white/10 text-[#E6EDF3]'
+                        }`}>
+                          {msg.content}
+                        </div>
+                        {msg.role === 'user' && (
+                          <div className="shrink-0 w-5 h-5 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
+                            <User className="w-3 h-3 text-[#7D8DA1]" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 p-3 border-t border-white/5">
+                    <input
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey && chatInput.trim()) {
+                          e.preventDefault();
+                          setChatMessages(prev => [...prev, { role: 'user', content: chatInput.trim() }]);
+                          setChatInput('');
+                          setIsChatStreaming(true);
+                          setTimeout(() => {
+                            setChatMessages(prev => [...prev, {
+                              role: 'assistant',
+                              content: `Analysis for test "${activeTest?.name}": This test validates ${activeTest?.method} ${activeTest?.path} with ${(activeTest?.confidence * 100).toFixed(0)}% confidence. Review assertions and expected status codes against the OpenAPI spec.`
+                            }]);
+                            setIsChatStreaming(false);
+                          }, 600);
+                        }
+                      }}
+                      placeholder="Ask about this test..."
+                      className="flex-1 bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder-[#7D8DA1] focus:outline-none focus:border-glow-blue/50 transition"
+                    />
+                    <button
+                      onClick={() => {
+                        if (!chatInput.trim() || isChatStreaming) return;
+                        setChatMessages(prev => [...prev, { role: 'user', content: chatInput.trim() }]);
+                        setChatInput('');
+                        setIsChatStreaming(true);
+                        setTimeout(() => {
+                          setChatMessages(prev => [...prev, {
+                            role: 'assistant',
+                            content: `Analysis for test "${activeTest?.name}": This test validates ${activeTest?.method} ${activeTest?.path} with ${(activeTest?.confidence * 100).toFixed(0)}% confidence. Review assertions and expected status codes against the OpenAPI spec.`
+                          }]);
+                          setIsChatStreaming(false);
+                        }, 600);
+                      }}
+                      disabled={!chatInput.trim() || isChatStreaming}
+                      className="shrink-0 w-7 h-7 rounded-lg bg-glow-blue hover:bg-opacity-90 text-slate-950 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      {isChatStreaming ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Send className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Bottom Sticky Action Bar Drawer */}
               <div className="p-4 bg-black/40 border-t border-white/5 flex items-center justify-between gap-4 shrink-0">
