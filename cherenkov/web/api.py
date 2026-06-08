@@ -30,7 +30,7 @@ from cherenkov.core.feedback_store import FeedbackStore, FeedbackEntry
 
 app = FastAPI(
     title="CHERENKOV QA Observability Dashboard Server",
-    version="1.1.0",
+    version="1.2.0",
     description="Localhost-first dashboard server for API conformance testing."
 )
 
@@ -41,6 +41,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Phase 0b: Monitoring & Security (conditionally added) ────────────
+from cherenkov.web.monitoring import router as monitor_router
+app.include_router(monitor_router)
+
+from cherenkov.web.middleware.security import add_security_middleware
+add_security_middleware(app)
 
 # ── Issue #196: HITL Auth — API key authentication ──────────────────────
 # Only active when CHERENKOV_HITL_API_KEY is set (single-user by default).
