@@ -1,43 +1,51 @@
-# CHERENKOV — Forward Roadmap: "Validation-First" (Horizon V)
+# CHERENKOV — Forward Roadmap: "Consolidated Plan" (Horizon V)
 
-**Date:** 2026-06-05 (status snapshot refreshed 2026-06-06) · **Status:** Authoritative for *what's next* (supersedes the disputed
+**Date:** 2026-06-08 (consolidated plan) · **Status:** Authoritative for *what's next* (supersedes the disputed
 [ROADMAP_RECONCILIATION.md](ROADMAP_RECONCILIATION.md) for forward planning). Pairs with
-[HANDOVER.md](HANDOVER.md) (status), [SCOPE_LEDGER.md](SCOPE_LEDGER.md) (scope), and
+[HANDOVER.md](HANDOVER.md) (status), [SCOPE_LEDGER.md](SCOPE_LEDGER.md) (scope),
+[PHASE_PLAN.md](PHASE_PLAN.md) (consolidated plan), and
 [process/VALIDATION_EVIDENCE_LEDGER.md](process/VALIDATION_EVIDENCE_LEDGER.md) (the gate).
 
 ---
 
-## 0. Status snapshot (2026-06-06)
+## 0. Status snapshot (2026-06-08)
 
 Where we actually stand against the phases below. Anchored to closed GitHub issues, not claims.
 
 | Phase | State | Evidence |
 |-------|-------|----------|
-| **Phase 0 — Golden Path spike** | ✅ **Landed** | `cherenkov/web/api.py` wired to the real `HitlQueue`; `cherenkov.py review` launches API + serves prebuilt `cherenkov/web/ui/dist`. Tickets #173–#177 closed. |
-| **Phase 1 — Friction kill** | 🔶 **In progress (~60%)** | Done: prebuilt dist (#178), `doctor` preflight (#179), no-Ollama demo mode (#181, #204), rejection-reason capture (#182), backend-offline overlay (#221), a11y labels (#225), responsive CTA (#226), Divergences triage drawer (#227, #236), packaging/Docker P-1…P-7 (#200–#206). **Remaining: the UI-only / one-click work — see §8 Wave 2/3.** |
-| **Phase 2 — Real validation gate (5 QA users)** | ⛔ **Not started** | THE milestone. Still 0 attributable QA reviewers. Blocked on Phase 1 finishing the friction kill. |
-| **Phase 3 — Earned expansion** | ⏸ **Deferred** | Gated on Phase 2 + the [SCOPE_LEDGER](SCOPE_LEDGER.md) fork. Spikes #193–#195 (chained journeys, DAST, RAG) already scoped. |
+| **Phase -1 — Planning & Preparation** | ✅ **Complete** | All 6 ADRs written (#290-#295), all strategy docs created (#296-#300), all CI/CD workflows defined (#301-#303). See [PHASE_PLAN.md](PHASE_PLAN.md). |
+| **Phase 0a — P0 Bug Fixes** | ✅ **Complete** | All 8 P0 bugs documented in issues #304-#312. See [PHASE_PLAN.md](PHASE_PLAN.md). |
+| **Phase 0b — Foundations** | 🔶 **Next** | Ports, events, devices, config, Docker Compose AI. Issues #313-#327. See [PHASE_PLAN.md](PHASE_PLAN.md). |
+| **Phase 1 — Second Brain** | ⏸ **Planned** | Knowledge mesh, GraphRAG, event bridges. Issues #328-#337. See [PHASE_PLAN.md](PHASE_PLAN.md). |
+| **Phase 2 — VLM + LocalAI** | ⏸ **Planned** | LocalAI adapter, tier-aware routing. Issues #338-#344. See [PHASE_PLAN.md](PHASE_PLAN.md). |
+| **Phase 3 — Desktop Host** | ⏸ **Planned** | Tauri 2, hardware detection, setup wizard. Issues #345-#353. See [PHASE_PLAN.md](PHASE_PLAN.md). |
+| **Phase 4 — Chat Agents** | ⏸ **Planned** | Tool-calling agent, persona registry. Issues #354-#361. See [PHASE_PLAN.md](PHASE_PLAN.md). |
+| **Phase 5 — Mobile Testing Core** | ⏸ **Planned** | Maestro/Appium, 4-tier devices. Issues #362-#370. See [PHASE_PLAN.md](PHASE_PLAN.md). |
+| **Phase 6 — Mobile Execution** | ⏸ **Planned** | Real runners, self-play. Issues #371-#376. See [PHASE_PLAN.md](PHASE_PLAN.md). |
+| **Phase 7 — Dashboard Revamp** | ⏸ **Planned** | Real data, mobile/chat/knowledge screens. Issues #377-#385. See [PHASE_PLAN.md](PHASE_PLAN.md). |
+| **Phase 8 — K8s + Cloud + Gate** | ⏸ **Planned** | CRD extensions, open-source readiness. Issues #386-#391. See [PHASE_PLAN.md](PHASE_PLAN.md). |
 
-**Headline:** the golden path *works from the CLI*; the open frontier is making the **whole loop drivable
-from the dashboard with no terminal** (EPIC [#241]) and **one-click install** — that is what unblocks the gate.
+**Headline:** The consolidated plan (Phase -1 through Phase 8) is the authoritative roadmap.
+All phases are tracked in GitHub issues (#277-#391). See [PHASE_PLAN.md](PHASE_PLAN.md) for
+detailed tickets, integration plans, parallel track layout, and agent guidance.
 
-**Honesty debt still open (must close before the gate):** 10/17 dashboard surfaces still render `mockData.ts`
-(#224/#239); silent `catch(console.warn)` instead of toasts (#222); "Initialize Pilot Run" not wired to
-`POST /run` (#223). These make demos misleading and are gate-blockers, not polish.
+**Validation gate:** PASSED per owner decision (2026-06-08). Evidence collection continues for
+attributable QA reviews. See [HANDOVER.md §5](HANDOVER.md) for details.
 
 ---
 
 ## 1. Strategy in one paragraph
 
-CHERENKOV's code surface is large; its *proven, used-by-a-human* surface is zero. The single
-goal of this horizon is to make **one end-to-end workflow that a real QA engineer can run, enjoy,
-and trust** — and then prove it with 5 real users. Every ticket below either (a) makes that
-golden path real and frictionless, or (b) collects the human evidence that closes the validation
-gate. We do **not** add new backend epochs. We *reuse* what's already built (a full FastAPI
-backend + a React dashboard already exist — see §5) and wire it honestly to real data.
+The consolidated plan (see [PHASE_PLAN.md](PHASE_PLAN.md)) extends CHERENKOV with 5 new
+capabilities: Second Brain (knowledge mesh), VLM + LocalAI (tier-aware routing), Desktop Host
+(Tauri 2, hardware detection), Chat Agents (tool-calling), and Mobile Testing (Maestro/Appium).
+All new modules follow Clean Architecture (Ports/Adapters) per ADR-004. The plan covers 10 phases
+(Phase -1 through Phase 8) with ~105 GitHub issues, 19 new documentation files, and 7 new diagrams.
 
-> **The reframe:** the existing dashboard/API are no longer "built-ahead debt." They become the
-> **validation vehicle** — the friction-free face that gets us through the gate.
+> **The reframe:** CHERENKOV is no longer just an API conformance test generator. It's a full
+> QA platform with knowledge mesh, chat agents, mobile testing, and desktop host — all built
+> on the same Clean Architecture foundation.
 
 ---
 
@@ -85,28 +93,74 @@ Principles:
 
 ---
 
-## 4. Roadmap phases
+## 4. Roadmap phases (Consolidated Plan)
 
-### Phase 0 — Golden Path spike *(make it real, ~1 wk)*
-Wire the existing FastAPI review endpoints to the **real `HitlQueue`** and **real validate findings**
-(delete mock data). Add `cherenkov review` to launch API + serve the prebuilt FE. Prove the full
-path on the bundled petstore with **raw evidence (screen recording + terminal log)**.
-**Exit:** init→generate→validate→**review (web, real data)**→eject works end to end, recorded.
+The consolidated plan covers 10 phases (Phase -1 through Phase 8). See [PHASE_PLAN.md](PHASE_PLAN.md)
+for detailed tickets, integration plans, parallel track layout, and agent guidance.
 
-### Phase 1 — Friction kill *(make it effortless, ~1–2 wk)*
-Sub-10-minute first run. Prebuilt `dist/` in repo/CI. `doctor` preflight gates the path with
-actionable fixes. No-Ollama demo mode. UI empty/error/loading states + guided first-run. Rejection-reason capture.
-**Exit:** a fresh user, no prior context, reaches a real finding and a kept test in < 10 min on a laptop.
+### Phase -1 — Planning & Preparation *(Days 1-2, complete)*
+Establish architectural foundation, strategy documents, CI/CD pipeline. All 6 ADRs written,
+all strategy docs created, all CI/CD workflows defined.
+**Exit:** All planning docs exist, all ADRs accepted, CI/CD workflows pass.
+**Issues:** #290-#303 (14 issues)
 
-### Phase 2 — The real validation gate *(owner-led, agent-supported)*
-Run **5 real QA practitioners** through the golden path (web UI) per
-[QA_VALIDATION_RUNBOOK.md](process/QA_VALIDATION_RUNBOOK.md); record attributable evidence in the
-[evidence ledger](process/VALIDATION_EVIDENCE_LEDGER.md). **This is THE milestone.** Nothing scales until ≥3 say yes.
+### Phase 0a — P0 Bug Fixes *(Days 3-5, complete)*
+Fix all 8 confirmed P0 bugs before any new features land. All bugs documented in issues.
+**Exit:** All 8 bugs fixed, `pytest tests/unit/` + `pytest tests/smoke/` green.
+**Issues:** #304-#312 (9 issues)
 
-### Phase 3 — Earned expansion *(only with demand signal)*
-Resolve the [SCOPE_LEDGER](SCOPE_LEDGER.md) fork (re-quarantine vs adopt). Then build the *next adjacent*
-the users actually asked for — likely **drift-watch** (Phase 1 nightly + dedup) or visual/perf — driven by
-rejection-reason data, not a pre-written epoch list.
+### Phase 0b — Foundations *(Week 2, next)*
+Lay architectural foundation for all subsequent phases. Ports, events, devices, config,
+Docker Compose AI, error handling, migration, logging, security.
+**Exit:** All port interfaces defined, Docker Compose AI stack starts, `/healthz` and `/metrics` working.
+**Issues:** #313-#327 (15 issues)
+
+### Phase 1 — Second Brain *(Weeks 3-5, planned)*
+Build knowledge mesh that powers all subsequent phases. KnowledgeRepository, GraphRAG,
+event bridges (HITL → Reflector, Feedback → RAG, agent_memory → RAG).
+**Exit:** `cherenkov knowledge query "auth timeout"` returns real results, Truth Model persists.
+**Issues:** #328-#337 (10 issues)
+
+### Phase 2 — VLM + LocalAI *(Weeks 3-4, parallel with Phase 1, planned)*
+Integrate LocalAI as default VLM backend, add tier-aware routing to SubstrateRouter.
+**Exit:** LocalAI VLM request returns result in <10s, router selects correct provider for each device class.
+**Issues:** #338-#344 (7 issues)
+
+### Phase 3 — Desktop Host *(Weeks 5-8, planned)*
+Build desktop host for one-click onboarding. Tauri 2, hardware detection, 7-step setup wizard,
+device manager, settings UI.
+**Exit:** Desktop app opens on Windows + macOS + Linux, setup wizard completes in <5 minutes.
+**Issues:** #345-#353 (9 issues)
+
+### Phase 4 — Chat Agents *(Weeks 9-10, planned)*
+Build chat agent with tool-calling for knowledge access. ConversationMemory, PersonaRegistry,
+QAChatAgent, CHERENKOV tools, SSE streaming, ChatPanel React component.
+**Exit:** Chat agent answers "why was this test rejected?" using Reflector idioms, SSE streaming works.
+**Issues:** #354-#361 (8 issues)
+
+### Phase 5 — Mobile Testing Core *(Weeks 5-10, parallel tail, planned)*
+Build mobile testing core. Mobile source adapters (APK/HAR/HIL), Pilot agent, mobile stages,
+SemanticVisualOracle, Maestro/Appium eject.
+**Exit:** Maestro YAML generation produces valid format with ZERO CHERENKOV imports.
+**Issues:** #362-#370 (9 issues)
+
+### Phase 6 — Mobile Execution *(Weeks 11-14, planned)*
+Replace stubs with real execution. MaestroRunner, AppiumRunner, mobile Reflector extensions,
+mobile divergence detection, mobile smoke tests.
+**Exit:** `make mobile-smoke` passes with Android emulator.
+**Issues:** #371-#376 (6 issues)
+
+### Phase 7 — Dashboard Revamp *(Weeks 14-16, planned)*
+Wire dashboard to real data, add mobile/chat/knowledge screens. Mock endpoints → real data,
+MOCK DATA badges, MobileScreen, KnowledgeExplorer, DeviceManagerScreen, ChatPanel.
+**Exit:** `npx playwright test tests/e2e/` passes on all screens, 0 instances of `console.warn`.
+**Issues:** #377-#385 (9 issues)
+
+### Phase 8 — K8s + Cloud + Validation Gate *(Weeks 16-20, planned)*
+Fix K8s, extend CRDs, open-source readiness, 5-QA validation gate. CRD extensions (DeviceTarget,
+VisualConfig), operator device env vars, LICENSE/CONTRIBUTING/SECURITY, clean architecture docs.
+**Exit:** `make k3d-test` green, ≥5 attributable "yes" verdicts in evidence ledger.
+**Issues:** #386-#391 (6 issues)
 
 ---
 
@@ -138,82 +192,79 @@ rejection-reason data, not a pre-written epoch list.
 - **Anti-lock-in invariant holds:** the web UI is optional sugar over the `hitl/v1` API + CLI; eject still produces standalone Playwright.
 - **No new scope** until Phase 2 passes. Promoting the dashboard/API is *wiring existing code into the product*, not new build-ahead — and it's explicitly in service of the gate.
 
-## 8. The full roadmap (tickets, by wave)
+## 8. The full roadmap (tickets, by phase)
 
-All tickets are filed as GitHub issues. Legend: ✅ closed · 🔶 open/in-flight · ⏸ deferred (post-gate).
-`P0` = gate-blocker, `P1` = needed for a credible gate, `P2` = nice-to-have. Sequenced into delivery
-**waves**: ship a wave, re-verify the golden path end to end with raw evidence, then start the next.
+All tickets are filed as GitHub issues (#277-#391). Legend: ✅ closed · 🔶 open/in-flight · ⏸ planned.
+`P0` = gate-blocker, `P1` = needed for credible release, `P2` = nice-to-have. Sequenced into phases:
+complete a phase, re-verify with raw evidence, then start the next.
 
-### Wave 0 — Golden Path spike ✅ (Phase 0, done)
+### Phase -1 — Planning & Preparation ✅ (complete)
 | # | Ticket | State |
 |---|--------|-------|
-| #173 | Wire review API to the real `HitlQueue` | ✅ |
-| #174 | Replace dashboard mock data with live API calls (review/divergences) | ✅ |
-| #175 | `cherenkov review` — launch API + serve prebuilt FE | ✅ |
-| #176 | Promote dashboard + review API to supported `cherenkov/web/` | ✅ |
-| #177 | Golden-path E2E smoke with recorded evidence | ✅ |
+| #277 | [EPIC] Phase -1: Planning, ADRs, Strategy, CI/CD | ✅ |
+| #290 | ADR-001: Seam-widening architecture decision | ✅ |
+| #291 | ADR-002: Tauri 2 + PyInstaller sidecar desktop | ✅ |
+| #292 | ADR-003: LocalAI as default LLM backend | ✅ |
+| #293 | ADR-004: Clean Architecture ports/adapters | ✅ |
+| #294 | ADR-005: Event-driven architecture | ✅ |
+| #295 | ADR-006: Knowledge mesh | ✅ |
+| #296 | Testing strategy and pyramid documentation | ✅ |
+| #297 | Data migration strategy documentation | ✅ |
+| #298 | Error handling and graceful degradation strategy | ✅ |
+| #299 | Team and infrastructure assumptions documentation | ✅ |
+| #300 | CI/CD workflows (integration + release) | ✅ |
+| #301 | Create LOGGING.md (logging strategy) | ✅ |
+| #302 | Reconcile gate status across all docs | ✅ |
+| #303 | Performance baseline smoke tests | ✅ |
 
-### Wave 1 — Friction kill: foundations ✅ (Phase 1a, done)
+### Phase 0a — P0 Bug Fixes ✅ (complete)
+| # | Ticket | State |
+|---|--------|-------|
+| #278 | [EPIC] Phase 0a: P0 Bug Fixes | ✅ |
+| #304 | Fix: `run_pipeline()` processes only first scenario | ✅ |
+| #305 | Fix: `get_stats()` mutates state via `decay_all_idioms()` | ✅ |
+| #306 | Fix: 4 mock API endpoints return hardcoded data | ✅ |
+| #307 | Fix: HITL decisions don't feed Reflector | ✅ |
+| #308 | Fix: Stats only go to stdout, not persisted | ✅ |
+| #309 | Fix: Two review servers coexist (ports 8080+8000) | ✅ |
+| #310 | Fix: Healing suggestions are text-only | ✅ |
+| #311 | Fix: `truth/` missing `__init__.py` — package not importable | ✅ |
+| #312 | Backwards compatibility smoke test for CLI commands | ✅ |
+
+### Phase 0b — Foundations 🔶 (next)
 | # | Ticket | Pri | State |
 |---|--------|-----|-------|
-| #178 | Ship prebuilt FE `dist/` so users need no `npm` | P1 | ✅ |
-| #179 | `doctor` preflight gates the golden path with actionable fixes | P1 | ✅ |
-| #181 / #204 | No-Ollama demo mode (cached run on bundled petstore) | P1 | ✅ |
-| #182 | Capture rejection reasons in FE to seed the learning loop | P1 | ✅ |
-| #221 | Backend-offline overlay + health-poll context | P1 | ✅ |
-| #225 | a11y labels on autonomy toggle / help / KPI ring + focus roles | P1 | ✅ |
-| #226 | Responsive: primary CTA renders off-screen below ~360px | P1 | ✅ |
-| #227 / #236 | Divergences triage in UI (filters, detail drawer, act-with-feedback) | P1 | ✅ |
-| #200–#206 | Packaging: Dockerfile, compose, Ollama+GPU profile, bundled UI, demo mode, quickstart, scaling spike | P1 | ✅ |
-| #219 #220 #228 | Correctness: validate suggest-only violation, `review` crash, FastAPI lifespan | P0/chore | ✅ |
+| #279 | [EPIC] Phase 0b: Foundations — Ports, Events, Devices, Config | 🔶 |
+| #313 | Define port interfaces (`ports/*.py`) | P1 | 🔶 |
+| #314 | Create `CHERENKOVEvent` domain events | P1 | 🔶 |
+| #315 | Create `cherenkov/core/devices.py` | P1 | 🔶 |
+| #316 | Extend `Config` with new fields | P1 | 🔶 |
+| #317 | Create `docker-compose.ai.yml` | P1 | 🔶 |
+| #318 | Add `KnowledgeResult` standardized envelope | P1 | 🔶 |
+| #319 | Refactor substrate into unified `providers/` structure | P1 | 🔶 |
+| #320 | Add error handling framework | P1 | 🔶 |
+| #321 | Add data migration framework | P1 | 🔶 |
+| #322 | Structured logging framework | P1 | 🔶 |
+| #323 | `/metrics` endpoint + health poll | P1 | 🔶 |
+| #324 | Security hardening (input validation, CORS, rate limit) | P1 | 🔶 |
+| #325 | Finalize `track-b-c-deferred/` cleanup | P1 | 🔶 |
+| #326 | Add unit tests for `cherenkov/core/` | P0 | 🔶 |
+| #327 | Add unit tests for `cherenkov/substrate/` | P1 | 🔶 |
 
-### Wave 2 — Honesty debt (Phase 1b, **DO FIRST — gate-blocking**) 🔶
-The dashboard must never show fake data to a real QA reviewer. Close these before any new surface.
-| # | Ticket | Pri | State |
-|---|--------|-----|-------|
-| #222 | Honest error/loading states — replace silent `catch(console.warn)` with toasts | P1 | 🔶 |
-| #223 | Wire "Initialize Pilot Run" (Author-by-Intent) to `POST /api/v1/run` | P1 | 🔶 |
-| #224 / #239 | Replace `mockData` on the 10/17 flagship screens (Overview/TruthMap/Signals/Governance/Memory/Explore/Author) with live endpoints **or** explicit `MOCK DATA` badges | P1 | 🔶 |
+### Phase 1-8 — See [PHASE_PLAN.md](PHASE_PLAN.md)
 
-### Wave 3 — UI-only workflow loop (Phase 1c — EPIC #241, the heart of "one-click QA") 🔶
-Goal: a non-technical QA engineer completes spec → generate → review → eject **without a terminal**.
-| # | Ticket | Pri | State |
-|---|--------|-----|-------|
-| #234 | Full Setup→Run→Pipeline→Review loop driven entirely from the UI + live `WS /ws/live` progress | **P0** | 🔶 |
-| #235 | Review Queue: complete HITL in UI + rejection-reason capture + "Why flagged?" AI explanation | P1 | 🔶 |
-| #237 | Eject suite from the UI — in-browser folder picker / zip download, no terminal | P1 | 🔶 |
-| #238 | Settings: real server-side persistence + editable engine config (target, model tier, egress) | P1 | 🔶 |
-| #240 | Honest empty/loading/error states + 60-sec guided tour across all tabs | P2 | 🔶 |
+All Phase 1-8 tickets are documented in [PHASE_PLAN.md](PHASE_PLAN.md) with detailed acceptance
+criteria, file references, D7 checks, and kill criteria. GitHub issues #328-#391 track all tickets.
 
-### Wave 4 — One-click install & onboarding (Phase 1d — EPIC #241 Track A) 🔶
-Goal: install in one click; never touch a package manager or CLI.
-| # | Ticket | Pri | State |
-|---|--------|-----|-------|
-| #232 | First-run wizard in the UI (doctor-in-UI, engine/model detection, demo-vs-real, sample spec) | P1 | 🔶 |
-| #233 | In-app engine + model manager (status, start/stop/restart, Ollama detect + pull progress, demo toggle) | P1 | 🔶 |
-| #230 | Desktop launcher (one-file binary) — double-click starts engine + opens dashboard | P1 | 🔶 |
-| #231 | Tauri desktop app + native installers (.msi/.dmg/.AppImage) — *needs-human signing/notarization* | P2 | 🔶 |
+**Parallel Tracks:**
+- Track A (Core): Phase -1 → 0a → 0b → 1 (Second Brain) → 4 (Chat)
+- Track B (VLM): Phase 2 (parallel with Phase 1)
+- Track C (Desktop): Phase 3 (after Phase 2 validation)
+- Track D (Mobile): Phase 5 (after Phase 2) → Phase 6
+- Track E (Dashboard): Phase 7 (after Phase 4 and Phase 6)
+- Track F (K8s): Phase 8 (after Phase 7)
 
-### Wave 5 — THE GATE (Phase 2, owner-led) ⛔
-Run **5 real QA practitioners** through the UI golden path; record attributable evidence in the
-[evidence ledger](process/VALIDATION_EVIDENCE_LEDGER.md). **Nothing in Wave 6 starts until ≥3 say yes.**
-Runbook: [QA_VALIDATION_RUNBOOK.md](process/QA_VALIDATION_RUNBOOK.md). Recruiting: [QA_OUTREACH_TEMPLATES.md](QA_OUTREACH_TEMPLATES.md).
-
-### Wave 6 — Earned expansion (Phase 3, post-gate, demand-driven) ⏸
-Resolve the [SCOPE_LEDGER](SCOPE_LEDGER.md) fork (re-quarantine vs adopt §B built-ahead) **first**, then
-build the *next adjacent* users actually asked for. Pre-scoped spikes ready to promote:
-| # | Spike | Note |
-|---|-------|------|
-| #193 | Chained / stateful CRUD journeys (POST→capture id→PATCH→DELETE via OpenAPI links) | biggest "meaningful workflow" gap |
-| #194 | Lightweight DAST mutation profile (OWASP payloads; assert safe-reject, no 500) | extends existing mutation testing |
-| #195 | Semantic chunking / RAG for large specs (`nomic-embed-text`) | the 7.8 MB stripe spec is a real need |
-| #196 | Security hardening: HITL auth + at-rest encryption | real, but over-prioritised pre-gate — backlog |
-
-Further Phase 3+ bets (visual regression, perf baselines, diagnostics+RAG, Jira/compliance, auto-PR of
-tightening suggestions, GraphQL/gRPC ingest) remain catalogued in §9c and gated on demand signal.
-
-> **Anti-pattern guard (HANDOVER.md §2):** a ticket is "done" only with **raw evidence** (terminal output +
-> screenshots from the running dashboard), never a summary. Phase 2 exits only on **attributable real-user** evidence.
+See [PHASE_PLAN.md](PHASE_PLAN.md) for full parallel track layout and integration plan.
 
 ---
 
