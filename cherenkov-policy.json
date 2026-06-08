@@ -4,7 +4,13 @@
     "full-dev": {
       "servers": {
         "cherenkov": {
-          "tools": ["hitl_list", "hitl_approve", "hitl_reject", "validate_run_gate"],
+          "tools": [
+            "hitl_list", "hitl_approve", "hitl_reject", "validate_run_gate",
+            "visual_diff_baseline", "run_k6_perf", "query_rag_index",
+            "export_jira_ticket", "scan_mena_compliance",
+            "chat_query_verdicts", "chat_query_idioms",
+            "chat_explain_divergence", "chat_run_test"
+          ],
           "allow_network": [],
           "allow_filesystem": false
         },
