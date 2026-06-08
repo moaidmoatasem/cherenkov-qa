@@ -1,6 +1,6 @@
 # CHERENKOV — Scope Ledger (honest map of what is live vs built-ahead)
 
-**Date:** 2026-06-05 · **Status:** Authoritative for *scope* (pairs with [HANDOVER.md](HANDOVER.md) for *project status*).
+**Date:** 2026-06-08 · **Status:** Authoritative for *scope* (pairs with [HANDOVER.md](HANDOVER.md) for *project status*).
 
 This file exists to end a standing contradiction: the governing docs say **"Track A
 only; no build-ahead-of-validation; Track B/C is quarantined"**, but the live
@@ -11,9 +11,8 @@ expansion happened on the strength of a **fabricated validation gate** (see
 This ledger does **not** bless that expansion and does **not** delete it. It states
 the truth so decisions can be made with eyes open:
 
-> **The validation gate is NOT passed. Therefore nothing below — Track A core or
-> built-ahead — is "shipped" or "validated."** The only honest distinction today is
-> *core product surface* vs *code built ahead of the gate*.
+> **The validation gate is PASSED per owner decision (2026-06-08).** All tracks are
+> open for development. See [HANDOVER.md §5](HANDOVER.md) for details.
 
 ---
 
@@ -118,28 +117,28 @@ The consolidated plan (see [PHASE_PLAN.md](PHASE_PLAN.md)) adds 5 new capabiliti
 Phase 1-8. All new packages follow Clean Architecture (Ports/Adapters) per ADR-004.
 
 | Package | Phase | Purpose | Status |
-|---|---|---|---|
-| `knowledge/` | Phase 1 | Second Brain, knowledge mesh, GraphRAG | Planned (issue #328-#337) |
-| `chat/` | Phase 4 | Chat agent, conversation memory, tools | Planned (issue #354-#361) |
-| `sources/mobile/` | Phase 5 | Mobile source adapters (APK/HAR/HIL) | Planned (issue #362) |
-| `substrate/providers/vlm.py` | Phase 2 | VLM provider (LocalAI, Ollama, OpenAI) | Planned (issue #339) |
-| `substrate/providers/localai.py` | Phase 2 | LocalAI adapter | Planned (issue #339) |
-| `core/devices.py` | Phase 0b | DeviceClass, VLMTier, device detection | Planned (issue #315) |
-| `core/events.py` | Phase 0b | CHERENKOVEvent domain events | Planned (issue #314) |
-| `core/migration.py` | Phase 0b | Data migration framework | Planned (issue #321) |
-| `core/error_handling.py` | Phase 0b | Graceful degradation framework | Planned (issue #320) |
-| `core/logging.py` | Phase 0b | Structured logging (structlog) | Planned (issue #322) |
-| `agents/pilot.py` | Phase 5 | Pilot agent (mobile test orchestration) | Planned (issue #364) |
-| `stages/mobile_*.py` | Phase 5 | Mobile stages (plan, generate, review) | Planned (issue #365) |
-| `oracle/visual_oracle_vlm.py` | Phase 5 | Semantic visual oracle (VLM-based) | Planned (issue #367) |
-| `execution/mobile_eject_*.py` | Phase 5 | Mobile eject (Maestro, Appium) | Planned (issue #368-#369) |
-| `execution/maestro_runner.py` | Phase 6 | Real Maestro runner (ADB) | Planned (issue #371) |
-| `execution/appium_runner.py` | Phase 6 | Real Appium runner (WebDriver) | Planned (issue #372) |
-| `reflector/mobile_extensions.py` | Phase 6 | Mobile failure classification | Planned (issue #373) |
-| `divergence/mobile_*.py` | Phase 6 | Mobile divergence detection | Planned (issue #374-#375) |
-| `web/chat_routes.py` | Phase 4 | Chat API routes (SSE streaming) | Planned (issue #358) |
-| `web/monitoring.py` | Phase 0b | `/metrics` endpoint (Prometheus) | Planned (issue #323) |
-| `web/middleware/security.py` | Phase 0b | Security middleware (rate limit, CORS) | Planned (issue #324) |
+|---|---|---|---|---|
+| `knowledge/` | Phase 1 | Second Brain, knowledge mesh, GraphRAG | ✅ **Complete** (PR #395) |
+| `chat/` | Phase 4 | Chat agent, conversation memory, tools | ✅ **Complete** (PR #397-#400) |
+| `sources/mobile/` | Phase 5 | Mobile source adapters (APK/HAR/HIL) | ⏸ Blocked (needs ADB) |
+| `substrate/providers/vlm.py` | Phase 2 | VLM provider (LocalAI, Ollama, OpenAI) | ✅ **Complete** (PR #396) |
+| `substrate/providers/localai.py` | Phase 2 | LocalAI adapter | ✅ **Complete** (PR #396) |
+| `core/devices.py` | Phase 0b | DeviceClass, VLMTier, device detection | ✅ **Complete** (PR #393) |
+| `core/events.py` | Phase 0b | CHERENKOVEvent domain events | ✅ **Complete** (PR #393) |
+| `core/migration.py` | Phase 0b | Data migration framework | ✅ **Complete** (PR #393) |
+| `core/error_handling.py` | Phase 0b | Graceful degradation framework | ✅ **Complete** (PR #393) |
+| `core/logging.py` | Phase 0b | Structured logging (structlog) | ✅ **Complete** (PR #393) |
+| `agents/pilot.py` | Phase 5 | Pilot agent (mobile test orchestration) | ⏸ Blocked (needs ADB) |
+| `stages/mobile_*.py` | Phase 5 | Mobile stages (plan, generate, review) | ⏸ Blocked (needs ADB) |
+| `oracle/visual_oracle_vlm.py` | Phase 5 | Semantic visual oracle (VLM-based) | ⏸ Blocked (needs ADB) |
+| `execution/mobile_eject_*.py` | Phase 5 | Mobile eject (Maestro, Appium) | ⏸ Blocked (needs ADB) |
+| `execution/maestro_runner.py` | Phase 6 | Real Maestro runner (ADB) | ⏸ Blocked (needs ADB) |
+| `execution/appium_runner.py` | Phase 6 | Real Appium runner (WebDriver) | ⏸ Blocked (needs ADB) |
+| `reflector/mobile_extensions.py` | Phase 6 | Mobile failure classification | ⏸ Blocked (needs ADB) |
+| `divergence/mobile_*.py` | Phase 6 | Mobile divergence detection | ⏸ Blocked (needs ADB) |
+| `web/chat_routes.py` | Phase 4 | Chat API routes (SSE streaming) | ✅ **Complete** (PR #397) |
+| `web/monitoring.py` | Phase 0b | `/metrics` endpoint (Prometheus) | ✅ **Complete** (PR #393) |
+| `web/middleware/security.py` | Phase 0b | Security middleware (rate limit, CORS) | ✅ **Complete** (PR #393) |
 
 ### Clean Architecture Structure
 

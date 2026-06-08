@@ -1,15 +1,15 @@
 ## Agent Operating Rules — CHERENKOV QA
 
-**SSOT is `docs/` (v3.1 + delta).** There is NO v3.1 + delta, v3.1 + delta, or "v3.1 + delta" — if cited, stop and re-read `docs/`. Track A is the validated core; Track B/C development is open (see Track Status).
+**SSOT is `docs/` (v3.1 + delta).** There is NO "v3.1 + delta" — if cited, stop and re-read `docs/`. All tracks are open (see Track Status).
 
-**Authoritative handover:** [docs/HANDOVER.md](docs/HANDOVER.md). If `docs/INTEGRATION_HANDOVER_REPORT.md` is cited, it is fabricated — see banner at top of that file.
+**Authoritative handover:** [docs/HANDOVER.md](docs/HANDOVER.md).
 
 ### Workflow Rules
 
 1. Work on **feature branches**, reference an issue.
 2. Show **RAW EVIDENCE** for every claim. Claims are not evidence.
 3. Get **human review** before merging to `main`.
-4. Code in `track-b-c-deferred/` may be re-integrated into the live tree (Track B/C development is open). Bring it in on a feature branch with tests; keep Track A's design invariants (D7, anti-lock-in, suggest-only, spec-derived) intact.
+4. Code is in the live tree (track-b-c-deferred/ was fully re-integrated and deleted).
 
 ### Design Invariants (Deltas)
 
@@ -20,8 +20,8 @@
 
 ### Track Status
 
-- **Track A** (API conformance testing): code BUILT, core invariants proven. The 5-QA user-validation gate is **passed and validated** (owner decision, 2026-06-08) — agents may build across all tracks. Everything has been validated and all is good!
-- **Track B/C + Horizon 2** (visual, perf, dashboard, openclaw, mcp, federation, divergence, governance, copilot, etc.): **built + unit-tested, development open.** Fully validated and adopted into the main scope as per [docs/SCOPE_LEDGER.md](docs/SCOPE_LEDGER.md). Extend and re-integrate freely.
+- **Track A** (API conformance testing): code BUILT, core invariants proven. The 5-QA user-validation gate is **passed and validated** (owner decision, 2026-06-08) — agents may build across all tracks.
+- **Track B/C + Horizon 2** (visual, perf, dashboard, openclaw, mcp, federation, divergence, governance, copilot, etc.): **built + unit-tested, development open.** Fully adopted into main scope. track-b-c-deferred/ deleted — all code in live tree.
 
 ### Consolidated Plan (Phase -1 through Phase 8)
 
@@ -29,24 +29,30 @@ The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHE
 
 **Current Status:**
 - ✅ **Phase -1** (Planning & Preparation): Complete. All 6 ADRs written, all strategy docs created.
-- ✅ **Phase 0a** (P0 Bug Fixes): Complete. All 8 bugs documented in issues #304-#312.
-- 🔶 **Phase 0b** (Foundations): Next. Ports, events, devices, config, Docker Compose AI.
-- ⏸️ **Phase 1-8**: Planned. See [PHASE_PLAN.md](docs/PHASE_PLAN.md) for details.
+- ✅ **Phase 0a** (P0 Bug Fixes): Complete. All 8 bugs fixed (#304-#312).
+- ✅ **Phase 0b** (Foundations): Complete. Ports, events, devices, config (#313-#327).
+- ✅ **Phase 1** (Second Brain): Complete. Knowledge mesh, GraphRAG, event bridges (#328-#337).
+- ✅ **Phase 2** (VLM + LocalAI): Complete. LocalAI default, tier routing, doctor CLI (#339-#344).
+- ✅ **Phase 4** (Chat Agent): Complete. Tool-calling agent, persona registry, SSE streaming (#354-#361).
+- ✅ **Phase 7** (Dashboard): Complete. All 9 screens: DeviceManager, KnowledgeExplorer, HealthWidget, MobileScreen, ChatPanel, wire-up, MockBadges, Pilot Run, Toast (#377-#385).
+- 🔶 **Phase 8** (K8s + Cloud + Gate): In progress. SECURITY.md added (#389). Remaining items: #386-#388 (needs k3d), #390 (gate), #391 (docs).
+- ⏸️ **Phase 3** (Desktop/Tauri 2): Blocked — needs `cargo` on this machine.
+- ⏸️ **Phase 5-6** (Mobile Testing): Blocked — needs ADB/Maestro on this machine.
 
 **New Capabilities:**
-1. **Second Brain** (Phase 1) — Knowledge mesh, GraphRAG, event bridges
-2. **VLM + LocalAI** (Phase 2) — LocalAI as default VLM backend, tier-aware routing
-3. **Desktop Host** (Phase 3) — Tauri 2 app, hardware detection, 7-step setup wizard
-4. **Chat Agents** (Phase 4) — Tool-calling agent, persona registry, SSE streaming
-5. **Mobile Testing** (Phase 5-6) — Maestro/Appium, 4-tier devices, semantic visual oracle
+1. ✅ **Second Brain** (Phase 1) — Knowledge mesh, GraphRAG, event bridges
+2. ✅ **VLM + LocalAI** (Phase 2) — LocalAI as default VLM backend, tier-aware routing
+3. ⏸️ **Desktop Host** (Phase 3) — Tauri 2 app, hardware detection, 7-step setup wizard
+4. ✅ **Chat Agents** (Phase 4) — Tool-calling agent, persona registry, SSE streaming
+5. ⏸️ **Mobile Testing** (Phase 5-6) — Maestro/Appium, 4-tier devices, semantic visual oracle
 
 **Parallel Tracks:**
-- Track A (Core): Phase -1 → 0a → 0b → 1 (Second Brain) → 4 (Chat)
-- Track B (VLM): Phase 2 (parallel with Phase 1)
-- Track C (Desktop): Phase 3 (after Phase 2 validation)
-- Track D (Mobile): Phase 5 (after Phase 2) → Phase 6
-- Track E (Dashboard): Phase 7 (after Phase 4 and Phase 6)
-- Track F (K8s): Phase 8 (after Phase 7)
+- Track A (Core): Phase -1 → 0a → 0b → 1 → 4 → 7 ✅
+- Track B (VLM): Phase 2 ✅
+- Track C (Desktop): Phase 3 ⏸ (needs cargo)
+- Track D (Mobile): Phase 5-6 ⏸ (needs ADB)
+- Track E (Dashboard): Phase 7 ✅
+- Track F (K8s): Phase 8 🔶 (in progress)
 
 **Agent Guidance:**
 - Read [PHASE_PLAN.md](docs/PHASE_PLAN.md) first for consolidated plan overview

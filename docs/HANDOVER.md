@@ -126,9 +126,10 @@ files, and 7 new diagrams. See [docs/PHASE_PLAN.md](PHASE_PLAN.md) for the full 
 > - **Phase 7**: Dashboard Revamp (real data, mobile/chat/knowledge screens)
 > - **Phase 8**: K8s + Cloud + Validation Gate (CRD extensions, open-source readiness)
 >
-> **Where we stand:** Phase -1 and Phase 0a are complete (all issues created, planning docs written).
-> Phase 0b (foundations) is next. See [PHASE_PLAN.md](PHASE_PLAN.md) for detailed tickets,
-> integration plans, and parallel track layout.
+> **Where we stand:** Phase -1, 0a, 0b, 1, 2, 4, and 7 are complete. Phase 8 is in progress
+> (SECURITY.md added). Phase 3 and Phase 5-6 are blocked (needs `cargo` / ADB respectively).
+> See [PHASE_PLAN.md](PHASE_PLAN.md) for detailed tickets, integration plans, and parallel
+> track layout.
 
 ---
 
@@ -141,10 +142,16 @@ All phases are tracked in GitHub issues (#277-#391). See [PHASE_PLAN.md](PHASE_P
 detailed tickets, integration plans, parallel track layout, and agent guidance.
 
 **Current Status:**
-- ✅ **Phase -1** (Planning & Preparation): Complete. All 6 ADRs written, all strategy docs created, all CI/CD workflows defined.
-- ✅ **Phase 0a** (P0 Bug Fixes): Complete. All 8 bugs documented in issues #304-#312.
-- 🔶 **Phase 0b** (Foundations): Next. Ports, events, devices, config, Docker Compose AI.
-- ⏸️ **Phase 1-8**: Pending. See [PHASE_PLAN.md](PHASE_PLAN.md) for details.
+- ✅ **Phase -1** (Planning & Preparation): Complete. All 6 ADRs written, all strategy docs created.
+- ✅ **Phase 0a** (P0 Bug Fixes): Complete. All 8 bugs fixed in issues #304-#312.
+- ✅ **Phase 0b** (Foundations): Complete. Ports, events, devices, config (#313-#327). Merged PR #393, #394.
+- ✅ **Phase 1** (Second Brain): Complete. Knowledge mesh, GraphRAG, event bridges. Merged PR #395.
+- ✅ **Phase 2** (VLM + LocalAI): Complete. LocalAI default, tier routing, doctor CLI. Merged PR #396.
+- ✅ **Phase 4** (Chat Agent): Complete. Tool-calling agent, persona registry, SSE streaming. Merged PR #397-#400.
+- ✅ **Phase 7** (Dashboard): Complete. All 9 screens built. Merged PR #401, #402, #405.
+- 🔶 **Phase 8** (K8s + Cloud + Gate): In progress. SECURITY.md added (#404). Needs k3d for #386-#388.
+- ⏸️ **Phase 3** (Desktop): Blocked — needs `cargo` on this machine.
+- ⏸️ **Phase 5-6** (Mobile): Blocked — needs ADB/Maestro on this machine.
 
 **Parallel Tracks:**
 - Track A (Core): Phase -1 → 0a → 0b → 1 (Second Brain) → 4 (Chat)
