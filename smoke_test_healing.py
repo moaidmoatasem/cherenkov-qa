@@ -46,9 +46,9 @@ def test_auth_expiry_detection():
     
     # 3. Generate suggestion
     suggestion = AuthExpiryHealer("test_healing").suggest_heal(scenario_id, "/users")
-    assert "BEARER_TOKEN" in suggestion, "Auth expiry suggestion missing key tokens"
+    assert "BEARER_TOKEN" in suggestion["suggestion"], "Auth expiry suggestion missing key tokens"
     print("\n--- AUTH_EXPIRY SUGGESTION OUTPUT ---")
-    print(suggestion)
+    print(suggestion["suggestion"])
     print("-------------------------------------\n")
 
 
@@ -81,10 +81,10 @@ def test_contract_drift_detection():
         missing_fields=diag.missing_fields,
         added_fields=diag.added_fields
     )
-    assert "[RED REGRESSION]" in suggestion, "Contract drift suggestion failed to flag RED regression"
-    assert "expect(data).toHaveProperty" in suggestion, "Contract drift suggestion missing suggested assertions"
+    assert "[RED REGRESSION]" in suggestion["suggestion"], "Contract drift suggestion failed to flag RED regression"
+    assert "expect(data).toHaveProperty" in suggestion["suggestion"], "Contract drift suggestion missing suggested assertions"
     print("\n--- CONTRACT_DRIFT SUGGESTION OUTPUT ---")
-    print(suggestion)
+    print(suggestion["suggestion"])
     print("-------------------------------------\n")
 
 
