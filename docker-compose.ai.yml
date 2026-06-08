@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  local-ai:
+    image: localai/localai:latest-aicpu
+    ports:
+      - "8080:8080"
+    environment:
+      - MODELS_PATH=/models
+      - THREADS=4
+      - CONTEXT_SIZE=2048
+    volumes:
+      - localai-models:/models
+      - localai-images:/tmp/images
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  cherenkov:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    environment:
+      - OLLAMA_URL=http://local-ai:8080/v1
+      - PROVIDER=ollama
+      - GEN_MODEL=qwen2.5-coder:7b
+      - CHERENKOV_VLM_PROVIDER=ollama
+      - CHERENKOV_VLM_LOCALAI_URL=http://local-ai:8080
+      - CHERENKOV_REDIS_ENABLED=true
+      - CHERENKOV_REDIS_URL=redis://redis:6379/0
+      - CHERENKOV_MONITORING_ENABLED=true
+    depends_on:
+      local-ai:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./.cherenkov:/app/.cherenkov
+
+volumes:
+  localai-models:
+  localai-images:

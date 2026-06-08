@@ -131,6 +131,59 @@ from cherenkov.substrate.provider import get_vlm_provider
 check("substrate.provider importable", True)
 from cherenkov.substrate.router import route
 check("substrate.router importable", True)
+from cherenkov.substrate.providers.ollama import OllamaProvider
+check("substrate.providers.ollama importable", True)
+from cherenkov.substrate.providers.vlm import VLMProvider as NewVLM, VLMResult
+check("substrate.providers.vlm importable", True)
+
+# 12. Phase 0b new modules
+print("\n--- Phase 0b: Core extensions ---")
+from cherenkov.core.devices import DeviceClass, VLMTier, DeviceInfo
+check("core.devices importable", True)
+di = DeviceInfo()
+check("DeviceInfo instantiable", True)
+check("DeviceInfo.to_dict works", isinstance(di.to_dict(), dict))
+
+from cherenkov.core.events import CHERENKOVEvent, EventCategory, EventSeverity
+check("core.events importable", True)
+ev = CHERENKOVEvent.pipeline_start("test")
+check("CHERENKOVEvent factory works", ev.name == "pipeline.start")
+check("CHERENKOVEvent.to_dict works", "event_id" in ev.to_dict())
+
+from cherenkov.core.knowledge_result import KnowledgeResult, KnowledgeKind
+check("core.knowledge_result importable", True)
+kr = KnowledgeResult(id="t1", kind=KnowledgeKind.IDIOM, key="/api/test", summary="test")
+check("KnowledgeResult instantiable", True)
+check("KnowledgeResult.to_event_payload works", "key" in kr.to_event_payload())
+
+from cherenkov.core.migration import SchemaMigration
+check("core.migration importable", True)
+
+from cherenkov.core.error_handling import GracefulDegradation, DegradationLevel, HealthStatus
+check("core.error_handling importable", True)
+gd = GracefulDegradation()
+check("GracefulDegradation instantiable", True)
+check("health starts healthy", gd.health.level == DegradationLevel.HEALTHY)
+
+from cherenkov.core.logging_ext import setup_json_logging, JSONFormatter
+check("core.logging_ext importable", True)
+
+# 13. Port interfaces
+print("\n--- Phase 0b: Port interfaces ---")
+from cherenkov.ports import EventBus, KnowledgeRepository, DeviceRegistry, VLMProvider
+check("ports importable", True)
+check("EventBus is protocol", True)
+check("KnowledgeRepository is protocol", True)
+check("DeviceRegistry is protocol", True)
+check("VLMProvider is protocol", True)
+
+# 14. Phase 0b: Web extensions
+print("\n--- Phase 0b: Web monitoring ---")
+from cherenkov.web.monitoring import router as monitor_router
+check("web.monitoring importable", True)
+
+from cherenkov.web.middleware.security import RateLimitMiddleware, InputValidationMiddleware, add_security_middleware
+check("web.middleware.security importable", True)
 
 # 12. StatsStore backwards compat
 print("\n--- StatsStore API ---")
