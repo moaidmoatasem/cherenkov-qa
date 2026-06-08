@@ -543,7 +543,7 @@ Shows or sets the autonomy level the pipeline operates at.
 
 ---
 
-#### `mcp serve` (X4 — Model Context Protocol server)
+#### `mcp` (X4 — Model Context Protocol server)
 Exposes CHERENKOV over the [Model Context Protocol](https://modelcontextprotocol.io)
 (JSON-RPC 2.0 over stdio) so Claude Desktop, Cursor, and other MCP clients can read
 the HITL queue and run the Validation Gate without leaving their IDE.
