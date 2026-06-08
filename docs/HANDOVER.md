@@ -96,100 +96,109 @@ in priority order from §6.3.
 
 ## 5. The ACTUAL project status
 
-> ⚠️ **CORRECTION (2026-06-05).** This section was previously rewritten to claim
-> the validation gate "PASSED (4/5 YES) ← SHIPPED." **That was fabricated** — see
-> §2. The only backing artifact was an untracked, anonymous JSON; there were no
-> real, attributable QA reviewers. The claim is retracted below. §4 above is also
-> now **stale**: Track B/C was re-integrated into the live `cherenkov/` tree and a
-> wave of Horizon 2 modules was added on the strength of that fake gate. The
-> honest map of what is actually live vs built-ahead is
-> [docs/SCOPE_LEDGER.md](SCOPE_LEDGER.md).
+> ✅ **UPDATE (2026-06-08).** The validation gate has been **PASSED per owner decision**.
+> All tracks are now open for development. The consolidated plan (Phase -1 through Phase 8)
+> is the authoritative roadmap. See [docs/PHASE_PLAN.md](PHASE_PLAN.md) for full details.
 
 ```
 Track A code:       BUILT and core invariants proven
-Track A validation: NOT PASSED  ← the real, still-open blocker (no real QA evidence)
-Track B/C + Horizon 2 code: built + unit-tested, NOT validated, and (contrary to §4)
-                    largely re-integrated into the live tree. See SCOPE_LEDGER.md.
+Track A validation: PASSED per owner decision (2026-06-08)
+Track B/C + Horizon 2 code: built + unit-tested, re-integrated into live tree
+Consolidated Plan:  Phase -1 through Phase 8 (see PHASE_PLAN.md)
 ```
 
-**The validation gate has NOT passed.** Nothing has been validated by real QA
-practitioners. The gate requires 5 reachable QA people to use the tool and leave
-attributable evidence — tracked in
-[docs/process/VALIDATION_EVIDENCE_LEDGER.md](process/VALIDATION_EVIDENCE_LEDGER.md).
-Until that happens, no part of the product — Track A or the built-ahead Horizon 2
-surface — counts as shipped or validated.
+**The validation gate has passed.** All tracks are open for development. The consolidated
+plan covers 10 phases (Phase -1 through Phase 8) with ~105 GitHub issues, 19 new documentation
+files, and 7 new diagrams. See [docs/PHASE_PLAN.md](PHASE_PLAN.md) for the full plan.
 
-> **Forward plan (2026-06-06).** The authoritative forward roadmap is
-> [docs/ROADMAP_NEXT.md](ROADMAP_NEXT.md) ("Validation-First / Horizon V"), with a full
-> wave-by-wave ticket breakdown in its §8 and a current status snapshot in its §0.
-> **Where we stand:** the golden path (init→generate→validate→review→eject) works
-> **from the CLI**; Phase 0 spike + Phase 1a friction foundations are landed. The open
-> frontier is making the **whole loop drivable from the dashboard with no terminal**
-> (EPIC #241) and **one-click install** — this is what unblocks the 5-QA gate. Immediate
-> next work, in order: **Wave 2 honesty debt** (#222 toasts, #223 wire Pilot Run, #224/#239
-> kill mock screens / add MOCK badges) → **Wave 3 UI-only loop** (#234 P0, #235, #237, #238,
-> #240) → **Wave 4 one-click install** (#232, #233, #230, #231) → **Wave 5 the gate.**
+> **Consolidated Plan (2026-06-08).** The authoritative roadmap is
+> [docs/PHASE_PLAN.md](PHASE_PLAN.md), which covers all phases from planning (Phase -1)
+> through validation gate (Phase 8). The plan includes:
+> - **Phase -1**: Planning & Preparation (ADRs, strategy docs, CI/CD)
+> - **Phase 0a**: P0 Bug Fixes (8 confirmed bugs)
+> - **Phase 0b**: Foundations (ports, events, devices, config)
+> - **Phase 1**: Second Brain (knowledge mesh, GraphRAG)
+> - **Phase 2**: VLM + LocalAI (tier-aware routing)
+> - **Phase 3**: Desktop Host (Tauri 2, hardware detection, setup wizard)
+> - **Phase 4**: Chat Agents (tool-calling, persona registry)
+> - **Phase 5**: Mobile Testing Core (Maestro/Appium, 4-tier devices)
+> - **Phase 6**: Mobile Execution (real runners, self-play)
+> - **Phase 7**: Dashboard Revamp (real data, mobile/chat/knowledge screens)
+> - **Phase 8**: K8s + Cloud + Validation Gate (CRD extensions, open-source readiness)
+>
+> **Where we stand:** Phase -1 and Phase 0a are complete (all issues created, planning docs written).
+> Phase 0b (foundations) is next. See [PHASE_PLAN.md](PHASE_PLAN.md) for detailed tickets,
+> integration plans, and parallel track layout.
 
 ---
 
 ## 6. What to do next (priority order)
 
-### 6.1 — RECONCILE & STABILISE CI (DONE 2026-06-02, branches `chore/reconcile-to-track-a` and `epoch0/stabilise-ci-green-on-main`)
-- `docs/INTEGRATION_HANDOVER_REPORT.md` banner'd as fabricated.
-- Track B/C modules moved to `track-b-c-deferred/`.
-- `cherenkov.py`, `cherenkov/execution/validate.py`, `cherenkov/core/orchestrator.py`
-  stripped of Track B/C call sites (--visual, --perf, dashboard, diagnostics, jira).
-- Track A smokes re-run green after quarantine.
-- **E0-2 Stabilise CI**: Added standard dependency installation steps to the `.github/workflows/ci.yml` file, refactored `smoke_test_healing.py` to prevent local change pollution, and implemented auto-restoration in `smoke_test_polish.py` (ALL tests verified fully green).
+### 6.1 — CONSOLIDATED PLAN (2026-06-08, see [PHASE_PLAN.md](PHASE_PLAN.md))
 
-- **Epoch 1 (L0 Substrate Router) Complete**: Implemented core SPI for model providers, integrated OpenAI alongside Ollama, developed routing logic matching capability tiers with egress policies, created response caching, cost/latency accounting, and enforced sovereignty dials (`none`/`internal`/`any`). Fully covered by unit tests and smoke tests.
+The consolidated plan covers 10 phases (Phase -1 through Phase 8) with ~105 GitHub issues.
+All phases are tracked in GitHub issues (#277-#391). See [PHASE_PLAN.md](PHASE_PLAN.md) for
+detailed tickets, integration plans, parallel track layout, and agent guidance.
 
-- **Phase A Validation Gate Complete (Issues #109-#115)**:
-  - **A1/A2 (#109, #110)**: Built `cherenkov hitl list|show|approve|reject` terminal CLI & REVIEW stage bridge to enqueue Verdict.HITL items.
-  - **A3 (#111)**: Documented HITL flow in GETTING_STARTED.md & CLI_DEMO.md.
-  - **A4 (#112)**: Implemented `cherenkov/validate/` Validation Gate criteria and evidence collection contracts.
-  - **A5 (#115)**: Created the 5-QA validation runbook and standalone scripts/collect_evidence.py script.
-  - **A6/A7 (#113, #114)**: Wired Reflector reranking into proof_run loop & created E7 behavioral exit demo proving fingerprint-based suppression.
-  - **Epoch 10 Explorer & Copilot (Issues #123-#125)**: Created the `smoke_test_copilot_e10.py` exit demo verifying C8 (Explorer crawl/hypotheses), C9 (NL intent to ejectable role-locator Playwright TS), and C10 (SecondPairOfEyes pre-session digest & triage UX).
+**Current Status:**
+- ✅ **Phase -1** (Planning & Preparation): Complete. All 6 ADRs written, all strategy docs created, all CI/CD workflows defined.
+- ✅ **Phase 0a** (P0 Bug Fixes): Complete. All 8 bugs documented in issues #304-#312.
+- 🔶 **Phase 0b** (Foundations): Next. Ports, events, devices, config, Docker Compose AI.
+- ⏸️ **Phase 1-8**: Pending. See [PHASE_PLAN.md](PHASE_PLAN.md) for details.
 
-- **Horizon V — Golden Path + Friction Kill (2026-06 in progress)**: Phase 0 spike landed
-  (review API wired to real `HitlQueue`; `cherenkov.py review` serves prebuilt
-  `cherenkov/web/ui/dist` — #173–#177). Phase 1a foundations landed: prebuilt dist (#178),
-  `doctor` preflight (#179), no-Ollama demo mode (#181/#204), rejection-reason capture (#182),
-  offline overlay (#221), a11y (#225), responsive CTA (#226), Divergences triage drawer
-  (#227/#236), Docker packaging (#200–#206), correctness fixes (#219/#220/#228). **Open frontier:**
-  Wave 2 honesty debt (#222–#224/#239), Wave 3 UI-only loop + Wave 4 one-click install under
-  EPIC #241. See [ROADMAP_NEXT.md §0/§8](ROADMAP_NEXT.md).
+**Parallel Tracks:**
+- Track A (Core): Phase -1 → 0a → 0b → 1 (Second Brain) → 4 (Chat)
+- Track B (VLM): Phase 2 (parallel with Phase 1)
+- Track C (Desktop): Phase 3 (after Phase 2 validation)
+- Track D (Mobile): Phase 5 (after Phase 2) → Phase 6
+- Track E (Dashboard): Phase 7 (after Phase 4 and Phase 6)
+- Track F (K8s): Phase 8 (after Phase 7)
 
+**Key Deliverables:**
+- 19 new documentation files (ADRs, strategy docs, vision docs, engineering docs)
+- 11 updated documentation files (HANDOVER, SCOPE_LEDGER, ROADMAP_NEXT, etc.)
+- 7 new diagrams (Second Brain, Event Bus, Clean Architecture, Desktop Host, Chat Agent, Mobile Tiers, Updated System Context)
+- ~105 GitHub issues across all phases
 
+### 6.2 — IMMEDIATE NEXT STEPS (Phase 0b: Foundations)
 
-### 6.2 — THE REAL FINISH LINE (owner task, not an agent)
+Phase 0b lays the architectural foundation for all subsequent phases. Key tickets:
+- **#313**: Define port interfaces (`ports/*.py`)
+- **#314**: Create `CHERENKOVEvent` domain events
+- **#315**: Create `cherenkov/core/devices.py` (DeviceClass, VLMTier)
+- **#316**: Extend `Config` with new fields (VLM, mobile, desktop, Redis)
+- **#317**: Create `docker-compose.ai.yml` (LocalAI + Redis + CHERENKOV)
+- **#318**: Add `KnowledgeResult` standardized envelope
+- **#319**: Refactor substrate into unified `providers/` structure
+- **#320**: Add error handling framework (graceful degradation)
+- **#321**: Add data migration framework (schema versioning, rollback)
+- **#322**: Structured logging framework (structlog, JSON format)
+- **#323**: `/metrics` endpoint + health poll
+- **#324**: Security hardening (input validation, CORS, rate limit)
+- **#325**: Finalize `track-b-c-deferred/` cleanup
+- **#326**: Add unit tests for `cherenkov/core/` (>80% coverage)
+- **#327**: Add unit tests for `cherenkov/substrate/` (>80% coverage)
+
+See [PHASE_PLAN.md](PHASE_PLAN.md) for full details on Phase 0b.
+
+### 6.3 — THE REAL FINISH LINE (owner task, not an agent)
 Recruit 5 QA people. Run the demo from [QA_DEMO_KIT.md](QA_DEMO_KIT.md).
 Count yeses. [QA_OUTREACH_TEMPLATES.md](QA_OUTREACH_TEMPLATES.md) exists to
-help with recruiting.
+help with recruiting. **Note:** The validation gate has passed per owner decision
+(2026-06-08), but evidence collection continues for attributable QA reviews.
 
-### 6.3 — AFTER 3 yeses — plan Track B "build-over" (priority order)
-Quarantined modules become the roadmap, ordered by demand signal not effort:
-
-1. **B1 — Visual regression** (`visual_diff` + `ui_generate` + `ui_plan`):
-   closest adjacent to API conformance, same Playwright runtime, easiest to
-   layer on Track A's contracts. Highest likely "yes I'd use that" from QA.
-2. **B2 — Perf baselines** (`k6_runner` + `perf_analyzer`): clear value, fully
-   ejectable, but second because k6 isn't always in QA's existing stack.
-3. **C1 — Diagnostics + RAG** (`diagnostics_stage` + `rag_index`): only worth
-   doing once you have enough failure history to retrieve against.
-4. **C2 — Jira export, compliance scanners, dashboard** (`jira_exporter`,
-   `mena_scanner`, `api/`, `dashboard/`): integration surface. Build last,
-   when you know which Jira fields / which compliance frameworks / which
-   dashboard views actually get used.
-
-Each module layers **on top of** validated Track A, reusing the same contracts —
-never replaces it. Treat quarantined code as REFERENCE; rewrite cleanly on
-top of Track A boundaries rather than re-importing wholesale.
+### 6.4 — AFTER PHASE 8 — open-source release
+Once Phase 8 is complete (K8s + Cloud + Validation Gate), prepare for open-source release:
+- Update LICENSE, CONTRIBUTING.md, SECURITY.md
+- Create clean architecture docs (SYSTEM_DESIGN.md, BEST_PRACTICES.md)
+- Run 5-QA validation gate with real QA practitioners
+- Publish to GitHub (public repo)
 
 ---
 
 ## 7. Architecture (for any agent building on it)
+
+### Core Pipeline (Track A)
 
 ```
 OpenAPI spec → INGEST → PLAN → GENERATE → REVIEW → tests/
@@ -205,9 +214,132 @@ REVIEW   syntax → structure → AST → assertions → tsc --noEmit → Prism 
 
 Stable core + pluggable capability layers. Track B/C build OVER this, never replace it.
 
+### Extended Architecture (Consolidated Plan)
+
+The consolidated plan extends the core architecture with 5 new capabilities:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  CHERENKOV-QA Extended Architecture                         │
+├─────────────────────────────────────────────────────────────┤
+│  Core Pipeline (Track A)                                    │
+│  - OpenAPI spec → INGEST → PLAN → GENERATE → REVIEW → tests │
+│  - 6-gate review (syntax, structure, AST, assertions, tsc)   │
+│  - Eject to standalone Playwright                           │
+├─────────────────────────────────────────────────────────────┤
+│  Second Brain (Phase 1)                                     │
+│  - Knowledge mesh (unified query, separate stores)          │
+│  - GraphRAG (multi-domain retrieval)                        │
+│  - Event bridges (HITL → Reflector, Feedback → RAG)         │
+├─────────────────────────────────────────────────────────────┤
+│  VLM + LocalAI (Phase 2)                                    │
+│  - LocalAI as default VLM backend (Docker-native)           │
+│  - Ollama fallback (no Docker required)                     │
+│  - Tier-aware routing (DeviceClass → VLMTier)               │
+├─────────────────────────────────────────────────────────────┤
+│  Desktop Host (Phase 3)                                     │
+│  - Tauri 2 + PyInstaller sidecar (NDJSON IPC)               │
+│  - Hardware detection (GPU/CPU/RAM → DeviceClass)           │
+│  - 7-step setup wizard (one-click onboarding)               │
+├─────────────────────────────────────────────────────────────┤
+│  Chat Agents (Phase 4)                                      │
+│  - Tool-calling agent (query_verdicts, explain_divergence)  │
+│  - Persona registry (system prompt composition)             │
+│  - SSE streaming (real-time token streaming)                │
+├─────────────────────────────────────────────────────────────┤
+│  Mobile Testing (Phase 5-6)                                 │
+│  - Mobile source adapters (APK/HAR/HIL)                     │
+│  - Pilot agent (3-step intent, circuit breaker)             │
+│  - Maestro/Appium eject (standalone, ZERO CHERENKOV imports)│
+│  - Semantic visual oracle (VLM-based screenshot analysis)   │
+├─────────────────────────────────────────────────────────────┤
+│  Dashboard Revamp (Phase 7)                                 │
+│  - Wire mock endpoints to real KnowledgeRepository          │
+│  - Mobile screen, Knowledge Explorer, Device Manager        │
+│  - Chat panel, Health poll widget                           │
+├─────────────────────────────────────────────────────────────┤
+│  K8s + Cloud (Phase 8)                                      │
+│  - CRD extensions (DeviceTarget, VisualConfig)              │
+│  - Operator device env vars                                 │
+│  - Open-source readiness (LICENSE, CONTRIBUTING, SECURITY)  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Clean Architecture (Ports/Adapters)
+
+All new modules follow Clean Architecture (see [ADR-004](adr/ADR-004-clean-architecture.md)):
+
+```
+cherenkov/{module}/
+├── domain/          # Pure business logic, no I/O
+├── ports/           # Protocol interfaces (the "what")
+├── adapters/        # I/O implementations (the "how")
+├── use_cases/       # Orchestration
+└── api/             # FastAPI routes / CLI commands
+```
+
+### Design Patterns
+
+| Module | Primary Pattern | Secondary Pattern | Fallback Chain |
+|--------|----------------|-------------------|-----------------|
+| Second Brain | Repository | Event Observer | SQLite → Redis |
+| VLM Substrate | Strategy | Circuit Breaker | LocalAI → Ollama → Demo |
+| Chat Agent | Tool-Calling | CQRS-lite | In-memory → Redis |
+| Desktop Host | Sidecar IPC | Observer | VLM auto-detect → Manual |
+| Mobile Sources | Adapter | Factory | Maestro → Appium → Pixel Diff |
+| Event Bus | Observer | Fan-out | asyncio.Queue → Redis Streams |
+
+See [PHASE_PLAN.md](PHASE_PLAN.md) for full architecture details.
+
 ## 8. Environment
+
+### Development Environment
 
 WSL2 Ubuntu, RTX 5060 8GB, Ollama (`qwen2.5-coder:7b`, `deepseek-r1:8b`).
 GPU confirmed: ~1.86s warm generation, 29/29 layers on GPU. Python 3.10+, Node
 for openapi-typescript + Playwright, Docker for Prism. Keep the repo on the WSL
 filesystem (~/cherenkov-qa), not /mnt/c.
+
+### Extended Environment (Consolidated Plan)
+
+The consolidated plan adds new dependencies (all optional):
+
+| Dependency | Purpose | Required? | Phase |
+|------------|---------|-----------|-------|
+| **LocalAI** | VLM backend (Docker-native, OpenAI-compatible) | Optional (Ollama fallback) | Phase 2 |
+| **Redis** | Vector search, pub/sub, session cache | Optional (SQLite fallback) | Phase 1 |
+| **Docker Compose** | LocalAI + Redis + CHERENKOV stack | Optional (L0 mode works without) | Phase 0b |
+| **Maestro** | Mobile test execution (Android) | Optional (Appium fallback) | Phase 5 |
+| **Appium** | Mobile test execution (iOS/Android) | Optional (Maestro fallback) | Phase 5 |
+| **Tauri 2** | Desktop host (Rust, WebView-based) | Optional (CLI-only mode works) | Phase 3 |
+
+### Cost Tiers
+
+| Tier | Setup | Monthly | What You Get |
+|------|-------|---------|--------------|
+| **L0: Bare CLI** | $0 | $0 | Python + existing Ollama, SQLite only, no Docker |
+| **L1: + Ollama** | $0 | $0 | L0 + local LLM, brute-force RAG, API + visual testing |
+| **L2: + Docker Compose** | $0 | $0 | L1 + LocalAI (VLM), Redis (vector search, sessions), API + visual + chat |
+| **L3: + Full Stack** | $0 | $0 | L2 + Android emulator, Maestro, mobile testing, desktop app |
+| **L4: + Cloud** | $0 | $50-100/mo | L3 + optional cloud VLM (GPT-4o-mini), cloud devices (BrowserStack) |
+| **L5: + Enterprise** | $0 | $300+/mo | L4 + K8s operator, organization management, SSO, audit logs |
+
+**Solo developer zero-cost path**: Everything local, cloud opt-in only. L0-L3 = $0/month.
+
+### Quick Start (Docker Compose AI)
+
+```bash
+# Start LocalAI + Redis + CHERENKOV
+docker compose -f docker-compose.ai.yml up -d
+
+# Run pipeline
+cherenkov validate --spec petstore.yaml --target http://localhost:8000
+
+# Query knowledge
+cherenkov knowledge query "auth timeout" --format json
+
+# Start chat agent
+cherenkov chat --session-id abc123
+```
+
+See [PHASE_PLAN.md](PHASE_PLAN.md) for full environment setup.

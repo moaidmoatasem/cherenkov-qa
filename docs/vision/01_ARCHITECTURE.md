@@ -52,26 +52,58 @@ flowchart TB
 
 ## 2. The layer map (and where the old plan lives)
 
-Seven layers. The original 22-week generator becomes **L1 + L3** — real, needed, but no longer the whole product.
+Ten layers (original 7 + 3 new from consolidated plan). The original 22-week generator becomes **L1 + L3** — real, needed, but no longer the whole product.
 
 ```mermaid
 flowchart TB
   L6["L6 · Federation — truth protocol, cross-service contracts, divergence corpus  (far future)"]
   L5["L5 · Experience — zero-config CLI, full config surface, dashboard"]
   L4["L4 · Continuity — daemon, watch, behavioral diff on every PR"]
+  L3_5["L3.5 · Mobile Testing — Maestro/Appium, 4-tier devices, semantic visual oracle  (Phase 5-6)"]
   L3["L3 · Artifact Layer — GENERATE / REVIEW / EXECUTE / EJECT  (← original Track A)"]
   L2["L2 · Divergence Engine — Skeptic + Witness  (THE BET)"]
+  L1_5["L1.5 · Chat Agents — tool-calling, persona registry, SSE streaming  (Phase 4)"]
   L1["L1 · Truth Model — multi-source INGEST → unified semantic graph  (← extends Track A INGEST)"]
-  L0["L0 · Substrate — model-agnostic inference router + provider plugins"]
+  L0_5["L0.5 · Knowledge Mesh — Second Brain, GraphRAG, event bridges  (Phase 1)"]
+  L0["L0 · Substrate — model-agnostic inference router + provider plugins + LocalAI VLM  (Phase 2)"]
 
-  L6 --> L5 --> L4 --> L3 --> L2 --> L1 --> L0
+  L6 --> L5 --> L4 --> L3_5 --> L3 --> L2 --> L1_5 --> L1 --> L0_5 --> L0
   style L2 fill:#1f6feb,stroke:#fff,color:#fff
   style L0 fill:#238636,stroke:#fff,color:#fff
   style L3 fill:#9e6a03,stroke:#fff,color:#fff
   style L1 fill:#9e6a03,stroke:#fff,color:#fff
+  style L0_5 fill:#d4c5f9,stroke:#fff,color:#fff
+  style L1_5 fill:#5319e7,stroke:#fff,color:#fff
+  style L3_5 fill:#fbca04,stroke:#fff,color:#fff
 ```
 
-> 🟦 the bet · 🟩 new foundation · 🟧 inherited from the original plan.
+> 🟦 the bet · 🟩 new foundation · 🟧 inherited from the original plan · 🟪 Second Brain (Phase 1) · 🟪 Chat Agents (Phase 4) · 🟨 Mobile Testing (Phase 5-6)
+
+### New Layers (Consolidated Plan)
+
+**L0.5 · Knowledge Mesh (Phase 1):**
+- Second Brain: unified query interface over separate stores (verdicts, idioms, incidents, HITL, feedback, agent_memory)
+- GraphRAG: multi-domain retrieval with semantic search
+- Event bridges: HITL → Reflector, Feedback → RAG, agent_memory → RAG
+- Adapters: SQLiteKnowledgeRepository (default), RedisKnowledgeRepository (upgrade)
+- See [15_SECOND_BRAIN.md](15_SECOND_BRAIN.md) for full details
+
+**L1.5 · Chat Agents (Phase 4):**
+- Tool-calling agent: query_verdicts, query_idioms, explain_divergence, run_test
+- Persona registry: system prompt composition with project context, idioms, Truth Model
+- Conversation memory: session history, context window management
+- SSE streaming: real-time token streaming to ChatPanel React component
+- MCP integration: external MCP clients can query knowledge
+- See [16_CHAT_AGENT.md](16_CHAT_AGENT.md) for full details
+
+**L3.5 · Mobile Testing (Phase 5-6):**
+- Mobile source adapters: APK/HAR/HIL ingestion
+- Pilot agent: 3-step intent orchestration with circuit breaker (20 observations, 5 min timeout)
+- Mobile stages: plan, generate, review (Maestro YAML)
+- Semantic visual oracle: VLM-based screenshot analysis with anti-reward-hacking gate
+- Dual eject formats: Maestro YAML + Appium Python (ZERO CHERENKOV imports)
+- 4-tier device support: Browser emulation → Android emulator → iOS simulator → Physical device
+- See [17_MOBILE_TESTING.md](17_MOBILE_TESTING.md) for full details
 
 ---
 
