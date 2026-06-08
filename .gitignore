@@ -60,5 +60,16 @@ ORIGINAL_REQUEST.md
 PROJECT.md
 issue*.json
 
+# IDE/Editor directories
+.kilo/
+.vscode/
+.zed/
+
+# K8s test manifests
+k8s/conformancecheck-mobile-test.yaml
+
+# Generated test files
+stub/generated_tests/k6_perf.js
+
 # temp artifacts
 nul
