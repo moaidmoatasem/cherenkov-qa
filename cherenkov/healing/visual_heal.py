@@ -31,17 +31,27 @@ class VisualHealer:
         self.log = get_logger("VISUAL_HEAL", run_id)
         self.oracle = VisualOracle()
 
-    def suggest_heal(self, report: VisualReport) -> str:
+    def suggest_heal(self, report: VisualReport) -> dict:
         """Analyse a failed VisualReport and produce a healing suggestion.
 
-        Returns a human-readable suggestion string. Never modifies files.
+        Returns a structured dict with a 'suggestion' key containing the human-readable text.
         """
         if report.verdict == Verdict.AUTO_APPROVE:
-            return "No healing needed — visual check passed."
+            return {
+                "healed": True,
+                "healer": "VisualHealer",
+                "scenario_id": report.scenario_id,
+                "suggestion": "No healing needed — visual check passed.",
+            }
 
         gate = next((g for g in report.gates if g.gate == "pixel_diff"), None)
         if gate is None:
-            return "No pixel_diff gate found in report."
+            return {
+                "healed": False,
+                "healer": "VisualHealer",
+                "scenario_id": report.scenario_id,
+                "suggestion": "No pixel_diff gate found in report.",
+            }
 
         diff_pixels = gate.diff_pixels
 
@@ -83,7 +93,16 @@ class VisualHealer:
             lines.append("  → If expected, run with --update-snapshots to rebaseline.")
 
         lines.append("\nNote: This is a SUGGESTION only (Delta D7). No files were modified.")
-        return "\n".join(lines)
+
+        return {
+            "healed": False,
+            "healer": "VisualHealer",
+            "scenario_id": report.scenario_id,
+            "kind": kind,
+            "confidence": confidence,
+            "explanation": explanation,
+            "suggestion": "\n".join(lines),
+        }
 
     def _classify_change(
         self,

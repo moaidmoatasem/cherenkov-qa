@@ -76,13 +76,27 @@ def main(argv: list[str] | None = None) -> int:
 
     any_flag = args.stats or args.idioms or args.audit  # no flag → show all
     try:
-        print(build_report(
+        report = build_report(
             args.db,
             stats=args.stats or not any_flag,
             idioms=args.idioms or not any_flag,
             audit=args.audit or not any_flag,
             limit=args.limit,
-        ))
+        )
+        print(report)
+
+        # Persist snapshot to StatsStore
+        if args.stats or not any_flag:
+            try:
+                from cherenkov.core.stats_store import StatsStore
+                rstats = reflector.get_stats()
+                StatsStore().snapshot(
+                    verdict_count=rstats.get("verdict_count", 0),
+                    idiom_count=rstats.get("idiom_count", 0),
+                    source="cli",
+                )
+            except Exception as e_snap:
+                logger.warning("failed to snapshot stats", exc_info=e_snap)
     except sqlite3.OperationalError as e:
         # the verdict store is local SQLite; a concurrent run may hold the lock
         print(f"reflector store unavailable ({e}); another run may hold the lock — "
