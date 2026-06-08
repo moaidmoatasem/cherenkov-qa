@@ -38,6 +38,10 @@ app = FastAPI(
 from cherenkov.knowledge.api.routes import router as knowledge_router
 app.include_router(knowledge_router)
 
+# ── Phase 4: Chat Agent API ────────────────────────────────────────────────────
+from cherenkov.chat.api.routes import router as chat_router
+app.include_router(chat_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
