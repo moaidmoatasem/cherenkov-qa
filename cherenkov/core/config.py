@@ -66,6 +66,32 @@ class Config:
     HITL_API_KEY: str = os.getenv("CHERENKOV_HITL_API_KEY", "")
     DB_KEY: str = os.getenv("CHERENKOV_DB_KEY", "")
 
+    # ── Phase 0b: VLM (Phase 2) ──────────────────────────────────────────
+    VLM_DEFAULT_PROVIDER: str = os.getenv("CHERENKOV_VLM_PROVIDER", "ollama")
+    VLM_LOCALAI_URL: str = os.getenv("CHERENKOV_VLM_LOCALAI_URL", "http://localhost:8080")
+    VLM_LOCALAI_MODEL: str = os.getenv("CHERENKOV_VLM_LOCALAI_MODEL", "llava")
+
+    # ── Phase 0b: Redis / Event Bus ──────────────────────────────────────
+    REDIS_ENABLED: bool = os.getenv("CHERENKOV_REDIS_ENABLED", "false").lower() in ("1", "true", "yes")
+    REDIS_URL: str = os.getenv("CHERENKOV_REDIS_URL", "redis://localhost:6379/0")
+
+    # ── Phase 0b: Device / Desktop (Phase 3) ─────────────────────────────
+    DEVICE_REGISTRATION_ENABLED: bool = os.getenv("CHERENKOV_DEVICE_REGISTRATION", "false").lower() in ("1", "true", "yes")
+    DESKTOP_ENABLED: bool = os.getenv("CHERENKOV_DESKTOP_ENABLED", "false").lower() in ("1", "true", "yes")
+    DESKTOP_WS_PORT: int = int(os.getenv("CHERENKOV_DESKTOP_WS_PORT", "9876"))
+
+    # ── Phase 0b: Mobile (Phase 5-6) ─────────────────────────────────────
+    MOBILE_ENABLED: bool = os.getenv("CHERENKOV_MOBILE_ENABLED", "false").lower() in ("1", "true", "yes")
+    MOBILE_DEVICE_POOL: str = os.getenv("CHERENKOV_MOBILE_DEVICE_POOL", "")
+    APPIUM_URL: str = os.getenv("CHERENKOV_APPIUM_URL", "http://localhost:4723")
+
+    # ── Phase 0b: Agent / Chat (Phase 4) ─────────────────────────────────
+    CHAT_ENABLED: bool = os.getenv("CHERENKOV_CHAT_ENABLED", "false").lower() in ("1", "true", "yes")
+    CHAT_WS_PORT: int = int(os.getenv("CHERENKOV_CHAT_WS_PORT", "9877"))
+
+    # ── Phase 0b: Monitoring (Phase 0b) ──────────────────────────────────
+    MONITORING_ENABLED: bool = os.getenv("CHERENKOV_MONITORING_ENABLED", "true").lower() in ("1", "true", "yes")
+    METRICS_PORT: int = int(os.getenv("CHERENKOV_METRICS_PORT", "8001"))
 
 
     @classmethod
@@ -104,6 +130,21 @@ class Config:
             "RAG_ENABLED": cls.RAG_ENABLED,
             "HITL_API_KEY": bool(cls.HITL_API_KEY),
             "DB_KEY_ENABLED": bool(cls.DB_KEY),
+            "VLM_DEFAULT_PROVIDER": cls.VLM_DEFAULT_PROVIDER,
+            "VLM_LOCALAI_URL": cls.VLM_LOCALAI_URL,
+            "VLM_LOCALAI_MODEL": cls.VLM_LOCALAI_MODEL,
+            "REDIS_ENABLED": cls.REDIS_ENABLED,
+            "REDIS_URL": cls.REDIS_URL,
+            "DEVICE_REGISTRATION_ENABLED": cls.DEVICE_REGISTRATION_ENABLED,
+            "DESKTOP_ENABLED": cls.DESKTOP_ENABLED,
+            "DESKTOP_WS_PORT": cls.DESKTOP_WS_PORT,
+            "MOBILE_ENABLED": cls.MOBILE_ENABLED,
+            "MOBILE_DEVICE_POOL": cls.MOBILE_DEVICE_POOL,
+            "APPIUM_URL": cls.APPIUM_URL,
+            "CHAT_ENABLED": cls.CHAT_ENABLED,
+            "CHAT_WS_PORT": cls.CHAT_WS_PORT,
+            "MONITORING_ENABLED": cls.MONITORING_ENABLED,
+            "METRICS_PORT": cls.METRICS_PORT,
         }
 
     @classmethod

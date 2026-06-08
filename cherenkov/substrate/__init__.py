@@ -3,14 +3,26 @@
 from cherenkov.substrate.provider import (
     ModelProvider,
     ProviderCapabilities,
-    OllamaProvider,
-    OpenAIProvider,
     get_provider,
     get_vlm_provider,
     provider_for_tier,
 )
-from cherenkov.substrate.vlm_provider import VLMProvider, VLMResult
+from cherenkov.substrate.vlm_provider import VLMProvider as OldVLMProvider, VLMResult as OldVLMResult
 from cherenkov.substrate.router import SubstrateRouter, route
+
+# Legacy aliases (backward compat)
+OllamaProvider = get_provider("ollama").__class__
+OpenAIProvider = get_provider("openai").__class__
+VLMProvider = OldVLMProvider
+VLMResult = OldVLMResult
+
+# New unified providers (Phase 0b refactor)
+from cherenkov.substrate.providers import (
+    OllamaProvider as OllamaProviderNew,
+    OpenAIProvider as OpenAIProviderNew,
+    VLMProvider as VLMProviderNew,
+    VLMResult as VLMResultNew,
+)
 
 __all__ = [
     "ModelProvider",
@@ -24,4 +36,8 @@ __all__ = [
     "provider_for_tier",
     "SubstrateRouter",
     "route",
+    "OllamaProviderNew",
+    "OpenAIProviderNew",
+    "VLMProviderNew",
+    "VLMResultNew",
 ]
