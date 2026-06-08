@@ -484,7 +484,3 @@ export async function startMobilePilot(): Promise<{ status: string }> {
   if (!res.ok) throw new Error(`Failed to start pilot: ${res.status}`);
   return res.json();
 }
-  const res = await fetch(`${API_BASE}/knowledge/query?q=${encodeURIComponent(query)}`);
-  if (!res.ok) throw new Error(`Knowledge query failed: ${res.status}`);
-  return res.json();
-}

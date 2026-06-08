@@ -1,0 +1,128 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: conformancechecks.validation.cherenkov.io
+spec:
+  group: validation.cherenkov.io
+  names:
+    kind: ConformanceCheck
+    listKind: ConformanceCheckList
+    plural: conformancechecks
+    shortNames:
+    - cck
+    singular: conformancecheck
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    subresources:
+      status: {}
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            required:
+            - targetRef
+            properties:
+              targetRef:
+                type: object
+                required:
+                - apiVersion
+                - kind
+                - name
+                - namespace
+                - port
+                properties:
+                  apiVersion:
+                    type: string
+                  kind:
+                    type: string
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                  port:
+                    type: integer
+              specRef:
+                type: string
+              llmConcurrency:
+                type: integer
+                minimum: 1
+                maximum: 16
+              deviceTargets:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    platform:
+                      type: string
+                      enum: [ios, android]
+                    osVersion:
+                      type: string
+                    deviceName:
+                      type: string
+                    browser:
+                      type: string
+                    viewportSize:
+                      type: object
+                      properties:
+                        width:
+                          type: integer
+                        height:
+                          type: integer
+              visualConfig:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  vlmProvider:
+                    type: string
+                  threshold:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+                  screenshotOnFail:
+                    type: boolean
+                  diffMethod:
+                    type: string
+                    enum: [pixelmatch, ssim, vlm]
+          status:
+            type: object
+            properties:
+              phase:
+                type: string
+                enum: [Pending, Running, Pass, Fail, Error]
+              lastRun:
+                type: string
+                format: date-time
+              result:
+                type: object
+                properties:
+                  passed:
+                    type: boolean
+                  summary:
+                    type: string
+                  divergences:
+                    type: array
+                    items:
+                      type: string
+              conditions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    status:
+                      type: string
+                      enum: ["True", "False", "Unknown"]
+                    reason:
+                      type: string
+                    message:
+                      type: string
+                    lastTransitionTime:
+                      type: string
+                      format: date-time
