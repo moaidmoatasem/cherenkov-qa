@@ -65,128 +65,86 @@ Track A smoke tests (the legitimate ones):
 
 ---
 
-## 4. Quarantined — Track B/C (~1,080 LOC, present but NOT shipped)
+## 4. Status of Track B/C and Horizon 2 (~1,080 LOC, re-integrated into the live tree)
 
-These were added DESPITE being deferred. They have been moved to
-**`track-b-c-deferred/`** (preserved, but off the Track A surface). They are
-NOT validated, NOT part of the Track A product, and were built before the
-Track A user-validation gate (which has NOT happened). Do not extend these.
-Do not import from them. Do not treat them as shipped.
+> **⚠️ Superseded by [docs/STATUS.md](STATUS.md).** This section is kept for
+> historical context. For the **current** status of every track and phase,
+> read [docs/STATUS.md](STATUS.md) — that file is the single source of truth.
 
-```
-track-b-c-deferred/cherenkov/
-  ai/rag_index.py              (SQLite vector RAG — Track C)
-  compliance/mena_scanner.py   (SAMA/CBE compliance — Track C security)
-  api/main.py                  (FastAPI dashboard backend — Week 18-19 deferral candidate)
-  stages/diagnostics_stage.py  (LLM root-cause — Track C)
-  stages/ui_generate.py        (UI test gen — Track B)
-  stages/ui_plan.py            (UI test planning — Track B)
-  validate/jira_exporter.py    (Jira tickets — Track C)
-  execution/k6_runner.py       (perf/load — Track B)
-  execution/perf_analyzer.py   (perf baselines — Track B)
-  execution/visual_diff.py     (visual testing — Track B)
-track-b-c-deferred/dashboard/  (React UI — Week 18-19 deferral candidate)
-track-b-c-deferred/smoke_tests/  (9 smokes testing isolated quarantined code)
-```
+These modules were originally added under a separate `track-b-c-deferred/`
+directory and quarantined. That directory has since been **fully
+re-integrated into the live tree and deleted** (see
+[AGENTS.md](../AGENTS.md)). All code now lives under `cherenkov/` and the
+relevant subfolders.
 
-When Track A is validated by 5 QA people (§5), these become the roadmap —
-in priority order from §6.3.
+**Current state of those modules:**
+- Built, unit-tested, and re-integrated into the live tree.
+- Rely on the Track A core pipeline; do not replace it.
+- The 5-QA user-validation gate has been **passed per owner decision on
+  2026-06-08** (see [docs/STATUS.md](STATUS.md) → "Phase status" and "Tracks"
+  tables for the canonical state).
+
+If you encounter references to `track-b-c-deferred/` elsewhere in the repo
+(README, vision/, ROADMAP_*.md, etc.), treat them as **stale** and link
+to [docs/STATUS.md](STATUS.md) instead.
 
 ---
 
 ## 5. The ACTUAL project status
 
-> ✅ **UPDATE (2026-06-08).** The validation gate has been **PASSED per owner decision**.
-> All tracks are now open for development. The consolidated plan (Phase -1 through Phase 8)
-> is the authoritative roadmap. See [docs/PHASE_PLAN.md](PHASE_PLAN.md) for full details.
+> **Canonical status lives in [docs/STATUS.md](STATUS.md).** This file does
+> not duplicate it; if the two disagree, [STATUS.md](STATUS.md) wins.
 
-```
-Track A code:       BUILT and core invariants proven
-Track A validation: PASSED per owner decision (2026-06-08)
-Track B/C + Horizon 2 code: built + unit-tested, re-integrated into live tree
-Consolidated Plan:  Phase -1 through Phase 8 (see PHASE_PLAN.md)
-```
+**Summary:**
+- Track A code: **built** and core invariants proven.
+- Track A 5-QA user-validation gate: **passed per owner decision on 2026-06-08.**
+- Track B/C + Horizon 2: **built, unit-tested, re-integrated** into the live tree
+  (`track-b-c-deferred/` was deleted; see [AGENTS.md](../AGENTS.md)).
+- Active tracks: A (core), B (VLM), C (desktop), D (mobile), E (dashboard), F (K8s).
+- Active phase work: Phase 8 (K8s + Cloud + Gate) is in progress; Phase 3
+  (Desktop) and Phase 5–6 (Mobile) are blocked on `cargo` / ADB.
+- The consolidated Phase -1 → 8 plan with tickets, parallel tracks, and
+  agent guidance lives in [docs/PHASE_PLAN.md](PHASE_PLAN.md).
+- All tickets (#277–#391) are tracked in GitHub.
 
-**The validation gate has passed.** All tracks are open for development. The consolidated
-plan covers 10 phases (Phase -1 through Phase 8) with ~105 GitHub issues, 19 new documentation
-files, and 7 new diagrams. See [docs/PHASE_PLAN.md](PHASE_PLAN.md) for the full plan.
-
-> **Consolidated Plan (2026-06-08).** The authoritative roadmap is
-> [docs/PHASE_PLAN.md](PHASE_PLAN.md), which covers all phases from planning (Phase -1)
-> through validation gate (Phase 8). The plan includes:
-> - **Phase -1**: Planning & Preparation (ADRs, strategy docs, CI/CD)
-> - **Phase 0a**: P0 Bug Fixes (8 confirmed bugs)
-> - **Phase 0b**: Foundations (ports, events, devices, config)
-> - **Phase 1**: Second Brain (knowledge mesh, GraphRAG)
-> - **Phase 2**: VLM + LocalAI (tier-aware routing)
-> - **Phase 3**: Desktop Host (Tauri 2, hardware detection, setup wizard)
-> - **Phase 4**: Chat Agents (tool-calling, persona registry)
-> - **Phase 5**: Mobile Testing Core (Maestro/Appium, 4-tier devices)
-> - **Phase 6**: Mobile Execution (real runners, self-play)
-> - **Phase 7**: Dashboard Revamp (real data, mobile/chat/knowledge screens)
-> - **Phase 8**: K8s + Cloud + Validation Gate (CRD extensions, open-source readiness)
->
-> **Where we stand:** Phase -1, 0a, 0b, 1, 2, 4, and 7 are complete. Phase 8 is in progress
-> (SECURITY.md added). Phase 3 and Phase 5-6 are blocked (needs `cargo` / ADB respectively).
-> See [PHASE_PLAN.md](PHASE_PLAN.md) for detailed tickets, integration plans, and parallel
-> track layout.
+For the full per-phase status table, the per-track state, and the
+design invariants, read [docs/STATUS.md](STATUS.md).
 
 ---
 
 ## 6. What to do next (priority order)
 
-### 6.1 — CONSOLIDATED PLAN (2026-06-08, see [PHASE_PLAN.md](PHASE_PLAN.md))
+> The per-phase status table and per-track state live in
+> [docs/STATUS.md](STATUS.md). This section lists what to read first and
+> where to focus next; it does not duplicate the status table.
 
-The consolidated plan covers 10 phases (Phase -1 through Phase 8) with ~105 GitHub issues.
-All phases are tracked in GitHub issues (#277-#391). See [PHASE_PLAN.md](PHASE_PLAN.md) for
-detailed tickets, integration plans, parallel track layout, and agent guidance.
+### 6.1 — Read first
 
-**Current Status:**
-- ✅ **Phase -1** (Planning & Preparation): Complete. All 6 ADRs written, all strategy docs created.
-- ✅ **Phase 0a** (P0 Bug Fixes): Complete. All 8 bugs fixed in issues #304-#312.
-- ✅ **Phase 0b** (Foundations): Complete. Ports, events, devices, config (#313-#327). Merged PR #393, #394.
-- ✅ **Phase 1** (Second Brain): Complete. Knowledge mesh, GraphRAG, event bridges. Merged PR #395.
-- ✅ **Phase 2** (VLM + LocalAI): Complete. LocalAI default, tier routing, doctor CLI. Merged PR #396.
-- ✅ **Phase 4** (Chat Agent): Complete. Tool-calling agent, persona registry, SSE streaming. Merged PR #397-#400.
-- ✅ **Phase 7** (Dashboard): Complete. All 9 screens built. Merged PR #401, #402, #405.
-- 🔶 **Phase 8** (K8s + Cloud + Gate): In progress. SECURITY.md added (#404). Needs k3d for #386-#388.
-- ⏸️ **Phase 3** (Desktop): Blocked — needs `cargo` on this machine.
-- ⏸️ **Phase 5-6** (Mobile): Blocked — needs ADB/Maestro on this machine.
+1. **[docs/STATUS.md](STATUS.md)** — canonical state of every phase and track.
+2. **[docs/PHASE_PLAN.md](PHASE_PLAN.md)** — the consolidated Phase -1 → 8
+   plan, parallel tracks, dependencies, and all ~105 GitHub issues (#277–#391).
+3. **[docs/HANDOVER.md](HANDOVER.md)** — this file.
+4. The relevant [ADR](adr/) before touching a module.
+5. [engineering/BEST_PRACTICES.md](engineering/BEST_PRACTICES.md) before writing code.
 
-**Parallel Tracks:**
-- Track A (Core): Phase -1 → 0a → 0b → 1 (Second Brain) → 4 (Chat)
-- Track B (VLM): Phase 2 (parallel with Phase 1)
-- Track C (Desktop): Phase 3 (after Phase 2 validation)
-- Track D (Mobile): Phase 5 (after Phase 2) → Phase 6
-- Track E (Dashboard): Phase 7 (after Phase 4 and Phase 6)
-- Track F (K8s): Phase 8 (after Phase 7)
+**The plan in one sentence:** 10 phases (Phase -1 through Phase 8), 6 parallel
+tracks (A core, B VLM, C desktop, D mobile, E dashboard, F K8s), ~105 GitHub
+issues, 19 new docs, 7 new diagrams. Track A and Phase -1, 0a, 0b, 1, 2, 4, 7
+are complete; Phase 8 is in progress; Phase 3 and 5–6 are blocked on `cargo` / ADB.
 
-**Key Deliverables:**
-- 19 new documentation files (ADRs, strategy docs, vision docs, engineering docs)
-- 11 updated documentation files (HANDOVER, SCOPE_LEDGER, ROADMAP_NEXT, etc.)
-- 7 new diagrams (Second Brain, Event Bus, Clean Architecture, Desktop Host, Chat Agent, Mobile Tiers, Updated System Context)
-- ~105 GitHub issues across all phases
+### 6.2 — IMMEDIATE NEXT STEPS (Phase 8: K8s + Cloud + Gate)
 
-### 6.2 — IMMEDIATE NEXT STEPS (Phase 0b: Foundations)
+The active phase is **Phase 8**. Phase 0b, 1, 2, 4, and 7 are complete
+(see [STATUS.md](STATUS.md) for the canonical state). Phase 8 needs `k3d`
+on this host for tickets #386–#388. Tickets in flight:
 
-Phase 0b lays the architectural foundation for all subsequent phases. Key tickets:
-- **#313**: Define port interfaces (`ports/*.py`)
-- **#314**: Create `CHERENKOVEvent` domain events
-- **#315**: Create `cherenkov/core/devices.py` (DeviceClass, VLMTier)
-- **#316**: Extend `Config` with new fields (VLM, mobile, desktop, Redis)
-- **#317**: Create `docker-compose.ai.yml` (LocalAI + Redis + CHERENKOV)
-- **#318**: Add `KnowledgeResult` standardized envelope
-- **#319**: Refactor substrate into unified `providers/` structure
-- **#320**: Add error handling framework (graceful degradation)
-- **#321**: Add data migration framework (schema versioning, rollback)
-- **#322**: Structured logging framework (structlog, JSON format)
-- **#323**: `/metrics` endpoint + health poll
-- **#324**: Security hardening (input validation, CORS, rate limit)
-- **#325**: Finalize `track-b-c-deferred/` cleanup
-- **#326**: Add unit tests for `cherenkov/core/` (>80% coverage)
-- **#327**: Add unit tests for `cherenkov/substrate/` (>80% coverage)
+- **#389 / #404**: `SECURITY.md` added.
+- **#386–#388**: K8s CRD extensions + operator device env vars (needs `k3d`).
+- **#390**: Final validation gate.
+- **#391**: Open-source readiness docs.
 
-See [PHASE_PLAN.md](PHASE_PLAN.md) for full details on Phase 0b.
+See [PHASE_PLAN.md](PHASE_PLAN.md) for the full ticket list, dependencies,
+and parallel-track layout.
 
 ### 6.3 — THE REAL FINISH LINE (owner task, not an agent)
 Recruit 5 QA people. Run the demo from [QA_DEMO_KIT.md](QA_DEMO_KIT.md).

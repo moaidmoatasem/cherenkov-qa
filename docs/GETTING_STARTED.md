@@ -1,6 +1,25 @@
 # CHERENKOV Getting Started Guide
 
-Welcome to CHERENKOV! This usage-first guide will walk you from initial installation to running your first passing test suite and ejecting standalone Playwright tests in under 5 minutes.
+Welcome to CHERENKOV! This usage-first guide will walk you from initial
+installation to running your first passing test suite and ejecting standalone
+Playwright tests in under 5 minutes.
+
+> **New here?** This doc is one of three entry points. Pick the one that fits:
+>
+> - **[../README.md](../README.md)** — 2-minute overview.
+> - **[CLI_DEMO.md](CLI_DEMO.md)** — terminal walk-through of the full flow.
+> - This file — the full install + first run guide.
+>
+> **Need the project status?** → [STATUS.md](STATUS.md).
+> **Lost in the docs?** → [INDEX.md](INDEX.md).
+
+**In this guide:**
+
+1. [Prerequisites & Installation](#-prerequisites--installation)
+2. [CLI Commands & Usage](#-cli-commands--usage)
+   - [Track A Core](#track-a-core)
+   - [Track B/C & Horizon 2](#track-bc--horizon-2)
+3. [Next steps](#next-steps)
 
 ---
 
@@ -365,13 +384,19 @@ Get an AI explanation for why the HITL item was flagged.
 
 ---
 
-### Horizon 2 / Experimental
+### Track B/C and Horizon 2 (built, re-integrated)
 
 These commands extend CHERENKOV beyond core API conformance into visual testing,
 performance benchmarking, truth model management, autonomous exploration, intent-
 driven authoring, governance, certification, autonomy profiling, IDE integration
-(MCP), and the review web UI. They are built and unit-tested but not externally
-validated — see [docs/SCOPE_LEDGER.md](docs/SCOPE_LEDGER.md).
+(MCP), and the review web UI. They are built, unit-tested, and re-integrated
+into the live tree. Runtime requirements (k6 for `perf`, `adb` for some
+mobile paths, `cargo` for the desktop host) are noted per command below.
+
+> Earlier docs described a separate `track-b-c-deferred/` directory. That
+> directory was fully re-integrated into the live tree and **deleted** — see
+> [AGENTS.md](../AGENTS.md). If you see a `track-b-c-deferred/` reference
+> elsewhere, treat it as stale and link to [docs/STATUS.md](STATUS.md).
 
 ---
 
@@ -617,6 +642,15 @@ so verdicts can be inspected and actioned from the browser instead of the termin
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client. 
 
 Running `eject` strips all CHERENKOV-specific trace monkey-patching and hooks cleanly, leaving you with a standard open-source suite.
+
+---
+
+## Next steps
+
+- **Want the project state and roadmap?** → [STATUS.md](STATUS.md) and [PHASE_PLAN.md](PHASE_PLAN.md).
+- **Want the bigger picture?** → [INDEX.md](INDEX.md) maps the whole docs tree.
+- **Lost or hitting an issue?** Search [wiki/FAQ.md](wiki/FAQ.md) or open an issue.
+- **Agent or contributor?** Read [HANDOVER.md](HANDOVER.md) and [AGENTS.md](../AGENTS.md) **before** any work.
 
 ---
 

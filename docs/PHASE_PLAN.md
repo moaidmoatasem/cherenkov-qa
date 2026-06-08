@@ -1,12 +1,38 @@
 # CHERENKOV-QA: Consolidated Phase Plan
 
-**Date:** 2026-06-08  
+**Date:** 2026-06-08 (last refined 2026-06-09)  
 **Status:** Active  
 **SSOT for:** All phases, tickets, integration plans, parallel tracks, architecture decisions, design patterns, agent guidance
 
+> **What to read first:** This plan is long. If you only have 5 minutes, read
+> §1 *Executive Summary*, then jump to §3 *Parallel Track Layout*. For the
+> canonical per-phase status, see [STATUS.md](STATUS.md) instead — this
+> file describes the plan; STATUS.md describes where we are in executing it.
+> For a doc-tree map, see [INDEX.md](INDEX.md).
+
+**In this plan:**
+
+1. [Executive Summary](#executive-summary)
+2. [Architecture Overview](#architecture-overview)
+3. [Parallel Track Layout](#parallel-track-layout)
+4. [Integration Plan](#integration-plan)
+5. [Phase -1 — Planning & Preparation](#phase--1--planning--preparation)
+6. [Phase 0a — P0 Bug Fixes](#phase-0a--p0-bug-fixes)
+7. [Phase 0b — Foundations](#phase-0b--foundations)
+8. [Phase 1 — Second Brain](#phase-1--second-brain)
+9. [Phase 2 — VLM + LocalAI](#phase-2--vlm--localai)
+10. [Phase 3 — Desktop Host](#phase-3--desktop-host)
+11. [Phase 4 — Chat Agents](#phase-4--chat-agents)
+12. [Phase 5 — Mobile Testing Core](#phase-5--mobile-testing-core)
+13. [Phase 6 — Mobile Execution](#phase-6--mobile-execution)
+14. [Phase 7 — Dashboard Revamp](#phase-7--dashboard-revamp)
+15. [Phase 8 — K8s + Cloud + Gate](#phase-8--k8s--cloud--gate)
+16. [Per-Phase Tickets](#per-phase-tickets)
+17. [Agent Guidance](#agent-guidance)
+
 ---
 
-## Executive Summary
+## 1. Executive Summary
 
 This document is the **Single Source of Truth (SSOT)** for the CHERENKOV-QA consolidated plan. It covers all phases from planning (Phase -1) through validation gate (Phase 8), with detailed tickets, integration plans, parallel tracks, and agent guidance.
 

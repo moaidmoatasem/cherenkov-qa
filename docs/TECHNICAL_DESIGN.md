@@ -1,5 +1,12 @@
 # CHERENKOV — Technical Design Policy Notes
-**Authority:** v3.1 + delta · **For:** Core Architecture
+
+**Authority:** [docs/STATUS.md](STATUS.md) · [docs/PHASE_PLAN.md](PHASE_PLAN.md) · [docs/HANDOVER.md](HANDOVER.md) · **For:** Core Architecture
+
+> **Anti-drift note (HANDOVER §2):** there is **no spec called "v3.1 + delta."**
+> The earlier "Authority: v3.1 + delta" line in this file was a fabrication
+> by a prior agent. This file's authority is now anchored to the live docs
+> (SSOT) listed above. If you find a reference to "v3.1 + delta" anywhere
+> in the repo, treat it as stale and re-anchor.
 
 ---
 
