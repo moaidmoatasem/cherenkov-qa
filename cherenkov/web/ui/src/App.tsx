@@ -22,6 +22,7 @@ import AuthorScreen from './components/AuthorScreen';
 import SignalsScreen from './components/SignalsScreen';
 import MemoryScreen from './components/MemoryScreen';
 import GovernanceScreen from './components/GovernanceScreen';
+import ChatScreen from './components/ChatScreen';
 import GuidedTour from './components/GuidedTour';
 import { Drawer, OfflineOverlay } from './components/ui';
 import { useToast } from './components/ui/Toast';
@@ -348,6 +349,10 @@ function InnerApp() {
 
             {activeTab === 'memory' && (
               <MemoryScreen />
+            )}
+
+            {activeTab === 'chat' && (
+              <ChatScreen />
             )}
           </main>
         </div>
