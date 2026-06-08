@@ -8,6 +8,7 @@ import subprocess
 import time
 import sys
 import shutil
+import pytest
 
 from cherenkov.healing.diagnose import Diagnoser
 
@@ -16,7 +17,7 @@ def start_target_server():
     print("Starting Target API Server...")
     cwd = os.path.abspath(os.path.join(os.path.dirname(__file__), "../target"))
     proc = subprocess.Popen(
-        [".venv/bin/uvicorn", "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
+        [sys.executable, "-m", "uvicorn", "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
         cwd=cwd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
@@ -57,6 +58,13 @@ test('create user failing assertion spec', async () => {
     os.makedirs(os.path.dirname(failing_spec), exist_ok=True)
     with open(failing_spec, "w", encoding="utf-8") as f:
         f.write(failing_code)
+
+    # Clean up stale sandbox dirs from previous runs
+    sandbox_base = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.cherenkov"))
+    for d in os.listdir(sandbox_base):
+        if d.startswith("sandbox_deep_heal"):
+            full = os.path.join(sandbox_base, d)
+            shutil.rmtree(full, ignore_errors=True)
 
     server_proc = None
     try:
@@ -124,6 +132,7 @@ test('create user failing assertion spec', async () => {
             server_proc.wait()
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows/WSL UNC path limitations prevent sandbox symlink operations")
 def test_legacy_deep_healing():
     try:
         main()

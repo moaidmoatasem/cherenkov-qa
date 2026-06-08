@@ -51,7 +51,9 @@ class FilesystemSandboxProvider(SandboxProvider):
                 self.log.info("successfully symlinked node_modules to sandbox")
             except Exception as e:
                 self.log.warning("failed to symlink node_modules, attempting copy", error=str(e))
-                shutil.copytree(parent_node_modules, sandbox_node_modules, symlinks=True)
+                if os.path.exists(sandbox_node_modules):
+                    shutil.rmtree(sandbox_node_modules)
+                shutil.copytree(parent_node_modules, sandbox_node_modules, dirs_exist_ok=True)
 
         return sandbox_path
 
