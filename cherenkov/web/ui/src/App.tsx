@@ -25,6 +25,8 @@ import GovernanceScreen from './components/GovernanceScreen';
 import ChatScreen from './components/ChatScreen';
 import DeviceManagerScreen from './components/DeviceManagerScreen';
 import KnowledgeExplorerScreen from './components/KnowledgeExplorerScreen';
+import GlobalShortcuts from './components/GlobalShortcuts';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import GuidedTour from './components/GuidedTour';
 import { Drawer, OfflineOverlay } from './components/ui';
 import { useToast } from './components/ui/Toast';
@@ -208,6 +210,8 @@ function InnerApp() {
   };
 
   return (
+      <GlobalShortcuts onNewRun={handleNewRun} onSearch={() => {}} />
+      <ErrorBoundary>
       <div className="flex h-screen w-screen overflow-hidden bg-bg-base text-text-primary font-sans antialiased relative" id="cherenkov-app-core">
         {/* Mesh Background Decoration */}
         <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] bg-cyan-500/15 rounded-full blur-[120px] pointer-events-none z-0" />
@@ -395,6 +399,7 @@ function InnerApp() {
         </Drawer>
 
       </div>
+      </ErrorBoundary>
   );
 }
 
