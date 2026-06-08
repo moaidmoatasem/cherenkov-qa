@@ -151,6 +151,28 @@ class ValidateRunGateInput(BaseModel):
     target_url: str | None = Field(default=None, description="Optional target API URL")
 
 
+class ChatQueryVerdictsInput(BaseModel):
+    endpoint: str | None = None
+    status_code: int | None = None
+    limit: int = Field(default=10, ge=1, le=100)
+
+
+class ChatQueryIdiomsInput(BaseModel):
+    pattern: str | None = None
+    limit: int = Field(default=10, ge=1, le=100)
+
+
+class ChatExplainDivergenceInput(BaseModel):
+    endpoint: str = Field(min_length=1)
+    method: str = Field(default="GET")
+
+
+class ChatRunTestInput(BaseModel):
+    endpoint: str = Field(min_length=1)
+    method: str = Field(default="GET")
+    spec_path: str | None = None
+
+
 # ── JSON-RPC error codes (MCP uses standard JSON-RPC + MCP extensions) ───────
 PARSE_ERROR      = -32700
 INVALID_REQUEST  = -32600

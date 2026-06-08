@@ -34,6 +34,10 @@ from cherenkov.mcp.contracts import (
     HitlListInput,
     HitlRejectInput,
     ValidateRunGateInput,
+    ChatQueryVerdictsInput,
+    ChatQueryIdiomsInput,
+    ChatExplainDivergenceInput,
+    ChatRunTestInput,
     INVALID_PARAMS,
     MCPContent,
     MCPResource,
@@ -74,6 +78,11 @@ RESOURCES: list[MCPResource] = [
         uri="cherenkov://validate/evidence",
         name="Validation Evidence Directory",
         description="Listing of evidence files captured by the Validation Gate.",
+    ),
+    MCPResource(
+        uri="cherenkov://chat/sessions",
+        name="Active Chat Sessions",
+        description="List of active chat sessions from the Chat Agent.",
     ),
 ]
 
@@ -208,6 +217,52 @@ TOOLS: list[MCPTool] = [
         description="Run the MENA compliance localization and data residency checks.",
         inputSchema=MCPToolInputSchema(properties={}, required=[]),
     ),
+    MCPTool(
+        name="chat_query_verdicts",
+        description="Query recent test verdicts from the Reflector.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "endpoint": MCPToolParam(type="string", description="Filter by endpoint (optional)."),
+                "status_code": MCPToolParam(type="integer", description="Filter by HTTP status code (optional)."),
+                "limit": MCPToolParam(type="integer", description="Max results to return (default 10)."),
+            },
+            required=[],
+        ),
+    ),
+    MCPTool(
+        name="chat_query_idioms",
+        description="Query learned idiom patterns from the Reflector.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "pattern": MCPToolParam(type="string", description="Filter by pattern substring (optional)."),
+                "limit": MCPToolParam(type="integer", description="Max results to return (default 10)."),
+            },
+            required=[],
+        ),
+    ),
+    MCPTool(
+        name="chat_explain_divergence",
+        description="Explain a divergence using the Knowledge Mesh GraphRAG.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "endpoint": MCPToolParam(type="string", description="API endpoint that diverged."),
+                "method": MCPToolParam(type="string", description="HTTP method (default GET)."),
+            },
+            required=["endpoint"],
+        ),
+    ),
+    MCPTool(
+        name="chat_run_test",
+        description="Plan test scenarios for a specific endpoint (suggest-only, does not execute).",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "endpoint": MCPToolParam(type="string", description="API endpoint to plan tests for."),
+                "method": MCPToolParam(type="string", description="HTTP method (default GET)."),
+                "spec_path": MCPToolParam(type="string", description="Path to OpenAPI spec (optional)."),
+            },
+            required=["endpoint"],
+        ),
+    ),
 ]
 
 
@@ -281,6 +336,13 @@ def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
         listing = _get_evidence_listing()
         return _resource_content(uri, listing).model_dump()
 
+    if uri == "cherenkov://chat/sessions":
+        from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
+        memory = SQLiteConversationMemory()
+        sessions = memory.list_sessions()
+        payload = {"sessions": [s.to_dict() for s in sessions]}
+        return _resource_content(uri, payload).model_dump()
+
     raise ValueError(f"Unknown resource URI: {uri!r}")
 
 
@@ -322,6 +384,14 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_export_jira(arguments).model_dump()
         if name == "scan_mena_compliance":
             return _tool_scan_mena(arguments).model_dump()
+        if name == "chat_query_verdicts":
+            return _tool_chat_query_verdicts(arguments).model_dump()
+        if name == "chat_query_idioms":
+            return _tool_chat_query_idioms(arguments).model_dump()
+        if name == "chat_explain_divergence":
+            return _tool_chat_explain_divergence(arguments).model_dump()
+        if name == "chat_run_test":
+            return _tool_chat_run_test(arguments).model_dump()
         if name == "policy_list":
             return _tool_policy_list(arguments).model_dump()
         if name == "policy_reload":
@@ -442,6 +512,36 @@ def _tool_scan_mena(args: dict[str, Any]) -> MCPToolCallResult:
         return _ok_content({"status": "scanned"})
     except Exception as exc:
         return _err_content(f"MENA error: {exc}")
+
+
+# ── Chat knowledge tools ──────────────────────────────────────────────────────
+
+def _tool_chat_query_verdicts(args: dict[str, Any]) -> MCPToolCallResult:
+    inp = ChatQueryVerdictsInput.model_validate(args)
+    from cherenkov.chat.tools import query_verdicts
+    result = query_verdicts(endpoint=inp.endpoint, status_code=inp.status_code, limit=inp.limit)
+    return _ok_content(result)
+
+
+def _tool_chat_query_idioms(args: dict[str, Any]) -> MCPToolCallResult:
+    inp = ChatQueryIdiomsInput.model_validate(args)
+    from cherenkov.chat.tools import query_idioms
+    result = query_idioms(pattern=inp.pattern, limit=inp.limit)
+    return _ok_content(result)
+
+
+def _tool_chat_explain_divergence(args: dict[str, Any]) -> MCPToolCallResult:
+    inp = ChatExplainDivergenceInput.model_validate(args)
+    from cherenkov.chat.tools import explain_divergence
+    result = explain_divergence(endpoint=inp.endpoint, method=inp.method)
+    return _ok_content(result)
+
+
+def _tool_chat_run_test(args: dict[str, Any]) -> MCPToolCallResult:
+    inp = ChatRunTestInput.model_validate(args)
+    from cherenkov.chat.tools import run_test
+    result = run_test(endpoint=inp.endpoint, method=inp.method, spec_path=inp.spec_path)
+    return _ok_content(result)
 
 # ── Evidence helpers ──────────────────────────────────────────────────────────
 
