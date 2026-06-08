@@ -30,9 +30,13 @@ from cherenkov.core.feedback_store import FeedbackStore, FeedbackEntry
 
 app = FastAPI(
     title="CHERENKOV QA Observability Dashboard Server",
-    version="1.2.0",
+    version="1.3.0",
     description="Localhost-first dashboard server for API conformance testing."
 )
+
+# ── Phase 1: Knowledge Mesh API ─────────────────────────────────────────────────
+from cherenkov.knowledge.api.routes import router as knowledge_router
+app.include_router(knowledge_router)
 
 app.add_middleware(
     CORSMiddleware,
