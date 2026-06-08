@@ -3,6 +3,7 @@
 cherenkov.py — Unified CLI for CHERENKOV E2E Suite operations.
 Authority: v3.1 + delta. Track A surface + optional B1 visual capability.
 """
+import json
 import os
 import sys
 import argparse
@@ -113,10 +114,13 @@ def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description='CHERENKOV E2E Suite Command Line Interface')
     parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose output')
     parser.add_argument('--quiet', '-q', action='store_true', help='Suppress all output (including JSONL from stderr)')
-    subparsers = parser.add_subparsers(dest='command', required=True, help='Subcommands to execute')
+    subparsers = parser.add_subparsers(dest='command', help='Subcommands to execute')
 
     validate_parser = subparsers.add_parser('validate', help='Validate E2E test suite against a real server')
     validate_parser.add_argument('--target', '-t', required=True, help='The real server target base URL')
+    # Legacy engine CLI compatibility: operator passes --spec and --output
+    validate_parser.add_argument('--spec', help='Path to OpenAPI spec (JSON/YAML) — legacy compat')
+    validate_parser.add_argument('--output', choices=['json', 'text'], default=None, help='Output format — legacy compat')
 
     self_test_parser = subparsers.add_parser('self-test', help='Run a deterministic dry-run of the pipeline (mocking Ollama and the server)')
 
@@ -272,6 +276,12 @@ def get_parser() -> argparse.ArgumentParser:
 
 def main():
     parser = get_parser()
+    # Default to 'validate' when called with legacy engine args (--spec)
+    if '--spec' in sys.argv[1:] and not any(a in sys.argv[1:] for a in
+        ['validate', 'self-test', 'report', 'eject', 'visual', 'perf',
+         'init', 'doctor', 'dashboard', 'map', 'daemon', 'explore',
+         'author', 'governance', 'certify', 'profile', 'hitl', 'review', 'mcp']):
+        sys.argv.insert(1, 'validate')
     args = parser.parse_args()
 
     from cherenkov.core.errors import LoggerConfig
@@ -286,8 +296,35 @@ def main():
         engine = ValidationEngine('cli_validate')
         results = engine.validate_suite(args.target)
         if results.get('status') == 'empty':
-            print(f'\nError: {results.get("message")}\n')
+            msg = results.get('message', 'Unknown error')
+            if args.output == 'json':
+                print(json.dumps({"passed": False, "divergences": [msg], "summary": msg, "checks": []}))
+            else:
+                print(f'\nError: {msg}\n')
             sys.exit(1)
+        if args.output == 'json':
+            reports = results.get('reports', [])
+            divergences = []
+            checks = []
+            for r in reports:
+                passed = r.get('passed', False)
+                checks.append({
+                    "passed": passed,
+                    "scenario_id": r.get('scenario_id', '?'),
+                    "error": r.get('error', '') if not passed else '',
+                })
+                if not passed:
+                    divergences.append(r.get('error', 'failed'))
+            passed_count = sum(1 for c in checks if c['passed'])
+            total = len(checks)
+            summary = f"{passed_count}/{total} scenarios passed"
+            print(json.dumps({
+                "passed": passed_count == total,
+                "divergences": divergences,
+                "summary": summary,
+                "checks": checks,
+            }))
+            sys.exit(0 if passed_count == total else 1)
         print_tightening_report(results)
         sys.exit(0)
 
