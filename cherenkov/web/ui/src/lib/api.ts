@@ -224,7 +224,107 @@ export async function ejectSuite(outputPath: string): Promise<EjectResponse> {
   return res.json();
 }
 
-import { Divergence } from '../types';
+import { Divergence, FailingTest } from '../types';
+
+export interface OverviewData {
+  releaseReadiness: number;
+  falsePositiveRate: number;
+  recentLearnings: Array<{ id: string; text: string }>;
+}
+
+export async function fetchOverviewData(): Promise<OverviewData> {
+  const res = await fetch(`${API_BASE}/overview`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to fetch overview: ${res.status}`);
+  }
+  return res.json();
+}
+
+export type ProvenanceType = 'spec' | 'code' | 'traffic' | 'db';
+
+export interface TruthMapNode {
+  endpoint: string;
+  hasDivergence: boolean;
+  claims: Array<{
+    id: string;
+    provenance: ProvenanceType;
+    claim: string;
+  }>;
+}
+
+export async function fetchTruthMapData(): Promise<TruthMapNode[]> {
+  const res = await fetch(`${API_BASE}/truth-map`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to fetch truth map: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function fetchFailuresData(): Promise<FailingTest[]> {
+  const res = await fetch(`${API_BASE}/failures`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to fetch failures: ${res.status}`);
+  }
+  return res.json();
+}
+
+export interface MetricsData {
+  status: string;
+  metrics: {
+    requestCount: number;
+    totalTokens: number;
+    totalCost: number;
+    totalDurationMs: number;
+    defectEscapeCount: number;
+    falsePositiveRate: number;
+    maintenanceEfficiency: number;
+  };
+}
+
+export async function fetchMetricsData(): Promise<MetricsData> {
+  const res = await fetch(`${API_BASE}/metrics`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to fetch metrics: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function fetchDivergencesData(): Promise<Divergence[]> {
+  const res = await fetch(`${API_BASE}/divergences`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to fetch divergences: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function submitReviewApprove(scenarioId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/review/approve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scenario_id: scenarioId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to approve scenario ${scenarioId}: ${res.status}`);
+  }
+}
+
+export async function submitReviewReject(scenarioId: string, reason: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/review/reject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scenario_id: scenarioId, reason }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to reject scenario ${scenarioId}: ${res.status}`);
+  }
+}
 
 export async function fetchDivergences(): Promise<Divergence[]> {
   const res = await fetch(`${API_BASE}/divergences`);

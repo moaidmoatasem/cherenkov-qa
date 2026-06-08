@@ -4,9 +4,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Network, AlertCircle, ArrowRight } from 'lucide-react';
-import { Card, PageHeader, ProvenanceChip, MockBadge } from './ui';
-import { fetchTruthMap } from '../lib/api';
+import { Network, AlertCircle, ArrowRight, Zap } from 'lucide-react';
+import { Card, PageHeader, ProvenanceChip, MockBadge, Skeleton } from './ui';
+import { fetchTruthMapData, TruthMapNode, ProvenanceType } from '../lib/api';
 
 interface TruthMapScreenProps {
   onNavigate: (tab: string) => void;
@@ -14,10 +14,52 @@ interface TruthMapScreenProps {
 
 export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
-  const [nodes, setNodes] = useState<any[]>([]);
+  const [nodes, setNodes] = useState<TruthMapNode[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    fetchTruthMap().then(setNodes);
+    setIsLoading(true);
+    setError(null);
+    fetchTruthMapData()
+      .then(data => {
+        setNodes(data || []);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        setError(err instanceof Error ? err.message : 'Failed to load truth map');
+        setIsLoading(false);
+      });
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="p-6 h-full overflow-hidden flex flex-col grid-bg bg-transparent relative z-10" id="truth-map-screen">
+        <MockBadge />
+        <PageHeader title="Endpoint Truth Graph" description="Unified claims graph mapping the alignment between OpenAPI specifications, server source code, and live HTTP database footprints." />
+        <div className="flex-1 flex items-center justify-center">
+          <Skeleton className="w-32 h-32 rounded-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 h-full overflow-hidden flex flex-col grid-bg bg-transparent relative z-10" id="truth-map-screen">
+        <MockBadge />
+        <PageHeader title="Endpoint Truth Graph" description="Unified claims graph mapping the alignment between OpenAPI specifications, server source code, and live HTTP database footprints." />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <Zap className="w-12 h-12 text-amber-400 mx-auto" />
+            <p className="text-text-muted text-sm font-semibold">Failed to load truth map</p>
+            <p className="text-[11px] text-text-muted/60">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const currentEndpoint = nodes[selectedIdx] || nodes[0];
 
   if (!currentEndpoint) return null;
@@ -29,12 +71,6 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
         title="Endpoint Truth Graph"
         description="Unified claims graph mapping the alignment between OpenAPI specifications, server source code, and live HTTP database footprints."
       />
-      <div className="flex justify-end -mt-4 mb-2">
-        <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border bg-amber-500/10 text-amber-400 border-amber-500/30">
-          MOCK DATA
-        </span>
-      </div>
-
       <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-5 gap-6 mt-6 items-stretch">
         {/* Endpoint List Panel (2/5) */}
         <div className="lg:col-span-2 flex flex-col bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden h-full">
