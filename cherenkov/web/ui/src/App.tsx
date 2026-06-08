@@ -211,6 +211,7 @@ function InnerApp() {
   };
 
   return (
+    <>
       <GlobalShortcuts onNewRun={handleNewRun} onSearch={() => {}} />
       <ErrorBoundary>
       <div className="flex h-screen w-screen overflow-hidden bg-bg-base text-text-primary font-sans antialiased relative" id="cherenkov-app-core">
@@ -405,6 +406,7 @@ function InnerApp() {
 
       </div>
       </ErrorBoundary>
+    </>
   );
 }
 
