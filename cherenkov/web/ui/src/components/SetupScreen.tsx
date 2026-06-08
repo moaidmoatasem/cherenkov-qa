@@ -36,7 +36,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
   const [serverAuth, setServerAuth] = useState('');
   const [loading, setLoading] = useState(false);
   const [ingestedSpecPath, setIngestedSpecPath] = useState<string | null>(null);
-  const { addToast } = useToast();
+  const { toast, addToast } = useToast();
   
   // Tooltip details state
   const [hoveredEndpoint, setHoveredEndpoint] = useState<EndpointRichness | null>(null);
@@ -143,6 +143,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
 
   const handleStartGeneration = () => {
     if (endpoints.length > 0 && ingestedSpecPath) {
+      toast('Starting generation of ' + endpoints.length + ' test suites...', 'info');
       onStartPipeline(endpoints, ingestedSpecPath, serverUrl, serverAuth);
     }
   };
