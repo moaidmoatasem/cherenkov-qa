@@ -138,22 +138,44 @@ def get_vlm_provider(name: str | None = None) -> VLMProvider:
     provider_name = name or Config.TIER_VISION_PROVIDER
     if provider_name in _VLM_CACHE:
         return _VLM_CACHE[provider_name]
-    if provider_name == "ollama":
+    if provider_name == "localai":
+        from cherenkov.substrate.providers.localai import LocalAIVLMProvider
+        p: VLMProvider = LocalAIVLMProvider()
+    elif provider_name == "ollama":
         p = VLMProvider(OllamaInferenceClient())
     elif provider_name == "openai":
         p = VLMProvider(OpenAIInferenceClient())
     else:
-        raise ValueError(f"Unknown VLM provider '{provider_name}'. Expected 'ollama' or 'openai'.")
+        raise ValueError(
+            f"Unknown VLM provider '{provider_name}'. "
+            f"Expected 'localai', 'ollama', or 'openai'."
+        )
     _VLM_CACHE[provider_name] = p
     return p
 
 
-def provider_for_tier(tier: str) -> OllamaProvider | OpenAIProvider | VLMProvider:
+def provider_for_tier(
+    tier: str, device_class: str | None = None
+) -> OllamaProvider | OpenAIProvider | VLMProvider:
     if tier == "small":
         return get_provider(Config.TIER_SMALL_PROVIDER)
     elif tier == "deep":
         return get_provider(Config.TIER_DEEP_PROVIDER)
     elif tier == "vision":
-        return get_vlm_provider()
+        vlm_provider_name = _resolve_vlm_provider(device_class)
+        return get_vlm_provider(vlm_provider_name)
     else:
         raise ValueError(f"Unknown capability tier '{tier}'. Expected 'small', 'deep', or 'vision'.")
+
+
+def _resolve_vlm_provider(device_class: str | None = None) -> str:
+    configured = Config.TIER_VISION_PROVIDER
+    if configured != "auto":
+        return configured
+    from cherenkov.core.devices import DeviceInfo, VLMTier
+    info = DeviceInfo()
+    if info.vlm_tier == VLMTier.LOCAL:
+        return "localai" if info.has_docker else "ollama"
+    elif info.vlm_tier == VLMTier.CLOUD:
+        return "openai"
+    return "ollama"
