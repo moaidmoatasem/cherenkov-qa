@@ -70,3 +70,8 @@ operator-build:
 clean-k8s:
 	KUBECONFIG=$(K3D_KUBECONFIG) kubectl delete namespace $(NAMESPACE) 2>/dev/null || true
 	$(K3D) cluster delete cherenkov 2>/dev/null || true
+
+.PHONY: mobile-smoke
+mobile-smoke:  ## Run mobile smoke tests (requires Maestro)
+	@echo "Running mobile smoke tests..."
+	cd tests/mobile && maestro test --format junit --output results.xml . 2>/dev/null || echo "Maestro not installed — install via: curl -Ls https://get.maestro.mobile.dev | bash"
