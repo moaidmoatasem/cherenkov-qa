@@ -38,3 +38,10 @@ stub/node_modules/
 *.trace.zip
 packaging/build/
 packaging/dist/
+k3d
+scripts/k8s-run
+
+# k3d binary — download via scripts/install-tools.sh
+scripts/k3d
+# k8s-run binary — build via make k8s-run-build
+scripts/k8s-run

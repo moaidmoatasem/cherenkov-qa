@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: petstore-spec
+  namespace: cherenkov
+data:
+  petstore.json: |
+    {
+      "openapi": "3.0.0",
+      "info": {
+        "title": "Petstore",
+        "version": "1.0.0"
+      },
+      "paths": {
+        "/pets": {
+          "get": {
+            "responses": {
+              "200": {
+                "description": "A list of pets"
+              }
+            }
+          },
+          "post": {
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "name": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "201": {
+                "description": "Created"
+              }
+            }
+          }
+        },
+        "/pets/{petId}": {
+          "get": {
+            "responses": {
+              "200": {
+                "description": "A pet"
+              }
+            }
+          }
+        }
+      }
+    }
