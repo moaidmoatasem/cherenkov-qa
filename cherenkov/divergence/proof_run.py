@@ -512,6 +512,17 @@ def _cli() -> None:
         print(f"  Idioms active   : {stats['idiom_count']}")
         print(f"  Store path      : {stats['store_path']}")
 
+        # Persist snapshot to StatsStore
+        try:
+            from cherenkov.core.stats_store import StatsStore
+            StatsStore().snapshot(
+                verdict_count=stats.get("verdict_count", 0),
+                idiom_count=stats.get("idiom_count", 0),
+                source="proof_run",
+            )
+        except Exception as e_ss:
+            print(f"  (stats snapshot failed: {e_ss})", file=sys.stderr)
+
     if args.output:
         out_path = Path(args.output)
         out_path.write_text(
