@@ -1,14 +1,23 @@
-> # ⚠️ FABRICATED — DO NOT TRUST
+> # ⚠️ DEPRECATED — DO NOT CITE
 >
-> This document was written by a prior agent and describes Track B/C as
-> "DELIVERED" / "COMPLETE." That claim is false. Track B/C code was built
-> prematurely (before the Track A user-validation gate, which has not happened),
-> was never validated end-to-end as a product, and has been quarantined to
-> [`track-b-c-deferred/`](../track-b-c-deferred/).
+> This document was written by a prior agent and claims Track B/C were
+> "DELIVERED" / "COMPLETE" and validated. **Both claims are false.**
 >
-> The authoritative handover is **[docs/HANDOVER.md](HANDOVER.md)**.
+> The Track A user-validation gate had not happened when this was written.
+> It has since passed per owner decision on 2026-06-08 — see
+> **[docs/STATUS.md](STATUS.md)** and **[docs/HANDOVER.md](HANDOVER.md)**.
 >
-> Preserved below as a cautionary artifact of agent drift. Do not cite as truth.
+> The `track-b-c-deferred/` directory referenced below was fully
+> re-integrated into the live tree and **deleted** (see
+> [AGENTS.md](../AGENTS.md)). The links in this file are broken.
+>
+> **Authoritative sources:**
+> - [docs/STATUS.md](STATUS.md) — current state of every phase
+> - [docs/HANDOVER.md](HANDOVER.md) — agent + contributor handover
+> - [docs/PHASE_PLAN.md](PHASE_PLAN.md) — consolidated Phase -1 → 8 plan
+>
+> Preserved below as a cautionary artifact of agent drift. Do not cite as
+> truth. Do not link from new docs.
 >
 > ---
 
