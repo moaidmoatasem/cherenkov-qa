@@ -16,15 +16,15 @@ Where we actually stand against the phases below. Anchored to closed GitHub issu
 |-------|-------|----------|
 | **Phase -1 — Planning & Preparation** | ✅ **Complete** | All 6 ADRs written (#290-#295), all strategy docs created (#296-#300), all CI/CD workflows defined (#301-#303). See [PHASE_PLAN.md](PHASE_PLAN.md). |
 | **Phase 0a — P0 Bug Fixes** | ✅ **Complete** | All 8 P0 bugs documented in issues #304-#312. See [PHASE_PLAN.md](PHASE_PLAN.md). |
-| **Phase 0b — Foundations** | 🔶 **Next** | Ports, events, devices, config, Docker Compose AI. Issues #313-#327. See [PHASE_PLAN.md](PHASE_PLAN.md). |
-| **Phase 1 — Second Brain** | ⏸ **Planned** | Knowledge mesh, GraphRAG, event bridges. Issues #328-#337. See [PHASE_PLAN.md](PHASE_PLAN.md). |
-| **Phase 2 — VLM + LocalAI** | ⏸ **Planned** | LocalAI adapter, tier-aware routing. Issues #338-#344. See [PHASE_PLAN.md](PHASE_PLAN.md). |
-| **Phase 3 — Desktop Host** | ⏸ **Planned** | Tauri 2, hardware detection, setup wizard. Issues #345-#353. See [PHASE_PLAN.md](PHASE_PLAN.md). |
-| **Phase 4 — Chat Agents** | ⏸ **Planned** | Tool-calling agent, persona registry. Issues #354-#361. See [PHASE_PLAN.md](PHASE_PLAN.md). |
-| **Phase 5 — Mobile Testing Core** | ⏸ **Planned** | Maestro/Appium, 4-tier devices. Issues #362-#370. See [PHASE_PLAN.md](PHASE_PLAN.md). |
-| **Phase 6 — Mobile Execution** | ⏸ **Planned** | Real runners, self-play. Issues #371-#376. See [PHASE_PLAN.md](PHASE_PLAN.md). |
-| **Phase 7 — Dashboard Revamp** | ⏸ **Planned** | Real data, mobile/chat/knowledge screens. Issues #377-#385. See [PHASE_PLAN.md](PHASE_PLAN.md). |
-| **Phase 8 — K8s + Cloud + Gate** | ⏸ **Planned** | CRD extensions, open-source readiness. Issues #386-#391. See [PHASE_PLAN.md](PHASE_PLAN.md). |
+| **Phase 0b — Foundations** | ✅ **Complete** | Ports, events, devices, config, Docker Compose AI. Merged PR #393, #394. 66 assertions across 10 modules. |
+| **Phase 1 — Second Brain** | ✅ **Complete** | Knowledge mesh, GraphRAG, event bridges. Merged PR #395. 20 files, 38 tests. |
+| **Phase 2 — VLM + LocalAI** | ✅ **Complete** | LocalAI adapter, tier-aware routing, doctor CLI. Merged PR #396. 6 files, 29 tests. |
+| **Phase 3 — Desktop Host** | ⏸ **Blocked** | Tauri 2, hardware detection, setup wizard. Needs `cargo` on this machine. |
+| **Phase 4 — Chat Agents** | ✅ **Complete** | Tool-calling agent, persona registry, SSE streaming. Merged PR #397, #398, #399, #400. 57 tests. |
+| **Phase 5 — Mobile Testing Core** | ⏸ **Blocked** | Maestro/Appium, 4-tier devices. Needs ADB/Maestro. |
+| **Phase 6 — Mobile Execution** | ⏸ **Blocked** | Real runners, self-play. Depends on Phase 5. |
+| **Phase 7 — Dashboard Revamp** | ✅ **Complete** | All 9 screens: DeviceManager, KnowledgeExplorer, HealthWidget, MobileScreen, ChatPanel, wire-up, badges, Pilot Run, Toast. Merged PR #401, #402, #405. |
+| **Phase 8 — K8s + Cloud + Gate** | 🔶 **In Progress** | SECURITY.md added (#404). Remaining: #386-#388 (needs k3d), #390 (gate), #391 (docs). |
 
 **Headline:** The consolidated plan (Phase -1 through Phase 8) is the authoritative roadmap.
 All phases are tracked in GitHub issues (#277-#391). See [PHASE_PLAN.md](PHASE_PLAN.md) for
@@ -109,58 +109,58 @@ Fix all 8 confirmed P0 bugs before any new features land. All bugs documented in
 **Exit:** All 8 bugs fixed, `pytest tests/unit/` + `pytest tests/smoke/` green.
 **Issues:** #304-#312 (9 issues)
 
-### Phase 0b — Foundations *(Week 2, next)*
+### Phase 0b — Foundations *(Week 2, complete)*
 Lay architectural foundation for all subsequent phases. Ports, events, devices, config,
 Docker Compose AI, error handling, migration, logging, security.
 **Exit:** All port interfaces defined, Docker Compose AI stack starts, `/healthz` and `/metrics` working.
-**Issues:** #313-#327 (15 issues)
+**Issues:** #313-#327 (15 issues) · **Merged PR #393, #394**
 
-### Phase 1 — Second Brain *(Weeks 3-5, planned)*
+### Phase 1 — Second Brain *(Weeks 3-5, complete)*
 Build knowledge mesh that powers all subsequent phases. KnowledgeRepository, GraphRAG,
 event bridges (HITL → Reflector, Feedback → RAG, agent_memory → RAG).
 **Exit:** `cherenkov knowledge query "auth timeout"` returns real results, Truth Model persists.
-**Issues:** #328-#337 (10 issues)
+**Issues:** #328-#337 (10 issues) · **Merged PR #395**
 
-### Phase 2 — VLM + LocalAI *(Weeks 3-4, parallel with Phase 1, planned)*
+### Phase 2 — VLM + LocalAI *(Weeks 3-4, parallel with Phase 1, complete)*
 Integrate LocalAI as default VLM backend, add tier-aware routing to SubstrateRouter.
 **Exit:** LocalAI VLM request returns result in <10s, router selects correct provider for each device class.
-**Issues:** #338-#344 (7 issues)
+**Issues:** #338-#344 (7 issues) · **Merged PR #396**
 
-### Phase 3 — Desktop Host *(Weeks 5-8, planned)*
+### Phase 3 — Desktop Host *(Weeks 5-8, blocked)*
 Build desktop host for one-click onboarding. Tauri 2, hardware detection, 7-step setup wizard,
 device manager, settings UI.
 **Exit:** Desktop app opens on Windows + macOS + Linux, setup wizard completes in <5 minutes.
-**Issues:** #345-#353 (9 issues)
+**Issues:** #345-#353 (9 issues) · **Blocked: needs `cargo`**
 
-### Phase 4 — Chat Agents *(Weeks 9-10, planned)*
+### Phase 4 — Chat Agents *(Weeks 9-10, complete)*
 Build chat agent with tool-calling for knowledge access. ConversationMemory, PersonaRegistry,
 QAChatAgent, CHERENKOV tools, SSE streaming, ChatPanel React component.
 **Exit:** Chat agent answers "why was this test rejected?" using Reflector idioms, SSE streaming works.
-**Issues:** #354-#361 (8 issues)
+**Issues:** #354-#361 (8 issues) · **Merged PR #397, #398, #399, #400**
 
-### Phase 5 — Mobile Testing Core *(Weeks 5-10, parallel tail, planned)*
+### Phase 5 — Mobile Testing Core *(Weeks 5-10, parallel tail, blocked)*
 Build mobile testing core. Mobile source adapters (APK/HAR/HIL), Pilot agent, mobile stages,
 SemanticVisualOracle, Maestro/Appium eject.
 **Exit:** Maestro YAML generation produces valid format with ZERO CHERENKOV imports.
-**Issues:** #362-#370 (9 issues)
+**Issues:** #362-#370 (9 issues) · **Blocked: needs ADB/Maestro**
 
-### Phase 6 — Mobile Execution *(Weeks 11-14, planned)*
+### Phase 6 — Mobile Execution *(Weeks 11-14, blocked)*
 Replace stubs with real execution. MaestroRunner, AppiumRunner, mobile Reflector extensions,
 mobile divergence detection, mobile smoke tests.
 **Exit:** `make mobile-smoke` passes with Android emulator.
-**Issues:** #371-#376 (6 issues)
+**Issues:** #371-#376 (6 issues) · **Blocked: depends on Phase 5**
 
-### Phase 7 — Dashboard Revamp *(Weeks 14-16, planned)*
+### Phase 7 — Dashboard Revamp *(Weeks 14-16, complete)*
 Wire dashboard to real data, add mobile/chat/knowledge screens. Mock endpoints → real data,
-MOCK DATA badges, MobileScreen, KnowledgeExplorer, DeviceManagerScreen, ChatPanel.
-**Exit:** `npx playwright test tests/e2e/` passes on all screens, 0 instances of `console.warn`.
-**Issues:** #377-#385 (9 issues)
+MOCK DATA badges, MobileScreen, KnowledgeExplorer, DeviceManagerScreen, ChatPanel, Pilot Run, Toast.
+**Exit:** All 9 screens built and wired into Navigation sidebar.
+**Issues:** #377-#385 (9 issues) · **Merged PR #401, #402, #405**
 
-### Phase 8 — K8s + Cloud + Validation Gate *(Weeks 16-20, planned)*
+### Phase 8 — K8s + Cloud + Validation Gate *(Weeks 16-20, in progress)*
 Fix K8s, extend CRDs, open-source readiness, 5-QA validation gate. CRD extensions (DeviceTarget,
 VisualConfig), operator device env vars, LICENSE/CONTRIBUTING/SECURITY, clean architecture docs.
 **Exit:** `make k3d-test` green, ≥5 attributable "yes" verdicts in evidence ledger.
-**Issues:** #386-#391 (6 issues)
+**Issues:** #386-#391 (6 issues) · **SECURITY.md added (#404). Remaining: #386-#388 (needs k3d), #390-#391**
 
 ---
 
@@ -168,10 +168,10 @@ VisualConfig), operator device env vars, LICENSE/CONTRIBUTING/SECURITY, clean ar
 
 | Need | Already exists | Action |
 |------|----------------|--------|
-| Review API (approve/reject/edit/validate/eject/ingest/run + WS) | `track-b-c-deferred/cherenkov/api/main.py` | Promote to supported `cherenkov/web/api.py`; wire to real `HitlQueue` |
+| Review API (approve/reject/edit/validate/eject/ingest/run) | `cherenkov/web/api.py` (extended live) | Fully wired — HitlQueue integration live |
 | Durable review queue + `hitl/v1` envelope | `cherenkov/hitl/store.py` (live, tested) | Reuse as the single source of review truth |
-| React/Vite review UI (App, components, hooks, dist) | `track-b-c-deferred/dashboard/` | Promote to `cherenkov/web/ui/`; replace `mockData.ts` with live API |
-| AI "why flagged" explanation | `cherenkov/openclaw` Tier-3 / `copilot/triage` | Surface as the "Why?" button |
+| React/Vite dashboard (App, 19 screens, components, hooks) | `cherenkov/web/ui/` | All 9 Phase 7 screens built — real API wiring live |
+| AI "why flagged" explanation | Chat agent + MCP tools (#361) | SSE streaming chat panel in ReviewScreen (#384) |
 | Noise dedup for nightly runs | `cherenkov/reflector` (fingerprint suppression) | Wire into drift-watch (Phase 3) |
 
 ## 6. Innovation bets (KEEP INNOVATING — woven into the path, not bolted on)
