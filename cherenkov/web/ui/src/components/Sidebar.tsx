@@ -22,7 +22,8 @@ import {
   Brain,
   ChevronDown,
   ChevronRight,
-  Star
+  Star,
+  MessageSquare
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
 import { Project } from '../types';
@@ -124,6 +125,7 @@ export default function Sidebar({
       label: 'LEARN',
       items: [
         { id: 'memory', label: 'Memory & Pairing', icon: Brain, desc: 'Reflector senior idioms' },
+        { id: 'chat', label: 'Chat', icon: MessageSquare, desc: 'SSE streaming assistant' },
       ]
     }
   ];

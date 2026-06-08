@@ -436,4 +436,25 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     expect(storedDensity).toBe('compact');
   });
 
+  // ── 21. Chat Screen ──────────────────────────────────────────────
+  test('Chat: session creation, message input, SSE streaming response', async ({ page }) => {
+    await page.click('#nav-item-chat');
+    await page.waitForSelector('#chat-screen');
+    await expect(page.locator('h1')).toContainText('Chat');
+
+    const textInput = page.locator('#chat-screen input[type="text"]');
+    await expect(textInput).toBeVisible();
+    await expect(textInput).toBeEnabled();
+
+    await textInput.fill('What tests should I run?');
+    const sendButton = page.locator('#chat-screen button:has(svg)');
+    await expect(sendButton).toBeVisible();
+    await sendButton.click();
+
+    await expect(page.getByText('What tests should I run?')).toBeVisible();
+
+    await page.waitForTimeout(500);
+    await expect(page.getByText(/Hello from CHERENKOV/)).toBeVisible();
+  });
+
 });
