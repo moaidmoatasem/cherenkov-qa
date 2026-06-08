@@ -335,3 +335,15 @@ export async function fetchOverview() {
   if (!res.ok) return { falsePositiveRate: 0, recentLearnings: [] };
   return res.json();
 }
+
+export async function createChatSession(): Promise<{ session_id: string; persona_id: string }> {
+  const res = await fetch(`${API_BASE}/chat/sessions`, { method: 'POST' });
+  if (!res.ok) throw new Error(`Failed to create chat session: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchChatMessages(sessionId: string): Promise<{ messages: Array<{ role: string; content: string }> }> {
+  const res = await fetch(`${API_BASE}/chat/sessions/${sessionId}/messages`);
+  if (!res.ok) throw new Error(`Failed to fetch chat messages: ${res.status}`);
+  return res.json();
+}

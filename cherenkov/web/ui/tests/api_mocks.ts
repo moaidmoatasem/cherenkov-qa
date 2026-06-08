@@ -648,4 +648,22 @@ export async function setupApiMocks(page: any) {
   await page.route('**/api/v1/eject', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'success', path: '/out' }) });
   });
+  await page.route('**/api/v1/chat/sessions', async (route: any) => {
+    if (route.request().method() === 'POST') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ session_id: 'mock-session-1', persona_id: 'default' }) });
+    } else {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+    }
+  });
+  await page.route('**/api/v1/chat/sessions/*/messages', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ messages: [] }) });
+  });
+  await page.route('**/api/v1/chat/sessions/*/stream', async (route: any) => {
+    const sseBody = 'event: token\ndata: {"token": "Hello"}\n\nevent: token\ndata: {"token": " from"}\n\nevent: token\ndata: {"token": " CHERENKOV"}\n\nevent: complete\ndata: {}\n\n';
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/event-stream',
+      body: sseBody,
+    });
+  });
 }
