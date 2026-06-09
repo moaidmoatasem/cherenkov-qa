@@ -277,16 +277,145 @@ docker compose -f docker-compose.ai.yml up -d
 cherenkov validate --spec petstore.yaml --target http://localhost:8000
 ```
 
-### Production (K8s)
+### K8s (k3d)
 
 ```bash
-# Deploy operator
+# One-time setup: build images + create cluster
+make k3d-up
+
+# Run integration tests
+make k3d-test
+
+# Tear down
+make k3d-down
+```
+
+### Production (Full K8s)
+
+```bash
+# Deploy CRDs
 kubectl apply -f operator/config/crd/bases/
+
+# Deploy operator
+kubectl apply -f operator/config/rbac/
 kubectl apply -f operator/config/manager/
 
-# Create ConformanceCheck
+# Create a ConformanceCheck resource
 kubectl apply -f conformancecheck.yaml
 ```
+
+---
+
+## Kubernetes Operator
+
+CHERENKOV includes a **Kubernetes operator** that manages `ConformanceCheck` custom resources. When a `ConformanceCheck` is created, the operator spawns a validation Job, tracks its progress, and reports results back to the resource status.
+
+### CRD: ConformanceCheck
+
+```yaml
+apiVersion: validation.cherenkov.io/v1alpha1
+kind: ConformanceCheck
+spec:
+  targetRef:                    # Required: the K8s resource to validate
+    apiVersion: apps/v1
+    kind: Deployment
+    name: my-api
+    namespace: default
+    port: 8080
+  specRef: "petstore-spec"      # ConfigMap containing the OpenAPI spec
+  schedule: "*/30 * * * *"     # Optional: cron schedule for recurring checks
+  gates:                        # Optional: specific gates to validate
+    - name: "status-codes"
+      type: "conformance"
+      assert: "all responses match spec"
+  llmConcurrency: 2             # Optional: max concurrent LLM tasks (1-16)
+  deviceTargets:                # Optional: mobile/web device targets
+    - platform: "android"
+      osVersion: "14"
+      deviceName: "pixel_7"
+      browser: "chrome"
+      viewportSize:
+        width: 1080
+        height: 1920
+  visualConfig:                 # Optional: visual testing config
+    enabled: true
+    vlmProvider: "localai"
+    threshold: 0.95
+    screenshotOnFail: true
+    diffMethod: "ssim"
+```
+
+### Reconciler Flow
+
+```
+ConformanceCheck created (phase="")
+        │
+        ▼
+Phase=Pending ──► Acquire concurrency slot
+        │              │
+        │              ▼
+        │         Create validate Job
+        │              │
+        ▼              ▼
+Phase=Running ──► Watch Job status
+        │              │
+        ├── Job Complete ──► Phase=Pass ✓
+        ├── Job Failed   ──► Phase=Fail ✗
+        └── Job Error    ──► Phase=Error ⚠
+```
+
+### Operator Architecture
+
+```
+┌──────────────────────────────────────────┐
+│  Controller Manager (operator/main.go)    │
+│  ┌────────────────────────────────────┐   │
+│  │ ConformanceCheckReconciler         │   │
+│  │  ├─ Get CR → determine phase       │   │
+│  │  ├─ TryAcquire scheduler slot      │   │
+│  │  ├─ Create/validate Job via Runner │   │
+│  │  └─ Update status + emit events    │   │
+│  ├────────────────────────────────────┤   │
+│  │ Scheduler (concurrency limiter)    │   │
+│  │  └─ MAX_CONCURRENT_LLM_TASKS env   │   │
+│  ├────────────────────────────────────┤   │
+│  │ JobRunner                          │   │
+│  │  └─ Creates batch/v1 Job pods      │   │
+│  │     └─ Mounts spec ConfigMap       │   │
+│  │     └─ Injects env vars            │   │
+│  └────────────────────────────────────┘   │
+│  Health: /healthz, /readyz                │
+│  Metrics: /metrics (:8080)                │
+└──────────────────────────────────────────┘
+```
+
+### CLI Bridge (`k8s-run`)
+
+A Go CLI tool that creates a `ConformanceCheck` CR and polls for results:
+
+```bash
+k8s-run --spec petstore-spec --target prism --port 4010 --timeout 60s
+```
+
+### K8s Manifests (`k8s/`)
+
+| File | Purpose |
+|------|---------|
+| `namespace.yaml` | `cherenkov` namespace |
+| `petstore-configmap.yaml` | Inline OpenAPI spec |
+| `ollama-pvc.yaml` | 20Gi PVC for models |
+| `ollama-service.yaml` | ClusterIP port 11434 |
+| `ollama-statefulset.yaml` | GPU-backed Ollama |
+| `ollama-init-job.yaml` | Pre-pull models |
+| `prism-deployment.yaml` | Mock API server |
+| `prism-service.yaml` | ClusterIP port 4010 |
+| `cherenkov-deployment.yaml` | Engine daemon |
+| `cherenkov-service.yaml` | ClusterIP port 8000 |
+| `operator-rbac.yaml` | SA + ClusterRole + binding |
+| `operator-deployment.yaml` | Operator pod |
+| `crd-conformancecheck.yaml` | CRD definition |
+| `k3d-cluster.yaml` | k3d cluster config |
+| `kustomization.yaml` | Kustomize overlay |
 
 ---
 

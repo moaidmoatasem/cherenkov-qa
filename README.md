@@ -119,8 +119,8 @@ roadmap: **[docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)**.
 7. **K8s + Cloud** (Phase 8) — CRD extensions, operator, open-source readiness.
 
 Phase -1, 0a, 0b, 1, 2, 4, and 7 are complete. Phase 8 is in progress
-(`SECURITY.md` added; needs `k3d` for #386–#388). See
-[docs/STATUS.md](docs/STATUS.md) for the canonical state.
+(CRD sync + device env vars code done; needs `make k3d-test` to verify).
+See [docs/STATUS.md](docs/STATUS.md) for the canonical state.
 
 ---
 

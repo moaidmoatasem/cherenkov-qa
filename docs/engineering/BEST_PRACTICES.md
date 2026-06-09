@@ -449,6 +449,86 @@ expected_status = spec.paths[endpoint].get(method).responses.keys()
 
 ---
 
+---
+
+## Go / Kubernetes Operator
+
+### Code Structure
+
+The operator lives in `operator/` and follows standard controller-runtime conventions:
+
+```
+operator/
+├── main.go                          # Entrypoint, manager setup
+├── api/v1alpha1/                    # CRD types
+│   ├── conformancecheck_types.go
+│   ├── groupversion_info.go
+│   └── zz_generated.deepcopy.go
+├── controllers/                     # Reconciler
+│   └── conformancecheck_controller.go
+├── internal/                        # Shared logic
+│   ├── scheduler.go                 # Concurrency limiter
+│   └── runner.go                    # Job creation
+├── cmd/k8s-run/                     # CLI bridge
+│   └── main.go
+├── config/                          # Kustomize config
+│   ├── crd/bases/
+│   └── rbac/
+├── Dockerfile
+└── go.mod
+```
+
+### CRD Type Conventions
+
+- **Every spec field** needs a JSON tag and may need `+kubebuilder` validation markers.
+- **DeepCopy** is auto-generated — run `make generate` after type changes.
+- **Backward compatibility**: New fields must be `omitempty`. Never remove or rename existing fields.
+
+```go
+type ConformanceCheckSpec struct {
+    TargetRef TargetRef `json:"targetRef"`
+    Schedule  string    `json:"schedule,omitempty"`
+    Gates     []Gate    `json:"gates,omitempty"`
+}
+```
+
+### Controller Patterns
+
+- **Phase machine**: Each CR progresses through Pending → Running → Pass/Fail/Error. Never skip phases.
+- **Requeue**: Use `RequeueAfter` for polling, never `Requeue: true` (avoids tight loops).
+- **Concurrency**: Acquire scheduler slot before starting work; release in all exit paths.
+- **Events**: Emit K8s events for every phase transition.
+
+```go
+switch check.Status.Phase {
+case PhasePending:
+    if !r.Scheduler.TryAcquire() {
+        return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+    }
+    // ... start work ...
+    return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+
+case PhaseRunning:
+    job := &batchv1.Job{}
+    err := r.Get(ctx, key, job)
+    // ... check job conditions ...
+}
+```
+
+### Job Runner Patterns
+
+- **Env vars** for engine configuration (OLLAMA_HOST, device targets, visual config).
+- **ConfigMap mounts** for spec files.
+- **Image pull policy**: `IfNotPresent` for local dev, `Always` for production.
+
+### Testing the Operator
+
+Without a real cluster, use:
+
+- **envtest** (controller-runtime built-in) for unit-testing the reconciler.
+- **`make k3d-up && make k3d-test`** for integration testing.
+- Manual: `kubectl apply -f conformancecheck.yaml` and watch status.
+
 ## References
 
 - `docs/PHASE_PLAN.md` (Consolidated plan)

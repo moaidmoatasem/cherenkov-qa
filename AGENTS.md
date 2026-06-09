@@ -35,9 +35,14 @@ The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHE
 - ✅ **Phase 2** (VLM + LocalAI): Complete. LocalAI default, tier routing, doctor CLI (#339-#344).
 - ✅ **Phase 4** (Chat Agent): Complete. Tool-calling agent, persona registry, SSE streaming (#354-#361).
 - ✅ **Phase 7** (Dashboard): Complete. All 9 screens: DeviceManager, KnowledgeExplorer, HealthWidget, MobileScreen, ChatPanel, wire-up, MockBadges, Pilot Run, Toast (#377-#385).
-- 🔶 **Phase 8** (K8s + Cloud + Gate): In progress. SECURITY.md added (#389). Remaining items: #386-#388 (needs k3d), #390 (gate), #391 (docs).
+- 🔶 **Phase 8** (K8s + Cloud + Gate): In progress. SECURITY.md added (#389). Remaining items: #386-#388 (CRD sync + device env vars — code done, needs `make k3d-test`), #390 (gate — resolved per owner decision), #391 (docs — SYSTEM_DESIGN.md + BEST_PRACTICES.md updated).
 - ⏸️ **Phase 3** (Desktop/Tauri 2): Blocked — needs `cargo` on this machine.
 - ⏸️ **Phase 5-6** (Mobile Testing): Blocked — needs ADB/Maestro on this machine.
+
+**Available Tools (WSL Ubuntu-24.04):**
+- ✅ Go 1.22.5 installed at `~/.local/opt/go/bin/go`
+- ✅ k3d v5.6.3 installed at `~/.local/bin/k3d`
+- ✅ Docker, kubectl, curl, wget available
 
 **New Capabilities:**
 1. ✅ **Second Brain** (Phase 1) — Knowledge mesh, GraphRAG, event bridges

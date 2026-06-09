@@ -73,6 +73,62 @@ func (in *ConformanceCheckSpec) DeepCopyInto(out *ConformanceCheckSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.DeviceTargets != nil {
+		in, out := &in.DeviceTargets, &out.DeviceTargets
+		*out = make([]DeviceTarget, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.VisualConfig != nil {
+		in, out := &in.VisualConfig, &out.VisualConfig
+		*out = new(VisualConfig)
+		(*in).DeepCopyInto(*out)
+	}
+}
+
+func (in *ViewportSize) DeepCopyInto(out *ViewportSize) {
+	*out = *in
+}
+
+func (in *ViewportSize) DeepCopy() *ViewportSize {
+	if in == nil {
+		return nil
+	}
+	out := new(ViewportSize)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *DeviceTarget) DeepCopyInto(out *DeviceTarget) {
+	*out = *in
+	if in.ViewportSize != nil {
+		in, out := &in.ViewportSize, &out.ViewportSize
+		*out = new(ViewportSize)
+		**out = **in
+	}
+}
+
+func (in *DeviceTarget) DeepCopy() *DeviceTarget {
+	if in == nil {
+		return nil
+	}
+	out := new(DeviceTarget)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *VisualConfig) DeepCopyInto(out *VisualConfig) {
+	*out = *in
+}
+
+func (in *VisualConfig) DeepCopy() *VisualConfig {
+	if in == nil {
+		return nil
+	}
+	out := new(VisualConfig)
+	in.DeepCopyInto(out)
+	return out
 }
 
 func (in *ConformanceCheckSpec) DeepCopy() *ConformanceCheckSpec {

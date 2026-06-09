@@ -38,13 +38,39 @@ type CheckResult struct {
 	Summary     string   `json:"summary,omitempty"`
 }
 
+// ViewportSize defines a browser viewport dimension.
+type ViewportSize struct {
+	Width  int `json:"width"`
+	Height int `json:"height"`
+}
+
+// DeviceTarget defines a mobile or browser device target for validation.
+type DeviceTarget struct {
+	Platform     string       `json:"platform"`
+	OSVersion    string       `json:"osVersion,omitempty"`
+	DeviceName   string       `json:"deviceName,omitempty"`
+	Browser      string       `json:"browser,omitempty"`
+	ViewportSize *ViewportSize `json:"viewportSize,omitempty"`
+}
+
+// VisualConfig defines visual regression testing configuration.
+type VisualConfig struct {
+	Enabled        bool    `json:"enabled"`
+	VLMProvider    string  `json:"vlmProvider,omitempty"`
+	Threshold      float64 `json:"threshold,omitempty"`
+	ScreenshotOnFail bool  `json:"screenshotOnFail,omitempty"`
+	DiffMethod     string  `json:"diffMethod,omitempty"`
+}
+
 // ConformanceCheckSpec defines the desired state.
 type ConformanceCheckSpec struct {
-	TargetRef TargetRef `json:"targetRef"`
-	SpecRef   string    `json:"specRef,omitempty"`
-	Schedule  string    `json:"schedule,omitempty"`
-	Gates     []Gate    `json:"gates,omitempty"`
-	LLMConcurrency *int32 `json:"llmConcurrency,omitempty"`
+	TargetRef      TargetRef      `json:"targetRef"`
+	SpecRef        string         `json:"specRef,omitempty"`
+	Schedule       string         `json:"schedule,omitempty"`
+	Gates          []Gate         `json:"gates,omitempty"`
+	LLMConcurrency *int32         `json:"llmConcurrency,omitempty"`
+	DeviceTargets  []DeviceTarget `json:"deviceTargets,omitempty"`
+	VisualConfig   *VisualConfig  `json:"visualConfig,omitempty"`
 }
 
 // ConformanceCheckStatus defines the observed state.

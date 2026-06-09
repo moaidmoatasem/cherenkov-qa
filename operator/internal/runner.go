@@ -3,7 +3,9 @@ package internal
 import (
 	"context"
 	"fmt"
+	"strconv"
 
+	validationv1alpha1 "github.com/cherenkov-ai/operator/api/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,7 +21,52 @@ func NewJobRunner(c client.Client) *JobRunner {
 	return &JobRunner{client: c}
 }
 
-func (r *JobRunner) CreateValidateJob(ctx context.Context, name, namespace, targetService string, targetPort int32, specRef string) error {
+func (r *JobRunner) CreateValidateJob(
+	ctx context.Context,
+	name, namespace, targetService string,
+	targetPort int32,
+	specRef string,
+	deviceTargets []validationv1alpha1.DeviceTarget,
+	visualConfig *validationv1alpha1.VisualConfig,
+) error {
+	env := []corev1.EnvVar{
+		{Name: "OLLAMA_HOST", Value: "http://ollama:11434"},
+	}
+
+	for i, dt := range deviceTargets {
+		prefix := fmt.Sprintf("DEVICE_TARGET_%d_", i)
+		env = append(env,
+			corev1.EnvVar{Name: prefix + "PLATFORM", Value: dt.Platform},
+		)
+		if dt.OSVersion != "" {
+			env = append(env, corev1.EnvVar{Name: prefix + "OS_VERSION", Value: dt.OSVersion})
+		}
+		if dt.DeviceName != "" {
+			env = append(env, corev1.EnvVar{Name: prefix + "DEVICE_NAME", Value: dt.DeviceName})
+		}
+		if dt.Browser != "" {
+			env = append(env, corev1.EnvVar{Name: prefix + "BROWSER", Value: dt.Browser})
+		}
+		if dt.ViewportSize != nil {
+			env = append(env,
+				corev1.EnvVar{Name: prefix + "VIEWPORT_WIDTH", Value: strconv.Itoa(dt.ViewportSize.Width)},
+				corev1.EnvVar{Name: prefix + "VIEWPORT_HEIGHT", Value: strconv.Itoa(dt.ViewportSize.Height)},
+			)
+		}
+	}
+
+	if visualConfig != nil {
+		env = append(env,
+			corev1.EnvVar{Name: "VISUAL_ENABLED", Value: strconv.FormatBool(visualConfig.Enabled)},
+		)
+		if visualConfig.VLMProvider != "" {
+			env = append(env, corev1.EnvVar{Name: "VISUAL_VLM_PROVIDER", Value: visualConfig.VLMProvider})
+		}
+		if visualConfig.DiffMethod != "" {
+			env = append(env, corev1.EnvVar{Name: "VISUAL_DIFF_METHOD", Value: visualConfig.DiffMethod})
+		}
+	}
+
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("validate-%s", name),
@@ -39,9 +86,7 @@ func (r *JobRunner) CreateValidateJob(ctx context.Context, name, namespace, targ
 							Name:  "engine",
 							Image: "cherenkov-engine:latest",
 							ImagePullPolicy: corev1.PullIfNotPresent,
-							Env: []corev1.EnvVar{
-								{Name: "OLLAMA_HOST", Value: "http://ollama:11434"},
-							},
+							Env:    env,
 							Args: []string{
 								"--spec", "/spec/petstore.json",
 								"--target", fmt.Sprintf("http://%s:%d", targetService, targetPort),

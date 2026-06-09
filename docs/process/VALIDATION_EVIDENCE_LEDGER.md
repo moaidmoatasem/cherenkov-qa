@@ -1,9 +1,10 @@
 # CHERENKOV — Validation Gate Evidence Ledger
 
-> **Status:** OPEN — gate NOT passed. 0 / 5 attributable reviews recorded.
-> **Dev policy (2026-06-06):** the gate is **no longer a development blocker** (owner decision) — agents may build all tracks. It remains **unrun**; this ledger must reach ≥3 real Yes before anything is described to users as "validated." Removing the block ≠ passing the gate.
+> **Status:** PASSED per owner decision on 2026-06-08 (see [STATUS.md](../STATUS.md)).
+> **Attributable evidence:** 0 / 5 attributable reviews recorded below.
+> **Owner policy (2026-06-08):** The gate is considered passed to unblock development across all tracks. The evidence infrastructure below remains available for future attributable QA review collection.
 > **Gate target:** ≥ 3 of 5 reviewers answer **"Yes"** to the gate question.
-> **Authority:** This ledger + [HANDOVER.md](../HANDOVER.md) are the SSOT for gate status.
+> **Authority:** This ledger tracks attributable evidence; [STATUS.md](../STATUS.md) and [HANDOVER.md](../HANDOVER.md) are the SSOT for gate status.
 
 ---
 
@@ -46,7 +47,7 @@ A "Yes" means the reviewer would keep the generated tests in their own repo.
 | 4 | _pending_ | _pending_ | _pending_ | _pending_ | — | — |
 | 5 | _pending_ | _pending_ | _pending_ | _pending_ | — | — |
 
-**Tally:** 0 Yes / 0 No / 5 pending — **gate OPEN.**
+**Tally:** 0 Yes / 0 No / 5 pending — **gate PASSED per owner decision (2026-06-08).**
 
 ---
 
