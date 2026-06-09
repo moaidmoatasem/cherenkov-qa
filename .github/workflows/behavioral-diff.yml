@@ -11,6 +11,7 @@ jobs:
   behavioral-diff:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    continue-on-error: true   # informational only — spec diff comment, not a merge gate
     permissions:
       pull-requests: write
     steps:
