@@ -8,7 +8,7 @@ The codebase follows a clean layered architecture. Dependencies flow **downward 
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  INTERFACES (web/ · mcp/ · chat/ · copilot/)                │
+│  INTERFACES (web/, mcp/, chat/, copilot/)                   │
 ├─────────────────────────────────────────────────────────────┤
 │  EXTENDED CAPABILITIES                                       │
 │  governance/ · federation/ · divergence/ · compliance/      │
@@ -29,76 +29,40 @@ The codebase follows a clean layered architecture. Dependencies flow **downward 
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Import Dependency Graph (from static analysis)
+## Import Frequency (grep-derived, descending)
 
-The table below was derived from `grep -r "from cherenkov\."` across all Python files.
-Numbers in the **Imports** column indicate the import-frequency rank of that module as a dependency.
+The following counts reflect how many times each module is imported by other
+cherenkov modules (i.e. demand on the module, not what it imports itself):
 
-| Module | Imports from | Imported by |
-|--------|-------------|-------------|
-| `core/` | *(none — zero upstream deps)* | ai, substrate, oracle, stages, execution, healing, hitl, reflector, truth, chat, knowledge, mcp, web, governance, divergence, copilot, federation, rag, sources, coverage, validate, sdet, compliance, continuity, openclaw, ports, dashboard |
-| `ai/` | core, reflector | stages, substrate, healing, mcp, web, coverage |
-| `substrate/` | ai, core | oracle, stages, healing, divergence, copilot, openclaw |
-| `oracle/` | core, oracle, substrate | stages |
-| `stages/` | ai, copilot, core, divergence, execution, governance, healing, hitl, rag, reflector, sources, stages, substrate, truth, web | core/orchestrator, chat, web, continuity |
-| `execution/` | core, hitl | stages, mcp, web |
-| `reflector/` | core | ai, stages, chat, divergence, copilot, web |
-| `truth/` | core, coverage, stages, truth | stages |
-| `healing/` | ai, core, healing, oracle, substrate | stages, copilot |
-| `hitl/` | hitl, openclaw | stages, execution, mcp, web |
-| `chat/` | chat, core, knowledge, reflector, stages | mcp, web |
-| `knowledge/` | *(self-contained)* | chat, web |
-| `mcp/` | ai, chat, core, execution, hitl, mcp, validate | *(interface layer)* |
-| `web/` | ai, chat, core, execution, hitl, knowledge, reflector, stages, web | *(interface layer)* |
-| `governance/` | core, governance | stages, dashboard |
-| `divergence/` | agents, core, divergence, reflector, sources, substrate | stages, sdet |
-| `copilot/` | core, healing, reflector, substrate | stages |
-| `federation/` | core, federation | *(extended capability)* |
-| `rag/` | core, rag | stages |
-| `sources/` | *(self-contained)* | stages, divergence |
-| `coverage/` | ai, core, coverage | truth |
-| `validate/` | core, validate | mcp |
-| `sdet/` | core, divergence, sdet | *(extended capability)* |
-| `compliance/` | compliance, core | *(extended capability)* |
-| `continuity/` | core, stages | *(extended capability)* |
-| `openclaw/` | core, hitl, openclaw, substrate | hitl |
-| `ports/` | core, ports | *(infrastructure)* |
-| `dashboard/` | core, governance | *(infrastructure)* |
-| `agents/` | *(self-contained)* | divergence |
-
-## Inter-Module Import Frequency
-
-Top imported modules (import count from `grep` analysis — measures how central each module is):
-
-| Rank | Module | Import count | Role |
-|------|--------|-------------|------|
-| 1 | `core` | 203 | Foundation — contracts, config, errors, orchestrator |
-| 2 | `ai` | 34 | LLM client abstraction |
-| 3 | `substrate` | 29 | Model routing and provider registry |
-| 4 | `knowledge` | 25 | GraphRAG and knowledge mesh |
-| 5 | `stages` | 23 | Pipeline stage definitions |
-| 6 | `reflector` | 22 | Verdict memory and suppression |
-| 7 | `truth` | 17 | Verdict model and emitters |
-| 8 | `chat` | 17 | Chat agent and conversation memory |
-| 9 | `hitl` | 15 | Human-in-the-loop review queue |
-| 10 | `healing` | 15 | Test repair suggestions |
-| 11 | `execution` | 15 | Playwright / validation runners |
-| 12 | `openclaw` | 10 | Feedback loop contracts |
-| 13 | `sources` | 9 | Traffic and event adapters |
-| 14 | `oracle` | 9 | Spec/snapshot validation strategies |
-| 15 | `validate` | 7 | Validation gate |
-| 16 | `mcp` | 7 | MCP JSON-RPC server |
-| 17 | `divergence` | 7 | Witness/skeptic/explorer loops |
-
-## Circular Import Risk
-
-`core/orchestrator.py` imports from `stages/` (ingest, plan, generate, review) and `ai/` — this is intentional:
-`orchestrator` is the entry-point runner, not a passive contract module. The true "no upstream deps" modules
-are `core/contracts.py`, `core/config.py`, and `core/errors.py`.
-
-Modules that import themselves (internal sub-package references): `stages`, `hitl`, `healing`, `divergence`,
-`chat`, `knowledge`, `reflector`, `truth`, `federation`, `openclaw`, `sdet`, `rag`, `compliance`, `sources`.
-None of these create cross-module circular imports based on static analysis.
+| Module | Import count | Role |
+|--------|-------------|------|
+| `core` | 203 | Foundation — most-imported module |
+| `ai` | 34 | LLM clients — second most-imported |
+| `substrate` | 29 | Model routing — third most-imported |
+| `knowledge` | 25 | GraphRAG mesh |
+| `stages` | 23 | Pipeline stage definitions |
+| `reflector` | 22 | Verdict memory + suppression |
+| `truth` | 17 | Verdict model + emitters |
+| `chat` | 17 | Chat agent + conversation memory |
+| `hitl` | 15 | Human-in-the-loop review |
+| `healing` | 15 | Test repair suggestions |
+| `execution` | 15 | Test execution engines |
+| `openclaw` | 10 | OpenClaw test introspection |
+| `oracle` | 9 | Validation oracle strategies |
+| `sources` | 9 | Traffic + event source adapters |
+| `validate` | 7 | Validation suite runner |
+| `mcp` | 7 | MCP JSON-RPC server internals |
+| `divergence` | 7 | Witness/skeptic/explorer loops |
+| `coverage` | 5 | Coverage assertion + gating |
+| `web` | 4 | FastAPI review API |
+| `ports` | 4 | Hexagonal port definitions |
+| `sdet` | 3 | SDET coverage loop |
+| `rag` | 3 | Retrieval-augmented generation |
+| `governance` | 3 | KPI + compliance reporting |
+| `federation` | 3 | Multi-node sync |
+| `copilot` | 3 | Intent detection + autonomy |
+| `compliance` | 1 | MENA compliance scanner |
+| `agents` | 1 | Agent pilot |
 
 ## Required Core (Track A — always needed)
 
@@ -108,49 +72,57 @@ These modules are required for the basic OpenAPI → Playwright pipeline:
 |--------|---------|-----------|
 | `core/contracts.py` | Versioned Pydantic stage contracts | All stage I/O models |
 | `core/config.py` | Environment-based configuration | All config values |
-| `core/errors.py` | Shared error types and logger | CherenkovError, get_logger |
-| `core/orchestrator.py` | DAG pipeline execution | run_pipeline() |
-| `stages/ingest.py` | OpenAPI spec ingestion | IngestStage |
-| `stages/plan.py` | Test scenario planning | PlanStage |
-| `stages/generate.py` | LLM test generation | GenerateStage |
-| `stages/review.py` | Test review and validation | ReviewStage |
-| `execution/eject.py` | Standalone test eject | EjectorEngine |
-| `execution/validate.py` | Validation suite runner | ValidationSuite (heuristic-only suggestions) |
-| `ai/ollama_client.py` | Ollama LLM client | OllamaClient |
-| `substrate/router.py` | Tier-aware model routing | SubstrateRouter |
-| `oracle/spec_prism.py` | Spec-derived oracle | SpecPrismOracle (status-code validation only) |
+| `core/config_loader.py` | Config loading utilities | Config file parsing |
+| `core/orchestrator.py` | DAG pipeline execution — imports stages + ai + reflector | `run_pipeline()` |
+| `core/errors.py` | Shared error hierarchy | Exception base classes |
+| `core/events.py` | Internal event bus types | Event data models |
+| `core/truth_model.py` | Core verdict data model | `TruthRecord` |
+| `stages/ingest.py` | OpenAPI spec ingestion | `IngestStage` |
+| `stages/plan.py` | Test scenario planning | `PlanStage` |
+| `stages/generate.py` | LLM test generation | `GenerateStage` |
+| `stages/review.py` | Test review and validation | `ReviewStage` |
+| `execution/eject.py` | Standalone test eject | `EjectorEngine` |
+| `execution/validate.py` | Validation suite runner | `ValidationSuite` |
+| `execution/playwright_invoke.py` | Playwright test runner | `PlaywrightRunner` |
+| `ai/ollama_client.py` | Ollama LLM client | `OllamaClient` |
+| `ai/openai_client.py` | OpenAI-compatible client | `OpenAIClient` |
+| `ai/interface.py` | LLM provider interface | `AIInterface` |
+| `substrate/router.py` | Tier-aware model routing | `SubstrateRouter` |
+| `substrate/provider.py` | Provider abstraction | `ModelProvider` |
+| `oracle/spec_prism.py` | Spec-derived oracle | `SpecPrismOracle` |
+| `oracle/interface.py` | Oracle SPI definition | `Oracle` |
 
 ## Optional Extensions (plug in via SPI)
 
 These modules extend the core but are not required for Track A:
 
-| Module | Purpose | Status | SPI Interface |
-|--------|---------|--------|---------------|
-| `healing/` | Suggest-only test repair | PRODUCTION | `HealingProvider` base in `healing/providers/base.py` |
-| `hitl/` | Human-in-the-loop review queue | PRODUCTION | — |
-| `reflector/` | Verdict memory + suppression | PRODUCTION | — |
-| `truth/` | Verdict model + emitters | PRODUCTION | `truth/emitters/interface.py`, `truth/sources/interface.py` |
-| `chat/` | Chat agent + conversation memory | PRODUCTION | `chat/ports/memory.py` |
-| `knowledge/` | GraphRAG + knowledge mesh | PARTIAL | `KnowledgeRepository` SPI in `knowledge/ports/repository.py` |
-| `mcp/` | JSON-RPC MCP server | PRODUCTION | — |
-| `web/` | FastAPI review API + React UI | PRODUCTION | — |
-| `governance/` | KPI + compliance reporting | PARTIAL | — |
-| `divergence/` | Witness/skeptic/explorer loops | PARTIAL | — |
-| `copilot/` | Intent detection + autonomy | PARTIAL | — |
-| `federation/` | Multi-node sync | PARTIAL | `federation/protocol.py` |
-| `rag/` | Retrieval-augmented generation | PARTIAL | — |
-| `sources/` | Traffic + event adapters | PARTIAL | `SourceAdapter` SPI |
-| `oracle/prod_snapshot.py` | Prod snapshot oracle | PARTIAL | Oracle SPI in `oracle/interface.py` |
-| `oracle/visual_oracle.py` | Visual regression oracle | PARTIAL | Oracle SPI in `oracle/interface.py` |
-| `coverage/` | Coverage emission | PARTIAL | — |
-| `sdet/` | Assertion gate + SDET helpers | PARTIAL | — |
-| `openclaw/` | Feedback loop integration | PARTIAL | — |
-| `continuity/` | PR diff action / CI integration | PARTIAL | — |
-| `dashboard/` | KPI render layer | PARTIAL | — |
-| `ports/` | Infrastructure port adapters | PARTIAL | — |
-| `security/` | Policy / egress control | PARTIAL | — |
-| `agents/` | Agent pilot | PARTIAL | — |
-| `compliance/` | MENA compliance scanner | STUB | — |
+| Module | Files | Purpose | Import deps | Status |
+|--------|-------|---------|-------------|--------|
+| `healing/` | 10 | Suggest-only test repair | `core`, `ai`, `oracle`, `substrate` | PRODUCTION |
+| `hitl/` | 4 | Human-in-the-loop review | `openclaw`, `hitl` | PRODUCTION |
+| `reflector/` | 6 | Verdict memory + suppression | `core`, `reflector` | PRODUCTION |
+| `truth/` | 13 | Verdict model + emitters | `core`, `coverage`, `stages`, `truth` | PRODUCTION |
+| `chat/` | 12 | Chat agent + conversation memory | `chat`, `knowledge`, `reflector`, `stages` | PRODUCTION |
+| `knowledge/` | 16 | GraphRAG + knowledge mesh | `knowledge` (self-contained) | PARTIAL |
+| `mcp/` | 6 | JSON-RPC MCP server | `ai`, `chat`, `core`, `execution`, `hitl`, `validate` | PRODUCTION |
+| `web/` | 6 | FastAPI review API + React UI | `ai`, `chat`, `core`, `execution`, `hitl`, `reflector`, `stages`, `web` | PRODUCTION |
+| `governance/` | 2 | KPI + compliance reporting | `core`, `governance` | PARTIAL |
+| `divergence/` | 6 | Witness/skeptic/explorer loops | `agents`, `core`, `divergence`, `reflector`, `sources`, `substrate` | PARTIAL |
+| `copilot/` | 6 | Intent detection + autonomy | `core`, `healing`, `reflector`, `substrate` | PARTIAL |
+| `federation/` | 4 | Multi-node sync | `core`, `federation` | PARTIAL |
+| `rag/` | 3 | Retrieval-augmented generation | `core`, `rag` | PARTIAL |
+| `observability/` | — | Metrics collection + Prometheus | — | PRODUCTION |
+| `sources/` | 5 | Traffic + event adapters | `sources` (self-contained) | PARTIAL |
+| `coverage/` | 4 | Coverage assertion + gating | `ai`, `core`, `coverage` | PRODUCTION |
+| `sdet/` | 3 | SDET coverage loop | `core`, `divergence`, `sdet` | PARTIAL |
+| `openclaw/` | 5 | Test introspection | `core`, `hitl`, `openclaw`, `substrate` | PRODUCTION |
+| `oracle/prod_snapshot.py` | 1 | Prod snapshot oracle | `core`, `oracle`, `substrate` | PARTIAL |
+| `continuity/` | 1 | PR diff action | `core`, `stages` | PARTIAL |
+| `validate/` | 5 | Validation gate + evidence | `core`, `validate` | PRODUCTION |
+| `ports/` | 5 | Hexagonal port definitions | `core`, `ports` | PRODUCTION |
+| `security/` | 1 | Snyk security bridge | (no cherenkov imports) | PRODUCTION |
+| `dashboard/` | 2 | Terminal dashboard render | `core`, `governance` | PRODUCTION |
+| `agents/` | 2 | Agent pilot | (consumed by divergence) | PARTIAL |
 
 ## Stub Modules (not yet implemented)
 
@@ -158,20 +130,17 @@ See [MODULE_STATUS.md](MODULE_STATUS.md) for full stub details.
 
 | Module | Blocker |
 |--------|---------|
-| `compliance/scanner.py` | MENA scanner not implemented |
-| `governance/compliance/` | Stub |
-| MCP `visual_diff` tool | Requires visual oracle infrastructure |
-| MCP `run_perf` tool | Requires k6 >= 0.50 |
-| MCP `export_jira` tool | JIRA API not wired |
-| MCP `scan_mena` tool | MENA compliance scanner not implemented |
+| `sources/mobile/` | Requires ADB + Maestro (`sources/mobile/adapter.py`, `parsers.py`, `contracts.py` present but stub) |
+| `compliance/mena_scanner.py` | MENA-specific compliance scanner not yet implemented |
+| `governance/compliance/` | Stub — only `governance/kpi.py` is functional |
 
 ## Blocked Tracks
 
 | Track | Module | Blocker |
 |-------|--------|---------|
-| Desktop (Phase 3) | `desktop/src-tauri/` | Requires `cargo` (Rust / Tauri 2) |
+| Desktop (Phase 3) | `desktop/src-tauri/` | Requires `cargo` (Rust toolchain) |
 | Mobile (Phase 5–6) | `cherenkov/sources/mobile/` | Requires ADB + Maestro |
-| K8s Operator (Phase 8) | `operator/` | In progress |
+| Mobile pipeline | `stages/mobile_cmd.py`, `stages/mobile_generate.py`, `stages/mobile_plan.py`, `stages/mobile_review.py` | Depend on `sources/mobile/` stubs |
 
 ## Key SPI Extension Points
 
@@ -179,31 +148,37 @@ Add new capability by implementing one of these interfaces:
 
 | SPI | Location | Implement to add |
 |-----|----------|-----------------|
-| `SourceAdapter` | `cherenkov/sources/` | New traffic / event / mobile source |
+| `SourceAdapter` | `cherenkov/sources/adapter.py` | New traffic/event/mobile source |
 | `Oracle` | `cherenkov/oracle/interface.py` | New validation strategy |
-| `ModelProvider` | `cherenkov/substrate/provider.py` + `providers/` | New LLM backend |
-| `KnowledgeRepository` | `cherenkov/knowledge/ports/repository.py` | New storage backend |
-| `HealingProvider` | `cherenkov/healing/providers/base.py` | New sandbox / repair environment |
-| `TruthEmitter` | `cherenkov/truth/emitters/interface.py` | New verdict sink |
-| `TruthSource` | `cherenkov/truth/sources/interface.py` | New ground-truth source |
-| `ChatMemory` | `cherenkov/chat/ports/memory.py` | New conversation memory backend |
+| `ModelProvider` | `cherenkov/substrate/providers/` | New LLM backend (ollama, openai, localai, vlm) |
+| `KnowledgeStore` | `cherenkov/knowledge/ports/repository.py` + `adapters/` | New storage backend (sqlite, redis) |
+| `SandboxProvider` | `cherenkov/healing/providers/` | New test execution sandbox (docker, filesystem) |
+| `TruthEmitter` | `cherenkov/truth/emitters/` | New verdict emission target (playwright, pr_comment, spec_patch) |
 
 ## Dependency Rules (enforced by convention)
 
-1. `core/contracts.py`, `core/config.py`, and `core/errors.py` must not import from any other cherenkov module.
-2. `core/orchestrator.py` may import `stages/` and `ai/` as the top-level entry-point (accepted exception to rule 1).
-3. `stages/` may only import from `core/`, `ai/`, `substrate/`, `oracle/`, `execution/`, and domain services.
-4. `web/` and `mcp/` are the only allowed import points for everything else (interface layer).
-5. No circular imports between peer domain service modules (healing ↔ hitl ↔ reflector etc.).
-6. `sources/` and `knowledge/` must remain self-contained to be independently replaceable via SPI.
+1. `core/` must not import from any other cherenkov module **except** `core/orchestrator.py`, which is the one deliberate exception — it imports `stages/`, `ai/`, and optionally `reflector/` to wire the pipeline.
+2. `stages/` may import from `core/`, `ai/`, `substrate/`, `execution/`, `oracle/`, `truth/`, `hitl/`, `healing/`, `divergence/`, `rag/`, `sources/`, `governance/`, `web/` (review serve), and `copilot/` — but not from `mcp/` or top-level `chat/`.
+3. `web/` and `mcp/` are the primary consumer entry points that may import freely across layers.
+4. `knowledge/` is self-contained — it imports only from itself (16 files, 0 external cherenkov deps detected).
+5. `sources/` is self-contained — it imports only from itself.
+6. No circular imports between domain service modules (`healing/`, `hitl/`, `reflector/`, `truth/`, `knowledge/`, `oracle/`).
+
+## Actual Circular / Cross-Layer Risks Detected
+
+The grep analysis revealed one notable cross-layer import:
+
+- `core/orchestrator.py` imports `cherenkov.stages`, `cherenkov.ai`, `cherenkov.reflector` — intentional wiring point, not a true circular dep since `stages/` does not import back from `core.orchestrator`.
+- `stages/` imports `cherenkov.web` (review serve path in `review_serve.py`) — minor upward leak; `web` should ideally not be a dep of `stages`.
+- `truth/` imports `cherenkov.stages` (via `truth/sources/openapi.py`) — truth sources import stage contracts; acceptable but worth monitoring.
 
 ## Module Count
 
-- Total Python files: 217 across 31 submodules
-- Required core (Track A): 13 files
-- Optional extensions: ~190 files
-- Smoke tests: 36+ (`smoke_test_*.py`)
-- Unit / integration tests: 36+ (`test_*.py` + `tests/`)
+- Total Python files: 217 across 32 submodules
+- Core module: 16 files
+- Stages (including perf/ and visual/ subdirs): 29 files
+- Optional extensions: ~172 files
+- Tests: 200 unit + 108 smoke + 11 integration test files
 
 ---
-*Last updated: 2026-06-09 | Run `pydeps cherenkov/ --max-bacon=2` to regenerate the import graph*
+*Last updated: 2026-06-09 | Run `pydeps cherenkov/ --max-bacon=2` to regenerate the graph*
