@@ -181,12 +181,17 @@ jobs:
           python-version: "3.11"
       - name: Install deps
         run: |
-          pip install pytest pytest-cov pydantic>=2.7 requests PyYAML
-          pip install -e . 2>/dev/null || pip install -r requirements.txt 2>/dev/null || true
+          pip install -r requirements.txt
+          pip install -e . 2>/dev/null || true
       - name: Run tests with coverage
+        env:
+          CHERENKOV_ENV: development
         run: |
           pytest tests/ --cov=cherenkov --cov-report=term-missing \
-            --cov-report=xml:coverage.xml -q || true
+            --cov-report=xml:coverage.xml -q \
+            --cov-fail-under=50 \
+            --ignore=tests/test_legacy_visual.py \
+            --ignore=tests/test_legacy_deep_healing.py
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         if: always()

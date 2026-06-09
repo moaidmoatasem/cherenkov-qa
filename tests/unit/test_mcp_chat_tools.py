@@ -122,7 +122,8 @@ class TestToolChatRunTest(unittest.TestCase):
         mock_rt.assert_called_once_with(endpoint="/users", method="GET", spec_path=None)
 
     @patch("cherenkov.chat.tools.run_test")
-    def test_with_all_params(self, mock_rt):
+    @patch("cherenkov.mcp.handlers._validate_spec_path", side_effect=lambda p: p)
+    def test_with_all_params(self, _mock_vsp, mock_rt):
         mock_rt.return_value = {"status": "planned", "scenarios": 1}
         result = _tool_chat_run_test({"endpoint": "/orders", "method": "POST", "spec_path": "api.yaml"})
         self.assertFalse(result.isError)
