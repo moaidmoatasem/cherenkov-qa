@@ -30,12 +30,12 @@ class SpecPrismOracle(Oracle):
 
     def evaluate(self, claim: Claim, **kwargs: Any) -> OracleResult:
         if claim.category not in ("endpoint", "observed_status", "observed_latency"):
-            return OracleResult(is_correct=True, confidence=0.5, detail="Non-evaluable claim category")
+            return OracleResult(is_correct=False, confidence=0.0, detail="Non-evaluable claim category")
 
         subject = claim.subject
         parts = subject.split(" ", 1)
         if len(parts) != 2:
-            return OracleResult(is_correct=True, confidence=0.3, detail=f"Cannot parse subject: {subject}")
+            return OracleResult(is_correct=False, confidence=0.0, detail=f"Cannot parse subject: {subject}")
 
         method = parts[0].upper()
         path = parts[1]
@@ -67,7 +67,7 @@ class SpecPrismOracle(Oracle):
         except requests.RequestException as e:
             self._log.warning("prism unreachable", error=str(e))
             return OracleResult(
-                is_correct=True,
-                confidence=0.3,
+                is_correct=False,
+                confidence=0.0,
                 detail=f"Cannot reach Prism at {self._prism_url}: {e}",
             )

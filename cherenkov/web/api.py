@@ -9,6 +9,7 @@ import json
 import uuid
 import asyncio
 import shutil
+import sqlite3
 import threading
 import logging
 from typing import List, Dict, Any
@@ -28,6 +29,41 @@ from cherenkov.hitl.contracts import HitlItem, HitlStatus, ok_envelope, err_enve
 from cherenkov.web import divergences as divergence_store
 from cherenkov.core.feedback_store import FeedbackStore, FeedbackEntry
 
+import re as _re
+from urllib.parse import urlparse as _urlparse
+import ipaddress as _ipaddress
+
+
+def _validate_scenario_id(scenario_id: str) -> str:
+    if not _re.match(r'^[a-zA-Z0-9_\-]{1,128}$', scenario_id):
+        raise HTTPException(status_code=400, detail="Invalid scenario_id: must be alphanumeric/underscore/hyphen, max 128 chars")
+    return scenario_id
+
+
+def _validate_output_path(path: str) -> str:
+    resolved = os.path.realpath(os.path.abspath(path))
+    allowed_base = os.path.realpath(os.path.abspath("."))
+    if not resolved.startswith(allowed_base):
+        raise HTTPException(status_code=400, detail="Output path must be within the working directory")
+    return resolved
+
+
+def _validate_spec_url(url: str) -> str:
+    parsed = _urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise HTTPException(status_code=400, detail="Only http/https URLs allowed")
+    host = parsed.hostname or ""
+    try:
+        addr = _ipaddress.ip_address(host)
+        if addr.is_private or addr.is_loopback or addr.is_link_local:
+            raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
+    except ValueError:
+        # It's a hostname, not an IP - block obvious localhost names
+        if host.lower() in ("localhost", "127.0.0.1", "::1", "0.0.0.0"):
+            raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
+    return url
+
+
 app = FastAPI(
     title="CHERENKOV QA Observability Dashboard Server",
     version="1.3.0",
@@ -44,7 +80,7 @@ app.include_router(chat_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -228,14 +264,15 @@ async def ingest_spec_file(
 
     try:
         if file:
+            MAX_SPEC_BYTES = 10 * 1024 * 1024  # 10 MB
+            content = await file.read(MAX_SPEC_BYTES + 1)
+            if len(content) > MAX_SPEC_BYTES:
+                raise HTTPException(status_code=413, detail="Spec file exceeds 10MB limit")
             with open(spec_path, "wb") as f:
-                shutil.copyfileobj(file.file, f)
+                f.write(content)
         elif url:
             import requests
-            from urllib.parse import urlparse
-            parsed_url = urlparse(url)
-            if parsed_url.scheme not in ('http', 'https'):
-                raise HTTPException(status_code=400, detail="Invalid URL scheme. Only HTTP and HTTPS are allowed.")
+            _validate_spec_url(url)
             resp = requests.get(url, timeout=15)
             resp.raise_for_status()
             with open(spec_path, "w", encoding="utf-8") as f:
@@ -267,8 +304,7 @@ async def ingest_spec_file(
     except Exception as e:
         if os.path.exists(spec_path):
             os.remove(spec_path)
-        err_msg = getattr(e, 'detail', str(e)) if hasattr(e, 'status_code') else str(e)
-        raise HTTPException(status_code=500, detail=f"Parsing error: {err_msg}")
+        raise HTTPException(status_code=500, detail="Spec parsing failed. Check that the file is a valid OpenAPI 3.x document.")
 
 #
 # Pipeline run
@@ -434,6 +470,7 @@ async def edit_review_item(payload: ReviewActionPayload, _auth=Depends(verify_ap
     """Save edited test code (filesystem, not in queue)."""
     if not payload.test_code:
         raise HTTPException(status_code=400, detail="Missing updated test code content.")
+    _validate_scenario_id(payload.scenario_id)
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
     os.makedirs(tests_dir, exist_ok=True)
     file_path = os.path.join(tests_dir, f"{payload.scenario_id}.spec.ts")
@@ -474,7 +511,7 @@ async def validate_test_suite(payload: ValidatePayload):
         results = engine.validate_suite(payload.target_url)
         return results
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Validation failed. Check the target URL and try again.")
 
 #
 # Eject
@@ -482,21 +519,24 @@ async def validate_test_suite(payload: ValidatePayload):
 @app.post("/api/v1/eject")
 async def eject_test_suite(payload: EjectPayload):
     try:
+        safe_path = _validate_output_path(payload.output_path)
         from cherenkov.execution.eject import EjectorEngine
         engine = EjectorEngine("api_eject")
-        success = engine.eject_suite(payload.output_path)
+        success = engine.eject_suite(safe_path)
         if not success:
             raise HTTPException(status_code=500, detail="Eject operation failed in engine.")
         files = []
-        if os.path.exists(payload.output_path):
-            for root, _, filenames in os.walk(payload.output_path):
+        if os.path.exists(safe_path):
+            for root, _, filenames in os.walk(safe_path):
                 for f in filenames:
-                    rel_dir = os.path.relpath(root, payload.output_path)
+                    rel_dir = os.path.relpath(root, safe_path)
                     if rel_dir == ".":
                         files.append(f)
                     else:
                         files.append(os.path.join(rel_dir, f).replace("\\", "/"))
-        return {"status": "ejected", "output_path": payload.output_path, "files": files}
+        return {"status": "ejected", "output_path": safe_path, "files": files}
+    except HTTPException:
+        raise
     except Exception as e:
         return {"status": "ejected", "output_path": payload.output_path, "files": []}
 

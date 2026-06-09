@@ -45,16 +45,12 @@ class QAChatAgent:
         return self._fallback_llm(messages)
 
     def _fallback_llm(self, messages: list[dict]) -> str:
-        logger.warning("No substrate router available, using [MOCK] fallback LLM response")
-        last = messages[-1] if messages else {}
-        user_text = last.get("content", "")
-        if "verdict" in user_text.lower():
-            return "[MOCK] Based on the available data, I found 3 verdicts for /api/users. The most common issue is a 422 vs 400 status code mismatch."
-        if "idiom" in user_text.lower():
-            return "[MOCK] I found 2 idioms related to authentication: 'auth_token_expired' and 'missing_auth_header'."
-        if "divergence" in user_text.lower():
-            return "[MOCK] The divergence for GET /api/users shows the spec expects 200 but the implementation returns 401 when no auth header is provided."
-        return f"[MOCK] I understand your question about '{user_text[:50]}'. Use the available tools to get specific data."
+        logger.error("substrate_router_unavailable", extra={"detail": "Returning error to user instead of mock data"})
+        return (
+            "I'm currently unable to process your request because the AI substrate is unavailable. "
+            "Please ensure Ollama is running and try again. "
+            "Run: ollama serve"
+        )
 
     def _prepare_llm_context(self, session_id: str) -> list[dict]:
         history = self.memory.get_messages(session_id)
