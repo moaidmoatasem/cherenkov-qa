@@ -17,6 +17,18 @@ from cherenkov.ai.ollama_client import strip_think
 from cherenkov.core.errors import get_logger
 
 
+def _sanitize_prompt_input(text: str, max_len: int = 500) -> str:
+    """Strip prompt injection markers and limit length."""
+    injection_markers = ["\n\nSystem:", "\n\nHuman:", "\n\nAssistant:", "###", "---\nINSTRUCT", "<|im_start|>", "<|system|>"]
+    sanitized = text
+    for marker in injection_markers:
+        if marker in sanitized:
+            sanitized = sanitized[:sanitized.index(marker)]
+    # Keep printable ASCII only, enforce max length
+    sanitized = sanitized.encode("ascii", errors="ignore").decode()[:max_len]
+    return sanitized.strip()
+
+
 def _load_system_prompt() -> str:
     """Loads the tuned generator system prompt committed to prompts/generator_system.txt.
 
@@ -67,7 +79,7 @@ class GenerateStage:
             + f"  endpoint: {method} {path}\n"
             + f"  case_type: {scenario.case_type}\n"
             + f"  mutation_id: {scenario.mutation_id}\n"
-            + f"  instruction: {instruction}\n"
+            + f"  instruction: {_sanitize_prompt_input(instruction)}\n"
             + f"  expected_status: {scenario.expected_status}\n"
             + "\n=== CRITICAL INSTRUCTIONS AND EXAMPLE ===\n"
             + "You are writing a Playwright API test in TypeScript using openapi-fetch client.\n"
@@ -118,7 +130,8 @@ class GenerateStage:
             instruction=instruction
         )
 
-        temperatures = [0.1, 0.3, 0.5]
+        # temperatures: start with variation, tighten on repair attempts
+        temperatures = [0.2, 0.1, 0.05]
         code = ""
         last_error = ""
 
