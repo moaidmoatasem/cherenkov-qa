@@ -453,12 +453,7 @@ jobs:
 
       - name: Check for critical/high vulnerabilities
         run: |
-          CRIT_HIGH=$(python3 -c "
-import json
-d = json.load(open('/tmp/snyk-report.json'))
-count = sum(1 for v in d.get('vulnerabilities', []) if v.get('severity','').lower() in ('critical','high'))
-print(count)
-" 2>/dev/null || echo "0")
+          CRIT_HIGH=$(python3 -c "import json; d=json.load(open('/tmp/snyk-report.json')); print(sum(1 for v in d.get('vulnerabilities',[]) if v.get('severity','').lower() in ('critical','high')))" 2>/dev/null || echo "0")
           if [ "$CRIT_HIGH" -gt 0 ] && [ "$CRIT_HIGH" != "0" ]; then
             echo "FATAL: $CRIT_HIGH critical/high severity vulnerabilities found. Blocking merge."
             echo "Review Snyk report before merging."
