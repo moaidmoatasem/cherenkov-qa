@@ -1,4 +1,5 @@
 from __future__ import annotations
+# TODO: convert to pytest — complex file (>150 lines, heavy mock patching with setUp)
 
 import json
 import os

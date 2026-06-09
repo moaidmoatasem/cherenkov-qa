@@ -1,3 +1,4 @@
+# TODO: convert to pytest — integration test with heavy mock patching (left for follow-up)
 """
 Tests for Issue #196 — Security Hardening: HITL Auth + At-Rest Encryption.
 

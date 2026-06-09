@@ -1,3 +1,4 @@
+# TODO: convert to pytest — complex file (>150 lines with setUp/tearDown)
 """
 Tests for Suggest-Only Jira Exporter (Issue #250).
 """

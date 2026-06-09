@@ -1,3 +1,4 @@
+# TODO: convert to pytest — complex file (>150 lines, many test classes with setUp/tearDown)
 import unittest
 import os
 import tempfile

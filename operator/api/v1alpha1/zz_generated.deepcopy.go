@@ -120,6 +120,13 @@ func (in *DeviceTarget) DeepCopy() *DeviceTarget {
 
 func (in *VisualConfig) DeepCopyInto(out *VisualConfig) {
 	*out = *in
+	if in.ExpectedScreenshots != nil {
+		in, out := &in.ExpectedScreenshots, &out.ExpectedScreenshots
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 }
 
 func (in *VisualConfig) DeepCopy() *VisualConfig {
@@ -127,6 +134,19 @@ func (in *VisualConfig) DeepCopy() *VisualConfig {
 		return nil
 	}
 	out := new(VisualConfig)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *TestResult) DeepCopyInto(out *TestResult) {
+	*out = *in
+}
+
+func (in *TestResult) DeepCopy() *TestResult {
+	if in == nil {
+		return nil
+	}
+	out := new(TestResult)
 	in.DeepCopyInto(out)
 	return out
 }
@@ -157,6 +177,11 @@ func (in *ConformanceCheckStatus) DeepCopyInto(out *ConformanceCheckStatus) {
 		in, out := &in.Result, &out.Result
 		*out = new(CheckResult)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.Results != nil {
+		in, out := &in.Results, &out.Results
+		*out = make([]TestResult, len(*in))
+		copy(*out, *in)
 	}
 }
 

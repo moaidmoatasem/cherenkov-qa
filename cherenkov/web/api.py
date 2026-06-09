@@ -655,6 +655,27 @@ async def get_metrics():
         },
     }
 
+@app.get("/api/v1/metrics/pipeline")
+def get_pipeline_metrics(last_runs: int = 10):
+    """Return pipeline stage metrics for the last N runs."""
+    try:
+        from cherenkov.observability.metrics import MetricsCollector
+        collector = MetricsCollector()
+        return {"metrics": collector.get_summary(last_n_runs=last_runs)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Could not load metrics")
+
+@app.get("/api/v1/metrics/prometheus")
+def get_metrics_prometheus():
+    """Return metrics in Prometheus text format."""
+    from cherenkov.observability.metrics import MetricsCollector
+    from fastapi.responses import PlainTextResponse
+    try:
+        collector = MetricsCollector()
+        return PlainTextResponse(collector.to_prometheus(), media_type="text/plain; version=0.0.4")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Could not load metrics")
+
 #
 # Mobile Pilot
 #

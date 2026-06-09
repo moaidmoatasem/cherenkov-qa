@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -33,6 +34,24 @@ func (r *JobRunner) CreateValidateJob(
 		{Name: "OLLAMA_HOST", Value: "http://ollama:11434"},
 	}
 
+	// Issue #388: pass CHERENKOV_DEVICE_TARGETS as a JSON-encoded array.
+	if len(deviceTargets) > 0 {
+		deviceJSON, _ := json.Marshal(deviceTargets)
+		env = append(env, corev1.EnvVar{
+			Name:  "CHERENKOV_DEVICE_TARGETS",
+			Value: string(deviceJSON),
+		})
+	}
+
+	// Issue #388: pass CHERENKOV_VLM_TIER.
+	if visualConfig != nil && visualConfig.VLMTier != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "CHERENKOV_VLM_TIER",
+			Value: visualConfig.VLMTier,
+		})
+	}
+
+	// Legacy per-device env vars (kept for backward compatibility).
 	for i, dt := range deviceTargets {
 		prefix := fmt.Sprintf("DEVICE_TARGET_%d_", i)
 		env = append(env,
@@ -73,38 +92,29 @@ func (r *JobRunner) CreateValidateJob(
 			Namespace: namespace,
 			Labels: map[string]string{
 				"cherenkov.io/check": name,
+				"conformancecheck":   name,
 			},
 		},
 		Spec: batchv1.JobSpec{
 			BackoffLimit:            int32Ptr(2),
 			TTLSecondsAfterFinished: int32Ptr(3600),
 			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"cherenkov.io/check": name,
+						"conformancecheck":   name,
+						"job-name":           fmt.Sprintf("validate-%s", name),
+					},
+				},
 				Spec: corev1.PodSpec{
 					RestartPolicy: corev1.RestartPolicyNever,
 					Containers: []corev1.Container{
 						{
-							Name:  "engine",
-							Image: "cherenkov-engine:latest",
+							Name:            "engine",
+							Image:           "cherenkov/cherenkov:latest",
 							ImagePullPolicy: corev1.PullIfNotPresent,
-							Env:    env,
-							Args: []string{
-								"--spec", "/spec/petstore.json",
-								"--target", fmt.Sprintf("http://%s:%d", targetService, targetPort),
-								"--output", "json",
-							},
-							VolumeMounts: []corev1.VolumeMount{
-								{Name: "spec", MountPath: "/spec", ReadOnly: true},
-							},
-						},
-					},
-					Volumes: []corev1.Volume{
-						{
-							Name: "spec",
-							VolumeSource: corev1.VolumeSource{
-								ConfigMap: &corev1.ConfigMapVolumeSource{
-									LocalObjectReference: corev1.LocalObjectReference{Name: specRef},
-								},
-							},
+							Command:         []string{"cherenkov", "validate"},
+							Env:             env,
 						},
 					},
 				},
