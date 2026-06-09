@@ -43,12 +43,15 @@ jobs:
           "
 
       - name: Post PR comment
+        if: hashFiles('pr_diff_report.md') != ''
         continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
+            if (!fs.existsSync('pr_diff_report.md')) { return; }
             const body = fs.readFileSync('pr_diff_report.md', 'utf8');
+            if (!body.trim()) { return; }
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
