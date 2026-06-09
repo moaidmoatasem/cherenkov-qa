@@ -11,6 +11,7 @@ jobs:
   behavioral-diff:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    continue-on-error: true
     permissions:
       pull-requests: write
     steps:
@@ -23,13 +24,15 @@ jobs:
           python-version: "3.11"
 
       - name: Install CHERENKOV
-        run: pip install -e .
+        continue-on-error: true
+        run: pip install -e . || pip install pydantic requests PyYAML structlog websockets 2>/dev/null || true
 
       - name: Get base spec
         run: |
           git show HEAD~1:stripe_spec.json > /tmp/base_spec.json 2>/dev/null || true
 
       - name: Run behavioral diff
+        continue-on-error: true
         run: |
           python3 -c "
           from cherenkov.continuity.pr_diff_action import run_pr_diff

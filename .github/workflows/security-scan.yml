@@ -39,4 +39,4 @@ jobs:
         continue-on-error: true
         with:
           sarif_file: semgrep.sarif
-        if: always()
+        if: always() && hashFiles('semgrep.sarif') != ''
