@@ -2,6 +2,7 @@ from __future__ import annotations
 import subprocess
 import time
 from pathlib import Path
+import requests
 
 class AppiumRunner:
     def __init__(self, appium_server: str = "http://localhost:4723", timeout: int = 30):
@@ -25,7 +26,6 @@ class AppiumRunner:
         }
 
     def health_check(self) -> bool:
-        import requests
         try:
             resp = requests.get(f"{self.appium_server}/status", timeout=5)
             return resp.status_code == 200

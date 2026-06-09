@@ -5,3 +5,4 @@ pydantic==2.7.1
 requests
 pyyaml
 websockets
+Appium-Python-Client>=3.0.0
