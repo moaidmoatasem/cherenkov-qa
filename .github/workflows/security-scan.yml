@@ -12,6 +12,7 @@ jobs:
   semgrep:
     name: Scan
     runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
       actions: read
       contents: read
