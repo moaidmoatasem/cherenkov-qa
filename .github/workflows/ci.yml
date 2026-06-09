@@ -44,7 +44,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run healing smoke test
-        run: PYTHONPATH=. python3 smoke_test_healing.py
+        run: PYTHONPATH=. python3 tests/smoke/smoke_test_healing.py
 
   polish-invariant:
     name: CLI Help + Docs Gate
@@ -63,7 +63,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run polish smoke test
-        run: PYTHONPATH=. python3 smoke_test_polish.py
+        run: PYTHONPATH=. python3 tests/smoke/smoke_test_polish.py
 
   certification-gate:
     name: E12 Certification Gate (C11)
@@ -82,7 +82,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run certification smoke test
-        run: PYTHONPATH=. python3 smoke_test_certification.py
+        run: PYTHONPATH=. python3 tests/smoke/smoke_test_certification.py
 
   governance-kpi:
     name: E12 Governance KPI (C12)
@@ -101,7 +101,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run governance smoke test
-        run: PYTHONPATH=. python3 smoke_test_governance.py
+        run: PYTHONPATH=. python3 tests/smoke/smoke_test_governance.py
 
   copilot-e10:
     name: E10 Explorer + Copilot (C8-C10)
@@ -123,7 +123,7 @@ jobs:
         run: PYTHONPATH=. python3 -m unittest test_copilot_e10.py
 
       - name: Run E10 copilot smoke test
-        run: PYTHONPATH=. python3 smoke_test_copilot_e10.py
+        run: PYTHONPATH=. python3 tests/smoke/smoke_test_copilot_e10.py
 
   ai-interface-unit:
     name: AI InferenceClient Seam (unit)
@@ -149,10 +149,50 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Build Docker Image
         run: docker build -t cherenkov:ci .
 
+  type-check:
+    name: Type check (mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: |
+          pip install mypy pydantic>=2.0 types-requests types-PyYAML
+      - name: Run mypy
+        run: |
+          mypy cherenkov/ --ignore-missing-imports --no-strict-optional \
+            --exclude 'cherenkov/web/ui' \
+            --exclude 'cherenkov/desktop' \
+            || true  # Report errors but don't fail yet (baseline pass)
+
+  coverage:
+    name: Test coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: |
+          pip install pytest pytest-cov pydantic>=2.7 requests PyYAML
+          pip install -e . 2>/dev/null || pip install -r requirements.txt 2>/dev/null || true
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ --cov=cherenkov --cov-report=term-missing \
+            --cov-report=xml:coverage.xml -q || true
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage.xml
 
   # ── X3 (#132): CI runners for env-dependent smokes ────────────────────────
   # Provisions node/npm/playwright so smoke_test_eject.py can run the
@@ -205,7 +245,7 @@ jobs:
         run: |
           npm config set fetch-retries 5
           npm config set fetch-retry-mintimeout 20000
-          PYTHONPATH=. python3 smoke_test_eject.py
+          PYTHONPATH=. python3 tests/smoke/smoke_test_eject.py
 
   # Provisions k6 so smoke_test_perf.py can run a real load-test pass
   # (previously the k6-missing path was tolerated as HITL/skip).
@@ -252,7 +292,7 @@ jobs:
           fi
 
       - name: Run perf baseline smoke test
-        run: PYTHONPATH=. python3 smoke_test_perf.py
+        run: PYTHONPATH=. python3 tests/smoke/smoke_test_perf.py
 
   # ── Validate smoke: CLI validate command against the target API ─────────────
   validate-smoke:
@@ -303,7 +343,7 @@ jobs:
       - name: Run validate CLI smoke test
         env:
           NODE_OPTIONS: --dns-result-order=ipv4first
-        run: PYTHONPATH=. python3 smoke_test_validate.py
+        run: PYTHONPATH=. python3 tests/smoke/smoke_test_validate.py
 
   # ── Opt-in: the ONE job that exercises the real model ──────────────────────
   # Hosted GitHub runners have no GPU and cannot run qwen2.5-coder:7b, so this is
@@ -334,7 +374,7 @@ jobs:
       - name: Run live generate smoke (real model -> compilable test)
         env:
           CHERENKOV_LIVE_LLM: "1"
-        run: PYTHONPATH=. python3 smoke_test_generate_live.py
+        run: PYTHONPATH=. python3 tests/smoke/smoke_test_generate_live.py
 
 
   mobile-pipeline-unit:
@@ -502,4 +542,3 @@ print(count)
         run: docker build -t cherenkov-mcp:ci -f Dockerfile.mcp .
       - name: Run sandbox smoke with Docker provider
         run: PYTHONPATH=. python3 -m unittest test_sandbox_providers.TestDockerSandboxProvider
-
