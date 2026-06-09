@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import os
+import re as _re
 from typing import Any
 
 from pydantic import ValidationError
@@ -54,6 +55,18 @@ from cherenkov.mcp.contracts import (
 
 # ── Policy engine instance ─────────────────────────────────────────────────────
 _policy = PolicyEngine()
+
+
+# ── Input validation helpers ───────────────────────────────────────────────────
+
+def _validate_spec_path(path: str) -> str:
+    resolved = os.path.realpath(os.path.abspath(path))
+    cwd = os.path.realpath(os.path.abspath("."))
+    if not resolved.startswith(cwd):
+        raise ValueError(f"spec_path must be within working directory")
+    if not resolved.endswith((".yaml", ".yml", ".json")):
+        raise ValueError(f"spec_path must be a .yaml, .yml, or .json file")
+    return resolved
 
 
 # ── Resource catalogue ────────────────────────────────────────────────────────
@@ -479,12 +492,11 @@ def _tool_visual_diff(args: dict[str, Any]) -> MCPToolCallResult:
         return _err_content(f"VisualDiff error: {exc}")
 
 def _tool_run_perf(args: dict[str, Any]) -> MCPToolCallResult:
-    try:
-        from cherenkov.stages.perf.perf_stage import PerfStage
-        stage = PerfStage()
-        return _ok_content({"status": "executed", "message": "Perf analysis complete"})
-    except Exception as exc:
-        return _err_content(f"Perf error: {exc}")
+    return _err_content(
+        "This tool is not yet fully implemented. "
+        "run_perf requires k6 >= 0.50 to be installed and configured. "
+        "See docs/MODULE_STATUS.md for implementation status."
+    )
 
 def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
     query = args.get("query", "")
@@ -497,21 +509,18 @@ def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
         return _err_content(f"RAG error: {exc}")
 
 def _tool_export_jira(args: dict[str, Any]) -> MCPToolCallResult:
-    item_id = args.get("item_id", "")
-    try:
-        from cherenkov.validate.jira_exporter import JiraExporter
-        exporter = JiraExporter()
-        return _ok_content({"item_id": item_id, "status": "exported"})
-    except Exception as exc:
-        return _err_content(f"Jira error: {exc}")
+    return _err_content(
+        "This tool is not yet fully implemented. "
+        "JIRA API integration not yet wired — no export performed. "
+        "See docs/MODULE_STATUS.md for implementation status."
+    )
 
 def _tool_scan_mena(args: dict[str, Any]) -> MCPToolCallResult:
-    try:
-        from cherenkov.compliance.mena_scanner import MENAComplianceScanner
-        scanner = MENAComplianceScanner()
-        return _ok_content({"status": "scanned"})
-    except Exception as exc:
-        return _err_content(f"MENA error: {exc}")
+    return _err_content(
+        "This tool is not yet fully implemented. "
+        "MENA compliance scanner not yet implemented. "
+        "See docs/MODULE_STATUS.md for implementation status."
+    )
 
 
 # ── Chat knowledge tools ──────────────────────────────────────────────────────
@@ -539,8 +548,14 @@ def _tool_chat_explain_divergence(args: dict[str, Any]) -> MCPToolCallResult:
 
 def _tool_chat_run_test(args: dict[str, Any]) -> MCPToolCallResult:
     inp = ChatRunTestInput.model_validate(args)
+    spec_path = inp.spec_path
+    if spec_path is not None:
+        try:
+            spec_path = _validate_spec_path(spec_path)
+        except ValueError as exc:
+            return _err_content(f"Invalid spec_path: {exc}")
     from cherenkov.chat.tools import run_test
-    result = run_test(endpoint=inp.endpoint, method=inp.method, spec_path=inp.spec_path)
+    result = run_test(endpoint=inp.endpoint, method=inp.method, spec_path=spec_path)
     return _ok_content(result)
 
 # ── Evidence helpers ──────────────────────────────────────────────────────────

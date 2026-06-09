@@ -10,10 +10,10 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@playwright/test": "^1.60.0",
+    "@playwright/test": "1.60.0",
     "@types/node": "^25.9.1",
     "openapi-typescript": "^7.13.0",
-    "typescript": "^5.0.0"
+    "typescript": "5.0.0"
   },
   "dependencies": {
     "openapi-fetch": "^0.17.0"

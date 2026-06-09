@@ -15,6 +15,35 @@ from pydantic import BaseModel, Field
 SCHEMA_VERSION = 1
 
 
+class MigrationError(Exception):
+    """Raised when a versioned contract cannot be migrated to the current schema version."""
+
+
+# Registry of migration functions: (from_version, to_version) -> callable
+# Each function takes a raw dict and returns an updated dict
+MIGRATIONS: dict[tuple[int, int], object] = {}
+
+
+def load_versioned(cls, data: dict) -> object:
+    """Load a versioned Pydantic model, applying any registered migrations."""
+    stored_version = data.get("schema_version", 1)
+    current_version = getattr(cls, "SCHEMA_VERSION", 1)
+    if stored_version != current_version:
+        version = stored_version
+        migrated = dict(data)
+        while version < current_version:
+            migrate_fn = MIGRATIONS.get((version, version + 1))
+            if migrate_fn is None:
+                raise MigrationError(
+                    f"No migration registered from schema v{version} to v{version + 1} "
+                    f"for {cls.__name__}. Cannot deserialize stored data."
+                )
+            migrated = migrate_fn(migrated)  # type: ignore[operator]
+            version += 1
+        return cls(**migrated)
+    return cls(**data)
+
+
 class Status(str, Enum):
     OK = "ok"
     DEGRADED = "degraded"   # produced output, but with caveats (e.g. thin spec)
@@ -27,6 +56,7 @@ class StageMeta(BaseModel):
     tokens: int = 0
     duration_ms: int = 0
     schema_version: int = SCHEMA_VERSION
+    run_id: str = Field(default_factory=lambda: str(__import__('uuid').uuid4())[:8])
 
 
 class StageError(BaseModel):
@@ -107,6 +137,8 @@ class GenerateOutput(BaseModel):
     status: Status = Status.OK
     errors: list[StageError] = Field(default_factory=list)
     metadata: StageMeta
+    model_name: str = ""
+    provider_name: str = ""
 
 
 # ── REVIEW ────────────────────────────────────────────────────────────────

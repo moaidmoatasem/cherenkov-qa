@@ -14,6 +14,20 @@ from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.trace_reader import TraceReader
 
 
+def _is_stable_value(v: object) -> bool:
+    """Return False for values likely to change between runs (timestamps, UUIDs, large ints)."""
+    if isinstance(v, str):
+        # Skip UUID-like strings
+        if re.match(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', v, re.I):
+            return False
+        # Skip ISO timestamps
+        if re.match(r'^\d{4}-\d{2}-\d{2}T', v):
+            return False
+    if isinstance(v, int) and v > 100000:
+        return False  # likely auto-increment or timestamp int
+    return True
+
+
 class TighteningAnalyzer:
     """Compares sent request bodies vs received response bodies to suggest stronger value assertions."""
 
@@ -34,7 +48,7 @@ class TighteningAnalyzer:
 
         for rk, rv in req_json.items():
             for pk, pv in resp_json.items():
-                if rv == pv and rv is not None:
+                if rv == pv and rv is not None and _is_stable_value(pv):
                     suggestions.append(
                         f"expect(data.{pk}).toBe('{pv}')" if isinstance(pv, str) else f"expect(data.{pk}).toBe({pv})"
                     )
@@ -80,7 +94,7 @@ class ValidationEngine:
             result = runner.execute_test(
                 scenario_id=scenario_id,
                 api_url=target_url,
-                test_code=None
+                test_code=code
             )
 
             trace_path = result.get("trace_path", "")

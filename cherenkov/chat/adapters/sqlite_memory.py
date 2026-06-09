@@ -16,6 +16,7 @@ class SQLiteConversationMemory:
 
     def _init_db(self) -> None:
         conn = sqlite3.connect(self.db_path)
+        conn.execute("PRAGMA foreign_keys = ON")
         conn.execute(
             "CREATE TABLE IF NOT EXISTS sessions ("
             "session_id TEXT PRIMARY KEY,"
