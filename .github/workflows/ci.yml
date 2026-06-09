@@ -389,8 +389,13 @@ jobs:
             echo "SNYK_TOKEN not set — skipping scan"
             echo '{"vulnerabilities":[],"infrastructureAsCode":[],"code":[]}' > /tmp/snyk-report.json
           else
-            snyk auth "$SNYK_TOKEN" >/dev/null 2>&1 || true
-            snyk test --json > /tmp/snyk-report.json 2>/dev/null || true
+            snyk auth "$SNYK_TOKEN" >/dev/null 2>&1 || { echo "WARNING: snyk auth failed — token may be invalid"; }
+            snyk test --json > /tmp/snyk-report.json 2>&1 || SNYK_EXIT=$?
+            # Exit code 1 = vulnerabilities found (expected), other codes = scan failure
+            if [ -n "$SNYK_EXIT" ] && [ "$SNYK_EXIT" -ne 0 ] && [ "$SNYK_EXIT" -ne 1 ]; then
+                echo "ERROR: snyk scan failed with exit code $SNYK_EXIT — treating as scan failure"
+                exit 1
+            fi
             # If snyk test produced an error message, write empty report
             if ! head -1 /tmp/snyk-report.json | grep -q '^{'; then
               echo '{"vulnerabilities":[],"infrastructureAsCode":[],"code":[]}' > /tmp/snyk-report.json
@@ -410,10 +415,11 @@ count = sum(1 for v in d.get('vulnerabilities', []) if v.get('severity','').lowe
 print(count)
 " 2>/dev/null || echo "0")
           if [ "$CRIT_HIGH" -gt 0 ] && [ "$CRIT_HIGH" != "0" ]; then
-            echo "WARNING: $CRIT_HIGH critical/high vulnerability(ies) found."
-            echo "Run skills/snyk-remediation.md to fix before merging."
+            echo "FATAL: $CRIT_HIGH critical/high severity vulnerabilities found. Blocking merge."
+            echo "Review Snyk report before merging."
+            exit 1
           else
-            echo "No critical or high vulnerabilities."
+            echo "Security gate passed: no critical/high vulnerabilities found."
           fi
 
       - name: Upload Snyk report

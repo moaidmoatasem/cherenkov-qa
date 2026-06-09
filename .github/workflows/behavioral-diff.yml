@@ -33,9 +33,12 @@ jobs:
         run: |
           python3 -c "
           from cherenkov.continuity.pr_diff_action import run_pr_diff
-          import os
+          import os, sys
           base = '/tmp/base_spec.json' if os.path.exists('/tmp/base_spec.json') else None
           pr = 'stripe_spec.json' if os.path.exists('stripe_spec.json') else None
+          if base is None or pr is None:
+              print('WARNING: One or both spec files missing — skipping behavioral diff')
+              sys.exit(0)  # skip with success, but don't post a fake report
           run_pr_diff(base_spec=base, pr_spec=pr, output_path='pr_diff_report.md')
           "
 
