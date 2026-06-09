@@ -1,9 +1,9 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: conformancechecks.validation.cherenkov.io
+  name: conformancechecks.cherenkov.io
 spec:
-  group: validation.cherenkov.io
+  group: cherenkov.io
   names:
     kind: ConformanceCheck
     listKind: ConformanceCheckList
@@ -25,92 +25,83 @@ spec:
           spec:
             type: object
             required:
-            - targetRef
+            - specURL
+            - targetURL
             properties:
-              targetRef:
-                type: object
-                required:
-                - apiVersion
-                - kind
-                - name
-                - namespace
-                - port
-                properties:
-                  apiVersion:
-                    type: string
-                  kind:
-                    type: string
-                  name:
-                    type: string
-                  namespace:
-                    type: string
-                  port:
-                    type: integer
-              specRef:
+              specURL:
                 type: string
+                description: URL of the OpenAPI specification to validate against
+              targetURL:
+                type: string
+                description: URL of the target service to validate
+              schedule:
+                type: string
+                description: Optional cron schedule for periodic validation
               llmConcurrency:
                 type: integer
                 minimum: 1
                 maximum: 16
-              deviceTargets:
+                description: Maximum number of concurrent LLM tasks
+              device_targets:
                 type: array
+                description: List of device targets for mobile/browser validation
                 items:
                   type: object
+                  required:
+                  - device_id
+                  - platform
                   properties:
+                    device_id:
+                      type: string
+                      description: Unique identifier for the device
                     platform:
                       type: string
-                      enum: [ios, android]
-                    osVersion:
+                      description: Device platform (ios, android, web)
+                    device_class:
                       type: string
-                    deviceName:
-                      type: string
-                    browser:
-                      type: string
-                    viewportSize:
-                      type: object
-                      properties:
-                        width:
-                          type: integer
-                        height:
-                          type: integer
-              visualConfig:
+                      description: Optional device class (phone, tablet, desktop)
+              visual_config:
                 type: object
+                description: Visual regression testing configuration
                 properties:
-                  enabled:
-                    type: boolean
-                  vlmProvider:
+                  vlm_tier:
                     type: string
-                  threshold:
-                    type: number
-                    minimum: 0
-                    maximum: 1
-                  screenshotOnFail:
-                    type: boolean
-                  diffMethod:
-                    type: string
-                    enum: [pixelmatch, ssim, vlm]
+                    description: VLM tier to use for visual comparison
+                  expected_screenshots:
+                    type: object
+                    description: Map of endpoint to expected screenshot path
+                    additionalProperties:
+                      type: string
           status:
             type: object
             properties:
               phase:
                 type: string
                 enum: [Pending, Running, Pass, Fail, Error]
+                description: Current phase of the conformance check
               lastRun:
                 type: string
                 format: date-time
-              result:
-                type: object
-                properties:
-                  passed:
-                    type: boolean
-                  summary:
-                    type: string
-                  divergences:
-                    type: array
-                    items:
+                description: Timestamp of the last validation run
+              results:
+                type: array
+                description: List of test results from the last run
+                items:
+                  type: object
+                  properties:
+                    endpoint:
+                      type: string
+                    method:
+                      type: string
+                    status:
+                      type: string
+                    device_id:
+                      type: string
+                    screenshot:
                       type: string
               conditions:
                 type: array
+                description: Status conditions for the conformance check
                 items:
                   type: object
                   properties:
