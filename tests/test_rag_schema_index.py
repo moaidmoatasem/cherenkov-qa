@@ -1,3 +1,4 @@
+# TODO: convert to pytest — complex file (>150 lines, multiple setUp/tearDown with temp dirs)
 """
 Tests for Issue #195 — Semantic Chunking / RAG for Large Specs.
 

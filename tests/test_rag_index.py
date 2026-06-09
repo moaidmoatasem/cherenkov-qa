@@ -1,3 +1,4 @@
+# TODO: convert to pytest — complex setUp with monkey-patching internals
 """
 Tests for Local SQLite RAG Index (Issue #252).
 """
