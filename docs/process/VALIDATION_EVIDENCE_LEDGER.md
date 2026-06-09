@@ -1,5 +1,18 @@
 # CHERENKOV — Validation Gate Evidence Ledger
 
+## Automated Validation (CI-driven)
+
+The golden path is now validated automatically on every push to `main` by the
+`Automated Golden Path Validation Gate` workflow (`.github/workflows/validation-gate.yml`).
+Results are uploaded as artifacts (`validation-gate-evidence-<sha>`).
+
+**Automated gate covers:** GP-1 through GP-11 (package install, pipeline, eject, oracle,
+chat, metrics, config, mobile dry-run, K8s CRD, orchestrator).
+
+Human reviews (ledger below) remain optional for additional attributable evidence.
+
+---
+
 > **Status:** PASSED per owner decision on 2026-06-08 (see [STATUS.md](../STATUS.md)).
 > **Attributable evidence:** 0 / 5 attributable reviews recorded below.
 > **Owner policy (2026-06-08):** The gate is considered passed to unblock development across all tracks. The evidence infrastructure below remains available for future attributable QA review collection.
