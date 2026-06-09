@@ -2,12 +2,24 @@
 test_embedding_index.py — Unit tests for the E2-3 Embedding Index.
 """
 import unittest
+import sys
 from unittest.mock import patch, MagicMock
 
+try:
+    import numpy  # noqa: F401
+    _NUMPY_AVAILABLE = True
+except ImportError:
+    _NUMPY_AVAILABLE = False
+
 from cherenkov.core.contracts import Claim, Provenance
-from cherenkov.truth.index import EmbeddingIndex
+
+if _NUMPY_AVAILABLE:
+    from cherenkov.truth.index import EmbeddingIndex
+else:
+    EmbeddingIndex = None
 
 
+@unittest.skipUnless(_NUMPY_AVAILABLE, "numpy not installed — skipping EmbeddingIndex tests")
 class TestEmbeddingIndex(unittest.TestCase):
 
     def setUp(self):
