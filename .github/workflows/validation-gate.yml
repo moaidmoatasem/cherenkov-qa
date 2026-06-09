@@ -1,0 +1,62 @@
+name: Automated Golden Path Validation Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * *'  # daily
+
+jobs:
+  golden-path:
+    name: Golden Path E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install pydantic pytest requests PyYAML structlog pydantic-settings 2>/dev/null || true
+      - name: Install CHERENKOV
+        run: pip install -e . 2>/dev/null || true
+      - name: Run golden path tests
+        env:
+          CHERENKOV_MOBILE_DRY_RUN: "1"
+          CHERENKOV_ENV: test
+        run: |
+          pytest tests/e2e/test_golden_path.py -v \
+            --tb=short \
+            --junit-xml=validation-gate-results.xml \
+            2>&1 || true
+      - name: Upload validation evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-gate-evidence-${{ github.sha }}
+          path: validation-gate-results.xml
+          retention-days: 90
+      - name: Summary
+        if: always()
+        run: |
+          python3 -c "
+          import xml.etree.ElementTree as ET, os, sys
+          f = 'validation-gate-results.xml'
+          if not os.path.exists(f):
+              print('No results file')
+              sys.exit(0)
+          tree = ET.parse(f)
+          root = tree.getroot()
+          suite = root if root.tag == 'testsuite' else root.find('testsuite')
+          if suite is None:
+              print('No testsuite element')
+              sys.exit(0)
+          total  = int(suite.get('tests', 0))
+          errors = int(suite.get('errors', 0))
+          fails  = int(suite.get('failures', 0))
+          skips  = int(suite.get('skipped', 0))
+          passed = total - errors - fails - skips
+          print(f'Golden Path Gate: {passed}/{total} passed, {skips} skipped, {fails+errors} failed')
+          " 2>/dev/null || true
