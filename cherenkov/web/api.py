@@ -14,6 +14,8 @@ import threading
 import logging
 from typing import List, Dict, Any
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException, UploadFile, File, Form, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -64,10 +66,19 @@ def _validate_spec_url(url: str) -> str:
     return url
 
 
+main_loop = None
+
+@asynccontextmanager
+async def lifespan(app_: FastAPI):
+    global main_loop
+    main_loop = asyncio.get_running_loop()
+    yield
+
 app = FastAPI(
     title="CHERENKOV QA Observability Dashboard Server",
     version="1.3.0",
-    description="Localhost-first dashboard server for API conformance testing."
+    description="Localhost-first dashboard server for API conformance testing.",
+    lifespan=lifespan,
 )
 
 # ── Phase 1: Knowledge Mesh API ─────────────────────────────────────────────────
@@ -128,12 +139,6 @@ class ConnectionManager:
                 pass
 
 manager = ConnectionManager()
-main_loop = None
-
-@app.on_event("startup")
-async def startup_event():
-    global main_loop
-    main_loop = asyncio.get_running_loop()
 
 def ws_event_callback(type_: str, payload: dict):
     if main_loop and manager.active_connections:
@@ -538,7 +543,7 @@ async def eject_test_suite(payload: EjectPayload):
     except HTTPException:
         raise
     except Exception as e:
-        return {"status": "ejected", "output_path": payload.output_path, "files": []}
+        raise HTTPException(status_code=500, detail=f"Eject operation failed: {e}")
 
 #
 # Divergences

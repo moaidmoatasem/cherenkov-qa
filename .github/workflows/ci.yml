@@ -546,6 +546,28 @@ jobs:
       - name: Run model runner unit tests
         run: PYTHONPATH=. python3 -m unittest test_model_runner_client.py
 
+  codeql-analysis:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          config-file: .github/codeql/codeql-config.yml
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"
+
   sandbox-heal-docker:
     name: Sandbox Heal Docker (opt-in)
     if: github.event_name == 'workflow_dispatch'
