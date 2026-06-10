@@ -47,6 +47,7 @@ scripts/k3d
 scripts/k8s-run
 
 # coverage artifacts
+.coverage
 .coverage.*
 
 # PR body drafts
