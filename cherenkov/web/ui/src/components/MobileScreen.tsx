@@ -55,18 +55,18 @@ export default function MobileScreen() {
               </Card>
             ))
           : devices.map((device) => (
-              <Card key={device.id} className="p-4 space-y-3 relative overflow-hidden">
+              <Card key={device.id} data-testid={`device-card-${device.id}`} className="p-4 space-y-3 relative overflow-hidden">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Smartphone className="w-5 h-5 text-[#7D8DA1]" />
                     <span className="font-semibold text-sm">{device.name}</span>
                   </div>
                   {device.connected ? (
-                    <span className="flex items-center gap-1 text-xs text-[#3FB950]">
+                    <span data-testid={`device-status-${device.id}`} className="flex items-center gap-1 text-xs text-[#3FB950]">
                       <CheckCircle className="w-3 h-3" /> Connected
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 text-xs text-[#F85149]">
+                    <span data-testid={`device-status-${device.id}`} className="flex items-center gap-1 text-xs text-[#F85149]">
                       <XCircle className="w-3 h-3" /> Disconnected
                     </span>
                   )}

@@ -78,13 +78,14 @@ export default function MobilePilotScreen() {
           <div className="flex items-center gap-3">
             <h2 className="text-sm font-semibold text-[#E6EDF3]">Pilot Status</h2>
             {badge && (
-              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${badge.color}`}>
+              <span data-testid="pilot-status-badge" className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${badge.color}`}>
                 {badge.label}
               </span>
             )}
           </div>
           {pilot?.status === 'idle' && (
             <button
+              data-testid="pilot-start-btn"
               onClick={handleStart}
               disabled={isStarting}
               className="flex items-center gap-1.5 px-4 py-2 bg-glow-blue/20 border border-glow-blue/30 rounded-lg text-xs text-glow-bright hover:bg-glow-blue/30 transition cursor-pointer disabled:opacity-50"
@@ -111,6 +112,7 @@ export default function MobilePilotScreen() {
                 </div>
                 <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
                   <div
+                    data-testid="pilot-progress-bar"
                     className={`h-full rounded-full transition-all duration-500 ${
                       pilot.status === 'failed' ? 'bg-[#F85149]' : 'bg-glow-blue'
                     }`}
@@ -125,6 +127,7 @@ export default function MobilePilotScreen() {
                 {pilot.steps.map((step: PilotStep) => (
                   <div
                     key={step.step_id}
+                    data-testid={`pilot-step-${step.step_id}`}
                     className="flex items-start gap-3 p-2.5 rounded-lg bg-white/[0.02] border border-white/5 text-xs"
                   >
                     <div className="mt-0.5 shrink-0">
