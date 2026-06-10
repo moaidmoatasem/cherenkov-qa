@@ -30,7 +30,10 @@ All modes support **headed** (visible window) and **headless** (CI mode).
 | [Roadmap](Roadmap.md) | Phase timeline, track status |
 | [FAQ](FAQ.md) | Common questions |
 | [Troubleshooting](Troubleshooting.md) | Fix guide for common problems |
-| [Way-of-Work](Way-of-Work.md) | Contribution workflow |
+| [Way-of-Work](Way-of-Work.md) | Contribution workflow — the full loop |
+| [Contributing](Contributing.md) | First contribution, dev setup, code style, review process |
+| [Testing](Testing.md) | Running tests, writing tests, CI matrix explained |
+| [Security](Security.md) | Vulnerability reporting, security model, secure usage |
 
 ---
 
