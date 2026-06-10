@@ -5,8 +5,8 @@
 > [README.md](../README.md), [HANDOVER.md](HANDOVER.md), and
 > [PHASE_PLAN.md](PHASE_PLAN.md).
 
-**Last updated:** 2026-06-09  
-**Branch:** `main` (working tree clean at start of docs pass)
+**Last updated:** 2026-06-10  
+**Branch:** `main`
 
 ---
 
@@ -34,7 +34,7 @@ under the consolidated Phase -1 through Phase 8 plan.
 | 5 | Mobile Testing Core | ⏸ Blocked | Needs ADB on this machine |
 | 6 | Mobile Execution | ⏸ Blocked | Depends on Phase 5 |
 | 7 | Dashboard Revamp | ✅ Complete | 9 screens built (PRs #401, #402, #405) |
-| 8 | K8s + Cloud + Gate | 🔶 In progress | `SECURITY.md` added (#404); needs `k3d` for #386–#388 |
+| 8 | K8s + Cloud + Gate | 🔶 In progress | CRD + controller coded (#404, #419, #425, #442); `make k3d-test` pending |
 
 ---
 
@@ -42,12 +42,12 @@ under the consolidated Phase -1 through Phase 8 plan.
 
 | Track | Scope | State |
 |-------|-------|-------|
-| A (Core) | API conformance testing | ✅ Built, core invariants proven, validation gate passed (2026-06-08) |
-| B (VLM) | LocalAI / Ollama substrate | ✅ Built, unit-tested, re-integrated into live tree |
-| C (Desktop) | Tauri 2 host | ✅ Built, unit-tested, re-integrated; runtime blocked on `cargo` |
-| D (Mobile) | Maestro / Appium | ✅ Built, unit-tested, re-integrated; runtime blocked on ADB |
-| E (Dashboard) | React UI | ✅ Built, all 9 screens shipped |
-| F (K8s) | Operator + CRDs | 🔶 In progress (Phase 8) |
+| A (Core) | API conformance testing | ✅ Built; validation gate passed (2026-06-08); **258 tests passing, 0 failures** |
+| B (VLM) | LocalAI / Ollama substrate | ✅ Built; MCP policy engine + Docker Model Runner adapter added |
+| C (Desktop) | Tauri 2 host | ✅ Built, unit-tested; runtime blocked on `cargo` |
+| D (Mobile) | Maestro / Appium | ✅ Built, unit-tested; E2E dashboard tests + data-testid added; runtime blocked on ADB |
+| E (Dashboard) | React UI | ✅ Built; all 9 screens shipped; E2E error-path + multi-viewport tests added |
+| F (K8s) | Operator + CRDs | 🔶 In progress (Phase 8); `make k3d-test` pending |
 
 > **Note on `track-b-c-deferred/`:** Earlier handover docs described a
 > separate `track-b-c-deferred/` directory. That directory was **fully
@@ -104,6 +104,7 @@ Solo developer zero-cost path: L0–L3 = $0/month.
 
 ## Change log
 
+- **2026-06-10** — Updated: test pass rate 16 failures → 258 passing; Track B/D/E state refreshed for priority rounds #419, #425, #442; Phase 8 notes updated.
 - **2026-06-09** — Created this file. Status deduplicated from `HANDOVER.md`,
   `README.md`, and `PHASE_PLAN.md`. `README.md` and `HANDOVER.md` now point
   here. See [AGENTS.md](../AGENTS.md) for agent operating rules.

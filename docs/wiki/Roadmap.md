@@ -113,19 +113,23 @@ Run History · Test Explorer · Spec Viewer · Healing Queue · Knowledge Graph 
 
 ### 🔶 Phase 8 — K8s + Cloud (Active)
 
-Current work: making CHERENKOV cloud-native.
+Current work: making CHERENKOV cloud-native and release-ready.
 
 **Done:**
 - `ConformanceCheck` CRD definition and Go controller
 - Device environment variables for K8s jobs
 - `SECURITY.md` security policy (issue #404)
 - k8s-run CLI bridge
+- **Quality round 1 (#419):** fixed 16 test failures → 258 passing, 0 failed; CI gates hardened (`--cov-fail-under=50`, no `|| true`); removed hardcoded GitHub tokens
+- **Quality round 2 (#425):** FastAPI lifespan migration; eject endpoint returns HTTP 500 on error; API integration tests; CodeQL added; MCP Policy Engine; Docker Model Runner adapter; 70 new tests
+- **Quality round 3 (#442):** Dashboard E2E tests (error-path, multi-viewport); mobile UI `data-testid` annotations; 57 new unit tests
+- Docker Hub publish workflow (`publish.yml`)
 
 **In Progress:**
-- `make k3d-test` validation
+- `make k3d-test` validation for K8s operator
 - Open-source readiness checklist
 
-**Blocked:**
+**Blocked (runtime environment, not code):**
 - Phase 3 (Desktop): needs `cargo` — `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
 - Phases 5–6 (Mobile): needs ADB — install Android platform tools
 
