@@ -34,9 +34,9 @@
 
 ## 1. Executive Summary
 
-This document is the **Single Source of Truth (SSOT)** for the CHERENKOV-QA consolidated plan. It covers all phases from planning (Phase -1) through validation gate (Phase 8), with detailed tickets, integration plans, parallel tracks, and agent guidance.
+This document is the **Single Source of Truth (SSOT)** for the CHERENKOV-QA technical delivery plan. It covers phases from planning (Phase -1) through validation gate (Phase 8), with detailed tickets, integration plans, parallel tracks, and agent guidance. For the extended product roadmap (Phases 9-16: market launch, integrations, enterprise tier, fine-tuned model), see [PRODUCT_STRATEGY_ROADMAP.md](PRODUCT_STRATEGY_ROADMAP.md) and [INTEGRATION_STRATEGY.md](INTEGRATION_STRATEGY.md).
 
-**Total Scope:**
+**Technical Delivery Scope (this document):**
 - 10 phases (Phase -1 through Phase 8)
 - ~105 GitHub issues
 - 19 new documentation files

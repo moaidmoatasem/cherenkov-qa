@@ -190,6 +190,14 @@ def get_queue() -> HitlQueue:
 # ── Endpoints ──────────────────────────────────────────────────────────
 
 #
+# Sidecar health — used by Tauri desktop host to detect engine readiness
+#
+@app.get("/healthz")
+async def healthz():
+    return {"ok": True, "version": "1.0.0"}
+
+
+#
 # Health
 #
 @app.get("/api/v1/health")

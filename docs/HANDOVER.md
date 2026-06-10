@@ -159,6 +159,26 @@ Once Phase 8 is complete (K8s + Cloud + Validation Gate), prepare for open-sourc
 - Run 5-QA validation gate with real QA practitioners
 - Publish to GitHub (public repo)
 
+### 6.5 — PHASES 9-16 — Product & Market Expansion
+
+After Phase 8, the extended product roadmap executes across 8 additional phases (18-month horizon):
+
+| Phase | Focus | Timeline |
+|-------|-------|----------|
+| 9 | Market launch (landing page, `npx cherenkov init`, Product Hunt) | Weeks 1-4 |
+| 10 | CI/CD native (GitHub Actions, GitLab, CircleCI, SARIF output) | Weeks 4-8 |
+| 11 | VS Code extension (generate, validate, gutter icons, quick fix) | Weeks 6-10 |
+| 12 | GraphQL + gRPC + AsyncAPI support | Months 3-5 |
+| 13 | Enterprise tier (SSO, RBAC, audit logs, compliance) | Months 5-9 |
+| 14 | Spec Guardian — continuous conformance monitoring daemon | Months 9-15 |
+| 15 | Fine-tuned `cherenkov-coder-7b` model on opt-in corpus | Months 12-18 |
+| 16 | Platform — marketplace, plugin SDK, public API, federation | Months 18-30 |
+
+Alongside these phases, a **25-integration delivery plan** covers Slack, Teams, Jira, Xray, Zephyr, OTEL, ArgoCD, Backstage, and more across 6 sprints.
+
+- Full roadmap → **[docs/PRODUCT_STRATEGY_ROADMAP.md](PRODUCT_STRATEGY_ROADMAP.md)**
+- Integration plan → **[docs/INTEGRATION_STRATEGY.md](INTEGRATION_STRATEGY.md)**
+
 ---
 
 ## 7. Architecture (for any agent building on it)

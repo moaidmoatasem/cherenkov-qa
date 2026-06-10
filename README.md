@@ -295,6 +295,12 @@ Everything runs locally. You choose how much infrastructure you want.
 <details>
 <summary><strong>Building on CHERENKOV?</strong></summary>
 
+**Key docs:**
+- **[docs/STATUS.md](docs/STATUS.md)** — canonical project state
+- **[docs/PRODUCT_STRATEGY_ROADMAP.md](docs/PRODUCT_STRATEGY_ROADMAP.md)** — market strategy, Phases 9-16, revenue model, 10-year vision
+- **[docs/INTEGRATION_STRATEGY.md](docs/INTEGRATION_STRATEGY.md)** — 25-integration ecosystem plan (VS Code, Slack, Jira, GraphQL, and more)
+- **[AGENTS.md](AGENTS.md)** — agent operating rules, deltas, track status
+
 | | |
 |--|--|
 | [docs/wiki/Architecture.md](docs/wiki/Architecture.md) | Full system architecture with diagrams |

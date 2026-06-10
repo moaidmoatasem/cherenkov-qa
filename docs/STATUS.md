@@ -99,6 +99,8 @@ Solo developer zero-cost path: L0–L3 = $0/month.
 - **Agent / contributor?** → [HANDOVER.md](HANDOVER.md) then [PHASE_PLAN.md](PHASE_PLAN.md)
 - **Architect?** → [engineering/SYSTEM_DESIGN.md](engineering/SYSTEM_DESIGN.md)
 - **Decision rationale?** → [adr/](adr/)
+- **Product strategy & market roadmap?** → [PRODUCT_STRATEGY_ROADMAP.md](PRODUCT_STRATEGY_ROADMAP.md) (Phases 9-16, market analysis, 10-year vision)
+- **Integration & ecosystem plan?** → [INTEGRATION_STRATEGY.md](INTEGRATION_STRATEGY.md) (25 integrations, 6 sprints)
 
 ---
 
