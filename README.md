@@ -2,7 +2,7 @@
 
 # ⚡ CHERENKOV QA
 
-### Tests your API, web UI, and mobile app — from your OpenAPI spec — zero lock-in
+### Spec in. Playwright tests out. Zero lock-in.
 
 [![CI](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/ci.yml/badge.svg)](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/ci.yml)
 [![Security](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/security-scan.yml/badge.svg)](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/security-scan.yml)
@@ -12,26 +12,56 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-22c55e.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**Your spec is the source of truth. Your tests prove it.**  
-*Zero cloud. Zero lock-in. Zero test code to write.*
+</div>
 
-[**Quick Start**](#quick-start-2-minutes) · [**How It Works**](#how-it-works) · [**Commands**](#commands) · [**Docs**](docs/INDEX.md) · [**Architecture**](docs/wiki/Architecture.md)
+---
+
+```
+openapi.yaml  ──▶  cherenkov validate  ──▶  Playwright tests  ──▶  eject  ──▶  run anywhere
+```
+
+Give CHERENKOV your OpenAPI spec and a live server URL.  
+It generates typed Playwright tests using a local LLM, runs a 6-gate review on every test,  
+executes them, and surfaces exactly where your implementation diverges from your spec.  
+No cloud. No API keys. When you're done, eject to vanilla Playwright — runs forever without CHERENKOV.
+
+```
+cherenkov validate --target http://localhost:8000
+
+  ✔  GET  /pets          happy_path             [PASSED]   195ms
+  ✔  POST /pets          create_pet             [PASSED]   211ms
+  ✗  POST /users         password_too_short     [FAILED]
+       spec says: 422 (validation error)
+       server returned: 400
+
+  1 conformance drift detected — nobody wrote that test, CHERENKOV found it from the spec
+```
+
+```bash
+# Export to vanilla Playwright — zero CHERENKOV import, runs forever
+./bin/cherenkov eject --output ./my-tests
+cd my-tests && npx playwright test   # ✓ works. always will.
+```
+
+<div align="center">
+
+[**Quick Start**](#quick-start-2-minutes) · [**How It Works**](#how-it-works) · [**Commands**](#commands) · [**Wiki**](docs/wiki/Home.md) · [**Docs**](docs/INDEX.md) · [**Architecture**](docs/wiki/Architecture.md)
 
 </div>
 
 ---
 
-## What It Does
+## What It Tests
 
-CHERENKOV reads your OpenAPI 3.x spec and **writes Playwright tests for you** using a local LLM running on your machine. It tests three layers:
+CHERENKOV generates and runs tests across three layers — from the same spec, the same command.
 
-| Layer | What It Tests | Headed / Headless |
-|-------|--------------|:-----------------:|
-| **API** | REST endpoints — status codes, schemas, auth vs your spec | Both |
-| **Web** | Browser UI flows via Playwright | Both |
-| **Mobile** | Device flows via Maestro + Appium, VLM visual oracle | Both |
+| Layer | What It Tests | Status |
+|-------|--------------|:------:|
+| **API** | REST endpoints — status codes, response schemas, auth flows vs your spec | ✅ Production ready |
+| **Web** | Browser UI flows via Playwright — headed or headless, VLM visual regression | ✅ Playwright ready |
+| **Mobile** | Device flows via Maestro + Appium, VLM visual oracle — 4-tier device support | ✅ Built · needs ADB |
 
-Everything runs locally. No API keys. No data leaving your machine. No vendor dependency after `eject`.
+All three modes run locally. No data leaves your machine.
 
 ---
 
@@ -51,7 +81,7 @@ flowchart LR
         MOB_RUN[Mobile\nMaestro/Appium]
     end
 
-    REPORT([📊 Report\n+ Visual Results])
+    REPORT([📊 Report\n+ Drift Detection])
     SUGGEST([💡 Tightening\nSuggestions])
     EJECT([📦 Standalone\nPlaywright Tests])
 
@@ -68,12 +98,12 @@ flowchart LR
 
 | Stage | What Happens |
 |-------|-------------|
-| **Ingest** | Parses and validates your OpenAPI 3.x spec |
-| **Plan** | Generates test scenarios (happy path, edge cases, auth flows) |
-| **Generate** | Local LLM writes typed `openapi-fetch` Playwright tests |
-| **Review** | 6-gate check: syntax → structure → AST → assertions → TypeScript → Prism mock |
-| **Run** | Executes tests against your live server |
-| **Report** | Identifies spec drift, generates tightening suggestions, ejects standalone tests |
+| **Ingest** | Parses and validates your OpenAPI 3.x spec — catches malformed specs before they generate bad tests |
+| **Plan** | Produces test scenarios: happy paths, edge cases, auth flows, error branches |
+| **Generate** | Local LLM writes typed `openapi-fetch` Playwright tests — your spec never leaves your machine |
+| **Review** | 6-gate check: syntax → structure → AST → assertions → TypeScript → Prism mock server |
+| **Run** | Executes tests against your live server, API layer + web UI layer + mobile layer |
+| **Report** | Identifies spec drift, surfaced as structured findings; generates tightening suggestions; ejects standalone tests |
 
 ---
 
@@ -88,7 +118,7 @@ cd cherenkov-qa
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# 2. Install Playwright and Node dependencies
+# 2. Playwright + Node deps
 cd stub && npm install && npx playwright install && cd ..
 
 # 3. Start the bundled sample API (or point at your own)
@@ -96,34 +126,14 @@ cd target && source ../.venv/bin/activate
 uvicorn target_api:app --host 127.0.0.1 --port 8000 &
 cd ..
 
-# 4. Run — watch it catch a real conformance bug
+# 4. Check everything is wired up
+PYTHONPATH=. ./bin/cherenkov doctor
+
+# 5. Run — watch it catch a real conformance bug
 PYTHONPATH=. ./bin/cherenkov validate --target http://localhost:8000
 ```
 
-> **Full setup guide (prerequisites, troubleshooting, Docker option):** [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)
-
----
-
-## Example Output
-
-```
-cherenkov validate — running against http://localhost:8000
-
-  ✔  GET /pets          happy_path             [PASSED]   195ms
-  ✔  POST /pets         create_pet             [PASSED]   211ms
-  ✗  POST /users        password_too_short     [FAILED]
-       expected: 422 (spec: POST /users → 422 on validation error)
-       actual:   400
-
-  Tightening suggestions for happy_path:
-    › assert response.headers['content-type'] includes 'application/json'
-    › assert response.body.id is typeof 'number'
-
-  2 passed, 1 failed — 1 conformance drift detected
-  Full report: .cherenkov/report.json
-```
-
-The `password_too_short` failure is a **real spec conformance bug**: the OpenAPI spec declares `422` for validation errors but the server returns `400`. Nobody wrote that test. CHERENKOV found it from the spec.
+> **Full setup guide (prerequisites, Docker option, troubleshooting):** [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)
 
 ---
 
@@ -131,19 +141,19 @@ The `password_too_short` failure is a **real spec conformance bug**: the OpenAPI
 
 ```bash
 # Core workflow
-./bin/cherenkov validate --target <url>       # Run tests + generate report
-./bin/cherenkov eject --output <dir>          # Export standalone Playwright tests
-./bin/cherenkov review --web                  # Open browser dashboard
+./bin/cherenkov validate --target <url>       # Run conformance tests + generate report
+./bin/cherenkov eject   --output <dir>         # Export standalone Playwright tests (zero lock-in)
+./bin/cherenkov review  --web                  # Open browser dashboard
 
 # Diagnostics
-./bin/cherenkov doctor                        # Check environment (Ollama, Node, etc.)
-./bin/cherenkov --help                        # All commands and options
+./bin/cherenkov doctor                         # Check environment (Ollama, Node, Playwright, etc.)
+./bin/cherenkov --help                         # All commands and options
 
 # Advanced
-./bin/cherenkov heal --report <file>          # Get fix suggestions for failures
-./bin/cherenkov explore --spec <file>         # Interactive spec explorer
-./bin/cherenkov chat                          # AI chat agent with tool access
-./bin/cherenkov daemon                        # Watch mode (re-run on spec change)
+./bin/cherenkov heal    --report <file>        # Get fix suggestions for failing tests
+./bin/cherenkov explore --spec <file>          # Interactive spec explorer
+./bin/cherenkov chat                           # AI chat agent with tool access to your spec + results
+./bin/cherenkov daemon                         # Watch mode — re-runs on spec change
 ```
 
 > **Complete CLI reference with all flags:** [docs/wiki/CLI-Reference.md](docs/wiki/CLI-Reference.md)
@@ -154,18 +164,38 @@ The `password_too_short` failure is a **real spec conformance bug**: the OpenAPI
 
 | Feature | What It Means |
 |---------|--------------|
-| **API conformance** | Spec-derived oracles — expected status from OpenAPI, never hardcoded |
+| **API conformance** | Expected status codes come from the OpenAPI spec — never hardcoded |
 | **Web testing** | Playwright browser flows, headed or headless, visual regression via VLM |
-| **Mobile testing** | Maestro + Appium device flows, VLM visual oracle (4-tier: emulator → CI) |
-| **Local LLM only** | Ollama runs on your machine; your spec never leaves |
-| **Zero lock-in** | `eject` produces vanilla Playwright + `openapi-fetch` — no CHERENKOV import in sight |
-| **Suggest-only healing** | When tests fail, CHERENKOV suggests fixes; it never auto-edits your code |
+| **Mobile testing** | Maestro + Appium device flows, VLM visual oracle, 4-tier device support |
+| **Local LLM only** | Ollama + `qwen2.5-coder:7b` runs on your machine; your spec never leaves |
+| **Zero lock-in** | `eject` produces vanilla Playwright + `openapi-fetch` — no CHERENKOV import anywhere |
+| **Suggest-only healing** | CHERENKOV suggests fixes for failures; it never auto-edits your code |
 | **6-gate review** | Every generated test passes syntax → structure → AST → assertions → TypeScript → Prism |
-| **React dashboard** | `--web` flag opens a live browser UI for all results |
+| **React dashboard** | `--web` opens a live browser UI showing test results, spec coverage, drift findings |
 | **K8s operator** | `ConformanceCheck` CRD runs tests as native Kubernetes jobs |
-| **Chat agent** | Ask questions about your spec and test results via natural language |
-| **Knowledge mesh** | GraphRAG-powered second brain learns from your codebase over time |
+| **Chat agent** | Ask questions about your spec and results in natural language |
+| **Knowledge mesh** | GraphRAG-powered second brain that learns from your codebase over time |
 | **MCP integration** | First-class Model Context Protocol server for IDE and agent use |
+
+---
+
+## The Zero Lock-In Promise
+
+```bash
+# One command. Vanilla Playwright. No CHERENKOV dependency anywhere.
+./bin/cherenkov eject --output ./my-tests
+
+# What you get: standard Playwright + openapi-fetch
+# Zero CHERENKOV imports. Zero CHERENKOV on PATH.
+# Runs in any CI. Runs on any machine. Runs after you stop using CHERENKOV.
+
+cd my-tests
+cat package.json        # "@playwright/test" + "openapi-fetch" — that's it
+npm install
+npx playwright test     # ✓ passes
+```
+
+The eject invariant is enforced in CI by `smoke_test_eject.py` — it verifies every ejected test file contains zero CHERENKOV imports. That check never gets disabled.
 
 ---
 
@@ -174,57 +204,43 @@ The `password_too_short` failure is a **real spec conformance bug**: the OpenAPI
 ```mermaid
 graph TB
     subgraph CLI ["🖥️  CLI  (cherenkov.py)"]
-        CMD[Commands: validate · eject · heal · chat · daemon]
+        CMD[validate · eject · heal · chat · daemon · doctor]
     end
 
     subgraph ORCH ["⚙️  Orchestration"]
         ORC[Orchestrator]
-        STAGES["Stages: ingest → plan → generate → review → validate"]
+        STAGES["ingest → plan → generate → review → run"]
+        EVENTS[Event Bus]
     end
 
-    subgraph DOMAIN ["📐  Domain"]
-        TRUTH[Truth Model\nOpenAPI + Traffic]
-        ORACLE[Verdict Oracle\nSpec-derived]
-        KNOWLEDGE[Knowledge Mesh\nGraphRAG]
+    subgraph DOMAIN ["📐  Domain  (pure Python — no I/O)"]
+        TRUTH[Truth Model\nOpenAPI · Traffic]
+        ORACLE[Verdict Oracle\nSpec-derived expected status]
+        KNOWLEDGE[Knowledge Mesh\nGraphRAG · Second Brain]
+        DIVERGENCE[Divergence Engine\nSelf-play · Proof runs]
     end
 
-    subgraph INFRA ["🔧  Infrastructure"]
+    subgraph INFRA ["🔧  Infrastructure Adapters"]
         LLM[LLM Router\nOllama · LocalAI · OpenAI]
-        PLAYWRIGHT[Playwright\nRunner]
-        PRISM[Prism\nMock Server]
+        PLAYWRIGHT[Playwright Runner]
+        PRISM[Prism Mock Server]
         K8S[K8s Operator\nConformanceCheck CRD]
     end
 
     subgraph UI ["🎨  Interfaces"]
-        WEB[React Dashboard]
-        MCP_S[MCP Server]
-        CHAT[Chat Agent]
+        WEB[React Dashboard\n9 screens · Vite]
+        MCP_S[MCP Server\nIDE + agent]
+        CHAT[Chat Agent\nSSE streaming]
     end
 
     CLI --> ORCH
     ORCH --> DOMAIN
     DOMAIN --> INFRA
     CLI --> UI
+    UI --> ORCH
 ```
 
-> **Deep-dive architecture docs:** [docs/wiki/Architecture.md](docs/wiki/Architecture.md)
-
----
-
-## The Anti-Lock-In Promise
-
-```bash
-# Export to vanilla Playwright — one command, zero CHERENKOV dependency
-./bin/cherenkov eject --output ./my_tests
-
-# Run the ejected tests anywhere
-cd my_tests
-npm install
-npx playwright test
-# Works. Forever. No cherenkov on the PATH.
-```
-
-What's left after eject: standard Playwright + `openapi-fetch`. If you stop using CHERENKOV tomorrow, your tests keep running. That's the deal.
+> **Deep-dive:** [docs/wiki/Architecture.md](docs/wiki/Architecture.md) · [docs/engineering/SYSTEM_DESIGN.md](docs/engineering/SYSTEM_DESIGN.md) · [ADRs](docs/adr/)
 
 ---
 
@@ -236,12 +252,12 @@ Everything runs locally. You choose how much infrastructure you want.
 |------|:-----------:|-------------|
 | **L0** Bare CLI | **$0** | Python + SQLite, no Docker required |
 | **L1** + Ollama | **$0** | L0 + local LLM, full API + visual testing |
-| **L2** + Docker Compose | **$0** | L1 + LocalAI (VLM), Redis (vector store / sessions) |
+| **L2** + Docker Compose | **$0** | L1 + LocalAI (VLM), Redis (vector store + sessions) |
 | **L3** + Full Stack | **$0** | L2 + Android emulator, Maestro, mobile testing, desktop app |
 | **L4** + Cloud | ~$50–100 | L3 + optional cloud VLM / cloud device farms |
 | **L5** + Enterprise | $300+ | L4 + K8s operator, SSO, audit logs, SLA |
 
-> **Solo developer zero-cost path: L0 through L3 = $0/month.**
+**Solo developer zero-cost path: L0 through L3 = $0/month.**
 
 ---
 
@@ -249,7 +265,7 @@ Everything runs locally. You choose how much infrastructure you want.
 
 | Track | Scope | State |
 |-------|-------|-------|
-| **A** Core engine | API conformance testing | ✅ Built · Validation gate passed (2026-06-08) |
+| **A** Core engine | API conformance testing | ✅ Built · Validation gate passed 2026-06-08 |
 | **B** VLM substrate | LocalAI / Ollama routing | ✅ Built and integrated |
 | **C** Desktop | Tauri 2 host app | ✅ Built · Runtime blocked on `cargo` |
 | **D** Mobile | Maestro / Appium | ✅ Built · Runtime blocked on ADB |
