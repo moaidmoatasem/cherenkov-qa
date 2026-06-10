@@ -25,16 +25,17 @@ import {
   Loader2
 } from 'lucide-react';
 import { TestItem, TestGate } from '../types';
-import { approveTestScenario, rejectTestScenario, editTestScenario, fetchGeneratedTests, fetchReviewQueue, ReviewQueueItem, explainTestScenario } from '../lib/api';
+import { approveTestScenario, rejectTestScenario, editTestScenario, fetchGeneratedTests, fetchReviewQueue, ReviewQueueItem, explainTestScenario, createChatSession, streamChatMessage } from '../lib/api';
 import { useToast } from './ui/Toast';
 import CherenkovLogo from './CherenkovLogo';
 import { Skeleton } from './ui';
 
 interface ReviewScreenProps {
   onUpdatePassRateAndCount: (testCount: number, approvedCount: number) => void;
+  autonomy?: 'Assisted' | 'Augmented' | 'Agentic';
 }
 
-export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenProps) {
+export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Assisted' }: ReviewScreenProps) {
   const { toast } = useToast();
   const [tests, setTests] = useState<TestItem[]>([]);
   const testsRef = useRef(tests);
@@ -93,7 +94,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
       .finally(() => setIsLoading(false));
   }, [toast]);
   const [activeFilter, setActiveFilter] = useState<'all' | 'approved' | 'review' | 'regenerating' | 'rejected'>('all');
-  const [selectedTestId, setSelectedTestId] = useState<string>('test-3'); // Default to the first review item
+  const [selectedTestId, setSelectedTestId] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
   const [editedCode, setEditedCode] = useState('');
   const [approveTriggerId, setApproveTriggerId] = useState<string | null>(null);
@@ -105,12 +106,36 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [isChatStreaming, setIsChatStreaming] = useState(false);
+  const [chatSessionId, setChatSessionId] = useState<string | null>(null);
+  const chatAbortRef = useRef<AbortController | null>(null);
 
   // Update pass rate on tests change
   useEffect(() => {
     const approvedCount = tests.filter(t => t.verdict === 'approved').length;
     onUpdatePassRateAndCount(tests.length, approvedCount);
   }, [tests, onUpdatePassRateAndCount]);
+
+  // Autonomy: auto-approve high-confidence tests in Augmented/Agentic mode
+  useEffect(() => {
+    if (isLoading || tests.length === 0) return;
+    if (autonomy !== 'Augmented' && autonomy !== 'Agentic') return;
+    const threshold = autonomy === 'Agentic' ? 0.75 : 0.9;
+    const toAutoApprove = tests.filter(
+      t => t.verdict === 'review' && t.confidence >= threshold
+    );
+    if (toAutoApprove.length === 0) return;
+    Promise.all(toAutoApprove.map(t => approveTestScenario(t.id).catch(() => null))).then(() => {
+      setTests(prev =>
+        prev.map(t =>
+          toAutoApprove.some(a => a.id === t.id) ? { ...t, verdict: 'approved' as const } : t
+        )
+      );
+      toast(
+        `${autonomy} mode: auto-approved ${toAutoApprove.length} high-confidence test${toAutoApprove.length > 1 ? 's' : ''} (≥${Math.round(threshold * 100)}% confidence).`,
+        'info'
+      );
+    });
+  }, [tests.length, autonomy, isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync edited code when selected test changes
   const activeTest = tests.find(t => t.id === selectedTestId) || tests[0];
@@ -121,8 +146,33 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
       setIsEditing(false);
       setAiExplanation(null);
       setIsExplaining(false);
+      // Reset chat when active test changes
+      setChatMessages([]);
+      setChatSessionId(null);
     }
   }, [selectedTestId, activeTest]);
+
+  // Initialise a real chat session when the panel opens
+  useEffect(() => {
+    if (!showChat || chatSessionId) return;
+    let mounted = true;
+    createChatSession('qa_assistant')
+      .then(data => {
+        if (!mounted) return;
+        setChatSessionId(data.session_id);
+        if (activeTest) {
+          // Seed the session with context so the LLM knows which test is being reviewed
+          const ctx =
+            `You are reviewing a generated Playwright test for ${activeTest.method} ${activeTest.path}. ` +
+            `Confidence: ${Math.round(activeTest.confidence * 100)}%. ` +
+            `Gate quality: ${activeTest.gates.quality ? 'pass' : 'needs attention'}. ` +
+            `Test code:\n\`\`\`typescript\n${activeTest.code}\n\`\`\``;
+          streamChatMessage(data.session_id, ctx, () => {}).catch(() => null);
+        }
+      })
+      .catch(() => null);
+    return () => { mounted = false; };
+  }, [showChat]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keyboard Navigation & Actions
   useEffect(() => {
@@ -256,6 +306,41 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
       toast(`Failed to get AI explanation: ${(err as Error).message}`, 'error');
     } finally {
       setIsExplaining(false);
+    }
+  };
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim() || isChatStreaming || !chatSessionId) return;
+    const userText = chatInput.trim();
+    setChatMessages(prev => [...prev, { role: 'user', content: userText }]);
+    setChatInput('');
+    setIsChatStreaming(true);
+    setChatMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+    const controller = new AbortController();
+    chatAbortRef.current = controller;
+    try {
+      await streamChatMessage(
+        chatSessionId,
+        userText,
+        (token) => {
+          setChatMessages(prev => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last?.role === 'assistant') {
+              next[next.length - 1] = { ...last, content: last.content + token };
+            }
+            return next;
+          });
+        },
+        controller.signal,
+      );
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') {
+        toast('Chat request failed — check backend connectivity.', 'error');
+        setChatMessages(prev => prev.slice(0, -1));
+      }
+    } finally {
+      setIsChatStreaming(false);
     }
   };
 
@@ -632,36 +717,15 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey && chatInput.trim()) {
                           e.preventDefault();
-                          setChatMessages(prev => [...prev, { role: 'user', content: chatInput.trim() }]);
-                          setChatInput('');
-                          setIsChatStreaming(true);
-                          setTimeout(() => {
-                            setChatMessages(prev => [...prev, {
-                              role: 'assistant',
-                              content: `Analysis for test "${activeTest?.name}": This test validates ${activeTest?.method} ${activeTest?.path} with ${(activeTest?.confidence * 100).toFixed(0)}% confidence. Review assertions and expected status codes against the OpenAPI spec.`
-                            }]);
-                            setIsChatStreaming(false);
-                          }, 600);
+                          sendChatMessage();
                         }
                       }}
                       placeholder="Ask about this test..."
                       className="flex-1 bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder-[#7D8DA1] focus:outline-none focus:border-glow-blue/50 transition"
                     />
                     <button
-                      onClick={() => {
-                        if (!chatInput.trim() || isChatStreaming) return;
-                        setChatMessages(prev => [...prev, { role: 'user', content: chatInput.trim() }]);
-                        setChatInput('');
-                        setIsChatStreaming(true);
-                        setTimeout(() => {
-                          setChatMessages(prev => [...prev, {
-                            role: 'assistant',
-                            content: `Analysis for test "${activeTest?.name}": This test validates ${activeTest?.method} ${activeTest?.path} with ${(activeTest?.confidence * 100).toFixed(0)}% confidence. Review assertions and expected status codes against the OpenAPI spec.`
-                          }]);
-                          setIsChatStreaming(false);
-                        }, 600);
-                      }}
-                      disabled={!chatInput.trim() || isChatStreaming}
+                      onClick={sendChatMessage}
+                      disabled={!chatInput.trim() || isChatStreaming || !chatSessionId}
                       className="shrink-0 w-7 h-7 rounded-lg bg-glow-blue hover:bg-opacity-90 text-slate-950 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {isChatStreaming ? (
@@ -698,7 +762,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
                         onClick={() => setRejectingId(activeTest.id)}
                         className="px-4 py-2 text-red-400 border border-red-500/20 bg-red-500/5 hover:bg-red-500 hover:text-slate-950 text-xs font-mono font-bold tracking-wider rounded-xl uppercase transition cursor-pointer"
                       >
-                        REJECT & RUN REGEN
+                        REJECT TEST
                       </button>
                       <button
                         onClick={() => setIsEditing(true)}
@@ -733,10 +797,10 @@ export default function ReviewScreen({ onUpdatePassRateAndCount }: ReviewScreenP
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-[#131d31] border border-white/10 p-6 rounded-2xl w-full max-w-md shadow-2xl space-y-4">
             <h3 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted">
-              Specify Rejection Reason (Feeds Reflector)
+              Rejection Reason
             </h3>
             <p className="text-xs text-[#7D8DA1]">
-              Provide instructions to guide the model rewrite and update negative verdict weights.
+              Describe what's wrong. Your feedback helps the AI generate better tests next time.
             </p>
             <textarea
               value={rejectReason}

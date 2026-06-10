@@ -34,7 +34,7 @@ import { useToast } from './components/ui/Toast';
 import OnboardingWizard from './components/OnboardingWizard';
 
 import { Project, EndpointRichness } from './types';
-import { runPipeline, fetchProjects } from './lib/api';
+import { runPipeline, fetchProjects, fetchMetricsData } from './lib/api';
 import { useHealth } from './lib/useHealth';
 import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
 import { useAppStore } from './stores/useAppStore';
@@ -76,9 +76,26 @@ function InnerApp() {
   // State to manage context live drawer visibility
   const [isLiveDrawerOpen, setIsLiveDrawerOpen] = useState(false);
 
-  // Observability Token pool metric simulations
-  const [tokenUsagePercent, setTokenUsagePercent] = useState(43);
-  const [totalSpentEstimated, setTotalSpentEstimated] = useState(0.14);
+  // Observability Token pool metrics — polled from real /api/v1/metrics
+  const [tokenUsagePercent, setTokenUsagePercent] = useState(0);
+  const [totalSpentEstimated, setTotalSpentEstimated] = useState(0);
+
+  React.useEffect(() => {
+    const poll = () => {
+      fetchMetricsData()
+        .then(data => {
+          const { totalTokens, totalCost } = data.metrics;
+          setTokenUsagePercent(Math.min(100, Math.round((totalTokens / 50000) * 100)));
+          setTotalSpentEstimated(totalCost);
+        })
+        .catch(() => {
+          // backend unreachable — keep previous values
+        });
+    };
+    poll();
+    const id = setInterval(poll, 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   // Guided Tour state
   const [showTour, setShowTour] = useState(() => {
@@ -102,11 +119,7 @@ function InnerApp() {
 
   const handleEnableDemo = async () => {
     try {
-      await fetch('http://localhost:8000/api/v1/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'demo' })
-      });
+      await runPipeline({ spec_path: '', demo_mode: true });
     } catch(e) {
       toast(`Demo enable failed: ${(e as Error).message}`, 'danger');
     }
@@ -199,15 +212,8 @@ function InnerApp() {
     }));
   };
 
-  // Select project ID and load active variables
   const handleSelectProject = (id: string) => {
     setSelectedProjectId(id);
-    const proj = projects.find(p => p.id === id);
-    if (proj) {
-      // simulate localized cost values proportional to previous run counts
-      setTotalSpentEstimated(proj.stats.testsCount * 0.0034);
-      setTokenUsagePercent(Math.min(95, Math.round(proj.stats.testsCount * 1.5)));
-    }
   };
 
   return (
@@ -297,6 +303,7 @@ function InnerApp() {
             {activeTab === 'review' && (
               <ReviewScreen
                 onUpdatePassRateAndCount={handleUpdatePassRateAndCount}
+                autonomy={autonomy}
               />
             )}
 
