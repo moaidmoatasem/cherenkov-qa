@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "last_refreshed": "2026-06-10",
+  "snippets": [
+    {
+      "key": "project_identity",
+      "task_types": ["*"],
+      "tokens_estimate": 120,
+      "content": "CHERENKOV-QA: API conformance test generator. OpenAPI spec in, Playwright tests out, zero lock-in. SSOT = docs/. Active phase: Phase 8 (K8s). Tracks: A(complete), B(complete), C(blocked), D(blocked), E(complete), F(in progress). Invariants: D7(no auto-edit), anti-lock-in, suggest-only healing, spec-derived HTTP status."
+    },
+    {
+      "key": "agent_memory_structure",
+      "task_types": ["explore", "test", "fix"],
+      "tokens_estimate": 80,
+      "content": "Agent memory at agent_memory/: endpoints.md, known-bugs.md, test-patterns.md, dashboard-states.md, snyk-findings.md, validation-gate.md. Sync runtime at agent_memory/sync/: session.json, tokens.json, context.json, experience.json, findings/."
+    },
+    {
+      "key": "current_phase_8",
+      "task_types": ["k8s", "phase8", "cloud"],
+      "tokens_estimate": 150,
+      "content": "Phase 8 (K8s+Cloud+Gate): #386-#388 (CRD sync + device env vars — code done, needs make k3d-test), #389 (SECURITY.md added), #390 (gate — resolved), #391 (docs — SYSTEM_DESIGN.md + BEST_PRACTICES.md updated). Phase 3 blocked: needs cargo. Phase 5-6 blocked: needs ADB/Maestro."
+    },
+    {
+      "key": "rail_001_ssot",
+      "task_types": ["*"],
+      "tokens_estimate": 30,
+      "content": "ANTI-DRIFT: docs/ is the SSOT. There is NO v3.1+delta. Show raw evidence for every claim. No fabricated test matrices."
+    },
+    {
+      "key": "rail_002_d7",
+      "task_types": ["healing", "validate", "generate"],
+      "tokens_estimate": 30,
+      "content": "INVARIANT D7: Never auto-edit test code. Healing = suggest-only. Validate = report-only. Zero files modified on disk."
+    },
+    {
+      "key": "rail_003_anti_lockin",
+      "task_types": ["eject", "generate"],
+      "tokens_estimate": 20,
+      "content": "ANTI-LOCK-IN: Eject strips all cherenkov imports. Output must run as standalone Playwright with zero cherenkov path references."
+    },
+    {
+      "key": "rail_004_spec_status",
+      "task_types": ["generate", "validate", "review"],
+      "tokens_estimate": 20,
+      "content": "SPEC-DERIVED: Expected HTTP status comes from OpenAPI spec, never hardcoded. 422 vs 400 is the canonical bug this project catches."
+    },
+    {
+      "key": "known_canonical_bug",
+      "task_types": ["validate", "demo", "qa"],
+      "tokens_estimate": 50,
+      "content": "CANONICAL BUG: POST /users returns 400 (implementation) but spec declares 422. Tests assert 422 per spec — they go RED against live target. This is the core demo scenario."
+    },
+    {
+      "key": "skills_index",
+      "task_types": ["test", "generate", "fix"],
+      "tokens_estimate": 60,
+      "content": "Skills in skills/: api-test-generation, eject-standalone, governance-certification, hitl-review, jira-exporter, k6-perf, mcp-integration, mena-compliance, perf-baseline, rag-query, self-healing, snyk-remediation, visual-diff, visual-regression, sync-driven-dev."
+    },
+    {
+      "key": "clean_arch_pattern",
+      "task_types": ["new_module", "refactor"],
+      "tokens_estimate": 60,
+      "content": "New modules follow: cherenkov/{module}/domain/ + ports/ + adapters/ + use_cases/ + api/. See ADR-004. Dependency flow downward only."
+    },
+    {
+      "key": "go_toolchain_available",
+      "task_types": ["k8s", "crd", "go"],
+      "tokens_estimate": 30,
+      "content": "Go 1.22.5 available at ~/.local/opt/go/bin/go. K3d v5.6.3 at ~/.local/bin/k3d. Docker, kubectl, curl, wget all available in WSL Ubuntu-24.04 environment."
+    }
+  ],
+  "task_type_map": {
+    "*": ["project_identity", "rail_001_ssot"],
+    "k8s": ["current_phase_8", "go_toolchain_available"],
+    "phase8": ["current_phase_8", "go_toolchain_available"],
+    "generate": ["rail_002_d7", "rail_003_anti_lockin", "rail_004_spec_status"],
+    "validate": ["known_canonical_bug", "rail_002_d7", "rail_004_spec_status"],
+    "healing": ["rail_002_d7"],
+    "new_module": ["clean_arch_pattern"],
+    "refactor": ["clean_arch_pattern"],
+    "demo": ["known_canonical_bug"],
+    "qa": ["known_canonical_bug"],
+    "test": ["skills_index", "agent_memory_structure"],
+    "fix": ["skills_index", "agent_memory_structure"]
+  }
+}

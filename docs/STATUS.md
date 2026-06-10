@@ -1,12 +1,5 @@
-# CHERENKOV — Project Status (canonical)
-
-> **Single source of truth for project status.** If another doc says something
-> different about phase progress, **this doc wins**. Linked from
-> [README.md](../README.md), [HANDOVER.md](HANDOVER.md), and
-> [PHASE_PLAN.md](PHASE_PLAN.md).
-
 **Last updated:** 2026-06-10  
-**Branch:** `main`
+**Branch:** `feat/sdd-cockpit`
 
 ---
 
@@ -29,12 +22,12 @@ under the consolidated Phase -1 through Phase 8 plan.
 | 0b | Foundations | ✅ Complete | Ports, events, devices, config (PRs #393, #394) |
 | 1 | Second Brain | ✅ Complete | Knowledge mesh, GraphRAG, event bridges (PR #395) |
 | 2 | VLM + LocalAI | ✅ Complete | LocalAI default, tier routing, doctor CLI (PR #396) |
-| 3 | Desktop Host | ⏸ Blocked | Needs `cargo` on this machine |
+| 3 | Desktop Host | 🔧 Env ready | `cargo` 1.96.0 installed (WSL + Windows); final build needs `sudo apt install libwebkit2gtk-4.1-dev pkg-config` in WSL |
 | 4 | Chat Agents | ✅ Complete | Tool-calling agent, persona registry, SSE (PRs #397–#400) |
-| 5 | Mobile Testing Core | ⏸ Blocked | Needs ADB on this machine |
-| 6 | Mobile Execution | ⏸ Blocked | Depends on Phase 5 |
+| 5 | Mobile Testing Core | 🔧 Env ready | 232/232 unit tests pass; real-device ADB needs `sudo apt install android-tools-adb` in WSL |
+| 6 | Mobile Execution | 🔧 Env ready | Depends on Phase 5 ADB; Maestro install pending |
 | 7 | Dashboard Revamp | ✅ Complete | 9 screens built (PRs #401, #402, #405) |
-| 8 | K8s + Cloud + Gate | 🔶 In progress | CRD + controller coded (#404, #419, #425, #442); `make k3d-test` pending |
+| 8 | K8s + Cloud + Gate | ✅ Complete | `make k3d-test` green (2026-06-09); all 6 issues closed |
 
 ---
 
@@ -47,7 +40,7 @@ under the consolidated Phase -1 through Phase 8 plan.
 | C (Desktop) | Tauri 2 host | ✅ Built, unit-tested; runtime blocked on `cargo` |
 | D (Mobile) | Maestro / Appium | ✅ Built, unit-tested; E2E dashboard tests + data-testid added; runtime blocked on ADB |
 | E (Dashboard) | React UI | ✅ Built; all 9 screens shipped; E2E error-path + multi-viewport tests added |
-| F (K8s) | Operator + CRDs | 🔶 In progress (Phase 8); `make k3d-test` pending |
+| F (K8s) | Operator + CRDs | ✅ Complete (Phase 8) |
 
 > **Note on `track-b-c-deferred/`:** Earlier handover docs described a
 > separate `track-b-c-deferred/` directory. That directory was **fully
@@ -101,6 +94,32 @@ Solo developer zero-cost path: L0–L3 = $0/month.
 - **Decision rationale?** → [adr/](adr/)
 - **Product strategy & market roadmap?** → [PRODUCT_STRATEGY_ROADMAP.md](PRODUCT_STRATEGY_ROADMAP.md) (Phases 9-16, market analysis, 10-year vision)
 - **Integration & ecosystem plan?** → [INTEGRATION_STRATEGY.md](INTEGRATION_STRATEGY.md) (25 integrations, 6 sprints)
+
+---
+
+## Finish-unblock commands (2026-06-10)
+
+Run these once in a WSL terminal to fully unblock Phases 3, 5, and 6:
+
+```bash
+# Unblocks Phase 3 (Tauri desktop build on Linux)
+sudo apt install -y build-essential pkg-config libwebkit2gtk-4.1-dev \
+  libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+
+# Unblocks Phase 5/6 (real-device ADB)
+sudo apt install -y android-tools-adb
+
+# Unblocks Phase 6 (Maestro mobile test runner)
+curl -Ls https://get.maestro.mobile.dev | bash
+
+# Verify Tauri build
+cd ~/cherenkov-qa/desktop/src-tauri
+CARGO_HTTP_CAINFO=/etc/ssl/certs/ca-certificates.crt ~/.cargo/bin/cargo build
+```
+
+`cargo` 1.96.0 is already installed in WSL (`~/.cargo/bin/`) and on Windows
+(`rustup` via winget). The 232 Python unit tests (all phases) pass as of this
+session.
 
 ---
 

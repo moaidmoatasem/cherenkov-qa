@@ -39,16 +39,18 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - **Mobile UI data-testid** — `MobileScreen.tsx` and `MobilePilotScreen.tsx` annotated with `data-testid` attributes; enables stable selector targeting
 - **57 new unit tests** across: `test_demo_mode.py`, `test_eject_engine.py`, `test_governance_kpi.py`, `test_ingest_stage.py`, `test_policy_engine.py`, `test_witness_agent.py`
 
-### Phase 8 — K8s + Cloud + Gate (In Progress)
+### Phase 8 — K8s + Cloud + Gate: Complete
 
-- `ConformanceCheck` CRD sync + device environment variables (coded; `make k3d-test` validation pending)
-- Open-source readiness checklist (in progress)
-
-### Coming Next
-- `make k3d-test` validation for K8s operator
-- Open-source readiness checklist (Phase 8 close)
+- `make k3d-test` green (2026-06-09). All 6 issues closed (#386-#391).
+  - K8s Phase 0 fixes (F1-F5) validated (#386)
+  - CRD extensions for DeviceTarget, VisualConfig (#387)
+  - Operator device environment variables (#388)
+  - Open-source readiness: SECURITY.md, LICENSE, CONTRIBUTING.md (#389)
+  - 5-QA validation gate resolved (#390)
+  - Clean architecture docs: SYSTEM_DESIGN.md, BEST_PRACTICES.md (#391)
 
 ---
+
 
 ## [1.0.0] — 2026-06-08 — Track A Validated
 
@@ -90,11 +92,11 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - Playwright E2E tests + accessibility (axe-core) tests
 - `cherenkov review --web` launches the dashboard
 
-#### Kubernetes Operator (Track F) — Phase 8 in progress
+#### Kubernetes Operator (Track F) — Phase 8 complete
 - Go 1.22.5 operator with `ConformanceCheck` CRD
 - `k8s-run` CLI bridge
 - k3d local cluster support
-- Phase 8 active: CRD sync + device env vars coded; needs `make k3d-test`
+- `make k3d-test` green: happy path (prism:4010 → Pass) and failure path (nonexistent:9999 → Error) validated
 
 #### Platform
 - **Knowledge Mesh (Second Brain)** — GraphRAG-powered knowledge graph, idiom extraction, learning from verdicts
