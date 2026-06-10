@@ -32,6 +32,7 @@ from cherenkov.web import divergences as divergence_store
 from cherenkov.core.feedback_store import FeedbackStore, FeedbackEntry
 
 import re as _re
+import contextlib as _contextlib
 from urllib.parse import urlparse as _urlparse
 import ipaddress as _ipaddress
 
@@ -324,16 +325,11 @@ def run_pipeline_thread(spec_path: str, run_id: str):
 @app.post("/api/v1/run")
 async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: BackgroundTasks, _auth=Depends(verify_api_key)):
     from cherenkov.stages.doctor_cmd import run_doctor
-    
-    # 1. Doctor Preflight Check (Issue 179)
-    # Redirect stdout to suppress terminal noise if needed, but for now just run it
-    import io, sys
-    old_stdout = sys.stdout
-    sys.stdout = io.StringIO()
-    try:
+
+    # 1. Doctor Preflight Check — suppress stdout to avoid polluting API response body
+    import io
+    with _contextlib.redirect_stdout(io.StringIO()):
         doctor_status = run_doctor()
-    finally:
-        sys.stdout = old_stdout
         
     # If demo mode is on, bypass doctor and just inject mock findings
     if payload.demo_mode:
@@ -368,11 +364,15 @@ async def list_generated_tests():
             with open(file_path, "r", encoding="utf-8") as file:
                 code = file.read()
             scenario_id = f.replace(".spec.ts", "")
+            # Infer HTTP method from test code; fall back to GET if not found
+            method_match = _re.search(r'method:\s*["\']([A-Z]+)["\']', code) or \
+                           _re.search(r'\.(get|post|put|patch|delete)\s*\(', code, _re.IGNORECASE)
+            method = method_match.group(1).upper() if method_match else "GET"
             tests.append({
                 "name": f,
                 "scenario_id": scenario_id,
                 "endpoint": scenario_id,
-                "method": "POST" if "create" in scenario_id else "GET",
+                "method": method,
                 "code": code
             })
     return tests

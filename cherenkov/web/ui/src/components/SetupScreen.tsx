@@ -53,10 +53,10 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
       setDoctorChecks(data.checks || []);
       setSystemReady(data.ready);
       setDoctorLoading(false);
-    }).catch(err => {
-      addToast("System Readiness Check failed to connect.", "danger");
+    }).catch(() => {
+      addToast("System Readiness Check failed to connect. Verify the backend is running.", "danger");
       setDoctorLoading(false);
-      setSystemReady(true); // Fallback to ready if we can't tell
+      // Leave systemReady false — show a warning instead of silently proceeding
     });
   }, []);
 
@@ -182,6 +182,19 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
           {/* System Check / First-run Wizard Panel */}
           {doctorLoading ? (
             <Skeleton className="w-full h-24 rounded-2xl" />
+          ) : !systemReady && doctorChecks.length === 0 ? (
+            <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
+              <span className="text-xs text-amber-400 font-mono">
+                Cannot verify system readiness — backend unreachable. Start the backend and refresh, or proceed with caution.
+              </span>
+              <button
+                onClick={() => { setDoctorLoading(true); fetchDoctor().then(d => { setDoctorChecks(d.checks || []); setSystemReady(d.ready); }).catch(() => {}).finally(() => setDoctorLoading(false)); }}
+                className="ml-auto shrink-0 px-3 py-1 text-[10px] font-mono bg-white/5 border border-white/10 rounded hover:bg-white/10 text-[#7D8DA1] hover:text-text-primary transition"
+              >
+                RETRY
+              </button>
+            </div>
           ) : !systemReady ? (
             <div className="bg-amber-500/10 border border-amber-500/20 p-6 rounded-2xl flex items-start gap-4">
               <AlertCircle className="w-6 h-6 text-amber-500 mt-1" />

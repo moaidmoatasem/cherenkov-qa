@@ -435,10 +435,63 @@ export async function fetchOverview() {
   return res.json();
 }
 
-export async function createChatSession(): Promise<{ session_id: string; persona_id: string }> {
-  const res = await fetch(`${API_BASE}/chat/sessions`, { method: 'POST' });
+export async function createChatSession(persona_id = 'qa_assistant'): Promise<{ session_id: string; persona_id: string }> {
+  const res = await fetch(`${API_BASE}/chat/sessions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ persona_id }),
+  });
   if (!res.ok) throw new Error(`Failed to create chat session: ${res.status}`);
   return res.json();
+}
+
+/**
+ * Stream a chat message via SSE. Calls onToken for each streamed token,
+ * resolves the full accumulated response when the stream completes.
+ */
+export async function streamChatMessage(
+  sessionId: string,
+  content: string,
+  onToken: (token: string) => void,
+  signal?: AbortSignal,
+): Promise<string> {
+  const res = await fetch(`${API_BASE}/chat/sessions/${sessionId}/stream`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+    signal,
+  });
+  if (!res.ok) throw new Error(`Chat stream failed: ${res.status}`);
+
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error('No response body');
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let accumulated = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const parts = buffer.split('\n\n');
+    buffer = parts.pop() ?? '';
+    for (const part of parts) {
+      if (!part.trim()) continue;
+      const dataLine = part.split('\n').find((l) => l.startsWith('data:'));
+      if (!dataLine) continue;
+      try {
+        const parsed = JSON.parse(dataLine.slice(5).trim());
+        if (parsed.token) {
+          accumulated += parsed.token;
+          onToken(parsed.token);
+        }
+      } catch {
+        // ignore malformed SSE frames
+      }
+    }
+  }
+  return accumulated;
 }
 
 export async function fetchChatMessages(sessionId: string): Promise<{ messages: Array<{ role: string; content: string }> }> {
