@@ -59,6 +59,10 @@ The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHE
 - Track E (Dashboard): Phase 7 ✅
 - Track F (K8s): Phase 8 🔶 (in progress)
 
+**Extended Roadmap (Phases 9-16 — Product & Market Expansion):**
+- See [docs/PRODUCT_STRATEGY_ROADMAP.md](docs/PRODUCT_STRATEGY_ROADMAP.md) for Phases 9-16: market launch, enterprise tier, fine-tuned model, 10-year vision, revenue model.
+- See [docs/INTEGRATION_STRATEGY.md](docs/INTEGRATION_STRATEGY.md) for the 25-integration delivery plan (VS Code, GitHub Actions, Slack, Teams, Jira, Xray, Zephyr, GraphQL, gRPC, and more) across 6 sprints.
+
 **Agent Guidance:**
 - Read [PHASE_PLAN.md](docs/PHASE_PLAN.md) first for consolidated plan overview
 - Read the relevant ADR for architectural decisions (docs/adr/)
