@@ -120,6 +120,12 @@ def _json_repair(raw: str) -> dict | None:
 class OllamaInferenceClient(InferenceClient):
     """Ollama-specific implementation of the InferenceClient interface."""
 
+    def __init__(self) -> None:
+        # Populated after each call so CachedInferenceClient can read real counts.
+        self._token_usage: dict[str, int] = {
+            "prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0
+        }
+
     def complete_json(
         self,
         system_prompt: str,
@@ -138,6 +144,7 @@ class OllamaInferenceClient(InferenceClient):
         log = get_logger("ollama", run_id)
         attempt = 0
         last_raw = ""
+        self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
 
         while attempt <= max_reprompts:
             t0 = time.time()
@@ -154,8 +161,13 @@ class OllamaInferenceClient(InferenceClient):
                 Config.OLLAMA_TIMEOUT,
             )
             resp.raise_for_status()
-            last_raw = resp.json().get("response", "")
+            body = resp.json()
+            last_raw = body.get("response", "")
             dt_ms = int((time.time() - t0) * 1000)
+
+            # Capture real token counts from Ollama response fields
+            self._token_usage["prompt_tokens"] = body.get("prompt_eval_count", 0)
+            self._token_usage["completion_tokens"] = body.get("eval_count", 0)
 
             parsed = _try_json(last_raw) or _json_repair(last_raw)
             if parsed is not None:
@@ -163,6 +175,7 @@ class OllamaInferenceClient(InferenceClient):
                 return parsed
 
             attempt += 1
+            self._token_usage["reprompts"] = attempt
             log.warning("json invalid, reprompting", model=model, attempt=attempt,
                         duration_ms=dt_ms)
 
@@ -186,6 +199,7 @@ class OllamaInferenceClient(InferenceClient):
         log = get_logger("ollama", run_id)
         attempt = 0
         text = ""
+        self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
         while attempt <= max_reprompts:
             t0 = time.time()
             resp = _post_with_retry(
@@ -200,7 +214,10 @@ class OllamaInferenceClient(InferenceClient):
                 Config.OLLAMA_TIMEOUT,
             )
             resp.raise_for_status()
-            text = resp.json().get("response", "").strip()
+            body = resp.json()
+            text = body.get("response", "").strip()
+            self._token_usage["prompt_tokens"] = body.get("prompt_eval_count", 0)
+            self._token_usage["completion_tokens"] = body.get("eval_count", 0)
             text = re.sub(r"^```[a-z]*\n?", "", text)
             text = re.sub(r"\n?```$", "", text)
             text = text.strip()
@@ -208,6 +225,7 @@ class OllamaInferenceClient(InferenceClient):
             if text:
                 return text
             attempt += 1
+            self._token_usage["reprompts"] = attempt
             log.warning("empty code response, reprompting", model=model, attempt=attempt)
         return text
 
