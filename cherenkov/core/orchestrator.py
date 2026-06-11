@@ -12,6 +12,7 @@ Includes:
 """
 from __future__ import annotations
 
+import random
 import time
 import uuid
 from typing import Callable, Any
@@ -69,10 +70,23 @@ class OrchestrationEngine:
         self.last_ingest: IngestOutput | None = None
         self.event_callback = event_callback
 
+    def _emit_event(self, event: str, data: dict) -> None:
+        """Invoke the event callback, swallowing any errors to prevent silent pipeline failure."""
+        if self.event_callback:
+            try:
+                self.event_callback(event, data)
+            except Exception as cb_err:
+                self.log.warning("event_callback_failed", error=str(cb_err))
+
     # ── Stage 1: INGEST Stage ──────────────────────────────────────────────
     def run_ingest(self, spec_path: str, simulate_malformed: bool = False) -> IngestOutput:
         self.log.info("stage run", stage="INGEST", spec_path=spec_path)
-        
+
+        import os as _os
+        if simulate_malformed:
+            assert _os.getenv("CHERENKOV_ENV", "production") != "production", \
+                "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
+
         # Test Mutation Trigger: return dict lacking required Fields (fails Pydantic schema validation)
         if simulate_malformed:
             return {
@@ -87,7 +101,12 @@ class OrchestrationEngine:
     # ── Stage 2: PLAN Stage ────────────────────────────────────────────────
     def run_plan(self, ingest: IngestOutput, simulate_malformed: bool = False) -> PlanOutput:
         self.log.info("stage run", stage="PLAN", endpoints_count=len(ingest.endpoints))
-        
+
+        import os as _os
+        if simulate_malformed:
+            assert _os.getenv("CHERENKOV_ENV", "production") != "production", \
+                "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
+
         if simulate_malformed:
             return {
                 "scenarios": []
@@ -98,7 +117,12 @@ class OrchestrationEngine:
     # ── Stage 3: GENERATE Stage ────────────────────────────────────────────
     def run_generate(self, scenario: Scenario, simulate_malformed: bool = False) -> GenerateOutput:
         self.log.info("stage run", stage="GENERATE", scenario_id=scenario.mutation_id)
-        
+
+        import os as _os
+        if simulate_malformed:
+            assert _os.getenv("CHERENKOV_ENV", "production") != "production", \
+                "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
+
         if simulate_malformed:
             return {
                 "scenario_id": scenario.mutation_id or "unknown",
@@ -142,7 +166,12 @@ class OrchestrationEngine:
     # ── Stage 4: REVIEW Stage ──────────────────────────────────────────────
     def run_review(self, generate: GenerateOutput, spec_path: str, simulate_malformed: bool = False) -> ReviewOutput:
         self.log.info("stage run", stage="REVIEW", scenario_id=generate.scenario_id)
-        
+
+        import os as _os
+        if simulate_malformed:
+            assert _os.getenv("CHERENKOV_ENV", "production") != "production", \
+                "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
+
         if simulate_malformed:
             return {
                 "scenario_id": generate.scenario_id,
@@ -197,8 +226,9 @@ class OrchestrationEngine:
                     )
                     self.breaker.record_failure()
                     return fallback_factory()
-                    
-                time.sleep(0.1)  # Brief wait before retry
+
+                wait = (2 ** attempts) * 0.5 + random.uniform(0, 0.5)
+                time.sleep(wait)  # Exponential backoff before retry
 
     # ── E2E Orchestration DAG ─────────────────────────────────────────────
     def run_pipeline(
@@ -207,6 +237,14 @@ class OrchestrationEngine:
         simulate_fail_stage: str | None = None,
     ) -> bool:
         """Runs E2E pipeline, tracking progress on the CLI. Returns True on success."""
+        import os as _os
+        if simulate_fail_stage:
+            assert _os.getenv("CHERENKOV_ENV", "production") != "production", \
+                "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
+
+        # Reset circuit breaker state for this fresh pipeline run
+        self.breaker.reset()
+
         # Dynamic GPU/CPU device detection health check at startup
         Config.detect_ollama_device(self.run_id)
         
@@ -217,8 +255,7 @@ class OrchestrationEngine:
         print("  REVIEW  [ Waiting... ]")
         print("========================================================\n")
         
-        if self.event_callback:
-            self.event_callback("stage_start", {"stage": "INGEST"})
+        self._emit_event("stage_start", {"stage": "INGEST"})
 
         # 1. INGEST
         print("\033[F\033[F\033[F\033[F\033[F  INGEST  [ Running... ]")
@@ -235,23 +272,20 @@ class OrchestrationEngine:
         )
         print(f"\033[F\033[F\033[F\033[F  INGEST  [ {ingest.status.upper()} ] ({ingest.metadata.duration_ms}ms)")
 
-        if self.event_callback:
-            self.event_callback("stage_success", {
-                "stage": "INGEST",
-                "summary": f"{len(ingest.endpoints)} endpoints indexed",
-                "duration_ms": ingest.metadata.duration_ms
-            })
+        self._emit_event("stage_success", {
+            "stage": "INGEST",
+            "summary": f"{len(ingest.endpoints)} endpoints indexed",
+            "duration_ms": ingest.metadata.duration_ms
+        })
 
         # Circuit Breaker check
         if self.breaker.tripped:
             self.log.error("pipeline aborted", reason="circuit breaker tripped")
             print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
-            if self.event_callback:
-                self.event_callback("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
+            self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
             return False
 
-        if self.event_callback:
-            self.event_callback("stage_start", {"stage": "PLAN"})
+        self._emit_event("stage_start", {"stage": "PLAN"})
 
         # 2. PLAN
         print("  PLAN    [ Running... ]")
@@ -267,18 +301,16 @@ class OrchestrationEngine:
         )
         print(f"\033[F  PLAN    [ {plan.status.upper()} ] ({plan.metadata.duration_ms}ms)")
 
-        if self.event_callback:
-            self.event_callback("stage_success", {
-                "stage": "PLAN",
-                "summary": f"{len(plan.scenarios)} scenarios planned",
-                "duration_ms": plan.metadata.duration_ms
-            })
+        self._emit_event("stage_success", {
+            "stage": "PLAN",
+            "summary": f"{len(plan.scenarios)} scenarios planned",
+            "duration_ms": plan.metadata.duration_ms
+        })
 
         if self.breaker.tripped:
             self.log.error("pipeline aborted", reason="circuit breaker tripped")
             print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
-            if self.event_callback:
-                self.event_callback("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
+            self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
             return False
 
         # 3 & 4. GENERATE and REVIEW with D2 Planner Feedback loop (distinct from simple retry ladder)
@@ -286,8 +318,7 @@ class OrchestrationEngine:
             self.log.warning("no scenarios available", stage="PLAN")
             print("  GENERATE[ SKIPPED ]")
             print("  REVIEW  [ SKIPPED ]")
-            if self.event_callback:
-                self.event_callback("pipeline_complete", {"success": True})
+            self._emit_event("pipeline_complete", {"success": True})
             return True
 
         scenario_results = []
@@ -302,8 +333,7 @@ class OrchestrationEngine:
 
             print(f"\n── Scenario: {current_scenario.endpoint} {current_scenario.method} [{current_scenario.case_type}] ──")
 
-            if self.event_callback:
-                self.event_callback("stage_start", {"stage": "GENERATE"})
+            self._emit_event("stage_start", {"stage": "GENERATE"})
 
             while True:
                 print("  GENERATE[ Running... ]")
@@ -321,8 +351,8 @@ class OrchestrationEngine:
                 )
                 print(f"\033[F  GENERATE[ {generate.status.upper()} ] ({generate.metadata.duration_ms}ms)")
 
-                if generate.status == Status.OK and self.event_callback:
-                    self.event_callback("test_generated", {
+                if generate.status == Status.OK:
+                    self._emit_event("test_generated", {
                         "endpoint": current_scenario.endpoint,
                         "method": current_scenario.method,
                         "code": generate.test_code,
@@ -332,12 +362,10 @@ class OrchestrationEngine:
                 if self.breaker.tripped:
                     self.log.error("pipeline aborted", reason="circuit breaker tripped")
                     print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
-                    if self.event_callback:
-                        self.event_callback("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
+                    self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
                     return False
 
-                if self.event_callback:
-                    self.event_callback("stage_start", {"stage": "REVIEW"})
+                self._emit_event("stage_start", {"stage": "REVIEW"})
 
                 print("  REVIEW  [ Running... ]")
                 review = self._execute_stage_with_retry(
@@ -355,18 +383,16 @@ class OrchestrationEngine:
                 )
                 print(f"\033[F  REVIEW  [ {review.status.upper()} ] ({review.metadata.duration_ms}ms)")
 
-                if self.event_callback:
-                    self.event_callback("stage_success", {
-                        "stage": "REVIEW",
-                        "summary": f"Review complete with verdict: {review.verdict.upper()}",
-                        "duration_ms": review.metadata.duration_ms
-                    })
+                self._emit_event("stage_success", {
+                    "stage": "REVIEW",
+                    "summary": f"Review complete with verdict: {review.verdict.upper()}",
+                    "duration_ms": review.metadata.duration_ms
+                })
 
                 if self.breaker.tripped:
                     self.log.error("pipeline aborted", reason="circuit breaker tripped")
                     print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
-                    if self.event_callback:
-                        self.event_callback("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
+                    self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
                     return False
 
                 # D2 Planner Feedback loop: if the prism dynamic dry-run fails, trigger dynamic re-planning
@@ -387,13 +413,12 @@ class OrchestrationEngine:
                         case_failures=fails_per_case_type[(endpoint, case_type)]
                     )
 
-                    if self.event_callback:
-                        self.event_callback("replan_trigger", {
-                            "endpoint": endpoint,
-                            "case_type": case_type,
-                            "failed_mutation": current_scenario.mutation_id,
-                            "replan_count": replans_per_endpoint[endpoint]
-                        })
+                    self._emit_event("replan_trigger", {
+                        "endpoint": endpoint,
+                        "case_type": case_type,
+                        "failed_mutation": current_scenario.mutation_id,
+                        "replan_count": replans_per_endpoint[endpoint]
+                    })
 
                     # Dynamic circuit breakers
                     if fails_per_case_type[(endpoint, case_type)] >= 2:
@@ -484,13 +509,12 @@ class OrchestrationEngine:
                   f"total cost: ${accounting.total_cost:.6f}")
         print("===================================================\n")
 
-        if self.event_callback:
-            self.event_callback("pipeline_complete", {
-                "success": pipeline_success,
-                "total_duration_ms": total_duration,
-                "scenarios_passed": successes,
-                "scenarios_total": total,
-            })
+        self._emit_event("pipeline_complete", {
+            "success": pipeline_success,
+            "total_duration_ms": total_duration,
+            "scenarios_passed": successes,
+            "scenarios_total": total,
+        })
 
         # Persist run stats to StatsStore
         try:
@@ -512,7 +536,7 @@ class OrchestrationEngine:
                 idiom_count=rstats.get("idiom_count", 0),
             )
         except Exception as e:
-            self.log.warning("failed to persist run stats", error=str(e))
+            self.log.error("stats_persist_failed", error=str(e), run_id=getattr(self, 'run_id', 'unknown'))
 
         return pipeline_success
 
@@ -560,7 +584,8 @@ class OrchestrationEngine:
                             metadata=StageMeta(stage='VISUAL', duration_ms=0),
                         )
                         break
-                    time.sleep(0.1)
+                    wait = (2 ** attempts) * 0.5 + random.uniform(0, 0.5)
+                    time.sleep(wait)  # Exponential backoff before retry
 
             if report is not None:
                 results.append(report)
@@ -610,7 +635,8 @@ class OrchestrationEngine:
                             metadata=StageMeta(stage="PERF", duration_ms=0),
                         )
                         break
-                    time.sleep(0.1)
+                    wait = (2 ** attempts) * 0.5 + random.uniform(0, 0.5)
+                    time.sleep(wait)  # Exponential backoff before retry
 
             if report is not None:
                 results.append(report)

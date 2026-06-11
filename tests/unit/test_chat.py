@@ -1,3 +1,4 @@
+# TODO: convert to pytest — complex file (>150 lines, heavy setUp/tearDown with FastAPI TestClient)
 import unittest
 import asyncio
 import os

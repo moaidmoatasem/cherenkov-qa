@@ -9,9 +9,12 @@ import json
 import uuid
 import asyncio
 import shutil
+import sqlite3
 import threading
 import logging
 from typing import List, Dict, Any
+from contextlib import asynccontextmanager
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException, UploadFile, File, Form, Depends, Header
@@ -29,10 +32,55 @@ from cherenkov.hitl.contracts import HitlItem, HitlStatus, ok_envelope, err_enve
 from cherenkov.web import divergences as divergence_store
 from cherenkov.core.feedback_store import FeedbackStore, FeedbackEntry
 
+import re as _re
+import contextlib as _contextlib
+from urllib.parse import urlparse as _urlparse
+import ipaddress as _ipaddress
+
+
+def _validate_scenario_id(scenario_id: str) -> str:
+    if not _re.match(r'^[a-zA-Z0-9_\-]{1,128}$', scenario_id):
+        raise HTTPException(status_code=400, detail="Invalid scenario_id: must be alphanumeric/underscore/hyphen, max 128 chars")
+    return scenario_id
+
+
+def _validate_output_path(path: str) -> str:
+    resolved = os.path.realpath(os.path.abspath(path))
+    allowed_base = os.path.realpath(os.path.abspath("."))
+    if not resolved.startswith(allowed_base):
+        raise HTTPException(status_code=400, detail="Output path must be within the working directory")
+    return resolved
+
+
+def _validate_spec_url(url: str) -> str:
+    parsed = _urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise HTTPException(status_code=400, detail="Only http/https URLs allowed")
+    host = parsed.hostname or ""
+    try:
+        addr = _ipaddress.ip_address(host)
+        if addr.is_private or addr.is_loopback or addr.is_link_local:
+            raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
+    except ValueError:
+        # It's a hostname, not an IP - block obvious localhost names
+        if host.lower() in ("localhost", "127.0.0.1", "::1", "0.0.0.0"):
+            raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
+    return url
+
+
+main_loop = None
+
+@asynccontextmanager
+async def lifespan(app_: FastAPI):
+    global main_loop
+    main_loop = asyncio.get_running_loop()
+    yield
+
 app = FastAPI(
     title="CHERENKOV QA Observability Dashboard Server",
     version="1.3.0",
-    description="Localhost-first dashboard server for API conformance testing."
+    description="Localhost-first dashboard server for API conformance testing.",
+    lifespan=lifespan,
 )
 
 # ── Phase 1: Knowledge Mesh API ─────────────────────────────────────────────────
@@ -43,9 +91,13 @@ app.include_router(knowledge_router)
 from cherenkov.chat.api.routes import router as chat_router
 app.include_router(chat_router)
 
+# ── Sprint 1: SDD Agent Cockpit API ─────────────────────────────────────────
+from cherenkov.web.sdd_routes import router as sdd_router
+app.include_router(sdd_router)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -93,12 +145,6 @@ class ConnectionManager:
                 pass
 
 manager = ConnectionManager()
-main_loop = None
-
-@app.on_event("startup")
-async def startup_event():
-    global main_loop
-    main_loop = asyncio.get_running_loop()
 
 def ws_event_callback(type_: str, payload: dict):
     if main_loop and manager.active_connections:
@@ -147,6 +193,38 @@ def get_queue() -> HitlQueue:
     return _queue
 
 # ── Endpoints ──────────────────────────────────────────────────────────
+
+#
+# Sidecar health — used by Tauri desktop host to detect engine readiness
+#
+@app.get("/healthz")
+async def healthz():
+    return {"ok": True, "version": "1.0.0"}
+
+
+#
+# Token consumption monitor
+#
+@app.get("/api/v1/tokens/report")
+async def tokens_report(days: int = 30):
+    """Token consumption report: usage by provider/stage, daily trend, recommendations."""
+    from cherenkov.observability.token_monitor import get_monitor
+    monitor = get_monitor()
+    return monitor.get_dashboard_data(days=days)
+
+
+@app.get("/api/v1/tokens/recommendations")
+async def tokens_recommendations(days: int = 30):
+    """Return only the actionable cost-reduction recommendations."""
+    from cherenkov.observability.token_monitor import get_monitor
+    monitor = get_monitor()
+    report = monitor.get_report(days=days)
+    return {
+        "recommendations": report.recommendations,
+        "total_cost_usd": report.total_cost_usd,
+        "period_days": days,
+    }
+
 
 #
 # Health
@@ -229,14 +307,15 @@ async def ingest_spec_file(
 
     try:
         if file:
+            MAX_SPEC_BYTES = 10 * 1024 * 1024  # 10 MB
+            content = await file.read(MAX_SPEC_BYTES + 1)
+            if len(content) > MAX_SPEC_BYTES:
+                raise HTTPException(status_code=413, detail="Spec file exceeds 10MB limit")
             with open(spec_path, "wb") as f:
-                shutil.copyfileobj(file.file, f)
+                f.write(content)
         elif url:
             import requests
-            from urllib.parse import urlparse
-            parsed_url = urlparse(url)
-            if parsed_url.scheme not in ('http', 'https'):
-                raise HTTPException(status_code=400, detail="Invalid URL scheme. Only HTTP and HTTPS are allowed.")
+            _validate_spec_url(url)
             resp = requests.get(url, timeout=15)
             resp.raise_for_status()
             with open(spec_path, "w", encoding="utf-8") as f:
@@ -268,8 +347,7 @@ async def ingest_spec_file(
     except Exception as e:
         if os.path.exists(spec_path):
             os.remove(spec_path)
-        err_msg = getattr(e, 'detail', str(e)) if hasattr(e, 'status_code') else str(e)
-        raise HTTPException(status_code=500, detail=f"Parsing error: {err_msg}")
+        raise HTTPException(status_code=500, detail="Spec parsing failed. Check that the file is a valid OpenAPI 3.x document.")
 
 #
 # Pipeline run
@@ -284,16 +362,11 @@ def run_pipeline_thread(spec_path: str, run_id: str):
 @app.post("/api/v1/run")
 async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: BackgroundTasks, _auth=Depends(verify_api_key)):
     from cherenkov.stages.doctor_cmd import run_doctor
-    
-    # 1. Doctor Preflight Check (Issue 179)
-    # Redirect stdout to suppress terminal noise if needed, but for now just run it
-    import io, sys
-    old_stdout = sys.stdout
-    sys.stdout = io.StringIO()
-    try:
+
+    # 1. Doctor Preflight Check — suppress stdout to avoid polluting API response body
+    import io
+    with _contextlib.redirect_stdout(io.StringIO()):
         doctor_status = run_doctor()
-    finally:
-        sys.stdout = old_stdout
         
     # If demo mode is on, bypass doctor and just inject mock findings
     if payload.demo_mode:
@@ -328,11 +401,15 @@ async def list_generated_tests():
             with open(file_path, "r", encoding="utf-8") as file:
                 code = file.read()
             scenario_id = f.replace(".spec.ts", "")
+            # Infer HTTP method from test code; fall back to GET if not found
+            method_match = _re.search(r'method:\s*["\']([A-Z]+)["\']', code) or \
+                           _re.search(r'\.(get|post|put|patch|delete)\s*\(', code, _re.IGNORECASE)
+            method = method_match.group(1).upper() if method_match else "GET"
             tests.append({
                 "name": f,
                 "scenario_id": scenario_id,
                 "endpoint": scenario_id,
-                "method": "POST" if "create" in scenario_id else "GET",
+                "method": method,
                 "code": code
             })
     return tests
@@ -435,6 +512,7 @@ async def edit_review_item(payload: ReviewActionPayload, _auth=Depends(verify_ap
     """Save edited test code (filesystem, not in queue)."""
     if not payload.test_code:
         raise HTTPException(status_code=400, detail="Missing updated test code content.")
+    _validate_scenario_id(payload.scenario_id)
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
     os.makedirs(tests_dir, exist_ok=True)
     file_path = os.path.join(tests_dir, f"{payload.scenario_id}.spec.ts")
@@ -475,7 +553,7 @@ async def validate_test_suite(payload: ValidatePayload):
         results = engine.validate_suite(payload.target_url)
         return results
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Validation failed. Check the target URL and try again.")
 
 #
 # Eject
@@ -483,23 +561,26 @@ async def validate_test_suite(payload: ValidatePayload):
 @app.post("/api/v1/eject")
 async def eject_test_suite(payload: EjectPayload):
     try:
+        safe_path = _validate_output_path(payload.output_path)
         from cherenkov.execution.eject import EjectorEngine
         engine = EjectorEngine("api_eject")
-        success = engine.eject_suite(payload.output_path)
+        success = engine.eject_suite(safe_path)
         if not success:
             raise HTTPException(status_code=500, detail="Eject operation failed in engine.")
         files = []
-        if os.path.exists(payload.output_path):
-            for root, _, filenames in os.walk(payload.output_path):
+        if os.path.exists(safe_path):
+            for root, _, filenames in os.walk(safe_path):
                 for f in filenames:
-                    rel_dir = os.path.relpath(root, payload.output_path)
+                    rel_dir = os.path.relpath(root, safe_path)
                     if rel_dir == ".":
                         files.append(f)
                     else:
                         files.append(os.path.join(rel_dir, f).replace("\\", "/"))
-        return {"status": "ejected", "output_path": payload.output_path, "files": files}
+        return {"status": "ejected", "output_path": safe_path, "files": files}
+    except HTTPException:
+        raise
     except Exception as e:
-        return {"status": "ejected", "output_path": payload.output_path, "files": []}
+        raise HTTPException(status_code=500, detail=f"Eject operation failed: {e}")
 
 #
 # Divergences
@@ -572,6 +653,127 @@ async def get_truth_map():
         for i in idioms
     ]
 
+# ── Explore ──────────────────────────────────────────────────────────────────
+
+class ExplorePayload(BaseModel):
+    base_url: str
+    ui_url: str = ""
+    use_ui_probe: bool = False
+    max_links: int = 20
+
+
+@app.post("/api/v1/explore")
+async def run_explorer(payload: ExplorePayload):
+    """Run the autonomous Explorer: discover flows then crawl for anomalies."""
+    from cherenkov.divergence.explorer import Explorer
+
+    ui_probe = None
+    if payload.use_ui_probe and payload.ui_url:
+        try:
+            from cherenkov.execution.ui_probe import PlaywrightUiProbe
+            ui_probe = PlaywrightUiProbe()
+        except Exception:
+            pass
+
+    explorer = Explorer(base_url=payload.base_url, ui_probe=ui_probe)
+
+    # Phase 1: discover flows from the UI URL (or fallback to base_url)
+    discover_root = payload.ui_url or payload.base_url
+    flows = []
+    try:
+        flows = explorer.discover_flows(discover_root, max_links=payload.max_links)
+    except Exception:
+        pass
+
+    # Phase 2: crawl the discovered API paths + UI paths
+    paths = list({f["path"] for f in flows if f.get("path") and f["path"] != "/"})
+    paths = paths[:payload.max_links] or ["/"]
+
+    findings = explorer.crawl(paths)
+    hypotheses = explorer.to_hypotheses(findings)
+
+    return {
+        "probed": len(paths),
+        "findings": [
+            {
+                "id": f.id,
+                "kind": f.kind.value if hasattr(f.kind, "value") else str(f.kind),
+                "url": f.url,
+                "method": f.method,
+                "status": f.status,
+                "latency_ms": f.latency_ms,
+                "detail": f.detail,
+                "evidence": f.evidence,
+                "severity": f.severity.value if hasattr(f.severity, "value") else str(f.severity),
+            }
+            for f in findings
+        ],
+        "flows": flows,
+        "hypotheses_count": len(hypotheses),
+    }
+
+
+# ── Visual Regression ─────────────────────────────────────────────────────────
+
+@app.get("/api/v1/visual/scenarios")
+async def list_visual_scenarios():
+    """Return visual regression scenario results from the last run."""
+    import glob as _glob
+    import json as _json
+
+    results = []
+    run_dir = ".cherenkov"
+    pattern = os.path.join(run_dir, "*", "visual_*.json")
+    try:
+        for path in sorted(_glob.glob(pattern), key=os.path.getmtime, reverse=True)[:20]:
+            try:
+                with open(path) as fh:
+                    data = _json.load(fh)
+                    if isinstance(data, dict) and "scenario_id" in data:
+                        results.append(data)
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return results
+
+
+@app.post("/api/v1/visual/check")
+async def run_visual_check(background_tasks: BackgroundTasks, target_url: str = "", name: str = "page"):
+    """Run a single visual regression check against target_url."""
+    from cherenkov.core.contracts import VisualSlice
+    from cherenkov.stages.visual.visual_stage import VisualStage
+
+    if not target_url:
+        raise HTTPException(status_code=400, detail="target_url is required")
+
+    safe_name = _re.sub(r"[^a-zA-Z0-9_\-]", "_", name)[:64]
+    sl = VisualSlice(name=safe_name, url=target_url)
+
+    def _run():
+        stage = VisualStage(run_id="api_visual")
+        report = stage.run(sl)
+        # Persist result to disk for the scenarios list endpoint
+        os.makedirs(".cherenkov/api_visual", exist_ok=True)
+        import json as _json
+        out = {
+            "scenario_id": report.scenario_id,
+            "status": report.status.value if hasattr(report.status, "value") else str(report.status),
+            "verdict": report.verdict.value if hasattr(report.verdict, "value") else str(report.verdict),
+            "gates": [g.model_dump() for g in report.gates],
+            "url": target_url,
+        }
+        # Enrich with VLM metadata from the vlm_semantic gate
+        vlm_gate = next((g for g in report.gates if g.gate == "vlm_semantic"), None)
+        if vlm_gate:
+            out["vlm_kind"] = "harmless_shift" if vlm_gate.passed else "anomaly"
+        with open(f".cherenkov/api_visual/{report.scenario_id}.json", "w") as fh:
+            _json.dump(out, fh, indent=2, default=str)
+
+    background_tasks.add_task(_run)
+    return {"status": "queued", "scenario_id": f"visual_{safe_name}", "url": target_url}
+
+
 @app.get("/api/v1/failures")
 async def get_failures():
     """Return recent failure verdicts from the VerdictStore."""
@@ -615,6 +817,27 @@ async def get_metrics():
             "maintenanceEfficiency": kpi["maintenance_efficiency"],
         },
     }
+
+@app.get("/api/v1/metrics/pipeline")
+def get_pipeline_metrics(last_runs: int = 10):
+    """Return pipeline stage metrics for the last N runs."""
+    try:
+        from cherenkov.observability.metrics import MetricsCollector
+        collector = MetricsCollector()
+        return {"metrics": collector.get_summary(last_n_runs=last_runs)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Could not load metrics")
+
+@app.get("/api/v1/metrics/prometheus")
+def get_metrics_prometheus():
+    """Return metrics in Prometheus text format."""
+    from cherenkov.observability.metrics import MetricsCollector
+    from fastapi.responses import PlainTextResponse
+    try:
+        collector = MetricsCollector()
+        return PlainTextResponse(collector.to_prometheus(), media_type="text/plain; version=0.0.4")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Could not load metrics")
 
 #
 # Mobile Pilot

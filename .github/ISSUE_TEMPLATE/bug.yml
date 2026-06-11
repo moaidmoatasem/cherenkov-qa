@@ -1,27 +1,92 @@
-name: "Bug"
-description: "Something is broken in Track A."
-title: "bug: <summary>"
+name: "Bug Report"
+description: "Something is broken. Help us fix it."
+title: "bug: <what is broken, one line>"
 labels: ["type:bug", "status:ready"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        **Before filing:** run `./bin/cherenkov doctor` · check [Troubleshooting](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/wiki/Troubleshooting.md) · search existing issues.
+
+        **Evidence rule:** paste raw terminal output — don't summarize it. A bug without evidence is not actionable.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: One or two sentences.
+      placeholder: "When I run `./bin/cherenkov validate --target http://localhost:8000`, it crashes with..."
+    validations:
+      required: true
+
   - type: textarea
     id: expected
     attributes:
-      label: Expected vs actual
+      label: What did you expect?
+      placeholder: "Expected: the validate command to run and produce a conformance report."
     validations:
       required: true
+
   - type: textarea
     id: repro
     attributes:
-      label: Steps to reproduce (with command + raw output)
+      label: Steps to reproduce (copy-paste ready)
+      placeholder: |
+        1. `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`
+        2. `cd stub && npm install && cd ..`
+        3. `PYTHONPATH=. ./bin/cherenkov validate --target http://localhost:8000`
+        4. See error
     validations:
       required: true
-  - type: input
-    id: scope
-    attributes:
-      label: Affected module
+
   - type: textarea
-    id: evidence
+    id: raw-output
     attributes:
-      label: Raw evidence (terminal/log)
+      label: Raw terminal output (required)
+      description: Paste the full output — not a paraphrase.
+      render: shell
+      placeholder: |
+        $ PYTHONPATH=. ./bin/cherenkov validate --target http://localhost:8000
+        Traceback (most recent call last):
+          File "cherenkov.py", line 42, in <module>
+            ...
+        ValueError: ...
     validations:
       required: true
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `./bin/cherenkov doctor`
+      render: shell
+      placeholder: |
+        $ ./bin/cherenkov doctor
+          ✔  Python   3.12.3
+          ✔  Node     22.1.0
+          ✗  Ollama   not reachable at http://localhost:11434
+    validations:
+      required: false
+
+  - type: input
+    id: module
+    attributes:
+      label: Affected module (if known)
+      placeholder: "e.g. cherenkov/execution/validate.py"
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - "P0 — Design invariant violated (D7 / anti-lock-in / spec-derived / model-agnostic)"
+        - "P1 — Core command broken (validate / eject / heal)"
+        - "P2 — Feature broken but workaround exists"
+        - "P3 — Minor, cosmetic, or edge case"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Spec contents, Docker setup, OS, anything else relevant.

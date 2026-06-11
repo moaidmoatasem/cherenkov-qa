@@ -1,3 +1,12 @@
+<!--
+⚠️ AGENT SCRATCH FILE — DO NOT CITE
+
+Filename and content are artifacts of a multi-agent "war room" session.
+This is not a maintained spec. For the live mobile-testing plan see
+[../../docs/PHASE_PLAN.md](../../PHASE_PLAN.md) (Phase 5/6) and
+[../../docs/STATUS.md](../../STATUS.md).
+-->
+
 #MOBILE TESTING PLAN
 
 ##Final overview of other agents:

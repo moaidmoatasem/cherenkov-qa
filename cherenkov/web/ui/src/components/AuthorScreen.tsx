@@ -15,7 +15,7 @@ export default function AuthorScreen() {
   useEffect(() => {
     fetchMemory().then(d => setIdioms(d.idioms));
   }, []);
-  const { addToast } = useToast();
+  const { toast: addToast } = useToast();
   const [intent, setIntent] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [runResult, setRunResult] = useState<{ run_id: string; status: string } | null>(null);

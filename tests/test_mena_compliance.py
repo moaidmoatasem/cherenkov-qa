@@ -1,3 +1,4 @@
+# TODO: convert to pytest — complex file (>150 lines, setUp/tearDown with shutil)
 """
 Tests for MENA Compliance Scanner (Issue #248).
 """

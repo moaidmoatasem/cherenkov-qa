@@ -143,12 +143,12 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     // Performance tab default
     await expect(page.getByText('API Latency & Anomaly Baselines')).toBeVisible();
 
-    // Switch to Visual
-    await page.click('button:has-text("Visual Regression")');
+    // Switch to Visual (scoped: the sidebar also has a "Visual Regression" nav item)
+    await page.click('#signals-screen button:has-text("Visual Regression")');
     await expect(page.getByText('UI Snapshot Comparisons')).toBeVisible();
 
     // Switch to Coverage
-    await page.click('button:has-text("SDET Coverage")');
+    await page.click('#signals-screen button:has-text("SDET Coverage")');
     await expect(page.getByText('Code Path Verification Coverage')).toBeVisible();
   });
 
@@ -318,11 +318,22 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
   });
 
   // ── 15. Explore Screen (inline crawler) ────────────────────────────
-  test('Explore screen: inline crawler with "Configure Scope" button', async ({ page }) => {
+  test('Visual Regression screen: VLM kind summary cards and scenario list', async ({ page }) => {
+    await page.click('#nav-item-visual-regression');
+    await page.waitForTimeout(300);
+    await expect(page.getByRole('heading', { name: 'Visual Regression' })).toBeVisible();
+    await expect(page.getByText('vs-1')).toBeVisible();
+    await expect(page.getByText('vs-2')).toBeVisible();
+    // Expand the anomaly scenario to reveal its VLM detail
+    await page.getByText('vs-2').click();
+    await expect(page.getByText('Button overlaps form field')).toBeVisible();
+  });
+
+  test('Explore screen: crawler scope config and start button', async ({ page }) => {
     await page.click('#nav-item-explore');
     await page.waitForTimeout(300);
     await expect(page.getByText('Explore Crawler')).toBeVisible();
-    await expect(page.getByText('Configure Scope & Target')).toBeVisible();
+    await expect(page.getByText('API Target URL')).toBeVisible();
   });
 
   // ── 16. UI Kit Screen ─────────────────────────────────────────────
@@ -393,7 +404,7 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     await expect(buttons.nth(1)).toHaveAttribute('aria-checked', 'true');
 
     // Session cost visible
-    await expect(page.getByText('SESSION COST:')).toBeVisible();
+    await expect(page.getByText('SESSION COST')).toBeVisible();
 
     // Help button
     const helpButton = page.locator('button[aria-label="Help Guide"]');
@@ -451,14 +462,14 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     expect(storedDensity).toBe('compact');
   });
 
-  // ── 22. Knowledge Explorer Screen ──────────────────────────────────
-  test('Knowledge: enter query, submit, verify results grid', async ({ page }) => {
+  // ── 22. Device & Provider Manager Screen ──────────────────────────
+  test('Devices: connectivity, model availability, and provider status panels', async ({ page }) => {
     await page.click('#nav-item-devices');
     await page.waitForSelector('#devices-screen');
     await expect(page.locator('h1')).toContainText('Device & Provider Manager');
     await expect(page.getByText('Device Connectivity')).toBeVisible();
     await expect(page.getByText('Model Availability')).toBeVisible();
-    await expect(page.getByText('Provider Status')).toBeVisible();
+    await expect(page.getByText('Provider Status').first()).toBeVisible();
     await expect(page.getByText('LocalAI').first()).toBeVisible();
     await expect(page.getByText('Ollama').first()).toBeVisible();
   });
@@ -559,6 +570,141 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
 
     await page.waitForTimeout(500);
     await expect(page.getByText(/Hello from CHERENKOV/)).toBeVisible();
+  });
+
+  // ── 28. Mobile Screen (NE8) ──────────────────────────────────────────
+  test('Mobile screen: device grid renders with disconnected badges', async ({ page }) => {
+    await page.click('#nav-item-mobile');
+    await page.waitForSelector('#mobile-screen');
+    await expect(page.locator('h1')).toContainText('Mobile Testing');
+
+    // Wait for 800ms loading timer to fire
+    await page.waitForTimeout(1000);
+
+    // All four device cards present via data-testid
+    await expect(page.getByTestId('device-card-m1')).toBeVisible();
+    await expect(page.getByTestId('device-card-m2')).toBeVisible();
+    await expect(page.getByTestId('device-card-m3')).toBeVisible();
+    await expect(page.getByTestId('device-card-m4')).toBeVisible();
+
+    // Device names visible
+    await expect(page.getByText('iPhone 15 Pro')).toBeVisible();
+    await expect(page.getByText('Pixel 8')).toBeVisible();
+
+    // All devices start disconnected
+    const m1Status = page.getByTestId('device-status-m1');
+    await expect(m1Status).toBeVisible();
+    await expect(m1Status).toContainText('Disconnected');
+
+    // Instructions panel visible
+    await expect(page.getByText('Mobile testing requires ADB')).toBeVisible();
+    await expect(page.getByText('Phase 5/6')).toBeVisible();
+  });
+
+  test('Mobile screen: skeleton visible during load then replaced by device cards', async ({ page }) => {
+    await page.click('#nav-item-mobile');
+    await page.waitForSelector('#mobile-screen');
+
+    // A card or skeleton container should be visible immediately
+    const firstCard = page.locator('#mobile-screen [class*="space-y-3"]').first();
+    await expect(firstCard).toBeVisible();
+
+    // After timer fires, real device cards appear
+    await page.waitForTimeout(1100);
+    await expect(page.getByTestId('device-card-m1')).toBeVisible();
+  });
+
+});
+
+// ── Error-Path E2E Suite (NE9) ─────────────────────────────────────────────
+test.describe('CHERENKOV QA Dashboard — Error Path Coverage', () => {
+
+  test.beforeEach(async ({ page }) => {
+    page.on('pageerror', err => {
+      console.error(`[BROWSER UNCAUGHT ERROR] ${err.message}`);
+    });
+
+    await setupApiMocks(page);
+
+    await page.goto('/');
+    await page.evaluate(() => {
+      localStorage.setItem('[copilot] tour_seen', 'true');
+      localStorage.setItem('[cherenkov] onboarding_seen', 'true');
+    });
+    await page.reload();
+    await page.waitForSelector('#cherenkov-app-core');
+    await page.waitForTimeout(SETTLEMENT);
+  });
+
+  test('Health widget degrades gracefully when API returns 500', async ({ page }) => {
+    await page.route('**/api/v1/health', route =>
+      route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'service unavailable' }) })
+    );
+
+    await page.reload();
+    await page.evaluate(() => {
+      localStorage.setItem('[copilot] tour_seen', 'true');
+      localStorage.setItem('[cherenkov] onboarding_seen', 'true');
+    });
+    await page.waitForSelector('#cherenkov-app-core');
+    await page.waitForTimeout(SETTLEMENT);
+
+    // App shell must not crash — topbar and sidebar still render
+    await expect(page.locator('#cherenkov-app-core')).toBeVisible();
+    await expect(page.locator('#cherenkov-topbar')).toBeVisible();
+    await expect(page.locator('#cherenkov-sidebar')).toBeVisible();
+  });
+
+  test('Divergences screen renders without crash when API returns empty list', async ({ page }) => {
+    await page.route('**/api/v1/divergences**', route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+    );
+
+    await page.click('#nav-item-divergences');
+    await page.waitForTimeout(600);
+
+    await expect(page.locator('h1')).toContainText('Divergence Triage Hub');
+    await expect(page.locator('#cherenkov-app-core')).toBeVisible();
+  });
+
+  test('Divergences screen renders without crash when API returns 500', async ({ page }) => {
+    await page.route('**/api/v1/divergences**', route =>
+      route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'internal error' }) })
+    );
+
+    await page.click('#nav-item-divergences');
+    await page.waitForTimeout(600);
+
+    await expect(page.locator('h1')).toContainText('Divergence Triage Hub');
+    await expect(page.locator('#cherenkov-app-core')).toBeVisible();
+  });
+
+  test('Eject screen: UI survives when eject API returns 500', async ({ page }) => {
+    await page.route('**/api/v1/eject', route =>
+      route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'disk full' }) })
+    );
+
+    await page.click('#nav-item-eject');
+    await page.waitForSelector('#eject-screen');
+    await page.locator('#btn-confirm-eject').click();
+    await page.waitForTimeout(500);
+
+    await expect(page.locator('#eject-screen')).toBeVisible();
+  });
+
+  test('Review screen: renders correctly when approve/reject endpoints return 500', async ({ page }) => {
+    await page.route('**/api/v1/review/approve', route =>
+      route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'error' }) })
+    );
+    await page.route('**/api/v1/review/reject', route =>
+      route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'error' }) })
+    );
+
+    await page.click('#nav-item-review');
+    await page.waitForSelector('#review-screen');
+
+    await expect(page.locator('h1')).toContainText('Human-In-The-Loop Validation Gate');
+    await expect(page.locator('#filter-tab-all')).toBeVisible();
   });
 
 });

@@ -4,6 +4,14 @@ Authority: v3.1 + delta.
 """
 from __future__ import annotations
 
+import os as _os
+# Load .env file if present (python-dotenv optional dependency)
+try:
+    from dotenv import load_dotenv as _load_dotenv
+    _load_dotenv(override=False)  # .env values don't override existing env vars
+except ImportError:
+    pass  # dotenv not installed, env vars only
+
 import os
 import requests
 from cherenkov.core.errors import get_logger
@@ -29,6 +37,9 @@ class Config:
 
     TIER_VISION_PROVIDER: str = os.getenv("CHERENKOV_TIER_VISION_PROVIDER", "ollama")
     TIER_VISION_MODEL: str = os.getenv("CHERENKOV_TIER_VISION_MODEL", "qwen2.5-vl:7b")
+
+    # Structured tier config — prefer this over accessing individual TIER_* attributes
+    TIERS: dict = {}  # populated after class definition
 
     FALLBACK_ENABLED: bool = os.getenv("CHERENKOV_FALLBACK_ENABLED", "true").lower() == "true"
     FALLBACK_PROVIDER: str = os.getenv("CHERENKOV_FALLBACK_PROVIDER", "openai")
@@ -99,6 +110,43 @@ class Config:
     MONITORING_ENABLED: bool = os.getenv("CHERENKOV_MONITORING_ENABLED", "true").lower() in ("1", "true", "yes")
     METRICS_PORT: int = int(os.getenv("CHERENKOV_METRICS_PORT", "8001"))
 
+
+    @classmethod
+    def validate(cls) -> None:
+        """Validate all config values are within acceptable bounds. Raises ValueError on violation."""
+        errors = []
+
+        # Timeout bounds
+        if hasattr(cls, 'OLLAMA_TIMEOUT'):
+            if not (1 <= cls.OLLAMA_TIMEOUT <= 3600):
+                errors.append(f"OLLAMA_TIMEOUT={cls.OLLAMA_TIMEOUT} must be between 1 and 3600 seconds")
+
+        # Retry bounds
+        for attr in ('OLLAMA_RETRIES', 'MAX_RETRIES', 'GEN_RETRIES'):
+            if hasattr(cls, attr):
+                val = getattr(cls, attr)
+                if not (0 <= val <= 20):
+                    errors.append(f"{attr}={val} must be between 0 and 20")
+
+        # Egress policy (EGRESS attribute)
+        if hasattr(cls, 'EGRESS'):
+            if cls.EGRESS not in ('none', 'internal', 'any'):
+                errors.append(f"EGRESS={cls.EGRESS!r} must be one of: none, internal, any")
+
+        # Egress policy alias (EGRESS_POLICY attribute if present)
+        if hasattr(cls, 'EGRESS_POLICY'):
+            if cls.EGRESS_POLICY not in ('none', 'internal', 'any'):
+                errors.append(f"EGRESS_POLICY={cls.EGRESS_POLICY!r} must be one of: none, internal, any")
+
+        # Port numbers
+        for attr in ('OLLAMA_PORT', 'API_PORT', 'WEB_PORT', 'DESKTOP_WS_PORT', 'CHAT_WS_PORT', 'METRICS_PORT'):
+            if hasattr(cls, attr):
+                val = getattr(cls, attr)
+                if val is not None and not (1 <= int(val) <= 65535):
+                    errors.append(f"{attr}={val} must be a valid port (1-65535)")
+
+        if errors:
+            raise ValueError("Config validation failed:\n" + "\n".join(f"  - {e}" for e in errors))
 
     @classmethod
     def to_dict(cls) -> dict[str, str | int | bool]:
@@ -207,3 +255,16 @@ class Config:
         cpu_warn = "CPU mode — generation ~10x slower, GPU recommended."
         log.warning("device status", details=cpu_warn, processor="CPU", size_vram=0)
         return "CPU"
+
+
+# Populate structured tier config after class definition
+Config.TIERS = {
+    "small": {
+        "provider": Config.TIER_SMALL_PROVIDER,
+        "model":    Config.TIER_SMALL_MODEL,
+    },
+    "deep": {
+        "provider": Config.TIER_DEEP_PROVIDER,
+        "model":    Config.TIER_DEEP_MODEL,
+    },
+}

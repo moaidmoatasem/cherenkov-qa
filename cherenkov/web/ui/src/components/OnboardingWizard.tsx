@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from './ui';
 import { fetchHealth } from '../lib/api';
+import { invokeDesktop, HardwareInfo } from '../lib/tauri';
 
 interface OnboardingWizardProps {
   onComplete: () => void;
@@ -15,11 +16,17 @@ export default function OnboardingWizard({ onComplete, onEnableDemo }: Onboardin
   useEffect(() => {
     let mounted = true;
     const checkSystem = async () => {
+      // In the desktop shell, the native prerequisite check is authoritative
+      // for Ollama; the HTTP health probe below still decides engine status.
+      const hw = await invokeDesktop<HardwareInfo>('check_prerequisites');
+      if (mounted && hw) {
+        setOllamaStatus(hw.has_ollama ? 'found' : 'missing');
+      }
       try {
         const h = await fetchHealth();
         if (mounted) {
           setEngineStatus('online');
-          setOllamaStatus(h.device !== 'unknown' ? 'found' : 'missing');
+          if (!hw) setOllamaStatus(h.device !== 'unknown' ? 'found' : 'missing');
         }
       } catch (e) {
         if (mounted) setEngineStatus('offline');

@@ -25,7 +25,9 @@ import {
   ChevronRight,
   Star,
   MessageSquare,
-  Smartphone
+  Smartphone,
+  Gauge,
+  Eye
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
 import { Project } from '../types';
@@ -70,7 +72,14 @@ export default function Sidebar({
     'LEARN': true
   });
   const [searchQuery, setSearchQuery] = useState('');
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [favorites, setFavorites] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem('[cherenkov] sidebar_favorites');
+      return saved ? new Set(JSON.parse(saved) as string[]) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
 
   const toggleSection = (label: string) => {
     setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
@@ -83,6 +92,11 @@ export default function Sidebar({
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+      try {
+        localStorage.setItem('[cherenkov] sidebar_favorites', JSON.stringify([...next]));
+      } catch {
+        // storage unavailable
+      }
       return next;
     });
   };
@@ -99,7 +113,6 @@ export default function Sidebar({
       items: [
         { id: 'truth-map', label: 'Truth Map', icon: Network, desc: 'The endpoint claim graph' },
         { id: 'divergences', label: 'Divergences', icon: Zap, desc: 'Confirmed API inconsistencies' },
-        { id: 'explore', label: 'Explore', icon: Search, desc: 'Autonomous explorer digests' },
       ]
     },
     {
@@ -113,6 +126,8 @@ export default function Sidebar({
       label: 'SIGNALS',
       items: [
         { id: 'signals', label: 'Signals', icon: TrendingUp, desc: 'Visual, Perf & Coverage details' },
+        { id: 'explore', label: 'Explore', icon: Search, desc: 'Autonomous crawler — flows & anomalies' },
+        { id: 'visual-regression', label: 'Visual Regression', icon: Eye, desc: 'VLM-semantic screenshot diff' },
       ]
     },
     {
@@ -131,6 +146,12 @@ export default function Sidebar({
         { id: 'memory', label: 'Memory & Pairing', icon: Brain, desc: 'Reflector senior idioms' },
         { id: 'knowledge', label: 'Knowledge', icon: Brain, desc: 'Second Brain knowledge mesh' },
         { id: 'chat', label: 'Chat', icon: MessageSquare, desc: 'SSE streaming assistant' },
+      ]
+    },
+    {
+      label: 'COCKPIT',
+      items: [
+        { id: 'sdd', label: 'SDD Agent Cockpit', icon: Gauge, desc: 'Sync state, tokens, experience' },
       ]
     }
   ];
@@ -286,19 +307,21 @@ export default function Sidebar({
           <span className="hidden lg:inline text-sm font-medium">Settings</span>
         </button>
 
-        {/* UI Kit gallery developer shortcut */}
-        <button
-          onClick={() => setActiveTab('ui-kit')}
-          title="Open UI Kit Gallery"
-          className={`w-full group px-3 lg:px-4 py-2 rounded-lg flex items-center gap-3 transition-colors cursor-pointer focus:outline-none focus:ring-1 focus:ring-glow-blue/50 ${
-            activeTab === 'ui-kit' 
-              ? 'bg-white/10 text-glow-bright' 
-              : 'text-[#7D8DA1] hover:text-[#E6EDF3] hover:bg-white/5'
-          }`}
-        >
-          <CircleDot className="w-5 h-5 shrink-0" />
-          <span className="hidden lg:inline text-sm font-medium">UI Kit Gallery</span>
-        </button>
+        {/* UI Kit gallery — dev builds only */}
+        {import.meta.env.DEV && (
+          <button
+            onClick={() => setActiveTab('ui-kit')}
+            title="Open UI Kit Gallery"
+            className={`w-full group px-3 lg:px-4 py-2 rounded-lg flex items-center gap-3 transition-colors cursor-pointer focus:outline-none focus:ring-1 focus:ring-glow-blue/50 ${
+              activeTab === 'ui-kit'
+                ? 'bg-white/10 text-glow-bright'
+                : 'text-[#7D8DA1] hover:text-[#E6EDF3] hover:bg-white/5'
+            }`}
+          >
+            <CircleDot className="w-5 h-5 shrink-0" />
+            <span className="hidden lg:inline text-sm font-medium">UI Kit Gallery</span>
+          </button>
+        )}
 
         {/* Budget bar */}
         <div className="hidden lg:block">

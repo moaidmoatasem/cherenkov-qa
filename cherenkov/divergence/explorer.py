@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import uuid
 from typing import Callable, Iterable
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse as _urlparse
 
 from cherenkov.core.contracts import (
     DivergenceClass,
@@ -256,3 +256,121 @@ class Explorer:
             "UI is expected to render/behave per spec.",
             f"UI surface anomaly: {f.detail or f.kind.value}.",
         )
+
+    # ── autonomous flow discovery ──────────────────────────────────────────
+
+    def discover_flows(self, root_url: str, max_links: int = 20) -> list[dict]:
+        """Navigate *root_url* with a real browser and discover user flows.
+
+        Returns a list of flow dicts, each with keys:
+          type  : "link" | "form" | "nav_item"
+          url   : absolute URL (for links/nav)
+          path  : URL path
+          method: HTTP method
+          label : human-readable label (nav items / form ids)
+
+        Requires the ``playwright`` Python package. Degrades gracefully when it
+        is unavailable (returns []). The discovered paths feed directly into
+        ``crawl()`` for probabilistic exploration.
+        """
+        try:
+            from playwright.sync_api import sync_playwright
+        except ImportError:
+            self.log.warning("discover_flows: playwright not available")
+            return []
+
+        from urllib.parse import urlparse
+
+        base = urlparse(root_url)
+        flows: list[dict] = []
+
+        with sync_playwright() as pw:
+            browser = pw.chromium.launch(headless=True, args=["--no-sandbox", "--disable-gpu"])
+            context = browser.new_context(
+                viewport={"width": 1280, "height": 800},
+                ignore_https_errors=True,
+            )
+            page = context.new_page()
+
+            try:
+                page.goto(root_url, wait_until="networkidle", timeout=15_000)
+            except Exception as exc:
+                self.log.warning("discover_flows navigation failed", url=root_url, error=str(exc))
+                browser.close()
+                return []
+
+            # --- extract anchor links ---
+            try:
+                raw_links: list[str] = page.evaluate(
+                    """() => {
+                        const seen = new Set();
+                        return [...document.querySelectorAll('a[href]')]
+                            .map(a => a.href)
+                            .filter(h => h && !h.startsWith('javascript:') && !h.startsWith('mailto:'))
+                            .filter(h => { if (seen.has(h)) return false; seen.add(h); return true; });
+                    }"""
+                )
+                for link in raw_links[:max_links]:
+                    parsed = urlparse(link)
+                    if parsed.netloc and parsed.netloc != base.netloc:
+                        continue
+                    flows.append({
+                        "type": "link",
+                        "url": link,
+                        "path": parsed.path or "/",
+                        "method": "GET",
+                        "label": "",
+                    })
+            except Exception:
+                pass
+
+            # --- extract forms ---
+            try:
+                raw_forms: list[dict] = page.evaluate(
+                    """() => [...document.querySelectorAll('form')].map(f => ({
+                        action: f.action || '',
+                        method: (f.method || 'GET').toUpperCase(),
+                        id: f.id || ''
+                    }))"""
+                )
+                for form in raw_forms:
+                    flows.append({
+                        "type": "form",
+                        "url": form.get("action", ""),
+                        "path": urlparse(form.get("action", "")).path or "/",
+                        "method": form.get("method", "POST"),
+                        "label": form.get("id", ""),
+                    })
+            except Exception:
+                pass
+
+            # --- extract nav / interactive elements ---
+            try:
+                raw_nav: list[dict] = page.evaluate(
+                    """() => [...document.querySelectorAll(
+                        '[data-testid], nav a, [role="menuitem"], [role="tab"], [aria-label]'
+                    )].map(el => ({
+                        text: (el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 80),
+                        href: el.getAttribute('href') || '',
+                        tag: el.tagName
+                    })).filter(i => i.text)"""
+                )
+                for nav in raw_nav[:10]:
+                    href = nav.get("href", "")
+                    if not href or href.startswith("#"):
+                        continue
+                    abs_url = urljoin(root_url + "/", href.lstrip("/")) if not href.startswith("http") else href
+                    flows.append({
+                        "type": "nav_item",
+                        "url": abs_url,
+                        "path": urlparse(abs_url).path or "/",
+                        "method": "GET",
+                        "label": nav.get("text", ""),
+                    })
+            except Exception:
+                pass
+
+            browser.close()
+
+        self.log.info("discover_flows complete", root_url=root_url, flows=len(flows))
+        return flows

@@ -137,6 +137,10 @@ Phase 1-8. All new packages follow Clean Architecture (Ports/Adapters) per ADR-0
 | `reflector/mobile_extensions.py` | Phase 6 | Mobile failure classification | ⏸ Blocked (needs ADB) |
 | `divergence/mobile_*.py` | Phase 6 | Mobile divergence detection | ⏸ Blocked (needs ADB) |
 | `web/chat_routes.py` | Phase 4 | Chat API routes (SSE streaming) | ✅ **Complete** (PR #397) |
+| `operator/` | Phase 8 | K8s operator (controller-runtime), CRD types, reconciler, scheduler, JobRunner | 🔶 **In progress** (#386-#388) |
+| `k8s/` | Phase 8 | K8s manifests (namespace, ollama, prism, cherenkov, CRDs, kustomize) | 🔶 **In progress** (#386-#388) |
+| `k8s/crd-conformancecheck.yaml` | Phase 8 | Standalone ConformanceCheck CRD (deviceTargets, visualConfig) | 🔶 **In progress** (#387) |
+| `SECURITY.md` | Phase 8 | Security policy, supported versions, vulnerability reporting | ✅ **Complete** (#389) |
 | `web/monitoring.py` | Phase 0b | `/metrics` endpoint (Prometheus) | ✅ **Complete** (PR #393) |
 | `web/middleware/security.py` | Phase 0b | Security middleware (rate limit, CORS) | ✅ **Complete** (PR #393) |
 

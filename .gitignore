@@ -47,6 +47,7 @@ scripts/k3d
 scripts/k8s-run
 
 # coverage artifacts
+.coverage
 .coverage.*
 
 # PR body drafts
@@ -73,3 +74,32 @@ stub/generated_tests/k6_perf.js
 
 # temp artifacts
 nul
+
+# Tauri desktop build artifacts
+desktop/src-tauri/target/
+desktop/src-tauri/gen/
+desktop/src-tauri/binaries/
+
+# Playwright artifacts
+cherenkov/web/ui/test-results/
+# Debug scripts
+_debug_*.py
+_verify_*.py
+.agentrr/
+policy.yaml
+sponsio.yaml
+
+# Build artifacts
+operator/k8s-run
+operator/k8s-run-static
+operator/manager
+
+# Generated visual-regression artifacts (VisualDiffEngine owns these)
+stub/generated_tests/visual_regression_baseline_ui.spec.ts
+stub/generated_tests/*-snapshots/
+stub/generated_tests/visual_cli_*.spec.ts
+
+# local artifacts that must never be committed
+*.err
+*.exe
+kubeconfig*.yaml

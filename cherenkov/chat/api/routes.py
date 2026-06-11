@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
 from cherenkov.chat.agent import QAChatAgent
 from cherenkov.chat.ports.memory import ConversationMemory
+from cherenkov.chat.guard import get_guard
 
 router = APIRouter()
 
@@ -69,6 +70,10 @@ async def send_message(
     session = agent.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
+    guard = get_guard()
+    guard_result = guard.check_tool_call("chat_send_message", {"session_id": session_id, "content_length": len(body.content)})
+    if not guard_result.allowed:
+        raise HTTPException(status_code=403, detail=guard_result.reason)
     assistant_msg = agent.chat(session_id, body.content)
     return {"role": "assistant", "content": assistant_msg.content}
 
@@ -96,6 +101,10 @@ async def stream_chat(
     session = agent.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
+    guard = get_guard()
+    guard_result = guard.check_tool_call("chat_stream", {"session_id": session_id, "content_length": len(body.content)})
+    if not guard_result.allowed:
+        raise HTTPException(status_code=403, detail=guard_result.reason)
 
     async def event_stream():
         async for token in agent.chat_stream(session_id, body.content):

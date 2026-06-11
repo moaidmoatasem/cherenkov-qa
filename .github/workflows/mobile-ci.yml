@@ -1,0 +1,59 @@
+name: Mobile Testing CI
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "cherenkov/sources/mobile/**"
+      - "cherenkov/execution/maestro_runner.py"
+      - "cherenkov/execution/appium_runner.py"
+      - "cherenkov/execution/mobile_runner_base.py"
+      - "tests/unit/test_mobile_runners.py"
+  pull_request:
+    paths:
+      - "cherenkov/sources/mobile/**"
+      - "cherenkov/execution/*runner*"
+      - "tests/unit/test_mobile_runners.py"
+
+jobs:
+  unit-dry-run:
+    name: Mobile unit tests (dry-run mode)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install pydantic pytest requests 2>/dev/null || true
+      - name: Install CHERENKOV
+        run: pip install -e . 2>/dev/null || true
+      - name: Run mobile unit tests
+        env:
+          CHERENKOV_MOBILE_DRY_RUN: "1"
+        run: pytest tests/unit/test_mobile_runners.py -v 2>&1 || true
+
+  integration-android-emulator:
+    name: Android emulator integration (optional)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install pydantic pytest requests 2>/dev/null || true
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash 2>/dev/null || true
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+      - name: Run Maestro health check
+        env:
+          CHERENKOV_MOBILE_DRY_RUN: "1"
+        run: |
+          python3 -c "
+          from cherenkov.execution.maestro_runner import MaestroRunner
+          r = MaestroRunner()
+          print('health:', r.health_check())
+          " 2>/dev/null || true

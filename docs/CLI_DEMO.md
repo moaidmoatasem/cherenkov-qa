@@ -5,15 +5,20 @@ This terminal recording simulation demonstrates the end-to-end flow of CHERENKOV
 2. **Injecting Conformance Drift Bug** (FastAPI ValidationError status 400).
 3. **Catching Mismatches (Red)** showing expected 422 vs received 400 conformance failures.
 
+> **Reading path:** this doc is the terminal walk-through. For the full
+> install + first run, see [GETTING_STARTED.md](GETTING_STARTED.md). For the
+> project state, see [STATUS.md](STATUS.md). For everything else, see
+> [INDEX.md](INDEX.md).
+
 ---
 
-## ⏺️ Terminal Playback Recording
+## âşď¸ Terminal Playback Recording
 
 ```ansi
 [1;36m$ ./bin/cherenkov validate --target http://localhost:8000[0m
 
 ================================================================================
-🔍 CHERENKOV VALUE ASSERTION TIGHTENING REPORT
+đ CHERENKOV VALUE ASSERTION TIGHTENING REPORT
 ================================================================================
 Target Server URL: http://localhost:8000
 Scenarios Verified: 2
@@ -25,7 +30,7 @@ Captured HTTP Exchange:
   Sent Payload:     {"email":"test@example.com","password":"password123"}
   Received Response: {"id":42,"email":"test@example.com"}
 
-💡 Suggested Assertion Tightening (Suggest-only):
+đĄ Suggested Assertion Tightening (Suggest-only):
   consider -> expect(data.email).toBe('test@example.com')
   consider -> expect(data.email).toBe(body.email)
 
@@ -35,12 +40,12 @@ Captured HTTP Exchange:
   Sent Payload:     {"email":"test@example.com","password":"short"}
   Received Response: {"detail":"Validation Error"}
 
-💡 Suggested Assertion Tightening (Suggest-only):
+đĄ Suggested Assertion Tightening (Suggest-only):
   No value matching suggestions detected.
 
 ================================================================================
 Git status verification:
-✓ Git status is 100% clean — zero test files were auto-modified by validation. Suggest-only constraint honored.
+â Git status is 100% clean â zero test files were auto-modified by validation. Suggest-only constraint honored.
 ================================================================================
 
 
@@ -53,7 +58,7 @@ INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 [1;36m$ cd .. && ./bin/cherenkov validate --target http://localhost:8000[0m
 
 ================================================================================
-🔍 CHERENKOV VALUE ASSERTION TIGHTENING REPORT
+đ CHERENKOV VALUE ASSERTION TIGHTENING REPORT
 ================================================================================
 Target Server URL: http://localhost:8000
 Scenarios Verified: 2
@@ -65,13 +70,13 @@ Captured HTTP Exchange:
   Sent Payload:     {"email":"test@example.com","password":"password123"}
   Received Response: {"id":42,"email":"test@example.com"}
 
-💡 Suggested Assertion Tightening (Suggest-only):
+đĄ Suggested Assertion Tightening (Suggest-only):
   consider -> expect(data.email).toBe('test@example.com')
   consider -> expect(data.email).toBe(body.email)
 
 Scenario: password_too_short [[1;31mFAILED[0m]
 --------------------------------------------------------------------------------
-🛑 Failure Error: Error: expect(received).toBe(expected) // Object.is equality
+đ Failure Error: Error: expect(received).toBe(expected) // Object.is equality
 
 [1;31mExpected: 422[0m
 [32mReceived: 400[0m
@@ -87,7 +92,7 @@ Scenario: password_too_short [[1;31mFAILED[0m]
 
 ================================================================================
 Git status verification:
-✓ Git status is 100% clean — zero test files were auto-modified by validation. Suggest-only constraint honored.
+â Git status is 100% clean â zero test files were auto-modified by validation. Suggest-only constraint honored.
 ================================================================================
 
 
@@ -96,7 +101,7 @@ Git status verification:
 
 ---
 
-## ⏺️ HITL Terminal Queue Flow (A3 #111)
+## âşď¸ HITL Terminal Queue Flow (A3 #111)
 
 This terminal recording simulation demonstrates the workflow when a `REVIEW` stage generates a Human-In-The-Loop review finding and it is resolved via the CLI:
 
@@ -104,7 +109,7 @@ This terminal recording simulation demonstrates the workflow when a `REVIEW` sta
  [1;36m$ ./bin/cherenkov validate --target http://localhost:8000 [0m
 
 ================================================================================
-🔍 CHERENKOV VALUE ASSERTION TIGHTENING REPORT
+đ CHERENKOV VALUE ASSERTION TIGHTENING REPORT
 ================================================================================
 Target Server URL: http://localhost:8000
 Scenarios Verified: 3
@@ -113,7 +118,7 @@ Scenarios Verified: 3
 Scenario: happy_path [ [1;32mPASSED [0m]
 Scenario: create_user_missing_email [ [1;33mHITL REVIEW REQUIRED [0m]
 --------------------------------------------------------------------------------
-💡 Review Triggered:
+đĄ Review Triggered:
   Quality Score: 0.78 (HITL Threshold: 0.70 - 0.90)
   Failed Gate:   gate_3_ast (Confidence Check)
   Endpoint:      POST /users
@@ -121,7 +126,7 @@ Scenario: create_user_missing_email [ [1;33mHITL REVIEW REQUIRED [0m]
 --------------------------------------------------------------------------------
 
  [1;36m$ ./bin/cherenkov hitl list [0m
-HITL queue — pending (1 item(s))
+HITL queue â pending (1 item(s))
   id                                    status      info
   ------------------------------------  ----------  ----
   ck_1bc8ef7a-39c1-4b10-a9fa-80e98f...  pending     conf=0.78  gate=gate_3_ast  POST /users
@@ -153,7 +158,7 @@ HITL item: ck_1bc8ef7a-39c1-4b10-a9fa-80e98ffb191a
 }
 
  [1;36m$ ./bin/cherenkov hitl list --all [0m
-HITL queue — all (1 item(s))
+HITL queue â all (1 item(s))
   id                                    status      info
   ------------------------------------  ----------  ----
   ck_1bc8ef7a-39c1-4b10-a9fa-80e98f...  approved    conf=0.78  actor=@alice  POST /users
@@ -164,7 +169,7 @@ HITL queue — all (1 item(s))
 
 ---
 
-## ⏺️ Horizon V Review Web UI (Demo Mode)
+## âşď¸ Horizon V Review Web UI (Demo Mode)
 
 This terminal recording shows starting the local web review interface to triage HITL queue items via the browser instead of the terminal.
 
@@ -172,7 +177,7 @@ This terminal recording shows starting the local web review interface to triage 
  [1;36m$ ./bin/cherenkov review --web --demo [0m
 
 ================================================================================
-🌐 CHERENKOV HORIZON V REVIEW SERVER
+đ CHERENKOV HORIZON V REVIEW SERVER
 ================================================================================
 Starting Review UI Server in DEMO mode...
 Loaded 5 mock HITL findings for demonstration.

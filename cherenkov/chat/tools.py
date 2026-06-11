@@ -3,9 +3,14 @@ from __future__ import annotations
 import logging
 from typing import Any, Callable
 
+from cherenkov.chat.guard import get_guard
+
 logger = logging.getLogger(__name__)
 
+_guard = get_guard()
 
+
+@_guard.wrap_tool(name="query_verdicts")
 def query_verdicts(endpoint: str | None = None, status_code: int | None = None, limit: int = 10) -> dict[str, Any]:
     try:
         from cherenkov.reflector.reflector import get_reflector
@@ -17,6 +22,7 @@ def query_verdicts(endpoint: str | None = None, status_code: int | None = None, 
         return {"error": str(e), "verdicts": []}
 
 
+@_guard.wrap_tool(name="query_idioms")
 def query_idioms(pattern: str | None = None, limit: int = 10) -> dict[str, Any]:
     try:
         from cherenkov.reflector.reflector import get_reflector
@@ -28,6 +34,7 @@ def query_idioms(pattern: str | None = None, limit: int = 10) -> dict[str, Any]:
         return {"error": str(e), "idioms": []}
 
 
+@_guard.wrap_tool(name="explain_divergence")
 def explain_divergence(endpoint: str, method: str = "GET") -> dict[str, Any]:
     try:
         from cherenkov.knowledge.graph_rag import GraphRAG
@@ -41,6 +48,7 @@ def explain_divergence(endpoint: str, method: str = "GET") -> dict[str, Any]:
         return {"error": str(e)}
 
 
+@_guard.wrap_tool(name="run_test")
 def run_test(endpoint: str, method: str = "GET", spec_path: str | None = None) -> dict[str, Any]:
     try:
         from cherenkov.stages.ingest import IngestStage
@@ -77,4 +85,9 @@ def execute_tool(name: str, **kwargs: Any) -> dict[str, Any]:
     tool = TOOL_REGISTRY.get(name)
     if not tool:
         return {"error": f"Unknown tool '{name}'"}
-    return tool(**kwargs)
+    guard_result = _guard.check_tool_call(name, kwargs)
+    if not guard_result.allowed:
+        return {"error": guard_result.reason, "guard": guard_result.to_dict(), "tool": name}
+    result = tool(**kwargs)
+    _guard.record_tool_call(name, kwargs, result)
+    return result

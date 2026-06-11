@@ -18,6 +18,19 @@ def hash_test_content(test_content: str) -> str:
     """Returns a stable SHA-256 hash of test source, ignoring surrounding whitespace."""
     return hashlib.sha256(test_content.strip().encode("utf-8")).hexdigest()
 
+
+import hashlib as _hashlib
+
+
+def _compute_snapshot_hash(test_code: str, spec_path: str | None = None) -> str:
+    """Hash both the test code and the spec it was generated from."""
+    hasher = _hashlib.sha256()
+    hasher.update(test_code.encode())
+    if spec_path and __import__('os').path.exists(spec_path):
+        with open(spec_path, 'rb') as f:
+            hasher.update(f.read())
+    return hasher.hexdigest()
+
 class FailureClass(str, Enum):
     AUTH_EXPIRY = "AUTH_EXPIRY"
     CONTRACT_DRIFT = "CONTRACT_DRIFT"
@@ -156,12 +169,13 @@ class Diagnoser:
             stale_snapshot=stale_snapshot
         )
 
-    def verify_flake_status(self, run_test_func: Callable[[], bool], max_retries: int = 2) -> FailureClass:
+    def verify_flake_status(self, run_test_func: Callable[[], bool], max_retries: int = 3) -> FailureClass:
         """Retries a failing test run using backoff to classify it as FLAKY_SUCCESS vs DETERMINISTIC_FAILURE."""
         self.log.info("starting transient flake verification via retries")
-        
+
         for attempt in range(1, max_retries + 1):
-            time.sleep(attempt * 0.1)  # Backoff delay
+            wait = (2 ** attempt) * 0.3  # exponential backoff, was: attempt * 0.1
+            time.sleep(wait)  # Backoff delay
             self.log.info("retrying test run", attempt=attempt)
             
             passed = run_test_func()
@@ -194,8 +208,8 @@ class Diagnoser:
             "scenario_id": scenario_id,
             "status": status,
             "body_keys": body_keys,
-            "test_hash": hash_test_content(test_content) if test_content is not None else None,
-            "timestamp": int(time.time()) if 'time' in globals() else 0
+            "test_hash": _compute_snapshot_hash(test_content) if test_content is not None else None,
+            "timestamp": int(time.time())
         }
 
         try:

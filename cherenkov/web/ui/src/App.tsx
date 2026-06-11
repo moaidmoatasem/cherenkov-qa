@@ -26,6 +26,9 @@ import ChatScreen from './components/ChatScreen';
 import DeviceManagerScreen from './components/DeviceManagerScreen';
 import MobileScreen from './components/MobileScreen';
 import KnowledgeExplorerScreen from './components/KnowledgeExplorerScreen';
+import SddDashboardScreen from './components/SddDashboardScreen';
+import VisualRegressionScreen from './components/VisualRegressionScreen';
+import ExplorerScreen from './components/ExplorerScreen';
 import GlobalShortcuts from './components/GlobalShortcuts';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import GuidedTour from './components/GuidedTour';
@@ -34,10 +37,10 @@ import { useToast } from './components/ui/Toast';
 import OnboardingWizard from './components/OnboardingWizard';
 
 import { Project, EndpointRichness } from './types';
-import { runPipeline, fetchProjects } from './lib/api';
+import { runPipeline, fetchProjects, fetchMetricsData } from './lib/api';
 import { useHealth } from './lib/useHealth';
+import { listenDesktop } from './lib/tauri';
 import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
-import { useAppStore } from './stores/useAppStore';
 
 function InnerApp() {
   const { toast } = useToast();
@@ -62,6 +65,14 @@ function InnerApp() {
   // Backend liveness — single source of truth for the honest offline state (#221).
   const { online, demoMode, checking, refresh, lastCheckedAt } = useHealth();
 
+  // Desktop shell: re-probe health when the engine sidecar changes state.
+  React.useEffect(() => {
+    const subs = ['engine-healthy', 'engine-demo-mode', 'engine-stopped'].map(evt =>
+      listenDesktop(evt, () => refresh())
+    );
+    return () => { subs.forEach(p => p.then(unlisten => unlisten())); };
+  }, [refresh]);
+
   // Autonomy settings with local storage persistence
   const [autonomy, setAutonomyState] = useState<'Assisted' | 'Augmented' | 'Agentic'>(() => {
     const saved = localStorage.getItem('[copilot] autonomy');
@@ -76,9 +87,26 @@ function InnerApp() {
   // State to manage context live drawer visibility
   const [isLiveDrawerOpen, setIsLiveDrawerOpen] = useState(false);
 
-  // Observability Token pool metric simulations
-  const [tokenUsagePercent, setTokenUsagePercent] = useState(43);
-  const [totalSpentEstimated, setTotalSpentEstimated] = useState(0.14);
+  // Observability Token pool metrics — polled from real /api/v1/metrics
+  const [tokenUsagePercent, setTokenUsagePercent] = useState(0);
+  const [totalSpentEstimated, setTotalSpentEstimated] = useState(0);
+
+  React.useEffect(() => {
+    const poll = () => {
+      fetchMetricsData()
+        .then(data => {
+          const { totalTokens, totalCost } = data.metrics;
+          setTokenUsagePercent(Math.min(100, Math.round((totalTokens / 50000) * 100)));
+          setTotalSpentEstimated(totalCost);
+        })
+        .catch(() => {
+          // backend unreachable — keep previous values
+        });
+    };
+    poll();
+    const id = setInterval(poll, 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   // Guided Tour state
   const [showTour, setShowTour] = useState(() => {
@@ -102,11 +130,7 @@ function InnerApp() {
 
   const handleEnableDemo = async () => {
     try {
-      await fetch('http://localhost:8000/api/v1/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'demo' })
-      });
+      await runPipeline({ spec_path: '', demo_mode: true });
     } catch(e) {
       toast(`Demo enable failed: ${(e as Error).message}`, 'danger');
     }
@@ -199,15 +223,8 @@ function InnerApp() {
     }));
   };
 
-  // Select project ID and load active variables
   const handleSelectProject = (id: string) => {
     setSelectedProjectId(id);
-    const proj = projects.find(p => p.id === id);
-    if (proj) {
-      // simulate localized cost values proportional to previous run counts
-      setTotalSpentEstimated(proj.stats.testsCount * 0.0034);
-      setTokenUsagePercent(Math.min(95, Math.round(proj.stats.testsCount * 1.5)));
-    }
   };
 
   return (
@@ -297,6 +314,7 @@ function InnerApp() {
             {activeTab === 'review' && (
               <ReviewScreen
                 onUpdatePassRateAndCount={handleUpdatePassRateAndCount}
+                autonomy={autonomy}
               />
             )}
 
@@ -337,20 +355,11 @@ function InnerApp() {
             )}
 
             {activeTab === 'explore' && (
-              <div className="p-6">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-8 max-w-lg mx-auto text-center space-y-4">
-                  <h3 className="font-display font-semibold text-lg text-text-primary">Explore Crawler</h3>
-                  <p className="text-xs text-[#7D8DA1] leading-relaxed">
-                    This autonomous crawler parses specifications to execute live crawling runs, diagnosing anomalies and front-end errors.
-                  </p>
-                  <button
-                    onClick={handleNewRun}
-                    className="px-6 py-2 bg-glow-blue hover:bg-opacity-95 text-slate-950 font-bold text-xs rounded-xl uppercase font-mono tracking-wider transition cursor-pointer"
-                  >
-                    Configure Scope & Target
-                  </button>
-                </div>
-              </div>
+              <ExplorerScreen />
+            )}
+
+            {activeTab === 'visual-regression' && (
+              <VisualRegressionScreen />
             )}
 
             {activeTab === 'author' && (
@@ -383,6 +392,10 @@ function InnerApp() {
 
             {activeTab === 'knowledge' && (
               <KnowledgeExplorerScreen />
+            )}
+
+            {activeTab === 'sdd' && (
+              <SddDashboardScreen />
             )}
           </main>
         </div>

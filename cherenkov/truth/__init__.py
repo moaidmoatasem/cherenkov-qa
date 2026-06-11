@@ -7,6 +7,12 @@ This package provides:
 - Source adapters: Extract claims from OpenAPI specs, traffic (HAR), and DB schemas
 """
 
-from cherenkov.truth.index import EmbeddingIndex, embed_text
+try:
+    from cherenkov.truth.index import EmbeddingIndex, embed_text
+    _index_available = True
+except ImportError:
+    EmbeddingIndex = None  # type: ignore[assignment,misc]
+    embed_text = None  # type: ignore[assignment]
+    _index_available = False
 
 __all__ = ["EmbeddingIndex", "embed_text"]

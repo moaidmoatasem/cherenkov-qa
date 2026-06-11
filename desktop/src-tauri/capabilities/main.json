@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-capability",
+  "description": "Grant the dashboard (served by the engine sidecar on 127.0.0.1) access to core IPC and the app commands.",
+  "windows": ["main"],
+  "remote": {
+    "urls": ["http://127.0.0.1", "http://localhost"]
+  },
+  "permissions": [
+    "core:default",
+    "notification:default",
+    "dialog:default",
+    "process:default",
+    "updater:default"
+  ]
+}

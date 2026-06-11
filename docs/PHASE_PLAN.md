@@ -1,16 +1,42 @@
 # CHERENKOV-QA: Consolidated Phase Plan
 
-**Date:** 2026-06-08  
+**Date:** 2026-06-08 (last refined 2026-06-09)  
 **Status:** Active  
 **SSOT for:** All phases, tickets, integration plans, parallel tracks, architecture decisions, design patterns, agent guidance
 
+> **What to read first:** This plan is long. If you only have 5 minutes, read
+> §1 *Executive Summary*, then jump to §3 *Parallel Track Layout*. For the
+> canonical per-phase status, see [STATUS.md](STATUS.md) instead — this
+> file describes the plan; STATUS.md describes where we are in executing it.
+> For a doc-tree map, see [INDEX.md](INDEX.md).
+
+**In this plan:**
+
+1. [Executive Summary](#executive-summary)
+2. [Architecture Overview](#architecture-overview)
+3. [Parallel Track Layout](#parallel-track-layout)
+4. [Integration Plan](#integration-plan)
+5. [Phase -1 — Planning & Preparation](#phase--1--planning--preparation)
+6. [Phase 0a — P0 Bug Fixes](#phase-0a--p0-bug-fixes)
+7. [Phase 0b — Foundations](#phase-0b--foundations)
+8. [Phase 1 — Second Brain](#phase-1--second-brain)
+9. [Phase 2 — VLM + LocalAI](#phase-2--vlm--localai)
+10. [Phase 3 — Desktop Host](#phase-3--desktop-host)
+11. [Phase 4 — Chat Agents](#phase-4--chat-agents)
+12. [Phase 5 — Mobile Testing Core](#phase-5--mobile-testing-core)
+13. [Phase 6 — Mobile Execution](#phase-6--mobile-execution)
+14. [Phase 7 — Dashboard Revamp](#phase-7--dashboard-revamp)
+15. [Phase 8 — K8s + Cloud + Gate](#phase-8--k8s--cloud--gate)
+16. [Per-Phase Tickets](#per-phase-tickets)
+17. [Agent Guidance](#agent-guidance)
+
 ---
 
-## Executive Summary
+## 1. Executive Summary
 
-This document is the **Single Source of Truth (SSOT)** for the CHERENKOV-QA consolidated plan. It covers all phases from planning (Phase -1) through validation gate (Phase 8), with detailed tickets, integration plans, parallel tracks, and agent guidance.
+This document is the **Single Source of Truth (SSOT)** for the CHERENKOV-QA technical delivery plan. It covers phases from planning (Phase -1) through validation gate (Phase 8), with detailed tickets, integration plans, parallel tracks, and agent guidance. For the extended product roadmap (Phases 9-16: market launch, integrations, enterprise tier, fine-tuned model), see [PRODUCT_STRATEGY_ROADMAP.md](PRODUCT_STRATEGY_ROADMAP.md) and [INTEGRATION_STRATEGY.md](INTEGRATION_STRATEGY.md).
 
-**Total Scope:**
+**Technical Delivery Scope (this document):**
 - 10 phases (Phase -1 through Phase 8)
 - ~105 GitHub issues
 - 19 new documentation files
@@ -101,7 +127,7 @@ TRACK F (K8s):                                8 (K8s + Cloud + Gate) ↓
 | 9-10 | Phase 4 (Chat) | - | - | - | - | - |
 | 11-14 | - | - | - | Phase 6 (Mobile Exec) | - | K8s fixes |
 | 14-16 | - | - | - | - | Phase 7 (Dashboard) | - |
-| 16-20 | - | - | - | - | - | Phase 8 (K8s+Gate) |
+| 16-20 | ✅ | ✅ | ✅ | ✅ | ✅ | Phase 8 (K8s+Gate) complete |
 
 ---
 
@@ -132,7 +158,7 @@ Phase 3 ──→ Phase 7 (desktop needs to exist for dashboard)
 | Phase 4 (Chat) | Phase 7 (Dashboard) | ChatPanel shows streaming chat | SSE endpoint works with ChatAgent |
 | Phase 5 (Mobile) | Phase 7 (Dashboard) | MobileScreen shows pilot traces | Mobile traces appear in dashboard |
 | Phase 0a (Bug fix) | All | All 8 bugs must be fixed before foundations merge | `pytest tests/unit/` + `pytest tests/smoke/` green |
-| Phase 8 (K8s) | All | CRD extensions don't break existing deployment | `make k3d-test` green |
+| Phase 8 (K8s) | All ✅ | CRD extensions don't break existing deployment ✅ | `make k3d-test` green ✅ |
 
 ### Integration Testing Strategy
 
@@ -377,7 +403,7 @@ For every cross-phase integration point:
 - ReviewScreen mobile+chat (#384)
 - Health poll widget (#385)
 
-### Phase 8: K8s + Cloud + Validation Gate (Weeks 16-20)
+### ✅ Phase 8: K8s + Cloud + Validation Gate (Weeks 16-20) — Complete
 
 **EPIC:** #287  
 **Tickets:** #386-#391 (6 issues)  
@@ -539,7 +565,7 @@ For every cross-phase integration point:
 6. **Weeks 9-10:** Phase 4 (Chat Agents)
 7. **Weeks 11-14:** Phase 6 (Mobile Execution)
 8. **Weeks 14-16:** Phase 7 (Dashboard Revamp)
-9. **Weeks 16-20:** Phase 8 (K8s + Validation Gate)
+9. **Weeks 16-20:** Phase 8 (K8s + Validation Gate) ✅
 
 ---
 
