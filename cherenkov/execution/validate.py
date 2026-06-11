@@ -7,7 +7,13 @@ from __future__ import annotations
 import os
 import re
 import json
+from enum import Enum
 from typing import Any, Dict, List
+
+class OutputFormat(str, Enum):
+    JUNIT = "junit"
+    SARIF = "sarif"
+
 
 from cherenkov.core.errors import get_logger
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
@@ -26,6 +32,38 @@ def _is_stable_value(v: object) -> bool:
     if isinstance(v, int) and v > 100000:
         return False  # likely auto-increment or timestamp int
     return True
+
+
+def find_spec_line(spec_path: str, method: str, endpoint: str) -> int:
+    """Finds the line number of a given method/endpoint in the spec file."""
+    if not spec_path or not os.path.exists(spec_path):
+        return 1
+    try:
+        with open(spec_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+        
+        endpoint_clean = endpoint.strip().lower()
+        method_clean = method.strip().lower()
+        
+        endpoint_line = -1
+        for idx, line in enumerate(lines):
+            if f'"{endpoint_clean}"' in line.lower() or f"'{endpoint_clean}'" in line.lower() or f"{endpoint_clean}:" in line.lower():
+                endpoint_line = idx + 1
+                if method_clean in line.lower():
+                    return idx + 1
+        
+        if endpoint_line != -1:
+            for idx in range(endpoint_line - 1, min(len(lines), endpoint_line + 20)):
+                if f'"{method_clean}"' in lines[idx].lower() or f"'{method_clean}'" in lines[idx].lower() or f"{method_clean}:" in lines[idx].lower():
+                    return idx + 1
+            return endpoint_line
+            
+        for idx, line in enumerate(lines):
+            if f'"{method_clean}"' in line.lower() or f"'{method_clean}'" in line.lower():
+                return idx + 1
+    except Exception:
+        pass
+    return 1
 
 
 class TighteningAnalyzer:
@@ -103,17 +141,20 @@ class ValidationEngine:
             req_body_str = ""
             resp_body_str = ""
 
-            if passed and trace_path:
-                method_match = re.search(r"client\.(GET|POST|PUT|DELETE|PATCH)\('([^']+)'", code)
-                if method_match:
-                    target_method = method_match.group(1)
-                    target_url_path = method_match.group(2)
+            # Extract method and path for all test scenarios
+            method_match = re.search(r"client\.(GET|POST|PUT|DELETE|PATCH)\((?:'|\"|`)([^'\";`]+)(?:'|\"|BaseURL)?\)", code)
+            target_method = "UNKNOWN"
+            target_url_path = "unknown"
+            if method_match:
+                target_method = method_match.group(1)
+                target_url_path = method_match.group(2)
 
-                    response_info = reader.extract_http_response(trace_path, target_url_path, target_method)
-                    if response_info:
-                        req_body_str = response_info.get("request_body_raw", "")
-                        resp_body_str = response_info.get("body_raw", "")
-                        suggestions = TighteningAnalyzer.analyze(req_body_str, resp_body_str)
+            if passed and trace_path and method_match:
+                response_info = reader.extract_http_response(trace_path, target_url_path, target_method)
+                if response_info:
+                    req_body_str = response_info.get("request_body_raw", "")
+                    resp_body_str = response_info.get("body_raw", "")
+                    suggestions = TighteningAnalyzer.analyze(req_body_str, resp_body_str)
 
             reports.append({
                 "scenario_id": scenario_id,
@@ -122,6 +163,12 @@ class ValidationEngine:
                 "response_body": resp_body_str,
                 "suggestions": suggestions,
                 "error": result.get("failure_message", "") if not passed else "",
+                "method": target_method,
+                "endpoint": target_url_path,
+                "error_line": result.get("error_line"),
+                "error_column": result.get("error_column"),
+                "error_file": result.get("error_file"),
+                "test_file": result.get("test_file"),
             })
 
         return {
