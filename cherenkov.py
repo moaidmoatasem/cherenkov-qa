@@ -182,6 +182,18 @@ def get_parser() -> argparse.ArgumentParser:
     governance_parser.add_argument('--trend', '-t', metavar='METRIC', default=None,
                                    help='Show trend for a metric (health_score, escape_rate, coverage, etc.)')
 
+    # ── Token consumption monitor ─────────────────────────────────────────
+    tokens_parser = subparsers.add_parser('tokens', help='Token consumption monitor — usage, cost, recommendations')
+    tokens_sub = tokens_parser.add_subparsers(dest='tokens_command', required=True)
+
+    tok_report = tokens_sub.add_parser('report', help='Full usage report with recommendations')
+    tok_report.add_argument('--days', '-d', type=int, default=30, help='Lookback window in days (default: 30)')
+    tok_report.add_argument('--json', dest='json_out', action='store_true', help='Output as JSON')
+
+    tok_breakdown = tokens_sub.add_parser('breakdown', help='Per-provider or per-stage breakdown')
+    tok_breakdown.add_argument('--stage', action='store_true', help='Break down by stage instead of provider')
+    tok_breakdown.add_argument('--days', '-d', type=int, default=30, help='Lookback window in days (default: 30)')
+
     # ── Epoch 12: Certification gate (C11 #126) ────────────────────────────
     certify_parser = subparsers.add_parser('certify', help='E12 Gold-Set + RAG-Triad model tier certification')
     certify_parser.add_argument('--tier', '-T', default='small', choices=['small', 'deep', 'vision'],
@@ -280,7 +292,7 @@ def main():
     if '--spec' in sys.argv[1:] and not any(a in sys.argv[1:] for a in
         ['validate', 'self-test', 'report', 'eject', 'visual', 'perf',
          'init', 'doctor', 'dashboard', 'map', 'daemon', 'explore',
-         'author', 'governance', 'certify', 'profile', 'hitl', 'review', 'mcp']):
+         'author', 'governance', 'certify', 'profile', 'hitl', 'review', 'mcp', 'tokens']):
         sys.argv.insert(1, 'validate')
     args = parser.parse_args()
 
@@ -403,6 +415,13 @@ def main():
         sys.exit(run_author(args.intent, output=args.output, target=args.target))
 
     # ── Epoch 12 subcommands ────────────────────────────────────────────────
+    elif args.command == 'tokens':
+        from cherenkov.stages.tokens_cmd import run_tokens_report, run_tokens_breakdown
+        if args.tokens_command == 'report':
+            run_tokens_report(days=args.days, as_json=args.json_out)
+        elif args.tokens_command == 'breakdown':
+            run_tokens_breakdown(by_stage=args.stage, days=args.days)
+
     elif args.command == 'governance':
         from cherenkov.stages.governance_cmd import run_governance
         sys.exit(run_governance(json_out=args.json_out, trend=args.trend))

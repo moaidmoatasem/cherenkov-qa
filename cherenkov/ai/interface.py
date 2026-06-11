@@ -69,7 +69,8 @@ class CachedInferenceClient(InferenceClient):
 
     Checks the cache before delegating to the underlying client. On a cache hit
     returns instantly (0ms effective latency, $0 cost). Tracks every request in
-    the CostAccountant for per-run reporting.
+    the CostAccountant for per-run reporting, using real token counts from the
+    underlying client's _token_usage attribute when available.
     """
 
     def __init__(
@@ -77,10 +78,18 @@ class CachedInferenceClient(InferenceClient):
         client: InferenceClient,
         cache: ResponseCache | None = None,
         accountant: CostAccountant | None = None,
+        provider: str = "ollama",
     ):
         self._client = client
         self._cache = cache or ResponseCache()
         self._accountant = accountant or CostAccountant()
+        self._provider = provider
+
+    def _real_token_usage(self) -> dict[str, int]:
+        """Read token counts the underlying client captured from the API response."""
+        return getattr(self._client, "_token_usage", {
+            "prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0
+        })
 
     def complete_json(
         self,
@@ -91,10 +100,15 @@ class CachedInferenceClient(InferenceClient):
         max_reprompts: int = 2,
         temperature: float = 0.1,
         run_id: str | None = None,
+        stage: str = "",
     ) -> dict:
         cached = self._cache.get(model, system_prompt, user_prompt)
         if cached is not None:
-            self._accountant.record(model=model, duration_ms=0, tokens=0, cache_hit=True)
+            self._accountant.record(
+                model=model, duration_ms=0, tokens=0,
+                cache_hit=True, provider=self._provider,
+                stage=stage, run_id=run_id or "",
+            )
             return cached
 
         t0 = time.time()
@@ -107,9 +121,17 @@ class CachedInferenceClient(InferenceClient):
             run_id=run_id,
         )
         dt_ms = int((time.time() - t0) * 1000)
+        usage = self._real_token_usage()
 
         self._cache.set(model, system_prompt, user_prompt, result)
-        self._accountant.record_json(model=model, duration_ms=dt_ms, output=result, cache_hit=False)
+        self._accountant.record_json(
+            model=model, duration_ms=dt_ms, output=result, cache_hit=False,
+            provider=self._provider,
+            prompt_tokens=usage.get("prompt_tokens", 0),
+            completion_tokens=usage.get("completion_tokens", 0),
+            stage=stage, run_id=run_id or "",
+            reprompts=usage.get("reprompts", 0),
+        )
 
         return result
 
@@ -121,10 +143,15 @@ class CachedInferenceClient(InferenceClient):
         *,
         temperature: float = 0.1,
         run_id: str | None = None,
+        stage: str = "",
     ) -> str:
         cached = self._cache.get(model, system_prompt, user_prompt)
         if cached is not None:
-            self._accountant.record(model=model, duration_ms=0, tokens=0, cache_hit=True)
+            self._accountant.record(
+                model=model, duration_ms=0, tokens=0,
+                cache_hit=True, provider=self._provider,
+                stage=stage, run_id=run_id or "",
+            )
             return str(cached)
 
         t0 = time.time()
@@ -136,9 +163,17 @@ class CachedInferenceClient(InferenceClient):
             run_id=run_id,
         )
         dt_ms = int((time.time() - t0) * 1000)
+        usage = self._real_token_usage()
 
         self._cache.set(model, system_prompt, user_prompt, result)
-        self._accountant.record_code(model=model, duration_ms=dt_ms, output=result, cache_hit=False)
+        self._accountant.record_code(
+            model=model, duration_ms=dt_ms, output=result, cache_hit=False,
+            provider=self._provider,
+            prompt_tokens=usage.get("prompt_tokens", 0),
+            completion_tokens=usage.get("completion_tokens", 0),
+            stage=stage, run_id=run_id or "",
+            reprompts=usage.get("reprompts", 0),
+        )
 
         return result
 
@@ -165,10 +200,15 @@ class CachedInferenceClient(InferenceClient):
         *,
         temperature: float = 0.1,
         run_id: str | None = None,
+        stage: str = "VISION",
     ) -> str:
         cached = self._cache.get(model, system_prompt, user_prompt + image_data[:80])
         if cached is not None:
-            self._accountant.record(model=model, duration_ms=0, tokens=0, cache_hit=True)
+            self._accountant.record(
+                model=model, duration_ms=0, tokens=0,
+                cache_hit=True, provider=self._provider,
+                stage=stage, run_id=run_id or "",
+            )
             return str(cached)
 
         t0 = time.time()
@@ -181,9 +221,16 @@ class CachedInferenceClient(InferenceClient):
             run_id=run_id,
         )
         dt_ms = int((time.time() - t0) * 1000)
+        usage = self._real_token_usage()
 
         self._cache.set(model, system_prompt, user_prompt + image_data[:80], result)
-        self._accountant.record_code(model=model, duration_ms=dt_ms, output=result, cache_hit=False)
+        self._accountant.record_code(
+            model=model, duration_ms=dt_ms, output=result, cache_hit=False,
+            provider=self._provider,
+            prompt_tokens=usage.get("prompt_tokens", 0),
+            completion_tokens=usage.get("completion_tokens", 0),
+            stage=stage, run_id=run_id or "",
+        )
 
         return result
 

@@ -202,6 +202,30 @@ async def healthz():
 
 
 #
+# Token consumption monitor
+#
+@app.get("/api/v1/tokens/report")
+async def tokens_report(days: int = 30):
+    """Token consumption report: usage by provider/stage, daily trend, recommendations."""
+    from cherenkov.observability.token_monitor import get_monitor
+    monitor = get_monitor()
+    return monitor.get_dashboard_data(days=days)
+
+
+@app.get("/api/v1/tokens/recommendations")
+async def tokens_recommendations(days: int = 30):
+    """Return only the actionable cost-reduction recommendations."""
+    from cherenkov.observability.token_monitor import get_monitor
+    monitor = get_monitor()
+    report = monitor.get_report(days=days)
+    return {
+        "recommendations": report.recommendations,
+        "total_cost_usd": report.total_cost_usd,
+        "period_days": days,
+    }
+
+
+#
 # Health
 #
 @app.get("/api/v1/health")
