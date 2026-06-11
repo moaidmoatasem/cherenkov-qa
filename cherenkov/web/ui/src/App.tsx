@@ -27,6 +27,8 @@ import DeviceManagerScreen from './components/DeviceManagerScreen';
 import MobileScreen from './components/MobileScreen';
 import KnowledgeExplorerScreen from './components/KnowledgeExplorerScreen';
 import SddDashboardScreen from './components/SddDashboardScreen';
+import VisualRegressionScreen from './components/VisualRegressionScreen';
+import ExplorerScreen from './components/ExplorerScreen';
 import GlobalShortcuts from './components/GlobalShortcuts';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import GuidedTour from './components/GuidedTour';
@@ -353,20 +355,11 @@ function InnerApp() {
             )}
 
             {activeTab === 'explore' && (
-              <div className="p-6">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-8 max-w-lg mx-auto text-center space-y-4">
-                  <h3 className="font-display font-semibold text-lg text-text-primary">Explore Crawler</h3>
-                  <p className="text-xs text-[#7D8DA1] leading-relaxed">
-                    This autonomous crawler parses specifications to execute live crawling runs, diagnosing anomalies and front-end errors.
-                  </p>
-                  <button
-                    onClick={handleNewRun}
-                    className="px-6 py-2 bg-glow-blue hover:bg-opacity-95 text-slate-950 font-bold text-xs rounded-xl uppercase font-mono tracking-wider transition cursor-pointer"
-                  >
-                    Configure Scope & Target
-                  </button>
-                </div>
-              </div>
+              <ExplorerScreen />
+            )}
+
+            {activeTab === 'visual-regression' && (
+              <VisualRegressionScreen />
             )}
 
             {activeTab === 'author' && (
