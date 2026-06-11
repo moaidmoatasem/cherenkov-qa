@@ -49,10 +49,10 @@ export default function MemoryScreen() {
 
         {/* Pairing Explanation Panel (2/5) */}
         <div className="lg:col-span-2 flex flex-col bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 space-y-4">
-          <h3 className="text-sm font-semibold text-[#E6EDF3] border-b border-white/5 pb-3 flex items-center gap-2 font-display">
+          <h2 className="text-sm font-semibold text-[#E6EDF3] border-b border-white/5 pb-3 flex items-center gap-2 font-display">
             <GraduationCap className="w-4.5 h-4.5 text-glow-blue" />
             <span>Mentor Junior-Senior Pairing</span>
-          </h3>
+          </h2>
 
           <div className="space-y-4">
             {MOCK_PAIRING.map((p, idx) => (

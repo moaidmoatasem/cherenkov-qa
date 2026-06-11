@@ -361,7 +361,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
   };
 
   return (
-    <div className="p-6 h-full overflow-hidden flex flex-col justify-between grid-bg bg-transparent relative z-10" id="review-screen">
+    <div className="p-6 h-full overflow-hidden flex flex-col justify-between grid-bg bg-transparent relative z-10" id="review-screen" data-testid="review-screen">
       
       {/* Page Header */}
       <div className="flex items-center justify-between border-b border-white/5 pb-4 shrink-0">
@@ -421,7 +421,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
           </div>
 
           {/* Test items lists */}
-          <div className="flex-1 overflow-y-auto divide-y divide-white/5 p-4 space-y-2.5">
+          <div className="flex-1 overflow-y-auto divide-y divide-white/5 p-4 space-y-2.5" data-testid="review-queue-list">
             {isLoading ? (
               <div className="h-full flex flex-col items-center justify-center text-center font-sans space-y-1.5 py-24">
                 <Skeleton className="w-10 h-10 rounded-full" />
@@ -536,7 +536,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
               <div className="p-4 bg-black/40 border-b border-white/5 shrink-0">
                 <div className="flex items-center justify-between text-xs">
                   <div>
-                    <h3 className="font-display font-semibold text-sm text-text-primary">{activeTest.name}</h3>
+                    <h2 className="font-display font-semibold text-sm text-text-primary">{activeTest.name}</h2>
                     <p className="text-[11px] font-mono text-[#7D8DA1] mt-0.5">PLAYWRIGHT COMPONENT SPEC · PATH: {activeTest.path}</p>
                   </div>
 
@@ -760,6 +760,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                     <div className="flex gap-2">
                       <button
                         onClick={() => setRejectingId(activeTest.id)}
+                        data-testid="review-reject-btn"
                         className="px-4 py-2 text-red-400 border border-red-500/20 bg-red-500/5 hover:bg-red-500 hover:text-slate-950 text-xs font-mono font-bold tracking-wider rounded-xl uppercase transition cursor-pointer"
                       >
                         REJECT TEST
@@ -774,6 +775,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
 
                     <button
                       onClick={() => handleApprove(activeTest.id)}
+                      data-testid="review-approve-btn"
                       className="px-8 py-2 bg-[#3FB950] hover:bg-opacity-95 text-[#FFFFFF] font-bold rounded-xl text-xs tracking-wider uppercase font-mono transition-all duration-300 shadow-lg cursor-pointer"
                     >
                       APPROVE SPEC TEST
@@ -796,9 +798,9 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
       {rejectingId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-[#131d31] border border-white/10 p-6 rounded-2xl w-full max-w-md shadow-2xl space-y-4">
-            <h3 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted">
+            <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted">
               Rejection Reason
-            </h3>
+            </h2>
             <p className="text-xs text-[#7D8DA1]">
               Describe what's wrong. Your feedback helps the AI generate better tests next time.
             </p>

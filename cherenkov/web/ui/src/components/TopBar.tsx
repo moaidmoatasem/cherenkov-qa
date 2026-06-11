@@ -66,7 +66,7 @@ export default function TopBar({
   };
 
   return (
-    <header className="h-16 border-b border-white/10 bg-black/10 backdrop-blur-md px-6 flex items-center justify-between shrink-0 select-none z-10" id="cherenkov-topbar">
+    <header className="h-16 border-b border-white/10 bg-black/10 backdrop-blur-md px-6 flex items-center justify-between shrink-0 select-none z-10" id="cherenkov-topbar" data-testid="topbar">
       {/* Current Workspace Breadcrumb */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5 text-xs font-mono text-[#7D8DA1] uppercase tracking-wider">
@@ -124,10 +124,11 @@ export default function TopBar({
         </div>
 
         {/* Local Node Status (Clickable to open live-run drawer) */}
-        <div 
+        <div
           onClick={onLiveClick}
           className="flex items-center gap-2 cursor-pointer group"
           title="Click to view live executing pipeline monitor"
+          data-testid="topbar-status"
         >
           <span className="text-[#7D8DA1] group-hover:text-glow-bright uppercase text-[10px] tracking-wider font-mono transition-colors">NODE STATE:</span>
           <div className="flex items-center gap-1.5 px-3 py-1 rounded bg-white/5 border border-white/10 group-hover:border-glow-blue/45 transition-colors">
@@ -137,7 +138,9 @@ export default function TopBar({
         </div>
 
         {/* Health Widget */}
-        <HealthWidget />
+        <div data-testid="topbar-health">
+          <HealthWidget />
+        </div>
 
         {/* Session Timer */}
         <div className="flex items-center gap-1.5 text-xs font-mono text-[#7D8DA1]">

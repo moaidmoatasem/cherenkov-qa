@@ -234,7 +234,7 @@ async def health_check():
     try:
         device = await asyncio.wait_for(
             asyncio.to_thread(Config.detect_ollama_device),
-            timeout=5.0
+            timeout=2.0
         )
     except Exception:
         device = "unknown"

@@ -70,6 +70,13 @@ class OrchestrationEngine:
         self.last_ingest: IngestOutput | None = None
         self.event_callback = event_callback
 
+    def close(self):
+        """Close any open file handles."""
+        from cherenkov.core.errors import LoggerConfig
+        if LoggerConfig.events_file and not LoggerConfig.events_file.closed:
+            LoggerConfig.events_file.close()
+            LoggerConfig.events_file = None
+
     def _emit_event(self, event: str, data: dict) -> None:
         """Invoke the event callback, swallowing any errors to prevent silent pipeline failure."""
         if self.event_callback:

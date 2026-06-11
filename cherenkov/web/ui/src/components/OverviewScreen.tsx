@@ -69,7 +69,7 @@ export default function OverviewScreen({ onNewRun, onPilotRun, onNavigate }: Ove
   }
 
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="overview-screen">
+    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="overview-screen" data-testid="overview-screen">
       <PageHeader
         title="Release Readiness & Learning"
         description="Core metrics tracking API safety, active divergences, and Reflector self-healing optimizations."
@@ -91,11 +91,11 @@ export default function OverviewScreen({ onNewRun, onPilotRun, onNavigate }: Ove
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         {/* Release Readiness KPI Ring */}
-        <Card className="flex flex-col items-center justify-between p-6">
+        <Card className="flex flex-col items-center justify-between p-6" data-testid="overview-kpi-readiness">
           <div className="w-full">
-            <h3 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted">
+            <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted">
               Release Readiness Score
-            </h3>
+            </h2>
             <p className="text-xs text-[#7D8DA1] mt-1">Weighted score based on unresolved critical divergences.</p>
           </div>
           <div className="py-6">
@@ -118,12 +118,12 @@ export default function OverviewScreen({ onNewRun, onPilotRun, onNavigate }: Ove
         </Card>
 
         {/* Top Active Divergences */}
-        <Card className="flex flex-col justify-between p-6">
+        <Card className="flex flex-col justify-between p-6" data-testid="overview-kpi-divergences">
           <div>
-            <h3 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
+            <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
               <Zap className="w-4 h-4 text-glow-blue" />
               <span>Top Unresolved Divergences</span>
-            </h3>
+            </h2>
             <div className="mt-4 space-y-3">
               {isLoading ? (
                 <>
@@ -167,12 +167,12 @@ export default function OverviewScreen({ onNewRun, onPilotRun, onNavigate }: Ove
         </Card>
 
         {/* Recent Learning Activity Feed */}
-        <Card className="flex flex-col justify-between p-6">
+        <Card className="flex flex-col justify-between p-6" data-testid="overview-kpi-learnings">
           <div>
-            <h3 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
+            <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
               <GraduationCap className="w-4 h-4 text-glow-blue" />
               <span>Reflector Verdict Memory</span>
-            </h3>
+            </h2>
             <div className="mt-4 space-y-4">
               {overview.recentLearnings.map((item, idx) => (
                 <div key={idx} className="flex gap-3 text-xs">
