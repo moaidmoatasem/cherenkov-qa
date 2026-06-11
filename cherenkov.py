@@ -121,7 +121,8 @@ def get_parser() -> argparse.ArgumentParser:
     # Legacy engine CLI compatibility: operator passes --spec and --output
     validate_parser.add_argument('--spec', help='Path to OpenAPI spec (JSON/YAML) — legacy compat')
     validate_parser.add_argument('--output', choices=['json', 'text'], default=None, help='Output format — legacy compat')
-    validate_parser.add_argument('--output-format', choices=['junit', 'sarif'], default=None, help='Output report format for CI/CD')
+    validate_parser.add_argument('--output-format', choices=['junit', 'sarif', 'allure'], default=None, help='Output report format for CI/CD')
+    validate_parser.add_argument('--allure-dir', default='allure-results', help='Output directory for Allure result files (default: allure-results/)')
 
     self_test_parser = subparsers.add_parser('self-test', help='Run a deterministic dry-run of the pipeline (mocking Ollama and the server)')
 
@@ -344,6 +345,13 @@ def main():
             from cherenkov.execution.emitters.sarif import emit_sarif
             print(emit_sarif(results, spec_path=spec_path))
             sys.exit(0 if passed_count == total else 1)
+        elif getattr(args, 'output_format', None) == 'allure':
+            from cherenkov.execution.emitters.allure import emit_allure
+            output_dir = getattr(args, 'allure_dir', 'allure-results')
+            paths = emit_allure(results, output_dir=output_dir, spec_path=spec_path)
+            print(f"Allure results written to {output_dir}/ ({len(paths)} file(s))")
+            sys.exit(0 if passed_count == total else 1)
+
         if args.output == 'json':
             reports = results.get('reports', [])
             divergences = []
