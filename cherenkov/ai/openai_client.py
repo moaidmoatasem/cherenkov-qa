@@ -24,6 +24,9 @@ class OpenAIInferenceClient(InferenceClient):
     def __init__(self):
         self.api_key = Config.OPENAI_API_KEY
         self.base_url = "https://api.openai.com/v1"
+        self._token_usage: dict[str, int] = {
+            "prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0
+        }
 
     def _chat_completion(
         self,
@@ -56,7 +59,11 @@ class OpenAIInferenceClient(InferenceClient):
             timeout=300,
         )
         resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]["content"]
+        data = resp.json()
+        usage = data.get("usage", {})
+        self._token_usage["prompt_tokens"] = usage.get("prompt_tokens", 0)
+        self._token_usage["completion_tokens"] = usage.get("completion_tokens", 0)
+        return data["choices"][0]["message"]["content"]
 
     def complete_json(
         self,
