@@ -328,7 +328,7 @@ The consolidated plan adds new dependencies (all optional):
 | **L1: + Ollama** | $0 | $0 | L0 + local LLM, brute-force RAG, API + visual testing |
 | **L2: + Docker Compose** | $0 | $0 | L1 + LocalAI (VLM), Redis (vector search, sessions), API + visual + chat |
 | **L3: + Full Stack** | $0 | $0 | L2 + Android emulator, Maestro, mobile testing, desktop app |
-| **L4: + Cloud** | $0 | $50-100/mo | L3 + optional cloud VLM (GPT-4o-mini), cloud devices (BrowserStack) |
+| **L4: + Cloud** | $0 | $0-100/mo | L3 + optional cloud VLM (GitHub Models free tier or GPT-4o-mini), cloud devices (BrowserStack) |
 | **L5: + Enterprise** | $0 | $300+/mo | L4 + K8s operator, organization management, SSO, audit logs |
 
 **Solo developer zero-cost path**: Everything local, cloud opt-in only. L0-L3 = $0/month.
