@@ -1,6 +1,17 @@
-﻿# CHERENKOV QA
+# CHERENKOV E2E Suite
 
-**API conformance test generator** â€” spec in, Playwright tests out, zero lock-in.
+The **v3.1 + delta** standard for zero-maintenance, spec-driven API testing.
+CHERENKOV is an orchestrator that uses local LLMs to generate, run, and self-heal Playwright test suites based strictly on your OpenAPI specs.
+
+## See It In Action
+Want to see how CHERENKOV detects drift, heals tests, and ejects to standalone Playwright?
+**[Read the Step-by-Step Demo Script](docs/DEMO_SCRIPT.md)** or watch the screencast below:
+
+*(Video placeholder: YouTube/Asciinema embed goes here)*
+
+## Core Invariants (The Deltas)
+
+**API conformance test generator** — spec in, Playwright tests out, zero lock-in.
 
 CHERENKOV reads your OpenAPI spec, generates typed Playwright API tests via a local LLM (Ollama/Qwen 2.5-coder:7b), and runs them against your real server to catch conformance drift. Your spec never leaves your machine.
 

@@ -7,6 +7,7 @@ from __future__ import annotations
 import os
 import re
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List
 
 from cherenkov.core.errors import get_logger
@@ -52,9 +53,9 @@ class ValidationEngine:
         self.stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
         self.tests_dir = os.path.join(self.stub_dir, "generated_tests")
 
-    def validate_suite(self, target_url: str) -> Dict[str, Any]:
+    def validate_suite(self, target_url: str, workers: int = 1) -> Dict[str, Any]:
         """Runs all spec tests in generated_tests against target_url and parses trace files for tightening suggestions."""
-        self.log.info("starting suite validation", target_url=target_url)
+        self.log.info("starting suite validation", target_url=target_url, workers=workers)
 
         if not os.path.exists(self.tests_dir):
             self.log.warning("no generated tests directory found")
@@ -65,16 +66,16 @@ class ValidationEngine:
             return {"status": "empty", "message": "No spec files found.", "reports": []}
 
         reports = []
-        runner = PlaywrightRunner(run_id=self.run_id)
-        reader = TraceReader(run_id=self.run_id)
-
-        for t_file in test_files:
+        
+        def _run_single_test(t_file: str) -> dict:
             scenario_id = t_file.replace(".spec.ts", "")
             test_path = os.path.join(self.tests_dir, t_file)
 
             with open(test_path, "r", encoding="utf-8") as f:
                 code = f.read()
 
+            runner = PlaywrightRunner(run_id=self.run_id)
+            reader = TraceReader(run_id=self.run_id)
             self.log.info("validating scenario", scenario_id=scenario_id)
 
             result = runner.execute_test(
@@ -101,14 +102,19 @@ class ValidationEngine:
                         resp_body_str = response_info.get("body_raw", "")
                         suggestions = TighteningAnalyzer.analyze(req_body_str, resp_body_str)
 
-            reports.append({
+            return {
                 "scenario_id": scenario_id,
                 "passed": passed,
                 "request_body": req_body_str,
                 "response_body": resp_body_str,
                 "suggestions": suggestions,
                 "error": result.get("failure_message", "") if not passed else "",
-            })
+            }
+
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = [executor.submit(_run_single_test, tf) for tf in test_files]
+            for future in as_completed(futures):
+                reports.append(future.result())
 
         return {
             "status": "success",
