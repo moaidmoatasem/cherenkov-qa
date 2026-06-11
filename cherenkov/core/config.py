@@ -37,6 +37,12 @@ class Config:
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
+    # ── GitHub Models ──────────────────────────────────────────────────────────
+    GITHUB_MODELS_URL: str = os.getenv("CHERENKOV_GITHUB_MODELS_URL", "https://models.inference.ai.azure.com")
+    GITHUB_TOKEN: str = os.getenv("CHERENKOV_GITHUB_TOKEN", os.getenv("GITHUB_TOKEN", ""))
+    GITHUB_MODELS_SMALL_MODEL: str = os.getenv("CHERENKOV_GITHUB_MODELS_SMALL_MODEL", "meta-llama-3.1-8b-instruct")
+    GITHUB_MODELS_DEEP_MODEL: str = os.getenv("CHERENKOV_GITHUB_MODELS_DEEP_MODEL", "gpt-4o")
+
     # ── E1-5 Cache & Accounting ──────────────────────────────────────────
     CACHE_ENABLED: bool = os.getenv("CACHE_ENABLED", "true").lower() in ("1", "true", "yes")
     CACHE_MAX_SIZE: int = int(os.getenv("CACHE_MAX_SIZE", "100"))
