@@ -201,9 +201,9 @@ def test_gp8_config_validate_exists():
 
 # ─── GP-9: Mobile dry-run works ──────────────────────────────────────────────
 
-def test_gp9_mobile_dry_run():
+def test_gp9_mobile_dry_run(monkeypatch):
     """GP-9: Mobile testing works in dry-run mode (no ADB required)."""
-    os.environ["CHERENKOV_MOBILE_DRY_RUN"] = "1"
+    monkeypatch.setenv("CHERENKOV_MOBILE_DRY_RUN", "1")
     try:
         from cherenkov.execution.maestro_runner import MaestroRunner
         runner = MaestroRunner()
@@ -212,8 +212,6 @@ def test_gp9_mobile_dry_run():
         assert result["status"] == "passed"
     except ImportError:
         pytest.skip("MaestroRunner not importable")
-    finally:
-        os.environ.pop("CHERENKOV_MOBILE_DRY_RUN", None)
 
 
 # ─── GP-10: K8s CRD valid ────────────────────────────────────────────────────
@@ -231,5 +229,5 @@ def test_gp10_k8s_crd_has_device_targets():
 
 def test_gp11_orchestrator_importable():
     """GP-11: Orchestrator imports cleanly."""
-    from cherenkov.core.orchestrator import Orchestrator
-    assert Orchestrator is not None
+    from cherenkov.core.orchestrator import OrchestrationEngine
+    assert OrchestrationEngine is not None

@@ -4,12 +4,17 @@ import tempfile
 import pytest
 from unittest.mock import patch
 
-os.environ["CHERENKOV_MOBILE_DRY_RUN"] = "1"
-
 from cherenkov.execution.maestro_runner import MaestroRunner
 from cherenkov.execution.appium_runner import AppiumRunner
 from cherenkov.sources.mobile.parsers import HARParser, HILParser
 from cherenkov.sources.mobile.contracts import MobileApp, MobileFlow
+
+
+# Other test modules (e.g. test_golden_path GP-9) mutate this env var, so set
+# it per-test rather than at import time to stay order-independent.
+@pytest.fixture(autouse=True)
+def _mobile_dry_run(monkeypatch):
+    monkeypatch.setenv("CHERENKOV_MOBILE_DRY_RUN", "1")
 
 
 # Test dry-run mode
@@ -78,16 +83,10 @@ def test_maestro_run_directory_dry_run():
 
 
 # Test that real mode would call subprocess (without running it)
-def test_maestro_real_mode_calls_subprocess():
-    env_backup = os.environ.pop("CHERENKOV_MOBILE_DRY_RUN", None)
-    try:
-        runner = MaestroRunner()
-        with patch("subprocess.run") as mock_run:
-            mock_run.return_value = type("R", (), {"returncode": 0, "stdout": "ok", "stderr": ""})()
-            result = runner.run_test("/some/test.yaml")
-            assert mock_run.called
-    finally:
-        if env_backup is not None:
-            os.environ["CHERENKOV_MOBILE_DRY_RUN"] = env_backup
-        else:
-            os.environ["CHERENKOV_MOBILE_DRY_RUN"] = "1"
+def test_maestro_real_mode_calls_subprocess(monkeypatch):
+    monkeypatch.delenv("CHERENKOV_MOBILE_DRY_RUN", raising=False)
+    runner = MaestroRunner()
+    with patch("subprocess.run") as mock_run:
+        mock_run.return_value = type("R", (), {"returncode": 0, "stdout": "ok", "stderr": ""})()
+        result = runner.run_test("/some/test.yaml")
+        assert mock_run.called
