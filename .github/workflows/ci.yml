@@ -126,7 +126,7 @@ jobs:
           pip install -r requirements.txt httpx
 
       - name: Run E10 copilot unit tests
-        run: PYTHONPATH=. python3 -m unittest test_copilot_e10.py
+        run: PYTHONPATH=. python3 -m unittest tests/standalone/test_copilot_e10.py
 
       - name: Run E10 copilot smoke test
         run: PYTHONPATH=. python3 tests/smoke/smoke_test_copilot_e10.py
@@ -149,7 +149,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run InferenceClient interface unit tests
-        run: PYTHONPATH=. python3 -m unittest test_inference_client.py
+        run: PYTHONPATH=. python3 -m unittest tests/standalone/test_inference_client.py
 
   docker-build-check:
     name: Verify Docker Build
@@ -413,10 +413,10 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run mobile pipeline smoke test
-        run: PYTHONPATH=. python3 smoke_test_mobile.py
+        run: PYTHONPATH=. python3 tests/standalone/smoke_test_mobile.py
 
       - name: Run mobile pipeline unit tests
-        run: PYTHONPATH=. python3 -m unittest test_mobile_pipeline.py -v
+        run: PYTHONPATH=. python3 -m unittest tests/standalone/test_mobile_pipeline.py -v
 
   snyk-scan:
     name: Snyk Dependency Scan
@@ -510,7 +510,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run sandbox provider unit tests
-        run: PYTHONPATH=. python3 -m unittest test_sandbox_providers.py
+        run: PYTHONPATH=. python3 -m unittest tests/standalone/test_sandbox_providers.py
 
   policy-engine-unit:
     name: MCP Policy Engine Unit
@@ -527,7 +527,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run policy engine unit tests
-        run: PYTHONPATH=. python3 -m unittest test_mcp_policy.py
+        run: PYTHONPATH=. python3 -m unittest tests/standalone/test_mcp_policy.py
 
   model-runner-unit:
     name: Model Runner Adapter Unit
@@ -544,7 +544,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run model runner unit tests
-        run: PYTHONPATH=. python3 -m unittest test_model_runner_client.py
+        run: PYTHONPATH=. python3 -m unittest tests/standalone/test_model_runner_client.py
 
   codeql-analysis:
     name: CodeQL Security Analysis
@@ -585,4 +585,4 @@ jobs:
       - name: Build Docker MCP image
         run: docker build -t cherenkov-mcp:ci -f Dockerfile.mcp .
       - name: Run sandbox smoke with Docker provider
-        run: PYTHONPATH=. python3 -m unittest test_sandbox_providers.TestDockerSandboxProvider
+        run: PYTHONPATH=. python3 -m unittest tests/standalone/test_sandbox_providers.py -k TestDockerSandboxProvider

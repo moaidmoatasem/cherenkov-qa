@@ -27,3 +27,6 @@ include = ["cherenkov*"]
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
+# tests/standalone holds suites invoked directly via unittest in CI
+# (service/env-dependent); they are not part of pytest discovery.
+norecursedirs = ["standalone", ".*", "__pycache__", "node_modules"]

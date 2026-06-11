@@ -199,6 +199,25 @@ The eject invariant is enforced in CI by `smoke_test_eject.py` — it verifies e
 
 ---
 
+## How It Compares
+
+Spec-conformance testing isn't new — the difference is what you're left holding afterward.
+
+| | What it leaves you | Conformance source | Runs offline |
+|--|--|--|:--:|
+| **CHERENKOV** | A typed Playwright + `openapi-fetch` suite your team owns forever | OpenAPI spec | ✅ local LLM |
+| **Schemathesis** | A fuzz run report — findings, not tests | OpenAPI spec | ✅ |
+| **Dredd** | A validation run against spec examples | API Blueprint / OpenAPI | ✅ |
+| **Postman / contract tools** | Collections tied to the platform | hand-written assertions | varies |
+
+If you want property-based fuzzing today, Schemathesis is excellent — use it.
+CHERENKOV is for when the deliverable is a **readable regression suite**: tests
+your team can read, review in a PR, extend by hand, and keep running in plain
+`npx playwright test` long after removing CHERENKOV itself. The drift findings
+are the demo; the ejected suite is the product.
+
+---
+
 ## Architecture
 
 ```mermaid

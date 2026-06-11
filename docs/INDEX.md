@@ -74,8 +74,8 @@ findings, and context to prevent AI amnesia.
 | [QA_DEMO_KIT.md](QA_DEMO_KIT.md) | Demo script |
 | [QA_OUTREACH_TEMPLATES.md](QA_OUTREACH_TEMPLATES.md) | Templates for recruiting QA reviewers |
 | [process/VALIDATION_EVIDENCE_LEDGER.md](process/VALIDATION_EVIDENCE_LEDGER.md) | Evidence ledger for validation |
-| [CHERENKOV_QA_TEST_EXECUTION_REPORT.md](../CHERENKOV_QA_TEST_EXECUTION_REPORT.md) | Test execution report |
-| [QA_TEST_REPORT.md](../QA_TEST_REPORT.md) | QA test report |
+| [reports/CHERENKOV_QA_TEST_EXECUTION_REPORT.md](reports/CHERENKOV_QA_TEST_EXECUTION_REPORT.md) | Test execution report |
+| [reports/QA_TEST_REPORT.md](reports/QA_TEST_REPORT.md) | QA test report |
 
 ---
 
