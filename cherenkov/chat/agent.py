@@ -9,6 +9,7 @@ from cherenkov.chat.domain.models import Session, Message
 from cherenkov.chat.ports.memory import ConversationMemory
 from cherenkov.chat.persona import PersonaRegistry
 from cherenkov.chat.tools import TOOL_REGISTRY, execute_tool
+from cherenkov.chat.guard import get_guard
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,7 @@ class QAChatAgent:
         self.add_user_message(session_id, user_message)
         llm_messages = self._prepare_llm_context(session_id)
         response_content = self._call_llm(llm_messages)
+        get_guard().record_llm_call(llm_messages, response_content)
         assistant_msg = Message(
             role="assistant", content=response_content, session_id=session_id
         )
@@ -88,6 +90,7 @@ class QAChatAgent:
         self.add_user_message(session_id, user_message)
         llm_messages = self._prepare_llm_context(session_id)
         full_content = self._call_llm(llm_messages)
+        get_guard().record_llm_call(llm_messages, full_content)
         words = full_content.split()
         for i, word in enumerate(words):
             token = word + (" " if i < len(words) - 1 else "")

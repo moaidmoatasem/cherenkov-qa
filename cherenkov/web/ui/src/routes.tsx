@@ -18,6 +18,13 @@ export const ROUTES = {
   settings: '/settings',
   uiKit: '/ui-kit',
   devices: '/devices',
+  sdd: '/sdd',
+  sddSessions: '/sdd/sessions',
+  sddExperience: '/sdd/experience',
+  sddTokens: '/sdd/tokens',
+  sddGraph: '/sdd/graph',
+  sddWiki: '/sdd/wiki',
+  sddConfig: '/sdd/config',
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;

@@ -127,7 +127,7 @@ TRACK F (K8s):                                8 (K8s + Cloud + Gate) ↓
 | 9-10 | Phase 4 (Chat) | - | - | - | - | - |
 | 11-14 | - | - | - | Phase 6 (Mobile Exec) | - | K8s fixes |
 | 14-16 | - | - | - | - | Phase 7 (Dashboard) | - |
-| 16-20 | - | - | - | - | - | Phase 8 (K8s+Gate) |
+| 16-20 | ✅ | ✅ | ✅ | ✅ | ✅ | Phase 8 (K8s+Gate) complete |
 
 ---
 
@@ -158,7 +158,7 @@ Phase 3 ──→ Phase 7 (desktop needs to exist for dashboard)
 | Phase 4 (Chat) | Phase 7 (Dashboard) | ChatPanel shows streaming chat | SSE endpoint works with ChatAgent |
 | Phase 5 (Mobile) | Phase 7 (Dashboard) | MobileScreen shows pilot traces | Mobile traces appear in dashboard |
 | Phase 0a (Bug fix) | All | All 8 bugs must be fixed before foundations merge | `pytest tests/unit/` + `pytest tests/smoke/` green |
-| Phase 8 (K8s) | All | CRD extensions don't break existing deployment | `make k3d-test` green |
+| Phase 8 (K8s) | All ✅ | CRD extensions don't break existing deployment ✅ | `make k3d-test` green ✅ |
 
 ### Integration Testing Strategy
 
@@ -401,7 +401,7 @@ For every cross-phase integration point:
 - ReviewScreen mobile+chat (#384)
 - Health poll widget (#385)
 
-### Phase 8: K8s + Cloud + Validation Gate (Weeks 16-20)
+### ✅ Phase 8: K8s + Cloud + Validation Gate (Weeks 16-20) — Complete
 
 **EPIC:** #287  
 **Tickets:** #386-#391 (6 issues)  
@@ -563,7 +563,7 @@ For every cross-phase integration point:
 6. **Weeks 9-10:** Phase 4 (Chat Agents)
 7. **Weeks 11-14:** Phase 6 (Mobile Execution)
 8. **Weeks 14-16:** Phase 7 (Dashboard Revamp)
-9. **Weeks 16-20:** Phase 8 (K8s + Validation Gate)
+9. **Weeks 16-20:** Phase 8 (K8s + Validation Gate) ✅
 
 ---
 

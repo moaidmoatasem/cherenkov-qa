@@ -4,6 +4,7 @@
 
 # Core data validation
 pydantic>=2.7.0,<3.0.0
+jsonschema>=4.0.0
 
 # HTTP / networking
 requests
@@ -30,6 +31,16 @@ redis>=5.0.0
 # Response-body validation in the spec+prism oracle (graceful fallback if
 # absent, but tests/unit/test_oracle_body_validation.py requires it)
 jsonschema>=4.0.0
+
+# Agent safety & governance (optional — graceful fallback if absent)
+# Sponsio: runtime contract enforcement (Apache 2.0)
+#   pip install sponsio
+# Microsoft Agent Governance Toolkit: policy engine (MIT)
+#   pip install agent-governance-toolkit-core
+# AgentRR: record/replay debugging (Apache 2.0)
+#   pip install agentrr
+#
+# All three are optional. The chat agent works without them.
 
 # Test tooling
 pytest>=8.0.0
