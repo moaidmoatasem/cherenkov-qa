@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "last_updated": "2026-06-09T22:32:09.250251+00:00",
-  "experience_count": 2,
-  "sessions_contributing": 2,
+  "last_updated": "2026-06-11T10:17:24.111471+00:00",
+  "experience_count": 7,
+  "sessions_contributing": 5,
   "experiences": [
     {
       "id": "exp_seed_001",
@@ -36,6 +36,71 @@
         "test-e2e"
       ],
       "session_id": "sess_20260609223124_025597"
+    },
+    {
+      "id": "exp_sess_20260611094450_976e10_0774",
+      "timestamp": "2026-06-11T09:55:18.853509+00:00",
+      "task": "planning",
+      "action": "decision Aligned",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "planning"
+      ],
+      "session_id": "sess_20260611094450_976e10"
+    },
+    {
+      "id": "exp_sess_20260611095846_a8297d_dca2",
+      "timestamp": "2026-06-11T10:02:37.497453+00:00",
+      "task": "coding",
+      "action": "decision Wired run_k6_perf, export_jira_ticket, and scan_mena_compliance stub tools in handlers.py and validated inputs at trust boundary using contracts.py",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "coding"
+      ],
+      "session_id": "sess_20260611095846_a8297d"
+    },
+    {
+      "id": "exp_sess_20260611100720_8c7d4e_5773",
+      "timestamp": "2026-06-11T10:17:24.111419+00:00",
+      "task": "feature",
+      "action": "decision Proposed implementation plan for JUnit XML and SARIF formats (Issue #444) and updated task.md checklist.",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "feature"
+      ],
+      "session_id": "sess_20260611100720_8c7d4e"
+    },
+    {
+      "id": "exp_sess_20260611100720_8c7d4e_59d5",
+      "timestamp": "2026-06-11T10:17:24.111448+00:00",
+      "task": "feature",
+      "action": "decision Proposed implementation plan for GitHub Actions marketplace action (Issue #443) and updated task.md checklist.",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "feature"
+      ],
+      "session_id": "sess_20260611100720_8c7d4e"
+    },
+    {
+      "id": "exp_sess_20260611100720_8c7d4e_6995",
+      "timestamp": "2026-06-11T10:17:24.111465+00:00",
+      "task": "feature",
+      "action": "decision Implemented action.yml, entrypoint.sh, updated Dockerfile, and added test_github_action.py to support GitHub Actions Integration.",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "feature"
+      ],
+      "session_id": "sess_20260611100720_8c7d4e"
     }
   ],
   "pattern_index": {
@@ -50,6 +115,17 @@
     ],
     "test-e2e": [
       "exp_sess_20260609223124_025597_36f4"
+    ],
+    "planning": [
+      "exp_sess_20260611094450_976e10_0774"
+    ],
+    "coding": [
+      "exp_sess_20260611095846_a8297d_dca2"
+    ],
+    "feature": [
+      "exp_sess_20260611100720_8c7d4e_5773",
+      "exp_sess_20260611100720_8c7d4e_59d5",
+      "exp_sess_20260611100720_8c7d4e_6995"
     ]
   }
 }

@@ -36,5 +36,5 @@ COPY . /app
 # Copy the built UI into the application
 COPY --from=ui-build /app/cherenkov/web/ui/dist /app/cherenkov/web/ui/dist
 
-# Set the entrypoint
-ENTRYPOINT ["python", "cherenkov.py"]
+RUN chmod +x /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]

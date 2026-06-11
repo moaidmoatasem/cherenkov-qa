@@ -1,0 +1,37 @@
+name: 'CHERENKOV Conformance Check'
+description: 'Generate and run API conformance tests from your OpenAPI spec'
+author: 'moaidmoatasem'
+inputs:
+  spec:
+    description: 'Path to OpenAPI spec (JSON/YAML)'
+    required: true
+  target:
+    description: 'API server URL to test against'
+    required: true
+  fail-on-drift:
+    description: 'Exit code 1 if conformance violations found'
+    required: false
+    default: 'true'
+  llm-provider:
+    description: 'LLM provider (openai|ollama)'
+    required: false
+    default: 'openai'
+  openai-api-key:
+    description: 'OpenAI API key (required if llm-provider is openai)'
+    required: false
+outputs:
+  violations:
+    description: 'Number of conformance violations found'
+  report-path:
+    description: 'Path to generated conformance report'
+  sarif-path:
+    description: 'Path to SARIF output'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    INPUT_SPEC: ${{ inputs.spec }}
+    INPUT_TARGET: ${{ inputs.target }}
+    INPUT_FAIL_ON_DRIFT: ${{ inputs.fail-on-drift }}
+    INPUT_LLM_PROVIDER: ${{ inputs.llm-provider }}
+    OPENAI_API_KEY: ${{ inputs.openai-api-key }}

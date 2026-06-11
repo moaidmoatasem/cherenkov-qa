@@ -126,11 +126,66 @@ def check_egress_blocked(cfg: LayeredConfig) -> tuple[bool, str]:
     return healthy, "; ".join(warnings) if warnings else "egress policy consistent"
 
 
-def run_doctor() -> int:
+def check_cargo() -> tuple[bool, str]:
+    path = shutil.which("cargo")
+    if path:
+        try:
+            result = subprocess.run(
+                ["cargo", "--version"], capture_output=True, text=True, timeout=10
+            )
+            if result.returncode == 0:
+                return True, result.stdout.strip()
+            return False, f"cargo execution failed: {result.stderr.strip()}"
+        except Exception as e:
+            return False, f"cannot get cargo version: {e}"
+    return False, "not found on PATH"
+
+
+def check_tauri_cli() -> tuple[bool, str]:
+    path = shutil.which("cargo-tauri") or shutil.which("tauri")
+    if path:
+        try:
+            cmd = ["cargo", "tauri", "--version"] if path.endswith("cargo-tauri") else ["tauri", "--version"]
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=10
+            )
+            if result.returncode == 0:
+                return True, result.stdout.strip()
+            return False, f"tauri execution failed: {result.stderr.strip()}"
+        except Exception as e:
+            return False, f"cannot get tauri-cli version: {e}"
+    return False, "not found on PATH (run: cargo install tauri-cli)"
+
+
+def run_doctor(desktop: bool = False) -> int:
     """Execute `cherenkov doctor`.
 
     Returns exit code (0 = healthy, 1 = warnings/issues found).
     """
+    if desktop:
+        print("=" * 64)
+        print("  CHERENKOV doctor -- Desktop Host Environment Check")
+        print("=" * 64)
+        print("\n  -- Desktop Host Environment --")
+        cargo_ok, cargo_detail = check_cargo()
+        print(f"  {'cargo':<30} {'[OK]' if cargo_ok else '[NO]'}  {cargo_detail}")
+        
+        tauri_ok, tauri_detail = check_tauri_cli()
+        print(f"  {'tauri-cli':<30} {'[OK]' if tauri_ok else '[NO]'}  {tauri_detail}")
+        
+        issues = 0
+        if not cargo_ok:
+            issues += 1
+        if not tauri_ok:
+            issues += 1
+            
+        print(f"\n  {'-' * 60}")
+        if issues == 0:
+            print("  [OK] Desktop host toolchain complete and healthy.")
+        else:
+            print(f"  [WARN] {issues} issue(s) detected - review warnings above.")
+        print()
+        return 0 if issues == 0 else 1
     print("=" * 64)
     print("  CHERENKOV doctor -- system health check")
     print("=" * 64)

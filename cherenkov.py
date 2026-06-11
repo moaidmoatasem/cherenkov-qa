@@ -121,6 +121,8 @@ def get_parser() -> argparse.ArgumentParser:
     # Legacy engine CLI compatibility: operator passes --spec and --output
     validate_parser.add_argument('--spec', help='Path to OpenAPI spec (JSON/YAML) — legacy compat')
     validate_parser.add_argument('--output', choices=['json', 'text'], default=None, help='Output format — legacy compat')
+    validate_parser.add_argument('--output-format', choices=['junit', 'sarif', 'allure'], default=None, help='Output report format for CI/CD')
+    validate_parser.add_argument('--allure-dir', default='allure-results', help='Output directory for Allure result files (default: allure-results/)')
 
     self_test_parser = subparsers.add_parser('self-test', help='Run a deterministic dry-run of the pipeline (mocking Ollama and the server)')
 
@@ -152,6 +154,7 @@ def get_parser() -> argparse.ArgumentParser:
                             help='Overwrite existing cherenkov.toml')
 
     doctor_parser = subparsers.add_parser('doctor', help='System health check (E5-3)')
+    doctor_parser.add_argument('--desktop', action='store_true', help='Check Rust and Tauri CLI dependencies for Desktop host')
 
     dashboard_parser = subparsers.add_parser('dashboard', help='Visualise Truth Model + divergences (E5-4, defer-first)')
 
@@ -314,6 +317,41 @@ def main():
             else:
                 print(f'\nError: {msg}\n')
             sys.exit(1)
+
+        # Resolve spec path
+        spec_path = None
+        if args.spec:
+            spec_path = args.spec
+        else:
+            try:
+                from cherenkov.core.config_loader import load_effective_config
+                cfg = load_effective_config()
+                specs = cfg.autodetect_spec()
+                if specs:
+                    spec_path = specs[0]
+            except Exception:
+                pass
+            if not spec_path:
+                spec_path = "stub/target_spec.json"
+
+        passed_count = sum(1 for r in results.get('reports', []) if r.get('passed', False))
+        total = len(results.get('reports', []))
+
+        if getattr(args, 'output_format', None) == 'junit':
+            from cherenkov.execution.emitters.junit import emit_junit
+            print(emit_junit(results, spec_path=spec_path))
+            sys.exit(0 if passed_count == total else 1)
+        elif getattr(args, 'output_format', None) == 'sarif':
+            from cherenkov.execution.emitters.sarif import emit_sarif
+            print(emit_sarif(results, spec_path=spec_path))
+            sys.exit(0 if passed_count == total else 1)
+        elif getattr(args, 'output_format', None) == 'allure':
+            from cherenkov.execution.emitters.allure import emit_allure
+            output_dir = getattr(args, 'allure_dir', 'allure-results')
+            paths = emit_allure(results, output_dir=output_dir, spec_path=spec_path)
+            print(f"Allure results written to {output_dir}/ ({len(paths)} file(s))")
+            sys.exit(0 if passed_count == total else 1)
+
         if args.output == 'json':
             reports = results.get('reports', [])
             divergences = []
@@ -390,7 +428,7 @@ def main():
 
     elif args.command == 'doctor':
         from cherenkov.stages.doctor_cmd import run_doctor
-        sys.exit(run_doctor())
+        sys.exit(run_doctor(desktop=args.desktop))
 
     elif args.command == 'dashboard':
         from cherenkov.dashboard.render import run_dashboard

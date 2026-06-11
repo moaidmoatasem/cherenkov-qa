@@ -40,6 +40,9 @@ from cherenkov.mcp.contracts import (
     ChatQueryIdiomsInput,
     ChatExplainDivergenceInput,
     ChatRunTestInput,
+    RunK6PerfInput,
+    ExportJiraTicketInput,
+    ScanMenaComplianceInput,
     INVALID_PARAMS,
     MCPContent,
     MCPResource,
@@ -229,7 +232,13 @@ TOOLS: list[MCPTool] = [
     MCPTool(
         name="scan_mena_compliance",
         description="Run the MENA compliance localization and data residency checks.",
-        inputSchema=MCPToolInputSchema(properties={}, required=[]),
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "target_url": MCPToolParam(type="string", description="Optional target URL."),
+                "spec_path": MCPToolParam(type="string", description="Optional OpenAPI specification path.")
+            },
+            required=[]
+        ),
     ),
     MCPTool(
         name="chat_query_verdicts",
@@ -499,11 +508,28 @@ def _tool_visual_diff(args: dict[str, Any]) -> MCPToolCallResult:
         return _err_content(f"VisualDiff error: {exc}")
 
 def _tool_run_perf(args: dict[str, Any]) -> MCPToolCallResult:
-    return _err_content(
-        "This tool is not yet fully implemented. "
-        "run_perf requires k6 >= 0.50 to be installed and configured. "
-        "See docs/MODULE_STATUS.md for implementation status."
-    )
+    try:
+        inp = RunK6PerfInput.model_validate(args)
+        from cherenkov.core.config import Config
+        from cherenkov.core.contracts import PerfSlice
+        from cherenkov.core.orchestrator import OrchestrationEngine
+
+        target_url = inp.target_url or Config.API_URL
+        sl = PerfSlice(
+            name="mcp_run",
+            target_url=target_url,
+            endpoint="/",
+            method="GET",
+            vus=5,
+            duration_sec=5
+        )
+        engine = OrchestrationEngine()
+        reports = engine.run_perf_stage(slices=[sl])
+        if not reports:
+            return _err_content("No reports returned from perf stage.")
+        return _ok_content(reports[0].model_dump())
+    except Exception as exc:
+        return _err_content(f"PerfStage error: {exc}")
 
 def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
     query = args.get("query", "")
@@ -516,18 +542,54 @@ def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
         return _err_content(f"RAG error: {exc}")
 
 def _tool_export_jira(args: dict[str, Any]) -> MCPToolCallResult:
-    return _err_content(
-        "This tool is not yet fully implemented. "
-        "JIRA API integration not yet wired — no export performed. "
-        "See docs/MODULE_STATUS.md for implementation status."
-    )
+    try:
+        inp = ExportJiraTicketInput.model_validate(args)
+        q = _queue()
+        item = q.get(inp.item_id)
+        if item is None:
+            return _err_content(f"HITL item {inp.item_id} not found.")
+
+        from cherenkov.validate.jira_exporter import JiraExporter
+        exporter = JiraExporter(run_id=item.run_id)
+
+        file_path = exporter.export_ticket(
+            scenario_id=item.mutation_id or item.id,
+            failure_class=item.review_gate_failed or "UNKNOWN",
+            error_message=item.confidence_reason or "No details provided.",
+            hypothesis=item.confidence_reason
+        )
+
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        return _ok_content({
+            "status": "exported",
+            "file_path": file_path,
+            "ticket_content": content
+        })
+    except Exception as exc:
+        return _err_content(f"Jira export error: {exc}")
 
 def _tool_scan_mena(args: dict[str, Any]) -> MCPToolCallResult:
-    return _err_content(
-        "This tool is not yet fully implemented. "
-        "MENA compliance scanner not yet implemented. "
-        "See docs/MODULE_STATUS.md for implementation status."
-    )
+    try:
+        inp = ScanMenaComplianceInput.model_validate(args)
+        from cherenkov.core.config import Config
+        from cherenkov.compliance.mena_scanner import MENAComplianceScanner
+
+        target_url = inp.target_url or Config.API_URL
+        spec_path = inp.spec_path or "stub/target_spec.json"
+
+        if not os.path.isabs(spec_path) and not os.path.exists(spec_path):
+            repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+            alt_path = os.path.join(repo_root, spec_path)
+            if os.path.exists(alt_path):
+                spec_path = alt_path
+
+        scanner = MENAComplianceScanner(run_id="mcp_compliance")
+        report = scanner.run_compliance_audit(target_url=target_url, spec_path=spec_path)
+        return _ok_content(report)
+    except Exception as exc:
+        return _err_content(f"MENA compliance scanner error: {exc}")
 
 
 # ── Chat knowledge tools ──────────────────────────────────────────────────────

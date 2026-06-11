@@ -29,6 +29,7 @@ import (
 
 const (
 	defaultRequeueAfter = 30 * time.Second
+	cleanupFinalizer    = "qa.cherenkov.io/cleanup"
 )
 
 // ConformanceCheckReconciler reconciles a ConformanceCheck object.
@@ -53,6 +54,68 @@ func (r *ConformanceCheckReconciler) Reconcile(ctx context.Context, req reconcil
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, err
+	}
+
+	// Handle deletion finalizer if metadata.DeletionTimestamp is set
+	if !cc.DeletionTimestamp.IsZero() {
+		if containsString(cc.Finalizers, cleanupFinalizer) {
+			logger.Info("deleting ConformanceCheck and cleaning up associated Jobs", "name", cc.Name)
+
+			// Update status phase to Terminating
+			if cc.Status.Phase != "Terminating" {
+				cc.Status.Phase = "Terminating"
+				if err := r.Status().Update(ctx, cc); err != nil {
+					return ctrl.Result{}, err
+				}
+			}
+
+			// List existing Jobs for this ConformanceCheck
+			jobList := &batchv1.JobList{}
+			if err := r.List(ctx, jobList,
+				client.InNamespace(cc.Namespace),
+				client.MatchingLabels{"conformancecheck": cc.Name},
+			); err != nil {
+				return ctrl.Result{}, err
+			}
+
+			jobsStillExist := false
+			for _, job := range jobList.Items {
+				logger.Info("deleting associated Job during finalizer cleanup", "job", job.Name)
+				propagationPolicy := metav1.DeletePropagationBackground
+				if err := r.Delete(ctx, &job, &client.DeleteOptions{
+					PropagationPolicy: &propagationPolicy,
+				}); err != nil {
+					if !errors.IsNotFound(err) {
+						logger.Error(err, "failed to delete Job during finalizer cleanup", "job", job.Name)
+						return ctrl.Result{}, err
+					}
+				} else {
+					jobsStillExist = true
+				}
+			}
+
+			if jobsStillExist {
+				logger.Info("associated Jobs still terminating/deleting, requeuing")
+				return ctrl.Result{RequeueAfter: 2 * time.Second}, nil
+			}
+
+			// Remove finalizer once Jobs are gone
+			cc.Finalizers = removeString(cc.Finalizers, cleanupFinalizer)
+			if err := r.Update(ctx, cc); err != nil {
+				return ctrl.Result{}, err
+			}
+			logger.Info("successfully removed finalizer from ConformanceCheck", "name", cc.Name)
+		}
+		return ctrl.Result{}, nil
+	}
+
+	// Add finalizer to ConformanceCheck if not already present
+	if !containsString(cc.Finalizers, cleanupFinalizer) {
+		cc.Finalizers = append(cc.Finalizers, cleanupFinalizer)
+		if err := r.Update(ctx, cc); err != nil {
+			return ctrl.Result{}, err
+		}
+		logger.Info("successfully added finalizer to ConformanceCheck", "name", cc.Name)
 	}
 
 	// F3: List existing Jobs with label "conformancecheck": cc.Name.
@@ -249,4 +312,24 @@ func (r *ConformanceCheckReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&batchv1.Job{}).
 		Named("conformancecheck").
 		Complete(r)
+}
+
+func containsString(slice []string, s string) bool {
+	for _, item := range slice {
+		if item == s {
+			return true
+		}
+	}
+	return false
+}
+
+func removeString(slice []string, s string) []string {
+	var result []string
+	for _, item := range slice {
+		if item == s {
+			continue
+		}
+		result = append(result, item)
+	}
+	return result
 }

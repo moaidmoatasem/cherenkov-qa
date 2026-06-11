@@ -58,11 +58,11 @@ class PlaywrightRunner:
         # We override baseURL via API_URL env variable which playwright config picks up
 
         if self._use_wsl:
-            exit_code, failure_msg, trace_path = self._exec_via_wsl(
+            exit_code, failure_msg, trace_path, error_line, error_column, error_file = self._exec_via_wsl(
                 scenario_id, api_url, update_snapshots
             )
         else:
-            exit_code, failure_msg, trace_path = self._exec_native(
+            exit_code, failure_msg, trace_path, error_line, error_column, error_file = self._exec_native(
                 scenario_id, api_url, update_snapshots
             )
 
@@ -78,7 +78,10 @@ class PlaywrightRunner:
             "exit_code": exit_code,
             "failure_message": failure_msg,
             "trace_path": trace_path,
-            "test_file": test_file_path
+            "test_file": test_file_path,
+            "error_line": error_line,
+            "error_column": error_column,
+            "error_file": error_file,
         }
 
     def _exec_native(self, scenario_id: str, api_url: str, update_snapshots: bool) -> tuple:
@@ -140,6 +143,9 @@ class PlaywrightRunner:
         stderr = stderr.strip()
         failure_msg = ""
         trace_path = ""
+        error_line = None
+        error_column = None
+        error_file = None
 
         try:
             json_start = stdout.find("{")
@@ -158,6 +164,17 @@ class PlaywrightRunner:
                                     errors = result.get("errors", [])
                                     if errors:
                                         failure_msg += "\n".join([err.get("message", "") for err in errors])
+                                        for err in errors:
+                                            loc = err.get("location")
+                                            if loc and loc.get("file"):
+                                                error_line = loc.get("line")
+                                                error_column = loc.get("column")
+                                                error_file = loc.get("file")
+                                                break
+                                    if not error_line:
+                                        error_line = spec.get("line")
+                                        error_column = spec.get("column")
+                                        error_file = spec.get("file")
             else:
                 if exit_code != 0:
                     failure_msg = stderr or stdout or "Unknown execution failure."
@@ -165,4 +182,4 @@ class PlaywrightRunner:
             if exit_code != 0:
                 failure_msg = stderr or stdout or str(e)
 
-        return exit_code, failure_msg, trace_path
+        return exit_code, failure_msg, trace_path, error_line, error_column, error_file

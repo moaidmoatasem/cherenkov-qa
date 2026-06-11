@@ -173,6 +173,19 @@ class ChatRunTestInput(BaseModel):
     spec_path: str | None = None
 
 
+class RunK6PerfInput(BaseModel):
+    target_url: str | None = Field(default=None, description="Optional target URL.")
+
+
+class ExportJiraTicketInput(BaseModel):
+    item_id: str = Field(min_length=1, max_length=256)
+
+
+class ScanMenaComplianceInput(BaseModel):
+    target_url: str | None = Field(default=None, description="Optional target URL.")
+    spec_path: str | None = Field(default=None, description="Optional OpenAPI specification path.")
+
+
 # ── JSON-RPC error codes (MCP uses standard JSON-RPC + MCP extensions) ───────
 PARSE_ERROR      = -32700
 INVALID_REQUEST  = -32600

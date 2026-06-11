@@ -62,10 +62,11 @@ def _detect_device() -> dict:
 @click.option("--vlm", is_flag=True, help="Check VLM capabilities")
 @click.option("--localai", is_flag=True, help="Check LocalAI availability")
 @click.option("--device", is_flag=True, help="Show device info")
+@click.option("--desktop", is_flag=True, help="Check Rust and Tauri CLI dependencies")
 @click.option("--json-output", "json_out", is_flag=True, help="Output as JSON")
-def doctor(vlm: bool, localai: bool, device: bool, json_out: bool) -> None:
-    report = {"device": {}, "vlm": {}, "localai": {}, "recommendations": []}
-    show_all = not vlm and not localai and not device
+def doctor(vlm: bool, localai: bool, device: bool, desktop: bool, json_out: bool) -> None:
+    report = {"device": {}, "vlm": {}, "localai": {}, "desktop": {}, "recommendations": []}
+    show_all = not vlm and not localai and not device and not desktop
 
     if show_all or device:
         d = _detect_device()
@@ -121,6 +122,43 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool) -> None:
                 click.echo(f"{'=' * 40}")
                 for rec in report["recommendations"]:
                     click.echo(f"  - {rec}")
+
+    if show_all or desktop:
+        import shutil
+        import subprocess
+        cargo_path = shutil.which("cargo")
+        has_cargo = cargo_path is not None
+        cargo_ver = "not found"
+        if has_cargo:
+            try:
+                res = subprocess.run(["cargo", "--version"], capture_output=True, text=True, timeout=5)
+                cargo_ver = res.stdout.strip()
+            except Exception:
+                cargo_ver = "error running cargo"
+
+        tauri_path = shutil.which("cargo-tauri") or shutil.which("tauri")
+        has_tauri = tauri_path is not None
+        tauri_ver = "not found"
+        if has_tauri:
+            try:
+                cmd = ["cargo", "tauri", "--version"] if tauri_path.endswith("cargo-tauri") else ["tauri", "--version"]
+                res = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+                tauri_ver = res.stdout.strip()
+            except Exception:
+                tauri_ver = "error running tauri-cli"
+
+        report["desktop"] = {
+            "cargo_available": has_cargo,
+            "cargo_version": cargo_ver,
+            "tauri_cli_available": has_tauri,
+            "tauri_cli_version": tauri_ver,
+        }
+
+        if not json_out:
+            click.echo(f"\nDesktop Host Environment")
+            click.echo(f"{'=' * 40}")
+            click.echo(f"  Cargo:       {'Yes' if has_cargo else 'No'} ({cargo_ver})")
+            click.echo(f"  Tauri CLI:   {'Yes' if has_tauri else 'No'} ({tauri_ver})")
 
     if json_out:
         click.echo(json.dumps(report, indent=2))
