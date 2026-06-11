@@ -118,9 +118,11 @@ def get_parser() -> argparse.ArgumentParser:
 
     validate_parser = subparsers.add_parser('validate', help='Validate E2E test suite against a real server')
     validate_parser.add_argument('--target', '-t', required=True, help='The real server target base URL')
+    validate_parser.add_argument('--source', choices=['openapi', 'graphql', 'grpc', 'accessibility'], default='openapi', help='Source type for ingestion')
+    validate_parser.add_argument('--format', choices=['json', 'text', 'sarif', 'html', 'junit', 'allure'], default=None, help='Output report format')
     # Legacy engine CLI compatibility: operator passes --spec and --output
     validate_parser.add_argument('--spec', help='Path to OpenAPI spec (JSON/YAML) — legacy compat')
-    validate_parser.add_argument('--output', choices=['json', 'text'], default=None, help='Output format — legacy compat')
+    validate_parser.add_argument('--output', default='.cherenkov/report', help='Output path (extension inferred from --format if not given)')
 
     self_test_parser = subparsers.add_parser('self-test', help='Run a deterministic dry-run of the pipeline (mocking Ollama and the server)')
 
@@ -305,8 +307,49 @@ def main():
     # If not quiet, they also go to stderr.
 
     if args.command == 'validate':
+        if getattr(args, 'source', 'openapi') == 'graphql':
+            from cherenkov.sources.graphql.adapter import GraphQLSourceAdapter
+            from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
+            from cherenkov.stages.generate import GenerateStage
+            
+            source = GraphQLSourceAdapter(args.spec)
+            planner = GraphQLScenarioPlanner()
+            scenarios = planner.plan(source)
+            for sc in scenarios:
+                GenerateStage("cli_validate").run(scenario=sc, source_type="graphql")
+
         engine = ValidationEngine('cli_validate')
         results = engine.validate_suite(args.target)
+        
+        if getattr(args, 'format', None) == 'sarif':
+            from cherenkov.execution.emitters.sarif import SARIFEmitter
+            import os
+            os.makedirs(".cherenkov", exist_ok=True)
+            emitter = SARIFEmitter()
+            from cherenkov.core.contracts import DivergenceReport
+            # Mapping reports dict to DivergenceReport finding format dynamically.
+            report_obj = DivergenceReport(findings=[])
+            for r in results.get('reports', []):
+                from cherenkov.core.contracts import DivergenceFinding
+                if not r.get('passed', False):
+                    report_obj.findings.append(DivergenceFinding(
+                        violation_type="conformance-drift",
+                        endpoint=r.get('scenario_id', 'unknown'),
+                        http_method="ANY",
+                        expected="Valid response",
+                        actual=r.get('error', ''),
+                        summary="Response drift detected",
+                        description=f"Error: {r.get('error', '')}",
+                        severity="high",
+                        remediation="Update API or spec"
+                    ))
+            sarif_data = emitter.emit(report_obj, args.spec or "openapi.yaml")
+            out_path = args.output if getattr(args, 'output', '').endswith('.sarif') else getattr(args, 'output', '.cherenkov/report') + ".sarif"
+            with open(out_path, "w") as f:
+                json.dump(sarif_data, f, indent=2)
+            print(f"SARIF report written to {out_path}")
+            sys.exit(0 if results.get('status') != 'empty' and all(r.get('passed', False) for r in results.get('reports', [])) else 1)
+
         if results.get('status') == 'empty':
             msg = results.get('message', 'Unknown error')
             if args.output == 'json':

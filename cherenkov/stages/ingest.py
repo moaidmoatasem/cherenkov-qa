@@ -108,7 +108,13 @@ class IngestStage:
         components = spec.get("components", {}).get("schemas", {})
         endpoints: list[EndpointSlice] = []
 
-        for url_path, methods in spec.get("paths", {}).items():
+        paths_and_webhooks = {}
+        paths_and_webhooks.update(spec.get("paths", {}))
+        for hook_name, hook_item in spec.get("webhooks", {}).items():
+            if isinstance(hook_item, dict):
+                paths_and_webhooks[f"/_webhook/{hook_name}"] = hook_item
+
+        for url_path, methods in paths_and_webhooks.items():
             for method, op in methods.items():
                 if method.lower() not in ("get", "post", "put", "delete", "patch"):
                     continue
@@ -230,8 +236,12 @@ class IngestStage:
                             if not isinstance(prop_schema, dict):
                                 continue
                             
+                            prop_type = prop_schema.get("type")
+                            if isinstance(prop_type, list) and len(prop_type) > 0:
+                                prop_type = prop_type[0]
+                            
                             # String length violation
-                            if prop_schema.get("type") == "string":
+                            if prop_type == "string":
                                 if "max_length" in prop_schema or "maxLength" in prop_schema:
                                     max_l = prop_schema.get("maxLength") or prop_schema.get("max_length")
                                     mutations.append(
@@ -269,7 +279,7 @@ class IngestStage:
                                             )
                                         )
                             # Number value violation
-                            elif prop_schema.get("type") in ("number", "integer"):
+                            elif prop_type in ("number", "integer"):
                                 if "maximum" in prop_schema:
                                     max_v = prop_schema["maximum"]
                                     mutations.append(
