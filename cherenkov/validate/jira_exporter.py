@@ -87,9 +87,10 @@ class JiraExporter:
         hypothesis: Optional[str] = None,
         resolution_steps: Optional[List[str]] = None,
         similar_cases_count: int = 0,
-        compliance_score: Optional[int] = None
+        compliance_score: Optional[int] = None,
+        project_key: Optional[str] = None
     ) -> str:
-        """Writes the formatted copy-ready Markdown ticket to the standard local ticket directory."""
+        """Writes the formatted copy-ready Markdown ticket, and optionally creates it in Jira via API if credentials are configured."""
         os.makedirs(self.ticket_dir, exist_ok=True)
         filename = f"jira_ticket_{scenario_id}_{int(time.time())}.md"
         file_path = os.path.join(self.ticket_dir, filename)
@@ -105,6 +106,26 @@ class JiraExporter:
             similar_cases_count=similar_cases_count,
             compliance_score=compliance_score
         )
+
+        # Try to create actual Jira ticket if client is configured
+        try:
+            from cherenkov.adapters.exporters.jira_client import JiraClient
+            client = JiraClient()
+            if client.is_configured:
+                project = project_key or os.getenv("CHERENKOV_JIRA_PROJECT", "QA")
+                summary = f"CHERENKOV Drift: {scenario_id}"
+                label = "".join(c if c.isalnum() else "-" for c in failure_class.lower())
+                client.create_issue(
+                    project_key=project,
+                    summary=summary,
+                    description=ticket_content,
+                    labels=["api-conformance", "cherenkov", label]
+                )
+                self.log.info("suggest-only jira ticket exported to Jira REST API")
+            else:
+                self.log.info("Jira credentials not configured, skipping REST API export")
+        except Exception as e:
+            self.log.error("Jira API export failed", error=str(e))
 
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(ticket_content)

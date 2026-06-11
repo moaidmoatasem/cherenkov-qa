@@ -1,0 +1,10 @@
+{
+  "session_id": "sess_20260611094450_976e10",
+  "findings": [
+    {
+      "timestamp": "2026-06-11T09:50:21.919454+00:00",
+      "type": "decision",
+      "message": "decision Aligned"
+    }
+  ]
+}
