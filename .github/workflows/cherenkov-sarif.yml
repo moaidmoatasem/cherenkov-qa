@@ -1,0 +1,39 @@
+name: Cherenkov QA Conformance
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  cherenkov-qa:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Start API Server
+      run: |
+        # Replace with the command to start your API Server
+        echo "Starting API Server..."
+        # e.g., npm run start &
+        # sleep 5
+
+    - name: Run Cherenkov Validation
+      uses: moaidmoatasem/cherenkov-qa@main
+      with:
+        spec_path: 'openapi.yaml' # Replace with your spec file
+        target_url: 'http://localhost:3000' # Replace with your target URL
+        format: 'sarif'
+        output_path: 'cherenkov_results.sarif'
+        
+    - name: Upload SARIF to GitHub Security Data
+      if: always()
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'cherenkov_results.sarif'
+        category: 'cherenkov-qa'

@@ -16,6 +16,7 @@ import (
 
 	validationv1alpha1 "github.com/cherenkov-ai/operator/api/v1alpha1"
 	"github.com/cherenkov-ai/operator/controllers"
+	"github.com/cherenkov-ai/operator/internal/healthcheck"
 )
 
 var (
@@ -65,8 +66,12 @@ func main() {
 		setupLog.Error(err, "unable to set up health check")
 		os.Exit(1)
 	}
-	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
+	if err := mgr.AddReadyzCheck("readyz", mgr.GetCache().WaitForCacheSync); err != nil {
 		setupLog.Error(err, "unable to set up ready check")
+		os.Exit(1)
+	}
+	if err := mgr.AddReadyzCheck("ollama", healthcheck.OllamaReadyz); err != nil {
+		setupLog.Error(err, "unable to set up ollama ready check")
 		os.Exit(1)
 	}
 

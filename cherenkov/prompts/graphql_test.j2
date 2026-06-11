@@ -1,0 +1,11 @@
+You are generating a Playwright/TypeScript conformance test for a GraphQL operation.
+Operation: {{ operation_name }} ({{ kind }})
+Query: {{ gql_query }}
+Variables: {{ variables }}
+Expected structure: {{ expected_response_structure }}
+
+Generate a test that:
+1. Uses graphql-request GraphQLClient
+2. Sends the operation with valid variables
+3. Asserts the response matches the schema structure
+4. Has no CHERENKOV imports (ejectable)

@@ -19,7 +19,14 @@ func NewJobRunner(c client.Client) *JobRunner {
 	return &JobRunner{client: c}
 }
 
-func (r *JobRunner) CreateValidateJob(ctx context.Context, name, namespace, targetService string, targetPort int32, specRef string) error {
+func (r *JobRunner) CreateValidateJob(ctx context.Context, name, namespace, targetService string, targetPort int32, specRef string, deviceTarget string) error {
+	envVars := []corev1.EnvVar{
+		{Name: "OLLAMA_HOST", Value: "http://ollama:11434"},
+	}
+	if deviceTarget != "" {
+		envVars = append(envVars, corev1.EnvVar{Name: "CHERENKOV_DEVICE_TARGET", Value: deviceTarget})
+	}
+
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("validate-%s", name),
@@ -39,9 +46,7 @@ func (r *JobRunner) CreateValidateJob(ctx context.Context, name, namespace, targ
 							Name:  "engine",
 							Image: "cherenkov-engine:latest",
 							ImagePullPolicy: corev1.PullIfNotPresent,
-							Env: []corev1.EnvVar{
-								{Name: "OLLAMA_HOST", Value: "http://ollama:11434"},
-							},
+							Env: envVars,
 							Args: []string{
 								"--spec", "/spec/petstore.json",
 								"--target", fmt.Sprintf("http://%s:%d", targetService, targetPort),

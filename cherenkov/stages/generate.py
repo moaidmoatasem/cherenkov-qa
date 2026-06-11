@@ -99,24 +99,38 @@ class GenerateStage:
 
     def run(
         self,
-        scenario: Scenario,
-        path: str,
-        method: str,
-        operation: dict[str, Any],
-        schemas: dict[str, Any],
-        instruction: str
+        scenario: Any,
+        path: str = "",
+        method: str = "",
+        operation: dict[str, Any] = None,
+        schemas: dict[str, Any] = None,
+        instruction: str = "",
+        source_type: str = "openapi"
     ) -> GenerateOutput:
         t0 = time.time()
-        self.log.info("stage start", scenario_id=scenario.mutation_id)
+        mutation_id = getattr(scenario, "mutation_id", getattr(scenario, "operation_name", "unknown"))
+        self.log.info("stage start", scenario_id=mutation_id)
 
-        user_prompt = self._build_user_prompt(
-            path=path,
-            method=method,
-            operation=operation,
-            schemas=schemas,
-            scenario=scenario,
-            instruction=instruction
-        )
+        if source_type == "graphql":
+            import jinja2
+            env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))))
+            template = env.get_template("graphql_test.j2")
+            user_prompt = template.render(
+                operation_name=scenario.operation_name,
+                kind=scenario.kind,
+                gql_query=scenario.gql_query,
+                variables=scenario.variables,
+                expected_response_structure=scenario.expected_response_structure
+            )
+        else:
+            user_prompt = self._build_user_prompt(
+                path=path,
+                method=method,
+                operation=operation,
+                schemas=schemas,
+                scenario=scenario,
+                instruction=instruction
+            )
 
         temperatures = [0.1, 0.3, 0.5]
         code = ""
@@ -126,7 +140,7 @@ class GenerateStage:
         stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
         temp_dir = os.path.join(stub_dir, "generated_tests")
         os.makedirs(temp_dir, exist_ok=True)
-        temp_file = os.path.join(temp_dir, f"temp_{scenario.mutation_id}.spec.ts")
+        temp_file = os.path.join(temp_dir, f"temp_{mutation_id}.spec.ts")
 
         for temp in temperatures:
             try:
@@ -170,7 +184,7 @@ class GenerateStage:
         if not code or (last_error and "TSC failed" not in last_error and "Ollama" in last_error):
             self.log.error(last_error)
             return GenerateOutput(
-                scenario_id=scenario.mutation_id or "unknown",
+                scenario_id=mutation_id,
                 test_code="",
                 status=Status.FAILED,
                 errors=[StageError(code="OLLAMA_GENERATION_FAILED", detail=last_error)],
@@ -181,7 +195,7 @@ class GenerateStage:
         self.log.info("stage success", duration_ms=dt)
 
         return GenerateOutput(
-            scenario_id=scenario.mutation_id or "unknown",
+            scenario_id=mutation_id,
             test_code=code,
             imports=["@playwright/test", "../client"],
             status=Status.OK,
