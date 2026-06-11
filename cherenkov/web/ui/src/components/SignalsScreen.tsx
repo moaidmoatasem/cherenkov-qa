@@ -41,9 +41,9 @@ export default function SignalsScreen() {
       {activeTab === 'performance' && (
         <Card className="p-6 space-y-6">
           <div className="flex justify-between items-center">
-            <h3 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted">
+            <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted">
               API Latency & Anomaly Baselines
-            </h3>
+            </h2>
             <span className="text-[10px] font-mono text-[#7D8DA1]">UPDATED 1M AGO</span>
           </div>
 
@@ -81,9 +81,9 @@ export default function SignalsScreen() {
 
       {activeTab === 'visual' && (
         <Card className="p-6 space-y-6">
-          <h3 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted">
+          <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted">
             UI Snapshot Comparisons
-          </h3>
+          </h2>
 
           <div className="space-y-4">
             {MOCK_SIGNALS.visual.map((v) => (
@@ -120,9 +120,9 @@ export default function SignalsScreen() {
 
       {activeTab === 'coverage' && (
         <Card className="p-6 space-y-6">
-          <h3 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted">
+          <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted">
             Code Path Verification Coverage
-          </h3>
+          </h2>
 
           <div className="space-y-4">
             {MOCK_SIGNALS.coverage.map((c, idx) => (

@@ -55,6 +55,54 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    _SECURITY_HEADERS = {
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
+        "Content-Security-Policy": (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: blob:; "
+            "connect-src 'self' ws: wss:; "
+            "font-src 'self'; "
+            "frame-ancestors 'none'"
+        ),
+    }
+
+    # Read-only polling endpoints safe to cache briefly (polled every 10s by dashboard)
+    _CACHEABLE_PATHS = {
+        "/api/v1/health",
+        "/healthz",
+        "/api/v1/metrics",
+        "/api/v1/tokens/report",
+        "/api/v1/tokens/recommendations",
+        "/api/v1/overview",
+        "/api/v1/truth-map",
+        "/api/v1/failures",
+    }
+
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        for header, value in self._SECURITY_HEADERS.items():
+            response.headers[header] = value
+        path = request.url.path
+        if path.startswith("/assets/"):
+            # Static assets: long-lived immutable cache (Vite hashes filenames)
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        elif request.method == "GET" and path in self._CACHEABLE_PATHS:
+            # Safe read-only polling endpoints: short cache to reduce repeated backend hits
+            response.headers["Cache-Control"] = "public, max-age=5, stale-while-revalidate=10"
+        else:
+            # Mutating endpoints and sensitive data: never cache
+            response.headers["Cache-Control"] = "no-store"
+        return response
+
+
 def add_security_middleware(app: FastAPI) -> None:
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(InputValidationMiddleware)
+    app.add_middleware(SecurityHeadersMiddleware)

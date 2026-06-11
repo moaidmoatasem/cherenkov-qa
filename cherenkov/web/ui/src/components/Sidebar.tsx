@@ -157,9 +157,10 @@ export default function Sidebar({
   ];
 
   return (
-    <aside 
-      className="w-20 lg:w-[280px] shrink-0 border-r border-white/10 bg-black/20 backdrop-blur-xl flex flex-col justify-between h-full select-none z-10 transition-all duration-300" 
+    <aside
+      className="w-20 lg:w-[280px] shrink-0 border-r border-white/10 bg-black/20 backdrop-blur-xl flex flex-col justify-between h-full select-none z-10 transition-all duration-300"
       id="cherenkov-sidebar"
+      data-testid="sidebar"
     >
       <div className="flex flex-col h-full overflow-y-auto">
         {/* Logo Section */}
@@ -225,16 +226,18 @@ export default function Sidebar({
                         <button
                           key={item.id}
                           id={`nav-item-${item.id}`}
+                          data-testid={`nav-${item.id}`}
+                          data-active={isActive}
                           onClick={() => setActiveTab(item.id)}
                           title={`${item.label} — ${item.desc}`}
                           className={`w-full group px-3 lg:px-4 py-2.5 rounded-lg flex items-center lg:items-start gap-3 transition-all duration-200 text-left relative focus:outline-none focus:ring-1 focus:ring-glow-blue/50 cursor-pointer ${
-                            isActive 
-                              ? 'bg-white/10 text-glow-bright' 
+                            isActive
+                              ? 'bg-white/10 text-glow-bright'
                               : 'text-[#7D8DA1] hover:text-[#E6EDF3] hover:bg-white/5'
                           }`}
                         >
                           {isActive && (
-                            <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-glow-blue rounded-r shadow-[0_0_12px_rgba(34,211,238,0.9)]" />
+                            <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-glow-blue rounded-r shadow-[0_0_12px_rgba(34,211,238,0.9)]" data-testid="nav-active-indicator" />
                           )}
                           <Icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-glow-bright' : 'text-[#7D8DA1] group-hover:text-glow-bright'}`} />
                           <div className="hidden lg:block min-w-0">
@@ -297,9 +300,11 @@ export default function Sidebar({
         <button
           onClick={() => setActiveTab('settings')}
           title="Open Settings"
+          data-testid="nav-settings"
+          data-active={activeTab === 'settings'}
           className={`w-full group px-3 lg:px-4 py-2 rounded-lg flex items-center gap-3 transition-colors cursor-pointer focus:outline-none focus:ring-1 focus:ring-glow-blue/50 ${
-            activeTab === 'settings' 
-              ? 'bg-white/10 text-glow-bright' 
+            activeTab === 'settings'
+              ? 'bg-white/10 text-glow-bright'
               : 'text-[#7D8DA1] hover:text-[#E6EDF3] hover:bg-white/5'
           }`}
         >

@@ -210,7 +210,7 @@ export default function PipelineScreen({
   const contextPercent = Math.min(100, Math.round((contextTokens / 32768) * 100));
 
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10 flex flex-col justify-between" id="pipeline-screen">
+    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10 flex flex-col justify-between" id="pipeline-screen" data-testid="pipeline-screen">
       
       {/* Upper Panel header controls */}
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
@@ -236,6 +236,7 @@ export default function PipelineScreen({
           <button
             onClick={() => setIsPaused(!isPaused)}
             id="pipeline-pause-resume-btn"
+            data-testid="pipeline-run-btn"
             className="flex items-center gap-1.5 px-4.5 py-1.5 rounded bg-white/5 border border-white/10 hover:border-glow-blue text-[#E6EDF3] text-xs font-mono transition duration-200 cursor-pointer"
           >
             {isPaused ? (
@@ -283,7 +284,7 @@ export default function PipelineScreen({
                       <h4 className="text-sm font-semibold text-text-primary mt-1">{stage.id === 'generate' && !isPaused ? `Synthesizing ${currentTest.endpoint}` : stage.summary}</h4>
                     </div>
                     {/* Status Dot */}
-                    <span className="relative flex h-2.5 w-2.5 mt-1">
+                    <span className="relative flex h-2.5 w-2.5 mt-1" data-testid={`pipeline-status-${stage.id}`} data-status={stage.status}>
                       {isRunning && (
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-glow-blue opacity-85"></span>
                       )}
@@ -380,7 +381,7 @@ export default function PipelineScreen({
                 <span className="text-[#7D8DA1]">TOKEN BUDGET</span>
                 <span className="text-text-primary">{tokensSpent.toLocaleString()} / 50,000</span>
               </div>
-              <div className="w-full bg-black/40 h-2 rounded-full border border-white/10">
+              <div className="w-full bg-black/40 h-2 rounded-full border border-white/10" data-testid="pipeline-progress">
                 <div className="bg-glow-blue rounded-full h-full" style={{ width: `${(tokensSpent / 50000) * 100}%` }} />
               </div>
               <div className="flex justify-between text-[11px] font-mono text-[#7D8DA1]">
