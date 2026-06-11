@@ -93,3 +93,8 @@ sponsio.yaml
 operator/k8s-run
 operator/k8s-run-static
 operator/manager
+
+# Generated visual-regression artifacts (VisualDiffEngine owns these)
+stub/generated_tests/visual_regression_baseline_ui.spec.ts
+stub/generated_tests/*-snapshots/
+stub/generated_tests/visual_cli_*.spec.ts
