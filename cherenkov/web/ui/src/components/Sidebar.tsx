@@ -26,7 +26,8 @@ import {
   Star,
   MessageSquare,
   Smartphone,
-  Gauge
+  Gauge,
+  Eye
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
 import { Project } from '../types';
@@ -112,7 +113,6 @@ export default function Sidebar({
       items: [
         { id: 'truth-map', label: 'Truth Map', icon: Network, desc: 'The endpoint claim graph' },
         { id: 'divergences', label: 'Divergences', icon: Zap, desc: 'Confirmed API inconsistencies' },
-        { id: 'explore', label: 'Explore', icon: Search, desc: 'Autonomous explorer digests' },
       ]
     },
     {
@@ -126,6 +126,8 @@ export default function Sidebar({
       label: 'SIGNALS',
       items: [
         { id: 'signals', label: 'Signals', icon: TrendingUp, desc: 'Visual, Perf & Coverage details' },
+        { id: 'explore', label: 'Explore', icon: Search, desc: 'Autonomous crawler — flows & anomalies' },
+        { id: 'visual-regression', label: 'Visual Regression', icon: Eye, desc: 'VLM-semantic screenshot diff' },
       ]
     },
     {
