@@ -14,7 +14,7 @@ export default function GovernanceScreen() {
   useEffect(() => {
     fetchGovernance().then(setGov);
   }, []);
-  const { addToast } = useToast();
+  const { toast: addToast } = useToast();
 
   const handleExport = () => {
     addToast('Compliance audit log export initialized successfully.', 'success');

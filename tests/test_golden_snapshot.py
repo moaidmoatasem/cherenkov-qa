@@ -1,3 +1,4 @@
+# TODO: convert to pytest — integration test with mocks heavily (left for follow-up)
 import unittest
 from unittest.mock import patch, MagicMock
 from cherenkov.stages.generate import GenerateStage

@@ -27,7 +27,7 @@ interface HealingScreenProps {
 }
 
 export default function HealingScreen({ onSuggestResolveCount }: HealingScreenProps) {
-  const { addToast } = useToast();
+  const { toast: addToast } = useToast();
   const [failures, setFailures] = useState<FailingTest[]>([]);
 
   useEffect(() => {

@@ -1,0 +1,16 @@
+{
+  "session": {
+    "id": "sess_init",
+    "status": "closed",
+    "task": null,
+    "task_type": null,
+    "started_at": null,
+    "ended_at": null,
+    "findings_count": 0,
+    "token_total": 0,
+    "summary": null,
+    "compacted": false
+  },
+  "previous_sessions": [],
+  "sessions_since_compact": 0
+}

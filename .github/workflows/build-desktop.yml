@@ -1,0 +1,129 @@
+name: Build & Release Desktop App
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      draft:
+        description: 'Create as draft release'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-sidecar:
+    name: Build Python Sidecar (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: cherenkov-launcher-linux
+            binary: cherenkov-launcher
+          - os: macos-latest
+            artifact: cherenkov-launcher-macos
+            binary: cherenkov-launcher
+          - os: windows-latest
+            artifact: cherenkov-launcher-windows
+            binary: cherenkov-launcher.exe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build sidecar with PyInstaller
+        run: pyinstaller packaging/cherenkov.spec --distpath packaging/dist
+
+      - name: Rename binary for Tauri sidecar convention
+        shell: bash
+        run: |
+          TRIPLE=$(python3 -c "import platform; m=platform.machine().lower(); s=platform.system().lower(); print(f'{m}-apple-darwin' if s=='darwin' else (f'{m}-pc-windows-msvc' if s=='windows' else f'{m}-unknown-linux-gnu'))")
+          SRC="packaging/dist/${{ matrix.binary }}"
+          EXT="${{ matrix.binary == 'cherenkov-launcher.exe' && '.exe' || '' }}"
+          DEST="desktop/src-tauri/binaries/cherenkov-launcher-${TRIPLE}${EXT}"
+          mkdir -p desktop/src-tauri/binaries
+          cp "$SRC" "$DEST"
+          echo "Sidecar placed at: $DEST"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: desktop/src-tauri/binaries/
+
+  build-desktop:
+    name: Build Desktop App (${{ matrix.os }})
+    needs: build-sidecar
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: cherenkov-linux
+          - os: macos-latest
+            artifact: cherenkov-macos
+          - os: windows-latest
+            artifact: cherenkov-windows
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: cherenkov/web/ui/package-lock.json
+
+      - name: Build frontend
+        working-directory: cherenkov/web/ui
+        run: |
+          npm ci
+          npm run build
+
+      - name: Download sidecar binary
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.os == 'ubuntu-latest' && 'cherenkov-launcher-linux' || matrix.os == 'macos-latest' && 'cherenkov-launcher-macos' || 'cherenkov-launcher-windows' }}
+          path: desktop/src-tauri/binaries/
+
+      - name: Make sidecar executable (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: chmod +x desktop/src-tauri/binaries/*
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: desktop
+          tagName: ${{ github.ref_name }}
+          releaseName: 'CHERENKOV ${{ github.ref_name }}'
+          releaseBody: |
+            ## What's Changed
+            See [CHANGELOG.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CHANGELOG.md) for details.
+
+            ## Download
+            - **Windows**: `.msi` or `.exe` installer
+            - **macOS**: `.dmg` disk image
+            - **Linux**: `.AppImage` (universal) or `.deb` package
+          releaseDraft: ${{ github.event.inputs.draft == 'true' || github.event_name == 'workflow_dispatch' }}
+          includeUpdaterJson: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            desktop/src-tauri/target/release/bundle/

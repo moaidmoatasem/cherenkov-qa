@@ -4,6 +4,10 @@
 **Status:** Active  
 **Related EPIC:** #277 (Phase -1)
 
+> **Reading path:** this is the testing policy and pyramid. For the project
+> state see [STATUS.md](STATUS.md); for the consolidated plan see
+> [PHASE_PLAN.md](PHASE_PLAN.md); for the doc-tree map see [INDEX.md](INDEX.md).
+
 ---
 
 ## Testing Pyramid

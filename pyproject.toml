@@ -7,9 +7,17 @@ name = "cherenkov"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
-    "pydantic==2.7.1",
+    "pydantic>=2.7.0,<3.0.0",
     "requests",
     "pyyaml",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "python-multipart>=0.0.9",
+    "httpx>=0.27.0",
+    "click>=8.1.0",
+    "websockets",
+    "redis>=5.0.0",
+    "Appium-Python-Client>=3.0.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -18,3 +26,10 @@ include = ["cherenkov*"]
 
 [project.scripts]
 cherenkov = "cherenkov:main"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+# tests/standalone holds suites invoked directly via unittest in CI
+# (service/env-dependent); they are not part of pytest discovery.
+norecursedirs = ["standalone", ".*", "__pycache__", "node_modules"]

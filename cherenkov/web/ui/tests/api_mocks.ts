@@ -638,6 +638,12 @@ export async function setupApiMocks(page: any) {
       status: 'ok', metrics: { requestCount: 142, totalTokens: 128000, totalCost: 0.42, totalDurationMs: 32400, defectEscapeCount: 2, falsePositiveRate: 1.2, maintenanceEfficiency: 0.88 }
     })});
   });
+  await page.route('**/api/v1/visual/scenarios', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
+      { scenario_id: 'vs-1', status: 'ok', verdict: 'AUTO_APPROVE', gates: [], vlm_kind: 'harmless_shift', vlm_confidence: 0.93, vlm_detail: 'Anti-aliasing drift only', url: 'http://localhost:8000/' },
+      { scenario_id: 'vs-2', status: 'failed', verdict: 'HITL', gates: [], vlm_kind: 'anomaly', vlm_confidence: 0.88, vlm_detail: 'Button overlaps form field', url: 'http://localhost:8000/checkout' },
+    ])});
+  });
   await page.route('**/api/v1/doctor', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ checks: [
       { id: 'd1', name: 'Device Connectivity', status: 'passed', message: 'VLM host reachable' },

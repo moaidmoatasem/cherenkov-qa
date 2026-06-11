@@ -25,6 +25,7 @@ class GovernanceKPI:
     total_endpoints: int = 0
     covered_endpoints: int = 0
     last_run_ts: int = 0
+    coverage_data_available: bool = True
 
     @property
     def health_score(self) -> float:
@@ -141,6 +142,8 @@ class GovernanceCollector:
                 kpi.passed_tests = accepted
                 kpi.failed_tests = rejected
                 kpi.escaped_defects = escaped
+                # false_positives here = verdicts rejected by human reviewers
+                # This is a proxy for FP rate, not a statistically rigorous measure
                 kpi.false_positives = rejected
                 kpi.idiom_count = idiom_count
 
@@ -167,10 +170,11 @@ class GovernanceCollector:
             except Exception as e:
                 self.log.warning("could not read coverage db", error=str(e))
 
-        if kpi.coverage == 0.0 and kpi.total_endpoints == 0:
-            kpi.total_endpoints = 1
-            kpi.covered_endpoints = 1
-            kpi.coverage = 1.0
+        if kpi.total_endpoints == 0:
+            # No endpoint data available — coverage is unknown, not 100%
+            kpi.coverage = 0.0
+            # Add a flag so dashboards can show "no data" instead of 0%
+            kpi.coverage_data_available = False
 
         kpi.maintenance_score = max(0.0, min(1.0, 1.0 - kpi.false_positive_rate * 0.5 - kpi.escape_rate * 0.3))
 

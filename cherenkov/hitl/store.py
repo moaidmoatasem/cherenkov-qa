@@ -15,6 +15,7 @@ encryption. Falls back to plain SQLite if pysqlcipher3 is not available.
 """
 from __future__ import annotations
 
+import os as _os
 import os
 import sqlite3
 import time
@@ -66,11 +67,21 @@ def _default_db_path() -> str:
     return os.path.join(root, ".cherenkov", "hitl.db")
 
 
+def _validate_db_path(path: str) -> str:
+    if path == ":memory:":
+        return path
+    resolved = _os.path.realpath(_os.path.abspath(path))
+    if not resolved.endswith(".db"):
+        raise ValueError(f"db_path must end with .db, got: {path!r}")
+    parent = _os.path.dirname(resolved)
+    if not _os.path.exists(parent):
+        _os.makedirs(parent, exist_ok=True)
+    return resolved
+
+
 class HitlQueue:
     def __init__(self, db_path: str | None = None) -> None:
-        self.db_path = db_path or _default_db_path()
-        if self.db_path != ":memory:":
-            os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        self.db_path = _validate_db_path(db_path or _default_db_path())
         self._init()
 
     def _connect(self) -> sqlite3.Connection:
@@ -214,3 +225,7 @@ class HitlQueue:
 
 def _now() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+# HitlStore is an alias for HitlQueue (enables external code / tests to use either name)
+HitlStore = HitlQueue

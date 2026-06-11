@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const ALL_VIEWPORTS = !!process.env.ALL_VIEWPORTS;
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: false,
@@ -18,6 +20,18 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    ...(ALL_VIEWPORTS
+      ? [
+          {
+            name: 'firefox',
+            use: { ...devices['Desktop Firefox'] },
+          },
+          {
+            name: 'mobile-chrome',
+            use: { ...devices['Pixel 5'] },
+          },
+        ]
+      : []),
   ],
   webServer: {
     command: 'npm run dev',

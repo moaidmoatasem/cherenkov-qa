@@ -8,18 +8,13 @@ from cherenkov.core.contracts import CostEntry, AccountingReport, CacheStats
 
 
 def _estimate_tokens(text: object) -> int:
-    """Approximate token count from response payload.
-
-    Uses ~4 characters per token as a rough heuristic for code and JSON output.
-    For Ollama the actual eval_count should be preferred when available.
-    """
-    raw = str(text)
-    return max(1, len(raw) // 4)
+    """Approximate token count from response payload (~4 chars per token)."""
+    return max(1, len(str(text)) // 4)
 
 
 _COST_PER_TOKEN = {
-    "ollama": 0.0,
-    "openai": 0.000015,
+    "ollama":    0.0,
+    "openai":    0.000015,
     "anthropic": 0.00003,
 }
 
@@ -29,10 +24,14 @@ class CostAccountant:
 
     Records each call (cache-hit or cache-miss) with duration, token estimate,
     and computed cost. Provides a summary AccountingReport on demand.
+
+    Optionally persists every record to TokenMonitor for cross-run analytics.
+    Pass monitor=None (default) to keep behaviour purely in-memory.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, monitor=None) -> None:
         self._entries: list[CostEntry] = []
+        self._monitor = monitor  # TokenMonitor | None — injected to avoid hard import cycle
 
     def record(
         self,
@@ -41,19 +40,55 @@ class CostAccountant:
         tokens: int = 0,
         cache_hit: bool = False,
         provider: str = "ollama",
+        *,
+        prompt_tokens: int = 0,
+        completion_tokens: int = 0,
+        stage: str = "",
+        run_id: str = "",
+        reprompts: int = 0,
     ) -> None:
-        cost_per_token = _COST_PER_TOKEN.get(provider, 0.0)
-        cost = 0.0 if cache_hit else tokens * cost_per_token
+        # Use split counts when available; fall back to total estimate
+        if prompt_tokens or completion_tokens:
+            actual_tokens = prompt_tokens + completion_tokens
+        else:
+            actual_tokens = tokens or 0
+
+        from cherenkov.observability.token_monitor import compute_cost
+        if prompt_tokens or completion_tokens:
+            cost = 0.0 if cache_hit else compute_cost(
+                provider, model, prompt_tokens, completion_tokens
+            )
+        else:
+            cost_per_token = _COST_PER_TOKEN.get(provider, 0.0)
+            cost = 0.0 if cache_hit else actual_tokens * cost_per_token
+
         self._entries.append(
             CostEntry(
                 model=model,
                 provider=provider,
                 duration_ms=duration_ms,
-                tokens=tokens,
-                cost=round(cost, 6),
+                tokens=actual_tokens,
+                cost=round(cost, 8),
                 cache_hit=cache_hit,
             )
         )
+
+        if self._monitor is not None and not cache_hit:
+            from cherenkov.observability.token_monitor import TokenRecord
+            self._monitor.record(
+                TokenRecord(
+                    run_id=run_id or "unknown",
+                    model=model,
+                    provider=provider,
+                    stage=stage,
+                    prompt_tokens=prompt_tokens or (actual_tokens // 2),
+                    completion_tokens=completion_tokens or (actual_tokens // 2),
+                    total_tokens=actual_tokens,
+                    cost_usd=round(cost, 8),
+                    cache_hit=cache_hit,
+                    reprompts=reprompts,
+                )
+            )
 
     def record_json(
         self,
@@ -62,10 +97,26 @@ class CostAccountant:
         output: dict,
         cache_hit: bool = False,
         provider: str = "ollama",
+        *,
+        prompt_tokens: int = 0,
+        completion_tokens: int = 0,
+        stage: str = "",
+        run_id: str = "",
+        reprompts: int = 0,
     ) -> None:
         import json as _json
-        tokens = _estimate_tokens(_json.dumps(output, default=str))
-        self.record(model, duration_ms, tokens, cache_hit, provider)
+        estimated = _estimate_tokens(_json.dumps(output, default=str))
+        self.record(
+            model, duration_ms,
+            tokens=estimated,
+            cache_hit=cache_hit,
+            provider=provider,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            stage=stage,
+            run_id=run_id,
+            reprompts=reprompts,
+        )
 
     def record_code(
         self,
@@ -74,9 +125,25 @@ class CostAccountant:
         output: str,
         cache_hit: bool = False,
         provider: str = "ollama",
+        *,
+        prompt_tokens: int = 0,
+        completion_tokens: int = 0,
+        stage: str = "",
+        run_id: str = "",
+        reprompts: int = 0,
     ) -> None:
-        tokens = _estimate_tokens(output)
-        self.record(model, duration_ms, tokens, cache_hit, provider)
+        estimated = _estimate_tokens(output)
+        self.record(
+            model, duration_ms,
+            tokens=estimated,
+            cache_hit=cache_hit,
+            provider=provider,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            stage=stage,
+            run_id=run_id,
+            reprompts=reprompts,
+        )
 
     @property
     def report(self) -> AccountingReport:
@@ -85,7 +152,7 @@ class CostAccountant:
             entries=entries,
             total_duration_ms=sum(e.duration_ms for e in entries),
             total_tokens=sum(e.tokens for e in entries),
-            total_cost=round(sum(e.cost for e in entries), 6),
+            total_cost=round(sum(e.cost for e in entries), 8),
             request_count=len(entries),
         )
 
@@ -99,10 +166,10 @@ class CostAccountant:
 
         store = VerdictStore()
         db_path = store.db_path
-        
+
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        
+
         try:
             cursor.execute("SELECT outcome, COUNT(*) FROM verdicts GROUP BY outcome")
             counts = dict(cursor.fetchall())
@@ -114,7 +181,7 @@ class CostAccountant:
         accepts = counts.get(VerdictOutcome.ACCEPT.value, 0)
         rejects = counts.get(VerdictOutcome.REJECT.value, 0)
         escaped = counts.get(VerdictOutcome.ESCAPED_DEFECT.value, 0)
-        
+
         total = accepts + rejects + escaped
         total_skeptic = accepts + rejects
 
@@ -127,4 +194,3 @@ class CostAccountant:
             "maintenance_efficiency": round(maintenance_efficiency, 4),
             "total_verdicts": total,
         }
-

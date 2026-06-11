@@ -17,10 +17,25 @@ import time
 from typing import Protocol
 
 import requests
+import random as _random
 
 from cherenkov.core.errors import OllamaJSONError, get_logger
 from cherenkov.core.config import Config
 from cherenkov.ai.interface import InferenceClient
+
+
+def _post_with_retry(url: str, payload: dict, timeout: int, max_retries: int = 4) -> "requests.Response":
+    """POST with exponential backoff retry on Timeout or ConnectionError."""
+    last_err: Exception | None = None
+    for attempt in range(max_retries):
+        try:
+            return requests.post(url, json=payload, timeout=timeout)
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+            last_err = e
+            if attempt < max_retries - 1:
+                wait = (2 ** attempt) * 0.5 + _random.uniform(0, 0.5)
+                time.sleep(wait)
+    raise last_err  # type: ignore[misc]
 
 
 class OllamaClient(InferenceClient):
@@ -49,6 +64,7 @@ class OllamaClient(InferenceClient):
         user_prompt: str,
         model: str,
         *,
+        max_reprompts: int = 2,
         temperature: float = 0.1,
         run_id: str | None = None,
     ) -> str:
@@ -56,6 +72,7 @@ class OllamaClient(InferenceClient):
             system_prompt,
             user_prompt,
             model,
+            max_reprompts=max_reprompts,
             temperature=temperature,
             run_id=run_id
         )
@@ -91,14 +108,23 @@ def _try_json(text: str) -> dict | None:
         return None
 
 
-def _json_repair(text: str) -> dict | None:
-    """Last-ditch before reprompting: grab the outermost {...} and retry."""
-    m = re.search(r"\{.*\}", text, re.DOTALL)
-    return _try_json(m.group(0)) if m else None
+def _json_repair(raw: str) -> dict | None:
+    """Extract the last valid JSON object from a string (last is usually the real response)."""
+    # Find all {...} blocks and return the last one (most likely the real response)
+    matches = list(re.finditer(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)?\}', raw, re.DOTALL))
+    if matches:
+        return _try_json(matches[-1].group(0))
+    return None
 
 
 class OllamaInferenceClient(InferenceClient):
     """Ollama-specific implementation of the InferenceClient interface."""
+
+    def __init__(self) -> None:
+        # Populated after each call so CachedInferenceClient can read real counts.
+        self._token_usage: dict[str, int] = {
+            "prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0
+        }
 
     def complete_json(
         self,
@@ -118,12 +144,13 @@ class OllamaInferenceClient(InferenceClient):
         log = get_logger("ollama", run_id)
         attempt = 0
         last_raw = ""
+        self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
 
         while attempt <= max_reprompts:
             t0 = time.time()
-            resp = requests.post(
+            resp = _post_with_retry(
                 Config.OLLAMA_URL,
-                json={
+                {
                     "model": model,
                     "system": system_prompt,     # static -> cached prefix
                     "prompt": user_prompt,
@@ -131,11 +158,16 @@ class OllamaInferenceClient(InferenceClient):
                     "stream": False,
                     "options": {"temperature": temperature},
                 },
-                timeout=Config.OLLAMA_TIMEOUT,
+                Config.OLLAMA_TIMEOUT,
             )
             resp.raise_for_status()
-            last_raw = resp.json().get("response", "")
+            body = resp.json()
+            last_raw = body.get("response", "")
             dt_ms = int((time.time() - t0) * 1000)
+
+            # Capture real token counts from Ollama response fields
+            self._token_usage["prompt_tokens"] = body.get("prompt_eval_count", 0)
+            self._token_usage["completion_tokens"] = body.get("eval_count", 0)
 
             parsed = _try_json(last_raw) or _json_repair(last_raw)
             if parsed is not None:
@@ -143,6 +175,7 @@ class OllamaInferenceClient(InferenceClient):
                 return parsed
 
             attempt += 1
+            self._token_usage["reprompts"] = attempt
             log.warning("json invalid, reprompting", model=model, attempt=attempt,
                         duration_ms=dt_ms)
 
@@ -157,30 +190,44 @@ class OllamaInferenceClient(InferenceClient):
         user_prompt: str,
         model: str,
         *,
+        max_reprompts: int = 2,
         temperature: float = 0.1,
         run_id: str | None = None,
     ) -> str:
         """For the GENERATE stage: we want raw TS code, not JSON. Same static-prompt
         discipline for prefix caching. Strips stray markdown fences."""
         log = get_logger("ollama", run_id)
-        t0 = time.time()
-        resp = requests.post(
-            Config.OLLAMA_URL,
-            json={
-                "model": model,
-                "system": system_prompt,
-                "prompt": user_prompt,
-                "stream": False,
-                "options": {"temperature": temperature},
-            },
-            timeout=Config.OLLAMA_TIMEOUT,
-        )
-        resp.raise_for_status()
-        text = resp.json().get("response", "").strip()
-        text = re.sub(r"^```[a-z]*\n?", "", text)
-        text = re.sub(r"\n?```$", "", text)
-        log.info("code ok", model=model, duration_ms=int((time.time() - t0) * 1000))
-        return text.strip()
+        attempt = 0
+        text = ""
+        self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
+        while attempt <= max_reprompts:
+            t0 = time.time()
+            resp = _post_with_retry(
+                Config.OLLAMA_URL,
+                {
+                    "model": model,
+                    "system": system_prompt,
+                    "prompt": user_prompt,
+                    "stream": False,
+                    "options": {"temperature": temperature},
+                },
+                Config.OLLAMA_TIMEOUT,
+            )
+            resp.raise_for_status()
+            body = resp.json()
+            text = body.get("response", "").strip()
+            self._token_usage["prompt_tokens"] = body.get("prompt_eval_count", 0)
+            self._token_usage["completion_tokens"] = body.get("eval_count", 0)
+            text = re.sub(r"^```[a-z]*\n?", "", text)
+            text = re.sub(r"\n?```$", "", text)
+            text = text.strip()
+            log.info("code ok", model=model, attempt=attempt, duration_ms=int((time.time() - t0) * 1000))
+            if text:
+                return text
+            attempt += 1
+            self._token_usage["reprompts"] = attempt
+            log.warning("empty code response, reprompting", model=model, attempt=attempt)
+        return text
 
     def complete_vision(
         self,
@@ -195,9 +242,9 @@ class OllamaInferenceClient(InferenceClient):
         """Vision request: send image as base64 to Ollama's /api/generate."""
         log = get_logger("ollama-vision", run_id)
         t0 = time.time()
-        resp = requests.post(
+        resp = _post_with_retry(
             Config.OLLAMA_URL,
-            json={
+            {
                 "model": model,
                 "system": system_prompt,
                 "prompt": user_prompt,
@@ -205,7 +252,7 @@ class OllamaInferenceClient(InferenceClient):
                 "stream": False,
                 "options": {"temperature": temperature},
             },
-            timeout=Config.OLLAMA_TIMEOUT,
+            Config.OLLAMA_TIMEOUT,
         )
         resp.raise_for_status()
         text = resp.json().get("response", "").strip()
@@ -225,15 +272,15 @@ class OllamaInferenceClient(InferenceClient):
         t0 = time.time()
         base_url = Config.OLLAMA_URL.rsplit("/api/generate", 1)[0]
         chat_url = f"{base_url}/api/chat"
-        resp = requests.post(
+        resp = _post_with_retry(
             chat_url,
-            json={
+            {
                 "model": model,
                 "messages": messages,
                 "stream": False,
                 "options": {"temperature": temperature},
             },
-            timeout=Config.OLLAMA_TIMEOUT,
+            Config.OLLAMA_TIMEOUT,
         )
         resp.raise_for_status()
         text = resp.json().get("message", {}).get("content", "").strip()
@@ -269,6 +316,7 @@ def complete_code(
     user_prompt: str,
     model: str,
     *,
+    max_reprompts: int = 2,
     temperature: float = 0.1,
     run_id: str | None = None,
 ) -> str:
@@ -277,6 +325,7 @@ def complete_code(
         system_prompt=system_prompt,
         user_prompt=user_prompt,
         model=model,
+        max_reprompts=max_reprompts,
         temperature=temperature,
         run_id=run_id,
     )

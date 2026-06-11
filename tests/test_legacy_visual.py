@@ -79,7 +79,15 @@ def main():
             server_proc.wait()
 
 
+def _stub_browser_available() -> bool:
+    """The visual check drives a real Chromium via the stub's Playwright install."""
+    import glob
+    browsers_path = os.environ.get("PLAYWRIGHT_BROWSERS_PATH", os.path.expanduser("~/.cache/ms-playwright"))
+    return bool(glob.glob(os.path.join(browsers_path, "chromium*")))
+
+
 @pytest.mark.skipif(os.name == "nt", reason="Windows CMD does not support UNC paths as current directory")
+@pytest.mark.skipif(not _stub_browser_available(), reason="Playwright Chromium not installed — run npx playwright install chromium")
 def test_legacy_visual():
     try:
         main()

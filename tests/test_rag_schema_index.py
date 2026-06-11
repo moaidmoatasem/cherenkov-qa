@@ -1,3 +1,4 @@
+# TODO: convert to pytest — complex file (>150 lines, multiple setUp/tearDown with temp dirs)
 """
 Tests for Issue #195 — Semantic Chunking / RAG for Large Specs.
 
@@ -14,9 +15,15 @@ import tempfile
 import unittest
 from unittest.mock import patch, MagicMock
 
-import numpy as np
+try:
+    import numpy as np
+    _NUMPY_AVAILABLE = True
+except ImportError:
+    np = None
+    _NUMPY_AVAILABLE = False
 
 
+@unittest.skipUnless(_NUMPY_AVAILABLE, "numpy not installed — skipping SchemaIndex tests")
 class TestSchemaChunking(unittest.TestCase):
     """Tests for schema chunk text building."""
 
@@ -48,6 +55,7 @@ class TestSchemaChunking(unittest.TestCase):
         self.assertIn("type: object", text)
 
 
+@unittest.skipUnless(_NUMPY_AVAILABLE, "numpy not installed — skipping SchemaIndex tests")
 class TestSchemaIndexCache(unittest.TestCase):
     """Tests for SchemaIndex disk cache."""
 
@@ -95,6 +103,7 @@ class TestSchemaIndexCache(unittest.TestCase):
         shutil.rmtree(self.tmpdir, ignore_errors=True)
 
 
+@unittest.skipUnless(_NUMPY_AVAILABLE, "numpy not installed — skipping SchemaIndex tests")
 class TestSchemaRetrieval(unittest.TestCase):
     """Tests for RAG-based schema retrieval."""
 
@@ -162,6 +171,7 @@ class TestSchemaRetrieval(unittest.TestCase):
             shutil.rmtree(str(cache_dir.parent), ignore_errors=True)
 
 
+@unittest.skipUnless(_NUMPY_AVAILABLE, "numpy not installed — skipping SchemaIndex tests")
 class TestRAGIngestIntegration(unittest.TestCase):
     """Tests that RAG enriches schemas in the ingest pipeline."""
 

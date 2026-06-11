@@ -9,6 +9,7 @@ from cherenkov.chat.domain.models import Session, Message
 from cherenkov.chat.ports.memory import ConversationMemory
 from cherenkov.chat.persona import PersonaRegistry
 from cherenkov.chat.tools import TOOL_REGISTRY, execute_tool
+from cherenkov.chat.guard import get_guard
 
 logger = logging.getLogger(__name__)
 
@@ -45,16 +46,17 @@ class QAChatAgent:
         return self._fallback_llm(messages)
 
     def _fallback_llm(self, messages: list[dict]) -> str:
-        logger.warning("No substrate router available, using [MOCK] fallback LLM response")
-        last = messages[-1] if messages else {}
-        user_text = last.get("content", "")
-        if "verdict" in user_text.lower():
-            return "[MOCK] Based on the available data, I found 3 verdicts for /api/users. The most common issue is a 422 vs 400 status code mismatch."
-        if "idiom" in user_text.lower():
-            return "[MOCK] I found 2 idioms related to authentication: 'auth_token_expired' and 'missing_auth_header'."
-        if "divergence" in user_text.lower():
-            return "[MOCK] The divergence for GET /api/users shows the spec expects 200 but the implementation returns 401 when no auth header is provided."
-        return f"[MOCK] I understand your question about '{user_text[:50]}'. Use the available tools to get specific data."
+        logger.error("substrate_router_unavailable")
+        user_content = " ".join(
+            m.get("content", "") for m in messages if m.get("role") == "user"
+        ).lower()
+        if "verdict" in user_content:
+            return "[MOCK] No verdicts found in the current session. Run a pipeline to generate test verdicts."
+        if "idiom" in user_content:
+            return "[MOCK] No idioms found in the current session. Run a pipeline to build an idiom library."
+        if "divergence" in user_content:
+            return "[MOCK] No divergences detected in the current run. Spec and server appear in sync."
+        return "[MOCK] AI substrate unavailable. Start Ollama with: ollama serve"
 
     def _prepare_llm_context(self, session_id: str) -> list[dict]:
         history = self.memory.get_messages(session_id)
@@ -75,6 +77,7 @@ class QAChatAgent:
         self.add_user_message(session_id, user_message)
         llm_messages = self._prepare_llm_context(session_id)
         response_content = self._call_llm(llm_messages)
+        get_guard().record_llm_call(llm_messages, response_content)
         assistant_msg = Message(
             role="assistant", content=response_content, session_id=session_id
         )
@@ -87,6 +90,7 @@ class QAChatAgent:
         self.add_user_message(session_id, user_message)
         llm_messages = self._prepare_llm_context(session_id)
         full_content = self._call_llm(llm_messages)
+        get_guard().record_llm_call(llm_messages, full_content)
         words = full_content.split()
         for i, word in enumerate(words):
             token = word + (" " if i < len(words) - 1 else "")

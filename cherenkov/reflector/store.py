@@ -29,6 +29,18 @@ from cherenkov.core.errors import get_logger
 _BUSY_TIMEOUT_S = 30.0
 
 
+def _validate_db_path(path: str) -> str:
+    resolved = os.path.realpath(os.path.abspath(path))
+    # Ensure the path ends with .db
+    if not resolved.endswith(".db"):
+        raise ValueError(f"db_path must end with .db, got: {path!r}")
+    # Ensure the parent directory exists or can be created
+    parent = os.path.dirname(resolved)
+    if not os.path.exists(parent):
+        os.makedirs(parent, exist_ok=True)
+    return resolved
+
+
 def _default_db_path() -> str:
     repo_root = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "../..")
@@ -48,9 +60,7 @@ class VerdictStore:
         self.db_path = db_path or _default_db_path()
         self.log = get_logger("REFLECTOR", run_id)
         if self.db_path != ":memory:":
-            dirname = os.path.dirname(self.db_path)
-            if dirname:
-                os.makedirs(dirname, exist_ok=True)
+            self.db_path = _validate_db_path(self.db_path)
         self._init_tables()
 
     # ── schema ────────────────────────────────────────────────────────────
@@ -112,26 +122,31 @@ class VerdictStore:
 
     def record_verdict(self, record: VerdictRecord) -> None:
         conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
-        conn.execute(
-            "INSERT OR REPLACE INTO verdicts "
-            "(id, hypothesis_id, outcome, divergence_class, endpoint, "
-            " failure_class, source, detail, timestamp, schema_version) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?)",
-            (
-                record.id,
-                record.hypothesis_id,
-                record.outcome.value,
-                record.divergence_class.value if record.divergence_class else None,
-                record.endpoint,
-                record.failure_class,
-                record.source,
-                record.detail,
-                record.timestamp or int(time.time()),
-                record.schema_version,
-            ),
-        )
-        conn.commit()
-        conn.close()
+        try:
+            conn.execute(
+                "INSERT OR REPLACE INTO verdicts "
+                "(id, hypothesis_id, outcome, divergence_class, endpoint, "
+                " failure_class, source, detail, timestamp, schema_version) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (
+                    record.id,
+                    record.hypothesis_id,
+                    record.outcome.value,
+                    record.divergence_class.value if record.divergence_class else None,
+                    record.endpoint,
+                    record.failure_class,
+                    record.source,
+                    record.detail,
+                    record.timestamp or int(time.time()),
+                    record.schema_version,
+                ),
+            )
+            conn.commit()
+        except Exception as e:
+            self.log.error("verdict_store_write_failed", error=str(e), record_id=getattr(record, 'id', 'unknown'))
+            raise  # re-raise so caller knows the write failed
+        finally:
+            conn.close()
 
     def get_verdict(self, verdict_id: str) -> VerdictRecord | None:
         conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
@@ -266,9 +281,16 @@ class VerdictStore:
         """Apply exponential time decay to all idiom decay_score values.
 
         decay_score *= 0.5 ^ (hours_elapsed / half_life_hours)
+
+        NOTE: Uses BEGIN EXCLUSIVE to prevent lost updates during the
+        read-modify-write loop when multiple processes access the database
+        concurrently (e.g. daemon, proof_run, CLI). Without this, two
+        concurrent callers could both read the same rows and then overwrite
+        each other's updates.
         """
         now = int(time.time())
         conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn.execute("BEGIN EXCLUSIVE")
         rows = conn.execute(
             "SELECT id, last_confirmed, decay_score FROM idioms"
         ).fetchall()
@@ -337,9 +359,7 @@ class ReflectorStore:
     def __init__(self, db_path: str | None = None):
         self.db_path = db_path or _default_db_path().replace("verdicts.db", "reflector.db")
         if self.db_path != ":memory:":
-            dirname = os.path.dirname(self.db_path)
-            if dirname:
-                os.makedirs(dirname, exist_ok=True)
+            self.db_path = _validate_db_path(self.db_path)
         self._init_table()
 
     def _init_table(self) -> None:

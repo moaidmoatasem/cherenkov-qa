@@ -56,7 +56,7 @@ export default function OverviewScreen({ onNewRun, onPilotRun, onNavigate }: Ove
     return (
       <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10">
         <EmptyState 
-          icon={<Zap />}
+          icon={Zap}
           title="Failed to load Overview"
           description={`Could not fetch live divergences: ${error}`}
           primaryAction={{

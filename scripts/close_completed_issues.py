@@ -2,8 +2,14 @@
 import urllib.request
 import urllib.error
 import json
+import os
+import sys
 
-TOKEN = "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"
+TOKEN = os.environ.get("GITHUB_TOKEN", "")
+if not TOKEN:
+    print("ERROR: GITHUB_TOKEN environment variable not set. Export it before running.")
+    sys.exit(1)
+
 OWNER, REPO = "moaidmoatasem", "cherenkov-qa"
 API = f"https://api.github.com/repos/{OWNER}/{REPO}/issues"
 

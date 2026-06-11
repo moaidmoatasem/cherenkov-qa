@@ -1,8 +1,17 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Operating rules (read first)
-    url: https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/HANDOVER.md
-    about: Authoritative project state. The handover wins over any other doc.
-  - name: Way of work
-    url: https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CONTRIBUTING.md
-    about: How humans and agents contribute, git flow, restrictions.
+  - name: "📖 Project Status (read first)"
+    url: https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/STATUS.md
+    about: What is built, what is blocked, what is next. Single source of truth.
+  - name: "🤝 Contributing Guide"
+    url: https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/wiki/Contributing.md
+    about: How to contribute — setup, workflow, invariants, definition of done.
+  - name: "🔧 Troubleshooting"
+    url: https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/wiki/Troubleshooting.md
+    about: Check here before filing a bug — most common issues are documented.
+  - name: "🗺️ Roadmap"
+    url: https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/wiki/Roadmap.md
+    about: Phase timeline, track status, what is planned and what is not.
+  - name: "🔒 Security Issue"
+    url: https://github.com/moaidmoatasem/cherenkov-qa/security/advisories/new
+    about: Report security vulnerabilities here — do not open a public issue.
