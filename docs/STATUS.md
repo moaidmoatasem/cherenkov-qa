@@ -44,7 +44,7 @@ under the consolidated Phase -1 through Phase 8 plan.
 |-------|-------|-------|
 | A (Core) | API conformance testing | ✅ Built; validation gate passed (2026-06-08); **258 tests passing, 0 failures** |
 | B (VLM) | LocalAI / Ollama substrate | ✅ Built; MCP policy engine + Docker Model Runner adapter added |
-| C (Desktop) | Tauri 2 host | ✅ Built, unit-tested; runtime blocked on `cargo` |
+| C (Desktop) | Tauri 2 host | ✅ Built; compiles (`cargo check` green), icons + valid Tauri 2 config, IPC bridge wired to dashboard; bundling needs PyInstaller sidecar (`packaging/build.sh` / `build.ps1`) |
 | D (Mobile) | Maestro / Appium | ✅ Built, unit-tested; E2E dashboard tests + data-testid added; runtime blocked on ADB |
 | E (Dashboard) | React UI | ✅ Built; all 9 screens shipped; E2E error-path + multi-viewport tests added |
 | F (K8s) | Operator + CRDs | 🔶 In progress (Phase 8); `make k3d-test` pending |

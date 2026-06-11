@@ -7,7 +7,7 @@ mod setup_wizard;
 mod updater;
 mod wizard;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -32,7 +32,10 @@ type SharedSidecar = Arc<Mutex<SidecarState>>;
 enum LauncherEvent {
     Ready { version: String },
     Port { port: u16 },
-    Shutdown { signal: serde_json::Value },
+    Shutdown {
+        #[allow(dead_code)]
+        signal: serde_json::Value,
+    },
     Progress { step: String, pct: u8, detail: Option<String> },
     DemoMode { reason: String },
 }

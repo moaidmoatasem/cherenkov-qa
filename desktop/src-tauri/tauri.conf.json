@@ -10,6 +10,7 @@
     "frontendDist": "../../cherenkov/web/ui/dist"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "CHERENKOV",
