@@ -105,6 +105,31 @@ def check_prism_docker() -> tuple[bool, str]:
     return False, "Docker not installed (Prism unavailable)"
 
 
+def check_cargo() -> tuple[bool, str]:
+    path = shutil.which("cargo")
+    if path:
+        try:
+            result = subprocess.run(
+                ["cargo", "--version"], capture_output=True, text=True, timeout=10,
+            )
+            return True, result.stdout.strip()
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            return False, "cannot get version"
+    return False, "not found on PATH"
+
+
+def check_tauri_cli() -> tuple[bool, str]:
+    try:
+        result = subprocess.run(
+            ["cargo", "tauri", "info"], capture_output=True, text=True, timeout=10,
+        )
+        if result.returncode == 0:
+            return True, "available"
+        return False, "not installed (run: cargo install tauri-cli)"
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return False, "cargo not found"
+
+
 def check_egress_blocked(cfg: LayeredConfig) -> tuple[bool, str]:
     """Check if the current egress policy would block cloud providers."""
     egress = cfg.get("substrate.egress", "internal")
@@ -126,7 +151,7 @@ def check_egress_blocked(cfg: LayeredConfig) -> tuple[bool, str]:
     return healthy, "; ".join(warnings) if warnings else "egress policy consistent"
 
 
-def run_doctor() -> int:
+def run_doctor(desktop: bool = False) -> int:
     """Execute `cherenkov doctor`.
 
     Returns exit code (0 = healthy, 1 = warnings/issues found).
@@ -183,6 +208,13 @@ def run_doctor() -> int:
     prism_ok, prism_detail = check_prism_docker()
     print(f"  {'prism (docker)':<30} {'[OK]' if prism_ok else '[NO]'}  {prism_detail}")
 
+    if desktop:
+        print("\n  -- Desktop Track (Track C) --")
+        cargo_ok, cargo_detail = check_cargo()
+        print(f"  {'cargo (rust)':<30} {'[OK]' if cargo_ok else '[NO]'}  {cargo_detail}")
+        tauri_ok, tauri_detail = check_tauri_cli()
+        print(f"  {'tauri-cli':<30} {'[OK]' if tauri_ok else '[NO]'}  {tauri_detail}")
+
     # ── Egress policy check ──────────────────────────────────────────────
     egress_ok, egress_detail = check_egress_blocked(cfg)
     print(f"\n  {'egress policy':<30} {'[OK]' if egress_ok else '[NO]'}  {egress_detail}")
@@ -215,6 +247,11 @@ def run_doctor() -> int:
         issues += 1
     if not prism_ok:
         issues += 1  # Docker not available
+    if desktop:
+        if not cargo_ok:
+            issues += 1
+        if not tauri_ok:
+            issues += 1
     if config_errors:
         issues += len(config_errors)
 

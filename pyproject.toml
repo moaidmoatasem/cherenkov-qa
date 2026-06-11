@@ -24,6 +24,9 @@ dependencies = [
 where = ["."]
 include = ["cherenkov*"]
 
+[project.scripts]
+cherenkov = "cherenkov:main"
+
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]

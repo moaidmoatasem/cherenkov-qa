@@ -95,6 +95,11 @@ class SubstrateRouter:
                 f"Provider '{provider_name}' requires egress but "
                 f"EGRESS policy is '{policy}' (only local providers allowed)"
             )
+        if policy == "github" and provider_name not in ("github",):
+            raise EgressError(
+                f"Provider '{provider_name}' blocked — 'github' egress policy only "
+                "permits the GitHub Models provider."
+            )
 
 
 _DEFAULT_ROUTER = SubstrateRouter()

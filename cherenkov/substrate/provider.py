@@ -117,19 +117,59 @@ class OpenAIProvider:
         )
 
 
-_PROVIDER_CACHE: dict[str, OllamaProvider | OpenAIProvider] = {}
+class GitHubModelsProvider:
+    """Free cloud provider via GitHub Models API."""
+
+    def __init__(self, client: InferenceClient | None = None) -> None:
+        if client is None:
+            from cherenkov.ai.github_models_client import GitHubModelsInferenceClient
+            client = GitHubModelsInferenceClient()
+        self.client = client
+
+    def generate(self, request: ReasoningRequest) -> ReasoningResult:
+        import json
+        model = (
+            Config.GITHUB_MODELS_SMALL_MODEL
+            if request.capability_tier == "small"
+            else Config.GITHUB_MODELS_DEEP_MODEL
+        )
+        system_prompt = "You are a logical QA AI assistant specializing in API conformance testing."
+        user_prompt = request.task
+
+        if request.output_schema:
+            user_prompt += f"\n\nOutput JSON matching: {json.dumps(request.output_schema)}"
+            content = self.client.complete_json(system_prompt=system_prompt, user_prompt=user_prompt, model=model)
+        else:
+            content = self.client.complete_code(system_prompt=system_prompt, user_prompt=user_prompt, model=model)
+
+        return ReasoningResult(
+            content=content, provider="github", model=model, cost_usd=0.0, latency_ms=0, cached=False
+        )
+
+    def capabilities(self) -> ProviderCapabilities:
+        # Note: Excluded 'vision' tier to avoid breaking get_vlm_provider registry
+        return ProviderCapabilities(
+            capability_tiers=["small", "deep"],
+            requires_egress=True,
+            provider_name="github",
+        )
+
+
+_PROVIDER_CACHE: dict[str, OllamaProvider | OpenAIProvider | GitHubModelsProvider] = {}
 _VLM_CACHE: dict[str, VLMProvider] = {}
 
 
-def get_provider(name: str) -> OllamaProvider | OpenAIProvider:
+def get_provider(name: str) -> OllamaProvider | OpenAIProvider | GitHubModelsProvider:
     if name in _PROVIDER_CACHE:
         return _PROVIDER_CACHE[name]
     if name == "ollama":
-        p: OllamaProvider | OpenAIProvider = OllamaProvider()
+        p: OllamaProvider | OpenAIProvider | GitHubModelsProvider = OllamaProvider()
     elif name == "openai":
         p = OpenAIProvider()
+    elif name == "github":
+        p = GitHubModelsProvider()
     else:
-        raise ValueError(f"Unknown provider '{name}'. Expected 'ollama' or 'openai'.")
+        raise ValueError(f"Unknown provider '{name}'. Expected 'ollama', 'openai', or 'github'.")
     _PROVIDER_CACHE[name] = p
     return p
 
@@ -156,7 +196,7 @@ def get_vlm_provider(name: str | None = None) -> VLMProvider:
 
 def provider_for_tier(
     tier: str, device_class: str | None = None
-) -> OllamaProvider | OpenAIProvider | VLMProvider:
+) -> OllamaProvider | OpenAIProvider | GitHubModelsProvider | VLMProvider:
     if tier == "small":
         return get_provider(Config.TIER_SMALL_PROVIDER)
     elif tier == "deep":

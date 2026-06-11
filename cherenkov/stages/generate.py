@@ -134,6 +134,26 @@ class GenerateStage:
                 variables=scenario.variables,
                 expected_response_structure=scenario.expected_response_structure
             )
+        elif source_type == "accessibility":
+            import jinja2
+            env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))))
+            template = env.get_template("accessibility_test.j2")
+            user_prompt = template.render(
+                scenario_id=scenario.scenario_id,
+                page_target=scenario.page_target,
+                rules=scenario.rules
+            )
+            # Short-circuit LLM since we just use the template for accessibility tests
+            code = user_prompt
+            dt = int((time.time() - t0) * 1000)
+            self.log.info("stage success (template)", duration_ms=dt)
+            return GenerateOutput(
+                scenario_id=mutation_id,
+                test_code=code,
+                imports=["@playwright/test", "@axe-core/playwright"],
+                status=Status.OK,
+                metadata=StageMeta(stage="GENERATE", duration_ms=dt)
+            )
         else:
             user_prompt = self._build_user_prompt(
                 path=path,
@@ -143,6 +163,25 @@ class GenerateStage:
                 scenario=scenario,
                 instruction=instruction
             )
+
+        from cherenkov.cache.endpoint_cache import EndpointCache
+        cache = EndpointCache()
+        cache_hash = None
+
+        # Only cache openapi source generations
+        if source_type == "openapi":
+            cache_hash = cache.compute_hash(path, method, {"op": operation, "sch": schemas}, Config.GEN_MODEL)
+            entry = cache.get(cache_hash)
+            if entry:
+                self.log.info("cache hit", hash=cache_hash)
+                dt = int((time.time() - t0) * 1000)
+                return GenerateOutput(
+                    scenario_id=mutation_id,
+                    test_code=entry.test_code,
+                    imports=["@playwright/test", "../client"],
+                    status=Status.OK,
+                    metadata=StageMeta(stage="GENERATE", duration_ms=dt)
+                )
 
         # temperatures: start with variation, tighten on repair attempts
         temperatures = [0.2, 0.1, 0.05]
@@ -206,6 +245,9 @@ class GenerateStage:
 
         dt = int((time.time() - t0) * 1000)
         self.log.info("stage success", duration_ms=dt)
+
+        if cache_hash:
+            cache.put(cache_hash, code, Config.GEN_MODEL)
 
         return GenerateOutput(
             scenario_id=mutation_id,

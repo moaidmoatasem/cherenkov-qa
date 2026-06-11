@@ -46,3 +46,7 @@ jsonschema>=4.0.0
 pytest>=8.0.0
 pytest-cov>=5.0.0
 anyio>=4.0.0
+
+# Templated prompts (GraphQL/accessibility) + CLI completion
+jinja2>=3.1.0
+argcomplete>=3.3.0

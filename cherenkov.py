@@ -8,6 +8,7 @@ import os
 import sys
 import argparse
 import subprocess
+import argcomplete
 
 from cherenkov.execution.validate import ValidationEngine
 from cherenkov.execution.eject import EjectorEngine
@@ -120,9 +121,20 @@ def get_parser() -> argparse.ArgumentParser:
     validate_parser.add_argument('--target', '-t', required=True, help='The real server target base URL')
     validate_parser.add_argument('--source', choices=['openapi', 'graphql', 'grpc', 'accessibility'], default='openapi', help='Source type for ingestion')
     validate_parser.add_argument('--format', choices=['json', 'text', 'sarif', 'html', 'junit', 'allure'], default=None, help='Output report format')
+    validate_parser.add_argument('--workers', type=int, default=1, help='Number of parallel workers for Playwright tests')
+    validate_parser.add_argument('--no-html', action='store_true', help='Disable automatic HTML report generation')
+    validate_parser.add_argument('--no-cache', action='store_true', help='Disable incremental test generation cache')
     # Legacy engine CLI compatibility: operator passes --spec and --output
-    validate_parser.add_argument('--spec', help='Path to OpenAPI spec (JSON/YAML) — legacy compat')
-    validate_parser.add_argument('--output', default='.cherenkov/report', help='Output path (extension inferred from --format if not given)')
+    validate_parser.add_argument('--spec', help='Path to OpenAPI spec (JSON/YAML) — legacy compat').completer = argcomplete.completers.FilesCompleter()
+    validate_parser.add_argument('--output', default='.cherenkov/report', help='Output path (extension inferred from --format if not given)').completer = argcomplete.completers.FilesCompleter()
+
+    diff_parser = subparsers.add_parser('diff', help='Compare two OpenAPI specs for breaking changes')
+    diff_parser.add_argument('--before', required=True, help='Path to the original spec').completer = argcomplete.completers.FilesCompleter()
+    diff_parser.add_argument('--after', required=True, help='Path to the modified spec').completer = argcomplete.completers.FilesCompleter()
+    diff_parser.add_argument('--format', choices=['text', 'json'], default='text', help='Output format')
+
+    completion_parser = subparsers.add_parser('completion', help='Generate shell completion scripts')
+    completion_parser.add_argument('shell', choices=['bash', 'zsh', 'fish'], help='Target shell')
 
     self_test_parser = subparsers.add_parser('self-test', help='Run a deterministic dry-run of the pipeline (mocking Ollama and the server)')
 
@@ -154,6 +166,7 @@ def get_parser() -> argparse.ArgumentParser:
                             help='Overwrite existing cherenkov.toml')
 
     doctor_parser = subparsers.add_parser('doctor', help='System health check (E5-3)')
+    doctor_parser.add_argument('--desktop', action='store_true', help='Include Track C (Desktop/Tauri) checks')
 
     dashboard_parser = subparsers.add_parser('dashboard', help='Visualise Truth Model + divergences (E5-4, defer-first)')
 
@@ -290,11 +303,13 @@ def get_parser() -> argparse.ArgumentParser:
 
 def main():
     parser = get_parser()
+    argcomplete.autocomplete(parser)
     # Default to 'validate' when called with legacy engine args (--spec)
     if '--spec' in sys.argv[1:] and not any(a in sys.argv[1:] for a in
         ['validate', 'self-test', 'report', 'eject', 'visual', 'perf',
          'init', 'doctor', 'dashboard', 'map', 'daemon', 'explore',
-         'author', 'governance', 'certify', 'profile', 'hitl', 'review', 'mcp', 'tokens']):
+         'author', 'governance', 'certify', 'profile', 'hitl', 'review', 'mcp', 'tokens',
+         'diff', 'completion']):
         sys.argv.insert(1, 'validate')
     args = parser.parse_args()
 
@@ -307,6 +322,15 @@ def main():
     # If not quiet, they also go to stderr.
 
     if args.command == 'validate':
+        if getattr(args, 'no_cache', False):
+            from cherenkov.cache.endpoint_cache import EndpointCache
+            EndpointCache().clear()
+
+        if hasattr(args, 'spec') and args.spec:
+            # We don't automatically fail the validate on breaking change here, 
+            # we just run the tests. Spec differs are explicit.
+            pass
+
         if getattr(args, 'source', 'openapi') == 'graphql':
             from cherenkov.sources.graphql.adapter import GraphQLSourceAdapter
             from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
@@ -317,13 +341,22 @@ def main():
             scenarios = planner.plan(source)
             for sc in scenarios:
                 GenerateStage("cli_validate").run(scenario=sc, source_type="graphql")
+        elif getattr(args, 'source', 'openapi') == 'accessibility':
+            from cherenkov.sources.accessibility.adapter import AccessibilitySourceAdapter
+            from cherenkov.stages.plan_accessibility import AccessibilityScenarioPlanner
+            from cherenkov.stages.generate import GenerateStage
+
+            source = AccessibilitySourceAdapter(args.spec)
+            planner = AccessibilityScenarioPlanner()
+            scenarios = planner.plan(source)
+            for sc in scenarios:
+                GenerateStage("cli_validate").run(scenario=sc, source_type="accessibility")
 
         engine = ValidationEngine('cli_validate')
-        results = engine.validate_suite(args.target)
+        results = engine.validate_suite(args.target, workers=getattr(args, 'workers', 1))
         
         if getattr(args, 'format', None) == 'sarif':
             from cherenkov.execution.emitters.sarif import SARIFEmitter
-            import os
             os.makedirs(".cherenkov", exist_ok=True)
             emitter = SARIFEmitter()
             from cherenkov.core.contracts import DivergenceReport
@@ -381,6 +414,35 @@ def main():
             }))
             sys.exit(0 if passed_count == total else 1)
         print_tightening_report(results)
+
+        if not getattr(args, 'no_html', False):
+            from cherenkov.execution.emitters.html_report import HTMLReportEmitter
+            from pathlib import Path
+            html_path = Path(".cherenkov") / "report.html"
+            HTMLReportEmitter().emit(results, html_path)
+            print(f"HTML report generated: {html_path}")
+
+        from cherenkov.cache.endpoint_cache import EndpointCache
+        stats = EndpointCache().stats()
+        print(f"Cache Stats: {stats}")
+
+        sys.exit(0)
+
+    elif args.command == 'diff':
+        from cherenkov.diff.spec_differ import SpecDiffer, print_diff_report
+        differ = SpecDiffer()
+        report = differ.diff(args.before, args.after)
+        print_diff_report(report, fmt=args.format)
+        sys.exit(1 if report.has_breaking_changes else 0)
+
+    elif args.command == 'completion':
+        # Generate the argcomplete activation script for the specified shell
+        if args.shell == 'bash':
+            print('eval "$(register-python-argcomplete cherenkov)"')
+        elif args.shell == 'zsh':
+            print('eval "$(register-python-argcomplete cherenkov)"')
+        elif args.shell == 'fish':
+            print('register-python-argcomplete --shell fish cherenkov | source')
         sys.exit(0)
 
     elif args.command == 'self-test':
@@ -433,7 +495,7 @@ def main():
 
     elif args.command == 'doctor':
         from cherenkov.stages.doctor_cmd import run_doctor
-        sys.exit(run_doctor())
+        sys.exit(run_doctor(desktop=getattr(args, 'desktop', False)))
 
     elif args.command == 'dashboard':
         from cherenkov.dashboard.render import run_dashboard

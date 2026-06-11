@@ -13,7 +13,8 @@
     "@playwright/test": "1.56.1",
     "@types/node": "^25.9.1",
     "openapi-typescript": "^7.13.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@axe-core/playwright": "^4.9.0"
   },
   "dependencies": {
     "openapi-fetch": "^0.17.0"

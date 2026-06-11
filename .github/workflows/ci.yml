@@ -394,6 +394,36 @@ jobs:
           CHERENKOV_LIVE_LLM: "1"
         run: PYTHONPATH=. python3 tests/smoke/smoke_test_generate_live.py
 
+  live-llm-github-models:
+    name: Live LLM — GitHub Models (MVP Verify)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install pydantic==2.7.1 requests
+      - name: Verify GitHub Models provider round-trip
+        env:
+          CHERENKOV_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHERENKOV_EGRESS: github
+          CHERENKOV_TIER_DEEP_PROVIDER: github
+          CHERENKOV_TIER_SMALL_PROVIDER: github
+          CHERENKOV_CERTIFICATION_ENABLED: "false"
+        run: |
+          cat << 'EOF' > test_github_models.py
+          from cherenkov.substrate.router import SubstrateRouter
+          from cherenkov.core.contracts import ReasoningRequest
+          router = SubstrateRouter()
+          req = ReasoningRequest(task="Reply with 'OK'", capability_tier="small")
+          res = router.route(req)
+          print(f"Success! Provider: {res.provider}, Response: {res.content}")
+          EOF
+          PYTHONPATH=. python3 test_github_models.py
+
 
   mobile-pipeline-unit:
     name: Mobile Pipeline Unit Tests
