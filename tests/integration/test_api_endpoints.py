@@ -395,6 +395,18 @@ class TestMobilePilot(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()["status"], "started")
 
+    def test_devices_inventory_shape(self):
+        """Inventory returns a real (possibly empty) device list plus runner health booleans."""
+        r = self.client.get("/api/v1/mobile/devices")
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertIsInstance(body["devices"], list)
+        self.assertIn("maestro", body["runners"])
+        self.assertIn("appium", body["runners"])
+        for device in body["devices"]:
+            self.assertIn("id", device)
+            self.assertIn("connected", device)
+
 
 # ── Ingest edge cases ─────────────────────────────────────────────────────────
 

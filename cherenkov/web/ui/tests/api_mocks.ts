@@ -638,6 +638,15 @@ export async function setupApiMocks(page: any) {
       status: 'ok', metrics: { requestCount: 142, totalTokens: 128000, totalCost: 0.42, totalDurationMs: 32400, defectEscapeCount: 2, falsePositiveRate: 1.2, maintenanceEfficiency: 0.88 }
     })});
   });
+  await page.route('**/api/v1/mobile/devices', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      devices: [
+        { id: 'emulator-5554', name: 'sdk_gphone64_x86_64', platform: 'Android', connected: true, state: 'device' },
+        { id: 'R5CT20ABCDE', name: 'SM-G991B', platform: 'Android', connected: false, state: 'unauthorized' },
+      ],
+      runners: { maestro: true, appium: false },
+    })});
+  });
   await page.route('**/api/v1/visual/scenarios', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
       { scenario_id: 'vs-1', status: 'ok', verdict: 'AUTO_APPROVE', gates: [], vlm_kind: 'harmless_shift', vlm_confidence: 0.93, vlm_detail: 'Anti-aliasing drift only', url: 'http://localhost:8000/' },

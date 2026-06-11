@@ -573,32 +573,27 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
   });
 
   // ── 28. Mobile Screen (NE8) ──────────────────────────────────────────
-  test('Mobile screen: device grid renders with disconnected badges', async ({ page }) => {
+  test('Mobile screen: device grid renders from /mobile/devices inventory', async ({ page }) => {
     await page.click('#nav-item-mobile');
     await page.waitForSelector('#mobile-screen');
     await expect(page.locator('h1')).toContainText('Mobile Testing');
 
-    // Wait for 800ms loading timer to fire
-    await page.waitForTimeout(1000);
+    // Devices from the mocked ADB inventory
+    await expect(page.getByTestId('device-card-emulator-5554')).toBeVisible();
+    await expect(page.getByTestId('device-card-R5CT20ABCDE')).toBeVisible();
+    await expect(page.getByText('sdk_gphone64_x86_64')).toBeVisible();
+    await expect(page.getByText('SM-G991B')).toBeVisible();
 
-    // All four device cards present via data-testid
-    await expect(page.getByTestId('device-card-m1')).toBeVisible();
-    await expect(page.getByTestId('device-card-m2')).toBeVisible();
-    await expect(page.getByTestId('device-card-m3')).toBeVisible();
-    await expect(page.getByTestId('device-card-m4')).toBeVisible();
+    // Connection badges reflect the ADB state
+    await expect(page.getByTestId('device-status-emulator-5554')).toContainText('Connected');
+    await expect(page.getByTestId('device-status-R5CT20ABCDE')).toContainText('unauthorized');
 
-    // Device names visible
-    await expect(page.getByText('iPhone 15 Pro')).toBeVisible();
-    await expect(page.getByText('Pixel 8')).toBeVisible();
-
-    // All devices start disconnected
-    const m1Status = page.getByTestId('device-status-m1');
-    await expect(m1Status).toBeVisible();
-    await expect(m1Status).toContainText('Disconnected');
+    // Runner availability chips
+    await expect(page.getByTestId('runner-maestro')).toBeVisible();
+    await expect(page.getByTestId('runner-appium')).toBeVisible();
 
     // Instructions panel visible
     await expect(page.getByText('Mobile testing requires ADB')).toBeVisible();
-    await expect(page.getByText('Phase 5/6')).toBeVisible();
   });
 
   test('Mobile screen: skeleton visible during load then replaced by device cards', async ({ page }) => {
@@ -609,9 +604,17 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     const firstCard = page.locator('#mobile-screen [class*="space-y-3"]').first();
     await expect(firstCard).toBeVisible();
 
-    // After timer fires, real device cards appear
-    await page.waitForTimeout(1100);
-    await expect(page.getByTestId('device-card-m1')).toBeVisible();
+    // After the inventory loads, real device cards appear
+    await expect(page.getByTestId('device-card-emulator-5554')).toBeVisible();
+  });
+
+  test('Mobile screen: honest empty state when no devices connected', async ({ page }) => {
+    await page.route('**/api/v1/mobile/devices', async (route: any) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ devices: [], runners: { maestro: false, appium: false } }) });
+    });
+    await page.click('#nav-item-mobile');
+    await page.waitForSelector('#mobile-screen');
+    await expect(page.getByText('No Devices Connected')).toBeVisible();
   });
 
 });

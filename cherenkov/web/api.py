@@ -859,6 +859,55 @@ _mobile_pilot_status = {
 async def get_mobile_pilot_status():
     return _mobile_pilot_status
 
+
+@app.get("/api/v1/mobile/devices")
+async def list_mobile_devices():
+    """Real connected-device inventory: ADB devices plus runner health.
+
+    Returns an empty device list (not fake data) when no devices are
+    connected or ADB is unavailable, so the UI can show an honest state.
+    """
+    import shutil as _shutil
+    import subprocess as _subprocess
+
+    devices = []
+    if _shutil.which("adb"):
+        try:
+            out = _subprocess.run(
+                ["adb", "devices", "-l"], capture_output=True, text=True, timeout=5
+            ).stdout
+            for line in out.splitlines()[1:]:
+                parts = line.strip().split()
+                if len(parts) < 2:
+                    continue
+                serial, state = parts[0], parts[1]
+                model = next(
+                    (p.split(":", 1)[1] for p in parts[2:] if p.startswith("model:")),
+                    serial,
+                )
+                devices.append({
+                    "id": serial,
+                    "name": model,
+                    "platform": "Android",
+                    "connected": state == "device",
+                    "state": state,
+                })
+        except Exception:
+            pass
+
+    from cherenkov.execution.maestro_runner import MaestroRunner
+    from cherenkov.execution.appium_runner import AppiumRunner
+    try:
+        maestro_ok = MaestroRunner().health_check()
+    except Exception:
+        maestro_ok = False
+    try:
+        appium_ok = AppiumRunner(timeout=2).health_check()
+    except Exception:
+        appium_ok = False
+
+    return {"devices": devices, "runners": {"maestro": maestro_ok, "appium": appium_ok}}
+
 @app.post("/api/v1/mobile/pilot/start")
 async def start_mobile_pilot():
     _mobile_pilot_status["status"] = "running"
