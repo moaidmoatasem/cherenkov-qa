@@ -4,7 +4,9 @@ import urllib.error
 import json
 import sys
 
-TOKEN = "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"
+import os
+
+TOKEN = os.getenv("GITHUB_TOKEN", "")
 OWNER, REPO = "moaidmoatasem", "cherenkov-qa"
 API = f"https://api.github.com/repos/{OWNER}/{REPO}/issues"
 
