@@ -25,6 +25,17 @@ else
     echo "k3d already installed: $(k3d version)"
 fi
 
+# Install kubectl
+if ! command -v kubectl &>/dev/null; then
+    echo "Installing kubectl..."
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    rm kubectl
+    kubectl version --client
+else
+    echo "kubectl already installed"
+fi
+
 echo ""
 echo "=== Setup complete ==="
 echo "Run 'source /etc/profile.d/go.sh' or start a new shell for Go to be on PATH"

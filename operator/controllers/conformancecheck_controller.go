@@ -72,7 +72,7 @@ func (r *ConformanceCheckReconciler) Reconcile(ctx context.Context, req reconcil
 		}
 
 		if err := r.Runner.CreateValidateJob(ctx, check.Name, check.Namespace,
-			check.Spec.TargetRef.Name, check.Spec.TargetRef.Port, specRef); err != nil {
+			check.Spec.TargetRef.Name, check.Spec.TargetRef.Port, specRef, check.Spec.DeviceTarget); err != nil {
 			r.Scheduler.Release()
 			check.Status.Phase = validationv1alpha1.PhaseError
 			_ = r.Status().Update(ctx, check)

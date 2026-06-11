@@ -45,6 +45,7 @@ type ConformanceCheckSpec struct {
 	Schedule  string    `json:"schedule,omitempty"`
 	Gates     []Gate    `json:"gates,omitempty"`
 	LLMConcurrency *int32 `json:"llmConcurrency,omitempty"`
+	DeviceTarget string `json:"deviceTarget,omitempty"`
 }
 
 // ConformanceCheckStatus defines the observed state.

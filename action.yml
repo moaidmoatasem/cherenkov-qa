@@ -1,0 +1,55 @@
+name: 'Cherenkov QA Conformance Test'
+description: 'Runs Cherenkov QA API conformance tests and uploads SARIF results'
+author: 'Moaid Moatasem'
+inputs:
+  spec_path:
+    description: 'Path to OpenAPI or GraphQL spec'
+    required: true
+  target_url:
+    description: 'Target API URL to test against'
+    required: true
+  source_type:
+    description: 'Type of spec (openapi or graphql)'
+    required: false
+    default: 'openapi'
+  format:
+    description: 'Output format (json, text, sarif)'
+    required: false
+    default: 'sarif'
+  output_path:
+    description: 'Path for output report'
+    required: false
+    default: 'cherenkov_report.sarif'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        cd stub && npm install && cd ..
+      shell: bash
+
+    - name: Run Cherenkov
+      run: |
+        python cherenkov.py validate \
+          --spec ${{ inputs.spec_path }} \
+          --target ${{ inputs.target_url }} \
+          --source ${{ inputs.source_type }} \
+          --format ${{ inputs.format }} \
+          --output ${{ inputs.output_path }}
+      shell: bash
+
+branding:
+  icon: 'check-circle'
+  color: 'blue'
