@@ -79,7 +79,13 @@ def main():
             server_proc.wait()
 
 
+VISUAL_SPEC = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "../stub/generated_tests/visual_regression_baseline_ui.spec.ts"
+))
+
+
 @pytest.mark.skipif(os.name == "nt", reason="Windows CMD does not support UNC paths as current directory")
+@pytest.mark.skipif(not os.path.exists(VISUAL_SPEC), reason="visual_regression_baseline_ui.spec.ts not generated — run the visual pipeline first (VisualDiffEngine consumes, never creates, this spec)")
 def test_legacy_visual():
     try:
         main()

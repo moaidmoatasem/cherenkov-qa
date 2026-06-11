@@ -132,7 +132,18 @@ test('create user failing assertion spec', async () => {
             server_proc.wait()
 
 
+def _ollama_available() -> bool:
+    """Deep healing repairs the spec via the local LLM; probe for a live Ollama."""
+    import urllib.request
+    try:
+        urllib.request.urlopen("http://localhost:11434/api/tags", timeout=2)
+        return True
+    except Exception:
+        return False
+
+
 @pytest.mark.skipif(os.name == "nt", reason="Windows/WSL UNC path limitations prevent sandbox symlink operations")
+@pytest.mark.skipif(not _ollama_available(), reason="Ollama not reachable — sandbox healing needs the local LLM to repair the failing spec")
 def test_legacy_deep_healing():
     try:
         main()

@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use tauri::{AppHandle, Emitter};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -43,17 +42,6 @@ fn emit_progress(app: &AppHandle, progress: SetupProgress) {
 /// Check if a binary exists on PATH or at a known location.
 fn is_installed(binary: &str) -> bool {
     which::which(binary).is_ok()
-}
-
-/// Returns the Ollama models directory.
-fn ollama_models_dir() -> Option<PathBuf> {
-    if let Some(home) = dirs::home_dir() {
-        let p = home.join(".ollama").join("models");
-        if p.exists() {
-            return Some(p);
-        }
-    }
-    None
 }
 
 /// Check if the required model is already pulled.

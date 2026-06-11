@@ -37,8 +37,8 @@ import OnboardingWizard from './components/OnboardingWizard';
 import { Project, EndpointRichness } from './types';
 import { runPipeline, fetchProjects, fetchMetricsData } from './lib/api';
 import { useHealth } from './lib/useHealth';
+import { listenDesktop } from './lib/tauri';
 import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
-import { useAppStore } from './stores/useAppStore';
 
 function InnerApp() {
   const { toast } = useToast();
@@ -62,6 +62,14 @@ function InnerApp() {
 
   // Backend liveness — single source of truth for the honest offline state (#221).
   const { online, demoMode, checking, refresh, lastCheckedAt } = useHealth();
+
+  // Desktop shell: re-probe health when the engine sidecar changes state.
+  React.useEffect(() => {
+    const subs = ['engine-healthy', 'engine-demo-mode', 'engine-stopped'].map(evt =>
+      listenDesktop(evt, () => refresh())
+    );
+    return () => { subs.forEach(p => p.then(unlisten => unlisten())); };
+  }, [refresh]);
 
   // Autonomy settings with local storage persistence
   const [autonomy, setAutonomyState] = useState<'Assisted' | 'Augmented' | 'Agentic'>(() => {

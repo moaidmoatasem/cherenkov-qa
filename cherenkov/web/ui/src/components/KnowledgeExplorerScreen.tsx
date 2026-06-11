@@ -58,7 +58,7 @@ export default function KnowledgeExplorerScreen() {
 
       {error && (
         <EmptyState
-          icon={<Database />}
+          icon={Database}
           title="Query Failed"
           description={error}
           primaryAction={{
@@ -82,7 +82,7 @@ export default function KnowledgeExplorerScreen() {
 
       {!isLoading && !error && results.length === 0 && query && (
         <EmptyState
-          icon={<Brain />}
+          icon={Brain}
           title="No Results"
           description="Your query returned no results. Try a different search term."
         />

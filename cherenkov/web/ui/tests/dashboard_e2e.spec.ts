@@ -393,7 +393,7 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     await expect(buttons.nth(1)).toHaveAttribute('aria-checked', 'true');
 
     // Session cost visible
-    await expect(page.getByText('SESSION COST:')).toBeVisible();
+    await expect(page.getByText('SESSION COST')).toBeVisible();
 
     // Help button
     const helpButton = page.locator('button[aria-label="Help Guide"]');
@@ -451,14 +451,14 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     expect(storedDensity).toBe('compact');
   });
 
-  // ── 22. Knowledge Explorer Screen ──────────────────────────────────
-  test('Knowledge: enter query, submit, verify results grid', async ({ page }) => {
+  // ── 22. Device & Provider Manager Screen ──────────────────────────
+  test('Devices: connectivity, model availability, and provider status panels', async ({ page }) => {
     await page.click('#nav-item-devices');
     await page.waitForSelector('#devices-screen');
     await expect(page.locator('h1')).toContainText('Device & Provider Manager');
     await expect(page.getByText('Device Connectivity')).toBeVisible();
     await expect(page.getByText('Model Availability')).toBeVisible();
-    await expect(page.getByText('Provider Status')).toBeVisible();
+    await expect(page.getByText('Provider Status').first()).toBeVisible();
     await expect(page.getByText('LocalAI').first()).toBeVisible();
     await expect(page.getByText('Ollama').first()).toBeVisible();
   });

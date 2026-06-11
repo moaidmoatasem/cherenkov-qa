@@ -239,7 +239,7 @@ export default function SddDashboardScreen() {
             <div className="flex justify-between">
               <span className="text-text-muted">Session status</span>
               <span className={`font-mono ${status?.session?.status === 'open' ? 'text-green-400' : 'text-text-muted'}`}>
-                {status?.session?.status ?? 'none'}
+                {(status?.session?.status as string) ?? 'none'}
               </span>
             </div>
             {status?.session?.status === 'open' && status?.session?.id && (

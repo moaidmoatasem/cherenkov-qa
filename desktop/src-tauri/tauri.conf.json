@@ -10,6 +10,7 @@
     "frontendDist": "../../cherenkov/web/ui/dist"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "CHERENKOV",
@@ -37,6 +38,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "externalBin": ["cherenkov-launcher"],
     "shortDescription": "AI-native API conformance test generator",
     "longDescription": "CHERENKOV reads your OpenAPI spec, generates typed Playwright tests using a local LLM, runs them against your real server, and catches spec-conformance drift. Zero lock-in.",
     "macOS": {
@@ -55,11 +57,11 @@
     },
     "linux": {
       "deb": { "depends": [] }
-    }
+    },
+    "createUpdaterArtifacts": true
   },
   "plugins": {
     "updater": {
-      "active": true,
       "pubkey": "",
       "endpoints": [
         "https://github.com/moaidmoatasem/cherenkov-qa/releases/latest/download/latest.json"

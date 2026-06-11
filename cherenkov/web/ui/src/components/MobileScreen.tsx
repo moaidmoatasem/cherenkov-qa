@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Smartphone, Monitor, CheckCircle, XCircle, RotateCw, Play } from 'lucide-react';
 import { Card, PageHeader, MockBadge, EmptyState, Skeleton } from './ui';
-import { createChatSession, sendChatMessage } from '../lib/api';
+
 
 interface MobileDevice {
   id: string;
