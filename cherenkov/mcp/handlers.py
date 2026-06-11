@@ -30,6 +30,7 @@ from pydantic import ValidationError
 from cherenkov.hitl.store import HitlQueue
 from cherenkov.validate.gate import ValidationGate
 from cherenkov.mcp.policy import PolicyEngine
+from cherenkov.chat.guard import get_guard
 from cherenkov.mcp.contracts import (
     HitlApproveInput,
     HitlListInput,
@@ -376,6 +377,12 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
         if not _policy.is_tool_allowed(profile, server_name, name):
             return _err_content(
                 f"Tool '{name}' blocked by policy for server '{server_name}' in profile '{profile}'."
+            ).model_dump()
+        guard = get_guard()
+        guard_result = guard.check_tool_call(name, arguments)
+        if not guard_result.allowed:
+            return _err_content(
+                f"Tool '{name}' blocked by safety guard: {guard_result.reason}"
             ).model_dump()
 
     try:

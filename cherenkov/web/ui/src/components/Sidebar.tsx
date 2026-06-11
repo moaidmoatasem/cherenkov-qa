@@ -25,7 +25,8 @@ import {
   ChevronRight,
   Star,
   MessageSquare,
-  Smartphone
+  Smartphone,
+  Gauge
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
 import { Project } from '../types';
@@ -143,6 +144,12 @@ export default function Sidebar({
         { id: 'memory', label: 'Memory & Pairing', icon: Brain, desc: 'Reflector senior idioms' },
         { id: 'knowledge', label: 'Knowledge', icon: Brain, desc: 'Second Brain knowledge mesh' },
         { id: 'chat', label: 'Chat', icon: MessageSquare, desc: 'SSE streaming assistant' },
+      ]
+    },
+    {
+      label: 'COCKPIT',
+      items: [
+        { id: 'sdd', label: 'SDD Agent Cockpit', icon: Gauge, desc: 'Sync state, tokens, experience' },
       ]
     }
   ];

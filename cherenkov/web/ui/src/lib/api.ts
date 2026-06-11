@@ -4,6 +4,12 @@
  * In production builds, the static files and API are hosted under the same origin.
  */
 
+import type {
+  SddStatusResponse, SddSessionSummary, SddSessionDetail,
+  SddExperience, SddTokenData, SddContextData,
+  GraphData, PatternInsight, WikiEntry, SddFinding,
+} from '../types';
+
 export const API_BASE = '/api/v1';
 
 export interface IngestResponse {
@@ -535,5 +541,85 @@ export async function fetchMobilePilotStatus(): Promise<PilotStatus> {
 export async function startMobilePilot(): Promise<{ status: string }> {
   const res = await fetch(`${API_BASE}/mobile/pilot/start`, { method: 'POST' });
   if (!res.ok) throw new Error(`Failed to start pilot: ${res.status}`);
+  return res.json();
+}
+
+// ── SDD Agent Cockpit API ─────────────────────────────────────────────
+
+export async function fetchSddStatus(): Promise<SddStatusResponse> {
+  const res = await fetch(`${API_BASE}/sdd/status`);
+  if (!res.ok) return { session: {}, current_tokens: { session_id: null, prompt: 0, generate: 0, read: 0, search: 0, total: 0 }, budget: {}, historical: { total_all_time: 0, sessions_completed: 0, avg_per_session: 0, by_task_type: {} }, experience_count: 0, sessions_since_compact: 0 };
+  return res.json();
+}
+
+export async function fetchSddSessions(limit = 50, taskType?: string): Promise<SddSessionSummary[]> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (taskType) params.set('task_type', taskType);
+  const res = await fetch(`${API_BASE}/sdd/sessions?${params}`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function fetchSddSessionDetail(sessionId: string): Promise<SddSessionDetail> {
+  const res = await fetch(`${API_BASE}/sdd/sessions/${sessionId}`);
+  if (!res.ok) throw new Error(`Session not found: ${res.status}`);
+  return res.json();
+}
+
+export async function querySddExperience(pattern?: string, outcome?: string, sort?: string, limit = 50): Promise<SddExperience[]> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (pattern) params.set('pattern', pattern);
+  if (outcome) params.set('outcome', outcome);
+  if (sort) params.set('sort', sort);
+  const res = await fetch(`${API_BASE}/sdd/experience?${params}`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function fetchSddTokens(): Promise<SddTokenData> {
+  const res = await fetch(`${API_BASE}/sdd/tokens`);
+  if (!res.ok) return { current_session: { session_id: null, prompt: 0, generate: 0, read: 0, search: 0, total: 0 }, budget: {}, historical: { total_all_time: 0, sessions_completed: 0, avg_per_session: 0, by_task_type: {} }, top_consumers: [] };
+  return res.json();
+}
+
+export async function fetchSddContext(): Promise<SddContextData> {
+  const res = await fetch(`${API_BASE}/sdd/context`);
+  if (!res.ok) return { version: 1, last_refreshed: '', snippets: [], task_type_map: {} };
+  return res.json();
+}
+
+export async function triggerSddCompact(force = false): Promise<void> {
+  await fetch(`${API_BASE}/sdd/compact?force=${force}`, { method: 'POST' });
+}
+
+export async function fetchSddGraph(): Promise<GraphData> {
+  const res = await fetch(`${API_BASE}/sdd/graph/export`);
+  if (!res.ok) return { nodes: [], edges: [] };
+  return res.json();
+}
+
+export async function fetchSddPatterns(): Promise<PatternInsight[]> {
+  const res = await fetch(`${API_BASE}/sdd/graph/patterns`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function fetchSddWikiTree(): Promise<WikiEntry[]> {
+  const res = await fetch(`${API_BASE}/sdd/wiki/tree`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function fetchSddWikiFile(path: string): Promise<{ path: string; content: string; size: number; last_updated: string }> {
+  const res = await fetch(`${API_BASE}/sdd/wiki/${encodeURIComponent(path)}`);
+  if (!res.ok) throw new Error(`Wiki file not found: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchSddFindings(sessionId?: string, limit = 100): Promise<SddFinding[]> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (sessionId) params.set('session_id', sessionId);
+  const res = await fetch(`${API_BASE}/sdd/findings?${params}`);
+  if (!res.ok) return [];
   return res.json();
 }

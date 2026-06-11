@@ -26,6 +26,7 @@ import ChatScreen from './components/ChatScreen';
 import DeviceManagerScreen from './components/DeviceManagerScreen';
 import MobileScreen from './components/MobileScreen';
 import KnowledgeExplorerScreen from './components/KnowledgeExplorerScreen';
+import SddDashboardScreen from './components/SddDashboardScreen';
 import GlobalShortcuts from './components/GlobalShortcuts';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import GuidedTour from './components/GuidedTour';
@@ -398,6 +399,10 @@ function InnerApp() {
 
             {activeTab === 'knowledge' && (
               <KnowledgeExplorerScreen />
+            )}
+
+            {activeTab === 'sdd' && (
+              <SddDashboardScreen />
             )}
           </main>
         </div>

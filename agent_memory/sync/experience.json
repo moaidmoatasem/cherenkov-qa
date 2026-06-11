@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "last_updated": "2026-06-09T22:32:09.250251+00:00",
+  "experience_count": 2,
+  "sessions_contributing": 2,
+  "experiences": [
+    {
+      "id": "exp_seed_001",
+      "timestamp": "2026-06-10",
+      "task": "SDD methodology creation",
+      "action": "Decision: filesystem-based sync protocol instead of DB",
+      "rationale": "Zero external deps, git-trackable, works without any infra. JSON over markdown for structured query.",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "sdd",
+        "sync",
+        "methodology"
+      ],
+      "session_id": "sess_seed",
+      "applicable_tasks": [
+        "infrastructure",
+        "tooling",
+        "protocol-design"
+      ]
+    },
+    {
+      "id": "exp_sess_20260609223124_025597_36f4",
+      "timestamp": "2026-06-09T22:32:09.250226+00:00",
+      "task": "test-e2e",
+      "action": "decision Use Pydantic models over raw dicts for config validation",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 4500,
+      "patterns": [
+        "test-e2e"
+      ],
+      "session_id": "sess_20260609223124_025597"
+    }
+  ],
+  "pattern_index": {
+    "sdd": [
+      "exp_seed_001"
+    ],
+    "sync": [
+      "exp_seed_001"
+    ],
+    "methodology": [
+      "exp_seed_001"
+    ],
+    "test-e2e": [
+      "exp_sess_20260609223124_025597_36f4"
+    ]
+  }
+}

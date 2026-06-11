@@ -35,7 +35,7 @@ The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHE
 - ✅ **Phase 2** (VLM + LocalAI): Complete. LocalAI default, tier routing, doctor CLI (#339-#344).
 - ✅ **Phase 4** (Chat Agent): Complete. Tool-calling agent, persona registry, SSE streaming (#354-#361).
 - ✅ **Phase 7** (Dashboard): Complete. All 9 screens: DeviceManager, KnowledgeExplorer, HealthWidget, MobileScreen, ChatPanel, wire-up, MockBadges, Pilot Run, Toast (#377-#385).
-- 🔶 **Phase 8** (K8s + Cloud + Gate): In progress. SECURITY.md added (#389). Remaining items: #386-#388 (CRD sync + device env vars — code done, needs `make k3d-test`), #390 (gate — resolved per owner decision), #391 (docs — SYSTEM_DESIGN.md + BEST_PRACTICES.md updated).
+- ✅ **Phase 8** (K8s + Cloud + Gate): Complete. `make k3d-test` green (2026-06-09). All 6 issues closed (#386-#391): K8s fixes validated, CRD extensions + device env vars deployed, SECURITY.md added, validation gate resolved, clean architecture docs updated.
 - ⏸️ **Phase 3** (Desktop/Tauri 2): Blocked — needs `cargo` on this machine.
 - ⏸️ **Phase 5-6** (Mobile Testing): Blocked — needs ADB/Maestro on this machine.
 
@@ -57,7 +57,7 @@ The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHE
 - Track C (Desktop): Phase 3 ⏸ (needs cargo)
 - Track D (Mobile): Phase 5-6 ⏸ (needs ADB)
 - Track E (Dashboard): Phase 7 ✅
-- Track F (K8s): Phase 8 🔶 (in progress)
+- Track F (K8s): Phase 8 ✅
 
 **Extended Roadmap (Phases 9-16 — Product & Market Expansion):**
 - See [docs/PRODUCT_STRATEGY_ROADMAP.md](docs/PRODUCT_STRATEGY_ROADMAP.md) for Phases 9-16: market launch, enterprise tier, fine-tuned model, 10-year vision, revenue model.
@@ -80,3 +80,31 @@ As of June 2026, CHERENKOV adopts the following advanced orchestration patterns 
    - Use **DeepEval** for agent logic and trajectory evaluation.
    - Use **Logfire** for tracing autonomous reasoning.
    - Use **MiniGPT** (or equivalent Vision-Language models) for visual UI validation rather than relying solely on DOM scraping.
+
+### Sync Driven Development (SDD) — Token-Efficient Agent Protocol
+
+**Every agent session MUST follow the SDD protocol before/during/after work** to save tokens, compound experience, and prevent AI amnesia.
+
+**SDD rules (see [docs/engineering/SYNC_DRIVEN_DEV.md](docs/engineering/SYNC_DRIVEN_DEV.md)):**
+
+1. **BEFORE** any work: `python scripts/agent_sync.py before --task <task_type>`
+   - This loads pre-computed context snippets (saves ~5-10k tokens vs re-reading docs)
+   - Sets up session tracking and token budget
+
+2. **DURING** work: Log decisions + findings + token usage
+   - `python scripts/agent_sync.py log --type <decision|finding|pitfall> <message>`
+   - `python scripts/agent_sync.py token --action <read|prompt|generate|search> --count <n> --item <name>`
+
+3. **AFTER** work: `python scripts/agent_sync.py after --summary "what was done"`
+   - Closes session, extracts experience records, updates token history
+
+4. **Query past experience**: `python scripts/agent_sync.py experience query <pattern>`
+   - Learn from past sessions, avoid repeated mistakes
+
+5. **Token budget**: 50k default per session. Compact when >80% used.
+   - `python scripts/agent_sync.py status` — check current state
+   - `python scripts/agent_sync.py compact` — after 3+ sessions
+
+**Skip the skill sync-driven-dev** at `skills/sync-driven-dev.md` for the full workflow reference.
+
+The SDD runtime lives in `agent_memory/sync/` (JSON state files + findings log).

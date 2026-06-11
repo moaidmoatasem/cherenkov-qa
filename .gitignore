@@ -82,3 +82,14 @@ desktop/src-tauri/cherenkov-launcher-*
 
 # Playwright artifacts
 cherenkov/web/ui/test-results/
+# Debug scripts
+_debug_*.py
+_verify_*.py
+.agentrr/
+policy.yaml
+sponsio.yaml
+
+# Build artifacts
+operator/k8s-run
+operator/k8s-run-static
+operator/manager
