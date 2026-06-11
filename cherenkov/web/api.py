@@ -652,6 +652,127 @@ async def get_truth_map():
         for i in idioms
     ]
 
+# ── Explore ──────────────────────────────────────────────────────────────────
+
+class ExplorePayload(BaseModel):
+    base_url: str
+    ui_url: str = ""
+    use_ui_probe: bool = False
+    max_links: int = 20
+
+
+@app.post("/api/v1/explore")
+async def run_explorer(payload: ExplorePayload):
+    """Run the autonomous Explorer: discover flows then crawl for anomalies."""
+    from cherenkov.divergence.explorer import Explorer
+
+    ui_probe = None
+    if payload.use_ui_probe and payload.ui_url:
+        try:
+            from cherenkov.execution.ui_probe import PlaywrightUiProbe
+            ui_probe = PlaywrightUiProbe()
+        except Exception:
+            pass
+
+    explorer = Explorer(base_url=payload.base_url, ui_probe=ui_probe)
+
+    # Phase 1: discover flows from the UI URL (or fallback to base_url)
+    discover_root = payload.ui_url or payload.base_url
+    flows = []
+    try:
+        flows = explorer.discover_flows(discover_root, max_links=payload.max_links)
+    except Exception:
+        pass
+
+    # Phase 2: crawl the discovered API paths + UI paths
+    paths = list({f["path"] for f in flows if f.get("path") and f["path"] != "/"})
+    paths = paths[:payload.max_links] or ["/"]
+
+    findings = explorer.crawl(paths)
+    hypotheses = explorer.to_hypotheses(findings)
+
+    return {
+        "probed": len(paths),
+        "findings": [
+            {
+                "id": f.id,
+                "kind": f.kind.value if hasattr(f.kind, "value") else str(f.kind),
+                "url": f.url,
+                "method": f.method,
+                "status": f.status,
+                "latency_ms": f.latency_ms,
+                "detail": f.detail,
+                "evidence": f.evidence,
+                "severity": f.severity.value if hasattr(f.severity, "value") else str(f.severity),
+            }
+            for f in findings
+        ],
+        "flows": flows,
+        "hypotheses_count": len(hypotheses),
+    }
+
+
+# ── Visual Regression ─────────────────────────────────────────────────────────
+
+@app.get("/api/v1/visual/scenarios")
+async def list_visual_scenarios():
+    """Return visual regression scenario results from the last run."""
+    import glob as _glob
+    import json as _json
+
+    results = []
+    run_dir = ".cherenkov"
+    pattern = os.path.join(run_dir, "*", "visual_*.json")
+    try:
+        for path in sorted(_glob.glob(pattern), key=os.path.getmtime, reverse=True)[:20]:
+            try:
+                with open(path) as fh:
+                    data = _json.load(fh)
+                    if isinstance(data, dict) and "scenario_id" in data:
+                        results.append(data)
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return results
+
+
+@app.post("/api/v1/visual/check")
+async def run_visual_check(background_tasks: BackgroundTasks, target_url: str = "", name: str = "page"):
+    """Run a single visual regression check against target_url."""
+    from cherenkov.core.contracts import VisualSlice
+    from cherenkov.stages.visual.visual_stage import VisualStage
+
+    if not target_url:
+        raise HTTPException(status_code=400, detail="target_url is required")
+
+    safe_name = _re.sub(r"[^a-zA-Z0-9_\-]", "_", name)[:64]
+    sl = VisualSlice(name=safe_name, url=target_url)
+
+    def _run():
+        stage = VisualStage(run_id="api_visual")
+        report = stage.run(sl)
+        # Persist result to disk for the scenarios list endpoint
+        os.makedirs(".cherenkov/api_visual", exist_ok=True)
+        import json as _json
+        out = {
+            "scenario_id": report.scenario_id,
+            "status": report.status.value if hasattr(report.status, "value") else str(report.status),
+            "verdict": report.verdict.value if hasattr(report.verdict, "value") else str(report.verdict),
+            "gates": [g.model_dump() for g in report.gates],
+            "url": target_url,
+        }
+        # Enrich with VLM metadata from the vlm_semantic gate
+        vlm_gate = next((g for g in report.gates if g.gate == "vlm_semantic"), None)
+        if vlm_gate:
+            out["vlm_kind"] = "harmless_shift" if vlm_gate.passed else "anomaly"
+        with open(f".cherenkov/api_visual/{report.scenario_id}.json", "w") as fh:
+            _json.dump(out, fh, indent=2, default=str)
+
+    background_tasks.add_task(_run)
+    return {"status": "queued", "scenario_id": f"visual_{safe_name}", "url": target_url}
+
+
 @app.get("/api/v1/failures")
 async def get_failures():
     """Return recent failure verdicts from the VerdictStore."""
