@@ -43,7 +43,7 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     fetchSettings().then(data => {
-      setTargetSettings(data.target || { url: '', auth_header: '' });
+      setTargetSettings({ url: data.target?.url ?? '', auth_header: data.target?.auth_header ?? '' });
       setTier(data.engine.model_tier as any);
       setBudget(data.engine.execution_budget);
       setThreadLimit(data.engine.workers);

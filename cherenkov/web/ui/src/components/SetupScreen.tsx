@@ -36,7 +36,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
   const [serverAuth, setServerAuth] = useState('');
   const [loading, setLoading] = useState(false);
   const [ingestedSpecPath, setIngestedSpecPath] = useState<string | null>(null);
-  const { toast, addToast } = useToast();
+  const { toast } = useToast();
   
   // Tooltip details state
   const [hoveredEndpoint, setHoveredEndpoint] = useState<EndpointRichness | null>(null);
@@ -54,7 +54,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
       setSystemReady(data.ready);
       setDoctorLoading(false);
     }).catch(() => {
-      addToast("System Readiness Check failed to connect. Verify the backend is running.", "danger");
+      toast("System Readiness Check failed to connect. Verify the backend is running.", "danger");
       setDoctorLoading(false);
       // Leave systemReady false — show a warning instead of silently proceeding
     });
@@ -81,13 +81,13 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
         path: ep.path,
         method: ep.method,
         richness: ep.richness,
-        band: ep.richness >= 0.7 ? 'full' : ep.richness >= 0.5 ? 'inferred' : 'degraded',
+        band: (ep.richness >= 0.7 ? 'full' : ep.richness >= 0.5 ? 'inferred' : 'degraded') as 'full' | 'inferred' | 'degraded',
         missingElements: ep.missing_elements || [],
       }));
       setEndpoints(mapped);
       setIngestedSpecPath(data.spec_path);
     } catch (err) {
-      addToast("Real backend spec ingestion failed.", "error");
+      toast("Real backend spec ingestion failed.", "error");
       setEndpoints([]);
     } finally {
       setLoading(false);

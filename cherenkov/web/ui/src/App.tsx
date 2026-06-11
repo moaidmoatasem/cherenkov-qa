@@ -37,7 +37,6 @@ import { Project, EndpointRichness } from './types';
 import { runPipeline, fetchProjects, fetchMetricsData } from './lib/api';
 import { useHealth } from './lib/useHealth';
 import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
-import { useAppStore } from './stores/useAppStore';
 
 function InnerApp() {
   const { toast } = useToast();

@@ -163,6 +163,15 @@ fn spawn_sidecar(app: &AppHandle, sidecar_state: SharedSidecar) {
                                 tokio::spawn(async move {
                                     if wait_for_health(port, 30).await {
                                         let _ = app2.emit("engine-healthy", port);
+                                        // The window URL in tauri.conf.json assumes port 8000;
+                                        // navigate to the port the engine actually bound.
+                                        if port != 8000 {
+                                            if let Some(window) = app2.get_webview_window("main") {
+                                                if let Ok(url) = format!("http://127.0.0.1:{}", port).parse() {
+                                                    let _ = window.navigate(url);
+                                                }
+                                            }
+                                        }
                                     } else {
                                         let _ = app2.emit("engine-error", "Engine health check timed out");
                                     }

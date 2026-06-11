@@ -74,3 +74,11 @@ stub/generated_tests/k6_perf.js
 
 # temp artifacts
 nul
+
+# Tauri desktop build artifacts
+desktop/src-tauri/target/
+desktop/src-tauri/gen/
+desktop/src-tauri/cherenkov-launcher-*
+
+# Playwright artifacts
+cherenkov/web/ui/test-results/
