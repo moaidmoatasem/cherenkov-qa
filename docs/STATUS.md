@@ -125,6 +125,9 @@ session.
 
 ## Change log
 
+- **2026-06-11** — QA Reasoning Engine foundation added (`cherenkov/reasoning/`):
+  artifact-adaptive QA workflows per [ADR-007](adr/ADR-007-qa-reasoning-engine.md)
+  and [vision/19_QA_REASONING.md](vision/19_QA_REASONING.md). 29 unit tests passing.
 - **2026-06-10** — Updated: test pass rate 16 failures → 258 passing; Track B/D/E state refreshed for priority rounds #419, #425, #442; Phase 8 notes updated.
 - **2026-06-09** — Created this file. Status deduplicated from `HANDOVER.md`,
   `README.md`, and `PHASE_PLAN.md`. `README.md` and `HANDOVER.md` now point

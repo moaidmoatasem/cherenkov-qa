@@ -41,6 +41,7 @@ If you only have 2 minutes, read **§ "What it does (30 seconds)"** in
 - [config_cookbook.md](config_cookbook.md) — config knobs and recipes
 - [MIGRATION.md](MIGRATION.md) / [MIGRATION_INVENTORY.md](MIGRATION_INVENTORY.md) — schema and data migrations
 - [ASSUMPTIONS.md](ASSUMPTIONS.md) — explicit non-goals and assumptions
+- [vision/19_QA_REASONING.md](vision/19_QA_REASONING.md) — QA Reasoning Engine: artifact-adaptive QA workflows ([ADR-007](adr/ADR-007-qa-reasoning-engine.md))
 
 ---
 
