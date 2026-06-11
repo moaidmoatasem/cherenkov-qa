@@ -143,12 +143,12 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     // Performance tab default
     await expect(page.getByText('API Latency & Anomaly Baselines')).toBeVisible();
 
-    // Switch to Visual
-    await page.click('button:has-text("Visual Regression")');
+    // Switch to Visual (scoped: the sidebar also has a "Visual Regression" nav item)
+    await page.click('#signals-screen button:has-text("Visual Regression")');
     await expect(page.getByText('UI Snapshot Comparisons')).toBeVisible();
 
     // Switch to Coverage
-    await page.click('button:has-text("SDET Coverage")');
+    await page.click('#signals-screen button:has-text("SDET Coverage")');
     await expect(page.getByText('Code Path Verification Coverage')).toBeVisible();
   });
 
@@ -318,11 +318,22 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
   });
 
   // ── 15. Explore Screen (inline crawler) ────────────────────────────
-  test('Explore screen: inline crawler with "Configure Scope" button', async ({ page }) => {
+  test('Visual Regression screen: VLM kind summary cards and scenario list', async ({ page }) => {
+    await page.click('#nav-item-visual-regression');
+    await page.waitForTimeout(300);
+    await expect(page.getByRole('heading', { name: 'Visual Regression' })).toBeVisible();
+    await expect(page.getByText('vs-1')).toBeVisible();
+    await expect(page.getByText('vs-2')).toBeVisible();
+    // Expand the anomaly scenario to reveal its VLM detail
+    await page.getByText('vs-2').click();
+    await expect(page.getByText('Button overlaps form field')).toBeVisible();
+  });
+
+  test('Explore screen: crawler scope config and start button', async ({ page }) => {
     await page.click('#nav-item-explore');
     await page.waitForTimeout(300);
     await expect(page.getByText('Explore Crawler')).toBeVisible();
-    await expect(page.getByText('Configure Scope & Target')).toBeVisible();
+    await expect(page.getByText('API Target URL')).toBeVisible();
   });
 
   // ── 16. UI Kit Screen ─────────────────────────────────────────────

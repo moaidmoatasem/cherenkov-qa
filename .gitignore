@@ -78,7 +78,7 @@ nul
 # Tauri desktop build artifacts
 desktop/src-tauri/target/
 desktop/src-tauri/gen/
-desktop/src-tauri/cherenkov-launcher-*
+desktop/src-tauri/binaries/
 
 # Playwright artifacts
 cherenkov/web/ui/test-results/

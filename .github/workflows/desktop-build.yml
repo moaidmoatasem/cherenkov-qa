@@ -44,10 +44,21 @@ jobs:
           libayatana-appindicator3-dev
           librsvg2-dev || true
 
-      - name: Build
+      # tauri-build validates that the externalBin sidecar exists at compile
+      # time. This smoke job only checks that the Rust code compiles, so a
+      # stub stands in for the real PyInstaller launcher (built and bundled
+      # by build-desktop.yml at release time).
+      - name: Create placeholder sidecar
+        shell: bash
         working-directory: desktop/src-tauri
-        run: cargo build 2>&1 || true
+        run: |
+          TRIPLE=$(rustc -vV | sed -n 's/^host: //p')
+          EXT=""
+          if [[ "${{ runner.os }}" == "Windows" ]]; then EXT=".exe"; fi
+          mkdir -p binaries
+          printf '#!/bin/sh\nexit 0\n' > "binaries/cherenkov-launcher-${TRIPLE}${EXT}"
+          chmod +x "binaries/cherenkov-launcher-${TRIPLE}${EXT}"
 
       - name: Check
         working-directory: desktop/src-tauri
-        run: cargo check 2>&1 || true
+        run: cargo check

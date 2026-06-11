@@ -38,7 +38,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": ["cherenkov-launcher"],
+    "externalBin": ["binaries/cherenkov-launcher"],
     "shortDescription": "AI-native API conformance test generator",
     "longDescription": "CHERENKOV reads your OpenAPI spec, generates typed Playwright tests using a local LLM, runs them against your real server, and catches spec-conformance drift. Zero lock-in.",
     "macOS": {
