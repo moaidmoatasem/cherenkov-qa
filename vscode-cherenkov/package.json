@@ -1,0 +1,96 @@
+{
+  "name": "vscode-cherenkov",
+  "displayName": "CHERENKOV QA",
+  "description": "API conformance testing inside VS Code — generate tests, validate conformance, and see violations inline.",
+  "version": "0.1.0",
+  "publisher": "cherenkov-qa",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moaidmoatasem/cherenkov-qa"
+  },
+  "icon": "images/icon.png",
+  "activationEvents": [
+    "onLanguage:yaml",
+    "onLanguage:json"
+  ],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Testing", "Linters", "Other"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cherenkov.generateTests",
+        "title": "CHERENKOV: Generate Conformance Tests",
+        "category": "CHERENKOV"
+      },
+      {
+        "command": "cherenkov.validate",
+        "title": "CHERENKOV: Validate Conformance",
+        "category": "CHERENKOV"
+      },
+      {
+        "command": "cherenkov.doctor",
+        "title": "CHERENKOV: Check LLM Health",
+        "category": "CHERENKOV"
+      },
+      {
+        "command": "cherenkov.clearDiagnostics",
+        "title": "CHERENKOV: Clear Violations",
+        "category": "CHERENKOV"
+      }
+    ],
+    "configuration": {
+      "title": "CHERENKOV QA",
+      "properties": {
+        "cherenkov.cliPath": {
+          "type": "string",
+          "default": "cherenkov",
+          "description": "Path to the cherenkov CLI executable or Python script."
+        },
+        "cherenkov.targetUrl": {
+          "type": "string",
+          "default": "http://localhost:8080",
+          "description": "Default target API URL to validate against."
+        },
+        "cherenkov.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Python interpreter to use when running cherenkov.py directly."
+        }
+      }
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceExtname == .yaml || resourceExtname == .yml || resourceExtname == .json",
+          "command": "cherenkov.generateTests",
+          "group": "cherenkov@1"
+        },
+        {
+          "when": "resourceExtname == .yaml || resourceExtname == .yml || resourceExtname == .json",
+          "command": "cherenkov.validate",
+          "group": "cherenkov@2"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "package": "npx @vscode/vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "typescript": "^5.3.2",
+    "mocha": "^10.2.0",
+    "glob": "^8.1.0",
+    "@types/glob": "^8.1.0",
+    "@vscode/test-electron": "^2.3.2"
+  }
+}
