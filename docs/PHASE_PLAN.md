@@ -248,16 +248,17 @@ For every cross-phase integration point:
 - Knowledge query CLI (#336)
 - Truth Model persistence (#337)
 
-### Phase 2: VLM + LocalAI (Weeks 3-4, parallel with Phase 1)
+### Phase 2: VLM + LocalAI + GitHub Models (Weeks 3-4, parallel with Phase 1)
 
 **EPIC:** #281  
-**Tickets:** #338-#344 (7 issues)  
-**Goals:** Integrate LocalAI as default VLM backend, add tier-aware routing  
+**Tickets:** #338-#344, #405 (8 issues)  
+**Goals:** Integrate LocalAI as default VLM backend, add tier-aware routing, and integrate GitHub Models as a free cloud inference provider.
 **Kill Criteria:**
 - Tauri 2 prototype opens on Windows + macOS + Linux
 - LocalAI VLM request returns result in <10s on 1280×720 PNG
 - Router selects correct provider for each device class
 - `cherenkov doctor --vlm --localai` shows tier recommendation
+- GitHub Models cloud inference routing works in CI with valid `github` egress policy.
 
 **Key Deliverables:**
 - Tauri 2 validation sprint (#338)
@@ -267,6 +268,7 @@ For every cross-phase integration point:
 - `/healthz` endpoint (#342)
 - Launcher extensions (#343)
 - Doctor --vlm --localai (#344)
+- GitHub Models free cloud tier provider integration (#405)
 
 ### Phase 3: Desktop Host (Weeks 5-8)
 
