@@ -152,6 +152,7 @@ def get_parser() -> argparse.ArgumentParser:
                             help='Overwrite existing cherenkov.toml')
 
     doctor_parser = subparsers.add_parser('doctor', help='System health check (E5-3)')
+    doctor_parser.add_argument('--desktop', action='store_true', help='Check Rust and Tauri CLI dependencies for Desktop host')
 
     dashboard_parser = subparsers.add_parser('dashboard', help='Visualise Truth Model + divergences (E5-4, defer-first)')
 
@@ -390,7 +391,7 @@ def main():
 
     elif args.command == 'doctor':
         from cherenkov.stages.doctor_cmd import run_doctor
-        sys.exit(run_doctor())
+        sys.exit(run_doctor(desktop=args.desktop))
 
     elif args.command == 'dashboard':
         from cherenkov.dashboard.render import run_dashboard
