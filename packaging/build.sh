@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build the CHERENKOV desktop launcher sidecar for macOS/Linux.
 # Mirror of build.ps1. Produces packaging/dist/cherenkov-launcher and copies it
-# to desktop/src-tauri/ under the target-triple name Tauri expects for
+# to desktop/src-tauri/binaries/ under the target-triple name Tauri expects for
 # externalBin (e.g. cherenkov-launcher-x86_64-unknown-linux-gnu).
 set -euo pipefail
 
@@ -30,10 +30,12 @@ if [[ -z "$TRIPLE" ]]; then
   exit 1
 fi
 
-DEST="../desktop/src-tauri/cherenkov-launcher-${TRIPLE}"
+DEST_DIR="../desktop/src-tauri/binaries"
+mkdir -p "$DEST_DIR"
+DEST="${DEST_DIR}/cherenkov-launcher-${TRIPLE}"
 cp "$LAUNCHER" "$DEST"
 chmod +x "$DEST"
 
 echo "Build complete!"
 echo "  launcher: packaging/${LAUNCHER#./}"
-echo "  sidecar:  desktop/src-tauri/cherenkov-launcher-${TRIPLE}"
+echo "  sidecar:  desktop/src-tauri/binaries/cherenkov-launcher-${TRIPLE}"
