@@ -1,58 +1,63 @@
-# BRIEFING — 2026-06-07T20:18:23+03:00
+# BRIEFING — 2026-06-11T20:26:00Z
 
 ## Mission
-Resolve the 5 gate-blocking issues identified by the Victory Auditor (Intent wiring, ReviewScreen bug, SetupScreen toast, Mock UI endpoints, Telemetry route).
+Craft prompt → delegate to teamwork_preview. Five QA practitioners to review the Cherenkov dashboard/web interface and generate a consolidated report.
 
 ## 🔒 My Identity
 - Archetype: Project Orchestrator
 - Roles: orchestrator, user_liaison, human_reporter, successor
 - Working directory: \\wsl.localhost\Ubuntu-24.04\home\moaid\cherenkov-qa\.agents\orchestrator
 - Original parent: top-level
-- Original parent conversation ID: f3cea00d-88c5-49e1-abe0-a05d672d2288
+- Original parent conversation ID: 54e8ff9c-e45f-4657-b98d-0faa0ad15c02
 
 ## 🔒 My Workflow
 - **Pattern**: Project Orchestrator (Iterative Task Execution)
 - **Scope document**: \\wsl.localhost\Ubuntu-24.04\home\moaid\cherenkov-qa\PROJECT.md
-1. **Decompose**: 5 specific code fixes from the audit report.
+1. **Decompose**: Split QA task into 5 distinct QA persona evaluations (Security, Usability, Performance, Automation, Accessibility).
 2. **Dispatch & Execute**:
-   - **Direct (iteration loop)**: Dispatch a Worker to implement the 5 fixes. Followed by a Reviewer to verify.
+   - **Delegate**: Spawn 5 `teamwork_preview_worker` instances.
 3. **On failure**: Retry, Replace, Skip, Redistribute, Redesign, Escalate.
 4. **Succession**: At 16 spawns, write handoff.md, spawn successor.
 - **Work items**:
-  1. Fix Intent Wiring [pending]
-  2. Fix ReviewScreen Render Bug [pending]
-  3. Fix SetupScreen Toast Error [pending]
-  4. Add Mock endpoints [pending]
-  5. Add Telemetry endpoints [pending]
+  1. Security QA [in-progress]
+  2. Usability QA [in-progress]
+  3. Performance QA [in-progress]
+  4. Automation QA [in-progress]
+  5. Accessibility QA [in-progress]
+  6. Synthesize 5_QA_REPORT.md [pending]
 - **Current phase**: 2
-- **Current focus**: Dispatching worker to implement fixes.
+- **Current focus**: Waiting for 5 QA personas.
 
 ## 🔒 Key Constraints
-- Must use subagents to write code.
-- Must not run commands to build/test directly, delegate to workers.
-- Must ensure fixes do not introduce regressions into Track A.
+- Provide clear instructions to use `chrome-devtools-mcp` tools.
+- Generate `5_QA_REPORT.md`.
 
 ## Current Parent
-- Conversation ID: f3cea00d-88c5-49e1-abe0-a05d672d2288
-- Updated: 2026-06-07T20:18:23+03:00
+- Conversation ID: 54e8ff9c-e45f-4657-b98d-0faa0ad15c02
+- Updated: 2026-06-11T20:28:00Z
 
 ## Key Decisions Made
-- Decompose the fixes into a single batch for a teamwork_preview_worker, as they are relatively isolated and clear.
+- Deployed 5 subagents.
 
 ## Team Roster
 | Agent | Type | Work Item | Status | Conv ID |
 |-------|------|-----------|--------|---------|
+| sub-1 | worker | Security QA | in-progress | e31d5f39-4736-48a6-a9d7-36c824b18b65 |
+| sub-2 | worker | Usability QA | in-progress | 4a6dfd99-3905-4982-bfe3-1ee09616705f |
+| sub-3 | worker | Performance QA | in-progress | 156f190e-9b9a-44f9-bbe5-a9f3a32072d1 |
+| sub-4 | worker | Automation QA | in-progress | c11be8a8-567c-4e28-81ba-56f8f98a3c48 |
+| sub-5 | worker | Accessiblity QA | in-progress | 05cc92bd-e672-418c-a854-1e0771d8aa00 |
 
 ## Succession Status
 - Succession required: no
-- Spawn count: 0 / 16
-- Pending subagents: none
+- Spawn count: 5 / 16
+- Pending subagents: 5
 - Predecessor: none
 - Successor: not yet spawned
 
 ## Active Timers
 - Heartbeat cron: not started
-- Safety timer: none
+- Safety timer: task-35
 
 ## Artifact Index
-- \\wsl.localhost\Ubuntu-24.04\home\moaid\cherenkov-qa\.agents\orchestrator\BRIEFING.md — Identity and mission
+- ORIGINAL_REQUEST.md — Mission details
