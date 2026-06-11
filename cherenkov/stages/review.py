@@ -212,6 +212,15 @@ class ReviewStage:
                                     if suggestion and suggestion.get("suggestion"):
                                         print(suggestion["suggestion"])
                                         self.log.info("generated healing suggestion", failure_class=diag.failure_class.value)
+                                        try:
+                                            from cherenkov.openclaw.adapter import OpenClawAdapter
+                                            OpenClawAdapter().notify_healing_suggestion({
+                                                "scenario_id": scenario_id,
+                                                "suggestion": suggestion["suggestion"],
+                                                "failure_class": diag.failure_class.value
+                                            })
+                                        except Exception as exc:
+                                            self.log.warning("failed to emit slack notification for healing suggestion", error=str(exc))
                 except Exception as e:
                     prism_passed = False
                     prism_detail = f"Exception occurred during Prism dry-run: {e}"
@@ -265,6 +274,11 @@ class ReviewStage:
                     run_id=self.run_id,
                 )
                 HitlQueue().enqueue(hitl_item)
+                try:
+                    from cherenkov.openclaw.adapter import OpenClawAdapter
+                    OpenClawAdapter().notify_new_item(hitl_item)
+                except Exception as exc:
+                    self.log.warning("failed to emit slack notification for new hitl item", error=str(exc))
                 self.log.info(
                     "hitl item enqueued",
                     scenario_id=scenario_id,

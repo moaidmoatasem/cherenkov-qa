@@ -50,6 +50,17 @@ class OpenClawAdapter:
         # Tier-2: chat_user_id -> @cli_user identity map
         self._identity_map: dict[str, str] = {}
 
+        # Wire Slack webhook notifications if notification_endpoint or env is configured
+        import os
+        notification_url = self._config.notification_endpoint or os.environ.get("CHERENKOV_SLACK_WEBHOOK_URL")
+        if notification_url:
+            try:
+                from cherenkov.adapters.notifiers.slack import SlackNotifier
+                self._slack_notifier = SlackNotifier(notification_url)
+                self.on_notify(self._slack_notifier.notify_envelope)
+            except Exception as exc:
+                self._log.warning("failed to initialize Slack notifier", error=str(exc))
+
     # ── Tier-2: identity mapping (#149) ───────────────────────────────────
 
     def register_chat_user(self, chat_user_id: str, cli_user: str) -> None:
@@ -77,6 +88,16 @@ class OpenClawAdapter:
                 cb(envelope)
             except Exception as exc:
                 self._log.warning("notify callback failed", error=str(exc))
+
+    def notify_new_item(self, item: HitlItem) -> None:
+        """Call this to notify about a new pending HITL item."""
+        env = ok_envelope("openclaw.new_item", item.model_dump())
+        self._notify(env)
+
+    def notify_healing_suggestion(self, suggestion: dict[str, Any]) -> None:
+        """Call this to notify about a new healing suggestion."""
+        env = ok_envelope("openclaw.healing_suggestion", suggestion)
+        self._notify(env)
 
     # ── Tier-2: pre-check before mutation (#149) ──────────────────────────
 
