@@ -111,3 +111,72 @@ class JiraExporter:
 
         self.log.info("suggest-only jira ticket exported successfully", filename=filename, path=file_path)
         return file_path
+
+    def create_jira_issue(self, summary: str, description: str) -> Optional[str]:
+        import base64
+        import urllib.request
+        import json
+
+        jira_url = os.environ.get("CHERENKOV_JIRA_URL")
+        jira_token = os.environ.get("CHERENKOV_JIRA_TOKEN")
+        jira_project = os.environ.get("CHERENKOV_JIRA_PROJECT", "QA")
+
+        if not jira_url or not jira_token:
+            self.log.warning("Jira URL or Token not set. Skipping real Jira ticket creation.")
+            return None
+
+        url = f"{jira_url.rstrip('/')}/rest/api/3/issue"
+
+        # Prepare auth header
+        if ":" in jira_token:
+            auth_bytes = jira_token.encode("utf-8")
+            auth_b64 = base64.b64encode(auth_bytes).decode("utf-8")
+            headers = {"Authorization": f"Basic {auth_b64}"}
+        elif jira_token.startswith("Basic ") or jira_token.startswith("Bearer "):
+            headers = {"Authorization": jira_token}
+        else:
+            headers = {"Authorization": f"Bearer {jira_token}"}
+
+        headers["Content-Type"] = "application/json"
+        headers["Accept"] = "application/json"
+
+        # Payload for Jira REST API v3
+        payload = {
+            "fields": {
+                "project": {"key": jira_project},
+                "summary": summary,
+                "description": {
+                    "type": "doc",
+                    "version": 1,
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": description
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "issuetype": {"name": "Bug"}
+            }
+        }
+
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers=headers,
+            method="POST"
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=10) as response:
+                res_data = json.loads(response.read().decode("utf-8"))
+                issue_key = res_data.get("key")
+                self.log.info("Jira issue created successfully", key=issue_key)
+                return issue_key
+        except Exception as e:
+            self.log.error("Failed to create Jira issue", error=str(e))
+            raise e

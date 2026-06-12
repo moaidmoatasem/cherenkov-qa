@@ -71,9 +71,12 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
     }
   };
 
+  const [ingestError, setIngestError] = useState<string | null>(null);
+
   const loadRealOrMockSpec = async (name: string, file: File | null, url: string | null) => {
     setLoading(true);
     setFileName(name);
+    setIngestError(null);
     try {
       const data = await ingestSpec(file, url);
       const mapped = data.endpoints.map((ep: any, idx: number) => ({
@@ -87,7 +90,9 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
       setEndpoints(mapped);
       setIngestedSpecPath(data.spec_path);
     } catch (err) {
-      toast("Real backend spec ingestion failed.", "error");
+      const msg = err instanceof Error ? err.message : 'Spec ingestion failed — check the spec format and URL.';
+      setIngestError(msg);
+      toast(`Spec ingestion failed: ${msg}`, 'error');
       setEndpoints([]);
     } finally {
       setLoading(false);
@@ -315,6 +320,18 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
                   Fetch
                 </button>
               </form>
+            )}
+
+            {/* Ingest Error Card — shows actual API error detail */}
+            {ingestError && (
+              <div className="flex items-start gap-3 bg-rose-500/10 border border-rose-500/30 rounded-xl p-4" data-testid="ingest-error-card">
+                <AlertCircle className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-rose-400 font-mono">Spec Ingestion Failed</p>
+                  <p className="text-xs text-[#E6EDF3] mt-1 break-words">{ingestError}</p>
+                  <p className="text-[10px] text-[#7D8DA1] mt-1">Check the spec URL or file format, then try again.</p>
+                </div>
+              </div>
             )}
 
             {/* Preset shortcuts for quick demo reviewer */}
