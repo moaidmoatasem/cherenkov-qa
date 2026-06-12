@@ -111,8 +111,9 @@ class HitlQueue:
 
     # ── reads ────────────────────────────────────────────────────────────
     def enqueue(self, item: HitlItem) -> HitlItem:
-        # INSERT OR IGNORE — never resurrect/clobber an already-resolved item if
-        # the same id is enqueued twice. Returns the stored item (existing wins).
+        # INSERT OR IGNORE — never resurrect/clobber an already-resolved item.
+        # After insert, update endpoint/method on still-pending items so re-runs
+        # back-fill metadata that was missing on first enqueue.
         con = self._connect()
         con.execute(
             "INSERT OR IGNORE INTO hitl_queue (id,status,endpoint,method,mutation_id,"
@@ -124,9 +125,16 @@ class HitlQueue:
              item.review_gate_failed, item.approved_by, item.approved_at,
              item.reject_reason, item.run_id, item.spec_hash, item.created_at),
         )
+        # Back-fill endpoint/method on pending items that were enqueued without them
+        if item.endpoint or item.method:
+            con.execute(
+                "UPDATE hitl_queue SET endpoint=?, method=? "
+                "WHERE id=? AND status='pending' AND (endpoint IS NULL OR method IS NULL)",
+                (item.endpoint, item.method, item.id),
+            )
         con.commit()
         con.close()
-        return self.get(item.id) or item   # existing item wins on id collision
+        return self.get(item.id) or item
 
     def get(self, item_id: str) -> HitlItem | None:
         con = self._connect()
