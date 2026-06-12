@@ -5,17 +5,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, Activity, Image, Percent, AlertTriangle, CheckCircle } from 'lucide-react';
-import { Card, PageHeader, MockBadge, Tabs } from './ui';
+import { Card, PageHeader, Tabs } from './ui';
 import { fetchSignals } from '../lib/api';
 
 export default function SignalsScreen() {
-  const [MOCK_SIGNALS, setSignals] = useState<any>({ performance: [], visual: [], coverage: [] });
+  const [signalsData, setSignals] = useState<any>({ performance: [], visual: [], coverage: [] });
   useEffect(() => {
-    fetchSignals().then(data => {
+    fetchSignals().then((data) => {
       setSignals({
-        performance: Array.isArray(data.performance) ? data.performance : [],
-        visual: Array.isArray(data.visual) ? data.visual : [],
-        coverage: Array.isArray(data.coverage) ? data.coverage : [],
+        performance: Array.isArray(data.performance) ? data.performance : (data.performance || []),
+        visual: Array.isArray(data.visual) ? data.visual : (data.visual || []),
+        coverage: Array.isArray(data.coverage) ? data.coverage : (data.coverage || []),
       });
     });
   }, []);
@@ -29,16 +29,10 @@ export default function SignalsScreen() {
 
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="signals-screen">
-      <MockBadge />
       <PageHeader
         title="Telemetry Signals"
         description="Verify performance, visual changes, and functional coverage profiles from live test suite telemetry."
       />
-      <div className="flex justify-end -mt-4 mb-2">
-        <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border bg-amber-500/10 text-amber-400 border-amber-500/30">
-          MOCK DATA
-        </span>
-      </div>
 
       <div className="border-b border-white/5 pb-2">
         <Tabs items={tabs} activeId={activeTab} onChange={setActiveTab} />
@@ -54,7 +48,7 @@ export default function SignalsScreen() {
           </div>
 
           <div className="space-y-4">
-            {MOCK_SIGNALS.performance.map((p, idx) => (
+            {signalsData.performance.map((p: any, idx: number) => (
               <div
                 key={idx}
                 className={`p-3.5 rounded-xl border flex justify-between items-center font-mono text-xs ${
@@ -92,7 +86,7 @@ export default function SignalsScreen() {
           </h2>
 
           <div className="space-y-4">
-            {MOCK_SIGNALS.visual.map((v) => (
+            {signalsData.visual.map((v: any) => (
               <div
                 key={v.id}
                 className={`p-3.5 rounded-xl border flex justify-between items-center text-xs ${
@@ -131,7 +125,7 @@ export default function SignalsScreen() {
           </h2>
 
           <div className="space-y-4">
-            {MOCK_SIGNALS.coverage.map((c, idx) => (
+            {signalsData.coverage.map((c: any, idx: number) => (
               <div key={idx} className="p-4 rounded-xl border border-white/5 bg-black/20 space-y-3">
                 <div className="flex justify-between items-center text-xs font-mono">
                   <span className="font-semibold text-text-primary">{c.path}</span>
