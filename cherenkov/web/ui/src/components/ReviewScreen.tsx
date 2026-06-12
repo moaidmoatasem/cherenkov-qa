@@ -39,10 +39,15 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
   const { toast } = useToast();
   const [tests, setTests] = useState<TestItem[]>([]);
   const testsRef = useRef(tests);
-  
+  const onUpdateRef = useRef(onUpdatePassRateAndCount);
+
   useEffect(() => {
     testsRef.current = tests;
   }, [tests]);
+
+  useEffect(() => {
+    onUpdateRef.current = onUpdatePassRateAndCount;
+  });
   
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -109,11 +114,11 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
   const [chatSessionId, setChatSessionId] = useState<string | null>(null);
   const chatAbortRef = useRef<AbortController | null>(null);
 
-  // Update pass rate on tests change
+  // Update pass rate on tests change — use ref to avoid re-firing when parent re-renders
   useEffect(() => {
     const approvedCount = tests.filter(t => t.verdict === 'approved').length;
-    onUpdatePassRateAndCount(tests.length, approvedCount);
-  }, [tests, onUpdatePassRateAndCount]);
+    onUpdateRef.current(tests.length, approvedCount);
+  }, [tests]);
 
   // Autonomy: auto-approve high-confidence tests in Augmented/Agentic mode
   useEffect(() => {
@@ -137,20 +142,20 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
     });
   }, [tests.length, autonomy, isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Sync edited code when selected test changes
+  // Sync edited code when selected test changes — derive activeTest inside effect to avoid stale ref in deps
   const activeTest = tests.find(t => t.id === selectedTestId) || tests[0];
 
   useEffect(() => {
-    if (activeTest) {
-      setEditedCode(activeTest.code);
+    const test = testsRef.current.find(t => t.id === selectedTestId) || testsRef.current[0];
+    if (test) {
+      setEditedCode(test.code);
       setIsEditing(false);
       setAiExplanation(null);
       setIsExplaining(false);
-      // Reset chat when active test changes
       setChatMessages([]);
       setChatSessionId(null);
     }
-  }, [selectedTestId, activeTest]);
+  }, [selectedTestId]); // activeTest excluded — object identity changes every render
 
   // Initialise a real chat session when the panel opens
   useEffect(() => {

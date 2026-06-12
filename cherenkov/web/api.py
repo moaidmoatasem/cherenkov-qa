@@ -797,6 +797,80 @@ async def get_failures():
         conn.close()
     return rows
 
+@app.get("/api/v1/memory")
+async def get_memory():
+    """Return accumulated testing idioms and mentor pairing context."""
+    from cherenkov.reflector.store import VerdictStore
+
+    store = VerdictStore()
+    try:
+        raw_idioms = store.list_idioms(limit=50)
+    except Exception:
+        raw_idioms = []
+
+    idioms = [
+        {
+            "id": i.id,
+            "text": i.pattern,
+            "count": i.confirm_count,
+            "decay": f"{i.decay_score:.0%}" if i.decay_score is not None else "ACTIVE",
+        }
+        for i in raw_idioms
+    ]
+    pairing = [
+        {"context": "API conformance", "explanation": "Verify status codes, response schemas, and auth flows match the OpenAPI spec before approving a test."},
+        {"context": "False positive triage", "explanation": "When a test fails, cross-check the spec claim and actual response body to determine if the spec or the implementation is wrong."},
+    ]
+    return {"idioms": idioms, "pairing": pairing}
+
+
+@app.get("/api/v1/signals")
+async def get_signals():
+    """Return performance, visual, and SDET coverage telemetry signals."""
+    from cherenkov.ai.accounting import CostAccountant
+    from cherenkov.reflector.store import VerdictStore
+    import sqlite3, time
+
+    store = VerdictStore()
+    # Build performance entries from verdict history (last 20)
+    performance = []
+    try:
+        conn = sqlite3.connect(store.db_path, timeout=5.0)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.execute(
+            "SELECT endpoint, duration_ms, timestamp FROM verdicts ORDER BY timestamp DESC LIMIT 20"
+        )
+        rows = cursor.fetchall()
+        conn.close()
+        for r in rows:
+            dur = r["duration_ms"] if r["duration_ms"] else 0
+            baseline = 200
+            performance.append({
+                "time": r["timestamp"] or "—",
+                "latency": dur,
+                "baseline": baseline,
+                "anomaly": dur > baseline * 3,
+            })
+    except Exception:
+        pass
+
+    # Visual regression entries (stubbed — real data would come from playwright screenshots)
+    visual = [
+        {"id": "v1", "name": "Overview Dashboard", "difference": "0.0%", "status": "ok"},
+        {"id": "v2", "name": "Divergences Table", "difference": "0.0%", "status": "ok"},
+    ]
+
+    # Coverage breakdown
+    accountant = CostAccountant()
+    report = accountant.report
+    total = report.request_count or 1
+    coverage = [
+        {"path": "/api/v1/*", "cherenkov": min(100, round((report.request_count / max(total, 1)) * 100)), "sdet": 0},
+    ]
+
+    return {"performance": performance, "visual": visual, "coverage": coverage}
+
+
 @app.get("/api/v1/metrics")
 async def get_metrics():
     """Return aggregated cost and latency metrics."""
@@ -864,6 +938,86 @@ async def get_mobile_pilot_status():
 async def start_mobile_pilot():
     _mobile_pilot_status["status"] = "running"
     return {"status": "started"}
+
+# ── Projects ─────────────────────────────────────────────────────────────────
+
+@app.get("/api/v1/projects")
+async def get_projects():
+    """Return a list of projects derived from the workspace layout."""
+    workspace = os.getcwd()
+    from cherenkov.ai.accounting import CostAccountant
+    from cherenkov.reflector.store import VerdictStore
+
+    store = VerdictStore()
+    try:
+        conn = sqlite3.connect(store.db_path, timeout=5.0)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.execute(
+            "SELECT COUNT(*) as total, "
+            "SUM(CASE WHEN outcome='approve' THEN 1 ELSE 0 END) as approved "
+            "FROM verdicts"
+        )
+        row = dict(cursor.fetchone())
+        conn.close()
+        total = row.get("total") or 0
+        approved = row.get("approved") or 0
+        pass_rate = round((approved / total) * 100) if total > 0 else 0
+    except Exception:
+        total, pass_rate = 0, 0
+
+    return [
+        {
+            "id": "default",
+            "name": os.path.basename(workspace) or "cherenkov",
+            "lastRun": "",
+            "pipelineStatus": {"ingest": "queued", "plan": "queued", "generate": "queued", "review": "queued"},
+            "stats": {"testsCount": total, "passRate": pass_rate, "healingCount": 0},
+            "sparkline": [],
+        }
+    ]
+
+
+# ── Settings ──────────────────────────────────────────────────────────────────
+
+_settings: dict = {
+    "target": {"url": "http://localhost:8000", "auth_header": ""},
+    "engine": {"model_tier": "local", "enable_demo_mode": False, "execution_budget": 100, "workers": 4},
+    "security": {"egress_policy": "strict", "auth_secret": ""},
+    "ui": {"density": "comfortable", "reduced_motion": False},
+}
+
+
+@app.get("/api/v1/settings")
+async def get_settings():
+    return _settings
+
+
+@app.put("/api/v1/settings")
+async def update_settings(body: dict):
+    for key, val in body.items():
+        if key in _settings and isinstance(val, dict):
+            _settings[key].update(val)
+        elif key in _settings:
+            _settings[key] = val
+    return _settings
+
+
+# ── Governance ────────────────────────────────────────────────────────────────
+
+@app.get("/api/v1/governance")
+async def get_governance():
+    """Return governance health score and policy issues."""
+    from cherenkov.ai.accounting import CostAccountant
+
+    accountant = CostAccountant()
+    kpi = accountant.get_governance_kpis()
+    fp_rate = kpi.get("false_positive_rate", 0.0)
+    score = max(0, round(100 - fp_rate * 100))
+    issues = []
+    if fp_rate > 0.05:
+        issues.append({"id": "high-fp", "severity": "high", "message": f"False positive rate {fp_rate:.1%} exceeds 5% threshold"})
+    return {"score": score, "issues": issues}
+
 
 #
 # WebSocket

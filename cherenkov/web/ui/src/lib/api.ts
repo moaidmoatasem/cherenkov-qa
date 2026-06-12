@@ -431,7 +431,7 @@ export async function fetchMemory() {
 
 export async function fetchSignals() {
   const res = await fetch(`${API_BASE}/signals`);
-  if (!res.ok) return { performance: [], visual: [], coverage: {} };
+  if (!res.ok) return { performance: [], visual: [], coverage: [] };
   return res.json();
 }
 
