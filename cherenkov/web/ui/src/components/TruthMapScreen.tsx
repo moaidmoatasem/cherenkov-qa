@@ -62,7 +62,24 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
 
   const currentEndpoint = nodes[selectedIdx] || nodes[0];
 
-  if (!currentEndpoint) return null;
+  if (!currentEndpoint) {
+    return (
+      <div className="p-6 h-full overflow-hidden flex flex-col grid-bg bg-transparent relative z-10" id="truth-map-screen">
+        <MockBadge />
+        <PageHeader title="Endpoint Truth Graph" description="Unified claims graph mapping the alignment between OpenAPI specifications, server source code, and live HTTP database footprints." />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <Network className="w-12 h-12 text-text-muted/40 mx-auto" />
+            <p className="text-text-muted text-sm font-semibold">No endpoints mapped yet</p>
+            <p className="text-[11px] text-text-muted/60">Run a spec ingest to build the endpoint truth graph.</p>
+            <button onClick={() => onNavigate('setup')} className="mt-2 px-4 py-1.5 rounded bg-accent-bg border border-glow-blue text-glow-bright text-xs hover:bg-glow-blue hover:text-bg-base transition duration-300">
+              Go to Spec Ingest
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 h-full overflow-hidden flex flex-col justify-between grid-bg bg-transparent relative z-10" id="truth-map-screen">
