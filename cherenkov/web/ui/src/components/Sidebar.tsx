@@ -27,9 +27,13 @@ import {
   MessageSquare,
   Smartphone,
   Gauge,
-  Eye
+  Eye,
+  Map,
+  Layers,
+  SlidersHorizontal
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
+import GuidedFlow from './GuidedFlow';
 import { Project } from '../types';
 
 interface SidebarProps {
@@ -41,15 +45,18 @@ interface SidebarProps {
   projects: Project[];
   selectedProjectId: string | null;
   onSelectProject: (id: string) => void;
+  reviewPendingCount?: number;
 }
 
 interface NavSection {
   label: string;
+  demoLabel?: boolean;
   items: {
     id: string;
     label: string;
     icon: React.ComponentType<any>;
     desc: string;
+    isDemo?: boolean;
   }[];
 }
 
@@ -61,15 +68,28 @@ export default function Sidebar({
   tokenUsagePercent,
   projects,
   selectedProjectId,
-  onSelectProject
+  onSelectProject,
+  reviewPendingCount = 0
 }: SidebarProps) {
+  const [sidebarMode, setSidebarMode] = useState<'guided' | 'expert'>(() => {
+    try {
+      return (localStorage.getItem('[cherenkov] sidebar_mode') as 'guided' | 'expert') || 'guided';
+    } catch { return 'guided'; }
+  });
+
+  const toggleMode = () => {
+    const next = sidebarMode === 'guided' ? 'expert' : 'guided';
+    setSidebarMode(next);
+    try { localStorage.setItem('[cherenkov] sidebar_mode', next); } catch { /* noop */ }
+  };
+
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    'OVERVIEW': true,
-    'ENGINE': true,
-    'AUTHOR': true,
-    'SIGNALS': true,
-    'OPERATE': true,
-    'LEARN': true
+    'PIPELINE': true,
+    'CREATE': true,
+    'INVESTIGATE': true,
+    'INTELLIGENCE': true,
+    'RELEASE': true,
+    'SYSTEM': true,
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<Set<string>>(() => {
@@ -100,60 +120,59 @@ export default function Sidebar({
       return next;
     });
   };
-  
+
   const sections: NavSection[] = [
     {
-      label: 'OVERVIEW',
+      label: 'PIPELINE',
       items: [
-        { id: 'overview', label: 'Overview', icon: LayoutDashboard, desc: 'Release readiness & recent learning' },
+        { id: 'setup', label: 'Spec Ingest', icon: Layers, desc: 'Upload spec + doctor check' },
+        { id: 'pipeline', label: 'Pipeline', icon: LayoutDashboard, desc: 'Live test generation DAG' },
+        { id: 'review', label: 'Review Gate', icon: CheckSquare, desc: 'HITL verdict memory gates' },
       ]
     },
     {
-      label: 'ENGINE',
+      label: 'CREATE',
       items: [
-        { id: 'truth-map', label: 'Truth Map', icon: Network, desc: 'The endpoint claim graph' },
-        { id: 'divergences', label: 'Divergences', icon: Zap, desc: 'Confirmed API inconsistencies' },
+        { id: 'author', label: 'Author by Intent', icon: Compass, desc: 'NL-intent Pilot runs' },
+        { id: 'healing', label: 'Healing Options', icon: Sparkles, desc: 'API Drift suggestions (suggest-only)' },
       ]
     },
     {
-      label: 'AUTHOR',
+      label: 'INVESTIGATE',
+      demoLabel: true,
       items: [
-        { id: 'author', label: 'Author by Intent', icon: Compass, desc: 'NL-intent interactive Copilot' },
-        { id: 'review', label: 'Review Queue', icon: CheckSquare, desc: 'HITL verdict memory gates' },
+        { id: 'divergences', label: 'Divergences', icon: Zap, desc: 'Risk-scored triage' },
+        { id: 'explore', label: 'Explorer', icon: Search, desc: 'Autonomous crawler', isDemo: true },
+        { id: 'visual-regression', label: 'Visual Regression', icon: Eye, desc: 'VLM screenshot diff', isDemo: true },
       ]
     },
     {
-      label: 'SIGNALS',
-      items: [
-        { id: 'signals', label: 'Signals', icon: TrendingUp, desc: 'Visual, Perf & Coverage details' },
-        { id: 'explore', label: 'Explore', icon: Search, desc: 'Autonomous crawler — flows & anomalies' },
-        { id: 'visual-regression', label: 'Visual Regression', icon: Eye, desc: 'VLM-semantic screenshot diff' },
-      ]
-    },
-    {
-      label: 'OPERATE',
-      items: [
-        { id: 'healing', label: 'Healing Options', icon: Sparkles, desc: 'API Drift & Self-Repair' },
-        { id: 'devices', label: 'Devices', icon: Cpu, desc: 'VLM device management' },
-        { id: 'mobile', label: 'Mobile', icon: Smartphone, desc: 'Mobile device testing' },
-        { id: 'eject', label: 'Eject Suite', icon: Download, desc: 'Export plain Playwright' },
-        { id: 'governance', label: 'Governance', icon: Shield, desc: 'KPI cert & model compliance' },
-      ]
-    },
-    {
-      label: 'LEARN',
+      label: 'INTELLIGENCE',
       items: [
         { id: 'memory', label: 'Memory & Pairing', icon: Brain, desc: 'Reflector senior idioms' },
-        { id: 'knowledge', label: 'Knowledge', icon: Brain, desc: 'Second Brain knowledge mesh' },
+        { id: 'knowledge', label: 'Knowledge', icon: Brain, desc: 'Second Brain mesh' },
         { id: 'chat', label: 'Chat', icon: MessageSquare, desc: 'SSE streaming assistant' },
       ]
     },
     {
-      label: 'COCKPIT',
+      label: 'RELEASE',
+      demoLabel: true,
       items: [
-        { id: 'sdd', label: 'SDD Agent Cockpit', icon: Gauge, desc: 'Sync state, tokens, experience' },
+        { id: 'overview', label: 'Release Readiness', icon: Map, desc: 'Ship/no-ship gate' },
+        { id: 'truth-map', label: 'Truth Map', icon: Network, desc: 'Endpoint claim graph', isDemo: true },
+        { id: 'signals', label: 'Signals', icon: TrendingUp, desc: 'Perf & Coverage telemetry', isDemo: true },
       ]
-    }
+    },
+    {
+      label: 'SYSTEM',
+      items: [
+        { id: 'governance', label: 'Governance', icon: Shield, desc: 'KPI cert & compliance' },
+        { id: 'devices', label: 'Devices', icon: Cpu, desc: 'VLM device management' },
+        { id: 'mobile', label: 'Mobile', icon: Smartphone, desc: 'Mobile device testing' },
+        { id: 'eject', label: 'Eject Suite', icon: Download, desc: 'Export plain Playwright' },
+        { id: 'sdd', label: 'SDD Cockpit', icon: Gauge, desc: 'Agent sync & tokens' },
+      ]
+    },
   ];
 
   return (
@@ -182,81 +201,128 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Search Filter */}
-        <div className="px-3 lg:px-4 pb-2 shrink-0 hidden lg:block">
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-[#7D8DA1]" />
-            <input 
-              type="text" 
-              placeholder="Search..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-black/30 text-text-primary text-xs pl-8 pr-2 py-1.5 rounded border border-white/10 focus:outline-none focus:border-glow-blue transition"
+        {/* Guided / Expert mode switcher + nav */}
+        {sidebarMode === 'guided' ? (
+          <>
+            <GuidedFlow
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              reviewPendingCount={reviewPendingCount}
             />
-          </div>
-        </div>
+            <button
+              onClick={toggleMode}
+              id="btn-switch-to-expert"
+              data-testid="btn-switch-to-expert"
+              className="mx-3 mb-2 w-[calc(100%-24px)] px-3 py-2 rounded-lg text-[10px] font-mono uppercase tracking-wider text-[#7D8DA1] border border-white/10 hover:border-glow-blue/40 hover:text-glow-bright transition text-center cursor-pointer hidden lg:flex items-center justify-center gap-1.5"
+            >
+              <SlidersHorizontal className="w-3 h-3" />
+              Expert View
+            </button>
+          </>
+        ) : (
+          <>
+            {/* Back to Guided button */}
+            <button
+              onClick={toggleMode}
+              id="btn-switch-to-guided"
+              data-testid="btn-switch-to-guided"
+              className="mx-3 my-1 w-[calc(100%-24px)] px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider text-[#7D8DA1] border border-white/10 hover:border-glow-blue/40 hover:text-glow-bright transition text-center cursor-pointer hidden lg:flex items-center justify-center gap-1.5"
+            >
+              ← Guided Flow
+            </button>
 
-        {/* Nav Links */}
-        <nav className="flex-1 px-2 py-3 space-y-4 overflow-y-auto">
-          {sections.map((section) => {
-            const filteredItems = section.items.filter(item => 
-              item.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
-              item.desc.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-            
-            if (filteredItems.length === 0 && searchQuery) return null;
-
-            const isExpanded = expandedSections[section.label];
-
-            return (
-              <div key={section.label} className="space-y-1">
-                <button 
-                  onClick={() => toggleSection(section.label)}
-                  className="w-full hidden lg:flex items-center justify-between px-4 text-[10px] font-bold font-mono tracking-widest text-[#7D8DA1]/60 hover:text-[#7D8DA1] transition cursor-pointer"
-                >
-                  <span>{section.label}</span>
-                  {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                </button>
-                {isExpanded && (
-                  <div className="space-y-0.5">
-                    {filteredItems.map((item) => {
-                      const Icon = item.icon;
-                      const isActive = activeTab === item.id;
-                      return (
-                        <button
-                          key={item.id}
-                          id={`nav-item-${item.id}`}
-                          data-testid={`nav-${item.id}`}
-                          data-active={isActive}
-                          onClick={() => setActiveTab(item.id)}
-                          title={`${item.label} — ${item.desc}`}
-                          className={`w-full group px-3 lg:px-4 py-2.5 rounded-lg flex items-center lg:items-start gap-3 transition-all duration-200 text-left relative focus:outline-none focus:ring-1 focus:ring-glow-blue/50 cursor-pointer ${
-                            isActive
-                              ? 'bg-white/10 text-glow-bright'
-                              : 'text-[#7D8DA1] hover:text-[#E6EDF3] hover:bg-white/5'
-                          }`}
-                        >
-                          {isActive && (
-                            <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-glow-blue rounded-r shadow-[0_0_12px_rgba(34,211,238,0.9)]" data-testid="nav-active-indicator" />
-                          )}
-                          <Icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-glow-bright' : 'text-[#7D8DA1] group-hover:text-glow-bright'}`} />
-                          <div className="hidden lg:block min-w-0">
-                            <span className={`block text-sm font-medium ${isActive ? 'font-semibold text-text-primary text-glow-bright' : 'text-[#7D8DA1]'}`}>
-                              {item.label}
-                            </span>
-                            <span className="block text-[10px] text-[#7D8DA1]/75 mt-0.5 font-normal leading-tight truncate">
-                              {item.desc}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+            {/* Search Filter */}
+            <div className="px-3 lg:px-4 pb-2 shrink-0 hidden lg:block">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-[#7D8DA1]" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-black/30 text-text-primary text-xs pl-8 pr-2 py-1.5 rounded border border-white/10 focus:outline-none focus:border-glow-blue transition"
+                />
               </div>
-            );
-          })}
-        </nav>
+            </div>
+
+            {/* Expert Nav Links */}
+            <nav className="flex-1 px-2 py-3 space-y-4 overflow-y-auto">
+              {sections.map((section) => {
+                const filteredItems = section.items.filter(item =>
+                  item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.desc.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+
+                if (filteredItems.length === 0 && searchQuery) return null;
+
+                const isExpanded = expandedSections[section.label];
+
+                return (
+                  <div key={section.label} className="space-y-1">
+                    <button
+                      onClick={() => toggleSection(section.label)}
+                      className="w-full hidden lg:flex items-center justify-between px-4 text-[10px] font-bold font-mono tracking-widest text-[#7D8DA1]/60 hover:text-[#7D8DA1] transition cursor-pointer"
+                    >
+                      <span className="flex items-center gap-1">
+                        {section.label}
+                        {section.demoLabel && (
+                          <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/25 ml-1">DEMO</span>
+                        )}
+                      </span>
+                      {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                    </button>
+                    {isExpanded && (
+                      <div className="space-y-0.5">
+                        {filteredItems.map((item) => {
+                          const Icon = item.icon;
+                          const isActive = activeTab === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              id={`nav-item-${item.id}`}
+                              data-testid={`nav-${item.id}`}
+                              data-active={isActive}
+                              onClick={() => setActiveTab(item.id)}
+                              title={`${item.label} — ${item.desc}`}
+                              className={`w-full group px-3 lg:px-4 py-2.5 rounded-lg flex items-center lg:items-start gap-3 transition-all duration-200 text-left relative focus:outline-none focus:ring-1 focus:ring-glow-blue/50 cursor-pointer ${
+                                isActive
+                                  ? 'bg-white/10 text-glow-bright'
+                                  : 'text-[#7D8DA1] hover:text-[#E6EDF3] hover:bg-white/5'
+                              }`}
+                            >
+                              {isActive && (
+                                <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-glow-blue rounded-r shadow-[0_0_12px_rgba(34,211,238,0.9)]" data-testid="nav-active-indicator" />
+                              )}
+                              <Icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-glow-bright' : 'text-[#7D8DA1] group-hover:text-glow-bright'}`} />
+                              <div className="hidden lg:block min-w-0 flex-1">
+                                <div className="flex items-center gap-1 flex-wrap">
+                                  <span className={`text-sm font-medium ${isActive ? 'font-semibold text-text-primary text-glow-bright' : 'text-[#7D8DA1]'}`}>
+                                    {item.label}
+                                  </span>
+                                  {item.isDemo && (
+                                    <span className="text-[8px] font-bold px-1 py-0.5 rounded bg-amber-500/15 text-amber-400">DEMO</span>
+                                  )}
+                                  {item.id === 'review' && reviewPendingCount > 0 && (
+                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 ml-auto">
+                                      {reviewPendingCount}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="block text-[10px] text-[#7D8DA1]/75 mt-0.5 font-normal leading-tight truncate">
+                                  {item.desc}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+          </>
+        )}
       </div>
 
       {/* Bottom Pinned section */}
@@ -284,7 +350,7 @@ export default function Sidebar({
                 ))}
               </select>
               {selectedProjectId && (
-                <button 
+                <button
                   onClick={(e) => toggleFavorite(selectedProjectId, e)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded text-[#7D8DA1] hover:text-yellow-400 transition"
                   title="Toggle Favorite"
@@ -335,7 +401,7 @@ export default function Sidebar({
             <span className="text-glow-bright">{tokenUsagePercent}% Used</span>
           </div>
           <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden border border-white/5">
-            <div 
+            <div
               style={{ width: `${tokenUsagePercent}%` }}
               className="bg-glow-blue h-full rounded-full transition-all duration-500 animate-pulse-slow cherenkov-glow"
             />

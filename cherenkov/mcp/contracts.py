@@ -179,3 +179,28 @@ INVALID_REQUEST  = -32600
 METHOD_NOT_FOUND = -32601
 INVALID_PARAMS   = -32602
 INTERNAL_ERROR   = -32603
+
+
+# ── New Conformance MCP Tool Inputs ──────────────────────────────────────────
+
+class RunConformanceCheckInput(BaseModel):
+    target_url: str = Field(min_length=1)
+    spec_path: str = Field(default="stub/openapi.yaml")
+    workers: int = Field(default=1, ge=1, le=32)
+
+
+class ListDriftFindingsInput(BaseModel):
+    severity: Literal["high", "medium", "low"] | None = None
+    endpoint: str | None = None
+    limit: int = Field(default=20, ge=1, le=100)
+
+
+class GetTighteningInput(BaseModel):
+    endpoint: str = Field(min_length=1)
+    method: str = Field(default="GET")
+
+
+class ExplainFindingInput(BaseModel):
+    finding_id: str = Field(min_length=1)
+    detail_level: Literal["concise", "detailed"] = Field(default="concise")
+
