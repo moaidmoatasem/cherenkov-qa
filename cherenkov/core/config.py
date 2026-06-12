@@ -84,6 +84,15 @@ class Config:
     HITL_API_KEY: str = os.getenv("CHERENKOV_HITL_API_KEY", "")
     DB_KEY: str = os.getenv("CHERENKOV_DB_KEY", "")
 
+    # ── NVIDIA NemoClaw (local Nemotron via OpenShell runtime) ──────────────
+    NEMOCLAW_URL: str = os.getenv("CHERENKOV_NEMOCLAW_URL", "http://localhost:11435/v1")
+    NEMOCLAW_API_KEY: str = os.getenv("CHERENKOV_NEMOCLAW_API_KEY", "")
+    NEMOCLAW_TIMEOUT: int = int(os.getenv("CHERENKOV_NEMOCLAW_TIMEOUT", "300"))
+    NEMOCLAW_SMALL_MODEL: str = os.getenv("CHERENKOV_NEMOCLAW_SMALL_MODEL", "nemotron-nano-4b")
+    NEMOCLAW_DEEP_MODEL: str = os.getenv("CHERENKOV_NEMOCLAW_DEEP_MODEL", "nemotron-super-49b")
+    NEMOCLAW_VISION_MODEL: str = os.getenv("CHERENKOV_NEMOCLAW_VISION_MODEL", "nemotron-vlm-4b")
+    NEMOCLAW_OPENSSL_POLICY: str = os.getenv("CHERENKOV_NEMOCLAW_OPENSSL_POLICY", "default")
+
     # ── Phase 0b: VLM (Phase 2) ──────────────────────────────────────────
     VLM_DEFAULT_PROVIDER: str = os.getenv("CHERENKOV_VLM_PROVIDER", "ollama")
     VLM_LOCALAI_URL: str = os.getenv("CHERENKOV_VLM_LOCALAI_URL", "http://localhost:8080")
@@ -173,6 +182,11 @@ class Config:
             "FALLBACK_ENABLED": cls.FALLBACK_ENABLED,
             "FALLBACK_PROVIDER": cls.FALLBACK_PROVIDER,
             "OPENAI_MODEL": cls.OPENAI_MODEL,
+            "NEMOCLAW_URL": cls.NEMOCLAW_URL,
+            "NEMOCLAW_API_KEY": bool(cls.NEMOCLAW_API_KEY),
+            "NEMOCLAW_SMALL_MODEL": cls.NEMOCLAW_SMALL_MODEL,
+            "NEMOCLAW_DEEP_MODEL": cls.NEMOCLAW_DEEP_MODEL,
+            "NEMOCLAW_VISION_MODEL": cls.NEMOCLAW_VISION_MODEL,
             "CACHE_ENABLED": cls.CACHE_ENABLED,
             "CACHE_MAX_SIZE": cls.CACHE_MAX_SIZE,
             "CACHE_TTL_SECONDS": cls.CACHE_TTL_SECONDS,

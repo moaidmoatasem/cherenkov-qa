@@ -171,9 +171,12 @@ def get_provider(name: str) -> OllamaProvider | OpenAIProvider | GitHubModelsPro
     elif name == "anthropic":
         from cherenkov.substrate.providers.anthropic import AnthropicProvider
         p = AnthropicProvider()  # type: ignore[assignment]
+    elif name == "nemoclaw":
+        from cherenkov.substrate.providers.nemoclaw import NemoClawProvider
+        p = NemoClawProvider()  # type: ignore[assignment]
     else:
         raise ValueError(
-            f"Unknown provider '{name}'. Expected 'ollama', 'openai', 'github', or 'anthropic'."
+            f"Unknown provider '{name}'. Expected 'ollama', 'openai', 'github', 'anthropic', or 'nemoclaw'."
         )
     _PROVIDER_CACHE[name] = p
     return p
@@ -190,10 +193,13 @@ def get_vlm_provider(name: str | None = None) -> VLMProvider:
         p = VLMProvider(OllamaInferenceClient())
     elif provider_name == "openai":
         p = VLMProvider(OpenAIInferenceClient())
+    elif provider_name == "nemoclaw":
+        from cherenkov.ai.nemoclaw_client import NemoClawInferenceClient
+        p = VLMProvider(NemoClawInferenceClient())
     else:
         raise ValueError(
             f"Unknown VLM provider '{provider_name}'. "
-            f"Expected 'localai', 'ollama', or 'openai'."
+            f"Expected 'localai', 'ollama', 'openai', or 'nemoclaw'."
         )
     _VLM_CACHE[provider_name] = p
     return p

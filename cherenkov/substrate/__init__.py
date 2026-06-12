@@ -22,6 +22,7 @@ from cherenkov.substrate.providers import (
     OpenAIProvider as OpenAIProviderNew,
     VLMProvider as VLMProviderNew,
     VLMResult as VLMResultNew,
+    NemoClawProvider,
 )
 
 __all__ = [
@@ -40,4 +41,5 @@ __all__ = [
     "OpenAIProviderNew",
     "VLMProviderNew",
     "VLMResultNew",
+    "NemoClawProvider",
 ]
