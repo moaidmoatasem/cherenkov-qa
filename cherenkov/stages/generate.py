@@ -180,7 +180,9 @@ class GenerateStage:
                     test_code=entry.test_code,
                     imports=["@playwright/test", "../client"],
                     status=Status.OK,
-                    metadata=StageMeta(stage="GENERATE", duration_ms=dt)
+                    metadata=StageMeta(stage="GENERATE", duration_ms=dt),
+                    endpoint=path,
+                    method=method.upper() if method else None,
                 )
 
         # temperatures: start with variation, tighten on repair attempts
@@ -233,15 +235,31 @@ class GenerateStage:
         if os.path.exists(temp_file):
             os.remove(temp_file)
 
-        if not code or (last_error and "TSC failed" not in last_error and "Ollama" in last_error):
-            self.log.error(last_error)
-            return GenerateOutput(
-                scenario_id=mutation_id,
-                test_code="",
-                status=Status.FAILED,
-                errors=[StageError(code="OLLAMA_GENERATION_FAILED", detail=last_error)],
-                metadata=StageMeta(stage="GENERATE", duration_ms=0)
-            )
+        # If Ollama is unavailable or all temperatures failed, fall back to the deterministic
+        # template generator so the pipeline continues to completion without a GPU.
+        ollama_failed = not code or ("Ollama" in last_error and "TSC failed" not in last_error)
+        if ollama_failed:
+            self.log.warning("ollama unavailable — using template generator fallback", error=last_error)
+            try:
+                from cherenkov.ai.template_generator import generate_test as _gen_template
+                code = _gen_template(
+                    path=path,
+                    method=method,
+                    operation=operation or {},
+                    schemas=schemas or {},
+                    scenario=scenario,
+                    instruction=instruction,
+                )
+                self.log.info("template generator produced fallback code", chars=len(code))
+            except Exception as tmpl_err:
+                self.log.error("template generator also failed", error=str(tmpl_err))
+                return GenerateOutput(
+                    scenario_id=mutation_id,
+                    test_code="",
+                    status=Status.FAILED,
+                    errors=[StageError(code="GENERATE_FAILED", detail=str(tmpl_err))],
+                    metadata=StageMeta(stage="GENERATE", duration_ms=0)
+                )
 
         dt = int((time.time() - t0) * 1000)
         self.log.info("stage success", duration_ms=dt)
@@ -254,5 +272,7 @@ class GenerateStage:
             test_code=code,
             imports=["@playwright/test", "../client"],
             status=Status.OK,
-            metadata=StageMeta(stage="GENERATE", duration_ms=dt)
+            metadata=StageMeta(stage="GENERATE", duration_ms=dt),
+            endpoint=path,
+            method=method.upper() if method else None,
         )
