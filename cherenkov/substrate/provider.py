@@ -168,8 +168,13 @@ def get_provider(name: str) -> OllamaProvider | OpenAIProvider | GitHubModelsPro
         p = OpenAIProvider()
     elif name == "github":
         p = GitHubModelsProvider()
+    elif name == "anthropic":
+        from cherenkov.substrate.providers.anthropic import AnthropicProvider
+        p = AnthropicProvider()  # type: ignore[assignment]
     else:
-        raise ValueError(f"Unknown provider '{name}'. Expected 'ollama', 'openai', or 'github'.")
+        raise ValueError(
+            f"Unknown provider '{name}'. Expected 'ollama', 'openai', 'github', or 'anthropic'."
+        )
     _PROVIDER_CACHE[name] = p
     return p
 

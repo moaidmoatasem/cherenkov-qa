@@ -9,7 +9,9 @@
             "visual_diff_baseline", "run_k6_perf", "query_rag_index",
             "export_jira_ticket", "scan_mena_compliance",
             "chat_query_verdicts", "chat_query_idioms",
-            "chat_explain_divergence", "chat_run_test"
+            "chat_explain_divergence", "chat_run_test",
+            "run_conformance_check", "get_last_report", "list_drift_findings",
+            "get_tightening_suggestions", "explain_finding"
           ],
           "allow_network": [],
           "allow_filesystem": false

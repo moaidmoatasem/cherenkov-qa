@@ -173,6 +173,32 @@ class ChatRunTestInput(BaseModel):
     spec_path: str | None = None
 
 
+# ── Issue #441: Conformance tools ─────────────────────────────────────────────
+
+class RunConformanceCheckInput(BaseModel):
+    target_url: str = Field(min_length=1, description="Target API base URL")
+    spec_path: str = Field(default="stub/openapi.yaml", description="Path to OpenAPI spec")
+    workers: int = Field(default=1, ge=1, le=16, description="Parallel workers")
+
+
+class ListDriftFindingsInput(BaseModel):
+    severity: Literal["high", "medium", "low"] | None = Field(
+        default=None, description="Filter by severity"
+    )
+    endpoint: str | None = Field(default=None, description="Filter by endpoint path")
+    limit: int = Field(default=20, ge=1, le=200)
+
+
+class GetTighteningInput(BaseModel):
+    endpoint: str = Field(min_length=1, description="e.g. /users/{id}")
+    method: str = Field(default="GET")
+
+
+class ExplainFindingInput(BaseModel):
+    finding_id: str = Field(min_length=1, description="Finding ID from list_drift_findings")
+    detail_level: Literal["concise", "detailed"] = Field(default="concise")
+
+
 # ── JSON-RPC error codes (MCP uses standard JSON-RPC + MCP extensions) ───────
 PARSE_ERROR      = -32700
 INVALID_REQUEST  = -32600
