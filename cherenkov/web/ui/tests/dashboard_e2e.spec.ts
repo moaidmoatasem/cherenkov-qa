@@ -260,7 +260,7 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     await expect(dismissBtn).toBeVisible();
 
     // Verify ReadOnlyDiffViewer opens
-    const viewDiffBtn = page.locator('#drift-card-fail-1 button:has-text("View Diff")');
+    const viewDiffBtn = page.locator('#drift-card-fail-1 button:has-text("VIEW SUGGESTION DIFF")');
     await expect(viewDiffBtn).toBeVisible();
     await viewDiffBtn.click();
     await expect(page.locator('#read-only-diff-viewer')).toBeVisible();
@@ -342,7 +342,7 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
   test('Explore screen: crawler scope config and start button', async ({ page }) => {
     await page.click('#nav-item-explore');
     await page.waitForTimeout(300);
-    await expect(page.getByText('Explore Crawler')).toBeVisible();
+    await expect(page.getByText('Autonomous Explorer')).toBeVisible();
     await expect(page.getByText('API Target URL')).toBeVisible();
   });
 
@@ -541,15 +541,15 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     await expect(ejectToast).toBeVisible();
     await expect(ejectToast).toContainText('Eject successful');
 
-    // Overview screen: click Run Discovery Scan shows info toast
+    // Overview screen: click New Analysis Run shows info toast
     await page.click('#nav-item-overview');
     await page.waitForSelector('#overview-screen');
-    await page.locator('button:has-text("Run Discovery Scan")').first().click();
+    await page.locator('button:has-text("New Analysis Run")').first().click();
     await page.waitForSelector('#setup-screen');
     await page.waitForTimeout(200);
     const navToast = page.locator('[role="status"]').first();
     await expect(navToast).toBeVisible();
-    await expect(navToast).toContainText('Initiating discovery scan');
+    await expect(navToast).toContainText('Starting discovery scan…');
 
     // Setup screen: load presets then generate shows info toast
     await page.locator('#btn-shortcut-petstore').click();
