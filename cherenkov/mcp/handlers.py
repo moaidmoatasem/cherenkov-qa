@@ -40,6 +40,10 @@ from cherenkov.mcp.contracts import (
     ChatQueryIdiomsInput,
     ChatExplainDivergenceInput,
     ChatRunTestInput,
+    RunConformanceCheckInput,
+    ListDriftFindingsInput,
+    GetTighteningInput,
+    ExplainFindingInput,
     INVALID_PARAMS,
     MCPContent,
     MCPResource,
@@ -277,6 +281,78 @@ TOOLS: list[MCPTool] = [
             required=["endpoint"],
         ),
     ),
+    # ── Issue #441: Conformance tools ──────────────────────────────────────
+    MCPTool(
+        name="run_conformance_check",
+        description=(
+            "Trigger a cherenkov validate run against a target URL and return the "
+            "report summary. Requires execute permission."
+        ),
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "target_url": MCPToolParam(type="string", description="Target API base URL."),
+                "spec_path": MCPToolParam(
+                    type="string",
+                    description="Path to OpenAPI spec (default: stub/openapi.yaml).",
+                ),
+                "workers": MCPToolParam(
+                    type="integer", description="Parallel workers (default 1)."
+                ),
+            },
+            required=["target_url"],
+        ),
+    ),
+    MCPTool(
+        name="get_last_report",
+        description="Return the most recent .cherenkov/report.json without triggering a new run.",
+        inputSchema=MCPToolInputSchema(properties={}, required=[]),
+    ),
+    MCPTool(
+        name="list_drift_findings",
+        description="Return structured spec-drift findings from the last conformance run.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "severity": MCPToolParam(
+                    type="string",
+                    description="Filter by severity: high | medium | low. Omit for all.",
+                ),
+                "endpoint": MCPToolParam(
+                    type="string", description="Filter by endpoint path (optional)."
+                ),
+                "limit": MCPToolParam(
+                    type="integer", description="Max results to return (default 20)."
+                ),
+            },
+            required=[],
+        ),
+    ),
+    MCPTool(
+        name="get_tightening_suggestions",
+        description="Return OpenAPI spec tightening suggestions for a specific endpoint.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "endpoint": MCPToolParam(type="string", description="e.g. /users/{id}"),
+                "method": MCPToolParam(type="string", description="HTTP method (default GET)."),
+            },
+            required=["endpoint"],
+        ),
+    ),
+    MCPTool(
+        name="explain_finding",
+        description="Natural-language explanation of a specific drift finding using the LLM.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "finding_id": MCPToolParam(
+                    type="string", description="Finding ID from list_drift_findings."
+                ),
+                "detail_level": MCPToolParam(
+                    type="string",
+                    description="concise (default) or detailed.",
+                ),
+            },
+            required=["finding_id"],
+        ),
+    ),
 ]
 
 
@@ -416,6 +492,16 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_policy_list(arguments).model_dump()
         if name == "policy_reload":
             return _tool_policy_reload(arguments).model_dump()
+        if name == "run_conformance_check":
+            return _tool_run_conformance_check(arguments).model_dump()
+        if name == "get_last_report":
+            return _tool_get_last_report(arguments).model_dump()
+        if name == "list_drift_findings":
+            return _tool_list_drift_findings(arguments).model_dump()
+        if name == "get_tightening_suggestions":
+            return _tool_get_tightening_suggestions(arguments).model_dump()
+        if name == "explain_finding":
+            return _tool_explain_finding(arguments).model_dump()
     except ValidationError as exc:
         return _err_content(f"Invalid input: {exc}").model_dump()
     except Exception as exc:
@@ -581,6 +667,133 @@ def _get_latest_validation_report() -> dict[str, Any]:
         "result": "no_evidence",
         "summary": "No validation evidence found. Run: cherenkov validate --target <url>",
     }
+
+
+# ── Issue #441: Conformance tools ─────────────────────────────────────────────
+
+def _tool_run_conformance_check(args: dict[str, Any]) -> MCPToolCallResult:
+    """Trigger a validate run against target_url; return summary. D7: suggest-only."""
+    inp = RunConformanceCheckInput.model_validate(args)
+    try:
+        spec_path = _validate_spec_path(inp.spec_path)
+    except ValueError as exc:
+        return _err_content(f"Invalid spec_path: {exc}")
+    try:
+        from cherenkov.execution.validate import ValidationEngine
+        engine = ValidationEngine()
+        report = engine.validate_suite(target_url=inp.target_url, workers=inp.workers)
+        return _ok_content({
+            "status": "complete",
+            "passed": report.get("passed", 0),
+            "failed": report.get("failed", 0),
+            "drift_count": report.get("drift_count", len(report.get("reports", []))),
+            "report_path": ".cherenkov/report.json",
+            "summary": report,
+        })
+    except Exception as exc:
+        return _err_content(f"Conformance check error: {exc}")
+
+
+def _tool_get_last_report(args: dict[str, Any]) -> MCPToolCallResult:
+    """Return the most recent .cherenkov/report.json without triggering a new run."""
+    report_path = os.path.join(os.getcwd(), ".cherenkov", "report.json")
+    if not os.path.exists(report_path):
+        return _ok_content({
+            "error": "No report found.",
+            "hint": "Run `cherenkov validate --target <url>` first.",
+        })
+    try:
+        with open(report_path) as f:
+            return _ok_content(json.load(f))
+    except Exception as exc:
+        return _err_content(f"Error reading report: {exc}")
+
+
+def _tool_list_drift_findings(args: dict[str, Any]) -> MCPToolCallResult:
+    """Return structured drift findings from the divergence corpus."""
+    inp = ListDriftFindingsInput.model_validate(args)
+    try:
+        from cherenkov.web.divergences import _DIVERGENCE_CORPUS
+        findings = list(_DIVERGENCE_CORPUS)
+        if inp.severity:
+            findings = [f for f in findings if f.get("severity") == inp.severity]
+        if inp.endpoint:
+            findings = [f for f in findings if inp.endpoint in f.get("endpoint", "")]
+        findings = findings[: inp.limit]
+        return _ok_content({"findings": findings, "total": len(findings)})
+    except Exception as exc:
+        return _err_content(f"list_drift_findings error: {exc}")
+
+
+def _tool_get_tightening_suggestions(args: dict[str, Any]) -> MCPToolCallResult:
+    """Return value-assertion tightening suggestions for an endpoint."""
+    inp = GetTighteningInput.model_validate(args)
+    try:
+        from cherenkov.execution.validate import TighteningAnalyzer
+        # Suggest based on trace evidence in .cherenkov/evidence/
+        evidence_dir = os.path.join(os.getcwd(), ".cherenkov", "evidence")
+        import glob as _glob
+        patterns: list[str] = []
+        if os.path.isdir(evidence_dir):
+            for ev_file in sorted(_glob.glob(os.path.join(evidence_dir, "*.json")))[-10:]:
+                with open(ev_file) as f:
+                    ev = json.load(f)
+                if (
+                    inp.endpoint in ev.get("endpoint", "")
+                    and ev.get("method", "GET").upper() == inp.method.upper()
+                ):
+                    suggestions = TighteningAnalyzer.analyze(
+                        ev.get("request_body", ""), ev.get("response_body", "")
+                    )
+                    patterns.extend(suggestions)
+        return _ok_content({
+            "endpoint": inp.endpoint,
+            "method": inp.method,
+            "suggestions": list(dict.fromkeys(patterns)),  # dedup preserving order
+        })
+    except Exception as exc:
+        return _err_content(f"get_tightening_suggestions error: {exc}")
+
+
+def _tool_explain_finding(args: dict[str, Any]) -> MCPToolCallResult:
+    """LLM natural-language explanation of a specific drift finding."""
+    inp = ExplainFindingInput.model_validate(args)
+    try:
+        from cherenkov.web.divergences import _DIVERGENCE_CORPUS
+        finding = next(
+            (f for f in _DIVERGENCE_CORPUS if f.get("id") == inp.finding_id), None
+        )
+        if not finding:
+            return _err_content(f"Finding '{inp.finding_id}' not found.")
+
+        detail_instruction = (
+            "Be concise (2-3 sentences)."
+            if inp.detail_level == "concise"
+            else "Be thorough, covering root cause and remediation steps."
+        )
+        prompt = (
+            f"Explain this API conformance finding to a developer:\n"
+            f"Endpoint: {finding.get('endpoint')}\n"
+            f"Issue: {finding.get('claimB', finding.get('summary', ''))}\n"
+            f"Spec says: {finding.get('claimA', '')}\n"
+            f"Evidence: {finding.get('evidence', '')}\n\n"
+            f"Explain: 1) What this means, 2) Why it matters, 3) How to fix it.\n"
+            f"{detail_instruction}"
+        )
+        try:
+            from cherenkov.chat.tools import explain_divergence
+            result = explain_divergence(
+                endpoint=finding.get("endpoint", ""), method="GET"
+            )
+            explanation = result.get("explanation", result.get("answer", str(result)))
+        except Exception:
+            explanation = (
+                f"Finding {inp.finding_id}: {finding.get('claimB', '')} "
+                f"(LLM unavailable — check Ollama/model config)"
+            )
+        return _ok_content({"finding_id": inp.finding_id, "explanation": explanation})
+    except Exception as exc:
+        return _err_content(f"explain_finding error: {exc}")
 
 
 def _get_evidence_listing() -> dict[str, Any]:
