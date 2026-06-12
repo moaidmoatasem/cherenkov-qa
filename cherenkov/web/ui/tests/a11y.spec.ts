@@ -21,6 +21,7 @@ test.describe('CHERENKOV QA Accessibility — Structural & ARIA Audit', () => {
     await page.evaluate(() => {
       localStorage.setItem('[copilot] tour_seen', 'true');
       localStorage.setItem('[cherenkov] onboarding_seen', 'true');
+      localStorage.setItem('[cherenkov] sidebar_mode', 'expert');
     });
     await page.reload();
     await page.waitForSelector('#cherenkov-app-core');

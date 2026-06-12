@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Compass, Sparkles, Terminal, Download, CheckCircle2, Play, Loader2, AlertTriangle } from 'lucide-react';
-import { Card, PageHeader, MockBadge } from './ui';
+import { Card, PageHeader } from './ui';
 import { fetchMemory } from '../lib/api';
 import { useToast } from './ui/Toast';
 import { runPipeline } from '../lib/api';
@@ -65,7 +65,6 @@ export default function AuthorScreen() {
         title="Author by Intent"
         description="Transform natural language test goals into active client browser runs and eject standalone Playwright specifications."
       />
-      <MockBadge />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Left 2 columns: Authoring core */}

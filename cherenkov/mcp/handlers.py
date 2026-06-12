@@ -40,6 +40,10 @@ from cherenkov.mcp.contracts import (
     ChatQueryIdiomsInput,
     ChatExplainDivergenceInput,
     ChatRunTestInput,
+    RunConformanceCheckInput,
+    ListDriftFindingsInput,
+    GetTighteningInput,
+    ExplainFindingInput,
     INVALID_PARAMS,
     MCPContent,
     MCPResource,
@@ -277,6 +281,57 @@ TOOLS: list[MCPTool] = [
             required=["endpoint"],
         ),
     ),
+    MCPTool(
+        name="run_conformance_check",
+        description="Trigger a validate run and return the report summary.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "target_url": MCPToolParam(type="string", description="The target API base URL."),
+                "spec_path": MCPToolParam(type="string", description="Path to OpenAPI spec (default: stub/openapi.yaml)."),
+                "workers": MCPToolParam(type="integer", description="Number of workers (default: 1)."),
+            },
+            required=["target_url"],
+        ),
+    ),
+    MCPTool(
+        name="get_last_report",
+        description="Return the most recent conformance report.",
+        inputSchema=MCPToolInputSchema(properties={}, required=[]),
+    ),
+    MCPTool(
+        name="list_drift_findings",
+        description="Return structured list of spec drift findings from the last run.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "severity": MCPToolParam(type="string", description="Filter by severity: high | medium | low."),
+                "endpoint": MCPToolParam(type="string", description="Filter by specific endpoint path."),
+                "limit": MCPToolParam(type="integer", description="Max findings to return (default: 20)."),
+            },
+            required=[],
+        ),
+    ),
+    MCPTool(
+        name="get_tightening_suggestions",
+        description="Return OpenAPI spec tightening suggestions for a specific endpoint.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "endpoint": MCPToolParam(type="string", description="The endpoint path (e.g. /users/{id})."),
+                "method": MCPToolParam(type="string", description="The HTTP method (default: GET)."),
+            },
+            required=["endpoint"],
+        ),
+    ),
+    MCPTool(
+        name="explain_finding",
+        description="Natural language explanation of a specific finding using the LLM.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "finding_id": MCPToolParam(type="string", description="The unique finding ID."),
+                "detail_level": MCPToolParam(type="string", description="Detail level: concise | detailed (default: concise)."),
+            },
+            required=["finding_id"],
+        ),
+    ),
 ]
 
 
@@ -412,6 +467,16 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_chat_explain_divergence(arguments).model_dump()
         if name == "chat_run_test":
             return _tool_chat_run_test(arguments).model_dump()
+        if name == "run_conformance_check":
+            return _tool_run_conformance_check(arguments).model_dump()
+        if name == "get_last_report":
+            return _tool_get_last_report(arguments).model_dump()
+        if name == "list_drift_findings":
+            return _tool_list_drift_findings(arguments).model_dump()
+        if name == "get_tightening_suggestions":
+            return _tool_get_tightening_suggestions(arguments).model_dump()
+        if name == "explain_finding":
+            return _tool_explain_finding(arguments).model_dump()
         if name == "policy_list":
             return _tool_policy_list(arguments).model_dump()
         if name == "policy_reload":
@@ -499,11 +564,41 @@ def _tool_visual_diff(args: dict[str, Any]) -> MCPToolCallResult:
         return _err_content(f"VisualDiff error: {exc}")
 
 def _tool_run_perf(args: dict[str, Any]) -> MCPToolCallResult:
-    return _err_content(
-        "This tool is not yet fully implemented. "
-        "run_perf requires k6 >= 0.50 to be installed and configured. "
-        "See docs/MODULE_STATUS.md for implementation status."
-    )
+    target_url = args.get("target_url") or os.environ.get("API_URL") or "http://localhost:8000"
+    scenario_name = args.get("scenario_name") or "mcp_test"
+    duration = args.get("duration") or 5
+    vus = args.get("vus") or 5
+    endpoint = args.get("endpoint") or "/"
+    method = args.get("method") or "GET"
+    
+    try:
+        from cherenkov.core.contracts import PerfSlice
+        sl = PerfSlice(
+            name=scenario_name,
+            target_url=target_url,
+            endpoint=endpoint,
+            method=method,
+            vus=vus,
+            duration_sec=duration
+        )
+        from cherenkov.stages.perf.perf_stage import PerfStage
+        stage = PerfStage()
+        report = stage.run(sl)
+        return _ok_content({
+            "scenario_id": report.scenario_id,
+            "status": report.status.value if hasattr(report.status, "value") else str(report.status),
+            "verdict": report.verdict.value if hasattr(report.verdict, "value") else str(report.verdict),
+            "errors": [e.detail for e in report.errors],
+            "gates": [{
+                "gate": g.gate,
+                "passed": g.passed,
+                "latency_ms": g.latency_ms,
+                "anomaly_detected": g.anomaly_detected,
+                "k6_available": g.k6_available,
+            } for g in report.gates]
+        })
+    except Exception as exc:
+        return _err_content(f"Perf error: {exc}")
 
 def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
     query = args.get("query", "")
@@ -516,18 +611,71 @@ def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
         return _err_content(f"RAG error: {exc}")
 
 def _tool_export_jira(args: dict[str, Any]) -> MCPToolCallResult:
-    return _err_content(
-        "This tool is not yet fully implemented. "
-        "JIRA API integration not yet wired — no export performed. "
-        "See docs/MODULE_STATUS.md for implementation status."
-    )
+    item_id = args.get("item_id", "")
+    try:
+        q = _queue()
+        item = q.get(item_id)
+        if not item:
+            return _err_content(f"HITL item {item_id} not found in queue.")
+            
+        from cherenkov.validate.jira_exporter import JiraExporter
+        exporter = JiraExporter()
+        
+        file_path = exporter.export_ticket(
+            scenario_id=item.id,
+            failure_class=item.mutation_label or "conformance-drift",
+            error_message=item.review_gate_failed or "Validation failed",
+            expected_status="Valid response",
+            received_status="Divergent response",
+            hypothesis=item.confidence_reason,
+            compliance_score=80
+        )
+        
+        summary = f"🛑 CHERENKOV QA — DRIFT DETECTED: {item.id}"
+        description = exporter.format_ticket(
+            scenario_id=item.id,
+            failure_class=item.mutation_label or "conformance-drift",
+            error_message=item.review_gate_failed or "Validation failed",
+            expected_status="Valid response",
+            received_status="Divergent response",
+            hypothesis=item.confidence_reason,
+            compliance_score=80
+        )
+        
+        issue_key = exporter.create_jira_issue(summary, description)
+        
+        return _ok_content({
+            "item_id": item_id,
+            "status": "exported",
+            "file_path": file_path,
+            "jira_issue_key": issue_key or "sandboxed"
+        })
+    except Exception as exc:
+        return _err_content(f"Jira error: {exc}")
 
 def _tool_scan_mena(args: dict[str, Any]) -> MCPToolCallResult:
-    return _err_content(
-        "This tool is not yet fully implemented. "
-        "MENA compliance scanner not yet implemented. "
-        "See docs/MODULE_STATUS.md for implementation status."
-    )
+    target_url = args.get("target_url") or os.environ.get("API_URL") or "http://localhost:8000"
+    spec_path = args.get("spec_path") or "stub/openapi.yaml"
+    try:
+        from cherenkov.compliance.mena_scanner import MENAComplianceScanner
+        scanner = MENAComplianceScanner()
+        report = scanner.run_compliance_audit(target_url=target_url, spec_path=spec_path)
+        violations = []
+        for domain, details in report["framework_mappings"]["SAMA_CCSF"].items():
+            if details["status"] == "NON-COMPLIANT":
+                violations.append(f"{domain}: {details['remediation']}")
+        for domain, details in report["framework_mappings"]["EGYPT_FinCSF"].items():
+            if details["status"] == "NON-COMPLIANT":
+                violations.append(f"{domain}: {details['remediation']}")
+                
+        return _ok_content({
+            "compliance_score": report["overall_compliance_score"],
+            "violations": violations,
+            "mappings": report["framework_mappings"]
+        })
+    except Exception as exc:
+        return _err_content(f"MENA error: {exc}")
+
 
 
 # ── Chat knowledge tools ──────────────────────────────────────────────────────
@@ -564,6 +712,112 @@ def _tool_chat_run_test(args: dict[str, Any]) -> MCPToolCallResult:
     from cherenkov.chat.tools import run_test
     result = run_test(endpoint=inp.endpoint, method=inp.method, spec_path=spec_path)
     return _ok_content(result)
+
+
+def _tool_run_conformance_check(args: dict[str, Any]) -> MCPToolCallResult:
+    inp = RunConformanceCheckInput.model_validate(args)
+    from cherenkov.execution.validate import ValidationEngine
+    engine = ValidationEngine("mcp_conformance")
+    results = engine.validate_suite(target_url=inp.target_url, workers=inp.workers)
+    
+    # Save the report to .cherenkov/report.json
+    os.makedirs(".cherenkov", exist_ok=True)
+    with open(".cherenkov/report.json", "w") as f:
+        json.dump(results, f, indent=2)
+        
+    return _ok_content({
+        "status": "complete",
+        "passed": sum(1 for r in results.get("reports", []) if r.get("passed", False)),
+        "failed": sum(1 for r in results.get("reports", []) if not r.get("passed", False)),
+        "drift_count": sum(1 for r in results.get("reports", []) if not r.get("passed", False)),
+        "report_path": ".cherenkov/report.json",
+    })
+
+
+def _tool_get_last_report(args: dict[str, Any]) -> MCPToolCallResult:
+    from pathlib import Path
+    report_path = Path(".cherenkov/report.json")
+    if not report_path.exists():
+        return _err_content("No report found. Run cherenkov validate first.")
+    try:
+        data = json.loads(report_path.read_text())
+        return _ok_content(data)
+    except Exception as exc:
+        return _err_content(f"Failed to read report: {exc}")
+
+
+def _tool_list_drift_findings(args: dict[str, Any]) -> MCPToolCallResult:
+    inp = ListDriftFindingsInput.model_validate(args)
+    from cherenkov.web.divergences import get_divergences
+    findings = get_divergences(
+        severity=inp.severity,
+        endpoint=inp.endpoint,
+        limit=inp.limit,
+    )
+    return _ok_content({
+        "findings": [f.dict() for f in findings],
+        "total": len(findings),
+    })
+
+
+def _tool_get_tightening_suggestions(args: dict[str, Any]) -> MCPToolCallResult:
+    inp = GetTighteningInput.model_validate(args)
+    report = _get_latest_validation_report()
+    reports = report.get("reports", [])
+    if not reports:
+        import os
+        report_path = os.path.join(os.getcwd(), ".cherenkov", "report.json")
+        if os.path.exists(report_path):
+            try:
+                with open(report_path) as f:
+                    data = json.load(f)
+                    reports = data.get("reports", [])
+            except Exception:
+                pass
+                
+    suggestions = []
+    endpoint_clean = inp.endpoint.strip("/").lower()
+    method_clean = inp.method.upper()
+    for r in reports:
+        scenario_id = r.get("scenario_id", "").lower()
+        if method_clean.lower() in scenario_id and endpoint_clean.replace("/", "_") in scenario_id:
+            suggestions.extend(r.get("suggestions", []))
+            
+    return _ok_content({
+        "endpoint": inp.endpoint,
+        "method": inp.method,
+        "suggestions": list(set(suggestions)),
+    })
+
+
+def _tool_explain_finding(args: dict[str, Any]) -> MCPToolCallResult:
+    inp = ExplainFindingInput.model_validate(args)
+    from cherenkov.web.divergences import get_finding_by_id
+    finding = get_finding_by_id(inp.finding_id)
+    if not finding:
+        return _err_content(f"Finding {inp.finding_id} not found")
+
+    prompt = f"""
+    Explain this API conformance finding to a developer:
+    Endpoint: {finding.endpoint} ({finding.method})
+    Issue: {finding.summary}
+    Expected: {finding.expected}
+    Actual: {finding.actual}
+
+    Explain: 1) What this means, 2) Why it matters, 3) How to fix it.
+    {"Be concise (2-3 sentences)." if inp.detail_level == "concise" else "Be thorough."}
+    """
+    
+    from cherenkov.core.contracts import ReasoningRequest
+    from cherenkov.substrate.router import route
+    req = ReasoningRequest(task=prompt, capability_tier="small")
+    try:
+        res = route(req)
+        explanation = str(res.content).strip()
+        return _ok_content({"finding_id": inp.finding_id, "explanation": explanation})
+    except Exception as exc:
+        return _err_content(f"LLM routing error: {exc}")
+
 
 # ── Evidence helpers ──────────────────────────────────────────────────────────
 

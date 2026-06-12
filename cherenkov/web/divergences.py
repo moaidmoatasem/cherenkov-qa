@@ -131,3 +131,47 @@ def apply_action(divergence_id: str, action: str) -> str:
     new_status = _ACTION_STATUS[action]
     _STATUS_OVERRIDES[divergence_id] = new_status
     return new_status
+
+
+class DivergenceFindingNamespace:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+    def dict(self):
+        return {k: v for k, v in self.__dict__.items() if k != 'dict'}
+
+
+def get_divergences(severity: str | None = None, endpoint: str | None = None, limit: int = 20) -> List[DivergenceFindingNamespace]:
+    res = list_divergences()
+    if severity:
+        res = [d for d in res if d.get("severity") == severity]
+    if endpoint:
+        res = [d for d in res if endpoint in d.get("endpoint", "")]
+    
+    out = []
+    for d in res[:limit]:
+        ep_str = d.get("endpoint", "")
+        parts = ep_str.split(" ", 1)
+        method = parts[0] if len(parts) > 1 else "GET"
+        path = parts[1] if len(parts) > 1 else ep_str
+        
+        out.append(DivergenceFindingNamespace(
+            id=d.get("id"),
+            endpoint=path,
+            method=method,
+            http_method=method,
+            severity=d.get("severity"),
+            summary=d.get("claimB"),
+            expected=d.get("claimA"),
+            actual=d.get("claimB"),
+            description=d.get("claimB"),
+            remediation="Update code to match spec",
+        ))
+    return out
+
+
+def get_finding_by_id(finding_id: str) -> DivergenceFindingNamespace | None:
+    for f in get_divergences(limit=100):
+        if f.id == finding_id:
+            return f
+    return None
+

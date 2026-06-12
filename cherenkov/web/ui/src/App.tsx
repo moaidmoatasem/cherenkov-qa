@@ -37,7 +37,7 @@ import { useToast } from './components/ui/Toast';
 import OnboardingWizard from './components/OnboardingWizard';
 
 import { Project, EndpointRichness } from './types';
-import { runPipeline, fetchProjects, fetchMetricsData } from './lib/api';
+import { runPipeline, fetchProjects, fetchMetricsData, fetchReviewQueue } from './lib/api';
 import { useHealth } from './lib/useHealth';
 import { listenDesktop } from './lib/tauri';
 import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
@@ -105,6 +105,19 @@ function InnerApp() {
     };
     poll();
     const id = setInterval(poll, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Live review queue badge count — polled every 30s
+  const [reviewPendingCount, setReviewPendingCount] = useState(0);
+  React.useEffect(() => {
+    const pollQueue = () => {
+      fetchReviewQueue('pending')
+        .then(items => setReviewPendingCount(Array.isArray(items) ? items.length : 0))
+        .catch(() => { /* keep previous value on error */ });
+    };
+    pollQueue();
+    const id = setInterval(pollQueue, 30_000);
     return () => clearInterval(id);
   }, []);
 
@@ -271,6 +284,7 @@ function InnerApp() {
           projects={projects}
           selectedProjectId={selectedProjectId}
           onSelectProject={handleSelectProject}
+          reviewPendingCount={reviewPendingCount}
         />
 
         {/* RIGHT DISPLAY VIEWPORT PANEL FRAME */}

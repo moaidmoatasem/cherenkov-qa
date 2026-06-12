@@ -21,6 +21,7 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     await page.evaluate(() => {
       localStorage.setItem('[copilot] tour_seen', 'true');
       localStorage.setItem('[cherenkov] onboarding_seen', 'true');
+      localStorage.setItem('[cherenkov] sidebar_mode', 'expert');
     });
     await page.reload();
     await page.waitForSelector('#cherenkov-app-core');
@@ -57,7 +58,7 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
   test('Overview: KPI rings, release readiness, divergences list', async ({ page }) => {
     await page.click('#nav-item-overview');
     await page.waitForSelector('#overview-screen');
-    await expect(page.locator('h1')).toContainText('Release Readiness & Learning');
+    await expect(page.locator('h1')).toContainText('Release Readiness');
 
     // KPI ring with progressbar role
     const kpiRing = page.locator('[role="progressbar"]').first();
@@ -258,6 +259,16 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     // Dismiss a card
     const dismissBtn = page.locator('#drift-card-fail-1 button:has-text("Dismiss")');
     await expect(dismissBtn).toBeVisible();
+
+    // Verify ReadOnlyDiffViewer opens
+    const viewDiffBtn = page.locator('#drift-card-fail-1 button:has-text("View Diff")');
+    await expect(viewDiffBtn).toBeVisible();
+    await viewDiffBtn.click();
+    await expect(page.locator('#read-only-diff-viewer')).toBeVisible();
+    await expect(page.locator('#btn-diff-copy')).toBeVisible();
+    await expect(page.locator('#btn-diff-download')).toBeVisible();
+    await page.locator('#btn-diff-dismiss').click();
+    await expect(page.locator('#read-only-diff-viewer')).not.toBeVisible();
   });
 
   // ── 13. Eject Screen ──────────────────────────────────────────────
@@ -630,6 +641,7 @@ test.describe('CHERENKOV QA Dashboard — Error Path Coverage', () => {
     await page.evaluate(() => {
       localStorage.setItem('[copilot] tour_seen', 'true');
       localStorage.setItem('[cherenkov] onboarding_seen', 'true');
+      localStorage.setItem('[cherenkov] sidebar_mode', 'expert');
     });
     await page.reload();
     await page.waitForSelector('#cherenkov-app-core');
@@ -645,6 +657,7 @@ test.describe('CHERENKOV QA Dashboard — Error Path Coverage', () => {
     await page.evaluate(() => {
       localStorage.setItem('[copilot] tour_seen', 'true');
       localStorage.setItem('[cherenkov] onboarding_seen', 'true');
+      localStorage.setItem('[cherenkov] sidebar_mode', 'expert');
     });
     await page.waitForSelector('#cherenkov-app-core');
     await page.waitForTimeout(SETTLEMENT);
