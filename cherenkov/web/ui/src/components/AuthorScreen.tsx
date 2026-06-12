@@ -21,19 +21,41 @@ export default function AuthorScreen() {
   const [runResult, setRunResult] = useState<{ run_id: string; status: string } | null>(null);
   const [isDone, setIsDone] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
+  const [authorMode, setAuthorMode] = useState<'intent' | 'deterministic'>('intent');
+  const [detSelector, setDetSelector] = useState('');
+  const [detAction, setDetAction] = useState('click');
+  const [detExpected, setDetExpected] = useState('');
+  const [liveLogs, setLiveLogs] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!isRunning) return;
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws/live`);
+    ws.onmessage = (e) => {
+      setLiveLogs(prev => [...prev, e.data]);
+    };
+    return () => ws.close();
+  }, [isRunning]);
 
   const handleStart = async () => {
-    if (!intent.trim()) {
+    if (authorMode === 'intent' && !intent.trim()) {
       addToast('Please type an intent first.', 'warning');
+      return;
+    }
+    if (authorMode === 'deterministic' && !detSelector.trim()) {
+      addToast('Please provide a target CSS selector.', 'warning');
       return;
     }
     setIsRunning(true);
     setRunResult(null);
     setIsDone(false);
     setRunError(null);
+    setLiveLogs([]);
+
+    const payloadIntent = authorMode === 'intent' ? intent : `Select: ${detSelector} | Action: ${detAction} | Expected: ${detExpected}`;
 
     try {
-      const result = await runPipeline({ spec_path: 'stub/target_spec.json', intent });
+      const result = await runPipeline({ spec_path: 'stub/target_spec.json', intent: payloadIntent });
       setRunResult(result);
       setIsRunning(false);
       setIsDone(true);
@@ -51,6 +73,8 @@ export default function AuthorScreen() {
     setRunResult(null);
     setRunError(null);
     setIntent('');
+    setDetSelector('');
+    setDetExpected('');
   };
 
   const exampleIntents = [
@@ -70,34 +94,92 @@ export default function AuthorScreen() {
         {/* Left 2 columns: Authoring core */}
         <div className="lg:col-span-2 space-y-6">
           <Card className="p-6 space-y-4">
-            <h3 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
-              <Compass className="w-4 h-4 text-glow-blue" />
-              <span>Describe Test Scenario Intent</span>
-            </h3>
-
-            <textarea
-              id="txt-author-intent"
-              value={intent}
-              onChange={(e) => setIntent(e.target.value)}
-              placeholder="e.g. Verify that guest checkouts apply 15% discount code and succeed with 200 OK..."
-              className="w-full h-32 p-4 font-sans text-sm text-[#E6EDF3] bg-black/30 border border-white/10 rounded-xl focus:outline-none focus:border-glow-blue transition leading-relaxed"
-            />
-
-            {/* Example chips */}
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-mono text-[#7D8DA1] uppercase">Quick Examples:</span>
-              <div className="flex flex-wrap gap-2">
-                {exampleIntents.map((ex, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setIntent(ex)}
-                    className="text-[11px] font-sans px-2.5 py-1 rounded-lg border border-white/5 bg-white/5 hover:border-glow-blue/50 hover:bg-white/10 text-[#7D8DA1] hover:text-[#E6EDF3] transition cursor-pointer text-left"
-                  >
-                    {ex}
-                  </button>
-                ))}
+            <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <h3 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
+                <Compass className="w-4 h-4 text-glow-blue" />
+                <span>Describe Test Scenario Intent</span>
+              </h3>
+              <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1">
+                <button
+                  onClick={() => setAuthorMode('intent')}
+                  className={`text-[10px] uppercase font-bold px-3 py-1.5 rounded-md transition ${authorMode === 'intent' ? 'bg-glow-blue text-slate-950' : 'text-[#7D8DA1] hover:text-[#E6EDF3]'}`}
+                >
+                  Magic Box
+                </button>
+                <button
+                  onClick={() => setAuthorMode('deterministic')}
+                  className={`text-[10px] uppercase font-bold px-3 py-1.5 rounded-md transition ${authorMode === 'deterministic' ? 'bg-glow-blue text-slate-950' : 'text-[#7D8DA1] hover:text-[#E6EDF3]'}`}
+                >
+                  Deterministic
+                </button>
               </div>
             </div>
+
+            {authorMode === 'intent' ? (
+              <>
+                <textarea
+                  id="txt-author-intent"
+                  value={intent}
+                  onChange={(e) => setIntent(e.target.value)}
+                  placeholder="e.g. Verify that guest checkouts apply 15% discount code and succeed with 200 OK..."
+                  className="w-full h-32 p-4 font-sans text-sm text-[#E6EDF3] bg-black/30 border border-white/10 rounded-xl focus:outline-none focus:border-glow-blue transition leading-relaxed"
+                />
+
+                {/* Example chips */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-mono text-[#7D8DA1] uppercase">Quick Examples:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {exampleIntents.map((ex, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setIntent(ex)}
+                        className="text-[11px] font-sans px-2.5 py-1 rounded-lg border border-white/5 bg-white/5 hover:border-glow-blue/50 hover:bg-white/10 text-[#7D8DA1] hover:text-[#E6EDF3] transition cursor-pointer text-left"
+                      >
+                        {ex}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-4 bg-black/30 p-4 rounded-xl border border-white/10">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono text-[#7D8DA1] uppercase">CSS Selector Target</label>
+                    <input
+                      type="text"
+                      value={detSelector}
+                      onChange={(e) => setDetSelector(e.target.value)}
+                      placeholder="e.g. button#checkout-submit"
+                      className="w-full p-2.5 font-mono text-xs text-[#E6EDF3] bg-black/50 border border-white/10 rounded-lg focus:outline-none focus:border-glow-blue transition"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono text-[#7D8DA1] uppercase">Action</label>
+                    <select
+                      value={detAction}
+                      onChange={(e) => setDetAction(e.target.value)}
+                      className="w-full p-2.5 font-mono text-xs text-[#E6EDF3] bg-black/50 border border-white/10 rounded-lg focus:outline-none focus:border-glow-blue transition appearance-none"
+                    >
+                      <option value="click">Click Element</option>
+                      <option value="type">Type Text</option>
+                      <option value="assert">Assert Visibility</option>
+                      <option value="extract">Extract Value</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono text-[#7D8DA1] uppercase">Expected Result / Input Value</label>
+                  <input
+                    type="text"
+                    value={detExpected}
+                    onChange={(e) => setDetExpected(e.target.value)}
+                    placeholder="e.g. 'Order Confirmed' or input string"
+                    className="w-full p-2.5 font-mono text-xs text-[#E6EDF3] bg-black/50 border border-white/10 rounded-lg focus:outline-none focus:border-glow-blue transition"
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-end pt-2">
               <button
@@ -120,11 +202,24 @@ export default function AuthorScreen() {
               </h3>
 
               {isRunning && (
-                <div className="flex items-center gap-4 p-4 rounded-xl bg-glow-blue/5 border border-glow-blue/20">
-                  <Loader2 className="w-5 h-5 animate-spin text-glow-bright shrink-0" />
-                  <div>
-                    <p className="text-sm font-mono text-glow-bright font-semibold">Pipeline running...</p>
-                    <p className="text-xs text-[#7D8DA1] font-mono mt-1">Executing intent against backend pipeline.</p>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 p-4 rounded-xl bg-glow-blue/5 border border-glow-blue/20">
+                    <Loader2 className="w-5 h-5 animate-spin text-glow-bright shrink-0" />
+                    <div>
+                      <p className="text-sm font-mono text-glow-bright font-semibold">Pipeline running...</p>
+                      <p className="text-xs text-[#7D8DA1] font-mono mt-1">Executing intent against backend pipeline.</p>
+                    </div>
+                  </div>
+                  
+                  {/* Live Telemetry Log Box */}
+                  <div className="bg-black/50 border border-white/5 rounded-xl p-3 font-mono text-[10px] text-[#7D8DA1] h-32 overflow-y-auto">
+                    {liveLogs.length === 0 ? (
+                      <span className="opacity-50">Waiting for telemetry...</span>
+                    ) : (
+                      liveLogs.map((log, i) => (
+                        <div key={i} className="mb-1">{log}</div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}

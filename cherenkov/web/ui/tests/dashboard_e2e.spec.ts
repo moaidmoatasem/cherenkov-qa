@@ -21,7 +21,6 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     await page.evaluate(() => {
       localStorage.setItem('[copilot] tour_seen', 'true');
       localStorage.setItem('[cherenkov] onboarding_seen', 'true');
-      localStorage.setItem('[cherenkov] sidebar_mode', 'expert');
     });
     await page.reload();
     await page.waitForSelector('#cherenkov-app-core');

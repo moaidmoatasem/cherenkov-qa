@@ -4,7 +4,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { Copy, Download, X, CheckCircle } from 'lucide-react';
+import { Copy, Download, X, CheckCircle, Terminal } from 'lucide-react';
 
 interface ReadOnlyDiffViewerProps {
   original: string;
@@ -73,6 +73,21 @@ export function ReadOnlyDiffViewer({ original, proposed, testName = 'test', onDi
           <span className="text-xs font-bold font-mono uppercase tracking-wider text-amber-400">⚠ Suggest Only — Review Before Applying</span>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            id="btn-diff-copy-cmd"
+            data-testid="btn-diff-copy-cmd"
+            onClick={async () => {
+              const cmd = `cat << 'EOF' | git apply\n${diffText}\nEOF`;
+              await navigator.clipboard.writeText(cmd);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-text-primary hover:bg-sky-500/20 hover:border-sky-500/50 hover:text-sky-300 transition cursor-pointer"
+            title="Copy command to apply patch via terminal"
+          >
+            {copied ? <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> : <Terminal className="w-3.5 h-3.5" />}
+            Copy CLI
+          </button>
           <button
             id="btn-diff-copy"
             data-testid="btn-diff-copy"
