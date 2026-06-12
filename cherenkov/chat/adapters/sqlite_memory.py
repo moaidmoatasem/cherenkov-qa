@@ -11,6 +11,12 @@ from cherenkov.chat.ports.memory import ConversationMemory
 
 class SQLiteConversationMemory:
     def __init__(self, db_path: str = "data/chat.db"):
+        import os
+        # Resolve relative path against the project root so it works regardless of cwd
+        if not os.path.isabs(db_path):
+            root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+            db_path = os.path.join(root, db_path)
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
         self.db_path = db_path
         self._init_db()
 

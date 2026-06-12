@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import time
 import logging
 from collections import defaultdict
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app: FastAPI, max_requests: int = 100, window_seconds: int = 60):
+    def __init__(self, app: FastAPI, max_requests: int = int(os.getenv("CHERENKOV_MAX_REQUESTS", "100")), window_seconds: int = 60):
         super().__init__(app)
         self.max_requests = max_requests
         self.window_seconds = window_seconds

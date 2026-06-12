@@ -10,6 +10,7 @@ node_modules/
 # generated / local
 .cherenkov/
 *.log
+data/*.db
 stub/stripe-types.ts
 # ignore generated test run artefacts, but allow committed fixtures
 stub/generated_tests/test-results/
@@ -71,6 +72,14 @@ k8s/conformancecheck-mobile-test.yaml
 
 # Generated test files
 stub/generated_tests/k6_perf.js
+# Pipeline-generated test artifacts (written by GENERATE/REVIEW stages at runtime)
+stub/generated_tests/age_exceeds_max.spec.ts
+stub/generated_tests/name_too_long.spec.ts
+stub/generated_tests/test_happy_path.spec.ts
+stub/generated_tests/ui_audit.spec.ts
+# Catch all future pipeline-run spec files (non-fixture)
+stub/generated_tests/*_path.spec.ts
+stub/generated_tests/*_auth*.spec.ts
 
 # temp artifacts
 nul
@@ -82,9 +91,12 @@ desktop/src-tauri/binaries/
 
 # Playwright artifacts
 cherenkov/web/ui/test-results/
+test-results/
 # Debug scripts
 _debug_*.py
 _verify_*.py
+_ui_audit.py
+_ui_audit.spec.ts
 .agentrr/
 policy.yaml
 sponsio.yaml

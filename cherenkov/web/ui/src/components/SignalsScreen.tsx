@@ -9,9 +9,15 @@ import { Card, PageHeader, MockBadge, Tabs } from './ui';
 import { fetchSignals } from '../lib/api';
 
 export default function SignalsScreen() {
-  const [MOCK_SIGNALS, setSignals] = useState<any>({ performance: [], visual: [], coverage: {} });
+  const [MOCK_SIGNALS, setSignals] = useState<any>({ performance: [], visual: [], coverage: [] });
   useEffect(() => {
-    fetchSignals().then(setSignals);
+    fetchSignals().then(data => {
+      setSignals({
+        performance: Array.isArray(data.performance) ? data.performance : [],
+        visual: Array.isArray(data.visual) ? data.visual : [],
+        coverage: Array.isArray(data.coverage) ? data.coverage : [],
+      });
+    });
   }, []);
   const [activeTab, setActiveTab] = useState('performance');
 
