@@ -32,8 +32,11 @@ def get_client() -> InferenceClient:
         raw_client = OllamaInferenceClient()
     elif provider == "openai":
         raw_client = OpenAIInferenceClient()
+    elif provider == "nemoclaw":
+        from cherenkov.ai.nemoclaw_client import NemoClawInferenceClient
+        raw_client = NemoClawInferenceClient()
     else:
-        raise ValueError(f"Unknown provider '{provider}'. Expected 'ollama' or 'openai'.")
+        raise ValueError(f"Unknown provider '{provider}'. Expected 'ollama', 'openai', or 'nemoclaw'.")
 
     _current_client = CachedInferenceClient(raw_client)
     _current_provider = provider
