@@ -626,7 +626,7 @@ async def get_overview():
         "defectEscapeCount": kpi["defect_escape_count"],
         "totalVerdicts": kpi["total_verdicts"],
         "recentLearnings": [
-            {"id": f.id, "action": f.action, "reason": f.reason, "timestamp": getattr(f, "timestamp", "")}
+            {"id": f.hitl_item_id, "action": f.action, "reason": f.reason, "timestamp": getattr(f, "timestamp", "")}
             for f in recent
         ],
     }
