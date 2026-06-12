@@ -102,46 +102,6 @@ function FindingBadge({ kind }: { kind: FindingKind }) {
   );
 }
 
-// ── mock data ─────────────────────────────────────────────────────────────────
-
-const MOCK_RESULT: CrawlResult = {
-  probed: 12,
-  hypotheses_count: 3,
-  findings: [
-    {
-      id: '1', kind: 'SERVER_ERROR', url: 'http://localhost:8000/pets/999', method: 'GET',
-      status: 500, latency_ms: 84, severity: 'critical',
-      detail: 'Server returned 500. Unhandled exception in pet lookup handler.',
-      evidence: '{"error": "Internal Server Error"}',
-    },
-    {
-      id: '2', kind: 'CLIENT_ERROR', url: 'http://localhost:8000/orders', method: 'POST',
-      status: 422, latency_ms: 112, severity: 'medium',
-      detail: 'Expected 201, got 422. Missing required field "quantity" in request body.',
-      evidence: '{"detail": [{"loc": ["body", "quantity"], "msg": "field required"}]}',
-    },
-    {
-      id: '3', kind: 'JS_ERROR', url: 'http://localhost:3000/overview', method: 'GET',
-      status: null, latency_ms: 0, severity: 'high',
-      detail: 'Console error: Cannot read properties of undefined (reading "map")',
-      evidence: 'TypeError at OverviewScreen.tsx:82',
-    },
-    {
-      id: '4', kind: 'SLOW_RESPONSE', url: 'http://localhost:8000/pets', method: 'GET',
-      status: 200, latency_ms: 3412, severity: 'low',
-      detail: 'Response took 3412ms (budget 2000ms). Possible N+1 query.',
-      evidence: '',
-    },
-  ],
-  flows: [
-    { type: 'link', url: 'http://localhost:3000/overview', path: '/overview', method: 'GET', label: '' },
-    { type: 'link', url: 'http://localhost:3000/divergences', path: '/divergences', method: 'GET', label: '' },
-    { type: 'nav_item', url: 'http://localhost:3000/healing', path: '/healing', method: 'GET', label: 'Healing Options' },
-    { type: 'nav_item', url: 'http://localhost:3000/settings', path: '/settings', method: 'GET', label: 'Settings' },
-    { type: 'form', url: 'http://localhost:3000/setup', path: '/setup', method: 'POST', label: 'run-config' },
-  ],
-};
-
 // ── main component ────────────────────────────────────────────────────────────
 
 type Phase = 'idle' | 'discovering' | 'crawling' | 'done' | 'error';
@@ -163,33 +123,18 @@ export default function ExplorerScreen() {
     setError('');
 
     try {
-      // Phase 1: flow discovery
-      await new Promise(r => setTimeout(r, 600));
       setPhase('crawling');
-
-      const res = await fetch(`${API_BASE}/explore`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          base_url: targetUrl,
-          ui_url: uiUrl,
-          use_ui_probe: useUiProbe,
-          max_links: maxLinks,
-        }),
+      const data = await runExplorer({
+        base_url: targetUrl,
+        ui_url: uiUrl,
+        use_ui_probe: useUiProbe,
+        max_links: maxLinks,
       });
-
-      if (res.ok) {
-        setResult(await res.json());
-      } else {
-        // Fall back to mock data for demo purposes
-        await new Promise(r => setTimeout(r, 800));
-        setResult(MOCK_RESULT);
-      }
+      setResult(data);
       setPhase('done');
-    } catch {
-      await new Promise(r => setTimeout(r, 800));
-      setResult(MOCK_RESULT);
-      setPhase('done');
+    } catch (e) {
+      setError('Crawl failed. Ensure the explorer service is running.');
+      setPhase('error');
     }
   }
 
@@ -206,10 +151,10 @@ export default function ExplorerScreen() {
       <div>
         <h2 className="text-lg font-display font-semibold text-text-primary flex items-center gap-2">
           <Search className="w-5 h-5 text-glow-blue" />
-          Explore Crawler
+          Autonomous Explorer
         </h2>
         <p className="text-xs text-[#7D8DA1] mt-0.5">
-          Autonomous HTTP + browser crawl — discovers flows, surfaces anomalies, feeds the Skeptic engine
+          Cherenkov Agent UI/API crawler discovering undocumented flows, dead links, and deep exceptions.
         </p>
       </div>
 

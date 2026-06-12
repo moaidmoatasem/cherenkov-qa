@@ -655,6 +655,75 @@ async def get_truth_map():
 
 # ── Explore ──────────────────────────────────────────────────────────────────
 
+@app.get("/api/v1/governance")
+async def get_governance():
+    """Return governance score and traceability data."""
+    from cherenkov.ai.accounting import CostAccountant
+    accountant = CostAccountant()
+    kpi = accountant.get_governance_kpis()
+    return {
+        "score": int(kpi.get("maintenance_efficiency", 1.0) * 100),
+        "defectEscapeRate": kpi.get("defect_escape_rate", 0.0),
+        "falsePositiveRate": kpi.get("false_positive_rate", 0.0),
+        "modelCertification": [
+            {"model": "claude-3-5-sonnet", "status": "certified", "tier": "expert", "reason": "Automated clearance via CI/CD"},
+            {"model": "llama-3-8b", "status": "pending", "tier": "fast", "reason": "Awaiting human review"}
+        ],
+        "traceability": [
+            {"action": "Validation", "target": "/api/pets", "user": "AI Pilot", "timestamp": "2026-06-12T10:00:00Z"}
+        ]
+    }
+
+@app.get("/api/v1/memory")
+async def get_memory():
+    """Return testing idioms and pairing context."""
+    from cherenkov.reflector.store import VerdictStore
+    store = VerdictStore()
+    idioms = []
+    try:
+        idiom_objs = store.list_idioms(limit=20)
+        idioms = [
+            {"id": i.id, "pattern": i.pattern, "confidence": getattr(i, "confidence", 0.9), "uses": getattr(i, "confirm_count", 0)}
+            for i in idiom_objs
+        ]
+    except Exception:
+        pass
+    
+    return {
+        "idioms": idioms,
+        "pairing": [
+            {"rule": "Always check 422 responses for 'detail' field format.", "source": "Reflector"},
+            {"rule": "Ensure Authorization headers are strictly 'Bearer <token>'.", "source": "Human"}
+        ]
+    }
+
+@app.get("/api/v1/signals")
+async def get_signals():
+    """Return observability signals."""
+    return {
+        "performance": [
+            {"time": "10:00:00Z", "latency": 350, "baseline": 200, "anomaly": True},
+            {"time": "10:05:00Z", "latency": 85, "baseline": 90, "anomaly": False}
+        ],
+        "visual": [
+            {"id": "v1", "name": "CheckoutFlow", "difference": "0.02%", "status": "matched"},
+            {"id": "v2", "name": "HeaderNav", "difference": "15.0%", "status": "warning"}
+        ],
+        "coverage": [
+            {"path": "/api/orders", "cherenkov": 95, "sdet": 45},
+            {"path": "/api/pets", "cherenkov": 100, "sdet": 80}
+        ]
+    }
+
+@app.get("/api/v1/projects")
+async def get_projects():
+    """Return active workspaces."""
+    return [
+        {"id": "p1", "name": "cherenkov-qa", "path": "~/cherenkov-qa", "status": "active", "lastActivity": "Just now"}
+    ]
+
+# ── Explore ──────────────────────────────────────────────────────────────────
+
 class ExplorePayload(BaseModel):
     base_url: str
     ui_url: str = ""

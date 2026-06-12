@@ -95,50 +95,6 @@ function StatusIcon({ status }: { status: string }) {
   return <XCircle className="w-4 h-4 text-red-400" />;
 }
 
-// ── mock data (used when backend is unavailable) ──────────────────────────────
-
-const MOCK_SCENARIOS: VisualScenario[] = [
-  {
-    scenario_id: 'visual_homepage',
-    status: 'ok',
-    verdict: 'AUTO_APPROVE',
-    gates: [
-      { gate: 'pixel_diff', passed: true, diff_pixels: 0, baseline_path: 'homepage.png', actual_path: '' },
-      { gate: 'vlm_semantic', passed: true, diff_pixels: 0, baseline_path: 'homepage.png', actual_path: '' },
-    ],
-    vlm_kind: 'harmless_shift',
-    vlm_confidence: 0.92,
-    vlm_detail: 'Minor anti-aliasing difference in hero text. No structural change detected.',
-    url: 'http://localhost:3000/',
-  },
-  {
-    scenario_id: 'visual_dashboard',
-    status: 'failed',
-    verdict: 'HITL',
-    gates: [
-      { gate: 'pixel_diff', passed: false, diff_pixels: 1482, baseline_path: 'dashboard.png', actual_path: 'dashboard-actual.png' },
-      { gate: 'vlm_semantic', passed: false, diff_pixels: 0, baseline_path: 'dashboard.png', actual_path: 'dashboard-actual.png' },
-    ],
-    vlm_kind: 'anomaly',
-    vlm_confidence: 0.87,
-    vlm_detail: 'Chart widget is missing from the top-right quadrant. The metrics panel appears to have collapsed.',
-    url: 'http://localhost:3000/overview',
-  },
-  {
-    scenario_id: 'visual_settings',
-    status: 'degraded',
-    verdict: 'HITL',
-    gates: [
-      { gate: 'pixel_diff', passed: false, diff_pixels: 340, baseline_path: 'settings.png', actual_path: 'settings-actual.png' },
-      { gate: 'vlm_semantic', passed: true, diff_pixels: 0, baseline_path: 'settings.png', actual_path: '' },
-    ],
-    vlm_kind: 'redesign',
-    vlm_confidence: 0.78,
-    vlm_detail: 'Toggle switches have been restyled. Layout is intact. Likely an intentional UI update.',
-    url: 'http://localhost:3000/settings',
-  },
-];
-
 // ── main component ────────────────────────────────────────────────────────────
 
 export default function VisualRegressionScreen() {
@@ -155,14 +111,11 @@ export default function VisualRegressionScreen() {
   async function fetchScenarios() {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/visual/scenarios`);
-      if (res.ok) {
-        setScenarios(await res.json());
-      } else {
-        setScenarios(MOCK_SCENARIOS);
-      }
+      const { fetchVisualScenarios } = await import('../lib/api');
+      const data = await fetchVisualScenarios();
+      setScenarios(data || []);
     } catch {
-      setScenarios(MOCK_SCENARIOS);
+      setScenarios([]);
     }
     setLoading(false);
   }

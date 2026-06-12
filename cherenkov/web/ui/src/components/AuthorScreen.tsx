@@ -11,9 +11,9 @@ import { useToast } from './ui/Toast';
 import { runPipeline } from '../lib/api';
 
 export default function AuthorScreen() {
-  const [MOCK_MENTOR_IDIOMS, setIdioms] = useState<any[]>([]);
+  const [mentorIdioms, setIdioms] = useState<any[]>([]);
   useEffect(() => {
-    fetchMemory().then(d => setIdioms(d.idioms));
+    fetchMemory().then(d => setIdioms(d.idioms || []));
   }, []);
   const { toast: addToast } = useToast();
   const [intent, setIntent] = useState('');
@@ -276,10 +276,10 @@ export default function AuthorScreen() {
             </p>
 
             <div className="space-y-3">
-              {MOCK_MENTOR_IDIOMS.map((idm) => (
-                <div key={idm.id} className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1">
-                  <h4 className="text-xs font-bold text-text-primary font-sans">{idm.title}</h4>
-                  <p className="text-[11px] text-[#7D8DA1]/85 leading-normal">{idm.desc}</p>
+              {mentorIdioms.map((idm: any, idx: number) => (
+                <div key={idm.id || idx} className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1">
+                  <h4 className="text-xs font-bold text-text-primary font-sans">{idm.pattern || idm.title}</h4>
+                  <p className="text-[11px] text-[#7D8DA1]/85 leading-normal">{idm.desc || 'Context pattern learned by Reflector'}</p>
                 </div>
               ))}
             </div>

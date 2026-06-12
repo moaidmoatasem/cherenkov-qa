@@ -623,3 +623,19 @@ export async function fetchSddFindings(sessionId?: string, limit = 100): Promise
   if (!res.ok) return [];
   return res.json();
 }
+
+export async function fetchVisualScenarios(): Promise<any[]> {
+  const res = await fetch(`${API_BASE}/visual/scenarios`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function runExplorer(payload: { base_url: string; ui_url?: string; use_ui_probe?: boolean; max_links?: number }): Promise<any> {
+  const res = await fetch(`${API_BASE}/explore`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Explorer run failed: ${res.status}`);
+  return res.json();
+}
