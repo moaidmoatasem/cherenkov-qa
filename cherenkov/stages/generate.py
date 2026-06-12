@@ -180,7 +180,9 @@ class GenerateStage:
                     test_code=entry.test_code,
                     imports=["@playwright/test", "../client"],
                     status=Status.OK,
-                    metadata=StageMeta(stage="GENERATE", duration_ms=dt)
+                    metadata=StageMeta(stage="GENERATE", duration_ms=dt),
+                    endpoint=path,
+                    method=method.upper() if method else None,
                 )
 
         # temperatures: start with variation, tighten on repair attempts
@@ -270,5 +272,7 @@ class GenerateStage:
             test_code=code,
             imports=["@playwright/test", "../client"],
             status=Status.OK,
-            metadata=StageMeta(stage="GENERATE", duration_ms=dt)
+            metadata=StageMeta(stage="GENERATE", duration_ms=dt),
+            endpoint=path,
+            method=method.upper() if method else None,
         )

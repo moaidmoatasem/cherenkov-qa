@@ -139,6 +139,8 @@ class GenerateOutput(BaseModel):
     metadata: StageMeta
     model_name: str = ""
     provider_name: str = ""
+    endpoint: str | None = None
+    method: str | None = None
 
 
 # ── REVIEW ────────────────────────────────────────────────────────────────

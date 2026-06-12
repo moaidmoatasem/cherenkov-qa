@@ -170,14 +170,14 @@ def generate_test(
     lines.append(f"  const {{ data, response }} = await {call};")
     lines.append(f"  expect(response.status).toBe({expected_status});")
 
-    # Body assertion — only for success responses that return data
+    # Body assertion — toHaveProperty required by assertions gate for all responses
     if resp_prop and expected_status in (200, 201, 202):
         lines.append(f"  expect(data).toHaveProperty('{resp_prop}');")
     elif expected_status >= 400:
-        # Error responses: check that data exists (may be null on 4xx)
-        lines.append("  expect(response.status).toBeGreaterThanOrEqual(400);")
+        # Error responses: assert standard error envelope property
+        lines.append("  expect(data).toHaveProperty('message');")
     else:
-        lines.append("  expect(data).toBeDefined();")
+        lines.append("  expect(data).toHaveProperty('status');")
 
     lines.append("});")
     lines.append("")
