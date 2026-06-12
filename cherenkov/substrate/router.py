@@ -100,6 +100,8 @@ class SubstrateRouter:
                 f"Provider '{provider_name}' blocked — 'github' egress policy only "
                 "permits the GitHub Models provider."
             )
+        # "external" policy allows any egress provider (ollama, openai, anthropic, github)
+        # "none" / "internal" are already handled above
 
 
 _DEFAULT_ROUTER = SubstrateRouter()
