@@ -12,3 +12,4 @@ export * from './MockBadge';
 export * from './KpiRing';
 export * from './Toast';
 export { default as OfflineOverlay } from './OfflineOverlay';
+export * from './ReadOnlyDiffViewer';

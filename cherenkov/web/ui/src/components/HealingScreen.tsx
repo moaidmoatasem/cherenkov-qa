@@ -18,8 +18,8 @@ import {
 } from 'lucide-react';
 import { FailingTest } from '../types';
 import { fetchFailures } from '../lib/api';
-import { validateSuite, editTestScenario } from '../lib/api';
 import { useToast } from './ui/Toast';
+import { ReadOnlyDiffViewer } from './ui';
 import CherenkovLogo from './CherenkovLogo';
 
 interface HealingScreenProps {
@@ -33,33 +33,11 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
   useEffect(() => {
     fetchFailures().then(setFailures);
   }, []);
-  const [appliedIds, setAppliedIds] = useState<string[]>([]);
-  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [viewingDiffId, setViewingDiffId] = useState<string | null>(null);
   const [activeTraceLog, setActiveTraceLog] = useState<string | null>(null);
 
-  const handleApply = async (id: string) => {
-    setConfirmingId(null);
-    const item = failures.find(f => f.id === id);
-    if (!item) return;
-
-    try {
-      await editTestScenario(id, item.proposedCode);
-      addToast(`Successfully applied healing to ${item.name}`, 'success');
-
-      setAppliedIds(prev => [...prev, id]);
-
-      validateSuite('http://localhost:8080/v2').catch(() => {
-        addToast('Validation suite trigger failed.', 'warning');
-      });
-
-      setTimeout(() => {
-        const remaining = failures.filter(f => f.id !== id);
-        setFailures(remaining);
-        onSuggestResolveCount(remaining.length);
-      }, 1500);
-    } catch (err) {
-      addToast(`Failed to apply healing: ${(err as Error).message}`, 'error');
-    }
+  const handleViewDiff = (id: string) => {
+    setViewingDiffId(id);
   };
 
   const handleDismiss = (id: string) => {
@@ -135,26 +113,13 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
           </div>
         ) : (
           failures.map((item) => {
-            const isApplied = appliedIds.includes(item.id);
-            const isConfirming = confirmingId === item.id;
             
             return (
               <div
                 key={item.id}
                 id={`drift-card-${item.id}`}
-                className={`border rounded-2xl bg-white/5 backdrop-blur-md transition-all duration-500 overflow-hidden relative ${
-                  isApplied 
-                    ? 'border-[#3FB950] bg-[#3FB950]/10 opacity-75 scale-98 translate-y-1' 
-                    : 'border-white/10 hover:border-glow-blue/40'
-                }`}
+                className={`border rounded-2xl bg-white/5 backdrop-blur-md transition-all duration-500 overflow-hidden relative border-white/10 hover:border-glow-blue/40`}
               >
-                {/* Active Application Flash overlay indicator */}
-                {isApplied && (
-                  <div className="absolute inset-0 bg-[#3FB950]/20 z-10 flex flex-col items-center justify-center font-mono text-xs font-semibold text-[#3FB950] animate-fadeIn">
-                    <Check className="w-8 h-8 text-[#3FB950] animate-bounce" />
-                    <span>SUGGESTION APPLIED · PLAYWRIGHT SPEC UPDATED</span>
-                  </div>
-                )}
 
                 {/* Card Top Title info bar */}
                 <div className="p-4 bg-black/40 border-b border-white/5 flex flex-wrap gap-3 items-center justify-between select-none">
@@ -236,31 +201,13 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
                         Dismiss
                       </button>
 
-                      {isConfirming ? (
-                        <div className="flex items-center gap-1.5 animate-fadeIn">
-                          <span className="text-[10px] font-mono text-[#D29922]">REWRITE AST FILE?</span>
-                          <button
-                            onClick={() => handleApply(item.id)}
-                            className="px-3 py-1 bg-success-custom text-[#FFFFFF] font-bold rounded text-xs font-mono uppercase cursor-pointer"
-                          >
-                            CONFIRM
-                          </button>
-                          <button
-                            onClick={() => setConfirmingId(null)}
-                            className="px-2 py-1 bg-white/10 text-text-[#7D8DA1] rounded text-xs font-mono uppercase cursor-pointer"
-                          >
-                            CANCEL
-                          </button>
-                        </div>
-                      ) : (
                         <button
-                          onClick={() => setConfirmingId(item.id)}
+                          onClick={() => handleViewDiff(item.id)}
                           className="flex items-center gap-1.5 px-4 py-1.5 bg-glow-blue hover:bg-opacity-95 text-slate-950 font-bold rounded-xl text-xs font-mono uppercase tracking-wider transition shadow cursor-pointer"
                         >
-                          <span>APPLY HEALING SUGGESTION</span>
+                          <span>VIEW SUGGESTION DIFF</span>
                           <ArrowRight className="w-3 h-3 stroke-[3px]" />
                         </button>
-                      )}
                     </div>
                   </div>
 
@@ -313,6 +260,24 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
           </div>
         </div>
       )}
+
+      {/* Floating ReadOnlyDiffViewer */}
+      {viewingDiffId && (() => {
+        const item = failures.find(f => f.id === viewingDiffId);
+        if (!item) return null;
+        return (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+            <div className="w-full max-w-3xl">
+              <ReadOnlyDiffViewer
+                original={item.oldCode || ''}
+                proposed={item.proposedCode || ''}
+                testName={item.name}
+                onDismiss={() => setViewingDiffId(null)}
+              />
+            </div>
+          </div>
+        );
+      })()}
 
     </div>
   );

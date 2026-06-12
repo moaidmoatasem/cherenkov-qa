@@ -1,1387 +1,399 @@
---- ISSUE 433 ---
-Title: feat: incremental test generation — re-generate only changed endpoints
+--- ISSUE 441 ---
+Title: feat: MCP server — expose conformance results as tool outputs for AI agents
 Body:
 ## Summary
-Speed up repeated runs on large APIs by hashing each endpoint's spec block and only re-generating tests for endpoints that have changed since the last run.
+Extend the existing MCP server with 5 new tools so IDE agents (Claude Desktop, Cursor, Copilot) can query conformance results, trigger new runs, and explain findings without leaving the editor.
 
 ## Codebase Context
-- **Generate stage:** `cherenkov/stages/generate.py` — `GenerateStage` — the main target
-- **Plan stage output:** `cherenkov/stages/plan.py` — produces `PlanOutput` (list of `Scenario`)
-- **Contracts:** `cherenkov/core/contracts.py` — `Scenario`, `GenerateOutput` — check field names
-- **Stats store:** `cherenkov/core/stats_store.py` — `StatsStore` (SQLite) — reuse for cache metadata
-- **Config:** `cherenkov/core/config.py` — `Config` — add cache config fields here
-- **Cache dir convention:** `.cherenkov/` (already used for `report.json`)
-- **CLI:** `cherenkov.py` — add `--no-cache` flag to `validate`/`generate` subcommands
-- **Docs:** `docs/wiki/Configuration.md`
+- **MCP server handlers:** `cherenkov/mcp/handlers.py` (25k lines) — `MCPHandler` — add new tool definitions here
+- **MCP contracts:** `cherenkov/mcp/contracts.py` — add input Pydantic models for new tools
+- **MCP server:** `cherenkov/mcp/server.py` — `MCPServer` — stdio handler (tools auto-discovered from handlers)
+- **Policy engine:** `cherenkov/mcp/policy.py` — `PolicyEngine` — tools must be registered for policy enforcement
+- **Validation engine:** `cherenkov/execution/validate.py` — `ValidationEngine` — call from `run_conformance_check`
+- **Report location:** `.cherenkov/report.json` — read by `get_last_report`
+- **Drift findings:** `cherenkov/web/divergences.py` — storage + querying for `list_drift_findings`
+- **Tightening analyzer:** `cherenkov/execution/validate.py` — `TighteningAnalyzer` — for `get_tightening_suggestions`
+- **AI inference:** `cherenkov/ai/interface.py` — `InferenceClient` — for `explain_finding` LLM call
+- **Chat tool patterns:** `cherenkov/chat/` — reuse tool-calling patterns here
+- **Docs target:** `docs/wiki/Configuration.md` under "MCP integration"
 
-## Implementation Steps
+## New Tools to Add
 
-### 1. Create `cherenkov/cache/` package
+### Tool 1: `run_conformance_check`
+Triggers a `cherenkov validate` run against a target URL and streams progress via SSE.
 
-**`cherenkov/cache/__init__.py`** — empty
-
-**`cherenkov/cache/endpoint_cache.py`**:
+**Input model** (add to `cherenkov/mcp/contracts.py`):
 ```python
-import hashlib, json, sqlite3
-from pathlib import Path
-from dataclasses import dataclass
-
-CACHE_DB = Path(".cherenkov/cache/cache.db")
-CACHE_TEST_DIR = Path(".cherenkov/cache/tests")
-
-@dataclass
-class CacheEntry:
-    endpoint_hash: str
-    spec_content_hash: str
-    model_name: str
-    model_version: str
-    generated_test_path: str
-    created_at: str
-
-class EndpointCache:
-    """SQLite-backed cache mapping endpoint spec hashes → generated test paths."""
-
-    def __init__(self, db_path: Path = CACHE_DB):
-        self.db_path = db_path
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        self._init_db()
-
-    def _init_db(self):
-        with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS endpoint_cache (
-                    endpoint_hash TEXT PRIMARY KEY,
-                    spec_content_hash TEXT NOT NULL,
-                    model_name TEXT NOT NULL,
-                    model_version TEXT NOT NULL,
-                    generated_test_path TEXT NOT NULL,
-                    created_at TEXT NOT NULL
-                )
-            """)
-
-    def compute_hash(self, path: str, method: str, schema_block: dict,
-                     model_name: str, model_version: str) -> str:
-        """Hash = SHA-256 of (path + method + schema_json + model_name + model_version)."""
-        payload = json.dumps({
-            "path": path,
-            "method": method,
-            "schema": schema_block,
-            "model": model_name,
-            "version": model_version,
-        }, sort_keys=True)
-        return hashlib.sha256(payload.encode()).hexdigest()
-
-    def get(self, endpoint_hash: str) -> CacheEntry | None:
-        with sqlite3.connect(self.db_path) as conn:
-            row = conn.execute(
-                "SELECT * FROM endpoint_cache WHERE endpoint_hash = ?",
-                (endpoint_hash,)
-            ).fetchone()
-        if row:
-            return CacheEntry(*row)
-        return None
-
-    def put(self, entry: CacheEntry) -> None:
-        with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
-                INSERT OR REPLACE INTO endpoint_cache VALUES (?, ?, ?, ?, ?, ?)
-            """, (
-                entry.endpoint_hash, entry.spec_content_hash,
-                entry.model_name, entry.model_version,
-                entry.generated_test_path, entry.created_at,
-            ))
-
-    def stats(self) -> dict:
-        with sqlite3.connect(self.db_path) as conn:
-            total = conn.execute("SELECT COUNT(*) FROM endpoint_cache").fetchone()[0]
-        return {"cached_endpoints": total, "cache_db": str(self.db_path)}
+class RunConformanceCheckInput(BaseModel):
+    target_url: str
+    spec_path: str = "stub/openapi.yaml"
+    workers: int = 1
 ```
 
-### 2. Modify `cherenkov/stages/generate.py`
-In `GenerateStage.run()`, wrap the LLM call with a cache check:
-
+**Handler** (add to `cherenkov/mcp/handlers.py`):
 ```python
-from cherenkov.cache.endpoint_cache import EndpointCache, CacheEntry
-from datetime import datetime, timezone
-
-class GenerateStage:
-    def run(self, plan_output: PlanOutput, config: Config,
-            no_cache: bool = False) -> GenerateOutput:
-        cache = EndpointCache() if not no_cache else None
-        generated = []
-        cache_hits = 0
-        cache_misses = 0
-
-        for scenario in plan_output.scenarios:
-            endpoint_hash = self._compute_endpoint_hash(scenario, config)
-
-            if cache and (entry := cache.get(endpoint_hash)):
-                # Cache hit — reuse existing test file
-                test_code = Path(entry.generated_test_path).read_text()
-                generated.append(GeneratedTest(
-                    scenario=scenario,
-                    test_code=test_code,
-                    from_cache=True,
-                ))
-                cache_hits += 1
-                continue
-
-            # Cache miss — call LLM
-            test_code = self._generate_via_llm(scenario, config)
-            cache_misses += 1
-
-            if cache:
-                test_path = CACHE_TEST_DIR / f"{endpoint_hash}.spec.ts"
-                test_path.parent.mkdir(parents=True, exist_ok=True)
-                test_path.write_text(test_code)
-                cache.put(CacheEntry(
-                    endpoint_hash=endpoint_hash,
-                    spec_content_hash=endpoint_hash,
-                    model_name=config.model_name,
-                    model_version=config.model_version or "unknown",
-                    generated_test_path=str(test_path),
-                    created_at=datetime.now(timezone.utc).isoformat(),
-                ))
-            generated.append(GeneratedTest(scenario=scenario, test_code=test_code))
-
-        return GenerateOutput(
-            tests=generated,
-            cache_stats={"hits": cache_hits, "misses": cache_misses},
-        )
-
-    def _compute_endpoint_hash(self, scenario: Scenario, config: Config) -> str:
-        cache = EndpointCache()
-        return cache.compute_hash(
-            path=scenario.path,
-            method=scenario.method,
-            schema_block=scenario.raw_schema,
-            model_name=config.model_name,
-            model_version=config.model_version or "unknown",
-        )
-```
-
-### 3. Add `--no-cache` flag to CLI
-In `cherenkov.py`, in `validate` and `generate` subcommand parsers:
-```python
-parser_validate.add_argument(
-    "--no-cache",
-    action="store_true",
-    help="Force full regeneration, ignoring the endpoint cache",
-)
-```
-
-Pass `no_cache=args.no_cache` to `GenerateStage.run()`.
-
-### 4. Add cache stats to run report
-In `cherenkov/core/contracts.py`, add to `GenerateOutput`:
-```python
-class GenerateOutput(BaseModel):
-    tests: list[GeneratedTest]
-    cache_stats: dict = {}  # {"hits": N, "misses": N}
-```
-
-Print cache stats in the CLI output after each run:
-```
-Cache: 47 hits, 3 misses (94% from cache, saved ~4m 12s)
-```
-
-### 5. Cache invalidation on model change
-The cache key already includes `model_name` + `model_version` (from step 1). Changing the model will naturally produce cache misses. No explicit invalidation needed.
-
-### 6. Update `docs/wiki/Configuration.md`
-Add section "Incremental Generation Cache":
-- Cache location: `.cherenkov/cache/`
-- Cache key: spec hash + model name + model version
-- Disable with: `cherenkov validate --no-cache`
-- Cache is safe to delete: `rm -rf .cherenkov/cache/` forces full regeneration
-
-## Acceptance Criteria
-- [ ] Second run on an unchanged spec takes <10% of the time of the first run
-- [ ] Changing one endpoint only re-generates tests for that endpoint (verified by checking `cache_stats.misses == 1`)
-- [ ] `--no-cache` forces full regeneration (verified by `cache_stats.hits == 0`)
-- [ ] Cache is invalidated when model name changes (different model key → no hits)
-- [ ] Cache stats are printed at end of every run
-- [ ] `docs/wiki/Configuration.md` documents cache location and `--no-cache`
-
-## Files to Create/Modify
-| File | Action |
-|------|--------|
-| `cherenkov/cache/__init__.py` | Create |
-| `cherenkov/cache/endpoint_cache.py` | Create — `EndpointCache` class |
-| `cherenkov/stages/generate.py` | Modify — add cache hit/miss logic |
-| `cherenkov/core/contracts.py` | Modify — add `cache_stats` to `GenerateOutput` |
-| `cherenkov.py` | Modify — add `--no-cache` flag |
-| `tests/test_endpoint_cache.py` | Create — unit tests |
-| `docs/wiki/Configuration.md` | Modify — cache documentation |
-
-## Performance Target
-- 50-endpoint spec: first run ~10 min, second run (unchanged) <1 min
-- Single endpoint change: re-generate only that endpoint (~12s instead of 10 min)
-
-
-========================================
---- ISSUE 434 ---
-Title: feat: parallel test execution across endpoints
-Body:
-## Summary
-Enable parallel test execution across endpoints by passing `--workers N` to the Playwright runner, with proper Prism mock server sharing and result aggregation.
-
-## Codebase Context
-- **Playwright runner:** `cherenkov/execution/playwright_invoke.py` — `PlaywrightRunner` — primary file to modify
-- **Validation engine:** `cherenkov/execution/validate.py` — `ValidationEngine` — orchestrates the runner
-- **CLI:** `cherenkov.py` — `validate` subcommand — add `--workers` flag
-- **Contracts:** `cherenkov/core/contracts.py` — `DivergenceReport`, `AccountingReport`
-- **Prism mock server:** check `cherenkov/execution/` or `cherenkov/stages/` for how Prism is started (likely in `ingest.py` or `validate.py`)
-- **Docs:** `docs/wiki/CLI-Reference.md`
-
-## Implementation Steps
-
-### 1. Locate Prism mock server startup
-Search `cherenkov/stages/ingest.py` and `cherenkov/execution/validate.py` for Prism subprocess invocation (likely `subprocess.Popen(["prism", "mock", ...])` or similar). The Prism server must be started **once** and shared across all workers.
-
-### 2. Modify `cherenkov/execution/playwright_invoke.py`
-
-Add `--workers` support to `PlaywrightRunner`:
-
-```python
-import multiprocessing
-from pathlib import Path
-
-class PlaywrightRunner:
-    def run(
-        self,
-        test_files: list[Path],
-        target_url: str,
-        workers: int = 1,
-        timeout_ms: int = 30_000,
-    ) -> PlaywrightResult:
-        """Run Playwright tests with optional parallelism."""
-        cmd = [
-            "npx", "playwright", "test",
-            "--reporter=json",
-            f"--timeout={timeout_ms}",
-        ]
-        if workers > 1:
-            cmd += ["--workers", str(workers)]
-        else:
-            cmd += ["--workers", "1"]
-
-        # Pass test files explicitly
-        cmd += [str(f) for f in test_files]
-
-        result = subprocess.run(
-            cmd,
-            cwd=self.test_dir,
-            capture_output=True,
-            text=True,
-            env={**os.environ, "CHERENKOV_TARGET": target_url},
-        )
-        return self._parse_json_result(result.stdout, result.returncode)
-```
-
-### 3. Add `--workers` flag to `cherenkov.py`
-```python
-parser_validate.add_argument(
-    "--workers",
-    type=int,
-    default=None,
-    metavar="N",
-    help=(
-        "Number of parallel Playwright workers. "
-        "Defaults to min(cpu_count, 4). Use 1 for sequential."
-    ),
-)
-```
-
-In the validate handler, resolve workers:
-```python
-import multiprocessing
-workers = args.workers or min(multiprocessing.cpu_count(), 4)
-```
-
-Pass `workers=workers` to `ValidationEngine.run()` or directly to `PlaywrightRunner.run()`.
-
-### 4. Ensure Prism is started once before parallelism
-In `ValidationEngine` or wherever Prism is started, make sure it starts before the parallel Playwright run and is passed as a shared `base_url` to all test files:
-
-```python
-# Pseudocode — adapt to actual Prism startup location
-prism_proc = start_prism_server(spec_path=args.spec, port=4010)
-try:
-    runner = PlaywrightRunner(test_dir=generated_tests_dir)
-    result = runner.run(
-        test_files=test_files,
-        target_url=args.target or "http://localhost:4010",
-        workers=workers,
+async def tool_run_conformance_check(self, input: RunConformanceCheckInput) -> dict:
+    """Trigger a validate run and return the report summary."""
+    from cherenkov.execution.validate import ValidationEngine
+    engine = ValidationEngine(config=self.config)
+    report = await asyncio.to_thread(
+        engine.run,
+        spec_path=input.spec_path,
+        target_url=input.target_url,
+        workers=input.workers,
     )
-finally:
-    prism_proc.terminate()
+    return {
+        "status": "complete",
+        "passed": report.passed,
+        "failed": report.failed,
+        "drift_count": report.drift_count,
+        "report_path": ".cherenkov/report.json",
+    }
 ```
 
-Key requirement: **Prism must not be started inside each worker** — it must be a shared fixture at the process level.
+### Tool 2: `get_last_report`
+Returns the last `.cherenkov/report.json` contents without triggering a new run.
 
-### 5. Result aggregation
-Playwright's `--reporter=json` outputs a single JSON with all test results regardless of worker count. The existing `_parse_json_result()` in `PlaywrightRunner` should already aggregate correctly. Verify it sums `passed`, `failed`, `skipped` correctly across all workers' results.
-
-If Playwright writes per-worker JSON files, merge them:
 ```python
-def _parse_json_result(self, stdout: str, returncode: int) -> PlaywrightResult:
-    data = json.loads(stdout) if stdout.strip() else {}
-    return PlaywrightResult(
-        passed=data.get("stats", {}).get("expected", 0),
-        failed=data.get("stats", {}).get("unexpected", 0),
-        skipped=data.get("stats", {}).get("skipped", 0),
-        suites=data.get("suites", []),
-        exit_code=returncode,
+async def tool_get_last_report(self) -> dict:
+    """Return the most recent conformance report."""
+    report_path = Path(".cherenkov/report.json")
+    if not report_path.exists():
+        return {"error": "No report found. Run cherenkov validate first."}
+    return json.loads(report_path.read_text())
+```
+
+### Tool 3: `list_drift_findings`
+Returns structured list of spec drift findings from the last run.
+
+**Input model:**
+```python
+class ListDriftFindingsInput(BaseModel):
+    severity: str | None = None  # filter: "high" | "medium" | "low" | None = all
+    endpoint: str | None = None  # filter by specific endpoint path
+    limit: int = 20
+```
+
+**Handler:**
+```python
+async def tool_list_drift_findings(self, input: ListDriftFindingsInput) -> dict:
+    from cherenkov.web.divergences import get_divergences
+    findings = get_divergences(
+        severity=input.severity,
+        endpoint=input.endpoint,
+        limit=input.limit,
     )
+    return {
+        "findings": [f.dict() for f in findings],
+        "total": len(findings),
+    }
 ```
 
-### 6. Update `playwright.config.ts` in `stub/`
-Ensure the Playwright config used for generated tests supports workers:
-```typescript
-// stub/playwright.config.ts
-import { defineConfig } from '@playwright/test';
-export default defineConfig({
-  workers: process.env.CHERENKOV_WORKERS
-    ? parseInt(process.env.CHERENKOV_WORKERS)
-    : undefined,  // let CLI flag control
-  reporter: 'json',
-  use: {
-    baseURL: process.env.CHERENKOV_TARGET || 'http://localhost:8000',
-  },
-});
-```
+### Tool 4: `get_tightening_suggestions`
+Returns OpenAPI spec tightening suggestions for a specific endpoint.
 
-Pass `CHERENKOV_WORKERS=N` env var from Python runner:
+**Input model:**
 ```python
-env={**os.environ, "CHERENKOV_TARGET": target_url, "CHERENKOV_WORKERS": str(workers)}
+class GetTighteningInput(BaseModel):
+    endpoint: str      # e.g. "/users/{id}"
+    method: str = "GET"
 ```
 
-### 7. Update `docs/wiki/CLI-Reference.md`
-Add to `validate` command:
+**Handler:**
+```python
+async def tool_get_tightening_suggestions(self, input: GetTighteningInput) -> dict:
+    from cherenkov.execution.validate import TighteningAnalyzer
+    analyzer = TighteningAnalyzer(config=self.config)
+    suggestions = analyzer.get_suggestions(
+        endpoint=input.endpoint, method=input.method
+    )
+    return {
+        "endpoint": input.endpoint,
+        "method": input.method,
+        "suggestions": suggestions,
+    }
 ```
---workers N    Number of parallel Playwright workers (default: min(cpu_count, 4))
-               Use --workers 1 for sequential execution (debugging).
+
+### Tool 5: `explain_finding`
+Natural language explanation of a specific finding, using the LLM.
+
+**Input model:**
+```python
+class ExplainFindingInput(BaseModel):
+    finding_id: str  # from list_drift_findings output
+    detail_level: str = "concise"  # "concise" | "detailed"
 ```
+
+**Handler:**
+```python
+async def tool_explain_finding(self, input: ExplainFindingInput) -> dict:
+    from cherenkov.web.divergences import get_finding_by_id
+    finding = get_finding_by_id(input.finding_id)
+    if not finding:
+        return {"error": f"Finding {input.finding_id} not found"}
+
+    prompt = f"""
+    Explain this API conformance finding to a developer:
+    Endpoint: {finding.endpoint} ({finding.method})
+    Issue: {finding.summary}
+    Expected: {finding.expected}
+    Actual: {finding.actual}
+
+    Explain: 1) What this means, 2) Why it matters, 3) How to fix it.
+    {'Be concise (2-3 sentences).' if input.detail_level == 'concise' else 'Be thorough.'}
+    """
+    response = await self.inference_client.complete(prompt)
+    return {"finding_id": input.finding_id, "explanation": response.text}
+```
+
+## Registration Pattern
+In `cherenkov/mcp/handlers.py`, all tools are discovered by convention. Ensure each new method:
+1. Is named `tool_<tool_name>` (snake_case matching MCP tool name)
+2. Has a Pydantic input model if it takes parameters
+3. Is added to the tool manifest returned by `list_tools()`
+
+Check existing tool methods in `handlers.py` to follow the exact registration pattern used there.
+
+## Policy Registration
+In `cherenkov/mcp/policy.py` or `cherenkov-policy.json`, register the new tools with appropriate permissions:
+- `run_conformance_check` → requires `execute` permission
+- `get_last_report`, `list_drift_findings`, `get_tightening_suggestions`, `explain_finding` → read-only
 
 ## Acceptance Criteria
-- [ ] `cherenkov validate --workers 4` runs tests in parallel
-- [ ] `cherenkov validate --workers 1` runs sequentially (same as current behavior)
-- [ ] Final report (`report.json`) is identical regardless of `--workers` value
-- [ ] Wall-clock time for a 50-endpoint spec is ≤ 30% of sequential time with `--workers 4`
-- [ ] Prism mock server is started exactly once (not once per worker)
-- [ ] `docs/wiki/CLI-Reference.md` documents `--workers`
+- [ ] All 5 tools registered in MCP server manifest (visible in `cherenkov mcp list-tools`)
+- [ ] `run_conformance_check` triggers a real validate run and returns report summary
+- [ ] `get_last_report` returns report without triggering a new run
+- [ ] `list_drift_findings` supports filtering by severity and endpoint
+- [ ] `get_tightening_suggestions` returns structured suggestions
+- [ ] `explain_finding` produces natural-language explanation via LLM
+- [ ] Tools documented in `docs/wiki/Configuration.md` under "MCP integration"
+- [ ] Tested with Claude Desktop (verify tools appear in tool list)
 
-## Files to Create/Modify
+## Files to Modify
 | File | Action |
 |------|--------|
-| `cherenkov/execution/playwright_invoke.py` | Modify — add `workers` param to `run()` |
-| `cherenkov/execution/validate.py` | Modify — thread `workers` through to runner |
-| `cherenkov.py` | Modify — add `--workers` flag |
-| `stub/playwright.config.ts` | Modify — read `CHERENKOV_WORKERS` env var |
-| `tests/test_parallel_execution.py` | Create — timing regression test |
-| `docs/wiki/CLI-Reference.md` | Modify — `--workers` docs |
-
-## Performance Benchmark
-```bash
-# Measure sequential vs parallel
-time cherenkov validate --spec stub/openapi.yaml --target http://localhost:8000 --workers 1
-time cherenkov validate --spec stub/openapi.yaml --target http://localhost:8000 --workers 4
-# target: workers=4 should be ≥3x faster on a 50+ endpoint spec
-```
+| `cherenkov/mcp/handlers.py` | Add 5 new `tool_*` methods |
+| `cherenkov/mcp/contracts.py` | Add 4 new input Pydantic models |
+| `cherenkov/mcp/policy.py` | Register new tools with permissions |
+| `cherenkov-policy.json` | Add new tool entries |
+| `tests/test_mcp_tools.py` | Create — unit tests for each new tool |
+| `docs/wiki/Configuration.md` | Modify — MCP integration section |
 
 
 ========================================
---- ISSUE 435 ---
-Title: feat: HTML test report with shareable findings
+--- ISSUE 442 ---
+Title: feat(priority-3): mobile E2E, error-path E2E, multi-viewport, data-testid, 57 unit tests
 Body:
+$(cat <<'EOF'
 ## Summary
-Generate a self-contained `report.html` alongside `report.json` after every `cherenkov validate` run. Single file, no CDN dependencies, readable by anyone on the team.
 
-## Codebase Context
-- **Report command:** `cherenkov/stages/report_cmd.py` — `ReportCmd` — primary target
-- **Validation engine output:** `cherenkov/execution/validate.py` — `ValidationEngine` — produces `DivergenceReport`
-- **Contracts:** `cherenkov/core/contracts.py` — `DivergenceReport`, `AccountingReport` — fields to render
-- **Existing emitters:** `cherenkov/execution/emitters/` — `junit.py`, `sarif.py`, `allure.py` — follow same pattern
-- **Jinja2:** already in `requirements.txt` — use for HTML templating
-- **Output convention:** `.cherenkov/report.json` → also write `.cherenkov/report.html`
-- **CLI:** `cherenkov.py` — add `--no-html` flag to `validate`
-- **Docs:** `docs/wiki/CLI-Reference.md`
+- **NE8** — 2 new E2E tests for MobileScreen: device grid renders with `data-testid` selectors, disconnected status badges, and skeleton→card transition
+- **NE9** — 6 new error-path E2E tests: health 500, divergences empty/500, eject 500, review approve/reject 500 — all verify the app does not crash
+- **NE10** — Multi-viewport Playwright config: Firefox + Pixel 5 projects added, opt-in via `ALL_VIEWPORTS=1` (chromium default unchanged)
+- **NE11** — `data-testid` attributes added to `MobileScreen.tsx` (`device-card-{id}`, `device-status-{id}`) and `MobilePilotScreen.tsx` (`pilot-status-badge`, `pilot-start-btn`, `pilot-progress-bar`, `pilot-step-{id}`)
+- **NE13** — 57 unit tests across 6 previously-untested modules: `EjectorEngine`, `GovernanceKPI/Report`, `PolicyEngine`, `IngestStage/resolve_refs_depth`, `WitnessAgent/_diff/_parse_repro_steps`, `demo_mode`
 
-## Implementation Steps
+## Test plan
 
-### 1. Create Jinja2 template `cherenkov/execution/emitters/report_template.html`
+- [ ] `python -m pytest tests/unit/ tests/integration/` → 303 passed, 1 skipped (verified locally)
+- [ ] New unit files: `test_eject_engine.py`, `test_governance_kpi.py`, `test_policy_engine.py`, `test_ingest_stage.py`, `test_witness_agent.py`, `test_demo_mode.py` — all 57 pass in 0.34s
+- [ ] Playwright config: `ALL_VIEWPORTS=1 npx playwright test` adds Firefox + Pixel 5 runs; default `npx playwright test` uses chromium only
+- [ ] Mobile E2E: navigate `#nav-item-mobile` → `data-testid="device-card-m1"` visible after 800ms timer
+- [ ] Error-path E2E: each test mocks one endpoint to 500 and asserts `#cherenkov-app-core` remains visible
 
-Self-contained HTML with inline CSS and minimal vanilla JS (no CDN):
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CHERENKOV Conformance Report — {{ spec_title }}</title>
-<style>
-  /* Inline all CSS — no external resources */
-  body { font-family: system-ui, sans-serif; margin: 0; background: #f8f9fa; color: #212529; }
-  .header { background: #1a1a2e; color: white; padding: 1.5rem 2rem; }
-  .header h1 { margin: 0; font-size: 1.5rem; }
-  .summary { display: flex; gap: 1rem; padding: 1.5rem 2rem; background: white; border-bottom: 1px solid #dee2e6; }
-  .stat { text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; min-width: 100px; }
-  .stat .value { font-size: 2rem; font-weight: bold; }
-  .stat.passed .value { color: #198754; }
-  .stat.failed .value { color: #dc3545; }
-  .stat.drift .value { color: #fd7e14; }
-  .stat.skipped .value { color: #6c757d; }
-  table { width: 100%; border-collapse: collapse; background: white; }
-  th { background: #e9ecef; padding: .75rem 1rem; text-align: left; position: sticky; top: 0; }
-  td { padding: .6rem 1rem; border-bottom: 1px solid #dee2e6; }
-  .badge { padding: .25rem .5rem; border-radius: 4px; font-size: .8rem; font-weight: 600; }
-  .badge-pass { background: #d1e7dd; color: #0f5132; }
-  .badge-fail { background: #f8d7da; color: #842029; }
-  .badge-drift { background: #fff3cd; color: #664d03; }
-  details summary { cursor: pointer; padding: .5rem 1rem; background: #f8f9fa; }
-  pre { background: #212529; color: #f8f9fa; padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: .85rem; }
-  .main { padding: 1.5rem 2rem; }
-</style>
-</head>
-<body>
-<div class="header">
-  <h1>CHERENKOV Conformance Report</h1>
-  <p style="margin:.5rem 0 0; opacity:.8">{{ spec_title }} · {{ run_time }} · Target: {{ target_url }}</p>
-</div>
-<div class="summary">
-  <div class="stat passed"><div class="value">{{ passed }}</div><div>Passed</div></div>
-  <div class="stat failed"><div class="value">{{ failed }}</div><div>Failed</div></div>
-  <div class="stat drift"><div class="value">{{ drift_count }}</div><div>Drift</div></div>
-  <div class="stat skipped"><div class="value">{{ skipped }}</div><div>Skipped</div></div>
-</div>
-<div class="main">
-  {% if drift_findings %}
-  <h2>Spec Drift Findings</h2>
-  <table>
-    <thead><tr><th>Endpoint</th><th>Method</th><th>Severity</th><th>Expected</th><th>Actual</th><th>Details</th></tr></thead>
-    <tbody>
-    {% for f in drift_findings %}
-    <tr>
-      <td><code>{{ f.endpoint }}</code></td>
-      <td>{{ f.method }}</td>
-      <td><span class="badge badge-drift">{{ f.severity }}</span></td>
-      <td>{{ f.expected }}</td>
-      <td>{{ f.actual }}</td>
-      <td><details><summary>View</summary><pre>{{ f.full_detail | e }}</pre></details></td>
-    </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% endif %}
-
-  <h2>All Endpoints</h2>
-  <table>
-    <thead><tr><th>Endpoint</th><th>Method</th><th>Status</th><th>Tightening Suggestions</th></tr></thead>
-    <tbody>
-    {% for e in endpoints %}
-    <tr>
-      <td><code>{{ e.path }}</code></td>
-      <td>{{ e.method }}</td>
-      <td><span class="badge badge-{{ e.status_class }}">{{ e.status }}</span></td>
-      <td>{% if e.suggestions %}<details><summary>{{ e.suggestions | length }} suggestion(s)</summary>
-        {% for s in e.suggestions %}<pre>{{ s | e }}</pre>{% endfor %}
-      </details>{% endif %}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-</div>
-</body>
-</html>
-```
-
-### 2. Create `cherenkov/execution/emitters/html_report.py`
-
-```python
-from pathlib import Path
-from jinja2 import Environment, FileSystemLoader
-from cherenkov.core.contracts import DivergenceReport
-from datetime import datetime
-
-TEMPLATE_DIR = Path(__file__).parent
-TEMPLATE_NAME = "report_template.html"
-
-class HTMLReportEmitter:
-    def emit(self, report: DivergenceReport, output_path: Path) -> Path:
-        env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)), autoescape=False)
-        template = env.get_template(TEMPLATE_NAME)
-
-        html = template.render(
-            spec_title=report.spec_title or "API Conformance",
-            run_time=datetime.now().strftime("%Y-%m-%d %H:%M"),
-            target_url=report.target_url or "—",
-            passed=report.passed,
-            failed=report.failed,
-            drift_count=report.drift_count,
-            skipped=report.skipped,
-            drift_findings=self._format_findings(report),
-            endpoints=self._format_endpoints(report),
-        )
-        output_path.write_text(html, encoding="utf-8")
-        return output_path
-
-    def _format_findings(self, report: DivergenceReport) -> list[dict]:
-        findings = []
-        for f in getattr(report, "findings", []):
-            findings.append({
-                "endpoint": f.endpoint,
-                "method": f.http_method,
-                "severity": getattr(f, "severity", "medium"),
-                "expected": str(f.expected),
-                "actual": str(f.actual),
-                "full_detail": f.summary,
-            })
-        return findings
-
-    def _format_endpoints(self, report: DivergenceReport) -> list[dict]:
-        endpoints = []
-        for e in getattr(report, "endpoint_results", []):
-            status_class = "pass" if e.passed else ("drift" if e.has_drift else "fail")
-            endpoints.append({
-                "path": e.path,
-                "method": e.method,
-                "status": "PASS" if e.passed else ("DRIFT" if e.has_drift else "FAIL"),
-                "status_class": status_class,
-                "suggestions": getattr(e, "tightening_suggestions", []),
-            })
-        return endpoints
-```
-
-### 3. Wire into validation flow
-In `cherenkov/stages/report_cmd.py` or wherever `report.json` is written, add:
-
-```python
-from cherenkov.execution.emitters.html_report import HTMLReportEmitter
-
-report_dir = Path(".cherenkov")
-# Existing: write report.json
-report_dir.joinpath("report.json").write_text(report.json(), encoding="utf-8")
-
-# New: write report.html (unless --no-html)
-if not getattr(config, "no_html", False):
-    html_emitter = HTMLReportEmitter()
-    html_path = html_emitter.emit(report, report_dir / "report.html")
-    print(f"HTML report: {html_path}")
-```
-
-### 4. Add `--no-html` flag to `cherenkov.py`
-```python
-parser_validate.add_argument(
-    "--no-html",
-    action="store_true",
-    help="Skip HTML report generation",
+https://claude.ai/code/session_01YAbTXN84tiSWKFuNBDfgSf
+EOF
 )
-```
 
-Pass `no_html=args.no_html` through to config or report command.
-
-### 5. Write tests `tests/test_html_report.py`
-```python
-def test_html_report_is_self_contained(sample_report, tmp_path):
-    from cherenkov.execution.emitters.html_report import HTMLReportEmitter
-    emitter = HTMLReportEmitter()
-    out = emitter.emit(sample_report, tmp_path / "report.html")
-    html = out.read_text()
-    # Must not reference external resources
-    assert "cdn." not in html
-    assert "https://fonts" not in html
-    # Must contain summary stats
-    assert str(sample_report.passed) in html
-    assert str(sample_report.failed) in html
-
-def test_html_totals_match_json(sample_report, tmp_path):
-    from cherenkov.execution.emitters.html_report import HTMLReportEmitter
-    import json
-    emitter = HTMLReportEmitter()
-    out = emitter.emit(sample_report, tmp_path / "report.html")
-    html = out.read_text()
-    # Verify the HTML totals match the source report
-    assert f">{sample_report.passed}<" in html
-    assert f">{sample_report.drift_count}<" in html
-```
-
-## Acceptance Criteria
-- [ ] `report.html` is generated after every `cherenkov validate` run alongside `report.json`
-- [ ] HTML file is self-contained (no CDN, no external JS/CSS — verified by test)
-- [ ] Summary stats (passed/failed/drift/skipped) match `report.json` totals exactly
-- [ ] Spec drift findings are shown with expandable details
-- [ ] Tightening suggestions are rendered as collapsible code blocks
-- [ ] `--no-html` skips HTML generation
-- [ ] `docs/wiki/CLI-Reference.md` documents `--no-html` and report output location
-
-## Files to Create/Modify
-| File | Action |
-|------|--------|
-| `cherenkov/execution/emitters/html_report.py` | Create — `HTMLReportEmitter` |
-| `cherenkov/execution/emitters/report_template.html` | Create — Jinja2 template |
-| `cherenkov/stages/report_cmd.py` | Modify — call `HTMLReportEmitter` after JSON write |
-| `cherenkov.py` | Modify — add `--no-html` flag |
-| `tests/test_html_report.py` | Create — self-contained + totals match tests |
-| `docs/wiki/CLI-Reference.md` | Modify — document `--no-html` |
-
-## Notes
-- Jinja2 is already in `requirements.txt` — no new dependencies
-- Keep template as one file with inline CSS only — no external fonts or icons
-- The template file lives next to the emitter so `FileSystemLoader(Path(__file__).parent)` always finds it
-
+---
+_Generated by [Claude Code](https://claude.ai/code/session_01YAbTXN84tiSWKFuNBDfgSf)_
 
 ========================================
---- ISSUE 436 ---
-Title: feat: CLI shell completion (bash / zsh / fish)
+--- ISSUE 443 ---
+Title: feat(integration): GitHub Actions marketplace action with SARIF output
 Body:
 ## Summary
-Add shell tab-completion for bash, zsh, and fish so developers can tab-complete CHERENKOV commands and flags.
+Publish a GitHub Actions marketplace action so any repo can add CHERENKOV conformance checks in 3 lines of YAML.
 
-## Codebase Context
-- **CLI entry point:** `cherenkov.py` — `get_parser()` returns an `argparse.ArgumentParser` with ~25 subcommands
-- **CLI framework:** argparse (not Click) — use `argcomplete` library
-- **Subcommands:** `validate`, `eject`, `heal`, `chat`, `doctor`, `daemon`, `explore`, `review`, `hitl`, `mcp`, `report`, `visual`, `perf`, `init`, `map`, `governance`, `certify`, `profile`, `tokens`, `author`, `self-test`
-- **pyproject.toml / setup.py:** check for `[project.scripts]` entry point — needed for `argcomplete` global registration
-- **Docs target:** `docs/GETTING_STARTED.md`
+## Motivation
+Every CI run is a discovery event. Every public repo that adds this action signals to its community that CHERENKOV exists. This is the highest-leverage viral distribution channel.
 
-## Implementation Steps
+## Acceptance Criteria
+- [ ] `action.yml` defined at repo root or `action/` directory
+- [ ] `uses: cherenkov-qa/action@v1` works with `spec`, `target`, `fail-on-drift` inputs
+- [ ] SARIF output written → violations appear in GitHub Security tab as code scanning alerts
+- [ ] JUnit XML output for CI test result parsing
+- [ ] Docker-based runner using `ghcr.io/cherenkov-qa/cli:latest`
+- [ ] Published to GitHub Actions Marketplace
+- [ ] README quickstart updated with 3-line example
 
-### 1. Add `argcomplete` to `requirements.txt`
-```
-argcomplete>=3.3.0
-```
-
-### 2. Add `argcomplete` activation to `cherenkov.py`
-At the top of `cherenkov.py`, after the argparse parser is built but before `parse_args()`:
-
-```python
-import argcomplete
-
-def main():
-    parser = get_parser()
-    argcomplete.autocomplete(parser)  # Must be called BEFORE parse_args()
-    args = parser.parse_args()
-    # ... rest of dispatch
-```
-
-The `argcomplete.autocomplete(parser)` call short-circuits when a completion is requested, so it has zero overhead on normal runs.
-
-### 3. Add `cherenkov completion` subcommand
-In `get_parser()`, add a new subcommand:
-
-```python
-parser_completion = subparsers.add_parser(
-    "completion",
-    help="Generate shell completion script",
-)
-parser_completion.add_argument(
-    "shell",
-    choices=["bash", "zsh", "fish"],
-    help="Shell to generate completion for",
-)
-```
-
-In the dispatch handler:
-```python
-elif args.command == "completion":
-    _generate_completion(args.shell)
-
-def _generate_completion(shell: str) -> None:
-    """Print a completion script for the given shell."""
-    script_name = "cherenkov"  # must match the installed command name
-    if shell == "bash":
-        print(f'eval "$(register-python-argcomplete {script_name})"')
-        print("# Add the above line to ~/.bashrc")
-        print("# Or run: cherenkov completion bash >> ~/.bashrc")
-    elif shell == "zsh":
-        print("autoload -U bashcompinit && bashcompinit")
-        print(f'eval "$(register-python-argcomplete {script_name})"')
-        print("# Add the above lines to ~/.zshrc")
-    elif shell == "fish":
-        print(f"register-python-argcomplete --shell fish {script_name} | source")
-        print("# Or: cherenkov completion fish > ~/.config/fish/completions/cherenkov.fish")
-```
-
-### 4. Add completers for file-path arguments
-For arguments that take file paths (like `--spec`), add completers so tab-completion shows YAML files:
-
-```python
-import argcomplete
-
-# In get_parser(), after adding --spec argument:
-parser_validate.add_argument("--spec", help="Path to OpenAPI spec")
-# Add completer:
-parser_validate._option_string_actions["--spec"].completer = argcomplete.completers.FilesCompleter(["*.yaml", "*.yml", "*.json"])
-```
-
-Similarly for `--output`, `--from-postman`, etc.
-
-### 5. Register `cherenkov` command in `pyproject.toml`
-Ensure `cherenkov` is installed as a proper CLI entry point (required for `register-python-argcomplete`):
-```toml
-[project.scripts]
-cherenkov = "cherenkov:main"
-```
-
-If this already exists, verify the script name matches `"cherenkov"` exactly.
-
-### 6. Add CI test for completion scripts
-In `.github/workflows/ci.yml` (or equivalent):
+## Implementation Notes
 ```yaml
-- name: Test shell completions
-  run: |
-    # Check bash completion generates without error
-    cherenkov completion bash | bash -n   # syntax check
-    cherenkov completion zsh  | bash -n   # zsh script is bash-compatible here
+# action.yml
+name: CHERENKOV Conformance Check
+inputs:
+  spec: { required: true }
+  target: { required: true }
+  fail-on-drift: { default: 'true' }
+  llm-provider: { default: 'openai' }
+outputs:
+  violations: { description: Number of violations }
+  sarif-path: { description: Path to SARIF file }
+runs:
+  using: docker
+  image: ghcr.io/cherenkov-qa/cli:latest
 ```
 
-Or as a unit test in `tests/test_cli_completion.py`:
-```python
-import subprocess
-
-def test_bash_completion_output():
-    result = subprocess.run(
-        ["python", "cherenkov.py", "completion", "bash"],
-        capture_output=True, text=True
-    )
-    assert result.returncode == 0
-    assert "register-python-argcomplete" in result.stdout
-
-def test_zsh_completion_output():
-    result = subprocess.run(
-        ["python", "cherenkov.py", "completion", "zsh"],
-        capture_output=True, text=True
-    )
-    assert result.returncode == 0
-    assert "bashcompinit" in result.stdout
-
-def test_fish_completion_output():
-    result = subprocess.run(
-        ["python", "cherenkov.py", "completion", "fish"],
-        capture_output=True, text=True
-    )
-    assert result.returncode == 0
-    assert "register-python-argcomplete" in result.stdout
-```
-
-### 7. Update `docs/GETTING_STARTED.md`
-Add section "Shell Completion":
-```markdown
-## Shell Completion
-
-Enable tab-completion for CHERENKOV commands:
-
-**Bash:**
-```bash
-cherenkov completion bash >> ~/.bashrc
-source ~/.bashrc
-```
-
-**Zsh:**
-```zsh
-echo 'autoload -U bashcompinit && bashcompinit' >> ~/.zshrc
-cherenkov completion zsh >> ~/.zshrc
-source ~/.zshrc
-```
-
-**Fish:**
-```fish
-cherenkov completion fish > ~/.config/fish/completions/cherenkov.fish
-```
-
-After setup, press Tab after `cherenkov ` to see all commands, or `cherenkov validate --` to see all flags.
-```
-
-## Acceptance Criteria
-- [ ] `cherenkov completion bash` outputs a valid completion script
-- [ ] `cherenkov completion zsh` outputs a valid completion script
-- [ ] `cherenkov completion fish` outputs a valid completion script
-- [ ] Tab-completes all command names: `validate`, `eject`, `heal`, `chat`, `doctor`, `daemon`, `explore`, `review`, `hitl`, `mcp`, `init`, `map`, `report`, `visual`, `perf`
-- [ ] Tab-completes `--spec` flag with `.yaml`/`.yml` file suggestions
-- [ ] Completion scripts pass a bash syntax check in CI
-- [ ] Install instructions in `docs/GETTING_STARTED.md`
-
-## Files to Create/Modify
-| File | Action |
-|------|--------|
-| `cherenkov.py` | Modify — add `argcomplete.autocomplete(parser)`, add `completion` subcommand |
-| `requirements.txt` | Modify — add `argcomplete>=3.3.0` |
-| `pyproject.toml` | Modify — verify/add `[project.scripts]` entry |
-| `tests/test_cli_completion.py` | Create — output tests for all 3 shells |
-| `docs/GETTING_STARTED.md` | Modify — add Shell Completion section |
-
-## Notes
-- This is self-contained: no domain knowledge of the testing pipeline needed
-- `argcomplete` works with `argparse` directly — no need to rewrite the CLI
-- The `autocomplete()` call is a no-op when not in a completion context (zero runtime cost)
-
+**Effort:** 3 days
+**Sprint:** Sprint 1 (Weeks 1-2)
+**References:** [INTEGRATION_STRATEGY.md](docs/INTEGRATION_STRATEGY.md) §Tier 0
 
 ========================================
---- ISSUE 437 ---
-Title: feat: spec-diff alerting — detect and report OpenAPI breaking changes
+--- ISSUE 444 ---
+Title: feat(integration): JUnit XML and SARIF output formats for CI compatibility
 Body:
 ## Summary
-Add a `cherenkov diff` command (and automatic detection in `validate`) that compares two OpenAPI specs and reports breaking vs additive changes.
+Add JUnit XML and SARIF output formats to the validate command so CI systems can parse results natively.
 
-## Codebase Context
-- **CLI dispatcher:** `cherenkov.py` — `get_parser()` — add `diff` subcommand
-- **Ingest stage:** `cherenkov/stages/ingest.py` — `IngestStage` — already parses specs; reuse parsed output
-- **Truth model sources:** `cherenkov/truth/sources/openapi.py` — parses endpoints/schemas into structured claims
-- **Contracts:** `cherenkov/core/contracts.py` — add `SpecDiffReport` model
-- **Validation engine:** `cherenkov/execution/validate.py` — add spec-change warning at start
-- **Cache dir:** `.cherenkov/` — store cached spec hash between runs for automatic detection
-- **Docs target:** `docs/wiki/CLI-Reference.md`
-
-## Implementation Steps
-
-### 1. Create `cherenkov/diff/` package
-
-**`cherenkov/diff/__init__.py`** — empty
-
-**`cherenkov/diff/spec_differ.py`**:
-```python
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any
-import yaml, json
-
-class ChangeType(str, Enum):
-    REMOVED_ENDPOINT = "removed_endpoint"
-    REMOVED_REQUIRED_FIELD = "removed_required_field"
-    NARROWED_RESPONSE_SCHEMA = "narrowed_response_schema"
-    CHANGED_PARAMETER_TYPE = "changed_parameter_type"
-    ADDED_ENDPOINT = "added_endpoint"
-    ADDED_OPTIONAL_FIELD = "added_optional_field"
-    CHANGED_DESCRIPTION = "changed_description"
-
-@dataclass
-class SpecChange:
-    change_type: ChangeType
-    breaking: bool
-    endpoint: str
-    method: str | None
-    detail: str
-    before: Any = None
-    after: Any = None
-
-@dataclass
-class SpecDiffReport:
-    breaking: list[SpecChange] = field(default_factory=list)
-    additive: list[SpecChange] = field(default_factory=list)
-    informational: list[SpecChange] = field(default_factory=list)
-
-    @property
-    def has_breaking_changes(self) -> bool:
-        return len(self.breaking) > 0
-
-class SpecDiffer:
-    def diff(self, before_path: str, after_path: str) -> SpecDiffReport:
-        before = self._load(before_path)
-        after = self._load(after_path)
-        report = SpecDiffReport()
-
-        before_paths = set(before.get("paths", {}).keys())
-        after_paths = set(after.get("paths", {}).keys())
-
-        # Removed endpoints (BREAKING)
-        for p in before_paths - after_paths:
-            for method in before["paths"][p]:
-                if method.upper() in {"GET","POST","PUT","PATCH","DELETE","OPTIONS","HEAD"}:
-                    report.breaking.append(SpecChange(
-                        change_type=ChangeType.REMOVED_ENDPOINT,
-                        breaking=True,
-                        endpoint=p, method=method.upper(),
-                        detail=f"Endpoint {method.upper()} {p} was removed",
-                    ))
-
-        # Added endpoints (ADDITIVE)
-        for p in after_paths - before_paths:
-            for method in after["paths"][p]:
-                if method.upper() in {"GET","POST","PUT","PATCH","DELETE","OPTIONS","HEAD"}:
-                    report.additive.append(SpecChange(
-                        change_type=ChangeType.ADDED_ENDPOINT,
-                        breaking=False,
-                        endpoint=p, method=method.upper(),
-                        detail=f"New endpoint {method.upper()} {p}",
-                    ))
-
-        # Changed endpoints — check schemas
-        for p in before_paths & after_paths:
-            self._diff_endpoint(
-                before["paths"][p], after["paths"][p], p, report
-            )
-
-        return report
-
-    def _diff_endpoint(self, before_item: dict, after_item: dict,
-                       path: str, report: SpecDiffReport) -> None:
-        for method in before_item:
-            if method not in after_item:
-                continue
-            before_op = before_item[method]
-            after_op = after_item[method]
-            self._diff_response_schemas(before_op, after_op, path, method, report)
-            self._diff_parameters(before_op, after_op, path, method, report)
-
-    def _diff_response_schemas(self, before_op, after_op, path, method, report):
-        # Compare response schemas for removals / narrowing
-        before_resp = before_op.get("responses", {})
-        after_resp = after_op.get("responses", {})
-        for status_code in before_resp:
-            if status_code not in after_resp:
-                report.breaking.append(SpecChange(
-                    change_type=ChangeType.NARROWED_RESPONSE_SCHEMA,
-                    breaking=True,
-                    endpoint=path, method=method.upper(),
-                    detail=f"Response {status_code} removed from {method.upper()} {path}",
-                ))
-
-    def _diff_parameters(self, before_op, after_op, path, method, report):
-        before_params = {p["name"]: p for p in before_op.get("parameters", [])}
-        after_params = {p["name"]: p for p in after_op.get("parameters", [])}
-        for name, param in before_params.items():
-            if param.get("required") and name not in after_params:
-                report.breaking.append(SpecChange(
-                    change_type=ChangeType.REMOVED_REQUIRED_FIELD,
-                    breaking=True,
-                    endpoint=path, method=method.upper(),
-                    detail=f"Required parameter '{name}' removed from {method.upper()} {path}",
-                ))
-
-    def _load(self, path: str) -> dict:
-        with open(path) as f:
-            return yaml.safe_load(f) if path.endswith((".yaml", ".yml")) else json.load(f)
-```
-
-### 2. Add `cherenkov diff` subcommand to `cherenkov.py`
-```python
-parser_diff = subparsers.add_parser(
-    "diff",
-    help="Detect breaking and additive OpenAPI spec changes",
-)
-parser_diff.add_argument("--before", required=True, metavar="SPEC",
-                         help="Path to previous spec version")
-parser_diff.add_argument("--after", required=True, metavar="SPEC",
-                         help="Path to new spec version")
-parser_diff.add_argument("--format", choices=["text", "json"], default="text")
-```
-
-In dispatch:
-```python
-elif args.command == "diff":
-    from cherenkov.diff.spec_differ import SpecDiffer
-    differ = SpecDiffer()
-    report = differ.diff(args.before, args.after)
-    _print_diff_report(report, fmt=args.format)
-    if report.has_breaking_changes:
-        sys.exit(1)
-```
-
-### 3. Auto-detect spec changes in `validate`
-In `cherenkov/execution/validate.py` (or the validate CLI handler), before running tests:
-
-```python
-import hashlib, json
-from pathlib import Path
-
-def _check_spec_changed(spec_path: str) -> bool:
-    cache_file = Path(".cherenkov/spec_hash.json")
-    current_hash = hashlib.sha256(open(spec_path, "rb").read()).hexdigest()
-    if cache_file.exists():
-        stored = json.loads(cache_file.read_text())
-        last_hash = stored.get("hash")
-        if last_hash != current_hash:
-            print(f"⚠️  Spec has changed since last run. Run `cherenkov diff` for details.")
-            return True
-    cache_file.parent.mkdir(exist_ok=True)
-    cache_file.write_text(json.dumps({"hash": current_hash, "spec": spec_path}))
-    return False
-```
-
-### 4. Output formatting
-```
-CHERENKOV Spec Diff: v1.yaml → v2.yaml
-
-BREAKING CHANGES (2):
-  ❌ [REMOVED] DELETE /users/{id} — endpoint removed
-  ❌ [BREAKING] GET /orders — required parameter 'page' removed
-
-ADDITIVE CHANGES (1):
-  ✅ [NEW] POST /users/batch — new endpoint
-
-Run cherenkov validate to re-generate affected tests.
-```
-
-### 5. Update `docs/wiki/CLI-Reference.md`
-Add `cherenkov diff` command docs with examples.
+## Motivation
+JUnit XML is the universal CI test result format (Jenkins, CircleCI, GitLab, GitHub). SARIF enables GitHub Security tab integration. Both formats unlock Xray/Zephyr integration at near-zero incremental cost.
 
 ## Acceptance Criteria
-- [ ] `cherenkov diff --before openapi-v1.yaml --after openapi-v2.yaml` outputs structured breaking/additive report
-- [ ] Breaking changes shown first with severity labels (`❌ [REMOVED]`, `❌ [BREAKING]`)
-- [ ] Additive changes shown with `✅ [NEW]` labels
-- [ ] `cherenkov diff` exits with code 1 when breaking changes are found, 0 otherwise
-- [ ] `cherenkov validate` warns when spec has changed since last run
-- [ ] `--format json` outputs machine-readable JSON
-- [ ] Documented in `docs/wiki/CLI-Reference.md`
+- [ ] `cherenkov validate --output-format junit` produces valid JUnit XML
+- [ ] `cherenkov validate --output-format sarif` produces valid SARIF 2.1.0
+- [ ] SARIF includes: ruleId (endpoint path), message (violation description), location (spec file + line)
+- [ ] JUnit includes: testSuite per endpoint, testCase per scenario, failure element for violations
+- [ ] Both formats work in CI without additional tooling
 
-## Files to Create/Modify
-| File | Action |
-|------|--------|
-| `cherenkov/diff/__init__.py` | Create |
-| `cherenkov/diff/spec_differ.py` | Create — `SpecDiffer`, `SpecDiffReport` |
-| `cherenkov/core/contracts.py` | Modify — add `SpecDiffReport` Pydantic model |
-| `cherenkov.py` | Modify — add `diff` subcommand |
-| `cherenkov/execution/validate.py` | Modify — auto-detect spec change warning |
-| `tests/test_spec_differ.py` | Create — unit tests with fixture specs |
-| `docs/wiki/CLI-Reference.md` | Modify — `cherenkov diff` docs |
+## Implementation Notes
+- Add `OutputFormat` enum to `cherenkov/execution/validate.py`
+- JUnit writer: `cherenkov/execution/emitters/junit.py`
+- SARIF writer: `cherenkov/execution/emitters/sarif.py`
+- Hook into existing `ValidationEngine` result
 
-## Dependencies
-- `pyyaml` — already in requirements.txt
-- Optional: `oasdiff` Go binary as subprocess for deeper schema diffing (if needed)
-
+**Effort:** 2 days
+**Sprint:** Sprint 1 (Weeks 1-2)
+**Unlocks:** Xray, Zephyr, TestRail integrations (Sprint 3)
 
 ========================================
---- ISSUE 438 ---
-Title: chore: unblock Desktop track — document cargo setup + CI path
-Body:
-## Context
-
-Phase 3 (Desktop host — Tauri 2) is built and tested but blocked at runtime on `cargo` (Rust toolchain). The `desktop/` code compiles correctly once Rust is available.
-
-## What to do
-
-1. Document the one-time setup to unblock the desktop track:
-   ```bash
-   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-   source ~/.cargo/env
-   cargo install tauri-cli
-   cd desktop && cargo tauri build
-   ```
-2. Add a `--desktop` flag to `cherenkov doctor` that checks for `cargo` and `tauri-cli`
-3. Update `desktop-build.yml` GitHub Actions workflow to install Rust via `dtolnay/rust-toolchain@stable`
-4. Update `docs/STATUS.md` to reflect unblocked state once CI passes
-
-## Acceptance criteria
-
-- [ ] `cherenkov doctor --desktop` reports `cargo` presence/absence clearly
-- [ ] `desktop-build.yml` CI job passes on a standard runner with Rust installed
-- [ ] `docs/STATUS.md` Track C status updated
-
-## Notes
-
-The Tauri 2 desktop app code is at `desktop/`. The build was last verified working locally before the CI environment changed.
-
-========================================
---- ISSUE 439 ---
-Title: feat: accessibility testing source (WCAG 2.1 AA via axe-core)
+--- ISSUE 445 ---
+Title: feat(integration): Slack notifier — wire notification_endpoint for conformance alerts
 Body:
 ## Summary
-Implement an `AccessibilitySource` adapter using `@axe-core/playwright` that generates WCAG 2.1 AA conformance tests from a URL list or sitemap, wired into the existing Source Adapter SPI.
+Implement a real Slack notifier wired to the existing `notification_endpoint` config in `openclaw/adapter.py`. The config field is declared but never called.
 
-## Codebase Context
-- **Source adapter protocol reference:** `cherenkov/sources/mobile/adapter.py` — `MobileSourceAdapter` — same protocol to follow
-- **OpenAPI source reference:** `cherenkov/sources/` (existing OpenAPI adapter)
-- **Ingest stage:** `cherenkov/stages/ingest.py` — `IngestStage` — wire new source type here
-- **Plan stage:** `cherenkov/stages/plan.py` — or create `stages/plan_accessibility.py`
-- **Generate stage:** `cherenkov/stages/generate.py` — add `source_type == "accessibility"` branch
-- **CLI:** `cherenkov.py` — add `--source accessibility` and `--spec sitemap.xml` to `validate`
-- **Stubs:** `stub/package.json` — add `@axe-core/playwright`
-- **Eject engine:** `cherenkov/execution/eject.py` — `EjectorEngine` — ensure ejected tests include axe-core
-- **Docs:** `docs/wiki/CLI-Reference.md`, `docs/wiki/Configuration.md`
-
-## Implementation Steps
-
-### 1. Create `cherenkov/sources/accessibility/` package
-
-**`cherenkov/sources/accessibility/__init__.py`** — empty
-
-**`cherenkov/sources/accessibility/contracts.py`**:
-```python
-from pydantic import BaseModel
-
-class PageTarget(BaseModel):
-    url: str
-    title: str | None = None
-    wcag_level: str = "AA"  # "A" | "AA" | "AAA"
-
-class AccessibilityScenario(BaseModel):
-    page: PageTarget
-    scenario_type: str  # "wcag_aa_full" | "wcag_focus_order" | "wcag_contrast" | "wcag_aria"
-    description: str
-```
-
-**`cherenkov/sources/accessibility/adapter.py`**:
-```python
-import xml.etree.ElementTree as ET
-from pathlib import Path
-from cherenkov.sources.accessibility.contracts import PageTarget, AccessibilityScenario
-
-class AccessibilitySourceAdapter:
-    """Parses a URL list or sitemap.xml → list of PageTarget objects."""
-
-    def __init__(self, spec_path: str):
-        self.spec_path = spec_path
-        self.pages = self._load_pages()
-
-    def _load_pages(self) -> list[PageTarget]:
-        path = Path(self.spec_path)
-        if path.suffix == ".xml":
-            return self._parse_sitemap(path)
-        elif path.suffix in (".txt", ".list"):
-            return self._parse_url_list(path)
-        else:
-            raise ValueError(f"Unsupported spec format for accessibility: {path.suffix}. Use sitemap.xml or urls.txt")
-
-    def _parse_sitemap(self, path: Path) -> list[PageTarget]:
-        tree = ET.parse(path)
-        root = tree.getroot()
-        ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
-        pages = []
-        for url_elem in root.findall("sm:url", ns):
-            loc = url_elem.find("sm:loc", ns)
-            if loc is not None:
-                pages.append(PageTarget(url=loc.text.strip()))
-        return pages
-
-    def _parse_url_list(self, path: Path) -> list[PageTarget]:
-        return [
-            PageTarget(url=line.strip())
-            for line in path.read_text().splitlines()
-            if line.strip() and not line.startswith("#")
-        ]
-
-    def iter_scenarios(self) -> list[AccessibilityScenario]:
-        scenarios = []
-        for page in self.pages:
-            scenarios.append(AccessibilityScenario(
-                page=page,
-                scenario_type="wcag_aa_full",
-                description=f"WCAG 2.1 AA full scan of {page.url}",
-            ))
-        return scenarios
-```
-
-### 2. Create `cherenkov/stages/plan_accessibility.py`
-```python
-from cherenkov.sources.accessibility.adapter import AccessibilitySourceAdapter
-from cherenkov.sources.accessibility.contracts import AccessibilityScenario
-
-class AccessibilityScenarioPlanner:
-    def plan(self, adapter: AccessibilitySourceAdapter) -> list[AccessibilityScenario]:
-        return adapter.iter_scenarios()
-```
-
-### 3. Add Playwright test template for accessibility
-Create `cherenkov/prompts/accessibility_test.j2`:
-```typescript
-// Generated by CHERENKOV — accessibility conformance test
-// WCAG 2.1 Level: {{ wcag_level }}
-import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
-
-test('{{ page_url }} — WCAG 2.1 {{ wcag_level }} conformance', async ({ page }) => {
-  await page.goto('{{ page_url }}');
-  await page.waitForLoadState('networkidle');
-
-  const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa'])
-    .analyze();
-
-  expect(results.violations).toEqual([]);
-});
-```
-
-### 4. Wire into `cherenkov/stages/generate.py`
-Add a branch for `source_type == "accessibility"`:
-```python
-elif source_type == "accessibility":
-    from cherenkov.sources.accessibility.adapter import AccessibilitySourceAdapter
-    from jinja2 import Environment, FileSystemLoader
-    adapter = AccessibilitySourceAdapter(spec_path)
-    scenarios = adapter.iter_scenarios()
-    env = Environment(loader=FileSystemLoader("cherenkov/prompts"))
-    template = env.get_template("accessibility_test.j2")
-    for scenario in scenarios:
-        yield template.render(
-            page_url=scenario.page.url,
-            wcag_level=scenario.page.wcag_level,
-        )
-```
-
-### 5. Add `--source accessibility` CLI flag
-In `cherenkov.py`:
-```python
-parser_validate.add_argument(
-    "--source",
-    choices=["openapi", "graphql", "grpc", "accessibility"],
-    default="openapi",
-)
-```
-
-Handle in validate dispatch:
-```python
-if args.source == "accessibility":
-    from cherenkov.sources.accessibility.adapter import AccessibilitySourceAdapter
-    source = AccessibilitySourceAdapter(args.spec)
-    # pipe to planner → generator → reviewer → runner
-```
-
-### 6. Update `stub/package.json`
-```json
-"@axe-core/playwright": "^4.9.0"
-```
-
-Run `npm install` in `stub/` after this change.
-
-### 7. Ensure `EjectorEngine` includes axe-core in ejected tests
-In `cherenkov/execution/eject.py`, when ejecting accessibility tests:
-- Include `@axe-core/playwright` in the ejected `package.json`
-- Ejected tests must have zero CHERENKOV imports (only `@playwright/test` + `@axe-core/playwright`)
-
-### 8. Update docs
-- `docs/wiki/CLI-Reference.md`: add `--source accessibility` to `validate` docs
-- `docs/wiki/Configuration.md`: add Accessibility Source section
+## Motivation
+Slack is where engineering teams live. A conformance violation alert in `#api-quality` before a developer notices the CI failure is the single highest-value team adoption driver.
 
 ## Acceptance Criteria
-- [ ] `cherenkov validate --source accessibility --spec sitemap.xml --target http://localhost:3000` runs and reports WCAG violations
-- [ ] `cherenkov validate --source accessibility --spec urls.txt --target http://localhost:3000` also works
-- [ ] Generated tests use `AxeBuilder` and `withTags(['wcag2a', 'wcag2aa'])`
-- [ ] Generated tests pass the 6-gate review (`stages/review.py`)
-- [ ] `cherenkov eject` produces standalone tests with `@axe-core/playwright` in `package.json` — zero CHERENKOV imports
-- [ ] Docs updated
+- [ ] `cherenkov/adapters/notifiers/slack.py` — `SlackNotifier` class using Slack Incoming Webhooks
+- [ ] Notifies on: conformance drift detected, HITL item pending approval, healing suggestion available
+- [ ] Slack Block Kit message format with: endpoint, expected vs actual status, violation count, [View Report] button
+- [ ] Wired to `OpenClawAdapter.notification_endpoint` in `openclaw/adapter.py`
+- [ ] Configurable via `CHERENKOV_SLACK_WEBHOOK_URL` env var
+- [ ] Tests: `tests/unit/test_slack_notifier.py` with mocked webhook
 
-## Files to Create/Modify
-| File | Action |
-|------|--------|
-| `cherenkov/sources/accessibility/__init__.py` | Create |
-| `cherenkov/sources/accessibility/adapter.py` | Create — `AccessibilitySourceAdapter` |
-| `cherenkov/sources/accessibility/contracts.py` | Create — `PageTarget`, `AccessibilityScenario` |
-| `cherenkov/stages/plan_accessibility.py` | Create — `AccessibilityScenarioPlanner` |
-| `cherenkov/prompts/accessibility_test.j2` | Create — Jinja2 test template |
-| `cherenkov/stages/generate.py` | Modify — add accessibility branch |
-| `cherenkov/execution/eject.py` | Modify — include axe-core in ejected tests |
-| `cherenkov.py` | Modify — add `--source accessibility` |
-| `stub/package.json` | Modify — add `@axe-core/playwright` |
-| `tests/test_accessibility_source.py` | Create — unit tests |
-| `docs/wiki/CLI-Reference.md` | Modify |
-| `docs/wiki/Configuration.md` | Modify |
+## Message Format
+```
+🔴 CHERENKOV: Conformance drift detected
+Service: payment-api | Spec: v2.3.1
+POST /payments/charge
+Expected: 422 (spec) → Got: 400 (server)
+[View Report]  [Create Jira Ticket]
+```
 
+**Effort:** 1 week
+**Sprint:** Sprint 1 (Weeks 1-2)
+**References:** `cherenkov/openclaw/adapter.py`, `cherenkov/openclaw/contracts.py`
 
 ========================================
---- ISSUE 440 ---
-Title: docs: video tutorial / screencast — spec in, tests out in 3 minutes
+--- ISSUE 446 ---
+Title: feat(integration): Microsoft Teams Adaptive Card notifications
 Body:
 ## Summary
-Produce a 3-minute screencast demonstrating the full CHERENKOV cycle (clone → validate → catch drift → eject) and embed it in the README hero section.
+Implement a Teams notifier using Adaptive Cards for enterprise engineering orgs.
 
-## Codebase Context
-- **Target API for demo:** `target/` directory — contains a sample API intentionally set up with a `password_too_short` drift (422 expected, 400 returned)
-- **README:** `README.md` — add link/embed in hero section
-- **CLI commands to demo:** `cherenkov doctor`, `cherenkov validate`, `cherenkov eject`, `cherenkov review --web`
-- **Sample spec:** `stub/openapi.yaml` — used as the spec input
-- **Expected drift demonstration:** `password_too_short` endpoint returns 400 instead of spec-mandated 422
-
-## Demo Script (3 minutes)
-
-### Segment 1: Setup (0:00–0:30) — `cherenkov doctor`
-```bash
-git clone https://github.com/moaidmoatasem/cherenkov-qa
-cd cherenkov-qa
-pip install -e .
-cherenkov doctor
-# Shows: ✅ Python 3.11, ✅ Playwright, ✅ Ollama, ✅ qwen2.5-coder:7b
-```
-
-### Segment 2: Catch the drift (0:30–1:30) — `cherenkov validate`
-```bash
-# Start the sample API in another terminal
-cd target && python app.py
-
-# In main terminal:
-cherenkov validate --spec stub/openapi.yaml --target http://localhost:8000
-# Watch:
-# - 6-gate review passes
-# - Tests generated
-# - DRIFT DETECTED: POST /auth/register — expected 422, got 400
-```
-
-### Segment 3: Eject standalone tests (1:30–2:15) — `cherenkov eject`
-```bash
-cherenkov eject --output ./my-tests
-cd my-tests
-npx playwright test
-# Shows: standalone Playwright tests running, no CHERENKOV dependency
-```
-
-### Segment 4: Web dashboard (2:15–3:00) — `cherenkov review --web`
-```bash
-cherenkov review --web
-# Browser opens: http://localhost:8080
-# Show: violation table, tightening suggestions, endpoint heatmap
-```
-
-## Recording Tools
-
-### Option A: asciinema (recommended for lightweight embed)
-```bash
-pip install asciinema
-asciinema rec cherenkov-demo.cast --title "CHERENKOV Demo"
-# Run the demo script above
-# Stop with Ctrl+D
-asciinema upload cherenkov-demo.cast
-# Copy the URL, e.g.: https://asciinema.org/a/XXXXX
-```
-
-Embed in README:
-```markdown
-[[CHERENKOV Demo](https://asciinema.org/a/XXXXX.svg)](https://asciinema.org/a/XXXXX)
-```
-
-### Option B: Screen recording (for richer demo)
-- Record with OBS Studio or QuickTime
-- Upload to YouTube (unlisted or public)
-- Embed in README as thumbnail → link
-
-## README Update
-Find the hero section in `README.md` (the top, after the badge row) and add:
-
-```markdown
-## See It In Action
-
-[[3-minute demo: spec → generate → drift caught → eject](https://asciinema.org/a/XXXXX.svg)](https://asciinema.org/a/XXXXX)
-
-> **In 3 minutes:** Point CHERENKOV at any OpenAPI spec and a live API. Watch it catch the `password_too_short` drift — spec says 422, server returns 400. Then eject standalone Playwright tests with zero CHERENKOV dependency.
-```
-
-## Reproducibility Requirements
-The demo must be fully reproducible using only the repo contents:
-1. `target/` API must be runnable with `python target/app.py` (check `target/requirements.txt`)
-2. `stub/openapi.yaml` must define `POST /auth/register` with `422` for `password_too_short`
-3. `target/app.py` must return `400` for that case (intentional drift for demo)
-
-If any of these are broken, fix them before recording.
+## Motivation
+Teams is the enterprise communication standard. A Teams connector is the difference between "interesting CLI tool" and "approved enterprise software." Engineers can approve/reject HITL items directly from Teams.
 
 ## Acceptance Criteria
-- [ ] Recording is uploaded (asciinema.org, YouTube, or GitHub Releases asset)
-- [ ] Recording URL/embed added to `README.md` hero section (before the first `##` heading)
-- [ ] Demo uses the bundled `target/` sample API (reproducible by anyone cloning the repo)
-- [ ] The drift catch (`password_too_short`: 422→400) is clearly visible in the recording
-- [ ] Recording is ≤ 3 minutes 30 seconds
+- [ ] `cherenkov/adapters/notifiers/teams.py` — `TeamsNotifier` using Teams Incoming Webhook
+- [ ] Adaptive Card format (richer than Slack blocks): violation details, endpoint, diff
+- [ ] Actionable: approve/reject HITL directly from Teams card via webhook callbacks
+- [ ] Configurable via `CHERENKOV_TEAMS_WEBHOOK_URL` env var
+- [ ] Shares same notification interface as Slack adapter
 
-## Files to Create/Modify
-| File | Action |
-|------|--------|
-| `README.md` | Modify — add demo embed/link in hero section |
-| `target/app.py` | Verify/fix — must return 400 for `password_too_short` (intentional drift) |
-| `stub/openapi.yaml` | Verify/fix — must specify 422 for `password_too_short` |
-| `docs/DEMO_SCRIPT.md` | Create — exact commands used in the recording (for reproducibility) |
+**Effort:** 1 week
+**Sprint:** Sprint 3 (Weeks 7-10)
 
-## Notes
-- asciinema produces a ~200KB text file vs a 50MB video — much better for embedding in READMEs
-- If using screen recording, upload to GitHub Releases as a `.mp4` asset to avoid hotlinking issues
-- The `cherenkov review --web` segment can be a static screenshot if browser recording is complex
+========================================
+--- ISSUE 447 ---
+Title: feat(integration): Complete MCP stubs — run_k6_perf, export_jira_ticket, scan_mena_compliance
+Body:
+## Summary
+Three MCP tools in `cherenkov/mcp/handlers.py` currently return "not yet fully implemented". Complete them.
 
+## Tools to Complete
+
+### `run_k6_perf`
+- Wire to the existing k6 executor in `cherenkov/stages/perf/`
+- Input: target URL, scenario name, duration, VUs
+- Output: p95/p99 latency, error rate, throughput
+
+### `export_jira_ticket`
+- Currently writes local Markdown in `cherenkov/validate/jira_exporter.py`
+- Wire to real Jira REST API v3: `POST /rest/api/3/issue`
+- Requires: `CHERENKOV_JIRA_URL`, `CHERENKOV_JIRA_TOKEN`, `CHERENKOV_JIRA_PROJECT` env vars
+- Returns: created issue key (e.g. `QA-123`)
+
+### `scan_mena_compliance`
+- Wire to existing `cherenkov/compliance/mena_scanner.py` `MENAComplianceScanner`
+- Input: target URL, spec path
+- Output: compliance score (0-100), violations list, SAMA/FinCSF mappings
+
+## Acceptance Criteria
+- [ ] All three MCP tools return real data, not "not yet fully implemented"
+- [ ] Unit tests for each in `tests/unit/test_mcp_handlers.py`
+- [ ] MCP policy `cherenkov-policy.json` updated to allow these tools in `full-dev` profile
+
+**Effort:** 3 days
+**Sprint:** Sprint 1 (Weeks 1-2)
+**File:** `cherenkov/mcp/handlers.py`
+
+========================================
+--- ISSUE 448 ---
+Title: feat(integration): VS Code extension — generate, validate, gutter icons, quick fix
+Body:
+## Summary
+Build a VS Code extension so developers can generate and validate API tests without leaving their editor.
+
+## Motivation
+VS Code has 73M+ monthly active users. Every backend developer opens OpenAPI specs here daily. A right-click → "Generate tests" is the highest-conversion funnel imaginable and creates daily active use.
+
+## Acceptance Criteria
+- [ ] Extension published to VS Code Marketplace as `cherenkov-qa.cherenkov`
+- [ ] Command: "Generate Tests from Spec" — right-click on `.yaml`/`.json` → triggers generation
+- [ ] Command: "Run Conformance Check" — validates against configured target URL
+- [ ] Command: "Eject to Playwright" — runs eject command
+- [ ] Gutter icons on OpenAPI path entries: ✅ passing / ❌ drift / ⬜ untested
+- [ ] Code Lens above each path: `▶ 4 tests | ⚠ 1 violation → Heal`
+- [ ] Problems panel: conformance violations as warnings with file/line attribution
+- [ ] Quick Fix (suggest-only): `Ctrl+.` → "Apply suggested assertion"
+- [ ] Settings: `cherenkov.targetUrl`, `cherenkov.specPath`, `cherenkov.llmProvider`
+
+## Structure
+```
+vscode-cherenkov/
+├── src/
+│   ├── extension.ts
+│   ├── commands/{generate,validate,eject,doctor}.ts
+│   ├── providers/{CodeLens,Diagnostics,TreeData,Hover}Provider.ts
+│   ├── views/{ConformancePanel,HealingPanel}.ts
+│   └── api/CherenkovClient.ts  # calls local CLI or MCP server
+```
+
+**Effort:** 3-4 weeks
+**Sprint:** Sprint 2 (Weeks 3-6)
+**References:** [INTEGRATION_STRATEGY.md](docs/INTEGRATION_STRATEGY.md) §Tier 0
 
 ========================================

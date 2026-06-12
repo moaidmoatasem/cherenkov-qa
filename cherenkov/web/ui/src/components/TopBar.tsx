@@ -114,13 +114,13 @@ export default function TopBar({
       <div className="flex items-center gap-6">
         {/* Token Cost Summary */}
         <div className="flex items-center gap-4 bg-black/30 border border-white/10 px-3.5 py-1.5 rounded-md font-mono text-xs">
-          <div className="flex items-center gap-1 text-[#7D8DA1]" title="Demo telemetry display">
+          <div className="flex items-center gap-1 text-[#7D8DA1]" title="Session cost polled from /api/v1/metrics every 30s">
             <DollarSign className="w-3 h-3 text-[#3FB950]" />
-            <span>SESSION COST (DEMO):</span>
+            <span>SESSION COST:</span>
           </div>
           <span className="text-glow-bright font-semibold">${totalSpentEstimated.toFixed(2)}</span>
           <span className="text-white/10">|</span>
-          <span className="text-[#7D8DA1]/80 text-[10px]">Cloud equivalent: ${(totalSpentEstimated * 3.4).toFixed(3)}</span>
+          <span className="text-[#7D8DA1]/80 text-[10px]" title="Projected cost if this run used OpenAI GPT-4o at list price">Cloud equiv: ${(totalSpentEstimated * 3.4).toFixed(3)}</span>
         </div>
 
         {/* Local Node Status (Clickable to open live-run drawer) */}

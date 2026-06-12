@@ -5,48 +5,45 @@
 **Environment:** Local `uvicorn` instance (`--demo` mode)
 
 ## Executive Summary
-Five QA personas evaluated the Cherenkov QA Dashboard using static analysis, HTTP profiling, and accessibility heuristics. The dashboard exhibits excellent accessibility and lightweight asset delivery, but suffers from significant backend latency (TTFB) and missing security headers. Testability is moderate, relying on stable `#id` tags rather than standard data attributes.
+Five QA personas evaluated the Cherenkov QA Dashboard using HTTP profiling and static source analysis. The dashboard is highly responsive and its static HTML shell is properly configured with fundamental metadata. However, the static analysis revealed a complete lack of HTTP security headers, missing `<noscript>` fallbacks, and the absence of `data-testid` attributes in the frontend source code.
 
 ---
 
-## 1. Accessibility QA
-**Score:** 98/100 (via Lighthouse Audit heuristics)
-**Status:** **PASS (with minor warning)**
+## 1. Performance QA
+**Status:** **PASS**
+- **Methodology:** `wsl curl -s -w "%{http_code} %{time_total}\n" -o /dev/null http://localhost:8000`
+- **Findings:** The dashboard endpoint is highly responsive. The server returned a 200 OK status code with a total response time of approximately **0.0036 seconds (3.6 milliseconds)**. 
+- **Conclusion:** Excellent baseline performance for the local dashboard server.
 
-- **Strengths:** ARIA roles, color contrast, and interactive elements are correctly labeled and compliant with WCAG guidelines.
-- **Findings:** Only one semantic violation was identified: `heading-order`. An `<h3>` element ("No workspace projects found") within the `projects-screen` skips the `<h2>` level.
-- **Action Item:** Ensure the `<h3>` is preceded by an `<h2>`, or promote it to `<h2>` to maintain logical screen reader navigation.
-
-## 2. Performance QA
-**Status:** **NEEDS IMPROVEMENT**
-
-- **Strengths:** The frontend payload is exceptionally lightweight. The initial document is just 443 bytes. The JS bundle (~459 KB) and CSS (~78 KB) are delivered rapidly (under 50ms).
-- **Findings:** A severe bottleneck was identified on the backend: the Time to First Byte (TTFB) for the base `/` HTML document takes approximately **4.70 seconds**. 
-- **Action Item:** Profile the Uvicorn/FastAPI backend to identify blocking I/O operations, slow initializations, or routing delays occurring during the initial page load.
-
-## 3. Security QA
+## 2. Security QA
 **Status:** **FAIL**
+- **Methodology:** `wsl curl -s -D - -o /dev/null http://localhost:8000`
+- **Findings:** The server (`uvicorn`) omits multiple critical HTTP security headers, leaving the frontend vulnerable to fundamental web exploits. The following headers are completely missing:
+  - `Content-Security-Policy`
+  - `X-Frame-Options`
+  - `X-Content-Type-Options`
+  - `Strict-Transport-Security`
+  - `X-XSS-Protection`
+  - `Referrer-Policy`
+- **Action Item:** Implement a backend middleware to inject strict security headers.
 
-- **Strengths:** No explicit API key exposures or unsafe eval scripts were detected in the base payload.
-- **Findings:** The server omits multiple critical HTTP security headers, leaving the frontend vulnerable to fundamental web exploits:
-  - Missing `Content-Security-Policy` (CSP) -> Vulnerable to XSS.
-  - Missing `X-Frame-Options` -> Vulnerable to Clickjacking.
-  - Missing `X-Content-Type-Options` -> Vulnerable to MIME-sniffing.
-- **Action Item:** Implement a backend middleware to inject strict security headers (e.g., `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`).
+## 3. Automation & Testability QA
+**Status:** **NEEDS IMPROVEMENT**
+- **Methodology:** Source codebase static analysis and endpoint evaluation.
+- **Findings:** The codebase completely lacks standard `data-testid` or `data-test-id` attributes. The React components rely on standard IDs (`#id`) and Tailwind CSS classes, which introduces brittleness for UI automation testing (e.g., Playwright or Selenium).
+- **Action Item:** Refactor the React components to introduce standard `data-testid="..."` attributes for all interactive elements to decouple automated tests from styling and DOM structure.
 
-## 4. Automation & Testability QA
-**Status:** **PASS (with reservations)**
-
-- **Strengths:** The DOM structure heavily utilizes deterministic `id` attributes (e.g., `#overview-screen`, `#workspace-search-input`, `#btn-pilot-run`), making it viable for tool-based testing.
-- **Findings:** The codebase completely lacks standard `data-testid` or `data-test-id` attributes. Relying on `#id` and Tailwind CSS utility classes introduces brittleness, as styling changes might inadvertently break Playwright/Selenium test selectors.
-- **Action Item:** Refactor the React components to introduce standard `data-testid="..."` attributes for all interactive elements to decouple automated tests from styling/DOM structure.
+## 4. Accessibility QA
+**Status:** **INCONCLUSIVE (Static Pass)**
+- **Methodology:** Static HTML shell evaluation via `curl.exe -s http://localhost:8000`
+- **Findings:** The static HTML shell correctly implements `lang="en"` and the viewport meta tag for mobile responsiveness. However, because it is an SPA (`<div id="root"></div>`), there are no ARIA attributes or semantic HTML tags (like `<main>`, `<header>`) in the initial payload. 
+- **Action Item:** A full accessibility evaluation of ARIA compliance requires a headless browser to render the dynamic DOM.
 
 ## 5. Usability QA
 **Status:** **NEEDS IMPROVEMENT**
-
-- **Strengths:** Modern SPA architecture allows for seamless client-side transitions once loaded.
-- **Findings:** The application fails gracefully. It lacks a `<noscript>` tag warning users if JavaScript is disabled or fails to load. Additionally, a valid favicon is missing (`<link rel="icon" href="data:,">`), which degrades the tab identification experience for users juggling multiple tools.
+- **Methodology:** Static HTML evaluation via `curl -s http://localhost:8000`
+- **Findings:** The application includes a correct `<title>` and viewport configuration. However, it fails to provide a `<noscript>` tag to warn users who have JavaScript disabled (which is required for this SPA). Furthermore, the favicon is implemented as an empty placeholder (`<link rel="icon" href="data:,">`), which degrades tab identification.
 - **Action Item:** Add a `<noscript>` fallback in the `index.html` and provide a proper favicon.
 
 ---
-*Report generated autonomously via CHERENKOV Teamwork Orchestration.*
+*Report generated autonomously via CHERENKOV Teamwork Orchestration from verified subagent evidence.*
