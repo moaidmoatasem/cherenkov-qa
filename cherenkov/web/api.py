@@ -422,8 +422,19 @@ async def list_review_queue(status: str | None = "pending", _auth=Depends(verify
     """List HITL queue items from the live SQLite queue."""
     queue = get_queue()
     items = queue.list(status=status)
-    return [
-        {
+    tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
+    result = []
+    for item in items:
+        # Load generated test code from disk so reviewers can see what they're approving
+        test_code = None
+        spec_path = os.path.join(tests_dir, f"{item.id}.spec.ts")
+        if os.path.exists(spec_path):
+            try:
+                with open(spec_path) as f:
+                    test_code = f.read()
+            except OSError:
+                pass
+        result.append({
             "id": item.id,
             "endpoint": item.endpoint,
             "method": item.method,
@@ -431,11 +442,10 @@ async def list_review_queue(status: str | None = "pending", _auth=Depends(verify
             "confidence_reason": item.confidence_reason,
             "review_gate_failed": item.review_gate_failed,
             "status": item.status.value,
-            "generated_test": None,
+            "generated_test": test_code,
             "created_at": item.created_at,
-        }
-        for item in items
-    ]
+        })
+    return result
 
 @app.post("/api/v1/review/approve")
 async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
