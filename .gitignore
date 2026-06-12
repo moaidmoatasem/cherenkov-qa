@@ -10,6 +10,7 @@ node_modules/
 # generated / local
 .cherenkov/
 *.log
+data/*.db
 stub/stripe-types.ts
 # ignore generated test run artefacts, but allow committed fixtures
 stub/generated_tests/test-results/
