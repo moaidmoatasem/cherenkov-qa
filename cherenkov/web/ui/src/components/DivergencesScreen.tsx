@@ -11,7 +11,7 @@ import {
 } from './ui';
 import { fetchDivergences, actOnDivergence } from '../lib/api';
 import { Divergence, SeverityType, StatusType } from '../types';
-import { Search, ShieldAlert, ArrowRight, BookOpen, ExternalLink, HelpCircle } from 'lucide-react';
+import { Search, ShieldAlert, ArrowRight, BookOpen, ExternalLink, HelpCircle, Copy, CheckCircle } from 'lucide-react';
 
 export default function DivergencesScreen() {
   const { toast } = useToast();
@@ -27,9 +27,21 @@ export default function DivergencesScreen() {
 
   const listRef = useRef<HTMLDivElement>(null);
 
+  const [linkCopied, setLinkCopied] = useState(false);
+
   // Load divergences
   useEffect(() => {
-    fetchDivergences().then(setDivergences);
+    fetchDivergences().then(data => {
+      setDivergences(data);
+      const params = new URLSearchParams(window.location.search);
+      const divId = params.get('divergence');
+      if (divId) {
+        const found = data.find(d => d.id === divId);
+        if (found) {
+          setSelectedDiv(found);
+        }
+      }
+    });
   }, []);
 
   // Filter logic
@@ -267,11 +279,46 @@ export default function DivergencesScreen() {
         {selectedDiv && (
           <div className="space-y-6">
             {/* Header info */}
-            <div className="flex flex-wrap items-center gap-3">
-              <SeverityPill severity={selectedDiv.severity} />
-              <StatusDot status={selectedDiv.status} showLabel />
-              <ProvenanceChip type={selectedDiv.divergenceClass === 'D1' ? 'spec' : selectedDiv.divergenceClass === 'D4' ? 'db' : selectedDiv.divergenceClass === 'D3' ? 'code' : 'traffic'} />
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <SeverityPill severity={selectedDiv.severity} />
+                <StatusDot status={selectedDiv.status} showLabel />
+                <ProvenanceChip type={selectedDiv.divergenceClass === 'D1' ? 'spec' : selectedDiv.divergenceClass === 'D4' ? 'db' : selectedDiv.divergenceClass === 'D3' ? 'code' : 'traffic'} />
+              </div>
+              <button
+                onClick={async () => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('divergence', selectedDiv.id);
+                  await navigator.clipboard.writeText(url.toString());
+                  setLinkCopied(true);
+                  setTimeout(() => setLinkCopied(false), 2000);
+                  toast('Divergence link copied to clipboard.', 'success');
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white/5 border border-white/10 hover:bg-glow-blue/20 hover:border-glow-blue/50 hover:text-glow-bright text-xs font-semibold text-text-primary transition cursor-pointer"
+                title="Copy link to divergence"
+              >
+                {linkCopied ? <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                Share
+              </button>
             </div>
+
+            {/* Confidence Bar */}
+            {selectedDiv.confidence !== undefined && (
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-[10px] text-[#7D8DA1] font-mono tracking-wider uppercase">
+                  <span>Engine Confidence</span>
+                  <span className={selectedDiv.confidence > 0.8 ? 'text-emerald-400' : selectedDiv.confidence > 0.5 ? 'text-amber-400' : 'text-rose-400'}>
+                    {Math.round(selectedDiv.confidence * 100)}%
+                  </span>
+                </div>
+                <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden border border-white/10">
+                  <div
+                    style={{ width: `${Math.round(selectedDiv.confidence * 100)}%` }}
+                    className={`h-full rounded-full transition-all duration-500 ${selectedDiv.confidence > 0.8 ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : selectedDiv.confidence > 0.5 ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]'}`}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Path description */}
             <div>

@@ -71,17 +71,6 @@ export default function Sidebar({
   onSelectProject,
   reviewPendingCount = 0
 }: SidebarProps) {
-  const [sidebarMode, setSidebarMode] = useState<'guided' | 'expert'>(() => {
-    try {
-      return (localStorage.getItem('[cherenkov] sidebar_mode') as 'guided' | 'expert') || 'guided';
-    } catch { return 'guided'; }
-  });
-
-  const toggleMode = () => {
-    const next = sidebarMode === 'guided' ? 'expert' : 'guided';
-    setSidebarMode(next);
-    try { localStorage.setItem('[cherenkov] sidebar_mode', next); } catch { /* noop */ }
-  };
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     'PIPELINE': true,
@@ -201,52 +190,30 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Guided / Expert mode switcher + nav */}
-        {sidebarMode === 'guided' ? (
-          <>
-            <GuidedFlow
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              reviewPendingCount={reviewPendingCount}
-            />
-            <button
-              onClick={toggleMode}
-              id="btn-switch-to-expert"
-              data-testid="btn-switch-to-expert"
-              className="mx-3 mb-2 w-[calc(100%-24px)] px-3 py-2 rounded-lg text-[10px] font-mono uppercase tracking-wider text-[#7D8DA1] border border-white/10 hover:border-glow-blue/40 hover:text-glow-bright transition text-center cursor-pointer hidden lg:flex items-center justify-center gap-1.5"
-            >
-              <SlidersHorizontal className="w-3 h-3" />
-              Expert View
-            </button>
-          </>
-        ) : (
-          <>
-            {/* Back to Guided button */}
-            <button
-              onClick={toggleMode}
-              id="btn-switch-to-guided"
-              data-testid="btn-switch-to-guided"
-              className="mx-3 my-1 w-[calc(100%-24px)] px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider text-[#7D8DA1] border border-white/10 hover:border-glow-blue/40 hover:text-glow-bright transition text-center cursor-pointer hidden lg:flex items-center justify-center gap-1.5"
-            >
-              ← Guided Flow
-            </button>
+        {/* Unified Nav */}
+        <div className="flex flex-col h-full overflow-hidden">
+          <GuidedFlow
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            reviewPendingCount={reviewPendingCount}
+          />
 
-            {/* Search Filter */}
-            <div className="px-3 lg:px-4 pb-2 shrink-0 hidden lg:block">
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-[#7D8DA1]" />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-black/30 text-text-primary text-xs pl-8 pr-2 py-1.5 rounded border border-white/10 focus:outline-none focus:border-glow-blue transition"
-                />
-              </div>
+          {/* Search Filter */}
+          <div className="px-3 lg:px-4 py-2 shrink-0 hidden lg:block border-t border-white/5 mt-2">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-[#7D8DA1]" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-black/30 text-text-primary text-xs pl-8 pr-2 py-1.5 rounded border border-white/10 focus:outline-none focus:border-glow-blue transition"
+              />
             </div>
+          </div>
 
-            {/* Expert Nav Links */}
-            <nav className="flex-1 px-2 py-3 space-y-4 overflow-y-auto">
+          {/* Expert Nav Links */}
+          <nav className="flex-1 px-2 py-2 space-y-4 overflow-y-auto">
               {sections.map((section) => {
                 const filteredItems = section.items.filter(item =>
                   item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -321,8 +288,7 @@ export default function Sidebar({
                 );
               })}
             </nav>
-          </>
-        )}
+        </div>
       </div>
 
       {/* Bottom Pinned section */}
