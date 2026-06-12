@@ -725,13 +725,6 @@ async def get_signals():
         ]
     }
 
-@app.get("/api/v1/projects")
-async def get_projects():
-    """Return active workspaces."""
-    return [
-        {"id": "p1", "name": "cherenkov-qa", "path": "~/cherenkov-qa", "status": "active", "lastActivity": "Just now"}
-    ]
-
 # ── Explore ──────────────────────────────────────────────────────────────────
 
 class ExplorePayload(BaseModel):
@@ -855,9 +848,18 @@ async def run_visual_check(background_tasks: BackgroundTasks, target_url: str = 
 
 @app.get("/api/v1/failures")
 async def get_failures():
-    """Return recent failure verdicts from the VerdictStore."""
+    """Return recent failure verdicts shaped as FailingTest for the HealingScreen."""
     from cherenkov.reflector.store import VerdictStore
     from cherenkov.core.contracts import VerdictOutcome
+
+    # Map DB failure_class values to UI FailingTest.failureType enum
+    _FAILURE_TYPE_MAP = {
+        "CONTRACT_DRIFT": "CONTRACT_DRIFT",
+        "AUTH_EXPIRY": "AUTH_EXPIRY",
+        "STATE_SEQUENCING": "STATE_SEQUENCING",
+        "NETWORK_FLAKY": "NETWORK_FLAKY",
+        "ASSERTION_DRIFT": "ASSERTION_DRIFT",
+    }
 
     store = VerdictStore()
     conn = sqlite3.connect(store.db_path, timeout=10.0)
@@ -869,12 +871,29 @@ async def get_failures():
             "ORDER BY timestamp DESC LIMIT 50",
             (VerdictOutcome.REJECT.value, VerdictOutcome.ESCAPED_DEFECT.value)
         )
-        rows = [dict(r) for r in cursor.fetchall()]
+        raw = [dict(r) for r in cursor.fetchall()]
     except Exception:
-        rows = []
+        raw = []
     finally:
         conn.close()
-    return rows
+
+    # Shape into FailingTest interface expected by HealingScreen
+    return [
+        {
+            "id": r["id"],
+            "name": r["endpoint"] or r["id"],
+            "failureType": _FAILURE_TYPE_MAP.get(r.get("failure_class") or "", "ASSERTION_DRIFT"),
+            "diagnosis": r.get("detail") or "Failure detected during review.",
+            "oldCode": "",
+            "proposedCode": "",
+            "hasAssertionWarning": False,
+            # keep raw fields for other consumers
+            "endpoint": r["endpoint"],
+            "outcome": r["outcome"],
+            "timestamp": r["timestamp"],
+        }
+        for r in raw
+    ]
 
 @app.get("/api/v1/memory")
 async def get_memory():
