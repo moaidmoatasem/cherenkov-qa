@@ -400,6 +400,8 @@ async def list_generated_tests():
             file_path = os.path.join(tests_dir, f)
             with open(file_path, "r", encoding="utf-8") as file:
                 code = file.read()
+            if not code or not code.strip():
+                continue
             scenario_id = f.replace(".spec.ts", "")
             # Infer HTTP method from test code; fall back to GET if not found
             method_match = _re.search(r'method:\s*["\']([A-Z]+)["\']', code) or \
@@ -558,9 +560,14 @@ async def classify_review_item(payload: ClassifyPayload, _auth=Depends(verify_ap
 #
 @app.post("/api/v1/validate")
 async def validate_test_suite(payload: ValidatePayload):
+    import asyncio, functools
     try:
         engine = ValidationEngine("api_validate")
-        results = engine.validate_suite(payload.target_url)
+        loop = asyncio.get_event_loop()
+        results = await loop.run_in_executor(
+            None,
+            functools.partial(engine.validate_suite, payload.target_url)
+        )
         return results
     except Exception as e:
         raise HTTPException(status_code=500, detail="Validation failed. Check the target URL and try again.")
