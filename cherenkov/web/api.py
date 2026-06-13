@@ -409,16 +409,20 @@ async def list_generated_tests():
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
     if not os.path.exists(tests_dir):
         return []
-    tests = []
-    for f in sorted(os.listdir(tests_dir)):
-        if f.endswith(".spec.ts"):
+    def _scan() -> list[dict]:
+        tests = []
+        for f in sorted(os.listdir(tests_dir)):
+            if not f.endswith(".spec.ts"):
+                continue
             file_path = os.path.join(tests_dir, f)
-            with open(file_path, "r", encoding="utf-8") as file:
-                code = file.read()
+            try:
+                with open(file_path, "r", encoding="utf-8") as fh:
+                    code = fh.read()
+            except OSError:
+                continue
             if not code or not code.strip():
                 continue
             scenario_id = f.replace(".spec.ts", "")
-            # Infer HTTP method from test code; fall back to GET if not found
             method_match = _re.search(r'method:\s*["\']([A-Z]+)["\']', code) or \
                            _re.search(r'\.(get|post|put|patch|delete)\s*\(', code, _re.IGNORECASE)
             method = method_match.group(1).upper() if method_match else "GET"
@@ -429,7 +433,9 @@ async def list_generated_tests():
                 "method": method,
                 "code": code
             })
-    return tests
+        return tests
+
+    return await asyncio.to_thread(_scan)
 
 #
 # Review — wired to real HitlQueue (Issue 173)
@@ -547,8 +553,11 @@ async def edit_review_item(payload: ReviewActionPayload, _auth=Depends(verify_ap
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
     os.makedirs(tests_dir, exist_ok=True)
     file_path = os.path.join(tests_dir, f"{payload.scenario_id}.spec.ts")
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write(payload.test_code)
+    code_to_write = payload.test_code
+    def _write():
+        with open(file_path, "w", encoding="utf-8") as fh:
+            fh.write(code_to_write)
+    await asyncio.to_thread(_write)
     return {"status": "saved", "scenario_id": payload.scenario_id}
 
 @app.post("/api/v1/review/classify")
@@ -822,20 +831,24 @@ async def list_visual_scenarios():
     import glob as _glob
     import json as _json
 
-    results = []
-    run_dir = ".cherenkov"
-    pattern = os.path.join(run_dir, "*", "visual_*.json")
-    try:
-        for path in sorted(_glob.glob(pattern), key=os.path.getmtime, reverse=True)[:20]:
-            try:
-                with open(path) as fh:
-                    data = _json.load(fh)
-                    if isinstance(data, dict) and "scenario_id" in data:
-                        results.append(data)
-            except Exception:
-                continue
-    except Exception:
-        pass
+    def _scan_visuals() -> list[dict]:
+        out = []
+        run_dir = ".cherenkov"
+        pattern = os.path.join(run_dir, "*", "visual_*.json")
+        try:
+            for path in sorted(_glob.glob(pattern), key=os.path.getmtime, reverse=True)[:20]:
+                try:
+                    with open(path) as fh:
+                        data = _json.load(fh)
+                        if isinstance(data, dict) and "scenario_id" in data:
+                            out.append(data)
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        return out
+
+    results = await asyncio.to_thread(_scan_visuals)
     return results
 
 

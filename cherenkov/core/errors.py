@@ -4,10 +4,12 @@ From Week 1, not bolted on later (Non-Negotiable #17).
 """
 from __future__ import annotations
 
-  
 import json
 import sys
+import threading
 import time
+
+_tl = threading.local()  # per-thread events file slot
 
 
 # ── typed exceptions (never raise bare Exception in pipeline code) ──────────
@@ -60,7 +62,16 @@ class CertificationError(CherenkovError):
 
 class LoggerConfig:
     suppress_stderr = False
-    events_file = None
+    events_file = None  # module-level fallback; prefer per-thread via set_events_file()
+
+
+def set_events_file(f) -> None:
+    """Bind an events file to the current thread (safe for concurrent pipeline runs)."""
+    _tl.events_file = f
+
+
+def _get_events_file():
+    return getattr(_tl, "events_file", None) or LoggerConfig.events_file
 
 # ── structured logging (JSONL, one event per line) ──────────────────────────
 class StructuredLogger:
@@ -84,9 +95,10 @@ class StructuredLogger:
         line = json.dumps(record)
         if not LoggerConfig.suppress_stderr:
             print(line, file=sys.stderr)
-        if LoggerConfig.events_file:
-            LoggerConfig.events_file.write(line + "\n")
-            LoggerConfig.events_file.flush()
+        ef = _get_events_file()
+        if ef:
+            ef.write(line + "\n")
+            ef.flush()
         if self._file:
             self._file.write(line + "\n")
             self._file.flush()
