@@ -261,6 +261,15 @@ class GenerateStage:
                     metadata=StageMeta(stage="GENERATE", duration_ms=0)
                 )
 
+        if not code or not code.strip():
+            return GenerateOutput(
+                scenario_id=mutation_id,
+                test_code="",
+                status=Status.FAILED,
+                errors=[StageError(code="GENERATE_EMPTY", detail="Generator produced empty output")],
+                metadata=StageMeta(stage="GENERATE", duration_ms=0)
+            )
+
         dt = int((time.time() - t0) * 1000)
         self.log.info("stage success", duration_ms=dt)
 
