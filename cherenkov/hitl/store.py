@@ -99,6 +99,8 @@ class HitlQueue:
                 approved_by TEXT, approved_at TEXT, reject_reason TEXT,
                 run_id TEXT, spec_hash TEXT, created_at TEXT
             );
+            CREATE INDEX IF NOT EXISTS idx_hitl_status
+                ON hitl_queue(status, created_at);
             CREATE TABLE IF NOT EXISTS audit_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 command TEXT NOT NULL, actor TEXT NOT NULL, source TEXT NOT NULL,
@@ -168,7 +170,7 @@ class HitlQueue:
             if extra_sql:
                 sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=?, reject_reason=? WHERE id=? AND status='pending'"
                 vals = (new_status.value, actor, _now(), extra_vals[0], item_id)
-            
+
             cur = con.execute(sql, vals)
             rows = cur.rowcount
             if rows == 1:
@@ -185,7 +187,7 @@ class HitlQueue:
             )
             con.commit()
         finally:
-            pass
+            con.close()
 
         if outcome == "success":
             env = ok_envelope(command, {

@@ -244,6 +244,16 @@ class OrchestrationEngine:
         simulate_fail_stage: str | None = None,
     ) -> bool:
         """Runs E2E pipeline, tracking progress on the CLI. Returns True on success."""
+        try:
+            return self._run_pipeline_inner(spec_path, simulate_fail_stage)
+        finally:
+            self.close()
+
+    def _run_pipeline_inner(
+        self,
+        spec_path: str,
+        simulate_fail_stage: str | None = None,
+    ) -> bool:
         import os as _os
         if simulate_fail_stage:
             assert _os.getenv("CHERENKOV_ENV", "production") != "production", \
