@@ -313,6 +313,102 @@ jobs:
 
 ---
 
+## MCP Integration
+
+CHERENKOV exposes a Model Context Protocol (MCP) server so IDE agents — Claude Desktop, Cursor, Copilot, and [Open Interpreter](https://github.com/openinterpreter/openinterpreter) — can query conformance results, trigger new runs, and explain findings without leaving the editor.
+
+### Starting the MCP Server
+
+```bash
+./bin/cherenkov mcp serve
+```
+
+Communicates via JSON-RPC 2.0 over stdio. Blocks until stdin closes.
+
+### Available Tools
+
+| Tool | Permission | Description |
+|------|-----------|-------------|
+| `hitl_list` | read | List HITL queue items by status |
+| `hitl_approve` | write | Approve a pending HITL item |
+| `hitl_reject` | write | Reject a pending HITL item |
+| `validate_run_gate` | read | Run Validation Gate in report-only mode |
+| `run_conformance_check` | execute | Trigger `cherenkov validate` and return report summary |
+| `get_last_report` | read | Return `.cherenkov/report.json` without a new run |
+| `list_drift_findings` | read | List spec-drift findings, filterable by severity and endpoint |
+| `get_tightening_suggestions` | read | Return OpenAPI spec tightening suggestions for an endpoint |
+| `explain_finding` | read | Natural-language LLM explanation of a specific finding |
+| `chat_query_verdicts` | read | Query recent test verdicts from the Reflector |
+| `chat_query_idioms` | read | Query learned idiom patterns |
+| `chat_explain_divergence` | read | Explain a divergence via GraphRAG |
+| `chat_run_test` | read | Plan test scenarios (suggest-only) |
+| `policy_list` / `policy_reload` | admin | View and hot-reload `cherenkov-policy.json` |
+
+### Client Configurations
+
+#### Claude Desktop
+
+Add to `claude_desktop_config.json → mcpServers`:
+
+```json
+{
+  "cherenkov": {
+    "command": "python3",
+    "args": ["/path/to/cherenkov-qa/cherenkov.py", "mcp", "serve"],
+    "cwd": "/path/to/cherenkov-qa"
+  }
+}
+```
+
+#### Open Interpreter
+
+Add to `~/.openinterpreter/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "cherenkov": {
+      "command": "python3",
+      "args": ["/path/to/cherenkov-qa/cherenkov.py", "mcp", "serve"],
+      "cwd": "/path/to/cherenkov-qa",
+      "env": {
+        "MCP_PROFILE": "full-dev"
+      }
+    }
+  }
+}
+```
+
+After adding the config, restart Open Interpreter. The cherenkov tools appear automatically in the tool list. You can then ask Open Interpreter to run conformance checks, query findings, or explain drift directly from the terminal.
+
+#### Cursor / VS Code Copilot
+
+Add to `.cursor/mcp.json` (or VS Code's MCP settings):
+
+```json
+{
+  "mcpServers": {
+    "cherenkov": {
+      "command": "python3",
+      "args": ["cherenkov.py", "mcp", "serve"],
+      "cwd": "/path/to/cherenkov-qa"
+    }
+  }
+}
+```
+
+### Policy Enforcement
+
+Tools are governed by `cherenkov-policy.json`. The `full-dev` profile (default) allows all tools. `run_conformance_check` requires `execute` permission; all other conformance tools are read-only.
+
+Set the active profile via:
+
+```bash
+export MCP_PROFILE=full-dev   # default
+```
+
+---
+
 ## Further Reading
 
 - [CLI Reference](CLI-Reference.md) — flags that override config values

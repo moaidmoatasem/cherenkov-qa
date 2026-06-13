@@ -502,16 +502,6 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_policy_list(arguments).model_dump()
         if name == "policy_reload":
             return _tool_policy_reload(arguments).model_dump()
-        if name == "run_conformance_check":
-            return _tool_run_conformance_check(arguments).model_dump()
-        if name == "get_last_report":
-            return _tool_get_last_report(arguments).model_dump()
-        if name == "list_drift_findings":
-            return _tool_list_drift_findings(arguments).model_dump()
-        if name == "get_tightening_suggestions":
-            return _tool_get_tightening_suggestions(arguments).model_dump()
-        if name == "explain_finding":
-            return _tool_explain_finding(arguments).model_dump()
     except ValidationError as exc:
         return _err_content(f"Invalid input: {exc}").model_dump()
     except Exception as exc:
@@ -743,111 +733,6 @@ def _tool_chat_run_test(args: dict[str, Any]) -> MCPToolCallResult:
     from cherenkov.chat.tools import run_test
     result = run_test(endpoint=inp.endpoint, method=inp.method, spec_path=spec_path)
     return _ok_content(result)
-
-
-def _tool_run_conformance_check(args: dict[str, Any]) -> MCPToolCallResult:
-    inp = RunConformanceCheckInput.model_validate(args)
-    from cherenkov.execution.validate import ValidationEngine
-    engine = ValidationEngine("mcp_conformance")
-    results = engine.validate_suite(target_url=inp.target_url, workers=inp.workers)
-    
-    # Save the report to .cherenkov/report.json
-    os.makedirs(".cherenkov", exist_ok=True)
-    with open(".cherenkov/report.json", "w") as f:
-        json.dump(results, f, indent=2)
-        
-    return _ok_content({
-        "status": "complete",
-        "passed": sum(1 for r in results.get("reports", []) if r.get("passed", False)),
-        "failed": sum(1 for r in results.get("reports", []) if not r.get("passed", False)),
-        "drift_count": sum(1 for r in results.get("reports", []) if not r.get("passed", False)),
-        "report_path": ".cherenkov/report.json",
-    })
-
-
-def _tool_get_last_report(args: dict[str, Any]) -> MCPToolCallResult:
-    from pathlib import Path
-    report_path = Path(".cherenkov/report.json")
-    if not report_path.exists():
-        return _err_content("No report found. Run cherenkov validate first.")
-    try:
-        data = json.loads(report_path.read_text())
-        return _ok_content(data)
-    except Exception as exc:
-        return _err_content(f"Failed to read report: {exc}")
-
-
-def _tool_list_drift_findings(args: dict[str, Any]) -> MCPToolCallResult:
-    inp = ListDriftFindingsInput.model_validate(args)
-    from cherenkov.web.divergences import get_divergences
-    findings = get_divergences(
-        severity=inp.severity,
-        endpoint=inp.endpoint,
-        limit=inp.limit,
-    )
-    return _ok_content({
-        "findings": [f.dict() for f in findings],
-        "total": len(findings),
-    })
-
-
-def _tool_get_tightening_suggestions(args: dict[str, Any]) -> MCPToolCallResult:
-    inp = GetTighteningInput.model_validate(args)
-    report = _get_latest_validation_report()
-    reports = report.get("reports", [])
-    if not reports:
-        import os
-        report_path = os.path.join(os.getcwd(), ".cherenkov", "report.json")
-        if os.path.exists(report_path):
-            try:
-                with open(report_path) as f:
-                    data = json.load(f)
-                    reports = data.get("reports", [])
-            except Exception:
-                pass
-                
-    suggestions = []
-    endpoint_clean = inp.endpoint.strip("/").lower()
-    method_clean = inp.method.upper()
-    for r in reports:
-        scenario_id = r.get("scenario_id", "").lower()
-        if method_clean.lower() in scenario_id and endpoint_clean.replace("/", "_") in scenario_id:
-            suggestions.extend(r.get("suggestions", []))
-            
-    return _ok_content({
-        "endpoint": inp.endpoint,
-        "method": inp.method,
-        "suggestions": list(set(suggestions)),
-    })
-
-
-def _tool_explain_finding(args: dict[str, Any]) -> MCPToolCallResult:
-    inp = ExplainFindingInput.model_validate(args)
-    from cherenkov.web.divergences import get_finding_by_id
-    finding = get_finding_by_id(inp.finding_id)
-    if not finding:
-        return _err_content(f"Finding {inp.finding_id} not found")
-
-    prompt = f"""
-    Explain this API conformance finding to a developer:
-    Endpoint: {finding.endpoint} ({finding.method})
-    Issue: {finding.summary}
-    Expected: {finding.expected}
-    Actual: {finding.actual}
-
-    Explain: 1) What this means, 2) Why it matters, 3) How to fix it.
-    {"Be concise (2-3 sentences)." if inp.detail_level == "concise" else "Be thorough."}
-    """
-    
-    from cherenkov.core.contracts import ReasoningRequest
-    from cherenkov.substrate.router import route
-    req = ReasoningRequest(task=prompt, capability_tier="small")
-    try:
-        res = route(req)
-        explanation = str(res.content).strip()
-        return _ok_content({"finding_id": inp.finding_id, "explanation": explanation})
-    except Exception as exc:
-        return _err_content(f"LLM routing error: {exc}")
 
 
 # ── Evidence helpers ──────────────────────────────────────────────────────────
