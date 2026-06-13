@@ -49,6 +49,7 @@ class AnthropicProvider(ModelProvider):
         model: str | None = None,
     ) -> None:
         self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY", "")
+        self.bearer_token = os.environ.get("ANTHROPIC_BEARER_TOKEN", "")
         self.model = model or os.getenv(
             "CHERENKOV_ANTHROPIC_MODEL", _DEFAULT_GENERATION_MODEL
         )
@@ -60,6 +61,11 @@ class AnthropicProvider(ModelProvider):
             raise ImportError(
                 "anthropic package not installed. Run: pip install anthropic"
             ) from exc
+        if self.bearer_token:
+            return anthropic.Anthropic(
+                api_key="bearer",
+                default_headers={"Authorization": f"Bearer {self.bearer_token}"},
+            )
         return anthropic.Anthropic(api_key=self.api_key)
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
