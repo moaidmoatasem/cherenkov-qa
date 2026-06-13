@@ -115,3 +115,7 @@ stub/generated_tests/visual_cli_*.spec.ts
 *.err
 *.exe
 kubeconfig*.yaml
+
+# Eject flow output directories (generated at runtime)
+stub/audit_exported/
+stub/exported_tests/
