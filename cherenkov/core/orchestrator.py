@@ -24,7 +24,7 @@ from cherenkov.core.contracts import (
     IngestOutput, PlanOutput, GenerateOutput, ReviewOutput,
     EndpointSlice, Mutation, Scenario, GateResult, Verdict, Status, StageMeta, StageError
 )
-from cherenkov.core.errors import get_logger, ContractError
+from cherenkov.core.errors import get_logger, ContractError, set_events_file
 from cherenkov.ai import get_accounting_report, get_cache_stats
 from cherenkov.stages.ingest import IngestStage
 from cherenkov.stages.plan import PlanStage
@@ -58,12 +58,12 @@ class OrchestrationEngine:
     def __init__(self, run_id: str | None = None, error_threshold: int = 2, event_callback: Callable[[str, dict], None] | None = None):
         self.run_id = run_id or str(uuid.uuid4())[:8]
         
-        # Setup run directory and events log (Issue 186)
+        # Setup run directory and per-thread events log (Issue 186)
         import os
-        from cherenkov.core.errors import LoggerConfig
         run_dir = os.path.abspath(f".cherenkov/runs/{self.run_id}")
         os.makedirs(run_dir, exist_ok=True)
-        LoggerConfig.events_file = open(os.path.join(run_dir, "events.jsonl"), "a", encoding="utf-8")
+        self._events_file = open(os.path.join(run_dir, "events.jsonl"), "a", encoding="utf-8")
+        set_events_file(self._events_file)  # bind to this thread; safe for concurrent runs
         
         self.log = get_logger("orchestrator", self.run_id)
         self.breaker = CircuitBreaker(threshold=error_threshold)
@@ -72,10 +72,10 @@ class OrchestrationEngine:
 
     def close(self):
         """Close any open file handles."""
-        from cherenkov.core.errors import LoggerConfig
-        if LoggerConfig.events_file and not LoggerConfig.events_file.closed:
-            LoggerConfig.events_file.close()
-            LoggerConfig.events_file = None
+        set_events_file(None)
+        if self._events_file and not self._events_file.closed:
+            self._events_file.close()
+            self._events_file = None
 
     def _emit_event(self, event: str, data: dict) -> None:
         """Invoke the event callback, swallowing any errors to prevent silent pipeline failure."""
