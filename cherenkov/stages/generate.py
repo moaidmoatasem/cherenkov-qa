@@ -261,7 +261,7 @@ class GenerateStage:
                     metadata=StageMeta(stage="GENERATE", duration_ms=0)
                 )
 
-        if not code or not code.strip():
+        if not isinstance(code, str) or not code.strip():
             return GenerateOutput(
                 scenario_id=mutation_id,
                 test_code="",
