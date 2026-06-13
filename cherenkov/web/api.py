@@ -128,21 +128,36 @@ async def verify_api_key(x_api_key: str | None = Header(None), authorization: st
 class ConnectionManager:
     def __init__(self):
         self.active_connections: list[WebSocket] = []
+        self._lock = asyncio.Lock()
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
-        self.active_connections.append(websocket)
+        async with self._lock:
+            self.active_connections.append(websocket)
 
-    def disconnect(self, websocket: WebSocket):
-        if websocket in self.active_connections:
-            self.active_connections.remove(websocket)
+    async def disconnect(self, websocket: WebSocket):
+        async with self._lock:
+            try:
+                self.active_connections.remove(websocket)
+            except ValueError:
+                pass
 
     async def broadcast(self, message: dict):
-        for connection in self.active_connections:
+        async with self._lock:
+            conns = list(self.active_connections)
+        dead = []
+        for connection in conns:
             try:
                 await connection.send_json(message)
             except Exception:
-                pass
+                dead.append(connection)
+        if dead:
+            async with self._lock:
+                for c in dead:
+                    try:
+                        self.active_connections.remove(c)
+                    except ValueError:
+                        pass
 
 manager = ConnectionManager()
 
@@ -425,18 +440,21 @@ async def list_review_queue(status: str | None = "pending", _auth=Depends(verify
     queue = get_queue()
     items = queue.list(status=status)
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
-    result = []
-    for item in items:
-        # Load generated test code from disk so reviewers can see what they're approving
-        test_code = None
-        spec_path = os.path.join(tests_dir, f"{item.id}.spec.ts")
-        if os.path.exists(spec_path):
+
+    def _load_all_codes() -> dict[str, str | None]:
+        codes: dict[str, str | None] = {}
+        for item in items:
+            spec_path = os.path.join(tests_dir, f"{item.id}.spec.ts")
             try:
-                with open(spec_path) as f:
-                    test_code = f.read()
+                with open(spec_path, encoding="utf-8") as f:
+                    codes[item.id] = f.read() or None
             except OSError:
-                pass
-        result.append({
+                codes[item.id] = None
+        return codes
+
+    codes = await asyncio.to_thread(_load_all_codes)
+    return [
+        {
             "id": item.id,
             "endpoint": item.endpoint,
             "method": item.method,
@@ -444,10 +462,11 @@ async def list_review_queue(status: str | None = "pending", _auth=Depends(verify
             "confidence_reason": item.confidence_reason,
             "review_gate_failed": item.review_gate_failed,
             "status": item.status.value,
-            "generated_test": test_code,
+            "generated_test": codes.get(item.id),
             "created_at": item.created_at,
-        })
-    return result
+        }
+        for item in items
+    ]
 
 @app.post("/api/v1/review/approve")
 async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
@@ -1137,7 +1156,7 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             await websocket.receive_text()
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        await manager.disconnect(websocket)
 
 #
 # Static file serving for prebuilt UI
