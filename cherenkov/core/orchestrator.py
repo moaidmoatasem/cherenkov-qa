@@ -372,6 +372,12 @@ class OrchestrationEngine:
                     self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
                     return False
 
+                if generate.status != Status.OK:
+                    self.log.warning("skipping REVIEW: generate stage failed", scenario_id=generate.scenario_id)
+                    print("  REVIEW  [ SKIPPED ]")
+                    self._emit_event("stage_skip", {"stage": "REVIEW", "reason": "generate failed"})
+                    break
+
                 self._emit_event("stage_start", {"stage": "REVIEW"})
 
                 print("  REVIEW  [ Running... ]")
