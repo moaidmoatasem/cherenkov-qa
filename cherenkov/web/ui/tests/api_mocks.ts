@@ -663,6 +663,55 @@ export async function setupApiMocks(page: any) {
   await page.route('**/api/v1/review/reject', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
   });
+  await page.route('**/api/v1/review/edit', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+  await page.route('**/api/v1/review/explain', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      explanation: 'The test asserts the correct status code and response shape. However, the quality gate flagged that the descriptive name of the updated pet is not verified after the PUT call, which could mask a silent data-mutation bug.'
+    }) });
+  });
+  // SDD Agent Cockpit mocks
+  await page.route('**/api/v1/sdd/status', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      session: { id: 'sess-001', status: 'open', task: 'ui-e2e-thorough' },
+      current_tokens: { session_id: 'sess-001', prompt: 8200, generate: 3100, read: 1400, search: 600, total: 13300 },
+      budget: { per_session: 50000 },
+      historical: { total_all_time: 284000, sessions_completed: 12, avg_per_session: 23666, by_task_type: { 'ui-e2e': { sessions: 4, total_tokens: 91000 }, 'api-test': { sessions: 8, total_tokens: 193000 } } },
+      experience_count: 47,
+      sessions_since_compact: 3
+    }) });
+  });
+  await page.route('**/api/v1/sdd/sessions*', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
+      { id: 'sess-001', task: 'ui-e2e-thorough', token_total: 13300, summary: 'Writing comprehensive UI E2E tests' },
+      { id: 'sess-002', task: 'api-regression', token_total: 22100, summary: 'Extended API regression suite' },
+      { id: 'sess-003', task: 'bug-3-detection', token_total: 9800, summary: 'GET /users empty list bug' },
+    ]) });
+  });
+  await page.route('**/api/v1/sdd/experience*', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
+      { id: 'exp-1', action: 'Added BUG-3 detection test for GET /users', outcome: 'success', token_cost: 420, patterns: ['regression-detection', 'api-contract'] },
+      { id: 'exp-2', action: 'Fixed null-body 204 response in stub client', outcome: 'success', token_cost: 310, patterns: ['http-semantics'] },
+      { id: 'exp-3', action: 'Attempted bearer auth with Anthropic SDK', outcome: 'failure', token_cost: 180, patterns: ['auth', 'api-client'] },
+    ]) });
+  });
+  await page.route('**/api/v1/sdd/tokens', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      current_session: { session_id: 'sess-001', prompt: 8200, generate: 3100, read: 1400, search: 600, total: 13300 },
+      budget: { per_session: 50000 },
+      historical: { total_all_time: 284000, sessions_completed: 12, avg_per_session: 23666, by_task_type: {} },
+      top_consumers: []
+    }) });
+  });
+  await page.route('**/api/v1/sdd/graph/patterns', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
+      { name: 'regression-detection', frequency: 8, success_rate: 0.88, avg_token_cost: 390 },
+      { name: 'api-contract', frequency: 12, success_rate: 0.92, avg_token_cost: 280 },
+      { name: 'http-semantics', frequency: 5, success_rate: 0.95, avg_token_cost: 220 },
+      { name: 'auth', frequency: 3, success_rate: 0.60, avg_token_cost: 450 },
+    ]) });
+  });
   await page.route('**/api/v1/run', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ run_id: 'test-run-id', status: 'started' }) });
   });
