@@ -314,16 +314,15 @@ async def ingest_spec_file(
             with open(spec_path, "wb") as f:
                 f.write(content)
         elif url:
-            import asyncio, functools, requests
+            import requests
             _validate_spec_url(url)
-            loop = asyncio.get_event_loop()
-            resp = await loop.run_in_executor(None, functools.partial(requests.get, url, timeout=15))
+            resp = await asyncio.to_thread(requests.get, url, timeout=15)
             resp.raise_for_status()
             with open(spec_path, "w", encoding="utf-8") as f:
                 f.write(resp.text)
 
         ingest_stage = IngestStage(run_id)
-        ingest_output = ingest_stage.run(spec_path)
+        ingest_output = await asyncio.to_thread(ingest_stage.run, spec_path)
 
         endpoints = []
         for ep in ingest_output.endpoints:
@@ -396,7 +395,7 @@ async def list_generated_tests():
     if not os.path.exists(tests_dir):
         return []
     tests = []
-    for f in os.listdir(tests_dir):
+    for f in sorted(os.listdir(tests_dir)):
         if f.endswith(".spec.ts"):
             file_path = os.path.join(tests_dir, f)
             with open(file_path, "r", encoding="utf-8") as file:
@@ -561,16 +560,16 @@ async def classify_review_item(payload: ClassifyPayload, _auth=Depends(verify_ap
 #
 @app.post("/api/v1/validate")
 async def validate_test_suite(payload: ValidatePayload):
-    import asyncio, functools
     try:
         engine = ValidationEngine("api_validate")
-        loop = asyncio.get_event_loop()
-        results = await loop.run_in_executor(
-            None,
-            functools.partial(engine.validate_suite, payload.target_url)
+        results = await asyncio.wait_for(
+            asyncio.to_thread(engine.validate_suite, payload.target_url),
+            timeout=300.0,
         )
         return results
-    except Exception as e:
+    except asyncio.TimeoutError:
+        raise HTTPException(status_code=504, detail="Validation timed out after 300 seconds.")
+    except Exception:
         raise HTTPException(status_code=500, detail="Validation failed. Check the target URL and try again.")
 
 #
@@ -745,7 +744,6 @@ class ExplorePayload(BaseModel):
 @app.post("/api/v1/explore")
 async def run_explorer(payload: ExplorePayload):
     """Run the autonomous Explorer: discover flows then crawl for anomalies."""
-    import asyncio, functools
     from cherenkov.divergence.explorer import Explorer
 
     ui_probe = None
@@ -764,8 +762,8 @@ async def run_explorer(payload: ExplorePayload):
         flows = []
         try:
             flows = explorer.discover_flows(discover_root, max_links=payload.max_links)
-        except Exception:
-            pass
+        except Exception as _exc:
+            logging.getLogger(__name__).warning("discover_flows raised unexpectedly: %s", _exc)
 
         # Phase 2: crawl the discovered API paths + UI paths
         paths = list({f["path"] for f in flows if f.get("path") and f["path"] != "/"})
@@ -794,8 +792,7 @@ async def run_explorer(payload: ExplorePayload):
             "hypotheses_count": len(hypotheses),
         }
 
-    loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(None, _run_sync)
+    return await asyncio.to_thread(_run_sync)
 
 
 # ── Visual Regression ─────────────────────────────────────────────────────────
