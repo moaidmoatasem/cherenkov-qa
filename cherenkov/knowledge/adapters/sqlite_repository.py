@@ -24,6 +24,31 @@ class SQLiteKnowledgeRepository:
             ")"
         )
         conn.execute("CREATE INDEX IF NOT EXISTS idx_source ON knowledge_items(source)")
+        # FTS5 index for fast full-text search (replaces LIKE '%x%' full-table-scan)
+        conn.execute(
+            "CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts "
+            "USING fts5(item_id UNINDEXED, data, content='knowledge_items', content_rowid='rowid')"
+        )
+        # Keep FTS in sync with the content table
+        conn.executescript("""
+            CREATE TRIGGER IF NOT EXISTS knowledge_fts_insert
+                AFTER INSERT ON knowledge_items BEGIN
+                    INSERT INTO knowledge_fts(rowid, item_id, data)
+                    VALUES (new.rowid, new.item_id, new.data);
+                END;
+            CREATE TRIGGER IF NOT EXISTS knowledge_fts_delete
+                AFTER DELETE ON knowledge_items BEGIN
+                    INSERT INTO knowledge_fts(knowledge_fts, rowid, item_id, data)
+                    VALUES ('delete', old.rowid, old.item_id, old.data);
+                END;
+            CREATE TRIGGER IF NOT EXISTS knowledge_fts_update
+                AFTER UPDATE ON knowledge_items BEGIN
+                    INSERT INTO knowledge_fts(knowledge_fts, rowid, item_id, data)
+                    VALUES ('delete', old.rowid, old.item_id, old.data);
+                    INSERT INTO knowledge_fts(rowid, item_id, data)
+                    VALUES (new.rowid, new.item_id, new.data);
+                END;
+        """)
         conn.commit()
         conn.close()
 
@@ -68,10 +93,20 @@ class SQLiteKnowledgeRepository:
 
     def search(self, pattern: str, limit: int = 10) -> list[KnowledgeQueryResult]:
         conn = sqlite3.connect(self.db_path)
-        cursor = conn.execute(
-            "SELECT item_id, source, data, metadata FROM knowledge_items WHERE data LIKE ? LIMIT ?",
-            (f"%{pattern}%", limit),
-        )
+        # FTS5 match (indexed) — falls back to LIKE scan if FTS table is missing
+        try:
+            cursor = conn.execute(
+                "SELECT k.item_id, k.source, k.data, k.metadata "
+                "FROM knowledge_items k "
+                "JOIN knowledge_fts f ON k.item_id = f.item_id "
+                "WHERE knowledge_fts MATCH ? LIMIT ?",
+                (f'"{pattern}"', limit),
+            )
+        except sqlite3.OperationalError:
+            cursor = conn.execute(
+                "SELECT item_id, source, data, metadata FROM knowledge_items WHERE data LIKE ? LIMIT ?",
+                (f"%{pattern}%", limit),
+            )
         rows = cursor.fetchall()
         conn.close()
         results = []
