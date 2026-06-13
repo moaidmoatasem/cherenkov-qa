@@ -129,8 +129,11 @@ const customFetch = async (input: RequestInfo | URL, init?: RequestInit): Promis
       headers.append(k, String(v));
     }
 
+    // Null-body statuses (204, 304) must not have a body in the Response constructor
+    const NULL_BODY_STATUSES = new Set([101, 204, 205, 304]);
+    const body = NULL_BODY_STATUSES.has(pwResponse.status()) ? null : bodyText;
 
-    return new Response(bodyText, {
+    return new Response(body, {
       status: pwResponse.status(),
       statusText: pwResponse.statusText(),
       headers: headers,

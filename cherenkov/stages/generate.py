@@ -168,9 +168,10 @@ class GenerateStage:
         cache = EndpointCache()
         cache_hash = None
 
-        # Only cache openapi source generations
+        # Only cache openapi source generations — key includes mutation_id so each
+        # scenario gets its own entry rather than sharing one per endpoint.
         if source_type == "openapi":
-            cache_hash = cache.compute_hash(path, method, {"op": operation, "sch": schemas}, Config.GEN_MODEL)
+            cache_hash = cache.compute_hash(path, method, {"op": operation, "sch": schemas, "mid": mutation_id}, Config.GEN_MODEL)
             entry = cache.get(cache_hash)
             if entry:
                 self.log.info("cache hit", hash=cache_hash)
