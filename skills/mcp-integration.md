@@ -7,12 +7,12 @@ related_contracts: [Track B/C]
 # MCP Integration Skill
 
 ## Purpose
-Expose CHERENKOV over the Model Context Protocol (JSON-RPC 2.0 over stdio) so Claude Desktop, Cursor, and other MCP clients can interact with the HITL queue and run the Validation Gate without leaving the IDE.
+Expose CHERENKOV over the Model Context Protocol (JSON-RPC 2.0 over stdio) so Claude Desktop, Cursor, Open Interpreter, and other MCP clients can query conformance results, trigger new runs, explain findings, and interact with the HITL queue — all without leaving the editor.
 
 ## When to Use
-- You use Claude Desktop, Cursor, or another MCP-compatible IDE
+- You use Claude Desktop, Cursor, Open Interpreter, or another MCP-compatible agent
 - You want to approve/reject HITL items from within your editor
-- You want to run the Validation Gate from an MCP client
+- You want to run conformance checks, query drift findings, or get spec tightening suggestions from an MCP client
 
 ## Workflow
 
@@ -39,6 +39,15 @@ Blocks until stdin closes. Communicates via JSON-RPC 2.0 over stdio.
 | `hitl_approve` | Approve a pending item (atomic SQL gatekeeper) |
 | `hitl_reject` | Reject a pending item (atomic SQL gatekeeper) |
 | `validate_run_gate` | Run the Validation Gate in report-only mode (suggest-only, D7 honored) |
+| `run_conformance_check` | Trigger `cherenkov validate` against a target URL; returns report summary (requires execute permission) |
+| `get_last_report` | Return `.cherenkov/report.json` without triggering a new run |
+| `list_drift_findings` | List spec-drift findings; filter by `severity` (high/medium/low) and `endpoint` |
+| `get_tightening_suggestions` | Return OpenAPI spec tightening suggestions for a given endpoint + method |
+| `explain_finding` | Natural-language LLM explanation of a specific finding by ID |
+| `chat_query_verdicts` | Query recent test verdicts from the Reflector |
+| `chat_query_idioms` | Query learned test idiom patterns |
+| `chat_explain_divergence` | Explain a divergence via the Knowledge Mesh GraphRAG |
+| `chat_run_test` | Plan test scenarios for an endpoint (suggest-only) |
 
 ### Security Model
 - All tool arguments validated with Pydantic before reaching the HITL queue
@@ -46,7 +55,9 @@ Blocks until stdin closes. Communicates via JSON-RPC 2.0 over stdio.
 - Server never reads secrets or env vars from client input
 - MCP peers are treated as untrusted
 
-### Claude Desktop Configuration
+### Client Configurations
+
+#### Claude Desktop
 Add to `claude_desktop_config.json → mcpServers`:
 ```json
 {
@@ -54,6 +65,36 @@ Add to `claude_desktop_config.json → mcpServers`:
     "command": "python3",
     "args": ["/path/to/cherenkov-qa/cherenkov.py", "mcp", "serve"],
     "cwd": "/path/to/cherenkov-qa"
+  }
+}
+```
+
+#### Open Interpreter
+Add to `~/.openinterpreter/mcp.json`:
+```json
+{
+  "mcpServers": {
+    "cherenkov": {
+      "command": "python3",
+      "args": ["/path/to/cherenkov-qa/cherenkov.py", "mcp", "serve"],
+      "cwd": "/path/to/cherenkov-qa",
+      "env": { "MCP_PROFILE": "full-dev" }
+    }
+  }
+}
+```
+Restart Open Interpreter after adding the config. Cherenkov tools appear automatically in the tool list.
+
+#### Cursor / VS Code
+Add to `.cursor/mcp.json`:
+```json
+{
+  "mcpServers": {
+    "cherenkov": {
+      "command": "python3",
+      "args": ["cherenkov.py", "mcp", "serve"],
+      "cwd": "/path/to/cherenkov-qa"
+    }
   }
 }
 ```
@@ -73,7 +114,7 @@ The project supports the [Docker MCP Gateway](https://github.com/docker/mcp-gate
 **Full-dev tool counts:**
 | Server | Tools | Notes |
 |--------|-------|-------|
-| cherenkov | 4 tools + 4 resources | `hitl_list`, `hitl_approve`, `hitl_reject`, `validate_run_gate` |
+| cherenkov | 13 tools + 5 resources | `hitl_list`, `hitl_approve`, `hitl_reject`, `validate_run_gate`, `run_conformance_check`, `get_last_report`, `list_drift_findings`, `get_tightening_suggestions`, `explain_finding`, `chat_*` (×4), `policy_*` (×2) |
 | context7 | 2 | `resolve-library-id`, `get-library-docs` |
 | sequentialthinking | 1 | Structured problem-solving |
 | github-official | 41 + 2 prompts + 5 resource templates | Issue/PR/repo management (requires PAT) |
