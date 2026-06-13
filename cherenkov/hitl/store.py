@@ -18,6 +18,7 @@ from __future__ import annotations
 import os as _os
 import os
 import sqlite3
+import threading
 import time
 import logging
 
@@ -82,10 +83,21 @@ def _validate_db_path(path: str) -> str:
 class HitlQueue:
     def __init__(self, db_path: str | None = None) -> None:
         self.db_path = _validate_db_path(db_path or _default_db_path())
+        self._local = threading.local()
         self._init()
 
     def _connect(self) -> sqlite3.Connection:
-        return _get_connection(self.db_path)
+        """Return a per-thread cached connection; reconnects if the connection is dead."""
+        con = getattr(self._local, "con", None)
+        if con is not None:
+            try:
+                con.execute("SELECT 1")
+                return con
+            except Exception:
+                pass
+        con = _get_connection(self.db_path)
+        self._local.con = con
+        return con
 
     def _init(self) -> None:
         con = self._connect()
@@ -109,7 +121,6 @@ class HitlQueue:
             """
         )
         con.commit()
-        con.close()
 
     # ── reads ────────────────────────────────────────────────────────────
     def enqueue(self, item: HitlItem) -> HitlItem:
@@ -135,13 +146,11 @@ class HitlQueue:
                 (item.endpoint, item.method, item.id),
             )
         con.commit()
-        con.close()
         return self.get(item.id) or item
 
     def get(self, item_id: str) -> HitlItem | None:
         con = self._connect()
         row = con.execute("SELECT * FROM hitl_queue WHERE id=?", (item_id,)).fetchone()
-        con.close()
         return HitlItem(**{k: row[k] for k in row.keys()}) if row else None
 
     def list(self, status: str | None = "pending") -> list[HitlItem]:
@@ -151,26 +160,24 @@ class HitlQueue:
                                (status,)).fetchall()
         else:
             rows = con.execute("SELECT * FROM hitl_queue ORDER BY created_at").fetchall()
-        con.close()
         return [HitlItem(**{k: r[k] for k in r.keys()}) for r in rows]
 
     def audit_rows(self) -> list[dict]:
         con = self._connect()
         rows = con.execute("SELECT * FROM audit_log ORDER BY id").fetchall()
-        con.close()
         return [dict(r) for r in rows]
 
     # ── atomic mutations → frozen envelope ─────────────────────────────────
     def _resolve(self, command: str, item_id: str, actor: str, source: str,
                  new_status: HitlStatus, extra_sql: str, extra_vals: tuple) -> HitlEnvelope:
         con = self._connect()
-        try:
-            sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=? WHERE id=? AND status='pending'"
-            vals = (new_status.value, actor, _now(), item_id)
-            if extra_sql:
-                sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=?, reject_reason=? WHERE id=? AND status='pending'"
-                vals = (new_status.value, actor, _now(), extra_vals[0], item_id)
+        sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=? WHERE id=? AND status='pending'"
+        vals = (new_status.value, actor, _now(), item_id)
+        if extra_sql:
+            sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=?, reject_reason=? WHERE id=? AND status='pending'"
+            vals = (new_status.value, actor, _now(), extra_vals[0], item_id)
 
+        try:
             cur = con.execute(sql, vals)
             rows = cur.rowcount
             if rows == 1:
@@ -186,8 +193,9 @@ class HitlQueue:
                 (command, actor, source, item_id, outcome, rows, _now()),
             )
             con.commit()
-        finally:
-            con.close()
+        except Exception:
+            con.rollback()
+            raise
 
         if outcome == "success":
             env = ok_envelope(command, {
@@ -204,7 +212,6 @@ class HitlQueue:
                                {"current_status": exists["status"],
                                 "current_actor": exists["approved_by"],
                                 "current_actor_at": exists["approved_at"]})
-        con.close()
         return env
 
     def optimistic_lock(self, item_id: str, reviewer: str) -> bool:
@@ -221,7 +228,6 @@ class HitlQueue:
         )
         locked = cur.rowcount == 1
         con.commit()
-        con.close()
         return locked
 
     def approve(self, item_id: str, actor: str, source: str = "cli") -> HitlEnvelope:
