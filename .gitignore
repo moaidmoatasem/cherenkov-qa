@@ -11,6 +11,7 @@ node_modules/
 .cherenkov/
 *.log
 data/*.db
+hitl.db
 stub/stripe-types.ts
 # ignore generated test run artefacts, but allow committed fixtures
 stub/generated_tests/test-results/
