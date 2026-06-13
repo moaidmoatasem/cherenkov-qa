@@ -314,9 +314,10 @@ async def ingest_spec_file(
             with open(spec_path, "wb") as f:
                 f.write(content)
         elif url:
-            import requests
+            import asyncio, functools, requests
             _validate_spec_url(url)
-            resp = requests.get(url, timeout=15)
+            loop = asyncio.get_event_loop()
+            resp = await loop.run_in_executor(None, functools.partial(requests.get, url, timeout=15))
             resp.raise_for_status()
             with open(spec_path, "w", encoding="utf-8") as f:
                 f.write(resp.text)
@@ -744,6 +745,7 @@ class ExplorePayload(BaseModel):
 @app.post("/api/v1/explore")
 async def run_explorer(payload: ExplorePayload):
     """Run the autonomous Explorer: discover flows then crawl for anomalies."""
+    import asyncio, functools
     from cherenkov.divergence.explorer import Explorer
 
     ui_probe = None
@@ -754,42 +756,46 @@ async def run_explorer(payload: ExplorePayload):
         except Exception:
             pass
 
-    explorer = Explorer(base_url=payload.base_url, ui_probe=ui_probe)
+    def _run_sync():
+        explorer = Explorer(base_url=payload.base_url, ui_probe=ui_probe)
 
-    # Phase 1: discover flows from the UI URL (or fallback to base_url)
-    discover_root = payload.ui_url or payload.base_url
-    flows = []
-    try:
-        flows = explorer.discover_flows(discover_root, max_links=payload.max_links)
-    except Exception:
-        pass
+        # Phase 1: discover flows from the UI URL (or fallback to base_url)
+        discover_root = payload.ui_url or payload.base_url
+        flows = []
+        try:
+            flows = explorer.discover_flows(discover_root, max_links=payload.max_links)
+        except Exception:
+            pass
 
-    # Phase 2: crawl the discovered API paths + UI paths
-    paths = list({f["path"] for f in flows if f.get("path") and f["path"] != "/"})
-    paths = paths[:payload.max_links] or ["/"]
+        # Phase 2: crawl the discovered API paths + UI paths
+        paths = list({f["path"] for f in flows if f.get("path") and f["path"] != "/"})
+        paths = paths[:payload.max_links] or ["/"]
 
-    findings = explorer.crawl(paths)
-    hypotheses = explorer.to_hypotheses(findings)
+        findings = explorer.crawl(paths)
+        hypotheses = explorer.to_hypotheses(findings)
 
-    return {
-        "probed": len(paths),
-        "findings": [
-            {
-                "id": f.id,
-                "kind": f.kind.value if hasattr(f.kind, "value") else str(f.kind),
-                "url": f.url,
-                "method": f.method,
-                "status": f.status,
-                "latency_ms": f.latency_ms,
-                "detail": f.detail,
-                "evidence": f.evidence,
-                "severity": f.severity.value if hasattr(f.severity, "value") else str(f.severity),
-            }
-            for f in findings
-        ],
-        "flows": flows,
-        "hypotheses_count": len(hypotheses),
-    }
+        return {
+            "probed": len(paths),
+            "findings": [
+                {
+                    "id": f.id,
+                    "kind": f.kind.value if hasattr(f.kind, "value") else str(f.kind),
+                    "url": f.url,
+                    "method": f.method,
+                    "status": f.status,
+                    "latency_ms": f.latency_ms,
+                    "detail": f.detail,
+                    "evidence": f.evidence,
+                    "severity": f.severity.value if hasattr(f.severity, "value") else str(f.severity),
+                }
+                for f in findings
+            ],
+            "flows": flows,
+            "hypotheses_count": len(hypotheses),
+        }
+
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, _run_sync)
 
 
 # ── Visual Regression ─────────────────────────────────────────────────────────
