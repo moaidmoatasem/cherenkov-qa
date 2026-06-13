@@ -191,15 +191,8 @@ class GenerateStage:
         code = ""
         last_error = ""
 
-        # Make temp directory for tsc check
-        stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
-        temp_dir = os.path.join(stub_dir, "generated_tests")
-        os.makedirs(temp_dir, exist_ok=True)
-        temp_file = os.path.join(temp_dir, f"temp_{mutation_id}.spec.ts")
-
         for temp in temperatures:
             try:
-                # 1. Complete raw code generation via configured provider
                 client = get_client()
                 raw_code = client.complete_code(
                     system_prompt=SYSTEM_PROMPT,
@@ -208,37 +201,16 @@ class GenerateStage:
                     temperature=temp,
                     run_id=self.run_id
                 )
-                
-                # 2. Brutal DeepSeek <think> strip (if any)
                 code = strip_think(raw_code)
-
-                # 3. Write temp file and check tsc --noEmit
-                with open(temp_file, "w", encoding="utf-8") as f:
-                    f.write(code)
-                
-                import subprocess
-                process = subprocess.run(
-                    [_npx(), "tsc", "--noEmit"],
-                    cwd=stub_dir,
-                    capture_output=True,
-                    text=True,
-                    timeout=30
-                )
-                if process.returncode == 0:
-                    break
-                else:
-                    last_error = f"TSC failed: {process.stderr[:100]}"
-                    self.log.warning("tsc compilation failed, retrying with higher temperature", temperature=temp, error=last_error)
+                if code.strip():
+                    break  # TypeScript compilation is validated by Gate 5 in ReviewStage
             except Exception as e:
                 last_error = f"Ollama generation failed: {e}"
-                self.log.warning("generation exception, retrying with higher temperature", temperature=temp, error=last_error)
-
-        if os.path.exists(temp_file):
-            os.remove(temp_file)
+                self.log.warning("generation exception, retrying", temperature=temp, error=last_error)
 
         # If Ollama is unavailable or all temperatures failed, fall back to the deterministic
         # template generator so the pipeline continues to completion without a GPU.
-        ollama_failed = not code or ("Ollama" in last_error and "TSC failed" not in last_error)
+        ollama_failed = not code
         if ollama_failed:
             self.log.warning("ollama unavailable — using template generator fallback", error=last_error)
             try:
