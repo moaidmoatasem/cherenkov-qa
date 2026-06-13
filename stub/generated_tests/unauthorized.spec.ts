@@ -2,13 +2,12 @@ import { client } from '../client';
 import { test, expect } from '@playwright/test';
 
 const _body = {
-  "id": 1,
-  "name": "Cherenkov Test",
-  "status": "available"
+  "email": "test@cherenkov.dev",
+  "password": "Password123!"
 };
 
-test('post /_webhook/newPet happy_path happy_path', async () => {
-  const { data, response } = await client.POST('/_webhook/newPet', { body: _body });
+test('post /users happy_path happy_path', async () => {
+  const { data, response } = await client.POST('/users', { body: _body });
   expect(response.status).toBe(201);
-  expect(data).toHaveProperty('status');
+  expect(data).toHaveProperty('id');
 });
