@@ -17,7 +17,7 @@ import {
   Settings
 } from 'lucide-react';
 import { FailingTest } from '../types';
-import { fetchFailures } from '../lib/api';
+import { fetchFailures, validateSuite, editTestScenario } from '../lib/api';
 import { useToast } from './ui/Toast';
 import { ReadOnlyDiffViewer } from './ui';
 import CherenkovLogo from './CherenkovLogo';
@@ -44,6 +44,24 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
     const remaining = failures.filter(f => f.id !== id);
     setFailures(remaining);
     onSuggestResolveCount(remaining.length);
+  };
+
+  const handleApply = async (item: FailingTest) => {
+    try {
+      addToast(`Applying fix for ${item.name}...`, 'info');
+      await editTestScenario(item.id, item.proposedCode);
+      addToast(`Fix applied to ${item.name}. Running validation...`, 'info');
+      const res = await validateSuite('http://localhost:8080/v2');
+      if (res.status === 'passed') {
+        addToast(`Validation passed for ${item.name}`, 'success');
+        // Remove from list after successful fix
+        handleDismiss(item.id);
+      } else {
+        addToast(`Validation completed with ${res.reports?.filter(r => !r.passed).length || 0} failures`, 'warning');
+      }
+    } catch (err) {
+      addToast(`Apply failed: ${(err as Error).message}`, 'danger');
+    }
   };
 
   const getFailureBadgeColor = (type: string) => {
@@ -193,22 +211,31 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
                       <span>OPEN EXPLAINER TRACE</span>
                     </button>
 
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => handleDismiss(item.id)}
-                        data-testid="dismiss-btn"
-                        className="px-3 py-1.5 text-text-muted hover:text-red-400 transition text-xs font-mono uppercase cursor-pointer"
-                      >
-                        Dismiss
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => handleDismiss(item.id)}
+                          data-testid="dismiss-btn"
+                          className="px-3 py-1.5 text-text-muted hover:text-red-400 transition text-xs font-mono uppercase cursor-pointer"
+                        >
+                          Dismiss
+                        </button>
 
                         <button
-                          onClick={() => handleViewDiff(item.id)}
-                          data-testid="view-diff-btn"
-                          className="flex items-center gap-1.5 px-4 py-1.5 bg-glow-blue hover:bg-opacity-95 text-slate-950 font-bold rounded-xl text-xs font-mono uppercase tracking-wider transition shadow cursor-pointer"
+                          onClick={() => handleApply(item)}
+                          data-testid="apply-btn"
+                          className="flex items-center gap-1.5 px-4 py-1.5 bg-success-custom hover:bg-opacity-95 text-slate-950 font-bold rounded-xl text-xs font-mono uppercase tracking-wider transition shadow cursor-pointer"
                         >
-                          <span>VIEW SUGGESTION DIFF</span>
-                          <ArrowRight className="w-3 h-3 stroke-[3px]" />
+                          <Check className="w-3 h-3 stroke-[3px]" />
+                          <span>APPLY FIX</span>
+                        </button>
+
+                          <button
+                            onClick={() => handleViewDiff(item.id)}
+                            data-testid="view-diff-btn"
+                            className="flex items-center gap-1.5 px-4 py-1.5 bg-glow-blue hover:bg-opacity-95 text-slate-950 font-bold rounded-xl text-xs font-mono uppercase tracking-wider transition shadow cursor-pointer"
+                          >
+                            <span>VIEW SUGGESTION DIFF</span>
+                            <ArrowRight className="w-3 h-3 stroke-[3px]" />
                         </button>
                     </div>
                   </div>
