@@ -84,7 +84,7 @@ export default function AuthorScreen() {
   ];
 
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="author-screen">
+    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="author-screen" data-testid="author-screen">
       <PageHeader
         title="Author by Intent"
         description="Transform natural language test goals into active client browser runs and eject standalone Playwright specifications."
@@ -122,6 +122,7 @@ export default function AuthorScreen() {
                   value={intent}
                   onChange={(e) => setIntent(e.target.value)}
                   placeholder="e.g. Verify that guest checkouts apply 15% discount code and succeed with 200 OK..."
+                  data-testid="intent-textarea"
                   className="w-full h-32 p-4 font-sans text-sm text-[#E6EDF3] bg-black/30 border border-white/10 rounded-xl focus:outline-none focus:border-glow-blue transition leading-relaxed"
                 />
 
@@ -185,6 +186,7 @@ export default function AuthorScreen() {
               <button
                 onClick={handleStart}
                 disabled={isRunning}
+                data-testid="run-btn"
                 className="flex items-center gap-2 px-6 py-2.5 bg-glow-blue hover:bg-opacity-95 disabled:opacity-50 text-slate-950 font-bold text-xs rounded-xl uppercase tracking-wider transition cursor-pointer font-mono shadow-lg shadow-cyan-500/10"
               >
                 {isRunning ? <Loader2 className="w-4 h-4 animate-spin text-slate-950" /> : <Play className="w-4 h-4 text-slate-950" />}
@@ -212,7 +214,7 @@ export default function AuthorScreen() {
                   </div>
                   
                   {/* Live Telemetry Log Box */}
-                  <div className="bg-black/50 border border-white/5 rounded-xl p-3 font-mono text-[10px] text-[#7D8DA1] h-32 overflow-y-auto">
+                  <div className="bg-black/50 border border-white/5 rounded-xl p-3 font-mono text-[10px] text-[#7D8DA1] h-32 overflow-y-auto" data-testid="live-logs">
                     {liveLogs.length === 0 ? (
                       <span className="opacity-50">Waiting for telemetry...</span>
                     ) : (

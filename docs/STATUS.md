@@ -37,9 +37,9 @@ under the consolidated Phase -1 through Phase 8 plan.
 |-------|-------|-------|
 | A (Core) | API conformance testing | ✅ Built; validation gate passed (2026-06-08); **258 tests passing, 0 failures** |
 | B (VLM) | LocalAI / Ollama substrate | ✅ Built; MCP policy engine + Docker Model Runner adapter added |
-| C (Desktop) | Tauri 2 host | ✅ Built; compiles (`cargo check` green), icons + valid Tauri 2 config, IPC bridge wired to dashboard; bundling needs PyInstaller sidecar (`packaging/build.sh` / `build.ps1`) |
-| D (Mobile) | Maestro / Appium | ✅ Built, unit-tested; E2E dashboard tests + data-testid added; runtime blocked on ADB |
-| E (Dashboard) | React UI | ✅ Built; all 9 screens shipped; E2E error-path + multi-viewport tests added |
+| C (Desktop) | Tauri 2 host | 🔧 Shell complete; `cargo check` green, valid Tauri 2 config, icons; IPC bridge scaffolded but not integration-tested; full build blocked on `libwebkit2gtk-4.1-dev` + PyInstaller sidecar (`packaging/build.sh`) |
+| D (Mobile) | Maestro / Appium | ✅ Built, unit-tested; E2E dashboard tests added; runtime blocked on ADB |
+| E (Dashboard) | React UI | ✅ Built; all 9 screens shipped; E2E error-path + multi-viewport tests added; `data-testid` coverage in progress |
 | F (K8s) | Operator + CRDs | ✅ Complete (Phase 8) |
 
 > **Note on `track-b-c-deferred/`:** Earlier handover docs described a

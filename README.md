@@ -286,10 +286,10 @@ Everything runs locally. You choose how much infrastructure you want.
 |-------|-------|-------|
 | **A** Core engine | API conformance testing | ✅ Built · Validation gate passed 2026-06-08 |
 | **B** VLM substrate | LocalAI / Ollama routing | ✅ Built and integrated |
-| **C** Desktop | Tauri 2 host app | ✅ Built · Runtime blocked on `cargo` |
+| **C** Desktop | Tauri 2 host app | 🔧 Shell complete · Blocked on `libwebkit2gtk-4.1-dev` + PyInstaller sidecar |
 | **D** Mobile | Maestro / Appium | ✅ Built · Runtime blocked on ADB |
 | **E** Dashboard | React UI (9 screens) | ✅ All screens shipped |
-| **F** K8s | Operator + CRDs | 🔶 Phase 8 in progress |
+| **F** K8s | Operator + CRDs | ✅ Phase 8 complete |
 
 **Active work:** Phase 8 — K8s CRD sync + cloud readiness.  
 **Canonical status:** [docs/STATUS.md](docs/STATUS.md)  
