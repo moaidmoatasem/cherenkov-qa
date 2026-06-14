@@ -147,3 +147,9 @@ class SQLiteConversationMemory:
             )
             for row in rows
         ]
+
+    def close(self) -> None:
+        con = getattr(self._local, "con", None)
+        if con is not None:
+            con.close()
+            self._local.con = None

@@ -11,6 +11,7 @@ def stats_store():
     tmp.close()
     store = StatsStore(db_path)
     yield store
+    store.close()
     if os.path.exists(db_path):
         os.unlink(db_path)
 
