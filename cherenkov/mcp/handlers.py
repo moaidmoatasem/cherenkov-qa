@@ -272,6 +272,12 @@ TOOLS: list[MCPTool] = [
         inputSchema=MCPToolInputSchema(
             properties={
                 "item_id": MCPToolParam(
+    MCPTool(
+        name="export_linear_ticket",
+        description="Suggest-only Linear export for failed validation items.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "item_id": MCPToolParam(
                     type="string", description="Validation item ID."
                 )
             },
@@ -636,6 +642,8 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_query_rag(arguments).model_dump()
         if name == "export_jira_ticket":
             return _tool_export_jira(arguments).model_dump()
+        if name == "export_linear_ticket":
+            return _tool_export_linear(arguments).model_dump()
         if name == "scan_mena_compliance":
             return _tool_scan_mena(arguments).model_dump()
         if name == "scan_mena_compliance_enhanced":
@@ -907,6 +915,50 @@ def _tool_export_jira(args: dict[str, Any]) -> MCPToolCallResult:
         )
     except Exception as exc:
         return _err_content(f"Jira error: {exc}")
+
+
+def _tool_export_linear(args: dict[str, Any]) -> MCPToolCallResult:
+    item_id = args.get("item_id", "")
+    try:
+        q = _queue()
+        item = q.get(item_id)
+        if not item:
+            return _err_content(f"HITL item {item_id} not found in queue.")
+
+        from cherenkov.validate.linear_exporter import LinearExporter
+        exporter = LinearExporter()
+
+        file_path = exporter.export_ticket(
+            scenario_id=item.id,
+            failure_class=item.mutation_label or "conformance-drift",
+            error_message=item.review_gate_failed or "Validation failed",
+            expected_status="Valid response",
+            received_status="Divergent response",
+            hypothesis=item.confidence_reason
+        )
+
+        summary = f"🛑 CHERENKOV QA — DRIFT DETECTED: {item.id}"
+        description = exporter.format_ticket(
+            scenario_id=item.id,
+            failure_class=item.mutation_label or "conformance-drift",
+            error_message=item.review_gate_failed or "Validation failed",
+            expected_status="Valid response",
+            received_status="Divergent response",
+            hypothesis=item.confidence_reason
+        )
+
+        issue_key = exporter.create_linear_issue(summary, description)
+
+        return _ok_content(
+            {
+                "item_id": item_id,
+                "status": "exported",
+                "file_path": file_path,
+                "linear_issue_key": issue_key or "sandboxed",
+            }
+        )
+    except Exception as exc:
+        return _err_content(f"Linear error: {exc}")
 
 
 def _tool_scan_mena(args: dict[str, Any]) -> MCPToolCallResult:

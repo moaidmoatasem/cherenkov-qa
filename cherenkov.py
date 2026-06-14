@@ -344,7 +344,7 @@ def get_parser() -> argparse.ArgumentParser:
     daemon_parser.add_argument("--target", help="Target URL (required for guardian)")
     daemon_parser.add_argument(
         "--source",
-        choices=["openapi", "graphql"],
+        choices=["openapi", "graphql", "grpc", "accessibility"],
         default="openapi",
         help="Source type (guardian)",
     )
@@ -612,6 +612,28 @@ def get_parser() -> argparse.ArgumentParser:
         "serve",
         help="Start the MCP server over stdio (connect Claude Desktop, Cursor, etc.)",
     )
+    pub_parser = mcp_sub.add_parser(
+        "publish",
+        help="Register an external MCP server with the mesh registry",
+    )
+    pub_parser.add_argument("--name", required=True, help="Server name")
+    pub_parser.add_argument("--url", required=True, help="Server URL")
+    pub_parser.add_argument(
+        "--tools",
+        default="[]",
+        help="JSON list of tool definitions this server provides",
+    )
+    pub_parser.add_argument(
+        "--resources",
+        default="[]",
+        help="JSON list of resource definitions this server provides",
+    )
+    pub_parser.add_argument(
+        "--version", default="1.0.0", help="Server version"
+    )
+    pub_parser.add_argument(
+        "--attestation", default="", help="Optional attestation token"
+    )
 
     return parser
 
@@ -745,6 +767,52 @@ def main():
             with open(out_path, "w") as f:
                 json.dump(sarif_data, f, indent=2)
             print(f"SARIF report written to {out_path}")
+            sys.exit(
+                0
+                if results.get("status") != "empty"
+                and all(r.get("passed", False) for r in results.get("reports", []))
+                else 1
+            )
+
+        if getattr(args, "format", None) == "allure":
+            from cherenkov.execution.emitters.allure import AllureEmitter
+            from types import SimpleNamespace
+
+            emitter = AllureEmitter()
+            from cherenkov.core.contracts import DivergenceFinding
+
+            report_obj = SimpleNamespace(findings=[])
+            total_tests = 0
+            for r in results.get("reports", []):
+                total_tests += 1
+                if not r.get("passed", False):
+                    report_obj.findings.append(
+                        DivergenceFinding(
+                            violation_type="conformance-drift",
+                            endpoint=r.get("scenario_id", "unknown"),
+                            http_method="ANY",
+                            expected="Valid response",
+                            actual=r.get("error", ""),
+                            summary="Response drift detected",
+                            description=f"Error: {r.get('error', '')}",
+                            severity="high",
+                            remediation="Update API or spec",
+                        )
+                    )
+            setattr(report_obj, "_total_tests", total_tests)
+            allure_data = emitter.emit(report_obj, args.spec or "openapi.yaml")
+            
+            out_dir = getattr(args, "output", ".cherenkov/allure-results")
+            if out_dir.endswith(".json") or out_dir.endswith(".xml"):
+                out_dir = ".cherenkov/allure-results"
+            os.makedirs(out_dir, exist_ok=True)
+            
+            for item in allure_data:
+                file_path = os.path.join(out_dir, f"{item['uuid']}-result.json")
+                with open(file_path, "w") as f:
+                    json.dump(item, f, indent=2)
+            
+            print(f"Allure results written to {out_dir}")
             sys.exit(
                 0
                 if results.get("status") != "empty"
@@ -1025,6 +1093,23 @@ def main():
 
         if args.mcp_command == "serve":
             run_mcp_server()
+            sys.exit(0)
+        elif args.mcp_command == "publish":
+            import json
+            from cherenkov.mcp.mesh_router import get_registry
+
+            registry = get_registry()
+            tools = json.loads(args.tools)
+            resources = json.loads(args.resources)
+            reg_id = registry.register_server(
+                name=args.name,
+                url=args.url,
+                tools=tools,
+                resources=resources,
+                version=args.version,
+                attestation=args.attestation,
+            )
+            print(json.dumps({"status": "ok", "registration_id": reg_id}))
             sys.exit(0)
 
 

@@ -630,11 +630,11 @@ LOW EFFORT ──────────────┼────────
 - [ ] Wire `notification_endpoint` for outbound webhooks (generic HTTP POST)
 
 ### Sprint 2 (Weeks 3-6): Developer Tools
-- [ ] VS Code extension beta (generate + validate commands + gutter icons)
-- [ ] Jira API client (complete the stub)
-- [ ] Linear integration
-- [ ] Allure report emitter
-- [ ] Pre-commit hook
+- [x] VS Code extension beta (generate + validate commands + gutter icons)
+- [x] Jira API client (complete the stub)
+- [x] Linear integration
+- [x] Allure report emitter
+- [x] Pre-commit hook
 
 ### Sprint 3 (Weeks 7-10): Enterprise QA
 - [ ] Xray Cloud import
