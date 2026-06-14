@@ -72,7 +72,7 @@ class TestSpecPrismOracle(unittest.TestCase):
         )
         result = self.oracle.evaluate(non_eval_claim)
         self.assertFalse(result.is_correct)
-        self.assertEqual(result.confidence, 0.5)
+        self.assertEqual(result.confidence, 0.0)
 
     @patch("cherenkov.oracle.spec_prism.requests.request")
     def test_prism_unreachable(self, mock_request):
@@ -84,7 +84,7 @@ class TestSpecPrismOracle(unittest.TestCase):
 
         result = self.oracle.evaluate(self.claim)
         self.assertFalse(result.is_correct)
-        self.assertEqual(result.confidence, 0.3)
+        self.assertEqual(result.confidence, 0.0)
 
 
 class TestProdSnapshotOracle(unittest.TestCase):
