@@ -74,6 +74,8 @@ class QAChatAgent:
         return llm_messages
 
     def chat(self, session_id: str, user_message: str) -> Message:
+        if not self.memory.get_session(session_id):
+            self.memory.create_session(session_id)
         self.add_user_message(session_id, user_message)
         llm_messages = self._prepare_llm_context(session_id)
         response_content = self._call_llm(llm_messages)
@@ -87,6 +89,8 @@ class QAChatAgent:
     async def chat_stream(
         self, session_id: str, user_message: str
     ) -> AsyncGenerator[str, None]:
+        if not self.memory.get_session(session_id):
+            self.memory.create_session(session_id)
         self.add_user_message(session_id, user_message)
         llm_messages = self._prepare_llm_context(session_id)
         full_content = self._call_llm(llm_messages)

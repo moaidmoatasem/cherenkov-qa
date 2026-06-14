@@ -151,8 +151,10 @@ class GenMetricsStore:
                 ),
             )
 
-        with sqlite3.connect(self.db_path) as conn:
-            conn.execute(
+        from contextlib import closing
+        with closing(sqlite3.connect(self.db_path)) as conn:
+            with conn:
+                conn.execute(
                 """
                 INSERT INTO gen_metrics (
                     run_id, ts,
@@ -177,7 +179,8 @@ class GenMetricsStore:
 
     def history(self, limit: int = 10) -> list[dict[str, Any]]:
         """Return the N most recent run rows, newest first."""
-        with sqlite3.connect(self.db_path) as conn:
+        from contextlib import closing
+        with closing(sqlite3.connect(self.db_path)) as conn:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
                 "SELECT * FROM gen_metrics ORDER BY id DESC LIMIT ?", (limit,)
@@ -204,5 +207,7 @@ class GenMetricsStore:
 
     def _ensure_schema(self) -> None:
         Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
-        with sqlite3.connect(self.db_path) as conn:
-            conn.execute(_DB_SCHEMA)
+        from contextlib import closing
+        with closing(sqlite3.connect(self.db_path)) as conn:
+            with conn:
+                conn.execute(_DB_SCHEMA)
