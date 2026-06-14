@@ -430,6 +430,73 @@ adb devices
 
 ---
 
+---
+
+## MCP Server / Open Interpreter
+
+### Tools not visible in Open Interpreter
+
+Open Interpreter reads `~/.openinterpreter/mcp.json` at startup. Changes don't apply to a running session.
+
+```bash
+# Verify config exists and is valid JSON
+python3 -c "import json; json.load(open('$HOME/.openinterpreter/mcp.json')); print('OK')"
+
+# Restart Open Interpreter
+interpreter
+```
+
+If the file doesn't exist, run the setup script:
+
+```bash
+bash scripts/setup_oi.sh
+```
+
+### MCP server won't start
+
+```bash
+# Run manually to see the full error
+PYTHONPATH=/path/to/cherenkov-qa python3 /path/to/cherenkov-qa/cherenkov.py mcp serve
+```
+
+Common causes:
+- **`ModuleNotFoundError`** — run `pip install -r requirements.txt` in the repo directory
+- **`Address already in use`** — another cherenkov MCP process is running; kill it with `pkill -f "cherenkov.py mcp serve"`
+- **`spec_path must be within working directory`** — check that `cwd` in the MCP config is the absolute path to the repo root
+
+### Tool blocked by policy
+
+```
+Tool 'run_conformance_check' blocked by policy for server 'cherenkov' in profile 'default'.
+```
+
+Set `MCP_PROFILE=full-dev` in the `env` block of `~/.openinterpreter/mcp.json`, or:
+
+```bash
+export MCP_PROFILE=full-dev
+interpreter
+```
+
+### `spec_path` path traversal error
+
+```
+Invalid spec_path: spec_path must be within working directory
+```
+
+The `spec_path` argument must be a relative path inside the cherenkov-qa directory. Use `stub/openapi.yaml` (the default) or a path under `docs/`.
+
+### Claude Desktop / Cursor not seeing tools
+
+Same MCP server, different config location:
+
+- **Claude Desktop:** `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows)
+- **Cursor:** `.cursor/mcp.json` in project root
+- **VS Code:** `.vscode/mcp.json` in project root
+
+After editing, restart the client. See [Configuration → MCP Integration](Configuration.md#mcp-integration) for the config format.
+
+---
+
 ## Getting More Help
 
 If none of the above fixes your issue:
