@@ -7,7 +7,6 @@ from unittest.mock import patch
 from cherenkov.execution.maestro_runner import MaestroRunner
 from cherenkov.execution.appium_runner import AppiumRunner
 from cherenkov.sources.mobile.parsers import HARParser, HILParser
-from cherenkov.sources.mobile.contracts import MobileApp, MobileFlow
 
 
 # Other test modules (e.g. test_golden_path GP-9) mutate this env var, so set
@@ -44,7 +43,19 @@ def test_appium_health_check_dry_run():
 
 # Test HAR parser
 def test_har_parser_valid():
-    har = {"log": {"entries": [{"request": {"url": "https://api.example.com/users", "method": "GET"}, "response": {"status": 200}}]}}
+    har = {
+        "log": {
+            "entries": [
+                {
+                    "request": {
+                        "url": "https://api.example.com/users",
+                        "method": "GET",
+                    },
+                    "response": {"status": 200},
+                }
+            ]
+        }
+    }
     with tempfile.NamedTemporaryFile(suffix=".har", mode="w", delete=False) as f:
         json.dump(har, f)
         fname = f.name
@@ -87,6 +98,8 @@ def test_maestro_real_mode_calls_subprocess(monkeypatch):
     monkeypatch.delenv("CHERENKOV_MOBILE_DRY_RUN", raising=False)
     runner = MaestroRunner()
     with patch("subprocess.run") as mock_run:
-        mock_run.return_value = type("R", (), {"returncode": 0, "stdout": "ok", "stderr": ""})()
+        mock_run.return_value = type(
+            "R", (), {"returncode": 0, "stdout": "ok", "stderr": ""}
+        )()
         result = runner.run_test("/some/test.yaml")
         assert mock_run.called

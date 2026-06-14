@@ -19,8 +19,12 @@ def test_cherenkov_event_default_init():
 
 
 def test_cherenkov_event_to_dict():
-    ev = CHERENKOVEvent(category=EventCategory.PIPELINE, name="pipeline.start",
-                        payload={"run_id": "abc"}, severity=EventSeverity.INFO)
+    ev = CHERENKOVEvent(
+        category=EventCategory.PIPELINE,
+        name="pipeline.start",
+        payload={"run_id": "abc"},
+        severity=EventSeverity.INFO,
+    )
     d = ev.to_dict()
     assert d["name"] == "pipeline.start"
     assert d["category"] == "pipeline"

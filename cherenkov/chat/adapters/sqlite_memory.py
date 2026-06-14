@@ -4,15 +4,14 @@ import json
 import sqlite3
 import threading
 from datetime import datetime
-from typing import Any
 
-from cherenkov.chat.domain.models import Session, Message, Role
-from cherenkov.chat.ports.memory import ConversationMemory
+from cherenkov.chat.domain.models import Session, Message
 
 
 class SQLiteConversationMemory:
     def __init__(self, db_path: str = "data/chat.db"):
         import os
+
         # Resolve relative path against the project root so it works regardless of cwd
         if not os.path.isabs(db_path):
             root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
@@ -60,10 +59,14 @@ class SQLiteConversationMemory:
             "FOREIGN KEY (session_id) REFERENCES sessions(session_id)"
             ")"
         )
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id)")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id)"
+        )
         conn.commit()
 
-    def create_session(self, session_id: str, persona_id: str = "qa_assistant") -> Session:
+    def create_session(
+        self, session_id: str, persona_id: str = "qa_assistant"
+    ) -> Session:
         conn = self._connect()
         conn.execute(
             "INSERT OR REPLACE INTO sessions (session_id, persona_id, created_at, metadata, is_active) "
@@ -123,7 +126,9 @@ class SQLiteConversationMemory:
 
     def close_session(self, session_id: str) -> None:
         conn = self._connect()
-        conn.execute("UPDATE sessions SET is_active = 0 WHERE session_id = ?", (session_id,))
+        conn.execute(
+            "UPDATE sessions SET is_active = 0 WHERE session_id = ?", (session_id,)
+        )
         conn.commit()
 
     def list_sessions(self, limit: int = 20) -> list[Session]:

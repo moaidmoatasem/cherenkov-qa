@@ -3,11 +3,12 @@
 smoke_test_jira.py — Suggest-Only Jira Exporter integration smoke test.
 Proves copy-ready GFM markdown ticket generation, context merging, and zero-egress sandboxing.
 """
+
 import os
 import sys
-import time
 
 from cherenkov.validate.jira_exporter import JiraExporter
+
 
 def run_jira_smoke_tests():
     print("=======================================================")
@@ -26,7 +27,9 @@ def run_jira_smoke_tests():
     # 1. Initialize JiraExporter
     print("Pass 1: Initializing Suggest-Only Jira Exporter...")
     exporter = JiraExporter(run_id="jira_smoke")
-    assert exporter.ticket_dir.endswith(".cherenkov/jira_tickets"), "Invalid ticket directory setup."
+    assert exporter.ticket_dir.endswith(
+        ".cherenkov/jira_tickets"
+    ), "Invalid ticket directory setup."
     print("✓ JiraExporter initialized successfully.\n")
 
     # 2. Format and Export Ticket
@@ -40,7 +43,7 @@ def run_jira_smoke_tests():
     resolution_steps = [
         "Check token generation gateway credentials.",
         "Ensure clock skew between client and gateway is within accepted tolerances.",
-        "Rotate the client JWT key pair."
+        "Rotate the client JWT key pair.",
     ]
     similar_cases_count = 3
     compliance_score = 60
@@ -54,7 +57,7 @@ def run_jira_smoke_tests():
         hypothesis=hypothesis,
         resolution_steps=resolution_steps,
         similar_cases_count=similar_cases_count,
-        compliance_score=compliance_score
+        compliance_score=compliance_score,
     )
 
     # 3. Assert outputs
@@ -65,17 +68,33 @@ def run_jira_smoke_tests():
     with open(ticket_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    assert f"🛑 CHERENKOV QA — DRIFT DETECTED: {scenario_id}" in content, "Missing ticket header."
+    assert (
+        f"🛑 CHERENKOV QA — DRIFT DETECTED: {scenario_id}" in content
+    ), "Missing ticket header."
     assert "## 🔍 Incident Details" in content, "Missing Incident Details section."
-    assert f"- **Scenario ID**: `{scenario_id}`" in content, "Missing scenario ID details."
-    assert f"- **Failure Classification**: `{failure_class}`" in content, "Missing failure class details."
-    assert f"Expected `{expected_status}` | Received `{received_status}`" in content, "Missing conformance status."
+    assert (
+        f"- **Scenario ID**: `{scenario_id}`" in content
+    ), "Missing scenario ID details."
+    assert (
+        f"- **Failure Classification**: `{failure_class}`" in content
+    ), "Missing failure class details."
+    assert (
+        f"Expected `{expected_status}` | Received `{received_status}`" in content
+    ), "Missing conformance status."
     assert "## 🧠 AI Root-Cause Hypothesis" in content, "Missing AI Root-Cause section."
     assert hypothesis in content, "Missing AI diagnostics hypothesis."
-    assert "### 🛠️ Actionable Resolution Steps" in content, "Missing resolution steps header."
-    assert "1. Check token generation gateway credentials." in content, "Missing step 1 assertion."
-    assert "Found **3** similar historical failure(s)" in content, "Missing RAG correlation mapping."
-    assert f"- **MENA Regulatory Score**: `{compliance_score}%`" in content, "Missing compliance score metric mapping."
+    assert (
+        "### 🛠️ Actionable Resolution Steps" in content
+    ), "Missing resolution steps header."
+    assert (
+        "1. Check token generation gateway credentials." in content
+    ), "Missing step 1 assertion."
+    assert (
+        "Found **3** similar historical failure(s)" in content
+    ), "Missing RAG correlation mapping."
+    assert (
+        f"- **MENA Regulatory Score**: `{compliance_score}%`" in content
+    ), "Missing compliance score metric mapping."
 
     print("--- GENERATED TICKET SAMPLE (RAW GFM) ---")
     print(content)
@@ -84,6 +103,7 @@ def run_jira_smoke_tests():
     print("=======================================================")
     print("   CHERENKOV JIRA INTEGRATION SMOKE TESTS PASSED!")
     print("=======================================================")
+
 
 if __name__ == "__main__":
     try:

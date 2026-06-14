@@ -2,6 +2,7 @@
 CHERENKOV core/errors.py + logging — typed exceptions and structured JSONL logs.
 From Week 1, not bolted on later (Non-Negotiable #17).
 """
+
 from __future__ import annotations
 
 import json
@@ -15,49 +16,56 @@ _tl = threading.local()  # per-thread events file slot
 # ── typed exceptions (never raise bare Exception in pipeline code) ──────────
 class CherenkovError(Exception):
     """Base for all pipeline errors."""
+
     code = "CHERENKOV_ERROR"
 
 
 class ProviderJSONError(CherenkovError):
     """Provider output failed JSON validation after the full retry ladder."""
+
     code = "PROVIDER_JSON_ERROR"
 
 
 class OllamaJSONError(ProviderJSONError):
     """Ollama-specific model output failed JSON validation after the full retry ladder."""
+
     code = "INVALID_JSON"
 
 
 class ContractError(CherenkovError):
     """A stage emitted data that failed its Pydantic contract."""
+
     code = "CONTRACT_VIOLATION"
 
 
 class RefDepthError(CherenkovError):
     """$ref resolution hit the depth limit (circular or too deep)."""
+
     code = "REF_DEPTH"
 
 
 class SpecTooThinError(CherenkovError):
     """Endpoint richness below the floor and no inference possible."""
+
     code = "SPEC_TOO_THIN"
 
 
 class EgressError(CherenkovError):
     """A provider requires egress but the current policy forbids it."""
+
     code = "EGRESS_BLOCKED"
 
 
 class AllProvidersFailedError(CherenkovError):
     """All providers (primary + fallback) failed for a request."""
+
     code = "ALL_PROVIDERS_FAILED"
 
 
 class CertificationError(CherenkovError):
     """A model tier failed its certification gold set."""
+
     code = "CERTIFICATION_FAILED"
-
-
 
 
 class LoggerConfig:
@@ -72,6 +80,7 @@ def set_events_file(f) -> None:
 
 def _get_events_file():
     return getattr(_tl, "events_file", None) or LoggerConfig.events_file
+
 
 # ── structured logging (JSONL, one event per line) ──────────────────────────
 class StructuredLogger:
@@ -103,9 +112,14 @@ class StructuredLogger:
             self._file.write(line + "\n")
             self._file.flush()
 
-    def info(self, msg: str, **f):    self._emit("INFO", msg, **f)
-    def warning(self, msg: str, **f): self._emit("WARN", msg, **f)
-    def error(self, msg: str, **f):   self._emit("ERROR", msg, **f)
+    def info(self, msg: str, **f):
+        self._emit("INFO", msg, **f)
+
+    def warning(self, msg: str, **f):
+        self._emit("WARN", msg, **f)
+
+    def error(self, msg: str, **f):
+        self._emit("ERROR", msg, **f)
 
 
 def get_logger(stage: str, run_id: str | None = None, file=None) -> StructuredLogger:

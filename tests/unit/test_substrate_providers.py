@@ -36,8 +36,9 @@ def test_ollama_provider_generate():
 
 def test_ollama_provider_generate_with_schema():
     prov = _ollama_provider()
-    req = ReasoningRequest(task="test", capability_tier="small",
-                           output_schema={"type": "object"})
+    req = ReasoningRequest(
+        task="test", capability_tier="small", output_schema={"type": "object"}
+    )
     result = prov.generate(req)
     assert result.content == '{"key": "value"}'
 

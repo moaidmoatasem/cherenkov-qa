@@ -1,4 +1,3 @@
-import sys
 from typing import Any, Optional
 
 import requests
@@ -15,14 +14,14 @@ def expand_path(path: str) -> str:
 def http_get(url: str, timeout: int = 10) -> Optional[requests.Response]:
     try:
         return requests.get(url, timeout=timeout)
-    except requests.RequestException as e:
+    except requests.RequestException:
         return None
 
 
 def http_post(url: str, timeout: int = 10) -> Optional[requests.Response]:
     try:
         return requests.post(url, json={"name": "test"}, timeout=timeout)
-    except requests.RequestException as e:
+    except requests.RequestException:
         return None
 
 
@@ -37,11 +36,15 @@ METHOD_HANDLERS = {
 }
 
 
-def run_validation(spec_path: str, target_base: str, strict: bool = True) -> dict[str, Any]:
+def run_validation(
+    spec_path: str, target_base: str, strict: bool = True
+) -> dict[str, Any]:
     with open(spec_path, "r") as f:
         import json
+
         try:
             import yaml
+
             if spec_path.endswith((".yaml", ".yml")):
                 spec = yaml.safe_load(f.read())
             else:
@@ -72,17 +75,37 @@ def run_validation(spec_path: str, target_base: str, strict: bool = True) -> dic
         handler = METHOD_HANDLERS.get(method)
         if handler is None:
             divergences.append(f"{method} {path}: unsupported method")
-            checks.append({"method": method, "path": path, "url": url, "passed": False, "error": "unsupported method"})
+            checks.append(
+                {
+                    "method": method,
+                    "path": path,
+                    "url": url,
+                    "passed": False,
+                    "error": "unsupported method",
+                }
+            )
             continue
 
         resp = handler(url)
         if resp is None:
             divergences.append(f"{method} {path}: connection failed")
-            checks.append({"method": method, "path": path, "url": url, "passed": False, "error": "connection failed"})
+            checks.append(
+                {
+                    "method": method,
+                    "path": path,
+                    "url": url,
+                    "passed": False,
+                    "error": "connection failed",
+                }
+            )
             continue
 
         actual_status = resp.status_code
-        expected_str = ",".join(str(s) for s in sorted(expected_statuses)) if expected_statuses else "any"
+        expected_str = (
+            ",".join(str(s) for s in sorted(expected_statuses))
+            if expected_statuses
+            else "any"
+        )
 
         check = {
             "method": method,

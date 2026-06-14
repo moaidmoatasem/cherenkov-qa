@@ -5,10 +5,10 @@ Authority: v3.1 + delta.
 D7 invariant: never auto-edits test code. All heal output is diff-only suggestions.
 Anti-lock-in: provider abstraction allows filesystem (default) or Docker sandbox.
 """
+
 from __future__ import annotations
 
 import os
-import shutil
 import time
 import uuid
 import difflib
@@ -34,9 +34,10 @@ import { test, expect } from '@playwright/test';
 
 test('corrected test scenario', async ({ page }) => {
   // Corrected locators or assert status
-  expect(response.status).toBe(400); 
+  expect(response.status).toBe(400);
 });
 """
+
 
 class SandboxHealer:
     """Manages isolated workspace replication and runs the run-and-repair LLM self-healing cycle."""
@@ -44,8 +45,12 @@ class SandboxHealer:
     def __init__(self, run_id: str | None = None, provider: str = "filesystem"):
         self.run_id = run_id or str(uuid.uuid4())[:8]
         self.log = get_logger("SANDBOX_HEALER", self.run_id)
-        self.stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
-        self.cherenkov_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.cherenkov"))
+        self.stub_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../stub")
+        )
+        self.cherenkov_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../.cherenkov")
+        )
         self.provider = self._resolve_provider(provider)
 
     def _resolve_provider(self, name: str) -> SandboxProvider:
@@ -59,14 +64,21 @@ class SandboxHealer:
 
     def replicate_workspace(self, scenario_id: str) -> str:
         """Delegates to the active sandbox provider."""
-        self.log.info("replicating workspace via provider", provider=type(self.provider).__name__)
+        self.log.info(
+            "replicating workspace via provider", provider=type(self.provider).__name__
+        )
         return self.provider.replicate_workspace(
             f"{self.run_id}_{scenario_id}", self.stub_dir
         )
 
-    def execute_playwright_sandbox(self, sandbox_dir: str, spec_filename: str, api_url: str) -> dict:
+    def execute_playwright_sandbox(
+        self, sandbox_dir: str, spec_filename: str, api_url: str
+    ) -> dict:
         """Delegates to the active sandbox provider."""
-        self.log.info("executing playwright test via provider", provider=type(self.provider).__name__)
+        self.log.info(
+            "executing playwright test via provider",
+            provider=type(self.provider).__name__,
+        )
         result = self.provider.execute_test(sandbox_dir, spec_filename, api_url)
         return {
             "passed": result.passed,
@@ -75,7 +87,9 @@ class SandboxHealer:
             "stderr": result.stderr,
         }
 
-    def generate_unified_diff(self, original_code: str, healed_code: str, filename: str) -> str:
+    def generate_unified_diff(
+        self, original_code: str, healed_code: str, filename: str
+    ) -> str:
         orig_lines = original_code.splitlines(keepends=True)
         heal_lines = healed_code.splitlines(keepends=True)
 
@@ -83,7 +97,7 @@ class SandboxHealer:
             orig_lines,
             heal_lines,
             fromfile=f"a/generated_tests/{filename}",
-            tofile=f"b/generated_tests/{filename}"
+            tofile=f"b/generated_tests/{filename}",
         )
         return "".join(diff)
 
@@ -93,13 +107,19 @@ class SandboxHealer:
         original_test_filename: str,
         failure_log: str,
         api_url: str,
-        max_attempts: int = 3
+        max_attempts: int = 3,
     ) -> dict:
         """Runs iterative repair loops in the sandbox and returns a unified diff if repaired."""
         t0 = time.time()
-        self.log.info("initiating deep self-healing cycle", scenario=scenario_id, attempts=max_attempts)
+        self.log.info(
+            "initiating deep self-healing cycle",
+            scenario=scenario_id,
+            attempts=max_attempts,
+        )
 
-        original_file_path = os.path.join(self.stub_dir, "generated_tests", original_test_filename)
+        original_file_path = os.path.join(
+            self.stub_dir, "generated_tests", original_test_filename
+        )
         if not os.path.exists(original_file_path):
             error_msg = f"Original spec file {original_test_filename} not found."
             self.log.error(error_msg)
@@ -132,19 +152,28 @@ class SandboxHealer:
                     system_prompt=SYSTEM_PROMPT,
                     user_prompt=user_prompt,
                     model=Config.GEN_MODEL,
-                    run_id=self.run_id
+                    run_id=self.run_id,
                 )
                 proposed_code = strip_think(proposed_raw)
 
-                self.provider.write_file(sandbox_dir, spec_workspace_path, proposed_code)
+                self.provider.write_file(
+                    sandbox_dir, spec_workspace_path, proposed_code
+                )
 
                 self.log.info("verifying proposed code in sandbox...")
-                run_res = self.execute_playwright_sandbox(sandbox_dir, original_test_filename, api_url)
+                run_res = self.execute_playwright_sandbox(
+                    sandbox_dir, original_test_filename, api_url
+                )
 
                 if run_res["passed"]:
-                    self.log.info("self-healing successful! Green state achieved in sandbox", attempt=attempt)
+                    self.log.info(
+                        "self-healing successful! Green state achieved in sandbox",
+                        attempt=attempt,
+                    )
 
-                    diff_str = self.generate_unified_diff(original_code, proposed_code, original_test_filename)
+                    diff_str = self.generate_unified_diff(
+                        original_code, proposed_code, original_test_filename
+                    )
 
                     diffs_dir = os.path.join(self.cherenkov_dir, "healed_diffs")
                     os.makedirs(diffs_dir, exist_ok=True)
@@ -162,21 +191,25 @@ class SandboxHealer:
                         "diff_path": diff_file_path,
                         "diff": diff_str,
                         "code": proposed_code,
-                        "message": f"Test successfully healed in sandbox on attempt {attempt}!"
+                        "message": f"Test successfully healed in sandbox on attempt {attempt}!",
                     }
 
                 else:
-                    self.log.warning("proposed repair failed to pass in sandbox", attempt=attempt)
+                    self.log.warning(
+                        "proposed repair failed to pass in sandbox", attempt=attempt
+                    )
                     current_code = proposed_code
                     current_failure = run_res["stderr"] or run_res["stdout"]
 
             except Exception as e:
-                self.log.error("sandbox repair cycle error", attempt=attempt, error=str(e))
+                self.log.error(
+                    "sandbox repair cycle error", attempt=attempt, error=str(e)
+                )
                 current_failure = f"Sandbox execution threw exception: {e}"
 
         self.provider.destroy_workspace(sandbox_dir)
         return {
             "healed": False,
             "attempts": max_attempts,
-            "message": f"Deep self-healing completed but failed to achieve a green state in {max_attempts} attempts."
+            "message": f"Deep self-healing completed but failed to achieve a green state in {max_attempts} attempts.",
         }

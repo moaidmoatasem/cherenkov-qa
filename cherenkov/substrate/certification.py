@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import json
-import math
-import time
 import re
 from pathlib import Path
 from typing import Any
 from cherenkov.core.config import Config
 from cherenkov.core.contracts import GoldSet, GoldSetItem, CertResult, ReasoningRequest
 from cherenkov.core.errors import get_logger
+
 
 class RAGTriadEvaluator:
     """RAG-Triad metrics: Context Relevance, Answer Faithfulness, Answer Relevance.
@@ -66,7 +65,27 @@ class RAGTriadEvaluator:
         """
         if not response.strip():
             return 0.0
-        q_words = {"what", "how", "why", "when", "where", "who", "which", "is", "are", "do", "does", "explain", "list", "name", "describe", "say", "evaluate", "calculate", "summarize"}
+        q_words = {
+            "what",
+            "how",
+            "why",
+            "when",
+            "where",
+            "who",
+            "which",
+            "is",
+            "are",
+            "do",
+            "does",
+            "explain",
+            "list",
+            "name",
+            "describe",
+            "say",
+            "evaluate",
+            "calculate",
+            "summarize",
+        }
         prompt_lower = prompt.lower()
         prompt_words = set(re.findall(r"\w+", prompt_lower))
 
@@ -92,16 +111,40 @@ class RAGTriadEvaluator:
 
 # Default comprehensive gold set covering multiple capability domains
 _DEFAULT_GOLD_SET_ITEMS: list[dict[str, Any]] = [
-    {"prompt": "Say the exact word 'CHERENKOV' and nothing else.", "expected_contains": ["CHERENKOV"]},
+    {
+        "prompt": "Say the exact word 'CHERENKOV' and nothing else.",
+        "expected_contains": ["CHERENKOV"],
+    },
     {"prompt": "Evaluate: 2 + 2 = ?", "expected_contains": ["4"]},
     {"prompt": "What is 15 * 3?", "expected_contains": ["45"]},
-    {"prompt": "List the numbers 1 through 5 in order.", "expected_contains": ["1", "2", "3", "4", "5"]},
-    {"prompt": "Is a prime number divisible by any number other than 1 and itself?", "expected_contains": ["no", "not"]},
-    {"prompt": "Explain what an API is in one sentence.", "expected_contains": ["application", "interface"]},
-    {"prompt": "What HTTP status code means 'Not Found'?", "expected_contains": ["404"]},
-    {"prompt": "Describe what a unit test does.", "expected_contains": ["test", "function", "code"]},
-    {"prompt": "Name one benefit of using type hints in Python.", "expected_contains": ["readability", "error", "bug", "type"]},
-    {"prompt": "What does 'idempotent' mean in HTTP?", "expected_contains": ["same", "result", "request"]},
+    {
+        "prompt": "List the numbers 1 through 5 in order.",
+        "expected_contains": ["1", "2", "3", "4", "5"],
+    },
+    {
+        "prompt": "Is a prime number divisible by any number other than 1 and itself?",
+        "expected_contains": ["no", "not"],
+    },
+    {
+        "prompt": "Explain what an API is in one sentence.",
+        "expected_contains": ["application", "interface"],
+    },
+    {
+        "prompt": "What HTTP status code means 'Not Found'?",
+        "expected_contains": ["404"],
+    },
+    {
+        "prompt": "Describe what a unit test does.",
+        "expected_contains": ["test", "function", "code"],
+    },
+    {
+        "prompt": "Name one benefit of using type hints in Python.",
+        "expected_contains": ["readability", "error", "bug", "type"],
+    },
+    {
+        "prompt": "What does 'idempotent' mean in HTTP?",
+        "expected_contains": ["same", "result", "request"],
+    },
 ]
 
 
@@ -130,7 +173,9 @@ class ModelCertificationManager:
         self.log.info("running model tier certification", tier=tier)
         gold_set = self.load_gold_set()
         if not gold_set.items:
-            return CertResult(certified=True, faithfulness_score=1.0, detail="Gold set is empty")
+            return CertResult(
+                certified=True, faithfulness_score=1.0, detail="Gold set is empty"
+            )
 
         passed = 0
         total = len(gold_set.items)
@@ -141,14 +186,22 @@ class ModelCertificationManager:
             try:
                 res = provider.generate(req)
                 content = str(res.content)
-                item_passed = all(exp.lower() in content.lower() for exp in item.expected_contains)
+                item_passed = all(
+                    exp.lower() in content.lower() for exp in item.expected_contains
+                )
                 if item_passed:
                     passed += 1
                 triad = self._rag_triad.evaluate(item.prompt, content)
-                rag_avg = (triad["context_relevance"] + triad["answer_faithfulness"] + triad["answer_relevance"]) / 3.0
+                rag_avg = (
+                    triad["context_relevance"]
+                    + triad["answer_faithfulness"]
+                    + triad["answer_relevance"]
+                ) / 3.0
                 rag_scores.append(rag_avg)
             except Exception as e:
-                self.log.warning("failed to generate response during certification", error=str(e))
+                self.log.warning(
+                    "failed to generate response during certification", error=str(e)
+                )
 
         faithfulness = passed / total if total else 1.0
         rag_overall = sum(rag_scores) / len(rag_scores) if rag_scores else 0.0
@@ -160,10 +213,19 @@ class ModelCertificationManager:
             f"rag-triad={rag_overall:.2f}, composite={composite:.2f}, "
             f"min_required={Config.CERTIFICATION_MIN_FAITHFULNESS})"
         )
-        self.log.info("certification complete", tier=tier, certified=certified, composite=composite)
-        return CertResult(certified=certified, faithfulness_score=composite, detail=detail)
+        self.log.info(
+            "certification complete",
+            tier=tier,
+            certified=certified,
+            composite=composite,
+        )
+        return CertResult(
+            certified=certified, faithfulness_score=composite, detail=detail
+        )
 
-    def certify_tier_with_rag_report(self, tier: str, provider) -> tuple[CertResult, list[dict[str, Any]]]:
+    def certify_tier_with_rag_report(
+        self, tier: str, provider
+    ) -> tuple[CertResult, list[dict[str, Any]]]:
         """Run certification and return both result and per-item RAG-Triad report."""
         self.log.info("running model tier certification with RAG report", tier=tier)
         gold_set = self.load_gold_set()
@@ -172,34 +234,51 @@ class ModelCertificationManager:
         passed = 0
         total = len(gold_set.items) if gold_set.items else 0
 
-        for item in (gold_set.items or []):
+        for item in gold_set.items or []:
             req = ReasoningRequest(task=item.prompt, capability_tier=tier)
             try:
                 res = provider.generate(req)
                 content = str(res.content)
-                item_passed = all(exp.lower() in content.lower() for exp in item.expected_contains)
+                item_passed = all(
+                    exp.lower() in content.lower() for exp in item.expected_contains
+                )
                 if item_passed:
                     passed += 1
                 triad = self._rag_triad.evaluate(item.prompt, content)
-                reports.append({
-                    "prompt": item.prompt,
-                    "response": content[:200],
-                    "passed": item_passed,
-                    "rag_triad": triad,
-                })
+                reports.append(
+                    {
+                        "prompt": item.prompt,
+                        "response": content[:200],
+                        "passed": item_passed,
+                        "rag_triad": triad,
+                    }
+                )
             except Exception as e:
-                reports.append({
-                    "prompt": item.prompt,
-                    "response": f"<error: {e}>",
-                    "passed": False,
-                    "rag_triad": {"context_relevance": 0.0, "answer_faithfulness": 0.0, "answer_relevance": 0.0},
-                })
+                reports.append(
+                    {
+                        "prompt": item.prompt,
+                        "response": f"<error: {e}>",
+                        "passed": False,
+                        "rag_triad": {
+                            "context_relevance": 0.0,
+                            "answer_faithfulness": 0.0,
+                            "answer_relevance": 0.0,
+                        },
+                    }
+                )
 
         faithfulness = passed / total if total else 1.0
         rag_scores = [r["rag_triad"] for r in reports]
         rag_overall = (
-            sum(s["context_relevance"] + s["answer_faithfulness"] + s["answer_relevance"] for s in rag_scores)
-            / (len(rag_scores) * 3) if rag_scores else 0.0
+            sum(
+                s["context_relevance"]
+                + s["answer_faithfulness"]
+                + s["answer_relevance"]
+                for s in rag_scores
+            )
+            / (len(rag_scores) * 3)
+            if rag_scores
+            else 0.0
         )
         composite = faithfulness * 0.6 + rag_overall * 0.4
         certified = composite >= Config.CERTIFICATION_MIN_FAITHFULNESS

@@ -33,7 +33,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
         <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-4">
           <h2 className="text-xl font-bold text-red-400">Something went wrong</h2>
           <p className="text-sm text-gray-400 max-w-md">{this.state.error?.message}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded transition"
           >

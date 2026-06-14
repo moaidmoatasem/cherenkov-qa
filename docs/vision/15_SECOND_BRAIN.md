@@ -1,7 +1,7 @@
 # Vision 15: Second Brain (Knowledge Mesh)
 
-**Date:** 2026-06-08  
-**Status:** Active  
+**Date:** 2026-06-08
+**Status:** Active
 **Related EPIC:** #280 (Phase 1)
 
 ---
@@ -75,7 +75,7 @@ class KnowledgeResult:
     source: str
     confidence: float
     metadata: dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "data": self.data,
@@ -123,7 +123,7 @@ class SQLiteKnowledgeRepository:
     def __init__(self, db_path: str = "data/knowledge.db"):
         self.db_path = db_path
         self._init_db()
-    
+
     def _init_db(self):
         conn = sqlite3.connect(self.db_path)
         conn.execute("""
@@ -138,24 +138,24 @@ class SQLiteKnowledgeRepository:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_source ON knowledge_items(source)")
         conn.commit()
         conn.close()
-    
+
     def query(self, query: KnowledgeQuery) -> KnowledgeResult:
         conn = sqlite3.connect(self.db_path)
-        
+
         sql = "SELECT item_id, source, data, metadata FROM knowledge_items"
         params = []
-        
+
         if query.source:
             sql += " WHERE source = ?"
             params.append(query.source)
-        
+
         sql += " ORDER BY created_at DESC LIMIT ?"
         params.append(query.limit)
-        
+
         cursor = conn.execute(sql, params)
         rows = cursor.fetchall()
         conn.close()
-        
+
         results = []
         for row in rows:
             results.append(KnowledgeResult(
@@ -164,14 +164,14 @@ class SQLiteKnowledgeRepository:
                 confidence=1.0,
                 metadata=json.loads(row[3]) if row[3] else {}
             ))
-        
+
         return KnowledgeResult(
             data=results,
             source=query.source or "all",
             confidence=1.0,
             metadata={"count": len(results)}
         )
-    
+
     def store(self, item: KnowledgeItem) -> str:
         conn = sqlite3.connect(self.db_path)
         conn.execute(
@@ -181,7 +181,7 @@ class SQLiteKnowledgeRepository:
         conn.commit()
         conn.close()
         return item.item_id
-    
+
     def search(self, pattern: str, limit: int = 10) -> list[KnowledgeResult]:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.execute(
@@ -190,7 +190,7 @@ class SQLiteKnowledgeRepository:
         )
         rows = cursor.fetchall()
         conn.close()
-        
+
         results = []
         for row in rows:
             results.append(KnowledgeResult(
@@ -200,7 +200,7 @@ class SQLiteKnowledgeRepository:
                 metadata=json.loads(row[3]) if row[3] else {}
             ))
         return results
-    
+
     def get_by_id(self, item_id: str) -> KnowledgeResult | None:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.execute(
@@ -209,10 +209,10 @@ class SQLiteKnowledgeRepository:
         )
         row = cursor.fetchone()
         conn.close()
-        
+
         if not row:
             return None
-        
+
         return KnowledgeResult(
             data=json.loads(row[2]),
             source=row[1],
@@ -234,11 +234,11 @@ from cherenkov.knowledge.domain.models import KnowledgeQuery, KnowledgeResult, K
 class RedisKnowledgeRepository:
     def __init__(self, redis_url: str = "redis://localhost:6379"):
         self.redis = redis.from_url(redis_url)
-    
+
     def query(self, query: KnowledgeQuery) -> KnowledgeResult:
         pattern = f"knowledge:{query.source or '*'}:*"
         keys = self.redis.keys(pattern)
-        
+
         results = []
         for key in keys[:query.limit]:
             data = self.redis.get(key)
@@ -250,14 +250,14 @@ class RedisKnowledgeRepository:
                     confidence=1.0,
                     metadata=item.get("metadata", {})
                 ))
-        
+
         return KnowledgeResult(
             data=results,
             source=query.source or "all",
             confidence=1.0,
             metadata={"count": len(results)}
         )
-    
+
     def store(self, item: KnowledgeItem) -> str:
         key = f"knowledge:{item.source}:{item.item_id}"
         self.redis.set(key, json.dumps({
@@ -268,10 +268,10 @@ class RedisKnowledgeRepository:
             "created_at": item.created_at.isoformat()
         }))
         return item.item_id
-    
+
     def search(self, pattern: str, limit: int = 10) -> list[KnowledgeResult]:
         keys = self.redis.keys(f"knowledge:*:*")
-        
+
         results = []
         for key in keys:
             data = self.redis.get(key)
@@ -286,18 +286,18 @@ class RedisKnowledgeRepository:
                     ))
                     if len(results) >= limit:
                         break
-        
+
         return results
-    
+
     def get_by_id(self, item_id: str) -> KnowledgeResult | None:
         keys = self.redis.keys(f"knowledge:*:{item_id}")
         if not keys:
             return None
-        
+
         data = self.redis.get(keys[0])
         if not data:
             return None
-        
+
         item = json.loads(data)
         return KnowledgeResult(
             data=item["data"],
@@ -319,11 +319,11 @@ from cherenkov.knowledge.ports.repository import KnowledgeRepository
 class GraphRAG:
     def __init__(self, repository: KnowledgeRepository):
         self.repository = repository
-    
+
     def query(self, query: str, sources: list[str] | None = None, limit: int = 10) -> list[KnowledgeResult]:
         if sources is None:
             sources = ["verdicts", "idioms", "incidents", "hitl", "feedback", "agent_memory"]
-        
+
         results = []
         for source in sources:
             knowledge_query = KnowledgeQuery(
@@ -334,15 +334,15 @@ class GraphRAG:
             result = self.repository.query(knowledge_query)
             if result.data:
                 results.append(result)
-        
+
         results.sort(key=lambda r: r.confidence, reverse=True)
         return results[:limit]
-    
+
     def explain_divergence(self, endpoint: str, method: str) -> KnowledgeResult:
         verdicts = self.query(f"{endpoint} {method}", sources=["verdicts"], limit=5)
         idioms = self.query(f"{endpoint} {method}", sources=["idioms"], limit=5)
         incidents = self.query(f"{endpoint} {method}", sources=["incidents"], limit=5)
-        
+
         explanation = {
             "endpoint": endpoint,
             "method": method,
@@ -350,7 +350,7 @@ class GraphRAG:
             "idioms": [i.data for i in idioms],
             "incidents": [inc.data for inc in incidents]
         }
-        
+
         return KnowledgeResult(
             data=explanation,
             source="graph_rag",
@@ -379,12 +379,12 @@ class HITLReflectorBridge:
         self.event_bus = event_bus
         self.reflector = reflector
         self.event_bus.subscribe("HITLDecisionMade", self._on_hitl_decision)
-    
+
     def _on_hitl_decision(self, event: HITLDecisionMade):
         item = self._get_hitl_item(event.item_id)
         if not item:
             return
-        
+
         self.reflector.ingest_human_verdict(
             item_id=event.item_id,
             verdict=event.action,
@@ -406,10 +406,10 @@ class FeedbackRAGBridge:
     def __init__(self, feedback_store: FeedbackStore, repository: KnowledgeRepository):
         self.feedback_store = feedback_store
         self.repository = repository
-    
+
     def sync_feedback(self):
         feedback_entries = self.feedback_store.list_all()
-        
+
         for entry in feedback_entries:
             item = KnowledgeItem(
                 item_id=f"feedback_{entry.id}",
@@ -440,14 +440,14 @@ class AgentMemoryRAGBridge:
     def __init__(self, repository: KnowledgeRepository, memory_dir: str = "agent_memory"):
         self.repository = repository
         self.memory_dir = Path(memory_dir)
-    
+
     def sync_agent_memory(self):
         if not self.memory_dir.exists():
             return
-        
+
         for md_file in self.memory_dir.glob("*.md"):
             content = md_file.read_text()
-            
+
             item = KnowledgeItem(
                 item_id=f"agent_memory_{md_file.stem}",
                 source="agent_memory",
@@ -487,15 +487,15 @@ def knowledge():
 def query(query_text: str, source: str, limit: int, format: str):
     """Query knowledge repository."""
     repo = SQLiteKnowledgeRepository()
-    
+
     knowledge_query = KnowledgeQuery(
         query=query_text,
         source=source,
         limit=limit
     )
-    
+
     result = repo.query(knowledge_query)
-    
+
     if format == "json":
         click.echo(json.dumps(result.to_dict(), indent=2))
     elif format == "text":
@@ -546,7 +546,7 @@ def test_query_returns_knowledge_result():
     repo = SQLiteKnowledgeRepository(":memory:")
     query = KnowledgeQuery(query="auth timeout")
     result = repo.query(query)
-    
+
     assert hasattr(result, "data")
     assert hasattr(result, "source")
     assert hasattr(result, "confidence")
@@ -559,12 +559,12 @@ def test_store_returns_item_id():
         data={"endpoint": "/users"}
     )
     item_id = repo.store(item)
-    
+
     assert item_id == "test_123"
 
 def test_search_finds_pattern():
     repo = SQLiteKnowledgeRepository(":memory:")
-    
+
     # Store some items
     repo.store(KnowledgeItem(
         item_id="1",
@@ -576,10 +576,10 @@ def test_search_finds_pattern():
         source="verdicts",
         data={"endpoint": "/login", "status": "success"}
     ))
-    
+
     # Search
     results = repo.search("auth timeout")
-    
+
     assert len(results) == 1
     assert results[0].data["endpoint"] == "/users"
 ```

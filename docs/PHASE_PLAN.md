@@ -1,7 +1,7 @@
 # CHERENKOV-QA: Consolidated Phase Plan
 
-**Date:** 2026-06-08 (last refined 2026-06-09)  
-**Status:** Active  
+**Date:** 2026-06-08 (last refined 2026-06-09)
+**Status:** Active
 **SSOT for:** All phases, tickets, integration plans, parallel tracks, architecture decisions, design patterns, agent guidance
 
 > **What to read first:** This plan is long. If you only have 5 minutes, read
@@ -86,7 +86,7 @@ The Source Adapter SPI is the key extension mechanism:
 ```
 Current: OpenAPI spec source → API conformance tests
 Future: AccessibilitySource → WCAG audit tests
-Future: SecuritySource → DAST/OWASP tests  
+Future: SecuritySource → DAST/OWASP tests
 Future: PerformanceSource → Load/stress tests
 Future: GraphQLSource → GraphQL conformance
 Future: gRPCSource → gRPC conformance
@@ -174,9 +174,9 @@ For every cross-phase integration point:
 
 ### Phase -1: Planning & Preparation (Days 1-2)
 
-**EPIC:** #277  
-**Tickets:** #290-#303 (14 issues)  
-**Goals:** Establish architectural foundation, strategy documents, CI/CD pipeline  
+**EPIC:** #277
+**Tickets:** #290-#303 (14 issues)
+**Goals:** Establish architectural foundation, strategy documents, CI/CD pipeline
 **Kill Criteria:**
 - All 6 ADRs exist in `docs/adr/`
 - All 4 strategy docs exist in `docs/`
@@ -202,9 +202,9 @@ For every cross-phase integration point:
 
 ### Phase 0a: P0 Bug Fixes (Days 3-5)
 
-**EPIC:** #278  
-**Tickets:** #304-#312 (9 issues)  
-**Goals:** Fix all 8 confirmed P0 bugs before any new features land  
+**EPIC:** #278
+**Tickets:** #304-#312 (9 issues)
+**Goals:** Fix all 8 confirmed P0 bugs before any new features land
 **Kill Criteria:**
 - `pytest tests/unit/` passes
 - `pytest tests/smoke/` passes
@@ -224,9 +224,9 @@ For every cross-phase integration point:
 
 ### Phase 0b: Foundations (Week 2)
 
-**EPIC:** #279  
-**Tickets:** #313-#327 (15 issues)  
-**Goals:** Lay architectural foundation for all subsequent phases  
+**EPIC:** #279
+**Tickets:** #313-#327 (15 issues)
+**Goals:** Lay architectural foundation for all subsequent phases
 **Kill Criteria:**
 - `pytest tests/unit/` passes
 - `pytest tests/contracts/` passes
@@ -253,9 +253,9 @@ For every cross-phase integration point:
 
 ### Phase 1: Second Brain (Weeks 3-5)
 
-**EPIC:** #280  
-**Tickets:** #328-#337 (10 issues)  
-**Goals:** Build knowledge mesh that powers all subsequent phases  
+**EPIC:** #280
+**Tickets:** #328-#337 (10 issues)
+**Goals:** Build knowledge mesh that powers all subsequent phases
 **Kill Criteria:**
 - `pytest tests/unit/test_knowledge_repository.py` passes
 - `pytest tests/contracts/` passes for both SQLite and Redis adapters
@@ -276,8 +276,8 @@ For every cross-phase integration point:
 
 ### Phase 2: VLM + LocalAI + GitHub Models (Weeks 3-4, parallel with Phase 1)
 
-**EPIC:** #281  
-**Tickets:** #338-#344, #405 (8 issues)  
+**EPIC:** #281
+**Tickets:** #338-#344, #405 (8 issues)
 **Goals:** Integrate LocalAI as default VLM backend, add tier-aware routing, and integrate GitHub Models as a free cloud inference provider.
 **Kill Criteria:**
 - Tauri 2 prototype opens on Windows + macOS + Linux
@@ -298,9 +298,9 @@ For every cross-phase integration point:
 
 ### Phase 3: Desktop Host (Weeks 5-8)
 
-**EPIC:** #282  
-**Tickets:** #345-#353 (9 issues)  
-**Goals:** Build desktop host for one-click onboarding  
+**EPIC:** #282
+**Tickets:** #345-#353 (9 issues)
+**Goals:** Build desktop host for one-click onboarding
 **Kill Criteria:**
 - Desktop app opens on Windows + macOS + Linux
 - Setup wizard completes in <10 clicks, <5 minutes
@@ -320,9 +320,9 @@ For every cross-phase integration point:
 
 ### Phase 4: Chat Agents (Weeks 9-10)
 
-**EPIC:** #283  
-**Tickets:** #354-#361 (8 issues)  
-**Goals:** Build chat agent with tool-calling for knowledge access  
+**EPIC:** #283
+**Tickets:** #354-#361 (8 issues)
+**Goals:** Build chat agent with tool-calling for knowledge access
 **Kill Criteria:**
 - `pytest tests/unit/test_chat_agent.py` passes
 - Chat agent answers "why was this test rejected?" using Reflector idioms
@@ -341,9 +341,9 @@ For every cross-phase integration point:
 
 ### Phase 5: Mobile Testing Core (Weeks 5-10, parallel tail)
 
-**EPIC:** #284  
-**Tickets:** #362-#370 (9 issues)  
-**Goals:** Build mobile testing core (sources, pilot, stages, eject)  
+**EPIC:** #284
+**Tickets:** #362-#370 (9 issues)
+**Goals:** Build mobile testing core (sources, pilot, stages, eject)
 **Kill Criteria:**
 - `pytest tests/unit/test_mobile_source_adapter.py` passes
 - Pilot agent completes 3-step intent with terminal DONE
@@ -363,9 +363,9 @@ For every cross-phase integration point:
 
 ### Phase 6: Mobile Execution (Weeks 11-14)
 
-**EPIC:** #285  
-**Tickets:** #371-#376 (6 issues)  
-**Goals:** Replace stubs with real execution, self-play validation  
+**EPIC:** #285
+**Tickets:** #371-#376 (6 issues)
+**Goals:** Replace stubs with real execution, self-play validation
 **Kill Criteria:**
 - `make mobile-smoke` passes with Android emulator
 - ADB commands work, screenshots captured
@@ -382,9 +382,9 @@ For every cross-phase integration point:
 
 ### Phase 7: Dashboard Revamp (Weeks 14-16)
 
-**EPIC:** #286  
-**Tickets:** #377-#385 (9 issues)  
-**Goals:** Wire dashboard to real data, add mobile/chat/knowledge screens  
+**EPIC:** #286
+**Tickets:** #377-#385 (9 issues)
+**Goals:** Wire dashboard to real data, add mobile/chat/knowledge screens
 **Kill Criteria:**
 - `npx playwright test tests/e2e/` passes on all screens
 - `/overview`, `/truth-map`, `/failures`, `/metrics` return real data
@@ -405,9 +405,9 @@ For every cross-phase integration point:
 
 ### ✅ Phase 8: K8s + Cloud + Validation Gate (Weeks 16-20) — Complete
 
-**EPIC:** #287  
-**Tickets:** #386-#391 (6 issues)  
-**Goals:** Fix K8s, extend CRDs, open-source readiness, 5-QA validation gate  
+**EPIC:** #287
+**Tickets:** #386-#391 (6 issues)
+**Goals:** Fix K8s, extend CRDs, open-source readiness, 5-QA validation gate
 **Kill Criteria:**
 - `make k3d-up && make k3d-test` green
 - kubectl apply succeeds with device_target in spec

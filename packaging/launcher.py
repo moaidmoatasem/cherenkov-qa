@@ -11,6 +11,7 @@ Protocol (all NDJSON, one JSON object per line):
   {"event": "progress",  "data": {"step": "model_pull", "pct": 42, "detail": "..."}}
   {"event": "shutdown",  "data": {"signal": "SIGINT"}}
 """
+
 import os
 import sys
 import json
@@ -42,6 +43,7 @@ def find_free_port(start_port: int = 8000) -> int:
 def run_server(port: int) -> None:
     import uvicorn
     from cherenkov.web.api import app as fastapi_app
+
     uvicorn.run(fastapi_app, host="127.0.0.1", port=port, log_level="warning")
 
 
@@ -75,6 +77,7 @@ def main() -> None:
     if os.environ.get("DEMO_MODE") == "1":
         try:
             from cherenkov.execution.demo_mode import generate_demo_findings
+
             generate_demo_findings()
         except Exception:
             pass
@@ -92,6 +95,7 @@ def main() -> None:
         time.sleep(0.5)
         try:
             import urllib.request
+
             urllib.request.urlopen(f"http://127.0.0.1:{port}/healthz", timeout=1)
             break
         except Exception:

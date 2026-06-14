@@ -1,8 +1,5 @@
-import os
 import json
-import sqlite3
 import pytest
-from pathlib import Path
 
 from cherenkov.core.config import Config
 from cherenkov.core.contracts import (
@@ -35,6 +32,7 @@ class DummyProvider:
 
     def capabilities(self):
         from cherenkov.substrate.provider import ProviderCapabilities
+
         return ProviderCapabilities(
             capability_tiers=["small"],
             requires_egress=False,
@@ -45,12 +43,7 @@ class DummyProvider:
 def test_model_certification(tmp_path):
     gold_set_file = tmp_path / "gold_set.json"
     gold_set_data = {
-        "items": [
-            {
-                "prompt": "Test word 'HELLO'.",
-                "expected_contains": ["HELLO"]
-            }
-        ]
+        "items": [{"prompt": "Test word 'HELLO'.", "expected_contains": ["HELLO"]}]
     }
     gold_set_file.write_text(json.dumps(gold_set_data), encoding="utf-8")
 
@@ -60,7 +53,7 @@ def test_model_certification(tmp_path):
 
     try:
         manager = ModelCertificationManager()
-        
+
         # certify_tier now reports a RAG-Triad *composite* score in
         # faithfulness_score (faithfulness*0.6 + rag_overall*0.4), certified when
         # composite >= Config.CERTIFICATION_MIN_FAITHFULNESS. Assert on the
@@ -86,7 +79,7 @@ def test_model_certification(tmp_path):
 def test_mentor_and_governance_kpis(tmp_path):
     db_file = tmp_path / "test_verdicts.db"
     store = VerdictStore(db_path=str(db_file))
-    
+
     # Store some verdicts
     v1 = VerdictRecord(
         id="v1",
@@ -141,6 +134,7 @@ def test_mentor_and_governance_kpis(tmp_path):
     # We temporarily monkeypatch VerdictStore default path or pass store dependency
     # Let's override store db_path temporarily in VerdictStore._default_db_path or just patch VerdictStore
     import cherenkov.reflector.store
+
     old_default = cherenkov.reflector.store._default_db_path
     cherenkov.reflector.store._default_db_path = lambda: str(db_file)
 
@@ -162,42 +156,41 @@ def test_router_certification_gate(tmp_path):
 
     gold_set_file = tmp_path / "gold_set.json"
     gold_set_data = {
-        "items": [
-            {
-                "prompt": "Test word 'HELLO'.",
-                "expected_contains": ["HELLO"]
-            }
-        ]
+        "items": [{"prompt": "Test word 'HELLO'.", "expected_contains": ["HELLO"]}]
     }
     gold_set_file.write_text(json.dumps(gold_set_data), encoding="utf-8")
 
     old_path = Config.CERTIFICATION_GOLD_SET_PATH
     old_enabled = Config.CERTIFICATION_ENABLED
-    
+
     Config.CERTIFICATION_GOLD_SET_PATH = str(gold_set_file)
     Config.CERTIFICATION_ENABLED = True
 
     try:
         router = SubstrateRouter()
-        
+
         # Mock provider_for_tier to return failing dummy
         import cherenkov.substrate.router
+
         old_provider_for_tier = cherenkov.substrate.router.provider_for_tier
-        cherenkov.substrate.router.provider_for_tier = lambda tier: DummyProvider("Fail response")
-        
+        cherenkov.substrate.router.provider_for_tier = lambda tier: DummyProvider(
+            "Fail response"
+        )
+
         req = ReasoningRequest(task="Test task", capability_tier="small")
         with pytest.raises(CertificationError):
             router.route(req)
-            
+
         # Switch provider to passing dummy
-        cherenkov.substrate.router.provider_for_tier = lambda tier: DummyProvider("Here is HELLO")
+        cherenkov.substrate.router.provider_for_tier = lambda tier: DummyProvider(
+            "Here is HELLO"
+        )
         # Creating new router instance so cache is clean
         router2 = SubstrateRouter()
         res = router2.route(req)
         assert res.provider == "dummy"
-        
+
         cherenkov.substrate.router.provider_for_tier = old_provider_for_tier
     finally:
         Config.CERTIFICATION_GOLD_SET_PATH = old_path
         Config.CERTIFICATION_ENABLED = old_enabled
-

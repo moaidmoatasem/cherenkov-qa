@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from cherenkov.core.contracts import DivergenceReport
-from cherenkov.core.truth_model import TruthModel, NodeType
+from cherenkov.core.truth_model import TruthModel
 from cherenkov.truth.emitters.interface import Emitter
 
 
@@ -43,10 +43,17 @@ class PlaywrightEmitter(Emitter):
             label = ep.label.replace("{", "").replace("}", "")
             method = label.split(" ")[0].lower() if " " in label else "get"
             path_part = label.split(" ")[-1] if " " in label else label
-            safe_name = path_part.replace("/", "_").replace("-", "_").replace("{", "").replace("}", "")
+            safe_name = (
+                path_part.replace("/", "_")
+                .replace("-", "_")
+                .replace("{", "")
+                .replace("}", "")
+            )
 
             lines.append(f'test.describe("{label}", () => {{')
-            lines.append(f'  test("GET {label} returns 200", async ({{ request }}) => {{')
+            lines.append(
+                f'  test("GET {label} returns 200", async ({{ request }}) => {{'
+            )
             lines.append(f'    const resp = await request.{method}("{path_part}");')
             lines.append("    expect(resp.status()).toBe(200);")
             lines.append("  });")

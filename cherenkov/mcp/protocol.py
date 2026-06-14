@@ -10,6 +10,7 @@ Responses are written as a single JSON line to stdout.
 
 The server loop runs until stdin is closed (EOF).
 """
+
 from __future__ import annotations
 
 import json
@@ -38,7 +39,10 @@ def _write_response(resp: JsonRpcResponse) -> None:
 
 def _make_error(id: Any, code: int, message: str, data: Any = None) -> JsonRpcResponse:
     from cherenkov.mcp.contracts import JsonRpcError
-    return JsonRpcResponse(id=id, error=JsonRpcError(code=code, message=message, data=data))
+
+    return JsonRpcResponse(
+        id=id, error=JsonRpcError(code=code, message=message, data=data)
+    )
 
 
 def _make_success(id: Any, result: Any) -> JsonRpcResponse:
@@ -73,7 +77,9 @@ def dispatch_one(raw: str, table: DispatchTable) -> JsonRpcResponse | None:
     if handler is None:
         if is_notification:
             return None
-        return _make_error(req.id, METHOD_NOT_FOUND, f"Method not found: {req.method!r}")
+        return _make_error(
+            req.id, METHOD_NOT_FOUND, f"Method not found: {req.method!r}"
+        )
 
     try:
         result = handler(req.params)

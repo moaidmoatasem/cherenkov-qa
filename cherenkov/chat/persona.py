@@ -30,7 +30,9 @@ _DEFAULT_PERSONA = Persona(
 
 class PersonaRegistry:
     def __init__(self):
-        self._personas: dict[str, Persona] = {_DEFAULT_PERSONA.persona_id: _DEFAULT_PERSONA}
+        self._personas: dict[str, Persona] = {
+            _DEFAULT_PERSONA.persona_id: _DEFAULT_PERSONA
+        }
 
     def get(self, persona_id: str) -> Persona | None:
         return self._personas.get(persona_id)
@@ -41,7 +43,9 @@ class PersonaRegistry:
     def list_personas(self) -> list[Persona]:
         return list(self._personas.values())
 
-    def compose_prompt(self, persona_id: str, context: dict[str, Any] | None = None) -> str:
+    def compose_prompt(
+        self, persona_id: str, context: dict[str, Any] | None = None
+    ) -> str:
         persona = self.get(persona_id)
         if not persona:
             persona = _DEFAULT_PERSONA

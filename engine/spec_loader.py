@@ -23,7 +23,15 @@ def extract_routes(spec: dict) -> dict:
     routes = {}
     for path, methods in spec.get("paths", {}).items():
         for method in methods:
-            if method.upper() in ("GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"):
+            if method.upper() in (
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "PATCH",
+                "HEAD",
+                "OPTIONS",
+            ):
                 operation = methods[method]
                 expected_statuses = set()
                 for status_code in operation.get("responses", {}):

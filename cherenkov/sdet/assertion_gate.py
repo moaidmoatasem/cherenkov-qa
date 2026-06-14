@@ -11,6 +11,7 @@ This is intentionally a thin adapter over `AdversarialSelfPlay`: it reuses the
 broken-impl run rather than reimplementing it, and presents an SDET-shaped
 result (`AssertionGateResult`) plus a batch filter.
 """
+
 from __future__ import annotations
 
 from typing import Callable
@@ -57,7 +58,10 @@ class MeaningfulAssertionGate:
             if not sp.passed_correct:
                 reason = "Test does not pass the spec-conforming mock"
             else:
-                reason = sp.kill_reason or "Test passes the broken impl — assertions are vacuous"
+                reason = (
+                    sp.kill_reason
+                    or "Test passes the broken impl — assertions are vacuous"
+                )
         else:
             reason = ""
 

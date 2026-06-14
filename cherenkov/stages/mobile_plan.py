@@ -2,6 +2,7 @@
 CHERENKOV stages/mobile_plan.py — mobile test scenario planner stage.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import time
@@ -41,7 +42,13 @@ class MobilePlanStage:
                 id="m002",
                 name="login flow",
                 description="Verify user can log in with valid credentials",
-                steps=["tap login button", "enter username", "enter password", "tap submit", "verify dashboard visible"],
+                steps=[
+                    "tap login button",
+                    "enter username",
+                    "enter password",
+                    "tap submit",
+                    "verify dashboard visible",
+                ],
             ),
         ]
         dt = int((time.time() - t0) * 1000)

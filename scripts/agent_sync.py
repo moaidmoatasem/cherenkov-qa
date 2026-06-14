@@ -17,7 +17,6 @@ Environment:
 import json
 import os
 import sys
-import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -25,6 +24,7 @@ from typing import Optional
 
 
 # ── Path resolution ──────────────────────────────────────────────────
+
 
 def _project_root() -> Path:
     env = os.environ.get("CHERENKOV_ROOT")
@@ -45,6 +45,7 @@ EXPERIENCE_FILE = SYNC_DIR / "experience.json"
 
 # ── JSON helpers ─────────────────────────────────────────────────────
 
+
 def _read_json(path: Path):
     if not path.exists():
         return {}
@@ -61,6 +62,7 @@ def _write_json(path: Path, data):
 
 # ── Session ID ───────────────────────────────────────────────────────
 
+
 def _new_session_id() -> str:
     ts = datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M%S")
     short = uuid.uuid4().hex[:6]
@@ -72,6 +74,7 @@ def _timestamp() -> str:
 
 
 # ── Subcommands ──────────────────────────────────────────────────────
+
 
 def cmd_before(task_type: str, budget: Optional[int] = None):
     """Start a new agent session: load context, init state."""
@@ -90,10 +93,10 @@ def cmd_before(task_type: str, budget: Optional[int] = None):
             "token_total": 0,
             "summary": None,
             "compacted": False,
-            "task_type": task_type
+            "task_type": task_type,
         },
         "previous_sessions": [],
-        "sessions_since_compact": 0
+        "sessions_since_compact": 0,
     }
 
     # Carry forward previous sessions from old session.json
@@ -105,7 +108,7 @@ def cmd_before(task_type: str, budget: Optional[int] = None):
             "task": old["session"].get("task"),
             "ended_at": old["session"].get("ended_at"),
             "summary": old["session"].get("summary"),
-            "token_total": old["session"].get("token_total", 0)
+            "token_total": old["session"].get("token_total", 0),
         }
         session["previous_sessions"].append(prev)
         # Keep last 10
@@ -123,20 +126,24 @@ def cmd_before(task_type: str, budget: Optional[int] = None):
                 "hard_cap": (budget or 50000) * 2,
                 "warning_at_pct": 60,
                 "compact_at_pct": 80,
-                "emergency_at_pct": 95
+                "emergency_at_pct": 95,
             },
             "current_session": {},
             "historical": {
                 "total_all_time": 0,
                 "sessions_completed": 0,
                 "avg_per_session": 0,
-                "by_task_type": {}
+                "by_task_type": {},
             },
-            "top_consumers": []
+            "top_consumers": [],
         }
     tokens["current_session"] = {
         "session_id": session_id,
-        "prompt": 0, "generate": 0, "read": 0, "search": 0, "total": 0
+        "prompt": 0,
+        "generate": 0,
+        "read": 0,
+        "search": 0,
+        "total": 0,
     }
     _write_json(TOKENS_FILE, tokens)
 
@@ -196,7 +203,14 @@ def cmd_after(summary: str):
     tokens["historical"] = hist
 
     # Clear current session
-    tokens["current_session"] = {"session_id": None, "prompt": 0, "generate": 0, "read": 0, "search": 0, "total": 0}
+    tokens["current_session"] = {
+        "session_id": None,
+        "prompt": 0,
+        "generate": 0,
+        "read": 0,
+        "search": 0,
+        "total": 0,
+    }
     _write_json(TOKENS_FILE, tokens)
 
     # Extract experience from findings
@@ -224,7 +238,7 @@ def cmd_after(summary: str):
             "outcome": "success",  # optimistic; owner can revise
             "token_cost": total,
             "patterns": session["session"].get("task_type", "unknown").split(","),
-            "session_id": sid
+            "session_id": sid,
         }
         exp["experiences"].append(exp_rec)
 
@@ -268,11 +282,9 @@ def cmd_log(log_type: str, message: str):
         findings_data["session_id"] = sid
         findings_data["findings"] = []
 
-    findings_data["findings"].append({
-        "timestamp": _timestamp(),
-        "type": log_type,
-        "message": message
-    })
+    findings_data["findings"].append(
+        {"timestamp": _timestamp(), "type": log_type, "message": message}
+    )
     _write_json(findings_path, findings_data)
 
     # Update session count
@@ -295,7 +307,9 @@ def cmd_token(action_type: Optional[str], count: Optional[int], item: Optional[s
         sys.exit(1)
 
     if action_type not in ("prompt", "generate", "read", "search"):
-        print(f"Unknown action type: {action_type}. Use: prompt, generate, read, search")
+        print(
+            f"Unknown action type: {action_type}. Use: prompt, generate, read, search"
+        )
         sys.exit(1)
 
     if count is None or count < 0:
@@ -310,13 +324,15 @@ def cmd_token(action_type: Optional[str], count: Optional[int], item: Optional[s
     # Track top consumers
     if item:
         consumers = tokens.get("top_consumers", [])
-        consumers.append({
-            "timestamp": _timestamp(),
-            "action": action_type,
-            "count": count,
-            "item": item,
-            "running_total": total
-        })
+        consumers.append(
+            {
+                "timestamp": _timestamp(),
+                "action": action_type,
+                "count": count,
+                "item": item,
+                "running_total": total,
+            }
+        )
         # Keep last 50
         tokens["top_consumers"] = consumers[-50:]
 
@@ -350,7 +366,7 @@ def cmd_status(json_output: bool = False):
             "tokens": tokens.get("current_session"),
             "budget": tokens.get("budget"),
             "historical": tokens.get("historical"),
-            "experience_count": exp.get("experience_count", 0)
+            "experience_count": exp.get("experience_count", 0),
         }
         print(json.dumps(data, indent=2))
         return
@@ -383,14 +399,18 @@ def cmd_status(json_output: bool = False):
     print(f"  Search:   {tok.get('search', 0)}")
 
     hist = tokens.get("historical", {})
-    print(f"History:    {hist.get('sessions_completed', 0)} sessions, "
-          f"{hist.get('total_all_time', 0)} total tokens, "
-          f"avg {hist.get('avg_per_session', 0)}/session")
+    print(
+        f"History:    {hist.get('sessions_completed', 0)} sessions, "
+        f"{hist.get('total_all_time', 0)} total tokens, "
+        f"avg {hist.get('avg_per_session', 0)}/session"
+    )
 
     print(f"Experience: {exp.get('experience_count', 0)} records")
     prev = session.get("previous_sessions", [])
     if prev:
-        print(f"Last session: {prev[-1].get('id')} - {prev[-1].get('summary', 'no summary')[:80]}")
+        print(
+            f"Last session: {prev[-1].get('id')} - {prev[-1].get('summary', 'no summary')[:80]}"
+        )
 
 
 def cmd_compact(force: bool = False):
@@ -403,7 +423,9 @@ def cmd_compact(force: bool = False):
     sessions_since = session.get("sessions_since_compact", 0)
 
     if sessions_since < 3 and not force:
-        print(f"Only {sessions_since} sessions since last compact. Use --force to override.")
+        print(
+            f"Only {sessions_since} sessions since last compact. Use --force to override."
+        )
         return
 
     # Auto-promote: if a task type has been used 3+ sessions, ensure its context is loaded
@@ -437,14 +459,19 @@ def cmd_compact(force: bool = False):
     print(f"Context compacted. {len(snippets)} snippets, {len(ttm)} task mappings.")
 
 
-def cmd_experience_query(pattern: str, outcome: Optional[str] = None, sort: Optional[str] = None):
+def cmd_experience_query(
+    pattern: str, outcome: Optional[str] = None, sort: Optional[str] = None
+):
     """Query past experiences by pattern."""
     exp = _read_json(EXPERIENCE_FILE)
     results = []
 
     for rec in exp.get("experiences", []):
         pats = " ".join(rec.get("patterns", []))
-        if pattern.lower() in pats.lower() or pattern.lower() in rec.get("action", "").lower():
+        if (
+            pattern.lower() in pats.lower()
+            or pattern.lower() in rec.get("action", "").lower()
+        ):
             if outcome and rec.get("outcome") != outcome:
                 continue
             results.append(rec)
@@ -461,13 +488,16 @@ def cmd_experience_query(pattern: str, outcome: Optional[str] = None, sort: Opti
     print(f"Found {len(results)} experience(s) for '{pattern}':")
     for r in results:
         print(f"\n  [{r['id']}] {r['action'][:100]}")
-        print(f"  Outcome: {r['outcome']} | Tokens: {r['token_cost']} | Patterns: {', '.join(r.get('patterns', []))}")
+        print(
+            f"  Outcome: {r['outcome']} | Tokens: {r['token_cost']} | Patterns: {', '.join(r.get('patterns', []))}"
+        )
         if r.get("rationale"):
             print(f"  Rationale: {r['rationale'][:150]}")
         print(f"  Session: {r['session_id']} | {r['timestamp']}")
 
 
 # ── CLI Entry Point ──────────────────────────────────────────────────
+
 
 def main():
     if len(sys.argv) < 2:
@@ -547,7 +577,9 @@ def main():
             elif not arg.startswith("--"):
                 pattern = arg
         if not pattern:
-            print("Usage: agent_sync experience query <pattern> [--outcome <str>] [--sort <field>]")
+            print(
+                "Usage: agent_sync experience query <pattern> [--outcome <str>] [--sort <field>]"
+            )
             sys.exit(1)
         cmd_experience_query(pattern, outcome, sort)
 

@@ -3,6 +3,7 @@
 smoke_test_perf.py — E2E performance validation and load exporter test for CHERENKOV.
 Proves generation of standard local k6 script files and graceful execution report.
 """
+
 import os
 import subprocess
 import time
@@ -10,18 +11,29 @@ import sys
 
 from cherenkov.execution.k6_runner import K6Runner
 
+
 def start_target_server():
     """Starts the mock range FastAPI server."""
     print("Starting Target API Server...")
     cwd = os.path.abspath(os.path.join(os.path.dirname(__file__), "../target"))
     proc = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
+        [
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "target_api:app",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "8000",
+        ],
         cwd=cwd,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        stderr=subprocess.PIPE,
     )
     time.sleep(2)  # Wait for startup
     return proc
+
 
 def main():
     print("=======================================================")
@@ -47,8 +59,12 @@ def main():
         res = runner.run_k6_validation("http://127.0.0.1:8000")
 
         # 4. Verify results
-        assert res["status"] in ("success", "exported", "degraded"), f"Load exporter run failed: {res.get('message', '')}"
-        
+        assert res["status"] in (
+            "success",
+            "exported",
+            "degraded",
+        ), f"Load exporter run failed: {res.get('message', '')}"
+
         # Verify script written to disk successfully
         assert os.path.exists(k6_file), "k6 script file was not written to disk."
         print(f"✓ k6 Performance script generated successfully: {k6_file}")
@@ -56,8 +72,12 @@ def main():
         # Check file contents to ensure correct payload mapping
         with open(k6_file, "r", encoding="utf-8") as f:
             content = f.read()
-        assert "http.post" in content, "Generated script is missing HTTP POST execution call."
-        assert "thresholds" in content, "Generated script is missing performance thresholds."
+        assert (
+            "http.post" in content
+        ), "Generated script is missing HTTP POST execution call."
+        assert (
+            "thresholds" in content
+        ), "Generated script is missing performance thresholds."
         print("✓ Performance script parameters verified.")
 
         print(f"\nResult: {res['message']}")
@@ -87,4 +107,3 @@ def test_legacy_perf():
     except SystemExit as e:
         if e.code != 0:
             raise AssertionError(f"Test failed with exit code {e.code}")
-

@@ -2,12 +2,14 @@
 """
 smoke_test_eject.py — automated E2E integration test proving Standalone Ejection (Phase 9).
 """
+
 import os
 import sys
 import time
 import shutil
 import subprocess
 import requests
+
 
 def _to_wsl_path(windows_path: str) -> str:
     """Convert a \\\\wsl.localhost\\<distro>\\foo\\bar path to a WSL Linux path (/foo/bar)."""
@@ -16,25 +18,46 @@ def _to_wsl_path(windows_path: str) -> str:
     linux_parts = parts[4:]
     return "/" + "/".join(linux_parts)
 
+
 def _start_target_api():
     """Start the target API and return (proc_or_none, base_url)."""
     target_dir = os.path.abspath("target")
-    if sys.platform == "win32" and (target_dir.startswith("\\\\") or target_dir.startswith("//")):
+    if sys.platform == "win32" and (
+        target_dir.startswith("\\\\") or target_dir.startswith("//")
+    ):
         linux_target = _to_wsl_path(target_dir)
         # Kill any leftover uvicorn, start fresh via tmux in WSL
-        subprocess.run(["wsl.exe", "-e", "bash", "-c",
-            "tmux kill-session -t ck_target 2>/dev/null; echo done"],
-            capture_output=True, timeout=10)
-        subprocess.Popen(["wsl.exe", "-e", "bash", "-c",
-            "tmux new-session -d -s ck_target "
-            f"'cd {linux_target} && "
-            "uvicorn target_api:app --host 0.0.0.0 --port 8000'"],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(
+            [
+                "wsl.exe",
+                "-e",
+                "bash",
+                "-c",
+                "tmux kill-session -t ck_target 2>/dev/null; echo done",
+            ],
+            capture_output=True,
+            timeout=10,
+        )
+        subprocess.Popen(
+            [
+                "wsl.exe",
+                "-e",
+                "bash",
+                "-c",
+                "tmux new-session -d -s ck_target "
+                f"'cd {linux_target} && "
+                "uvicorn target_api:app --host 0.0.0.0 --port 8000'",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         # Find WSL guest IP for Windows-side health checks
         try:
             wsl_ip = subprocess.run(
                 ["wsl.exe", "-e", "bash", "-c", "hostname -I | cut -d' ' -f1"],
-                capture_output=True, text=True, timeout=5
+                capture_output=True,
+                text=True,
+                timeout=5,
             ).stdout.strip()
         except Exception:
             wsl_ip = "localhost"
@@ -44,7 +67,9 @@ def _start_target_api():
     subprocess.run(["fuser", "-k", "8000/tcp"], capture_output=True, timeout=5)
     proc = subprocess.Popen(
         ["uvicorn", "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
-        cwd=target_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        cwd=target_dir,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     return proc, "http://localhost:8000"
 
@@ -56,10 +81,16 @@ def _stop_target_api(proc):
         proc.wait()
     else:
         subprocess.run(
-            ["wsl.exe", "-e", "bash", "-c",
-             "tmux kill-session -t ck_target 2>/dev/null; echo done"],
-            timeout=5
+            [
+                "wsl.exe",
+                "-e",
+                "bash",
+                "-c",
+                "tmux kill-session -t ck_target 2>/dev/null; echo done",
+            ],
+            timeout=5,
         )
+
 
 def main():
     print("=======================================================")
@@ -96,7 +127,7 @@ def main():
         subprocess.run(
             ["python3", "cherenkov.py", "eject", "--output", output_dir],
             env={**os.environ, "PYTHONPATH": "."},
-            check=True
+            check=True,
         )
 
         # 3. Assert ejected files structure
@@ -109,7 +140,7 @@ def main():
             "client.ts",
             "playwright.config.ts",
             "package.json",
-            "tsconfig.json"
+            "tsconfig.json",
         ]
         for path in expected_paths:
             full_path = os.path.join(output_dir, path)
@@ -122,9 +153,9 @@ def main():
             "cherenkov",
             "playwrightContextStorage",
             "AsyncLocalStorage",
-            "monkey-patch"
+            "monkey-patch",
         ]
-        
+
         # Scramble/check files
         for root, dirs, files in os.walk(output_dir):
             # Skip node_modules or output packages if they exist
@@ -136,7 +167,7 @@ def main():
                     continue
                 with open(file_path, "r", encoding="utf-8") as f:
                     content = f.read()
-                    
+
                 # Search for forbidden keywords case-insensitively
                 for kw in forbidden_keywords:
                     # Exception: package.json name is 'ejected-playwright-tests', which is fine
@@ -144,14 +175,22 @@ def main():
                         # Don't fail on tsconfig or standard config comments unless they mention cherenkov code
                         if kw == "cherenkov" and "ejected-playwright-tests" in content:
                             continue
-                        raise AssertionError(f"Violation: Ejected file '{file}' contains forbidden CHERENKOV metadata keyword: '{kw}'!")
+                        raise AssertionError(
+                            f"Violation: Ejected file '{file}' contains forbidden CHERENKOV metadata keyword: '{kw}'!"
+                        )
 
-        print("[OK] 100% clean check: zero CHERENKOV imports, hooks, or code bleed found in the ejected folder!")
+        print(
+            "[OK] 100% clean check: zero CHERENKOV imports, hooks, or code bleed found in the ejected folder!"
+        )
 
         # 5. Run npm install + playwright test in the ejected suite (skip on UNC path — npm/node not guaranteed)
-        unc_path = os.path.abspath(".").startswith("\\\\") or os.path.abspath(".").startswith("//")
+        unc_path = os.path.abspath(".").startswith("\\\\") or os.path.abspath(
+            "."
+        ).startswith("//")
         if not unc_path:
-            print("Installing node dependencies inside the ejected suite (npm install)...")
+            print(
+                "Installing node dependencies inside the ejected suite (npm install)..."
+            )
             subprocess.run(["npm", "install"], cwd=output_dir, check=True)
             print("[OK] npm dependencies installed successfully.")
 
@@ -160,16 +199,23 @@ def main():
                 ["npx", "playwright", "test", "tests/happy_path.spec.ts"],
                 cwd=output_dir,
                 env={**os.environ, "API_URL": "http://localhost:8000"},
-                capture_output=True, text=True
+                capture_output=True,
+                text=True,
             )
             print("\n--- STANDALONE PLAYWRIGHT TEST RUN OUTPUT ---")
             print(pw_proc.stdout)
             print(pw_proc.stderr)
             print("---------------------------------------------\n")
-            assert pw_proc.returncode == 0, f"Standalone E2E tests failed: rc={pw_proc.returncode}"
-            print("[OK] Standalone Playwright E2E happy_path test successfully run and PASSED (GREEN) natively!")
+            assert (
+                pw_proc.returncode == 0
+            ), f"Standalone E2E tests failed: rc={pw_proc.returncode}"
+            print(
+                "[OK] Standalone Playwright E2E happy_path test successfully run and PASSED (GREEN) natively!"
+            )
         else:
-            print("[SKIP] npm/playwright steps skipped (UNC path — install manually to verify)")
+            print(
+                "[SKIP] npm/playwright steps skipped (UNC path — install manually to verify)"
+            )
 
     finally:
         # 7. Clean up Target API background task
@@ -186,6 +232,7 @@ def main():
     print("\n=======================================================")
     print("  ALL PHASE 9 STANDALONE EJECT TESTS PASSED SUCCESSFULLY!")
     print("=======================================================")
+
 
 if __name__ == "__main__":
     main()

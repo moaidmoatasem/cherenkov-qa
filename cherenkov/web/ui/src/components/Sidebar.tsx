@@ -4,9 +4,9 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { 
-  FolderGit2, 
-  Settings, 
+import {
+  FolderGit2,
+  Settings,
   Terminal,
   CircleDot,
   Cpu,
@@ -60,9 +60,9 @@ interface NavSection {
   }[];
 }
 
-export default function Sidebar({ 
-  activeTab, 
-  setActiveTab, 
+export default function Sidebar({
+  activeTab,
+  setActiveTab,
   onNewRun,
   status,
   tokenUsagePercent,

@@ -1,10 +1,12 @@
 """Unit tests for cherenkov/governance/kpi.py — GovernanceKPI and GovernanceReport."""
+
 import unittest
 
 
 class TestGovernanceKPI(unittest.TestCase):
     def _make(self, **kwargs):
         from cherenkov.governance.kpi import GovernanceKPI
+
         return GovernanceKPI(**kwargs)
 
     def test_defaults_produce_valid_health_score(self):
@@ -49,6 +51,7 @@ class TestGovernanceKPI(unittest.TestCase):
 class TestGovernanceReport(unittest.TestCase):
     def _make(self, **kpi_kwargs):
         from cherenkov.governance.kpi import GovernanceKPI, GovernanceReport
+
         return GovernanceReport(kpi=GovernanceKPI(**kpi_kwargs))
 
     def test_render_contains_health_score_label(self):
@@ -62,12 +65,19 @@ class TestGovernanceReport(unittest.TestCase):
     def test_render_json_keys(self):
         report = self._make(total_tests=100, passed_tests=80, escaped_defects=2)
         j = report.render_json()
-        for key in ("health_score", "escape_rate", "coverage", "total_tests", "passed_tests"):
+        for key in (
+            "health_score",
+            "escape_rate",
+            "coverage",
+            "total_tests",
+            "passed_tests",
+        ):
             self.assertIn(key, j)
         self.assertEqual(j["total_tests"], 100)
         self.assertEqual(j["passed_tests"], 80)
 
     def test_render_json_history_count_zero_by_default(self):
         from cherenkov.governance.kpi import GovernanceReport
+
         report = GovernanceReport()
         self.assertEqual(report.render_json()["history_count"], 0)

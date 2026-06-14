@@ -1,4 +1,5 @@
 """Unit tests for cherenkov/execution/eject.py — EjectorEngine."""
+
 import json
 import os
 import tempfile
@@ -8,6 +9,7 @@ import unittest
 class TestSpecFilesIn(unittest.TestCase):
     def _call(self, directory: str) -> list:
         from cherenkov.execution.eject import EjectorEngine
+
         return EjectorEngine._spec_files_in(directory)
 
     def test_nonexistent_dir_returns_empty(self):
@@ -49,6 +51,7 @@ class TestSpecFilesIn(unittest.TestCase):
 class TestEjectSuite(unittest.TestCase):
     def setUp(self):
         from cherenkov.execution.eject import EjectorEngine
+
         self.engine = EjectorEngine(run_id="test-run")
 
     def test_eject_creates_expected_files(self):

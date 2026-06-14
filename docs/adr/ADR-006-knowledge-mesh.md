@@ -1,8 +1,8 @@
 # ADR-006: Knowledge Mesh (Unified Query, Separate Stores)
 
-**Date:** 2026-06-08  
-**Status:** Accepted  
-**Deciders:** Project Owner + AI Agents  
+**Date:** 2026-06-08
+**Status:** Accepted
+**Deciders:** Project Owner + AI Agents
 **Related EPIC:** #277 (Phase -1), #280 (Phase 1)
 
 ---
@@ -121,14 +121,14 @@ class GraphRAG:
         """Query across multiple knowledge domains."""
         if sources is None:
             sources = ["verdicts", "idioms", "incidents", "hitl", "feedback", "agent_memory"]
-        
+
         results = []
         for source in sources:
             knowledge_query = KnowledgeQuery(query=query, source=source, limit=limit // len(sources))
             result = self.repository.query(knowledge_query)
             if result.data:
                 results.append(result)
-        
+
         # Sort by confidence
         results.sort(key=lambda r: r.confidence, reverse=True)
         return results[:limit]

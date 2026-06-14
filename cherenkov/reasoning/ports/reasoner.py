@@ -1,4 +1,5 @@
 """ReasoningBackend port — the 'how to think' boundary (ADR-007 §3)."""
+
 from __future__ import annotations
 
 from typing import Protocol

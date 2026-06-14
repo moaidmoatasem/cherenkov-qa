@@ -2,6 +2,7 @@
 CHERENKOV truth/sources/openapi.py — OpenAPI Source Adapter.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -38,7 +39,9 @@ class OpenAPISourceAdapter(SourceAdapter):
             subject_prefix = f"{method} {path}"
 
             # Normalize subject path for ID creation
-            normalized_path = path.replace("/", "_").replace("{", "").replace("}", "").strip("_")
+            normalized_path = (
+                path.replace("/", "_").replace("{", "").replace("}", "").strip("_")
+            )
             id_prefix = f"spec_{method.lower()}_{normalized_path}"
 
             # 1. Endpoint existence and richness claim

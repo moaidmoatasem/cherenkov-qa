@@ -2,16 +2,23 @@
 """
 smoke_test_provider.py -- smoke test to verify ModelProvider SPI.
 """
+
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.ai.ollama_client import InferenceClient
 from cherenkov.substrate.provider import OllamaProvider
 
+
 class MockInferenceClient(InferenceClient):
-    def complete_json(self, system_prompt: str, user_prompt: str, model: str, **kwargs) -> dict:
+    def complete_json(
+        self, system_prompt: str, user_prompt: str, model: str, **kwargs
+    ) -> dict:
         return {"test": "success"}
 
-    def complete_code(self, system_prompt: str, user_prompt: str, model: str, **kwargs) -> str:
+    def complete_code(
+        self, system_prompt: str, user_prompt: str, model: str, **kwargs
+    ) -> str:
         return "success"
+
 
 def test_ollama_provider_conformance():
     print("=== PASS 1: Test OllamaProvider ===")
@@ -21,7 +28,7 @@ def test_ollama_provider_conformance():
     request = ReasoningRequest(
         task="Write a test",
         output_schema={"type": "object", "properties": {"test": {"type": "string"}}},
-        capability_tier="small"
+        capability_tier="small",
     )
 
     result = provider.generate(request)
@@ -37,6 +44,7 @@ def test_ollama_provider_conformance():
     assert round_trip.model == result.model
 
     print("[PASS] OllamaProvider conformance test passed.")
+
 
 if __name__ == "__main__":
     test_ollama_provider_conformance()

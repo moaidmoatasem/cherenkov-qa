@@ -7,6 +7,7 @@ schema_version = 'mcp/v1'
 These models represent the wire shapes for the JSON-RPC 2.0 / MCP protocol.
 They are local to the mcp/ package — never forking core/contracts.py.
 """
+
 from __future__ import annotations
 
 from typing import Any, Literal
@@ -17,8 +18,10 @@ SCHEMA_VERSION = "mcp/v1"
 
 # ── JSON-RPC 2.0 frames ───────────────────────────────────────────────────────
 
+
 class JsonRpcRequest(BaseModel):
     """Inbound JSON-RPC 2.0 request from an MCP client."""
+
     jsonrpc: Literal["2.0"] = "2.0"
     id: int | str | None = None
     method: str
@@ -33,6 +36,7 @@ class JsonRpcError(BaseModel):
 
 class JsonRpcResponse(BaseModel):
     """Outbound JSON-RPC 2.0 response."""
+
     jsonrpc: Literal["2.0"] = "2.0"
     id: int | str | None = None
     result: Any | None = None
@@ -41,11 +45,16 @@ class JsonRpcResponse(BaseModel):
     def to_success(self, id: int | str | None, result: Any) -> "JsonRpcResponse":
         return JsonRpcResponse(id=id, result=result)
 
-    def to_error(self, id: int | str | None, code: int, message: str, data: Any = None) -> "JsonRpcResponse":
-        return JsonRpcResponse(id=id, error=JsonRpcError(code=code, message=message, data=data))
+    def to_error(
+        self, id: int | str | None, code: int, message: str, data: Any = None
+    ) -> "JsonRpcResponse":
+        return JsonRpcResponse(
+            id=id, error=JsonRpcError(code=code, message=message, data=data)
+        )
 
 
 # ── MCP capability advertisement ─────────────────────────────────────────────
+
 
 class MCPServerInfo(BaseModel):
     name: str = "cherenkov"
@@ -65,6 +74,7 @@ class MCPInitializeResult(BaseModel):
 
 
 # ── MCP Resource shapes ───────────────────────────────────────────────────────
+
 
 class MCPResource(BaseModel):
     uri: str
@@ -89,6 +99,7 @@ class MCPResourceReadResult(BaseModel):
 
 # ── MCP Tool shapes ───────────────────────────────────────────────────────────
 
+
 class MCPToolParam(BaseModel):
     type: str
     description: str
@@ -112,6 +123,7 @@ class MCPToolListResult(BaseModel):
 
 class MCPToolCallInput(BaseModel):
     """Validated inputs for a tool/call invocation from an MCP client."""
+
     name: str
     arguments: dict[str, Any] = Field(default_factory=dict)
 
@@ -127,6 +139,7 @@ class MCPToolCallResult(BaseModel):
 
 
 # ── Input validation models (trust boundary — MCP peers are untrusted) ───────
+
 
 class HitlApproveInput(BaseModel):
     item_id: str = Field(min_length=1, max_length=256)
@@ -175,9 +188,12 @@ class ChatRunTestInput(BaseModel):
 
 # ── Issue #441: Conformance tools ─────────────────────────────────────────────
 
+
 class RunConformanceCheckInput(BaseModel):
     target_url: str = Field(min_length=1, description="Target API base URL")
-    spec_path: str = Field(default="stub/openapi.yaml", description="Path to OpenAPI spec")
+    spec_path: str = Field(
+        default="stub/openapi.yaml", description="Path to OpenAPI spec"
+    )
     workers: int = Field(default=1, ge=1, le=16, description="Parallel workers")
 
 
@@ -195,43 +211,73 @@ class GetTighteningInput(BaseModel):
 
 
 class ExplainFindingInput(BaseModel):
-    finding_id: str = Field(min_length=1, description="Finding ID from list_drift_findings")
+    finding_id: str = Field(
+        min_length=1, description="Finding ID from list_drift_findings"
+    )
     detail_level: Literal["concise", "detailed"] = Field(default="concise")
 
 
 # ── Issue #457: Enhanced Visual Diff Baseline ────────────────────────────────
 
+
 class VisualDiffBaselineInput(BaseModel):
-    target_url: str | None = Field(default=None, description="Optional target URL for visual testing")
-    baseline_dir: str | None = Field(default=None, description="Baseline directory path (default: stub/visual_baselines)")
-    diff_threshold: float | None = Field(default=None, ge=0.0, le=1.0, description="Pixel diff threshold (0.0-1.0, default: 0.5)")
-    comparison_mode: str | None = Field(default=None, description="Comparison mode: pixel, structural, or auto")
-    report_path: str | None = Field(default=None, description="Path to save visual report (default: .cherenkov/visual_report.json)")
+    target_url: str | None = Field(
+        default=None, description="Optional target URL for visual testing"
+    )
+    baseline_dir: str | None = Field(
+        default=None,
+        description="Baseline directory path (default: stub/visual_baselines)",
+    )
+    diff_threshold: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="Pixel diff threshold (0.0-1.0, default: 0.5)",
+    )
+    comparison_mode: str | None = Field(
+        default=None, description="Comparison mode: pixel, structural, or auto"
+    )
+    report_path: str | None = Field(
+        default=None,
+        description="Path to save visual report (default: .cherenkov/visual_report.json)",
+    )
 
 
 # ── Issue #458: Compliance and Governance MCP Tools ──────────────────────────
 
+
 class MenaComplianceEnhancedInput(BaseModel):
     target_url: str = Field(min_length=1, description="Target API base URL")
-    spec_path: str = Field(default="stub/openapi.yaml", description="Path to OpenAPI spec")
-    framework: str = Field(default="sama_ccsf", description="Compliance framework: sama_ccsf or egypt_cbef")
+    spec_path: str = Field(
+        default="stub/openapi.yaml", description="Path to OpenAPI spec"
+    )
+    framework: str = Field(
+        default="sama_ccsf", description="Compliance framework: sama_ccsf or egypt_cbef"
+    )
 
 
 class GovernanceCertificationInput(BaseModel):
     cert_id: str = Field(min_length=1, description="Certification ID to validate")
-    validation_criteria: str = Field(min_length=1, description="Validation criteria or standards to check against")
+    validation_criteria: str = Field(
+        min_length=1, description="Validation criteria or standards to check against"
+    )
 
 
 class ComplianceFindingsInput(BaseModel):
-    severity: Literal["high", "medium", "low", "all"] | None = Field(default=None, description="Filter by severity")
-    endpoint: str | None = Field(default=None, description="Filter by endpoint path (optional)")
-    limit: int = Field(default=20, ge=1, le=200, description="Maximum results to return")
+    severity: Literal["high", "medium", "low", "all"] | None = Field(
+        default=None, description="Filter by severity"
+    )
+    endpoint: str | None = Field(
+        default=None, description="Filter by endpoint path (optional)"
+    )
+    limit: int = Field(
+        default=20, ge=1, le=200, description="Maximum results to return"
+    )
 
 
 # ── JSON-RPC error codes (MCP uses standard JSON-RPC + MCP extensions) ───────
-PARSE_ERROR      = -32700
-INVALID_REQUEST  = -32600
+PARSE_ERROR = -32700
+INVALID_REQUEST = -32600
 METHOD_NOT_FOUND = -32601
-INVALID_PARAMS   = -32602
-INTERNAL_ERROR   = -32603
-
+INVALID_PARAMS = -32602
+INTERNAL_ERROR = -32603

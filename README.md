@@ -20,9 +20,9 @@
 openapi.yaml  ──▶  cherenkov validate  ──▶  Playwright tests  ──▶  eject  ──▶  run anywhere
 ```
 
-Give CHERENKOV your OpenAPI spec and a live server URL.  
-It generates typed Playwright tests using a local LLM, runs a 6-gate review on every test,  
-executes them, and surfaces exactly where your implementation diverges from your spec.  
+Give CHERENKOV your OpenAPI spec and a live server URL.
+It generates typed Playwright tests using a local LLM, runs a 6-gate review on every test,
+executes them, and surfaces exactly where your implementation diverges from your spec.
 No cloud. No API keys. When you're done, eject to vanilla Playwright — runs forever without CHERENKOV.
 
 ```
@@ -291,8 +291,8 @@ Everything runs locally. You choose how much infrastructure you want.
 | **E** Dashboard | React UI (9 screens) | ✅ All screens shipped |
 | **F** K8s | Operator + CRDs | ✅ Phase 8 complete |
 
-**Active work:** Phase 8 — K8s CRD sync + cloud readiness.  
-**Canonical status:** [docs/STATUS.md](docs/STATUS.md)  
+**Active work:** Phase 8 — K8s CRD sync + cloud readiness.
+**Canonical status:** [docs/STATUS.md](docs/STATUS.md)
 **Phase roadmap:** [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)
 
 ---

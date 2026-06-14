@@ -21,6 +21,7 @@ Design:
   - Fallback: if all passes error, returns is_correct=False with low confidence
     rather than raising, keeping the pipeline non-blocking.
 """
+
 from __future__ import annotations
 
 from typing import Any

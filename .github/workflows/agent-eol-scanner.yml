@@ -1,0 +1,51 @@
+name: Autonomous EOL Scanner
+on:
+  schedule:
+    # Run at 02:00 on Sunday
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+
+jobs:
+  scan-and-heal:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Analysis Tools
+        run: pip install pip-audit
+
+      - name: Scan for EOL & Vulnerabilities (Python)
+        id: python-audit
+        run: |
+          # This simulates scanning for EOL and serious vulnerabilities
+          pip-audit -r requirements.txt || echo "vuln_found=true" >> $GITHUB_ENV
+          
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Scan for EOL & Vulnerabilities (Node)
+        id: node-audit
+        run: |
+          npm audit || echo "vuln_found=true" >> $GITHUB_ENV
+
+      - name: Trigger Autonomous Healing Agent
+        if: env.vuln_found == 'true'
+        run: |
+          echo "Vulnerabilities or EOL components detected!"
+          echo "In a fully active CHERENKOV agent system, this step invokes the agent:"
+          echo "python scripts/agent_sync.py resolve --task EOL_MIGRATION"
+          echo "The agent will fork a branch, rewrite the Adapter, and open a PR."
+          # Placeholder for the actual agent invocation.

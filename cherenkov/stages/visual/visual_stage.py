@@ -16,6 +16,7 @@ Epoch 9 addition: after the pixel_diff gate, a second vlm_semantic gate runs
 the VisualOracle to classify the change semantically (ANOMALY / HARMLESS_SHIFT /
 REDESIGN / UNKNOWN). This gate is advisory — it never overrides the pixel gate.
 """
+
 from __future__ import annotations
 
 import os
@@ -45,7 +46,12 @@ class VisualStage:
     After the pixel_diff gate a vlm_semantic gate classifies the diff via VLM.
     """
 
-    def __init__(self, run_id: str | None = None, init_mode: bool = False, vlm_enabled: bool = True):
+    def __init__(
+        self,
+        run_id: str | None = None,
+        init_mode: bool = False,
+        vlm_enabled: bool = True,
+    ):
         self.run_id = run_id
         self.init_mode = init_mode
         self.vlm_enabled = vlm_enabled
@@ -72,13 +78,16 @@ class VisualStage:
         """Run the VisualOracle VLM gate. Never raises — degrades to UNKNOWN on error."""
         try:
             from cherenkov.oracle.visual_oracle import VisualOracle
+
             oracle = VisualOracle()
             claim = Claim(
                 id=f"visual_{sl.name}",
                 category="visual_diff",
                 subject=sl.name,
                 value={"pixel_passed": pixel_passed},
-                provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri=sl.url),
+                provenance=Provenance(
+                    source_type=ProvenanceType.SPEC, source_uri=sl.url
+                ),
             )
             result = oracle.evaluate(
                 claim,
@@ -113,8 +122,14 @@ class VisualStage:
         # Playwright stores snapshots at:
         #   stub/generated_tests/{scenario}.spec.ts-snapshots/{slice}-{platform}.png
         # Missing baseline -> auto-promote to init (--update-snapshots).
-        snap_dir = os.path.join(self.runner.tests_dir, f"{scenario_id}.spec.ts-snapshots")
-        platform = sys.platform if sys.platform in ("linux", "darwin", "win32") else sys.platform
+        snap_dir = os.path.join(
+            self.runner.tests_dir, f"{scenario_id}.spec.ts-snapshots"
+        )
+        platform = (
+            sys.platform
+            if sys.platform in ("linux", "darwin", "win32")
+            else sys.platform
+        )
         baseline_file = os.path.join(snap_dir, f"{sl.name}-{platform}.png")
         needs_init = self.init_mode or not os.path.exists(baseline_file)
 
@@ -127,7 +142,9 @@ class VisualStage:
 
         passed = bool(result.get("passed"))
         baseline_label = (
-            f"{baseline_dir.rstrip('/')}/{sl.name}.png" if baseline_dir else baseline_file
+            f"{baseline_dir.rstrip('/')}/{sl.name}.png"
+            if baseline_dir
+            else baseline_file
         )
         # The actual screenshot Playwright writes on a diff failure lives next to the baseline.
         actual_label = os.path.join(snap_dir, f"{sl.name}-actual.png")
@@ -137,7 +154,9 @@ class VisualStage:
             passed=passed,
             diff_pixels=0 if passed else -1,
             baseline_path=baseline_label,
-            actual_path=actual_label if os.path.exists(actual_label) else result.get("test_file", ""),
+            actual_path=actual_label
+            if os.path.exists(actual_label)
+            else result.get("test_file", ""),
         )
 
         gates: list[VisualGateResult] = [pixel_gate]
@@ -154,16 +173,24 @@ class VisualStage:
 
         errors: list[StageError] = []
         if not passed:
-            errors.append(StageError(
-                code="VISUAL_MISMATCH",
-                detail=result.get("failure_message", "") or "visual diff failed",
-                where=sl.name,
-            ))
+            errors.append(
+                StageError(
+                    code="VISUAL_MISMATCH",
+                    detail=result.get("failure_message", "") or "visual diff failed",
+                    where=sl.name,
+                )
+            )
 
         # Overall verdict: HITL if pixel gate failed AND VLM didn't classify it harmless.
         vlm_harmless = any(g.gate == "vlm_semantic" and g.passed for g in gates)
-        final_verdict = Verdict.AUTO_APPROVE if (passed or vlm_harmless) else Verdict.HITL
-        final_status = Status.OK if passed else (Status.DEGRADED if vlm_harmless else Status.FAILED)
+        final_verdict = (
+            Verdict.AUTO_APPROVE if (passed or vlm_harmless) else Verdict.HITL
+        )
+        final_status = (
+            Status.OK
+            if passed
+            else (Status.DEGRADED if vlm_harmless else Status.FAILED)
+        )
 
         return VisualReport(
             scenario_id=scenario_id,
@@ -171,5 +198,7 @@ class VisualStage:
             verdict=final_verdict,
             status=final_status,
             errors=errors,
-            metadata=StageMeta(stage="visual", duration_ms=int((time.time() - t0) * 1000)),
+            metadata=StageMeta(
+                stage="visual", duration_ms=int((time.time() - t0) * 1000)
+            ),
         )

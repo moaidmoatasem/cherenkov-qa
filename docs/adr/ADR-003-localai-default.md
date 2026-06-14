@@ -1,8 +1,8 @@
 # ADR-003: LocalAI as Default LLM Backend
 
-**Date:** 2026-06-08  
-**Status:** Accepted  
-**Deciders:** Project Owner + AI Agents  
+**Date:** 2026-06-08
+**Status:** Accepted
+**Deciders:** Project Owner + AI Agents
 **Related EPIC:** #277 (Phase -1), #281 (Phase 2)
 
 ---
@@ -69,19 +69,19 @@ def get_vlm_provider(self):
     """Get VLM provider based on tier."""
     if self.vlm_tier == VLMTier.PIXEL_DIFF_ONLY:
         return None  # No VLM, pixel diff only
-    
+
     # Try LocalAI first
     if self.localai.is_available():
         return self.localai
-    
+
     # Fallback to Ollama
     if self.ollama.is_available():
         return self.ollama
-    
+
     # Fallback to OpenAI (if egress allowed)
     if self.openai.is_available():
         return self.openai
-    
+
     # No VLM available
     return None
 ```

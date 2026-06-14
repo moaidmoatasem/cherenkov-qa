@@ -3,6 +3,7 @@ cherenkov/core/feedback_store.py
 
 Records structured feedback for rejected or approved HITL findings to seed the learning loop.
 """
+
 from __future__ import annotations
 
 import json
@@ -13,6 +14,7 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class RejectionReason:
     INTENDED_CHANGE = "intended_change"
@@ -20,12 +22,14 @@ class RejectionReason:
     WRONG_ASSERTION = "wrong_assertion"
     OTHER = "other"
 
+
 @dataclass
 class FeedbackEntry:
     hitl_item_id: str
     action: str  # "reject" or "approve"
     reason: Optional[str] = None
     notes: Optional[str] = None
+
 
 class FeedbackStore:
     def __init__(self, store_path: str | Path = ".cherenkov/feedback.json"):
@@ -39,13 +43,15 @@ class FeedbackStore:
         try:
             with open(self.store_path, "r") as f:
                 data = json.load(f)
-            
+
             data.append(asdict(entry))
-            
+
             with open(self.store_path, "w") as f:
                 json.dump(data, f, indent=2)
-                
-            logger.info(f"Recorded feedback for {entry.hitl_item_id} (action: {entry.action})")
+
+            logger.info(
+                f"Recorded feedback for {entry.hitl_item_id} (action: {entry.action})"
+            )
         except Exception as e:
             logger.error(f"Failed to record feedback: {e}")
 

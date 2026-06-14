@@ -260,18 +260,18 @@ metadata:
 spec:
   # Required
   target: http://my-api:8080           # API URL inside cluster
-  
+
   # Optional
   openapiUrl: ""                       # Spec URL (defaults to target/openapi.json)
   schedule: "0 */6 * * *"             # Cron schedule (default: manual only)
   timeout: 120                         # Job timeout in seconds
   workers: 4                           # Parallel test workers
-  
+
   # LLM config (uses cluster-level defaults if not set)
   llm:
     model: qwen2.5-coder:7b
     ollamaUrl: http://ollama:11434
-    
+
   # Results
   reportRetention: 30d                 # How long to keep reports
 ```

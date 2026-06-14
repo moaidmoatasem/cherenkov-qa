@@ -15,6 +15,7 @@ Design constraints:
     crawl never aborts due to a probe failure.
   - Zero browser state shared between calls (fresh context per URL).
 """
+
 from __future__ import annotations
 
 from typing import Callable
@@ -56,28 +57,47 @@ class PlaywrightUiProbe:
         try:
             from playwright.sync_api import sync_playwright
         except ImportError:
-            return [(ExplorerFindingKind.UNREACHABLE, "playwright Python package not installed", url)]
+            return [
+                (
+                    ExplorerFindingKind.UNREACHABLE,
+                    "playwright Python package not installed",
+                    url,
+                )
+            ]
 
         findings: list[tuple[ExplorerFindingKind, str, str]] = []
         console_errors: list[str] = []
         page_errors: list[str] = []
 
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(headless=True, args=["--no-sandbox", "--disable-gpu"])
+            browser = pw.chromium.launch(
+                headless=True, args=["--no-sandbox", "--disable-gpu"]
+            )
             context = browser.new_context(
                 viewport={"width": 1280, "height": 800},
                 ignore_https_errors=True,
             )
             page = context.new_page()
 
-            page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
+            page.on(
+                "console",
+                lambda msg: console_errors.append(msg.text)
+                if msg.type == "error"
+                else None,
+            )
             page.on("pageerror", lambda err: page_errors.append(str(err)))
 
             try:
                 page.goto(url, wait_until="networkidle", timeout=self._timeout)
             except Exception as nav_err:
                 browser.close()
-                return [(ExplorerFindingKind.UNREACHABLE, f"Navigation failed: {nav_err}", url)]
+                return [
+                    (
+                        ExplorerFindingKind.UNREACHABLE,
+                        f"Navigation failed: {nav_err}",
+                        url,
+                    )
+                ]
 
             # Collect broken images
             try:
@@ -87,16 +107,22 @@ class PlaywrightUiProbe:
                         .map(img => img.src)"""
                 )
                 for src in broken:
-                    findings.append((ExplorerFindingKind.VISUAL_BREAK, f"Broken image: {src}", url))
+                    findings.append(
+                        (ExplorerFindingKind.VISUAL_BREAK, f"Broken image: {src}", url)
+                    )
             except Exception:
                 pass
 
             # Capture screenshot for downstream VLM analysis if a directory is configured
             if self._screenshot_dir:
-                import os, time
+                import os
+                import time
+
                 os.makedirs(self._screenshot_dir, exist_ok=True)
                 slug = url.replace("://", "_").replace("/", "_").replace(":", "_")[:80]
-                shot_path = os.path.join(self._screenshot_dir, f"{slug}_{int(time.time())}.png")
+                shot_path = os.path.join(
+                    self._screenshot_dir, f"{slug}_{int(time.time())}.png"
+                )
                 try:
                     page.screenshot(path=shot_path, full_page=False)
                 except Exception:
@@ -105,9 +131,13 @@ class PlaywrightUiProbe:
             browser.close()
 
         for err in console_errors:
-            findings.append((ExplorerFindingKind.JS_ERROR, f"Console error: {err}", url))
+            findings.append(
+                (ExplorerFindingKind.JS_ERROR, f"Console error: {err}", url)
+            )
 
         for err in page_errors:
-            findings.append((ExplorerFindingKind.JS_ERROR, f"Page exception: {err}", url))
+            findings.append(
+                (ExplorerFindingKind.JS_ERROR, f"Page exception: {err}", url)
+            )
 
         return findings

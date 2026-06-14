@@ -2,6 +2,7 @@
 Tests for cherenkov/ai/model_runner_client.py — Docker Model Runner adapter.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import unittest

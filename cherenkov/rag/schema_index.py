@@ -7,11 +7,11 @@ retrieves semantically relevant schemas per endpoint + mutation.
 This is an alternative populator of EndpointSlice.schemas — no change to
 the generate/review contract downstream.
 """
+
 from __future__ import annotations
 
 import json
 import hashlib
-import os
 import time
 from pathlib import Path
 from typing import Any
@@ -26,6 +26,7 @@ from cherenkov.core.errors import get_logger
 # ── Chunk data model ────────────────────────────────────────────────────────
 class Chunk:
     """A single indexed schema chunk: one component schema entry."""
+
     def __init__(self, name: str, text: str, source: dict[str, Any]):
         self.name = name
         self.text = text
@@ -101,8 +102,14 @@ class SchemaIndex:
         if properties:
             prop_lines = []
             for pname, pschema in properties.items():
-                ptype = pschema.get("type", "unknown") if isinstance(pschema, dict) else "unknown"
-                pdesc = pschema.get("description", "") if isinstance(pschema, dict) else ""
+                ptype = (
+                    pschema.get("type", "unknown")
+                    if isinstance(pschema, dict)
+                    else "unknown"
+                )
+                pdesc = (
+                    pschema.get("description", "") if isinstance(pschema, dict) else ""
+                )
                 prop_lines.append(f"{pname} ({ptype}){': ' + pdesc if pdesc else ''}")
             parts.append("properties: " + ", ".join(prop_lines))
         if "required" in schema:
@@ -113,7 +120,9 @@ class SchemaIndex:
     def _get_spec_hash(cls, spec: dict[str, Any]) -> str:
         """Compute a stable hash of the spec's component schemas for cache invalidation."""
         schemas = spec.get("components", {}).get("schemas", {})
-        return hashlib.sha256(json.dumps(schemas, sort_keys=True).encode()).hexdigest()[:16]
+        return hashlib.sha256(json.dumps(schemas, sort_keys=True).encode()).hexdigest()[
+            :16
+        ]
 
     def _cache_path(self, spec_hash: str) -> Path:
         return self._cache_dir / f"rag_{spec_hash}.json"
@@ -131,7 +140,9 @@ class SchemaIndex:
                 for item in data:
                     chunk = Chunk(item["name"], item["text"], item["source"])
                     self._chunks.append(chunk)
-                self._log.info("loaded from cache", spec_hash=spec_hash, chunks=len(self._chunks))
+                self._log.info(
+                    "loaded from cache", spec_hash=spec_hash, chunks=len(self._chunks)
+                )
                 return
             except Exception as e:
                 self._log.warning("cache load failed, re-indexing", error=str(e))

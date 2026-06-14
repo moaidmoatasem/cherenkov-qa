@@ -4,9 +4,9 @@ Authority: v3.1 + delta.
 
 Proves agnosticism: a cloud provider implementing the same SPI as Ollama.
 """
+
 from __future__ import annotations
 
-import json
 import re
 import time
 
@@ -15,7 +15,7 @@ import requests
 from cherenkov.core.errors import ProviderJSONError, get_logger
 from cherenkov.core.config import Config
 from cherenkov.ai.interface import InferenceClient
-from cherenkov.ai.ollama_client import strip_think, _try_json, _json_repair
+from cherenkov.ai.ollama_client import _try_json, _json_repair
 
 
 class OpenAIInferenceClient(InferenceClient):
@@ -25,7 +25,9 @@ class OpenAIInferenceClient(InferenceClient):
         self.api_key = Config.OPENAI_API_KEY
         self.base_url = "https://api.openai.com/v1"
         self._token_usage: dict[str, int] = {
-            "prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "reprompts": 0,
         }
 
     def _chat_completion(
@@ -104,8 +106,12 @@ class OpenAIInferenceClient(InferenceClient):
                 return parsed
 
             attempt += 1
-            log.warning("json invalid, reprompting", model=model, attempt=attempt,
-                        duration_ms=dt_ms)
+            log.warning(
+                "json invalid, reprompting",
+                model=model,
+                attempt=attempt,
+                duration_ms=dt_ms,
+            )
 
         raise ProviderJSONError(
             f"{model} did not return valid JSON after {max_reprompts} reprompts. "
@@ -208,4 +214,3 @@ class OpenAIInferenceClient(InferenceClient):
         text = resp.json()["choices"][0]["message"]["content"].strip()
         log.info("chat ok", model=model, duration_ms=int((time.time() - t0) * 1000))
         return text
-

@@ -9,20 +9,19 @@ Verifies:
 
 All tests run in offline mode (use_llm=False) — no LLM, no network.
 """
+
 from __future__ import annotations
 
-import sys
-import io
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
-import pytest
 
-from cherenkov.divergence.proof_run import run_proof, PROOF_RUN_PROBES, _offline_hypotheses
+from cherenkov.divergence.proof_run import run_proof, PROOF_RUN_PROBES
 from cherenkov.reflector.reflector import Reflector
 from cherenkov.reflector.store import VerdictStore
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
+
 
 def _in_memory_reflector() -> Reflector:
     """Reflector backed by an in-memory SQLite (no disk I/O)."""
@@ -47,6 +46,7 @@ def _mock_reflector_suppress_all() -> MagicMock:
 
 # ── A7 rerank() call count tests ──────────────────────────────────────────────
 
+
 class TestRerankcalledPerProbe:
     """rerank() must be called exactly once per PROOF_RUN_PROBE."""
 
@@ -57,7 +57,9 @@ class TestRerankcalledPerProbe:
         # Patch witness so we don't hit the network
         with patch(
             "cherenkov.divergence.proof_run.WitnessAgent.reproduce",
-            return_value=MagicMock(reproduced=False, evidence=None, rejection_reason="mocked"),
+            return_value=MagicMock(
+                reproduced=False, evidence=None, rejection_reason="mocked"
+            ),
         ):
             run_proof(
                 base_url="http://localhost:1",
@@ -76,7 +78,9 @@ class TestRerankcalledPerProbe:
 
         with patch(
             "cherenkov.divergence.proof_run.WitnessAgent.reproduce",
-            return_value=MagicMock(reproduced=False, evidence=None, rejection_reason="mocked"),
+            return_value=MagicMock(
+                reproduced=False, evidence=None, rejection_reason="mocked"
+            ),
         ):
             run_proof(
                 base_url="http://localhost:1",
@@ -85,22 +89,23 @@ class TestRerankcalledPerProbe:
             )
 
         expected_keys = {
-            f"{method} {endpoint}"
-            for endpoint, method, _, _ in PROOF_RUN_PROBES
+            f"{method} {endpoint}" for endpoint, method, _, _ in PROOF_RUN_PROBES
         }
         actual_keys = {
             c.kwargs.get("endpoint") or c.args[1]
             for c in reflector.rerank.call_args_list
         }
-        assert expected_keys == actual_keys, (
-            f"Endpoint keys mismatch.\n  Expected: {expected_keys}\n  Got: {actual_keys}"
-        )
+        assert (
+            expected_keys == actual_keys
+        ), f"Endpoint keys mismatch.\n  Expected: {expected_keys}\n  Got: {actual_keys}"
 
     def test_no_rerank_when_reflector_is_none(self, capsys):
         """When reflector=None, proof_run must NOT call rerank() on anything."""
         with patch(
             "cherenkov.divergence.proof_run.WitnessAgent.reproduce",
-            return_value=MagicMock(reproduced=False, evidence=None, rejection_reason="mocked"),
+            return_value=MagicMock(
+                reproduced=False, evidence=None, rejection_reason="mocked"
+            ),
         ):
             # Should not raise; reflector is not used
             run_proof(
@@ -114,6 +119,7 @@ class TestRerankcalledPerProbe:
 
 # ── Suppression tests ─────────────────────────────────────────────────────────
 
+
 class TestSuppressionPreventsWitnessEntry:
     """Hypotheses removed by rerank() must NEVER reach WitnessAgent.reproduce()."""
 
@@ -122,7 +128,9 @@ class TestSuppressionPreventsWitnessEntry:
         reflector = _mock_reflector_suppress_all()
 
         witness_reproduce = MagicMock(
-            return_value=MagicMock(reproduced=False, evidence=None, rejection_reason="mocked")
+            return_value=MagicMock(
+                reproduced=False, evidence=None, rejection_reason="mocked"
+            )
         )
         with patch(
             "cherenkov.divergence.proof_run.WitnessAgent.reproduce",
@@ -138,7 +146,9 @@ class TestSuppressionPreventsWitnessEntry:
             f"Witness.reproduce() should not be called when all hypotheses are "
             f"suppressed, but it was called {witness_reproduce.call_count} time(s)"
         )
-        assert reports == [], "No reports should be emitted when all hypotheses are suppressed"
+        assert (
+            reports == []
+        ), "No reports should be emitted when all hypotheses are suppressed"
 
     def test_partial_suppression_limits_witness_calls(self):
         """When rerank() removes half the hypotheses, witness calls are halved."""
@@ -160,7 +170,9 @@ class TestSuppressionPreventsWitnessEntry:
         reflector.rerank.side_effect = _selective_rerank
 
         witness_reproduce = MagicMock(
-            return_value=MagicMock(reproduced=False, evidence=None, rejection_reason="mocked")
+            return_value=MagicMock(
+                reproduced=False, evidence=None, rejection_reason="mocked"
+            )
         )
         with patch(
             "cherenkov.divergence.proof_run.WitnessAgent.reproduce",
@@ -182,6 +194,7 @@ class TestSuppressionPreventsWitnessEntry:
 
 # ── Print message tests ───────────────────────────────────────────────────────
 
+
 class TestSuppressedCountPrinted:
     """When hypotheses are suppressed, the count must be printed."""
 
@@ -191,7 +204,9 @@ class TestSuppressedCountPrinted:
 
         with patch(
             "cherenkov.divergence.proof_run.WitnessAgent.reproduce",
-            return_value=MagicMock(reproduced=False, evidence=None, rejection_reason="mocked"),
+            return_value=MagicMock(
+                reproduced=False, evidence=None, rejection_reason="mocked"
+            ),
         ):
             run_proof(
                 base_url="http://localhost:1",
@@ -200,9 +215,9 @@ class TestSuppressedCountPrinted:
             )
 
         captured = capsys.readouterr()
-        assert "Reflector: suppressed" in captured.out, (
-            f"Expected suppression message in stdout.\nGot:\n{captured.out}"
-        )
+        assert (
+            "Reflector: suppressed" in captured.out
+        ), f"Expected suppression message in stdout.\nGot:\n{captured.out}"
 
     def test_no_suppressed_message_when_nothing_suppressed(self, capsys):
         """No suppression message when rerank() is a pass-through."""
@@ -210,7 +225,9 @@ class TestSuppressedCountPrinted:
 
         with patch(
             "cherenkov.divergence.proof_run.WitnessAgent.reproduce",
-            return_value=MagicMock(reproduced=False, evidence=None, rejection_reason="mocked"),
+            return_value=MagicMock(
+                reproduced=False, evidence=None, rejection_reason="mocked"
+            ),
         ):
             run_proof(
                 base_url="http://localhost:1",
@@ -219,16 +236,18 @@ class TestSuppressedCountPrinted:
             )
 
         captured = capsys.readouterr()
-        assert "Reflector: suppressed" not in captured.out, (
-            "Suppression message should NOT appear when nothing was suppressed."
-        )
+        assert (
+            "Reflector: suppressed" not in captured.out
+        ), "Suppression message should NOT appear when nothing was suppressed."
 
     def test_ingest_called_for_each_witness_result(self):
         """ingest_from_reproduction() must be called once per witness result."""
         reflector = _mock_reflector_pass_through()
 
         witness_reproduce = MagicMock(
-            return_value=MagicMock(reproduced=False, evidence=None, rejection_reason="mocked")
+            return_value=MagicMock(
+                reproduced=False, evidence=None, rejection_reason="mocked"
+            )
         )
         with patch(
             "cherenkov.divergence.proof_run.WitnessAgent.reproduce",

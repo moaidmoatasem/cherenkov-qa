@@ -65,11 +65,18 @@ class CHERENKOVEvent:
         )
 
     @classmethod
-    def pipeline_complete(cls, run_id: str, success: bool, passed: int = 0, total: int = 0) -> CHERENKOVEvent:
+    def pipeline_complete(
+        cls, run_id: str, success: bool, passed: int = 0, total: int = 0
+    ) -> CHERENKOVEvent:
         return cls(
             category=EventCategory.PIPELINE,
             name="pipeline.complete",
-            payload={"run_id": run_id, "success": success, "passed": passed, "total": total},
+            payload={
+                "run_id": run_id,
+                "success": success,
+                "passed": passed,
+                "total": total,
+            },
             severity=EventSeverity.INFO if success else EventSeverity.WARNING,
             correlation_id=run_id,
         )
@@ -85,7 +92,9 @@ class CHERENKOVEvent:
         )
 
     @classmethod
-    def hitl_rejected(cls, item_id: str, reason: str = "", actor: str = "") -> CHERENKOVEvent:
+    def hitl_rejected(
+        cls, item_id: str, reason: str = "", actor: str = ""
+    ) -> CHERENKOVEvent:
         return cls(
             category=EventCategory.HITL,
             name="hitl.rejected",

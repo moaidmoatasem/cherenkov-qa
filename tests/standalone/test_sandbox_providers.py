@@ -5,6 +5,7 @@ Authority: v3.1 + delta.
 D7 invariant: sandboxed workspaces cannot modify host files.
 Anti-lock-in: filesystem provider is the default fallback.
 """
+
 from __future__ import annotations
 
 import os
@@ -42,9 +43,7 @@ class TestFilesystemSandboxProvider(unittest.TestCase):
             f.write("config data")
         self.cherenkov_dir = os.path.join(self.tmp_dir, ".cherenkov")
         os.makedirs(self.cherenkov_dir, exist_ok=True)
-        self.provider = FilesystemSandboxProvider(
-            cherenkov_dir=self.cherenkov_dir
-        )
+        self.provider = FilesystemSandboxProvider(cherenkov_dir=self.cherenkov_dir)
 
     def tearDown(self):
         shutil.rmtree(self.tmp_dir, ignore_errors=True)
@@ -52,9 +51,7 @@ class TestFilesystemSandboxProvider(unittest.TestCase):
     def test_replicate_workspace_creates_sandbox(self):
         workspace = self.provider.replicate_workspace("test-123", self.stub_dir)
         self.assertTrue(os.path.isdir(workspace))
-        self.assertTrue(
-            os.path.isdir(os.path.join(workspace, "generated_tests"))
-        )
+        self.assertTrue(os.path.isdir(os.path.join(workspace, "generated_tests")))
         self.provider.destroy_workspace(workspace)
         self.assertFalse(os.path.exists(workspace))
 
@@ -68,9 +65,7 @@ class TestFilesystemSandboxProvider(unittest.TestCase):
 
     def test_read_file(self):
         workspace = self.provider.replicate_workspace("test-read", self.stub_dir)
-        content = self.provider.read_file(
-            workspace, "config/test.txt"
-        )
+        content = self.provider.read_file(workspace, "config/test.txt")
         self.assertEqual(content, "config data")
         self.provider.destroy_workspace(workspace)
 
@@ -79,9 +74,7 @@ class TestFilesystemSandboxProvider(unittest.TestCase):
         self.provider.write_file(
             workspace, "generated_tests/new_test.spec.ts", "test content"
         )
-        result = self.provider.read_file(
-            workspace, "generated_tests/new_test.spec.ts"
-        )
+        result = self.provider.read_file(workspace, "generated_tests/new_test.spec.ts")
         self.assertEqual(result, "test content")
         self.provider.destroy_workspace(workspace)
 
@@ -123,7 +116,8 @@ class TestDockerSandboxProvider(unittest.TestCase):
         # Verify container exists
         result = subprocess.run(
             ["docker", "inspect", container_id],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
         self.assertEqual(result.returncode, 0)
         self.provider.destroy_workspace(container_id)
@@ -135,7 +129,8 @@ class TestDockerSandboxProvider(unittest.TestCase):
         # Container is removed — no trace on host
         result = subprocess.run(
             ["docker", "inspect", container_id],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
         self.assertNotEqual(result.returncode, 0)
 

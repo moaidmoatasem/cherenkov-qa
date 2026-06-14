@@ -3,6 +3,7 @@ CHERENKOV substrate/vlm_provider.py — VLM (Vision Language Model) provider.
 Egress-aware vision provider following the ModelProvider Protocol.
 Supports local (Ollama with Qwen3-VL etc.) and cloud (OpenAI GPT-4o vision).
 """
+
 from __future__ import annotations
 
 import base64
@@ -15,7 +16,6 @@ from cherenkov.core.config import Config
 from cherenkov.core.errors import get_logger
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient
-from cherenkov.ai.openai_client import OpenAIInferenceClient
 
 
 def _encode_image(image_path: str) -> str:
@@ -46,9 +46,7 @@ class VLMProvider:
         system_prompt = "You are a precise visual analyst."
         user_prompt = request.task
 
-        model = (
-            Config.TIER_VISION_MODEL
-        )
+        model = Config.TIER_VISION_MODEL
 
         image_path = None
         if request.output_schema and "image_path" in request.output_schema:
@@ -83,7 +81,9 @@ class VLMProvider:
                 )
 
         dt_ms = int((time.time() - t0) * 1000)
-        provider_name = "ollama" if Config.TIER_VISION_PROVIDER == "ollama" else "openai"
+        provider_name = (
+            "ollama" if Config.TIER_VISION_PROVIDER == "ollama" else "openai"
+        )
 
         return ReasoningResult(
             content=content,
@@ -97,6 +97,7 @@ class VLMProvider:
     def capabilities(self):
         """Advertise vision capability."""
         from cherenkov.substrate.provider import ProviderCapabilities
+
         provider_name = Config.TIER_VISION_PROVIDER
         requires_egress = provider_name != "ollama"
         return ProviderCapabilities(
@@ -108,6 +109,7 @@ class VLMProvider:
 
 class VLMResult(BaseModel):
     """Structured result from a VLM analysis."""
+
     description: str = ""
     elements_found: list[str] = Field(default_factory=list)
     anomalies: list[str] = Field(default_factory=list)

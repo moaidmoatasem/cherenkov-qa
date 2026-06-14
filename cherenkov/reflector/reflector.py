@@ -10,6 +10,7 @@ Then:
   2. Accumulates per-system Idioms (patterns that keep being confirmed)
   3. Surfaces ranked Idioms for future Mentor consumption
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -53,7 +54,12 @@ def fingerprint_of(hypothesis: DivergenceHypothesis) -> str:
     """
     cls = hypothesis.divergence_class.value if hypothesis.divergence_class else ""
     basis = "|".join(
-        [cls, _norm(hypothesis.endpoint), _norm(hypothesis.claim_a), _norm(hypothesis.claim_b)]
+        [
+            cls,
+            _norm(hypothesis.endpoint),
+            _norm(hypothesis.claim_a),
+            _norm(hypothesis.claim_b),
+        ]
     )
     return hashlib.sha256(basis.encode()).hexdigest()[:16]
 
@@ -96,11 +102,7 @@ class Reflector:
         Returns:
             The VerdictRecord that was persisted.
         """
-        outcome = (
-            VerdictOutcome.ACCEPT
-            if result.reproduced
-            else VerdictOutcome.REJECT
-        )
+        outcome = VerdictOutcome.ACCEPT if result.reproduced else VerdictOutcome.REJECT
         record = VerdictRecord(
             id=str(uuid.uuid4()),
             hypothesis_id=hypothesis.id,
@@ -131,7 +133,9 @@ class Reflector:
             self.store.record_rejected_fingerprint(
                 fingerprint_of(hypothesis),
                 hypothesis.endpoint,
-                hypothesis.divergence_class.value if hypothesis.divergence_class else None,
+                hypothesis.divergence_class.value
+                if hypothesis.divergence_class
+                else None,
             )
 
         return record
@@ -199,7 +203,9 @@ class Reflector:
             self.store.record_rejected_fingerprint(
                 fingerprint_of(hypothesis),
                 hypothesis.endpoint,
-                hypothesis.divergence_class.value if hypothesis.divergence_class else None,
+                hypothesis.divergence_class.value
+                if hypothesis.divergence_class
+                else None,
             )
         self.log.info(
             "recorded human verdict",
@@ -235,7 +241,8 @@ class Reflector:
         rejected = self.store.get_rejected_hypothesis_ids(endpoint)
         rejected_fps = self.store.rejected_fingerprints(endpoint)
         filtered = [
-            h for h in hypotheses
+            h
+            for h in hypotheses
             if h.id not in rejected and fingerprint_of(h) not in rejected_fps
         ]
 
@@ -303,9 +310,7 @@ class Reflector:
                 endpoint=hypothesis.endpoint,
             )
 
-    def get_top_idioms(
-        self, min_decay: float = 0.3, limit: int = 20
-    ) -> list[Idiom]:
+    def get_top_idioms(self, min_decay: float = 0.3, limit: int = 20) -> list[Idiom]:
         """Surface ranked Idioms for Mentor (E13) or CLI inspection."""
         return self.store.get_idioms(min_decay=min_decay, limit=limit)
 

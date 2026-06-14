@@ -10,11 +10,11 @@ Verifies:
 
 All tests use in-memory SQLite — no disk I/O, fully deterministic.
 """
+
 from __future__ import annotations
 
 import uuid
 
-import pytest
 
 from cherenkov.core.contracts import (
     DivergenceClass,
@@ -22,7 +22,6 @@ from cherenkov.core.contracts import (
     DivergenceHypothesis,
     ReproductionResult,
     Severity,
-    VerdictOutcome,
 )
 from cherenkov.reflector.reflector import Reflector, fingerprint_of
 from cherenkov.reflector.store import VerdictStore
@@ -31,6 +30,7 @@ from cherenkov.reflector.store import VerdictStore
 # ── fixtures ──────────────────────────────────────────────────────────────────
 import tempfile
 import os
+
 
 def _store() -> VerdictStore:
     fd, path = tempfile.mkstemp(suffix=".db")
@@ -73,15 +73,16 @@ def _rejected_result(hypothesis_id: str) -> ReproductionResult:
 
 # ── 1. fingerprint_of() stability ─────────────────────────────────────────────
 
+
 class TestFingerprintStability:
     """Same hypothesis (content) must yield the same fingerprint, regardless of id."""
 
     def test_same_hypothesis_same_fingerprint(self):
         h1 = _make_hypothesis()
         h2 = _make_hypothesis()  # fresh UUID but identical content
-        assert fingerprint_of(h1) == fingerprint_of(h2), (
-            "Two hypotheses with identical class/endpoint/claims must share a fingerprint."
-        )
+        assert (
+            fingerprint_of(h1) == fingerprint_of(h2)
+        ), "Two hypotheses with identical class/endpoint/claims must share a fingerprint."
 
     def test_fingerprint_is_deterministic_across_calls(self):
         h = _make_hypothesis()
@@ -100,6 +101,7 @@ class TestFingerprintStability:
 
 
 # ── 2. fingerprint_of() distinctness ─────────────────────────────────────────
+
 
 class TestFingerprintDistinctness:
     """Different hypotheses must produce different fingerprints."""
@@ -128,12 +130,13 @@ class TestFingerprintDistinctness:
         """Leading/trailing/double spaces are stripped in the fingerprint basis."""
         h1 = _make_hypothesis(claim_a="  spec: status enum  only  ")
         h2 = _make_hypothesis(claim_a="spec: status enum only")
-        assert fingerprint_of(h1) == fingerprint_of(h2), (
-            "Whitespace normalisation should make these fingerprints identical."
-        )
+        assert fingerprint_of(h1) == fingerprint_of(
+            h2
+        ), "Whitespace normalisation should make these fingerprints identical."
 
 
 # ── 3. Storage and retrieval of rejected fingerprints ─────────────────────────
+
 
 class TestRejectedFingerprintStorage:
     """Rejected fingerprints must be persisted and retrievable from the store."""
@@ -169,9 +172,9 @@ class TestRejectedFingerprintStorage:
         reflector.ingest_from_reproduction(h, result)
 
         stored = store.rejected_fingerprints()
-        assert fingerprint_of(h) not in stored, (
-            "Accepted hypothesis must NOT leave a rejected fingerprint."
-        )
+        assert (
+            fingerprint_of(h) not in stored
+        ), "Accepted hypothesis must NOT leave a rejected fingerprint."
 
     def test_verdict_count_incremented(self):
         store = _store()
@@ -182,12 +185,13 @@ class TestRejectedFingerprintStorage:
             reflector.ingest_from_reproduction(h, _rejected_result(h.id))
 
         stats = reflector.get_stats()
-        assert stats["verdict_count"] == 3, (
-            f"Expected 3 verdicts stored, got {stats['verdict_count']}"
-        )
+        assert (
+            stats["verdict_count"] == 3
+        ), f"Expected 3 verdicts stored, got {stats['verdict_count']}"
 
 
 # ── 4. Suppression: rejected → filtered by rerank() on next round ─────────────
+
 
 class TestSuppressionViafFingerprint:
     """Core E7 behavioural-exit: rejected hypothesis must be suppressed on re-run."""
@@ -209,7 +213,9 @@ class TestSuppressionViafFingerprint:
         # Step 2: mint a fresh hypothesis with the same semantic content
         h2 = _make_hypothesis()  # fresh UUID, same class/endpoint/claims
         assert h.id != h2.id, "pre-condition: hypothesis IDs must differ"
-        assert fingerprint_of(h) == fingerprint_of(h2), "pre-condition: fingerprints must match"
+        assert fingerprint_of(h) == fingerprint_of(
+            h2
+        ), "pre-condition: fingerprints must match"
 
         # Step 3: rerank should suppress h2
         filtered = reflector.rerank([h2], endpoint=h2.endpoint)
@@ -228,9 +234,9 @@ class TestSuppressionViafFingerprint:
 
         h_different = _make_hypothesis(claim_a="claim A version 2")
         filtered = reflector.rerank([h_different], endpoint=h_different.endpoint)
-        assert filtered == [h_different], (
-            "A hypothesis with different content must NOT be suppressed."
-        )
+        assert filtered == [
+            h_different
+        ], "A hypothesis with different content must NOT be suppressed."
 
     def test_three_rejected_none_resurface(self):
         """
@@ -268,9 +274,9 @@ class TestSuppressionViafFingerprint:
         for i, h_fresh in enumerate(fresh_batch):
             result = reflector.rerank([h_fresh], endpoint=h_fresh.endpoint)
             total_suppressed += len(fresh_batch) - len([result])
-            assert result == [], (
-                f"Fresh hypothesis #{i} should be suppressed (kill criterion 1 failed)."
-            )
+            assert (
+                result == []
+            ), f"Fresh hypothesis #{i} should be suppressed (kill criterion 1 failed)."
 
     def test_rerank_empty_list_returns_empty(self):
         """rerank([]) must return [] without error."""
@@ -283,6 +289,7 @@ class TestSuppressionViafFingerprint:
         h1 = _make_hypothesis(claim_a="fresh claim 1")
         h2 = _make_hypothesis(claim_a="fresh claim 2")
         result = reflector.rerank([h1, h2])
-        assert set(r.id for r in result) == {h1.id, h2.id}, (
-            "All unseen hypotheses should pass through rerank()."
-        )
+        assert set(r.id for r in result) == {
+            h1.id,
+            h2.id,
+        }, "All unseen hypotheses should pass through rerank()."

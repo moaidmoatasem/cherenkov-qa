@@ -4,6 +4,7 @@ CHERENKOV divergence/skeptic.py — E3-1 Skeptic Agent.
 Generates divergence hypotheses across the 5-way space (D1–D5) from spec
 claims, via the Substrate Router. Never hardcodes a model.
 """
+
 from __future__ import annotations
 
 import json
@@ -124,7 +125,9 @@ class SkepticAgent:
 
         return hypotheses
 
-    def mobile_hypothesize(self, app_id: str, screen_name: str, element_id: str) -> dict:
+    def mobile_hypothesize(
+        self, app_id: str, screen_name: str, element_id: str
+    ) -> dict:
         from cherenkov.agents.pilot import PilotAgent, InMemoryRunner
 
         runner = InMemoryRunner()
@@ -137,7 +140,9 @@ class SkepticAgent:
             "screen": screen_name,
             "element": element_id,
             "pilot_steps": [vars(s) for s in steps],
-            "conclusion": "passed" if all(s.status == "done" for s in steps) else "failed",
+            "conclusion": "passed"
+            if all(s.status == "done" for s in steps)
+            else "failed",
         }
 
     # ── private ───────────────────────────────────────────────────────────

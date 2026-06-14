@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-import time
 from typing import Any, Callable
 
 from cherenkov.core.errors import get_logger
@@ -13,10 +11,13 @@ from cherenkov.hitl.contracts import (
     HitlStatus,
     err_envelope,
     ok_envelope,
-    SCHEMA_VERSION,
 )
 from cherenkov.hitl.store import HitlQueue
-from cherenkov.openclaw.contracts import OpenClawConfig, TriggerRequest, ClassificationRequest
+from cherenkov.openclaw.contracts import (
+    OpenClawConfig,
+    TriggerRequest,
+    ClassificationRequest,
+)
 from cherenkov.openclaw.feedback import HealingFeedbackStore
 
 NotifyCallback = Callable[[HitlEnvelope], None]
@@ -55,7 +56,9 @@ class OpenClawAdapter:
     def register_chat_user(self, chat_user_id: str, cli_user: str) -> None:
         """Map a chat user ID to a CLI actor name."""
         self._identity_map[chat_user_id] = cli_user
-        self._log.info("registered chat user", chat_user_id=chat_user_id, cli_user=cli_user)
+        self._log.info(
+            "registered chat user", chat_user_id=chat_user_id, cli_user=cli_user
+        )
 
     def _resolve_actor(self, chat_user_id: str) -> str | None:
         """Resolve chat user to CLI actor. Returns None if unmapped."""
@@ -84,7 +87,8 @@ class OpenClawAdapter:
         """Pre-check item before mutating. Returns error envelope if blocked, None if OK."""
         if chat_user_id is not None and self._resolve_actor(chat_user_id) is None:
             return err_envelope(
-                "openclaw.auth", "forbidden",
+                "openclaw.auth",
+                "forbidden",
                 f"Chat user '{chat_user_id}' is not mapped to a CLI user. "
                 "Please register with /register.",
                 {"chat_user_id": chat_user_id},
@@ -92,12 +96,15 @@ class OpenClawAdapter:
         item = self._queue.get(item_id)
         if item is None:
             return err_envelope(
-                "openclaw.show", "not_found",
-                f"{item_id} not found.", {"id": item_id},
+                "openclaw.show",
+                "not_found",
+                f"{item_id} not found.",
+                {"id": item_id},
             )
         if item.status != HitlStatus.PENDING:
             return err_envelope(
-                "openclaw.mutation", "conflict",
+                "openclaw.mutation",
+                "conflict",
                 f"{item_id} is no longer pending. Already {item.status.value} "
                 f"by {item.approved_by}.",
                 {
@@ -114,11 +121,14 @@ class OpenClawAdapter:
         """List HITL items as a frozen hitl/v1 envelope."""
         try:
             items = self._queue.list(status=status)
-            return ok_envelope("openclaw.list", {
-                "status_filter": status,
-                "count": len(items),
-                "items": [i.model_dump() for i in items],
-            })
+            return ok_envelope(
+                "openclaw.list",
+                {
+                    "status_filter": status,
+                    "count": len(items),
+                    "items": [i.model_dump() for i in items],
+                },
+            )
         except Exception as exc:
             return err_envelope("openclaw.list", "invalid_input", str(exc))
 
@@ -128,14 +138,20 @@ class OpenClawAdapter:
             item = self._queue.get(item_id)
             if item is None:
                 return err_envelope(
-                    "openclaw.show", "not_found",
-                    f"{item_id} not found.", {"id": item_id},
+                    "openclaw.show",
+                    "not_found",
+                    f"{item_id} not found.",
+                    {"id": item_id},
                 )
-            return ok_envelope("openclaw.show", {"id": item_id, "item": item.model_dump()})
+            return ok_envelope(
+                "openclaw.show", {"id": item_id, "item": item.model_dump()}
+            )
         except Exception as exc:
             return err_envelope("openclaw.show", "invalid_input", str(exc))
 
-    def approve_envelope(self, item_id: str, actor: str, chat_user_id: str | None = None) -> HitlEnvelope:
+    def approve_envelope(
+        self, item_id: str, actor: str, chat_user_id: str | None = None
+    ) -> HitlEnvelope:
         """Approve a pending HITL item. Tier-2: supports chat identity resolution.
 
         Returns envelope, notifies on success. Unmapped chat users are refused.
@@ -150,7 +166,9 @@ class OpenClawAdapter:
             self._notify(notify_env)
         return env
 
-    def reject_envelope(self, item_id: str, actor: str, reason: str, chat_user_id: str | None = None) -> HitlEnvelope:
+    def reject_envelope(
+        self, item_id: str, actor: str, reason: str, chat_user_id: str | None = None
+    ) -> HitlEnvelope:
         """Reject a pending HITL item. Tier-2: supports chat identity resolution.
 
         Returns envelope, notifies on success. Unmapped chat users are refused.
@@ -159,7 +177,9 @@ class OpenClawAdapter:
         if block is not None:
             return block
         resolved = self._resolve_actor(chat_user_id) if chat_user_id else actor
-        env = self._queue.reject(item_id=item_id, actor=resolved, reason=reason, source="openclaw")
+        env = self._queue.reject(
+            item_id=item_id, actor=resolved, reason=reason, source="openclaw"
+        )
         if env.ok:
             notify_env = ok_envelope("openclaw.reject", env.payload)
             self._notify(notify_env)
@@ -176,29 +196,42 @@ class OpenClawAdapter:
         resolved = self._resolve_actor(chat_user_id)
         if resolved is None:
             return err_envelope(
-                "openclaw.auth", "forbidden",
+                "openclaw.auth",
+                "forbidden",
                 f"Chat user '{chat_user_id}' is not mapped.",
                 {"chat_user_id": chat_user_id},
             )
         item = self._queue.get(item_id)
         if item is None:
-            return err_envelope("openclaw.lock", "not_found", f"{item_id} not found.", {"id": item_id})
+            return err_envelope(
+                "openclaw.lock", "not_found", f"{item_id} not found.", {"id": item_id}
+            )
         if item.status != HitlStatus.PENDING:
             return err_envelope(
-                "openclaw.lock", "conflict",
+                "openclaw.lock",
+                "conflict",
                 f"{item_id} is already {item.status.value} by {item.approved_by}.",
-                {"current_status": item.status.value, "current_actor": item.approved_by},
+                {
+                    "current_status": item.status.value,
+                    "current_actor": item.approved_by,
+                },
             )
         lock = self._queue.optimistic_lock(item_id=item_id, reviewer=resolved)
         if not lock:
             return err_envelope(
-                "openclaw.lock", "conflict",
+                "openclaw.lock",
+                "conflict",
                 f"{item_id} is already being reviewed.",
                 {"id": item_id},
             )
-        return ok_envelope("openclaw.lock", {
-            "id": item_id, "reviewer": resolved, "action": "lock",
-        })
+        return ok_envelope(
+            "openclaw.lock",
+            {
+                "id": item_id,
+                "reviewer": resolved,
+                "action": "lock",
+            },
+        )
 
     def trigger_run(self, request: TriggerRequest) -> HitlEnvelope:
         """Trigger a re-run via registered handlers.
@@ -207,12 +240,14 @@ class OpenClawAdapter:
         """
         if not self._trigger_handlers:
             return err_envelope(
-                "openclaw.trigger", "not_found",
+                "openclaw.trigger",
+                "not_found",
                 "No run-trigger handler registered. Defer to manual execution.",
                 {"reason": request.reason},
             )
         last_env: HitlEnvelope = err_envelope(
-            "openclaw.trigger", "invalid_input",
+            "openclaw.trigger",
+            "invalid_input",
             "All trigger handlers returned errors.",
         )
         for handler in self._trigger_handlers:
@@ -224,7 +259,8 @@ class OpenClawAdapter:
                     return env
             except Exception as exc:
                 last_env = err_envelope(
-                    "openclaw.trigger", "invalid_input",
+                    "openclaw.trigger",
+                    "invalid_input",
                     f"Trigger handler error: {exc}",
                 )
         return last_env
@@ -241,11 +277,14 @@ class OpenClawAdapter:
         seen_ids = {item.id for item in self._last_poll}
         new_items = [item for item in current if item.id not in seen_ids]
         self._last_poll = current
-        return ok_envelope("openclaw.poll", {
-            "new_count": len(new_items),
-            "pending_count": len(current),
-            "new_items": [i.model_dump() for i in new_items],
-        })
+        return ok_envelope(
+            "openclaw.poll",
+            {
+                "new_count": len(new_items),
+                "pending_count": len(current),
+                "new_items": [i.model_dump() for i in new_items],
+            },
+        )
 
     # ── Tier-2: healing feedback classification (#150) ────────────────────
 
@@ -257,8 +296,12 @@ class OpenClawAdapter:
         """
         item = self._queue.get(request.item_id)
         if item is None:
-            return err_envelope("openclaw.classify", "not_found",
-                                f"{request.item_id} not found.", {"id": request.item_id})
+            return err_envelope(
+                "openclaw.classify",
+                "not_found",
+                f"{request.item_id} not found.",
+                {"id": request.item_id},
+            )
 
         try:
             self._feedback.record_feedback(
@@ -270,7 +313,9 @@ class OpenClawAdapter:
                 detail=request.detail,
             )
         except Exception as exc:
-            return err_envelope("openclaw.classify", "invalid_input", f"Feedback record failed: {exc}")
+            return err_envelope(
+                "openclaw.classify", "invalid_input", f"Feedback record failed: {exc}"
+            )
 
         thresholds = self._feedback.compute_thresholds(
             endpoint=item.endpoint or "",
@@ -284,39 +329,56 @@ class OpenClawAdapter:
                 "classification": classification,
                 "confidence": thresholds["confidence"],
                 "count": thresholds["count"],
-                "label": "Suggest auto-handling" if classification == "ignore" else
-                         "Likely intended drift" if classification == "intended" else
-                         "Regression - flag for review",
+                "label": "Suggest auto-handling"
+                if classification == "ignore"
+                else "Likely intended drift"
+                if classification == "intended"
+                else "Regression - flag for review",
             }
 
-        return ok_envelope("openclaw.classify", {
-            "item_id": request.item_id,
-            "recorded_classification": request.classification,
-            "thresholds": thresholds,
-            "suggestion": suggestion,
-        })
+        return ok_envelope(
+            "openclaw.classify",
+            {
+                "item_id": request.item_id,
+                "recorded_classification": request.classification,
+                "thresholds": thresholds,
+                "suggestion": suggestion,
+            },
+        )
 
     def suggestion_envelope(self, endpoint: str, mutation_id: str) -> HitlEnvelope:
         """Get the current suggestion threshold for an endpoint+mutation pair."""
         try:
-            thresholds = self._feedback.compute_thresholds(endpoint=endpoint, mutation_id=mutation_id)
+            thresholds = self._feedback.compute_thresholds(
+                endpoint=endpoint, mutation_id=mutation_id
+            )
         except Exception as exc:
             return err_envelope("openclaw.suggestion", "invalid_input", str(exc))
 
-        return ok_envelope("openclaw.suggestion", {
-            "endpoint": endpoint,
-            "mutation_id": mutation_id,
-            "thresholds": thresholds,
-        })
+        return ok_envelope(
+            "openclaw.suggestion",
+            {
+                "endpoint": endpoint,
+                "mutation_id": mutation_id,
+                "thresholds": thresholds,
+            },
+        )
 
     def explain_envelope(self, item_id: str) -> HitlEnvelope:
         """Get an AI explanation for why the test failed, without recommending action."""
         item = self._queue.get(item_id)
         if item is None:
-            return err_envelope("openclaw.explain", "not_found", f"{item_id} not found.", {"id": item_id})
+            return err_envelope(
+                "openclaw.explain",
+                "not_found",
+                f"{item_id} not found.",
+                {"id": item_id},
+            )
 
         try:
-            thresholds = self._feedback.compute_thresholds(item.endpoint or "", item.mutation_id or "")
+            thresholds = self._feedback.compute_thresholds(
+                item.endpoint or "", item.mutation_id or ""
+            )
         except Exception:
             thresholds = {}
 
@@ -338,23 +400,19 @@ class OpenClawAdapter:
             "Format your explanation clearly and prefix it with [AI 🤖]."
         )
 
-        req = ReasoningRequest(
-            task=prompt,
-            capability_tier="small"
-        )
+        req = ReasoningRequest(task=prompt, capability_tier="small")
 
         try:
             res = route(req)
             explanation = str(res.content).strip()
             if not explanation.startswith("[AI 🤖]"):
                 explanation = f"[AI 🤖] {explanation}"
-            return ok_envelope("openclaw.explain", {
-                "id": item_id,
-                "explanation": explanation
-            })
+            return ok_envelope(
+                "openclaw.explain", {"id": item_id, "explanation": explanation}
+            )
         except Exception as exc:
             return err_envelope(
                 "openclaw.explain",
                 "llm_unavailable",
-                f"Offline path: Local model is down or unreachable. Error: {str(exc)}"
+                f"Offline path: Local model is down or unreachable. Error: {str(exc)}",
             )

@@ -2,6 +2,7 @@
 CHERENKOV execution/mobile_eject_maestro.py — Maestro YAML ejector.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import os
@@ -29,7 +30,9 @@ class MaestroEjector:
 
         for i, test in enumerate(tests):
             test_name = test.get("name", f"test_{i:03d}")
-            safe_name = "".join(c if c.isalnum() or c in ("-", "_") else "_" for c in test_name)
+            safe_name = "".join(
+                c if c.isalnum() or c in ("-", "_") else "_" for c in test_name
+            )
             file_path = output_path / f"{safe_name}.yaml"
             with open(file_path, "w", encoding="utf-8") as f:
                 yaml.dump(test, f, default_flow_style=False, sort_keys=False)

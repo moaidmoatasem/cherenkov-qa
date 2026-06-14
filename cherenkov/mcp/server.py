@@ -25,9 +25,9 @@ Usage
     }
   }
 """
+
 from __future__ import annotations
 
-import sys
 from typing import Any
 
 from cherenkov.core.errors import get_logger
@@ -75,17 +75,15 @@ def build_dispatch_table() -> DispatchTable:
     """Build the full JSON-RPC method → handler mapping."""
     return {
         # ── MCP lifecycle ──────────────────────────────────────────────────
-        "initialize":           _handle_initialize,
+        "initialize": _handle_initialize,
         "notifications/initialized": _handle_initialized,
-        "ping":                 _handle_ping,
-
+        "ping": _handle_ping,
         # ── Resources ─────────────────────────────────────────────────────
-        "resources/list":       handle_resources_list,
-        "resources/read":       handle_resource_read,
-
+        "resources/list": handle_resources_list,
+        "resources/read": handle_resource_read,
         # ── Tools ──────────────────────────────────────────────────────────
-        "tools/list":           handle_tools_list,
-        "tools/call":           handle_tool_call,
+        "tools/list": handle_tools_list,
+        "tools/call": handle_tool_call,
     }
 
 

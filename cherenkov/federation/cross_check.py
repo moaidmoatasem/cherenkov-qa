@@ -1,14 +1,24 @@
 """E6-2 Cross-service contract check."""
+
 from cherenkov.core.contracts import (
-    DivergenceReport, DivergenceClass, Severity, DivergenceEvidence, StageMeta
+    DivergenceReport,
+    DivergenceClass,
+    Severity,
+    DivergenceEvidence,
+    StageMeta,
 )
 from cherenkov.federation.protocol import TruthFragment
 
 RESPONSE_PROP_PREFIXES = ("response_", "response")
 
+
 def _response_props(node) -> dict:
-    return {k: v for k, v in node.properties.items()
-            if k.lower().startswith(RESPONSE_PROP_PREFIXES)}
+    return {
+        k: v
+        for k, v in node.properties.items()
+        if k.lower().startswith(RESPONSE_PROP_PREFIXES)
+    }
+
 
 def _schema_drift(a, b, key, method, path):
     """Detect same endpoint, different response schema."""
@@ -41,6 +51,7 @@ def _schema_drift(a, b, key, method, path):
         )
     return None
 
+
 def _invariant_conflict(a, b, key, method, path):
     """Detect same claim predicate, contradictory values."""
     claims_a = {c.predicate: c for c in a.claims}
@@ -69,14 +80,21 @@ def _invariant_conflict(a, b, key, method, path):
             )
     return None
 
+
 def cross_service_check(a: TruthFragment, b: TruthFragment) -> list[DivergenceReport]:
     """Compare two Truth fragments and detect cross-service breaks."""
     divergences = []
 
-    endpoints_a = {(n.properties.get("method"), n.properties.get("path")): n
-                   for n in a.nodes if n.properties.get("method")}
-    endpoints_b = {(n.properties.get("method"), n.properties.get("path")): n
-                   for n in b.nodes if n.properties.get("method")}
+    endpoints_a = {
+        (n.properties.get("method"), n.properties.get("path")): n
+        for n in a.nodes
+        if n.properties.get("method")
+    }
+    endpoints_b = {
+        (n.properties.get("method"), n.properties.get("path")): n
+        for n in b.nodes
+        if n.properties.get("method")
+    }
 
     for key in endpoints_a:
         if key not in endpoints_b:

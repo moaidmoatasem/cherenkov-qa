@@ -7,7 +7,10 @@ from cherenkov.substrate.provider import (
     get_vlm_provider,
     provider_for_tier,
 )
-from cherenkov.substrate.vlm_provider import VLMProvider as OldVLMProvider, VLMResult as OldVLMResult
+from cherenkov.substrate.vlm_provider import (
+    VLMProvider as OldVLMProvider,
+    VLMResult as OldVLMResult,
+)
 from cherenkov.substrate.router import SubstrateRouter, route
 
 # Legacy aliases (backward compat)

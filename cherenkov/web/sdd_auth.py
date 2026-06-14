@@ -17,6 +17,12 @@ async def verify_write_access(
         return
     if x_api_key and x_api_key == configured_key:
         return
-    if authorization and authorization.startswith("Bearer ") and authorization[7:] == configured_key:
+    if (
+        authorization
+        and authorization.startswith("Bearer ")
+        and authorization[7:] == configured_key
+    ):
         return
-    raise HTTPException(status_code=403, detail="Write access requires localhost or valid API key")
+    raise HTTPException(
+        status_code=403, detail="Write access requires localhost or valid API key"
+    )

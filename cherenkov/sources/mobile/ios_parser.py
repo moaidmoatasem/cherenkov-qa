@@ -1,5 +1,4 @@
 from __future__ import annotations
-import json
 from pathlib import Path
 from cherenkov.sources.mobile.contracts import MobileApp
 
@@ -30,11 +29,14 @@ class PlistParser:
             raise FileNotFoundError(f"plist not found: {plist_path}")
         try:
             import plistlib
+
             with open(plist, "rb") as f:
                 data = plistlib.load(f)
             return MobileApp(
                 app_id=data.get("CFBundleIdentifier", plist.stem),
-                name=data.get("CFBundleDisplayName", data.get("CFBundleName", plist.stem)),
+                name=data.get(
+                    "CFBundleDisplayName", data.get("CFBundleName", plist.stem)
+                ),
                 platform="ios",
                 version=data.get("CFBundleShortVersionString", "0.0.0"),
                 package_path=str(plist.resolve()),

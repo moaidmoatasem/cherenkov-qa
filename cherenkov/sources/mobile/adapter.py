@@ -21,7 +21,9 @@ class MobileSourceAdapter:
         self._har_parser = har_parser or HARParser()
         self._hil_parser = hil_parser or HILParser()
 
-    def ingest(self, source_path: str) -> MobileApp | list[dict[str, Any]] | list[MobileFlow]:
+    def ingest(
+        self, source_path: str
+    ) -> MobileApp | list[dict[str, Any]] | list[MobileFlow]:
         """Detect file type by extension and delegate to the matching parser.
 
         Supported extensions:

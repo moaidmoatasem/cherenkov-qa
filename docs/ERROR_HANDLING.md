@@ -1,7 +1,7 @@
 # CHERENKOV-QA Error Handling & Graceful Degradation
 
-**Date:** 2026-06-08  
-**Status:** Active  
+**Date:** 2026-06-08
+**Status:** Active
 **Related EPIC:** #277 (Phase -1), #279 (Phase 0b)
 
 ---
@@ -131,7 +131,7 @@ class ErrorResponse:
     code: str
     message: str
     detail: dict[str, Any]
-    
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "error": {
@@ -144,7 +144,7 @@ class ErrorResponse:
 class GracefulDegradation:
     def __init__(self):
         self.dependencies: dict[str, DependencyCheck] = {}
-    
+
     def check_dependency(self, name: str, check_fn: callable, fallback: str | None = None) -> DependencyCheck:
         try:
             check_fn()
@@ -153,7 +153,7 @@ class GracefulDegradation:
         except Exception as e:
             status = DependencyStatus.UNAVAILABLE if not fallback else DependencyStatus.DEGRADED
             message = f"{name} is unavailable: {str(e)}"
-        
+
         check = DependencyCheck(
             name=name,
             status=status,
@@ -162,14 +162,14 @@ class GracefulDegradation:
         )
         self.dependencies[name] = check
         return check
-    
+
     def get_health_status(self) -> dict[str, Any]:
         overall = "healthy"
         if any(d.status == DependencyStatus.UNAVAILABLE for d in self.dependencies.values()):
             overall = "unhealthy"
         elif any(d.status == DependencyStatus.DEGRADED for d in self.dependencies.values()):
             overall = "degraded"
-        
+
         return {
             "status": overall,
             "dependencies": {
@@ -198,13 +198,13 @@ async def healthz():
     degradation.check_dependency("redis", check_redis, fallback="sqlite")
     degradation.check_dependency("ollama", check_ollama)
     degradation.check_dependency("docker", check_docker)
-    
+
     status = degradation.get_health_status()
-    
+
     http_status = 200
     if status["status"] == "unhealthy":
         http_status = 503
-    
+
     return Response(
         content=json.dumps(status),
         status_code=http_status,
@@ -244,19 +244,19 @@ def check_docker():
 def get_vlm_provider(self):
     if self.vlm_tier == VLMTier.PIXEL_DIFF_ONLY:
         return None
-    
+
     # Try LocalAI first
     if self.localai.is_available():
         return self.localai
-    
+
     # Fallback to Ollama
     if self.ollama.is_available():
         return self.ollama
-    
+
     # Fallback to OpenAI (if egress allowed)
     if self.openai.is_available():
         return self.openai
-    
+
     # No VLM available
     return None
 ```
@@ -304,7 +304,7 @@ def query_knowledge(repo: KnowledgeRepository, query: str) -> KnowledgeResult:
     except Exception as e:
         # Log error
         logger.error(f"Knowledge query failed: {e}")
-        
+
         # Return empty result instead of crashing
         return KnowledgeResult(
             data=[],
@@ -349,14 +349,14 @@ from cherenkov.core.error_handling import GracefulDegradation, DependencyStatus
 def test_graceful_degradation_healthy():
     degradation = GracefulDegradation()
     degradation.check_dependency("test", lambda: None)
-    
+
     status = degradation.get_health_status()
     assert status["status"] == "healthy"
 
 def test_graceful_degradation_degraded():
     degradation = GracefulDegradation()
     degradation.check_dependency("test", lambda: 1/0, fallback="fallback")
-    
+
     status = degradation.get_health_status()
     assert status["status"] == "degraded"
     assert status["dependencies"]["test"]["fallback"] == "fallback"
@@ -364,7 +364,7 @@ def test_graceful_degradation_degraded():
 def test_graceful_degradation_unhealthy():
     degradation = GracefulDegradation()
     degradation.check_dependency("test", lambda: 1/0)
-    
+
     status = degradation.get_health_status()
     assert status["status"] == "unhealthy"
 ```

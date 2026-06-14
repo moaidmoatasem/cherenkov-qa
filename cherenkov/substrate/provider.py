@@ -18,11 +18,9 @@ class ProviderCapabilities(BaseModel):
 
 
 class ModelProvider(Protocol):
-    def generate(self, request: ReasoningRequest) -> ReasoningResult:
-        ...
+    def generate(self, request: ReasoningRequest) -> ReasoningResult: ...
 
-    def capabilities(self) -> ProviderCapabilities:
-        ...
+    def capabilities(self) -> ProviderCapabilities: ...
 
 
 class OllamaProvider:
@@ -123,27 +121,42 @@ class GitHubModelsProvider:
     def __init__(self, client: InferenceClient | None = None) -> None:
         if client is None:
             from cherenkov.ai.github_models_client import GitHubModelsInferenceClient
+
             client = GitHubModelsInferenceClient()
         self.client = client
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
         import json
+
         model = (
             Config.GITHUB_MODELS_SMALL_MODEL
             if request.capability_tier == "small"
             else Config.GITHUB_MODELS_DEEP_MODEL
         )
-        system_prompt = "You are a logical QA AI assistant specializing in API conformance testing."
+        system_prompt = (
+            "You are a logical QA AI assistant specializing in API conformance testing."
+        )
         user_prompt = request.task
 
         if request.output_schema:
-            user_prompt += f"\n\nOutput JSON matching: {json.dumps(request.output_schema)}"
-            content = self.client.complete_json(system_prompt=system_prompt, user_prompt=user_prompt, model=model)
+            user_prompt += (
+                f"\n\nOutput JSON matching: {json.dumps(request.output_schema)}"
+            )
+            content = self.client.complete_json(
+                system_prompt=system_prompt, user_prompt=user_prompt, model=model
+            )
         else:
-            content = self.client.complete_code(system_prompt=system_prompt, user_prompt=user_prompt, model=model)
+            content = self.client.complete_code(
+                system_prompt=system_prompt, user_prompt=user_prompt, model=model
+            )
 
         return ReasoningResult(
-            content=content, provider="github", model=model, cost_usd=0.0, latency_ms=0, cached=False
+            content=content,
+            provider="github",
+            model=model,
+            cost_usd=0.0,
+            latency_ms=0,
+            cached=False,
         )
 
     def capabilities(self) -> ProviderCapabilities:
@@ -170,9 +183,11 @@ def get_provider(name: str) -> OllamaProvider | OpenAIProvider | GitHubModelsPro
         p = GitHubModelsProvider()
     elif name == "anthropic":
         from cherenkov.substrate.providers.anthropic import AnthropicProvider
+
         p = AnthropicProvider()  # type: ignore[assignment]
     elif name == "nemoclaw":
         from cherenkov.substrate.providers.nemoclaw import NemoClawProvider
+
         p = NemoClawProvider()  # type: ignore[assignment]
     else:
         raise ValueError(
@@ -188,6 +203,7 @@ def get_vlm_provider(name: str | None = None) -> VLMProvider:
         return _VLM_CACHE[provider_name]
     if provider_name == "localai":
         from cherenkov.substrate.providers.localai import LocalAIVLMProvider
+
         p: VLMProvider = LocalAIVLMProvider()
     elif provider_name == "ollama":
         p = VLMProvider(OllamaInferenceClient())
@@ -195,6 +211,7 @@ def get_vlm_provider(name: str | None = None) -> VLMProvider:
         p = VLMProvider(OpenAIInferenceClient())
     elif provider_name == "nemoclaw":
         from cherenkov.ai.nemoclaw_client import NemoClawInferenceClient
+
         p = VLMProvider(NemoClawInferenceClient())
     else:
         raise ValueError(
@@ -216,7 +233,9 @@ def provider_for_tier(
         vlm_provider_name = _resolve_vlm_provider(device_class)
         return get_vlm_provider(vlm_provider_name)
     else:
-        raise ValueError(f"Unknown capability tier '{tier}'. Expected 'small', 'deep', or 'vision'.")
+        raise ValueError(
+            f"Unknown capability tier '{tier}'. Expected 'small', 'deep', or 'vision'."
+        )
 
 
 def _resolve_vlm_provider(device_class: str | None = None) -> str:
@@ -224,6 +243,7 @@ def _resolve_vlm_provider(device_class: str | None = None) -> str:
     if configured != "auto":
         return configured
     from cherenkov.core.devices import DeviceInfo, VLMTier
+
     info = DeviceInfo()
     if info.vlm_tier == VLMTier.LOCAL:
         return "localai" if info.has_docker else "ollama"

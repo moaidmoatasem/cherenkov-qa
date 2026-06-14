@@ -341,8 +341,8 @@ export async function fetchDivergences(): Promise<Divergence[]> {
 }
 
 export async function actOnDivergence(
-  divergenceId: string, 
-  action: 'close_with_test' | 'mark_intended' | 'reject', 
+  divergenceId: string,
+  action: 'close_with_test' | 'mark_intended' | 'reject',
   reason?: string
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/divergences/act`, {

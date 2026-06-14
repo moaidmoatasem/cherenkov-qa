@@ -17,13 +17,18 @@ def run_certify(tier: str = "small", rag_report: bool = False) -> int:
 
     if rag_report:
         cert, reports = cert_mgr.certify_tier_with_rag_report(tier, provider)
-        print(json.dumps({
-            "tier": tier,
-            "certified": cert.certified,
-            "faithfulness_score": cert.faithfulness_score,
-            "detail": cert.detail,
-            "per_item_reports": reports,
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "tier": tier,
+                    "certified": cert.certified,
+                    "faithfulness_score": cert.faithfulness_score,
+                    "detail": cert.detail,
+                    "per_item_reports": reports,
+                },
+                indent=2,
+            )
+        )
     else:
         cert = cert_mgr.certify_tier(tier, provider)
         print("=" * 60)

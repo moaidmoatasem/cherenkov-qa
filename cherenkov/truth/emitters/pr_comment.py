@@ -29,15 +29,23 @@ class PRCommentEmitter(Emitter):
         lines = [
             "## CHERENKOV Divergence Report",
             "",
-            f"| Endpoint | Divergence | Severity | Description |",
-            f"|----------|------------|----------|-------------|",
+            "| Endpoint | Divergence | Severity | Description |",
+            "|----------|------------|----------|-------------|",
         ]
 
         if divergences:
             for d in divergences:
                 endpoint = d.endpoint_id or "unknown"
-                cls = d.divergence_class.value if hasattr(d.divergence_class, "value") else str(d.divergence_class)
-                sev = d.severity.value if hasattr(d.severity, "value") else str(d.severity)
+                cls = (
+                    d.divergence_class.value
+                    if hasattr(d.divergence_class, "value")
+                    else str(d.divergence_class)
+                )
+                sev = (
+                    d.severity.value
+                    if hasattr(d.severity, "value")
+                    else str(d.severity)
+                )
                 desc = d.description.replace("|", "\\|") if d.description else ""
                 lines.append(f"| {endpoint} | {cls} | {sev} | {desc} |")
         else:

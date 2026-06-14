@@ -17,4 +17,9 @@ class MobileRunnerBase(ABC):
     def health_check(self) -> bool: ...
 
     def _dry_run_result(self, test_path: str) -> dict:
-        return {"status": "passed", "stdout": f"[DRY-RUN] {test_path}", "stderr": "", "dry_run": True}
+        return {
+            "status": "passed",
+            "stdout": f"[DRY-RUN] {test_path}",
+            "stderr": "",
+            "dry_run": True,
+        }

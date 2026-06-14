@@ -34,15 +34,25 @@ class EdgeType(str, Enum):
 
 class Provenance(BaseModel):
     source_id: str = Field(description="ID of the source node")
-    source_type: str = Field(description="Type of source (openapi_spec, traffic_capture, db_schema, etc.)")
-    source_location: str = Field(description="File path, URL, or description of where the claim came from")
+    source_type: str = Field(
+        description="Type of source (openapi_spec, traffic_capture, db_schema, etc.)"
+    )
+    source_location: str = Field(
+        description="File path, URL, or description of where the claim came from"
+    )
     extracted_at: datetime = Field(description="When the claim was extracted")
-    confidence: float = Field(default=1.0, ge=0.0, le=1.0, description="Confidence in this claim (0-1)")
-    detail: str = Field(default="", description="Human-readable detail about extraction")
+    confidence: float = Field(
+        default=1.0, ge=0.0, le=1.0, description="Confidence in this claim (0-1)"
+    )
+    detail: str = Field(
+        default="", description="Human-readable detail about extraction"
+    )
 
 
 class Claim(BaseModel):
-    predicate: str = Field(description="What is being claimed (e.g. 'returns_status', 'has_field')")
+    predicate: str = Field(
+        description="What is being claimed (e.g. 'returns_status', 'has_field')"
+    )
     value: Any = Field(description="The value of the claim")
     provenance: Provenance = Field(description="Where this claim came from")
 
@@ -51,8 +61,12 @@ class GraphNode(BaseModel):
     id: str = Field(description="Unique node identifier")
     type: NodeType = Field(description="Node type")
     label: str = Field(description="Human-readable label")
-    properties: dict[str, Any] = Field(default_factory=dict, description="Arbitrary key-value properties")
-    claims: list[Claim] = Field(default_factory=list, description="Claims about this node")
+    properties: dict[str, Any] = Field(
+        default_factory=dict, description="Arbitrary key-value properties"
+    )
+    claims: list[Claim] = Field(
+        default_factory=list, description="Claims about this node"
+    )
 
 
 class GraphEdge(BaseModel):
@@ -60,12 +74,18 @@ class GraphEdge(BaseModel):
     source_id: str = Field(description="Source node ID")
     target_id: str = Field(description="Target node ID")
     type: EdgeType = Field(description="Edge type")
-    claims: list[Claim] = Field(default_factory=list, description="Claims represented by this edge")
-    properties: dict[str, Any] = Field(default_factory=dict, description="Arbitrary key-value properties")
+    claims: list[Claim] = Field(
+        default_factory=list, description="Claims represented by this edge"
+    )
+    properties: dict[str, Any] = Field(
+        default_factory=dict, description="Arbitrary key-value properties"
+    )
 
 
 class TruthModel(BaseModel):
-    nodes: dict[str, GraphNode] = Field(default_factory=dict, description="Nodes keyed by ID")
+    nodes: dict[str, GraphNode] = Field(
+        default_factory=dict, description="Nodes keyed by ID"
+    )
     edges: list[GraphEdge] = Field(default_factory=list, description="Directed edges")
     schema_version: int = Field(default=1, description="Schema version for migration")
 

@@ -1,6 +1,6 @@
 # CHERENKOV QA — Wiki
 
-> **Spec in. Playwright tests out. Zero lock-in.**  
+> **Spec in. Playwright tests out. Zero lock-in.**
 > Source of truth lives in the repo. This wiki mirrors it. When in doubt, the repo wins.
 
 CHERENKOV generates and runs conformance tests for **APIs, web UIs, and mobile apps** from your OpenAPI spec,

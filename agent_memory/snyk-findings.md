@@ -16,4 +16,3 @@ Last scan: 2026-06-07 18:15 UTC
 
 | Date | Vuln ID | Package | Fix Applied | Agent |
 |------|---------|---------|-------------|-------|
-

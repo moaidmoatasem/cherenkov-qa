@@ -114,33 +114,33 @@ sequenceDiagram
     participant ENG as OrchestrationEngine
     participant LLM as Qwen2.5 Coder (Ollama)
     participant PRISM as Prism Mock Server
-    
+
     U->>API: POST /api/v1/ingest (spec file)
     API->>HITL: Store endpoints
     API->>U: Return endpoint richness
-    
+
     U->>API: POST /api/v1/run (spec_path)
     API->>ENG: OrchestrationEngine.run_pipeline()
-    
+
     ENG->>ENG: Stage 1 - INGEST
     ENG->>ENG: Stage 2 - PLAN (deterministic)
     ENG->>LLM: Stage 3 - GENERATE
     ENG->>ENG: Stage 4 - REVIEW (6 gates)
     ENG->>HITL: Enqueue Verdict.HITL items
-    
+
     U->>API: GET /api/v1/review/queue
     API->>HITL: List pending items
     API->>U: ReviewQueueItem[]
-    
+
     U->>API: POST /api/v1/review/approve|reject
     API->>HITL: resolve(item_id, actor, source)
     API->>U: ok_envelope
-    
+
     U->>API: POST /api/v1/validate (target_url)
     API->>ENG: ValidationEngine.validate_suite()
     Note over API,ENG: Runs generated tests against real server
     ENG->>U: TighteningReport with drift detection
-    
+
     U->>API: POST /api/v1/eject (output_path)
     API->>U: Standalone Playwright suite
 ```
@@ -242,7 +242,7 @@ Ejected folder is 100% standard and runs standalone.
 
 Would you like me to focus on any specific area for deeper analysis or provide code-level recommendations for the revamp work? Note that I am in read-only mode and can only provide analysis, not make changes.
 
-agent 2: 
+agent 2:
 I've created a comprehensive revamp plan at `C:\Users\moaid\.vibe\plans\1780881300-sharp-shiny-river.md`.
 
 The plan covers:
@@ -381,11 +381,11 @@ Revamp the entire CHERENKOV-QA system including user experience, user workflows,
    [project]
    name = "my-api"
    spec_path = "openapi.yaml"
-   
+
    [testing]
    target_url = "http://localhost:8000"
    model = "qwen2.5-coder:7b"
-   
+
    [profiles]
    laptop = { model = "qwen2.5-coder:7b", workers = 2 }
    ci = { model = "qwen2.5-coder:7b", workers = 4 }
@@ -944,19 +944,19 @@ sequenceDiagram
     WebUI->>API: POST /api/v1/run {intent: "full_suite"}
     API->>Engine: start_pipeline()
     API-->>WebUI: 202 Accepted (Run ID)
-    
+
     loop Stream Progress
         Engine->>API: yield status updates
         API->>WebUI: WS /ws/live (Generation/Validation progress)
     end
-    
+
     Engine->>Target: Execute Playwright Tests
     Target-->>Engine: HTTP Responses
-    
+
     Engine->>DB: Write Violations to Queue
     Engine->>API: Pipeline Complete
     API->>WebUI: WS /ws/live (Complete status)
-    
+
     WebUI->>API: GET /api/v1/queue
     API-->>WebUI: Return Queued Items
     WebUI-->>User: Render Triage Queue

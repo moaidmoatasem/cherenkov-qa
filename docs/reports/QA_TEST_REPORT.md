@@ -1,9 +1,9 @@
 # CHERENKOV QA Comprehensive Test Report
 
-**Test Date:** 2026-06-05  
-**QA Engineer:** Mistral Vibe CLI Agent  
-**System Under Test:** CHERENKOV QA v3.1+delta  
-**Branch:** fix/e8-perf-har-json-escaping  
+**Test Date:** 2026-06-05
+**QA Engineer:** Mistral Vibe CLI Agent
+**System Under Test:** CHERENKOV QA v3.1+delta
+**Branch:** fix/e8-perf-har-json-escaping
 
 ---
 
@@ -26,9 +26,9 @@
 
 ### 1.1 Environment Information
 - **OS:** Windows (WSL Ubuntu-24.04)
-- **Python:** 
-- **Node.js:** 
-- **Playwright:** 
+- **Python:**
+- **Node.js:**
+- **Playwright:**
 
 ### 1.2 Pre-Test Checklist
 - [ ] Python dependencies installed
@@ -45,119 +45,119 @@
 ```bash
 Command: ./bin/cherenkov --help
 Expected: Display all available commands and options
-Status: 
+Status:
 ```
 
 ### 2.2 Validate Command
 ```bash
 Command: ./bin/cherenkov validate --target http://localhost:8000
 Expected: Run tests against target server, generate tightening report
-Status: 
+Status:
 ```
 
 ### 2.3 Eject Command
 ```bash
 Command: ./bin/cherenkov eject --output ./ejected_tests
 Expected: Export standalone Playwright tests
-Status: 
+Status:
 ```
 
 ### 2.4 Visual Command
 ```bash
 Command: ./bin/cherenkov visual --target http://localhost:3000 --baseline-dir ./baselines
 Expected: Run visual regression checks
-Status: 
+Status:
 ```
 
 ### 2.5 Performance Command
 ```bash
 Command: ./bin/cherenkov perf --target http://localhost:8000 --endpoint /users --vus 10 --duration 10
 Expected: Run performance baseline checks
-Status: 
+Status:
 ```
 
 ### 2.6 Init Command
 ```bash
 Command: ./bin/cherenkov init --profile laptop --force
 Expected: Generate configuration file
-Status: 
+Status:
 ```
 
 ### 2.7 Doctor Command
 ```bash
 Command: ./bin/cherenkov doctor
 Expected: System health check
-Status: 
+Status:
 ```
 
 ### 2.8 Map Command
 ```bash
 Command: ./bin/cherenkov map --detailed
 Expected: Build and inspect Truth Model
-Status: 
+Status:
 ```
 
 ### 2.9 Dashboard Command
 ```bash
 Command: ./bin/cherenkov dashboard
 Expected: Visualize Truth Model and divergences
-Status: 
+Status:
 ```
 
 ### 2.10 Explore Command
 ```bash
 Command: ./bin/cherenkov explore --target http://localhost:3000 --path /users --path /health
 Expected: Crawl live surface and print risk digest
-Status: 
+Status:
 ```
 
 ### 2.11 Author Command
 ```bash
 Command: ./bin/cherenkov author "check user creation with valid email" --output ./tests --target http://localhost:8000
 Expected: Generate Playwright test from plain-language intent
-Status: 
+Status:
 ```
 
 ### 2.12 Governance Command
 ```bash
 Command: ./bin/cherenkov governance --json --trend health_score
 Expected: Display governance KPI panel
-Status: 
+Status:
 ```
 
 ### 2.13 Certify Command
 ```bash
 Command: ./bin/cherenkov certify --tier small --rag-report
 Expected: Run certification gate
-Status: 
+Status:
 ```
 
 ### 2.14 Profile Command
 ```bash
 Command: ./bin/cherenkov profile show
 Expected: Show current autonomy profile
-Status: 
+Status:
 ```
 
 ### 2.15 HITL Commands
 ```bash
 Command: ./bin/cherenkov hitl list --all
 Expected: List all HITL queue items
-Status: 
+Status:
 ```
 
 ### 2.16 Review Command
 ```bash
 Command: ./bin/cherenkov review --port 8080
 Expected: Start review dashboard web UI
-Status: 
+Status:
 ```
 
 ### 2.17 MCP Command
 ```bash
 Command: ./bin/cherenkov mcp serve
 Expected: Start MCP server over stdio
-Status: 
+Status:
 ```
 
 ---

@@ -73,6 +73,7 @@ class DeviceInfo:
             return False
         try:
             import subprocess
+
             result = subprocess.run(
                 ["nvidia-smi"], capture_output=True, text=True, timeout=5
             )
@@ -84,6 +85,7 @@ class DeviceInfo:
     def _check_docker() -> bool:
         try:
             import subprocess
+
             result = subprocess.run(
                 ["docker", "info"], capture_output=True, text=True, timeout=5
             )
@@ -95,7 +97,8 @@ class DeviceInfo:
     def _get_memory_gb() -> float:
         try:
             import psutil
-            return psutil.virtual_memory().total / (1024 ** 3)
+
+            return psutil.virtual_memory().total / (1024**3)
         except ImportError:
             return 0.0
 

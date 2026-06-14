@@ -9,12 +9,12 @@ Enforces the decisions that took the whole spec arc to settle:
     across a loop so Ollama's RadixAttention caches the prefix (Delta V1 / D-10)
   - brutal <think> strip for deepseek planning output (don't rescue malformed)
 """
+
 from __future__ import annotations
 
 import json
 import re
 import time
-from typing import Protocol
 
 import requests
 import random as _random
@@ -24,7 +24,9 @@ from cherenkov.core.config import Config
 from cherenkov.ai.interface import InferenceClient
 
 
-def _post_with_retry(url: str, payload: dict, timeout: int, max_retries: int = 4) -> "requests.Response":
+def _post_with_retry(
+    url: str, payload: dict, timeout: int, max_retries: int = 4
+) -> "requests.Response":
     """POST with exponential backoff retry on Timeout or ConnectionError."""
     last_err: Exception | None = None
     for attempt in range(max_retries):
@@ -33,7 +35,7 @@ def _post_with_retry(url: str, payload: dict, timeout: int, max_retries: int = 4
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
             last_err = e
             if attempt < max_retries - 1:
-                wait = (2 ** attempt) * 0.5 + _random.uniform(0, 0.5)
+                wait = (2**attempt) * 0.5 + _random.uniform(0, 0.5)
                 time.sleep(wait)
     raise last_err  # type: ignore[misc]
 
@@ -55,7 +57,7 @@ class OllamaClient(InferenceClient):
             model,
             max_reprompts=max_reprompts,
             temperature=temperature,
-            run_id=run_id
+            run_id=run_id,
         )
 
     def complete_code(
@@ -74,7 +76,7 @@ class OllamaClient(InferenceClient):
             model,
             max_reprompts=max_reprompts,
             temperature=temperature,
-            run_id=run_id
+            run_id=run_id,
         )
 
     def chat(
@@ -86,11 +88,9 @@ class OllamaClient(InferenceClient):
         run_id: str | None = None,
     ) -> str:
         return _DEFAULT_CLIENT.chat(
-            messages=messages,
-            model=model,
-            temperature=temperature,
-            run_id=run_id
+            messages=messages, model=model, temperature=temperature, run_id=run_id
         )
+
 
 _THINK = re.compile(r"<think\b[^>]*>.*?</think>", re.DOTALL)
 
@@ -111,7 +111,7 @@ def _try_json(text: str) -> dict | None:
 def _json_repair(raw: str) -> dict | None:
     """Extract the last valid JSON object from a string (last is usually the real response)."""
     # Find all {...} blocks and return the last one (most likely the real response)
-    matches = list(re.finditer(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)?\}', raw, re.DOTALL))
+    matches = list(re.finditer(r"\{[^{}]*(?:\{[^{}]*\}[^{}]*)?\}", raw, re.DOTALL))
     if matches:
         return _try_json(matches[-1].group(0))
     return None
@@ -123,7 +123,9 @@ class OllamaInferenceClient(InferenceClient):
     def __init__(self) -> None:
         # Populated after each call so CachedInferenceClient can read real counts.
         self._token_usage: dict[str, int] = {
-            "prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "reprompts": 0,
         }
 
     def complete_json(
@@ -152,9 +154,9 @@ class OllamaInferenceClient(InferenceClient):
                 Config.OLLAMA_URL,
                 {
                     "model": model,
-                    "system": system_prompt,     # static -> cached prefix
+                    "system": system_prompt,  # static -> cached prefix
                     "prompt": user_prompt,
-                    "format": "json",            # constrain sampling to valid JSON (D-9)
+                    "format": "json",  # constrain sampling to valid JSON (D-9)
                     "stream": False,
                     "options": {"temperature": temperature},
                 },
@@ -176,8 +178,12 @@ class OllamaInferenceClient(InferenceClient):
 
             attempt += 1
             self._token_usage["reprompts"] = attempt
-            log.warning("json invalid, reprompting", model=model, attempt=attempt,
-                        duration_ms=dt_ms)
+            log.warning(
+                "json invalid, reprompting",
+                model=model,
+                attempt=attempt,
+                duration_ms=dt_ms,
+            )
 
         raise OllamaJSONError(
             f"{model} did not return valid JSON after {max_reprompts} reprompts. "
@@ -221,12 +227,19 @@ class OllamaInferenceClient(InferenceClient):
             text = re.sub(r"^```[a-z]*\n?", "", text)
             text = re.sub(r"\n?```$", "", text)
             text = text.strip()
-            log.info("code ok", model=model, attempt=attempt, duration_ms=int((time.time() - t0) * 1000))
+            log.info(
+                "code ok",
+                model=model,
+                attempt=attempt,
+                duration_ms=int((time.time() - t0) * 1000),
+            )
             if text:
                 return text
             attempt += 1
             self._token_usage["reprompts"] = attempt
-            log.warning("empty code response, reprompting", model=model, attempt=attempt)
+            log.warning(
+                "empty code response, reprompting", model=model, attempt=attempt
+            )
         return text
 
     def complete_vision(
@@ -329,4 +342,3 @@ def complete_code(
         temperature=temperature,
         run_id=run_id,
     )
-

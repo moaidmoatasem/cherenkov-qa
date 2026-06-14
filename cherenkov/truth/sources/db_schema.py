@@ -39,10 +39,20 @@ def _parse_create_table(sql: str) -> list[dict[str, Any]]:
                 continue
 
             upper = tokens[0].upper()
-            if upper in ("PRIMARY", "UNIQUE", "FOREIGN", "INDEX", "CHECK", "CONSTRAINT"):
+            if upper in (
+                "PRIMARY",
+                "UNIQUE",
+                "FOREIGN",
+                "INDEX",
+                "CHECK",
+                "CONSTRAINT",
+            ):
                 constraints.append({"raw": line, "type": upper})
             else:
-                col: dict[str, Any] = {"name": tokens[0], "type": tokens[1] if len(tokens) > 1 else "UNKNOWN"}
+                col: dict[str, Any] = {
+                    "name": tokens[0],
+                    "type": tokens[1] if len(tokens) > 1 else "UNKNOWN",
+                }
                 rest_raw = " ".join(tokens[2:])
                 rest_upper = rest_raw.upper()
                 col["nullable"] = "NOT NULL" not in rest_upper
@@ -54,11 +64,13 @@ def _parse_create_table(sql: str) -> list[dict[str, Any]]:
                     col["default"] = default_match.group(1)
                 columns.append(col)
 
-        tables.append({
-            "name": table_name,
-            "columns": columns,
-            "constraints": constraints,
-        })
+        tables.append(
+            {
+                "name": table_name,
+                "columns": columns,
+                "constraints": constraints,
+            }
+        )
 
     return tables
 
@@ -89,7 +101,10 @@ class DBSchemaSourceAdapter(SourceAdapter):
                     id=f"db_table_{table['name']}",
                     category="table",
                     subject=subject,
-                    value={"name": table["name"], "column_count": len(table["columns"])},
+                    value={
+                        "name": table["name"],
+                        "column_count": len(table["columns"]),
+                    },
                     provenance=Provenance(
                         source_type=ProvenanceType.DB,
                         source_uri=str(resolved),

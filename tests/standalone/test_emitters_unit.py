@@ -3,7 +3,7 @@ test_emitters_unit.py — Unit tests for UnitTestEmitter in truth/emitters/ (#12
 
 Tests pytest and jest code generation from Truth Model.
 """
-import os
+
 import tempfile
 import unittest
 
@@ -23,7 +23,9 @@ class TestUnitTestEmitter(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def _make_tm(self, method="GET", path="/api/users", summary="List users") -> TruthModel:
+    def _make_tm(
+        self, method="GET", path="/api/users", summary="List users"
+    ) -> TruthModel:
         tm = TruthModel()
         node = GraphNode(
             id=f"ep:{method}:{path}",
@@ -98,8 +100,10 @@ class TestUnitTestEmitter(unittest.TestCase):
     def test_emit_with_base_url(self):
         tm = self._make_tm()
         self.emitter.emit(
-            tm, Path(self.tmp.name),
-            framework="pytest", base_url="https://api.example.com",
+            tm,
+            Path(self.tmp.name),
+            framework="pytest",
+            base_url="https://api.example.com",
         )
         py_files = list(Path(self.tmp.name).glob("*.py"))
         if py_files:
@@ -113,6 +117,7 @@ class TestUnitTestEmitter(unittest.TestCase):
 
     def test_emitter_follows_spi(self):
         from cherenkov.truth.emitters.interface import Emitter
+
         self.assertIsInstance(self.emitter, Emitter)
 
     def test_emit_pytest_code_is_standalone(self):
@@ -151,7 +156,9 @@ class TestUnitTestEmitter(unittest.TestCase):
 
     def test_multiple_endpoints_generate_multiple_files(self):
         tm = TruthModel()
-        for i, (method, path) in enumerate([("GET", "/users"), ("POST", "/users"), ("GET", "/orders")]):
+        for i, (method, path) in enumerate(
+            [("GET", "/users"), ("POST", "/users"), ("GET", "/orders")]
+        ):
             node = GraphNode(
                 id=f"ep-{i}",
                 type=NodeType.ENDPOINT,

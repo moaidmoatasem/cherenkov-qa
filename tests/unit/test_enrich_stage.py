@@ -1,7 +1,7 @@
 """Unit tests for cherenkov/stages/enrich.py — RESTGPT-style spec enrichment."""
+
 from __future__ import annotations
 
-import pytest
 
 from cherenkov.stages.enrich import (
     SpecEnrichStage,

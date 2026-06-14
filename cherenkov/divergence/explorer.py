@@ -14,11 +14,12 @@ Design constraints:
   - The Explorer observes; it does not judge. Findings become *hypotheses* the
     Skeptic/Witness can confirm or reject — never auto-confirmed defects.
 """
+
 from __future__ import annotations
 
 import uuid
 from typing import Callable, Iterable
-from urllib.parse import urljoin, urlparse as _urlparse
+from urllib.parse import urljoin
 
 from cherenkov.core.contracts import (
     DivergenceClass,
@@ -109,12 +110,17 @@ class Explorer:
             self.log.info("probing", url=url, method=method)
             status, latency_ms, body = self._http_probe(url, method)
             findings.extend(
-                self._classify_http(url, method, status, latency_ms, body, expected_status)
+                self._classify_http(
+                    url, method, status, latency_ms, body, expected_status
+                )
             )
             if self._ui_probe is not None and method.upper() == "GET":
                 findings.extend(self._run_ui_probe(url))
-        self.log.info("crawl complete", probed=len(list(paths)) if hasattr(paths, "__len__") else -1,
-                      findings=len(findings))
+        self.log.info(
+            "crawl complete",
+            probed=len(list(paths)) if hasattr(paths, "__len__") else -1,
+            findings=len(findings),
+        )
         return findings
 
     def _resolve(self, path: str) -> str:
@@ -136,50 +142,93 @@ class Explorer:
         out: list[ExplorerFinding] = []
 
         if status is None:
-            out.append(self._finding(
-                ExplorerFindingKind.UNREACHABLE, url, method, None, latency_ms,
-                detail="No response (connection refused/timeout).",
-                evidence=body, severity=Severity.HIGH,
-            ))
+            out.append(
+                self._finding(
+                    ExplorerFindingKind.UNREACHABLE,
+                    url,
+                    method,
+                    None,
+                    latency_ms,
+                    detail="No response (connection refused/timeout).",
+                    evidence=body,
+                    severity=Severity.HIGH,
+                )
+            )
             return out
 
         if status >= 500:
-            out.append(self._finding(
-                ExplorerFindingKind.SERVER_ERROR, url, method, status, latency_ms,
-                detail=f"Server returned {status}.",
-                evidence=body, severity=Severity.CRITICAL,
-            ))
+            out.append(
+                self._finding(
+                    ExplorerFindingKind.SERVER_ERROR,
+                    url,
+                    method,
+                    status,
+                    latency_ms,
+                    detail=f"Server returned {status}.",
+                    evidence=body,
+                    severity=Severity.CRITICAL,
+                )
+            )
         elif expected_status is not None and status != expected_status:
             sev = Severity.HIGH if status >= 400 else Severity.MEDIUM
-            kind = (ExplorerFindingKind.CLIENT_ERROR if 400 <= status < 500
-                    else ExplorerFindingKind.SERVER_ERROR)
-            out.append(self._finding(
-                kind, url, method, status, latency_ms,
-                detail=f"Expected {expected_status}, got {status}.",
-                evidence=body, severity=sev,
-            ))
+            kind = (
+                ExplorerFindingKind.CLIENT_ERROR
+                if 400 <= status < 500
+                else ExplorerFindingKind.SERVER_ERROR
+            )
+            out.append(
+                self._finding(
+                    kind,
+                    url,
+                    method,
+                    status,
+                    latency_ms,
+                    detail=f"Expected {expected_status}, got {status}.",
+                    evidence=body,
+                    severity=sev,
+                )
+            )
         elif 400 <= status < 500 and expected_status is None:
-            out.append(self._finding(
-                ExplorerFindingKind.CLIENT_ERROR, url, method, status, latency_ms,
-                detail=f"Client error {status} on a crawled route.",
-                evidence=body, severity=Severity.MEDIUM,
-            ))
+            out.append(
+                self._finding(
+                    ExplorerFindingKind.CLIENT_ERROR,
+                    url,
+                    method,
+                    status,
+                    latency_ms,
+                    detail=f"Client error {status} on a crawled route.",
+                    evidence=body,
+                    severity=Severity.MEDIUM,
+                )
+            )
 
         if latency_ms >= self.slow_ms:
-            out.append(self._finding(
-                ExplorerFindingKind.SLOW_RESPONSE, url, method, status, latency_ms,
-                detail=f"Response took {latency_ms}ms (budget {self.slow_ms}ms).",
-                evidence="", severity=Severity.LOW,
-            ))
+            out.append(
+                self._finding(
+                    ExplorerFindingKind.SLOW_RESPONSE,
+                    url,
+                    method,
+                    status,
+                    latency_ms,
+                    detail=f"Response took {latency_ms}ms (budget {self.slow_ms}ms).",
+                    evidence="",
+                    severity=Severity.LOW,
+                )
+            )
         return out
 
     def _run_ui_probe(self, url: str) -> list[ExplorerFinding]:
         out: list[ExplorerFinding] = []
         try:
             for kind, detail, evidence in self._ui_probe(url):  # type: ignore[misc]
-                sev = (Severity.HIGH if kind == ExplorerFindingKind.JS_ERROR
-                       else Severity.MEDIUM)
-                out.append(self._finding(kind, url, "GET", None, 0, detail, evidence, sev))
+                sev = (
+                    Severity.HIGH
+                    if kind == ExplorerFindingKind.JS_ERROR
+                    else Severity.MEDIUM
+                )
+                out.append(
+                    self._finding(kind, url, "GET", None, 0, detail, evidence, sev)
+                )
         except Exception as e:  # a probe must never crash the crawl
             self.log.warning("ui_probe failed", url=url, error=str(e))
         return out
@@ -209,7 +258,9 @@ class Explorer:
 
     # ── feed the Skeptic ─────────────────────────────────────────────────────
 
-    def to_hypotheses(self, findings: list[ExplorerFinding]) -> list[DivergenceHypothesis]:
+    def to_hypotheses(
+        self, findings: list[ExplorerFinding]
+    ) -> list[DivergenceHypothesis]:
         """Convert observed findings into Skeptic-shaped hypotheses.
 
         A 5xx/unreachable maps to D2 (code↔prod: source claims success, prod
@@ -220,25 +271,30 @@ class Explorer:
         hypotheses: list[DivergenceHypothesis] = []
         for f in findings:
             dclass, claim_a, claim_b = self._map_class(f)
-            hypotheses.append(DivergenceHypothesis(
-                id=str(uuid.uuid4()),
-                divergence_class=dclass,
-                claim_a=claim_a,
-                claim_b=claim_b,
-                predicted_evidence=f.detail or f.kind.value,
-                severity=f.severity,
-                endpoint=f"{f.method.upper()} {f.url}",
-                repro_steps=[
-                    f"Send {f.method.upper()} {f.url}",
-                    f"Observe: {f.detail or f.kind.value}",
-                ],
-            ))
+            hypotheses.append(
+                DivergenceHypothesis(
+                    id=str(uuid.uuid4()),
+                    divergence_class=dclass,
+                    claim_a=claim_a,
+                    claim_b=claim_b,
+                    predicted_evidence=f.detail or f.kind.value,
+                    severity=f.severity,
+                    endpoint=f"{f.method.upper()} {f.url}",
+                    repro_steps=[
+                        f"Send {f.method.upper()} {f.url}",
+                        f"Observe: {f.detail or f.kind.value}",
+                    ],
+                )
+            )
         return hypotheses
 
     @staticmethod
     def _map_class(f: ExplorerFinding) -> tuple[DivergenceClass, str, str]:
-        if f.kind in (ExplorerFindingKind.SERVER_ERROR, ExplorerFindingKind.UNREACHABLE,
-                      ExplorerFindingKind.SLOW_RESPONSE):
+        if f.kind in (
+            ExplorerFindingKind.SERVER_ERROR,
+            ExplorerFindingKind.UNREACHABLE,
+            ExplorerFindingKind.SLOW_RESPONSE,
+        ):
             return (
                 DivergenceClass.D2_CODE_PROD,
                 "Source code intends this route to succeed.",
@@ -285,7 +341,9 @@ class Explorer:
         flows: list[dict] = []
 
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(headless=True, args=["--no-sandbox", "--disable-gpu"])
+            browser = pw.chromium.launch(
+                headless=True, args=["--no-sandbox", "--disable-gpu"]
+            )
             context = browser.new_context(
                 viewport={"width": 1280, "height": 800},
                 ignore_https_errors=True,
@@ -295,7 +353,9 @@ class Explorer:
             try:
                 page.goto(root_url, wait_until="networkidle", timeout=15_000)
             except Exception as exc:
-                self.log.warning("discover_flows navigation failed", url=root_url, error=str(exc))
+                self.log.warning(
+                    "discover_flows navigation failed", url=root_url, error=str(exc)
+                )
                 browser.close()
                 return []
 
@@ -314,13 +374,15 @@ class Explorer:
                     parsed = urlparse(link)
                     if parsed.netloc and parsed.netloc != base.netloc:
                         continue
-                    flows.append({
-                        "type": "link",
-                        "url": link,
-                        "path": parsed.path or "/",
-                        "method": "GET",
-                        "label": "",
-                    })
+                    flows.append(
+                        {
+                            "type": "link",
+                            "url": link,
+                            "path": parsed.path or "/",
+                            "method": "GET",
+                            "label": "",
+                        }
+                    )
             except Exception:
                 pass
 
@@ -334,13 +396,15 @@ class Explorer:
                     }))"""
                 )
                 for form in raw_forms:
-                    flows.append({
-                        "type": "form",
-                        "url": form.get("action", ""),
-                        "path": urlparse(form.get("action", "")).path or "/",
-                        "method": form.get("method", "POST"),
-                        "label": form.get("id", ""),
-                    })
+                    flows.append(
+                        {
+                            "type": "form",
+                            "url": form.get("action", ""),
+                            "path": urlparse(form.get("action", "")).path or "/",
+                            "method": form.get("method", "POST"),
+                            "label": form.get("id", ""),
+                        }
+                    )
             except Exception:
                 pass
 
@@ -359,14 +423,20 @@ class Explorer:
                     href = nav.get("href", "")
                     if not href or href.startswith("#"):
                         continue
-                    abs_url = urljoin(root_url + "/", href.lstrip("/")) if not href.startswith("http") else href
-                    flows.append({
-                        "type": "nav_item",
-                        "url": abs_url,
-                        "path": urlparse(abs_url).path or "/",
-                        "method": "GET",
-                        "label": nav.get("text", ""),
-                    })
+                    abs_url = (
+                        urljoin(root_url + "/", href.lstrip("/"))
+                        if not href.startswith("http")
+                        else href
+                    )
+                    flows.append(
+                        {
+                            "type": "nav_item",
+                            "url": abs_url,
+                            "path": urlparse(abs_url).path or "/",
+                            "method": "GET",
+                            "label": nav.get("text", ""),
+                        }
+                    )
             except Exception:
                 pass
 

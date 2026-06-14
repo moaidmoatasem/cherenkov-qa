@@ -1,19 +1,22 @@
 """E6-1 Truth Protocol"""
+
 from __future__ import annotations
 import json
 from enum import Enum
 from typing import Any, Union
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from cherenkov.core.contracts import DivergenceReport
 from cherenkov.core.truth_model import GraphEdge, GraphNode
 
 PROTOCOL_VERSION = "1.0.0"
+
 
 class ProtocolMessageType(str, Enum):
     TRUTH_FRAGMENT = "truth_fragment"
     DIVERGENCE = "divergence"
     ACK = "ack"
     ERROR = "error"
+
 
 class TruthFragment(BaseModel):
     service_id: str
@@ -23,6 +26,7 @@ class TruthFragment(BaseModel):
     edges: list[GraphEdge] = []
     claims: list[dict[str, Any]] = []
 
+
 class DivergenceEnvelope(BaseModel):
     from_service: str
     to_service: str
@@ -31,14 +35,17 @@ class DivergenceEnvelope(BaseModel):
     divergence: DivergenceReport
     signature: str | None = None
 
+
 class ProtocolMessage(BaseModel):
     type: ProtocolMessageType
     protocol_version: str = PROTOCOL_VERSION
     payload: Union[TruthFragment, DivergenceEnvelope, dict] = {}
 
+
 def dumps(msg: ProtocolMessage) -> str:
     data = msg.model_dump(mode="json", exclude_none=True)
     return json.dumps(data, sort_keys=True, separators=(",", ":"))
+
 
 def loads(s: str) -> ProtocolMessage:
     try:
@@ -56,7 +63,7 @@ def loads(s: str) -> ProtocolMessage:
     except (ValueError, IndexError) as e:
         raise ValueError(f"Invalid: {msg_version}") from e
     if msg_major != current_major:
-        raise ValueError(f"Major version mismatch")
+        raise ValueError("Major version mismatch")
     msg_type = data.get("type")
     if msg_type is None:
         raise ValueError("Missing type")

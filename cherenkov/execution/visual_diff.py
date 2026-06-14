@@ -2,6 +2,7 @@
 CHERENKOV execution/visual_diff.py — Visual snapshot baseline and comparison engine.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import os
@@ -9,7 +10,9 @@ import subprocess
 from cherenkov.core.errors import get_logger
 from cherenkov.core.config import Config
 
-VISUAL_SPEC_RELPATH = os.path.join("generated_tests", "visual_regression_baseline_ui.spec.ts")
+VISUAL_SPEC_RELPATH = os.path.join(
+    "generated_tests", "visual_regression_baseline_ui.spec.ts"
+)
 
 # The engine owns this spec: it is (re)generated on demand so visual checks
 # work from a clean checkout, and Playwright stores the baseline screenshots
@@ -36,7 +39,9 @@ class VisualDiffEngine:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("VISUAL_DIFF", run_id)
-        self.stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
+        self.stub_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../stub")
+        )
         self.spec_path = os.path.join(self.stub_dir, VISUAL_SPEC_RELPATH)
         # Playwright writes snapshots beside the spec by default.
         self.snapshots_dir = self.spec_path + "-snapshots"
@@ -45,17 +50,23 @@ class VisualDiffEngine:
         """Write the baseline spec if it does not exist yet."""
         if os.path.exists(self.spec_path):
             return
-        self.log.info("visual baseline spec not found, generating it", path=self.spec_path)
+        self.log.info(
+            "visual baseline spec not found, generating it", path=self.spec_path
+        )
         os.makedirs(os.path.dirname(self.spec_path), exist_ok=True)
         with open(self.spec_path, "w", encoding="utf-8") as f:
             f.write(VISUAL_SPEC_TEMPLATE)
 
-    def _run_playwright(self, url: str, extra_args: list[str]) -> subprocess.CompletedProcess:
+    def _run_playwright(
+        self, url: str, extra_args: list[str]
+    ) -> subprocess.CompletedProcess:
         npx_cmd = "npx.cmd" if os.name == "nt" else "npx"
         cmd = [npx_cmd, "playwright", "test", VISUAL_SPEC_RELPATH, *extra_args]
         env = os.environ.copy()
         env["API_URL"] = url
-        return subprocess.run(cmd, cwd=self.stub_dir, env=env, capture_output=True, text=True)
+        return subprocess.run(
+            cmd, cwd=self.stub_dir, env=env, capture_output=True, text=True
+        )
 
     def run_visual_validation(self, api_url: str | None = None) -> dict:
         """Executes the visual E2E test. If baseline snapshots are absent, initializes them via --update-snapshots."""
@@ -69,10 +80,15 @@ class VisualDiffEngine:
         )
 
         if not snapshots_exist:
-            self.log.info("visual baseline snapshot not found, initializing baseline using --update-snapshots")
+            self.log.info(
+                "visual baseline snapshot not found, initializing baseline using --update-snapshots"
+            )
             init = self._run_playwright(url, ["--update-snapshots"])
             if init.returncode == 0:
-                self.log.info("visual baseline snapshot successfully initialized", path=self.snapshots_dir)
+                self.log.info(
+                    "visual baseline snapshot successfully initialized",
+                    path=self.snapshots_dir,
+                )
             else:
                 self.log.warning(
                     "visual baseline initialization failed",
@@ -83,24 +99,34 @@ class VisualDiffEngine:
         # Run validation
         process = self._run_playwright(url, ["--reporter=json"])
 
-        passed = (process.returncode == 0)
+        passed = process.returncode == 0
         report = {
             "passed": passed,
             "exit_code": process.returncode,
             "target_url": url,
             "baseline_dir": self.snapshots_dir,
-            "mismatch_detected": not passed
+            "mismatch_detected": not passed,
         }
 
         if passed:
-            self.log.info("visual verification passed - layout matches baseline snapshot")
+            self.log.info(
+                "visual verification passed - layout matches baseline snapshot"
+            )
             if not snapshots_exist:
-                report["message"] = "Visual baseline initialized successfully. No prior snapshot to compare against."
+                report["message"] = (
+                    "Visual baseline initialized successfully. No prior snapshot to compare against."
+                )
             else:
-                report["message"] = "Visual verification passed successfully. No UI layout deviations detected."
+                report["message"] = (
+                    "Visual verification passed successfully. No UI layout deviations detected."
+                )
         else:
-            self.log.warning("visual mismatch detected - UI layout deviates from baseline snapshot")
-            report["message"] = "Visual verification failed. Mismatch detected between live UI and baseline snapshot."
+            self.log.warning(
+                "visual mismatch detected - UI layout deviates from baseline snapshot"
+            )
+            report["message"] = (
+                "Visual verification failed. Mismatch detected between live UI and baseline snapshot."
+            )
             report["error_output"] = process.stderr or process.stdout
 
         return report

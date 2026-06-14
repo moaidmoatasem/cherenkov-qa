@@ -3,10 +3,12 @@
 Test script for Epoch 8 Perf Intelligence enhancements.
 Tests the new ML anomaly detection, traffic-based load profiles, and LLM-aware metrics.
 """
+
 import os
 import tempfile
 import sqlite3
 from cherenkov.stages.perf.perf_stage import PerfStage, PerfSlice, ML_AVAILABLE
+
 
 def test_basic_functionality():
     """Test basic performance stage functionality."""
@@ -23,7 +25,7 @@ def test_basic_functionality():
             endpoint="/api/test",
             method="GET",
             vus=5,
-            duration_sec=3
+            duration_sec=3,
         )
 
         result = stage.run(sl)
@@ -40,6 +42,7 @@ def test_basic_functionality():
         print(f"[+] Database contains {count} performance record(s)")
         assert count == 1
 
+
 def test_statistical_analysis():
     """Test statistical anomaly detection."""
     print("\nTesting statistical anomaly detection...")
@@ -55,7 +58,7 @@ def test_statistical_analysis():
             endpoint="/api/stats",
             method="POST",
             vus=3,
-            duration_sec=2
+            duration_sec=2,
         )
 
         # Run multiple times to establish baseline with varying latencies
@@ -67,12 +70,15 @@ def test_statistical_analysis():
         # Test analysis with normal value (within expected range)
         analysis = stage._analyze("/api/stats", "POST", 42.5)
         print(f"[+] Normal analysis: anomaly_detected={analysis['anomaly_detected']}")
-        assert not analysis['anomaly_detected']
+        assert not analysis["anomaly_detected"]
 
         # Test analysis with high value (should trigger anomaly)
         analysis = stage._analyze("/api/stats", "POST", 150.0)
-        print(f"[+] High value analysis: anomaly_detected={analysis['anomaly_detected']}")
-        assert analysis['anomaly_detected']
+        print(
+            f"[+] High value analysis: anomaly_detected={analysis['anomaly_detected']}"
+        )
+        assert analysis["anomaly_detected"]
+
 
 def test_ml_availability():
     """Test ML dependency availability."""
@@ -91,7 +97,7 @@ def test_ml_availability():
                 endpoint="/api/ml",
                 method="GET",
                 vus=2,
-                duration_sec=1
+                duration_sec=1,
             )
 
             # Create enough baseline data for ML
@@ -114,13 +120,14 @@ def test_ml_availability():
                 endpoint="/api/fallback",
                 method="POST",
                 vus=1,
-                duration_sec=1
+                duration_sec=1,
             )
 
             # Should use statistical method when ML not available
             analysis = stage._analyze("/api/fallback", "POST", 45.0, use_ml=True)
             print(f"[+] Fallback to statistical: method={analysis['method']}")
-            assert analysis['method'] == 'statistical'
+            assert analysis["method"] == "statistical"
+
 
 def test_traffic_load_profile():
     """Test traffic-based load profile generation."""
@@ -174,7 +181,7 @@ def test_traffic_load_profile():
 }
 """
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.har', delete=False) as har_file:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".har", delete=False) as har_file:
         har_file.write(har_content)
         har_path = har_file.name
 
@@ -186,7 +193,9 @@ def test_traffic_load_profile():
             profile = stage.generate_load_profile_from_traffic(har_path)
 
             if profile:
-                print(f"[+] Generated traffic profile: {profile.endpoint} {profile.method}")
+                print(
+                    f"[+] Generated traffic profile: {profile.endpoint} {profile.method}"
+                )
                 print(f"  VUS: {profile.vus}, Duration: {profile.duration_sec}s")
                 assert profile.vus > 0
                 assert profile.duration_sec > 0
@@ -195,6 +204,7 @@ def test_traffic_load_profile():
 
     finally:
         os.unlink(har_path)
+
 
 def test_llm_endpoint_detection():
     """Test LLM endpoint detection heuristic."""
@@ -212,7 +222,7 @@ def test_llm_endpoint_detection():
         "/generate-text",
         "/inference/llama",
         "/ai/prompt",
-        "/model/embeddings"
+        "/model/embeddings",
     ]
 
     for endpoint in llm_endpoints:
@@ -221,17 +231,13 @@ def test_llm_endpoint_detection():
         assert is_llm
 
     # Test non-LLM endpoints
-    non_llm_endpoints = [
-        "/api/users",
-        "/health",
-        "/status",
-        "/config"
-    ]
+    non_llm_endpoints = ["/api/users", "/health", "/status", "/config"]
 
     for endpoint in non_llm_endpoints:
         is_llm = stage._is_llm_endpoint(endpoint)
         print(f"[+] {endpoint}: LLM={is_llm}")
         assert not is_llm
+
 
 def test_backward_compatibility():
     """Test that existing functionality still works."""
@@ -248,7 +254,7 @@ def test_backward_compatibility():
             endpoint="/api/compat",
             method="GET",
             vus=5,
-            duration_sec=3
+            duration_sec=3,
         )
 
         # Should work with just the perf slice
@@ -259,7 +265,8 @@ def test_backward_compatibility():
         # Test that statistical method is default
         analysis = stage._analyze("/api/compat", "GET", 45.0)
         print(f"[+] Default analysis method: {analysis['method']}")
-        assert analysis['method'] == 'statistical'
+        assert analysis["method"] == "statistical"
+
 
 if __name__ == "__main__":
     print("Running Epoch 8 Perf Intelligence enhancement tests...")
@@ -275,7 +282,9 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("[+] All tests completed successfully!")
     print("\nEpoch 8 Perf Intelligence enhancements are working:")
-    print("  - Statistical -> ML anomaly detection (seasonal baseline + isolation forest)")
+    print(
+        "  - Statistical -> ML anomaly detection (seasonal baseline + isolation forest)"
+    )
     print("  - Generative load profiles from traffic sources")
     print("  - LLM-aware metrics (TTFT/ITL/cost)")
     print("  - Zero-dependency statistical path remains default")

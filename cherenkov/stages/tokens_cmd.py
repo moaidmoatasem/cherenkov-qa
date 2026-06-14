@@ -5,10 +5,10 @@ Usage:
     cherenkov tokens report [--days N] [--json]
     cherenkov tokens breakdown [--stage] [--days N]
 """
+
 from __future__ import annotations
 
 import json
-import sys
 
 
 def run_tokens_report(days: int = 30, as_json: bool = False) -> None:
@@ -53,7 +53,7 @@ def run_tokens_report(days: int = 30, as_json: bool = False) -> None:
             )
 
     if report.recommendations:
-        print(f"\n  Recommendations")
+        print("\n  Recommendations")
         print(f"  {'─'*56}")
         for rec in report.recommendations:
             sev = rec["severity"].upper()

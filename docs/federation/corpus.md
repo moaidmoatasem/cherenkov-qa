@@ -7,7 +7,7 @@ Opt-in anonymized aggregation of divergence findings across CHERENKOV instances.
 Structural shape and divergence kinds:
 
 - divergence_class: D1_SPEC_CODE, D5_SPEC_PROD, etc. (enum)
-- severity: HIGH, MEDIUM, LOW (enum)  
+- severity: HIGH, MEDIUM, LOW (enum)
 - claim_a / claim_b key structure: method + endpoint path **structure only** (hashed)
 - Divergence metadata: timestamps (UTC), protocol version
 

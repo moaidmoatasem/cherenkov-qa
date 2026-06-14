@@ -1,6 +1,7 @@
 from typing import Any, Dict
 from datetime import datetime
 
+
 class SARIFEmitter:
     """Emits DivergenceReports into the SARIF format for GitHub Advanced Security."""
 
@@ -10,7 +11,7 @@ class SARIFEmitter:
         for finding in getattr(report, "findings", []):
             severity = getattr(finding, "severity", "medium")
             level = "error" if severity in ("high", "critical") else "warning"
-            
+
             result = {
                 "ruleId": getattr(finding, "violation_type", "conformance-drift"),
                 "level": level,
@@ -20,12 +21,8 @@ class SARIFEmitter:
                 "locations": [
                     {
                         "physicalLocation": {
-                            "artifactLocation": {
-                                "uri": spec_path
-                            },
-                            "region": {
-                                "startLine": 1
-                            }
+                            "artifactLocation": {"uri": spec_path},
+                            "region": {"startLine": 1},
                         }
                     }
                 ],
@@ -35,8 +32,8 @@ class SARIFEmitter:
                     "expected": getattr(finding, "expected", ""),
                     "actual": getattr(finding, "actual", ""),
                     "description": getattr(finding, "description", ""),
-                    "remediation": getattr(finding, "remediation", "")
-                }
+                    "remediation": getattr(finding, "remediation", ""),
+                },
             }
             results.append(result)
 
@@ -52,19 +49,23 @@ class SARIFEmitter:
                             "rules": [
                                 {
                                     "id": "conformance-drift",
-                                    "shortDescription": {"text": "API Conformance Drift Detected"},
-                                    "fullDescription": {"text": "The API response drifted from the defined specification."}
+                                    "shortDescription": {
+                                        "text": "API Conformance Drift Detected"
+                                    },
+                                    "fullDescription": {
+                                        "text": "The API response drifted from the defined specification."
+                                    },
                                 }
-                            ]
+                            ],
                         }
                     },
                     "invocations": [
                         {
                             "executionSuccessful": len(results) == 0,
-                            "endTimeUtc": datetime.utcnow().isoformat() + "Z"
+                            "endTimeUtc": datetime.utcnow().isoformat() + "Z",
                         }
                     ],
-                    "results": results
+                    "results": results,
                 }
-            ]
+            ],
         }

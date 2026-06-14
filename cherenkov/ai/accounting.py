@@ -2,9 +2,10 @@
 CHERENKOV ai/accounting.py — per-request cost & latency accounting.
 Authority: v3.1 + delta. E1-5.
 """
+
 from __future__ import annotations
 
-from cherenkov.core.contracts import CostEntry, AccountingReport, CacheStats
+from cherenkov.core.contracts import CostEntry, AccountingReport
 
 
 def _estimate_tokens(text: object) -> int:
@@ -13,8 +14,8 @@ def _estimate_tokens(text: object) -> int:
 
 
 _COST_PER_TOKEN = {
-    "ollama":    0.0,
-    "openai":    0.000015,
+    "ollama": 0.0,
+    "openai": 0.000015,
     "anthropic": 0.00003,
 }
 
@@ -31,7 +32,9 @@ class CostAccountant:
 
     def __init__(self, monitor=None) -> None:
         self._entries: list[CostEntry] = []
-        self._monitor = monitor  # TokenMonitor | None — injected to avoid hard import cycle
+        self._monitor = (
+            monitor  # TokenMonitor | None — injected to avoid hard import cycle
+        )
 
     def record(
         self,
@@ -54,9 +57,12 @@ class CostAccountant:
             actual_tokens = tokens or 0
 
         from cherenkov.observability.token_monitor import compute_cost
+
         if prompt_tokens or completion_tokens:
-            cost = 0.0 if cache_hit else compute_cost(
-                provider, model, prompt_tokens, completion_tokens
+            cost = (
+                0.0
+                if cache_hit
+                else compute_cost(provider, model, prompt_tokens, completion_tokens)
             )
         else:
             cost_per_token = _COST_PER_TOKEN.get(provider, 0.0)
@@ -75,6 +81,7 @@ class CostAccountant:
 
         if self._monitor is not None and not cache_hit:
             from cherenkov.observability.token_monitor import TokenRecord
+
             self._monitor.record(
                 TokenRecord(
                     run_id=run_id or "unknown",
@@ -105,9 +112,11 @@ class CostAccountant:
         reprompts: int = 0,
     ) -> None:
         import json as _json
+
         estimated = _estimate_tokens(_json.dumps(output, default=str))
         self.record(
-            model, duration_ms,
+            model,
+            duration_ms,
             tokens=estimated,
             cache_hit=cache_hit,
             provider=provider,
@@ -134,7 +143,8 @@ class CostAccountant:
     ) -> None:
         estimated = _estimate_tokens(output)
         self.record(
-            model, duration_ms,
+            model,
+            duration_ms,
             tokens=estimated,
             cache_hit=cache_hit,
             provider=provider,
@@ -167,7 +177,9 @@ class CostAccountant:
         conn = store._connect()
 
         try:
-            cursor = conn.execute("SELECT outcome, COUNT(*) FROM verdicts GROUP BY outcome")
+            cursor = conn.execute(
+                "SELECT outcome, COUNT(*) FROM verdicts GROUP BY outcome"
+            )
             counts = dict(cursor.fetchall())
         except Exception:
             counts = {}

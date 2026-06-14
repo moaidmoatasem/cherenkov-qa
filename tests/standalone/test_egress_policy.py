@@ -3,15 +3,17 @@ test_egress_policy.py — Comprehensive tests for egress policy enforcement (Iss
 
 Tests the sovereignty dial: egress=none|internal|any with property-driven provider checks.
 """
+
 import unittest
 import os
 from unittest.mock import patch, MagicMock
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.core.errors import EgressError, AllProvidersFailedError
+from cherenkov.core.errors import EgressError
 from cherenkov.core.config import Config
 from cherenkov.substrate.router import SubstrateRouter
 from cherenkov.substrate.provider import ProviderCapabilities
+
 
 def _make_mock_provider(
     name: str,
@@ -39,6 +41,7 @@ def _make_mock_provider(
         provider.generate.side_effect = RuntimeError(f"{name} failed")
     return provider
 
+
 class TestEgressPolicy(unittest.TestCase):
     """Comprehensive tests for egress policy enforcement."""
 
@@ -60,7 +63,7 @@ class TestEgressPolicy(unittest.TestCase):
         external_provider = _make_mock_provider("openai", requires_egress=True)
         mock_provider_for_tier.return_value = external_provider
 
-        with patch.object(Config, 'EGRESS', 'none'):
+        with patch.object(Config, "EGRESS", "none"):
             request = ReasoningRequest(task="test", capability_tier="small")
 
             with self.assertRaises(EgressError) as ctx:
@@ -77,7 +80,7 @@ class TestEgressPolicy(unittest.TestCase):
         local_provider = _make_mock_provider("ollama", requires_egress=False)
         mock_provider_for_tier.return_value = local_provider
 
-        with patch.object(Config, 'EGRESS', 'none'):
+        with patch.object(Config, "EGRESS", "none"):
             request = ReasoningRequest(task="test", capability_tier="small")
             result = self.router.route(request)
 
@@ -118,7 +121,7 @@ class TestEgressPolicy(unittest.TestCase):
         external_provider = _make_mock_provider("openai", requires_egress=True)
         mock_provider_for_tier.return_value = external_provider
 
-        with patch.object(Config, 'EGRESS', 'any'):
+        with patch.object(Config, "EGRESS", "any"):
             request = ReasoningRequest(task="test", capability_tier="small")
             result = self.router.route(request)
 
@@ -134,7 +137,9 @@ class TestEgressPolicy(unittest.TestCase):
     ):
         """AC4: Policy is enforced for fallback provider on spillover under internal policy."""
         # Primary provider (local) fails, fallback (external) should be blocked
-        failing_local = _make_mock_provider("ollama", requires_egress=False, succeed=False)
+        failing_local = _make_mock_provider(
+            "ollama", requires_egress=False, succeed=False
+        )
         external_fallback = _make_mock_provider("openai", requires_egress=True)
 
         mock_provider_for_tier.return_value = failing_local
@@ -143,6 +148,7 @@ class TestEgressPolicy(unittest.TestCase):
             if name == "openai":
                 return external_fallback
             return failing_local
+
         mock_get_provider.side_effect = get_provider_side_effect
 
         request = ReasoningRequest(task="test", capability_tier="small")
@@ -165,7 +171,9 @@ class TestEgressPolicy(unittest.TestCase):
     ):
         """AC4: Policy is enforced for fallback provider on spillover under any policy."""
         # Primary provider (local) fails, fallback (external) should succeed under 'any'
-        failing_local = _make_mock_provider("ollama", requires_egress=False, succeed=False)
+        failing_local = _make_mock_provider(
+            "ollama", requires_egress=False, succeed=False
+        )
         external_fallback = _make_mock_provider("openai", requires_egress=True)
 
         mock_provider_for_tier.return_value = failing_local
@@ -174,6 +182,7 @@ class TestEgressPolicy(unittest.TestCase):
             if name == "openai":
                 return external_fallback
             return failing_local
+
         mock_get_provider.side_effect = get_provider_side_effect
 
         request = ReasoningRequest(task="test", capability_tier="small")
@@ -194,7 +203,9 @@ class TestEgressPolicy(unittest.TestCase):
     ):
         """AC4: Policy is enforced for fallback provider on spillover under none policy."""
         # Both primary (external) and fallback (external) should be blocked under 'none'
-        failing_external = _make_mock_provider("anthropic", requires_egress=True, succeed=False)
+        failing_external = _make_mock_provider(
+            "anthropic", requires_egress=True, succeed=False
+        )
         external_fallback = _make_mock_provider("openai", requires_egress=True)
 
         mock_provider_for_tier.return_value = failing_external
@@ -203,6 +214,7 @@ class TestEgressPolicy(unittest.TestCase):
             if name == "openai":
                 return external_fallback
             return failing_external
+
         mock_get_provider.side_effect = get_provider_side_effect
 
         request = ReasoningRequest(task="test", capability_tier="small")
@@ -218,12 +230,11 @@ class TestEgressPolicy(unittest.TestCase):
     def test_property_driven_check_no_hardcoded_names(self):
         """Verify the implementation uses property-driven checks, not hardcoded provider names."""
         # This is a meta-test to verify our implementation
-        import os
         # Get the directory where this test file is located
         test_dir = os.path.dirname(os.path.abspath(__file__))
         # The router.py file should be in cherenkov/substrate/router.py relative to test directory
-        router_path = os.path.join(test_dir, 'cherenkov', 'substrate', 'router.py')
-        with open(router_path, 'r') as f:
+        router_path = os.path.join(test_dir, "cherenkov", "substrate", "router.py")
+        with open(router_path, "r") as f:
             router_code = f.read()
 
         # Should not contain hardcoded provider name checks
@@ -232,8 +243,9 @@ class TestEgressPolicy(unittest.TestCase):
         self.assertNotIn('provider_name == "ollama"', router_code)
 
         # Should use requires_egress property
-        self.assertIn('requires_egress', router_code)
-        self.assertIn('_enforce_egress', router_code)
+        self.assertIn("requires_egress", router_code)
+        self.assertIn("_enforce_egress", router_code)
+
 
 if __name__ == "__main__":
     unittest.main()

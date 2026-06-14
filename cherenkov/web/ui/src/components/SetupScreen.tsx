@@ -4,15 +4,15 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { 
-  Upload, 
-  Globe, 
-  ChevronRight, 
-  AlertCircle, 
-  CheckCircle, 
-  Terminal, 
-  ChevronDown, 
-  ChevronUp, 
+import {
+  Upload,
+  Globe,
+  ChevronRight,
+  AlertCircle,
+  CheckCircle,
+  Terminal,
+  ChevronDown,
+  ChevronUp,
   Layers
 } from 'lucide-react';
 import { EndpointRichness } from '../types';
@@ -37,7 +37,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
   const [loading, setLoading] = useState(false);
   const [ingestedSpecPath, setIngestedSpecPath] = useState<string | null>(null);
   const { toast } = useToast();
-  
+
   // Tooltip details state
   const [hoveredEndpoint, setHoveredEndpoint] = useState<EndpointRichness | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
@@ -108,7 +108,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       if (file.name.endsWith('.json') || file.name.endsWith('.yaml') || file.name.endsWith('.yml')) {
@@ -166,7 +166,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
 
   return (
     <div className="p-8 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="setup-screen" onDragEnter={handleDrag}>
-      
+
       {/* Title */}
       <div className="flex items-center gap-4">
         <CherenkovLogo variant="icon" size={42} />
@@ -223,7 +223,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
               <span className="text-xs text-[#3FB950] font-mono font-bold">ALL SYSTEM CHECKS PASSED. ENGINE READY.</span>
             </div>
           )}
-          
+
           {/* Spec upload form / area */}
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 px-6 py-8 rounded-2xl space-y-6 relative">
             <h2 className="text-lg font-display font-semibold text-text-primary flex items-center gap-2">
@@ -239,20 +239,20 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
               className={`border border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300 relative ${
-                dragActive 
-                  ? 'border-glow-blue bg-cyan-500/10 cherenkov-glow pointer-events-none' 
-                  : fileName 
-                    ? 'border-[#3FB950]/50 bg-white/5 hover:border-glow-blue/50' 
+                dragActive
+                  ? 'border-glow-blue bg-cyan-500/10 cherenkov-glow pointer-events-none'
+                  : fileName
+                    ? 'border-[#3FB950]/50 bg-white/5 hover:border-glow-blue/50'
                     : 'border-white/10 hover:border-glow-blue/50 bg-black/40'
               }`}
             >
-              <input 
-                ref={fileInputRef} 
-                type="file" 
+              <input
+                ref={fileInputRef}
+                type="file"
                 id="spec-file-input"
-                className="hidden" 
-                accept=".json,.yaml,.yml" 
-                onChange={handleChange} 
+                className="hidden"
+                accept=".json,.yaml,.yml"
+                onChange={handleChange}
               />
 
               <div className="space-y-4">
@@ -440,7 +440,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
             ) : (
               // Visual Report panel if Spec exists
               <div className="space-y-6">
-                
+
                 {/* Score telemetry card */}
                 <div className="p-4 bg-black/30 backdrop-blur-sm rounded-xl border border-white/10 flex items-center justify-between text-xs">
                   <div>
@@ -460,12 +460,12 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
                   {/* Horizontal visual endpoint blocks bar */}
                   <div className="flex gap-[3px] h-6 w-full py-1">
                     {endpoints.map((ep) => {
-                      const bandColor = ep.band === 'full' 
-                        ? 'bg-[#3FB950] hover:bg-[#3FB950]/80' 
-                        : ep.band === 'inferred' 
-                          ? 'bg-[#D29922] hover:bg-[#D29922]/80' 
+                      const bandColor = ep.band === 'full'
+                        ? 'bg-[#3FB950] hover:bg-[#3FB950]/80'
+                        : ep.band === 'inferred'
+                          ? 'bg-[#D29922] hover:bg-[#D29922]/80'
                           : 'bg-[#F85149] hover:bg-[#F85149]/80';
-                      
+
                       return (
                         <div
                           key={ep.id}
@@ -476,7 +476,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
                       );
                     })}
                   </div>
-                  
+
                   {/* Bands list descriptions */}
                   <div className="grid grid-cols-3 gap-1 pt-2 border-t border-white/10 text-[10px] font-mono text-text-muted text-center">
                     <div>
@@ -524,7 +524,7 @@ export default function SetupScreen({ onStartPipeline }: SetupScreenProps) {
 
       {/* Floating Hover Tooltip Detail for Segment hover */}
       {hoveredEndpoint && (
-        <div 
+        <div
           className="fixed z-50 p-4 border border-white/15 bg-slate-900 rounded-xl shadow-2xl backdrop-blur-md text-xs max-w-xs space-y-2 pointer-events-none"
           style={{
             left: `${tooltipPos.x}px`,

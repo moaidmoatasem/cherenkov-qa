@@ -7,7 +7,6 @@ from typing import Any
 from fastapi import APIRouter, Response
 
 from cherenkov.core.error_handling import get_degradation
-from cherenkov.core.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -17,14 +16,18 @@ router = APIRouter()
 @router.get("/healthz")
 async def healthz():
     degradation = get_degradation()
-    status_code = 200 if degradation.health.level.value in ("healthy", "degraded") else 503
+    status_code = (
+        200 if degradation.health.level.value in ("healthy", "degraded") else 503
+    )
     return Response(
-        content=json_dumps({
-            "status": "ok" if status_code == 200 else "unhealthy",
-            "level": degradation.health.level.value,
-            "checks": dict(degradation.health.checks),
-            "timestamp": time.time(),
-        }),
+        content=json_dumps(
+            {
+                "status": "ok" if status_code == 200 else "unhealthy",
+                "level": degradation.health.level.value,
+                "checks": dict(degradation.health.checks),
+                "timestamp": time.time(),
+            }
+        ),
         status_code=status_code,
         media_type="application/json",
     )
@@ -61,4 +64,5 @@ async def health_detail():
 
 def json_dumps(data: dict[str, Any]) -> str:
     import json
+
     return json.dumps(data)

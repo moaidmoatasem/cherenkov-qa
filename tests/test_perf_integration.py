@@ -1,8 +1,6 @@
-import os
-import sqlite3
-import pytest
 from unittest.mock import patch
 from cherenkov.execution.perf_analyzer import PerformanceAnalyzer
+
 
 @patch("cherenkov.execution.perf_analyzer.os.path.abspath")
 def test_baseline_stats_calculation(mock_abspath, tmp_path):
@@ -20,6 +18,7 @@ def test_baseline_stats_calculation(mock_abspath, tmp_path):
     assert stats["mean"] == 20.0
     assert stats["stddev"] == 8.16
 
+
 @patch("cherenkov.execution.perf_analyzer.os.path.abspath")
 def test_anomaly_detection(mock_abspath, tmp_path):
     mock_abspath.return_value = str(tmp_path / "perf_store.db")
@@ -31,7 +30,7 @@ def test_anomaly_detection(mock_abspath, tmp_path):
 
     # Base mean is 50.0, variance is ((0)^2 + (2)^2 + (-2)^2) / 3 = 8/3 = 2.66
     # Stddev = sqrt(2.66) = ~1.63
-    
+
     # Within threshold (2 stddev ~3.26)
     analysis_pass = analyzer.analyze_anomaly("/test", "POST", 52.5)
     assert analysis_pass["status"] == "passed"

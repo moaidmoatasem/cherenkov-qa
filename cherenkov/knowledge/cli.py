@@ -37,7 +37,7 @@ def query(query_text: str, source: str | None, limit: int, format: str):
         click.echo(f"Results: {count}")
         click.echo(f"Data: {result.data}")
     else:
-        click.echo(f"\nKnowledge Query Results")
+        click.echo("\nKnowledge Query Results")
         click.echo(f"{'=' * 50}")
         click.echo(f"Source: {result.source}")
         click.echo(f"Confidence: {result.confidence:.2f}")

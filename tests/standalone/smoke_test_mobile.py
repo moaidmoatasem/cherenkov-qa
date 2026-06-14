@@ -15,6 +15,7 @@ Verifies (without requiring real devices, Maestro, or Appium):
  11. AppiumEjector.eject() writes Python test files, conftest, and README
  12. MobileRAGIndex indexes and queries apps correctly
 """
+
 from __future__ import annotations
 
 import json
@@ -49,23 +50,42 @@ def check(condition: bool, msg: str) -> None:
 # ── 1. HARParser ─────────────────────────────────────────────────────────────
 print("1. HARParser")
 with tempfile.NamedTemporaryFile(suffix=".har", delete=False, mode="w") as f:
-    json.dump({
-        "log": {
-            "entries": [
-                {"request": {"url": "https://api.example.com/login", "method": "POST"},
-                 "response": {"status": 200}},
-                {"request": {"url": "https://api.example.com/users", "method": "GET"},
-                 "response": {"status": 404}},
-            ]
-        }
-    }, f)
+    json.dump(
+        {
+            "log": {
+                "entries": [
+                    {
+                        "request": {
+                            "url": "https://api.example.com/login",
+                            "method": "POST",
+                        },
+                        "response": {"status": 200},
+                    },
+                    {
+                        "request": {
+                            "url": "https://api.example.com/users",
+                            "method": "GET",
+                        },
+                        "response": {"status": 404},
+                    },
+                ]
+            }
+        },
+        f,
+    )
     har_path = f.name
 
 try:
     entries = HARParser().parse(har_path)
     check(len(entries) == 2, f"parsed 2 HAR entries (got {len(entries)})")
-    check(entries[0]["method"] == "POST", f"first entry is POST (got {entries[0]['method']})")
-    check(entries[1]["status"] == 404, f"second entry status 404 (got {entries[1]['status']})")
+    check(
+        entries[0]["method"] == "POST",
+        f"first entry is POST (got {entries[0]['method']})",
+    )
+    check(
+        entries[1]["status"] == 404,
+        f"second entry status 404 (got {entries[1]['status']})",
+    )
     check(entries[0]["url"] == "https://api.example.com/login", "URL preserved")
 finally:
     os.unlink(har_path)
@@ -73,7 +93,12 @@ finally:
 # ── 2. HILParser ─────────────────────────────────────────────────────────────
 print("\n2. HILParser")
 hil_data = [
-    {"flow_id": "f001", "name": "Login", "screens": ["home", "login"], "actions": [{"tap": "login_btn"}]},
+    {
+        "flow_id": "f001",
+        "name": "Login",
+        "screens": ["home", "login"],
+        "actions": [{"tap": "login_btn"}],
+    },
     {"flow_id": "f002", "name": "Signup", "screens": ["home", "signup"], "actions": []},
 ]
 with tempfile.NamedTemporaryFile(suffix=".hil", delete=False, mode="w") as f:
@@ -101,10 +126,16 @@ with tempfile.NamedTemporaryFile(suffix=".hil", delete=False, mode="w") as f:
 try:
     adapter = MobileSourceAdapter()
     har_result = adapter.ingest(adapter_har)
-    check(isinstance(har_result, list), f".har dispatched to HARParser -> list (got {type(har_result).__name__})")
+    check(
+        isinstance(har_result, list),
+        f".har dispatched to HARParser -> list (got {type(har_result).__name__})",
+    )
 
     hil_result = adapter.ingest(adapter_hil)
-    check(isinstance(hil_result, list), f".hil dispatched to HILParser -> list (got {type(hil_result).__name__})")
+    check(
+        isinstance(hil_result, list),
+        f".hil dispatched to HILParser -> list (got {type(hil_result).__name__})",
+    )
 
     try:
         adapter.ingest("file.xyz")
@@ -120,7 +151,10 @@ print("\n4. MobilePlanStage")
 plan_stage = MobilePlanStage(run_id="smoke")
 plan_output = plan_stage.run()
 check(plan_output.status == "ok", f"plan status == 'ok' (got {plan_output.status!r})")
-check(len(plan_output.scenarios) >= 1, f"at least 1 scenario (got {len(plan_output.scenarios)})")
+check(
+    len(plan_output.scenarios) >= 1,
+    f"at least 1 scenario (got {len(plan_output.scenarios)})",
+)
 for s in plan_output.scenarios:
     check(bool(s.id), f"scenario {s.id!r} has non-empty id")
     check(bool(s.steps), f"scenario {s.id!r} has steps")
@@ -131,7 +165,10 @@ gen_stage = MobileGenerateStage(run_id="smoke")
 gen_outputs = []
 for scenario in plan_output.scenarios:
     go = gen_stage.run(scenario)
-    check(go.scenario_id == scenario.id, f"gen output id matches scenario id '{scenario.id}'")
+    check(
+        go.scenario_id == scenario.id,
+        f"gen output id matches scenario id '{scenario.id}'",
+    )
     check(bool(go.yaml_content.strip()), f"non-empty YAML for scenario {scenario.id!r}")
     check("appId:" in go.yaml_content, f"YAML contains appId: for {scenario.id!r}")
     gen_outputs.append(go)
@@ -141,7 +178,10 @@ print("\n6. MobileReviewStage")
 review_stage = MobileReviewStage(run_id="smoke")
 for go in gen_outputs:
     ro = review_stage.run(go)
-    check(ro.passed, f"review passes for scenario {go.scenario_id!r} (errors: {ro.errors})")
+    check(
+        ro.passed,
+        f"review passes for scenario {go.scenario_id!r} (errors: {ro.errors})",
+    )
     check(ro.status == "ok", f"review status ok for {go.scenario_id!r}")
 
 # ── 7. Full pipeline: plan -> generate -> review ──────────────────────────────
@@ -163,13 +203,18 @@ check(all_passed, f"all {len(p_out.scenarios)} scenarios pass the full pipeline"
 print("\n8. MaestroRunner.health_check (no binary)")
 runner = MaestroRunner(maestro_binary="maestro-not-installed-xyz")
 result = runner.health_check()
-check(result is False, f"health_check returns False when binary missing (got {result!r})")
+check(
+    result is False, f"health_check returns False when binary missing (got {result!r})"
+)
 
 # ── 9. AppiumRunner health_check graceful failure ────────────────────────────
 print("\n9. AppiumRunner.health_check (no server)")
 appium = AppiumRunner(appium_server="http://127.0.0.1:19999")
 result = appium.health_check()
-check(result is False, f"health_check returns False when server unreachable (got {result!r})")
+check(
+    result is False,
+    f"health_check returns False when server unreachable (got {result!r})",
+)
 
 # ── 10. MaestroEjector ───────────────────────────────────────────────────────
 print("\n10. MaestroEjector.eject")
@@ -187,7 +232,10 @@ with tempfile.TemporaryDirectory() as out_dir:
     result_path = ejector.eject(maestro_yaml, out_dir)
     files = list(result_path.iterdir())
     file_names = [f.name for f in files]
-    check(any(f.endswith(".yaml") for f in file_names), f"at least one YAML file ejected (got {file_names})")
+    check(
+        any(f.endswith(".yaml") for f in file_names),
+        f"at least one YAML file ejected (got {file_names})",
+    )
     check("README.md" in file_names, "README.md written")
 
 # ── 11. AppiumEjector ────────────────────────────────────────────────────────
@@ -203,12 +251,18 @@ with tempfile.TemporaryDirectory() as out_dir:
     result_path = aejector.eject(appium_yaml, out_dir)
     files = list(result_path.iterdir())
     file_names = [f.name for f in files]
-    check(any(f.startswith("test_") and f.endswith(".py") for f in file_names), f"test_*.py file ejected")
+    check(
+        any(f.startswith("test_") and f.endswith(".py") for f in file_names),
+        "test_*.py file ejected",
+    )
     check("conftest.py" in file_names, "conftest.py written")
     check("requirements.txt" in file_names, "requirements.txt written")
     check("README.md" in file_names, "README.md written")
     req_content = (result_path / "requirements.txt").read_text()
-    check("Appium-Python-Client" in req_content, "requirements.txt includes Appium-Python-Client")
+    check(
+        "Appium-Python-Client" in req_content,
+        "requirements.txt includes Appium-Python-Client",
+    )
 
 # ── 12. MobileRAGIndex ───────────────────────────────────────────────────────
 print("\n12. MobileRAGIndex")
@@ -217,12 +271,22 @@ with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
 
 try:
     idx = MobileRAGIndex(db_path)
-    idx.index_app("com.myapp", "My App", "android", "e-commerce shopping login checkout", ["home", "cart"], [{"flow": "checkout"}])
+    idx.index_app(
+        "com.myapp",
+        "My App",
+        "android",
+        "e-commerce shopping login checkout",
+        ["home", "cart"],
+        [{"flow": "checkout"}],
+    )
     idx.index_app("com.other", "Other App", "ios", "media streaming video playback")
 
     results = idx.query("login")
-    check(len(results) >= 1, f"query 'login' returns at least 1 result (got {len(results)})")
-    check(results[0]["app_id"] == "com.myapp", f"correct app returned for 'login' query")
+    check(
+        len(results) >= 1,
+        f"query 'login' returns at least 1 result (got {len(results)})",
+    )
+    check(results[0]["app_id"] == "com.myapp", "correct app returned for 'login' query")
     check(isinstance(results[0]["screens"], list), "screens deserialized as list")
     check(isinstance(results[0]["flows"], list), "flows deserialized as list")
 
@@ -231,7 +295,10 @@ try:
 
     idx.index_app("com.myapp", "My App v2", "android", "updated e-commerce login")
     updated = idx.query("login")
-    check(any(r["name"] == "My App v2" for r in updated), "re-indexing same app_id replaces existing")
+    check(
+        any(r["name"] == "My App v2" for r in updated),
+        "re-indexing same app_id replaces existing",
+    )
 finally:
     os.unlink(db_path)
 

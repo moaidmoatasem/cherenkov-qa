@@ -3,12 +3,12 @@ CHERENKOV stages/vision_confirm.py — Epoch 9 Vision-Confirm Pilot.
 Pre-click check that uses VLM to verify an element exists in a screenshot
 before attempting to interact with it. Kills click-hallucination.
 """
+
 from __future__ import annotations
 
 import json
 import time
 
-from cherenkov.core.config import Config
 from cherenkov.core.errors import get_logger
 from cherenkov.substrate.provider import get_vlm_provider
 from cherenkov.substrate.router import route
@@ -138,7 +138,7 @@ class VisionConfirmPilot:
                 "description": what_you_see,
                 "hallucination_risk": True,
                 "suggestion": f"Element may be present but low confidence ({confidence:.2f}). "
-                              f"Consider using alternative selector: {alternatives[0] if alternatives else element_selector}",
+                f"Consider using alternative selector: {alternatives[0] if alternatives else element_selector}",
             }
         else:
             suggestion = "Element NOT confirmed in screenshot."

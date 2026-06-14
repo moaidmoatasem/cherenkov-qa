@@ -5,6 +5,7 @@ Authority: v3.1 + delta.
 Anti-lock-in: this is the default fallback when Docker is unavailable.
 D7 invariant: operations are confined to .cherenkov/sandbox_* directories.
 """
+
 from __future__ import annotations
 
 import os
@@ -25,13 +26,17 @@ class FilesystemSandboxProvider(SandboxProvider):
 
     def replicate_workspace(self, scenario_id: str, stub_dir: str) -> str:
         sandbox_path = os.path.join(self.cherenkov_dir, f"sandbox_{scenario_id}")
-        self.log.info("replicating stub workspace to filesystem sandbox", path=sandbox_path)
+        self.log.info(
+            "replicating stub workspace to filesystem sandbox", path=sandbox_path
+        )
 
         if os.path.exists(sandbox_path):
             shutil.rmtree(sandbox_path)
         os.makedirs(sandbox_path, exist_ok=True)
 
-        ignore_patterns = shutil.ignore_patterns("node_modules", "generated_tests", "test-results")
+        ignore_patterns = shutil.ignore_patterns(
+            "node_modules", "generated_tests", "test-results"
+        )
         for item in os.listdir(stub_dir):
             s = os.path.join(stub_dir, item)
             d = os.path.join(sandbox_path, item)
@@ -50,10 +55,14 @@ class FilesystemSandboxProvider(SandboxProvider):
                 os.symlink(parent_node_modules, sandbox_node_modules)
                 self.log.info("successfully symlinked node_modules to sandbox")
             except Exception as e:
-                self.log.warning("failed to symlink node_modules, attempting copy", error=str(e))
+                self.log.warning(
+                    "failed to symlink node_modules, attempting copy", error=str(e)
+                )
                 if os.path.exists(sandbox_node_modules):
                     shutil.rmtree(sandbox_node_modules)
-                shutil.copytree(parent_node_modules, sandbox_node_modules, dirs_exist_ok=True)
+                shutil.copytree(
+                    parent_node_modules, sandbox_node_modules, dirs_exist_ok=True
+                )
 
         return sandbox_path
 

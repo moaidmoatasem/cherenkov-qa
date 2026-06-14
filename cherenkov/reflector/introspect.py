@@ -16,6 +16,7 @@ Smells detected:
   • EPHEMERAL_SUPPRESSION  rejections keyed by a one-shot hypothesis_id, so a
                           fresh Skeptic run re-mints the id and the noise returns
 """
+
 from __future__ import annotations
 
 from collections import Counter, defaultdict
@@ -36,7 +37,7 @@ class SmellType(str, Enum):
 
 class MemorySmell(BaseModel):
     type: SmellType
-    severity: str               # "low" | "medium" | "high"
+    severity: str  # "low" | "medium" | "high"
     subject: str
     detail: str
     recommendation: str
@@ -85,12 +86,15 @@ def audit_memory(
         by_sig[(v.endpoint, cls)].add(v.outcome)
     for (endpoint, cls), outcomes in by_sig.items():
         if VerdictOutcome.ACCEPT in outcomes and VerdictOutcome.REJECT in outcomes:
-            smells.append(MemorySmell(
-                type=SmellType.FLIP_FLOP, severity="high",
-                subject=f"{endpoint or '?'} / {cls or '?'}",
-                detail="This signature was both ACCEPTed and REJECTed - the system's belief is unstable.",
-                recommendation="Re-witness and have a senior set the authoritative verdict.",
-            ))
+            smells.append(
+                MemorySmell(
+                    type=SmellType.FLIP_FLOP,
+                    severity="high",
+                    subject=f"{endpoint or '?'} / {cls or '?'}",
+                    detail="This signature was both ACCEPTed and REJECTed - the system's belief is unstable.",
+                    recommendation="Re-witness and have a senior set the authoritative verdict.",
+                )
+            )
 
     # 2) CONFLICTING_IDIOMS - rival patterns for the same (endpoint, class)
     groups: dict[tuple, list] = defaultdict(list)
@@ -99,38 +103,48 @@ def audit_memory(
     for (endpoint, cls), grp in groups.items():
         patterns = {g.pattern for g in grp}
         if len(patterns) > 1:
-            smells.append(MemorySmell(
-                type=SmellType.CONFLICTING_IDIOMS, severity="medium",
-                subject=f"{endpoint or '*'} / {cls}",
-                detail=f"{len(patterns)} distinct idiom patterns compete for the same context.",
-                recommendation="Merge or rank; keep the highest confirm_count, retire the rest.",
-            ))
+            smells.append(
+                MemorySmell(
+                    type=SmellType.CONFLICTING_IDIOMS,
+                    severity="medium",
+                    subject=f"{endpoint or '*'} / {cls}",
+                    detail=f"{len(patterns)} distinct idiom patterns compete for the same context.",
+                    recommendation="Merge or rank; keep the highest confirm_count, retire the rest.",
+                )
+            )
 
     # 3) STALE_BELIEF - strongly-confirmed idiom that has decayed toward zero
     for i in idioms:
         if i.confirm_count >= stale_min_confirms and i.decay_score < stale_decay:
-            smells.append(MemorySmell(
-                type=SmellType.STALE_BELIEF, severity="low",
-                subject=i.pattern[:60],
-                detail=f"confirmed {i.confirm_count}x but decayed to {i.decay_score:.2f} - possibly obsolete.",
-                recommendation="Re-validate against current behaviour; retire if no longer true.",
-            ))
+            smells.append(
+                MemorySmell(
+                    type=SmellType.STALE_BELIEF,
+                    severity="low",
+                    subject=i.pattern[:60],
+                    detail=f"confirmed {i.confirm_count}x but decayed to {i.decay_score:.2f} - possibly obsolete.",
+                    recommendation="Re-validate against current behaviour; retire if no longer true.",
+                )
+            )
 
     # 4) EPHEMERAL_SUPPRESSION - rejections that can never fire again
     id_counts = Counter(v.hypothesis_id for v in verdicts)
     ephemeral = [
-        v for v in verdicts
+        v
+        for v in verdicts
         if v.outcome == VerdictOutcome.REJECT and id_counts[v.hypothesis_id] == 1
     ]
     if ephemeral:
-        smells.append(MemorySmell(
-            type=SmellType.EPHEMERAL_SUPPRESSION, severity="high",
-            subject=f"{len(ephemeral)} rejection(s)",
-            detail="Rejections are keyed by a one-shot hypothesis_id; a fresh Skeptic run "
-                   "re-mints the id, so this suppressed noise will resurface.",
-            recommendation="Suppress by a semantic fingerprint "
-                           "(divergence_class + endpoint + normalized claims), not hypothesis_id.",
-        ))
+        smells.append(
+            MemorySmell(
+                type=SmellType.EPHEMERAL_SUPPRESSION,
+                severity="high",
+                subject=f"{len(ephemeral)} rejection(s)",
+                detail="Rejections are keyed by a one-shot hypothesis_id; a fresh Skeptic run "
+                "re-mints the id, so this suppressed noise will resurface.",
+                recommendation="Suppress by a semantic fingerprint "
+                "(divergence_class + endpoint + normalized claims), not hypothesis_id.",
+            )
+        )
 
     return MemoryAudit(
         verdicts_examined=len(verdicts),

@@ -12,6 +12,7 @@ Checks:
 
 Exit 0 = full parity, 1 = mismatch found.
 """
+
 from __future__ import annotations
 
 import argparse

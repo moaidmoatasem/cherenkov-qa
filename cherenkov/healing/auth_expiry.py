@@ -2,8 +2,10 @@
 CHERENKOV healing/auth_expiry.py -- suggest-only auth-expiry failure healing module.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 import os
+
 
 class AuthExpiryHealer:
     """Generates suggest-only setup steps to handle authentication token refresh issues without altering source files."""
@@ -17,7 +19,11 @@ class AuthExpiryHealer:
         Returns a structured dict with a 'suggestion' key containing the human-readable text.
         """
         env_credentials = [
-            "API_KEY", "CLIENT_SECRET", "ACCESS_TOKEN", "OAUTH_TOKEN", "BEARER_TOKEN"
+            "API_KEY",
+            "CLIENT_SECRET",
+            "ACCESS_TOKEN",
+            "OAUTH_TOKEN",
+            "BEARER_TOKEN",
         ]
         available_creds = [c for c in env_credentials if os.getenv(c)]
 
@@ -48,11 +54,17 @@ class AuthExpiryHealer:
             "   ```",
         ]
         if available_creds:
-            lines.append(f"\nNote: Detected available credential environment variables: {available_creds}\n")
+            lines.append(
+                f"\nNote: Detected available credential environment variables: {available_creds}\n"
+            )
         else:
-            lines.append("\nNote: No active credential env variables (e.g. BEARER_TOKEN, API_KEY) were found on PATH.\n")
+            lines.append(
+                "\nNote: No active credential env variables (e.g. BEARER_TOKEN, API_KEY) were found on PATH.\n"
+            )
 
-        lines.append("========================================================================  ")
+        lines.append(
+            "========================================================================  "
+        )
         return {
             "healed": False,
             "healer": "AuthExpiryHealer",

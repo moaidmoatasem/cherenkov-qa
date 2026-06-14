@@ -4,6 +4,7 @@ Domain models for the QA Reasoning Engine (ADR-007).
 Pure Python — no I/O, no LLM calls. These types are the contract between
 the workflow strategy, the reasoning backends, and the Track A bridge.
 """
+
 from __future__ import annotations
 
 from enum import Enum
@@ -19,19 +20,19 @@ class ArtifactKind(str, Enum):
 
 
 class Maturity(str, Enum):
-    CONCEPT = "concept"               # idea/draft — nothing runnable
+    CONCEPT = "concept"  # idea/draft — nothing runnable
     IN_DEVELOPMENT = "in_development"  # being built — unstable surface
-    STABILIZING = "stabilizing"        # feature-complete, hardening
-    PRODUCTION = "production"          # shipped — regressions are expensive
+    STABILIZING = "stabilizing"  # feature-complete, hardening
+    PRODUCTION = "production"  # shipped — regressions are expensive
 
 
 class TestingStage(str, Enum):
     __test__ = False  # not a pytest class despite the Test prefix
-    STATIC_REVIEW = "static_review"    # critique the artifact, run nothing
-    EXPLORATORY = "exploratory"        # charter-based discovery
-    FUNCTIONAL = "functional"          # scripted verification of behavior
-    REGRESSION = "regression"          # breadth-first re-verification
-    RELEASE_GATE = "release_gate"      # evidence-grade, exhaustive
+    STATIC_REVIEW = "static_review"  # critique the artifact, run nothing
+    EXPLORATORY = "exploratory"  # charter-based discovery
+    FUNCTIONAL = "functional"  # scripted verification of behavior
+    REGRESSION = "regression"  # breadth-first re-verification
+    RELEASE_GATE = "release_gate"  # evidence-grade, exhaustive
 
 
 class Activity(str, Enum):
@@ -52,19 +53,20 @@ class Depth(str, Enum):
 
 
 class ExecutionMode(str, Enum):
-    NONE = "none"      # nothing is run
-    MOCK = "mock"      # Prism / stub targets only
-    LIVE = "live"      # real target
+    NONE = "none"  # nothing is run
+    MOCK = "mock"  # Prism / stub targets only
+    LIVE = "live"  # real target
 
 
 class Artifact(BaseModel):
     """An input the engine reasons over. Content is raw text or a parsed dict."""
+
     kind: ArtifactKind
     name: str
-    uri: str = ""                      # path, URL, or figma link
-    content: str = ""                  # raw text (PRD, spec source, ...)
+    uri: str = ""  # path, URL, or figma link
+    content: str = ""  # raw text (PRD, spec source, ...)
     parsed: dict = Field(default_factory=dict)  # e.g. parsed OpenAPI document
-    target_url: str = ""               # runnable target paired with the artifact, if any
+    target_url: str = ""  # runnable target paired with the artifact, if any
 
     @property
     def is_executable(self) -> bool:
@@ -76,6 +78,7 @@ class Artifact(BaseModel):
 
 class QAContext(BaseModel):
     """The three variation axes: what, how mature, and which stage of testing."""
+
     artifact_kind: ArtifactKind
     maturity: Maturity = Maturity.IN_DEVELOPMENT
     stage: TestingStage = TestingStage.FUNCTIONAL
@@ -83,6 +86,7 @@ class QAContext(BaseModel):
 
 class WorkflowVariant(BaseModel):
     """A selected QA workflow: which activities run, how deep, what executes."""
+
     name: str
     activities: list[Activity]
     depth: Depth
@@ -100,11 +104,13 @@ class WorkflowVariant(BaseModel):
 
 # ── Reasoning outputs ─────────────────────────────────────────────────────
 
+
 class Requirement(BaseModel):
     """A testable statement extracted from the artifact."""
+
     id: str
     text: str
-    source_ref: str = ""               # endpoint, doc section, frame name, ...
+    source_ref: str = ""  # endpoint, doc section, frame name, ...
     testable: bool = True
 
 
@@ -112,7 +118,7 @@ class AnalysisResult(BaseModel):
     intents: list[str] = Field(default_factory=list)
     requirements: list[Requirement] = Field(default_factory=list)
     ambiguities: list[str] = Field(default_factory=list)
-    surface_size: int = 0              # endpoints / screens / flows discovered
+    surface_size: int = 0  # endpoints / screens / flows discovered
 
 
 class FindingCategory(str, Enum):
@@ -125,8 +131,9 @@ class FindingCategory(str, Enum):
 
 class ReviewFinding(BaseModel):
     """A critique of the artifact itself — produced before any test exists."""
+
     category: FindingCategory
-    severity: str = "medium"           # low | medium | high
+    severity: str = "medium"  # low | medium | high
     description: str
     recommendation: str = ""
     source_ref: str = ""
@@ -155,6 +162,7 @@ def priority_from_score(score: int) -> str:
 
 class TestCaseDesign(BaseModel):
     """A designed test case — traceable to a requirement and the risks it mitigates."""
+
     __test__ = False  # not a pytest class despite the Test prefix
     id: str
     title: str
@@ -175,6 +183,7 @@ class TestCaseDesign(BaseModel):
 
 class TestCharter(BaseModel):
     """An exploratory session charter (stage=exploratory)."""
+
     id: str
     mission: str
     areas: list[str] = Field(default_factory=list)
@@ -184,6 +193,7 @@ class TestCharter(BaseModel):
 
 class QAPlan(BaseModel):
     """The engine's product: everything needed to act, with full traceability."""
+
     context: QAContext
     variant: WorkflowVariant
     artifact_name: str

@@ -2,6 +2,7 @@
 CHERENKOV execution/eject.py — engine for ejecting standalone Playwright test suites.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import os
@@ -9,13 +10,16 @@ import shutil
 import json
 from cherenkov.core.errors import get_logger
 
+
 class EjectorEngine:
     """Manages the lifecycle of standalone Playwright test suite ejection, stripping all CHERENKOV metadata."""
 
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id or "eject"
         self.log = get_logger("EJECT", self.run_id)
-        self.stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
+        self.stub_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../stub")
+        )
         self.tests_src_dir = os.path.join(self.stub_dir, "generated_tests")
         # Tracked reference specs. `stub/generated_tests/` is gitignored, so on a
         # fresh checkout (e.g. CI) it is empty; fall back to these committed
@@ -30,8 +34,10 @@ class EjectorEngine:
         if not os.path.isdir(directory):
             return []
         return [
-            f for f in os.listdir(directory)
-            if f.endswith(".spec.ts") and os.path.getsize(os.path.join(directory, f)) > 0
+            f
+            for f in os.listdir(directory)
+            if f.endswith(".spec.ts")
+            and os.path.getsize(os.path.join(directory, f)) > 0
             or f == "_scores.json"
         ]
 
@@ -61,13 +67,15 @@ class EjectorEngine:
             if os.path.exists(output_path):
                 self.log.info("cleaning existing output directory", path=output_path)
                 shutil.rmtree(output_path)
-            
+
             os.makedirs(tests_dest_dir, exist_ok=True)
 
             # 2. Copy generated test files (.spec.ts), falling back to tracked fixtures
             tests_src_dir, spec_files = self._resolve_tests_src()
             if not tests_src_dir:
-                self.log.warning("no spec files found to eject (generated dir and fixtures both empty)")
+                self.log.warning(
+                    "no spec files found to eject (generated dir and fixtures both empty)"
+                )
                 return False
 
             for f in spec_files:
@@ -85,7 +93,9 @@ class EjectorEngine:
                 shutil.copy2(types_src, types_dest)
                 self.log.info("copied generated types", source=types_src)
             else:
-                self.log.warning("generated-types.ts not found in stub folder or fixtures")
+                self.log.warning(
+                    "generated-types.ts not found in stub folder or fixtures"
+                )
 
             # 4. Emit a clean, standard client.ts without any CHERENKOV trace or monkeypatching hooks
             clean_client_content = """// Standalone openapi-fetch client configuration
@@ -129,20 +139,16 @@ export default defineConfig({
 
             # 6. Emit a standard package.json with standard devDependencies
             clean_package_json = {
-              "name": "ejected-playwright-tests",
-              "version": "1.0.0",
-              "private": True,
-              "scripts": {
-                "test": "playwright test"
-              },
-              "devDependencies": {
-                "@playwright/test": "^1.60.0",
-                "typescript": "^5.0.0",
-                "@types/node": "^20.0.0"
-              },
-              "dependencies": {
-                "openapi-fetch": "^0.17.0"
-              }
+                "name": "ejected-playwright-tests",
+                "version": "1.0.0",
+                "private": True,
+                "scripts": {"test": "playwright test"},
+                "devDependencies": {
+                    "@playwright/test": "^1.60.0",
+                    "typescript": "^5.0.0",
+                    "@types/node": "^20.0.0",
+                },
+                "dependencies": {"openapi-fetch": "^0.17.0"},
             }
             package_json_dest = os.path.join(output_path, "package.json")
             with open(package_json_dest, "w", encoding="utf-8") as f:
@@ -151,14 +157,14 @@ export default defineConfig({
 
             # 7. Emit standard tsconfig.json
             clean_tsconfig = {
-              "compilerOptions": {
-                "target": "ES2022",
-                "module": "CommonJS",
-                "moduleResolution": "node",
-                "esModuleInterop": True,
-                "strict": True,
-                "skipLibCheck": True
-              }
+                "compilerOptions": {
+                    "target": "ES2022",
+                    "module": "CommonJS",
+                    "moduleResolution": "node",
+                    "esModuleInterop": True,
+                    "strict": True,
+                    "skipLibCheck": True,
+                }
             }
             tsconfig_dest = os.path.join(output_path, "tsconfig.json")
             with open(tsconfig_dest, "w", encoding="utf-8") as f:

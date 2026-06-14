@@ -39,18 +39,18 @@ export function Drawer({ isOpen, onClose, title, children }: DrawerProps) {
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex justify-end"
       role="dialog"
       aria-modal="true"
       aria-labelledby="drawer-title"
     >
       {/* Backdrop blur fade */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
         onClick={onClose}
       />
-      
+
       {/* Drawer slide-in panel */}
       <div
         ref={drawerRef}
@@ -64,7 +64,7 @@ export function Drawer({ isOpen, onClose, title, children }: DrawerProps) {
           <h2 id="drawer-title" className="text-lg font-bold font-display text-text-primary">
             {title}
           </h2>
-          <button 
+          <button
             onClick={onClose}
             aria-label="Close details"
             className="p-1.5 rounded-lg border border-border-custom bg-white/5 hover:bg-white/10 text-text-muted hover:text-text-primary transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-glow-blue/50"
@@ -72,7 +72,7 @@ export function Drawer({ isOpen, onClose, title, children }: DrawerProps) {
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto p-6">
           {children}
         </div>

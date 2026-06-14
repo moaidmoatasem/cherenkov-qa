@@ -8,12 +8,9 @@ Distinguishes intended vs unintended drift.
 
 from __future__ import annotations
 
-import json
-import os
 from pathlib import Path
 from typing import Any
 
-from cherenkov.core.contracts import DivergenceReport
 from cherenkov.core.errors import get_logger
 from cherenkov.stages.map_cmd import build_truth_model
 
@@ -21,7 +18,9 @@ from cherenkov.stages.map_cmd import build_truth_model
 class BehavioralDiff:
     """Computes behavioral diff between a base Truth Model and a PR Truth Model."""
 
-    def __init__(self, base_sources: dict[str, list[str]], pr_sources: dict[str, list[str]]):
+    def __init__(
+        self, base_sources: dict[str, list[str]], pr_sources: dict[str, list[str]]
+    ):
         self._base_sources = base_sources
         self._pr_sources = pr_sources
         self._log = get_logger("behavioral-diff")
@@ -38,34 +37,62 @@ class BehavioralDiff:
         for label, pr_node in pr_endpoints.items():
             base_node = base_endpoints.get(label)
 
-            pr_status_claims = [c for c in pr_node.claims if c.predicate.startswith("observed_status:")]
-            base_status_claims = [c for c in base_node.claims if c.predicate.startswith("observed_status:")] if base_node else []
+            pr_status_claims = [
+                c for c in pr_node.claims if c.predicate.startswith("observed_status:")
+            ]
+            base_status_claims = (
+                [
+                    c
+                    for c in base_node.claims
+                    if c.predicate.startswith("observed_status:")
+                ]
+                if base_node
+                else []
+            )
 
-            pr_status = pr_status_claims[0].value.get("status") if pr_status_claims else None
-            base_status = base_status_claims[0].value.get("status") if base_status_claims else None
+            pr_status = (
+                pr_status_claims[0].value.get("status") if pr_status_claims else None
+            )
+            base_status = (
+                base_status_claims[0].value.get("status")
+                if base_status_claims
+                else None
+            )
 
             if pr_status != base_status:
-                diffs.append({
-                    "endpoint": label,
-                    "change": "status",
-                    "base": base_status,
-                    "pr": pr_status,
-                    "intended": False,
-                    "description": f"Status changed from {base_status} to {pr_status}",
-                })
+                diffs.append(
+                    {
+                        "endpoint": label,
+                        "change": "status",
+                        "base": base_status,
+                        "pr": pr_status,
+                        "intended": False,
+                        "description": f"Status changed from {base_status} to {pr_status}",
+                    }
+                )
 
         for label, base_node in base_endpoints.items():
             if label not in pr_endpoints:
-                base_status_claims = [c for c in base_node.claims if c.predicate.startswith("observed_status:")]
-                base_status = base_status_claims[0].value.get("status") if base_status_claims else None
-                diffs.append({
-                    "endpoint": label,
-                    "change": "removed",
-                    "base": base_status,
-                    "pr": None,
-                    "intended": True,
-                    "description": f"Endpoint {label} removed from PR",
-                })
+                base_status_claims = [
+                    c
+                    for c in base_node.claims
+                    if c.predicate.startswith("observed_status:")
+                ]
+                base_status = (
+                    base_status_claims[0].value.get("status")
+                    if base_status_claims
+                    else None
+                )
+                diffs.append(
+                    {
+                        "endpoint": label,
+                        "change": "removed",
+                        "base": base_status,
+                        "pr": None,
+                        "intended": True,
+                        "description": f"Endpoint {label} removed from PR",
+                    }
+                )
 
         return diffs
 

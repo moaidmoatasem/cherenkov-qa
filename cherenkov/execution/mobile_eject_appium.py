@@ -2,6 +2,7 @@
 CHERENKOV execution/mobile_eject_appium.py — Appium Python test ejector.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import os
@@ -37,27 +38,37 @@ class AppiumEjector:
             if isinstance(step, dict):
                 if "assertVisible" in step:
                     text = step["assertVisible"]
-                    lines.append(f'    element = driver.find_element(AppiumBy.XPATH, "//*[contains(text(), \'{text}\')]")')
+                    lines.append(
+                        f"    element = driver.find_element(AppiumBy.XPATH, \"//*[contains(text(), '{text}')]\")"
+                    )
                     lines.append("    assert element.is_displayed()")
                 elif "tapOn" in step:
                     target = step["tapOn"]
-                    lines.append(f'    element = driver.find_element(AppiumBy.XPATH, "//*[contains(text(), \'{target}\')]")')
+                    lines.append(
+                        f"    element = driver.find_element(AppiumBy.XPATH, \"//*[contains(text(), '{target}')]\")"
+                    )
                     lines.append("    element.click()")
                 elif "inputText" in step:
                     target = step.get("inputText", "")
                     text = step.get("text", "")
-                    lines.append(f'    element = driver.find_element(AppiumBy.XPATH, "//*[contains(text(), \'{target}\')]")')
+                    lines.append(
+                        f"    element = driver.find_element(AppiumBy.XPATH, \"//*[contains(text(), '{target}')]\")"
+                    )
                     lines.append(f"    element.send_keys('{text}')")
                 elif "scroll" in step:
                     direction = step["scroll"]
-                    lines.append(f"    driver.swipe(500, 1500, 500, 500)  # scroll {direction}")
+                    lines.append(
+                        f"    driver.swipe(500, 1500, 500, 500)  # scroll {direction}"
+                    )
                 elif "waitForVisible" in step:
                     target = step["waitForVisible"]
                     timeout = step.get("timeout", 5000)
                     lines.append(
-                        f'    driver.find_element(AppiumBy.XPATH, "//*[contains(text(), \'{target}\')]")'
+                        f"    driver.find_element(AppiumBy.XPATH, \"//*[contains(text(), '{target}')]\")"
                     )
-                    lines.append(f"    # waited for visibility of '{target}' (timeout={timeout}ms)")
+                    lines.append(
+                        f"    # waited for visibility of '{target}' (timeout={timeout}ms)"
+                    )
                 else:
                     lines.append(f"    # unhandled step: {list(step.keys())[0]}")
             else:
@@ -77,7 +88,9 @@ class AppiumEjector:
 
         for i, test in enumerate(tests):
             test_name = test.get("name", f"test_{i:03d}")
-            safe_name = "".join(c if c.isalnum() or c == "_" else "_" for c in test_name)
+            safe_name = "".join(
+                c if c.isalnum() or c == "_" else "_" for c in test_name
+            )
             test_code = self._generate_appium_test(test)
             file_path = output_path / f"test_{safe_name}.py"
             with open(file_path, "w", encoding="utf-8") as f:
@@ -85,32 +98,29 @@ class AppiumEjector:
             self.log.info("wrote test file", filename=file_path.name)
 
         conftest_content = (
-            'import pytest\n'
-            'from appium import webdriver\n'
-            '\n'
-            '\n'
+            "import pytest\n"
+            "from appium import webdriver\n"
+            "\n"
+            "\n"
             '@pytest.fixture(scope="function")\n'
-            'def driver():\n'
-            '    desired_caps = {\n'
+            "def driver():\n"
+            "    desired_caps = {\n"
             '        "platformName": "Android",\n'
             '        "automationName": "UiAutomator2",\n'
             '        "deviceName": "emulator-5554",\n'
             '        "appPackage": "com.example.app",\n'
             '        "appActivity": ".MainActivity",\n'
-            '    }\n'
+            "    }\n"
             '    driver = webdriver.Remote("http://localhost:4723", desired_caps)\n'
-            '    yield driver\n'
-            '    driver.quit()\n'
+            "    yield driver\n"
+            "    driver.quit()\n"
         )
         conftest_path = output_path / "conftest.py"
         with open(conftest_path, "w", encoding="utf-8") as f:
             f.write(conftest_content)
         self.log.info("wrote conftest.py")
 
-        requirements_content = (
-            "Appium-Python-Client>=3.0.0\n"
-            "pytest>=7.0.0\n"
-        )
+        requirements_content = "Appium-Python-Client>=3.0.0\n" "pytest>=7.0.0\n"
         requirements_path = output_path / "requirements.txt"
         with open(requirements_path, "w", encoding="utf-8") as f:
             f.write(requirements_content)

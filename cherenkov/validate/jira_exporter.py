@@ -2,11 +2,12 @@
 CHERENKOV validate/jira_exporter.py — Suggest-Only Jira Ticket Exporter.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from cherenkov.core.errors import get_logger
 
@@ -17,7 +18,9 @@ class JiraExporter:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id or "jira_export"
         self.log = get_logger("JIRA_EXPORTER", self.run_id)
-        self.ticket_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.cherenkov/jira_tickets"))
+        self.ticket_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../.cherenkov/jira_tickets")
+        )
 
     def format_ticket(
         self,
@@ -29,7 +32,7 @@ class JiraExporter:
         hypothesis: Optional[str] = None,
         resolution_steps: Optional[List[str]] = None,
         similar_cases_count: int = 0,
-        compliance_score: Optional[int] = None
+        compliance_score: Optional[int] = None,
     ) -> str:
         """Formats failed scenario information into a highly descriptive Markdown ticket payload."""
         lines = []
@@ -39,10 +42,14 @@ class JiraExporter:
         lines.append(f"- **Scenario ID**: `{scenario_id}`")
         lines.append(f"- **Failure Classification**: `{failure_class}`")
         if expected_status is not None or received_status is not None:
-            lines.append(f"- **HTTP Conformance**: Expected `{expected_status}` | Received `{received_status}`")
-        lines.append(f"- **Timestamp**: `{time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}`")
+            lines.append(
+                f"- **HTTP Conformance**: Expected `{expected_status}` | Received `{received_status}`"
+            )
+        lines.append(
+            f"- **Timestamp**: `{time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}`"
+        )
         lines.append("")
-        
+
         lines.append("### ❌ Error Message")
         lines.append("```text")
         lines.append(error_message.strip())
@@ -62,7 +69,9 @@ class JiraExporter:
 
         lines.append("### 📚 RAG Incident Correlation")
         if similar_cases_count > 0:
-            lines.append(f"- Found **{similar_cases_count}** similar historical failure(s) in local SQLite database.")
+            lines.append(
+                f"- Found **{similar_cases_count}** similar historical failure(s) in local SQLite database."
+            )
         else:
             lines.append("- No similar historical failure cases detected in RAG index.")
         lines.append("")
@@ -70,7 +79,9 @@ class JiraExporter:
         if compliance_score is not None:
             lines.append("## 🔒 Cybersecurity Compliance Status")
             lines.append(f"- **MENA Regulatory Score**: `{compliance_score}%`")
-            lines.append("  *Maps active header configurations and spec structures directly to SAMA CCSF and CBE FinCSF guidelines.*")
+            lines.append(
+                "  *Maps active header configurations and spec structures directly to SAMA CCSF and CBE FinCSF guidelines.*"
+            )
             lines.append("")
 
         lines.append("---")
@@ -87,7 +98,7 @@ class JiraExporter:
         hypothesis: Optional[str] = None,
         resolution_steps: Optional[List[str]] = None,
         similar_cases_count: int = 0,
-        compliance_score: Optional[int] = None
+        compliance_score: Optional[int] = None,
     ) -> str:
         """Writes the formatted copy-ready Markdown ticket to the standard local ticket directory."""
         os.makedirs(self.ticket_dir, exist_ok=True)
@@ -103,13 +114,17 @@ class JiraExporter:
             hypothesis=hypothesis,
             resolution_steps=resolution_steps,
             similar_cases_count=similar_cases_count,
-            compliance_score=compliance_score
+            compliance_score=compliance_score,
         )
 
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(ticket_content)
 
-        self.log.info("suggest-only jira ticket exported successfully", filename=filename, path=file_path)
+        self.log.info(
+            "suggest-only jira ticket exported successfully",
+            filename=filename,
+            path=file_path,
+        )
         return file_path
 
     def create_jira_issue(self, summary: str, description: str) -> Optional[str]:
@@ -122,7 +137,9 @@ class JiraExporter:
         jira_project = os.environ.get("CHERENKOV_JIRA_PROJECT", "QA")
 
         if not jira_url or not jira_token:
-            self.log.warning("Jira URL or Token not set. Skipping real Jira ticket creation.")
+            self.log.warning(
+                "Jira URL or Token not set. Skipping real Jira ticket creation."
+            )
             return None
 
         url = f"{jira_url.rstrip('/')}/rest/api/3/issue"
@@ -151,16 +168,11 @@ class JiraExporter:
                     "content": [
                         {
                             "type": "paragraph",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": description
-                                }
-                            ]
+                            "content": [{"type": "text", "text": description}],
                         }
-                    ]
+                    ],
                 },
-                "issuetype": {"name": "Bug"}
+                "issuetype": {"name": "Bug"},
             }
         }
 
@@ -168,7 +180,7 @@ class JiraExporter:
             url,
             data=json.dumps(payload).encode("utf-8"),
             headers=headers,
-            method="POST"
+            method="POST",
         )
 
         try:

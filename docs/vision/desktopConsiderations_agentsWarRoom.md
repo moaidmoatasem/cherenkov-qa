@@ -492,7 +492,7 @@ Phase A: MVP Desktop (Week 1-2)
 ├─ Wire Tauri shell APIs for file dialogs
 └─ Package as .msi/.dmg/AppImage (no signing initially)
 
-Phase B: Enhanced Distribution (Week 3-4)  
+Phase B: Enhanced Distribution (Week 3-4)
 ├─ Code signing via GitHub Actions
 ├─ Auto-update integration (Tauri updater)
 ├─ Bundled Ollama installer (optional, ~500MB download)
@@ -553,9 +553,9 @@ pub fn validate_qa_payload(payload: &str) -> Result<bool, String> {
     if payload.trim().is_empty() {
         return Err("Validation Error: Payload cannot be empty".to_string());
     }
-    
+
     // Additional complex QA validation logic here...
-    
+
     Ok(true)
 }
 
@@ -570,7 +570,7 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), "Validation Error: Payload cannot be empty");
     }
-    
+
     #[test]
     fn test_validate_qa_payload_valid() {
         let result = validate_qa_payload("valid_telemetry_data_001");

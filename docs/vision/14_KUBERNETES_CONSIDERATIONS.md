@@ -187,13 +187,13 @@ Not a binary "Compose vs. K8s" choice. Four tiers that share the same images and
 Tier 1: Local Dev              Tier 2: Lightweight K8s         Tier 3: Production K8s         Tier 4: Multi-Cluster
 ─────────────────────          ───────────────────────         ──────────────────────         ──────────────────────
 Docker Compose                 k3d (single-node K8s)          Full K8s (multi-node)          K8s + federation
-                                                                                              
+
 No K8s knowledge               Same API as K8s               GPU operator                    Cross-cluster drift watch
 One command                    k3d CLI                       Helm charts                     Global truth model
-Minimal resource               ConfigMaps + Secrets           HPA auto-scaling               
-                               Volume snapshots               ClusterIssuer (cert-manager)   
-                               Traefik ingress                Prometheus + Grafana           
-                                                                                              
+Minimal resource               ConfigMaps + Secrets           HPA auto-scaling
+                               Volume snapshots               ClusterIssuer (cert-manager)
+                               Traefik ingress                Prometheus + Grafana
+
 ─── validation gate ───►       ─── team adoption ───►         ─── enterprise ───►            ─── global scale ───►
 ```
 

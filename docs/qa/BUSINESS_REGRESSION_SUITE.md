@@ -198,7 +198,7 @@ Each test case is written so a QA user can run it by **clicking the UI** and com
 
 ### TC-UI-044 — HYBRID silent-failure guard (negative) · 🟡
 **Steps:** Stop backend, then Approve/Reject/Edit.
-**Expected (current):** UI optimistically updates local state and only `console.warn`s — **no user-visible error**. 
+**Expected (current):** UI optimistically updates local state and only `console.warn`s — **no user-visible error**.
 **Pass criteria for regression:** behavior matches design (local fallback). **Flag as defect** if business requires the user to know the server did not record the verdict (silent divergence between UI and backend).
 
 ### TC-UI-045 — Concurrency / no cross-corruption · 🟢

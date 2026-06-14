@@ -2,6 +2,7 @@
 CHERENKOV stages/mobile_review.py — Maestro YAML review and validation stage.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import re
@@ -36,10 +37,16 @@ class MobileReviewStage:
         if "appId:" not in yaml_text:
             errors.append("Missing required 'appId' field")
 
-        if not re.search(r"^- (tapOn|inputText|assertVisible|assertNotVisible|waitFor|takeScreenshot|runFlow|scrollUntilVisible)", yaml_text, re.MULTILINE):
+        if not re.search(
+            r"^- (tapOn|inputText|assertVisible|assertNotVisible|waitFor|takeScreenshot|runFlow|scrollUntilVisible)",
+            yaml_text,
+            re.MULTILINE,
+        ):
             errors.append("No Maestro commands found in generated YAML")
 
-        has_indented_value = bool(re.search(r"^\s+text:|^\s+path:|^\s+when:", yaml_text, re.MULTILINE))
+        has_indented_value = bool(
+            re.search(r"^\s+text:|^\s+path:|^\s+when:", yaml_text, re.MULTILINE)
+        )
         if not has_indented_value:
             errors.append("Commands missing required indented values (text/path/when)")
 
@@ -47,7 +54,9 @@ class MobileReviewStage:
 
         dt = int((time.time() - t0) * 1000)
         if self.run_id:
-            print(f"[MOBILE_REVIEW] stage {'passed' if passed else 'failed'} — {len(errors)} errors — {dt}ms")
+            print(
+                f"[MOBILE_REVIEW] stage {'passed' if passed else 'failed'} — {len(errors)} errors — {dt}ms"
+            )
 
         return MobileReviewOutput(
             scenario_id=generate_output.scenario_id,

@@ -2,6 +2,7 @@
 CHERENKOV ai/cache.py — response prefix cache with LRU eviction and TTL.
 Authority: v3.1 + delta. E1-5.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -45,7 +46,9 @@ class ResponseCache:
         self._misses += 1
         return None
 
-    def set(self, model: str, system_prompt: str, user_prompt: str, value: object) -> None:
+    def set(
+        self, model: str, system_prompt: str, user_prompt: str, value: object
+    ) -> None:
         key = self._make_key(model, system_prompt, user_prompt)
         if key in self._cache:
             self._cache.move_to_end(key)

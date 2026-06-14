@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import os
 import sqlite3
 import logging
-from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +29,7 @@ class SchemaMigration:
         """Return the highest applied version using an existing connection."""
         try:
             self._ensure_schema_table(conn)
-            row = conn.execute(
-                f"SELECT MAX(version) FROM {_SCHEMA_TABLE}"
-            ).fetchone()
+            row = conn.execute(f"SELECT MAX(version) FROM {_SCHEMA_TABLE}").fetchone()
             return row[0] if row and row[0] else 0
         except sqlite3.OperationalError:
             return 0

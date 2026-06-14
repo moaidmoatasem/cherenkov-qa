@@ -9,10 +9,10 @@ Resolution order (lowest → highest precedence):
         → environment variables (CHERENKOV_*)
           → CLI flags
 """
+
 from __future__ import annotations
 
 import os
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -28,19 +28,34 @@ class ConfigError(CherenkovError):
 
 KNOWN_KEYS: set[str] = {
     "profile",
-    "sources.openapi", "sources.traffic", "sources.db_schema",
+    "sources.openapi",
+    "sources.traffic",
+    "sources.db_schema",
     "substrate.egress",
-    "substrate.tiers.small.provider", "substrate.tiers.small.model",
-    "substrate.tiers.deep.provider", "substrate.tiers.deep.model",
-    "substrate.tiers.vision.provider", "substrate.tiers.vision.model",
-    "substrate.budgets.max_cost_usd_per_run", "substrate.budgets.max_latency_ms",
-    "divergence.space", "divergence.adversarial_self_play", "divergence.min_severity",
-    "artifacts.emitters", "artifacts.eject",
+    "substrate.tiers.small.provider",
+    "substrate.tiers.small.model",
+    "substrate.tiers.deep.provider",
+    "substrate.tiers.deep.model",
+    "substrate.tiers.vision.provider",
+    "substrate.tiers.vision.model",
+    "substrate.budgets.max_cost_usd_per_run",
+    "substrate.budgets.max_latency_ms",
+    "divergence.space",
+    "divergence.adversarial_self_play",
+    "divergence.min_severity",
+    "artifacts.emitters",
+    "artifacts.eject",
     "oracle.kind",
-    "continuity.mode", "continuity.behavioral_diff_on_pr",
-    "reflector.enabled", "reflector.store_path", "reflector.decay_half_life_hours",
-    "certification.enabled", "certification.gold_set_path", "certification.min_faithfulness",
-    "copilot.autonomy", "copilot.mentor_enabled",
+    "continuity.mode",
+    "continuity.behavioral_diff_on_pr",
+    "reflector.enabled",
+    "reflector.store_path",
+    "reflector.decay_half_life_hours",
+    "certification.enabled",
+    "certification.gold_set_path",
+    "certification.min_faithfulness",
+    "copilot.autonomy",
+    "copilot.mentor_enabled",
 }
 
 # ── Profile defaults ─────────────────────────────────────────────────────
@@ -359,9 +374,15 @@ class LayeredConfig:
         """
         cwd = Path.cwd()
         patterns = [
-            "openapi.yaml", "openapi.yml", "openapi.json",
-            "spec.yaml", "spec.yml", "spec.json",
-            "*spec*.yaml", "*spec*.yml", "*spec*.json",
+            "openapi.yaml",
+            "openapi.yml",
+            "openapi.json",
+            "spec.yaml",
+            "spec.yml",
+            "spec.json",
+            "*spec*.yaml",
+            "*spec*.yml",
+            "*spec*.json",
             "stub/target_spec.json",
         ]
         found: list[str] = []

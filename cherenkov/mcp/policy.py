@@ -6,6 +6,7 @@ Reads cherenkov-policy.json and validates tool calls against allowlists.
 D7 invariant: policy gates are suggest-only; they block execution, not auto-edit.
 Anti-lock-in: policy can be disabled by removing the policy file.
 """
+
 from __future__ import annotations
 
 import json

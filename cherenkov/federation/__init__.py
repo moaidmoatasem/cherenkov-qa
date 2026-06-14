@@ -8,10 +8,10 @@ from cherenkov.federation.protocol import (
 )
 
 __all__ = [
-    'TruthFragment',
-    'DivergenceEnvelope',
-    'ProtocolMessage',
-    'ProtocolMessageType',
-    'dumps',
-    'loads',
+    "TruthFragment",
+    "DivergenceEnvelope",
+    "ProtocolMessage",
+    "ProtocolMessageType",
+    "dumps",
+    "loads",
 ]

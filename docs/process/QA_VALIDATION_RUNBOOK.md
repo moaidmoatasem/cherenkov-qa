@@ -1,8 +1,8 @@
 # CHERENKOV — 5-QA Validation Runbook (Phase A Gate)
 
-> **Version:** 1.0  
-> **Issue:** A5 #115  
-> **Status:** Active — awaiting 5 QA reviewer completions  
+> **Version:** 1.0
+> **Issue:** A5 #115
+> **Status:** Active — awaiting 5 QA reviewer completions
 > **Gate target:** 3 of 5 reviewers answer "Yes" to the gate question
 
 ---
@@ -360,5 +360,5 @@ Record all verdicts in [`docs/QA_DEMO_KIT.md`](../QA_DEMO_KIT.md) tracking sheet
 
 ---
 
-*This runbook is owned by the CHERENKOV project. Update when smoke scripts change.*  
+*This runbook is owned by the CHERENKOV project. Update when smoke scripts change.*
 *Last updated: 2026-06-04 — A5 #115*

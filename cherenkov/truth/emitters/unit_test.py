@@ -6,6 +6,7 @@ from cherenkov/coverage/emitter.py to produce standalone pytest/jest tests
 from the Truth Model endpoints. Anti-lock-in: generated tests have zero
 CHERENKOV dependency.
 """
+
 from __future__ import annotations
 
 import os
@@ -14,7 +15,7 @@ from typing import Any
 
 from cherenkov.core.contracts import DivergenceReport
 from cherenkov.core.errors import get_logger
-from cherenkov.core.truth_model import TruthModel, NodeType
+from cherenkov.core.truth_model import TruthModel
 from cherenkov.coverage.emitter import UnitTestEmitter as CoreEmitter
 from cherenkov.truth.emitters.interface import Emitter
 
@@ -44,7 +45,9 @@ class UnitTestEmitter(Emitter):
         framework = kwargs.get("framework", "pytest")
         base_url = kwargs.get("base_url", "")
         if framework not in ("pytest", "jest"):
-            raise ValueError(f"Unknown framework '{framework}'. Use 'pytest' or 'jest'.")
+            raise ValueError(
+                f"Unknown framework '{framework}'. Use 'pytest' or 'jest'."
+            )
 
         output_dir = str(output_path)
         endpoints = truth_model.get_endpoints()
@@ -57,17 +60,21 @@ class UnitTestEmitter(Emitter):
             path = parts[1] if len(parts) == 2 else label
             operation = ep.properties.get("operation", ep.properties)
 
-            slice_data_list.append({
-                "path": path,
-                "method": method,
-                "operation": operation,
-                "summary": ep.properties.get("summary", ""),
-            })
+            slice_data_list.append(
+                {
+                    "path": path,
+                    "method": method,
+                    "operation": operation,
+                    "summary": ep.properties.get("summary", ""),
+                }
+            )
 
-        self._log.info("emitting unit tests",
-                       count=len(slice_data_list),
-                       framework=framework,
-                       output_dir=output_dir)
+        self._log.info(
+            "emitting unit tests",
+            count=len(slice_data_list),
+            framework=framework,
+            output_dir=output_dir,
+        )
 
         results = self._core.emit(
             endpoint_slices=slice_data_list,

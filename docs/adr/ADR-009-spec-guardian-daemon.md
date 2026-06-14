@@ -1,11 +1,11 @@
 # ADR-009: Spec Guardian Daemon
 
-**Date:** 2026-06-14  
-**Status:** Accepted  
+**Date:** 2026-06-14
+**Status:** Accepted
 
 ## Context
 
-CHERENKOV QA (Track A) currently operates on a "push" model. Developers trigger it manually via the CLI or it runs sequentially as a step in a CI/CD pipeline. While this is effective for discrete validation, it does not achieve the 2027 vision of "Continuous Quality Assurance." 
+CHERENKOV QA (Track A) currently operates on a "push" model. Developers trigger it manually via the CLI or it runs sequentially as a step in a CI/CD pipeline. While this is effective for discrete validation, it does not achieve the 2027 vision of "Continuous Quality Assurance."
 
 The industry is moving toward fully autonomous QE loops where agents actively monitor repositories, observability telemetry, and specification drift, executing tests in the background and proposing fixes independently of human triggers. To remain at the forefront, CHERENKOV must evolve from an on-demand tool into a continuous daemon.
 

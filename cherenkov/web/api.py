@@ -2,22 +2,30 @@
 CHERENKOV web/api.py — FastAPI review backend, wired to the real HitlQueue.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import os
-import json
 import uuid
 import asyncio
-import shutil
 import sqlite3
 import threading
 import logging
-from typing import List, Dict, Any
 from contextlib import asynccontextmanager
 
-from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException, UploadFile, File, Form, Depends, Header
+from fastapi import (
+    FastAPI,
+    WebSocket,
+    WebSocketDisconnect,
+    BackgroundTasks,
+    HTTPException,
+    UploadFile,
+    File,
+    Form,
+    Depends,
+    Header,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -27,7 +35,6 @@ from cherenkov.stages.ingest import IngestStage
 from cherenkov.core.orchestrator import OrchestrationEngine
 from cherenkov.execution.validate import ValidationEngine
 from cherenkov.hitl.store import HitlQueue
-from cherenkov.hitl.contracts import HitlItem, HitlStatus, ok_envelope, err_envelope
 
 from cherenkov.web import divergences as divergence_store
 from cherenkov.core.feedback_store import FeedbackStore, FeedbackEntry
@@ -39,8 +46,11 @@ import ipaddress as _ipaddress
 
 
 def _validate_scenario_id(scenario_id: str) -> str:
-    if not _re.match(r'^[a-zA-Z0-9_\-]{1,128}$', scenario_id):
-        raise HTTPException(status_code=400, detail="Invalid scenario_id: must be alphanumeric/underscore/hyphen, max 128 chars")
+    if not _re.match(r"^[a-zA-Z0-9_\-]{1,128}$", scenario_id):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid scenario_id: must be alphanumeric/underscore/hyphen, max 128 chars",
+        )
     return scenario_id
 
 
@@ -48,7 +58,9 @@ def _validate_output_path(path: str) -> str:
     resolved = os.path.realpath(os.path.abspath(path))
     allowed_base = os.path.realpath(os.path.abspath("."))
     if not resolved.startswith(allowed_base):
-        raise HTTPException(status_code=400, detail="Output path must be within the working directory")
+        raise HTTPException(
+            status_code=400, detail="Output path must be within the working directory"
+        )
     return resolved
 
 
@@ -60,21 +72,27 @@ def _validate_spec_url(url: str) -> str:
     try:
         addr = _ipaddress.ip_address(host)
         if addr.is_private or addr.is_loopback or addr.is_link_local:
-            raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
+            raise HTTPException(
+                status_code=400, detail="Internal network URLs not allowed"
+            )
     except ValueError:
         # It's a hostname, not an IP - block obvious localhost names
         if host.lower() in ("localhost", "127.0.0.1", "::1", "0.0.0.0"):
-            raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
+            raise HTTPException(
+                status_code=400, detail="Internal network URLs not allowed"
+            )
     return url
 
 
 main_loop = None
+
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
     global main_loop
     main_loop = asyncio.get_running_loop()
     yield
+
 
 app = FastAPI(
     title="CHERENKOV QA Observability Dashboard Server",
@@ -85,19 +103,27 @@ app = FastAPI(
 
 # ── Phase 1: Knowledge Mesh API ─────────────────────────────────────────────────
 from cherenkov.knowledge.api.routes import router as knowledge_router
+
 app.include_router(knowledge_router)
 
 # ── Phase 4: Chat Agent API ────────────────────────────────────────────────────
 from cherenkov.chat.api.routes import router as chat_router
+
 app.include_router(chat_router)
 
 # ── Sprint 1: SDD Agent Cockpit API ─────────────────────────────────────────
 from cherenkov.web.sdd_routes import router as sdd_router
+
 app.include_router(sdd_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -105,24 +131,37 @@ app.add_middleware(
 
 # ── Phase 0b: Monitoring & Security (conditionally added) ────────────
 from cherenkov.web.monitoring import router as monitor_router
+
 app.include_router(monitor_router)
 
 from cherenkov.web.middleware.security import add_security_middleware
+
 add_security_middleware(app)
 
 # ── Issue #196: HITL Auth — API key authentication ──────────────────────
 # Only active when CHERENKOV_HITL_API_KEY is set (single-user by default).
 # Clients provide the key via X-API-Key header or Authorization: Bearer <key>.
 
-async def verify_api_key(x_api_key: str | None = Header(None), authorization: str | None = Header(None)):
+
+async def verify_api_key(
+    x_api_key: str | None = Header(None), authorization: str | None = Header(None)
+):
     configured_key = Config.HITL_API_KEY
     if not configured_key:
         return  # no auth configured — allow all
     if x_api_key and x_api_key == configured_key:
         return
-    if authorization and authorization.startswith("Bearer ") and authorization[7:] == configured_key:
+    if (
+        authorization
+        and authorization.startswith("Bearer ")
+        and authorization[7:] == configured_key
+    ):
         return
-    raise HTTPException(status_code=401, detail="Missing or invalid API key. Set CHERENKOV_HITL_API_KEY env var.")
+    raise HTTPException(
+        status_code=401,
+        detail="Missing or invalid API key. Set CHERENKOV_HITL_API_KEY env var.",
+    )
+
 
 # ── WebSocket Manager ──────────────────────────────────────────────────
 class ConnectionManager:
@@ -159,14 +198,16 @@ class ConnectionManager:
                     except ValueError:
                         pass
 
+
 manager = ConnectionManager()
+
 
 def ws_event_callback(type_: str, payload: dict):
     if main_loop and manager.active_connections:
         asyncio.run_coroutine_threadsafe(
-            manager.broadcast({"type": type_, "payload": payload}),
-            main_loop
+            manager.broadcast({"type": type_, "payload": payload}), main_loop
         )
+
 
 # ── API Endpoint Schemas ────────────────────────────────────────────────
 class RunPipelinePayload(BaseModel):
@@ -176,21 +217,26 @@ class RunPipelinePayload(BaseModel):
     demo_mode: bool = False
     intent: str | None = None
 
+
 class ReviewActionPayload(BaseModel):
     scenario_id: str
     reason: str | None = None
     test_code: str | None = None
 
+
 class ValidatePayload(BaseModel):
     target_url: str
 
+
 class EjectPayload(BaseModel):
     output_path: str
+
 
 class DivergenceActionPayload(BaseModel):
     divergence_id: str
     action: str
     reason: str | None = None
+
 
 class ClassifyPayload(BaseModel):
     item_id: str
@@ -198,8 +244,10 @@ class ClassifyPayload(BaseModel):
     detail: str | None = None
     actor: str | None = None
 
+
 # Singleton HitlQueue — backed by .cherenkov/hitl.db (or $CHERENKOV_HITL_DB)
 _queue: HitlQueue | None = None
+
 
 def get_queue() -> HitlQueue:
     global _queue
@@ -207,7 +255,9 @@ def get_queue() -> HitlQueue:
         _queue = HitlQueue(db_path=os.getenv("CHERENKOV_HITL_DB"))
     return _queue
 
+
 # ── Endpoints ──────────────────────────────────────────────────────────
+
 
 #
 # Sidecar health — used by Tauri desktop host to detect engine readiness
@@ -224,6 +274,7 @@ async def healthz():
 async def tokens_report(days: int = 30):
     """Token consumption report: usage by provider/stage, daily trend, recommendations."""
     from cherenkov.observability.token_monitor import get_monitor
+
     monitor = get_monitor()
     return monitor.get_dashboard_data(days=days)
 
@@ -232,6 +283,7 @@ async def tokens_report(days: int = 30):
 async def tokens_recommendations(days: int = 30):
     """Return only the actionable cost-reduction recommendations."""
     from cherenkov.observability.token_monitor import get_monitor
+
     monitor = get_monitor()
     report = monitor.get_report(days=days)
     return {
@@ -248,8 +300,7 @@ async def tokens_recommendations(days: int = 30):
 async def health_check():
     try:
         device = await asyncio.wait_for(
-            asyncio.to_thread(Config.detect_ollama_device),
-            timeout=2.0
+            asyncio.to_thread(Config.detect_ollama_device), timeout=2.0
         )
     except Exception:
         device = "unknown"
@@ -259,8 +310,9 @@ async def health_check():
         "gen_model": Config.GEN_MODEL,
         "active_connections": len(manager.active_connections),
         "workspace_root": os.getcwd(),
-        "demo_mode": os.environ.get("DEMO_MODE") == "1"
+        "demo_mode": os.environ.get("DEMO_MODE") == "1",
     }
+
 
 #
 # Doctor
@@ -268,68 +320,124 @@ async def health_check():
 @app.get("/api/v1/doctor")
 async def run_doctor_api():
     from cherenkov.stages.doctor_cmd import (
-        check_ollama_binary, check_ollama_daemon, check_node, 
-        check_npx_playwright, check_prism_docker, check_egress_blocked
+        check_ollama_binary,
+        check_ollama_daemon,
+        check_node,
+        check_npx_playwright,
+        check_prism_docker,
+        check_egress_blocked,
     )
     from cherenkov.core.config_loader import load_effective_config
     from cherenkov.core.config import Config
-    
+
     cfg = load_effective_config()
     checks = []
-    
+
     ollama_bin, bin_det = check_ollama_binary()
-    checks.append({"name": "Ollama Binary", "status": "passed" if ollama_bin else "failed", "message": bin_det})
-    
+    checks.append(
+        {
+            "name": "Ollama Binary",
+            "status": "passed" if ollama_bin else "failed",
+            "message": bin_det,
+        }
+    )
+
     if ollama_bin:
         ollama_daemon, daemon_det = check_ollama_daemon()
-        checks.append({"name": "Ollama Daemon", "status": "passed" if ollama_daemon else "failed", "message": daemon_det})
-    
+        checks.append(
+            {
+                "name": "Ollama Daemon",
+                "status": "passed" if ollama_daemon else "failed",
+                "message": daemon_det,
+            }
+        )
+
     node_ok, node_det = check_node()
-    checks.append({"name": "Node.js", "status": "passed" if node_ok else "failed", "message": node_det})
-    
+    checks.append(
+        {
+            "name": "Node.js",
+            "status": "passed" if node_ok else "failed",
+            "message": node_det,
+        }
+    )
+
     pw_ok, pw_det = check_npx_playwright()
-    checks.append({"name": "Playwright", "status": "passed" if pw_ok else "failed", "message": pw_det})
-    
+    checks.append(
+        {
+            "name": "Playwright",
+            "status": "passed" if pw_ok else "failed",
+            "message": pw_det,
+        }
+    )
+
     prism_ok, prism_det = check_prism_docker()
-    checks.append({"name": "Prism Docker", "status": "passed" if prism_ok else "failed", "message": prism_det})
-    
+    checks.append(
+        {
+            "name": "Prism Docker",
+            "status": "passed" if prism_ok else "failed",
+            "message": prism_det,
+        }
+    )
+
     egress_ok, egress_det = check_egress_blocked(cfg)
-    checks.append({"name": "Egress Policy", "status": "passed" if egress_ok else "failed", "message": egress_det})
-    
+    checks.append(
+        {
+            "name": "Egress Policy",
+            "status": "passed" if egress_ok else "failed",
+            "message": egress_det,
+        }
+    )
+
     device = Config.detect_ollama_device()
     is_gpu = device == "GPU"
-    checks.append({"name": "Device", "status": "passed" if is_gpu else "failed", "message": device + " (GPU recommended)"})
-    
+    checks.append(
+        {
+            "name": "Device",
+            "status": "passed" if is_gpu else "failed",
+            "message": device + " (GPU recommended)",
+        }
+    )
+
     ready = ollama_bin and node_ok and pw_ok and prism_ok
-    
+
     return {"checks": checks, "ready": ready}
+
 
 #
 # Ingest
 #
 @app.post("/api/v1/ingest")
 async def ingest_spec_file(
-    file: UploadFile | None = File(None),
-    url: str | None = Form(None)
+    file: UploadFile | None = File(None), url: str | None = Form(None)
 ):
     run_id = str(uuid.uuid4())[:8]
     temp_dir = os.path.abspath(os.path.join(os.getcwd(), ".cherenkov/temp_ingest"))
     os.makedirs(temp_dir, exist_ok=True)
-    spec_path = os.path.join(temp_dir, f"spec_{run_id}.json" if (file and file.filename and file.filename.endswith('.json')) else f"spec_{run_id}.yaml")
+    spec_path = os.path.join(
+        temp_dir,
+        f"spec_{run_id}.json"
+        if (file and file.filename and file.filename.endswith(".json"))
+        else f"spec_{run_id}.yaml",
+    )
 
     if not file and not url:
-        raise HTTPException(status_code=400, detail="Either file upload or URL must be provided.")
+        raise HTTPException(
+            status_code=400, detail="Either file upload or URL must be provided."
+        )
 
     try:
         if file:
             MAX_SPEC_BYTES = 10 * 1024 * 1024  # 10 MB
             content = await file.read(MAX_SPEC_BYTES + 1)
             if len(content) > MAX_SPEC_BYTES:
-                raise HTTPException(status_code=413, detail="Spec file exceeds 10MB limit")
+                raise HTTPException(
+                    status_code=413, detail="Spec file exceeds 10MB limit"
+                )
             with open(spec_path, "wb") as f:
                 f.write(content)
         elif url:
             import requests
+
             _validate_spec_url(url)
             resp = await asyncio.to_thread(requests.get, url, timeout=15)
             resp.raise_for_status()
@@ -342,27 +450,35 @@ async def ingest_spec_file(
         endpoints = []
         for ep in ingest_output.endpoints:
             missing = []
-            for m in (ep.mutations or []):
-                if hasattr(m, 'instruction') and m.instruction:
+            for m in ep.mutations or []:
+                if hasattr(m, "instruction") and m.instruction:
                     missing.append(m.instruction)
-            endpoints.append({
-                "path": ep.path,
-                "method": ep.method,
-                "richness": ep.richness,
-                "missing_elements": missing
-            })
+            endpoints.append(
+                {
+                    "path": ep.path,
+                    "method": ep.method,
+                    "richness": ep.richness,
+                    "missing_elements": missing,
+                }
+            )
 
         return {
             "spec_path": spec_path,
             "endpoints": endpoints,
-            "richness": sum(ep["richness"] for ep in endpoints) / len(endpoints) if endpoints else 0.0
+            "richness": sum(ep["richness"] for ep in endpoints) / len(endpoints)
+            if endpoints
+            else 0.0,
         }
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         if os.path.exists(spec_path):
             os.remove(spec_path)
-        raise HTTPException(status_code=500, detail="Spec parsing failed. Check that the file is a valid OpenAPI 3.x document.")
+        raise HTTPException(
+            status_code=500,
+            detail="Spec parsing failed. Check that the file is a valid OpenAPI 3.x document.",
+        )
+
 
 #
 # Pipeline run
@@ -374,32 +490,46 @@ def run_pipeline_thread(spec_path: str, run_id: str):
     except Exception as e:
         ws_event_callback("pipeline_error", {"detail": str(e)})
 
+
 @app.post("/api/v1/run")
-async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: BackgroundTasks, _auth=Depends(verify_api_key)):
+async def trigger_pipeline_run(
+    payload: RunPipelinePayload,
+    background_tasks: BackgroundTasks,
+    _auth=Depends(verify_api_key),
+):
     from cherenkov.stages.doctor_cmd import run_doctor
 
     # 1. Doctor Preflight Check — suppress stdout to avoid polluting API response body
     import io
+
     with _contextlib.redirect_stdout(io.StringIO()):
         doctor_status = run_doctor()
-        
+
     # If demo mode is on, bypass doctor and just inject mock findings
     if payload.demo_mode:
         from cherenkov.execution.demo_mode import generate_demo_findings
+
         generate_demo_findings()
         return {"run_id": "demo", "status": "demo_completed"}
-        
+
     # Warn but do not necessarily block if there are minor issues (e.g., CPU mode)
     if doctor_status != 0:
-        print("Warning: Doctor preflight checks reported issues (could be missing GPU or daemon state). Continuing anyway.")
-        
+        print(
+            "Warning: Doctor preflight checks reported issues (could be missing GPU or daemon state). Continuing anyway."
+        )
+
     run_id = str(uuid.uuid4())[:8]
     if not os.path.exists(payload.spec_path):
-        raise HTTPException(status_code=404, detail="Ingested spec file path not found.")
-    thread = threading.Thread(target=run_pipeline_thread, args=(payload.spec_path, run_id))
+        raise HTTPException(
+            status_code=404, detail="Ingested spec file path not found."
+        )
+    thread = threading.Thread(
+        target=run_pipeline_thread, args=(payload.spec_path, run_id)
+    )
     thread.daemon = True
     thread.start()
     return {"run_id": run_id, "status": "launched"}
+
 
 #
 # Tests
@@ -409,6 +539,7 @@ async def list_generated_tests():
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
     if not os.path.exists(tests_dir):
         return []
+
     def _scan() -> list[dict]:
         tests = []
         for f in sorted(os.listdir(tests_dir)):
@@ -423,25 +554,31 @@ async def list_generated_tests():
             if not code or not code.strip():
                 continue
             scenario_id = f.replace(".spec.ts", "")
-            method_match = _re.search(r'method:\s*["\']([A-Z]+)["\']', code) or \
-                           _re.search(r'\.(get|post|put|patch|delete)\s*\(', code, _re.IGNORECASE)
+            method_match = _re.search(
+                r'method:\s*["\']([A-Z]+)["\']', code
+            ) or _re.search(r"\.(get|post|put|patch|delete)\s*\(", code, _re.IGNORECASE)
             method = method_match.group(1).upper() if method_match else "GET"
-            tests.append({
-                "name": f,
-                "scenario_id": scenario_id,
-                "endpoint": scenario_id,
-                "method": method,
-                "code": code
-            })
+            tests.append(
+                {
+                    "name": f,
+                    "scenario_id": scenario_id,
+                    "endpoint": scenario_id,
+                    "method": method,
+                    "code": code,
+                }
+            )
         return tests
 
     return await asyncio.to_thread(_scan)
+
 
 #
 # Review — wired to real HitlQueue (Issue 173)
 #
 @app.get("/api/v1/review/queue")
-async def list_review_queue(status: str | None = "pending", _auth=Depends(verify_api_key)):
+async def list_review_queue(
+    status: str | None = "pending", _auth=Depends(verify_api_key)
+):
     """List HITL queue items from the live SQLite queue."""
     queue = get_queue()
     items = queue.list(status=status)
@@ -474,8 +611,11 @@ async def list_review_queue(status: str | None = "pending", _auth=Depends(verify
         for item in items
     ]
 
+
 @app.post("/api/v1/review/approve")
-async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
+async def approve_review_item(
+    payload: ReviewActionPayload, _auth=Depends(verify_api_key)
+):
     """Approve a pending HITL item via HitlQueue and feed positive verdict to Reflector."""
     queue = get_queue()
     actor = os.environ.get("USER", "dashboard")
@@ -483,21 +623,26 @@ async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify
     if not envelope.ok:
         detail = envelope.error.detail if envelope.error else {}
         raise HTTPException(
-            status_code=409 if envelope.error and envelope.error.code == "conflict" else 404,
+            status_code=409
+            if envelope.error and envelope.error.code == "conflict"
+            else 404,
             detail=envelope.error.message if envelope.error else "approve failed",
         )
 
     store = FeedbackStore()
-    store.record_feedback(FeedbackEntry(
-        hitl_item_id=payload.scenario_id,
-        action="approve",
-        reason=payload.reason or "Approved by reviewer",
-    ))
+    store.record_feedback(
+        FeedbackEntry(
+            hitl_item_id=payload.scenario_id,
+            action="approve",
+            reason=payload.reason or "Approved by reviewer",
+        )
+    )
 
     # Feed positive human verdict to Reflector
     try:
         from cherenkov.reflector.reflector import Reflector
         from cherenkov.core.contracts import VerdictOutcome
+
         reflector = Reflector(run_id="web")
         reflector.ingest_human_verdict(
             hypothesis_id=payload.scenario_id,
@@ -505,34 +650,42 @@ async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify
             detail=payload.reason or "Approved via review dashboard",
         )
     except Exception as e:
-        logging.getLogger("HITL").warning("failed to feed approve verdict to Reflector", exc_info=e)
+        logging.getLogger("HITL").warning(
+            "failed to feed approve verdict to Reflector", exc_info=e
+        )
 
     return {"status": "approved", "scenario_id": payload.scenario_id}
 
+
 @app.post("/api/v1/review/reject")
-async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
+async def reject_review_item(
+    payload: ReviewActionPayload, _auth=Depends(verify_api_key)
+):
     """Reject a pending HITL item via HitlQueue and feed negative verdict to Reflector."""
     queue = get_queue()
     actor = os.environ.get("USER", "dashboard")
     reason = payload.reason or "Rejected by reviewer"
-    envelope = queue.reject(payload.scenario_id, actor=actor, reason=reason, source="web")
+    envelope = queue.reject(
+        payload.scenario_id, actor=actor, reason=reason, source="web"
+    )
     if not envelope.ok:
         raise HTTPException(
-            status_code=409 if envelope.error and envelope.error.code == "conflict" else 404,
+            status_code=409
+            if envelope.error and envelope.error.code == "conflict"
+            else 404,
             detail=envelope.error.message if envelope.error else "reject failed",
         )
 
     store = FeedbackStore()
-    store.record_feedback(FeedbackEntry(
-        hitl_item_id=payload.scenario_id, 
-        action="reject", 
-        reason=reason
-    ))
+    store.record_feedback(
+        FeedbackEntry(hitl_item_id=payload.scenario_id, action="reject", reason=reason)
+    )
 
     # Feed negative human verdict to Reflector
     try:
         from cherenkov.reflector.reflector import Reflector
         from cherenkov.core.contracts import VerdictOutcome
+
         reflector = Reflector(run_id="web")
         reflector.ingest_human_verdict(
             hypothesis_id=payload.scenario_id,
@@ -540,25 +693,33 @@ async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_
             detail=reason,
         )
     except Exception as e:
-        logging.getLogger("HITL").warning("failed to feed reject verdict to Reflector", exc_info=e)
+        logging.getLogger("HITL").warning(
+            "failed to feed reject verdict to Reflector", exc_info=e
+        )
 
     return {"status": "rejected", "scenario_id": payload.scenario_id}
+
 
 @app.post("/api/v1/review/edit")
 async def edit_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
     """Save edited test code (filesystem, not in queue)."""
     if not payload.test_code:
-        raise HTTPException(status_code=400, detail="Missing updated test code content.")
+        raise HTTPException(
+            status_code=400, detail="Missing updated test code content."
+        )
     _validate_scenario_id(payload.scenario_id)
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
     os.makedirs(tests_dir, exist_ok=True)
     file_path = os.path.join(tests_dir, f"{payload.scenario_id}.spec.ts")
     code_to_write = payload.test_code
+
     def _write():
         with open(file_path, "w", encoding="utf-8") as fh:
             fh.write(code_to_write)
+
     await asyncio.to_thread(_write)
     return {"status": "saved", "scenario_id": payload.scenario_id}
+
 
 @app.post("/api/v1/review/classify")
 async def classify_review_item(payload: ClassifyPayload, _auth=Depends(verify_api_key)):
@@ -568,20 +729,35 @@ async def classify_review_item(payload: ClassifyPayload, _auth=Depends(verify_ap
     if payload.classification == "regression":
         envelope = queue.approve(payload.item_id, actor=actor, source="web")
     elif payload.classification == "intended":
-        envelope = queue.reject(payload.item_id, actor=actor,
-                                 reason=payload.detail or "classified as intended", source="web")
+        envelope = queue.reject(
+            payload.item_id,
+            actor=actor,
+            reason=payload.detail or "classified as intended",
+            source="web",
+        )
     elif payload.classification == "ignore":
         from cherenkov.hitl.contracts import HitlStatus
-        envelope = queue._resolve("hitl.classify", payload.item_id, actor, "web",
-                                   HitlStatus.IGNORED, "", ())
+
+        envelope = queue._resolve(
+            "hitl.classify", payload.item_id, actor, "web", HitlStatus.IGNORED, "", ()
+        )
     else:
-        raise HTTPException(status_code=400, detail=f"Unknown classification: {payload.classification}")
+        raise HTTPException(
+            status_code=400, detail=f"Unknown classification: {payload.classification}"
+        )
     if not envelope.ok:
         raise HTTPException(
-            status_code=409 if envelope.error and envelope.error.code == "conflict" else 404,
+            status_code=409
+            if envelope.error and envelope.error.code == "conflict"
+            else 404,
             detail=envelope.error.message if envelope.error else "classify failed",
         )
-    return {"status": "classified", "item_id": payload.item_id, "classification": payload.classification}
+    return {
+        "status": "classified",
+        "item_id": payload.item_id,
+        "classification": payload.classification,
+    }
+
 
 #
 # Validate
@@ -596,9 +772,15 @@ async def validate_test_suite(payload: ValidatePayload):
         )
         return results
     except asyncio.TimeoutError:
-        raise HTTPException(status_code=504, detail="Validation timed out after 300 seconds.")
+        raise HTTPException(
+            status_code=504, detail="Validation timed out after 300 seconds."
+        )
     except Exception:
-        raise HTTPException(status_code=500, detail="Validation failed. Check the target URL and try again.")
+        raise HTTPException(
+            status_code=500,
+            detail="Validation failed. Check the target URL and try again.",
+        )
+
 
 #
 # Eject
@@ -608,10 +790,13 @@ async def eject_test_suite(payload: EjectPayload):
     try:
         safe_path = _validate_output_path(payload.output_path)
         from cherenkov.execution.eject import EjectorEngine
+
         engine = EjectorEngine("api_eject")
         success = engine.eject_suite(safe_path)
         if not success:
-            raise HTTPException(status_code=500, detail="Eject operation failed in engine.")
+            raise HTTPException(
+                status_code=500, detail="Eject operation failed in engine."
+            )
         files = []
         if os.path.exists(safe_path):
             for root, _, filenames in os.walk(safe_path):
@@ -627,6 +812,7 @@ async def eject_test_suite(payload: EjectPayload):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Eject operation failed: {e}")
 
+
 #
 # Divergences
 #
@@ -634,12 +820,17 @@ async def eject_test_suite(payload: EjectPayload):
 async def list_divergences():
     return divergence_store.list_divergences()
 
+
 @app.post("/api/v1/divergences/act")
 async def act_on_divergence(payload: DivergenceActionPayload):
     try:
-        new_status = divergence_store.apply_action(payload.divergence_id, payload.action)
+        new_status = divergence_store.apply_action(
+            payload.divergence_id, payload.action
+        )
     except KeyError:
-        raise HTTPException(status_code=404, detail=f"Unknown divergence id: {payload.divergence_id}")
+        raise HTTPException(
+            status_code=404, detail=f"Unknown divergence id: {payload.divergence_id}"
+        )
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Unknown action: {payload.action}")
     return {
@@ -649,6 +840,7 @@ async def act_on_divergence(payload: DivergenceActionPayload):
         "new_status": new_status,
     }
 
+
 #
 # Dashboard data endpoints (backed by real stores)
 #
@@ -656,9 +848,7 @@ async def act_on_divergence(payload: DivergenceActionPayload):
 async def get_overview():
     """Return overview with false-positive rate and recent learnings."""
     from cherenkov.ai.accounting import CostAccountant
-    from cherenkov.reflector.store import VerdictStore
     from cherenkov.core.feedback_store import FeedbackStore
-    from cherenkov.core.contracts import VerdictOutcome
 
     accountant = CostAccountant()
     kpi = accountant.get_governance_kpis()
@@ -671,10 +861,16 @@ async def get_overview():
         "defectEscapeCount": kpi["defect_escape_count"],
         "totalVerdicts": kpi["total_verdicts"],
         "recentLearnings": [
-            {"id": f.hitl_item_id, "action": f.action, "reason": f.reason, "timestamp": getattr(f, "timestamp", "")}
+            {
+                "id": f.hitl_item_id,
+                "action": f.action,
+                "reason": f.reason,
+                "timestamp": getattr(f, "timestamp", ""),
+            }
             for f in recent
         ],
     }
+
 
 @app.get("/api/v1/truth-map")
 async def get_truth_map():
@@ -690,7 +886,9 @@ async def get_truth_map():
         {
             "id": i.id,
             "pattern": i.pattern,
-            "divergence_class": i.divergence_class.value if i.divergence_class else "unknown",
+            "divergence_class": i.divergence_class.value
+            if i.divergence_class
+            else "unknown",
             "endpoint": i.endpoint,
             "confirm_count": i.confirm_count,
             "decay_score": i.decay_score,
@@ -698,12 +896,15 @@ async def get_truth_map():
         for i in idioms
     ]
 
+
 # ── Explore ──────────────────────────────────────────────────────────────────
+
 
 @app.get("/api/v1/governance")
 async def get_governance():
     """Return governance score and traceability data."""
     from cherenkov.ai.accounting import CostAccountant
+
     accountant = CostAccountant()
     kpi = accountant.get_governance_kpis()
     return {
@@ -711,36 +912,65 @@ async def get_governance():
         "defectEscapeRate": kpi.get("defect_escape_rate", 0.0),
         "falsePositiveRate": kpi.get("false_positive_rate", 0.0),
         "modelCertification": [
-            {"model": "claude-3-5-sonnet", "status": "certified", "tier": "expert", "reason": "Automated clearance via CI/CD"},
-            {"model": "llama-3-8b", "status": "pending", "tier": "fast", "reason": "Awaiting human review"}
+            {
+                "model": "claude-3-5-sonnet",
+                "status": "certified",
+                "tier": "expert",
+                "reason": "Automated clearance via CI/CD",
+            },
+            {
+                "model": "llama-3-8b",
+                "status": "pending",
+                "tier": "fast",
+                "reason": "Awaiting human review",
+            },
         ],
         "traceability": [
-            {"action": "Validation", "target": "/api/pets", "user": "AI Pilot", "timestamp": "2026-06-12T10:00:00Z"}
-        ]
+            {
+                "action": "Validation",
+                "target": "/api/pets",
+                "user": "AI Pilot",
+                "timestamp": "2026-06-12T10:00:00Z",
+            }
+        ],
     }
+
 
 @app.get("/api/v1/memory")
 async def get_memory():
     """Return testing idioms and pairing context."""
     from cherenkov.reflector.store import VerdictStore
+
     store = VerdictStore()
     idioms = []
     try:
         idiom_objs = store.list_idioms(limit=20)
         idioms = [
-            {"id": i.id, "pattern": i.pattern, "confidence": getattr(i, "confidence", 0.9), "uses": getattr(i, "confirm_count", 0)}
+            {
+                "id": i.id,
+                "pattern": i.pattern,
+                "confidence": getattr(i, "confidence", 0.9),
+                "uses": getattr(i, "confirm_count", 0),
+            }
             for i in idiom_objs
         ]
     except Exception:
         pass
-    
+
     return {
         "idioms": idioms,
         "pairing": [
-            {"rule": "Always check 422 responses for 'detail' field format.", "source": "Reflector"},
-            {"rule": "Ensure Authorization headers are strictly 'Bearer <token>'.", "source": "Human"}
-        ]
+            {
+                "rule": "Always check 422 responses for 'detail' field format.",
+                "source": "Reflector",
+            },
+            {
+                "rule": "Ensure Authorization headers are strictly 'Bearer <token>'.",
+                "source": "Human",
+            },
+        ],
     }
+
 
 @app.get("/api/v1/signals")
 async def get_signals():
@@ -748,19 +978,31 @@ async def get_signals():
     return {
         "performance": [
             {"time": "10:00:00Z", "latency": 350, "baseline": 200, "anomaly": True},
-            {"time": "10:05:00Z", "latency": 85, "baseline": 90, "anomaly": False}
+            {"time": "10:05:00Z", "latency": 85, "baseline": 90, "anomaly": False},
         ],
         "visual": [
-            {"id": "v1", "name": "CheckoutFlow", "difference": "0.02%", "status": "matched"},
-            {"id": "v2", "name": "HeaderNav", "difference": "15.0%", "status": "warning"}
+            {
+                "id": "v1",
+                "name": "CheckoutFlow",
+                "difference": "0.02%",
+                "status": "matched",
+            },
+            {
+                "id": "v2",
+                "name": "HeaderNav",
+                "difference": "15.0%",
+                "status": "warning",
+            },
         ],
         "coverage": [
             {"path": "/api/orders", "cherenkov": 95, "sdet": 45},
-            {"path": "/api/pets", "cherenkov": 100, "sdet": 80}
-        ]
+            {"path": "/api/pets", "cherenkov": 100, "sdet": 80},
+        ],
     }
 
+
 # ── Explore ──────────────────────────────────────────────────────────────────
+
 
 class ExplorePayload(BaseModel):
     base_url: str
@@ -778,6 +1020,7 @@ async def run_explorer(payload: ExplorePayload):
     if payload.use_ui_probe and payload.ui_url:
         try:
             from cherenkov.execution.ui_probe import PlaywrightUiProbe
+
             ui_probe = PlaywrightUiProbe()
         except Exception:
             pass
@@ -791,11 +1034,13 @@ async def run_explorer(payload: ExplorePayload):
         try:
             flows = explorer.discover_flows(discover_root, max_links=payload.max_links)
         except Exception as _exc:
-            logging.getLogger(__name__).warning("discover_flows raised unexpectedly: %s", _exc)
+            logging.getLogger(__name__).warning(
+                "discover_flows raised unexpectedly: %s", _exc
+            )
 
         # Phase 2: crawl the discovered API paths + UI paths
         paths = list({f["path"] for f in flows if f.get("path") and f["path"] != "/"})
-        paths = paths[:payload.max_links] or ["/"]
+        paths = paths[: payload.max_links] or ["/"]
 
         findings = explorer.crawl(paths)
         hypotheses = explorer.to_hypotheses(findings)
@@ -812,7 +1057,9 @@ async def run_explorer(payload: ExplorePayload):
                     "latency_ms": f.latency_ms,
                     "detail": f.detail,
                     "evidence": f.evidence,
-                    "severity": f.severity.value if hasattr(f.severity, "value") else str(f.severity),
+                    "severity": f.severity.value
+                    if hasattr(f.severity, "value")
+                    else str(f.severity),
                 }
                 for f in findings
             ],
@@ -825,6 +1072,7 @@ async def run_explorer(payload: ExplorePayload):
 
 # ── Visual Regression ─────────────────────────────────────────────────────────
 
+
 @app.get("/api/v1/visual/scenarios")
 async def list_visual_scenarios():
     """Return visual regression scenario results from the last run."""
@@ -836,7 +1084,9 @@ async def list_visual_scenarios():
         run_dir = ".cherenkov"
         pattern = os.path.join(run_dir, "*", "visual_*.json")
         try:
-            for path in sorted(_glob.glob(pattern), key=os.path.getmtime, reverse=True)[:20]:
+            for path in sorted(_glob.glob(pattern), key=os.path.getmtime, reverse=True)[
+                :20
+            ]:
                 try:
                     with open(path) as fh:
                         data = _json.load(fh)
@@ -853,7 +1103,9 @@ async def list_visual_scenarios():
 
 
 @app.post("/api/v1/visual/check")
-async def run_visual_check(background_tasks: BackgroundTasks, target_url: str = "", name: str = "page"):
+async def run_visual_check(
+    background_tasks: BackgroundTasks, target_url: str = "", name: str = "page"
+):
     """Run a single visual regression check against target_url."""
     from cherenkov.core.contracts import VisualSlice
     from cherenkov.stages.visual.visual_stage import VisualStage
@@ -870,10 +1122,15 @@ async def run_visual_check(background_tasks: BackgroundTasks, target_url: str = 
         # Persist result to disk for the scenarios list endpoint
         os.makedirs(".cherenkov/api_visual", exist_ok=True)
         import json as _json
+
         out = {
             "scenario_id": report.scenario_id,
-            "status": report.status.value if hasattr(report.status, "value") else str(report.status),
-            "verdict": report.verdict.value if hasattr(report.verdict, "value") else str(report.verdict),
+            "status": report.status.value
+            if hasattr(report.status, "value")
+            else str(report.status),
+            "verdict": report.verdict.value
+            if hasattr(report.verdict, "value")
+            else str(report.verdict),
             "gates": [g.model_dump() for g in report.gates],
             "url": target_url,
         }
@@ -915,7 +1172,7 @@ async def get_failures():
                 "SELECT id, endpoint, outcome, failure_class, detail, timestamp "
                 "FROM verdicts WHERE outcome IN (?, ?) "
                 "ORDER BY timestamp DESC LIMIT 50",
-                (reject_val, escaped_val)
+                (reject_val, escaped_val),
             )
             return [dict(r) for r in cursor.fetchall()]
         except Exception:
@@ -930,7 +1187,9 @@ async def get_failures():
         {
             "id": r["id"],
             "name": r["endpoint"] or r["id"],
-            "failureType": _FAILURE_TYPE_MAP.get(r.get("failure_class") or "", "ASSERTION_DRIFT"),
+            "failureType": _FAILURE_TYPE_MAP.get(
+                r.get("failure_class") or "", "ASSERTION_DRIFT"
+            ),
             "diagnosis": r.get("detail") or "Failure detected during review.",
             "oldCode": "",
             "proposedCode": "",
@@ -942,6 +1201,7 @@ async def get_failures():
         }
         for r in raw
     ]
+
 
 @app.get("/api/v1/memory")
 async def get_memory():
@@ -964,8 +1224,14 @@ async def get_memory():
         for i in raw_idioms
     ]
     pairing = [
-        {"context": "API conformance", "explanation": "Verify status codes, response schemas, and auth flows match the OpenAPI spec before approving a test."},
-        {"context": "False positive triage", "explanation": "When a test fails, cross-check the spec claim and actual response body to determine if the spec or the implementation is wrong."},
+        {
+            "context": "API conformance",
+            "explanation": "Verify status codes, response schemas, and auth flows match the OpenAPI spec before approving a test.",
+        },
+        {
+            "context": "False positive triage",
+            "explanation": "When a test fails, cross-check the spec claim and actual response body to determine if the spec or the implementation is wrong.",
+        },
     ]
     return {"idioms": idioms, "pairing": pairing}
 
@@ -975,7 +1241,7 @@ async def get_signals():
     """Return performance, visual, and SDET coverage telemetry signals."""
     from cherenkov.ai.accounting import CostAccountant
     from cherenkov.reflector.store import VerdictStore
-    import sqlite3, time
+    import sqlite3
 
     store = VerdictStore()
 
@@ -997,16 +1263,23 @@ async def get_signals():
     for r in await asyncio.to_thread(_query_signals):
         dur = r["duration_ms"] if r["duration_ms"] else 0
         baseline = 200
-        performance.append({
-            "time": r["timestamp"] or "—",
-            "latency": dur,
-            "baseline": baseline,
-            "anomaly": dur > baseline * 3,
-        })
+        performance.append(
+            {
+                "time": r["timestamp"] or "—",
+                "latency": dur,
+                "baseline": baseline,
+                "anomaly": dur > baseline * 3,
+            }
+        )
 
     # Visual regression entries (stubbed — real data would come from playwright screenshots)
     visual = [
-        {"id": "v1", "name": "Overview Dashboard", "difference": "0.0%", "status": "ok"},
+        {
+            "id": "v1",
+            "name": "Overview Dashboard",
+            "difference": "0.0%",
+            "status": "ok",
+        },
         {"id": "v2", "name": "Divergences Table", "difference": "0.0%", "status": "ok"},
     ]
 
@@ -1015,7 +1288,11 @@ async def get_signals():
     report = accountant.report
     total = report.request_count or 1
     coverage = [
-        {"path": "/api/v1/*", "cherenkov": min(100, round((report.request_count / max(total, 1)) * 100)), "sdet": 0},
+        {
+            "path": "/api/v1/*",
+            "cherenkov": min(100, round((report.request_count / max(total, 1)) * 100)),
+            "sdet": 0,
+        },
     ]
 
     return {"performance": performance, "visual": visual, "coverage": coverage}
@@ -1042,26 +1319,33 @@ async def get_metrics():
         },
     }
 
+
 @app.get("/api/v1/metrics/pipeline")
 def get_pipeline_metrics(last_runs: int = 10):
     """Return pipeline stage metrics for the last N runs."""
     try:
         from cherenkov.observability.metrics import MetricsCollector
+
         collector = MetricsCollector()
         return {"metrics": collector.get_summary(last_n_runs=last_runs)}
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=500, detail="Could not load metrics")
+
 
 @app.get("/api/v1/metrics/prometheus")
 def get_metrics_prometheus():
     """Return metrics in Prometheus text format."""
     from cherenkov.observability.metrics import MetricsCollector
     from fastapi.responses import PlainTextResponse
+
     try:
         collector = MetricsCollector()
-        return PlainTextResponse(collector.to_prometheus(), media_type="text/plain; version=0.0.4")
-    except Exception as e:
+        return PlainTextResponse(
+            collector.to_prometheus(), media_type="text/plain; version=0.0.4"
+        )
+    except Exception:
         raise HTTPException(status_code=500, detail="Could not load metrics")
+
 
 #
 # Mobile Pilot
@@ -1071,31 +1355,76 @@ _mobile_pilot_status = {
     "current_step": 0,
     "total_steps": 6,
     "steps": [
-        {"step_id": "1", "action": "Connect device", "target": "android-emulator", "expected": "device online", "actual": "", "status": "pending"},
-        {"step_id": "2", "action": "Install APK", "target": "app-debug.apk", "expected": "install success", "actual": "", "status": "pending"},
-        {"step_id": "3", "action": "Launch app", "target": "com.example.app", "expected": "app foreground", "actual": "", "status": "pending"},
-        {"step_id": "4", "action": "Run login test", "target": "LoginScreen", "expected": "200 OK", "actual": "", "status": "pending"},
-        {"step_id": "5", "action": "Run checkout flow", "target": "CheckoutScreen", "expected": "order confirmed", "actual": "", "status": "pending"},
-        {"step_id": "6", "action": "Collect logs", "target": "logcat", "expected": "logs saved", "actual": "", "status": "pending"},
+        {
+            "step_id": "1",
+            "action": "Connect device",
+            "target": "android-emulator",
+            "expected": "device online",
+            "actual": "",
+            "status": "pending",
+        },
+        {
+            "step_id": "2",
+            "action": "Install APK",
+            "target": "app-debug.apk",
+            "expected": "install success",
+            "actual": "",
+            "status": "pending",
+        },
+        {
+            "step_id": "3",
+            "action": "Launch app",
+            "target": "com.example.app",
+            "expected": "app foreground",
+            "actual": "",
+            "status": "pending",
+        },
+        {
+            "step_id": "4",
+            "action": "Run login test",
+            "target": "LoginScreen",
+            "expected": "200 OK",
+            "actual": "",
+            "status": "pending",
+        },
+        {
+            "step_id": "5",
+            "action": "Run checkout flow",
+            "target": "CheckoutScreen",
+            "expected": "order confirmed",
+            "actual": "",
+            "status": "pending",
+        },
+        {
+            "step_id": "6",
+            "action": "Collect logs",
+            "target": "logcat",
+            "expected": "logs saved",
+            "actual": "",
+            "status": "pending",
+        },
     ],
 }
+
 
 @app.get("/api/v1/mobile/pilot/status")
 async def get_mobile_pilot_status():
     return _mobile_pilot_status
+
 
 @app.post("/api/v1/mobile/pilot/start")
 async def start_mobile_pilot():
     _mobile_pilot_status["status"] = "running"
     return {"status": "started"}
 
+
 # ── Projects ─────────────────────────────────────────────────────────────────
+
 
 @app.get("/api/v1/projects")
 async def get_projects():
     """Return a list of projects derived from the workspace layout."""
     workspace = os.getcwd()
-    from cherenkov.ai.accounting import CostAccountant
     from cherenkov.reflector.store import VerdictStore
 
     store = VerdictStore()
@@ -1129,7 +1458,12 @@ async def get_projects():
             "id": "default",
             "name": os.path.basename(workspace) or "cherenkov",
             "lastRun": "",
-            "pipelineStatus": {"ingest": "queued", "plan": "queued", "generate": "queued", "review": "queued"},
+            "pipelineStatus": {
+                "ingest": "queued",
+                "plan": "queued",
+                "generate": "queued",
+                "review": "queued",
+            },
             "stats": {"testsCount": total, "passRate": pass_rate, "healingCount": 0},
             "sparkline": [],
         }
@@ -1140,7 +1474,12 @@ async def get_projects():
 
 _settings: dict = {
     "target": {"url": "http://localhost:8000", "auth_header": ""},
-    "engine": {"model_tier": "local", "enable_demo_mode": False, "execution_budget": 100, "workers": 4},
+    "engine": {
+        "model_tier": "local",
+        "enable_demo_mode": False,
+        "execution_budget": 100,
+        "workers": 4,
+    },
     "security": {"egress_policy": "strict", "auth_secret": ""},
     "ui": {"density": "comfortable", "reduced_motion": False},
 }
@@ -1163,6 +1502,7 @@ async def update_settings(body: dict):
 
 # ── Governance ────────────────────────────────────────────────────────────────
 
+
 @app.get("/api/v1/governance")
 async def get_governance():
     """Return governance health score and policy issues."""
@@ -1174,7 +1514,13 @@ async def get_governance():
     score = max(0, round(100 - fp_rate * 100))
     issues = []
     if fp_rate > 0.05:
-        issues.append({"id": "high-fp", "severity": "high", "message": f"False positive rate {fp_rate:.1%} exceeds 5% threshold"})
+        issues.append(
+            {
+                "id": "high-fp",
+                "severity": "high",
+                "message": f"False positive rate {fp_rate:.1%} exceeds 5% threshold",
+            }
+        )
     return {"score": score, "issues": issues}
 
 
@@ -1190,10 +1536,12 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         await manager.disconnect(websocket)
 
+
 #
 # Static file serving for prebuilt UI
 #
 _ui_dist = os.path.join(os.path.dirname(__file__), "ui", "dist")
+
 
 @app.get("/")
 async def serve_index():
@@ -1201,6 +1549,7 @@ async def serve_index():
     if os.path.exists(index):
         return FileResponse(index)
     return {"status": "UI not built. Run `npm run build` in cherenkov/web/ui/."}
+
 
 @app.get("/assets/{path:path}")
 async def serve_assets(path: str):

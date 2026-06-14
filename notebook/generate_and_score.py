@@ -20,6 +20,7 @@ WHAT IT DOES NOT DO (on purpose)
   - No DB, no FastAPI, no Pydantic pipeline contracts. That's Week 2-3.
   - No real-server calls. Generation only. (Day 4 runs the tests separately.)
 """
+
 import argparse
 import json
 import os
@@ -66,16 +67,24 @@ test('get health happy path', async () => {
 """
 
 
-def resolve_refs_depth(node, schemas: dict, resolved: dict, depth: int, max_depth: int) -> None:
+def resolve_refs_depth(
+    node, schemas: dict, resolved: dict, depth: int, max_depth: int
+) -> None:
     if depth > max_depth:
         return
     if isinstance(node, dict):
         for k, v in node.items():
-            if k == "$ref" and isinstance(v, str) and v.startswith("#/components/schemas/"):
+            if (
+                k == "$ref"
+                and isinstance(v, str)
+                and v.startswith("#/components/schemas/")
+            ):
                 ref_name = v.split("/")[-1]
                 if ref_name not in resolved and ref_name in schemas:
                     resolved[ref_name] = schemas[ref_name]
-                    resolve_refs_depth(schemas[ref_name], schemas, resolved, depth + 1, max_depth)
+                    resolve_refs_depth(
+                        schemas[ref_name], schemas, resolved, depth + 1, max_depth
+                    )
             else:
                 resolve_refs_depth(v, schemas, resolved, depth, max_depth)
     elif isinstance(node, list):
@@ -92,11 +101,11 @@ def slice_spec(spec: dict) -> list[dict]:
         for method, op in methods.items():
             if method.lower() not in ("get", "post", "put", "delete", "patch"):
                 continue
-            
+
             # Resolve ONLY referenced schemas at depth 1 (immediate parents/body schemas)
             resolved_schemas = {}
             resolve_refs_depth(op, components, resolved_schemas, 1, 1)
-            
+
             slices.append(
                 {
                     "path": path,
@@ -177,8 +186,9 @@ def call_ollama(user_prompt: str) -> str:
 def score_test(code: str) -> dict:
     uses_client = bool(re.search(r"\bclient\.(GET|POST|PUT|DELETE|PATCH)\b", code))
     forbidden = bool(re.search(r"\b(fetch|axios)\b|\.request\b|throw new Error", code))
-    specific_status = bool(re.search(r"\.status\)?\s*\)?\s*\.toBe\(\s*\d{3}\s*\)", code)) or \
-                      bool(re.search(r"toBe\(\s*(200|201|204|400|401|404|422|500)\s*\)", code))
+    specific_status = bool(
+        re.search(r"\.status\)?\s*\)?\s*\.toBe\(\s*\d{3}\s*\)", code)
+    ) or bool(re.search(r"toBe\(\s*(200|201|204|400|401|404|422|500)\s*\)", code))
     body_shape = bool(re.search(r"toHaveProperty\(|typeof\s", code))
     # "would fail on wrong output" ≈ asserts a specific status AND a body shape
     would_fail_on_wrong = specific_status and body_shape
@@ -199,10 +209,18 @@ def score_test(code: str) -> dict:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("spec", help="path to OpenAPI json (e.g. target_spec.json)")
-    ap.add_argument("--client-types", help="path to generated-types.ts to embed in prompt")
-    ap.add_argument("--out", default="generated_tests", help="output dir for .spec.ts files")
-    ap.add_argument("--limit", type=int, help="limit the number of endpoints to generate tests for")
-    ap.add_argument("--filter", help="filter endpoints by path keyword (e.g., v1_customers)")
+    ap.add_argument(
+        "--client-types", help="path to generated-types.ts to embed in prompt"
+    )
+    ap.add_argument(
+        "--out", default="generated_tests", help="output dir for .spec.ts files"
+    )
+    ap.add_argument(
+        "--limit", type=int, help="limit the number of endpoints to generate tests for"
+    )
+    ap.add_argument(
+        "--filter", help="filter endpoints by path keyword (e.g., v1_customers)"
+    )
     args = ap.parse_args()
 
     spec = json.loads(Path(args.spec).read_text())
@@ -214,13 +232,19 @@ def main():
     total_raw = len(slices)
 
     if args.filter:
-        slices = [s for s in slices if args.filter in s["path"] or args.filter in s["method"].lower()]
-        print(f"Filtered to {len(slices)} endpoint(s) out of {total_raw} using filter '{args.filter}'")
+        slices = [
+            s
+            for s in slices
+            if args.filter in s["path"] or args.filter in s["method"].lower()
+        ]
+        print(
+            f"Filtered to {len(slices)} endpoint(s) out of {total_raw} using filter '{args.filter}'"
+        )
     else:
         print(f"Sliced {len(slices)} endpoint(s) from {args.spec}")
 
     if args.limit and args.limit < len(slices):
-        slices = slices[:args.limit]
+        slices = slices[: args.limit]
         print(f"Limited to first {args.limit} endpoint(s)")
 
     print("")
@@ -228,7 +252,10 @@ def main():
     results = []
     for i, sl in enumerate(slices, 1):
         name = f"{sl['method']}_{sl['path'].strip('/').replace('/', '_').replace('{','').replace('}','') or 'root'}"
-        print(f"[{i}/{len(slices)}] generating {sl['method']} {sl['path']} ...", flush=True)
+        print(
+            f"[{i}/{len(slices)}] generating {sl['method']} {sl['path']} ...",
+            flush=True,
+        )
         t0 = time.time()
         try:
             code = call_ollama(build_user_prompt(sl, client_types))
@@ -242,8 +269,10 @@ def main():
         sc["_seconds"] = round(dt, 1)
         results.append(sc)
         flag = "OK " if sc["meaningful"] else "weak"
-        print(f"    {flag} ({dt:.1f}s)  status={sc['asserts_specific_status']} "
-              f"shape={sc['asserts_body_shape']} client={sc['uses_openapi_fetch_client']}")
+        print(
+            f"    {flag} ({dt:.1f}s)  status={sc['asserts_specific_status']} "
+            f"shape={sc['asserts_body_shape']} client={sc['uses_openapi_fetch_client']}"
+        )
 
     if not results:
         print("\nNo tests generated. Check your filters or limits.")

@@ -4,6 +4,7 @@ Authority: v3.1 + delta. Epoch 5 (E5-4).
 
 Renders the claim graph and open divergences to the terminal from mock/data.
 """
+
 from __future__ import annotations
 
 from cherenkov.core.contracts import (
@@ -32,16 +33,20 @@ def render_truth_model(model: TruthModel | None = None) -> str:
     endpoints = model.get_endpoints() if hasattr(model, "get_endpoints") else []
 
     if not endpoints:
-        lines.extend([
-            "(no endpoints loaded -- run `cherenkov map` to build the Truth Model)",
-        ])
+        lines.extend(
+            [
+                "(no endpoints loaded -- run `cherenkov map` to build the Truth Model)",
+            ]
+        )
     else:
         for ep in endpoints:
             lines.append(f"\n  {ep.method} {ep.path}")
             lines.append(f"  {'-' * (len(ep.method) + len(ep.path) + 2)}")
-            claims = model.get_claims_by_endpoint(ep.path, ep.method) if hasattr(
-                model, "get_claims_by_endpoint"
-            ) else []
+            claims = (
+                model.get_claims_by_endpoint(ep.path, ep.method)
+                if hasattr(model, "get_claims_by_endpoint")
+                else []
+            )
             for claim in claims:
                 src = claim.provenance.source_type.value if claim.provenance else "?"
                 lines.append(f"    [{src:>8}] {claim.category}: {claim.subject}")
@@ -73,8 +78,9 @@ def render_divergences(reports: list[DivergenceReport] | None = None) -> str:
     return "\n".join(lines)
 
 
-def render_dashboard(model: TruthModel | None = None,
-                     reports: list[DivergenceReport] | None = None) -> str:
+def render_dashboard(
+    model: TruthModel | None = None, reports: list[DivergenceReport] | None = None
+) -> str:
     """Render the full dashboard: Truth Model + divergences."""
     parts = [
         "+" + "=" * 78 + "+",
@@ -111,39 +117,67 @@ def run_dashboard() -> int:
 
 MOCK_CLAIMS = [
     Claim(
-        id="c1", category="endpoint", subject="POST /users",
+        id="c1",
+        category="endpoint",
+        subject="POST /users",
         value={"description": "Create a new user"},
-        provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"),
+        provenance=Provenance(
+            source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"
+        ),
     ),
     Claim(
-        id="c2", category="request", subject="POST /users -> body -> email",
+        id="c2",
+        category="request",
+        subject="POST /users -> body -> email",
         value={"type": "string", "format": "email"},
-        provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"),
+        provenance=Provenance(
+            source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"
+        ),
     ),
     Claim(
-        id="c3", category="request", subject="POST /users -> body -> password",
+        id="c3",
+        category="request",
+        subject="POST /users -> body -> password",
         value={"type": "string", "minLength": 8},
-        provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"),
+        provenance=Provenance(
+            source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"
+        ),
     ),
     Claim(
-        id="c4", category="response", subject="POST /users -> 201",
+        id="c4",
+        category="response",
+        subject="POST /users -> 201",
         value={"type": "object", "properties": {"id": "integer", "email": "string"}},
-        provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"),
+        provenance=Provenance(
+            source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"
+        ),
     ),
     Claim(
-        id="c5", category="response", subject="POST /users -> 422",
+        id="c5",
+        category="response",
+        subject="POST /users -> 422",
         value={"description": "Validation error"},
-        provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"),
+        provenance=Provenance(
+            source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"
+        ),
     ),
     Claim(
-        id="c6", category="endpoint", subject="GET /health",
+        id="c6",
+        category="endpoint",
+        subject="GET /health",
         value={"description": "Health check endpoint"},
-        provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"),
+        provenance=Provenance(
+            source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"
+        ),
     ),
     Claim(
-        id="c7", category="response", subject="GET /health -> 200",
+        id="c7",
+        category="response",
+        subject="GET /health -> 200",
         value={"type": "object", "properties": {"status": "string"}},
-        provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"),
+        provenance=Provenance(
+            source_type=ProvenanceType.SPEC, source_uri="stub/target_spec.json"
+        ),
     ),
 ]
 

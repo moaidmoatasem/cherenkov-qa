@@ -17,11 +17,12 @@ Usage pattern:
     if result.tautological:
         print(f"KILLED: {result.kill_reason}")
 """
+
 from __future__ import annotations
 
 import json
 import threading
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Callable
 
@@ -29,10 +30,11 @@ from typing import Callable
 @dataclass
 class SelfPlayResult:
     """Outcome of one adversarial self-play validation."""
+
     test_id: str
-    passed_correct: bool        # test passed against the spec-conforming mock
-    failed_broken: bool         # test failed against the deliberately-broken server
-    tautological: bool          # True → kill this test
+    passed_correct: bool  # test passed against the spec-conforming mock
+    failed_broken: bool  # test failed against the deliberately-broken server
+    tautological: bool  # True → kill this test
     kill_reason: str = ""
     correct_mock_output: str = ""
     broken_impl_output: str = ""
@@ -91,15 +93,17 @@ class BrokenImplServer:
             def log_message(self, *_: object) -> None:
                 pass  # suppress server log noise
 
-            do_GET    = _respond
-            do_POST   = _respond
-            do_PUT    = _respond
+            do_GET = _respond
+            do_POST = _respond
+            do_PUT = _respond
             do_DELETE = _respond
-            do_PATCH  = _respond
+            do_PATCH = _respond
 
         self._server = HTTPServer(("127.0.0.1", self.port), _Handler)
         self._thread = threading.Thread(
-            target=self._server.serve_forever, daemon=True, name=f"broken-impl-{self.port}"
+            target=self._server.serve_forever,
+            daemon=True,
+            name=f"broken-impl-{self.port}",
         )
         self._thread.start()
 
@@ -126,7 +130,7 @@ class AdversarialSelfPlay:
     """
 
     def __init__(self) -> None:
-        self._log: list[bool] = []   # True = tautological (killed)
+        self._log: list[bool] = []  # True = tautological (killed)
 
     def mobile_gate(self, app_id: str, platform: str, flows: list[dict]) -> dict:
         from cherenkov.sources.mobile.contracts import MobileFlow
@@ -177,9 +181,9 @@ class AdversarialSelfPlay:
             SelfPlayResult — check .tautological to decide whether to kill the test.
         """
         passed_correct, correct_out = run_test(correct_mock_url)
-        passed_broken,  broken_out  = run_test(broken_mock_url)
+        passed_broken, broken_out = run_test(broken_mock_url)
 
-        failed_broken = not passed_broken   # we WANT the test to fail on a broken impl
+        failed_broken = not passed_broken  # we WANT the test to fail on a broken impl
 
         tautological = passed_correct and not failed_broken
 
@@ -208,9 +212,9 @@ class AdversarialSelfPlay:
 
     def report(self) -> str:
         """One-line summary of self-play session."""
-        total  = len(self._log)
+        total = len(self._log)
         killed = sum(self._log)
-        rate   = self.kill_rate()
+        rate = self.kill_rate()
         return (
             f"Self-play: {total} tests evaluated, "
             f"{killed} killed (tautological), "

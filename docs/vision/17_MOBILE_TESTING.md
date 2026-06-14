@@ -1,7 +1,7 @@
 # Vision 17: Mobile Testing (Maestro/Appium, 4-Tier Devices)
 
-**Date:** 2026-06-08  
-**Status:** Active  
+**Date:** 2026-06-08
+**Status:** Active
 **Related EPIC:** #284 (Phase 5), #285 (Phase 6)
 
 ---
@@ -142,7 +142,7 @@ class HARParser:
         import json
         with open(har_path) as f:
             har = json.load(f)
-        
+
         return [
             {
                 "url": entry["request"]["url"],
@@ -171,10 +171,10 @@ class MobileSourceAdapter:
         self.apk_parser = APKParser()
         self.har_parser = HARParser()
         self.hil_parser = HILParser()
-    
+
     def ingest(self, source_path: str) -> MobileApp:
         path = Path(source_path)
-        
+
         if path.suffix == ".apk":
             return self.apk_parser.parse(source_path)
         elif path.suffix == ".har":
@@ -211,7 +211,7 @@ class PilotStep:
 class InMemoryRunner:
     def __init__(self):
         self.steps: list[PilotStep] = []
-    
+
     def execute_step(self, step: PilotStep) -> PilotStep:
         step.status = "running"
         time.sleep(0.1)
@@ -227,40 +227,40 @@ class PilotAgent:
         self.timeout_seconds = timeout_seconds
         self.observations = 0
         self.start_time = None
-    
+
     def run(self, intent: str) -> list[PilotStep]:
         self.start_time = time.time()
         self.observations = 0
-        
+
         steps = self._parse_intent(intent)
-        
+
         for step in steps:
             if self.observations >= self.max_observations:
                 step.status = "failed"
                 step.actual = "Circuit breaker: max observations reached"
                 break
-            
+
             if time.time() - self.start_time > self.timeout_seconds:
                 step.status = "failed"
                 step.actual = "Circuit breaker: timeout reached"
                 break
-            
+
             result = self.runner.execute_step(step)
             self.observations += 1
-            
+
             if result.status == "failed":
                 self._recover(result)
                 break
-        
+
         return self.runner.steps
-    
+
     def _parse_intent(self, intent: str) -> list[PilotStep]:
         return [
             PilotStep(step_id="1", action="open_app", target="app", expected="app_opened"),
             PilotStep(step_id="2", action="navigate", target="screen", expected="screen_visible"),
             PilotStep(step_id="3", action="verify", target="element", expected="element_present")
         ]
-    
+
     def _recover(self, failed_step: PilotStep):
         print(f"Pilot recovery: {failed_step.action} failed - {failed_step.actual}")
 ```
@@ -278,7 +278,7 @@ from cherenkov.sources.mobile.contracts import MobileApp, MobileFlow
 class MobilePlanStage:
     def plan(self, app: MobileApp, flows: list[MobileFlow]) -> list[dict]:
         scenarios = []
-        
+
         for flow in flows:
             scenarios.append({
                 "flow_id": flow.flow_id,
@@ -286,7 +286,7 @@ class MobilePlanStage:
                 "screens": flow.screens,
                 "actions": flow.actions
             })
-        
+
         return scenarios
 ```
 
@@ -299,23 +299,23 @@ import yaml
 class MobileGenerateStage:
     def generate(self, scenarios: list[dict]) -> str:
         tests = []
-        
+
         for scenario in scenarios:
             test = {
                 "appId": "com.example.app",
                 "name": scenario["name"],
                 "steps": []
             }
-            
+
             for action in scenario["actions"]:
                 step = {
                     "action": action["type"],
                     "target": action["target"]
                 }
                 test["steps"].append(step)
-            
+
             tests.append(test)
-        
+
         return yaml.dump({"tests": tests}, default_flow_style=False)
 ```
 
@@ -328,16 +328,16 @@ class MobileReviewStage:
         import yaml
         try:
             data = yaml.safe_load(yaml_content)
-            
+
             if "tests" not in data:
                 return {"status": "failed", "reason": "Missing 'tests' field"}
-            
+
             for test in data["tests"]:
                 if "appId" not in test:
                     return {"status": "failed", "reason": "Missing 'appId' in test"}
                 if "steps" not in test:
                     return {"status": "failed", "reason": "Missing 'steps' in test"}
-            
+
             return {"status": "approved", "tests": len(data["tests"])}
         except yaml.YAMLError as e:
             return {"status": "failed", "reason": f"Invalid YAML: {e}"}
@@ -354,22 +354,22 @@ from cherenkov.substrate.router import SubstrateRouter
 class SemanticVisualOracle:
     def __init__(self, router: SubstrateRouter):
         self.router = router
-    
+
     def analyze(self, screenshot: bytes, expected_description: str) -> dict:
         provider = self.router.get_vlm_provider()
-        
+
         if not provider:
             return self._pixel_diff(screenshot, expected_description)
-        
+
         prompt = f"""Analyze this mobile app screenshot.
 Expected: {expected_description}
 
 Describe what you see and whether it matches the expected description.
 Rate confidence from 0.0 to 1.0."""
-        
+
         response = provider.analyze(screenshot, prompt)
         confidence = self._parse_confidence(response.text)
-        
+
         if confidence < 0.7:
             return {
                 "status": "uncertain",
@@ -377,20 +377,20 @@ Rate confidence from 0.0 to 1.0."""
                 "description": response.text,
                 "action": "escalate_to_hitl"
             }
-        
+
         return {
             "status": "passed" if confidence > 0.8 else "failed",
             "confidence": confidence,
             "description": response.text
         }
-    
+
     def _pixel_diff(self, screenshot: bytes, expected_description: str) -> dict:
         return {
             "status": "pixel_diff_only",
             "confidence": 0.5,
             "description": "VLM not available, using pixel diff only"
         }
-    
+
     def _parse_confidence(self, text: str) -> float:
         import re
         match = re.search(r'confidence[:\s]+([0-9.]+)', text, re.IGNORECASE)
@@ -414,21 +414,21 @@ class MaestroEjector:
     def eject(self, yaml_content: str, output_dir: str):
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
-        
+
         data = yaml.safe_load(yaml_content)
-        
+
         for i, test in enumerate(data.get("tests", [])):
             test_file = output_path / f"test_{i+1}_{test['name']}.yaml"
-            
+
             standalone_test = {
                 "appId": test["appId"],
                 "name": test["name"],
                 "steps": test["steps"]
             }
-            
+
             with open(test_file, "w") as f:
                 yaml.dump(standalone_test, f, default_flow_style=False)
-        
+
         readme = output_path / "README.md"
         with open(readme, "w") as f:
             f.write(f"""# Mobile Tests (Maestro)
@@ -449,7 +449,7 @@ maestro test .
 
 {len(data.get('tests', []))} tests generated.
 """)
-        
+
         return output_path
 ```
 
@@ -462,29 +462,29 @@ from pathlib import Path
 class AppiumEjector:
     def eject(self, yaml_content: str, output_dir: str):
         import yaml
-        
+
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
-        
+
         data = yaml.safe_load(yaml_content)
-        
+
         for i, test in enumerate(data.get("tests", [])):
             test_file = output_path / f"test_{i+1}_{test['name']}.py"
             test_code = self._generate_appium_test(test)
-            
+
             with open(test_file, "w") as f:
                 f.write(test_code)
-        
+
         requirements = output_path / "requirements.txt"
         with open(requirements, "w") as f:
             f.write("Appium-Python-Client>=3.0.0\n")
             f.write("pytest>=7.0.0\n")
-        
+
         return output_path
-    
+
     def _generate_appium_test(self, test: dict) -> str:
         test_name = test["name"].replace(" ", "_").lower()
-        
+
         code = f'''"""Appium test: {test["name"]}"""
 import pytest
 from appium import webdriver
@@ -496,18 +496,18 @@ class Test{test_name.title().replace("_", "")}:
         options = UiAutomator2Options()
         options.platform_name = "Android"
         options.app = "/path/to/app.apk"
-        
+
         driver = webdriver.Remote("http://localhost:4723", options=options)
         yield driver
         driver.quit()
-    
+
     def test_{test_name}(self, driver):
 '''
-        
+
         for step in test.get("steps", []):
             action = step.get("action")
             target = step.get("target")
-            
+
             if action == "tap":
                 code += f'        driver.find_element("id", "{target}").click()\n'
             elif action == "type":
@@ -515,7 +515,7 @@ class Test{test_name.title().replace("_", "")}:
                 code += f'        driver.find_element("id", "{target}").send_keys("{text}")\n'
             elif action == "assert_visible":
                 code += f'        assert driver.find_element("id", "{target}").is_displayed()\n'
-        
+
         return code
 ```
 
@@ -540,7 +540,7 @@ class MobileFailure:
 class MobileReflectorExtension:
     def __init__(self, reflector):
         self.reflector = reflector
-    
+
     def classify_mobile_failure(self, failure: MobileFailure):
         self.reflector.store_verdict(
             verdict=failure.classification,
@@ -549,7 +549,7 @@ class MobileReflectorExtension:
             reason=failure.reason,
             metadata={"device_info": failure.device_info}
         )
-        
+
         if failure.classification == "mobile_bug":
             self.reflector.boost_idiom(f"mobile_bug_{failure.endpoint}")
         elif failure.classification == "mobile_flaky":
@@ -569,22 +569,22 @@ from cherenkov.oracle.visual_oracle_vlm import SemanticVisualOracle
 class MobileSelfPlayGate:
     def __init__(self, oracle: SemanticVisualOracle):
         self.oracle = oracle
-    
+
     def validate(self, screenshot: bytes, expected_description: str) -> dict:
         correct_result = self.oracle.analyze(screenshot, expected_description)
-        
+
         broken_description = "Completely different screen"
         broken_result = self.oracle.analyze(screenshot, broken_description)
-        
+
         malicious_screenshot = self._create_malicious_screenshot()
         malicious_result = self.oracle.analyze(malicious_screenshot, expected_description)
-        
+
         gate_passed = (
             correct_result["status"] == "passed" and
             broken_result["status"] == "failed" and
             malicious_result["status"] == "uncertain"
         )
-        
+
         return {
             "gate_passed": gate_passed,
             "correct_mock": correct_result,
@@ -604,21 +604,21 @@ from pathlib import Path
 
 def test_mobile_ingest():
     from cherenkov.stages.ingest import IngestStage
-    
+
     test_apk = Path("tests/fixtures/test.apk")
     if not test_apk.exists():
         pytest.skip("Test APK not found")
-    
+
     ingest = IngestStage()
     app = ingest.ingest(str(test_apk))
-    
+
     assert app.app_id
     assert app.platform in ["android", "ios"]
 
 def test_mobile_plan():
     from cherenkov.stages.mobile_plan import MobilePlanStage
     from cherenkov.sources.mobile.contracts import MobileApp, MobileFlow
-    
+
     app = MobileApp(
         app_id="com.test.app",
         name="Test App",
@@ -626,7 +626,7 @@ def test_mobile_plan():
         version="1.0",
         package_path="/tmp/test.apk"
     )
-    
+
     flows = [
         MobileFlow(
             flow_id="login",
@@ -638,15 +638,15 @@ def test_mobile_plan():
             ]
         )
     ]
-    
+
     planner = MobilePlanStage()
     scenarios = planner.plan(app, flows)
-    
+
     assert len(scenarios) > 0
 
 def test_mobile_generate():
     from cherenkov.stages.mobile_generate import MobileGenerateStage
-    
+
     scenarios = [
         {
             "flow_id": "login",
@@ -657,10 +657,10 @@ def test_mobile_generate():
             ]
         }
     ]
-    
+
     generator = MobileGenerateStage()
     yaml_content = generator.generate(scenarios)
-    
+
     assert "tests:" in yaml_content
     assert "Login Flow" in yaml_content
 ```

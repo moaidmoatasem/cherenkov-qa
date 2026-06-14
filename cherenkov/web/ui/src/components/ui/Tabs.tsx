@@ -31,8 +31,8 @@ export function Tabs({ items, activeId, onChange, className = '' }: TabsProps) {
   };
 
   return (
-    <div 
-      role="tablist" 
+    <div
+      role="tablist"
       aria-label="Screen Tabs"
       className={`flex items-center gap-1 bg-white/5 border border-border-custom p-1 rounded-xl w-fit ${className}`}
     >
@@ -50,8 +50,8 @@ export function Tabs({ items, activeId, onChange, className = '' }: TabsProps) {
             onClick={() => onChange(item.id)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={`px-4 py-1.5 rounded-lg text-sm font-semibold tracking-wide transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-glow-blue/50
-              ${isActive 
-                ? 'bg-glow-blue text-bg-base shadow-[0_0_10px_rgba(34,211,238,0.2)]' 
+              ${isActive
+                ? 'bg-glow-blue text-bg-base shadow-[0_0_10px_rgba(34,211,238,0.2)]'
                 : 'text-text-muted hover:text-text-primary hover:bg-white/5'
               }`}
           >

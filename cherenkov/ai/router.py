@@ -5,6 +5,7 @@ Authority: v3.1 + delta.
 Anti-lock-in: providers are swappable via config.
 Non-Docker fallback: Ollama provider is always available.
 """
+
 from __future__ import annotations
 
 import os

@@ -12,7 +12,7 @@ jobs:
     permissions:
       security-events: write
       contents: read
-    
+
     steps:
     - uses: actions/checkout@v3
 
@@ -30,7 +30,7 @@ jobs:
         target_url: 'http://localhost:3000' # Replace with your target URL
         format: 'sarif'
         output_path: 'cherenkov_results.sarif'
-        
+
     - name: Upload SARIF to GitHub Security Data
       if: always()
       uses: github/codeql-action/upload-sarif@v2

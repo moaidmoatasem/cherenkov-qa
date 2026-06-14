@@ -2,6 +2,7 @@
 CHERENKOV execution/playwright_invoke.py — native Playwright test execution runner.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import json
@@ -38,16 +39,24 @@ class PlaywrightRunner:
     def __init__(self, run_id: str | None = None):
         self.log = get_logger("PLAYWRIGHT", run_id)
         # Root is cherenkov-qa, stub is inside it
-        self.stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
+        self.stub_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../stub")
+        )
         self.tests_dir = os.path.join(self.stub_dir, "generated_tests")
         # Detect Windows UNC path — cmd.exe cannot use UNC as cwd
         self._use_wsl = sys.platform == "win32" and _is_unc_path(self.stub_dir)
 
-    def execute_test(self, scenario_id: str, api_url: str, test_code: str | None = None, update_snapshots: bool = False) -> dict:
+    def execute_test(
+        self,
+        scenario_id: str,
+        api_url: str,
+        test_code: str | None = None,
+        update_snapshots: bool = False,
+    ) -> dict:
         """Writes the generated TypeScript test code, executes Playwright natively, and parses the JSON results."""
         os.makedirs(self.tests_dir, exist_ok=True)
         test_file_path = os.path.join(self.tests_dir, f"{scenario_id}.spec.ts")
-        
+
         # 1. Write pure Playwright TS test code if provided
         if test_code is not None:
             with open(test_file_path, "w", encoding="utf-8") as f:
@@ -70,18 +79,20 @@ class PlaywrightRunner:
             "playwright execution finished",
             passed=(exit_code == 0),
             exit_code=exit_code,
-            trace_path=trace_path
+            trace_path=trace_path,
         )
-        
+
         return {
             "passed": (exit_code == 0),
             "exit_code": exit_code,
             "failure_message": failure_msg,
             "trace_path": trace_path,
-            "test_file": test_file_path
+            "test_file": test_file_path,
         }
 
-    def _exec_native(self, scenario_id: str, api_url: str, update_snapshots: bool) -> tuple:
+    def _exec_native(
+        self, scenario_id: str, api_url: str, update_snapshots: bool
+    ) -> tuple:
         env = os.environ.copy()
         env["API_URL"] = api_url
         playwright_out = os.environ.get("PLAYWRIGHT_OUTPUT_DIR") or os.path.join(
@@ -90,30 +101,39 @@ class PlaywrightRunner:
         env["PLAYWRIGHT_OUTPUT_DIR"] = playwright_out
 
         cmd = [
-            _npx(), "playwright", "test",
+            _npx(),
+            "playwright",
+            "test",
             f"generated_tests/{scenario_id}.spec.ts",
-            "--reporter=json"
+            "--reporter=json",
         ]
         cmd.append("--trace=on")
         if update_snapshots:
             cmd.append("--update-snapshots")
 
-        self.log.info("invoking playwright runner (native)", command=" ".join(cmd), api_url=api_url)
-        
+        self.log.info(
+            "invoking playwright runner (native)",
+            command=" ".join(cmd),
+            api_url=api_url,
+        )
+
         process = subprocess.run(
-            cmd,
-            cwd=self.stub_dir,
-            env=env,
-            capture_output=True,
-            text=True
+            cmd, cwd=self.stub_dir, env=env, capture_output=True, text=True
         )
         return self._parse_result(process.stdout, process.stderr, process.returncode)
 
-    def _exec_via_wsl(self, scenario_id: str, api_url: str, update_snapshots: bool) -> tuple:
+    def _exec_via_wsl(
+        self, scenario_id: str, api_url: str, update_snapshots: bool
+    ) -> tuple:
         linux_stub = _wsl_path(self.stub_dir)
         test_rel = f"generated_tests/{scenario_id}.spec.ts"
         cmd_parts = [
-            "npx", "playwright", "test", test_rel, "--reporter=json", "--trace=on"
+            "npx",
+            "playwright",
+            "test",
+            test_rel,
+            "--reporter=json",
+            "--trace=on",
         ]
         if update_snapshots:
             cmd_parts.append("--update-snapshots")
@@ -125,13 +145,13 @@ class PlaywrightRunner:
         )
         wsl_cmd = ["wsl.exe", "-e", "bash", "-c", shell_cmd]
 
-        self.log.info("invoking playwright runner (wsl)", command=" ".join(wsl_cmd), api_url=api_url)
-
-        process = subprocess.run(
-            wsl_cmd,
-            capture_output=True,
-            text=True
+        self.log.info(
+            "invoking playwright runner (wsl)",
+            command=" ".join(wsl_cmd),
+            api_url=api_url,
         )
+
+        process = subprocess.run(wsl_cmd, capture_output=True, text=True)
         return self._parse_result(process.stdout, process.stderr, process.returncode)
 
     @staticmethod
@@ -157,7 +177,9 @@ class PlaywrightRunner:
                                 if result.get("status") != "expected":
                                     errors = result.get("errors", [])
                                     if errors:
-                                        failure_msg += "\n".join([err.get("message", "") for err in errors])
+                                        failure_msg += "\n".join(
+                                            [err.get("message", "") for err in errors]
+                                        )
             else:
                 if exit_code != 0:
                     failure_msg = stderr or stdout or "Unknown execution failure."

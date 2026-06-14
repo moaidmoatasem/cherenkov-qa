@@ -18,11 +18,11 @@ interface PaletteItem {
   action: () => void;
 }
 
-export default function CommandPalette({ 
-  onNavigate, 
-  onNewRun, 
-  projects, 
-  onSelectProject 
+export default function CommandPalette({
+  onNavigate,
+  onNewRun,
+  projects,
+  onSelectProject
 }: CommandPaletteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -68,12 +68,12 @@ export default function CommandPalette({
     { id: 'eject', title: 'Go to Eject Suite', icon: Compass, subtitle: 'Export standalone Playwright tests', category: 'NAVIGATION', action: () => onNavigate('eject') },
     { id: 'governance', title: 'Go to Governance', subtitle: 'Certification audit and traceability', category: 'NAVIGATION', icon: Compass, action: () => onNavigate('governance') },
     { id: 'memory', title: 'Go to Memory & Pairing', subtitle: 'Reflector senior team idioms', category: 'NAVIGATION', icon: Compass, action: () => onNavigate('memory') },
-    
+
     // ACTIONS
     { id: 'action-new-run', title: 'New Run Setup', subtitle: 'Launch spec parser setup wizard', category: 'ACTIONS', icon: Terminal, action: () => { onNewRun(); } },
     { id: 'action-author-test', title: 'Author a test...', subtitle: 'Type plain intent to generate Playwright test', category: 'ACTIONS', icon: Terminal, action: () => { onNavigate('author'); } },
     { id: 'action-open-divergences', title: 'Open Divergences list', subtitle: 'Inspect active drifts and errors', category: 'ACTIONS', icon: Zap, action: () => { onNavigate('divergences'); } },
-    
+
     // WORKSPACES
     ...projects.map((p) => ({
       id: `project-${p.id}`,
@@ -119,11 +119,11 @@ export default function CommandPalette({
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] px-4 bg-black/60 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
-      <div 
+      <div
         ref={containerRef}
         className="w-full max-w-2xl bg-bg-base border border-border-custom rounded-2xl shadow-2xl flex flex-col max-h-[70vh] overflow-hidden cherenkov-glow"
         onKeyDown={handleKeyDown}
@@ -170,8 +170,8 @@ export default function CommandPalette({
                     setIsOpen(false);
                   }}
                   className={`px-4 py-3 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-all duration-150
-                    ${isSelected 
-                      ? 'bg-white/10 text-text-primary' 
+                    ${isSelected
+                      ? 'bg-white/10 text-text-primary'
                       : 'text-text-muted hover:text-text-primary hover:bg-white/5'
                     }`}
                 >

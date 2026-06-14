@@ -1,13 +1,15 @@
 """Integration tests for K8s operator — validates operator logic without a live cluster."""
+
 import unittest
-from unittest import mock
 
 
 class TestConformanceCheckOperatorConfig(unittest.TestCase):
     """Verify K8s operator RBAC and CRD config files are well-formed."""
 
     def test_rbac_role_yaml_exists_and_valid(self):
-        import yaml, os
+        import yaml
+        import os
+
         rbac_candidates = [
             "operator/config/rbac/role.yaml",
             "operator/config/rbac/manager_role.yaml",
@@ -24,7 +26,9 @@ class TestConformanceCheckOperatorConfig(unittest.TestCase):
         self.assertIn("batch", all_groups, "Missing batch RBAC rule")
 
     def test_crd_yaml_exists_and_valid(self):
-        import yaml, os, glob
+        import yaml
+        import glob
+
         crds = glob.glob("operator/config/crd/bases/*.yaml")
         self.assertTrue(crds, "No CRD YAML files found")
         with open(crds[0]) as f:
@@ -38,6 +42,7 @@ class TestK8sCRDStructure(unittest.TestCase):
 
     def test_types_file_has_device_targets(self):
         import os
+
         types_file = "operator/api/v1alpha1/conformancecheck_types.go"
         if not os.path.exists(types_file):
             self.skipTest("types file not found")
@@ -49,6 +54,7 @@ class TestK8sCRDStructure(unittest.TestCase):
 
     def test_controller_passes_device_env_vars(self):
         import os
+
         ctrl = "operator/controllers/conformancecheck_controller.go"
         if not os.path.exists(ctrl):
             self.skipTest("controller file not found")

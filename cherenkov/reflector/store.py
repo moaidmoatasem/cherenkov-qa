@@ -6,6 +6,7 @@ Pattern copied from stages/perf/perf_stage.py:_BaselineDB:
   - CREATE TABLE IF NOT EXISTS
   - simple insert / query
 """
+
 from __future__ import annotations
 
 import json
@@ -13,13 +14,10 @@ import os
 import sqlite3
 import threading
 import time
-import uuid
-from typing import Any
 
 from cherenkov.core.contracts import (
     DivergenceClass,
     Idiom,
-    ReflectorConfig,
     VerdictOutcome,
     VerdictRecord,
 )
@@ -43,9 +41,7 @@ def _validate_db_path(path: str) -> str:
 
 
 def _default_db_path() -> str:
-    repo_root = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "../..")
-    )
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
     return os.path.join(repo_root, ".cherenkov", "verdicts.db")
 
 
@@ -112,16 +108,13 @@ class VerdictStore:
             "ON verdicts(hypothesis_id)"
         )
         conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_verdicts_outcome "
-            "ON verdicts(outcome)"
+            "CREATE INDEX IF NOT EXISTS idx_verdicts_outcome " "ON verdicts(outcome)"
         )
         conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_verdicts_endpoint "
-            "ON verdicts(endpoint)"
+            "CREATE INDEX IF NOT EXISTS idx_verdicts_endpoint " "ON verdicts(endpoint)"
         )
         conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_idioms_decay "
-            "ON idioms(decay_score DESC)"
+            "CREATE INDEX IF NOT EXISTS idx_idioms_decay " "ON idioms(decay_score DESC)"
         )
         # E7 fix: suppress by SEMANTIC fingerprint, not ephemeral hypothesis_id.
         conn.execute(
@@ -159,7 +152,11 @@ class VerdictStore:
             conn.commit()
         except Exception as e:
             conn.rollback()
-            self.log.error("verdict_store_write_failed", error=str(e), record_id=getattr(record, 'id', 'unknown'))
+            self.log.error(
+                "verdict_store_write_failed",
+                error=str(e),
+                record_id=getattr(record, "id", "unknown"),
+            )
             raise  # re-raise so caller knows the write failed
 
     def get_verdict(self, verdict_id: str) -> VerdictRecord | None:
@@ -171,9 +168,7 @@ class VerdictStore:
             return None
         return self._row_to_verdict(row)
 
-    def get_verdicts_for_hypothesis(
-        self, hypothesis_id: str
-    ) -> list[VerdictRecord]:
+    def get_verdicts_for_hypothesis(self, hypothesis_id: str) -> list[VerdictRecord]:
         conn = self._connect()
         rows = conn.execute(
             "SELECT * FROM verdicts WHERE hypothesis_id=? ORDER BY timestamp DESC",
@@ -181,15 +176,12 @@ class VerdictStore:
         ).fetchall()
         return [self._row_to_verdict(r) for r in rows]
 
-    def get_rejected_hypothesis_ids(
-        self, endpoint: str | None = None
-    ) -> set[str]:
+    def get_rejected_hypothesis_ids(self, endpoint: str | None = None) -> set[str]:
         """Return hypothesis IDs that were rejected (so they can be suppressed)."""
         conn = self._connect()
         if endpoint:
             rows = conn.execute(
-                "SELECT hypothesis_id FROM verdicts "
-                "WHERE outcome=? AND endpoint=?",
+                "SELECT hypothesis_id FROM verdicts " "WHERE outcome=? AND endpoint=?",
                 (VerdictOutcome.REJECT.value, endpoint),
             ).fetchall()
         else:
@@ -230,9 +222,7 @@ class VerdictStore:
             ).fetchall()
         return {r[0] for r in rows}
 
-    def get_recent_verdicts(
-        self, limit: int = 50
-    ) -> list[VerdictRecord]:
+    def get_recent_verdicts(self, limit: int = 50) -> list[VerdictRecord]:
         conn = self._connect()
         rows = conn.execute(
             "SELECT * FROM verdicts ORDER BY timestamp DESC LIMIT ?",
@@ -262,9 +252,7 @@ class VerdictStore:
         )
         conn.commit()
 
-    def get_idioms(
-        self, min_decay: float = 0.3, limit: int = 20
-    ) -> list[Idiom]:
+    def get_idioms(self, min_decay: float = 0.3, limit: int = 20) -> list[Idiom]:
         conn = self._connect()
         rows = conn.execute(
             "SELECT * FROM idioms WHERE decay_score >= ? "
@@ -357,7 +345,9 @@ class ReflectorStore:
     """
 
     def __init__(self, db_path: str | None = None):
-        self.db_path = db_path or _default_db_path().replace("verdicts.db", "reflector.db")
+        self.db_path = db_path or _default_db_path().replace(
+            "verdicts.db", "reflector.db"
+        )
         if self.db_path != ":memory:":
             self.db_path = _validate_db_path(self.db_path)
         self._local = threading.local()
@@ -386,9 +376,7 @@ class ReflectorStore:
             "data TEXT NOT NULL,"
             "timestamp INTEGER NOT NULL)"
         )
-        conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_entries_type ON entries(type)"
-        )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_entries_type ON entries(type)")
         conn.commit()
 
     def append(self, entry: dict) -> None:

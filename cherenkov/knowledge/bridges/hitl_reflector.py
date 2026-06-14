@@ -9,7 +9,9 @@ class HITLReflectorBridge:
         self.repository = repository
         self.reflector = reflector
 
-    def on_hitl_decision(self, item_id: str, action: str, reason: str, endpoint: str, method: str) -> None:
+    def on_hitl_decision(
+        self, item_id: str, action: str, reason: str, endpoint: str, method: str
+    ) -> None:
         item = KnowledgeItem(
             item_id=f"hitl_{item_id}",
             source="hitl",

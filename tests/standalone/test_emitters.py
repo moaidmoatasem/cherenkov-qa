@@ -1,4 +1,5 @@
 """Tests for E4-1 and E4-2: Artifact Emitters."""
+
 import unittest
 import tempfile
 from pathlib import Path

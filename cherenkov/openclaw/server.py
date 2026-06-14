@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 import sys
 import threading
@@ -10,12 +9,17 @@ from typing import Any
 from cherenkov.core.errors import get_logger
 from cherenkov.hitl.contracts import HitlEnvelope
 from cherenkov.openclaw.adapter import OpenClawAdapter
-from cherenkov.openclaw.contracts import OpenClawConfig, TriggerRequest, ClassificationRequest
+from cherenkov.openclaw.contracts import (
+    OpenClawConfig,
+    TriggerRequest,
+    ClassificationRequest,
+)
 
 _HAS_FASTAPI = False
 try:
     from fastapi import FastAPI, HTTPException, Request
     from fastapi.responses import JSONResponse
+
     _HAS_FASTAPI = True
 except ImportError:
     FastAPI = None  # type: ignore
@@ -43,8 +47,13 @@ def create_app(
         data = env.model_dump()
         if env.ok:
             return JSONResponse(content=data, status_code=status_code)
-        http_status = 409 if env.error and env.error.code == "conflict" else \
-                      404 if env.error and env.error.code == "not_found" else 400
+        http_status = (
+            409
+            if env.error and env.error.code == "conflict"
+            else 404
+            if env.error and env.error.code == "not_found"
+            else 400
+        )
         return JSONResponse(content=data, status_code=http_status)
 
     @app.get("/health")
@@ -61,18 +70,30 @@ def create_app(
 
     @app.post("/hitl/approve/{item_id}")
     async def hitl_approve(item_id: str, request: Request):
-        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        body = (
+            await request.json()
+            if request.headers.get("content-type") == "application/json"
+            else {}
+        )
         actor = body.get("actor", os.environ.get("USER", "openclaw"))
         chat_user_id = body.get("chat_user_id")
-        return _to_json_response(adp.approve_envelope(item_id, actor, chat_user_id=chat_user_id))
+        return _to_json_response(
+            adp.approve_envelope(item_id, actor, chat_user_id=chat_user_id)
+        )
 
     @app.post("/hitl/reject/{item_id}")
     async def hitl_reject(item_id: str, request: Request):
-        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        body = (
+            await request.json()
+            if request.headers.get("content-type") == "application/json"
+            else {}
+        )
         actor = body.get("actor", os.environ.get("USER", "openclaw"))
         reason = body.get("reason", "rejected via openclaw")
         chat_user_id = body.get("chat_user_id")
-        return _to_json_response(adp.reject_envelope(item_id, actor, reason, chat_user_id=chat_user_id))
+        return _to_json_response(
+            adp.reject_envelope(item_id, actor, reason, chat_user_id=chat_user_id)
+        )
 
     @app.post("/hitl/lock/{item_id}")
     async def hitl_lock(item_id: str, request: Request):
@@ -112,7 +133,10 @@ def create_app(
 def serve(config: OpenClawConfig | None = None) -> None:
     """Run the OpenClaw HTTP server (blocking)."""
     if not _HAS_FASTAPI:
-        print("ERROR: FastAPI + uvicorn required. pip install fastapi uvicorn", file=sys.stderr)
+        print(
+            "ERROR: FastAPI + uvicorn required. pip install fastapi uvicorn",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     import uvicorn
@@ -144,7 +168,9 @@ def serve_background(
     class ServerThread(Thread):
         def __init__(self):
             super().__init__(daemon=True)
-            self._config = uvicorn.Config(app, host=cfg.host, port=cfg.port, log_level="warning")
+            self._config = uvicorn.Config(
+                app, host=cfg.host, port=cfg.port, log_level="warning"
+            )
             self._server = uvicorn.Server(self._config)
 
         def run(self):

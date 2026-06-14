@@ -1,7 +1,7 @@
 # CHERENKOV-QA System Design
 
-**Date:** 2026-06-08  
-**Status:** Active  
+**Date:** 2026-06-08
+**Status:** Active
 **Related EPIC:** #277 (Phase -1)
 
 ---
@@ -219,10 +219,10 @@ class AccessibilityOracle:
 class CustomVLMProvider:
     def analyze(self, image: bytes, prompt: str) -> VLMResponse:
         pass
-    
+
     def is_available(self) -> bool:
         pass
-    
+
     def get_tier(self) -> str:
         return "custom"
 ```

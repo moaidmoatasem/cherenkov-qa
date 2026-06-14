@@ -6,6 +6,7 @@ on thin data. Dependency-free.
 
 Run:  PYTHONPATH=. python3 smoke_test_perf_anomaly.py
 """
+
 from __future__ import annotations
 
 import statistics
@@ -44,16 +45,23 @@ def main() -> int:
     checks["(naive mean+stddev would miss it)"] = naive_fooled
 
     # 5) thin data -> abstain
-    checks["abstains on thin data"] = d.evaluate([50, 51], 999).kind == "insufficient_data"
+    checks["abstains on thin data"] = (
+        d.evaluate([50, 51], 999).kind == "insufficient_data"
+    )
 
     for k, ok in checks.items():
         print(f"  [{'ok' if ok else 'XX'}] {k}")
-    print(f"\n  naive upper bound with 9s outlier = {naive_upper:.0f}ms "
-          f"(so a real 300ms spike hides under it)")
+    print(
+        f"\n  naive upper bound with 9s outlier = {naive_upper:.0f}ms "
+        f"(so a real 300ms spike hides under it)"
+    )
 
     passed = all(checks.values())
-    print("\n[PASS] robust anomaly detector: spike + drift + contamination-resistant"
-          if passed else "\n[FAIL] see above")
+    print(
+        "\n[PASS] robust anomaly detector: spike + drift + contamination-resistant"
+        if passed
+        else "\n[FAIL] see above"
+    )
     return 0 if passed else 1
 
 

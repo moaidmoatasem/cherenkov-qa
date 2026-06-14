@@ -9,6 +9,7 @@ Egress: requires_egress=True — blocked when CHERENKOV_EGRESS=internal.
 
 Closes: #453
 """
+
 from __future__ import annotations
 
 import json

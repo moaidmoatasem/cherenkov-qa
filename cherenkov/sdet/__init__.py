@@ -12,6 +12,7 @@ Both are orchestrators over injected callables (generate / run / repair), so
 they are deterministic and unit-testable without a live model or server —
 mirroring the design of `divergence/self_play.py`.
 """
+
 from cherenkov.sdet.assertion_gate import MeaningfulAssertionGate
 from cherenkov.sdet.coverage_loop import CoverageLoop, RunOutcome
 

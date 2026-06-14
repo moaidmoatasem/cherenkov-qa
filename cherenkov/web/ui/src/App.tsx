@@ -172,7 +172,7 @@ function InnerApp() {
     setActiveSpecPath(specPath);
     setActiveTab('pipeline');
     setStatus('Live');
-    
+
     try {
       await runPipeline({
         spec_path: specPath,
@@ -201,7 +201,7 @@ function InnerApp() {
   // Called when human-in-the-loop approves tests in review queue
   const handleUpdatePassRateAndCount = (testCount: number, approvedCount: number) => {
     if (!selectedProjectId) return;
-    
+
     setProjects(prev => prev.map(p => {
       if (p.id === selectedProjectId) {
         const passPercent = Math.round((approvedCount / testCount) * 100);
@@ -221,7 +221,7 @@ function InnerApp() {
   // Decrement healing counts as suggestions are accepted/rejected
   const handleSuggestResolveCount = (count: number) => {
     if (!selectedProjectId) return;
-    
+
     setProjects(prev => prev.map(p => {
       if (p.id === selectedProjectId) {
         return {
@@ -248,7 +248,7 @@ function InnerApp() {
         {/* Mesh Background Decoration */}
         <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] bg-cyan-500/15 rounded-full blur-[120px] pointer-events-none z-0" />
         <div className="absolute bottom-[-100px] right-[-100px] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px] pointer-events-none z-0" />
-        
+
         {/* Global Reachability Layer: Command Palette */}
         <CommandPalette
           onNavigate={setActiveTab}
@@ -265,9 +265,9 @@ function InnerApp() {
         )}
 
         {showTour && !showOnboarding && (
-          <GuidedTour 
-            onClose={handleCloseTour} 
-            onNavigate={setActiveTab} 
+          <GuidedTour
+            onClose={handleCloseTour}
+            onNavigate={setActiveTab}
           />
         )}
 
@@ -415,9 +415,9 @@ function InnerApp() {
         </div>
 
         {/* Live-Run Execution Drawer contextually hosting PipelineScreen */}
-        <Drawer 
-          isOpen={isLiveDrawerOpen} 
-          onClose={() => setIsLiveDrawerOpen(false)} 
+        <Drawer
+          isOpen={isLiveDrawerOpen}
+          onClose={() => setIsLiveDrawerOpen(false)}
           title="Live Execution Pipeline Monitor"
         >
           <div className="h-[75vh] flex flex-col">

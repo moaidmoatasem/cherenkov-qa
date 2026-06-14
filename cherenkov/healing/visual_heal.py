@@ -3,16 +3,13 @@ CHERENKOV healing/visual_heal.py — Epoch 9 Visual Self-Heal.
 Suggest-only (Delta D7): analyses visual regression failures and
 produces a healing suggestion, never auto-applies.
 """
+
 from __future__ import annotations
 
-import json
 
 from cherenkov.core.errors import get_logger
-from cherenkov.core.contracts import VisualGateResult, VisualReport, Verdict
+from cherenkov.core.contracts import VisualReport, Verdict
 from cherenkov.oracle.visual_oracle import VisualOracle, VisualChangeKind
-from cherenkov.substrate.provider import get_vlm_provider
-from cherenkov.substrate.router import route
-from cherenkov.core.contracts import ReasoningRequest
 
 
 class VisualHealer:
@@ -73,8 +70,12 @@ class VisualHealer:
 
         if kind == VisualChangeKind.REDESIGN:
             lines.append("\nSUGGESTION: Intentional redesign detected.")
-            lines.append("  → Update baseline snapshot: run with --update-snapshots or init_mode=True")
-            lines.append("  → No code change needed — the UI was intentionally changed.")
+            lines.append(
+                "  → Update baseline snapshot: run with --update-snapshots or init_mode=True"
+            )
+            lines.append(
+                "  → No code change needed — the UI was intentionally changed."
+            )
         elif kind == VisualChangeKind.ANOMALY:
             anomalies = classification.get("anomalies", [])
             lines.append("\nSUGGESTION: Real UI anomaly detected.")
@@ -84,7 +85,9 @@ class VisualHealer:
                     lines.append(f"    - {a}")
             lines.append("  → Fix the UI issue, then re-run visual regression.")
         elif kind == VisualChangeKind.HARMLESS_SHIFT:
-            lines.append("\nSUGGESTION: Harmless visual shift (anti-aliasing, scrollbar, etc.).")
+            lines.append(
+                "\nSUGGESTION: Harmless visual shift (anti-aliasing, scrollbar, etc.)."
+            )
             lines.append("  → Consider raising threshold_pixels on the VisualScenario.")
             lines.append("  → Or accept the shift — no functional impact.")
         else:
@@ -92,7 +95,9 @@ class VisualHealer:
             lines.append("  → Review the diff manually.")
             lines.append("  → If expected, run with --update-snapshots to rebaseline.")
 
-        lines.append("\nNote: This is a SUGGESTION only (Delta D7). No files were modified.")
+        lines.append(
+            "\nNote: This is a SUGGESTION only (Delta D7). No files were modified."
+        )
 
         return {
             "healed": False,
@@ -118,7 +123,9 @@ class VisualHealer:
             category="visual_diff",
             subject="screenshot",
             value={"diff_pixels": diff_pixels},
-            provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri="visual_healer"),
+            provenance=Provenance(
+                source_type=ProvenanceType.SPEC, source_uri="visual_healer"
+            ),
         )
         result = self.oracle.evaluate(
             claim,
@@ -127,7 +134,9 @@ class VisualHealer:
             diff_pixels=diff_pixels,
         )
         return {
-            "kind": result.detail.split(" (confidence")[0] if result.detail else VisualChangeKind.UNKNOWN,
+            "kind": result.detail.split(" (confidence")[0]
+            if result.detail
+            else VisualChangeKind.UNKNOWN,
             "explanation": result.detail,
             "confidence": result.confidence,
             "anomalies": [],

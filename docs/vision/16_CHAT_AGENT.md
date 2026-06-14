@@ -1,7 +1,7 @@
 # Vision 16: Chat Agent (Tool-Calling, Persona Registry)
 
-**Date:** 2026-06-08  
-**Status:** Active  
+**Date:** 2026-06-08
+**Status:** Active
 **Related EPIC:** #283 (Phase 4)
 
 ---
@@ -91,7 +91,7 @@ class SQLiteConversationMemory:
     def __init__(self, db_path: str = "data/chat.db"):
         self.db_path = db_path
         self._init_db()
-    
+
     def _init_db(self):
         conn = sqlite3.connect(self.db_path)
         conn.execute("""
@@ -114,11 +114,11 @@ class SQLiteConversationMemory:
         """)
         conn.commit()
         conn.close()
-    
+
     def create_session(self) -> str:
         import uuid
         session_id = str(uuid.uuid4())
-        
+
         conn = sqlite3.connect(self.db_path)
         conn.execute(
             "INSERT INTO sessions (session_id, metadata) VALUES (?, ?)",
@@ -126,9 +126,9 @@ class SQLiteConversationMemory:
         )
         conn.commit()
         conn.close()
-        
+
         return session_id
-    
+
     def add_message(self, session_id: str, message: Message) -> None:
         conn = sqlite3.connect(self.db_path)
         conn.execute(
@@ -137,7 +137,7 @@ class SQLiteConversationMemory:
         )
         conn.commit()
         conn.close()
-    
+
     def get_messages(self, session_id: str, limit: int = 20) -> list[Message]:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.execute(
@@ -146,7 +146,7 @@ class SQLiteConversationMemory:
         )
         rows = cursor.fetchall()
         conn.close()
-        
+
         messages = []
         for row in rows:
             messages.append(Message(
@@ -156,16 +156,16 @@ class SQLiteConversationMemory:
                 timestamp=row[3],
                 metadata=json.loads(row[4]) if row[4] else {}
             ))
-        
+
         return list(reversed(messages))  # Oldest first
-    
+
     def close_session(self, session_id: str) -> None:
         # Persist to KnowledgeRepository
         messages = self.get_messages(session_id, limit=1000)
-        
+
         from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
         from cherenkov.knowledge.domain.models import KnowledgeItem
-        
+
         repo = SQLiteKnowledgeRepository()
         item = KnowledgeItem(
             item_id=f"chat_session_{session_id}",
@@ -205,7 +205,7 @@ class PersonaRegistry:
     def __init__(self):
         self.personas: dict[str, Persona] = {}
         self._register_default_personas()
-    
+
     def _register_default_personas(self):
         self.register(Persona(
             name="qa_assistant",
@@ -231,33 +231,33 @@ Guiding principles:
 """,
             context={}
         ))
-    
+
     def register(self, persona: Persona) -> None:
         self.personas[persona.name] = persona
-    
+
     def get(self, name: str) -> Persona | None:
         return self.personas.get(name)
-    
+
     def compose_prompt(self, persona_name: str, project_context: dict, idioms: list, tools: list) -> str:
         persona = self.get(persona_name)
         if not persona:
             return ""
-        
+
         prompt = persona.system_prompt
-        
+
         if project_context:
             prompt += f"\n\nProject Context:\n{project_context}"
-        
+
         if idioms:
             prompt += "\n\nLearned Patterns (top idioms):\n"
             for idiom in idioms[:5]:
                 prompt += f"- {idiom}\n"
-        
+
         if tools:
             prompt += "\n\nAvailable Tools:\n"
             for tool in tools:
                 prompt += f"- {tool['name']}: {tool['description']}\n"
-        
+
         return prompt
 ```
 
@@ -289,70 +289,70 @@ class QAChatAgent:
         self.tools = tools
         self.max_tool_calls = max_tool_calls
         self.token_budget = token_budget
-    
+
     def chat(self, session_id: str, user_message: str) -> Generator[str, None, None]:
         # Add user message
         user_msg = Message(role="user", content=user_message)
         self.memory.add_message(session_id, user_msg)
-        
+
         # Get conversation history
         messages = self.memory.get_messages(session_id, limit=20)
-        
+
         # Compose system prompt
         from cherenkov.knowledge.graph_rag import GraphRAG
         from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
-        
+
         repo = SQLiteKnowledgeRepository()
         rag = GraphRAG(repo)
         idioms = rag.query("idioms", limit=5)
-        
+
         system_prompt = self.persona_registry.compose_prompt(
             persona_name="qa_assistant",
             project_context={},
             idioms=[i.data for i in idioms],
             tools=self.tools
         )
-        
+
         # Build message list
         llm_messages = [{"role": "system", "content": system_prompt}]
         for msg in messages:
             llm_messages.append({"role": msg.role, "content": msg.content})
-        
+
         # Call LLM
         tool_call_count = 0
         while tool_call_count < self.max_tool_calls:
             response = self.router.chat(llm_messages)
-            
+
             if response.get("tool_calls"):
                 for tool_call in response["tool_calls"]:
                     tool_result = self._execute_tool(tool_call)
-                    
+
                     llm_messages.append({
                         "role": "tool",
                         "content": str(tool_result),
                         "tool_call_id": tool_call["id"]
                     })
-                    
+
                     tool_call_count += 1
-                
+
                 continue
             else:
                 assistant_msg = Message(role="assistant", content=response["content"])
                 self.memory.add_message(session_id, assistant_msg)
-                
+
                 for token in response["tokens"]:
                     yield token
-                
+
                 break
-    
+
     def _execute_tool(self, tool_call: dict) -> dict:
         tool_name = tool_call["function"]["name"]
         tool_args = tool_call["function"]["arguments"]
-        
+
         tool = next((t for t in self.tools if t["name"] == tool_name), None)
         if not tool:
             return {"error": f"Unknown tool: {tool_name}"}
-        
+
         try:
             result = tool["execute"](**tool_args)
             return result
@@ -427,39 +427,39 @@ def get_tools() -> list[dict]:
 def query_verdicts(endpoint: str, limit: int = 10) -> dict:
     from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
     from cherenkov.knowledge.domain.models import KnowledgeQuery
-    
+
     repo = SQLiteKnowledgeRepository()
     query = KnowledgeQuery(query=endpoint, source="verdicts", limit=limit)
     result = repo.query(query)
-    
+
     return result.to_dict()
 
 def query_idioms(pattern: str, limit: int = 10) -> dict:
     from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
     from cherenkov.knowledge.domain.models import KnowledgeQuery
-    
+
     repo = SQLiteKnowledgeRepository()
     query = KnowledgeQuery(query=pattern, source="idioms", limit=limit)
     result = repo.query(query)
-    
+
     return result.to_dict()
 
 def explain_divergence(endpoint: str, method: str) -> dict:
     from cherenkov.knowledge.graph_rag import GraphRAG
     from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
-    
+
     repo = SQLiteKnowledgeRepository()
     rag = GraphRAG(repo)
     result = rag.explain_divergence(endpoint, method)
-    
+
     return result.to_dict()
 
 def run_test(spec_path: str, endpoint: str) -> dict:
     from cherenkov.core.orchestrator import OrchestrationEngine
-    
+
     engine = OrchestrationEngine()
     result = engine.run_pipeline(spec_path, endpoints=[endpoint])
-    
+
     return {"status": "completed", "result": result}
 ```
 
@@ -483,26 +483,26 @@ async def stream_chat(session_id: str, message: str):
         from cherenkov.chat.domain.persona import PersonaRegistry
         from cherenkov.substrate.router import SubstrateRouter
         from cherenkov.chat.tools.registry import get_tools
-        
+
         memory = SQLiteConversationMemory()
         persona_registry = PersonaRegistry()
         router = SubstrateRouter()
         tools = get_tools()
-        
+
         agent = QAChatAgent(
             memory=memory,
             persona_registry=persona_registry,
             router=router,
             tools=tools
         )
-        
+
         for token in agent.chat(session_id, message):
             event = {"event": "token", "data": {"token": token}}
             yield f"data: {json.dumps(event)}\n\n"
-        
+
         event = {"event": "complete", "data": {}}
         yield f"data: {json.dumps(event)}\n\n"
-    
+
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 ```
 
@@ -527,28 +527,28 @@ export function ChatPanel() {
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     fetch('/api/v1/chat/sessions', { method: 'POST' })
       .then(r => r.json())
       .then(data => setSessionId(data.session_id));
   }, []);
-  
+
   useEffect(() => {
     if (!sessionId) return;
-    
+
     fetch(`/api/v1/chat/sessions/${sessionId}/messages`)
       .then(r => r.json())
       .then(data => setMessages(data.messages));
   }, [sessionId]);
-  
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-  
+
   const sendMessage = async () => {
     if (!input.trim() || !sessionId) return;
-    
+
     const userMessage: Message = {
       message_id: Date.now().toString(),
       role: 'user',
@@ -558,19 +558,19 @@ export function ChatPanel() {
     setMessages([...messages, userMessage]);
     setInput('');
     setIsStreaming(true);
-    
+
     const eventSource = new EventSource(
       `/api/v1/chat/sessions/${sessionId}/stream?message=${encodeURIComponent(input)}`
     );
-    
+
     let assistantContent = '';
-    
+
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      
+
       if (data.event === 'token') {
         assistantContent += data.data.token;
-        
+
         setMessages(msgs => {
           const lastMsg = msgs[msgs.length - 1];
           if (lastMsg?.role === 'assistant') {
@@ -603,13 +603,13 @@ export function ChatPanel() {
         eventSource.close();
       }
     };
-    
+
     eventSource.onerror = () => {
       setIsStreaming(false);
       eventSource.close();
     };
   };
-  
+
   return (
     <div className="chat-panel">
       <div className="chat-messages">
@@ -621,7 +621,7 @@ export function ChatPanel() {
         ))}
         <div ref={messagesEndRef} />
       </div>
-      
+
       <div className="chat-input">
         <input
           type="text"
@@ -654,11 +654,11 @@ class QueryVerdictsHandler(MCPHandler):
     def handle(self, request: MCPRequest) -> MCPResponse:
         endpoint = request.params.get("endpoint")
         limit = request.params.get("limit", 10)
-        
+
         repo = SQLiteKnowledgeRepository()
         query = KnowledgeQuery(query=endpoint, source="verdicts", limit=limit)
         result = repo.query(query)
-        
+
         return MCPResponse(result=result.to_dict())
 
 def register_knowledge_handlers(server):
@@ -683,17 +683,17 @@ def test_chat_agent_responds():
     persona_registry = PersonaRegistry()
     router = SubstrateRouter()
     tools = get_tools()
-    
+
     agent = QAChatAgent(
         memory=memory,
         persona_registry=persona_registry,
         router=router,
         tools=tools
     )
-    
+
     session_id = memory.create_session()
     response = list(agent.chat(session_id, "Hello"))
-    
+
     assert len(response) > 0
 ```
 

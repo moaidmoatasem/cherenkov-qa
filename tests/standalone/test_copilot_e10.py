@@ -9,9 +9,9 @@ Covers:
 
 All model calls are mocked; no network, no browser, no Ollama required.
 """
+
 import tempfile
 import unittest
-from pathlib import Path
 from unittest.mock import MagicMock
 
 from cherenkov.core.contracts import (
@@ -38,19 +38,24 @@ def _result(content) -> ReasoningResult:
 # E10-1  Explorer
 # ═══════════════════════════════════════════════════════════════════════════
 
-class TestExplorer(unittest.TestCase):
 
+class TestExplorer(unittest.TestCase):
     def _probe_map(self, mapping):
         """Build an http_probe that returns canned (status, latency, body) per URL suffix."""
+
         def probe(url, method):
             for suffix, val in mapping.items():
                 if url.endswith(suffix):
                     return val
             return 200, 10, "ok"
+
         return probe
 
     def test_5xx_is_critical_server_error(self):
-        ex = Explorer(base_url="http://app", http_probe=self._probe_map({"/boom": (500, 12, "stack")}))
+        ex = Explorer(
+            base_url="http://app",
+            http_probe=self._probe_map({"/boom": (500, 12, "stack")}),
+        )
         findings = ex.crawl(["/boom"])
         self.assertEqual(len(findings), 1)
         self.assertEqual(findings[0].kind, ExplorerFindingKind.SERVER_ERROR)
@@ -58,22 +63,32 @@ class TestExplorer(unittest.TestCase):
         self.assertEqual(findings[0].status, 500)
 
     def test_unreachable_when_no_status(self):
-        ex = Explorer(base_url="http://app", http_probe=self._probe_map({"/x": (None, 0, "refused")}))
+        ex = Explorer(
+            base_url="http://app",
+            http_probe=self._probe_map({"/x": (None, 0, "refused")}),
+        )
         findings = ex.crawl(["/x"])
         self.assertEqual(findings[0].kind, ExplorerFindingKind.UNREACHABLE)
         self.assertEqual(findings[0].severity, Severity.HIGH)
 
     def test_unexpected_status_flagged_against_expected(self):
-        ex = Explorer(base_url="http://app", http_probe=self._probe_map({"/p": (404, 8, "")}))
+        ex = Explorer(
+            base_url="http://app", http_probe=self._probe_map({"/p": (404, 8, "")})
+        )
         findings = ex.crawl(["/p"], expected_status=200)
         kinds = {f.kind for f in findings}
         self.assertIn(ExplorerFindingKind.CLIENT_ERROR, kinds)
 
     def test_slow_response_finding(self):
-        ex = Explorer(base_url="http://app", slow_ms=100,
-                      http_probe=self._probe_map({"/slow": (200, 5000, "")}))
+        ex = Explorer(
+            base_url="http://app",
+            slow_ms=100,
+            http_probe=self._probe_map({"/slow": (200, 5000, "")}),
+        )
         findings = ex.crawl(["/slow"])
-        self.assertTrue(any(f.kind == ExplorerFindingKind.SLOW_RESPONSE for f in findings))
+        self.assertTrue(
+            any(f.kind == ExplorerFindingKind.SLOW_RESPONSE for f in findings)
+        )
 
     def test_clean_200_yields_no_findings(self):
         ex = Explorer(base_url="http://app", http_probe=self._probe_map({}))
@@ -82,9 +97,21 @@ class TestExplorer(unittest.TestCase):
     def test_findings_become_hypotheses_with_classes(self):
         ex = Explorer(base_url="http://app")
         findings = [
-            ExplorerFinding(id="1", kind=ExplorerFindingKind.SERVER_ERROR, url="http://app/a", status=500),
-            ExplorerFinding(id="2", kind=ExplorerFindingKind.CLIENT_ERROR, url="http://app/b", status=404),
-            ExplorerFinding(id="3", kind=ExplorerFindingKind.JS_ERROR, url="http://app/c"),
+            ExplorerFinding(
+                id="1",
+                kind=ExplorerFindingKind.SERVER_ERROR,
+                url="http://app/a",
+                status=500,
+            ),
+            ExplorerFinding(
+                id="2",
+                kind=ExplorerFindingKind.CLIENT_ERROR,
+                url="http://app/b",
+                status=404,
+            ),
+            ExplorerFinding(
+                id="3", kind=ExplorerFindingKind.JS_ERROR, url="http://app/c"
+            ),
         ]
         hyps = ex.to_hypotheses(findings)
         self.assertEqual(len(hyps), 3)
@@ -95,16 +122,23 @@ class TestExplorer(unittest.TestCase):
 
     def test_ui_probe_injected(self):
         def ui_probe(url):
-            return [(ExplorerFindingKind.JS_ERROR, "Uncaught TypeError", "x is undefined")]
-        ex = Explorer(base_url="http://app",
-                      http_probe=self._probe_map({}), ui_probe=ui_probe)
+            return [
+                (ExplorerFindingKind.JS_ERROR, "Uncaught TypeError", "x is undefined")
+            ]
+
+        ex = Explorer(
+            base_url="http://app", http_probe=self._probe_map({}), ui_probe=ui_probe
+        )
         findings = ex.crawl(["/page"])
         self.assertTrue(any(f.kind == ExplorerFindingKind.JS_ERROR for f in findings))
 
     def test_ui_probe_exception_does_not_crash_crawl(self):
         def bad(url):
             raise RuntimeError("browser died")
-        ex = Explorer(base_url="http://app", http_probe=self._probe_map({}), ui_probe=bad)
+
+        ex = Explorer(
+            base_url="http://app", http_probe=self._probe_map({}), ui_probe=bad
+        )
         # 200 OK + failing ui probe → no findings, no exception
         self.assertEqual(ex.crawl(["/page"]), [])
 
@@ -113,8 +147,8 @@ class TestExplorer(unittest.TestCase):
 # E10-2  IntentAuthor
 # ═══════════════════════════════════════════════════════════════════════════
 
-class TestIntentAuthor(unittest.TestCase):
 
+class TestIntentAuthor(unittest.TestCase):
     def _router_returning(self, payload):
         r = MagicMock()
         r.route.return_value = _result(payload)
@@ -134,7 +168,9 @@ class TestIntentAuthor(unittest.TestCase):
             ],
         }
         author = IntentAuthor(router=self._router_returning(payload))
-        spec = author.parse("check guest checkout with a discount", target_url="http://shop")
+        spec = author.parse(
+            "check guest checkout with a discount", target_url="http://shop"
+        )
         self.assertEqual(spec.title, "Guest checkout with discount")
         self.assertEqual(len(spec.steps), 4)
         self.assertEqual(spec.data_hints["discount_code"], "SAVE10")
@@ -163,20 +199,25 @@ class TestIntentAuthor(unittest.TestCase):
         spec = author.parse("log in", target_url="http://x")
         code = author.to_playwright(spec)
         self.assertIn('import { test, expect } from "@playwright/test"', code)
-        self.assertIn("getByRole(\"button\"", code)
+        self.assertIn('getByRole("button"', code)
         self.assertIn("getByLabel", code)
-        self.assertIn("getByText(\"Welcome\")", code)
+        self.assertIn('getByText("Welcome")', code)
         # no raw CSS/XPath selectors authored by a human
         self.assertNotIn("page.locator(", code)
         self.assertNotIn("xpath=", code)
         self.assertNotIn("css=", code)
 
     def test_author_writes_ejectable_file(self):
-        payload = {"title": "Smoke", "kind": "ui",
-                   "steps": [{"action": "navigate", "value": "http://x"}]}
+        payload = {
+            "title": "Smoke",
+            "kind": "ui",
+            "steps": [{"action": "navigate", "value": "http://x"}],
+        }
         author = IntentAuthor(router=self._router_returning(payload))
         with tempfile.TemporaryDirectory() as d:
-            spec, path = author.author("smoke test", output_dir=d, target_url="http://x")
+            spec, path = author.author(
+                "smoke test", output_dir=d, target_url="http://x"
+            )
             self.assertTrue(path.exists())
             self.assertTrue(path.name.endswith(".spec.ts"))
             text = path.read_text()
@@ -191,14 +232,22 @@ class TestIntentAuthor(unittest.TestCase):
 # E10-3  SecondPairOfEyes
 # ═══════════════════════════════════════════════════════════════════════════
 
-class TestSecondPairOfEyes(unittest.TestCase):
 
+class TestSecondPairOfEyes(unittest.TestCase):
     def test_digest_ranks_critical_first(self):
         findings = [
-            ExplorerFinding(id="1", kind=ExplorerFindingKind.SLOW_RESPONSE,
-                            url="http://app/slow", severity=Severity.LOW),
-            ExplorerFinding(id="2", kind=ExplorerFindingKind.SERVER_ERROR,
-                            url="http://app/boom", severity=Severity.CRITICAL),
+            ExplorerFinding(
+                id="1",
+                kind=ExplorerFindingKind.SLOW_RESPONSE,
+                url="http://app/slow",
+                severity=Severity.LOW,
+            ),
+            ExplorerFinding(
+                id="2",
+                kind=ExplorerFindingKind.SERVER_ERROR,
+                url="http://app/boom",
+                severity=Severity.CRITICAL,
+            ),
         ]
         digest = SecondPairOfEyes().build("http://app", findings=findings)
         self.assertEqual(len(digest.items), 2)
@@ -214,13 +263,23 @@ class TestSecondPairOfEyes(unittest.TestCase):
         reflector = MagicMock()
         # rerank returns hypotheses unchanged; idioms add a prior
         reflector.rerank.side_effect = lambda h, endpoint=None: h
-        idiom = MagicMock(pattern="tenant isolation on list endpoints",
-                          decay_score=0.9, confirm_count=3, endpoint="GET /list")
+        idiom = MagicMock(
+            pattern="tenant isolation on list endpoints",
+            decay_score=0.9,
+            confirm_count=3,
+            endpoint="GET /list",
+        )
         reflector.get_top_idioms.return_value = [idiom]
         digest = SecondPairOfEyes(reflector=reflector).build(
             "http://app",
-            findings=[ExplorerFinding(id="1", kind=ExplorerFindingKind.SERVER_ERROR,
-                                      url="http://app/x", severity=Severity.HIGH)],
+            findings=[
+                ExplorerFinding(
+                    id="1",
+                    kind=ExplorerFindingKind.SERVER_ERROR,
+                    url="http://app/x",
+                    severity=Severity.HIGH,
+                )
+            ],
         )
         sources = {it.source for it in digest.items}
         self.assertIn("idiom", sources)
@@ -231,8 +290,8 @@ class TestSecondPairOfEyes(unittest.TestCase):
 # E10-4  Triage
 # ═══════════════════════════════════════════════════════════════════════════
 
-class TestTriage(unittest.TestCase):
 
+class TestTriage(unittest.TestCase):
     def test_mapping_covers_all_classes(self):
         t = Triage()
         cases = {
@@ -256,7 +315,9 @@ class TestTriage(unittest.TestCase):
 
     def test_reflector_nudges_bug_to_intended(self):
         reflector = MagicMock()
-        reflector.idioms_for.return_value = [MagicMock(pattern="intended drift accepted")]
+        reflector.idioms_for.return_value = [
+            MagicMock(pattern="intended drift accepted")
+        ]
         t = Triage(reflector=reflector)
         res = t.triage("s1", FailureClass.CONTRACT_DRIFT, endpoint="GET /x")
         self.assertEqual(res.category, TriageCategory.INTENDED)

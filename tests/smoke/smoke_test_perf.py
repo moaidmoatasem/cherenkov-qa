@@ -11,6 +11,7 @@ Proves:
 
 Authority: v3.1 + delta. Track A surface, optional B2 perf layer.
 """
+
 import os
 import sqlite3
 import time
@@ -26,14 +27,23 @@ def _start_target():
     print("Starting target API on port 8000...")
     target_dir = os.path.abspath(os.path.join(REPO, "target"))
     proc = subprocess.Popen(
-        [".venv/bin/uvicorn", "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
-        cwd=target_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        [
+            ".venv/bin/uvicorn",
+            "target_api:app",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "8000",
+        ],
+        cwd=target_dir,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     for attempt in range(20):
         try:
             r = requests.get("http://127.0.0.1:8000/health", timeout=1)
             if r.status_code == 200:
-                print("Target API healthy (attempt " + str(attempt+1) + ").")
+                print("Target API healthy (attempt " + str(attempt + 1) + ").")
                 return proc
         except Exception:
             time.sleep(0.5)
@@ -69,11 +79,24 @@ def _row_count():
 
 def _run_perf():
     return subprocess.run(
-        ["./bin/cherenkov", "perf", "--target", "http://127.0.0.1:8000",
-         "--endpoint", "/health", "--method", "GET",
-         "--vus", "2", "--duration", "2"],
-        cwd=REPO, env={**os.environ, "PYTHONPATH": "."},
-        capture_output=True, text=True,
+        [
+            "./bin/cherenkov",
+            "perf",
+            "--target",
+            "http://127.0.0.1:8000",
+            "--endpoint",
+            "/health",
+            "--method",
+            "GET",
+            "--vus",
+            "2",
+            "--duration",
+            "2",
+        ],
+        cwd=REPO,
+        env={**os.environ, "PYTHONPATH": "."},
+        capture_output=True,
+        text=True,
     )
 
 
@@ -101,19 +124,42 @@ def main():
             print("--- stderr ---")
             print(result.stderr[-1500:])
         # HITL (k6 missing or initializing) is acceptable; non-zero exit only on hard FAIL status
-        assert result.returncode == 0, "perf must exit 0 (HITL/initializing OK) — got " + str(result.returncode)
+        assert result.returncode == 0, (
+            "perf must exit 0 (HITL/initializing OK) — got " + str(result.returncode)
+        )
 
         rows_after = _row_count()
-        assert rows_after > rows_before, "Expected at least one new row in perf_metrics.db — got " + str(rows_before) + " -> " + str(rows_after)
-        print("[OK] SQLite baseline DB rows: " + str(rows_before) + " -> " + str(rows_after))
+        assert rows_after > rows_before, (
+            "Expected at least one new row in perf_metrics.db — got "
+            + str(rows_before)
+            + " -> "
+            + str(rows_after)
+        )
+        print(
+            "[OK] SQLite baseline DB rows: "
+            + str(rows_before)
+            + " -> "
+            + str(rows_after)
+        )
 
         user_after = _snapshot_user_tests()
         new = set(user_after) - set(user_before)
-        changed = [p for p in (set(user_before) & set(user_after)) if user_before[p] != user_after[p]]
-        assert not (new or changed), "D7 violation: user files changed new=" + str(sorted(new)) + " changed=" + str(sorted(changed))
+        changed = [
+            p
+            for p in (set(user_before) & set(user_after))
+            if user_before[p] != user_after[p]
+        ]
+        assert not (new or changed), (
+            "D7 violation: user files changed new="
+            + str(sorted(new))
+            + " changed="
+            + str(sorted(changed))
+        )
         print("[OK] D7: user-owned files in stub/generated_tests/ untouched.")
 
-        assert os.path.exists(K6_SCRATCHPAD), "k6_perf.js scratchpad must be written by the stage"
+        assert os.path.exists(
+            K6_SCRATCHPAD
+        ), "k6_perf.js scratchpad must be written by the stage"
         print("[OK] k6 script scratchpad written at: " + K6_SCRATCHPAD)
 
     finally:

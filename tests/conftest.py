@@ -6,7 +6,7 @@ Provides:
 - ensure_port_8000_free: kills stale processes on port 8000 before each test
 - Markers for environment-dependent tests (playwright, ollama, gpu)
 """
-import os
+
 import socket
 import subprocess
 import time
@@ -14,9 +14,15 @@ import pytest
 
 
 def pytest_configure(config):
-    config.addinivalue_line("markers", "requires_playwright: test needs Playwright + Node installed")
-    config.addinivalue_line("markers", "requires_ollama: test needs a running Ollama instance")
-    config.addinivalue_line("markers", "requires_gpu: test needs a GPU runner with qwen2.5-coder")
+    config.addinivalue_line(
+        "markers", "requires_playwright: test needs Playwright + Node installed"
+    )
+    config.addinivalue_line(
+        "markers", "requires_ollama: test needs a running Ollama instance"
+    )
+    config.addinivalue_line(
+        "markers", "requires_gpu: test needs a GPU runner with qwen2.5-coder"
+    )
 
 
 def _port_in_use(port: int) -> bool:
@@ -33,8 +39,7 @@ def _free_port(port: int, timeout: float = 8.0) -> None:
     """Kill any process holding the given port, then wait for it to be released."""
     try:
         result = subprocess.run(
-            ["fuser", "-k", f"{port}/tcp"],
-            capture_output=True, timeout=5
+            ["fuser", "-k", f"{port}/tcp"], capture_output=True, timeout=5
         )
     except (FileNotFoundError, subprocess.TimeoutExpired):
         pass

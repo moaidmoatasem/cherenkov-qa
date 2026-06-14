@@ -1,9 +1,9 @@
 # CHERENKOV — Proof Run (E3-5)
 
-**Target:** Swagger Petstore v3 — the reference implementation of the OpenAPI Specification.  
-**Spec:** `https://petstore3.swagger.io/api/v3/openapi.json`  
-**Live server:** `https://petstore3.swagger.io/api/v3`  
-**CHERENKOV commit:** see `git log --oneline -1`  
+**Target:** Swagger Petstore v3 — the reference implementation of the OpenAPI Specification.
+**Spec:** `https://petstore3.swagger.io/api/v3/openapi.json`
+**Live server:** `https://petstore3.swagger.io/api/v3`
+**CHERENKOV commit:** see `git log --oneline -1`
 **Date:** 2026-06-02
 
 ---
@@ -30,7 +30,7 @@ The Petstore is the canonical "reference implementation" for OpenAPI tooling. Ev
 
 ## D-01 · Enum validation not enforced on `findByStatus`
 
-**Class:** D1 spec↔code  
+**Class:** D1 spec↔code
 **Severity:** medium
 
 ### Claim A (the spec)
@@ -67,7 +67,7 @@ Clients that rely on the spec to validate `status` values before sending will pa
 
 ## D-02 · Required field `photoUrls` not enforced on `POST /pet`
 
-**Class:** D1 spec↔code  
+**Class:** D1 spec↔code
 **Severity:** high
 
 ### Claim A (the spec)
@@ -109,7 +109,7 @@ Any client that depends on server-side validation of required fields will ship c
 
 ## D-03 · `petId=0` returns 404 instead of 400
 
-**Class:** D5 spec↔prod  
+**Class:** D5 spec↔prod
 **Severity:** low
 
 ### Claim A (the spec)
@@ -146,7 +146,7 @@ Clients that distinguish 400 from 404 to decide whether to retry a request will 
 
 ## D-04 · `GET /store/inventory` returns sparse data regardless of stored pets
 
-**Class:** D2 code↔prod  
+**Class:** D2 code↔prod
 **Severity:** medium
 
 ### Claim A (the spec)
@@ -185,7 +185,7 @@ Consumers that iterate over inventory keys to show a status dashboard will displ
 
 ## D-05 · Required response headers absent from `GET /user/login`
 
-**Class:** D5 spec↔prod  
+**Class:** D5 spec↔prod
 **Severity:** medium
 
 ### Claim A (the spec)

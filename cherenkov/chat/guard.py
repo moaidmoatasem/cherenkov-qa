@@ -18,7 +18,11 @@ class GuardResult:
         self.metadata = metadata or {}
 
     def to_dict(self) -> dict[str, Any]:
-        return {"allowed": self.allowed, "reason": self.reason, "metadata": self.metadata}
+        return {
+            "allowed": self.allowed,
+            "reason": self.reason,
+            "metadata": self.metadata,
+        }
 
 
 class SafetyGuard:
@@ -41,6 +45,7 @@ class SafetyGuard:
     def _init_sponsio(self) -> None:
         try:
             from sponsio import Sponsio
+
             self._sponsio = Sponsio()
             logger.info("SafetyGuard: Sponsio runtime contracts active")
         except ImportError:
@@ -69,16 +74,21 @@ class SafetyGuard:
     def _init_agt(self) -> None:
         try:
             from agentmesh.governance import PolicyEngine
+
             self._agt_engine = PolicyEngine(conflict_strategy="priority_first_match")
             policy_path = os.getenv("CHERENKOV_AGT_POLICY", "policy.yaml")
             if os.path.exists(policy_path):
                 policy = self._agt_engine.load_yaml_file(policy_path)
                 self._agt_engine.load_policy(policy)
-                logger.info("SafetyGuard: MS AGT policy engine active (policy=%s)", policy_path)
+                logger.info(
+                    "SafetyGuard: MS AGT policy engine active (policy=%s)", policy_path
+                )
             else:
                 logger.debug("SafetyGuard: policy.yaml not found at %s", policy_path)
         except ImportError:
-            logger.debug("SafetyGuard: agent-governance-toolkit not installed — policy checks skipped")
+            logger.debug(
+                "SafetyGuard: agent-governance-toolkit not installed — policy checks skipped"
+            )
         except Exception as exc:
             logger.warning("SafetyGuard: MS AGT init failed — %s", exc)
 
@@ -122,7 +132,9 @@ class SafetyGuard:
             from agentrr_core.schema.events import RunHeader
             from agentrr_recorder import Recorder
         except ImportError:
-            logger.debug("SafetyGuard: agentrr not installed — replay recording skipped")
+            logger.debug(
+                "SafetyGuard: agentrr not installed — replay recording skipped"
+            )
             return
 
         try:
@@ -176,20 +188,29 @@ class SafetyGuard:
         return GuardResult(allowed=True)
 
     def record_tool_call(self, name: str, args: dict[str, Any], result: Any) -> None:
-        self._record("tool_call", {
-            "name": name,
-            "args": args,
-            "result": result,
-        })
+        self._record(
+            "tool_call",
+            {
+                "name": name,
+                "args": args,
+                "result": result,
+            },
+        )
 
     def record_llm_call(self, messages: list[dict], response: str) -> None:
-        self._record("llm_call", {
-            "messages_count": len(messages),
-            "response_preview": response[:200],
-        })
+        self._record(
+            "llm_call",
+            {
+                "messages_count": len(messages),
+                "response_preview": response[:200],
+            },
+        )
 
-    def wrap_tool(self, name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def wrap_tool(
+        self, name: str
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         """Decorator factory: wrap a tool function with check-then-execute-then-record."""
+
         def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
             @functools.wraps(fn)
             def wrapped(**kwargs: Any) -> dict[str, Any]:
@@ -203,16 +224,20 @@ class SafetyGuard:
                 result = fn(**kwargs)
                 self.record_tool_call(name, kwargs, result)
                 return result
+
             return wrapped
+
         return decorator
 
     def wrap_llm(self, fn: Callable[..., str]) -> Callable[..., str]:
         """Wrap the LLM call function with recording."""
+
         @functools.wraps(fn)
         def wrapped(messages: list[dict]) -> str:
             response = fn(messages)
             self.record_llm_call(messages, response)
             return response
+
         return wrapped
 
 

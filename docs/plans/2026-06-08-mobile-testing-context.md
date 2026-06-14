@@ -1002,5 +1002,3 @@ without a terminal log.*
 ---
 
 **End of plan.**
-
-

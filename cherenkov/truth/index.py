@@ -9,8 +9,6 @@ Uses numpy for cosine similarity (no external vector DB dependency).
 from __future__ import annotations
 
 import json
-import time
-from typing import Any
 
 import numpy as np
 import requests
@@ -30,7 +28,7 @@ def _normalise(v: np.ndarray) -> np.ndarray:
 def embed_text(text: str, model: str = "nomic-embed-text") -> list[float]:
     """Embed a single text string via Ollama's nomic-embed-text model."""
     base_url = Config.OLLAMA_URL.rsplit("/api/generate", 1)[0]
-    
+
     try:
         resp = requests.post(
             f"{base_url}/api/embed",

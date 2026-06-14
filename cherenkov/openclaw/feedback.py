@@ -75,7 +75,9 @@ class HealingFeedbackStore:
             )
             con.commit()
         except sqlite3.OperationalError as exc:
-            self.log.warning("db init failed (non-fatal on some filesystems)", error=str(exc))
+            self.log.warning(
+                "db init failed (non-fatal on some filesystems)", error=str(exc)
+            )
 
     def record_feedback(
         self,
@@ -86,17 +88,33 @@ class HealingFeedbackStore:
         actor: str = "unknown",
         detail: str = "",
     ) -> None:
-        assert classification in ("regression", "intended", "ignore"), f"Invalid classification: {classification}"
+        assert classification in (
+            "regression",
+            "intended",
+            "ignore",
+        ), f"Invalid classification: {classification}"
         con = self._connect()
         con.execute(
             "INSERT INTO healing_feedback_log "
             "(item_id, endpoint, mutation_id, classification, actor, detail, timestamp) "
             "VALUES (?,?,?,?,?,?,?)",
-            (item_id, endpoint, mutation_id, classification, actor, detail, int(time.time())),
+            (
+                item_id,
+                endpoint,
+                mutation_id,
+                classification,
+                actor,
+                detail,
+                int(time.time()),
+            ),
         )
         con.commit()
-        self.log.info("recorded healing feedback",
-                      item_id=item_id, classification=classification, endpoint=endpoint)
+        self.log.info(
+            "recorded healing feedback",
+            item_id=item_id,
+            classification=classification,
+            endpoint=endpoint,
+        )
 
     def compute_thresholds(self, endpoint: str, mutation_id: str) -> dict[str, Any]:
         """Compute Laplace-smoothed thresholds for an endpoint+mutation pair.

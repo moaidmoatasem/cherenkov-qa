@@ -19,9 +19,9 @@ interface TopBarProps {
   demoMode?: boolean;
 }
 
-export default function TopBar({ 
-  currentProject, 
-  status, 
+export default function TopBar({
+  currentProject,
+  status,
   activeTab,
   totalSpentEstimated,
   autonomy,
@@ -29,7 +29,7 @@ export default function TopBar({
   onLiveClick,
   demoMode
 }: TopBarProps) {
-  
+
   const [sessionTime, setSessionTime] = React.useState(0);
 
   React.useEffect(() => {
@@ -43,7 +43,7 @@ export default function TopBar({
     const s = seconds % 60;
     return `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
-  
+
   const getTabLabel = (tab: string) => {
     switch (tab) {
       case 'projects': return 'Project Register';
@@ -99,8 +99,8 @@ export default function TopBar({
               aria-checked={isActive}
               onClick={() => setAutonomy(level)}
               className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-glow-blue focus:outline-none
-                ${isActive 
-                  ? 'bg-glow-blue text-bg-base shadow-[0_0_8px_rgba(34,211,238,0.35)]' 
+                ${isActive
+                  ? 'bg-glow-blue text-bg-base shadow-[0_0_8px_rgba(34,211,238,0.35)]'
                   : 'text-text-muted hover:text-text-primary hover:bg-white/5'
                 }`}
             >

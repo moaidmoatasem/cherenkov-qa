@@ -11,6 +11,7 @@ Default model mapping:
   deep   → nemotron-super-49b  (highest accuracy; use for planning / review gates)
   vision → nemotron-vlm-4b     (multimodal; visual regression oracle)
 """
+
 from __future__ import annotations
 
 import json
@@ -36,6 +37,7 @@ class NemoClawProvider:
     def __init__(self, client: InferenceClient | None = None) -> None:
         if client is None:
             from cherenkov.ai.nemoclaw_client import NemoClawInferenceClient
+
             client = NemoClawInferenceClient()
         self.client = client
 
@@ -47,14 +49,22 @@ class NemoClawProvider:
         return Config.NEMOCLAW_DEEP_MODEL
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
-        system_prompt = "You are a logical QA AI assistant specializing in API conformance testing."
+        system_prompt = (
+            "You are a logical QA AI assistant specializing in API conformance testing."
+        )
         user_prompt = request.task
         model = self._model_for_tier(request.capability_tier)
 
         t0 = time.time()
 
-        if request.capability_tier == "vision" and request.output_schema and "image_path" in request.output_schema:
-            import base64, pathlib
+        if (
+            request.capability_tier == "vision"
+            and request.output_schema
+            and "image_path" in request.output_schema
+        ):
+            import base64
+            import pathlib
+
             image_bytes = pathlib.Path(request.output_schema["image_path"]).read_bytes()
             image_data = base64.b64encode(image_bytes).decode()
             content = self.client.complete_vision(

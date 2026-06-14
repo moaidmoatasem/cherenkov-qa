@@ -9,6 +9,7 @@ This package provides:
 
 try:
     from cherenkov.truth.index import EmbeddingIndex, embed_text
+
     _index_available = True
 except ImportError:
     EmbeddingIndex = None  # type: ignore[assignment,misc]

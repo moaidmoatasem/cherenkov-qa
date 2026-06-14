@@ -38,9 +38,7 @@ class LocalAIVLMProvider:
                         {"type": "text", "text": user_prompt},
                         {
                             "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{image_data}"
-                            },
+                            "image_url": {"url": f"data:image/png;base64,{image_data}"},
                         },
                     ],
                 }
@@ -56,9 +54,7 @@ class LocalAIVLMProvider:
         data = resp.json()
         return data["choices"][0]["message"]["content"]
 
-    def compare_images(
-        self, baseline_path: str, actual_path: str
-    ) -> dict[str, Any]:
+    def compare_images(self, baseline_path: str, actual_path: str) -> dict[str, Any]:
         baseline_b64 = _encode_image(baseline_path)
         actual_b64 = _encode_image(actual_path)
         payload = {
@@ -83,9 +79,7 @@ class LocalAIVLMProvider:
                         },
                         {
                             "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{actual_b64}"
-                            },
+                            "image_url": {"url": f"data:image/png;base64,{actual_b64}"},
                         },
                     ],
                 }

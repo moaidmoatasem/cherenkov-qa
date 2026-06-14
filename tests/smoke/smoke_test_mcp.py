@@ -13,6 +13,7 @@ Kill criteria (all must pass for exit 0):
 Runs entirely in-process using stream injection — no real MCP client needed.
 D7 honored: zero test files touched.
 """
+
 from __future__ import annotations
 
 import io
@@ -27,7 +28,10 @@ _failures = []
 
 def _rpc(table, method: str, params: dict, req_id=1) -> dict:
     from cherenkov.mcp.protocol import dispatch_one
-    raw = json.dumps({"jsonrpc": "2.0", "id": req_id, "method": method, "params": params})
+
+    raw = json.dumps(
+        {"jsonrpc": "2.0", "id": req_id, "method": method, "params": params}
+    )
     resp = dispatch_one(raw, table)
     assert resp is not None, f"No response for method {method!r}"
     return json.loads(resp.model_dump_json())
@@ -52,7 +56,9 @@ def run() -> None:
     table = build_dispatch_table()
 
     # ── Kill criterion 1: initialize handshake ────────────────────────────────
-    resp = _rpc(table, "initialize", {"protocolVersion": "2024-11-05", "clientInfo": {}})
+    resp = _rpc(
+        table, "initialize", {"protocolVersion": "2024-11-05", "clientInfo": {}}
+    )
     check("initialize: no JSON-RPC error", resp.get("error") is None)
     result = resp.get("result", {})
     check(
@@ -66,7 +72,8 @@ def run() -> None:
     )
     check(
         "initialize: capabilities has resources + tools",
-        "resources" in result.get("capabilities", {}) and "tools" in result.get("capabilities", {}),
+        "resources" in result.get("capabilities", {})
+        and "tools" in result.get("capabilities", {}),
         str(result.get("capabilities")),
     )
 
@@ -78,7 +85,10 @@ def run() -> None:
         check(f"tools/list: '{required}' present", required in tools_by_name)
         if required in tools_by_name:
             schema = tools_by_name[required].get("inputSchema", {})
-            check(f"tools/list: '{required}' has inputSchema", schema.get("type") == "object")
+            check(
+                f"tools/list: '{required}' has inputSchema",
+                schema.get("type") == "object",
+            )
 
     # ── Kill criterion 3: resources/list — 4 required resources ──────────────
     resp = _rpc(table, "resources/list", {})
@@ -94,24 +104,35 @@ def run() -> None:
         check(f"resources/list: '{required_uri}' present", required_uri in uris)
 
     # ── Kill criterion 4: hitl_list returns hitl/v1 envelope ─────────────────
-    resp = _rpc(table, "tools/call", {"name": "hitl_list", "arguments": {"status": "pending"}})
+    resp = _rpc(
+        table, "tools/call", {"name": "hitl_list", "arguments": {"status": "pending"}}
+    )
     check("tools/call hitl_list: no JSON-RPC error", resp.get("error") is None)
     tool_result = resp.get("result", {})
     check("tools/call hitl_list: not isError", not tool_result.get("isError", True))
     content_text = (tool_result.get("content") or [{}])[0].get("text", "{}")
     try:
         payload = json.loads(content_text)
-        check("tools/call hitl_list: schema_version = 'hitl/v1'",
-              payload.get("schema_version") == "hitl/v1",
-              str(payload.get("schema_version")))
+        check(
+            "tools/call hitl_list: schema_version = 'hitl/v1'",
+            payload.get("schema_version") == "hitl/v1",
+            str(payload.get("schema_version")),
+        )
         check("tools/call hitl_list: ok = True", payload.get("ok") is True)
-        check("tools/call hitl_list: payload is list", isinstance(payload.get("payload"), list))
+        check(
+            "tools/call hitl_list: payload is list",
+            isinstance(payload.get("payload"), list),
+        )
     except Exception as exc:
         check("tools/call hitl_list: parseable JSON content", False, str(exc))
 
     # ── Kill criterion 5: invalid item_id rejected at trust boundary ──────────
-    resp = _rpc(table, "tools/call", {"name": "hitl_approve", "arguments": {"item_id": ""}})
-    check("trust boundary: empty item_id → no JSON-RPC crash", resp.get("error") is None)
+    resp = _rpc(
+        table, "tools/call", {"name": "hitl_approve", "arguments": {"item_id": ""}}
+    )
+    check(
+        "trust boundary: empty item_id → no JSON-RPC crash", resp.get("error") is None
+    )
     tool_result = resp.get("result", {})
     check(
         "trust boundary: empty item_id → isError=True",
@@ -121,19 +142,25 @@ def run() -> None:
 
     # ── Kill criterion 6: malformed JSON-RPC → parse error, no crash ─────────
     from cherenkov.mcp.protocol import dispatch_one
+
     bad_resp = dispatch_one("{{not valid json}}", table)
     check("malformed JSON: no crash", bad_resp is not None)
     from cherenkov.mcp.contracts import PARSE_ERROR
+
     check(
         "malformed JSON: error.code = PARSE_ERROR",
-        bad_resp is not None and bad_resp.error is not None and bad_resp.error.code == PARSE_ERROR,
+        bad_resp is not None
+        and bad_resp.error is not None
+        and bad_resp.error.code == PARSE_ERROR,
         str(bad_resp.error.code if bad_resp and bad_resp.error else "None"),
     )
 
     # ── Kill criterion 7: docs gate — `mcp` listed in CLI help ───────────────
     result = subprocess.run(
         [sys.executable, "cherenkov.py", "--help"],
-        capture_output=True, text=True, timeout=15
+        capture_output=True,
+        text=True,
+        timeout=15,
     )
     check(
         "docs gate: 'mcp' listed in `cherenkov --help`",
@@ -143,17 +170,31 @@ def run() -> None:
 
     # ── stdio transport round-trip ────────────────────────────────────────────
     from cherenkov.mcp.protocol import serve_stdio
-    two_pings = "\n".join([
-        json.dumps({"jsonrpc": "2.0", "id": 1, "method": "ping", "params": {}}),
-        json.dumps({"jsonrpc": "2.0", "id": 2, "method": "ping", "params": {}}),
-    ]) + "\n"
+
+    two_pings = (
+        "\n".join(
+            [
+                json.dumps({"jsonrpc": "2.0", "id": 1, "method": "ping", "params": {}}),
+                json.dumps({"jsonrpc": "2.0", "id": 2, "method": "ping", "params": {}}),
+            ]
+        )
+        + "\n"
+    )
     inp = io.StringIO(two_pings)
     out = io.StringIO()
     serve_stdio(table, input_stream=inp, output_stream=out)
     lines = [l for l in out.getvalue().splitlines() if l.strip()]
-    check("stdio transport: 2 ping requests → 2 responses", len(lines) == 2, str(len(lines)))
+    check(
+        "stdio transport: 2 ping requests → 2 responses",
+        len(lines) == 2,
+        str(len(lines)),
+    )
     ids_seen = {json.loads(l)["id"] for l in lines}
-    check("stdio transport: response IDs match request IDs", ids_seen == {1, 2}, str(ids_seen))
+    check(
+        "stdio transport: response IDs match request IDs",
+        ids_seen == {1, 2},
+        str(ids_seen),
+    )
 
     # ── Summary ───────────────────────────────────────────────────────────────
     print()

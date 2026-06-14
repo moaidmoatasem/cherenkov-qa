@@ -1,6 +1,6 @@
 # CHERENKOV QA — Frontend Workflow Requirements
 
-**Status:** Requirements Specification  
+**Status:** Requirements Specification
 **Intended Audience:** Product Management, UI/UX Design, Solution Architecture, Frontend Engineering
 
 ---
@@ -32,7 +32,7 @@ CHERENKOV-QA's current dashboard (React 18 + Vite) delivers core capabilities bu
 ### Required Workflows
 
 #### J1-A: Intent Capture & Clarification
-**Entry:** Sidebar → Author by Intent OR ⌘K → "author a test"  
+**Entry:** Sidebar → Author by Intent OR ⌘K → "author a test"
 **States:**
 1. **Empty State** — Large focused textarea with 3 example chips, glow accent animation
 2. **Typing** — Character-stream glow on Submit button, inline autocomplete suggestions
@@ -48,7 +48,7 @@ Intent Input Component:
 ```
 
 #### J1-B: Pilot Execution Preview
-**Trigger:** Submit intent with Autonomy=Assisted (default for Maya)  
+**Trigger:** Submit intent with Autonomy=Assisted (default for Maya)
 **States per Step:**
 1. **pending** — Gray dot, no animation
 2. **running** — Cyan pulse (glow-pulse), step number highlight
@@ -90,7 +90,7 @@ Intent Input Component:
 #### J2-A: Divergence List with Risk Prioritization
 **Filters:**
 - Class (D1-D5) — Current implementation
-- Severity — Current implementation  
+- Severity — Current implementation
 - Status — Current implementation
 - **NEW: Risk Score** (high/medium/low) — From QA Reasoning Engine
 - **NEW: Confidence** (0-100%) — From pilot execution
@@ -116,7 +116,7 @@ Divergence Detail Drawer:
 #### J2-C: Quick Actions (Power User)
 **Keyboard shortcuts:**
 - `a` — Approve/emit test
-- `i` — Mark intended  
+- `i` — Mark intended
 - `r` — Reject with reason prompt
 - `c` — Copy repro steps to clipboard
 
@@ -132,26 +132,26 @@ Divergence Detail Drawer:
 
 The QA Reasoning Engine (ADR-007) outputs a `QAPlan` with:
 - `analysis` — Artifact weaknesses/gaps
-- `review_findings` — Contradictions and test smells  
+- `review_findings` — Contradictions and test smells
 - `risk_register` — Ranked risks with rationale
 - `designed_cases` — Test cases linked to requirements/risks
 
 **Required Screens:**
 
 #### J3-A: QA Plan Viewer
-**Component:** `QAPlanScreen.tsx`  
+**Component:** `QAPlanScreen.tsx`
 **Displays:**
 - Risk heatmap (KpiRing style for risk count)
 - Analysis findings list (sorted by severity)
 - Designed cases table (requirement, risk, priority, status)
 
 #### J3-B: Risk Register
-**Component:** Embedded in QA Plan or separate `RiskScreen.tsx`  
+**Component:** Embedded in QA Plan or separate `RiskScreen.tsx`
 **Columns:**
 - Risk ID | Description | Requirement Link | Priority | Mitigation Status
 
 #### J3-C: Pattern Learning
-**Component:** `MemoryScreen.tsx` (exists)  
+**Component:** `MemoryScreen.tsx` (exists)
 **Enhancements:**
 - Show patterns learned THIS session vs ALL
 - Decay indicator (patterns not seen recently fade)
@@ -164,7 +164,7 @@ The QA Reasoning Engine (ADR-007) outputs a `QAPlan` with:
 ### Required Workflows
 
 #### J4-A: ConformanceCheck CRD Integration
-**View:** Governance screen enhancement  
+**View:** Governance screen enhancement
 **Shows:**
 - K8s Job status (running/done/failed)
 - Last run timestamp
@@ -250,7 +250,7 @@ And: Toast confirms: "Test ejected to tests/login.spec.ts — runs standalone"
 ### Scenario 2: QA Lead — Divergence Triage
 ```
 Given: Sam opens Divergences screen
-When: He filters to "D1: Spec ↔ Code" and severity "critical"  
+When: He filters to "D1: Spec ↔ Code" and severity "critical"
 Then: List shows 3 items, sorted by confidence
 When: He opens a divergence, sees Claim A vs B with evidence
 And: He clicks "Close with Test"
@@ -327,14 +327,14 @@ API: /api/v1/governance/k8s-status (new)
 
 ## 12. Definition of Done (Per Screen)
 
-✅ Loads with mock data  
-✅ Has empty/loading/error states  
-✅ Keyboard navigable (j/k, Enter, a/r/c shortcuts)  
-✅ Passes `npm run build` and lint  
-✅ Matches existing design system tokens  
-✅ Works with reduced-motion preference  
-✅ Mobile-responsive (< lg icon rail)  
-✅ Autonomy settings respected (Assisted default)  
+✅ Loads with mock data
+✅ Has empty/loading/error states
+✅ Keyboard navigable (j/k, Enter, a/r/c shortcuts)
+✅ Passes `npm run build` and lint
+✅ Matches existing design system tokens
+✅ Works with reduced-motion preference
+✅ Mobile-responsive (< lg icon rail)
+✅ Autonomy settings respected (Assisted default)
 
 ---
 
@@ -349,7 +349,7 @@ API: /api/v1/governance/k8s-status (new)
 ```
 1. Maya opens dashboard → sees OverviewScreen with risk digest
 2. She types intent: "check guest can checkout with discount code"
-3. System shows: 
+3. System shows:
    - Step-by-step plan (via LLM or heuristic)
    - Mentor idioms: "Seniors also check tenant isolation on checkout flows"
 4. Pilot executes live with vision confirmation
@@ -442,7 +442,7 @@ API: /api/v1/governance/k8s-status (new)
     stage: 'release_gate'
   },
   analysis: [
-    { id: 'gap-1', type: 'missing_error_response', endpoint: '/pets', 
+    { id: 'gap-1', type: 'missing_error_response', endpoint: '/pets',
       severity: 'high', finding: 'No 422 schema defined for invalid input' }
   ],
   risk_register: [
@@ -485,7 +485,7 @@ interface Divergence {
 // GET /api/v1/memory/idioms?context=<endpoint|flow>
 // Response: Idioms ranked by relevance + confirmation
 [
-  { id: 'idiom-1', 
+  { id: 'idiom-1',
     pattern: 'On POST endpoints, verify 422 on invalid payload',
     confirmations: 23, decay: 0.1, last_seen: '2026-06-10',
     context: { endpoint: '/users', method: 'POST' } }
@@ -595,7 +595,7 @@ const withFallback = async<T>(apiCall: () => Promise<T>, mockData: T): Promise<T
 
 ```
 Week 1: Defect fixes (D-1, D-2, D-3, D-4, D-9) + Risk score integration
-Week 2: QA Plan screen + Mentor idioms integration  
+Week 2: QA Plan screen + Mentor idioms integration
 Week 3: Coverage tab + Governance certification
 Week 4: Testing, polish, accessibility audit
 ```

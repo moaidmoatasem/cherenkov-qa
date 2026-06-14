@@ -2,6 +2,7 @@
 CHERENKOV cherenkov/stages/plan_accessibility.py
 Planner for accessibility testing scenarios.
 """
+
 from __future__ import annotations
 
 from typing import List

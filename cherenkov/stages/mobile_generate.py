@@ -2,10 +2,11 @@
 CHERENKOV stages/mobile_generate.py — Maestro YAML test generator stage.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from cherenkov.stages.mobile_plan import MobileScenario
 
@@ -25,7 +26,7 @@ class MobileGenerateStage:
 
     def run(self, scenario: MobileScenario) -> MobileGenerateOutput:
         t0 = time.time()
-        yaml_lines = [f"appId: com.example.app"]
+        yaml_lines = ["appId: com.example.app"]
         yaml_lines.append("---")
         yaml_lines.append(f"name: {scenario.name}")
         yaml_lines.append("")
@@ -33,25 +34,27 @@ class MobileGenerateStage:
             step_id = step.lower().replace(" ", "_")
             if "tap " in step:
                 element = step.replace("tap ", "")
-                yaml_lines.append(f"- tapOn:")
-                yaml_lines.append(f"    text: \"{element}\"")
+                yaml_lines.append("- tapOn:")
+                yaml_lines.append(f'    text: "{element}"')
             elif "enter " in step:
                 parts = step.replace("enter ", "").split(" ", 1)
                 field = parts[0] if len(parts) == 1 else parts[0]
-                yaml_lines.append(f"- inputText:")
-                yaml_lines.append(f"    text: \"test_{field}\"")
+                yaml_lines.append("- inputText:")
+                yaml_lines.append(f'    text: "test_{field}"')
             elif "launch" in step or "wait" in step:
-                yaml_lines.append(f"- waitFor: 2")
+                yaml_lines.append("- waitFor: 2")
             elif "capture" in step:
-                yaml_lines.append(f"- takeScreenshot:")
-                yaml_lines.append(f"    path: \"screenshots/{scenario.id}_{step_id}.png\"")
+                yaml_lines.append("- takeScreenshot:")
+                yaml_lines.append(
+                    f'    path: "screenshots/{scenario.id}_{step_id}.png"'
+                )
             elif "verify" in step or "visible" in step:
-                yaml_lines.append(f"- assertVisible:")
-                yaml_lines.append(f"    text: \".*\"")
+                yaml_lines.append("- assertVisible:")
+                yaml_lines.append('    text: ".*"')
             else:
-                yaml_lines.append(f"- runFlow:")
-                yaml_lines.append(f"    when:")
-                yaml_lines.append(f"      visible: \"{step}\"")
+                yaml_lines.append("- runFlow:")
+                yaml_lines.append("    when:")
+                yaml_lines.append(f'      visible: "{step}"')
         yaml_content = "\n".join(yaml_lines)
 
         dt = int((time.time() - t0) * 1000)

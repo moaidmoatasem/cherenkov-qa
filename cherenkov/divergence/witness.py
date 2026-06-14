@@ -5,6 +5,7 @@ Deterministic reproduction harness: fires a real HTTP request and diffs
 the real response against the hypothesis claim. Re-execution is independent
 of the Skeptic — the Witness only needs a DivergenceHypothesis and a base URL.
 """
+
 from __future__ import annotations
 
 import json
@@ -100,10 +101,15 @@ class WitnessAgent:
         # `expected` from repro_steps may be an int (expected status code).
         # DivergenceEvidence.response_expected is str|dict, so we use claim_b
         # as the narrative expectation and pass the raw expected to _diff.
-        diff = _diff(actual, expected if expected is not None else hypothesis.claim_b, resp.status_code)
+        diff = _diff(
+            actual,
+            expected if expected is not None else hypothesis.claim_b,
+            resp.status_code,
+        )
         response_expected: str | dict = (
-            f"HTTP {expected} per spec" if isinstance(expected, int) else
-            (expected if expected is not None else hypothesis.claim_b)
+            f"HTTP {expected} per spec"
+            if isinstance(expected, int)
+            else (expected if expected is not None else hypothesis.claim_b)
         )
 
         return DivergenceEvidence(
@@ -121,6 +127,7 @@ class WitnessAgent:
 
 
 # ── helpers ───────────────────────────────────────────────────────────────
+
 
 def _parse_repro_steps(
     steps: list[str],
@@ -161,7 +168,7 @@ def _parse_repro_steps(
 
         # Extract expected status code
         step_lower = step.lower()
-        if ("expect" in step_lower or "assert" in step_lower or "should" in step_lower):
+        if "expect" in step_lower or "assert" in step_lower or "should" in step_lower:
             for code in (200, 201, 204, 400, 401, 403, 404, 409, 422, 500):
                 if str(code) in step:
                     expected = code
@@ -173,7 +180,11 @@ def _parse_repro_steps(
 def _diff(actual: Any, expected: Any, status_code: int) -> str:
     """Return a human-readable description of the delta between actual and expected."""
     if expected is None:
-        body = json.dumps(actual, indent=2, default=str) if isinstance(actual, dict) else str(actual)
+        body = (
+            json.dumps(actual, indent=2, default=str)
+            if isinstance(actual, dict)
+            else str(actual)
+        )
         return f"status={status_code}; body={body[:300]}"
 
     if isinstance(expected, int):
@@ -185,7 +196,7 @@ def _diff(actual: Any, expected: Any, status_code: int) -> str:
     if isinstance(actual, dict) and isinstance(expected, dict):
         parts: list[str] = []
         missing = {k for k in expected if k not in actual}
-        extra   = {k for k in actual   if k not in expected}
+        extra = {k for k in actual if k not in expected}
         if missing:
             parts.append(f"missing keys={sorted(missing)}")
         if extra:

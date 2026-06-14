@@ -7,14 +7,16 @@ Build + inspect the Truth Model for a target from all configured sources.
 
 from __future__ import annotations
 
-import sys
 from datetime import datetime, timezone
-from pathlib import Path
 
-from cherenkov.core.contracts import ProvenanceType
 from cherenkov.core.truth_model import (
-    TruthModel, GraphNode, NodeType, GraphEdge, EdgeType,
-    Claim as TMClaim, Provenance as TMProvenance,
+    TruthModel,
+    GraphNode,
+    NodeType,
+    GraphEdge,
+    EdgeType,
+    Claim as TMClaim,
+    Provenance as TMProvenance,
 )
 from cherenkov.truth.sources.interface import SourceAdapter
 from cherenkov.truth.sources.openapi import OpenAPISourceAdapter
@@ -28,11 +30,11 @@ def _to_tm_claim(contract_claim) -> TMClaim:
     return TMClaim(
         predicate=f"{contract_claim.category}:{contract_claim.subject}",
         value=contract_claim.value,
-            provenance=TMProvenance(
-                source_id=prov.source_uri,
-                source_type=prov.source_type.value,
-                source_location=prov.source_uri,
-                extracted_at=datetime.now(timezone.utc),
+        provenance=TMProvenance(
+            source_id=prov.source_uri,
+            source_type=prov.source_type.value,
+            source_location=prov.source_uri,
+            extracted_at=datetime.now(timezone.utc),
             confidence=1.0,
             detail=prov.details.get("type", ""),
         ),
@@ -86,7 +88,12 @@ def build_truth_model(sources: dict[str, list[str]]) -> TruthModel:
                 node_type = NodeType.ENDPOINT
                 if claim.category in ("table", "column", "constraint"):
                     node_type = NodeType.CONSTRAINT
-                elif claim.category in ("observed_status", "observed_latency", "observed_headers", "observed_request_body"):
+                elif claim.category in (
+                    "observed_status",
+                    "observed_latency",
+                    "observed_headers",
+                    "observed_request_body",
+                ):
                     node_type = NodeType.ENDPOINT
 
                 tm_claim = _to_tm_claim(claim)
@@ -136,7 +143,9 @@ def render_truth_model(tm: TruthModel, detailed: bool = False) -> str:
             lines.append(f"    {ep.label}")
             for c in ep.claims:
                 lines.append(f"      [{c.predicate}]  = {c.value}")
-                lines.append(f"        provenance: {c.provenance.source_type} @ {c.provenance.source_location}")
+                lines.append(
+                    f"        provenance: {c.provenance.source_type} @ {c.provenance.source_location}"
+                )
 
     lines.append(f"\n  Constraints:  {len(constraints)}")
     if detailed and constraints:
@@ -156,6 +165,7 @@ def run_map(sources: dict[str, list[str]] | None = None, detailed: bool = False)
     """Execute `cherenkov map`."""
     if sources is None:
         from cherenkov.core.config_loader import load_effective_config
+
         cfg = load_effective_config()
         sources = {}
         specs = cfg.autodetect_spec()

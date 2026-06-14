@@ -9,6 +9,7 @@ field-for-field (camelCase) so the client can render it without translation.
 Status overrides from /act are held in-process; this is a localhost-first
 dashboard, so an in-memory store is sufficient.
 """
+
 from __future__ import annotations
 
 from typing import Dict, List
@@ -70,7 +71,7 @@ _DIVERGENCE_CORPUS: List[dict] = [
         "status": "reproduced",
         "claimA": "Response Headers:\n  X-Rate-Limit: integer\n  X-Expires-After: date-time",
         "claimB": "Successful login returns 200 OK but completely omits both required response headers.",
-        "evidence": 'Request:  GET /user/login?username=test&password=abc123\nResponse Headers:\n  Content-Type: application/json\n  (X-Rate-Limit: ABSENT)\n  (X-Expires-After: ABSENT)',
+        "evidence": "Request:  GET /user/login?username=test&password=abc123\nResponse Headers:\n  Content-Type: application/json\n  (X-Rate-Limit: ABSENT)\n  (X-Expires-After: ABSENT)",
         "reproSteps": 'curl -sI "https://petstore3.swagger.io/api/v3/user/login?username=test&password=abc123" \\\n  | grep -i "x-rate\\|x-expires"',
         "confidence": 0.90,
     },
@@ -136,36 +137,41 @@ def apply_action(divergence_id: str, action: str) -> str:
 class DivergenceFindingNamespace:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
+
     def dict(self):
-        return {k: v for k, v in self.__dict__.items() if k != 'dict'}
+        return {k: v for k, v in self.__dict__.items() if k != "dict"}
 
 
-def get_divergences(severity: str | None = None, endpoint: str | None = None, limit: int = 20) -> List[DivergenceFindingNamespace]:
+def get_divergences(
+    severity: str | None = None, endpoint: str | None = None, limit: int = 20
+) -> List[DivergenceFindingNamespace]:
     res = list_divergences()
     if severity:
         res = [d for d in res if d.get("severity") == severity]
     if endpoint:
         res = [d for d in res if endpoint in d.get("endpoint", "")]
-    
+
     out = []
     for d in res[:limit]:
         ep_str = d.get("endpoint", "")
         parts = ep_str.split(" ", 1)
         method = parts[0] if len(parts) > 1 else "GET"
         path = parts[1] if len(parts) > 1 else ep_str
-        
-        out.append(DivergenceFindingNamespace(
-            id=d.get("id"),
-            endpoint=path,
-            method=method,
-            http_method=method,
-            severity=d.get("severity"),
-            summary=d.get("claimB"),
-            expected=d.get("claimA"),
-            actual=d.get("claimB"),
-            description=d.get("claimB"),
-            remediation="Update code to match spec",
-        ))
+
+        out.append(
+            DivergenceFindingNamespace(
+                id=d.get("id"),
+                endpoint=path,
+                method=method,
+                http_method=method,
+                severity=d.get("severity"),
+                summary=d.get("claimB"),
+                expected=d.get("claimA"),
+                actual=d.get("claimB"),
+                description=d.get("claimB"),
+                remediation="Update code to match spec",
+            )
+        )
     return out
 
 
@@ -174,4 +180,3 @@ def get_finding_by_id(finding_id: str) -> DivergenceFindingNamespace | None:
         if f.id == finding_id:
             return f
     return None
-

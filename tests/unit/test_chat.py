@@ -3,17 +3,20 @@ import unittest
 import asyncio
 import os
 import tempfile
-import json
-from datetime import datetime
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from cherenkov.chat.domain.models import Message, Session, Role
+from cherenkov.chat.domain.models import Message, Session
 from cherenkov.chat.persona import Persona, PersonaRegistry
 from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
 from cherenkov.chat.agent import QAChatAgent
-from cherenkov.chat.tools import execute_tool, TOOL_REGISTRY, query_verdicts, query_idioms
+from cherenkov.chat.tools import (
+    execute_tool,
+    TOOL_REGISTRY,
+    query_verdicts,
+    query_idioms,
+)
 from cherenkov.chat.api.routes import router, get_memory, get_agent
 
 
@@ -56,14 +59,20 @@ class TestSession(unittest.TestCase):
 
 class TestPersona(unittest.TestCase):
     def test_default_persona(self):
-        p = Persona(persona_id="qa", name="QA", description="helper",
-                     system_prompt="You are QA")
+        p = Persona(
+            persona_id="qa", name="QA", description="helper", system_prompt="You are QA"
+        )
         self.assertEqual(p.persona_id, "qa")
         self.assertEqual(p.temperature, 0.1)
 
     def test_custom_temperature(self):
-        p = Persona(persona_id="t", name="T", description="d",
-                     system_prompt="prompt", temperature=0.5)
+        p = Persona(
+            persona_id="t",
+            name="T",
+            description="d",
+            system_prompt="prompt",
+            temperature=0.5,
+        )
         self.assertEqual(p.temperature, 0.5)
 
 
@@ -81,8 +90,12 @@ class TestPersonaRegistry(unittest.TestCase):
         self.assertIsNone(p)
 
     def test_register_and_get(self):
-        custom = Persona(persona_id="custom", name="Custom", description="D",
-                          system_prompt="you are custom")
+        custom = Persona(
+            persona_id="custom",
+            name="Custom",
+            description="D",
+            system_prompt="you are custom",
+        )
         self.registry.register(custom)
         p = self.registry.get("custom")
         self.assertIsNotNone(p)
@@ -174,8 +187,11 @@ class TestSQLiteConversationMemory(unittest.TestCase):
 
     def test_message_with_tool_calls(self):
         self.memory.create_session("s1")
-        msg = Message(role="assistant", content="tool result",
-                       tool_calls=[{"name": "query_verdicts"}])
+        msg = Message(
+            role="assistant",
+            content="tool result",
+            tool_calls=[{"name": "query_verdicts"}],
+        )
         self.memory.add_message("s1", msg)
         messages = self.memory.get_messages("s1")
         self.assertEqual(len(messages), 1)
@@ -201,8 +217,12 @@ class TestQAChatAgent(unittest.TestCase):
         self.assertEqual(ses.persona_id, "qa_assistant")
 
     def test_create_session_custom_persona(self):
-        custom = Persona(persona_id="custom", name="Custom", description="D",
-                          system_prompt="custom prompt")
+        custom = Persona(
+            persona_id="custom",
+            name="Custom",
+            description="D",
+            system_prompt="custom prompt",
+        )
         self.registry.register(custom)
         ses = self.agent.create_session(persona_id="custom")
         self.assertEqual(ses.persona_id, "custom")
@@ -241,11 +261,13 @@ class TestQAChatAgent(unittest.TestCase):
 
     def test_chat_stream_yields_tokens(self):
         ses = self.agent.create_session()
+
         async def _collect():
             tokens = []
             async for token in self.agent.chat_stream(ses.session_id, "hello"):
                 tokens.append(token)
             return tokens
+
         tokens = asyncio.run(_collect())
         self.assertTrue(len(tokens) > 0)
         history = self.memory.get_messages(ses.session_id)
@@ -260,15 +282,21 @@ class TestQAChatAgent(unittest.TestCase):
         self.assertTrue(result.startswith("[MOCK]"))
 
     def test_fallback_llm_verdict_keyword(self):
-        result = self.agent._fallback_llm([{"role": "user", "content": "show me verdicts"}])
+        result = self.agent._fallback_llm(
+            [{"role": "user", "content": "show me verdicts"}]
+        )
         self.assertIn("verdict", result.lower())
 
     def test_fallback_llm_idiom_keyword(self):
-        result = self.agent._fallback_llm([{"role": "user", "content": "what idioms exist"}])
+        result = self.agent._fallback_llm(
+            [{"role": "user", "content": "what idioms exist"}]
+        )
         self.assertIn("idiom", result.lower())
 
     def test_fallback_llm_divergence_keyword(self):
-        result = self.agent._fallback_llm([{"role": "user", "content": "explain divergence"}])
+        result = self.agent._fallback_llm(
+            [{"role": "user", "content": "explain divergence"}]
+        )
         self.assertIn("divergence", result.lower())
 
     def test_prepare_llm_context(self):
@@ -324,7 +352,9 @@ class TestChatAPIIntegration(unittest.TestCase):
             os.unlink(self.db_path)
 
     def test_create_session(self):
-        resp = self.client.post("/api/v1/chat/sessions", json={"persona_id": "qa_assistant"})
+        resp = self.client.post(
+            "/api/v1/chat/sessions", json={"persona_id": "qa_assistant"}
+        )
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertIn("session_id", data)
@@ -359,7 +389,9 @@ class TestChatAPIIntegration(unittest.TestCase):
     def test_send_message(self):
         create_resp = self.client.post("/api/v1/chat/sessions", json={})
         sid = create_resp.json()["session_id"]
-        resp = self.client.post(f"/api/v1/chat/sessions/{sid}/messages", json={"content": "hello"})
+        resp = self.client.post(
+            f"/api/v1/chat/sessions/{sid}/messages", json={"content": "hello"}
+        )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["role"], "assistant")
         self.assertTrue(len(resp.json()["content"]) > 0)
@@ -367,7 +399,9 @@ class TestChatAPIIntegration(unittest.TestCase):
     def test_send_message_empty_content(self):
         create_resp = self.client.post("/api/v1/chat/sessions", json={})
         sid = create_resp.json()["session_id"]
-        resp = self.client.post(f"/api/v1/chat/sessions/{sid}/messages", json={"content": ""})
+        resp = self.client.post(
+            f"/api/v1/chat/sessions/{sid}/messages", json={"content": ""}
+        )
         self.assertEqual(resp.status_code, 422)
 
     def test_send_message_missing_content(self):
@@ -377,13 +411,17 @@ class TestChatAPIIntegration(unittest.TestCase):
         self.assertEqual(resp.status_code, 422)
 
     def test_send_message_session_not_found(self):
-        resp = self.client.post("/api/v1/chat/sessions/nonexistent/messages", json={"content": "hello"})
+        resp = self.client.post(
+            "/api/v1/chat/sessions/nonexistent/messages", json={"content": "hello"}
+        )
         self.assertEqual(resp.status_code, 404)
 
     def test_get_messages(self):
         create_resp = self.client.post("/api/v1/chat/sessions", json={})
         sid = create_resp.json()["session_id"]
-        self.client.post(f"/api/v1/chat/sessions/{sid}/messages", json={"content": "hello"})
+        self.client.post(
+            f"/api/v1/chat/sessions/{sid}/messages", json={"content": "hello"}
+        )
         resp = self.client.get(f"/api/v1/chat/sessions/{sid}/messages")
         self.assertEqual(resp.status_code, 200)
         messages = resp.json()["messages"]
@@ -401,9 +439,13 @@ class TestChatAPIIntegration(unittest.TestCase):
     def test_stream_chat(self):
         create_resp = self.client.post("/api/v1/chat/sessions", json={})
         sid = create_resp.json()["session_id"]
-        resp = self.client.post(f"/api/v1/chat/sessions/{sid}/stream", json={"content": "hello"})
+        resp = self.client.post(
+            f"/api/v1/chat/sessions/{sid}/stream", json={"content": "hello"}
+        )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.headers["content-type"], "text/event-stream; charset=utf-8")
+        self.assertEqual(
+            resp.headers["content-type"], "text/event-stream; charset=utf-8"
+        )
         lines = resp.text.strip().split("\n")
         events = [l for l in lines if l.startswith("event:")]
         self.assertTrue(len(events) >= 2)
@@ -413,7 +455,9 @@ class TestChatAPIIntegration(unittest.TestCase):
     def test_stream_chat_empty_content(self):
         create_resp = self.client.post("/api/v1/chat/sessions", json={})
         sid = create_resp.json()["session_id"]
-        resp = self.client.post(f"/api/v1/chat/sessions/{sid}/stream", json={"content": ""})
+        resp = self.client.post(
+            f"/api/v1/chat/sessions/{sid}/stream", json={"content": ""}
+        )
         self.assertEqual(resp.status_code, 422)
 
     def test_close_session(self):

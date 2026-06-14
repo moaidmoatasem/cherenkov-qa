@@ -1,7 +1,7 @@
 # FE Dashboard Parity Audit — `track-b-c-deferred/dashboard/` vs `cherenkov/web/ui/`
 
-**Issue**: #249  
-**Date**: 2026-06-06  
+**Issue**: #249
+**Date**: 2026-06-06
 **Status**: Complete — deferred dashboard superseded, ready for deletion
 
 ---

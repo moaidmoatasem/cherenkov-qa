@@ -4,10 +4,10 @@ cherenkov/ai/template_generator.py — deterministic Playwright TypeScript test 
 Produces real, runnable tests that pass all 6 ReviewStage gates without requiring an LLM.
 Used as the fallback when Ollama is unavailable.
 """
+
 from __future__ import annotations
 
 import json
-import re
 from typing import Any
 
 
@@ -18,14 +18,18 @@ def _method_call(method: str, path: str) -> str:
     return f"client.{m}('{path}', {{ body: _body }})"
 
 
-def _infer_body(operation: dict[str, Any], schemas: dict[str, Any], case_type: str, mutation_id: str | None) -> dict | None:
+def _infer_body(
+    operation: dict[str, Any],
+    schemas: dict[str, Any],
+    case_type: str,
+    mutation_id: str | None,
+) -> dict | None:
     """Build a minimal request body from the operation schema."""
     rb = operation.get("requestBody", {})
     content = rb.get("content", {})
-    schema_ref = (
-        content.get("application/json", {}).get("schema")
-        or content.get("*/*", {}).get("schema")
-    )
+    schema_ref = content.get("application/json", {}).get("schema") or content.get(
+        "*/*", {}
+    ).get("schema")
     if not schema_ref:
         return None
 
@@ -56,7 +60,15 @@ def _infer_body(operation: dict[str, Any], schemas: dict[str, Any], case_type: s
         if isinstance(t, list):
             t = next((x for x in t if x != "null"), "string")
         if t == "integer":
-            val = 999 if (case_type == "security" and mutation_id and "boundary" in mutation_id) else 1
+            val = (
+                999
+                if (
+                    case_type == "security"
+                    and mutation_id
+                    and "boundary" in mutation_id
+                )
+                else 1
+            )
         elif t == "boolean":
             val = True
         elif t == "array":
@@ -81,17 +93,22 @@ def _infer_body(operation: dict[str, Any], schemas: dict[str, Any], case_type: s
     return body or None
 
 
-def _infer_response_property(operation: dict[str, Any], schemas: dict[str, Any], expected_status: int) -> str | None:
+def _infer_response_property(
+    operation: dict[str, Any], schemas: dict[str, Any], expected_status: int
+) -> str | None:
     """Return a top-level property name we can assert on from the response body."""
     responses = operation.get("responses", {})
-    resp = responses.get(str(expected_status)) or responses.get("200") or responses.get("201")
+    resp = (
+        responses.get(str(expected_status))
+        or responses.get("200")
+        or responses.get("201")
+    )
     if not resp:
         return None
     content = resp.get("content", {})
-    schema = (
-        content.get("application/json", {}).get("schema")
-        or content.get("*/*", {}).get("schema")
-    )
+    schema = content.get("application/json", {}).get("schema") or content.get(
+        "*/*", {}
+    ).get("schema")
     if not schema:
         return None
     ref = schema.get("$ref", "")
@@ -107,7 +124,9 @@ def _infer_response_property(operation: dict[str, Any], schemas: dict[str, Any],
     return None
 
 
-def _path_with_example_param(path: str, operation: dict[str, Any], mutation_id: str | None) -> str:
+def _path_with_example_param(
+    path: str, operation: dict[str, Any], mutation_id: str | None
+) -> str:
     """Replace {param} placeholders with realistic test values."""
     params = operation.get("parameters", [])
     result = path
@@ -120,7 +139,11 @@ def _path_with_example_param(path: str, operation: dict[str, Any], mutation_id: 
         if t == "integer":
             val = "0" if (mutation_id and "invalid" in mutation_id) else "1"
         else:
-            val = "invalid-id" if (mutation_id and "invalid" in mutation_id) else "test-id"
+            val = (
+                "invalid-id"
+                if (mutation_id and "invalid" in mutation_id)
+                else "test-id"
+            )
         result = result.replace("{" + name + "}", val)
     return result
 
@@ -150,7 +173,11 @@ def generate_test(
     body = _infer_body(operation, schemas, case_type, mutation_id)
     resp_prop = _infer_response_property(operation, schemas, expected_status)
 
-    test_name = f"{method.lower()} {path} {case_type} {mutation_id or ''}".strip().replace("  ", " ")
+    test_name = (
+        f"{method.lower()} {path} {case_type} {mutation_id or ''}".strip().replace(
+            "  ", " "
+        )
+    )
 
     lines: list[str] = [
         "import { client } from '../client';",

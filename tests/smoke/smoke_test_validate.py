@@ -2,12 +2,14 @@
 """
 smoke_test_validate.py — automated integration test E2E verifying Phase 8 validation CLI reports.
 """
+
 import os
 import sys
 import time
 import subprocess
 import requests
 import hashlib
+
 
 def _to_wsl_path(windows_path: str) -> str:
     """Convert a \\\\wsl.localhost\\<distro>\\foo\\bar path to a WSL Linux path (/foo/bar)."""
@@ -16,23 +18,44 @@ def _to_wsl_path(windows_path: str) -> str:
     linux_parts = parts[4:]
     return "/" + "/".join(linux_parts)
 
+
 def _start_target_api():
     """Start the target API and return (proc_or_none, base_url)."""
     target_dir = os.path.abspath("target")
-    if sys.platform == "win32" and (target_dir.startswith("\\\\") or target_dir.startswith("//")):
+    if sys.platform == "win32" and (
+        target_dir.startswith("\\\\") or target_dir.startswith("//")
+    ):
         linux_target = _to_wsl_path(target_dir)
-        subprocess.run(["wsl.exe", "-e", "bash", "-c",
-            "tmux kill-session -t ck_target 2>/dev/null; echo done"],
-            capture_output=True, timeout=10)
-        subprocess.Popen(["wsl.exe", "-e", "bash", "-c",
-            "tmux new-session -d -s ck_target "
-            f"'cd {linux_target} && "
-            "uvicorn target_api:app --host 0.0.0.0 --port 8000'"],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(
+            [
+                "wsl.exe",
+                "-e",
+                "bash",
+                "-c",
+                "tmux kill-session -t ck_target 2>/dev/null; echo done",
+            ],
+            capture_output=True,
+            timeout=10,
+        )
+        subprocess.Popen(
+            [
+                "wsl.exe",
+                "-e",
+                "bash",
+                "-c",
+                "tmux new-session -d -s ck_target "
+                f"'cd {linux_target} && "
+                "uvicorn target_api:app --host 0.0.0.0 --port 8000'",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         try:
             wsl_ip = subprocess.run(
                 ["wsl.exe", "-e", "bash", "-c", "hostname -I | cut -d' ' -f1"],
-                capture_output=True, text=True, timeout=5
+                capture_output=True,
+                text=True,
+                timeout=5,
             ).stdout.strip()
         except Exception:
             wsl_ip = "localhost"
@@ -42,9 +65,12 @@ def _start_target_api():
     subprocess.run(["fuser", "-k", "8000/tcp"], capture_output=True, timeout=5)
     proc = subprocess.Popen(
         ["uvicorn", "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
-        cwd=target_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        cwd=target_dir,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     return proc, "http://localhost:8000"
+
 
 def _stop_target_api(proc):
     """Stop the target API."""
@@ -53,10 +79,16 @@ def _stop_target_api(proc):
         proc.wait()
     else:
         subprocess.run(
-            ["wsl.exe", "-e", "bash", "-c",
-             "tmux kill-session -t ck_target 2>/dev/null; echo done"],
-            timeout=5
+            [
+                "wsl.exe",
+                "-e",
+                "bash",
+                "-c",
+                "tmux kill-session -t ck_target 2>/dev/null; echo done",
+            ],
+            timeout=5,
         )
+
 
 def main():
     print("=======================================================")
@@ -87,8 +119,16 @@ def main():
 
     # 3. Ensure git tree is clean for generated_tests so the suggest-only constraint check works
     print("Restoring and cleaning stub/generated_tests to pristine state...")
-    subprocess.run(["git", "restore", "stub/generated_tests/"], cwd=os.path.abspath("."), check=False)
-    subprocess.run(["git", "clean", "-fd", "stub/generated_tests/"], cwd=os.path.abspath("."), check=False)
+    subprocess.run(
+        ["git", "restore", "stub/generated_tests/"],
+        cwd=os.path.abspath("."),
+        check=False,
+    )
+    subprocess.run(
+        ["git", "clean", "-fd", "stub/generated_tests/"],
+        cwd=os.path.abspath("."),
+        check=False,
+    )
 
     def _get_tests_hash():
         tests_dir = os.path.abspath("stub/generated_tests")
@@ -111,28 +151,44 @@ def main():
             env={**os.environ, "PYTHONPATH": "."},
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
         stdout = val_proc.stdout
         stderr = val_proc.stderr
-        
+
         print("\n--- CLI TIGHTENING REPORT OUTPUT ---")
         print(stdout)
         print("------------------------------------\n")
 
         # 4. Assert report details
-        assert "consider -> expect(data.email).toBe('test@example.com')" in stdout, "Missing suggested string value assertion!"
-        assert "consider -> expect(data.email).toBe(body.email)" in stdout, "Missing suggested payload match assertion!"
-        print("[OK] Successfully verified value tightening suggestions for /users POST happy_path endpoint.")
+        assert (
+            "consider -> expect(data.email).toBe('test@example.com')" in stdout
+        ), "Missing suggested string value assertion!"
+        assert (
+            "consider -> expect(data.email).toBe(body.email)" in stdout
+        ), "Missing suggested payload match assertion!"
+        print(
+            "[OK] Successfully verified value tightening suggestions for /users POST happy_path endpoint."
+        )
 
-        assert "password_too_short [FAILED]" in stdout, "Failed to capture password_too_short spec conformance drift!"
-        print("[OK] Successfully verified spec-to-implementation conformance failure (RED) report.")
+        assert (
+            "password_too_short [FAILED]" in stdout
+        ), "Failed to capture password_too_short spec conformance drift!"
+        print(
+            "[OK] Successfully verified spec-to-implementation conformance failure (RED) report."
+        )
 
-        assert "zero test files were auto-modified by validation" in stdout, "Suggest-only trust constraint violated (test files were modified)!"
-        
+        assert (
+            "zero test files were auto-modified by validation" in stdout
+        ), "Suggest-only trust constraint violated (test files were modified)!"
+
         post_hash = _get_tests_hash()
-        assert pre_hash == post_hash, f"Hash-guard regression: test files were modified on disk! Pre: {pre_hash}, Post: {post_hash}"
-        print("[OK] Successfully verified suggest-only sandbox constraint assertion (no files modified, hashes match).")
+        assert (
+            pre_hash == post_hash
+        ), f"Hash-guard regression: test files were modified on disk! Pre: {pre_hash}, Post: {post_hash}"
+        print(
+            "[OK] Successfully verified suggest-only sandbox constraint assertion (no files modified, hashes match)."
+        )
 
     except subprocess.CalledProcessError as e:
         print(f"Validation CLI execution failed: {e}")
@@ -148,6 +204,7 @@ def main():
     print("\n=======================================================")
     print("  ALL VALIDATE SUBCOMMAND SMOKE TESTS PASSED SUCCESSFULLY!")
     print("=======================================================")
+
 
 if __name__ == "__main__":
     main()

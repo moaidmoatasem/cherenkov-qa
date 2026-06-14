@@ -1,8 +1,8 @@
 # ADR-004: Clean Architecture (Ports/Adapters)
 
-**Date:** 2026-06-08  
-**Status:** Accepted  
-**Deciders:** Project Owner + AI Agents  
+**Date:** 2026-06-08
+**Status:** Accepted
+**Deciders:** Project Owner + AI Agents
 **Related EPIC:** #277 (Phase -1), #279 (Phase 0b)
 
 ---

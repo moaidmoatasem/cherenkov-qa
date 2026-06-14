@@ -2,8 +2,10 @@
 cherenkov/rag/ — Issue #195: Semantic chunking / RAG for large OpenAPI specs.
 Authority: v3.1 + delta.
 """
+
 try:
     from cherenkov.rag.schema_index import SchemaIndex, embed_text, Chunk
+
     _schema_available = True
 except ImportError:
     SchemaIndex = None  # type: ignore[assignment,misc]

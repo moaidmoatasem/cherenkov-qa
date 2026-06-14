@@ -44,7 +44,13 @@ class Mentor:
             self.log.info("mentor is disabled in config")
             return []
 
-        min_conf = min_confirmations if min_confirmations is not None else getattr(Config, "COPILOT_MENTOR_MIN_CONFIRMATIONS", _DEFAULT_MIN_CONFIRMATIONS)
+        min_conf = (
+            min_confirmations
+            if min_confirmations is not None
+            else getattr(
+                Config, "COPILOT_MENTOR_MIN_CONFIRMATIONS", _DEFAULT_MIN_CONFIRMATIONS
+            )
+        )
         all_active = self.store.get_idioms(min_decay=min_decay)
         relevant: list[Idiom] = []
 
@@ -53,7 +59,14 @@ class Mentor:
                 continue
 
             match = False
-            if endpoint and idiom.endpoint and (idiom.endpoint.lower() in endpoint.lower() or endpoint.lower() in idiom.endpoint.lower()):
+            if (
+                endpoint
+                and idiom.endpoint
+                and (
+                    idiom.endpoint.lower() in endpoint.lower()
+                    or endpoint.lower() in idiom.endpoint.lower()
+                )
+            ):
                 match = True
 
             if divergence_class and idiom.divergence_class == divergence_class:
@@ -66,6 +79,10 @@ class Mentor:
                 relevant.append(idiom)
 
         relevant.sort(key=lambda x: (x.decay_score, x.confirm_count), reverse=True)
-        self.log.info("surfaced idioms for context", endpoint=endpoint, count=len(relevant),
-                      min_confirmations=min_conf)
+        self.log.info(
+            "surfaced idioms for context",
+            endpoint=endpoint,
+            count=len(relevant),
+            min_confirmations=min_conf,
+        )
         return relevant

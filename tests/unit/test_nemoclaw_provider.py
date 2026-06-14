@@ -1,8 +1,8 @@
 """Unit tests for the NVIDIA NemoClaw substrate provider and inference client."""
+
 from __future__ import annotations
 
-import json
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -15,6 +15,7 @@ from cherenkov.ai.nemoclaw_client import NemoClawInferenceClient
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _mock_response(content: str, status_code: int = 200) -> MagicMock:
     resp = MagicMock()
@@ -92,9 +93,7 @@ class TestNemoClawInferenceClient:
         assert "differ" in result
         call_body = mock_post.call_args[1]["json"]
         user_msg = call_body["messages"][1]["content"]
-        assert any(
-            part.get("type") == "image_url" for part in user_msg
-        )
+        assert any(part.get("type") == "image_url" for part in user_msg)
 
     @patch("cherenkov.ai.nemoclaw_client.requests.get")
     def test_health_returns_true_on_200(self, mock_get):
@@ -105,6 +104,7 @@ class TestNemoClawInferenceClient:
     @patch("cherenkov.ai.nemoclaw_client.requests.get")
     def test_health_returns_false_on_connection_error(self, mock_get):
         import requests as req_lib
+
         mock_get.side_effect = req_lib.RequestException("refused")
         client = self._client()
         assert client.health() is False
@@ -152,6 +152,7 @@ class TestNemoClawProvider:
 
     def test_generate_deep_tier_calls_correct_model(self):
         from cherenkov.core.config import Config
+
         provider, mock_client = self._provider()
         mock_client.complete_code.return_value = "code"
         req = ReasoningRequest(task="plan", capability_tier="deep")
@@ -171,7 +172,6 @@ class TestNemoClawProvider:
         assert result.content == {"scenarios": []}
 
     def test_generate_vision_with_image_path(self, tmp_path):
-        import base64
         img_file = tmp_path / "screenshot.png"
         img_file.write_bytes(b"\x89PNG\r\n\x1a\n")  # minimal PNG header
 
@@ -202,12 +202,14 @@ class TestNemoClawProvider:
 class TestNemoClawProviderRegistry:
     def test_get_provider_nemoclaw_returns_nemoclaw_provider(self):
         from cherenkov.substrate.provider import _PROVIDER_CACHE
+
         _PROVIDER_CACHE.pop("nemoclaw", None)
         p = get_provider("nemoclaw")
         assert isinstance(p, NemoClawProvider)
 
     def test_get_provider_nemoclaw_cached(self):
         from cherenkov.substrate.provider import _PROVIDER_CACHE
+
         _PROVIDER_CACHE.pop("nemoclaw", None)
         p1 = get_provider("nemoclaw")
         p2 = get_provider("nemoclaw")
@@ -226,6 +228,7 @@ class TestNemoClawProviderRegistry:
 class TestNemoClawConfig:
     def test_config_has_nemoclaw_keys(self):
         from cherenkov.core.config import Config
+
         assert hasattr(Config, "NEMOCLAW_URL")
         assert hasattr(Config, "NEMOCLAW_API_KEY")
         assert hasattr(Config, "NEMOCLAW_SMALL_MODEL")
@@ -235,6 +238,7 @@ class TestNemoClawConfig:
 
     def test_config_defaults(self):
         from cherenkov.core.config import Config
+
         assert "11435" in Config.NEMOCLAW_URL
         assert Config.NEMOCLAW_SMALL_MODEL == "nemotron-nano-4b"
         assert Config.NEMOCLAW_DEEP_MODEL == "nemotron-super-49b"

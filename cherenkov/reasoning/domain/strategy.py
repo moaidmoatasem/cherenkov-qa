@@ -5,6 +5,7 @@ Pure rule table: QAContext (+ artifact executability) → WorkflowVariant.
 Deterministic and fully unit-tested; the LLM reasons *within* activities,
 never about *which* activities run.
 """
+
 from __future__ import annotations
 
 from cherenkov.reasoning.domain.models import (
@@ -34,8 +35,13 @@ def select_variant(context: QAContext, artifact: Artifact) -> WorkflowVariant:
         activities = [_A.RISK_ASSESS, _A.PLAN, _A.DESIGN_CASES, _A.EXECUTE, _A.REPORT]
     else:  # FUNCTIONAL and RELEASE_GATE share the full chain
         activities = [
-            _A.ANALYZE, _A.REVIEW, _A.RISK_ASSESS,
-            _A.PLAN, _A.DESIGN_CASES, _A.EXECUTE, _A.REPORT,
+            _A.ANALYZE,
+            _A.REVIEW,
+            _A.RISK_ASSESS,
+            _A.PLAN,
+            _A.DESIGN_CASES,
+            _A.EXECUTE,
+            _A.REPORT,
         ]
 
     # Maturity gates execution: concept artifacts have nothing to run,
@@ -65,7 +71,7 @@ def _select_depth(maturity: Maturity, stage: TestingStage) -> Depth:
     if stage == TestingStage.RELEASE_GATE:
         return Depth.EXHAUSTIVE
     if maturity == Maturity.CONCEPT:
-        return Depth.DEEP        # deep critique of the artifact itself
+        return Depth.DEEP  # deep critique of the artifact itself
     if maturity == Maturity.IN_DEVELOPMENT:
-        return Depth.SHALLOW     # the surface is still moving
+        return Depth.SHALLOW  # the surface is still moving
     return Depth.MEDIUM

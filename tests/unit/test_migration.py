@@ -41,9 +41,11 @@ def test_get_applied_version(db_path):
 
 def test_apply_multiple(db_path):
     sm = SchemaMigration(db_path, current_version=0, target_version=2)
-    result = sm.apply([
-        (1, "CREATE TABLE IF NOT EXISTS t1 (id INT)"),
-        (2, "CREATE TABLE IF NOT EXISTS t2 (id INT)"),
-    ])
+    result = sm.apply(
+        [
+            (1, "CREATE TABLE IF NOT EXISTS t1 (id INT)"),
+            (2, "CREATE TABLE IF NOT EXISTS t2 (id INT)"),
+        ]
+    )
     assert result
     assert sm.get_applied_version() == 2

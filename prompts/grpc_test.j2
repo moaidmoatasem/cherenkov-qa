@@ -1,0 +1,17 @@
+gRPC PROTOBUF CONTENT:
+{{ proto_content }}
+
+SCENARIO INSTRUCTION:
+Write a Playwright test to send a gRPC call to `{{ service }}/{{ rpc_name }}` using `@grpc/grpc-js` and `@grpc/proto-loader`.
+
+=== CRITICAL INSTRUCTIONS ===
+You are writing a Playwright API test in TypeScript for a gRPC endpoint.
+STRICT RULES:
+- Import `test` and `expect` from '@playwright/test'.
+- Import `grpc` from '@grpc/grpc-js' and `protoLoader` from '@grpc/proto-loader'.
+- Assume the `.proto` file is loaded from `stub/stub.proto` (we will provide the stub for tests).
+- Construct the gRPC client and execute the RPC call to `{{ rpc_name }}`.
+- Send a JSON payload that matches the `{{ input_message }}` message structure.
+- Wait for the callback or wrap it in a Promise.
+- Assert that no error occurred, or check the specific gRPC error code.
+- Output ONLY the TypeScript code block starting with the imports. No prose, no explanations.

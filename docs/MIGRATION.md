@@ -1,7 +1,7 @@
 # CHERENKOV-QA Data Migration Strategy
 
-**Date:** 2026-06-08  
-**Status:** Active  
+**Date:** 2026-06-08
+**Status:** Active
 **Related EPIC:** #277 (Phase -1), #279 (Phase 0b)
 
 ---
@@ -35,7 +35,7 @@ class MigrationRunner:
         self.db_path = db_path
         self.migrations = sorted(migrations, key=lambda m: m.version)
         self.backup_dir = Path(".cherenkov/backups")
-    
+
     def get_current_version(self, conn: sqlite3.Connection) -> int:
         try:
             cursor = conn.execute("SELECT version FROM schema_version ORDER BY version DESC LIMIT 1")
@@ -43,18 +43,18 @@ class MigrationRunner:
             return row[0] if row else 0
         except sqlite3.OperationalError:
             return 0
-    
+
     def backup(self, version: int) -> Path:
         self.backup_dir.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_path = self.backup_dir / f"{timestamp}_v{version}_pre_migration.db"
         shutil.copy2(self.db_path, backup_path)
         return backup_path
-    
+
     def migrate(self) -> None:
         conn = sqlite3.connect(self.db_path)
         current_version = self.get_current_version(conn)
-        
+
         # Create schema_version table if not exists
         conn.execute("""
             CREATE TABLE IF NOT EXISTS schema_version (
@@ -64,58 +64,58 @@ class MigrationRunner:
             )
         """)
         conn.commit()
-        
+
         for migration in self.migrations:
             if migration.version <= current_version:
                 continue
-            
+
             print(f"Applying migration v{migration.version}: {migration.description}")
-            
+
             # Backup before migration
             backup_path = self.backup(current_version)
             print(f"  Backup created: {backup_path}")
-            
+
             try:
                 # Apply migration
                 migration.up(conn)
-                
+
                 # Record migration
                 conn.execute(
                     "INSERT INTO schema_version (version, description) VALUES (?, ?)",
                     (migration.version, migration.description)
                 )
                 conn.commit()
-                
+
                 print(f"  Migration v{migration.version} applied successfully")
                 current_version = migration.version
-                
+
             except Exception as e:
                 print(f"  Migration v{migration.version} failed: {e}")
                 print(f"  Restoring from backup: {backup_path}")
                 conn.close()
                 shutil.copy2(backup_path, self.db_path)
                 raise
-        
+
         conn.close()
-    
+
     def rollback(self, target_version: int) -> None:
         conn = sqlite3.connect(self.db_path)
         current_version = self.get_current_version(conn)
-        
+
         if target_version >= current_version:
             print(f"Already at version {current_version}, nothing to rollback")
             conn.close()
             return
-        
+
         # Rollback migrations in reverse order
         for migration in reversed(self.migrations):
             if migration.version <= target_version:
                 break
             if migration.version > current_version:
                 continue
-            
+
             print(f"Rolling back migration v{migration.version}: {migration.description}")
-            
+
             try:
                 migration.down(conn)
                 conn.execute("DELETE FROM schema_version WHERE version = ?", (migration.version,))
@@ -125,7 +125,7 @@ class MigrationRunner:
                 print(f"  Rollback v{migration.version} failed: {e}")
                 conn.close()
                 raise
-        
+
         conn.close()
 ```
 
@@ -299,10 +299,10 @@ def run_pipeline(self, spec_path: str):
     # Run migrations on startup
     from cherenkov.core.migration import MigrationRunner
     from migrations import get_migrations
-    
+
     runner = MigrationRunner("data/cherenkov.db", get_migrations())
     runner.migrate()
-    
+
     # ... rest of pipeline ...
 ```
 
@@ -321,37 +321,37 @@ def test_migrations_apply_cleanly():
     conn = sqlite3.connect(":memory:")
     runner = MigrationRunner(":memory:", get_migrations())
     runner.migrate()
-    
+
     # Verify schema_version table exists
     cursor = conn.execute("SELECT version FROM schema_version")
     versions = [row[0] for row in cursor.fetchall()]
-    
+
     assert versions == [1, 2, 3, 4]
 
 def test_migrations_are_idempotent():
     """Running migrations twice should be safe."""
     conn = sqlite3.connect(":memory:")
     runner = MigrationRunner(":memory:", get_migrations())
-    
+
     runner.migrate()
     runner.migrate()  # Should not fail
-    
+
     cursor = conn.execute("SELECT version FROM schema_version")
     versions = [row[0] for row in cursor.fetchall()]
-    
+
     assert versions == [1, 2, 3, 4]
 
 def test_rollback_works():
     """Rollback should reverse migrations."""
     conn = sqlite3.connect(":memory:")
     runner = MigrationRunner(":memory:", get_migrations())
-    
+
     runner.migrate()
     runner.rollback(target_version=2)
-    
+
     cursor = conn.execute("SELECT version FROM schema_version")
     versions = [row[0] for row in cursor.fetchall()]
-    
+
     assert versions == [1, 2]
 ```
 

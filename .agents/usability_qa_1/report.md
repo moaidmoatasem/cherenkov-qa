@@ -30,7 +30,7 @@ Running `curl -s http://localhost:8000` yielded the following HTML source for th
 - The empty data URI for the favicon is technically valid but from a usability/branding perspective, it might be considered insufficient.
 
 ## 4. Conclusion
-The dashboard's base HTML includes standard meta tags (title, viewport) but lacks a `<noscript>` fallback for users without JavaScript. The favicon is present but implemented as an empty placeholder. 
+The dashboard's base HTML includes standard meta tags (title, viewport) but lacks a `<noscript>` fallback for users without JavaScript. The favicon is present but implemented as an empty placeholder.
 
 ## 5. Verification Method
 Run `curl -s http://localhost:8000` or inspect the page source in a browser to confirm the HTML structure.

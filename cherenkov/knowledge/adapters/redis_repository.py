@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 import json
-from typing import Any
 
-from cherenkov.knowledge.domain.models import KnowledgeQuery, KnowledgeQueryResult, KnowledgeItem
+from cherenkov.knowledge.domain.models import (
+    KnowledgeQuery,
+    KnowledgeQueryResult,
+    KnowledgeItem,
+)
 
 
 class RedisKnowledgeRepository:
     def __init__(self, redis_url: str = "redis://localhost:6379"):
         try:
             import redis as redis_client
+
             self.redis = redis_client.from_url(redis_url)
             self._available = True
         except ImportError:

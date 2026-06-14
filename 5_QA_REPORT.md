@@ -12,7 +12,7 @@ Five QA personas evaluated the Cherenkov QA Dashboard using HTTP profiling and s
 ## 1. Performance QA
 **Status:** **PASS**
 - **Methodology:** `wsl curl -s -w "%{http_code} %{time_total}\n" -o /dev/null http://localhost:8000`
-- **Findings:** The dashboard endpoint is highly responsive. The server returned a 200 OK status code with a total response time of approximately **0.0036 seconds (3.6 milliseconds)**. 
+- **Findings:** The dashboard endpoint is highly responsive. The server returned a 200 OK status code with a total response time of approximately **0.0036 seconds (3.6 milliseconds)**.
 - **Conclusion:** Excellent baseline performance for the local dashboard server.
 
 ## 2. Security QA
@@ -36,7 +36,7 @@ Five QA personas evaluated the Cherenkov QA Dashboard using HTTP profiling and s
 ## 4. Accessibility QA
 **Status:** **INCONCLUSIVE (Static Pass)**
 - **Methodology:** Static HTML shell evaluation via `curl.exe -s http://localhost:8000`
-- **Findings:** The static HTML shell correctly implements `lang="en"` and the viewport meta tag for mobile responsiveness. However, because it is an SPA (`<div id="root"></div>`), there are no ARIA attributes or semantic HTML tags (like `<main>`, `<header>`) in the initial payload. 
+- **Findings:** The static HTML shell correctly implements `lang="en"` and the viewport meta tag for mobile responsiveness. However, because it is an SPA (`<div id="root"></div>`), there are no ARIA attributes or semantic HTML tags (like `<main>`, `<header>`) in the initial payload.
 - **Action Item:** A full accessibility evaluation of ARIA compliance requires a headless browser to render the dynamic DOM.
 
 ## 5. Usability QA

@@ -92,33 +92,33 @@ Minimum: 1000 examples (10^3); Optimal: 10,000 examples (10^4)
 def score_divergence_list(predicted, ground_truth):
     def canonicalize(div):
         return (div["divergence_class"], extract_endpoint_key(div))
-    
+
     pred_set = {canonicalize(d) for d in predicted}
     truth_set = {canonicalize(d) for d in ground_truth}
-    
+
     tp = len(pred_set & truth_set)
     fp = len(pred_set - truth_set)
     fn = len(truth_set - pred_set)
-    
+
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
-    
+
     return {"precision": precision, "recall": recall, "f1": f1}
 
 def cross_validate(corpus, k=5):
     folds = [corpus[i::k] for i in range(k)]
     f1_scores = []
-    
+
     for i, test_fold in enumerate(folds):
         train_folds = [f for j, f in enumerate(folds) if j != i]
         train_data = [item for fold in train_folds for item in fold]
-        
+
         model = fine_tune("qwen2.5-coder:7b", examples=train_data, epochs=3)
         predictions = [model.predict(ex["input"]) for ex in test_fold]
         f1 = score_divergence_list(predictions, [e["output"] for e in test_fold])["f1"]
         f1_scores.append(f1)
-    
+
     return {"mean_f1": sum(f1_scores)/len(f1_scores), "fold_scores": f1_scores}
 `
 

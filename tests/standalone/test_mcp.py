@@ -10,6 +10,7 @@ Tests cover:
   - validate_run_gate suggest-only (no auto-apply)
   - Malformed input rejection before any queue is touched
 """
+
 from __future__ import annotations
 
 import io
@@ -21,8 +22,6 @@ from cherenkov.mcp.contracts import (
     HitlApproveInput,
     HitlListInput,
     HitlRejectInput,
-    INVALID_PARAMS,
-    INTERNAL_ERROR,
     METHOD_NOT_FOUND,
     PARSE_ERROR,
 )
@@ -43,14 +42,18 @@ class TestJsonRpcProtocol(unittest.TestCase):
         self.assertEqual(resp.error.code, PARSE_ERROR)
 
     def test_method_not_found(self):
-        raw = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "nonexistent", "params": {}})
+        raw = json.dumps(
+            {"jsonrpc": "2.0", "id": 1, "method": "nonexistent", "params": {}}
+        )
         resp = dispatch_one(raw, self.table)
         self.assertIsNotNone(resp.error)
         self.assertEqual(resp.error.code, METHOD_NOT_FOUND)
 
     def test_notification_no_reply(self):
         # Notifications have no 'id' field — server must not reply
-        raw = json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized", "params": {}})
+        raw = json.dumps(
+            {"jsonrpc": "2.0", "method": "notifications/initialized", "params": {}}
+        )
         resp = dispatch_one(raw, self.table)
         self.assertIsNone(resp)
 
@@ -62,7 +65,9 @@ class TestJsonRpcProtocol(unittest.TestCase):
         self.assertEqual(resp.id, 42)
 
     def test_id_echoed_in_response(self):
-        raw = json.dumps({"jsonrpc": "2.0", "id": "abc-123", "method": "ping", "params": {}})
+        raw = json.dumps(
+            {"jsonrpc": "2.0", "id": "abc-123", "method": "ping", "params": {}}
+        )
         resp = dispatch_one(raw, self.table)
         self.assertEqual(resp.id, "abc-123")
 
@@ -94,8 +99,14 @@ class TestMCPInitialize(unittest.TestCase):
 
     def test_initialize_via_dispatch(self):
         table = build_dispatch_table()
-        raw = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize",
-                          "params": {"protocolVersion": "2024-11-05", "clientInfo": {}}})
+        raw = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {"protocolVersion": "2024-11-05", "clientInfo": {}},
+            }
+        )
         resp = dispatch_one(raw, table)
         self.assertIsNone(resp.error)
         self.assertIn("protocolVersion", resp.result)
@@ -108,7 +119,9 @@ class TestResourcesListDispatch(unittest.TestCase):
         self.table = build_dispatch_table()
 
     def test_resources_list_returns_list(self):
-        raw = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "resources/list", "params": {}})
+        raw = json.dumps(
+            {"jsonrpc": "2.0", "id": 1, "method": "resources/list", "params": {}}
+        )
         resp = dispatch_one(raw, self.table)
         self.assertIsNone(resp.error)
         self.assertIn("resources", resp.result)
@@ -116,7 +129,9 @@ class TestResourcesListDispatch(unittest.TestCase):
         self.assertGreaterEqual(len(resp.result["resources"]), 4)
 
     def test_resources_have_required_fields(self):
-        raw = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "resources/list", "params": {}})
+        raw = json.dumps(
+            {"jsonrpc": "2.0", "id": 1, "method": "resources/list", "params": {}}
+        )
         resp = dispatch_one(raw, self.table)
         for r in resp.result["resources"]:
             self.assertIn("uri", r)
@@ -131,7 +146,9 @@ class TestToolsListDispatch(unittest.TestCase):
         self.table = build_dispatch_table()
 
     def test_tools_list_returns_expected_tools(self):
-        raw = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}})
+        raw = json.dumps(
+            {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}
+        )
         resp = dispatch_one(raw, self.table)
         self.assertIsNone(resp.error)
         names = {t["name"] for t in resp.result["tools"]}
@@ -141,7 +158,9 @@ class TestToolsListDispatch(unittest.TestCase):
         self.assertIn("validate_run_gate", names)
 
     def test_tools_have_input_schema(self):
-        raw = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}})
+        raw = json.dumps(
+            {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}
+        )
         resp = dispatch_one(raw, self.table)
         for t in resp.result["tools"]:
             self.assertIn("inputSchema", t)
@@ -174,10 +193,14 @@ class TestInputValidation(unittest.TestCase):
     def test_hitl_approve_via_tool_call_rejects_empty_id(self):
         """Verify that tools/call with empty item_id returns isError=True, not a crash."""
         table = build_dispatch_table()
-        raw = json.dumps({
-            "jsonrpc": "2.0", "id": 1, "method": "tools/call",
-            "params": {"name": "hitl_approve", "arguments": {"item_id": ""}}
-        })
+        raw = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/call",
+                "params": {"name": "hitl_approve", "arguments": {"item_id": ""}},
+            }
+        )
         resp = dispatch_one(raw, table)
         self.assertIsNone(resp.error)  # JSON-RPC level is fine
         result = resp.result
@@ -191,10 +214,14 @@ class TestHitlToolsWithMockQueue(unittest.TestCase):
         self.table = build_dispatch_table()
 
     def _call(self, tool: str, arguments: dict) -> dict:
-        raw = json.dumps({
-            "jsonrpc": "2.0", "id": 1, "method": "tools/call",
-            "params": {"name": tool, "arguments": arguments},
-        })
+        raw = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/call",
+                "params": {"name": tool, "arguments": arguments},
+            }
+        )
         resp = dispatch_one(raw, self.table)
         self.assertIsNone(resp.error)
         return resp.result
@@ -221,22 +248,32 @@ class TestHitlToolsWithMockQueue(unittest.TestCase):
     @patch("cherenkov.mcp.handlers._queue")
     def test_hitl_approve_calls_queue_approve(self, mock_queue_factory):
         from cherenkov.hitl.contracts import ok_envelope
+
         mock_q = MagicMock()
-        mock_q.approve.return_value = ok_envelope("hitl.approve", {"id": "x", "action": "approve"})
+        mock_q.approve.return_value = ok_envelope(
+            "hitl.approve", {"id": "x", "action": "approve"}
+        )
         mock_queue_factory.return_value = mock_q
 
         result = self._call("hitl_approve", {"item_id": "item-1", "actor": "alice"})
-        mock_q.approve.assert_called_once_with(item_id="item-1", actor="alice", source="mcp")
+        mock_q.approve.assert_called_once_with(
+            item_id="item-1", actor="alice", source="mcp"
+        )
         self.assertFalse(result.get("isError", False))
 
     @patch("cherenkov.mcp.handlers._queue")
     def test_hitl_reject_calls_queue_reject(self, mock_queue_factory):
         from cherenkov.hitl.contracts import ok_envelope
+
         mock_q = MagicMock()
-        mock_q.reject.return_value = ok_envelope("hitl.reject", {"id": "x", "action": "reject"})
+        mock_q.reject.return_value = ok_envelope(
+            "hitl.reject", {"id": "x", "action": "reject"}
+        )
         mock_queue_factory.return_value = mock_q
 
-        result = self._call("hitl_reject", {"item_id": "item-1", "actor": "bob", "reason": "wrong"})
+        result = self._call(
+            "hitl_reject", {"item_id": "item-1", "actor": "bob", "reason": "wrong"}
+        )
         mock_q.reject.assert_called_once_with(
             item_id="item-1", actor="bob", reason="wrong", source="mcp"
         )
@@ -245,6 +282,7 @@ class TestHitlToolsWithMockQueue(unittest.TestCase):
     @patch("cherenkov.mcp.handlers._queue")
     def test_hitl_approve_missing_actor_uses_default(self, mock_queue_factory):
         from cherenkov.hitl.contracts import ok_envelope
+
         mock_q = MagicMock()
         mock_q.approve.return_value = ok_envelope("hitl.approve", {})
         mock_queue_factory.return_value = mock_q
@@ -266,6 +304,7 @@ class TestValidateRunGate(unittest.TestCase):
         from cherenkov.validate.contracts import ValidationReport
         import uuid
         from datetime import datetime, timezone
+
         mock_report = ValidationReport(
             run_id=str(uuid.uuid4()),
             timestamp=datetime.now(timezone.utc).isoformat(),
@@ -277,10 +316,14 @@ class TestValidateRunGate(unittest.TestCase):
         mock_gate.run.return_value = mock_report
         mock_gate_cls.return_value = mock_gate
 
-        raw = json.dumps({
-            "jsonrpc": "2.0", "id": 1, "method": "tools/call",
-            "params": {"name": "validate_run_gate", "arguments": {}},
-        })
+        raw = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/call",
+                "params": {"name": "validate_run_gate", "arguments": {}},
+            }
+        )
         resp = dispatch_one(raw, self.table)
         self.assertIsNone(resp.error)
         self.assertFalse(resp.result.get("isError", False))
@@ -296,10 +339,14 @@ class TestValidateRunGate(unittest.TestCase):
         mock_gate.run.side_effect = RuntimeError("gate failed")
         mock_gate_cls.return_value = mock_gate
 
-        raw = json.dumps({
-            "jsonrpc": "2.0", "id": 1, "method": "tools/call",
-            "params": {"name": "validate_run_gate", "arguments": {}},
-        })
+        raw = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/call",
+                "params": {"name": "validate_run_gate", "arguments": {}},
+            }
+        )
         resp = dispatch_one(raw, self.table)
         self.assertIsNone(resp.error)
         self.assertTrue(resp.result.get("isError", False))
@@ -327,7 +374,12 @@ class TestStdioTransport(unittest.TestCase):
 
     def test_serve_stdio_skips_empty_lines(self):
         from cherenkov.mcp.protocol import serve_stdio
-        inp = io.StringIO("\n\n" + json.dumps({"jsonrpc": "2.0", "id": 1, "method": "ping", "params": {}}) + "\n\n")
+
+        inp = io.StringIO(
+            "\n\n"
+            + json.dumps({"jsonrpc": "2.0", "id": 1, "method": "ping", "params": {}})
+            + "\n\n"
+        )
         out = io.StringIO()
         serve_stdio(build_dispatch_table(), input_stream=inp, output_stream=out)
         lines = [l for l in out.getvalue().splitlines() if l.strip()]
@@ -335,6 +387,7 @@ class TestStdioTransport(unittest.TestCase):
 
     def test_serve_stdio_handles_malformed_json(self):
         from cherenkov.mcp.protocol import serve_stdio
+
         inp = io.StringIO("{{broken\n")
         out = io.StringIO()
         serve_stdio(build_dispatch_table(), input_stream=inp, output_stream=out)

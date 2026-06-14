@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class GraphQLScenario(BaseModel):
     operation_name: str
     kind: str  # query/mutation/subscription

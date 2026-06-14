@@ -11,6 +11,7 @@ the email"). The Copilot:
 The emitted file is standard Playwright; it ejects cleanly (no CHERENKOV runtime
 hooks), satisfying the E10 exit criterion's "passing, ejected test".
 """
+
 from __future__ import annotations
 
 import json
@@ -100,7 +101,7 @@ class IntentAuthor:
             "intent into an ordered, executable test plan.\n"
             "Rules:\n"
             "  - Describe each target by its visible ROLE and NAME (e.g. \"the 'Checkout' "
-            "button\", \"the Email field\"), never a CSS/XPath selector.\n"
+            'button", "the Email field"), never a CSS/XPath selector.\n'
             "  - actions: navigate | click | fill | expect | request.\n"
             "  - 'expect' steps assert visible text or a response; put the expectation in 'value'.\n"
             "  - Put any concrete data (codes, emails) into data_hints and reference it in steps.\n"
@@ -109,7 +110,9 @@ class IntentAuthor:
             'Return a JSON object: {"title","kind","target_url","data_hints","steps"[]}.'
         )
 
-    def _parse_spec(self, content: Any, raw_intent: str, target_url: str) -> IntentSpec | None:
+    def _parse_spec(
+        self, content: Any, raw_intent: str, target_url: str
+    ) -> IntentSpec | None:
         if isinstance(content, str):
             try:
                 content = json.loads(content)
@@ -135,7 +138,9 @@ class IntentAuthor:
                 raw_intent=raw_intent,
                 title=content.get("title") or self._title_from(raw_intent),
                 target_url=content.get("target_url") or target_url,
-                kind=content.get("kind", "ui") if content.get("kind") in ("ui", "api") else "ui",
+                kind=content.get("kind", "ui")
+                if content.get("kind") in ("ui", "api")
+                else "ui",
                 steps=steps,
                 data_hints=content.get("data_hints") or {},
             )
@@ -150,8 +155,17 @@ class IntentAuthor:
         model didn't shape it.
         """
         steps = [
-            IntentStep(action="navigate", value=target_url or "/", note="from intent (offline fallback)"),
-            IntentStep(action="expect", target="page", value="", note="page loads without error"),
+            IntentStep(
+                action="navigate",
+                value=target_url or "/",
+                note="from intent (offline fallback)",
+            ),
+            IntentStep(
+                action="expect",
+                target="page",
+                value="",
+                note="page loads without error",
+            ),
         ]
         return IntentSpec(
             id=str(uuid.uuid4()),
@@ -185,7 +199,7 @@ class IntentAuthor:
             f"//   {spec.raw_intent}",
             "// Standard Playwright — owned by you, no CHERENKOV runtime required.",
             "",
-            f'test({json.dumps(spec.title)}, async ({{ page, request }}) => {{',
+            f"test({json.dumps(spec.title)}, async ({{ page, request }}) => {{",
         ]
         for step in spec.steps:
             lines.extend("  " + ln for ln in self._render_step(step, base))
@@ -201,17 +215,23 @@ class IntentAuthor:
         if action == "click":
             return [f"await {self._locator(step.target)}.click();"]
         if action == "fill":
-            return [f"await {self._locator(step.target)}.fill({json.dumps(step.value)});"]
+            return [
+                f"await {self._locator(step.target)}.fill({json.dumps(step.value)});"
+            ]
         if action == "request":
             method = (step.note or "get").lower()
-            method = method if method in ("get", "post", "put", "delete", "patch") else "get"
+            method = (
+                method if method in ("get", "post", "put", "delete", "patch") else "get"
+            )
             return [
                 f"const resp = await request.{method}({json.dumps(step.value or step.target)});",
                 "expect(resp.status()).toBeLessThan(400);",
             ]
         if action == "expect":
             if step.value:
-                return [f"await expect(page.getByText({json.dumps(step.value)})).toBeVisible();"]
+                return [
+                    f"await expect(page.getByText({json.dumps(step.value)})).toBeVisible();"
+                ]
             return ["await expect(page).toHaveURL(/.*/);"]
         # Unsupported action: surface loudly, don't bury a TODO.
         self._unsupported_actions.append(step.action)
@@ -228,7 +248,9 @@ class IntentAuthor:
         low = t.lower()
         # crude role inference from the description; keeps tests selector-free
         name = re.sub(r"^(the|a|an)\s+", "", low)
-        name = re.sub(r"\s+(button|link|field|input|checkbox|tab|menu item)$", "", name).strip()
+        name = re.sub(
+            r"\s+(button|link|field|input|checkbox|tab|menu item)$", "", name
+        ).strip()
         pretty = name.title() if name else t
         if "button" in low:
             return f'page.getByRole("button", {{ name: {json.dumps(pretty)} }})'
@@ -255,8 +277,12 @@ class IntentAuthor:
         fname = self._slug(spec.title) + ".spec.ts"
         path = out / fname
         path.write_text(self.to_playwright(spec), encoding="utf-8")
-        self.log.info("authored test", path=str(path), steps=len(spec.steps),
-                      status=spec.status.value)
+        self.log.info(
+            "authored test",
+            path=str(path),
+            steps=len(spec.steps),
+            status=spec.status.value,
+        )
         return spec, path
 
     @staticmethod

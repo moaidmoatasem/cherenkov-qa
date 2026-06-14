@@ -18,11 +18,11 @@ the same path as the terminal CLI and OpenClaw Tier-1. No bypass.
 D7 invariant: no auto-edit of test code here or anywhere triggered from here.
 Suggest-only: validate_run_gate returns a report, never auto-applies anything.
 """
+
 from __future__ import annotations
 
 import json
 import os
-import re as _re
 from typing import Any
 
 from pydantic import ValidationError
@@ -48,7 +48,6 @@ from cherenkov.mcp.contracts import (
     MenaComplianceEnhancedInput,
     GovernanceCertificationInput,
     ComplianceFindingsInput,
-    INVALID_PARAMS,
     MCPContent,
     MCPResource,
     MCPResourceContent,
@@ -68,13 +67,14 @@ _policy = PolicyEngine()
 
 # ── Input validation helpers ───────────────────────────────────────────────────
 
+
 def _validate_spec_path(path: str) -> str:
     resolved = os.path.realpath(os.path.abspath(path))
     cwd = os.path.realpath(os.path.abspath("."))
     if not resolved.startswith(cwd):
-        raise ValueError(f"spec_path must be within working directory")
+        raise ValueError("spec_path must be within working directory")
     if not resolved.endswith((".yaml", ".yml", ".json")):
-        raise ValueError(f"spec_path must be a .yaml, .yml, or .json file")
+        raise ValueError("spec_path must be a .yaml, .yml, or .json file")
     return resolved
 
 
@@ -122,7 +122,7 @@ TOOLS: list[MCPTool] = [
                 "status": MCPToolParam(
                     type="string",
                     description="Filter by status: pending | approved | rejected | ignored. "
-                                "Omit or pass null for pending.",
+                    "Omit or pass null for pending.",
                 )
             },
             required=[],
@@ -136,7 +136,9 @@ TOOLS: list[MCPTool] = [
         ),
         inputSchema=MCPToolInputSchema(
             properties={
-                "item_id": MCPToolParam(type="string", description="ID of the HITL item to approve."),
+                "item_id": MCPToolParam(
+                    type="string", description="ID of the HITL item to approve."
+                ),
                 "actor": MCPToolParam(type="string", description="Reviewer identity."),
             },
             required=["item_id"],
@@ -150,9 +152,11 @@ TOOLS: list[MCPTool] = [
         ),
         inputSchema=MCPToolInputSchema(
             properties={
-                "item_id": MCPToolParam(type="string", description="ID of the HITL item to reject."),
-                "actor":   MCPToolParam(type="string", description="Reviewer identity."),
-                "reason":  MCPToolParam(type="string", description="Rejection reason."),
+                "item_id": MCPToolParam(
+                    type="string", description="ID of the HITL item to reject."
+                ),
+                "actor": MCPToolParam(type="string", description="Reviewer identity."),
+                "reason": MCPToolParam(type="string", description="Rejection reason."),
             },
             required=["item_id"],
         ),
@@ -199,17 +203,19 @@ TOOLS: list[MCPTool] = [
         description="Run visual snapshot regression and UI matching checks.",
         inputSchema=MCPToolInputSchema(
             properties={
-                "target_url": MCPToolParam(type="string", description="Optional target URL.")
+                "target_url": MCPToolParam(
+                    type="string", description="Optional target URL."
+                )
             },
-            required=[]
+            required=[],
         ),
     ),
     # ── Issue #457: Enhanced Visual Diff Baseline Tool ──────────────────────
     MCPTool(
         name="visual_diff_baseline_enhanced",
         description="Run comprehensive visual snapshot regression with baseline management, "
-                    "configurable diff thresholds, pixel/structural/auto comparison modes, "
-                    "and custom report paths.",
+        "configurable diff thresholds, pixel/structural/auto comparison modes, "
+        "and custom report paths.",
         inputSchema=MCPToolInputSchema(
             properties={
                 "target_url": MCPToolParam(
@@ -241,9 +247,11 @@ TOOLS: list[MCPTool] = [
         description="Run K6 performance load testing and latency analysis.",
         inputSchema=MCPToolInputSchema(
             properties={
-                "target_url": MCPToolParam(type="string", description="Optional target URL.")
+                "target_url": MCPToolParam(
+                    type="string", description="Optional target URL."
+                )
             },
-            required=[]
+            required=[],
         ),
     ),
     MCPTool(
@@ -251,9 +259,11 @@ TOOLS: list[MCPTool] = [
         description="Query the SQLite RAG index for test historical artifacts.",
         inputSchema=MCPToolInputSchema(
             properties={
-                "query": MCPToolParam(type="string", description="Natural language query.")
+                "query": MCPToolParam(
+                    type="string", description="Natural language query."
+                )
             },
-            required=["query"]
+            required=["query"],
         ),
     ),
     MCPTool(
@@ -261,9 +271,11 @@ TOOLS: list[MCPTool] = [
         description="Suggest-only Jira export for failed validation items.",
         inputSchema=MCPToolInputSchema(
             properties={
-                "item_id": MCPToolParam(type="string", description="Validation item ID.")
+                "item_id": MCPToolParam(
+                    type="string", description="Validation item ID."
+                )
             },
-            required=["item_id"]
+            required=["item_id"],
         ),
     ),
     MCPTool(
@@ -275,7 +287,7 @@ TOOLS: list[MCPTool] = [
     MCPTool(
         name="scan_mena_compliance_enhanced",
         description="Run enhanced MENAC compliance checking for SAMA CCSF and Egypt CBE FinCSF frameworks. "
-                    "Takes target_url, spec_path, and framework parameters for targeted scanning.",
+        "Takes target_url, spec_path, and framework parameters for targeted scanning.",
         inputSchema=MCPToolInputSchema(
             properties={
                 "target_url": MCPToolParam(
@@ -337,9 +349,15 @@ TOOLS: list[MCPTool] = [
         description="Query recent test verdicts from the Reflector.",
         inputSchema=MCPToolInputSchema(
             properties={
-                "endpoint": MCPToolParam(type="string", description="Filter by endpoint (optional)."),
-                "status_code": MCPToolParam(type="integer", description="Filter by HTTP status code (optional)."),
-                "limit": MCPToolParam(type="integer", description="Max results to return (default 10)."),
+                "endpoint": MCPToolParam(
+                    type="string", description="Filter by endpoint (optional)."
+                ),
+                "status_code": MCPToolParam(
+                    type="integer", description="Filter by HTTP status code (optional)."
+                ),
+                "limit": MCPToolParam(
+                    type="integer", description="Max results to return (default 10)."
+                ),
             },
             required=[],
         ),
@@ -349,8 +367,12 @@ TOOLS: list[MCPTool] = [
         description="Query learned idiom patterns from the Reflector.",
         inputSchema=MCPToolInputSchema(
             properties={
-                "pattern": MCPToolParam(type="string", description="Filter by pattern substring (optional)."),
-                "limit": MCPToolParam(type="integer", description="Max results to return (default 10)."),
+                "pattern": MCPToolParam(
+                    type="string", description="Filter by pattern substring (optional)."
+                ),
+                "limit": MCPToolParam(
+                    type="integer", description="Max results to return (default 10)."
+                ),
             },
             required=[],
         ),
@@ -360,8 +382,12 @@ TOOLS: list[MCPTool] = [
         description="Explain a divergence using the Knowledge Mesh GraphRAG.",
         inputSchema=MCPToolInputSchema(
             properties={
-                "endpoint": MCPToolParam(type="string", description="API endpoint that diverged."),
-                "method": MCPToolParam(type="string", description="HTTP method (default GET)."),
+                "endpoint": MCPToolParam(
+                    type="string", description="API endpoint that diverged."
+                ),
+                "method": MCPToolParam(
+                    type="string", description="HTTP method (default GET)."
+                ),
             },
             required=["endpoint"],
         ),
@@ -371,9 +397,15 @@ TOOLS: list[MCPTool] = [
         description="Plan test scenarios for a specific endpoint (suggest-only, does not execute).",
         inputSchema=MCPToolInputSchema(
             properties={
-                "endpoint": MCPToolParam(type="string", description="API endpoint to plan tests for."),
-                "method": MCPToolParam(type="string", description="HTTP method (default GET)."),
-                "spec_path": MCPToolParam(type="string", description="Path to OpenAPI spec (optional)."),
+                "endpoint": MCPToolParam(
+                    type="string", description="API endpoint to plan tests for."
+                ),
+                "method": MCPToolParam(
+                    type="string", description="HTTP method (default GET)."
+                ),
+                "spec_path": MCPToolParam(
+                    type="string", description="Path to OpenAPI spec (optional)."
+                ),
             },
             required=["endpoint"],
         ),
@@ -387,7 +419,9 @@ TOOLS: list[MCPTool] = [
         ),
         inputSchema=MCPToolInputSchema(
             properties={
-                "target_url": MCPToolParam(type="string", description="Target API base URL."),
+                "target_url": MCPToolParam(
+                    type="string", description="Target API base URL."
+                ),
                 "spec_path": MCPToolParam(
                     type="string",
                     description="Path to OpenAPI spec (default: stub/openapi.yaml).",
@@ -429,7 +463,9 @@ TOOLS: list[MCPTool] = [
         inputSchema=MCPToolInputSchema(
             properties={
                 "endpoint": MCPToolParam(type="string", description="e.g. /users/{id}"),
-                "method": MCPToolParam(type="string", description="HTTP method (default GET)."),
+                "method": MCPToolParam(
+                    type="string", description="HTTP method (default GET)."
+                ),
             },
             required=["endpoint"],
         ),
@@ -454,6 +490,7 @@ TOOLS: list[MCPTool] = [
 
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
+
 
 def _queue() -> HitlQueue:
     return HitlQueue()
@@ -487,6 +524,7 @@ def _resource_content(uri: str, payload: Any) -> MCPResourceReadResult:
 
 # ── Resource handlers ─────────────────────────────────────────────────────────
 
+
 def handle_resources_list(params: dict[str, Any]) -> dict[str, Any]:
     return MCPResourceListResult(resources=RESOURCES).model_dump()
 
@@ -497,8 +535,13 @@ def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
     if uri == "cherenkov://hitl/pending":
         q = _queue()
         items = q.list(status="pending")
-        payload = {"schema_version": "hitl/v1", "ok": True, "command": "hitl.list",
-                   "payload": [i.model_dump() for i in items], "error": None}
+        payload = {
+            "schema_version": "hitl/v1",
+            "ok": True,
+            "command": "hitl.list",
+            "payload": [i.model_dump() for i in items],
+            "error": None,
+        }
         return _resource_content(uri, payload).model_dump()
 
     if uri.startswith("cherenkov://hitl/item/"):
@@ -508,11 +551,25 @@ def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
         q = _queue()
         item = q.get(item_id)
         if item is None:
-            payload = {"schema_version": "hitl/v1", "ok": False, "command": "hitl.show",
-                       "payload": None, "error": {"code": "not_found", "message": f"{item_id} not found.", "detail": {}}}
+            payload = {
+                "schema_version": "hitl/v1",
+                "ok": False,
+                "command": "hitl.show",
+                "payload": None,
+                "error": {
+                    "code": "not_found",
+                    "message": f"{item_id} not found.",
+                    "detail": {},
+                },
+            }
         else:
-            payload = {"schema_version": "hitl/v1", "ok": True, "command": "hitl.show",
-                       "payload": item.model_dump(), "error": None}
+            payload = {
+                "schema_version": "hitl/v1",
+                "ok": True,
+                "command": "hitl.show",
+                "payload": item.model_dump(),
+                "error": None,
+            }
         return _resource_content(uri, payload).model_dump()
 
     if uri == "cherenkov://validate/latest":
@@ -525,6 +582,7 @@ def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
 
     if uri == "cherenkov://chat/sessions":
         from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
+
         memory = SQLiteConversationMemory()
         sessions = memory.list_sessions()
         payload = {"sessions": [s.to_dict() for s in sessions]}
@@ -534,6 +592,7 @@ def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
 
 
 # ── Tool call handlers ────────────────────────────────────────────────────────
+
 
 def handle_tools_list(params: dict[str, Any]) -> dict[str, Any]:
     return MCPToolListResult(tools=TOOLS).model_dump()
@@ -617,6 +676,7 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
 
 # ── Individual tools ──────────────────────────────────────────────────────────
 
+
 def _tool_hitl_list(args: dict[str, Any]) -> MCPToolCallResult:
     inp = HitlListInput.model_validate(args)
     q = _queue()
@@ -641,7 +701,9 @@ def _tool_hitl_approve(args: dict[str, Any]) -> MCPToolCallResult:
 def _tool_hitl_reject(args: dict[str, Any]) -> MCPToolCallResult:
     inp = HitlRejectInput.model_validate(args)
     q = _queue()
-    env = q.reject(item_id=inp.item_id, actor=inp.actor, reason=inp.reason, source="mcp")
+    env = q.reject(
+        item_id=inp.item_id, actor=inp.actor, reason=inp.reason, source="mcp"
+    )
     return _ok_content(env.model_dump())
 
 
@@ -666,6 +728,7 @@ def _tool_validate_gate(args: dict[str, Any]) -> MCPToolCallResult:
 
 # ── Policy tools ──────────────────────────────────────────────────────────────
 
+
 def _tool_policy_list(args: dict[str, Any]) -> MCPToolCallResult:
     """Return current policy rules for all profiles."""
     return _ok_content(_policy.list_policy())
@@ -679,27 +742,37 @@ def _tool_policy_reload(args: dict[str, Any]) -> MCPToolCallResult:
 
 # ── Track B/C tools ───────────────────────────────────────────────────────────
 
+
 def _tool_visual_diff(args: dict[str, Any]) -> MCPToolCallResult:
     target_url = args.get("target_url")
     try:
         from cherenkov.execution.visual_diff import VisualDiffEngine
+
         engine = VisualDiffEngine()
         report = engine.run_visual_validation(api_url=target_url)
         return _ok_content(report)
     except Exception as exc:
         return _err_content(f"VisualDiff error: {exc}")
 
+
 def _tool_visual_diff_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
     """Enhanced visual diff tool with baseline management, configurable thresholds, and report output."""
     try:
         inp = VisualDiffBaselineInput.model_validate(args)
-        target_url = inp.target_url or os.environ.get("API_URL") or "http://localhost:8000"
-        baseline_dir = inp.baseline_dir or os.path.join(os.getcwd(), "stub", "visual_baselines")
+        target_url = (
+            inp.target_url or os.environ.get("API_URL") or "http://localhost:8000"
+        )
+        baseline_dir = inp.baseline_dir or os.path.join(
+            os.getcwd(), "stub", "visual_baselines"
+        )
         diff_threshold = inp.diff_threshold or 0.5
         comparison_mode = inp.comparison_mode or "pixel"
-        report_path = inp.report_path or os.path.join(os.getcwd(), ".cherenkov", "visual_report.json")
+        report_path = inp.report_path or os.path.join(
+            os.getcwd(), ".cherenkov", "visual_report.json"
+        )
 
         from cherenkov.execution.visual_diff import VisualDiffEngine
+
         engine = VisualDiffEngine()
         base_report = engine.run_visual_validation(api_url=target_url)
 
@@ -727,51 +800,67 @@ def _tool_visual_diff_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
 
 
 def _tool_run_perf(args: dict[str, Any]) -> MCPToolCallResult:
-    target_url = args.get("target_url") or os.environ.get("API_URL") or "http://localhost:8000"
+    target_url = (
+        args.get("target_url") or os.environ.get("API_URL") or "http://localhost:8000"
+    )
     scenario_name = args.get("scenario_name") or "mcp_test"
     duration = args.get("duration") or 5
     vus = args.get("vus") or 5
     endpoint = args.get("endpoint") or "/"
     method = args.get("method") or "GET"
-    
+
     try:
         from cherenkov.core.contracts import PerfSlice
+
         sl = PerfSlice(
             name=scenario_name,
             target_url=target_url,
             endpoint=endpoint,
             method=method,
             vus=vus,
-            duration_sec=duration
+            duration_sec=duration,
         )
         from cherenkov.stages.perf.perf_stage import PerfStage
+
         stage = PerfStage()
         report = stage.run(sl)
-        return _ok_content({
-            "scenario_id": report.scenario_id,
-            "status": report.status.value if hasattr(report.status, "value") else str(report.status),
-            "verdict": report.verdict.value if hasattr(report.verdict, "value") else str(report.verdict),
-            "errors": [e.detail for e in report.errors],
-            "gates": [{
-                "gate": g.gate,
-                "passed": g.passed,
-                "latency_ms": g.latency_ms,
-                "anomaly_detected": g.anomaly_detected,
-                "k6_available": g.k6_available,
-            } for g in report.gates]
-        })
+        return _ok_content(
+            {
+                "scenario_id": report.scenario_id,
+                "status": report.status.value
+                if hasattr(report.status, "value")
+                else str(report.status),
+                "verdict": report.verdict.value
+                if hasattr(report.verdict, "value")
+                else str(report.verdict),
+                "errors": [e.detail for e in report.errors],
+                "gates": [
+                    {
+                        "gate": g.gate,
+                        "passed": g.passed,
+                        "latency_ms": g.latency_ms,
+                        "anomaly_detected": g.anomaly_detected,
+                        "k6_available": g.k6_available,
+                    }
+                    for g in report.gates
+                ],
+            }
+        )
     except Exception as exc:
         return _err_content(f"Perf error: {exc}")
+
 
 def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
     query = args.get("query", "")
     try:
         from cherenkov.ai.rag_index import RAGIndex
+
         rag = RAGIndex()
         res = rag.query(query)
         return _ok_content({"query": query, "results": res})
     except Exception as exc:
         return _err_content(f"RAG error: {exc}")
+
 
 def _tool_export_jira(args: dict[str, Any]) -> MCPToolCallResult:
     item_id = args.get("item_id", "")
@@ -780,10 +869,11 @@ def _tool_export_jira(args: dict[str, Any]) -> MCPToolCallResult:
         item = q.get(item_id)
         if not item:
             return _err_content(f"HITL item {item_id} not found in queue.")
-            
+
         from cherenkov.validate.jira_exporter import JiraExporter
+
         exporter = JiraExporter()
-        
+
         file_path = exporter.export_ticket(
             scenario_id=item.id,
             failure_class=item.mutation_label or "conformance-drift",
@@ -791,9 +881,9 @@ def _tool_export_jira(args: dict[str, Any]) -> MCPToolCallResult:
             expected_status="Valid response",
             received_status="Divergent response",
             hypothesis=item.confidence_reason,
-            compliance_score=80
+            compliance_score=80,
         )
-        
+
         summary = f"🛑 CHERENKOV QA — DRIFT DETECTED: {item.id}"
         description = exporter.format_ticket(
             scenario_id=item.id,
@@ -802,27 +892,35 @@ def _tool_export_jira(args: dict[str, Any]) -> MCPToolCallResult:
             expected_status="Valid response",
             received_status="Divergent response",
             hypothesis=item.confidence_reason,
-            compliance_score=80
+            compliance_score=80,
         )
-        
+
         issue_key = exporter.create_jira_issue(summary, description)
-        
-        return _ok_content({
-            "item_id": item_id,
-            "status": "exported",
-            "file_path": file_path,
-            "jira_issue_key": issue_key or "sandboxed"
-        })
+
+        return _ok_content(
+            {
+                "item_id": item_id,
+                "status": "exported",
+                "file_path": file_path,
+                "jira_issue_key": issue_key or "sandboxed",
+            }
+        )
     except Exception as exc:
         return _err_content(f"Jira error: {exc}")
 
+
 def _tool_scan_mena(args: dict[str, Any]) -> MCPToolCallResult:
-    target_url = args.get("target_url") or os.environ.get("API_URL") or "http://localhost:8000"
+    target_url = (
+        args.get("target_url") or os.environ.get("API_URL") or "http://localhost:8000"
+    )
     spec_path = args.get("spec_path") or "stub/openapi.yaml"
     try:
         from cherenkov.compliance.mena_scanner import MENAComplianceScanner
+
         scanner = MENAComplianceScanner()
-        report = scanner.run_compliance_audit(target_url=target_url, spec_path=spec_path)
+        report = scanner.run_compliance_audit(
+            target_url=target_url, spec_path=spec_path
+        )
         violations = []
         for domain, details in report["framework_mappings"]["SAMA_CCSF"].items():
             if details["status"] == "NON-COMPLIANT":
@@ -830,12 +928,14 @@ def _tool_scan_mena(args: dict[str, Any]) -> MCPToolCallResult:
         for domain, details in report["framework_mappings"]["EGYPT_FinCSF"].items():
             if details["status"] == "NON-COMPLIANT":
                 violations.append(f"{domain}: {details['remediation']}")
-                
-        return _ok_content({
-            "compliance_score": report["overall_compliance_score"],
-            "violations": violations,
-            "mappings": report["framework_mappings"]
-        })
+
+        return _ok_content(
+            {
+                "compliance_score": report["overall_compliance_score"],
+                "violations": violations,
+                "mappings": report["framework_mappings"],
+            }
+        )
     except Exception as exc:
         return _err_content(f"MENA error: {exc}")
 
@@ -851,8 +951,11 @@ def _tool_scan_mena_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
             return _err_content(f"Invalid spec_path: {exc}")
 
         from cherenkov.compliance.mena_scanner import MENAComplianceScanner
+
         scanner = MENAComplianceScanner()
-        report = scanner.run_compliance_audit(target_url=inp.target_url, spec_path=spec_path)
+        report = scanner.run_compliance_audit(
+            target_url=inp.target_url, spec_path=spec_path
+        )
 
         # Filter by requested framework
         framework_key = inp.framework.upper()
@@ -865,17 +968,26 @@ def _tool_scan_mena_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
 
         violations = []
         for domain, details in mappings.items():
-            for sub_domain, sub_details in details.items() if isinstance(details, dict) else []:
-                if isinstance(sub_details, dict) and sub_details.get("status") == "NON-COMPLIANT":
-                    violations.append(f"{sub_domain}: {sub_details.get('remediation', '')}")
+            for sub_domain, sub_details in (
+                details.items() if isinstance(details, dict) else []
+            ):
+                if (
+                    isinstance(sub_details, dict)
+                    and sub_details.get("status") == "NON-COMPLIANT"
+                ):
+                    violations.append(
+                        f"{sub_domain}: {sub_details.get('remediation', '')}"
+                    )
 
-        return _ok_content({
-            "compliance_score": report["overall_compliance_score"],
-            "framework": inp.framework,
-            "violations": violations,
-            "mappings": mappings,
-            "audit_results": report.get("audit_results", {}),
-        })
+        return _ok_content(
+            {
+                "compliance_score": report["overall_compliance_score"],
+                "framework": inp.framework,
+                "violations": violations,
+                "mappings": mappings,
+                "audit_results": report.get("audit_results", {}),
+            }
+        )
     except Exception as exc:
         return _err_content(f"MENA enhanced error: {exc}")
 
@@ -894,20 +1006,28 @@ def _tool_validate_governance(args: dict[str, Any]) -> MCPToolCallResult:
         cert_valid = kpi_json["health_score"] >= 0.7
         findings = []
         if kpi_json["escape_rate"] > 0.1:
-            findings.append(f"Escape rate ({kpi_json['escape_rate']:.1%}) exceeds 10% threshold")
+            findings.append(
+                f"Escape rate ({kpi_json['escape_rate']:.1%}) exceeds 10% threshold"
+            )
         if kpi_json["false_positive_rate"] > 0.15:
-            findings.append(f"False positive rate ({kpi_json['false_positive_rate']:.1%}) exceeds 15% threshold")
+            findings.append(
+                f"False positive rate ({kpi_json['false_positive_rate']:.1%}) exceeds 15% threshold"
+            )
         if kpi_json["coverage"] < 0.5:
-            findings.append(f"Coverage ({kpi_json['coverage']:.1%}) below 50% threshold")
+            findings.append(
+                f"Coverage ({kpi_json['coverage']:.1%}) below 50% threshold"
+            )
 
-        return _ok_content({
-            "cert_id": inp.cert_id,
-            "validation_criteria": inp.validation_criteria,
-            "certified": cert_valid,
-            "health_score": kpi_json["health_score"],
-            "findings": findings,
-            "kpi_summary": kpi_json,
-        })
+        return _ok_content(
+            {
+                "cert_id": inp.cert_id,
+                "validation_criteria": inp.validation_criteria,
+                "certified": cert_valid,
+                "health_score": kpi_json["health_score"],
+                "findings": findings,
+                "kpi_summary": kpi_json,
+            }
+        )
     except Exception as exc:
         return _err_content(f"Governance validation error: {exc}")
 
@@ -927,9 +1047,15 @@ def _tool_report_compliance(args: dict[str, Any]) -> MCPToolCallResult:
         # Build compliance findings from the report
         all_findings = []
         for domain, details in report["framework_mappings"].items():
-            for sub_domain, sub_details in details.items() if isinstance(details, dict) else []:
+            for sub_domain, sub_details in (
+                details.items() if isinstance(details, dict) else []
+            ):
                 if isinstance(sub_details, dict):
-                    severity = "high" if sub_details.get("status") == "NON-COMPLIANT" else "low"
+                    severity = (
+                        "high"
+                        if sub_details.get("status") == "NON-COMPLIANT"
+                        else "low"
+                    )
                     finding = {
                         "domain": sub_domain,
                         "framework": domain,
@@ -948,33 +1074,39 @@ def _tool_report_compliance(args: dict[str, Any]) -> MCPToolCallResult:
             filtered = [f for f in filtered if inp.endpoint in f.get("endpoint", "")]
         filtered = filtered[: inp.limit]
 
-        return _ok_content({
-            "total_findings": len(all_findings),
-            "displayed": len(filtered),
-            "findings": filtered,
-            "filters_applied": {
-                "severity": inp.severity or "all",
-                "endpoint": inp.endpoint or "none",
-            },
-            "compliance_score": report.get("overall_compliance_score", 0),
-        })
+        return _ok_content(
+            {
+                "total_findings": len(all_findings),
+                "displayed": len(filtered),
+                "findings": filtered,
+                "filters_applied": {
+                    "severity": inp.severity or "all",
+                    "endpoint": inp.endpoint or "none",
+                },
+                "compliance_score": report.get("overall_compliance_score", 0),
+            }
+        )
     except Exception as exc:
         return _err_content(f"Compliance report error: {exc}")
 
 
-
 # ── Chat knowledge tools ──────────────────────────────────────────────────────
+
 
 def _tool_chat_query_verdicts(args: dict[str, Any]) -> MCPToolCallResult:
     inp = ChatQueryVerdictsInput.model_validate(args)
     from cherenkov.chat.tools import query_verdicts
-    result = query_verdicts(endpoint=inp.endpoint, status_code=inp.status_code, limit=inp.limit)
+
+    result = query_verdicts(
+        endpoint=inp.endpoint, status_code=inp.status_code, limit=inp.limit
+    )
     return _ok_content(result)
 
 
 def _tool_chat_query_idioms(args: dict[str, Any]) -> MCPToolCallResult:
     inp = ChatQueryIdiomsInput.model_validate(args)
     from cherenkov.chat.tools import query_idioms
+
     result = query_idioms(pattern=inp.pattern, limit=inp.limit)
     return _ok_content(result)
 
@@ -982,6 +1114,7 @@ def _tool_chat_query_idioms(args: dict[str, Any]) -> MCPToolCallResult:
 def _tool_chat_explain_divergence(args: dict[str, Any]) -> MCPToolCallResult:
     inp = ChatExplainDivergenceInput.model_validate(args)
     from cherenkov.chat.tools import explain_divergence
+
     result = explain_divergence(endpoint=inp.endpoint, method=inp.method)
     return _ok_content(result)
 
@@ -995,15 +1128,19 @@ def _tool_chat_run_test(args: dict[str, Any]) -> MCPToolCallResult:
         except ValueError as exc:
             return _err_content(f"Invalid spec_path: {exc}")
     from cherenkov.chat.tools import run_test
+
     result = run_test(endpoint=inp.endpoint, method=inp.method, spec_path=spec_path)
     return _ok_content(result)
 
 
 # ── Evidence helpers ──────────────────────────────────────────────────────────
 
+
 def _get_latest_validation_report() -> dict[str, Any]:
     """Return the most recent ValidationReport from evidence/, or a stub."""
-    import os, glob
+    import os
+    import glob
+
     evidence_dir = os.path.join(os.getcwd(), ".cherenkov", "evidence")
     pattern = os.path.join(evidence_dir, "*.json")
     files = sorted(glob.glob(pattern), reverse=True)
@@ -1019,6 +1156,7 @@ def _get_latest_validation_report() -> dict[str, Any]:
 
 # ── Issue #441: Conformance tools ─────────────────────────────────────────────
 
+
 def _tool_run_conformance_check(args: dict[str, Any]) -> MCPToolCallResult:
     """Trigger a validate run against target_url; return summary. D7: suggest-only."""
     inp = RunConformanceCheckInput.model_validate(args)
@@ -1028,16 +1166,21 @@ def _tool_run_conformance_check(args: dict[str, Any]) -> MCPToolCallResult:
         return _err_content(f"Invalid spec_path: {exc}")
     try:
         from cherenkov.execution.validate import ValidationEngine
+
         engine = ValidationEngine()
         report = engine.validate_suite(target_url=inp.target_url, workers=inp.workers)
-        return _ok_content({
-            "status": "complete",
-            "passed": report.get("passed", 0),
-            "failed": report.get("failed", 0),
-            "drift_count": report.get("drift_count", len(report.get("reports", []))),
-            "report_path": ".cherenkov/report.json",
-            "summary": report,
-        })
+        return _ok_content(
+            {
+                "status": "complete",
+                "passed": report.get("passed", 0),
+                "failed": report.get("failed", 0),
+                "drift_count": report.get(
+                    "drift_count", len(report.get("reports", []))
+                ),
+                "report_path": ".cherenkov/report.json",
+                "summary": report,
+            }
+        )
     except Exception as exc:
         return _err_content(f"Conformance check error: {exc}")
 
@@ -1046,10 +1189,12 @@ def _tool_get_last_report(args: dict[str, Any]) -> MCPToolCallResult:
     """Return the most recent .cherenkov/report.json without triggering a new run."""
     report_path = os.path.join(os.getcwd(), ".cherenkov", "report.json")
     if not os.path.exists(report_path):
-        return _ok_content({
-            "error": "No report found.",
-            "hint": "Run `cherenkov validate --target <url>` first.",
-        })
+        return _ok_content(
+            {
+                "error": "No report found.",
+                "hint": "Run `cherenkov validate --target <url>` first.",
+            }
+        )
     try:
         with open(report_path) as f:
             return _ok_content(json.load(f))
@@ -1062,6 +1207,7 @@ def _tool_list_drift_findings(args: dict[str, Any]) -> MCPToolCallResult:
     inp = ListDriftFindingsInput.model_validate(args)
     try:
         from cherenkov.web.divergences import _DIVERGENCE_CORPUS
+
         findings = list(_DIVERGENCE_CORPUS)
         if inp.severity:
             findings = [f for f in findings if f.get("severity") == inp.severity]
@@ -1078,12 +1224,16 @@ def _tool_get_tightening_suggestions(args: dict[str, Any]) -> MCPToolCallResult:
     inp = GetTighteningInput.model_validate(args)
     try:
         from cherenkov.execution.validate import TighteningAnalyzer
+
         # Suggest based on trace evidence in .cherenkov/evidence/
         evidence_dir = os.path.join(os.getcwd(), ".cherenkov", "evidence")
         import glob as _glob
+
         patterns: list[str] = []
         if os.path.isdir(evidence_dir):
-            for ev_file in sorted(_glob.glob(os.path.join(evidence_dir, "*.json")))[-10:]:
+            for ev_file in sorted(_glob.glob(os.path.join(evidence_dir, "*.json")))[
+                -10:
+            ]:
                 with open(ev_file) as f:
                     ev = json.load(f)
                 if (
@@ -1094,11 +1244,13 @@ def _tool_get_tightening_suggestions(args: dict[str, Any]) -> MCPToolCallResult:
                         ev.get("request_body", ""), ev.get("response_body", "")
                     )
                     patterns.extend(suggestions)
-        return _ok_content({
-            "endpoint": inp.endpoint,
-            "method": inp.method,
-            "suggestions": list(dict.fromkeys(patterns)),  # dedup preserving order
-        })
+        return _ok_content(
+            {
+                "endpoint": inp.endpoint,
+                "method": inp.method,
+                "suggestions": list(dict.fromkeys(patterns)),  # dedup preserving order
+            }
+        )
     except Exception as exc:
         return _err_content(f"get_tightening_suggestions error: {exc}")
 
@@ -1108,6 +1260,7 @@ def _tool_explain_finding(args: dict[str, Any]) -> MCPToolCallResult:
     inp = ExplainFindingInput.model_validate(args)
     try:
         from cherenkov.web.divergences import _DIVERGENCE_CORPUS
+
         finding = next(
             (f for f in _DIVERGENCE_CORPUS if f.get("id") == inp.finding_id), None
         )
@@ -1130,6 +1283,7 @@ def _tool_explain_finding(args: dict[str, Any]) -> MCPToolCallResult:
         )
         try:
             from cherenkov.chat.tools import explain_divergence
+
             result = explain_divergence(
                 endpoint=finding.get("endpoint", ""), method="GET"
             )
@@ -1147,8 +1301,13 @@ def _tool_explain_finding(args: dict[str, Any]) -> MCPToolCallResult:
 def _get_evidence_listing() -> dict[str, Any]:
     """Return a directory listing of .cherenkov/evidence/."""
     import os
+
     evidence_dir = os.path.join(os.getcwd(), ".cherenkov", "evidence")
     if not os.path.isdir(evidence_dir):
-        return {"evidence_dir": evidence_dir, "files": [], "note": "Directory does not exist yet."}
+        return {
+            "evidence_dir": evidence_dir,
+            "files": [],
+            "note": "Directory does not exist yet.",
+        }
     files = sorted(os.listdir(evidence_dir))
     return {"evidence_dir": evidence_dir, "files": files, "count": len(files)}

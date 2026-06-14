@@ -5,7 +5,7 @@ import time
 import logging
 from collections import defaultdict
 
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -13,7 +13,12 @@ logger = logging.getLogger(__name__)
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app: FastAPI, max_requests: int = int(os.getenv("CHERENKOV_MAX_REQUESTS", "100")), window_seconds: int = 60):
+    def __init__(
+        self,
+        app: FastAPI,
+        max_requests: int = int(os.getenv("CHERENKOV_MAX_REQUESTS", "100")),
+        window_seconds: int = 60,
+    ):
         super().__init__(app)
         self.max_requests = max_requests
         self.window_seconds = window_seconds
@@ -93,14 +98,18 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # HSTS only over HTTPS — avoids breaking local HTTP dev while protecting L4+ deployments
         proto = request.headers.get("x-forwarded-proto", request.url.scheme)
         if proto == "https":
-            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=31536000; includeSubDomains"
+            )
         path = request.url.path
         if path.startswith("/assets/"):
             # Static assets: long-lived immutable cache (Vite hashes filenames)
             response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
         elif request.method == "GET" and path in self._CACHEABLE_PATHS:
             # Safe read-only polling endpoints: short cache to reduce repeated backend hits
-            response.headers["Cache-Control"] = "public, max-age=5, stale-while-revalidate=10"
+            response.headers["Cache-Control"] = (
+                "public, max-age=5, stale-while-revalidate=10"
+            )
         else:
             # Mutating endpoints and sensitive data: never cache
             response.headers["Cache-Control"] = "no-store"

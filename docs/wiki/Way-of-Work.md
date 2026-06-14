@@ -4,7 +4,7 @@
 
 How to contribute — humans and AI agents follow the same rules.
 
-> **Full reference:** [CONTRIBUTING.md](../../CONTRIBUTING.md)  
+> **Full reference:** [CONTRIBUTING.md](../../CONTRIBUTING.md)
 > **Read first:** [docs/STATUS.md](../STATUS.md) · [docs/HANDOVER.md](../HANDOVER.md)
 
 ---
