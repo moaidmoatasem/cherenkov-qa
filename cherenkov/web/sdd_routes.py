@@ -5,6 +5,7 @@ Read-only by default (Sprint 1). Write endpoints added in Sprint 2.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -59,9 +60,11 @@ def _timestamp() -> str:
 
 @router.get("/api/v1/sdd/status")
 async def get_sdd_status():
-    session = _read_json(SYNC_DIR / "session.json")
-    tokens = _read_json(SYNC_DIR / "tokens.json")
-    exp = _read_json(SYNC_DIR / "experience.json")
+    session, tokens, exp = await asyncio.gather(
+        asyncio.to_thread(_read_json, SYNC_DIR / "session.json"),
+        asyncio.to_thread(_read_json, SYNC_DIR / "tokens.json"),
+        asyncio.to_thread(_read_json, SYNC_DIR / "experience.json"),
+    )
     s = session.get("session", {})
     tok = tokens.get("current_session", {})
     hist = tokens.get("historical", {})
@@ -80,7 +83,7 @@ async def list_sessions(
     limit: int = Query(50, ge=1, le=200),
     task_type: str | None = None,
 ):
-    session = _read_json(SYNC_DIR / "session.json")
+    session = await asyncio.to_thread(_read_json, SYNC_DIR / "session.json")
     prev = session.get("previous_sessions", [])
     current = session.get("session", {})
     result = []
@@ -109,17 +112,17 @@ async def list_sessions(
 
 @router.get("/api/v1/sdd/sessions/{session_id}")
 async def get_session_detail(session_id: str):
-    session = _read_json(SYNC_DIR / "session.json")
+    session = await asyncio.to_thread(_read_json, SYNC_DIR / "session.json")
     s = session.get("session", {})
     if s.get("id") == session_id:
-        findings = _read_json(FINDINGS_DIR / f"{session_id}.json")
+        findings = await asyncio.to_thread(_read_json, FINDINGS_DIR / f"{session_id}.json")
         return {
             "session": _coerce_session(s).model_dump(),
             "findings": findings.get("findings", []),
         }
     for p in session.get("previous_sessions", []):
         if p.get("id") == session_id:
-            findings = _read_json(FINDINGS_DIR / f"{session_id}.json")
+            findings = await asyncio.to_thread(_read_json, FINDINGS_DIR / f"{session_id}.json")
             return {
                 "session": {
                     "id": p["id"],
@@ -141,7 +144,7 @@ async def get_session_detail(session_id: str):
 
 @router.get("/api/v1/sdd/tokens")
 async def get_token_data():
-    raw = _read_json(SYNC_DIR / "tokens.json")
+    raw = await asyncio.to_thread(_read_json, SYNC_DIR / "tokens.json")
     cur = raw.get("current_session", {})
     hist = raw.get("historical", {})
     by_type = {}
@@ -171,7 +174,7 @@ async def get_token_data():
 
 @router.get("/api/v1/sdd/tokens/history")
 async def get_token_history():
-    tokens = _read_json(SYNC_DIR / "tokens.json")
+    tokens = await asyncio.to_thread(_read_json, SYNC_DIR / "tokens.json")
     return tokens.get("historical", {})
 
 
@@ -185,7 +188,7 @@ async def list_experience(
     sort: str | None = None,
     limit: int = Query(50, ge=1, le=200),
 ):
-    raw = _read_json(SYNC_DIR / "experience.json")
+    raw = await asyncio.to_thread(_read_json, SYNC_DIR / "experience.json")
     results = list(raw.get("experiences", []))
     if pattern:
         pl = pattern.lower()
@@ -206,7 +209,7 @@ async def list_experience(
 
 @router.get("/api/v1/sdd/experience/{exp_id}")
 async def get_experience_detail(exp_id: str):
-    raw = _read_json(SYNC_DIR / "experience.json")
+    raw = await asyncio.to_thread(_read_json, SYNC_DIR / "experience.json")
     for r in raw.get("experiences", []):
         if r.get("id") == exp_id:
             return r
@@ -218,7 +221,7 @@ async def get_experience_detail(exp_id: str):
 
 @router.get("/api/v1/sdd/context")
 async def get_context():
-    raw = _read_json(SYNC_DIR / "context.json")
+    raw = await asyncio.to_thread(_read_json, SYNC_DIR / "context.json")
     snippets = [ContextSnippet(**s) for s in raw.get("snippets", [])]
     return SddContextData(
         version=raw.get("version", 1),
@@ -233,9 +236,11 @@ async def get_context():
 
 @router.post("/api/v1/sdd/compact")
 async def trigger_compact(force: bool = False):
-    context = _read_json(SYNC_DIR / "context.json")
+    context, session = await asyncio.gather(
+        asyncio.to_thread(_read_json, SYNC_DIR / "context.json"),
+        asyncio.to_thread(_read_json, SYNC_DIR / "session.json"),
+    )
     snippets = context.get("snippets", [])
-    session = _read_json(SYNC_DIR / "session.json")
     ssc = session.get("sessions_since_compact", 0)
     if ssc < 3 and not force:
         return CompactResult(
@@ -246,7 +251,6 @@ async def trigger_compact(force: bool = False):
             archived=0,
         ).model_dump()
     session["sessions_since_compact"] = 0
-    _write_json(SYNC_DIR / "session.json", session)
     context["last_refreshed"] = _timestamp()
     _write_json(SYNC_DIR / "context.json", context)
     return CompactResult(
@@ -263,8 +267,10 @@ async def trigger_compact(force: bool = False):
 
 @router.get("/api/v1/sdd/graph/status")
 async def get_graph_status():
-    exp = _read_json(SYNC_DIR / "experience.json")
-    session = _read_json(SYNC_DIR / "session.json")
+    exp, session = await asyncio.gather(
+        asyncio.to_thread(_read_json, SYNC_DIR / "experience.json"),
+        asyncio.to_thread(_read_json, SYNC_DIR / "session.json"),
+    )
     return GraphStatus(
         node_count=exp.get("experience_count", 0) + 2,
         edge_count=exp.get("experience_count", 0),
@@ -275,7 +281,7 @@ async def get_graph_status():
 
 @router.get("/api/v1/sdd/graph/export")
 async def export_graph():
-    exp = _read_json(SYNC_DIR / "experience.json")
+    exp = await asyncio.to_thread(_read_json, SYNC_DIR / "experience.json")
     nodes: list[GraphNode] = []
     edges: list[GraphEdge] = []
     session_ids = set()
@@ -307,7 +313,7 @@ async def export_graph():
 
 @router.get("/api/v1/sdd/graph/patterns")
 async def get_pattern_insights():
-    exp = _read_json(SYNC_DIR / "experience.json")
+    exp = await asyncio.to_thread(_read_json, SYNC_DIR / "experience.json")
     pattern_map: dict[str, dict[str, Any]] = {}
     for e in exp.get("experiences", []):
         for p in e.get("patterns", []):
@@ -345,8 +351,7 @@ async def get_pattern_insights():
 # ── Wiki Endpoints (stub — Sprint 4 fills these fully) ──────────────────
 
 
-@router.get("/api/v1/sdd/wiki/tree")
-async def get_wiki_tree():
+def _scan_wiki_tree() -> list[dict]:
     if not MEMORY_DIR.exists():
         return []
     entries = []
@@ -368,13 +373,17 @@ async def get_wiki_tree():
     return entries
 
 
-@router.get("/api/v1/sdd/wiki/{path:path}")
-async def get_wiki_file(path: str):
+@router.get("/api/v1/sdd/wiki/tree")
+async def get_wiki_tree():
+    return await asyncio.to_thread(_scan_wiki_tree)
+
+
+def _read_wiki_file(path: str) -> dict[str, Any]:
     full = (MEMORY_DIR / path).resolve()
     if not full.exists() or not full.is_file():
-        raise HTTPException(status_code=404, detail=f"Wiki file {path} not found")
+        raise FileNotFoundError(path)
     if not str(full).startswith(str(MEMORY_DIR.resolve())):
-        raise HTTPException(status_code=403, detail="Path traversal blocked")
+        raise PermissionError(path)
     content = full.read_text(encoding="utf-8")
     stat = full.stat()
     return {
@@ -389,7 +398,28 @@ async def get_wiki_file(path: str):
     }
 
 
+@router.get("/api/v1/sdd/wiki/{path:path}")
+async def get_wiki_file(path: str):
+    try:
+        return await asyncio.to_thread(_read_wiki_file, path)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Wiki file {path} not found")
+    except PermissionError:
+        raise HTTPException(status_code=403, detail="Path traversal blocked")
+
+
 # ── Findings Endpoint ────────────────────────────────────────────────────
+
+
+def _load_all_findings(limit: int) -> list[dict]:
+    all_findings = []
+    for fpath in sorted(FINDINGS_DIR.glob("sess_*.json")):
+        data = _read_json(fpath)
+        for f in data.get("findings", []):
+            f["_session_id"] = data.get("session_id", fpath.stem)
+            all_findings.append(f)
+    all_findings.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+    return all_findings[:limit]
 
 
 @router.get("/api/v1/sdd/findings")
@@ -399,18 +429,9 @@ async def list_findings(
 ):
     if session_id:
         fpath = FINDINGS_DIR / f"{session_id}.json"
-        if not fpath.exists():
-            return []
-        data = _read_json(fpath)
+        data = await asyncio.to_thread(_read_json, fpath)
         return data.get("findings", [])[:limit]
-    all_findings = []
-    for fpath in sorted(FINDINGS_DIR.glob("sess_*.json")):
-        data = _read_json(fpath)
-        for f in data.get("findings", []):
-            f["_session_id"] = data.get("session_id", fpath.stem)
-            all_findings.append(f)
-    all_findings.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
-    return all_findings[:limit]
+    return await asyncio.to_thread(_load_all_findings, limit)
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────
