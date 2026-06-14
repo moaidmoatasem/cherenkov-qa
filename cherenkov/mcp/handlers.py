@@ -291,6 +291,18 @@ TOOLS: list[MCPTool] = [
         ),
     ),
     MCPTool(
+        name="export_github_ticket",
+        description="Suggest-only GitHub issue export for failed validation items.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "item_id": MCPToolParam(
+                    type="string", description="Validation item ID."
+                )
+            },
+            required=["item_id"],
+        ),
+    ),
+    MCPTool(
         name="scan_mena_compliance",
         description="Run the MENA compliance localization and data residency checks.",
         inputSchema=MCPToolInputSchema(properties={}, required=[]),
@@ -498,6 +510,31 @@ TOOLS: list[MCPTool] = [
             required=["finding_id"],
         ),
     ),
+    MCPTool(
+        name="mcp_registry_list",
+        description="List all MCP servers registered in the mesh registry.",
+        inputSchema=MCPToolInputSchema(properties={}, required=[]),
+    ),
+    MCPTool(
+        name="mcp_registry_publish",
+        description="Register an external MCP server with the mesh registry.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "name": MCPToolParam(type="string", description="Server name."),
+                "url": MCPToolParam(type="string", description="Server URL."),
+                "tools": MCPToolParam(
+                    type="string", description="JSON list of tool definitions."
+                ),
+                "resources": MCPToolParam(
+                    type="string", description="JSON list of resource definitions."
+                ),
+                "version": MCPToolParam(
+                    type="string", description="Server version (default 1.0.0)."
+                ),
+            },
+            required=["name", "url", "tools"],
+        ),
+    ),
 ]
 
 
@@ -650,6 +687,8 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_export_jira(arguments).model_dump()
         if name == "export_linear_ticket":
             return _tool_export_linear(arguments).model_dump()
+        if name == "export_github_ticket":
+            return _tool_export_github(arguments).model_dump()
         if name == "scan_mena_compliance":
             return _tool_scan_mena(arguments).model_dump()
         if name == "scan_mena_compliance_enhanced":
@@ -680,6 +719,10 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_policy_list(arguments).model_dump()
         if name == "policy_reload":
             return _tool_policy_reload(arguments).model_dump()
+        if name == "mcp_registry_list":
+            return _tool_registry_list(arguments).model_dump()
+        if name == "mcp_registry_publish":
+            return _tool_registry_publish(arguments).model_dump()
     except ValidationError as exc:
         return _err_content(f"Invalid input: {exc}").model_dump()
     except Exception as exc:
@@ -752,6 +795,32 @@ def _tool_policy_reload(args: dict[str, Any]) -> MCPToolCallResult:
     """Reload policy from cherenkov-policy.json."""
     _policy.reload()
     return _ok_content({"status": "reloaded", "policy": _policy.list_policy()})
+
+
+def _tool_registry_list(args: dict[str, Any]) -> MCPToolCallResult:
+    """List registered MCP servers in the mesh registry."""
+    from cherenkov.mcp.mesh_router import get_registry
+
+    servers = get_registry().list_servers()
+    return _ok_content({"servers": servers})
+
+
+def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
+    """Register an external MCP server with the mesh registry."""
+    import json
+    from cherenkov.mcp.mesh_router import get_registry
+
+    inp = args
+    tools = json.loads(inp.get("tools", "[]"))
+    resources = json.loads(inp.get("resources", "[]"))
+    reg_id = get_registry().register_server(
+        name=inp["name"],
+        url=inp["url"],
+        tools=tools,
+        resources=resources,
+        version=inp.get("version", "1.0.0"),
+    )
+    return _ok_content({"status": "ok", "registration_id": reg_id})
 
 
 # ── Track B/C tools ───────────────────────────────────────────────────────────
@@ -965,6 +1034,43 @@ def _tool_export_linear(args: dict[str, Any]) -> MCPToolCallResult:
         )
     except Exception as exc:
         return _err_content(f"Linear error: {exc}")
+
+
+def _tool_export_github(args: dict[str, Any]) -> MCPToolCallResult:
+    item_id = args.get("item_id", "")
+    try:
+        q = _queue()
+        item = q.get(item_id)
+        if not item:
+            return _err_content(f"HITL item {item_id} not found in queue.")
+
+        from cherenkov.validate.github_exporter import GitHubExporter
+        from cherenkov.validate.linear_exporter import LinearExporter
+        
+        # We reuse LinearExporter's format_ticket for markdown generation
+        formatter = LinearExporter()
+        summary = f"🛑 CHERENKOV QA — DRIFT DETECTED: {item.id}"
+        description = formatter.format_ticket(
+            scenario_id=item.id,
+            failure_class=item.mutation_label or "conformance-drift",
+            error_message=item.review_gate_failed or "Validation failed",
+            expected_status="Valid response",
+            received_status="Divergent response",
+            hypothesis=item.confidence_reason
+        )
+
+        exporter = GitHubExporter()
+        issue_url = exporter.create_github_issue(summary, description)
+
+        return _ok_content(
+            {
+                "item_id": item_id,
+                "status": "exported",
+                "github_issue_url": issue_url or "sandboxed",
+            }
+        )
+    except Exception as exc:
+        return _err_content(f"GitHub error: {exc}")
 
 
 def _tool_scan_mena(args: dict[str, Any]) -> MCPToolCallResult:
