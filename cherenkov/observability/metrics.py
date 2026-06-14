@@ -44,6 +44,8 @@ class MetricsCollector:
             self._mem_conn: sqlite3.Connection | None = sqlite3.connect(
                 ":memory:", check_same_thread=False
             )
+            if self._mem_conn is not None:
+                self._mem_conn.row_factory = sqlite3.Row
             self._local = None
         else:
             self._mem_conn = None
@@ -67,6 +69,16 @@ class MetricsCollector:
         con.execute("PRAGMA journal_mode=WAL")
         self._local.con = con
         return con
+
+    def close(self) -> None:
+        if self._mem_conn is not None:
+            self._mem_conn.close()
+            self._mem_conn = None
+        elif getattr(self, "_local", None) is not None:
+            con = getattr(self._local, "con", None)
+            if con is not None:
+                con.close()
+                self._local.con = None
 
     def _init_db(self) -> None:
         conn = self._connect()
