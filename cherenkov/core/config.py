@@ -74,6 +74,9 @@ class Config:
     CERTIFICATION_GOLD_SET_PATH: str = os.getenv("CHERENKOV_CERTIFICATION_GOLD_SET_PATH", ".cherenkov/gold_set.json")
     CERTIFICATION_MIN_FAITHFULNESS: float = float(os.getenv("CHERENKOV_CERTIFICATION_MIN_FAITHFULNESS", "0.8"))
 
+    # ── Pipeline parallelism ──────────────────────────────────────────────
+    MAX_CONCURRENT_SCENARIOS: int = int(os.getenv("CHERENKOV_PARALLEL_SCENARIOS", "4"))
+
     # ── Issue #194: DAST security mutation profile ────────────────────────
     DAST_ENABLED: bool = os.getenv("CHERENKOV_DAST_ENABLED", "false").lower() in ("1", "true", "yes")
 
