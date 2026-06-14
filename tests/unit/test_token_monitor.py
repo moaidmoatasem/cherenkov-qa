@@ -185,8 +185,8 @@ def test_get_dashboard_data_shape(monitor):
 
 
 def test_get_monitor_returns_same_instance():
-    m1 = get_monitor()
-    m2 = get_monitor()
+    m1 = get_monitor(":memory:")
+    m2 = get_monitor(":memory:")
     assert m1 is m2
     m1.close()
     import cherenkov.observability.token_monitor as tm
