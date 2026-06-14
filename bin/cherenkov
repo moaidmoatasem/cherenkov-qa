@@ -3,4 +3,4 @@
 # Authority: v3.1 + delta.
 
 export PYTHONPATH=.
-python3 cherenkov.py "$@"
+python3 cherenkov/cli.py "$@"

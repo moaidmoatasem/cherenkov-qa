@@ -34,7 +34,7 @@ import {
   RefreshCw,
   Layers,
 } from 'lucide-react';
-import { API_BASE } from '../lib/api';
+import { API_BASE, runExplorer } from '../lib/api';
 
 // ── types ─────────────────────────────────────────────────────────────────────
 

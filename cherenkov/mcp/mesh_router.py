@@ -74,7 +74,7 @@ class MCPRegistry:
             tool_name = tool.get("name", "")
             if tool_name:
                 self._tool_map[tool_name] = reg_id
-        log.info("Registered MCP server %s (%s) with %d tools", name, reg_id, len(tools))
+        log.info("Registered MCP server", name=name, reg_id=reg_id, tools_count=len(tools))
         return reg_id
 
     def unregister_server(self, reg_id: str) -> bool:
@@ -87,7 +87,7 @@ class MCPRegistry:
             tool_name = tool.get("name", "")
             self._tool_map.pop(tool_name, None)
         del self._servers[reg_id]
-        log.info("Unregistered MCP server %s", reg_id)
+        log.info("Unregistered MCP server", reg_id=reg_id)
         return True
 
     def list_servers(self) -> list[dict[str, Any]]:

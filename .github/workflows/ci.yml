@@ -164,7 +164,6 @@ jobs:
   type-check:
     name: Type check (mypy)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -177,13 +176,10 @@ jobs:
         run: |
           mypy cherenkov/ --ignore-missing-imports --no-strict-optional \
             --exclude 'cherenkov/web/ui' \
-            --exclude 'cherenkov/desktop' \
-            || true  # Report errors but don't fail yet (baseline pass)
-
+            --exclude 'cherenkov/desktop'
   coverage:
     name: Test coverage
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -199,7 +195,7 @@ jobs:
         run: |
           pytest tests/ --cov=cherenkov --cov-report=term-missing \
             --cov-report=xml:coverage.xml -q \
-            --cov-fail-under=50 \
+            --cov-fail-under=70 \
             --ignore=tests/test_legacy_visual.py \
             --ignore=tests/test_legacy_deep_healing.py
       - name: Upload coverage report

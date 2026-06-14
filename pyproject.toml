@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cherenkov"
 version = "0.1.0"
+license = {text = "MIT"}
 requires-python = ">=3.10"
 dependencies = [
     "pydantic>=2.7.0,<3.0.0",
@@ -16,16 +17,18 @@ dependencies = [
     "httpx>=0.27.0",
     "click>=8.1.0",
     "websockets",
-    "redis>=5.0.0",
-    "Appium-Python-Client>=3.0.0",
 ]
+
+[project.optional-dependencies]
+redis = ["redis>=5.0.0"]
+mobile = ["Appium-Python-Client>=3.0.0"]
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["cherenkov*"]
 
 [project.scripts]
-cherenkov = "cherenkov:main"
+cherenkov = "cherenkov.cli:main"
 
 [tool.pytest.ini_options]
 addopts = "-q"
