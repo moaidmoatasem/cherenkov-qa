@@ -196,7 +196,7 @@ test.describe('CHERENKOV QA Accessibility — Structural & ARIA Audit', () => {
     await page.focus('#spec-url-input');
     await expect(page.locator('#spec-url-input')).toBeFocused();
 
-    const fetchBtn = page.getByRole('button', { name: 'Fetch' });
+    const fetchBtn = page.locator('#setup-screen form button[type="submit"]');
     await fetchBtn.focus();
     await expect(fetchBtn).toBeFocused();
   });

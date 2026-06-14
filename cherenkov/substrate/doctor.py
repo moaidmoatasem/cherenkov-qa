@@ -68,7 +68,8 @@ def _detect_device() -> dict:
 @click.option("--localai", is_flag=True, help="Check LocalAI availability")
 @click.option("--device", is_flag=True, help="Show device info")
 @click.option("--json-output", "json_out", is_flag=True, help="Output as JSON")
-def doctor(vlm: bool, localai: bool, device: bool, json_out: bool) -> None:
+@click.option("--evals", is_flag=True, help="Show latest eval report")
+def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool) -> None:
     report = {"device": {}, "vlm": {}, "localai": {}, "recommendations": []}
     show_all = not vlm and not localai and not device
 
@@ -126,6 +127,29 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool) -> None:
                 click.echo(f"{'=' * 40}")
                 for rec in report["recommendations"]:
                     click.echo(f"  - {rec}")
+
+    if show_all or evals:
+        try:
+            from cherenkov.evals.store import EvalStore
+            store = EvalStore()
+            latest = store.latest()
+            if latest:
+                report["latest_evals"] = latest
+                if not json_out:
+                    click.echo("\nLatest Eval Report")
+                    click.echo(f"{'=' * 40}")
+                    click.echo(f"  Timestamp:   {latest['timestamp']}")
+                    click.echo(f"  Model:       {latest['model']}")
+                    click.echo(f"  Pass rate:   {latest['pass_rate']:.1%}")
+                    click.echo(f"  Scenarios:   {latest['passed']}/{latest['total']} passed")
+                    for metric, avg in latest.get("metrics", {}).items():
+                        click.echo(f"  {metric:20s} {avg:.2f}")
+            else:
+                report["latest_evals"] = None
+                if not json_out:
+                    click.echo("\nNo eval reports found. Run the generator pipeline first.")
+        except Exception as e:
+            report["latest_evals"] = {"error": str(e)}
 
     if json_out:
         click.echo(json.dumps(report, indent=2))
