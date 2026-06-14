@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "cherenkov": {
+      "command": "python3",
+      "args": ["cherenkov.py", "mcp", "serve"],
+      "cwd": ".",
+      "env": {
+        "MCP_PROFILE": "full-dev"
+      }
+    }
+  }
+}
