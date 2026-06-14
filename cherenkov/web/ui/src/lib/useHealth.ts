@@ -34,7 +34,10 @@ export function useHealth(intervalMs = 10000): HealthState {
 
   const probe = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/health`, { method: 'GET' });
+      const res = await fetch(`${API_BASE}/health`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(8000),
+      });
       if (!res.ok) throw new Error(`health ${res.status}`);
       const data = await res.json();
       setOnline(data?.status === 'online');

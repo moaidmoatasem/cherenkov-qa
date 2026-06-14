@@ -90,6 +90,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         for header, value in self._SECURITY_HEADERS.items():
             response.headers[header] = value
+        # HSTS only over HTTPS — avoids breaking local HTTP dev while protecting L4+ deployments
+        proto = request.headers.get("x-forwarded-proto", request.url.scheme)
+        if proto == "https":
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         path = request.url.path
         if path.startswith("/assets/"):
             # Static assets: long-lived immutable cache (Vite hashes filenames)
