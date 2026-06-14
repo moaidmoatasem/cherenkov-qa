@@ -132,19 +132,11 @@ tracks (A core, B VLM, C desktop, D mobile, E dashboard, F K8s), ~105 GitHub
 issues, 19 new docs, 7 new diagrams. Track A and Phase -1, 0a, 0b, 1, 2, 4, 7
 are complete; Phase 8 is in progress; Phase 3 and 5–6 are blocked on `cargo` / ADB.
 
-### 6.2 — IMMEDIATE NEXT STEPS (Phase 8: K8s + Cloud + Gate)
+### 6.2 — IMMEDIATE NEXT STEPS
+Phase 8 (K8s + Cloud + Gate) is COMPLETE (`make k3d-test` green as of 2026-06-09, #386-#391 resolved).
+Post-Implementation Test Stabilization (Phase 12 / Bug Bash) is COMPLETE. The `pytest` suite is 100% green (594 passing tests). SQLite `WinError 32` lock issues, dangerous `shutil.rmtree` temp directory cascades, and date mismatches have all been successfully fixed, committed, and merged into `main`.
 
-The active phase is **Phase 8**. Phase 0b, 1, 2, 4, and 7 are complete
-(see [STATUS.md](STATUS.md) for the canonical state). Phase 8 needs `k3d`
-on this host for tickets #386–#388. Tickets in flight:
-
-- **#389 / #404**: `SECURITY.md` added.
-- **#386–#388**: K8s CRD extensions + operator device env vars (needs `k3d`).
-- **#390**: Final validation gate.
-- **#391**: Open-source readiness docs.
-
-See [PHASE_PLAN.md](PHASE_PLAN.md) for the full ticket list, dependencies,
-and parallel-track layout.
+Next priorities lie in the extended roadmap (Phases 9-16), such as Phase 9 (Market Launch) or Phase 10 (CI/CD integration), unless the blocked tracks (Phase 3 Desktop, Phase 5-6 Mobile) become unblocked by installing their dependencies (`cargo`, `ADB`/`Maestro`).
 
 ### 6.3 — THE REAL FINISH LINE (owner task, not an agent)
 Recruit 5 QA people. Run the demo from [QA_DEMO_KIT.md](QA_DEMO_KIT.md).
