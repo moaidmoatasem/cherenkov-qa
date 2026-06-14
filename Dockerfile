@@ -37,4 +37,4 @@ COPY . /app
 COPY --from=ui-build /app/cherenkov/web/ui/dist /app/cherenkov/web/ui/dist
 
 # Set the entrypoint
-ENTRYPOINT ["python", "cherenkov/cli.py"]
+ENTRYPOINT ["python", "cherenkov/cli/core.py"]

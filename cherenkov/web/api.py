@@ -1487,7 +1487,7 @@ _settings: dict = {
 
 
 @app.get("/api/v1/settings")
-async def get_settings():
+async def api_get_settings():
     return _settings
 
 

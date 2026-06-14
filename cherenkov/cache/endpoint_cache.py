@@ -50,7 +50,7 @@ class EndpointCache:
             cache.put(h, code, model_name)
     """
 
-    _local = threading.local()
+    _lock = threading.Lock()
 
     def __init__(self, db_path: Path = CACHE_DB, ttl_seconds: int = _TTL_SECONDS):
         self.db_path = db_path
@@ -59,39 +59,26 @@ class EndpointCache:
         self._l1: dict[str, tuple[CacheEntry, float]] = {}
         self._init_db()
 
-    def _connect(self) -> sqlite3.Connection:
-        con = getattr(self._local, "con", None)
-        if con is not None:
+    def _init_db(self) -> None:
+        with self._lock:
+            con = sqlite3.connect(str(self.db_path), timeout=10.0)
             try:
-                con.execute("SELECT 1")
-                return con
+                con.execute("PRAGMA journal_mode=WAL")
             except Exception:
                 pass
-        con = sqlite3.connect(self.db_path, timeout=30.0)
-        try:
-            con.execute("PRAGMA journal_mode=WAL")
-        except Exception:
-            pass
-        self._local.con = con
-        return con
-
-    def _init_db(self) -> None:
-        con = self._connect()
-        con.execute("""
-            CREATE TABLE IF NOT EXISTS endpoint_cache (
-                endpoint_hash     TEXT PRIMARY KEY,
-                spec_content_hash TEXT NOT NULL,
-                model_name        TEXT NOT NULL,
-                test_code         TEXT NOT NULL,
-                created_at        TEXT NOT NULL
-            )
-        """)
-
-    def close(self) -> None:
-        con = getattr(self._local, "con", None)
-        if con is not None:
-            con.close()
-            self._local.con = None
+            try:
+                with con:
+                    con.execute("""
+                        CREATE TABLE IF NOT EXISTS endpoint_cache (
+                            endpoint_hash     TEXT PRIMARY KEY,
+                            spec_content_hash TEXT NOT NULL,
+                            model_name        TEXT NOT NULL,
+                            test_code         TEXT NOT NULL,
+                            created_at        TEXT NOT NULL
+                        )
+                    """)
+            finally:
+                con.close()
 
     def compute_hash(
         self,
@@ -113,25 +100,49 @@ class EndpointCache:
         )
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
+    def _query(self, sql: str, params: tuple = ()) -> sqlite3.Row | None:
+        """Execute a read query under the connection lock."""
+        with self._lock:
+            con = sqlite3.connect(str(self.db_path), timeout=10.0)
+            try:
+                try:
+                    con.execute("PRAGMA journal_mode=WAL")
+                except Exception:
+                    pass
+                return con.execute(sql, params).fetchone()
+            finally:
+                con.close()
+
+    def _execute(self, sql: str, params: tuple = ()) -> None:
+        """Execute a write under the connection lock."""
+        with self._lock:
+            con = sqlite3.connect(str(self.db_path), timeout=10.0)
+            try:
+                try:
+                    con.execute("PRAGMA journal_mode=WAL")
+                except Exception:
+                    pass
+                con.execute(sql, params)
+                con.commit()
+            finally:
+                con.close()
+
     def get(self, endpoint_hash: str) -> CacheEntry | None:
         """Return cached entry or None on miss/expiry. Checks L1 first, then L2."""
         now = time.monotonic()
-        # L1 check
         if endpoint_hash in self._l1:
             entry, ts = self._l1[endpoint_hash]
             if now - ts < self._ttl:
                 return entry
             del self._l1[endpoint_hash]
-        # L2 check
         cutoff = datetime.fromtimestamp(
             time.time() - self._ttl, tz=timezone.utc
         ).isoformat()
-        conn = self._connect()
-        row = conn.execute(
+        row = self._query(
             "SELECT endpoint_hash, spec_content_hash, model_name, test_code, created_at "
             "FROM endpoint_cache WHERE endpoint_hash = ? AND created_at >= ?",
             (endpoint_hash, cutoff),
-        ).fetchone()
+        )
         if row:
             entry = CacheEntry(*row)
             self._l1[endpoint_hash] = (entry, now)
@@ -149,19 +160,17 @@ class EndpointCache:
             created_at=now_iso,
         )
         self._l1[endpoint_hash] = (entry, time.monotonic())
-        conn = self._connect()
-        conn.execute(
+        self._execute(
             "INSERT OR REPLACE INTO endpoint_cache "
             "(endpoint_hash, spec_content_hash, model_name, test_code, created_at) "
             "VALUES (?, ?, ?, ?, ?)",
             (endpoint_hash, endpoint_hash, model_name, test_code, now_iso),
         )
-        conn.commit()
 
     def stats(self) -> dict:
         """Return cache statistics for reporting."""
-        conn = self._connect()
-        total = conn.execute("SELECT COUNT(*) FROM endpoint_cache").fetchone()[0]
+        row = self._query("SELECT COUNT(*) FROM endpoint_cache")
+        total = row[0] if row else 0
         return {
             "cached_endpoints": total,
             "cache_db": str(self.db_path),
@@ -171,6 +180,4 @@ class EndpointCache:
     def clear(self) -> None:
         """Wipe entire cache (e.g. after --no-cache flag or model change)."""
         self._l1.clear()
-        conn = self._connect()
-        conn.execute("DELETE FROM endpoint_cache")
-        conn.commit()
+        self._execute("DELETE FROM endpoint_cache")

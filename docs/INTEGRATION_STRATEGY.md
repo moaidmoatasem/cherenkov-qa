@@ -626,7 +626,7 @@ LOW EFFORT ──────────────┼────────
 - [ ] Complete 3 MCP stub tools (`run_k6_perf`, `export_jira_ticket`, `scan_mena_compliance`)
 - [ ] GitHub Actions marketplace action (SARIF output included)
 - [ ] JUnit XML output format (unblocks Xray/Zephyr/TestRail at zero extra cost)
-- [ ] `SlackNotifier` adapter wired to `OpenClawAdapter`
+- [x] `SlackNotifier` adapter wired to `OpenClawAdapter`
 - [ ] Wire `notification_endpoint` for outbound webhooks (generic HTTP POST)
 
 ### Sprint 2 (Weeks 3-6): Developer Tools
@@ -661,8 +661,8 @@ LOW EFFORT ──────────────┼────────
 ### Sprint 6 (Weeks 20-28): Market Expansion
 - [x] GraphQL schema support
 - [x] gRPC / Protobuf support
-- [ ] AsyncAPI / WebSocket support
-- [ ] Buf schema registry integration
+- [x] AsyncAPI / WebSocket support
+- [x] Buf schema registry integration
 
 ---
 

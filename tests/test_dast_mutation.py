@@ -93,7 +93,7 @@ class TestDASTMutationIngest(unittest.TestCase):
         self.os_environ_patch.stop()
 
     def test_security_mutations_emitted_when_enabled(self):
-        with patch.object(cherenkov.core.config.Config, "DAST_ENABLED", True):
+        with patch.object(get_settings(), "DAST_ENABLED", True):
             from cherenkov.stages.ingest import IngestStage as IngSt
 
             stage = IngSt("test_dast")
@@ -124,7 +124,7 @@ class TestDASTMutationIngest(unittest.TestCase):
                 self._cleanup_temp(spec_path)
 
     def test_security_mutations_not_emitted_when_disabled(self):
-        with patch.object(cherenkov.core.config.Config, "DAST_ENABLED", False):
+        with patch.object(get_settings(), "DAST_ENABLED", False):
             from cherenkov.stages.ingest import IngestStage as IngSt
 
             stage = IngSt("test_dast_disabled")
@@ -142,7 +142,7 @@ class TestDASTMutationIngest(unittest.TestCase):
                 self._cleanup_temp(spec_path)
 
     def test_security_mutations_per_string_field(self):
-        with patch.object(cherenkov.core.config.Config, "DAST_ENABLED", True):
+        with patch.object(get_settings(), "DAST_ENABLED", True):
             from cherenkov.stages.ingest import IngestStage as IngSt
 
             stage = IngSt("test_dast_count")

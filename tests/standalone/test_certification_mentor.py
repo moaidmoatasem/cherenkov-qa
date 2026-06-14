@@ -47,7 +47,7 @@ def test_model_certification(tmp_path):
     }
     gold_set_file.write_text(json.dumps(gold_set_data), encoding="utf-8")
 
-    # Set Config to use our temp gold set
+    # Set type(get_settings()) to use our temp gold set
     old_path = get_settings().CERTIFICATION_GOLD_SET_PATH
     get_settings().CERTIFICATION_GOLD_SET_PATH = str(gold_set_file)
 

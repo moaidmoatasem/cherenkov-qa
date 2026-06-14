@@ -229,18 +229,18 @@ def test_gp7_metrics_endpoints_registered():
     ), f"Missing /api/v1/metrics/prometheus. Routes: {routes}"
 
 
-# ─── GP-8: Config validates correctly ────────────────────────────────────────
+# ─── GP-8: type(get_settings()) validates correctly ────────────────────────────────────────
 
 
 def test_gp8_config_validate_exists():
-    """GP-8: Config.validate() classmethod exists and runs without error on defaults."""
+    """GP-8: get_settings().validate() classmethod exists and runs without error on defaults."""
     from cherenkov.core.settings import get_settings
 
-    assert hasattr(Config, "validate"), "Config.validate() classmethod must exist"
+    assert hasattr(type(get_settings()), "validate"), "get_settings().validate() classmethod must exist"
     try:
-        Config.validate()
+        get_settings().validate()
     except Exception as exc:
-        pytest.skip(f"Config.validate() raised on defaults: {exc}")
+        pytest.skip(f"get_settings().validate() raised on defaults: {exc}")
 
 
 # ─── GP-9: Mobile dry-run works ──────────────────────────────────────────────
