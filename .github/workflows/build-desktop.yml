@@ -57,7 +57,7 @@ jobs:
           cp "$SRC" "$DEST"
           echo "Sidecar placed at: $DEST"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
           path: desktop/src-tauri/binaries/
@@ -79,7 +79,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -122,7 +122,7 @@ jobs:
           releaseDraft: ${{ github.event.inputs.draft == 'true' || github.event_name == 'workflow_dispatch' }}
           includeUpdaterJson: true
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
           path: |
