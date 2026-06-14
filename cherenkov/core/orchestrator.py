@@ -512,7 +512,7 @@ class OrchestrationEngine:
         self.breaker.reset()
 
         # Dynamic GPU/CPU device detection health check at startup
-        Config.detect_ollama_device(self.run_id)
+        get_settings().detect_ollama_device(self.run_id)
 
         print(
             f"\n================ CHERENKOV PIPELINE RUN [{self.run_id}] ================"
