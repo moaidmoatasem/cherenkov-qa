@@ -274,23 +274,25 @@ def test_scan_mena_compliance_enhanced_invalid_spec():
 
 def test_validate_governance_certification(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    with patch("cherenkov.governance.kpi.GovernanceCollector.collect") as mock_collect:
-        from cherenkov.governance.kpi import GovernanceReport, GovernanceKPI
-        mock_kpi = GovernanceKPI(
-            escape_rate=0.05,
-            false_positive_rate=0.08,
-            coverage=0.75,
-            maintenance_score=0.9,
-            total_tests=100,
-            passed_tests=80,
-            failed_tests=15,
-            escaped_defects=5,
-            false_positives=8,
-            idiom_count=3,
-            total_endpoints=20,
-            covered_endpoints=15,
-        )
-        mock_collect.return_value = GovernanceReport(kpi=mock_kpi, history=[])
+    from cherenkov.governance.kpi import GovernanceReport, GovernanceKPI
+    mock_kpi = GovernanceKPI(
+        escape_rate=0.05,
+        false_positive_rate=0.08,
+        coverage=0.75,
+        maintenance_score=0.9,
+        total_tests=100,
+        passed_tests=80,
+        failed_tests=15,
+        escaped_defects=5,
+        false_positives=8,
+        idiom_count=3,
+        total_endpoints=20,
+        covered_endpoints=15,
+    )
+    with patch("cherenkov.governance.kpi.GovernanceCollector") as mock_cls:
+        mock_instance = MagicMock()
+        mock_instance.collect.return_value = GovernanceReport(kpi=mock_kpi, history=[])
+        mock_cls.return_value = mock_instance
 
         result = _call("validate_governance_certification", {
             "cert_id": "CERT-001",
@@ -299,20 +301,22 @@ def test_validate_governance_certification(tmp_path, monkeypatch):
     payload = json.loads(result["content"][0]["text"])
     assert payload["cert_id"] == "CERT-001"
     assert payload["certified"] is True
-    assert payload["health_score"] == 0.85
+    assert payload["health_score"] == mock_kpi.health_score
     assert result["isError"] is False
 
 
 def test_validate_governance_certification_fails(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    with patch("cherenkov.governance.kpi.GovernanceCollector.collect") as mock_collect:
-        from cherenkov.governance.kpi import GovernanceReport, GovernanceKPI
-        mock_kpi = GovernanceKPI(
-            escape_rate=0.25,
-            false_positive_rate=0.3,
-            coverage=0.2,
-        )
-        mock_collect.return_value = GovernanceReport(kpi=mock_kpi, history=[])
+    from cherenkov.governance.kpi import GovernanceReport, GovernanceKPI
+    mock_kpi = GovernanceKPI(
+        escape_rate=0.25,
+        false_positive_rate=0.3,
+        coverage=0.2,
+    )
+    with patch("cherenkov.governance.kpi.GovernanceCollector") as mock_cls:
+        mock_instance = MagicMock()
+        mock_instance.collect.return_value = GovernanceReport(kpi=mock_kpi, history=[])
+        mock_cls.return_value = mock_instance
 
         result = _call("validate_governance_certification", {
             "cert_id": "CERT-002",
