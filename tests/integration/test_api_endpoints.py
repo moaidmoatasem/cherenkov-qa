@@ -233,10 +233,11 @@ class TestReviewClassify(unittest.TestCase):
         self.client = _make_client()
 
     def test_classify_400_for_unknown_value(self):
-        r = self.client.post(
-            "/api/v1/review/classify",
-            json={"item_id": "s1", "classification": "not-a-real-class"},
-        )
+        with patch("cherenkov.web.api.get_queue"):
+            r = self.client.post(
+                "/api/v1/review/classify",
+                json={"item_id": "s1", "classification": "not-a-real-class"},
+            )
         self.assertEqual(r.status_code, 400)
 
     def test_classify_regression_routes_to_approve(self):
@@ -279,35 +280,26 @@ class TestEject(unittest.TestCase):
     def test_eject_success(self):
         mock_engine = MagicMock()
         mock_engine.eject_suite.return_value = True
-        with tempfile.TemporaryDirectory() as tmpdir:
-            out = os.path.join(tmpdir, "output")
-            with patch(
-                "cherenkov.execution.eject.EjectorEngine", return_value=mock_engine
-            ), patch("os.getcwd", return_value=tmpdir):
-                r = self.client.post("/api/v1/eject", json={"output_path": out})
+        out = os.path.abspath(os.path.join(os.getcwd(), "test_eject_output"))
+        with patch("cherenkov.execution.eject.EjectorEngine", return_value=mock_engine):
+            r = self.client.post("/api/v1/eject", json={"output_path": out})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()["status"], "ejected")
 
     def test_eject_500_when_engine_raises(self):
         mock_engine = MagicMock()
         mock_engine.eject_suite.side_effect = RuntimeError("disk full")
-        with tempfile.TemporaryDirectory() as tmpdir:
-            out = os.path.join(tmpdir, "output")
-            with patch(
-                "cherenkov.execution.eject.EjectorEngine", return_value=mock_engine
-            ), patch("os.getcwd", return_value=tmpdir):
-                r = self.client.post("/api/v1/eject", json={"output_path": out})
+        out = os.path.abspath(os.path.join(os.getcwd(), "test_eject_output"))
+        with patch("cherenkov.execution.eject.EjectorEngine", return_value=mock_engine):
+            r = self.client.post("/api/v1/eject", json={"output_path": out})
         self.assertEqual(r.status_code, 500)
 
     def test_eject_500_when_engine_returns_false(self):
         mock_engine = MagicMock()
         mock_engine.eject_suite.return_value = False
-        with tempfile.TemporaryDirectory() as tmpdir:
-            out = os.path.join(tmpdir, "output")
-            with patch(
-                "cherenkov.execution.eject.EjectorEngine", return_value=mock_engine
-            ), patch("os.getcwd", return_value=tmpdir):
-                r = self.client.post("/api/v1/eject", json={"output_path": out})
+        out = os.path.abspath(os.path.join(os.getcwd(), "test_eject_output"))
+        with patch("cherenkov.execution.eject.EjectorEngine", return_value=mock_engine):
+            r = self.client.post("/api/v1/eject", json={"output_path": out})
         self.assertEqual(r.status_code, 500)
 
 

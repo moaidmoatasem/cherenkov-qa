@@ -18,6 +18,7 @@ def hitl_bridge():
     reflector = MagicMock()
     bridge = HITLReflectorBridge(repo, reflector)
     yield bridge, repo, reflector
+    repo.close()
     if os.path.exists(db_path):
         os.unlink(db_path)
 
@@ -30,6 +31,7 @@ def feedback_bridge():
     repo = SQLiteKnowledgeRepository(db_path)
     feedback_store = MagicMock()
     yield repo, feedback_store
+    repo.close()
     if os.path.exists(db_path):
         os.unlink(db_path)
 
@@ -42,6 +44,7 @@ def agent_memory_bridge():
     tmp_db.close()
     repo = SQLiteKnowledgeRepository(db_path)
     yield repo, tmp_dir
+    repo.close()
     tmp_dir.cleanup()
     if os.path.exists(db_path):
         os.unlink(db_path)

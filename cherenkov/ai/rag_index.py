@@ -175,3 +175,9 @@ class RAGIndex:
         # Sort by similarity descending
         results.sort(key=lambda x: x["similarity"], reverse=True)
         return results[:limit]
+
+    def close(self) -> None:
+        con = getattr(self._local, "con", None)
+        if con is not None:
+            con.close()
+            self._local.con = None
