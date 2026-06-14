@@ -201,6 +201,15 @@ class Config:
     ).lower() in ("1", "true", "yes")
     METRICS_PORT: int = int(os.getenv("CHERENKOV_METRICS_PORT", "8001"))
 
+
+    # ── Issue #457: OpenTelemetry export ──────────────────────────────────
+    OTEL_ENABLED: bool = os.getenv("CHERENKOV_OTEL_ENABLED", "false").lower() in (
+        "1", "true", "yes"
+    )
+    OTEL_ENDPOINT: str = os.getenv("CHERENKOV_OTEL_ENDPOINT", "http://localhost:4317")
+    OTEL_SERVICE_NAME: str = os.getenv("CHERENKOV_OTEL_SERVICE_NAME", "cherenkov")
+    OTEL_ENVIRONMENT: str = os.getenv("CHERENKOV_OTEL_ENVIRONMENT", "production")
+
     # ── Device detection cache ────────────────────────────────────────────
     _device_cache: str | None = None
     _device_cache_ts: float = 0.0
