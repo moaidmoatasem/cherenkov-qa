@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 from functools import lru_cache
 
@@ -37,7 +38,7 @@ async def create_session(
     body: CreateSessionRequest,
     agent: QAChatAgent = Depends(get_agent),
 ):
-    session = agent.create_session(body.persona_id)
+    session = await asyncio.to_thread(agent.create_session, body.persona_id)
     return {"session_id": session.session_id, "persona_id": session.persona_id}
 
 
@@ -46,7 +47,7 @@ async def list_sessions(
     limit: int = 20,
     memory: ConversationMemory = Depends(get_memory),
 ):
-    sessions = memory.list_sessions(limit)
+    sessions = await asyncio.to_thread(memory.list_sessions, limit)
     return {"sessions": [s.to_dict() for s in sessions]}
 
 
@@ -55,7 +56,7 @@ async def get_session(
     session_id: str,
     agent: QAChatAgent = Depends(get_agent),
 ):
-    session = agent.get_session(session_id)
+    session = await asyncio.to_thread(agent.get_session, session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     return session.to_dict()
@@ -67,14 +68,14 @@ async def send_message(
     body: ChatMessageRequest,
     agent: QAChatAgent = Depends(get_agent),
 ):
-    session = agent.get_session(session_id)
+    session = await asyncio.to_thread(agent.get_session, session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     guard = get_guard()
     guard_result = guard.check_tool_call("chat_send_message", {"session_id": session_id, "content_length": len(body.content)})
     if not guard_result.allowed:
         raise HTTPException(status_code=403, detail=guard_result.reason)
-    assistant_msg = agent.chat(session_id, body.content)
+    assistant_msg = await asyncio.to_thread(agent.chat, session_id, body.content)
     return {"role": "assistant", "content": assistant_msg.content}
 
 
@@ -85,10 +86,10 @@ async def get_messages(
     agent: QAChatAgent = Depends(get_agent),
     memory: ConversationMemory = Depends(get_memory),
 ):
-    session = agent.get_session(session_id)
+    session = await asyncio.to_thread(agent.get_session, session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    messages = memory.get_messages(session_id, limit)
+    messages = await asyncio.to_thread(memory.get_messages, session_id, limit)
     return {"messages": [m.to_dict() for m in messages]}
 
 
@@ -98,7 +99,7 @@ async def stream_chat(
     body: ChatMessageRequest,
     agent: QAChatAgent = Depends(get_agent),
 ):
-    session = agent.get_session(session_id)
+    session = await asyncio.to_thread(agent.get_session, session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     guard = get_guard()
@@ -120,8 +121,8 @@ async def close_session(
     agent: QAChatAgent = Depends(get_agent),
     memory: ConversationMemory = Depends(get_memory),
 ):
-    session = agent.get_session(session_id)
+    session = await asyncio.to_thread(agent.get_session, session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    memory.close_session(session_id)
+    await asyncio.to_thread(memory.close_session, session_id)
     return {"status": "closed"}
