@@ -30,8 +30,6 @@ redis>=5.0.0
 
 # Response-body validation in the spec+prism oracle (graceful fallback if
 # absent, but tests/unit/test_oracle_body_validation.py requires it)
-jsonschema>=4.0.0
-
 # Agent safety & governance (optional — graceful fallback if absent)
 # Sponsio: runtime contract enforcement (Apache 2.0)
 #   pip install sponsio
