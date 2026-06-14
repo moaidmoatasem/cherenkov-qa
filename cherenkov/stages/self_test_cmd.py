@@ -2,7 +2,7 @@ import os
 import time
 import subprocess
 import requests
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.compat import npx as _npx
 from cherenkov.ai import get_client
 from cherenkov.ai.ollama_client import strip_think
@@ -22,7 +22,7 @@ def run_self_test() -> int:
     print("[1/3] Checking Ollama connectivity...", end=" ")
     try:
         t0 = time.time()
-        base_url = Config.OLLAMA_URL.rsplit("/api/generate", 1)[0]
+        base_url = get_settings().OLLAMA_URL.rsplit("/api/generate", 1)[0]
         resp = requests.get(f"{base_url}/api/tags", timeout=5)
         resp.raise_for_status()
         dt = int((time.time() - t0) * 1000)
@@ -42,7 +42,7 @@ def run_self_test() -> int:
         raw_code = client.complete_code(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=user_prompt,
-            model=Config.GEN_MODEL,
+            model=get_settings().GEN_MODEL,
             temperature=0.1,
         )
         code = strip_think(raw_code)

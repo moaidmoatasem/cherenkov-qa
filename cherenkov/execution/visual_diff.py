@@ -8,7 +8,7 @@ from __future__ import annotations
 import os
 import subprocess
 from cherenkov.core.errors import get_logger
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 
 VISUAL_SPEC_RELPATH = os.path.join(
     "generated_tests", "visual_regression_baseline_ui.spec.ts"
@@ -70,7 +70,7 @@ class VisualDiffEngine:
 
     def run_visual_validation(self, api_url: str | None = None) -> dict:
         """Executes the visual E2E test. If baseline snapshots are absent, initializes them via --update-snapshots."""
-        url = api_url or Config.API_URL
+        url = api_url or get_settings().API_URL
         self.log.info("starting visual regression checks", target_url=url)
 
         self._ensure_spec()

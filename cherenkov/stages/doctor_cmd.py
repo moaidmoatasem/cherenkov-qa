@@ -10,7 +10,7 @@ from __future__ import annotations
 import shutil
 import subprocess
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.compat import npx as _npx
 from cherenkov.core.config_loader import (
     LayeredConfig,

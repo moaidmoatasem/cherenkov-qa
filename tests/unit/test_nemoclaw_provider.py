@@ -151,13 +151,13 @@ class TestNemoClawProvider:
         assert result.cost_usd == 0.0
 
     def test_generate_deep_tier_calls_correct_model(self):
-        from cherenkov.core.config import Config
+        from cherenkov.core.settings import get_settings
 
         provider, mock_client = self._provider()
         mock_client.complete_code.return_value = "code"
         req = ReasoningRequest(task="plan", capability_tier="deep")
         result = provider.generate(req)
-        assert result.model == Config.NEMOCLAW_DEEP_MODEL
+        assert result.model == get_settings().NEMOCLAW_DEEP_MODEL
 
     def test_generate_with_output_schema_calls_complete_json(self):
         provider, mock_client = self._provider()
@@ -227,7 +227,7 @@ class TestNemoClawProviderRegistry:
 
 class TestNemoClawConfig:
     def test_config_has_nemoclaw_keys(self):
-        from cherenkov.core.config import Config
+        from cherenkov.core.settings import get_settings
 
         assert hasattr(Config, "NEMOCLAW_URL")
         assert hasattr(Config, "NEMOCLAW_API_KEY")
@@ -237,10 +237,10 @@ class TestNemoClawConfig:
         assert hasattr(Config, "NEMOCLAW_TIMEOUT")
 
     def test_config_defaults(self):
-        from cherenkov.core.config import Config
+        from cherenkov.core.settings import get_settings
 
-        assert "11435" in Config.NEMOCLAW_URL
-        assert Config.NEMOCLAW_SMALL_MODEL == "nemotron-nano-4b"
-        assert Config.NEMOCLAW_DEEP_MODEL == "nemotron-super-49b"
-        assert Config.NEMOCLAW_VISION_MODEL == "nemotron-vlm-4b"
-        assert Config.NEMOCLAW_TIMEOUT == 300
+        assert "11435" in get_settings().NEMOCLAW_URL
+        assert get_settings().NEMOCLAW_SMALL_MODEL == "nemotron-nano-4b"
+        assert get_settings().NEMOCLAW_DEEP_MODEL == "nemotron-super-49b"
+        assert get_settings().NEMOCLAW_VISION_MODEL == "nemotron-vlm-4b"
+        assert get_settings().NEMOCLAW_TIMEOUT == 300

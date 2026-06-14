@@ -14,7 +14,7 @@ import time
 
 import requests
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import ProviderJSONError, get_logger
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.ollama_client import _try_json, _json_repair, strip_think
@@ -34,9 +34,9 @@ class NemoClawInferenceClient(InferenceClient):
         api_key: str | None = None,
         timeout: int | None = None,
     ) -> None:
-        self.base_url = (base_url or Config.NEMOCLAW_URL).rstrip("/")
-        self.api_key = api_key if api_key is not None else Config.NEMOCLAW_API_KEY
-        self.timeout = timeout or Config.NEMOCLAW_TIMEOUT
+        self.base_url = (base_url or get_settings().NEMOCLAW_URL).rstrip("/")
+        self.api_key = api_key if api_key is not None else get_settings().NEMOCLAW_API_KEY
+        self.timeout = timeout or get_settings().NEMOCLAW_TIMEOUT
         self._token_usage: dict[str, int] = {
             "prompt_tokens": 0,
             "completion_tokens": 0,

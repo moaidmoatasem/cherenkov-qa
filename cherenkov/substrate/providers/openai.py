@@ -2,7 +2,7 @@ from __future__ import annotations
 
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.openai_client import OpenAIInferenceClient
 from cherenkov.substrate.provider import ProviderCapabilities
@@ -19,12 +19,12 @@ class OpenAIProvider:
         content = self.client.complete(
             system_prompt="You are a logical AI.",
             user_prompt=request.task,
-            model=Config.OPENAI_MODEL,
+            model=get_settings().OPENAI_MODEL,
         )
         return ReasoningResult(
             content=content,
             provider=self.provider_name,
-            model=Config.OPENAI_MODEL,
+            model=get_settings().OPENAI_MODEL,
         )
 
     def capabilities(self) -> ProviderCapabilities:

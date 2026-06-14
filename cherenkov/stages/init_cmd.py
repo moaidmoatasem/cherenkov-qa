@@ -12,7 +12,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.config_loader import LayeredConfig
 
 

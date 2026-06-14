@@ -31,7 +31,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.stages.ingest import IngestStage
 from cherenkov.core.orchestrator import OrchestrationEngine
 from cherenkov.execution.validate import ValidationEngine
@@ -147,7 +147,7 @@ add_security_middleware(app)
 async def verify_api_key(
     x_api_key: str | None = Header(None), authorization: str | None = Header(None)
 ):
-    configured_key = Config.HITL_API_KEY
+    configured_key = get_settings().HITL_API_KEY
     if not configured_key:
         return  # no auth configured — allow all
     if x_api_key and x_api_key == configured_key:
@@ -308,7 +308,7 @@ async def health_check():
     return {
         "status": "online",
         "device": device,
-        "gen_model": Config.GEN_MODEL,
+        "gen_model": get_settings().GEN_MODEL,
         "active_connections": len(manager.active_connections),
         "workspace_root": os.getcwd(),
         "demo_mode": os.environ.get("DEMO_MODE") == "1",
@@ -329,7 +329,7 @@ async def run_doctor_api():
         check_egress_blocked,
     )
     from cherenkov.core.config_loader import load_effective_config
-    from cherenkov.core.config import Config
+    from cherenkov.core.settings import get_settings
 
     cfg = load_effective_config()
     checks = []

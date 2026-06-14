@@ -10,7 +10,7 @@ from unittest.mock import patch, MagicMock
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.errors import EgressError
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.substrate.router import SubstrateRouter
 from cherenkov.substrate.provider import ProviderCapabilities
 
@@ -51,11 +51,11 @@ class TestEgressPolicy(unittest.TestCase):
     def test_default_egress_policy_is_internal(self):
         """AC4: Verify default policy is 'internal' when env var is unset."""
         # This test runs in a fresh process state
-        self.assertEqual(Config.EGRESS, "internal")
+        self.assertEqual(get_settings().EGRESS, "internal")
 
     def test_egress_value_defaults_to_internal(self):
-        """Config.EGRESS defaults to internal when CHERENKOV_EGRESS is not set."""
-        self.assertEqual(Config.EGRESS, "internal")
+        """get_settings().EGRESS defaults to internal when CHERENKOV_EGRESS is not set."""
+        self.assertEqual(get_settings().EGRESS, "internal")
 
     @patch("cherenkov.substrate.router.provider_for_tier")
     def test_egress_none_blocks_external_provider(self, mock_provider_for_tier):
@@ -128,8 +128,8 @@ class TestEgressPolicy(unittest.TestCase):
             self.assertEqual(result.provider, "openai")
             external_provider.generate.assert_called_once()
 
-    @patch("cherenkov.substrate.router.Config.FALLBACK_ENABLED", True)
-    @patch("cherenkov.substrate.router.Config.FALLBACK_PROVIDER", "openai")
+    @patch("cherenkov.substrate.router.get_settings().FALLBACK_ENABLED", True)
+    @patch("cherenkov.substrate.router.get_settings().FALLBACK_PROVIDER", "openai")
     @patch("cherenkov.substrate.router.provider_for_tier")
     @patch("cherenkov.substrate.router.get_provider")
     def test_fallback_egress_enforcement_internal_policy(
@@ -161,9 +161,9 @@ class TestEgressPolicy(unittest.TestCase):
         external_fallback.generate.assert_not_called()
         self.assertIn("EGRESS policy is 'internal'", str(ctx.exception))
 
-    @patch("cherenkov.substrate.router.Config.FALLBACK_ENABLED", True)
-    @patch("cherenkov.substrate.router.Config.FALLBACK_PROVIDER", "openai")
-    @patch("cherenkov.substrate.router.Config.EGRESS", "any")
+    @patch("cherenkov.substrate.router.get_settings().FALLBACK_ENABLED", True)
+    @patch("cherenkov.substrate.router.get_settings().FALLBACK_PROVIDER", "openai")
+    @patch("cherenkov.substrate.router.get_settings().EGRESS", "any")
     @patch("cherenkov.substrate.router.provider_for_tier")
     @patch("cherenkov.substrate.router.get_provider")
     def test_fallback_egress_enforcement_any_policy(
@@ -193,9 +193,9 @@ class TestEgressPolicy(unittest.TestCase):
         external_fallback.generate.assert_called_once()
         self.assertEqual(result.provider, "openai")
 
-    @patch("cherenkov.substrate.router.Config.FALLBACK_ENABLED", True)
-    @patch("cherenkov.substrate.router.Config.FALLBACK_PROVIDER", "openai")
-    @patch("cherenkov.substrate.router.Config.EGRESS", "none")
+    @patch("cherenkov.substrate.router.get_settings().FALLBACK_ENABLED", True)
+    @patch("cherenkov.substrate.router.get_settings().FALLBACK_PROVIDER", "openai")
+    @patch("cherenkov.substrate.router.get_settings().EGRESS", "none")
     @patch("cherenkov.substrate.router.provider_for_tier")
     @patch("cherenkov.substrate.router.get_provider")
     def test_fallback_egress_enforcement_none_policy(

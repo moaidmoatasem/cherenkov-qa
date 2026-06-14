@@ -7,7 +7,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.config_loader import KNOWN_KEYS, PROFILE_DEFAULTS, BUILTIN_DEFAULTS
 from cherenkov.substrate.provider import provider_for_tier, get_vlm_provider
 from cherenkov.substrate.vlm_provider import VLMProvider

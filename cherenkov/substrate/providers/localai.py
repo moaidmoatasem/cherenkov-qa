@@ -7,7 +7,7 @@ from typing import Any
 
 import requests
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +23,8 @@ class LocalAIVLMProvider:
         base_url: str | None = None,
         model: str | None = None,
     ):
-        self.base_url = (base_url or Config.VLM_LOCALAI_URL).rstrip("/")
-        self.model = model or Config.VLM_LOCALAI_MODEL
+        self.base_url = (base_url or get_settings().VLM_LOCALAI_URL).rstrip("/")
+        self.model = model or get_settings().VLM_LOCALAI_MODEL
 
     def describe_image(self, image_path: str, prompt: str = "") -> str:
         image_data = _encode_image(image_path)

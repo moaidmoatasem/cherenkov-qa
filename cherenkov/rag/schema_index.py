@@ -19,7 +19,7 @@ from typing import Any
 import numpy as np
 import requests
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
 
 
@@ -44,7 +44,7 @@ def _normalise(v: np.ndarray) -> np.ndarray:
 
 def embed_text(text: str, model: str = "nomic-embed-text") -> list[float]:
     """Embed a single text string via Ollama's nomic-embed-text model."""
-    base_url = Config.OLLAMA_URL.rsplit("/api/generate", 1)[0]
+    base_url = get_settings().OLLAMA_URL.rsplit("/api/generate", 1)[0]
 
     try:
         resp = requests.post(

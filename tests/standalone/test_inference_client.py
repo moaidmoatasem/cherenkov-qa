@@ -172,18 +172,18 @@ class TestOpenAIInferenceClient(unittest.TestCase):
     def test_openai_client_get_client_factory(self, mock_chat):
         """Verify get_client() returns OpenAIInferenceClient when configured."""
         from cherenkov.ai import get_client
-        from cherenkov.core.config import Config
+        from cherenkov.core.settings import get_settings
 
-        original = Config.PROVIDER
+        original = get_settings().PROVIDER
         try:
-            Config.PROVIDER = "openai"
+            get_settings().PROVIDER = "openai"
             client = get_client()
             wrapped = (
                 client.wrapped_client if hasattr(client, "wrapped_client") else client
             )
             self.assertIsInstance(wrapped, OpenAIInferenceClient)
         finally:
-            Config.PROVIDER = original
+            get_settings().PROVIDER = original
 
     @patch.object(OpenAIInferenceClient, "_chat_completion")
     def test_openai_client_api_request_failure(self, mock_chat):
@@ -218,11 +218,11 @@ class TestClientMemoization(unittest.TestCase):
     def test_get_client_is_memoized_per_provider(self):
         """Repeated get_client() calls with the same provider return the SAME object."""
         from cherenkov.ai import get_client
-        from cherenkov.core.config import Config
+        from cherenkov.core.settings import get_settings
 
-        original = Config.PROVIDER
+        original = get_settings().PROVIDER
         try:
-            Config.PROVIDER = "ollama"
+            get_settings().PROVIDER = "ollama"
             first = get_client()
             second = get_client()
             self.assertIs(
@@ -231,43 +231,43 @@ class TestClientMemoization(unittest.TestCase):
                 "get_client() rebuilt the client — cache/accounting would reset",
             )
         finally:
-            Config.PROVIDER = original
+            get_settings().PROVIDER = original
 
     def test_provider_change_rebuilds(self):
-        """Switching Config.PROVIDER yields a different client for the new provider."""
+        """Switching get_settings().PROVIDER yields a different client for the new provider."""
         from cherenkov.ai import get_client
-        from cherenkov.core.config import Config
+        from cherenkov.core.settings import get_settings
 
-        original = Config.PROVIDER
+        original = get_settings().PROVIDER
         try:
-            Config.PROVIDER = "ollama"
+            get_settings().PROVIDER = "ollama"
             ollama_client = get_client()
-            Config.PROVIDER = "openai"
+            get_settings().PROVIDER = "openai"
             openai_client = get_client()
             self.assertIsNot(ollama_client, openai_client)
             wrapped = getattr(openai_client, "wrapped_client", openai_client)
             self.assertIsInstance(wrapped, OpenAIInferenceClient)
         finally:
-            Config.PROVIDER = original
+            get_settings().PROVIDER = original
 
     def test_set_and_reset_client(self):
         """set_client() injects; reset_client() clears so get_client() rebuilds."""
         import cherenkov.ai as ai_mod
         from cherenkov.ai import set_client, reset_client, CachedInferenceClient
-        from cherenkov.core.config import Config
+        from cherenkov.core.settings import get_settings
 
-        original = Config.PROVIDER
+        original = get_settings().PROVIDER
         try:
             injected = CachedInferenceClient(OllamaInferenceClient())
             set_client(injected)
             self.assertIs(ai_mod._current_client, injected)
             reset_client()
             self.assertIsNone(ai_mod._current_client)
-            Config.PROVIDER = "ollama"
+            get_settings().PROVIDER = "ollama"
             rebuilt = ai_mod.get_client()
             self.assertIsNot(rebuilt, injected)
         finally:
-            Config.PROVIDER = original
+            get_settings().PROVIDER = original
             reset_client()
 
 

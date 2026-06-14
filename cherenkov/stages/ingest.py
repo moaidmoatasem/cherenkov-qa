@@ -18,7 +18,7 @@ from cherenkov.core.contracts import (
     StageMeta,
     StageError,
 )
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
 from cherenkov.sources.mobile.adapter import MobileSourceAdapter
 
@@ -37,12 +37,12 @@ DAST_PAYLOADS: list[tuple[str, str]] = [
 
 # Toggle env var — security mutations are opt-in to keep default runs focused
 def _dast_enabled() -> bool:
-    return Config.DAST_ENABLED
+    return get_settings().DAST_ENABLED
 
 
 # [Issue #195] RAG toggle — schema-level semantic retrieval for large specs
 def _rag_enabled() -> bool:
-    return Config.RAG_ENABLED
+    return get_settings().RAG_ENABLED
 
 
 def resolve_refs_depth(
@@ -148,7 +148,7 @@ class IngestStage:
                 # 1. Depth-limited reference resolution
                 resolved_schemas: dict[str, Any] = {}
                 resolve_refs_depth(
-                    op, components, resolved_schemas, 1, Config.SCHEMA_DEPTH
+                    op, components, resolved_schemas, 1, get_settings().SCHEMA_DEPTH
                 )
 
                 # [Issue #195] RAG-based schema enrichment — retrieves semantically relevant schemas

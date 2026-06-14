@@ -9,7 +9,7 @@ import os
 import shutil
 import subprocess
 from cherenkov.core.errors import get_logger
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 
 
 class K6Runner:
@@ -70,7 +70,7 @@ export default function () {{
 
     def run_k6_validation(self, api_url: str | None = None) -> dict:
         """Runs the exported k6 script natively. If k6 executable is missing, returns graceful export details."""
-        url = api_url or Config.API_URL
+        url = api_url or get_settings().API_URL
         self.export_k6_script(url)
 
         # Check if k6 is installed in the system PATH

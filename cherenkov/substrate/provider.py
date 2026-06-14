@@ -4,7 +4,7 @@ from pydantic import BaseModel
 import json
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient
 from cherenkov.ai.openai_client import OpenAIInferenceClient
@@ -32,9 +32,9 @@ class OllamaProvider:
         user_prompt = request.task
 
         model = (
-            Config.TIER_SMALL_MODEL
+            get_settings().TIER_SMALL_MODEL
             if request.capability_tier == "small"
-            else Config.TIER_DEEP_MODEL
+            else get_settings().TIER_DEEP_MODEL
         )
 
         if request.output_schema:
@@ -79,7 +79,7 @@ class OpenAIProvider:
         system_prompt = "You are a logical AI."
         user_prompt = request.task
 
-        model = Config.OPENAI_MODEL
+        model = get_settings().OPENAI_MODEL
 
         if request.output_schema:
             user_prompt += (
@@ -129,9 +129,9 @@ class GitHubModelsProvider:
         import json
 
         model = (
-            Config.GITHUB_MODELS_SMALL_MODEL
+            get_settings().GITHUB_MODELS_SMALL_MODEL
             if request.capability_tier == "small"
-            else Config.GITHUB_MODELS_DEEP_MODEL
+            else get_settings().GITHUB_MODELS_DEEP_MODEL
         )
         system_prompt = (
             "You are a logical QA AI assistant specializing in API conformance testing."
@@ -198,7 +198,7 @@ def get_provider(name: str) -> OllamaProvider | OpenAIProvider | GitHubModelsPro
 
 
 def get_vlm_provider(name: str | None = None) -> VLMProvider:
-    provider_name = name or Config.TIER_VISION_PROVIDER
+    provider_name = name or get_settings().TIER_VISION_PROVIDER
     if provider_name in _VLM_CACHE:
         return _VLM_CACHE[provider_name]
     if provider_name == "localai":
@@ -226,9 +226,9 @@ def provider_for_tier(
     tier: str, device_class: str | None = None
 ) -> OllamaProvider | OpenAIProvider | GitHubModelsProvider | VLMProvider:
     if tier == "small":
-        return get_provider(Config.TIER_SMALL_PROVIDER)
+        return get_provider(get_settings().TIER_SMALL_PROVIDER)
     elif tier == "deep":
-        return get_provider(Config.TIER_DEEP_PROVIDER)
+        return get_provider(get_settings().TIER_DEEP_PROVIDER)
     elif tier == "vision":
         vlm_provider_name = _resolve_vlm_provider(device_class)
         return get_vlm_provider(vlm_provider_name)
@@ -239,7 +239,7 @@ def provider_for_tier(
 
 
 def _resolve_vlm_provider(device_class: str | None = None) -> str:
-    configured = Config.TIER_VISION_PROVIDER
+    configured = get_settings().TIER_VISION_PROVIDER
     if configured != "auto":
         return configured
     from cherenkov.core.devices import DeviceInfo, VLMTier

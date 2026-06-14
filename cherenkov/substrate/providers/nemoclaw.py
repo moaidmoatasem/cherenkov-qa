@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 import time
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.substrate.provider import ProviderCapabilities
@@ -43,10 +43,10 @@ class NemoClawProvider:
 
     def _model_for_tier(self, tier: str) -> str:
         if tier == "small":
-            return Config.NEMOCLAW_SMALL_MODEL
+            return get_settings().NEMOCLAW_SMALL_MODEL
         if tier == "vision":
-            return Config.NEMOCLAW_VISION_MODEL
-        return Config.NEMOCLAW_DEEP_MODEL
+            return get_settings().NEMOCLAW_VISION_MODEL
+        return get_settings().NEMOCLAW_DEEP_MODEL
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
         system_prompt = (

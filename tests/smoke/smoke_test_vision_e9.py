@@ -34,7 +34,7 @@ from cherenkov.core.contracts import (
     StageMeta,
     StageError,
 )
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.config_loader import KNOWN_KEYS, PROFILE_DEFAULTS
 from cherenkov.substrate.provider import provider_for_tier
 from cherenkov.substrate.vlm_provider import VLMProvider, VLMResult

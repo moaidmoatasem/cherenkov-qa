@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient
 from cherenkov.substrate.provider import ProviderCapabilities
@@ -21,9 +21,9 @@ class OllamaProvider:
         user_prompt = request.task
 
         model = (
-            Config.TIER_SMALL_MODEL
+            get_settings().TIER_SMALL_MODEL
             if request.capability_tier == "small"
-            else Config.TIER_DEEP_MODEL
+            else get_settings().TIER_DEEP_MODEL
         )
 
         if request.output_schema:

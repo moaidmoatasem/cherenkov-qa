@@ -13,7 +13,7 @@ import time
 import requests
 
 from cherenkov.core.errors import get_logger
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 
 
 class RAGIndex:
@@ -60,7 +60,7 @@ class RAGIndex:
 
     def _get_embedding(self, text: str) -> list[float]:
         """Fetches vector embedding using Ollama nomic-embed-text local model."""
-        base_url = Config.OLLAMA_URL.rsplit("/api/generate", 1)[0]
+        base_url = get_settings().OLLAMA_URL.rsplit("/api/generate", 1)[0]
         embed_url = f"{base_url}/api/embed"
 
         try:

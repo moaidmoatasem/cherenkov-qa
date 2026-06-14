@@ -12,7 +12,7 @@ import time
 from pydantic import BaseModel, Field
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient
@@ -46,7 +46,7 @@ class VLMProvider:
         system_prompt = "You are a precise visual analyst."
         user_prompt = request.task
 
-        model = Config.TIER_VISION_MODEL
+        model = get_settings().TIER_VISION_MODEL
 
         image_path = None
         if request.output_schema and "image_path" in request.output_schema:
@@ -82,7 +82,7 @@ class VLMProvider:
 
         dt_ms = int((time.time() - t0) * 1000)
         provider_name = (
-            "ollama" if Config.TIER_VISION_PROVIDER == "ollama" else "openai"
+            "ollama" if get_settings().TIER_VISION_PROVIDER == "ollama" else "openai"
         )
 
         return ReasoningResult(
@@ -98,7 +98,7 @@ class VLMProvider:
         """Advertise vision capability."""
         from cherenkov.substrate.provider import ProviderCapabilities
 
-        provider_name = Config.TIER_VISION_PROVIDER
+        provider_name = get_settings().TIER_VISION_PROVIDER
         requires_egress = provider_name != "ollama"
         return ProviderCapabilities(
             capability_tiers=["vision"],

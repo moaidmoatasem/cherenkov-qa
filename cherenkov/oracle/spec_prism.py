@@ -11,7 +11,7 @@ from typing import Any
 
 import requests
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import Claim
 from cherenkov.core.errors import get_logger
 from cherenkov.oracle.interface import Oracle, OracleResult
