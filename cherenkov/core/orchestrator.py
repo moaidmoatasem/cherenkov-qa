@@ -498,6 +498,9 @@ class OrchestrationEngine:
 
         scenario_results = []
         all_durations = [ingest.metadata.duration_ms, plan.metadata.duration_ms]
+        # Track per-operation coverage for GenMetricsStore
+        _all_endpoints: set[str] = set()
+        _passed_endpoints: set[str] = set()
 
         max_workers = min(len(plan.scenarios), Config.MAX_CONCURRENT_SCENARIOS)
         print(f"  Running {len(plan.scenarios)} scenario(s) [{max_workers} concurrent]...\n")
@@ -509,6 +512,8 @@ class OrchestrationEngine:
             }
             for fut in as_completed(futures):
                 s = futures[fut]
+                ep_key = f"{s.method.upper()} {s.endpoint}"
+                _all_endpoints.add(ep_key)
                 try:
                     ok, gen_ms, rev_ms = fut.result()
                 except Exception as exc:
@@ -516,6 +521,8 @@ class OrchestrationEngine:
                                    scenario=getattr(s, "mutation_id", "?"))
                     ok, gen_ms, rev_ms = False, 0, 0
 
+                if ok:
+                    _passed_endpoints.add(ep_key)
                 scenario_results.append(ok)
                 all_durations.extend(ms for ms in (gen_ms, rev_ms) if ms)
                 label = s.mutation_id or f"{s.method} {s.endpoint}"
@@ -563,6 +570,19 @@ class OrchestrationEngine:
             "scenarios_passed": successes,
             "scenarios_total": total,
         })
+
+        # ── Research: LlamaRestTest-aligned generation quality metrics ─────
+        try:
+            from cherenkov.governance.gen_metrics import RunGenMetrics, GenMetricsStore
+            _metrics = RunGenMetrics(run_id=self.run_id)
+            for _ok in scenario_results:
+                _metrics.record_generation(all_gates_passed=_ok)
+            for _ep in _all_endpoints:
+                _metrics.record_operation(covered=(_ep in _passed_endpoints))
+            GenMetricsStore().save(_metrics)
+            print(_metrics.render())
+        except Exception as _me:
+            self.log.warning("gen_metrics_save_failed", error=str(_me))
 
         # Persist run stats to StatsStore
         try:
