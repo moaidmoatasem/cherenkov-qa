@@ -1,0 +1,24 @@
+{
+  "name": "cherenkov",
+  "version": "1.0.0",
+  "description": "AI-powered API conformance testing from your OpenAPI spec",
+  "bin": {
+    "cherenkov": "bin/cherenkov.js"
+  },
+  "scripts": {
+    "postinstall": "node bin/install.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moaidmoatasem/cherenkov-qa.git"
+  },
+  "keywords": [
+    "api-testing",
+    "conformance-testing",
+    "openapi",
+    "playwright",
+    "testing",
+    "ai-testing"
+  ],
+  "license": "MIT"
+}
