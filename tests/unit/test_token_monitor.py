@@ -1,4 +1,5 @@
 """Unit tests for cherenkov/observability/token_monitor.py."""
+
 from __future__ import annotations
 
 import time
@@ -14,6 +15,7 @@ from cherenkov.observability.token_monitor import (
 
 
 # ── compute_cost ──────────────────────────────────────────────────────────────
+
 
 def test_ollama_is_free():
     assert compute_cost("ollama", "qwen2.5-coder:7b", 1000, 500) == 0.0
@@ -39,6 +41,7 @@ def test_unknown_provider_uses_openai_default():
 
 # ── TokenMonitor persistence ──────────────────────────────────────────────────
 
+
 @pytest.fixture
 def monitor():
     return TokenMonitor(db_path=":memory:")
@@ -46,9 +49,15 @@ def monitor():
 
 def _make_record(**kwargs) -> TokenRecord:
     defaults = dict(
-        run_id="run-001", model="qwen2.5-coder:7b", provider="ollama",
-        stage="GENERATE", prompt_tokens=400, completion_tokens=300,
-        total_tokens=700, cost_usd=0.0, cache_hit=False,
+        run_id="run-001",
+        model="qwen2.5-coder:7b",
+        provider="ollama",
+        stage="GENERATE",
+        prompt_tokens=400,
+        completion_tokens=300,
+        total_tokens=700,
+        cost_usd=0.0,
+        cache_hit=False,
     )
     defaults.update(kwargs)
     return TokenRecord(**defaults)
@@ -80,8 +89,11 @@ def test_cache_hit_rate(monitor):
 
 def test_by_provider_breakdown(monitor):
     monitor.record(_make_record(provider="ollama", cost_usd=0.0, total_tokens=100))
-    monitor.record(_make_record(provider="openai", model="gpt-4o-mini",
-                                cost_usd=0.0003, total_tokens=50))
+    monitor.record(
+        _make_record(
+            provider="openai", model="gpt-4o-mini", cost_usd=0.0003, total_tokens=50
+        )
+    )
     report = monitor.get_report(days=7)
     providers = {row["provider"] for row in report.by_provider}
     assert "ollama" in providers
@@ -115,6 +127,7 @@ def test_empty_report_has_no_data_recommendation(monitor):
 
 # ── Recommendations ───────────────────────────────────────────────────────────
 
+
 def test_local_only_recommendation(monitor):
     monitor.record(_make_record(provider="ollama"))
     monitor.record(_make_record(provider="ollama"))
@@ -142,10 +155,14 @@ def test_high_reprompt_recommendation(monitor):
 
 
 def test_paid_provider_spend_recommendation(monitor):
-    monitor.record(_make_record(
-        provider="openai", model="gpt-4o", cost_usd=0.50,
-        total_tokens=5000,
-    ))
+    monitor.record(
+        _make_record(
+            provider="openai",
+            model="gpt-4o",
+            cost_usd=0.50,
+            total_tokens=5000,
+        )
+    )
     report = monitor.get_report(days=1)
     codes = {r["code"] for r in report.recommendations}
     assert "PAID_PROVIDER_SPEND" in codes
@@ -163,6 +180,7 @@ def test_get_dashboard_data_shape(monitor):
 
 
 # ── get_monitor singleton ─────────────────────────────────────────────────────
+
 
 def test_get_monitor_returns_same_instance():
     m1 = get_monitor()

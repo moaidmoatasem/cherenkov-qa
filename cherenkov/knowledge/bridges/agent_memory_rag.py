@@ -7,7 +7,9 @@ from cherenkov.knowledge.ports.repository import KnowledgeRepository
 
 
 class AgentMemoryRAGBridge:
-    def __init__(self, repository: KnowledgeRepository, memory_dir: str = "agent_memory"):
+    def __init__(
+        self, repository: KnowledgeRepository, memory_dir: str = "agent_memory"
+    ):
         self.repository = repository
         self.memory_dir = Path(memory_dir)
 

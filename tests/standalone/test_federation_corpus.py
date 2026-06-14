@@ -1,7 +1,16 @@
-import os, tempfile, pytest
-from cherenkov.core.contracts import DivergenceReport, DivergenceClass, Severity, DivergenceEvidence, StageMeta
+import os
+import tempfile
+import pytest
+from cherenkov.core.contracts import (
+    DivergenceReport,
+    DivergenceClass,
+    Severity,
+    DivergenceEvidence,
+    StageMeta,
+)
 from cherenkov.federation.protocol import DivergenceEnvelope
-from cherenkov.federation.corpus import Corpus, CorpusOptInError, CorpusEntry, CorpusBackend
+from cherenkov.federation.corpus import Corpus, CorpusOptInError, CorpusEntry
+
 
 def make_divergence():
     return DivergenceReport(
@@ -20,6 +29,7 @@ def make_divergence():
         metadata=StageMeta(stage="test", schema_version=1),
     )
 
+
 def test_opt_in_gate():
     os.environ.pop("CHERENKOV_CORPUS_OPT_IN", None)
     corpus = Corpus()
@@ -31,6 +41,7 @@ def test_opt_in_gate():
     )
     with pytest.raises(CorpusOptInError):
         corpus.submit(envelope)
+
 
 def test_opt_in_submit():
     with tempfile.TemporaryDirectory() as tmp:
@@ -46,6 +57,7 @@ def test_opt_in_submit():
         assert entry.id == "div-1"
         assert entry.timestamp
         os.environ.pop("CHERENKOV_CORPUS_OPT_IN")
+
 
 def test_anonymization():
     with tempfile.TemporaryDirectory() as tmp:
@@ -65,6 +77,7 @@ def test_anonymization():
         assert payload["to_service"]
         os.environ.pop("CHERENKOV_CORPUS_OPT_IN")
 
+
 def test_query_round_trip():
     with tempfile.TemporaryDirectory() as tmp:
         os.environ["CHERENKOV_CORPUS_OPT_IN"] = "true"
@@ -81,8 +94,10 @@ def test_query_round_trip():
         assert entries[0].id == "div-1"
         os.environ.pop("CHERENKOV_CORPUS_OPT_IN")
 
+
 class InMemoryBackend:
     """Fake CorpusBackend for testing the abstraction."""
+
     def __init__(self):
         self._store = []
 
@@ -91,6 +106,7 @@ class InMemoryBackend:
 
     def query(self, **filters) -> list[CorpusEntry]:
         return list(self._store)
+
 
 def test_corpus_backend_protocol():
     """Prove the CorpusBackend Protocol works with an in-memory fake."""

@@ -20,7 +20,9 @@ class ChatMessageRequest(BaseModel):
 
 
 class CreateSessionRequest(BaseModel):
-    persona_id: str = Field(default="qa_assistant", description="Persona to use for this session")
+    persona_id: str = Field(
+        default="qa_assistant", description="Persona to use for this session"
+    )
 
 
 @lru_cache(maxsize=1)
@@ -71,7 +73,10 @@ async def send_message(
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     guard = get_guard()
-    guard_result = guard.check_tool_call("chat_send_message", {"session_id": session_id, "content_length": len(body.content)})
+    guard_result = guard.check_tool_call(
+        "chat_send_message",
+        {"session_id": session_id, "content_length": len(body.content)},
+    )
     if not guard_result.allowed:
         raise HTTPException(status_code=403, detail=guard_result.reason)
     assistant_msg = agent.chat(session_id, body.content)
@@ -102,7 +107,9 @@ async def stream_chat(
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     guard = get_guard()
-    guard_result = guard.check_tool_call("chat_stream", {"session_id": session_id, "content_length": len(body.content)})
+    guard_result = guard.check_tool_call(
+        "chat_stream", {"session_id": session_id, "content_length": len(body.content)}
+    )
     if not guard_result.allowed:
         raise HTTPException(status_code=403, detail=guard_result.reason)
 

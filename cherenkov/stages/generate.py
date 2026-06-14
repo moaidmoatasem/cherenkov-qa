@@ -2,6 +2,7 @@
 CHERENKOV stages/generate.py — real recency-anchored test generator stage.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import json
@@ -9,9 +10,14 @@ import os
 import time
 from typing import Any
 
-from cherenkov.core.contracts import GenerateOutput, Scenario, Status, StageMeta, StageError
+from cherenkov.core.contracts import (
+    GenerateOutput,
+    Scenario,
+    Status,
+    StageMeta,
+    StageError,
+)
 from cherenkov.core.config import Config
-from cherenkov.core.compat import npx as _npx
 from cherenkov.ai import get_client
 from cherenkov.ai.ollama_client import strip_think
 from cherenkov.core.errors import get_logger
@@ -19,11 +25,19 @@ from cherenkov.core.errors import get_logger
 
 def _sanitize_prompt_input(text: str, max_len: int = 500) -> str:
     """Strip prompt injection markers and limit length."""
-    injection_markers = ["\n\nSystem:", "\n\nHuman:", "\n\nAssistant:", "###", "---\nINSTRUCT", "<|im_start|>", "<|system|>"]
+    injection_markers = [
+        "\n\nSystem:",
+        "\n\nHuman:",
+        "\n\nAssistant:",
+        "###",
+        "---\nINSTRUCT",
+        "<|im_start|>",
+        "<|system|>",
+    ]
     sanitized = text
     for marker in injection_markers:
         if marker in sanitized:
-            sanitized = sanitized[:sanitized.index(marker)]
+            sanitized = sanitized[: sanitized.index(marker)]
     # Keep printable ASCII only, enforce max length
     sanitized = sanitized.encode("ascii", errors="ignore").decode()[:max_len]
     return sanitized.strip()
@@ -47,6 +61,7 @@ def _load_system_prompt() -> str:
 # Tuned generator prompt committed to prompts/generator_system.txt (loaded once at import).
 SYSTEM_PROMPT = _load_system_prompt()
 
+
 class GenerateStage:
     """Invokes local LLM qwen2.5-coder to write compile-ready Playwright TypeScript tests."""
 
@@ -65,9 +80,7 @@ class GenerateStage:
         spec_rules_block: str = "",
     ) -> str:
         """Constructs a recency-anchored prompt payload, placing strict openapi-fetch rules at the absolute end to override model semantic bias."""
-        enrichment = (
-            f"\n\n{spec_rules_block}" if spec_rules_block else ""
-        )
+        enrichment = f"\n\n{spec_rules_block}" if spec_rules_block else ""
         return (
             "ENDPOINT SLICE (the only schema you need):\n"
             + json.dumps(
@@ -122,31 +135,57 @@ class GenerateStage:
         operation: dict[str, Any] = None,
         schemas: dict[str, Any] = None,
         instruction: str = "",
-        source_type: str = "openapi"
+        source_type: str = "openapi",
     ) -> GenerateOutput:
         t0 = time.time()
-        mutation_id = getattr(scenario, "mutation_id", getattr(scenario, "operation_name", "unknown"))
+        mutation_id = getattr(
+            scenario, "mutation_id", getattr(scenario, "operation_name", "unknown")
+        )
         self.log.info("stage start", scenario_id=mutation_id)
 
         if source_type == "graphql":
             import jinja2
-            env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))))
+
+            env = jinja2.Environment(
+                loader=jinja2.FileSystemLoader(
+                    os.path.abspath(
+                        os.path.join(os.path.dirname(__file__), "../../prompts")
+                    )
+                )
+            )
             template = env.get_template("graphql_test.j2")
             user_prompt = template.render(
                 operation_name=scenario.operation_name,
                 kind=scenario.kind,
                 gql_query=scenario.gql_query,
                 variables=scenario.variables,
-                expected_response_structure=scenario.expected_response_structure
+                expected_response_structure=scenario.expected_response_structure,
+            )
+        elif source_type == "grpc":
+            import jinja2
+            env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))))
+            template = env.get_template("grpc_test.j2")
+            user_prompt = template.render(
+                service=scenario.service,
+                rpc_name=scenario.rpc_name,
+                input_message=scenario.input_message,
+                proto_content=scenario.proto_content
             )
         elif source_type == "accessibility":
             import jinja2
-            env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))))
+
+            env = jinja2.Environment(
+                loader=jinja2.FileSystemLoader(
+                    os.path.abspath(
+                        os.path.join(os.path.dirname(__file__), "../../prompts")
+                    )
+                )
+            )
             template = env.get_template("accessibility_test.j2")
             user_prompt = template.render(
                 scenario_id=scenario.scenario_id,
                 page_target=scenario.page_target,
-                rules=scenario.rules
+                rules=scenario.rules,
             )
             # Short-circuit LLM since we just use the template for accessibility tests
             code = user_prompt
@@ -157,7 +196,7 @@ class GenerateStage:
                 test_code=code,
                 imports=["@playwright/test", "@axe-core/playwright"],
                 status=Status.OK,
-                metadata=StageMeta(stage="GENERATE", duration_ms=dt)
+                metadata=StageMeta(stage="GENERATE", duration_ms=dt),
             )
         else:
             # RESTGPT-style spec enrichment: extract rules + example values from
@@ -166,6 +205,7 @@ class GenerateStage:
             spec_rules_block = ""
             try:
                 from cherenkov.stages.enrich import SpecEnrichStage
+
                 rules = SpecEnrichStage(run_id=self.run_id).enrich(
                     path=path,
                     method=method,
@@ -175,7 +215,9 @@ class GenerateStage:
                 if not rules.is_empty():
                     spec_rules_block = rules.render_prompt_block()
             except Exception as enrich_err:
-                self.log.warning("spec enrichment failed (non-fatal)", error=str(enrich_err))
+                self.log.warning(
+                    "spec enrichment failed (non-fatal)", error=str(enrich_err)
+                )
 
             user_prompt = self._build_user_prompt(
                 path=path,
@@ -188,13 +230,19 @@ class GenerateStage:
             )
 
         from cherenkov.cache.endpoint_cache import EndpointCache
+
         cache = EndpointCache()
         cache_hash = None
 
         # Only cache openapi source generations — key includes mutation_id so each
         # scenario gets its own entry rather than sharing one per endpoint.
         if source_type == "openapi":
-            cache_hash = cache.compute_hash(path, method, {"op": operation, "sch": schemas, "mid": mutation_id}, Config.GEN_MODEL)
+            cache_hash = cache.compute_hash(
+                path,
+                method,
+                {"op": operation, "sch": schemas, "mid": mutation_id},
+                Config.GEN_MODEL,
+            )
             entry = cache.get(cache_hash)
             if entry:
                 self.log.info("cache hit", hash=cache_hash)
@@ -222,22 +270,30 @@ class GenerateStage:
                     user_prompt=user_prompt,
                     model=Config.GEN_MODEL,
                     temperature=temp,
-                    run_id=self.run_id
+                    run_id=self.run_id,
                 )
                 code = strip_think(raw_code)
                 if code.strip():
                     break  # TypeScript compilation is validated by Gate 5 in ReviewStage
             except Exception as e:
                 last_error = f"Ollama generation failed: {e}"
-                self.log.warning("generation exception, retrying", temperature=temp, error=last_error)
+                self.log.warning(
+                    "generation exception, retrying", temperature=temp, error=last_error
+                )
 
         # If Ollama is unavailable or all temperatures failed, fall back to the deterministic
         # template generator so the pipeline continues to completion without a GPU.
         ollama_failed = not code
         if ollama_failed:
-            self.log.warning("ollama unavailable — using template generator fallback", error=last_error)
+            self.log.warning(
+                "ollama unavailable — using template generator fallback",
+                error=last_error,
+            )
             try:
-                from cherenkov.ai.template_generator import generate_test as _gen_template
+                from cherenkov.ai.template_generator import (
+                    generate_test as _gen_template,
+                )
+
                 code = _gen_template(
                     path=path,
                     method=method,
@@ -246,7 +302,9 @@ class GenerateStage:
                     scenario=scenario,
                     instruction=instruction,
                 )
-                self.log.info("template generator produced fallback code", chars=len(code))
+                self.log.info(
+                    "template generator produced fallback code", chars=len(code)
+                )
             except Exception as tmpl_err:
                 self.log.error("template generator also failed", error=str(tmpl_err))
                 return GenerateOutput(
@@ -254,7 +312,7 @@ class GenerateStage:
                     test_code="",
                     status=Status.FAILED,
                     errors=[StageError(code="GENERATE_FAILED", detail=str(tmpl_err))],
-                    metadata=StageMeta(stage="GENERATE", duration_ms=0)
+                    metadata=StageMeta(stage="GENERATE", duration_ms=0),
                 )
 
         if not isinstance(code, str) or not code.strip():
@@ -262,8 +320,12 @@ class GenerateStage:
                 scenario_id=mutation_id,
                 test_code="",
                 status=Status.FAILED,
-                errors=[StageError(code="GENERATE_EMPTY", detail="Generator produced empty output")],
-                metadata=StageMeta(stage="GENERATE", duration_ms=0)
+                errors=[
+                    StageError(
+                        code="GENERATE_EMPTY", detail="Generator produced empty output"
+                    )
+                ],
+                metadata=StageMeta(stage="GENERATE", duration_ms=0),
             )
 
         dt = int((time.time() - t0) * 1000)
@@ -275,7 +337,9 @@ class GenerateStage:
         return GenerateOutput(
             scenario_id=mutation_id,
             test_code=code,
-            imports=["@playwright/test", "../client"],
+            imports=["@playwright/test"]
+            if source_type == "graphql"
+            else ["@playwright/test", "../client"],
             status=Status.OK,
             metadata=StageMeta(stage="GENERATE", duration_ms=dt),
             endpoint=path,

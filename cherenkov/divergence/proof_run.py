@@ -12,6 +12,7 @@ Usage:
     python -m cherenkov.divergence.proof_run
     python -m cherenkov.divergence.proof_run --base-url http://localhost:8080 --spec ./openapi.json
 """
+
 from __future__ import annotations
 
 import argparse
@@ -20,10 +21,8 @@ import sys
 import time
 import uuid
 from pathlib import Path
-from typing import Any
 
 from cherenkov.core.contracts import (
-    DivergenceEvidence,
     DivergenceHypothesis,
     DivergenceReport,
     ReproductionResult,
@@ -144,7 +143,10 @@ PETSTORE_SPEC_SUBSET: dict = {
                             "application/json": {
                                 "schema": {
                                     "type": "object",
-                                    "additionalProperties": {"type": "integer", "format": "int32"},
+                                    "additionalProperties": {
+                                        "type": "integer",
+                                        "format": "int32",
+                                    },
                                 }
                             }
                         },
@@ -253,6 +255,7 @@ PROOF_RUN_PROBES: list[tuple[str, str, dict, str]] = [
 
 # ── report assembly ───────────────────────────────────────────────────────
 
+
 def _make_report(
     hypothesis: DivergenceHypothesis,
     result: ReproductionResult,
@@ -278,6 +281,7 @@ def _make_report(
 
 
 # ── main orchestration loop ───────────────────────────────────────────────
+
 
 def run_proof(
     base_url: str,
@@ -359,84 +363,95 @@ def _offline_hypotheses(endpoint: str, method: str) -> list[DivergenceHypothesis
     from cherenkov.core.contracts import DivergenceClass, Severity
 
     if endpoint == "/pet/findByStatus" and method == "GET":
-        h.append(DivergenceHypothesis(
-            id=hid(),
-            divergence_class=DivergenceClass.D1_SPEC_CODE,
-            claim_a="spec: 'status' query param is enum(available|pending|sold); invalid value → 400",
-            claim_b="implementation accepts arbitrary status strings and returns 200",
-            predicted_evidence="GET /pet/findByStatus?status=INVALID_VALUE returns 200 with empty array",
-            severity=Severity.MEDIUM,
-            endpoint=f"{method} {endpoint}",
-            repro_steps=[
-                "Send GET /pet/findByStatus?status=INVALID_VALUE_XYZ",
-                "Expect 400 response per spec enum constraint",
-            ],
-        ))
+        h.append(
+            DivergenceHypothesis(
+                id=hid(),
+                divergence_class=DivergenceClass.D1_SPEC_CODE,
+                claim_a="spec: 'status' query param is enum(available|pending|sold); invalid value → 400",
+                claim_b="implementation accepts arbitrary status strings and returns 200",
+                predicted_evidence="GET /pet/findByStatus?status=INVALID_VALUE returns 200 with empty array",
+                severity=Severity.MEDIUM,
+                endpoint=f"{method} {endpoint}",
+                repro_steps=[
+                    "Send GET /pet/findByStatus?status=INVALID_VALUE_XYZ",
+                    "Expect 400 response per spec enum constraint",
+                ],
+            )
+        )
 
     elif endpoint == "/pet" and method == "POST":
-        h.append(DivergenceHypothesis(
-            id=hid(),
-            divergence_class=DivergenceClass.D1_SPEC_CODE,
-            claim_a="spec: Pet.photoUrls is a required field; omitting it → 4xx",
-            claim_b="implementation accepts Pet without photoUrls and returns 200",
-            predicted_evidence="POST /pet with body {\"name\":\"test\"} (no photoUrls) returns 200",
-            severity=Severity.HIGH,
-            endpoint=f"{method} {endpoint}",
-            repro_steps=[
-                'Send POST /pet with body {"name": "test-dog", "status": "available"}',
-                "Expect 400 or 422 because photoUrls is required per schema",
-            ],
-        ))
+        h.append(
+            DivergenceHypothesis(
+                id=hid(),
+                divergence_class=DivergenceClass.D1_SPEC_CODE,
+                claim_a="spec: Pet.photoUrls is a required field; omitting it → 4xx",
+                claim_b="implementation accepts Pet without photoUrls and returns 200",
+                predicted_evidence='POST /pet with body {"name":"test"} (no photoUrls) returns 200',
+                severity=Severity.HIGH,
+                endpoint=f"{method} {endpoint}",
+                repro_steps=[
+                    'Send POST /pet with body {"name": "test-dog", "status": "available"}',
+                    "Expect 400 or 422 because photoUrls is required per schema",
+                ],
+            )
+        )
 
     elif endpoint == "/pet/{petId}" and method == "GET":
-        h.append(DivergenceHypothesis(
-            id=hid(),
-            divergence_class=DivergenceClass.D5_SPEC_PROD,
-            claim_a="spec: petId=0 is 'Invalid ID supplied' → 400",
-            claim_b="production returns 404 Not Found instead of 400 for petId=0",
-            predicted_evidence="GET /pet/0 returns 404 instead of 400",
-            severity=Severity.LOW,
-            endpoint=f"{method} {endpoint}",
-            repro_steps=[
-                "Send GET /pet/0",
-                "Expect 400 Invalid ID per spec",
-            ],
-        ))
+        h.append(
+            DivergenceHypothesis(
+                id=hid(),
+                divergence_class=DivergenceClass.D5_SPEC_PROD,
+                claim_a="spec: petId=0 is 'Invalid ID supplied' → 400",
+                claim_b="production returns 404 Not Found instead of 400 for petId=0",
+                predicted_evidence="GET /pet/0 returns 404 instead of 400",
+                severity=Severity.LOW,
+                endpoint=f"{method} {endpoint}",
+                repro_steps=[
+                    "Send GET /pet/0",
+                    "Expect 400 Invalid ID per spec",
+                ],
+            )
+        )
 
     elif endpoint == "/store/inventory" and method == "GET":
-        h.append(DivergenceHypothesis(
-            id=hid(),
-            divergence_class=DivergenceClass.D2_CODE_PROD,
-            claim_a="spec: response is additionalProperties{integer} — a non-empty status map",
-            claim_b="production returns an empty object {} even when pets are present",
-            predicted_evidence="GET /store/inventory returns {} or very sparse map",
-            severity=Severity.MEDIUM,
-            endpoint=f"{method} {endpoint}",
-            repro_steps=[
-                "Send GET /store/inventory",
-                "Expect non-empty JSON object mapping status strings to integer counts",
-            ],
-        ))
+        h.append(
+            DivergenceHypothesis(
+                id=hid(),
+                divergence_class=DivergenceClass.D2_CODE_PROD,
+                claim_a="spec: response is additionalProperties{integer} — a non-empty status map",
+                claim_b="production returns an empty object {} even when pets are present",
+                predicted_evidence="GET /store/inventory returns {} or very sparse map",
+                severity=Severity.MEDIUM,
+                endpoint=f"{method} {endpoint}",
+                repro_steps=[
+                    "Send GET /store/inventory",
+                    "Expect non-empty JSON object mapping status strings to integer counts",
+                ],
+            )
+        )
 
     elif endpoint == "/user/login" and method == "GET":
-        h.append(DivergenceHypothesis(
-            id=hid(),
-            divergence_class=DivergenceClass.D5_SPEC_PROD,
-            claim_a="spec: 200 response MUST include X-Rate-Limit and X-Expires-After headers",
-            claim_b="production omits these response headers on login",
-            predicted_evidence="GET /user/login?username=test&password=test returns 200 without X-Rate-Limit",
-            severity=Severity.MEDIUM,
-            endpoint=f"{method} {endpoint}",
-            repro_steps=[
-                "Send GET /user/login?username=test&password=abc123",
-                "Expect X-Rate-Limit header in response per spec",
-            ],
-        ))
+        h.append(
+            DivergenceHypothesis(
+                id=hid(),
+                divergence_class=DivergenceClass.D5_SPEC_PROD,
+                claim_a="spec: 200 response MUST include X-Rate-Limit and X-Expires-After headers",
+                claim_b="production omits these response headers on login",
+                predicted_evidence="GET /user/login?username=test&password=test returns 200 without X-Rate-Limit",
+                severity=Severity.MEDIUM,
+                endpoint=f"{method} {endpoint}",
+                repro_steps=[
+                    "Send GET /user/login?username=test&password=abc123",
+                    "Expect X-Rate-Limit header in response per spec",
+                ],
+            )
+        )
 
     return h
 
 
 # ── CLI ────────────────────────────────────────────────────────────────────
+
 
 def _cli() -> None:
     parser = argparse.ArgumentParser(
@@ -486,7 +501,7 @@ def _cli() -> None:
         store = VerdictStore()
         reflector = Reflector(store=store)
 
-    print(f"CHERENKOV Proof Run")
+    print("CHERENKOV Proof Run")
     print(f"  Target : {args.base_url}")
     print(f"  Mode   : {'offline (hand-crafted)' if args.offline else 'LLM Skeptic'}")
     print(f"  Reflector : {'enabled' if reflector else 'disabled'}")
@@ -507,7 +522,7 @@ def _cli() -> None:
 
     if reflector and args.reflector_stats:
         stats = reflector.get_stats()
-        print(f"Reflector stats:")
+        print("Reflector stats:")
         print(f"  Verdicts stored : {stats['verdict_count']}")
         print(f"  Idioms active   : {stats['idiom_count']}")
         print(f"  Store path      : {stats['store_path']}")
@@ -515,6 +530,7 @@ def _cli() -> None:
         # Persist snapshot to StatsStore
         try:
             from cherenkov.core.stats_store import StatsStore
+
             StatsStore().snapshot(
                 verdict_count=stats.get("verdict_count", 0),
                 idiom_count=stats.get("idiom_count", 0),

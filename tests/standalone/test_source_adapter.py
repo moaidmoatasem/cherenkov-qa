@@ -3,6 +3,7 @@
 test_source_adapter.py — Conformance tests for Claim/Provenance contracts,
 SourceAdapter interface, and OpenAPISourceAdapter implementation.
 """
+
 import json
 import unittest
 from pathlib import Path
@@ -14,20 +15,19 @@ from cherenkov.truth.sources.openapi import OpenAPISourceAdapter
 
 
 class TestSourceAdapterSPI(unittest.TestCase):
-
     def test_claims_contract_serialization(self):
         """Verify Claim and Provenance model round-trips via Pydantic model_validate_json."""
         prov = Provenance(
             source_type=ProvenanceType.SPEC,
             source_uri="some/spec/path.json",
-            details={"version": "1.0.0"}
+            details={"version": "1.0.0"},
         )
         claim = Claim(
             id="spec_get_users_exists",
             category="endpoint",
             subject="GET /users",
             value={"richness": 0.8},
-            provenance=prov
+            provenance=prov,
         )
 
         dumped = claim.model_dump_json()
@@ -56,10 +56,7 @@ class TestSourceAdapterSPI(unittest.TestCase):
         # Create a simple valid OpenAPI spec
         spec_content = {
             "openapi": "3.1.0",
-            "info": {
-                "title": "Test API",
-                "version": "1.0.0"
-            },
+            "info": {"title": "Test API", "version": "1.0.0"},
             "paths": {
                 "/users": {
                     "post": {
@@ -68,20 +65,14 @@ class TestSourceAdapterSPI(unittest.TestCase):
                         "requestBody": {
                             "content": {
                                 "application/json": {
-                                    "schema": {
-                                        "$ref": "#/components/schemas/User"
-                                    }
+                                    "schema": {"$ref": "#/components/schemas/User"}
                                 }
                             }
                         },
                         "responses": {
-                            "201": {
-                                "description": "Created"
-                            },
-                            "422": {
-                                "description": "Validation Error"
-                            }
-                        }
+                            "201": {"description": "Created"},
+                            "422": {"description": "Validation Error"},
+                        },
                     }
                 }
             },
@@ -91,16 +82,12 @@ class TestSourceAdapterSPI(unittest.TestCase):
                         "type": "object",
                         "required": ["email", "name"],
                         "properties": {
-                            "email": {
-                                "type": "string"
-                            },
-                            "name": {
-                                "type": "string"
-                            }
-                        }
+                            "email": {"type": "string"},
+                            "name": {"type": "string"},
+                        },
                     }
                 }
-            }
+            },
         }
 
         with TemporaryDirectory() as tmpdir:
@@ -125,11 +112,19 @@ class TestSourceAdapterSPI(unittest.TestCase):
             self.assertEqual(exist_claim.subject, "POST /users")
             self.assertEqual(exist_claim.value["operation_id"], "createUser")
             self.assertEqual(exist_claim.provenance.source_type, ProvenanceType.SPEC)
-            self.assertEqual(exist_claim.provenance.source_uri, str(spec_path.resolve()))
+            self.assertEqual(
+                exist_claim.provenance.source_uri, str(spec_path.resolve())
+            )
 
             # Check mutation claim
-            mut_claim = next(c for c in claims if c.category == "mutation" and "missing_email" in c.id)
-            self.assertEqual(mut_claim.subject, "POST /users -> mutation -> missing_email")
+            mut_claim = next(
+                c
+                for c in claims
+                if c.category == "mutation" and "missing_email" in c.id
+            )
+            self.assertEqual(
+                mut_claim.subject, "POST /users -> mutation -> missing_email"
+            )
             self.assertEqual(mut_claim.value["expected_status"], 422)
 
 

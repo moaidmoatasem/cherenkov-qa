@@ -6,6 +6,7 @@ ReasoningBackend → QAPlan. For openapi_spec artifacts the plan bridges
 into Track A via `to_scenarios()`; execution itself stays with the
 existing pipeline (D7: this module never edits or runs test code).
 """
+
 from __future__ import annotations
 
 from cherenkov.core.contracts import Scenario
@@ -53,22 +54,34 @@ class QAWorkflow:
                 plan = plan.model_copy(update={"analysis": analysis})
             elif activity == Activity.REVIEW:
                 plan = plan.model_copy(
-                    update={"findings": self.reasoner.review(artifact, analysis, variant.depth)}
+                    update={
+                        "findings": self.reasoner.review(
+                            artifact, analysis, variant.depth
+                        )
+                    }
                 )
             elif activity == Activity.RISK_ASSESS:
                 if not analysis.requirements:
                     analysis = self.reasoner.analyze(artifact, variant.depth)
                     plan = plan.model_copy(update={"analysis": analysis})
                 plan = plan.model_copy(
-                    update={"risks": self.reasoner.assess_risks(artifact, analysis, variant.depth)}
+                    update={
+                        "risks": self.reasoner.assess_risks(
+                            artifact, analysis, variant.depth
+                        )
+                    }
                 )
-            elif activity == Activity.PLAN and context.stage == TestingStage.EXPLORATORY:
+            elif (
+                activity == Activity.PLAN and context.stage == TestingStage.EXPLORATORY
+            ):
                 plan = plan.model_copy(update={"charters": _charters_from_risks(plan)})
             elif activity == Activity.DESIGN_CASES:
                 cases = self.reasoner.design_cases(
                     artifact, analysis, plan.risks, variant.depth
                 )
-                plan = QAPlan(**{**plan.model_dump(), "cases": [c.model_dump() for c in cases]})
+                plan = QAPlan(
+                    **{**plan.model_dump(), "cases": [c.model_dump() for c in cases]}
+                )
             # EXECUTE and REPORT are carried out by downstream consumers
             # (Track A pipeline / explorer / report emitters) — see ADR-007 §4.
         return plan

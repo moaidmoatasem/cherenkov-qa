@@ -2,11 +2,11 @@
 CHERENKOV stages/ui_generate.py — UI E2E test generator stage.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import json
 import time
-from typing import Any
 
 from cherenkov.core.contracts import GenerateOutput, Status, StageMeta, StageError
 from cherenkov.core.config import Config
@@ -36,6 +36,7 @@ test('create user happy path via ui', async ({ page }) => {
 });
 """
 
+
 class UIGenerateStage:
     """Invokes local LLM qwen2.5-coder to write standard Playwright TypeScript UI/E2E tests."""
 
@@ -43,11 +44,7 @@ class UIGenerateStage:
         self.run_id = run_id
         self.log = get_logger("UI_GENERATE", run_id)
 
-    def _build_user_prompt(
-        self,
-        ui_spec: UISpec,
-        scenario: UIScenario
-    ) -> str:
+    def _build_user_prompt(self, ui_spec: UISpec, scenario: UIScenario) -> str:
         """Constructs E2E UI generation prompt payload."""
         return (
             "TARGET UI URL:\n"
@@ -58,17 +55,13 @@ class UIGenerateStage:
             + f"  id: {scenario.id}\n"
             + f"  name: {scenario.name}\n"
             + f"  description: {scenario.description}\n"
-            + f"  steps to automate:\n"
+            + "  steps to automate:\n"
             + json.dumps(scenario.steps, indent=2)
             + "\n=== CRITICAL INSTRUCTIONS AND EXAMPLE ===\n"
             + "Write the Playwright UI/E2E test in TypeScript adhering to standard Playwright rules now."
         )
 
-    def run(
-        self,
-        ui_spec: UISpec,
-        scenario: UIScenario
-    ) -> GenerateOutput:
+    def run(self, ui_spec: UISpec, scenario: UIScenario) -> GenerateOutput:
         t0 = time.time()
         self.log.info("stage start", scenario_id=scenario.id)
 
@@ -80,12 +73,12 @@ class UIGenerateStage:
                 system_prompt=SYSTEM_PROMPT,
                 user_prompt=user_prompt,
                 model=Config.GEN_MODEL,
-                run_id=self.run_id
+                run_id=self.run_id,
             )
-            
+
             # 2. Brutal DeepSeek <think> strip (if any)
             code = strip_think(raw_code)
-            
+
             # Auto-heal missing expect import if expect assertion is used in generated code
             if "expect(" in code:
                 lines = code.splitlines()
@@ -98,11 +91,11 @@ class UIGenerateStage:
                             lines[i] = line.replace("test", "test, expect")
                         else:
                             # Fallback if somehow braces are not matching standard shape
-                            lines[i] = "import { test, expect } from '@playwright/test';"
+                            lines[i] = (
+                                "import { test, expect } from '@playwright/test';"
+                            )
                 code = "\n".join(lines)
 
-
-            
         except Exception as e:
             error_msg = f"Ollama generation failed for E2E UI test: {e}"
             self.log.error(error_msg)
@@ -111,7 +104,7 @@ class UIGenerateStage:
                 test_code="",
                 status=Status.FAILED,
                 errors=[StageError(code="OLLAMA_GENERATION_FAILED", detail=error_msg)],
-                metadata=StageMeta(stage="UI_GENERATE", duration_ms=0)
+                metadata=StageMeta(stage="UI_GENERATE", duration_ms=0),
             )
 
         dt = int((time.time() - t0) * 1000)
@@ -122,6 +115,5 @@ class UIGenerateStage:
             test_code=code,
             imports=["@playwright/test"],
             status=Status.OK,
-            metadata=StageMeta(stage="UI_GENERATE", duration_ms=dt)
+            metadata=StageMeta(stage="UI_GENERATE", duration_ms=dt),
         )
-

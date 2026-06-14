@@ -2,6 +2,7 @@
 cherenkov/validate/gate.py
 ValidationGate – runs Track-A smoke scripts and returns a ValidationReport.
 """
+
 from __future__ import annotations
 
 import subprocess
@@ -212,9 +213,7 @@ class ValidationGate:
         total = len(gates)
         passed = sum(1 for g in gates if g.passed)
         failed_names = [g.gate for g in gates if not g.passed]
-        summary = (
-            f"result={result.upper()}  gates={passed}/{total} passed"
-        )
+        summary = f"result={result.upper()}  gates={passed}/{total} passed"
         if failed_names:
             summary += f"  failed=[{', '.join(failed_names)}]"
         return summary

@@ -16,6 +16,7 @@ Each test maps to a concrete research recommendation:
 Running these tests in CI gives a baseline pass/fail signal. Run them locally
 against a live Ollama to get real coverage numbers in GenMetricsStore.
 """
+
 from __future__ import annotations
 
 import re
@@ -66,7 +67,9 @@ class TestSpecEnrichment:
         from cherenkov.stages.enrich import SpecEnrichStage
 
         result = SpecEnrichStage().enrich("/users", "post", post_users_op, crud_schemas)
-        assert not result.is_empty(), "POST /users has rich descriptions — enrichment should produce output"
+        assert (
+            not result.is_empty()
+        ), "POST /users has rich descriptions — enrichment should produce output"
 
     def test_extracts_rfc_email_rule(self, post_users_op, crud_schemas):
         from cherenkov.stages.enrich import SpecEnrichStage
@@ -115,7 +118,9 @@ class TestSpecEnrichment:
     def test_extracts_path_param_example(self, get_user_op, crud_schemas):
         from cherenkov.stages.enrich import SpecEnrichStage
 
-        result = SpecEnrichStage().enrich("/users/{id}", "get", get_user_op, crud_schemas)
+        result = SpecEnrichStage().enrich(
+            "/users/{id}", "get", get_user_op, crud_schemas
+        )
         assert "id" in result.param_examples
         assert "usr_" in str(result.param_examples["id"])
 
@@ -140,8 +145,15 @@ class TestSpecEnrichment:
 class TestTemplateGenerator:
     """Eval: deterministic template generator produces spec-correct Playwright tests."""
 
-    def _generate(self, path: str, method: str, operation: dict, schemas: dict,
-                  case_type: str, expected_status: int) -> str:
+    def _generate(
+        self,
+        path: str,
+        method: str,
+        operation: dict,
+        schemas: dict,
+        case_type: str,
+        expected_status: int,
+    ) -> str:
         from cherenkov.ai.template_generator import generate_test
         from cherenkov.core.contracts import Scenario
 
@@ -162,34 +174,50 @@ class TestTemplateGenerator:
         )
 
     def test_post_users_happy_path_has_imports(self, post_users_op, crud_schemas):
-        code = self._generate("/users", "post", post_users_op, crud_schemas, "happy_path", 201)
+        code = self._generate(
+            "/users", "post", post_users_op, crud_schemas, "happy_path", 201
+        )
         assert "from '@playwright/test'" in code or 'from "@playwright/test"' in code
         assert "from '../client'" in code or 'from "../client"' in code
 
     def test_post_users_happy_path_asserts_status(self, post_users_op, crud_schemas):
-        code = self._generate("/users", "post", post_users_op, crud_schemas, "happy_path", 201)
+        code = self._generate(
+            "/users", "post", post_users_op, crud_schemas, "happy_path", 201
+        )
         assert "201" in code, f"Expected 201 assertion in:\n{code}"
         assert "toBe" in code
 
-    def test_post_users_happy_path_uses_openapi_fetch_client(self, post_users_op, crud_schemas):
-        code = self._generate("/users", "post", post_users_op, crud_schemas, "happy_path", 201)
+    def test_post_users_happy_path_uses_openapi_fetch_client(
+        self, post_users_op, crud_schemas
+    ):
+        code = self._generate(
+            "/users", "post", post_users_op, crud_schemas, "happy_path", 201
+        )
         assert re.search(r"client\.(POST|GET|PUT|DELETE|PATCH)", code)
 
     def test_post_users_validation_asserts_4xx(self, post_users_op, crud_schemas):
-        code = self._generate("/users", "post", post_users_op, crud_schemas, "validation", 400)
+        code = self._generate(
+            "/users", "post", post_users_op, crud_schemas, "validation", 400
+        )
         assert re.search(r"toBe\((400|422)\)", code), f"Expected 4xx in:\n{code}"
 
     def test_get_user_happy_path_asserts_200(self, get_user_op, crud_schemas):
-        code = self._generate("/users/{id}", "get", get_user_op, crud_schemas, "happy_path", 200)
+        code = self._generate(
+            "/users/{id}", "get", get_user_op, crud_schemas, "happy_path", 200
+        )
         assert "200" in code
 
     def test_no_raw_fetch_in_output(self, post_users_op, crud_schemas):
-        code = self._generate("/users", "post", post_users_op, crud_schemas, "happy_path", 201)
+        code = self._generate(
+            "/users", "post", post_users_op, crud_schemas, "happy_path", 201
+        )
         # Must not use raw fetch() or axios
         assert "fetch(" not in code or "openapi-fetch" in code.lower()
 
     def test_no_markdown_fences_in_output(self, post_users_op, crud_schemas):
-        code = self._generate("/users", "post", post_users_op, crud_schemas, "happy_path", 201)
+        code = self._generate(
+            "/users", "post", post_users_op, crud_schemas, "happy_path", 201
+        )
         assert "```" not in code
 
 
@@ -213,7 +241,14 @@ class TestIngestOnGoldenSpec:
         from cherenkov.stages.ingest import IngestStage
 
         result = IngestStage().run(str(GOLDEN_SPEC_PATH))
-        post_ep = next((ep for ep in result.endpoints if ep.path == "/users" and ep.method == "POST"), None)
+        post_ep = next(
+            (
+                ep
+                for ep in result.endpoints
+                if ep.path == "/users" and ep.method == "POST"
+            ),
+            None,
+        )
         assert post_ep is not None
         mut_ids = {m.id for m in post_ep.mutations}
         # Required fields: email, password
@@ -234,7 +269,14 @@ class TestIngestOnGoldenSpec:
         from cherenkov.stages.ingest import IngestStage
 
         result = IngestStage().run(str(GOLDEN_SPEC_PATH))
-        post_ep = next((ep for ep in result.endpoints if ep.path == "/users" and ep.method == "POST"), None)
+        post_ep = next(
+            (
+                ep
+                for ep in result.endpoints
+                if ep.path == "/users" and ep.method == "POST"
+            ),
+            None,
+        )
         happy = next((m for m in post_ep.mutations if m.id == "happy_path"), None)
         assert happy is not None and happy.expected_status == 201
 

@@ -13,11 +13,11 @@ Diagnose and fix common problems.
 ```mermaid
 flowchart TD
     START[Problem?]
-    
+
     START --> Q1{cherenkov doctor\nreports issues?}
     Q1 -->|Yes| FIX_DOCTOR[Fix what doctor reports\nsee sections below]
     Q1 -->|No| Q2{Error during\nvalidate?}
-    
+
     Q2 -->|Spec error| SPEC[Spec problems]
     Q2 -->|LLM error| LLM[LLM problems]
     Q2 -->|Review gate fail| GATE[Gate failures]

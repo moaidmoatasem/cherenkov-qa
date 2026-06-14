@@ -58,10 +58,10 @@ try {
 // 3. Custom fetch implementation routing openapi-fetch calls through Playwright's APIRequestContext
 const customFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
   const store = playwrightContextStorage.getStore();
-  
+
   if (store && store.request) {
     const requestContext = store.request;
-    
+
     // Resolve URL, method, headers and body from the input Request object or init options
     let url = "";
     let method = "GET";

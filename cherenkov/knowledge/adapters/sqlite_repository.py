@@ -5,7 +5,11 @@ import sqlite3
 import threading
 from typing import Any
 
-from cherenkov.knowledge.domain.models import KnowledgeQuery, KnowledgeQueryResult, KnowledgeItem
+from cherenkov.knowledge.domain.models import (
+    KnowledgeQuery,
+    KnowledgeQueryResult,
+    KnowledgeItem,
+)
 
 _BUSY_TIMEOUT_S = 30.0
 
@@ -101,7 +105,12 @@ class SQLiteKnowledgeRepository:
         conn = self._connect()
         conn.execute(
             "INSERT OR REPLACE INTO knowledge_items (item_id, source, data, metadata) VALUES (?, ?, ?, ?)",
-            (item.item_id, item.source, json.dumps(item.data), json.dumps(item.metadata)),
+            (
+                item.item_id,
+                item.source,
+                json.dumps(item.data),
+                json.dumps(item.metadata),
+            ),
         )
         conn.commit()
         return item.item_id

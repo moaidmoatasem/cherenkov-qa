@@ -17,7 +17,7 @@ export default function GlobalShortcuts({ onNewRun, onSearch }: GlobalShortcutsP
         onNewRun();
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onNewRun, onSearch]);

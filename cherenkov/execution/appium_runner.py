@@ -1,6 +1,5 @@
 from __future__ import annotations
 import subprocess
-import time
 from pathlib import Path
 import requests
 
@@ -22,7 +21,9 @@ class AppiumRunner(MobileRunnerBase):
 
         result = subprocess.run(
             ["pytest", str(path), f"--appium-server={self.appium_server}"],
-            capture_output=True, text=True, timeout=self.timeout,
+            capture_output=True,
+            text=True,
+            timeout=self.timeout,
         )
 
         return {

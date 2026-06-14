@@ -1,5 +1,8 @@
 from cherenkov.core.error_handling import (
-    GracefulDegradation, DegradationLevel, HealthStatus, get_degradation
+    GracefulDegradation,
+    DegradationLevel,
+    HealthStatus,
+    get_degradation,
 )
 
 

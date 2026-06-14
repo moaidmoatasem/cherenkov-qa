@@ -4,14 +4,14 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Sparkles, 
-  HelpCircle, 
-  AlertTriangle, 
-  CheckCircle, 
-  Terminal, 
-  X, 
-  Check, 
+import {
+  Sparkles,
+  HelpCircle,
+  AlertTriangle,
+  CheckCircle,
+  Terminal,
+  X,
+  Check,
   ArrowRight,
   Eye,
   Settings
@@ -65,7 +65,7 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
 
   return (
     <div className="p-8 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="healing-screen" data-testid="healing-screen">
-      
+
       {/* Page Header */}
       <div className="flex items-center gap-4 border-b border-white/5 pb-4 shrink-0">
         <CherenkovLogo variant="icon" size={42} />
@@ -83,7 +83,7 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
       <div className="border border-glow-blue/20 bg-white/5 backdrop-blur-xl rounded-2xl p-5 relative overflow-hidden flex items-center gap-4 shadow-lg select-none shrink-0" id="healing-banner">
         {/* Glowing floating blur background */}
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#2D9CDB] rounded-full blur-[64px] opacity-25" />
-        
+
         <div className="p-3 bg-glow-blue/15 text-glow-bright rounded-full shrink-0">
           <Sparkles className="w-6 h-6 animate-pulse" />
         </div>
@@ -113,7 +113,7 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
           </div>
         ) : (
           failures.map((item) => {
-            
+
             return (
               <div
                 key={item.id}
@@ -135,7 +135,7 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
 
                 {/* Diagnosis body */}
                 <div className="p-5 space-y-4">
-                  
+
                   {/* Diagnosis first text line */}
                   <div className="space-y-1">
                     <span className="block text-[9px] font-mono uppercase tracking-wider text-text-muted font-bold">Why it failed:</span>
@@ -158,7 +158,7 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
                   {/* SIDE-BY-SIDE DIFF VIEWPORT */}
                   <div className="space-y-1.5">
                     <span className="block text-[9px] font-mono uppercase tracking-wider text-text-muted font-bold">Surgical diff proposal</span>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 border border-white/5 rounded-xl overflow-hidden font-mono text-[11px] bg-black/40">
                       {/* Left: Outdated Code (Removal) */}
                       <div className="border-r border-white/5 flex flex-col justify-between">
@@ -231,7 +231,7 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
             >
               <X className="w-4 h-4 text-[#7D8DA1]" />
             </button>
-            
+
             <h3 className="font-display font-bold text-lg text-text-primary tracking-tight mb-2">
               APIs contract tracer Playwright logs: {activeTraceLog}
             </h3>

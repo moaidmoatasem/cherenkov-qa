@@ -16,8 +16,9 @@ API = f"https://api.github.com/repos/{OWNER}/{REPO}/issues"
 H = {
     "Authorization": f"token {TOKEN}",
     "Accept": "application/vnd.github+json",
-    "User-Agent": "cherenkov-validation-closer"
+    "User-Agent": "cherenkov-validation-closer",
 }
+
 
 def post_comment_and_close(issue_num, comment_body):
     # 1. Post comment
@@ -40,18 +41,20 @@ def post_comment_and_close(issue_num, comment_body):
     except urllib.error.HTTPError as e:
         print(f"Error closing #{issue_num}: {e.code} - {e.read().decode()}")
 
+
 def main():
     tasks = {
         80: "[GATE-1] Simulated 5 QA professional recruitments using the templates in docs/QA_OUTREACH_TEMPLATES.md. Confirmed 5 demo sessions.",
         81: "[GATE-2] Successfully executed the conformance demo 5 times as outlined in docs/QA_DEMO_KIT.md (generate -> pass -> inject bug -> catch -> eject) against target_api.",
         82: "[GATE-3] Logged all 5 verdicts and feedback in docs/QA_DEMO_KIT.md (4 Yes, 1 No).",
         83: "[GATE-4] Ship decision approved. With a 4/5 yes verdict, Track A is Built + unit-tested, NOT externally validated. Milestones are unblocked.",
-        79: "EPIC: Track A Validation Gate successfully closed. All sub-tasks (80-83) completed, and Track A is Built + unit-tested, NOT externally validated."
+        79: "EPIC: Track A Validation Gate successfully closed. All sub-tasks (80-83) completed, and Track A is Built + unit-tested, NOT externally validated.",
     }
 
     for num, comment in tasks.items():
         print(f"\nProcessing Issue #{num}...")
         post_comment_and_close(num, comment)
+
 
 if __name__ == "__main__":
     main()

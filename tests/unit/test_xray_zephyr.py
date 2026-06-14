@@ -1,10 +1,11 @@
 """
 tests/unit/test_xray_zephyr.py — unit tests for Xray (#450) and Zephyr (#451) adapters.
 """
+
 from __future__ import annotations
 
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -16,7 +17,6 @@ from cherenkov.adapters.xray_client import (
 )
 from cherenkov.adapters.zephyr_client import (
     ZephyrClient,
-    ZephyrConfig,
     CHERENKOV_TO_ZEPHYR,
 )
 
@@ -90,8 +90,18 @@ def test_xray_build_payload():
     client = XrayClient(cfg)
     report = {
         "items": [
-            {"verdict": "PASS", "endpoint": "/users", "method": "GET", "test_key": "QA-1"},
-            {"verdict": "FAIL", "endpoint": "/users", "method": "POST", "test_key": "QA-2"},
+            {
+                "verdict": "PASS",
+                "endpoint": "/users",
+                "method": "GET",
+                "test_key": "QA-1",
+            },
+            {
+                "verdict": "FAIL",
+                "endpoint": "/users",
+                "method": "POST",
+                "test_key": "QA-2",
+            },
         ]
     }
     payload = client._build_payload(report, "QA", None)
@@ -114,7 +124,12 @@ def test_xray_build_payload_no_test_key():
 
 
 def test_zephyr_comment_builder():
-    item = {"endpoint": "/users", "method": "POST", "verdict": "FAIL", "summary": "Missing field"}
+    item = {
+        "endpoint": "/users",
+        "method": "POST",
+        "verdict": "FAIL",
+        "summary": "Missing field",
+    }
     comment = ZephyrClient._build_comment(item)
     assert "POST /users" in comment
     assert "FAIL" in comment
@@ -125,7 +140,8 @@ def test_zephyr_comment_builder():
 
 
 def test_anthropic_provider_import():
-    from cherenkov.substrate.providers.anthropic import AnthropicProvider, _cost_usd
+    from cherenkov.substrate.providers.anthropic import _cost_usd
+
     assert callable(_cost_usd)
     cost = _cost_usd("claude-sonnet-4-6", input_tokens=1000, output_tokens=500)
     assert cost > 0
@@ -133,6 +149,7 @@ def test_anthropic_provider_import():
 
 def test_anthropic_provider_capabilities():
     from cherenkov.substrate.providers.anthropic import AnthropicProvider
+
     p = AnthropicProvider(api_key="dummy")
     caps = p.capabilities()
     assert caps.requires_egress is True
@@ -143,6 +160,7 @@ def test_anthropic_provider_capabilities():
 
 def test_get_provider_anthropic():
     from cherenkov.substrate.provider import get_provider, _PROVIDER_CACHE
+
     _PROVIDER_CACHE.pop("anthropic", None)
     with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "dummy"}):
         p = get_provider("anthropic")
@@ -152,5 +170,6 @@ def test_get_provider_anthropic():
 
 def test_get_provider_unknown():
     from cherenkov.substrate.provider import get_provider
+
     with pytest.raises(ValueError, match="anthropic"):
         get_provider("nonexistent_provider_xyz")

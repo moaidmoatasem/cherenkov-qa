@@ -194,10 +194,10 @@ sys.path.insert(0, REPO_ROOT)
 def test_<invariant_name>():
     # Arrange
     ...
-    
+
     # Act
     result = run_the_thing()
-    
+
     # Assert the invariant explicitly
     assert invariant_holds(result), (
         "INVARIANT VIOLATED: <explain what went wrong>\n"

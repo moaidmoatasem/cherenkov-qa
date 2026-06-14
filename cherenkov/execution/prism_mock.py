@@ -2,6 +2,7 @@
 CHERENKOV execution/prism_mock.py — dynamic mock server using Stoplight/Prism inside Docker.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import os
@@ -9,6 +10,7 @@ import subprocess
 import time
 import requests
 from cherenkov.core.errors import get_logger
+
 
 class PrismMockServer:
     """Manages the lifecycle of an ephemeral dynamic Stoplight Prism mock server in Docker."""
@@ -22,21 +24,33 @@ class PrismMockServer:
 
     def start(self) -> bool:
         """Pulls the Prism image (if missing), starts the container, and blocks until healthy."""
-        self.log.info("starting prism container", container=self.container_name, port=self.port)
-        
+        self.log.info(
+            "starting prism container", container=self.container_name, port=self.port
+        )
+
         # 1. Force teardown of any pre-existing container with same name
         self.stop()
-        
+
         # 2. Run the Prism container dynamically mounting the spec
         cmd = [
-            "docker", "run", "-d", "--rm",
-            "--name", self.container_name,
-            "-p", f"{self.port}:4010",
-            "-v", f"{self.spec_path}:/spec.json:ro",
+            "docker",
+            "run",
+            "-d",
+            "--rm",
+            "--name",
+            self.container_name,
+            "-p",
+            f"{self.port}:4010",
+            "-v",
+            f"{self.spec_path}:/spec.json:ro",
             "stoplight/prism:5",
-            "mock", "-h", "0.0.0.0", "--multiprocess=false", "/spec.json"
+            "mock",
+            "-h",
+            "0.0.0.0",
+            "--multiprocess=false",
+            "/spec.json",
         ]
-        
+
         try:
             subprocess.run(cmd, check=True, capture_output=True, text=True)
         except subprocess.CalledProcessError as e:
@@ -54,7 +68,7 @@ class PrismMockServer:
                 return True
             except requests.RequestException:
                 time.sleep(0.5)
-                
+
         self.log.error("prism dynamic mock server failed to respond in time")
         self.stop()
         return False
@@ -65,6 +79,8 @@ class PrismMockServer:
         stop_cmd = ["docker", "stop", self.container_name]
         try:
             subprocess.run(stop_cmd, capture_output=True, text=True)
-            self.log.info("prism container stopped and removed", container=self.container_name)
+            self.log.info(
+                "prism container stopped and removed", container=self.container_name
+            )
         except Exception:
             pass

@@ -104,7 +104,7 @@ test.describe('POST /pets - Creates a Pet', () => {
     };
 
     const { data, response } = await client.POST('/pets', { body: payload });
-    
+
     // AST & Schema Compliance Assertions
     expect(response.status).toBe(201);
     expect(data).toBeDefined();
@@ -134,7 +134,7 @@ test.describe('GET /store/order/{orderId} - Fetch Order Details', () => {
     const { data, response } = await client.GET('/store/order/{orderId}', {
       params: { path: { orderId: targetOrderId } }
     });
-    
+
     expect(response.status).toBe(200);
     expect(data).toHaveProperty('id');
     expect(data).toHaveProperty('petId');

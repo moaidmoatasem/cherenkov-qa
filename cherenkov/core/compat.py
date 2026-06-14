@@ -1,4 +1,5 @@
 """Cross-platform compatibility helpers."""
+
 from __future__ import annotations
 
 import shutil

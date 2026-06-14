@@ -3,6 +3,7 @@ import pytest
 
 def test_config_validate_passes_with_defaults():
     from cherenkov.core.config import Config
+
     # Should not raise with valid defaults
     try:
         Config.validate()
@@ -12,8 +13,9 @@ def test_config_validate_passes_with_defaults():
 
 def test_config_validate_rejects_bad_egress():
     from cherenkov.core.config import Config
-    original = getattr(Config, 'EGRESS', 'internal')
-    Config.EGRESS = 'invalid_value'
+
+    original = getattr(Config, "EGRESS", "internal")
+    Config.EGRESS = "invalid_value"
     try:
         with pytest.raises(ValueError, match="EGRESS"):
             Config.validate()
@@ -23,6 +25,7 @@ def test_config_validate_rejects_bad_egress():
 
 def test_config_validate_rejects_bad_timeout():
     from cherenkov.core.config import Config
+
     original = Config.OLLAMA_TIMEOUT
     Config.OLLAMA_TIMEOUT = 0  # below minimum of 1
     try:
@@ -34,6 +37,7 @@ def test_config_validate_rejects_bad_timeout():
 
 def test_config_validate_rejects_bad_port():
     from cherenkov.core.config import Config
+
     original = Config.METRICS_PORT
     Config.METRICS_PORT = 99999  # above maximum of 65535
     try:
@@ -45,6 +49,7 @@ def test_config_validate_rejects_bad_port():
 
 def test_config_tiers_dict():
     from cherenkov.core.config import Config
+
     assert "small" in Config.TIERS
     assert "deep" in Config.TIERS
     assert "provider" in Config.TIERS["small"]

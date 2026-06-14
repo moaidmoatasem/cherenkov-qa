@@ -6,12 +6,11 @@ Covers:
   C3 (#118): LLM-aware perf metrics (TTFT/inter-token/tokens-sec/P95-99/cost)
   C4 (#119): ML anomaly tier (opt-in; statistical stays default)
 """
+
 import json
 import os
-import sqlite3
 import tempfile
 import unittest
-from unittest.mock import patch, MagicMock
 
 from cherenkov.stages.perf.perf_stage import PerfStage, PerfSlice, _BaselineDB
 from cherenkov.stages.perf.anomaly import LatencyAnomalyDetector
@@ -55,10 +54,24 @@ class TestBaselineDB(unittest.TestCase):
     # ── LLM-specific metrics (#118) ──────────────────────────────────────
 
     def test_llm_record_and_stats(self):
-        self.db.record("/api/chat", "POST", 100.0,
-                        ttft_ms=45.0, itl_ms=15.0, cost_usd=0.002, is_llm=True)
-        self.db.record("/api/chat", "POST", 110.0,
-                        ttft_ms=50.0, itl_ms=18.0, cost_usd=0.003, is_llm=True)
+        self.db.record(
+            "/api/chat",
+            "POST",
+            100.0,
+            ttft_ms=45.0,
+            itl_ms=15.0,
+            cost_usd=0.002,
+            is_llm=True,
+        )
+        self.db.record(
+            "/api/chat",
+            "POST",
+            110.0,
+            ttft_ms=50.0,
+            itl_ms=18.0,
+            cost_usd=0.003,
+            is_llm=True,
+        )
         llm_stats = self.db.llm_stats("/api/chat", "POST")
         self.assertEqual(llm_stats["llm_request_count"], 2)
         self.assertAlmostEqual(llm_stats["ttft_mean_ms"], 47.5)
@@ -71,16 +84,29 @@ class TestBaselineDB(unittest.TestCase):
         self.assertEqual(llm_stats["llm_request_count"], 0)
 
     def test_llm_single_record_no_stddev(self):
-        self.db.record("/api/chat", "POST", 100.0,
-                        ttft_ms=45.0, itl_ms=15.0, cost_usd=0.002, is_llm=True)
+        self.db.record(
+            "/api/chat",
+            "POST",
+            100.0,
+            ttft_ms=45.0,
+            itl_ms=15.0,
+            cost_usd=0.002,
+            is_llm=True,
+        )
         llm_stats = self.db.llm_stats("/api/chat", "POST")
         self.assertEqual(llm_stats["ttft_stddev_ms"], 0.0)
 
     def test_llm_stats_multiple_has_stddev(self):
         for i in range(5):
-            self.db.record("/api/chat", "POST", 100.0 + i,
-                            ttft_ms=40.0 + i, itl_ms=10.0 + i,
-                            cost_usd=0.001 + i * 0.0001, is_llm=True)
+            self.db.record(
+                "/api/chat",
+                "POST",
+                100.0 + i,
+                ttft_ms=40.0 + i,
+                itl_ms=10.0 + i,
+                cost_usd=0.001 + i * 0.0001,
+                is_llm=True,
+            )
         llm_stats = self.db.llm_stats("/api/chat", "POST")
         self.assertGreater(llm_stats["ttft_stddev_ms"], 0)
 
@@ -152,11 +178,18 @@ class TestTrafficLoadProfile(unittest.TestCase):
         return path
 
     def test_single_entry_generates_profile(self):
-        path = self._make_har([{
-            "request": {"method": "GET", "url": "http://localhost:3000/api/test"},
-            "response": {"status": 200, "statusText": "OK", "headers": []},
-            "timings": {"send": 5, "wait": 50, "receive": 10},
-        }])
+        path = self._make_har(
+            [
+                {
+                    "request": {
+                        "method": "GET",
+                        "url": "http://localhost:3000/api/test",
+                    },
+                    "response": {"status": 200, "statusText": "OK", "headers": []},
+                    "timings": {"send": 5, "wait": 50, "receive": 10},
+                }
+            ]
+        )
         profile = self.stage.generate_load_profile_from_traffic(path)
         self.assertIsNotNone(profile)
         self.assertEqual(profile.method, "GET")
@@ -165,18 +198,27 @@ class TestTrafficLoadProfile(unittest.TestCase):
     def test_multiple_entries_picks_most_common(self):
         entries = []
         for i in range(3):
-            entries.append({
-                "request": {"method": "POST", "url": "http://localhost:3000/api/chat"},
-                "response": {"status": 200, "statusText": "OK", "headers": []},
-                "timings": {"send": 5, "wait": 100, "receive": 10},
-            })
+            entries.append(
+                {
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/api/chat",
+                    },
+                    "response": {"status": 200, "statusText": "OK", "headers": []},
+                    "timings": {"send": 5, "wait": 100, "receive": 10},
+                }
+            )
         for i in range(10):
-            entries.append({
-                "request": {"method": "GET",
-                            "url": "http://localhost:3000/api/users"},
-                "response": {"status": 200, "statusText": "OK", "headers": []},
-                "timings": {"send": 2, "wait": 30, "receive": 5},
-            })
+            entries.append(
+                {
+                    "request": {
+                        "method": "GET",
+                        "url": "http://localhost:3000/api/users",
+                    },
+                    "response": {"status": 200, "statusText": "OK", "headers": []},
+                    "timings": {"send": 2, "wait": 30, "receive": 5},
+                }
+            )
         path = self._make_har(entries)
         profile = self.stage.generate_load_profile_from_traffic(path)
         self.assertIsNotNone(profile)
@@ -192,11 +234,18 @@ class TestTrafficLoadProfile(unittest.TestCase):
         self.assertIsNone(profile)
 
     def test_profile_has_reasonable_defaults(self):
-        path = self._make_har([{
-            "request": {"method": "POST", "url": "http://localhost:3000/api/data"},
-            "response": {"status": 200, "statusText": "OK", "headers": []},
-            "timings": {"send": 5, "wait": 100, "receive": 10},
-        }])
+        path = self._make_har(
+            [
+                {
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/api/data",
+                    },
+                    "response": {"status": 200, "statusText": "OK", "headers": []},
+                    "timings": {"send": 5, "wait": 100, "receive": 10},
+                }
+            ]
+        )
         profile = self.stage.generate_load_profile_from_traffic(path)
         self.assertIsNotNone(profile)
         self.assertGreater(profile.vus, 0)
@@ -248,20 +297,27 @@ class TestMLAnomalyTier(unittest.TestCase):
         self.assertIn("threshold_limit", analysis)
 
     def test_backward_compatible_signature(self):
-        sl = PerfSlice(name="compat", target_url="http://localhost:3000",
-                       endpoint="/api/compat", method="GET", vus=1, duration_sec=1)
+        sl = PerfSlice(
+            name="compat",
+            target_url="http://localhost:3000",
+            endpoint="/api/compat",
+            method="GET",
+            vus=1,
+            duration_sec=1,
+        )
         result = self.stage.run(sl)
         self.assertEqual(result.status.value, "ok")
 
-    @unittest.skipIf(not __import__("importlib").util.find_spec("sklearn"),
-                     "sklearn not available")
+    @unittest.skipIf(
+        not __import__("importlib").util.find_spec("sklearn"), "sklearn not available"
+    )
     def test_ml_analysis_with_isolation_forest(self):
-        from sklearn.ensemble import IsolationForest
         for i in range(15):
             self.stage.db.record("/api/ml", "GET", 40.0 + (i % 5))
         analysis = self.stage._analyze("/api/ml", "GET", 42.0, use_ml=True)
-        self.assertTrue(analysis["method"].startswith("ml_")
-                        or analysis["method"] == "statistical")
+        self.assertTrue(
+            analysis["method"].startswith("ml_") or analysis["method"] == "statistical"
+        )
 
 
 class TestLatencyAnomalyDetector(unittest.TestCase):
@@ -269,8 +325,7 @@ class TestLatencyAnomalyDetector(unittest.TestCase):
 
     def setUp(self):
         self.detector = LatencyAnomalyDetector(k=3.5, min_samples=8)
-        self.history = [40.0, 42.0, 41.0, 43.0, 39.0,
-                        41.0, 42.0, 40.0, 43.0, 41.0]
+        self.history = [40.0, 42.0, 41.0, 43.0, 39.0, 41.0, 42.0, 40.0, 43.0, 41.0]
 
     def test_normal_value_no_anomaly(self):
         verdict = self.detector.evaluate(self.history, 42.0)
@@ -315,6 +370,7 @@ class TestTrafficSourceAdapter(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         from cherenkov.truth.sources.traffic import TrafficSourceAdapter
+
         self.adapter = TrafficSourceAdapter()
 
     def tearDown(self):
@@ -334,21 +390,29 @@ class TestTrafficSourceAdapter(unittest.TestCase):
         self.assertEqual(claims, [])
 
     def test_extracts_status_claims(self):
-        path = self._make_har([{
-            "request": {"method": "GET", "url": "http://example.com/api"},
-            "response": {"status": 200, "statusText": "OK", "headers": []},
-            "timings": {},
-        }])
+        path = self._make_har(
+            [
+                {
+                    "request": {"method": "GET", "url": "http://example.com/api"},
+                    "response": {"status": 200, "statusText": "OK", "headers": []},
+                    "timings": {},
+                }
+            ]
+        )
         claims = self.adapter.discover_claims(path)
         statuses = [c for c in claims if c.category == "observed_status"]
         self.assertGreaterEqual(len(statuses), 1)
 
     def test_extracts_latency_claims(self):
-        path = self._make_har([{
-            "request": {"method": "GET", "url": "http://example.com/api"},
-            "response": {"status": 200, "statusText": "OK", "headers": []},
-            "timings": {"send": 5, "wait": 100, "receive": 10},
-        }])
+        path = self._make_har(
+            [
+                {
+                    "request": {"method": "GET", "url": "http://example.com/api"},
+                    "response": {"status": 200, "statusText": "OK", "headers": []},
+                    "timings": {"send": 5, "wait": 100, "receive": 10},
+                }
+            ]
+        )
         claims = self.adapter.discover_claims(path)
         latencies = [c for c in claims if c.category == "observed_latency"]
         self.assertGreaterEqual(len(latencies), 1)
@@ -356,11 +420,16 @@ class TestTrafficSourceAdapter(unittest.TestCase):
 
     def test_provenance_is_traffic(self):
         from cherenkov.core.contracts import ProvenanceType
-        path = self._make_har([{
-            "request": {"method": "GET", "url": "http://example.com/api"},
-            "response": {"status": 200, "statusText": "OK", "headers": []},
-            "timings": {},
-        }])
+
+        path = self._make_har(
+            [
+                {
+                    "request": {"method": "GET", "url": "http://example.com/api"},
+                    "response": {"status": 200, "statusText": "OK", "headers": []},
+                    "timings": {},
+                }
+            ]
+        )
         claims = self.adapter.discover_claims(path)
         for c in claims:
             self.assertEqual(c.provenance.source_type, ProvenanceType.TRAFFIC)

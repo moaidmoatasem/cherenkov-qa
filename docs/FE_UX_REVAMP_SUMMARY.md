@@ -69,13 +69,13 @@ The current dashboard delivers features but lacks a **cohesive QA-first user exp
 
 ## Acceptance Criteria
 
-✅ Manual QA can author/eject first test in <10 min  
-✅ QA Lead can triage 5 divergences with risk sorting  
-✅ SDET sees patterns learned counter increment  
-✅ All screens load in mock mode (lib/api.ts pattern)  
-✅ WCAG AA contrast verified  
-✅ Keyboard shortcuts working (j/k, a/r/c)  
-✅ Reduced-motion preference honored  
+✅ Manual QA can author/eject first test in <10 min
+✅ QA Lead can triage 5 divergences with risk sorting
+✅ SDET sees patterns learned counter increment
+✅ All screens load in mock mode (lib/api.ts pattern)
+✅ WCAG AA contrast verified
+✅ Keyboard shortcuts working (j/k, a/r/c)
+✅ Reduced-motion preference honored
 ✅ Zero CHERENKOV imports in ejected tests (smoke test)
 
 ---

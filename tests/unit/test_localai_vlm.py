@@ -14,8 +14,14 @@ def test_localai_provider_init():
 
 
 def test_localai_provider_init_from_config():
-    with patch("cherenkov.substrate.providers.localai.Config.VLM_LOCALAI_URL", "http://10.0.0.1:8080"):
-        with patch("cherenkov.substrate.providers.localai.Config.VLM_LOCALAI_MODEL", "qwen2.5-vl:7b"):
+    with patch(
+        "cherenkov.substrate.providers.localai.Config.VLM_LOCALAI_URL",
+        "http://10.0.0.1:8080",
+    ):
+        with patch(
+            "cherenkov.substrate.providers.localai.Config.VLM_LOCALAI_MODEL",
+            "qwen2.5-vl:7b",
+        ):
             p = LocalAIVLMProvider()
             assert p.base_url == "http://10.0.0.1:8080"
             assert p.model == "qwen2.5-vl:7b"
@@ -28,6 +34,7 @@ def test_localai_health_unavailable():
 
 def test_localai_health_timeout():
     import requests
+
     provider = LocalAIVLMProvider(base_url="http://localhost:8080", model="llava")
     with patch("cherenkov.substrate.providers.localai.requests.get") as mock_get:
         mock_get.side_effect = requests.ConnectionError("timeout")
@@ -70,15 +77,19 @@ def test_localai_compare_images(mock_encode, mock_post):
     mock_encode.return_value = "base64data"
     mock_resp = MagicMock()
     mock_resp.json.return_value = {
-        "choices": [{
-            "message": {
-                "content": json.dumps({
-                    "description": "Layout shifted right",
-                    "kind": "HARMLESS_SHIFT",
-                    "confidence": 0.85,
-                })
+        "choices": [
+            {
+                "message": {
+                    "content": json.dumps(
+                        {
+                            "description": "Layout shifted right",
+                            "kind": "HARMLESS_SHIFT",
+                            "confidence": 0.85,
+                        }
+                    )
+                }
             }
-        }]
+        ]
     }
     mock_post.return_value = mock_resp
 
@@ -127,6 +138,7 @@ def test_localai_describe_image_file_not_found():
 
 def test_localai_encode_image():
     from cherenkov.substrate.providers.localai import _encode_image
+
     tf = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
     tf.write(b"hello")
     tf.close()

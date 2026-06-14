@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  PageHeader, 
-  Panel, 
-  Card, 
-  SeverityPill, 
-  StatusDot, 
-  ProvenanceChip, 
-  EmptyState, 
-  Skeleton, 
-  Tabs, 
-  Drawer, 
-  KpiRing, 
-  useToast 
+import {
+  PageHeader,
+  Panel,
+  Card,
+  SeverityPill,
+  StatusDot,
+  ProvenanceChip,
+  EmptyState,
+  Skeleton,
+  Tabs,
+  Drawer,
+  KpiRing,
+  useToast
 } from './ui';
 import { Layers, Play, RefreshCw, Eye } from 'lucide-react';
 
@@ -33,7 +33,7 @@ export default function UiKitScreen() {
         title="UI Kit Consistency Gallery"
         description="Verify all shared design tokens, primitives, and interaction states for compliance with the §6 Consistency Contract."
         primaryAction={
-          <button 
+          <button
             onClick={() => toast('Triggered primary page action', 'info')}
             className="px-4 py-2 text-sm font-semibold rounded-lg bg-glow-blue text-bg-base hover:bg-glow-bright hover:shadow-[0_0_12px_rgba(34,211,238,0.5)] transition-all cursor-pointer"
           >
@@ -55,7 +55,7 @@ export default function UiKitScreen() {
                 Using the <code>.cherenkov-panel</code> class providing 20px blur glassmorphism and 1px white border at 10% opacity.
               </p>
             </Panel>
-            
+
             <Card hoverable className="flex flex-col gap-3">
               <h3 className="text-base font-semibold text-text-primary">Hoverable Card</h3>
               <p className="text-sm text-text-muted">
@@ -122,7 +122,7 @@ export default function UiKitScreen() {
               <p className="text-sm text-text-muted">
                 Slides in from the right with blur backdrops and focus trap. ESC closes.
               </p>
-              <button 
+              <button
                 onClick={() => setIsDrawerOpen(true)}
                 className="w-full mt-auto py-2 text-sm font-semibold rounded-lg border border-border-custom bg-white/5 text-text-primary hover:bg-white/10 transition-all cursor-pointer flex items-center justify-center gap-2"
               >
@@ -133,25 +133,25 @@ export default function UiKitScreen() {
             <Card className="flex flex-col gap-4">
               <h3 className="text-sm font-bold tracking-wider uppercase text-text-muted">Toasts Feedback</h3>
               <div className="grid grid-cols-2 gap-2">
-                <button 
+                <button
                   onClick={() => toast('Successfully recorded decision to memory!', 'success')}
                   className="py-1.5 px-3 text-xs font-semibold rounded bg-success-custom/10 text-success-custom border border-success-custom/20 hover:bg-success-custom/20 transition-all cursor-pointer"
                 >
                   Success Toast
                 </button>
-                <button 
+                <button
                   onClick={() => toast('Model response taking longer than usual', 'warning')}
                   className="py-1.5 px-3 text-xs font-semibold rounded bg-warning-custom/10 text-warning-custom border border-warning-custom/20 hover:bg-warning-custom/20 transition-all cursor-pointer"
                 >
                   Warning Toast
                 </button>
-                <button 
+                <button
                   onClick={() => toast('Failed to connect to backend', 'danger', { actionLabel: 'Retry', onAction: () => toast('Retrying now...', 'info') })}
                   className="py-1.5 px-3 text-xs font-semibold rounded bg-danger-custom/10 text-danger-custom border border-danger-custom/20 hover:bg-danger-custom/20 transition-all cursor-pointer"
                 >
                   Danger Toast
                 </button>
-                <button 
+                <button
                   onClick={() => toast('Sovereign local security mode is active', 'info')}
                   className="py-1.5 px-3 text-xs font-semibold rounded bg-glow-blue/10 text-glow-blue border border-glow-blue/20 hover:bg-glow-blue/20 transition-all cursor-pointer"
                 >
@@ -177,11 +177,11 @@ export default function UiKitScreen() {
             <Card className="flex flex-col gap-3">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-semibold text-text-primary">Preview Shimmer State</span>
-                <button 
+                <button
                   onClick={() => setIsSkeletonLoading(!isSkeletonLoading)}
                   className="py-1 px-3 text-xs font-bold font-mono rounded bg-white/5 border border-border-custom hover:bg-white/10 flex items-center gap-1.5 cursor-pointer text-text-primary"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isSkeletonLoading ? 'animate-spin' : ''}`} /> 
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSkeletonLoading ? 'animate-spin' : ''}`} />
                   Toggle Load View
                 </button>
               </div>
@@ -200,7 +200,7 @@ export default function UiKitScreen() {
         {/* Section 5: Full Empty State */}
         <section className="space-y-4">
           <h2 className="text-lg font-bold font-display text-glow-blue">Empty States</h2>
-          <EmptyState 
+          <EmptyState
             title="No Divergences Discovered"
             description="All claims match perfectly across specifications, codebase, traffic logs and databases. Ready for release."
             primaryAction={{
@@ -235,7 +235,7 @@ export default function UiKitScreen() {
               {`- "user_id": 409605\n+ "user_id": "8fa8d39f-eead-43df-818f-a9cb84f68d6f"`}
             </div>
           </div>
-          <button 
+          <button
             onClick={() => {
               setIsDrawerOpen(false);
               toast('Divergence marked intended.', 'success');

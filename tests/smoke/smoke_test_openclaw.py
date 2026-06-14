@@ -11,18 +11,17 @@ Verifies:
 
 Exit code 0 = all criteria passed.
 """
+
 import json
 import os
-import subprocess
 import sys
 import tempfile
 import time
-import traceback
 
 # Ensure package root is on path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cherenkov.hitl.contracts import HitlItem, HitlStatus, HitlEnvelope
+from cherenkov.hitl.contracts import HitlItem, HitlEnvelope
 from cherenkov.hitl.store import HitlQueue
 from cherenkov.openclaw.adapter import OpenClawAdapter, TriggerRequest
 from cherenkov.openclaw.contracts import OpenClawConfig
@@ -59,12 +58,22 @@ def main() -> int:
 
     # Seed items
     items = [
-        HitlItem(id="demo-1", endpoint="/api/users", method="POST",
-                 mutation_id="missing_email", confidence=0.75,
-                 review_gate_failed="assertions"),
-        HitlItem(id="demo-2", endpoint="/api/orders", method="GET",
-                 mutation_id="invalid_status", confidence=0.82,
-                 review_gate_failed="syntax"),
+        HitlItem(
+            id="demo-1",
+            endpoint="/api/users",
+            method="POST",
+            mutation_id="missing_email",
+            confidence=0.75,
+            review_gate_failed="assertions",
+        ),
+        HitlItem(
+            id="demo-2",
+            endpoint="/api/orders",
+            method="GET",
+            mutation_id="invalid_status",
+            confidence=0.82,
+            review_gate_failed="syntax",
+        ),
     ]
     for item in items:
         queue.enqueue(item)
@@ -128,6 +137,7 @@ def main() -> int:
     def demo_handler(req):
         trigger_log.append(req.reason)
         from cherenkov.hitl.contracts import ok_envelope
+
         return ok_envelope("openclaw.trigger", {"triggered": True})
 
     adapter.on_trigger(demo_handler)
@@ -149,8 +159,9 @@ def main() -> int:
     check("second poll has no new items", env.payload["new_count"] == 0)
 
     print("\n7. Tier-2 #149 — Alice/Bob optimistic lock race")
-    alice_item = HitlItem(id="race-1", endpoint="/api/race", method="PUT",
-                          mutation_id="race_condition")
+    alice_item = HitlItem(
+        id="race-1", endpoint="/api/race", method="PUT", mutation_id="race_condition"
+    )
     queue.enqueue(alice_item)
 
     adapter.register_chat_user("alice_123", "@alice")
@@ -180,31 +191,52 @@ def main() -> int:
     from cherenkov.openclaw.contracts import ClassificationRequest
 
     # classify a resolved item
-    req = ClassificationRequest(item_id="demo-1", classification="intended",
-                                 actor="@alice", detail="intentional schema change")
+    req = ClassificationRequest(
+        item_id="demo-1",
+        classification="intended",
+        actor="@alice",
+        detail="intentional schema change",
+    )
     env = adapter.classify_envelope(req)
     check("classify on resolved item succeeds", env.ok)
     check("thresholds computed", "thresholds" in env.payload)
-    check("classification recorded", env.payload["recorded_classification"] == "intended")
+    check(
+        "classification recorded", env.payload["recorded_classification"] == "intended"
+    )
     check("count is 1", env.payload["thresholds"]["count"] == 1)
     check("no suggestion yet (count < 3)", env.payload["suggestion"] is None)
 
     # classify same endpoint 2 more times to trigger suggestion
     for i in range(2):
-        queue.enqueue(HitlItem(
-            id=f"sug-{i}", endpoint="/api/users", method="POST",
-            mutation_id="missing_email"))
+        queue.enqueue(
+            HitlItem(
+                id=f"sug-{i}",
+                endpoint="/api/users",
+                method="POST",
+                mutation_id="missing_email",
+            )
+        )
         adapter.approve_envelope(f"sug-{i}", "@tester")
         req2 = ClassificationRequest(
-            item_id=f"sug-{i}", classification="intended",
-            actor="@bob", detail="consistent drift")
+            item_id=f"sug-{i}",
+            classification="intended",
+            actor="@bob",
+            detail="consistent drift",
+        )
         adapter.classify_envelope(req2)
 
     env = adapter.classify_envelope(
-        ClassificationRequest(item_id="sug-1", classification="intended",
-                              actor="@bob", detail="third vote"))
-    check("suggestion surfaces at count >=3 and confidence >=0.70",
-          env.payload.get("suggestion") is not None)
+        ClassificationRequest(
+            item_id="sug-1",
+            classification="intended",
+            actor="@bob",
+            detail="third vote",
+        )
+    )
+    check(
+        "suggestion surfaces at count >=3 and confidence >=0.70",
+        env.payload.get("suggestion") is not None,
+    )
 
     # check suggestion content
     sug = env.payload["suggestion"]
@@ -212,20 +244,28 @@ def main() -> int:
     check("suggestion confidence >= 0.70", sug["confidence"] >= 0.70)
 
     # classify as regression
-    req3 = ClassificationRequest(item_id="demo-2", classification="regression",
-                                  actor="@alice", detail="actual regression")
+    req3 = ClassificationRequest(
+        item_id="demo-2",
+        classification="regression",
+        actor="@alice",
+        detail="actual regression",
+    )
     env = adapter.classify_envelope(req3)
     check("regression classification succeeds", env.ok)
     check("regression recorded", env.payload["recorded_classification"] == "regression")
 
     # classify missing item
-    req4 = ClassificationRequest(item_id="missing-item", classification="ignore", actor="@bob")
+    req4 = ClassificationRequest(
+        item_id="missing-item", classification="ignore", actor="@bob"
+    )
     env = adapter.classify_envelope(req4)
     check("classify missing item returns error", not env.ok)
     check("error code is not_found", env.error.code == "not_found")
 
     # suggestion_envelope for threshold reading
-    env = adapter.suggestion_envelope(endpoint="/api/users", mutation_id="missing_email")
+    env = adapter.suggestion_envelope(
+        endpoint="/api/users", mutation_id="missing_email"
+    )
     check("suggestion_envelope returns ok", env.ok)
     check("suggestion thresholds match", env.payload["thresholds"]["count"] >= 3)
 
@@ -233,6 +273,7 @@ def main() -> int:
     HAS_FASTAPI = False
     try:
         import fastapi  # noqa
+
         HAS_FASTAPI = True
     except ImportError:
         print("  ~ FastAPI not available, skipping HTTP tests")
@@ -240,11 +281,13 @@ def main() -> int:
     if HAS_FASTAPI:
         try:
             from cherenkov.openclaw.server import serve_background
+
             cfg = OpenClawConfig(port=18721)
             app, thread = serve_background(adapter=adapter, config=cfg)
             time.sleep(0.5)
 
             import urllib.request
+
             with urllib.request.urlopen("http://127.0.0.1:18721/health") as resp:
                 health = json.loads(resp.read())
                 check("HTTP /health returns ok", health.get("status") == "ok")
@@ -254,31 +297,50 @@ def main() -> int:
                 check("HTTP /hitl/list returns items", data.get("ok") is True)
                 check("HTTP list has items", data["payload"]["count"] >= 1)
 
-            with urllib.request.urlopen("http://127.0.0.1:18721/hitl/show/demo-1") as resp:
+            with urllib.request.urlopen(
+                "http://127.0.0.1:18721/hitl/show/demo-1"
+            ) as resp:
                 data = json.loads(resp.read())
                 check("HTTP /hitl/show/{id} works", data.get("ok") is True)
-                check("HTTP show has endpoint", data["payload"]["item"]["endpoint"] == "/api/users")
+                check(
+                    "HTTP show has endpoint",
+                    data["payload"]["item"]["endpoint"] == "/api/users",
+                )
 
             # Tier-2 HTTP: approve, reject, lock, classify
             import urllib.request as req2
+
             data = json.dumps({"actor": "@alice", "chat_user_id": "alice_123"}).encode()
-            http = req2.Request("http://127.0.0.1:18721/hitl/approve/race-1",
-                                data=data, headers={"Content-Type": "application/json"})
+            http = req2.Request(
+                "http://127.0.0.1:18721/hitl/approve/race-1",
+                data=data,
+                headers={"Content-Type": "application/json"},
+            )
             with req2.urlopen(http) as resp:
                 data = json.loads(resp.read())
                 check("HTTP approve works", data.get("ok") is True)
 
-            data = json.dumps({"actor": "@bob", "reason": "test rejection",
-                               "chat_user_id": "bob_456"}).encode()
-            http = req2.Request("http://127.0.0.1:18721/hitl/reject/nonexistent",
-                                data=data, headers={"Content-Type": "application/json"})
+            data = json.dumps(
+                {"actor": "@bob", "reason": "test rejection", "chat_user_id": "bob_456"}
+            ).encode()
+            http = req2.Request(
+                "http://127.0.0.1:18721/hitl/reject/nonexistent",
+                data=data,
+                headers={"Content-Type": "application/json"},
+            )
             with req2.urlopen(http) as resp:
                 data = json.loads(resp.read())
-                check("HTTP reject on missing returns ok (no-op via envelope)", data.get("ok") is True)
+                check(
+                    "HTTP reject on missing returns ok (no-op via envelope)",
+                    data.get("ok") is True,
+                )
 
             data = json.dumps({"chat_user_id": "alice_123"}).encode()
-            http = req2.Request("http://127.0.0.1:18721/hitl/lock/race-1",
-                                data=data, headers={"Content-Type": "application/json"})
+            http = req2.Request(
+                "http://127.0.0.1:18721/hitl/lock/race-1",
+                data=data,
+                headers={"Content-Type": "application/json"},
+            )
             try:
                 with req2.urlopen(http) as resp:
                     data = json.loads(resp.read())
@@ -286,9 +348,14 @@ def main() -> int:
             except Exception:
                 pass  # may conflict since already approved
 
-            data = json.dumps({"classification": "intended", "actor": "@alice"}).encode()
-            http = req2.Request("http://127.0.0.1:18721/hitl/classify/sug-1",
-                                data=data, headers={"Content-Type": "application/json"})
+            data = json.dumps(
+                {"classification": "intended", "actor": "@alice"}
+            ).encode()
+            http = req2.Request(
+                "http://127.0.0.1:18721/hitl/classify/sug-1",
+                data=data,
+                headers={"Content-Type": "application/json"},
+            )
             with req2.urlopen(http) as resp:
                 data = json.loads(resp.read())
                 check("HTTP classify succeeds", data.get("ok") is True)

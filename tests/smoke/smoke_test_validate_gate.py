@@ -5,6 +5,7 @@ Kill-criterion exit demo for the Validation Gate (A4 #112).
 Uses a mocked subprocess runner so it runs without Prism/Docker.
 Exit 0 = kill criterion met.
 """
+
 from __future__ import annotations
 
 import sys
@@ -23,14 +24,18 @@ def _verify_report(report: ValidationReport, label: str) -> bool:
 
     # 1. schema_version must be 'validate/v1'
     if report.schema_version != "validate/v1":
-        print(f"  [FAIL] {label}: schema_version={report.schema_version!r} (expected 'validate/v1')")
+        print(
+            f"  [FAIL] {label}: schema_version={report.schema_version!r} (expected 'validate/v1')"
+        )
         ok = False
     else:
         print(f"  [PASS] {label}: schema_version={report.schema_version!r}")
 
     # 2. result must be one of pass/fail/degraded
     if report.result not in ("pass", "fail", "degraded"):
-        print(f"  [FAIL] {label}: result={report.result!r} not in {{pass, fail, degraded}}")
+        print(
+            f"  [FAIL] {label}: result={report.result!r} not in {{pass, fail, degraded}}"
+        )
         ok = False
     else:
         print(f"  [PASS] {label}: result={report.result!r}")
@@ -73,7 +78,7 @@ def main() -> int:
         print(f"  [FAIL] expected result='pass', got {report1.result!r}")
         ok1 = False
     else:
-        print(f"  [PASS] result='pass' confirmed")
+        print("  [PASS] result='pass' confirmed")
     all_ok = all_ok and ok1
 
     # --- Scenario 2: one required gate fails → result='fail' ---
@@ -83,7 +88,9 @@ def main() -> int:
     def _mock_runner_first_fail(*args, **kwargs):
         call_count[0] += 1
         rc = 1 if call_count[0] == 1 else 0
-        return SimpleNamespace(returncode=rc, stdout="", stderr="simulated failure" if rc else "ok")
+        return SimpleNamespace(
+            returncode=rc, stdout="", stderr="simulated failure" if rc else "ok"
+        )
 
     report2 = gate.run(run_id="smoke-2", _subprocess_runner=_mock_runner_first_fail)
     print(f"  Summary: {report2.summary}")
@@ -92,7 +99,7 @@ def main() -> int:
         print(f"  [FAIL] expected result='fail', got {report2.result!r}")
         ok2 = False
     else:
-        print(f"  [PASS] result='fail' confirmed")
+        print("  [PASS] result='fail' confirmed")
     all_ok = all_ok and ok2
 
     # --- Scenario 3: one optional gate fails → result='degraded' ---
@@ -105,14 +112,16 @@ def main() -> int:
         rc = 1 if call_count2[0] == num_gates else 0
         return SimpleNamespace(returncode=rc, stdout="", stderr="")
 
-    report3 = gate.run(run_id="smoke-3", _subprocess_runner=_mock_runner_last_optional_fail)
+    report3 = gate.run(
+        run_id="smoke-3", _subprocess_runner=_mock_runner_last_optional_fail
+    )
     print(f"  Summary: {report3.summary}")
     ok3 = _verify_report(report3, "optional-fail")
     if report3.result != "degraded":
         print(f"  [FAIL] expected result='degraded', got {report3.result!r}")
         ok3 = False
     else:
-        print(f"  [PASS] result='degraded' confirmed")
+        print("  [PASS] result='degraded' confirmed")
     all_ok = all_ok and ok3
 
     # --- Final verdict ---

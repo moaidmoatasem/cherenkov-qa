@@ -1,4 +1,5 @@
 """Tests for E2-5: DB-schema adapter."""
+
 import unittest
 import tempfile
 import os
@@ -56,13 +57,16 @@ class TestDBSchemaSourceAdapter(unittest.TestCase):
         self.adapter = DBSchemaSourceAdapter()
 
     def _write_schema(self, sql: str) -> str:
-        tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".sql", delete=False, encoding="utf-8")
+        tmp = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".sql", delete=False, encoding="utf-8"
+        )
         tmp.write(sql)
         tmp.close()
         return tmp.name
 
     def test_adapter_implements_interface(self):
         from cherenkov.truth.sources.interface import SourceAdapter
+
         self.assertIsInstance(self.adapter, SourceAdapter)
 
     def test_discover_claims_raises_on_missing_file(self):
@@ -88,7 +92,9 @@ class TestDBSchemaSourceAdapter(unittest.TestCase):
             os.unlink(path)
 
     def test_discover_claims_extracts_columns(self):
-        path = self._write_schema("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT NOT NULL);")
+        path = self._write_schema(
+            "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT NOT NULL);"
+        )
         try:
             claims = self.adapter.discover_claims(path)
             col_claims = [c for c in claims if c.category == "column"]
@@ -102,6 +108,7 @@ class TestDBSchemaSourceAdapter(unittest.TestCase):
 
     def test_discover_claims_provenance_is_db(self):
         from cherenkov.core.contracts import ProvenanceType
+
         path = self._write_schema("CREATE TABLE items (id INTEGER);")
         try:
             claims = self.adapter.discover_claims(path)
@@ -111,7 +118,9 @@ class TestDBSchemaSourceAdapter(unittest.TestCase):
             os.unlink(path)
 
     def test_discover_claims_extracts_default(self):
-        path = self._write_schema("CREATE TABLE config (key TEXT, value TEXT DEFAULT 'active');")
+        path = self._write_schema(
+            "CREATE TABLE config (key TEXT, value TEXT DEFAULT 'active');"
+        )
         try:
             claims = self.adapter.discover_claims(path)
             col_claims = [c for c in claims if c.category == "column"]

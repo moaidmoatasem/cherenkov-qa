@@ -1,9 +1,9 @@
 # Cherenkov QA Dashboard - Test Suite Summary
 
-> **Document Version:** 1.0.0  
-> **Date:** 2026-06-06  
-> **Status:** Complete  
-> **Total Test Cases:** 700+  
+> **Document Version:** 1.0.0
+> **Date:** 2026-06-06
+> **Status:** Complete
+> **Total Test Cases:** 700+
 > **Coverage:** Full Regression
 
 ---

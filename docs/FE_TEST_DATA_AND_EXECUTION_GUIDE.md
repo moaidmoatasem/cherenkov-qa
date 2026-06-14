@@ -1,8 +1,8 @@
 # Cherenkov QA Dashboard - Test Data & Execution Guide
 
-> **Document Version:** 1.0.0  
-> **Last Updated:** 2026-06-06  
-> **Owner:** QA Engineering Team  
+> **Document Version:** 1.0.0
+> **Last Updated:** 2026-06-06
+> **Owner:** QA Engineering Team
 > **Purpose:** Supplementary guide with test data, execution details, and implementation notes
 
 ---
@@ -130,11 +130,11 @@ export interface EndpointRichness {
 export const MOCK_ENDPOINTS: EndpointRichness[] = [
   { id: 'ep-1', method: 'POST', path: '/pets', richness: 0.95, band: 'full', missingElements: [] },
   { id: 'ep-2', method: 'GET', path: '/pets/{petId}', richness: 0.88, band: 'full', missingElements: [] },
-  { id: 'ep-3', method: 'PUT', path: '/pets', richness: 0.72, band: 'full', 
+  { id: 'ep-3', method: 'PUT', path: '/pets', richness: 0.72, band: 'full',
     missingElements: ['missing 400 response model details'] },
-  { id: 'ep-4', method: 'DELETE', path: '/pets/{petId}', richness: 0.55, band: 'inferred', 
+  { id: 'ep-4', method: 'DELETE', path: '/pets/{petId}', richness: 0.55, band: 'inferred',
     missingElements: ['missing 404 error schema'] },
-  { id: 'ep-5', method: 'POST', path: '/pets/{petId}/uploadImage', richness: 0.42, band: 'degraded', 
+  { id: 'ep-5', method: 'POST', path: '/pets/{petId}/uploadImage', richness: 0.42, band: 'degraded',
     missingElements: ['empty multipart/form-data detail', 'missing 2xx response template'] },
   // ... 15 more endpoints
 ];
@@ -414,39 +414,39 @@ jobs:
     strategy:
       matrix:
         browser: [chromium, firefox, webkit]
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-    
+
     - name: Install dependencies
       run: |
         cd cherenkov/web/ui
         npm ci
-    
+
     - name: Install Playwright browsers
       run: npx playwright install --with-deps
-    
+
     - name: Start backend
       run: |
         cd cherenkov
         python -m uvicorn main:app --host 0.0.0.0 --port 8000 &
-    
+
     - name: Start frontend
       run: |
         cd cherenkov/web/ui
         npm run dev &
-    
+
     - name: Run smoke tests
       run: npx playwright test --browser ${{ matrix.browser }} --grep "@smoke"
-    
+
     - name: Run critical tests
       run: npx playwright test --browser ${{ matrix.browser }} --grep "@critical"
-    
+
     - name: Upload test results
       uses: actions/upload-artifact@v4
       if: always()
@@ -597,7 +597,7 @@ test('Flaky test', async ({ page }) => {
   await test.step('Step 1', async () => {
     await page.click('#button');
   });
-  
+
   await test.step('Step 2 with retry', async () => {
     await expect(page.locator('#result')).toBeVisible({ timeout: 10000 });
   });
@@ -692,7 +692,7 @@ npx playwright test --headed
 test('Debug test', async ({ page }) => {
   // Pause here - Playwright will open inspector
   await page.pause();
-  
+
   // Continue execution
   await page.click('#button');
 });

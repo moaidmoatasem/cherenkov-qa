@@ -1,17 +1,18 @@
 """Tests for E2-6: cherenkov map command."""
-import unittest
-import tempfile
-import os
-import json
 
-from cherenkov.core.truth_model import TruthModel, NodeType
+import unittest
+import os
+
+from cherenkov.core.truth_model import TruthModel
 from cherenkov.stages.map_cmd import build_truth_model, render_truth_model
+
 
 class TestBuildTruthModel(unittest.TestCase):
     def test_build_from_openapi(self):
-        import os
         # Use absolute path to stripe_spec.json
-        stripe_spec_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "stripe_spec.json")
+        stripe_spec_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "stripe_spec.json"
+        )
         sources = {"openapi": [stripe_spec_path]}
         tm = build_truth_model(sources)
         self.assertIsInstance(tm, TruthModel)
@@ -39,9 +40,10 @@ class TestBuildTruthModel(unittest.TestCase):
         self.assertIn("Endpoints:    0", output)
 
     def test_render_with_sources(self):
-        import os
         # Use absolute path to stripe_spec.json
-        stripe_spec_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "stripe_spec.json")
+        stripe_spec_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "stripe_spec.json"
+        )
         sources = {"openapi": [stripe_spec_path]}
         tm = build_truth_model(sources)
         output = render_truth_model(tm, detailed=True)
@@ -49,13 +51,15 @@ class TestBuildTruthModel(unittest.TestCase):
         self.assertIn("Sources:", output)
 
     def test_render_detailed_shows_provenance(self):
-        import os
         # Use absolute path to stripe_spec.json
-        stripe_spec_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "stripe_spec.json")
+        stripe_spec_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "stripe_spec.json"
+        )
         sources = {"openapi": [stripe_spec_path]}
         tm = build_truth_model(sources)
         output = render_truth_model(tm, detailed=True)
         self.assertIn("provenance:", output)
+
 
 if __name__ == "__main__":
     unittest.main()

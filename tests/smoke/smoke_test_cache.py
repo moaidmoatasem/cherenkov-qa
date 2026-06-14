@@ -3,10 +3,10 @@
 smoke_test_cache.py — E1-5 Response/prefix cache + cost & latency accounting smoke tests.
 Tests cache hit measurement, per-run cost + latency reporting, and pipeline integration.
 """
+
 from __future__ import annotations
 
 import time
-from typing import Any
 from cherenkov.ai.cache import ResponseCache
 from cherenkov.ai.accounting import CostAccountant
 from cherenkov.ai.interface import InferenceClient, CachedInferenceClient
@@ -66,9 +66,15 @@ def test_cache_lru():
     cache.set("model-3", "sys", "user", {"val": 3})
 
     assert cache.stats.size == 3
-    assert cache.get("model-0", "sys", "user") == {"val": 0}, "model-0 should still be cached"
-    assert cache.get("model-1", "sys", "user") is None, "model-1 should have been evicted"
-    assert cache.get("model-2", "sys", "user") == {"val": 2}, "model-2 should still be cached"
+    assert cache.get("model-0", "sys", "user") == {
+        "val": 0
+    }, "model-0 should still be cached"
+    assert (
+        cache.get("model-1", "sys", "user") is None
+    ), "model-1 should have been evicted"
+    assert cache.get("model-2", "sys", "user") == {
+        "val": 2
+    }, "model-2 should still be cached"
     assert cache.get("model-3", "sys", "user") == {"val": 3}, "model-3 should be cached"
     print("[OK] Test 2 PASS\n")
 
@@ -192,8 +198,22 @@ def test_accounting_report_contract():
     from cherenkov.core.contracts import CostEntry
 
     entries = [
-        CostEntry(model="m1", provider="ollama", duration_ms=500, tokens=100, cost=0.0, cache_hit=False),
-        CostEntry(model="m1", provider="ollama", duration_ms=0, tokens=0, cost=0.0, cache_hit=True),
+        CostEntry(
+            model="m1",
+            provider="ollama",
+            duration_ms=500,
+            tokens=100,
+            cost=0.0,
+            cache_hit=False,
+        ),
+        CostEntry(
+            model="m1",
+            provider="ollama",
+            duration_ms=0,
+            tokens=0,
+            cost=0.0,
+            cache_hit=True,
+        ),
     ]
     report = AccountingReport(
         entries=entries,

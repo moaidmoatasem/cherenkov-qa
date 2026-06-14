@@ -9,7 +9,9 @@ def test_kinds():
 
 
 def test_knowledge_result_default_init():
-    kr = KnowledgeResult(id="t1", kind=KnowledgeKind.IDIOM, key="/api/test", summary="a test")
+    kr = KnowledgeResult(
+        id="t1", kind=KnowledgeKind.IDIOM, key="/api/test", summary="a test"
+    )
     assert kr.id == "t1"
     assert kr.kind == KnowledgeKind.IDIOM
     assert kr.key == "/api/test"
@@ -19,9 +21,13 @@ def test_knowledge_result_default_init():
 
 def test_to_event_payload():
     kr = KnowledgeResult(
-        id="t1", kind=KnowledgeKind.VERDICT, key="/api/users",
-        summary="verdict for users", source="skeptic", confidence=0.95,
-        tags=["regression"]
+        id="t1",
+        kind=KnowledgeKind.VERDICT,
+        key="/api/users",
+        summary="verdict for users",
+        source="skeptic",
+        confidence=0.95,
+        tags=["regression"],
     )
     p = kr.to_event_payload()
     assert p["id"] == "t1"

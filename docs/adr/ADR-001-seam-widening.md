@@ -1,8 +1,8 @@
 # ADR-001: Seam-Widening Architecture
 
-**Date:** 2026-06-08  
-**Status:** Accepted  
-**Deciders:** Project Owner + AI Agents  
+**Date:** 2026-06-08
+**Status:** Accepted
+**Deciders:** Project Owner + AI Agents
 **Related EPIC:** #277 (Phase -1)
 
 ---

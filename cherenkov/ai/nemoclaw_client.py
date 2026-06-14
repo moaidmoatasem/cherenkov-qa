@@ -6,9 +6,9 @@ an OpenAI-compatible /v1/chat/completions endpoint.  All inference stays on
 device (requires_egress=False).  Authentication uses a Bearer token that is
 empty by default in development setups.
 """
+
 from __future__ import annotations
 
-import json
 import re
 import time
 
@@ -190,9 +190,7 @@ class NemoClawInferenceClient(InferenceClient):
                         {"type": "text", "text": user_prompt},
                         {
                             "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{image_data}"
-                            },
+                            "image_url": {"url": f"data:image/png;base64,{image_data}"},
                         },
                     ],
                 },

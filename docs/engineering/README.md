@@ -47,7 +47,7 @@ The consolidated plan (see [../PHASE_PLAN.md](../PHASE_PLAN.md)) adds 5 new capa
 | [../vision/17_MOBILE_TESTING.md](../vision/17_MOBILE_TESTING.md) | Maestro/Appium, 4-tier devices, semantic visual oracle | Phase 5-6 |
 | [../vision/18_DESKTOP_HOST.md](../vision/18_DESKTOP_HOST.md) | Tauri 2, hardware detection, setup wizard | Phase 3 |
 
-**Reading order for a new contributor/agent:** 
+**Reading order for a new contributor/agent:**
 1. [../PHASE_PLAN.md](../PHASE_PLAN.md) (consolidated plan overview)
 2. [ARCHITECTURE_PRINCIPLES.md](ARCHITECTURE_PRINCIPLES.md) (non-negotiable tenets)
 3. [../adr/ADR-004-clean-architecture.md](../adr/ADR-004-clean-architecture.md) (Clean Architecture pattern)

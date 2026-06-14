@@ -4,15 +4,15 @@
  */
 
 import React, { useState } from 'react';
-import { 
-  Download, 
-  Folder, 
-  FileCode, 
-  ChevronRight, 
-  ChevronDown, 
-  CheckCircle, 
-  Copy, 
-  Share2, 
+import {
+  Download,
+  Folder,
+  FileCode,
+  ChevronRight,
+  ChevronDown,
+  CheckCircle,
+  Copy,
+  Share2,
   HardDrive,
   Cpu,
   AlertCircle
@@ -73,7 +73,7 @@ export default function EjectScreen() {
 
     return (
       <div key={node.name} className="pl-4 select-none">
-        <div 
+        <div
           onClick={() => isFolder && toggleNode(nodeKey)}
           className={`flex items-center gap-1.5 py-1.5 rounded text-xs transition cursor-pointer font-mono ${
             isFolder ? 'text-[#7D8DA1] hover:text-text-primary' : 'text-text-primary hover:text-glow-bright'
@@ -105,7 +105,7 @@ export default function EjectScreen() {
 
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="eject-screen" data-testid="eject-screen">
-      
+
       {/* Page Header */}
       <div className="flex items-center gap-4">
         <CherenkovLogo variant="icon" size={42} />
@@ -131,7 +131,7 @@ export default function EjectScreen() {
             {!isEjected ? (
               // Stage 1: Configure run paths
               <div className="space-y-6 animate-fadeIn">
-                
+
                 {/* Reassurance Declaration Card block */}
                 <div className="p-4 rounded-2xl bg-[#22d3ee]/10 border border-glow-blue/25 text-xs text-[#7D8DA1] space-y-2 leading-relaxed">
                   <div className="flex items-center gap-2 text-glow-bright font-semibold font-mono uppercase text-[10px]">
@@ -227,7 +227,7 @@ export default function EjectScreen() {
                 {/* Copy Terminal Instruction */}
                 <div className="space-y-2">
                   <span className="block text-[10px] font-mono text-[#7D8DA1] uppercase tracking-wider font-bold">Copy Instructions terminal</span>
-                  
+
                   <div className="relative flex items-center bg-black/40 border border-white/10 rounded-xl overflow-hidden">
                     <pre className="flex-1 p-3.5 pr-24 font-mono text-[11px] text-[#E6EDF3] whitespace-pre-wrap select-all" data-testid="run-command">
                       <code>{runCommandText}</code>

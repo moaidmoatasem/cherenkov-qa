@@ -76,30 +76,30 @@ export default function GuidedTour({ onClose, onNavigate }: GuidedTourProps) {
             <X className="w-4 h-4" />
           </button>
         </div>
-        
+
         <p className="text-xs text-[#E6EDF3] leading-relaxed font-sans">
           {TOUR_STEPS[currentStep].description}
         </p>
-        
+
         <div className="flex justify-between items-center mt-2">
           <div className="flex gap-1.5">
             {TOUR_STEPS.map((_, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className={`w-2 h-2 rounded-full ${idx === currentStep ? 'bg-glow-blue' : 'bg-white/20'}`}
               />
             ))}
           </div>
-          
+
           <div className="flex gap-2 text-xs font-mono">
-            <button 
+            <button
               onClick={handlePrev}
               disabled={currentStep === 0}
               className="px-3 py-1.5 rounded-lg border border-white/10 text-text-muted hover:text-white hover:bg-white/5 disabled:opacity-30 transition"
             >
               PREV
             </button>
-            <button 
+            <button
               onClick={handleNext}
               className="px-4 py-1.5 rounded-lg bg-glow-blue hover:bg-opacity-90 text-slate-950 font-bold transition flex items-center gap-1"
             >

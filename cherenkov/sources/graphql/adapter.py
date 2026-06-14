@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Iterator
-from graphql import build_ast_schema, parse, build_client_schema, get_introspection_query
+from graphql import build_ast_schema, parse, build_client_schema
+
 
 @dataclass
 class GraphQLOperation:
@@ -9,6 +10,7 @@ class GraphQLOperation:
     fields: list[str]
     variables: dict
     return_type: str
+
 
 class GraphQLSourceAdapter:
     """Parses GraphQL SDL or introspection JSON → EndpointSlice-equivalent operations."""
@@ -22,6 +24,7 @@ class GraphQLSourceAdapter:
         if self.spec_path.endswith(".json"):
             # introspection JSON
             import json
+
             return build_client_schema(json.loads(content)["data"])
         else:
             # SDL (.graphql)
@@ -42,6 +45,8 @@ class GraphQLSourceAdapter:
                     name=field_name,
                     kind=type_name.lower(),
                     fields=self._get_leaf_fields(field.type),
-                    variables={arg_name: str(arg.type) for arg_name, arg in field.args.items()},
+                    variables={
+                        arg_name: str(arg.type) for arg_name, arg in field.args.items()
+                    },
                     return_type=str(field.type),
                 )

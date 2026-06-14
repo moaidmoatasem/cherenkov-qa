@@ -1,7 +1,7 @@
 # CHERENKOV-QA Logging Strategy
 
-**Date:** 2026-06-08  
-**Status:** Active  
+**Date:** 2026-06-08
+**Status:** Active
 **Related EPIC:** #277 (Phase -1), #279 (Phase 0b)
 
 ---
@@ -79,7 +79,7 @@ from logging.handlers import RotatingFileHandler
 
 def setup_logging(log_level: str = "INFO", log_format: str = "json"):
     """Setup structured logging."""
-    
+
     # Configure structlog
     structlog.configure(
         processors=[
@@ -98,18 +98,18 @@ def setup_logging(log_level: str = "INFO", log_format: str = "json"):
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
-    
+
     # Configure standard logging
     logging.basicConfig(
         format="%(message)s",
         stream=sys.stderr,
         level=getattr(logging, log_level.upper()),
     )
-    
+
     # Add file handler (rotating)
     log_dir = Path(".cherenkov/logs")
     log_dir.mkdir(parents=True, exist_ok=True)
-    
+
     file_handler = RotatingFileHandler(
         log_dir / "cherenkov.log",
         maxBytes=10*1024*1024,  # 10MB
@@ -136,32 +136,32 @@ def run_pipeline(spec_path: str, trace_id: str | None = None):
     """Run pipeline with structured logging."""
     trace_id = trace_id or str(uuid.uuid4())
     log = logger.bind(trace_id=trace_id, spec_path=spec_path)
-    
+
     log.info("pipeline_start")
-    
+
     try:
         # Ingest
         log.info("ingest_start")
         ingest_output = ingest_stage.ingest(spec_path)
         log.info("ingest_end", endpoints=len(ingest_output.endpoints))
-        
+
         # Plan
         log.info("plan_start")
         plan_output = plan_stage.plan(ingest_output)
         log.info("plan_end", scenarios=len(plan_output.scenarios))
-        
+
         # Generate
         log.info("generate_start")
         generate_output = generate_stage.generate(plan_output)
         log.info("generate_end", tests=len(generate_output.tests))
-        
+
         # Review
         log.info("review_start")
         review_output = review_stage.review(generate_output)
         log.info("review_end", approved=review_output.approved, hitl=review_output.hitl)
-        
+
         log.info("pipeline_end", status="success")
-        
+
     except Exception as e:
         log.error("pipeline_error", error=str(e), exc_info=True)
         raise
@@ -193,7 +193,7 @@ logger = get_logger()
 def run_pipeline(spec_path: str, trace_id: str | None = None):
     trace_id = trace_id or str(uuid.uuid4())
     log = logger.bind(trace_id=trace_id, spec_path=spec_path)
-    
+
     log.info("pipeline_start")
     # ... pipeline logic ...
     log.info("pipeline_end", tests_generated=len(tests))
@@ -244,19 +244,19 @@ async def stream_logs():
     async def event_generator():
         log_file = Path(".cherenkov/logs/cherenkov.log")
         last_pos = 0
-        
+
         while True:
             if log_file.exists():
                 with open(log_file, "r") as f:
                     f.seek(last_pos)
                     new_lines = f.readlines()
                     last_pos = f.tell()
-                    
+
                     for line in new_lines:
                         yield f"data: {line}\n\n"
-            
+
             await asyncio.sleep(1)
-    
+
     return StreamingResponse(
         event_generator(),
         media_type="text/event-stream"
@@ -271,18 +271,18 @@ import React, { useState, useEffect } from 'react';
 
 export function LogViewer() {
   const [logs, setLogs] = useState<any[]>([]);
-  
+
   useEffect(() => {
     const eventSource = new EventSource('/api/v1/logs');
-    
+
     eventSource.onmessage = (event) => {
       const log = JSON.parse(event.data);
       setLogs(prev => [...prev.slice(-100), log]);  // Keep last 100 logs
     };
-    
+
     return () => eventSource.close();
   }, []);
-  
+
   return (
     <div className="log-viewer">
       {logs.map((log, i) => (
@@ -310,18 +310,18 @@ import json
 def test_structured_logging():
     setup_logging(log_level="INFO", log_format="json")
     logger = get_logger("test")
-    
+
     # Capture logs
     import io
     import sys
     captured = io.StringIO()
     sys.stderr = captured
-    
+
     logger.info("test_message", key="value")
-    
+
     sys.stderr = sys.__stderr__
     output = captured.getvalue()
-    
+
     # Parse JSON
     log = json.loads(output.strip())
     assert log["level"] == "INFO"

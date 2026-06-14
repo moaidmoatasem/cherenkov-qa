@@ -2,11 +2,11 @@
 smoke_test_epoch5.py — Epoch 5 (Experience + Configuration) smoke tests.
 Authority: v3.1 + delta. Tests init, doctor, dashboard, and layered config.
 """
+
 from __future__ import annotations
 
 import os
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 
@@ -18,6 +18,7 @@ class TestConfigLoader(unittest.TestCase):
 
     def setUp(self):
         from cherenkov.core.config_loader import LayeredConfig
+
         self.LayeredConfig = LayeredConfig
 
     def test_builtin_defaults_loaded(self):
@@ -103,11 +104,13 @@ class TestInitCommand(unittest.TestCase):
 
     def test_generate_toml_contains_profile(self):
         from cherenkov.stages.init_cmd import generate_toml
+
         toml = generate_toml(spec_files=[], profile="laptop")
         self.assertIn('profile = "laptop"', toml)
 
     def test_generate_toml_with_specs(self):
         from cherenkov.stages.init_cmd import generate_toml
+
         toml = generate_toml(spec_files=["openapi.yaml", "spec.json"], profile="ci")
         self.assertIn('"openapi.yaml"', toml)
         self.assertIn('"spec.json"', toml)
@@ -115,6 +118,7 @@ class TestInitCommand(unittest.TestCase):
 
     def test_generate_toml_is_valid_toml(self):
         from cherenkov.stages.init_cmd import generate_toml
+
         toml = generate_toml(spec_files=["stub/target_spec.json"], profile="laptop")
         try:
             import tomllib
@@ -131,6 +135,7 @@ class TestInitCommand(unittest.TestCase):
 
     def test_init_writes_file(self):
         from cherenkov.stages.init_cmd import run_init
+
         cwd = Path.cwd()
         toml_path = cwd / "cherenkov.toml"
         backup = None
@@ -154,6 +159,7 @@ class TestDoctorCommand(unittest.TestCase):
 
     def test_doctor_runs_without_error(self):
         from cherenkov.stages.doctor_cmd import run_doctor
+
         try:
             rc = run_doctor()
             self.assertIn(rc, (0, 1))
@@ -162,12 +168,14 @@ class TestDoctorCommand(unittest.TestCase):
 
     def test_check_ollama_binary(self):
         from cherenkov.stages.doctor_cmd import check_ollama_binary
+
         ok, detail = check_ollama_binary()
         self.assertIsInstance(ok, bool)
         self.assertIsInstance(detail, str)
 
     def test_check_node(self):
         from cherenkov.stages.doctor_cmd import check_node
+
         ok, detail = check_node()
         self.assertIsInstance(ok, bool)
         self.assertIsInstance(detail, str)
@@ -175,6 +183,7 @@ class TestDoctorCommand(unittest.TestCase):
     def test_check_egress_blocked(self):
         from cherenkov.core.config_loader import LayeredConfig
         from cherenkov.stages.doctor_cmd import check_egress_blocked
+
         cfg = LayeredConfig()
         cfg.load_defaults()
         healthy, detail = check_egress_blocked(cfg)
@@ -187,6 +196,7 @@ class TestDashboardCommand(unittest.TestCase):
 
     def test_dashboard_runs_without_error(self):
         from cherenkov.dashboard.render import run_dashboard
+
         try:
             rc = run_dashboard()
             self.assertEqual(rc, 0)
@@ -195,6 +205,7 @@ class TestDashboardCommand(unittest.TestCase):
 
     def test_mock_data_renders(self):
         from cherenkov.dashboard.render import render_dashboard
+
         output = render_dashboard()
         self.assertIn("Truth Model", output)
         self.assertIn("Open Divergences", output)
@@ -203,6 +214,7 @@ class TestDashboardCommand(unittest.TestCase):
 
     def test_mock_truth_model(self):
         from cherenkov.dashboard.render import render_truth_model
+
         output = render_truth_model()
         self.assertIn("Claim Graph", output)
         self.assertIn("POST /users", output)
@@ -213,6 +225,7 @@ class TestCLIIntegration(unittest.TestCase):
 
     def test_init_subcommand_in_help(self):
         import importlib.util
+
         spec = importlib.util.spec_from_file_location("cherenkov_cli", "cherenkov.py")
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
@@ -224,14 +237,19 @@ class TestCLIIntegration(unittest.TestCase):
 
     def test_init_help_contains_profile(self):
         import importlib.util
+
         spec = importlib.util.spec_from_file_location("cherenkov_cli", "cherenkov.py")
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         parser = mod.get_parser()
         init_parser = None
         for action in parser._actions:
-            if hasattr(action, 'choices') and action.choices and 'init' in action.choices:
-                init_parser = action.choices['init']
+            if (
+                hasattr(action, "choices")
+                and action.choices
+                and "init" in action.choices
+            ):
+                init_parser = action.choices["init"]
                 break
         self.assertIsNotNone(init_parser)
         help_text = init_parser.format_help()

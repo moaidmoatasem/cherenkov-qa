@@ -67,7 +67,10 @@ class TestToolChatQueryVerdicts(unittest.TestCase):
         mock_qv.assert_called_once_with(endpoint="/users", status_code=None, limit=10)
 
     def test_default_limit(self):
-        with patch("cherenkov.chat.tools.query_verdicts", return_value={"verdicts": [], "total": 0}) as mock_qv:
+        with patch(
+            "cherenkov.chat.tools.query_verdicts",
+            return_value={"verdicts": [], "total": 0},
+        ) as mock_qv:
             result = _tool_chat_query_verdicts({})
         self.assertFalse(result.isError)
         mock_qv.assert_called_once_with(endpoint=None, status_code=None, limit=10)
@@ -103,12 +106,15 @@ class TestToolChatExplainDivergence(unittest.TestCase):
     @patch("cherenkov.chat.tools.explain_divergence")
     def test_with_method(self, mock_ed):
         mock_ed.return_value = {"explanation": "divergence detail"}
-        result = _tool_chat_explain_divergence({"endpoint": "/orders", "method": "POST"})
+        result = _tool_chat_explain_divergence(
+            {"endpoint": "/orders", "method": "POST"}
+        )
         self.assertFalse(result.isError)
         mock_ed.assert_called_once_with(endpoint="/orders", method="POST")
 
     def test_missing_endpoint_raises(self):
         from pydantic import ValidationError
+
         with self.assertRaises(ValidationError):
             _tool_chat_explain_divergence({})
 
@@ -126,12 +132,17 @@ class TestToolChatRunTest(unittest.TestCase):
     @patch("cherenkov.mcp.handlers._validate_spec_path", side_effect=lambda p: p)
     def test_with_all_params(self, _mock_vsp, mock_rt):
         mock_rt.return_value = {"status": "planned", "scenarios": 1}
-        result = _tool_chat_run_test({"endpoint": "/orders", "method": "POST", "spec_path": "api.yaml"})
+        result = _tool_chat_run_test(
+            {"endpoint": "/orders", "method": "POST", "spec_path": "api.yaml"}
+        )
         self.assertFalse(result.isError)
-        mock_rt.assert_called_once_with(endpoint="/orders", method="POST", spec_path="api.yaml")
+        mock_rt.assert_called_once_with(
+            endpoint="/orders", method="POST", spec_path="api.yaml"
+        )
 
     def test_missing_endpoint_raises(self):
         from pydantic import ValidationError
+
         with self.assertRaises(ValidationError):
             _tool_chat_run_test({})
 
@@ -139,9 +150,12 @@ class TestToolChatRunTest(unittest.TestCase):
 class TestHandleToolCallRouting(unittest.TestCase):
     def setUp(self):
         from cherenkov.mcp.handlers import _policy
+
         _policy.reload()
 
-    @patch("cherenkov.chat.tools.query_verdicts", return_value={"verdicts": [], "total": 0})
+    @patch(
+        "cherenkov.chat.tools.query_verdicts", return_value={"verdicts": [], "total": 0}
+    )
     def test_routes_chat_query_verdicts(self, mock_qv):
         result = handle_tool_call({"name": "chat_query_verdicts", "arguments": {}})
         self.assertFalse(result.get("isError", False))
@@ -151,14 +165,20 @@ class TestHandleToolCallRouting(unittest.TestCase):
         result = handle_tool_call({"name": "chat_query_idioms", "arguments": {}})
         self.assertFalse(result.get("isError", False))
 
-    @patch("cherenkov.chat.tools.explain_divergence", return_value={"explanation": "ok"})
+    @patch(
+        "cherenkov.chat.tools.explain_divergence", return_value={"explanation": "ok"}
+    )
     def test_routes_chat_explain_divergence(self, mock_ed):
-        result = handle_tool_call({"name": "chat_explain_divergence", "arguments": {"endpoint": "/x"}})
+        result = handle_tool_call(
+            {"name": "chat_explain_divergence", "arguments": {"endpoint": "/x"}}
+        )
         self.assertFalse(result.get("isError", False))
 
     @patch("cherenkov.chat.tools.run_test", return_value={"status": "planned"})
     def test_routes_chat_run_test(self, mock_rt):
-        result = handle_tool_call({"name": "chat_run_test", "arguments": {"endpoint": "/x"}})
+        result = handle_tool_call(
+            {"name": "chat_run_test", "arguments": {"endpoint": "/x"}}
+        )
         self.assertFalse(result.get("isError", False))
 
     def test_unknown_tool_returns_error(self):

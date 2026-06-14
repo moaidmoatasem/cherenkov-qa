@@ -12,9 +12,7 @@ _BUSY_TIMEOUT_S = 10.0
 
 
 def _default_db_path() -> str:
-    repo_root = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "../..")
-    )
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
     return os.path.join(repo_root, ".cherenkov", "stats.db")
 
 
@@ -92,8 +90,18 @@ class StatsStore:
                 "(run_id, timestamp, success, scenarios_passed, scenarios_total, "
                 " total_duration_ms, total_cost, cache_hit_ratio, verdict_count, idiom_count) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (run_id, int(time.time()), int(success), scenarios_passed, scenarios_total,
-                 total_duration_ms, total_cost, cache_hit_ratio, verdict_count, idiom_count),
+                (
+                    run_id,
+                    int(time.time()),
+                    int(success),
+                    scenarios_passed,
+                    scenarios_total,
+                    total_duration_ms,
+                    total_cost,
+                    cache_hit_ratio,
+                    verdict_count,
+                    idiom_count,
+                ),
             )
             conn.commit()
         except Exception as e:
@@ -130,7 +138,9 @@ class StatsStore:
     def get_run_summary(self) -> dict:
         try:
             conn = self._connect()
-            total = conn.execute("SELECT COUNT(*) as c FROM pipeline_runs").fetchone()["c"]
+            total = conn.execute("SELECT COUNT(*) as c FROM pipeline_runs").fetchone()[
+                "c"
+            ]
             passed = conn.execute(
                 "SELECT COUNT(*) as c FROM pipeline_runs WHERE success = 1"
             ).fetchone()["c"]

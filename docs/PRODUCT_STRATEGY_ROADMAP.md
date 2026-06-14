@@ -167,38 +167,38 @@ The recommended play: **open core + community flywheel → enterprise K8s tier �
 ## 5. Pain Points We Uniquely Solve
 
 ### Pain 1: "Spec drift kills us in production"
-**Who:** Every team that maintains OpenAPI specs + backend services  
-**Symptom:** Spec says `422`, server returns `400`. Spec says field is required, server accepts null. These divergences are invisible until a client breaks.  
+**Who:** Every team that maintains OpenAPI specs + backend services
+**Symptom:** Spec says `422`, server returns `400`. Spec says field is required, server accepts null. These divergences are invisible until a client breaks.
 **CHERENKOV Fix:** Runs your spec through LLM-generated tests against your real server. Every run is a conformance audit. Caught before commit, not after incident.
 
 ### Pain 2: "Writing API tests is tedious and never happens"
-**Who:** Backend engineers, QA teams  
-**Symptom:** Coverage is always "coming soon". Engineers ship features faster than they write tests.  
+**Who:** Backend engineers, QA teams
+**Symptom:** Coverage is always "coming soon". Engineers ship features faster than they write tests.
 **CHERENKOV Fix:** `cherenkov generate --spec api.yaml` → instant typed Playwright suite. Generated tests pass the 6-gate review before you ever read them.
 
 ### Pain 3: "We can't trust auto-generated tests — they hallucinate"
-**Who:** Quality-conscious engineers who tried AI testing tools and got burned  
-**Symptom:** LLM generates plausible-looking tests that pass because they assert the wrong thing.  
+**Who:** Quality-conscious engineers who tried AI testing tools and got burned
+**Symptom:** LLM generates plausible-looking tests that pass because they assert the wrong thing.
 **CHERENKOV Fix:** Expected HTTP status and schema come from the OpenAPI spec — not the LLM. The LLM writes structure; the spec provides truth. Hallucination-resistant by architecture.
 
 ### Pain 4: "Tool lock-in. If we adopt this, we're stuck."
-**Who:** Engineering leads, architects  
-**Symptom:** Adoption hesitation because proprietary test format = migration cost later.  
+**Who:** Engineering leads, architects
+**Symptom:** Adoption hesitation because proprietary test format = migration cost later.
 **CHERENKOV Fix:** `cherenkov eject --output ./tests` strips all CHERENKOV imports. Tests run standalone with only Playwright + openapi-fetch. You can stop using CHERENKOV tomorrow. Tests still work.
 
 ### Pain 5: "Our LLM-powered tools send our internal specs to OpenAI"
-**Who:** Enterprise security, regulated industries (fintech, healthtech, govtech)  
-**Symptom:** Blocked from AI tools because of data privacy requirements.  
+**Who:** Enterprise security, regulated industries (fintech, healthtech, govtech)
+**Symptom:** Blocked from AI tools because of data privacy requirements.
 **CHERENKOV Fix:** Default provider is Ollama (local). `qwen2.5-coder:7b` runs on your laptop or K8s cluster. Zero data leaves your environment. OpenAI is an opt-in fallback with cost accounting.
 
 ### Pain 6: "Our tests break every time the spec changes"
-**Who:** Teams running frequent spec updates  
-**Symptom:** Test maintenance overhead kills velocity. Tests become stale or disabled.  
+**Who:** Teams running frequent spec updates
+**Symptom:** Test maintenance overhead kills velocity. Tests become stale or disabled.
 **CHERENKOV Fix:** Regenerate from updated spec. Knowledge mesh remembers past patterns. Suggest-only healing proposes targeted fixes. No auto-edits, no surprises.
 
 ### Pain 7: "Mobile API testing is a different world we don't touch"
-**Who:** Mobile teams, full-stack teams  
-**Symptom:** API tests exist for web but mobile surfaces are untested.  
+**Who:** Mobile teams, full-stack teams
+**Symptom:** API tests exist for web but mobile surfaces are untested.
 **CHERENKOV Fix:** Maestro + Appium bridges with semantic VLM oracles. Same spec → mobile test flows. Same conformance report format.
 
 ---
@@ -697,6 +697,6 @@ Everything else compounds from there.
 
 ---
 
-*Document authored: 2026-06-09*  
-*Revision cycle: Quarterly*  
+*Document authored: 2026-06-09*
+*Revision cycle: Quarterly*
 *Owner: Product / Strategy*

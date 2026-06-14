@@ -5,7 +5,6 @@ import sqlite3
 import threading
 import time
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 
 from cherenkov.core.errors import get_logger
@@ -32,10 +31,10 @@ class GovernanceKPI:
     def health_score(self) -> float:
         weights = {"escape": 0.3, "fp": 0.2, "coverage": 0.3, "maintenance": 0.2}
         score = (
-            weights["escape"] * (1.0 - self.escape_rate) +
-            weights["fp"] * (1.0 - self.false_positive_rate) +
-            weights["coverage"] * self.coverage +
-            weights["maintenance"] * self.maintenance_score
+            weights["escape"] * (1.0 - self.escape_rate)
+            + weights["fp"] * (1.0 - self.false_positive_rate)
+            + weights["coverage"] * self.coverage
+            + weights["maintenance"] * self.maintenance_score
         )
         return round(score, 4)
 
@@ -175,7 +174,9 @@ class GovernanceCollector:
             try:
                 conn = sqlite3.connect(coverage_db, timeout=5.0)
                 conn.execute("PRAGMA journal_mode=WAL")
-                total_ep = conn.execute("SELECT COUNT(*) FROM coverage_items").fetchone()[0]
+                total_ep = conn.execute(
+                    "SELECT COUNT(*) FROM coverage_items"
+                ).fetchone()[0]
                 covered_ep = conn.execute(
                     "SELECT COUNT(*) FROM coverage_items WHERE state='covered'"
                 ).fetchone()[0]
@@ -193,7 +194,9 @@ class GovernanceCollector:
             # Add a flag so dashboards can show "no data" instead of 0%
             kpi.coverage_data_available = False
 
-        kpi.maintenance_score = max(0.0, min(1.0, 1.0 - kpi.false_positive_rate * 0.5 - kpi.escape_rate * 0.3))
+        kpi.maintenance_score = max(
+            0.0, min(1.0, 1.0 - kpi.false_positive_rate * 0.5 - kpi.escape_rate * 0.3)
+        )
 
         report = GovernanceReport(kpi=kpi, history=self._get_history())
         self._persist(kpi)
@@ -209,10 +212,22 @@ class GovernanceCollector:
                 " escaped_defects, false_positives, idiom_count, "
                 " total_endpoints, covered_endpoints) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (kpi.last_run_ts, kpi.health_score, kpi.escape_rate, kpi.false_positive_rate,
-                 kpi.coverage, kpi.maintenance_score, kpi.total_tests, kpi.passed_tests,
-                 kpi.failed_tests, kpi.escaped_defects, kpi.false_positives, kpi.idiom_count,
-                 kpi.total_endpoints, kpi.covered_endpoints),
+                (
+                    kpi.last_run_ts,
+                    kpi.health_score,
+                    kpi.escape_rate,
+                    kpi.false_positive_rate,
+                    kpi.coverage,
+                    kpi.maintenance_score,
+                    kpi.total_tests,
+                    kpi.passed_tests,
+                    kpi.failed_tests,
+                    kpi.escaped_defects,
+                    kpi.false_positives,
+                    kpi.idiom_count,
+                    kpi.total_endpoints,
+                    kpi.covered_endpoints,
+                ),
             )
             conn.commit()
         except Exception as e:
@@ -222,7 +237,8 @@ class GovernanceCollector:
         try:
             conn = self._connect()
             rows = conn.execute(
-                "SELECT * FROM governance_kpi_history ORDER BY timestamp DESC LIMIT ?", (limit,)
+                "SELECT * FROM governance_kpi_history ORDER BY timestamp DESC LIMIT ?",
+                (limit,),
             ).fetchall()
             return [
                 {

@@ -7,6 +7,7 @@ analyses utilisation trends, and emits actionable cost-reduction recommendations
 Supports: Ollama (free, local), OpenAI, Anthropic.
 Pricing table follows provider public pricing pages (per-1K tokens, USD).
 """
+
 from __future__ import annotations
 
 import os
@@ -28,26 +29,26 @@ _PRICE_TABLE: dict[str, dict[str, dict[str, float]]] = {
         "default": {"input": 0.0, "output": 0.0},
     },
     "openai": {
-        "gpt-4o-mini":    {"input": 0.000150, "output": 0.000600},
-        "gpt-4o":         {"input": 0.005000, "output": 0.015000},
-        "gpt-4-turbo":    {"input": 0.010000, "output": 0.030000},
-        "gpt-3.5-turbo":  {"input": 0.000500, "output": 0.001500},
-        "default":        {"input": 0.010000, "output": 0.030000},
+        "gpt-4o-mini": {"input": 0.000150, "output": 0.000600},
+        "gpt-4o": {"input": 0.005000, "output": 0.015000},
+        "gpt-4-turbo": {"input": 0.010000, "output": 0.030000},
+        "gpt-3.5-turbo": {"input": 0.000500, "output": 0.001500},
+        "default": {"input": 0.010000, "output": 0.030000},
     },
     "anthropic": {
-        "claude-haiku":   {"input": 0.000250, "output": 0.001250},
-        "claude-sonnet":  {"input": 0.003000, "output": 0.015000},
-        "claude-opus":    {"input": 0.015000, "output": 0.075000},
-        "default":        {"input": 0.003000, "output": 0.015000},
+        "claude-haiku": {"input": 0.000250, "output": 0.001250},
+        "claude-sonnet": {"input": 0.003000, "output": 0.015000},
+        "claude-opus": {"input": 0.015000, "output": 0.075000},
+        "default": {"input": 0.003000, "output": 0.015000},
     },
 }
 
 # ── Recommendation thresholds ─────────────────────────────────────────────────
-_LOW_CACHE_THRESHOLD   = 0.10   # cache hit rate below 10% → caching underused
+_LOW_CACHE_THRESHOLD = 0.10  # cache hit rate below 10% → caching underused
 _HIGH_PROMPT_THRESHOLD = 2_000  # avg prompt tokens per call → prompt bloat
-_REPROMPT_THRESHOLD    = 0.15   # >15% calls needed a reprompt → schema issue
-_GROWTH_THRESHOLD      = 0.20   # week-over-week token growth > 20%
-_PAID_SPEND_THRESHOLD  = 0.05   # >$0.05 daily avg on paid provider → expensive
+_REPROMPT_THRESHOLD = 0.15  # >15% calls needed a reprompt → schema issue
+_GROWTH_THRESHOLD = 0.20  # week-over-week token growth > 20%
+_PAID_SPEND_THRESHOLD = 0.05  # >$0.05 daily avg on paid provider → expensive
 
 
 def _price_for(provider: str, model: str) -> dict[str, float]:
@@ -76,6 +77,7 @@ def compute_cost(
 
 # ── Data model ────────────────────────────────────────────────────────────────
 
+
 @dataclass
 class TokenRecord:
     run_id: str
@@ -94,6 +96,7 @@ class TokenRecord:
 @dataclass
 class TokenUsageReport:
     """Returned by TokenMonitor.get_report()."""
+
     period_days: int
     total_tokens: int
     total_cost_usd: float
@@ -101,14 +104,15 @@ class TokenUsageReport:
     cache_hit_rate: float
     avg_prompt_tokens: float
     avg_completion_tokens: float
-    by_provider: list[dict]          # [{provider, model, requests, tokens, cost_usd}]
-    by_stage: list[dict]             # [{stage, requests, tokens, cost_usd}]
-    daily_trend: list[dict]          # [{date, tokens, cost_usd}]
-    recommendations: list[dict]      # [{severity, code, title, detail, action}]
+    by_provider: list[dict]  # [{provider, model, requests, tokens, cost_usd}]
+    by_stage: list[dict]  # [{stage, requests, tokens, cost_usd}]
+    daily_trend: list[dict]  # [{date, tokens, cost_usd}]
+    recommendations: list[dict]  # [{severity, code, title, detail, action}]
     reprompt_rate: float = 0.0
 
 
 # ── Monitor ───────────────────────────────────────────────────────────────────
+
 
 class TokenMonitor:
     """Persistent, cross-run token consumption tracker and analyser.
@@ -181,9 +185,17 @@ class TokenMonitor:
             " total_tokens, cost_usd, cache_hit, reprompts, timestamp) "
             "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
             (
-                rec.run_id, rec.model, rec.provider, rec.stage,
-                rec.prompt_tokens, rec.completion_tokens, rec.total_tokens,
-                rec.cost_usd, int(rec.cache_hit), rec.reprompts, rec.timestamp,
+                rec.run_id,
+                rec.model,
+                rec.provider,
+                rec.stage,
+                rec.prompt_tokens,
+                rec.completion_tokens,
+                rec.total_tokens,
+                rec.cost_usd,
+                int(rec.cache_hit),
+                rec.reprompts,
+                rec.timestamp,
             ),
         )
         conn.commit()
@@ -197,17 +209,24 @@ class TokenMonitor:
 
         if not rows:
             return TokenUsageReport(
-                period_days=days, total_tokens=0, total_cost_usd=0.0,
-                total_requests=0, cache_hit_rate=0.0, avg_prompt_tokens=0.0,
-                avg_completion_tokens=0.0, by_provider=[], by_stage=[],
-                daily_trend=[], recommendations=self._recommendations([], days),
+                period_days=days,
+                total_tokens=0,
+                total_cost_usd=0.0,
+                total_requests=0,
+                cache_hit_rate=0.0,
+                avg_prompt_tokens=0.0,
+                avg_completion_tokens=0.0,
+                by_provider=[],
+                by_stage=[],
+                daily_trend=[],
+                recommendations=self._recommendations([], days),
             )
 
         records = [dict(r) for r in rows]
         total_tokens = sum(r["total_tokens"] for r in records)
-        total_cost   = round(sum(r["cost_usd"] for r in records), 6)
-        total_req    = len(records)
-        cache_hits   = sum(1 for r in records if r["cache_hit"])
+        total_cost = round(sum(r["cost_usd"] for r in records), 6)
+        total_req = len(records)
+        cache_hits = sum(1 for r in records if r["cache_hit"])
         total_reprompts = sum(r["reprompts"] for r in records)
 
         avg_prompt = sum(r["prompt_tokens"] for r in records) / total_req
@@ -243,11 +262,16 @@ class TokenMonitor:
             s = r["stage"] or "unknown"
             if s not in stage_agg:
                 stage_agg[s] = {
-                    "stage": s, "requests": 0, "total_tokens": 0, "cost_usd": 0.0
+                    "stage": s,
+                    "requests": 0,
+                    "total_tokens": 0,
+                    "cost_usd": 0.0,
                 }
             stage_agg[s]["requests"] += 1
             stage_agg[s]["total_tokens"] += r["total_tokens"]
-            stage_agg[s]["cost_usd"] = round(stage_agg[s]["cost_usd"] + r["cost_usd"], 6)
+            stage_agg[s]["cost_usd"] = round(
+                stage_agg[s]["cost_usd"] + r["cost_usd"], 6
+            )
         by_stage = sorted(stage_agg.values(), key=lambda x: x["cost_usd"], reverse=True)
 
         # daily trend (last `days` days)
@@ -255,7 +279,12 @@ class TokenMonitor:
         for r in records:
             date = time.strftime("%Y-%m-%d", time.gmtime(r["timestamp"]))
             if date not in day_agg:
-                day_agg[date] = {"date": date, "tokens": 0, "cost_usd": 0.0, "requests": 0}
+                day_agg[date] = {
+                    "date": date,
+                    "tokens": 0,
+                    "cost_usd": 0.0,
+                    "requests": 0,
+                }
             day_agg[date]["tokens"] += r["total_tokens"]
             day_agg[date]["cost_usd"] = round(
                 day_agg[date]["cost_usd"] + r["cost_usd"], 6
@@ -304,60 +333,70 @@ class TokenMonitor:
         recs: list[dict] = []
 
         if not records:
-            recs.append({
-                "severity": "info",
-                "code": "NO_DATA",
-                "title": "No token data yet",
-                "detail": "Run cherenkov against a real server to populate token usage.",
-                "action": "cherenkov validate --target <url>",
-            })
+            recs.append(
+                {
+                    "severity": "info",
+                    "code": "NO_DATA",
+                    "title": "No token data yet",
+                    "detail": "Run cherenkov against a real server to populate token usage.",
+                    "action": "cherenkov validate --target <url>",
+                }
+            )
             return recs
 
         # R1 — Cache underused
         if cache_hit_rate < _LOW_CACHE_THRESHOLD:
-            recs.append({
-                "severity": "warning",
-                "code": "CACHE_UNDERUSED",
-                "title": "Response cache hit rate is low "
-                         f"({cache_hit_rate*100:.1f}%)",
-                "detail": "Identical (system_prompt, user_prompt, model) tuples are "
-                          "re-evaluated instead of served from cache. "
-                          f"Current hit rate: {cache_hit_rate*100:.1f}% "
-                          f"(threshold: {_LOW_CACHE_THRESHOLD*100:.0f}%).",
-                "action": "Ensure CachedInferenceClient wraps all providers. "
-                          "Set CHERENKOV_CACHE_TTL in config (default: 3600s).",
-            })
+            recs.append(
+                {
+                    "severity": "warning",
+                    "code": "CACHE_UNDERUSED",
+                    "title": "Response cache hit rate is low "
+                    f"({cache_hit_rate*100:.1f}%)",
+                    "detail": "Identical (system_prompt, user_prompt, model) tuples are "
+                    "re-evaluated instead of served from cache. "
+                    f"Current hit rate: {cache_hit_rate*100:.1f}% "
+                    f"(threshold: {_LOW_CACHE_THRESHOLD*100:.0f}%).",
+                    "action": "Ensure CachedInferenceClient wraps all providers. "
+                    "Set CHERENKOV_CACHE_TTL in config (default: 3600s).",
+                }
+            )
 
         # R2 — Prompt bloat
         if avg_prompt_tokens > _HIGH_PROMPT_THRESHOLD:
-            monthly_prompt_tokens = avg_prompt_tokens * len(records) * (30 / max(days, 1))
-            recs.append({
-                "severity": "warning",
-                "code": "PROMPT_BLOAT",
-                "title": f"System prompts are large "
-                         f"(avg {avg_prompt_tokens:.0f} prompt tokens/call)",
-                "detail": f"Average prompt is {avg_prompt_tokens:.0f} tokens. "
-                          "Spec context, few-shot examples, or schema repetition "
-                          "may be inflating the prompt. "
-                          f"Estimated {monthly_prompt_tokens/1_000:.0f}K monthly prompt tokens.",
-                "action": "Compress system prompts: strip comments from schema, "
-                          "remove duplicate examples. "
-                          "Target: ≤1500 tokens/call for local models.",
-            })
+            monthly_prompt_tokens = (
+                avg_prompt_tokens * len(records) * (30 / max(days, 1))
+            )
+            recs.append(
+                {
+                    "severity": "warning",
+                    "code": "PROMPT_BLOAT",
+                    "title": f"System prompts are large "
+                    f"(avg {avg_prompt_tokens:.0f} prompt tokens/call)",
+                    "detail": f"Average prompt is {avg_prompt_tokens:.0f} tokens. "
+                    "Spec context, few-shot examples, or schema repetition "
+                    "may be inflating the prompt. "
+                    f"Estimated {monthly_prompt_tokens/1_000:.0f}K monthly prompt tokens.",
+                    "action": "Compress system prompts: strip comments from schema, "
+                    "remove duplicate examples. "
+                    "Target: ≤1500 tokens/call for local models.",
+                }
+            )
 
         # R3 — High reprompt rate
         if reprompt_rate > _REPROMPT_THRESHOLD:
-            recs.append({
-                "severity": "error",
-                "code": "HIGH_REPROMPT_RATE",
-                "title": f"High reprompt rate ({reprompt_rate*100:.1f}%)",
-                "detail": f"{reprompt_rate*100:.1f}% of calls needed at least one "
-                          "reprompt to produce valid JSON. "
-                          "Each reprompt doubles token consumption for that call.",
-                "action": "Tighten system prompt: add explicit JSON schema, "
-                          "reduce output field count, use format=json mode (Ollama). "
-                          "Check model — qwen2.5-coder:7b is better than deepseek for JSON.",
-            })
+            recs.append(
+                {
+                    "severity": "error",
+                    "code": "HIGH_REPROMPT_RATE",
+                    "title": f"High reprompt rate ({reprompt_rate*100:.1f}%)",
+                    "detail": f"{reprompt_rate*100:.1f}% of calls needed at least one "
+                    "reprompt to produce valid JSON. "
+                    "Each reprompt doubles token consumption for that call.",
+                    "action": "Tighten system prompt: add explicit JSON schema, "
+                    "reduce output field count, use format=json mode (Ollama). "
+                    "Check model — qwen2.5-coder:7b is better than deepseek for JSON.",
+                }
+            )
 
         # R4 — Paid provider expensive
         paid_total = sum(r["cost_usd"] for r in records if r["provider"] != "ollama")
@@ -365,67 +404,76 @@ class TokenMonitor:
             daily_avg = paid_total / max(days, 1)
             monthly_est = daily_avg * 30
             if daily_avg > _PAID_SPEND_THRESHOLD:
-                recs.append({
-                    "severity": "warning",
-                    "code": "PAID_PROVIDER_SPEND",
-                    "title": f"Paid API spend: ${paid_total:.4f} "
-                             f"(~${monthly_est:.2f}/month estimated)",
-                    "detail": f"Daily average: ${daily_avg:.4f}. "
-                              "Most test-generation workloads run equivalently "
-                              "on Ollama (qwen2.5-coder:7b) at $0/month.",
-                    "action": "Run 'cherenkov doctor' to check Ollama availability. "
-                              "Set CHERENKOV_PROVIDER=ollama to switch. "
-                              "Use paid providers only for planning stage if needed.",
-                })
+                recs.append(
+                    {
+                        "severity": "warning",
+                        "code": "PAID_PROVIDER_SPEND",
+                        "title": f"Paid API spend: ${paid_total:.4f} "
+                        f"(~${monthly_est:.2f}/month estimated)",
+                        "detail": f"Daily average: ${daily_avg:.4f}. "
+                        "Most test-generation workloads run equivalently "
+                        "on Ollama (qwen2.5-coder:7b) at $0/month.",
+                        "action": "Run 'cherenkov doctor' to check Ollama availability. "
+                        "Set CHERENKOV_PROVIDER=ollama to switch. "
+                        "Use paid providers only for planning stage if needed.",
+                    }
+                )
 
         # R5 — Model tier mismatch (expensive model for cheap work)
         expensive_json_calls = [
-            r for r in records
+            r
+            for r in records
             if r["provider"] in ("openai", "anthropic")
             and any(m in r["model"] for m in ("gpt-4-turbo", "gpt-4o", "claude-opus"))
             and r["stage"] in ("GENERATE", "REVIEW")
         ]
         if len(expensive_json_calls) > 5:
             wasted_cost = sum(r["cost_usd"] for r in expensive_json_calls)
-            recs.append({
-                "severity": "info",
-                "code": "MODEL_TIER_MISMATCH",
-                "title": f"Premium model used for routine JSON extraction "
-                         f"({len(expensive_json_calls)} calls, ${wasted_cost:.4f})",
-                "detail": "GENERATE and REVIEW stages do structured JSON extraction. "
-                          "Premium models (GPT-4o, Claude Opus) offer minimal benefit "
-                          "over cheaper tiers for this task.",
-                "action": "Route GENERATE/REVIEW to gpt-4o-mini or claude-haiku. "
-                          "Reserve premium models for PLAN stage only.",
-            })
+            recs.append(
+                {
+                    "severity": "info",
+                    "code": "MODEL_TIER_MISMATCH",
+                    "title": f"Premium model used for routine JSON extraction "
+                    f"({len(expensive_json_calls)} calls, ${wasted_cost:.4f})",
+                    "detail": "GENERATE and REVIEW stages do structured JSON extraction. "
+                    "Premium models (GPT-4o, Claude Opus) offer minimal benefit "
+                    "over cheaper tiers for this task.",
+                    "action": "Route GENERATE/REVIEW to gpt-4o-mini or claude-haiku. "
+                    "Reserve premium models for PLAN stage only.",
+                }
+            )
 
         # R6 — Token growth trend
         if daily_trend and len(daily_trend) >= 14:
-            first_week  = sum(d["tokens"] for d in daily_trend[:7])
+            first_week = sum(d["tokens"] for d in daily_trend[:7])
             second_week = sum(d["tokens"] for d in daily_trend[-7:])
             if first_week > 0 and second_week / first_week > (1 + _GROWTH_THRESHOLD):
                 growth_pct = (second_week / first_week - 1) * 100
-                recs.append({
-                    "severity": "info",
-                    "code": "TOKEN_GROWTH",
-                    "title": f"Token consumption grew {growth_pct:.0f}% week-over-week",
-                    "detail": f"Week 1: {first_week:,} tokens → Week 2: {second_week:,} tokens. "
-                              "This may indicate spec growth, more endpoints, "
-                              "or increasing reprompt frequency.",
-                    "action": "Run 'cherenkov tokens breakdown --stage' to find "
-                              "which stage is growing. "
-                              "Check if spec added many new endpoints or schemas.",
-                })
+                recs.append(
+                    {
+                        "severity": "info",
+                        "code": "TOKEN_GROWTH",
+                        "title": f"Token consumption grew {growth_pct:.0f}% week-over-week",
+                        "detail": f"Week 1: {first_week:,} tokens → Week 2: {second_week:,} tokens. "
+                        "This may indicate spec growth, more endpoints, "
+                        "or increasing reprompt frequency.",
+                        "action": "Run 'cherenkov tokens breakdown --stage' to find "
+                        "which stage is growing. "
+                        "Check if spec added many new endpoints or schemas.",
+                    }
+                )
 
         # R7 — All Ollama, no cost (positive ack)
         if all(r["provider"] == "ollama" for r in records):
-            recs.append({
-                "severity": "ok",
-                "code": "LOCAL_ONLY",
-                "title": "Running 100% on local Ollama — $0 API cost",
-                "detail": "All inference is local. Your spec never leaves your machine.",
-                "action": None,
-            })
+            recs.append(
+                {
+                    "severity": "ok",
+                    "code": "LOCAL_ONLY",
+                    "title": "Running 100% on local Ollama — $0 API cost",
+                    "detail": "All inference is local. Your spec never leaves your machine.",
+                    "action": None,
+                }
+            )
 
         return recs
 

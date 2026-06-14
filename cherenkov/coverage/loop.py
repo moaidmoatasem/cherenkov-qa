@@ -3,19 +3,14 @@ CHERENKOV coverage/loop.py — Epoch 11 Bounded Generate→Run→Read-Trace→Re
 Iteratively generates unit tests, runs them against a real server, reads
 coverage traces, and repairs tests until coverage threshold is met.
 """
+
 from __future__ import annotations
 
-import json
-import os
 import subprocess
-import time
-from pathlib import Path
-from typing import Any
 
 from cherenkov.core.config import Config
 from cherenkov.core.errors import get_logger
 from cherenkov.coverage.emitter import UnitTestEmitter
-from cherenkov.core.contracts import Status, StageMeta
 
 
 class CoverageThreshold:
@@ -171,7 +166,9 @@ class CoverageLoop:
                     test_name = result.get("name", "unknown")
                     error_msg = result.get("error", "")
                     repair_log.append(f"Repair needed: {test_name} — {error_msg[:100]}")
-                    self.log.info("repair needed", test=test_name, error=error_msg[:100])
+                    self.log.info(
+                        "repair needed", test=test_name, error=error_msg[:100]
+                    )
 
             status_coverage = self._estimate_status_coverage(endpoint_slices)
 
@@ -185,7 +182,9 @@ class CoverageLoop:
                 status_coverage=status_coverage,
             )
 
-            if self._check_threshold_met(covered_endpoints, total_endpoints, status_coverage):
+            if self._check_threshold_met(
+                covered_endpoints, total_endpoints, status_coverage
+            ):
                 self.log.info("coverage threshold met", iteration=iteration)
                 report = CoverageReport(
                     total_endpoints=total_endpoints,
@@ -198,9 +197,11 @@ class CoverageLoop:
                     threshold_met=True,
                     repair_log=repair_log,
                 )
-                print(f"\n[COVERAGE] Threshold met at iteration {iteration}: "
-                      f"{covered_endpoints}/{total_endpoints} endpoints, "
-                      f"{status_coverage:.0%} status coverage")
+                print(
+                    f"\n[COVERAGE] Threshold met at iteration {iteration}: "
+                    f"{covered_endpoints}/{total_endpoints} endpoints, "
+                    f"{status_coverage:.0%} status coverage"
+                )
                 return report
 
         status_coverage = self._estimate_status_coverage(endpoint_slices)
@@ -215,7 +216,11 @@ class CoverageLoop:
             threshold_met=False,
             repair_log=repair_log,
         )
-        self.log.info("coverage loop end", threshold_met=False, iterations=self.threshold.MAX_ITERATIONS)
+        self.log.info(
+            "coverage loop end",
+            threshold_met=False,
+            iterations=self.threshold.MAX_ITERATIONS,
+        )
         return report
 
     def _run_tests(
@@ -232,17 +237,30 @@ class CoverageLoop:
                 cmd = ["npx", "jest", output_dir, "--verbose"]
         else:
             import shlex
+
             cmd = shlex.split(test_command)
 
         try:
             import shutil
+
             runner_bin = cmd[0]
-            if not shutil.which(runner_bin.replace("python3", "python").replace("npx", "").strip()):
+            if not shutil.which(
+                runner_bin.replace("python3", "python").replace("npx", "").strip()
+            ):
                 if runner_bin in ("python3", "python", "python.exe"):
                     pass
                 elif not shutil.which(runner_bin.split("/")[0]):
-                    self.log.warning("runner not found", detail=f"'{runner_bin}' not on PATH")
-                    return {"passed": 0, "failed": 0, "exit_code": -1, "stdout": "", "stderr": "runner not found", "details": []}
+                    self.log.warning(
+                        "runner not found", detail=f"'{runner_bin}' not on PATH"
+                    )
+                    return {
+                        "passed": 0,
+                        "failed": 0,
+                        "exit_code": -1,
+                        "stdout": "",
+                        "stderr": "runner not found",
+                        "details": [],
+                    }
             proc = subprocess.run(
                 cmd,
                 shell=False,
@@ -270,10 +288,27 @@ class CoverageLoop:
             }
         except subprocess.TimeoutExpired:
             self.log.warning("test run timed out")
-            return {"passed": 0, "failed": 0, "exit_code": -1, "stdout": "", "stderr": "timeout", "details": []}
+            return {
+                "passed": 0,
+                "failed": 0,
+                "exit_code": -1,
+                "stdout": "",
+                "stderr": "timeout",
+                "details": [],
+            }
         except FileNotFoundError:
-            self.log.warning("test runner not found", detail=f"'{test_command.split()[0]}' not available")
-            return {"passed": 0, "failed": 0, "exit_code": -1, "stdout": "", "stderr": "runner not found", "details": []}
+            self.log.warning(
+                "test runner not found",
+                detail=f"'{test_command.split()[0]}' not available",
+            )
+            return {
+                "passed": 0,
+                "failed": 0,
+                "exit_code": -1,
+                "stdout": "",
+                "stderr": "runner not found",
+                "details": [],
+            }
 
     def _parse_results(self, stdout: str, passed: int, failed: int) -> list[dict]:
         """Parse test runner output into structured results."""
@@ -283,11 +318,13 @@ class CoverageLoop:
                 parts = line.split()
                 name = parts[0] if parts else "unknown"
                 is_passed = "PASSED" in line
-                details.append({
-                    "name": name,
-                    "passed": is_passed,
-                    "error": "" if is_passed else line,
-                })
+                details.append(
+                    {
+                        "name": name,
+                        "passed": is_passed,
+                        "error": "" if is_passed else line,
+                    }
+                )
         return details
 
     def _estimate_status_coverage(self, endpoint_slices: list[dict]) -> float:

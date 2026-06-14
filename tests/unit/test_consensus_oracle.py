@@ -1,9 +1,9 @@
 """Unit tests for cherenkov/oracle/consensus_oracle.py — CANDOR consensus oracle."""
+
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import pytest
 
 from cherenkov.core.contracts import Claim, Provenance, ProvenanceType
 from cherenkov.oracle.consensus_oracle import ConsensusOracle
@@ -43,7 +43,10 @@ _SAMPLE_SLICE = {
     "method": "POST",
     "operation": {
         "summary": "Create a new user",
-        "responses": {"201": {"description": "Created"}, "400": {"description": "Bad Request"}},
+        "responses": {
+            "201": {"description": "Created"},
+            "400": {"description": "Bad Request"},
+        },
     },
     "schemas": {},
 }
@@ -85,7 +88,9 @@ def test_evaluate_empty_test_code():
 
 def test_single_pass_fallback_on_client_error():
     oracle = ConsensusOracle(run_id="test-run")
-    with patch("cherenkov.oracle.consensus_oracle.ConsensusOracle._single_pass") as mock_pass:
+    with patch(
+        "cherenkov.oracle.consensus_oracle.ConsensusOracle._single_pass"
+    ) as mock_pass:
         mock_pass.return_value = {
             "verdict": "incorrect",
             "confidence": 0.3,
@@ -122,7 +127,9 @@ def test_unanimous_correct_returns_correct():
 
 def test_unanimous_incorrect_returns_incorrect():
     oracle = ConsensusOracle(passes=3, consensus_threshold=0.6)
-    side_effects = _mock_passes(["incorrect", "incorrect", "incorrect"], [0.8, 0.7, 0.8])
+    side_effects = _mock_passes(
+        ["incorrect", "incorrect", "incorrect"], [0.8, 0.7, 0.8]
+    )
     with patch.object(oracle, "_single_pass", side_effect=side_effects):
         result = oracle.evaluate(
             _make_claim(), test_code=_SAMPLE_TEST, endpoint_slice=_SAMPLE_SLICE
@@ -133,9 +140,7 @@ def test_unanimous_incorrect_returns_incorrect():
 def test_split_vote_below_threshold_returns_incorrect():
     # 1/3 agree (0.33) < threshold 0.6 → incorrect
     oracle = ConsensusOracle(passes=3, consensus_threshold=0.6)
-    side_effects = _mock_passes(
-        ["correct", "incorrect", "incorrect"], [0.9, 0.6, 0.7]
-    )
+    side_effects = _mock_passes(["correct", "incorrect", "incorrect"], [0.9, 0.6, 0.7])
     with patch.object(oracle, "_single_pass", side_effect=side_effects):
         result = oracle.evaluate(
             _make_claim(), test_code=_SAMPLE_TEST, endpoint_slice=_SAMPLE_SLICE
@@ -146,9 +151,7 @@ def test_split_vote_below_threshold_returns_incorrect():
 def test_split_vote_at_threshold_returns_correct():
     # 2/3 agree (0.67) >= threshold 0.6 → correct
     oracle = ConsensusOracle(passes=3, consensus_threshold=0.6)
-    side_effects = _mock_passes(
-        ["correct", "correct", "incorrect"], [0.8, 0.85, 0.6]
-    )
+    side_effects = _mock_passes(["correct", "correct", "incorrect"], [0.8, 0.85, 0.6])
     with patch.object(oracle, "_single_pass", side_effect=side_effects):
         result = oracle.evaluate(
             _make_claim(), test_code=_SAMPLE_TEST, endpoint_slice=_SAMPLE_SLICE

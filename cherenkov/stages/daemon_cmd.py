@@ -74,6 +74,7 @@ def run_daemon(interval_seconds: int = 60, max_loops: int = 0) -> int:
         log.info("rebuilding truth model", loop=loop_count)
 
         from cherenkov.core.config_loader import load_effective_config
+
         cfg = load_effective_config()
 
         sources = {}
@@ -89,13 +90,15 @@ def run_daemon(interval_seconds: int = 60, max_loops: int = 0) -> int:
             log.warning("no sources configured, skipping rebuild")
             summary = ""
 
-        queue.push({
-            "loop": loop_count,
-            "timestamp": time.time(),
-            "nodes": len(tm.nodes) if sources else 0,
-            "edges": len(tm.edges) if sources else 0,
-            "summary": summary,
-        })
+        queue.push(
+            {
+                "loop": loop_count,
+                "timestamp": time.time(),
+                "nodes": len(tm.nodes) if sources else 0,
+                "edges": len(tm.edges) if sources else 0,
+                "summary": summary,
+            }
+        )
 
         if max_loops != 0 and loop_count >= max_loops:
             break
@@ -103,4 +106,41 @@ def run_daemon(interval_seconds: int = 60, max_loops: int = 0) -> int:
         time.sleep(interval_seconds)
 
     log.info("daemon stopped", total_loops=loop_count)
+    return 0
+
+
+def run_guardian_daemon(
+    target_url: str,
+    spec_path: str,
+    source_type: str = "openapi",
+    interval_seconds: int = 10,
+) -> int:
+    """Execute `cherenkov daemon --guardian`.
+
+    Actively monitors the specification file and triggers real CHERENKOV
+    conformance generation and validation on change.
+    """
+    log = get_logger("guardian_daemon")
+
+    from cherenkov.daemon.watcher import SpecGuardianWatcher
+    from pathlib import Path
+
+    spec_file = Path(spec_path)
+    target_repo = spec_file.parent if spec_file.parent.name else Path(".")
+    filename = spec_file.name
+
+    log.info(
+        f"Guardian daemon starting on {spec_path} -> {target_url}",
+        interval=interval_seconds,
+    )
+    watcher = SpecGuardianWatcher(
+        target_repo=str(target_repo),
+        target_url=target_url,
+        source_type=source_type,
+        watch_files=[filename],
+    )
+
+    # We run start_watching which loops indefinitely.
+    watcher.start_watching(poll_interval=interval_seconds)
+
     return 0

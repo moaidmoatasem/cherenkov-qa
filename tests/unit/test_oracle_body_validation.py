@@ -1,5 +1,4 @@
 import pytest
-from unittest import mock
 
 
 def test_oracle_body_validation_catches_missing_required_field():
@@ -10,7 +9,11 @@ def test_oracle_body_validation_catches_missing_required_field():
         pytest.skip("SpecPrismOracle not available")
 
     oracle = SpecPrismOracle.__new__(SpecPrismOracle)
-    schema = {"type": "object", "required": ["id", "name"], "properties": {"id": {"type": "integer"}, "name": {"type": "string"}}}
+    schema = {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {"id": {"type": "integer"}, "name": {"type": "string"}},
+    }
     ok, conf, detail = oracle._validate_response_body({"id": 1}, schema)
     # Missing "name" field
     assert not ok, f"Expected failure but got: {detail}"
@@ -23,7 +26,11 @@ def test_oracle_body_validation_passes_valid_body():
     except ImportError:
         pytest.skip("SpecPrismOracle not available")
     oracle = SpecPrismOracle.__new__(SpecPrismOracle)
-    schema = {"type": "object", "required": ["id"], "properties": {"id": {"type": "integer"}}}
+    schema = {
+        "type": "object",
+        "required": ["id"],
+        "properties": {"id": {"type": "integer"}},
+    }
     ok, conf, detail = oracle._validate_response_body({"id": 42}, schema)
     assert ok
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from enum import Enum
 from typing import Any
 from pydantic import BaseModel
 
@@ -20,12 +19,14 @@ class VLMProvider:
 
     def describe_image(self, image_path: str, prompt: str = "") -> VLMResult:
         from cherenkov.substrate.vlm_provider import VLMProvider as OldVLM
+
         old = OldVLM()
         raw = old.describe_image(image_path, prompt)
         return VLMResult(description=raw, raw=raw)
 
     def compare_images(self, baseline_path: str, actual_path: str) -> dict[str, Any]:
         from cherenkov.substrate.vlm_provider import VLMProvider as OldVLM
+
         old = OldVLM()
         return old.compare_images(baseline_path, actual_path)
 

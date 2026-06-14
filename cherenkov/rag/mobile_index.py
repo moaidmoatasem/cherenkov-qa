@@ -2,6 +2,7 @@
 cherenkov/rag/mobile_index.py — Issue #366: Mobile RAG Index.
 Per-app knowledge retrieval using SQLite.
 """
+
 from __future__ import annotations
 
 import json

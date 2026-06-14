@@ -75,7 +75,7 @@ The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHE
 As of June 2026, CHERENKOV adopts the following advanced orchestration patterns for autonomous agents:
 5. **Skills Directory (`skills/`)**: Autonomous workflows MUST read stack-specific markdown instructions from `skills/` before executing complex tasks. This maintains the D7 invariant contextually.
 6. **Agent Memory (`agent_memory/`)**: Agents crawling or testing MUST document their state, findings, and context in the `agent_memory/` markdown wiki to prevent AI amnesia and build compounding knowledge.
-7. **Orchestration & Tooling Standards**: 
+7. **Orchestration & Tooling Standards**:
    - Use **PydanticAI** for all structured agent outputs and schema validation.
    - Use **DeepEval** for agent logic and trajectory evaluation.
    - Use **Logfire** for tracing autonomous reasoning.

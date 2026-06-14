@@ -56,7 +56,9 @@ class GracefulDegradation:
 
     def degraded_or_worse(self) -> bool:
         return self._health.level in (
-            DegradationLevel.DEGRADED, DegradationLevel.CRITICAL, DegradationLevel.DOWN
+            DegradationLevel.DEGRADED,
+            DegradationLevel.CRITICAL,
+            DegradationLevel.DOWN,
         )
 
     def critical_or_worse(self) -> bool:
@@ -66,7 +68,9 @@ class GracefulDegradation:
         try:
             ok = fn()
         except Exception as e:
-            logger.warning("health check failed", extra={"check": name, "error": str(e)})
+            logger.warning(
+                "health check failed", extra={"check": name, "error": str(e)}
+            )
             ok = False
         self._health.update(name, ok)
         return ok
@@ -82,6 +86,7 @@ class GracefulDegradation:
                 logger.error("call failed", extra={"check": name, "error": str(e)})
                 self._health.update(name, False)
                 return None
+
         return wrapper
 
 

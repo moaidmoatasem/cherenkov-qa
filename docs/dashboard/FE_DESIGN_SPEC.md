@@ -23,7 +23,7 @@
 3. **Submit → Planning.** Input collapses up (`220ms ease-out`), a **step list** scaffolds in with skeleton rows (`shimmer`). *State: loading-plan.*
 4. **Pilot executes step-by-step.** Each step row animates from `pending → running (cyan pulse) → done (success check)`; on **Assisted**, a "Confirm step" inline button gates each action. Live screenshot thumbnail updates per step.
 5. **Result.** A result `Card` slides up (`260ms`): pass/fail `StatusDot`, evidence disclosure (request/response + screenshot), and the diverging claim if any.
-6. **Save & Eject.** Primary button → toast "Test ejected to `tests/checkout.spec.ts` — runs standalone." 
+6. **Save & Eject.** Primary button → toast "Test ejected to `tests/checkout.spec.ts` — runs standalone."
 7. **Reflector microcopy.** "CHERENKOV learned this flow" chip — reinforces compounding value.
 
 **Branches & edge cases:**

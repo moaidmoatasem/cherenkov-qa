@@ -1,7 +1,7 @@
 # CHERENKOV-QA Testing Strategy
 
-**Date:** 2026-06-08  
-**Status:** Active  
+**Date:** 2026-06-08
+**Status:** Active
 **Related EPIC:** #277 (Phase -1)
 
 > **Reading path:** this is the testing policy and pyramid. For the project
@@ -25,9 +25,9 @@
 
 ## Unit Tests
 
-**Location:** `tests/unit/`  
-**Tool:** pytest  
-**Target:** 500+ tests  
+**Location:** `tests/unit/`
+**Tool:** pytest
+**Target:** 500+ tests
 **Coverage:** >80%
 
 ### What to Test
@@ -68,9 +68,9 @@ pytest tests/unit/ -v --cov=cherenkov --cov-report=term-missing
 
 ## Contract Tests
 
-**Location:** `tests/contracts/`  
-**Tool:** pytest  
-**Target:** 50+ tests  
+**Location:** `tests/contracts/`
+**Tool:** pytest
+**Target:** 50+ tests
 **Phase:** Phase 0b+
 
 ### What to Test
@@ -118,9 +118,9 @@ pytest tests/contracts/ -v
 
 ## Integration Tests
 
-**Location:** `tests/integration/`  
-**Tool:** pytest  
-**Target:** 50-100 tests  
+**Location:** `tests/integration/`
+**Tool:** pytest
+**Target:** 50-100 tests
 **Phase:** Phase 1+
 
 ### What to Test
@@ -141,17 +141,17 @@ def test_hitl_decision_feeds_reflector():
     # Setup
     queue = HitlQueue()
     reflector = Reflector()
-    
+
     # Create HITL item
     item_id = queue.enqueue(
         endpoint="/users",
         method="POST",
         confidence=0.85
     )
-    
+
     # Approve item
     queue.approve(item_id, actor="user", reason="Looks good")
-    
+
     # Verify Reflector updated
     idioms = reflector.get_idioms()
     assert any("users" in idiom.pattern for idiom in idioms)
@@ -168,9 +168,9 @@ pytest tests/integration/ -v
 
 ## E2E Tests
 
-**Location:** `tests/e2e/`  
-**Tool:** Playwright  
-**Target:** 5-10 tests  
+**Location:** `tests/e2e/`
+**Tool:** Playwright
+**Target:** 5-10 tests
 **Phase:** Phase 7-8
 
 ### What to Test
@@ -188,19 +188,19 @@ test('golden path: spec → generate → validate → review → eject', async (
   await page.goto('/setup');
   await page.setInputFiles('input[type="file"]', 'tests/fixtures/petstore.yaml');
   await page.click('button:has-text("Next")');
-  
+
   // Generate tests
   await page.click('button:has-text("Generate")');
   await expect(page.locator('.test-count')).toHaveText('42 tests generated');
-  
+
   // Validate
   await page.click('button:has-text("Validate")');
   await expect(page.locator('.validation-status')).toHaveText('passed');
-  
+
   // Review
   await page.click('button:has-text("Review")');
   await page.click('button:has-text("Approve All")');
-  
+
   // Eject
   await page.click('button:has-text("Eject")');
   const download = await page.waitForEvent('download');
@@ -219,9 +219,9 @@ npx playwright test tests/e2e/
 
 ## Smoke Tests
 
-**Location:** `tests/smoke/`  
-**Tool:** make targets  
-**Target:** 10+ tests  
+**Location:** `tests/smoke/`
+**Tool:** make targets
+**Target:** 10+ tests
 **Phase:** Phase 5+
 
 ### What to Test
@@ -254,9 +254,9 @@ make smoke
 
 ## Mobile Smoke Tests
 
-**Location:** `tests/smoke/mobile/`  
-**Tool:** ADB + Maestro  
-**Target:** 5+ tests  
+**Location:** `tests/smoke/mobile/`
+**Tool:** ADB + Maestro
+**Target:** 5+ tests
 **Phase:** Phase 6
 
 ### What to Test
@@ -318,12 +318,12 @@ def test_vlm_latency():
     provider = LocalAIVLMProvider()
     if not provider.is_available():
         pytest.skip("LocalAI not available")
-    
+
     image = create_test_image(1280, 720)
     start = time.time()
     result = provider.analyze(image, "Describe this screenshot")
     elapsed = time.time() - start
-    
+
     assert elapsed < 10.0, f"VLM latency {elapsed:.2f}s exceeds 10s baseline"
 ```
 

@@ -3,18 +3,17 @@ CHERENKOV coverage/emitter.py — Epoch 11 Unit-Test Emitter.
 Generates unit-level tests (pytest for Python, jest for TypeScript)
 from individual endpoint schemas, then ejects them as standalone files.
 """
+
 from __future__ import annotations
 
 import json
 import os
 import re
 import time
-from pathlib import Path
 
 from cherenkov.core.config import Config
 from cherenkov.core.contracts import GenerateOutput, Status, StageMeta, StageError
 from cherenkov.core.errors import get_logger
-from cherenkov.ai import get_client
 
 
 PYTEST_TEMPLATE = '''"""Unit test for {endpoint} — {method} {path}"""
@@ -46,7 +45,7 @@ class Test{cls_name}:
 '''
 
 
-JEST_TEMPLATE = '''/** Unit test for {endpoint} — {method} {path} */
+JEST_TEMPLATE = """/** Unit test for {endpoint} — {method} {path} */
 import fetch from "node-fetch";
 
 const BASE_URL = "{base_url}";
@@ -72,7 +71,7 @@ describe("{cls_name}", () => {{
     {jest_shape_assertions}
   }});
 }});
-'''
+"""
 
 
 class UnitTestEmitter:
@@ -124,7 +123,9 @@ class UnitTestEmitter:
                 elif framework == "jest":
                     code = self._emit_jest(slice_data, base_url)
                 else:
-                    raise ValueError(f"Unknown framework '{framework}'. Use 'pytest' or 'jest'.")
+                    raise ValueError(
+                        f"Unknown framework '{framework}'. Use 'pytest' or 'jest'."
+                    )
 
                 file_ext = ".py" if framework == "pytest" else ".ts"
                 filename = f"{scenario_id}{file_ext}"
@@ -132,21 +133,31 @@ class UnitTestEmitter:
                 with open(filepath, "w") as f:
                     f.write(code)
 
-                results.append(GenerateOutput(
-                    scenario_id=scenario_id,
-                    test_code=code,
-                    status=Status.OK,
-                    metadata=StageMeta(stage="UNIT_EMITTER", duration_ms=int((time.time() - t0) * 1000)),
-                ))
+                results.append(
+                    GenerateOutput(
+                        scenario_id=scenario_id,
+                        test_code=code,
+                        status=Status.OK,
+                        metadata=StageMeta(
+                            stage="UNIT_EMITTER",
+                            duration_ms=int((time.time() - t0) * 1000),
+                        ),
+                    )
+                )
             except Exception as e:
                 self.log.error("emit failed", scenario=scenario_id, error=str(e))
-                results.append(GenerateOutput(
-                    scenario_id=scenario_id,
-                    test_code="",
-                    status=Status.FAILED,
-                    errors=[StageError(code="EMIT_FAILED", detail=str(e))],
-                    metadata=StageMeta(stage="UNIT_EMITTER", duration_ms=int((time.time() - t0) * 1000)),
-                ))
+                results.append(
+                    GenerateOutput(
+                        scenario_id=scenario_id,
+                        test_code="",
+                        status=Status.FAILED,
+                        errors=[StageError(code="EMIT_FAILED", detail=str(e))],
+                        metadata=StageMeta(
+                            stage="UNIT_EMITTER",
+                            duration_ms=int((time.time() - t0) * 1000),
+                        ),
+                    )
+                )
 
         return results
 
@@ -155,7 +166,7 @@ class UnitTestEmitter:
         path = slice_data.get("path", "/")
         method = slice_data.get("method", "GET").lower()
         operation = slice_data.get("operation", {})
-        summary = (operation.get("summary", "") or "")
+        summary = operation.get("summary", "") or ""
         cls_name = self._to_class_name(path, method)
         test_name = self._to_test_name(path, method)
         expected_status = self._infer_expected_status(operation)
@@ -164,8 +175,8 @@ class UnitTestEmitter:
         body_kwargs_no_http = ""
         if method in ("post", "put", "patch"):
             sample_body = self._generate_sample_body(operation)
-            body_kwargs = f'json={json.dumps(sample_body)},'
-            body_kwargs_no_http = f', json={json.dumps(sample_body)}'
+            body_kwargs = f"json={json.dumps(sample_body)},"
+            body_kwargs_no_http = f", json={json.dumps(sample_body)}"
 
         shape_assertions = self._generate_shape_assertions(operation)
 
@@ -263,14 +274,16 @@ class UnitTestEmitter:
                 schema = content.get(media_type, {}).get("schema", {})
                 props = schema.get("properties", {})
                 for prop_name in props:
-                    assertions.append(f"        assert \"{prop_name}\" in data")
+                    assertions.append(f'        assert "{prop_name}" in data')
                 if props:
-                    assertions.append(f"        assert len(data) > 0")
+                    assertions.append("        assert len(data) > 0")
                 break
             if assertions:
                 break
         if not assertions:
-            assertions.append("        assert isinstance(data, dict) or isinstance(data, list)")
+            assertions.append(
+                "        assert isinstance(data, dict) or isinstance(data, list)"
+            )
         return "\n".join(assertions)
 
     def _generate_jest_shape_assertions(self, operation: dict) -> str:
@@ -283,12 +296,14 @@ class UnitTestEmitter:
                 schema = content.get(media_type, {}).get("schema", {})
                 props = schema.get("properties", {})
                 for prop_name in props:
-                    assertions.append(f"    expect(data).toHaveProperty(\"{prop_name}\");")
+                    assertions.append(
+                        f'    expect(data).toHaveProperty("{prop_name}");'
+                    )
                 break
             if assertions:
                 break
         if not assertions:
-            assertions.append("    expect(typeof data).toBe(\"object\");")
+            assertions.append('    expect(typeof data).toBe("object");')
         return "\n".join(assertions)
 
     @staticmethod

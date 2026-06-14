@@ -8,7 +8,6 @@ from typing import Any, AsyncGenerator
 from cherenkov.chat.domain.models import Session, Message
 from cherenkov.chat.ports.memory import ConversationMemory
 from cherenkov.chat.persona import PersonaRegistry
-from cherenkov.chat.tools import TOOL_REGISTRY, execute_tool
 from cherenkov.chat.guard import get_guard
 
 logger = logging.getLogger(__name__)
@@ -40,6 +39,7 @@ class QAChatAgent:
     def _call_llm(self, messages: list[dict]) -> str:
         if self.substrate_router:
             from cherenkov.core.contracts import ReasoningRequest
+
             req = ReasoningRequest(task=json.dumps(messages), capability_tier="small")
             result = self.substrate_router.route(req)
             return str(result.content)
@@ -104,9 +104,12 @@ class QAChatAgent:
         context: dict[str, Any] = {}
         try:
             from cherenkov.reflector.reflector import get_reflector
+
             r = get_reflector()
             stats = r.get_stats()
             context["idioms"] = stats.get("recent_idioms", [])[:10]
         except Exception as e:
-            logger.debug("Could not build reflector context for session %s: %s", session_id, e)
+            logger.debug(
+                "Could not build reflector context for session %s: %s", session_id, e
+            )
         return context

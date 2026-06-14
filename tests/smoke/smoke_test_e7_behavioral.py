@@ -15,6 +15,7 @@ Design constraints:
     network is unavailable the smoke gracefully falls back to counting what the
     Reflector stored (no crash).
 """
+
 from __future__ import annotations
 
 import sys
@@ -37,6 +38,7 @@ from cherenkov.reflector.store import VerdictStore
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
+
 
 def _make_hypothesis(
     claim_a: str,
@@ -66,6 +68,7 @@ def _rejected_result(hypothesis_id: str) -> ReproductionResult:
 
 # ── main demo ─────────────────────────────────────────────────────────────────
 
+
 def main() -> None:
     print("=" * 70)
     print("A6 #113 — E7 Behavioral Exit Demo")
@@ -74,6 +77,7 @@ def main() -> None:
     # ── Step 1: Create in-memory Reflector ────────────────────────────────────
     import tempfile
     import os
+
     fd, temp_db_path = tempfile.mkstemp(suffix=".db")
     os.close(fd)
     store = VerdictStore(db_path=temp_db_path)
@@ -106,13 +110,15 @@ def main() -> None:
         print(f"  Rejected: {h.divergence_class.value} @ {h.endpoint} → fp={fp}")
 
     stats_after_seed = reflector.get_stats()
-    print(f"\n[STEP 1] Verdict store after seeding: {stats_after_seed['verdict_count']} record(s)")
-    assert stats_after_seed["verdict_count"] == 3, (
-        f"Expected 3 verdicts after seeding, got {stats_after_seed['verdict_count']}"
+    print(
+        f"\n[STEP 1] Verdict store after seeding: {stats_after_seed['verdict_count']} record(s)"
     )
+    assert (
+        stats_after_seed["verdict_count"] == 3
+    ), f"Expected 3 verdicts after seeding, got {stats_after_seed['verdict_count']}"
 
     # ── Step 3: Run proof_run() in offline mode with the SAME reflector ───────
-    print(f"\n[STEP 2] Running proof_run() (offline, in-memory reflector) ...")
+    print("\n[STEP 2] Running proof_run() (offline, in-memory reflector) ...")
     try:
         reports = run_proof(
             base_url=PETSTORE_BASE_URL,
@@ -131,16 +137,19 @@ def main() -> None:
     # Collect which offline hypotheses for the first endpoint match our seeds.
     fresh_for_first_probe = _offline_hypotheses(first_endpoint, first_method)
     resurfaced = [
-        h for h in fresh_for_first_probe
-        if fingerprint_of(h) in rejected_fingerprints
+        h for h in fresh_for_first_probe if fingerprint_of(h) in rejected_fingerprints
     ]
 
     # Also verify directly via rerank()
-    reranked = reflector.rerank(fresh_for_first_probe, endpoint=f"{first_method} {first_endpoint}")
+    reranked = reflector.rerank(
+        fresh_for_first_probe, endpoint=f"{first_method} {first_endpoint}"
+    )
     suppressed_by_rerank = len(fresh_for_first_probe) - len(reranked)
 
     print(f"  Seeded fingerprints : {rejected_fingerprints}")
-    print(f"  Fresh-batch fps     : {[fingerprint_of(h) for h in fresh_for_first_probe]}")
+    print(
+        f"  Fresh-batch fps     : {[fingerprint_of(h) for h in fresh_for_first_probe]}"
+    )
     print(f"  Resurfaced count    : {len(resurfaced)}")
     print(f"  Suppressed by rerank: {suppressed_by_rerank}")
 
@@ -164,8 +173,10 @@ def main() -> None:
     print("\n[KILL CRITERION 3] Checking Skeptic hit-rate calculable ...")
     # Count accepted and total from the live store
     from cherenkov.core.contracts import VerdictOutcome
+
     accepted = sum(
-        1 for v in store.get_recent_verdicts(limit=200)
+        1
+        for v in store.get_recent_verdicts(limit=200)
         if v.outcome == VerdictOutcome.ACCEPT
     )
     total = stats_after_run["verdict_count"]
@@ -187,9 +198,15 @@ def main() -> None:
         sys.exit(0)
     else:
         print("ONE OR MORE KILL CRITERIA FAILED:")
-        print(f"  Kill criterion 1 (no resurface)    : {'PASS' if kill_1_pass else 'FAIL'}")
-        print(f"  Kill criterion 2 (verdict_count>3) : {'PASS' if kill_2_pass else 'FAIL'}")
-        print(f"  Kill criterion 3 (ratio calculable): {'PASS' if kill_3_pass else 'FAIL'}")
+        print(
+            f"  Kill criterion 1 (no resurface)    : {'PASS' if kill_1_pass else 'FAIL'}"
+        )
+        print(
+            f"  Kill criterion 2 (verdict_count>3) : {'PASS' if kill_2_pass else 'FAIL'}"
+        )
+        print(
+            f"  Kill criterion 3 (ratio calculable): {'PASS' if kill_3_pass else 'FAIL'}"
+        )
         print("=" * 70)
         sys.exit(1)
 

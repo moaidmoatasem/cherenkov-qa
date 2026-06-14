@@ -6,6 +6,7 @@ depth: it finds structural gaps (missing error responses, untestable
 requirement wording), not semantic ones. It is the always-available
 fallback and the unit-test substrate; LLM adapters add insight on top.
 """
+
 from __future__ import annotations
 
 import re
@@ -23,15 +24,25 @@ from cherenkov.reasoning.domain.models import (
     priority_from_score,
 )
 
-_REQ_PATTERN = re.compile(r"^.*\b(shall|must|should|will|needs? to)\b.*$", re.IGNORECASE | re.MULTILINE)
+_REQ_PATTERN = re.compile(
+    r"^.*\b(shall|must|should|will|needs? to)\b.*$", re.IGNORECASE | re.MULTILINE
+)
 _VAGUE_WORDS = re.compile(
     r"\b(fast|quick|easy|simple|user-friendly|appropriate|reasonable|etc\.?|some|various|as needed)\b",
     re.IGNORECASE,
 )
 _MUTATING = {"post", "put", "patch", "delete"}
-_HIGH_IMPACT_TOPICS = re.compile(r"\b(auth|login|password|payment|billing|delete|data loss|pii|security)\b", re.IGNORECASE)
+_HIGH_IMPACT_TOPICS = re.compile(
+    r"\b(auth|login|password|payment|billing|delete|data loss|pii|security)\b",
+    re.IGNORECASE,
+)
 
-_DEPTH_CAPS = {Depth.SHALLOW: 10, Depth.MEDIUM: 30, Depth.DEEP: 60, Depth.EXHAUSTIVE: 10_000}
+_DEPTH_CAPS = {
+    Depth.SHALLOW: 10,
+    Depth.MEDIUM: 30,
+    Depth.DEEP: 60,
+    Depth.EXHAUSTIVE: 10_000,
+}
 
 
 class HeuristicReasoner:
@@ -53,7 +64,15 @@ class HeuristicReasoner:
         count = 0
         for path, ops in sorted(artifact.parsed.get("paths", {}).items()):
             for method, op in sorted(ops.items()):
-                if method.lower() not in ("get", "post", "put", "patch", "delete", "head", "options"):
+                if method.lower() not in (
+                    "get",
+                    "post",
+                    "put",
+                    "patch",
+                    "delete",
+                    "head",
+                    "options",
+                ):
                     continue
                 count += 1
                 if len(requirements) >= cap:
@@ -70,7 +89,10 @@ class HeuristicReasoner:
                 if not (op or {}).get("description") and not (op or {}).get("summary"):
                     ambiguities.append(f"{ref} has no description or summary")
         return AnalysisResult(
-            intents=intents, requirements=requirements, ambiguities=ambiguities, surface_size=count
+            intents=intents,
+            requirements=requirements,
+            ambiguities=ambiguities,
+            surface_size=count,
         )
 
     def _analyze_text(self, artifact: Artifact, depth: Depth) -> AnalysisResult:
@@ -122,8 +144,11 @@ class HeuristicReasoner:
                                 source_ref=ref,
                             )
                         )
-                    if method.lower() in _MUTATING and not (op or {}).get("security") \
-                            and not artifact.parsed.get("security"):
+                    if (
+                        method.lower() in _MUTATING
+                        and not (op or {}).get("security")
+                        and not artifact.parsed.get("security")
+                    ):
                         findings.append(
                             ReviewFinding(
                                 category=FindingCategory.RISK,
@@ -154,11 +179,15 @@ class HeuristicReasoner:
         risks: list[RiskItem] = []
         for req in analysis.requirements:
             impact = 4 if _HIGH_IMPACT_TOPICS.search(req.text) else 2
-            mutating = any(m in req.source_ref.lower() for m in ("post", "put", "patch", "delete"))
+            mutating = any(
+                m in req.source_ref.lower() for m in ("post", "put", "patch", "delete")
+            )
             likelihood = 3 if not req.testable else 2
             if mutating:
                 impact = min(impact + 1, 5)
-                likelihood = max(likelihood, 3)  # state-changing surfaces fail more often
+                likelihood = max(
+                    likelihood, 3
+                )  # state-changing surfaces fail more often
             risks.append(
                 RiskItem(
                     id=f"RISK-{len(risks) + 1:03d}",

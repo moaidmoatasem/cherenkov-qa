@@ -8,9 +8,7 @@ Turn a captured traffic sample into observed-behaviour claims (enables D2/D5).
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
 
 from cherenkov.core.contracts import Claim, Provenance, ProvenanceType
 from cherenkov.truth.sources.interface import SourceAdapter
@@ -53,7 +51,10 @@ class TrafficSourceAdapter(SourceAdapter):
                     id=f"traffic_{i}_status",
                     category="observed_status",
                     subject=subject,
-                    value={"status": status, "statusText": response.get("statusText", "")},
+                    value={
+                        "status": status,
+                        "statusText": response.get("statusText", ""),
+                    },
                     provenance=Provenance(
                         source_type=ProvenanceType.TRAFFIC,
                         source_uri=str(resolved),
@@ -97,7 +98,10 @@ class TrafficSourceAdapter(SourceAdapter):
                         provenance=Provenance(
                             source_type=ProvenanceType.TRAFFIC,
                             source_uri=str(resolved),
-                            details={"type": "observed_response_headers", "entry_index": i},
+                            details={
+                                "type": "observed_response_headers",
+                                "entry_index": i,
+                            },
                         ),
                     )
                 )
@@ -110,7 +114,10 @@ class TrafficSourceAdapter(SourceAdapter):
                         id=f"traffic_{i}_request_body",
                         category="observed_request_body",
                         subject=subject,
-                        value={"mimeType": post_data.get("mimeType", ""), "text": post_data["text"]},
+                        value={
+                            "mimeType": post_data.get("mimeType", ""),
+                            "text": post_data["text"],
+                        },
                         provenance=Provenance(
                             source_type=ProvenanceType.TRAFFIC,
                             source_uri=str(resolved),

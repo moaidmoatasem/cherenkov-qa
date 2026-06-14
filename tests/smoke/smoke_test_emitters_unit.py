@@ -13,6 +13,7 @@ Verifies:
 
 Exit code 0 = all criteria passed.
 """
+
 import os
 import sys
 import tempfile
@@ -41,46 +42,73 @@ def check(label, condition, detail=""):
 def make_test_tm() -> TruthModel:
     tm = TruthModel()
     endpoints = [
-        ("GET", "/api/users", "List users", {
-            "responses": {"200": {
-                "description": "Success",
-                "content": {"application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": "integer"},
-                            "name": {"type": "string"},
-                            "email": {"type": "string"},
+        (
+            "GET",
+            "/api/users",
+            "List users",
+            {
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {"type": "integer"},
+                                        "name": {"type": "string"},
+                                        "email": {"type": "string"},
+                                    },
+                                }
+                            }
                         },
                     }
-                }},
-            }},
-        }),
-        ("POST", "/api/users", "Create user", {
-            "requestBody": {"content": {"application/json": {
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "name": {"type": "string"},
-                        "email": {"type": "string"},
-                    },
-                }
-            }}},
-            "responses": {"201": {
-                "description": "Created",
-                "content": {"application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": "integer"},
+                },
+            },
+        ),
+        (
+            "POST",
+            "/api/users",
+            "Create user",
+            {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {"type": "string"},
+                                    "email": {"type": "string"},
+                                },
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {"type": "integer"},
+                                    },
+                                }
+                            }
                         },
                     }
-                }},
-            }},
-        }),
-        ("GET", "/health", "Health check", {
-            "responses": {"200": {"description": "OK"}},
-        }),
+                },
+            },
+        ),
+        (
+            "GET",
+            "/health",
+            "Health check",
+            {
+                "responses": {"200": {"description": "OK"}},
+            },
+        ),
     ]
     for i, (method, path, summary, operation) in enumerate(endpoints):
         node = GraphNode(
@@ -120,11 +148,15 @@ def main():
             check("pytest uses requests library", "requests" in content)
             check("pytest has class definition", "class Test" in content)
             check("pytest has test_ prefix methods", "def test_" in content)
-            check("pytest code has no cherenkov dependency",
-                   "cherenkov" not in content.lower())
+            check(
+                "pytest code has no cherenkov dependency",
+                "cherenkov" not in content.lower(),
+            )
             # Check the generated import path is correct
-            check("pytest code has proper imports",
-                   "import pytest" in content and "import requests" in content)
+            check(
+                "pytest code has proper imports",
+                "import pytest" in content and "import requests" in content,
+            )
 
         check("all 3 endpoints generate files", len(py_files) == 3)
 
@@ -141,8 +173,10 @@ def main():
             check("jest has describe blocks", "describe" in content)
             check("jest has it blocks", 'it("' in content)
             check("jest uses fetch", "fetch" in content)
-            check("jest code has no cherenkov dependency",
-                   "cherenkov" not in content.lower())
+            check(
+                "jest code has no cherenkov dependency",
+                "cherenkov" not in content.lower(),
+            )
 
     # 4. Empty Truth Model
     print("\n4. Edge cases")
@@ -166,12 +200,13 @@ def main():
     print("\n5. Base URL injection")
     with tempfile.TemporaryDirectory() as tmp:
         out = Path(tmp)
-        emitter.emit(tm, out, framework="pytest", base_url="https://staging.example.com")
+        emitter.emit(
+            tm, out, framework="pytest", base_url="https://staging.example.com"
+        )
         py_files = list(out.glob("*.py"))
         if py_files:
             content = py_files[0].read_text()
-            check("base URL appears in test code",
-                   "staging.example.com" in content)
+            check("base URL appears in test code", "staging.example.com" in content)
 
     # ── Summary ──────────────────────────────────────────────────────────
     print("\n" + "=" * 60)

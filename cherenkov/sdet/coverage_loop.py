@@ -16,9 +16,10 @@ and it stops as soon as the coverage threshold is met (remaining targets stay
 PENDING). All model/server/trace work is injected as callables, so the loop is
 deterministic and unit-testable — mirroring `divergence/self_play.py`.
 """
+
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Callable
 
 from cherenkov.core.contracts import (
@@ -34,9 +35,10 @@ from cherenkov.sdet.assertion_gate import MeaningfulAssertionGate
 @dataclass
 class RunOutcome:
     """Result of running one candidate test against a base URL + reading its trace."""
-    passed: bool                          # assertions passed against the target server
-    exercised: bool = True                # the trace shows the target was actually hit
-    output: str = ""                      # captured stdout/diagnostic for repair context
+
+    passed: bool  # assertions passed against the target server
+    exercised: bool = True  # the trace shows the target was actually hit
+    output: str = ""  # captured stdout/diagnostic for repair context
     trace_info: dict[str, Any] | None = None
 
 

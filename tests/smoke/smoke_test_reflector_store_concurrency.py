@@ -9,6 +9,7 @@ A separate PROCESS holds an exclusive write lock (mirrors concurrent agents).
 
 Run:  PYTHONPATH=. python3 smoke_test_reflector_store_concurrency.py
 """
+
 from __future__ import annotations
 
 import os
@@ -26,9 +27,13 @@ from cherenkov.reflector.store import VerdictStore
 
 def _vr():
     return VerdictRecord(
-        id=str(uuid.uuid4()), hypothesis_id=str(uuid.uuid4()),
-        outcome=VerdictOutcome.REJECT, divergence_class=DivergenceClass.D1_SPEC_CODE,
-        endpoint="GET /pet/{petId}", source="test", timestamp=int(time.time()),
+        id=str(uuid.uuid4()),
+        hypothesis_id=str(uuid.uuid4()),
+        outcome=VerdictOutcome.REJECT,
+        divergence_class=DivergenceClass.D1_SPEC_CODE,
+        endpoint="GET /pet/{petId}",
+        source="test",
+        timestamp=int(time.time()),
     )
 
 
@@ -48,15 +53,18 @@ def main() -> int:
         "c.execute('COMMIT'); c.close()\n"
     )
     proc = subprocess.Popen([sys.executable, "-c", holder_src])
-    while not os.path.exists(ready):       # wait until the lock is actually held
+    while not os.path.exists(ready):  # wait until the lock is actually held
         time.sleep(0.02)
 
     # CONTROL — fail-fast writer cannot get in -> proves real contention.
     locked_fast = False
     ctrl = sqlite3.connect(db, timeout=0.1)
     try:
-        ctrl.execute("INSERT INTO verdicts (id,hypothesis_id,outcome,timestamp) "
-                     "VALUES (?,?,?,?)", ("ctrl", "h", "reject", 0))
+        ctrl.execute(
+            "INSERT INTO verdicts (id,hypothesis_id,outcome,timestamp) "
+            "VALUES (?,?,?,?)",
+            ("ctrl", "h", "reject", 0),
+        )
         ctrl.commit()
     except sqlite3.OperationalError as e:
         locked_fast = "locked" in str(e).lower()
@@ -71,11 +79,16 @@ def main() -> int:
     recorded = store.verdict_count() == 1
 
     print(f"control (timeout=0.1s) hit 'database is locked' : {locked_fast}")
-    print(f"hardened store waited then succeeded            : {recorded} (waited {waited:.2f}s)")
+    print(
+        f"hardened store waited then succeeded            : {recorded} (waited {waited:.2f}s)"
+    )
 
     ok = locked_fast and recorded
-    print("\n[PASS] busy-timeout serializes concurrent writers instead of crashing"
-          if ok else "\n[FAIL] see above")
+    print(
+        "\n[PASS] busy-timeout serializes concurrent writers instead of crashing"
+        if ok
+        else "\n[FAIL] see above"
+    )
     return 0 if ok else 1
 
 

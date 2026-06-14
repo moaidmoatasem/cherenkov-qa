@@ -3,6 +3,7 @@
 smoke_test_visual.py — E2E Visual testing integration test for CHERENKOV.
 Proves snapshot baseline initialization and layout validation checks.
 """
+
 import os
 import subprocess
 import time
@@ -12,18 +13,29 @@ import pytest
 
 from cherenkov.execution.visual_diff import VisualDiffEngine
 
+
 def start_target_server():
     """Starts the mock range FastAPI server."""
     print("Starting Target API Server...")
     cwd = os.path.abspath(os.path.join(os.path.dirname(__file__), "../target"))
     proc = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
+        [
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "target_api:app",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "8000",
+        ],
         cwd=cwd,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        stderr=subprocess.PIPE,
     )
     time.sleep(2)  # Wait for startup
     return proc
+
 
 def main():
     print("=======================================================")
@@ -31,7 +43,9 @@ def main():
     print("=======================================================\n")
 
     # Clean existing snapshots to verify fresh initialization
-    snapshots_dir = "stub/generated_tests/visual_regression_baseline_ui.spec.ts-snapshots"
+    snapshots_dir = (
+        "stub/generated_tests/visual_regression_baseline_ui.spec.ts-snapshots"
+    )
     if os.path.exists(snapshots_dir):
         print(f"Cleaning existing snapshots at {snapshots_dir}...")
         shutil.rmtree(snapshots_dir)
@@ -45,13 +59,19 @@ def main():
         visual_engine = VisualDiffEngine(run_id="visual_smoke")
 
         # 4. First run: should initialize snapshots baseline
-        print("\nPass 1: Running visual validation (Expected: Baseline initialization)...")
+        print(
+            "\nPass 1: Running visual validation (Expected: Baseline initialization)..."
+        )
         res1 = visual_engine.run_visual_validation("http://127.0.0.1:8000/")
-        assert res1["passed"], f"Baseline initialization failed: {res1.get('error_output', '')}"
+        assert res1[
+            "passed"
+        ], f"Baseline initialization failed: {res1.get('error_output', '')}"
         print("✓ Baseline initialized cleanly.")
 
         # Confirm snapshot files were written to disk
-        assert os.path.exists(snapshots_dir), "Snapshot baseline directory was not created."
+        assert os.path.exists(
+            snapshots_dir
+        ), "Snapshot baseline directory was not created."
         snapshot_files = os.listdir(snapshots_dir)
         assert len(snapshot_files) > 0, "No baseline snapshot images were captured."
         print(f"✓ Snapshot baseline written: {snapshot_files}")
@@ -59,7 +79,9 @@ def main():
         # 5. Second run: should compare and pass
         print("\nPass 2: Running visual validation (Expected: Comparison Pass)...")
         res2 = visual_engine.run_visual_validation("http://127.0.0.1:8000/")
-        assert res2["passed"], f"Visual comparison failed: {res2.get('error_output', '')}"
+        assert res2[
+            "passed"
+        ], f"Visual comparison failed: {res2.get('error_output', '')}"
         print("✓ Visual verification comparison PASSED.")
 
         print("\n=======================================================")
@@ -82,16 +104,24 @@ def main():
 def _stub_browser_available() -> bool:
     """The visual check drives a real Chromium via the stub's Playwright install."""
     import glob
-    browsers_path = os.environ.get("PLAYWRIGHT_BROWSERS_PATH", os.path.expanduser("~/.cache/ms-playwright"))
+
+    browsers_path = os.environ.get(
+        "PLAYWRIGHT_BROWSERS_PATH", os.path.expanduser("~/.cache/ms-playwright")
+    )
     return bool(glob.glob(os.path.join(browsers_path, "chromium*")))
 
 
-@pytest.mark.skipif(os.name == "nt", reason="Windows CMD does not support UNC paths as current directory")
-@pytest.mark.skipif(not _stub_browser_available(), reason="Playwright Chromium not installed — run npx playwright install chromium")
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Windows CMD does not support UNC paths as current directory",
+)
+@pytest.mark.skipif(
+    not _stub_browser_available(),
+    reason="Playwright Chromium not installed — run npx playwright install chromium",
+)
 def test_legacy_visual():
     try:
         main()
     except SystemExit as e:
         if e.code != 0:
             raise AssertionError(f"Test failed with exit code {e.code}")
-

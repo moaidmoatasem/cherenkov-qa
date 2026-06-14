@@ -112,19 +112,19 @@
                         <span class="status-badge status-failed">FAIL</span>
                     {% endif %}
                 </div>
-                
+
                 <div class="details">
                     {% if not report.passed and report.error %}
                     <div style="color: var(--error-color); font-weight: bold; margin-bottom: 0.5rem;">Error:</div>
                     <pre>{{ report.error }}</pre>
                     {% endif %}
-                    
+
                     {% if report.request_body or report.response_body %}
                     <strong>HTTP Exchange:</strong>
                     <pre>Sent:     {{ report.request_body }}
 Received: {{ report.response_body }}</pre>
                     {% endif %}
-                    
+
                     {% if report.suggestions %}
                     <strong>Tightening Suggestions:</strong>
                     <ul>

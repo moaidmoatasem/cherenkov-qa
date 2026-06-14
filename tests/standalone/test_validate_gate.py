@@ -4,13 +4,13 @@ Unit tests for cherenkov/validate/ — contracts, gate logic, evidence collector
 
 D7 invariant: this file is created fresh, not auto-edited from existing tests.
 """
+
 from __future__ import annotations
 
 import os
 import tempfile
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -22,6 +22,7 @@ from cherenkov.validate.gate import ValidationGate
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_report(**kwargs) -> ValidationReport:
     defaults = dict(
@@ -130,7 +131,9 @@ class TestValidationGateRun:
             call_count[0] += 1
             # fail the first script (smoke_track_a – required)
             rc = 1 if call_count[0] == 1 else 0
-            return SimpleNamespace(returncode=rc, stdout="", stderr="fail" if rc else "")
+            return SimpleNamespace(
+                returncode=rc, stdout="", stderr="fail" if rc else ""
+            )
 
         report = gate.run(_subprocess_runner=runner)
         assert report.result == "fail"
@@ -199,7 +202,9 @@ class TestEvidenceCollector:
     def test_record_creates_file(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             col = EvidenceCollector(base_dir=tmpdir)
-            path = col.record("my_gate", passed=True, output="all good", detail="exit=0")
+            path = col.record(
+                "my_gate", passed=True, output="all good", detail="exit=0"
+            )
             assert Path(path).exists()
 
     def test_record_content_contains_status(self):

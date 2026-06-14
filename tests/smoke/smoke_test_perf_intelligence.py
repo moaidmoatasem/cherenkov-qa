@@ -9,17 +9,16 @@ Covers:
 
 Exit code 0 = all criteria passed.
 """
-import importlib
+
 import json
 import os
 import sys
 import tempfile
-import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cherenkov.stages.perf.perf_stage import PerfStage, PerfSlice, _BaselineDB
-from cherenkov.stages.perf.anomaly import LatencyAnomalyDetector, AnomalyVerdict
+from cherenkov.stages.perf.perf_stage import PerfStage, PerfSlice
+from cherenkov.stages.perf.anomaly import LatencyAnomalyDetector
 
 PASS = 0
 FAIL = 0
@@ -49,12 +48,33 @@ def main() -> int:
     print("\n--- C3 (#118): LLM-aware perf metrics ---")
 
     # Record LLM endpoint metrics
-    stage.db.record("/api/chat/completions", "POST", 120.0,
-                     ttft_ms=45.0, itl_ms=15.0, cost_usd=0.002, is_llm=True)
-    stage.db.record("/api/chat/completions", "POST", 135.0,
-                     ttft_ms=50.0, itl_ms=18.0, cost_usd=0.0025, is_llm=True)
-    stage.db.record("/api/chat/completions", "POST", 110.0,
-                     ttft_ms=42.0, itl_ms=12.0, cost_usd=0.0018, is_llm=True)
+    stage.db.record(
+        "/api/chat/completions",
+        "POST",
+        120.0,
+        ttft_ms=45.0,
+        itl_ms=15.0,
+        cost_usd=0.002,
+        is_llm=True,
+    )
+    stage.db.record(
+        "/api/chat/completions",
+        "POST",
+        135.0,
+        ttft_ms=50.0,
+        itl_ms=18.0,
+        cost_usd=0.0025,
+        is_llm=True,
+    )
+    stage.db.record(
+        "/api/chat/completions",
+        "POST",
+        110.0,
+        ttft_ms=42.0,
+        itl_ms=12.0,
+        cost_usd=0.0018,
+        is_llm=True,
+    )
     stage.db.record("/api/users", "GET", 30.0, is_llm=False)
 
     stats = stage.db.stats("/api/chat/completions", "POST")
@@ -67,22 +87,23 @@ def main() -> int:
     check("LLM stats has request count", llm_stats["llm_request_count"] == 3)
 
     non_llm_stats = stage.db.llm_stats("/api/users", "GET")
-    check("Non-LLM endpoint returns zero LLM stats",
-           non_llm_stats["llm_request_count"] == 0)
+    check(
+        "Non-LLM endpoint returns zero LLM stats",
+        non_llm_stats["llm_request_count"] == 0,
+    )
 
     # Extraction returns None (honest absence, #157)
     llm_extracted = stage._extract_llm_metrics_from_response("some k6 output")
     check("LLM extraction returns None (not hash-derived)", llm_extracted is None)
 
     # LLM endpoint detection
-    check("/api/chat/completions detected as LLM",
-           stage._is_llm_endpoint("/api/chat/completions"))
-    check("/api/users NOT detected as LLM",
-           not stage._is_llm_endpoint("/api/users"))
-    check("/v1/embeddings detected as LLM",
-           stage._is_llm_endpoint("/v1/embeddings"))
-    check("/health NOT detected as LLM",
-           not stage._is_llm_endpoint("/health"))
+    check(
+        "/api/chat/completions detected as LLM",
+        stage._is_llm_endpoint("/api/chat/completions"),
+    )
+    check("/api/users NOT detected as LLM", not stage._is_llm_endpoint("/api/users"))
+    check("/v1/embeddings detected as LLM", stage._is_llm_endpoint("/v1/embeddings"))
+    check("/health NOT detected as LLM", not stage._is_llm_endpoint("/health"))
 
     # P95-99 calculation
     stage.db.record("/api/perf", "GET", 100.0)
@@ -102,8 +123,14 @@ def main() -> int:
     print("\n--- C4 (#119): ML anomaly tier ---")
 
     # Statistical path (zero-dependency default)
-    sl = PerfSlice(name="test", target_url="http://localhost:3000",
-                   endpoint="/api/test", method="GET", vus=1, duration_sec=1)
+    sl = PerfSlice(
+        name="test",
+        target_url="http://localhost:3000",
+        endpoint="/api/test",
+        method="GET",
+        vus=1,
+        duration_sec=1,
+    )
     result = stage.run(sl)
     check("Statistical run completes", result.status.value == "ok")
 
@@ -112,23 +139,21 @@ def main() -> int:
         stage.db.record("/api/anomaly", "GET", 40.0 + (i % 3) * 2.0)
 
     analysis_normal = stage._analyze("/api/anomaly", "GET", 42.0)
-    check("Normal latency not detected as anomaly",
-           not analysis_normal["anomaly_detected"])
-    check("Default method is statistical",
-           analysis_normal["method"] == "statistical")
+    check(
+        "Normal latency not detected as anomaly",
+        not analysis_normal["anomaly_detected"],
+    )
+    check("Default method is statistical", analysis_normal["method"] == "statistical")
 
     analysis_spike = stage._analyze("/api/anomaly", "GET", 500.0)
-    check("Spike latency detected as anomaly",
-           analysis_spike["anomaly_detected"])
-    check("Spike uses statistical method",
-           analysis_spike["method"] == "statistical")
+    check("Spike latency detected as anomaly", analysis_spike["anomaly_detected"])
+    check("Spike uses statistical method", analysis_spike["method"] == "statistical")
 
     test_count = analysis_normal["count"]
     check("Analysis returns count", test_count >= 3)
 
     analysis_init = stage._analyze("/api/never_seen", "GET", 50.0)
-    check("New endpoint returns initializing",
-           analysis_init.get("initializing", False))
+    check("New endpoint returns initializing", analysis_init.get("initializing", False))
 
     # ── LatencyAnomalyDetector (robust spike + drift) ────────────────────
     print("\n--- LatencyAnomalyDetector (robust spike/drift) ---")
@@ -144,37 +169,52 @@ def main() -> int:
     check("Spike kind is 'spike'", verdict.kind == "spike")
 
     verdict = detector.evaluate([], 42.0)
-    check("Insufficient history returns insufficient_data",
-           verdict.kind == "insufficient_data")
+    check(
+        "Insufficient history returns insufficient_data",
+        verdict.kind == "insufficient_data",
+    )
 
     # Drift detection: recent values creep up
     drift_history = [40.0] * 10 + [60.0] * 5
     verdict = detector.evaluate(drift_history[:-1], drift_history[-1])
-    check("Drift detection works for gradual creep",
-           verdict.kind == "drift")
+    check("Drift detection works for gradual creep", verdict.kind == "drift")
 
     # ── C2 (#117): Generative load profiles ──────────────────────────────
     print("\n--- C2 (#117): Generative load profiles ---")
 
-    har_content = json.dumps({
-        "log": {
-            "entries": [
-                {"request": {"method": "POST",
-                  "url": "http://localhost:3000/api/chat",
-                  "postData": {"mimeType": "application/json", "text": "hi"}},
-                 "response": {"status": 200, "statusText": "OK", "headers": []},
-                 "timings": {"send": 5, "wait": 100, "receive": 10}},
-                {"request": {"method": "GET",
-                  "url": "http://localhost:3000/api/chat"},
-                 "response": {"status": 200, "statusText": "OK", "headers": []},
-                 "timings": {"send": 3, "wait": 80, "receive": 5}},
-                {"request": {"method": "GET",
-                  "url": "http://localhost:3000/health"},
-                 "response": {"status": 200, "statusText": "OK", "headers": []},
-                 "timings": {"send": 2, "wait": 30, "receive": 3}},
-            ]
+    har_content = json.dumps(
+        {
+            "log": {
+                "entries": [
+                    {
+                        "request": {
+                            "method": "POST",
+                            "url": "http://localhost:3000/api/chat",
+                            "postData": {"mimeType": "application/json", "text": "hi"},
+                        },
+                        "response": {"status": 200, "statusText": "OK", "headers": []},
+                        "timings": {"send": 5, "wait": 100, "receive": 10},
+                    },
+                    {
+                        "request": {
+                            "method": "GET",
+                            "url": "http://localhost:3000/api/chat",
+                        },
+                        "response": {"status": 200, "statusText": "OK", "headers": []},
+                        "timings": {"send": 3, "wait": 80, "receive": 5},
+                    },
+                    {
+                        "request": {
+                            "method": "GET",
+                            "url": "http://localhost:3000/health",
+                        },
+                        "response": {"status": 200, "statusText": "OK", "headers": []},
+                        "timings": {"send": 2, "wait": 30, "receive": 3},
+                    },
+                ]
+            }
         }
-    })
+    )
 
     fd, har_path = tempfile.mkstemp(suffix=".har")
     os.close(fd)
@@ -207,6 +247,7 @@ def main() -> int:
 
     # Traffic Source Adapter integration with truth/sources/traffic.py
     from cherenkov.truth.sources.traffic import TrafficSourceAdapter
+
     tsa = TrafficSourceAdapter()
     fd, har_path2 = tempfile.mkstemp(suffix=".har")
     os.close(fd)

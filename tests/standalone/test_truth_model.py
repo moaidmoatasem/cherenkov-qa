@@ -4,6 +4,7 @@ test_truth_model.py — Unit tests for Truth Model graph schema (E2-2).
 Tests node/edge creation, provenance tracking, serialisation round-trip,
 and query methods.
 """
+
 import unittest
 from datetime import datetime, timezone
 
@@ -19,7 +20,6 @@ from cherenkov.core.truth_model import (
 
 
 class TestTruthModel(unittest.TestCase):
-
     def setUp(self):
         self.now = datetime(2026, 6, 2, 12, 0, 0, tzinfo=timezone.utc)
         self.prov = Provenance(

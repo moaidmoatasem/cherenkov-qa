@@ -15,10 +15,10 @@ Activation: automatic — ReviewStage calls log_outcome() on AUTO_APPROVE and
 REGENERATE verdicts. No config flag needed; the file is append-only and cheap.
 Opt out by deleting or symlinking .cherenkov/finetune.jsonl to /dev/null.
 """
+
 from __future__ import annotations
 
 import json
-import os
 import time
 from pathlib import Path
 from typing import Any
@@ -56,7 +56,7 @@ class FinetuneLogger:
         method: str,
         case_type: str,
         mutation_id: str,
-        verdict: str,           # "accepted" | "rejected"
+        verdict: str,  # "accepted" | "rejected"
         quality_score: float,
         gate_results: list[dict[str, Any]],
         test_code: str,

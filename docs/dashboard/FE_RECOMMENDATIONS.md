@@ -2,7 +2,7 @@
 ## Detailed Recommendations & Enhancements Report (additive-only)
 
 ### 0. Executive Summary
-The supported dashboard is **structurally complete** with 19 screens, providing a solid grouped information architecture, command palette, live drawer, autonomy ladder, health checking, and offline support. The engine half is functional (ingest → generate → review → eject). However, the observability half currently acts more as a presentation layer and contains several "honesty" defects where UI states diverge from true backend states. 
+The supported dashboard is **structurally complete** with 19 screens, providing a solid grouped information architecture, command palette, live drawer, autonomy ladder, health checking, and offline support. The engine half is functional (ingest → generate → review → eject). However, the observability half currently acts more as a presentation layer and contains several "honesty" defects where UI states diverge from true backend states.
 
 The recommendations in this report outline **additive-only, non-breaking enhancements** that fix silent failures (honoring the D7 rule), improve the routing architecture, introduce crucial missing views, and polish the user journey (navigation, a11y, and motion).
 

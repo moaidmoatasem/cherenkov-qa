@@ -16,16 +16,21 @@ def stats_store():
 
 
 def test_record_run(stats_store):
-    stats_store.record_run(run_id="test-run", success=True,
-                           scenarios_passed=3, scenarios_total=3,
-                           total_duration_ms=45)
+    stats_store.record_run(
+        run_id="test-run",
+        success=True,
+        scenarios_passed=3,
+        scenarios_total=3,
+        total_duration_ms=45,
+    )
     summary = stats_store.get_run_summary()
     assert summary["total_runs"] >= 1
 
 
 def test_record_fail(stats_store):
-    stats_store.record_run(run_id="fail-run", success=False,
-                           scenarios_passed=1, scenarios_total=3)
+    stats_store.record_run(
+        run_id="fail-run", success=False, scenarios_passed=1, scenarios_total=3
+    )
     summary = stats_store.get_run_summary()
     assert summary["total_runs"] == 1
     assert summary["successful_runs"] == 0

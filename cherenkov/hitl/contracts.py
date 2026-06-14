@@ -9,6 +9,7 @@ dashboard) consume ONLY the JSON envelope; they never touch the DB.
 Versioned Pydantic seam (companion to core/contracts.py), kept local to the hitl
 package so it never forks the hot core contracts file.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -21,7 +22,14 @@ SCHEMA_VERSION = "hitl/v1"
 
 # Frozen error-code vocabulary (Appendix A).
 ERROR_CODES = frozenset(
-    {"conflict", "not_found", "forbidden", "invalid_input", "db_locked", "llm_unavailable"}
+    {
+        "conflict",
+        "not_found",
+        "forbidden",
+        "invalid_input",
+        "db_locked",
+        "llm_unavailable",
+    }
 )
 
 
@@ -39,6 +47,7 @@ class HitlStatus(str, Enum):
 class HitlItem(BaseModel):
     """One human-review item. Bridges REVIEW's `Verdict.HITL` into a durable,
     addressable queue entry with a state machine."""
+
     id: str
     status: HitlStatus = HitlStatus.PENDING
     endpoint: str | None = None
@@ -64,6 +73,7 @@ class HitlError(BaseModel):
 
 class HitlEnvelope(BaseModel):
     """The only thing voice layers parse. Stable across hitl/v1."""
+
     schema_version: str = SCHEMA_VERSION
     ok: bool
     command: str
@@ -75,7 +85,13 @@ def ok_envelope(command: str, payload: Any) -> HitlEnvelope:
     return HitlEnvelope(ok=True, command=command, payload=payload, error=None)
 
 
-def err_envelope(command: str, code: str, message: str, detail: dict | None = None) -> HitlEnvelope:
+def err_envelope(
+    command: str, code: str, message: str, detail: dict | None = None
+) -> HitlEnvelope:
     assert code in ERROR_CODES, f"unknown hitl error code: {code}"
-    return HitlEnvelope(ok=False, command=command, payload=None,
-                        error=HitlError(code=code, message=message, detail=detail or {}))
+    return HitlEnvelope(
+        ok=False,
+        command=command,
+        payload=None,
+        error=HitlError(code=code, message=message, detail=detail or {}),
+    )

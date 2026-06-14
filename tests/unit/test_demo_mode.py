@@ -1,4 +1,5 @@
 """Unit tests for cherenkov/execution/demo_mode.py — MOCK_FINDINGS and generate_demo_findings."""
+
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -6,6 +7,7 @@ from unittest.mock import MagicMock, patch
 class TestMockFindings(unittest.TestCase):
     def setUp(self):
         from cherenkov.execution.demo_mode import MOCK_FINDINGS
+
         self.findings = MOCK_FINDINGS
 
     def test_three_findings_defined(self):
@@ -14,7 +16,11 @@ class TestMockFindings(unittest.TestCase):
     def test_all_findings_have_required_fields(self):
         required = {"id", "endpoint", "method", "mutation_id", "diff", "rationale"}
         for f in self.findings:
-            self.assertEqual(required, required & f.keys(), msg=f"Finding {f.get('id')} missing fields")
+            self.assertEqual(
+                required,
+                required & f.keys(),
+                msg=f"Finding {f.get('id')} missing fields",
+            )
 
     def test_finding_ids_are_unique(self):
         ids = [f["id"] for f in self.findings]
@@ -50,6 +56,7 @@ class TestGenerateDemoFindings(unittest.TestCase):
     def test_generate_demo_findings_does_not_raise(self, mock_queue_cls):
         mock_queue_cls.return_value = MagicMock()
         from cherenkov.execution.demo_mode import generate_demo_findings
+
         try:
             generate_demo_findings()
         except Exception as e:

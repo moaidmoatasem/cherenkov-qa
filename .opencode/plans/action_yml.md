@@ -1,0 +1,150 @@
+# GitHub Actions Action Content
+
+Replace `action.yml` with the content below.
+
+```yaml
+name: 'Cherenkov QA Conformance Test'
+description: 'Runs Cherenkov QA API conformance tests against OpenAPI specs. Generates Playwright tests from your spec, catches spec-server drift, and uploads SARIF results. Supports diff-aware mode for PRs.'
+author: 'Moaid Moatasem'
+branding:
+  icon: 'check-circle'
+  color: 'blue'
+
+inputs:
+  spec_path:
+    description: 'Path to OpenAPI or GraphQL spec'
+    required: true
+  target_url:
+    description: 'Target API URL to test against'
+    required: true
+  source_type:
+    description: 'Type of spec (openapi, graphql, grpc, accessibility)'
+    required: false
+    default: 'openapi'
+  format:
+    description: 'Output format (json, text, sarif, junit)'
+    required: false
+    default: 'sarif'
+  output_path:
+    description: 'Path for output report'
+    required: false
+    default: '.cherenkov/cherenkov_report.sarif'
+  mode:
+    description: 'Test mode - full (all endpoints) or diff (changed endpoints only, requires diff_base)'
+    required: false
+    default: 'full'
+  diff_base:
+    description: 'Git ref to compare against (e.g. origin/main). Required for diff mode.'
+    required: false
+    default: ''
+  fail_on_drift:
+    description: 'Exit with error if any conformance drift is detected'
+    required: false
+    default: 'true'
+  workers:
+    description: 'Number of parallel workers for test execution'
+    required: false
+    default: '2'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: pip
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: npm
+        cache-dependency-path: stub/package-lock.json
+
+    - name: Fetch git history for diff mode
+      if: ${{ inputs.mode == 'diff' && inputs.diff_base != '' }}
+      shell: bash
+      run: |
+        git fetch origin --depth=50 2>/dev/null || true
+        echo "base_ref=${{ inputs.diff_base }}" >> $GITHUB_ENV
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        cd stub && npm ci && cd ..
+
+    - name: Run Cherenkov (validate)
+      shell: bash
+      run: |
+        ARGS="validate --spec ${{ inputs.spec_path }} --target ${{ inputs.target_url }}"
+        ARGS="$ARGS --source ${{ inputs.source_type }}"
+        ARGS="$ARGS --workers ${{ inputs.workers }}"
+
+        if [ "${{ inputs.mode }}" = "diff" ] && [ -n "${{ inputs.diff_base }}" ]; then
+          ARGS="$ARGS --diff-base ${{ inputs.diff_base }}"
+          echo "Running diff-aware mode against ${{ inputs.diff_base }}"
+        fi
+
+        echo "::group::CHERENKOV output"
+        python cherenkov.py $ARGS
+        EXIT_CODE=$?
+        echo "::endgroup::"
+        echo "exit_code=$EXIT_CODE" >> $GITHUB_ENV
+
+    - name: Generate SARIF report
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        python cherenkov.py validate \
+          --spec ${{ inputs.spec_path }} \
+          --target ${{ inputs.target_url }} \
+          --source ${{ inputs.source_type }} \
+          --format sarif \
+          --output ${{ inputs.output_path }} \
+          --workers ${{ inputs.workers }} || true
+
+    - name: Upload SARIF results to GitHub Security
+      if: ${{ inputs.format == 'sarif' && always() }}
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ inputs.output_path }}
+        category: cherenkov-conformance
+
+    - name: Annotate PR with conformance results
+      if: ${{ github.event_name == 'pull_request' && always() }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const reportPath = '${{ inputs.output_path }}';
+          let summary = '\u2705 **Cherenkov QA** \u2014 No conformance violations detected.';
+          try {
+            const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            if (report.runs?.[0]?.results?.length > 0) {
+              const violations = report.runs[0].results;
+              summary = `\u26a0\ufe0f **Cherenkov QA** \u2014 ${violations.length} conformance violation(s) detected.\n\n`;
+              for (const v of violations.slice(0, 10)) {
+                summary += `\`${v.message.text}\`\n`;
+              }
+              if (violations.length > 10) {
+                summary += `\n\u2026 and ${violations.length - 10} more. See SARIF artifact for full report.`;
+              }
+            }
+          } catch {}
+          await github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });
+
+    - name: Fail on drift
+      if: ${{ inputs.fail_on_drift == 'true' && env.exit_code != '0' }}
+      shell: bash
+      run: |
+        echo "::error::CHERENKOV detected conformance drift. See SARIF report for details."
+        exit ${{ env.exit_code || 1 }}
+```

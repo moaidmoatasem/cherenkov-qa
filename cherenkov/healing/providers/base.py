@@ -2,10 +2,11 @@
 CHERENKOV healing/providers/base.py — SandboxProvider abstract base.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass

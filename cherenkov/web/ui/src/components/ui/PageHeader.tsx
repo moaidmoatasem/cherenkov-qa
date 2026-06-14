@@ -9,7 +9,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, primaryAction, tabs }: PageHeaderProps) {
   let actionElement: React.ReactNode = null;
-  
+
   if (primaryAction) {
     if (typeof primaryAction === 'object' && 'label' in primaryAction) {
       const act = primaryAction as { label: string; onClick?: () => void; testId?: string };

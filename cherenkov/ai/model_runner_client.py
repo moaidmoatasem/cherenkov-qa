@@ -5,11 +5,11 @@ Authority: v3.1 + delta.
 Anti-lock-in: conforms to the same interface as OllamaClient.
 Non-Docker fallback: ollama_client.py.
 """
+
 from __future__ import annotations
 
 import json
 import subprocess
-from typing import Any
 
 
 class ModelRunnerClient:
@@ -26,7 +26,8 @@ class ModelRunnerClient:
     def list_models(self) -> list[str]:
         result = subprocess.run(
             ["docker", "model", "list", "--format", "json"],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
         if result.returncode != 0:
             return []

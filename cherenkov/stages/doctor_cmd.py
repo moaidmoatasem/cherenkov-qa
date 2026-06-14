@@ -4,19 +4,16 @@ Authority: v3.1 + delta.
 
 Report effective config, device/model/egress health, and where each value came from.
 """
+
 from __future__ import annotations
 
-import os
 import shutil
 import subprocess
-import sys
-from pathlib import Path
 
 from cherenkov.core.config import Config
 from cherenkov.core.compat import npx as _npx
 from cherenkov.core.config_loader import (
     LayeredConfig,
-    KNOWN_KEYS,
     load_effective_config,
 )
 
@@ -34,7 +31,10 @@ def check_ollama_daemon() -> tuple[bool, str]:
         return False, "binary not available"
     try:
         result = subprocess.run(
-            [path, "list"], capture_output=True, text=True, timeout=10,
+            [path, "list"],
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         if result.returncode == 0:
             return True, "reachable"
@@ -51,7 +51,10 @@ def check_ollama_model(model: str) -> tuple[bool, str]:
         return False, "ollama binary not available"
     try:
         result = subprocess.run(
-            [path, "list"], capture_output=True, text=True, timeout=10,
+            [path, "list"],
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         if result.returncode == 0:
             if model in result.stdout:
@@ -67,7 +70,10 @@ def check_node() -> tuple[bool, str]:
     if path:
         try:
             result = subprocess.run(
-                ["node", "--version"], capture_output=True, text=True, timeout=10,
+                ["node", "--version"],
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             return True, result.stdout.strip()
         except (subprocess.TimeoutExpired, FileNotFoundError):
@@ -79,7 +85,9 @@ def check_npx_playwright() -> tuple[bool, str]:
     try:
         result = subprocess.run(
             [_npx(), "playwright", "--version"],
-            capture_output=True, text=True, timeout=30,
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
         if result.returncode == 0:
             return True, result.stdout.strip()
@@ -95,7 +103,9 @@ def check_prism_docker() -> tuple[bool, str]:
         try:
             result = subprocess.run(
                 ["docker", "info", "--format", "{{.ServerVersion}}"],
-                capture_output=True, text=True, timeout=10,
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             if result.returncode == 0:
                 return True, f"Docker {result.stdout.strip()} (Prism ready)"
@@ -110,7 +120,10 @@ def check_cargo() -> tuple[bool, str]:
     if path:
         try:
             result = subprocess.run(
-                ["cargo", "--version"], capture_output=True, text=True, timeout=10,
+                ["cargo", "--version"],
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             return True, result.stdout.strip()
         except (subprocess.TimeoutExpired, FileNotFoundError):
@@ -121,7 +134,10 @@ def check_cargo() -> tuple[bool, str]:
 def check_tauri_cli() -> tuple[bool, str]:
     try:
         result = subprocess.run(
-            ["cargo", "tauri", "info"], capture_output=True, text=True, timeout=10,
+            ["cargo", "tauri", "info"],
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         if result.returncode == 0:
             return True, "available"
@@ -180,17 +196,23 @@ def run_doctor(desktop: bool = False) -> int:
     print("\n  -- Environment Health --")
 
     ollama_bin, ollama_bin_detail = check_ollama_binary()
-    print(f"  {'ollama binary':<30} {'[OK]' if ollama_bin else '[NO]'}  {ollama_bin_detail}")
+    print(
+        f"  {'ollama binary':<30} {'[OK]' if ollama_bin else '[NO]'}  {ollama_bin_detail}"
+    )
 
     if ollama_bin:
         ollama_daemon, ollama_daemon_detail = check_ollama_daemon()
-        print(f"  {'ollama daemon':<30} {'[OK]' if ollama_daemon else '[NO]'}  {ollama_daemon_detail}")
+        print(
+            f"  {'ollama daemon':<30} {'[OK]' if ollama_daemon else '[NO]'}  {ollama_daemon_detail}"
+        )
 
     device = Config.detect_ollama_device()
     is_gpu = device == "GPU"
     print(f"  {'device':<30} {'[OK]' if is_gpu else '[WARN]'}  {device}")
     if not is_gpu:
-        print(f"  {'':<30}  Warning: CPU mode - generation ~10x slower. GPU recommended.")
+        print(
+            f"  {'':<30}  Warning: CPU mode - generation ~10x slower. GPU recommended."
+        )
 
     small_model = cfg.get("substrate.tiers.small.model", "qwen2.5-coder:7b")
     deep_model = cfg.get("substrate.tiers.deep.model", "deepseek-r1:8b")
@@ -211,13 +233,17 @@ def run_doctor(desktop: bool = False) -> int:
     if desktop:
         print("\n  -- Desktop Track (Track C) --")
         cargo_ok, cargo_detail = check_cargo()
-        print(f"  {'cargo (rust)':<30} {'[OK]' if cargo_ok else '[NO]'}  {cargo_detail}")
+        print(
+            f"  {'cargo (rust)':<30} {'[OK]' if cargo_ok else '[NO]'}  {cargo_detail}"
+        )
         tauri_ok, tauri_detail = check_tauri_cli()
         print(f"  {'tauri-cli':<30} {'[OK]' if tauri_ok else '[NO]'}  {tauri_detail}")
 
     # ── Egress policy check ──────────────────────────────────────────────
     egress_ok, egress_detail = check_egress_blocked(cfg)
-    print(f"\n  {'egress policy':<30} {'[OK]' if egress_ok else '[NO]'}  {egress_detail}")
+    print(
+        f"\n  {'egress policy':<30} {'[OK]' if egress_ok else '[NO]'}  {egress_detail}"
+    )
 
     # ── Config errors ────────────────────────────────────────────────────
     config_errors = cfg.errors()
@@ -231,7 +257,9 @@ def run_doctor(desktop: bool = False) -> int:
     if found_specs:
         print(f"\n  {'spec files':<30} [OK]  {len(found_specs)} found")
     else:
-        print(f"\n  {'spec files':<30} [WARN]  none found (run `cherenkov init` or edit cherenkov.toml)")
+        print(
+            f"\n  {'spec files':<30} [WARN]  none found (run `cherenkov init` or edit cherenkov.toml)"
+        )
 
     # ── Summary ──────────────────────────────────────────────────────────
     issues = 0
@@ -257,7 +285,7 @@ def run_doctor(desktop: bool = False) -> int:
 
     print(f"\n  {'-' * 60}")
     if issues == 0:
-        print(f"  [OK] All systems healthy. Ready to run.")
+        print("  [OK] All systems healthy. Ready to run.")
     else:
         print(f"  [WARN] {issues} issue(s) detected - review the warnings above.")
 

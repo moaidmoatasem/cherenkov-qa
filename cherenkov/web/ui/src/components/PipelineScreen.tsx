@@ -4,15 +4,15 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Play, 
-  Pause, 
-  Cpu, 
-  Database, 
-  CheckCircle, 
-  Zap, 
-  Terminal, 
-  ChevronRight, 
+import {
+  Play,
+  Pause,
+  Cpu,
+  Database,
+  CheckCircle,
+  Zap,
+  Terminal,
+  ChevronRight,
   X,
   Compass,
   Code,
@@ -28,12 +28,12 @@ interface PipelineScreenProps {
   onUpdateTokensSpent: (tokens: number, cost: number) => void;
 }
 
-export default function PipelineScreen({ 
+export default function PipelineScreen({
   onCompletePipeline,
-  onUpdateTokensSpent 
+  onUpdateTokensSpent
 }: PipelineScreenProps) {
   const { lastEvent, connected } = useLiveEvents();
-  
+
   // Pipeline steps state
   const [stages, setStages] = useState<PipelineStage[]>([
     { id: 'ingest', name: 'INGEST', status: 'done', summary: '20 endpoints indexed' },
@@ -47,7 +47,7 @@ export default function PipelineScreen({
   const [activeStageId, setActiveStageId] = useState<StageId>('generate');
   const [isPaused, setIsPaused] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(138); // starts at 2:18
-  
+
   // Telemetry details state
   const [tokensSpent, setTokensSpent] = useState(11243);
   const [contextTokens, setContextTokens] = useState(14200); // starts past 40%
@@ -72,9 +72,9 @@ export default function PipelineScreen({
   // Parse WS events
   useEffect(() => {
     if (!lastEvent) return;
-    
+
     const { type, payload } = lastEvent;
-    
+
     if (type === 'stage_start') {
       const { stage } = payload;
       setStages(prev => prev.map(s => {
@@ -88,7 +88,7 @@ export default function PipelineScreen({
       }));
       setActiveStageId(stage.toLowerCase() as StageId);
     }
-    
+
     else if (type === 'stage_success') {
       const { stage, summary } = payload;
       setStages(prev => prev.map(s => {
@@ -96,12 +96,12 @@ export default function PipelineScreen({
         return s;
       }));
     }
-    
+
     else if (type === 'test_generated') {
       const { endpoint, method, code, agent } = payload;
       setRealTestQueue(prev => [...prev, { endpoint: `${method} ${endpoint}`, code, agent }]);
     }
-    
+
     else if (type === 'pipeline_complete') {
       setTimeout(() => {
         onCompletePipeline();
@@ -146,7 +146,7 @@ export default function PipelineScreen({
       if (charIndexRef.current < fullCode.length) {
         const step = Math.min(3, fullCode.length - charIndexRef.current);
         const nextChars = fullCode.substring(charIndexRef.current, charIndexRef.current + step);
-        
+
         setTypedCode(prev => prev + nextChars);
         charIndexRef.current += step;
 
@@ -160,7 +160,7 @@ export default function PipelineScreen({
 
       } else {
         clearInterval(typingTimerRef.current!);
-        
+
         setCompletedTests(prev => [...prev, `${currentTest.endpoint} · fully compiled ✓`]);
 
         const limit = realTestQueue.length > 0 ? realTestQueue.length : 1;
@@ -176,7 +176,7 @@ export default function PipelineScreen({
               return s;
             }));
             setActiveStageId('review');
-            
+
             setTimeout(() => {
               onCompletePipeline();
             }, 3000);
@@ -211,7 +211,7 @@ export default function PipelineScreen({
 
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10 flex flex-col justify-between" id="pipeline-screen" data-testid="pipeline-screen">
-      
+
       {/* Upper Panel header controls */}
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
         <div className="flex items-center gap-4">
@@ -257,13 +257,13 @@ export default function PipelineScreen({
       {/* REGION A - THE PIPELINE (HORIZONTAL 4-NODE DAG) */}
       <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-2xl">
         <h2 className="text-[10px] font-mono tracking-widest text-[#7D8DA1] uppercase mb-4">AST TRANSLATION pipeline structure</h2>
-        
+
         <div className="flex flex-col md:flex-row items-center justify-between gap-2 relative">
-          
+
           {stages.map((stage, idx) => {
             const isRunning = stage.status === 'running';
             const isDone = stage.status === 'done';
-            
+
             return (
               <React.Fragment key={stage.id}>
                 {/* Node Box */}
@@ -271,10 +271,10 @@ export default function PipelineScreen({
                   id={`pipeline-node-${stage.id}`}
                   onClick={() => setShownDrawerId(stage.id)}
                   className={`flex-1 w-full md:w-auto p-4 rounded-xl border transition-all duration-300 cursor-pointer relative select-none ${
-                    isRunning 
-                      ? 'bg-white/10 border-glow-blue cherenkov-glow shadow-md shadow-cyan-500/10' 
-                      : isDone 
-                        ? 'bg-white/5 border-white/10 hover:bg-white/10' 
+                    isRunning
+                      ? 'bg-white/10 border-glow-blue cherenkov-glow shadow-md shadow-cyan-500/10'
+                      : isDone
+                        ? 'bg-white/5 border-white/10 hover:bg-white/10'
                         : 'bg-black/10 border-white/5 opacity-60'
                   }`}
                 >
@@ -293,7 +293,7 @@ export default function PipelineScreen({
                       }`} />
                     </span>
                   </div>
-                  
+
                   <div className="mt-3 flex items-center justify-between text-[10px] font-mono text-[#7D8DA1]">
                     <span>STAGE {idx + 1}/4</span>
                     <span className="text-glow-bright hover:underline">DRT Trace</span>
@@ -319,10 +319,10 @@ export default function PipelineScreen({
 
       {/* LOWER STACK - MONOSPACE STREAM PANEL AND TELEMETRY GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-        
+
         {/* REGION B: LIVE MONOSPACE STREAM CODE PANEL (COL-SPAN 2) */}
         <div className="lg:col-span-2 flex flex-col bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden min-h-[380px] h-[440px] relative">
-          
+
           {!connected && (
             <div className="absolute inset-0 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center z-10 text-center space-y-3">
               <AlertTriangle className="w-10 h-10 text-amber-500 animate-pulse" />
@@ -339,7 +339,7 @@ export default function PipelineScreen({
               <span className="text-[#334C5A]">|</span>
               <span className="text-xs font-mono text-glow-blue">compiling {currentTest.endpoint}</span>
             </div>
-            
+
             {/* Blinking State marker */}
             <div className="flex items-center gap-1.5 font-mono text-[10px] text-text-muted">
               <span className="w-1.5 h-1.5 rounded-full bg-glow-blue animate-ping" />
@@ -374,7 +374,7 @@ export default function PipelineScreen({
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-2xl flex flex-col justify-between space-y-6">
           <div className="space-y-6">
             <h3 className="text-xs font-mono uppercase tracking-wider text-text-muted border-b border-white/10 pb-2">Active Telemetry</h3>
-            
+
             {/* Tokens metrics */}
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-mono">
@@ -451,11 +451,11 @@ export default function PipelineScreen({
             >
               <X className="w-5 h-5" />
             </button>
-            
+
             <h3 className="font-display font-bold text-lg text-text-primary uppercase tracking-wider mb-2">
               Stage Diagnostics: {shownDrawerId}
             </h3>
-            
+
             <div className="space-y-4 text-xs font-sans mt-4">
               <div className="p-3 bg-black/40 rounded-xl border border-white/10 font-mono text-[#7D8DA1]">
                 Status code: <span className="text-glow-bright font-bold uppercase">SECURED_200</span><br />

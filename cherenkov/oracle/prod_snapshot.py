@@ -28,12 +28,18 @@ class ProdSnapshotOracle(Oracle):
 
     def evaluate(self, claim: Claim, **kwargs: Any) -> OracleResult:
         if claim.category not in ("endpoint", "observed_status"):
-            return OracleResult(is_correct=True, confidence=0.5, detail="Non-evaluable claim category")
+            return OracleResult(
+                is_correct=True, confidence=0.5, detail="Non-evaluable claim category"
+            )
 
         subject = claim.subject
         parts = subject.split(" ", 1)
         if len(parts) != 2:
-            return OracleResult(is_correct=True, confidence=0.3, detail=f"Cannot parse subject: {subject}")
+            return OracleResult(
+                is_correct=True,
+                confidence=0.3,
+                detail=f"Cannot parse subject: {subject}",
+            )
 
         method = parts[0].upper()
         path = parts[1]
@@ -43,7 +49,9 @@ class ProdSnapshotOracle(Oracle):
             resp = requests.request(method, prod_path, timeout=30)
 
             prod_status = resp.status_code
-            observed_status = claim.value.get("status") if isinstance(claim.value, dict) else None
+            observed_status = (
+                claim.value.get("status") if isinstance(claim.value, dict) else None
+            )
 
             if observed_status is not None:
                 match = observed_status == prod_status

@@ -11,6 +11,7 @@ Bugs injected in regression mode:
   BUG-4  POST /orders     → 500 on valid payload (server crash)
   BUG-5  GET  /products   → ignores 'category' query param filter
 """
+
 import os
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Query
@@ -30,10 +31,10 @@ REGRESSION_MODE = os.getenv("REGRESSION_MODE", "false").lower() == "true"
 _users: dict[int, dict] = {}
 _orders: dict[int, dict] = {}
 _products = [
-    {"id": 1, "name": "Widget A", "category": "tools",      "price": 9.99},
-    {"id": 2, "name": "Gadget B", "category": "electronics","price": 49.99},
-    {"id": 3, "name": "Doohickey","category": "tools",      "price": 14.99},
-    {"id": 4, "name": "Thingamajig","category":"misc",      "price": 4.99},
+    {"id": 1, "name": "Widget A", "category": "tools", "price": 9.99},
+    {"id": 2, "name": "Gadget B", "category": "electronics", "price": 49.99},
+    {"id": 3, "name": "Doohickey", "category": "tools", "price": 14.99},
+    {"id": 4, "name": "Thingamajig", "category": "misc", "price": 4.99},
 ]
 _next_user_id = 1
 _next_order_id = 1
@@ -52,19 +53,23 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=8, description="Password (≥8 chars)")
     name: str = Field(..., min_length=1, description="Display name")
 
+
 class UserResponse(BaseModel):
     id: int
     email: str
     name: str
 
+
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
+
 
 class OrderCreate(BaseModel):
     user_id: int
     product_id: int
     quantity: int = Field(..., ge=1, le=100)
+
 
 class OrderResponse(BaseModel):
     id: int
@@ -81,12 +86,18 @@ async def create_user(user: UserCreate):
     global _next_user_id
     uid = _next_user_id
     _next_user_id += 1
-    _users[uid] = {"id": uid, "email": user.email, "name": user.name,
-                   "password_hash": f"hashed_{user.password}"}
+    _users[uid] = {
+        "id": uid,
+        "email": user.email,
+        "name": user.name,
+        "password_hash": f"hashed_{user.password}",
+    }
     if REGRESSION_MODE:
         # BUG-1: wrong status code + wrong field name
-        return JSONResponse(status_code=200,
-                            content={"user_id": uid, "email": user.email, "name": user.name})
+        return JSONResponse(
+            status_code=200,
+            content={"user_id": uid, "email": user.email, "name": user.name},
+        )
     return {"id": uid, "email": user.email, "name": user.name}
 
 
@@ -96,8 +107,9 @@ async def list_users():
     if REGRESSION_MODE:
         # BUG-3: always empty
         return []
-    return [{"id": u["id"], "email": u["email"], "name": u["name"]}
-            for u in _users.values()]
+    return [
+        {"id": u["id"], "email": u["email"], "name": u["name"]} for u in _users.values()
+    ]
 
 
 # ── GET /users/{user_id} ────────────────────────────────────────────────────
@@ -149,10 +161,14 @@ async def create_order(order: OrderCreate):
     oid = _next_order_id
     _next_order_id += 1
     total = product["price"] * order.quantity
-    _orders[oid] = {"id": oid, "user_id": order.user_id,
-                    "product_id": order.product_id,
-                    "quantity": order.quantity,
-                    "total_price": total, "status": "pending"}
+    _orders[oid] = {
+        "id": oid,
+        "user_id": order.user_id,
+        "product_id": order.product_id,
+        "quantity": order.quantity,
+        "total_price": total,
+        "status": "pending",
+    }
     return _orders[oid]
 
 
@@ -178,5 +194,9 @@ async def list_products(category: Optional[str] = Query(None)):
 # ── GET /health ──────────────────────────────────────────────────────────────
 @app.get("/health", status_code=200)
 async def health():
-    return {"status": "ok", "regression_mode": REGRESSION_MODE,
-            "users": len(_users), "orders": len(_orders)}
+    return {
+        "status": "ok",
+        "regression_mode": REGRESSION_MODE,
+        "users": len(_users),
+        "orders": len(_orders),
+    }

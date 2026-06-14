@@ -2,7 +2,7 @@
 """
 Tests for Local SQLite RAG Index (Issue #252).
 """
-import json
+
 import os
 import sqlite3
 import tempfile
@@ -28,25 +28,30 @@ class TestRAGIndex(unittest.TestCase):
 
     def tearDown(self):
         import shutil
+
         shutil.rmtree(self.tmpdir, ignore_errors=True)
 
     def test_initialize_db_creates_table(self):
         """Test database table is created on init."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='incident_vectors'")
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='incident_vectors'"
+        )
         result = cursor.fetchone()
         conn.close()
         self.assertIsNotNone(result)
 
     def test_add_incident_stores_vector(self):
         """Test adding incident stores embedding in database."""
-        with patch.object(self.index, '_get_embedding', return_value=[0.1] * 768):
+        with patch.object(self.index, "_get_embedding", return_value=[0.1] * 768):
             self.index.add_incident("inc-001", "SCN-001", "HTTP_500", "Server error")
 
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT id, scenario_id, failure_class, error_message FROM incident_vectors WHERE id='inc-001'")
+        cursor.execute(
+            "SELECT id, scenario_id, failure_class, error_message FROM incident_vectors WHERE id='inc-001'"
+        )
         row = cursor.fetchone()
         conn.close()
 
@@ -59,7 +64,7 @@ class TestRAGIndex(unittest.TestCase):
     def test_query_similar_incidents_returns_ranked(self):
         """Test query returns incidents ranked by cosine similarity."""
         # Add two incidents with different embeddings
-        with patch.object(self.index, '_get_embedding') as mock_embed:
+        with patch.object(self.index, "_get_embedding") as mock_embed:
             # First incident: similar to query
             mock_embed.side_effect = [
                 [1.0, 0.0, 0.0],  # incident 1 embedding
@@ -82,7 +87,7 @@ class TestRAGIndex(unittest.TestCase):
 
     def test_query_with_limit(self):
         """Test query respects limit parameter."""
-        with patch.object(self.index, '_get_embedding', return_value=[0.1] * 768):
+        with patch.object(self.index, "_get_embedding", return_value=[0.1] * 768):
             for i in range(5):
                 self.index.add_incident(f"inc-{i}", f"SCN-{i}", "ERROR", f"Error {i}")
 
@@ -91,7 +96,7 @@ class TestRAGIndex(unittest.TestCase):
 
     def test_add_incident_replaces_duplicate_id(self):
         """Test adding incident with same ID replaces existing."""
-        with patch.object(self.index, '_get_embedding', return_value=[0.1] * 768):
+        with patch.object(self.index, "_get_embedding", return_value=[0.1] * 768):
             self.index.add_incident("inc-001", "SCN-001", "HTTP_500", "Server error")
             self.index.add_incident("inc-001", "SCN-001", "HTTP_500", "Updated error")
 
@@ -106,7 +111,7 @@ class TestRAGIndex(unittest.TestCase):
         """Test embedding falls back to mock vector when Ollama unavailable."""
         with patch("requests.post", side_effect=Exception("Connection refused")):
             vector = self.index._get_embedding("test text")
-        
+
         self.assertEqual(len(vector), 768)
         self.assertEqual(vector, [0.1] * 768)
 
@@ -117,7 +122,7 @@ class TestRAGIndex(unittest.TestCase):
                 MagicMock(status_code=200, json=lambda: {"embeddings": [[0.5] * 768]}),
             ]
             vector = self.index._get_embedding("test")
-        
+
         self.assertEqual(vector, [0.5] * 768)
         # Check /api/embed was called
         call_url = mock_post.call_args[0][0]
@@ -128,16 +133,17 @@ class TestRAGIndex(unittest.TestCase):
         with patch("requests.post") as mock_post:
             mock_post.side_effect = [
                 Exception("Not found"),  # /api/embed fails
-                MagicMock(status_code=200, json=lambda: {"embedding": [0.3] * 768}),  # /api/embeddings works
+                MagicMock(
+                    status_code=200, json=lambda: {"embedding": [0.3] * 768}
+                ),  # /api/embeddings works
             ]
             vector = self.index._get_embedding("test")
-        
+
         self.assertEqual(vector, [0.3] * 768)
         self.assertEqual(mock_post.call_count, 2)
 
 
 # Need to import sqlite3 for the first test
-import sqlite3
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 # CHERENKOV-QA Best Practices
 
-**Date:** 2026-06-08  
-**Status:** Active  
+**Date:** 2026-06-08
+**Status:** Active
 **Related EPIC:** #277 (Phase -1)
 
 ---
@@ -24,21 +24,21 @@ from cherenkov.knowledge.domain.models import KnowledgeQuery, KnowledgeResult
 
 def query_knowledge(repo: KnowledgeRepository, query: str, limit: int = 10) -> KnowledgeResult:
     """Query knowledge repository.
-    
+
     Args:
         repo: Knowledge repository instance
         query: Search query string
         limit: Maximum number of results
-    
+
     Returns:
         KnowledgeResult with matching items
-    
+
     Raises:
         ValueError: If query is empty
     """
     if not query:
         raise ValueError("Query cannot be empty")
-    
+
     knowledge_query = KnowledgeQuery(query=query, limit=limit)
     return repo.query(knowledge_query)
 ```
@@ -150,10 +150,10 @@ Test cross-module integration:
 def test_hitl_decision_feeds_reflector():
     queue = HitlQueue()
     reflector = Reflector()
-    
+
     item_id = queue.enqueue(endpoint="/users", method="POST", confidence=0.85)
     queue.approve(item_id, actor="user", reason="Looks good")
-    
+
     idioms = reflector.get_idioms()
     assert any("users" in idiom.pattern for idiom in idioms)
 ```
@@ -170,10 +170,10 @@ Never crash on infrastructure failure, always degrade:
 def get_vlm_provider(self):
     if self.localai.is_available():
         return self.localai
-    
+
     if self.ollama.is_available():
         return self.ollama
-    
+
     return None  # No VLM available
 ```
 
@@ -211,7 +211,7 @@ logger = get_logger()
 def run_pipeline(spec_path: str, trace_id: str | None = None):
     trace_id = trace_id or str(uuid.uuid4())
     log = logger.bind(trace_id=trace_id, spec_path=spec_path)
-    
+
     log.info("pipeline_start")
     # ... pipeline logic ...
     log.info("pipeline_end", tests_generated=42)
@@ -238,7 +238,7 @@ Validate all inputs:
 def validate_message(message: str) -> None:
     if len(message) > 10000:
         raise HTTPException(status_code=413, detail="Message too long")
-    
+
     if re.search(r'[\x00-\x1F\x7F]', message):
         raise HTTPException(status_code=400, detail="Message contains control characters")
 ```
@@ -319,14 +319,14 @@ All public functions must have docstrings:
 ```python
 def query_knowledge(repo: KnowledgeRepository, query: str) -> KnowledgeResult:
     """Query knowledge repository.
-    
+
     Args:
         repo: Knowledge repository instance
         query: Search query string
-    
+
     Returns:
         KnowledgeResult with matching items
-    
+
     Raises:
         ValueError: If query is empty
     """

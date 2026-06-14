@@ -1,4 +1,5 @@
 """Integration test: verify SQLite fallback when Redis is unavailable."""
+
 import unittest
 from unittest import mock
 
@@ -11,6 +12,7 @@ class TestRedisFallback(unittest.TestCase):
         with mock.patch("redis.Redis.ping", side_effect=ConnectionError("Redis down")):
             try:
                 from cherenkov.reflector.store import ReflectorStore
+
                 store = ReflectorStore(db_path=":memory:")
                 # Should not raise even with Redis down
                 self.assertIsNotNone(store)
@@ -23,6 +25,7 @@ class TestRedisFallback(unittest.TestCase):
             try:
                 from cherenkov.truth.model import VerdictRecord
                 from cherenkov.reflector.store import VerdictStore
+
                 store = VerdictStore(db_path=":memory:")
                 self.assertIsNotNone(store)
             except ImportError:
@@ -33,6 +36,7 @@ class TestRedisFallback(unittest.TestCase):
         with mock.patch("redis.Redis.ping", side_effect=ConnectionError("Redis down")):
             try:
                 from cherenkov.hitl.store import HitlStore
+
                 store = HitlStore(db_path=":memory:")
                 self.assertIsNotNone(store)
             except ImportError:

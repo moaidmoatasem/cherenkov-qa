@@ -2,6 +2,7 @@
 CHERENKOV truth/sources/interface.py — Source Adapter SPI interface.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import abc

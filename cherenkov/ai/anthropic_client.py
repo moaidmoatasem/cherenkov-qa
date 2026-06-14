@@ -6,9 +6,9 @@ ingress token used in cloud environments) via Bearer auth header.
 
 Used when PROVIDER=anthropic is set.
 """
+
 from __future__ import annotations
 
-import json
 import os
 import re
 import time
@@ -65,6 +65,7 @@ class AnthropicInferenceClient(InferenceClient):
         if self.bearer_token:
             # Use httpx directly so we can use Bearer auth without x-api-key interference
             import httpx
+
             resp = httpx.post(
                 "https://api.anthropic.com/v1/messages",
                 headers={
@@ -140,7 +141,9 @@ class AnthropicInferenceClient(InferenceClient):
         run_id: str | None = None,
     ) -> dict:
         for attempt in range(max_reprompts + 1):
-            raw = self._complete(system_prompt, user_prompt, model, temperature=temperature)
+            raw = self._complete(
+                system_prompt, user_prompt, model, temperature=temperature
+            )
             text = strip_think(raw)
             # Extract JSON
             fenced = re.search(r"```(?:json)?\s*([\s\S]+?)```", text)
@@ -154,4 +157,6 @@ class AnthropicInferenceClient(InferenceClient):
             if parsed is not None:
                 return parsed
             self._token_usage["reprompts"] += 1
-        raise ProviderJSONError(f"Anthropic failed to return valid JSON after {max_reprompts + 1} attempts")
+        raise ProviderJSONError(
+            f"Anthropic failed to return valid JSON after {max_reprompts + 1} attempts"
+        )

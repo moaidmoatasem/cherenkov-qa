@@ -3,14 +3,12 @@ CHERENKOV coverage/assertion_gate.py — Epoch 11 Assertion Gate.
 Self-play: runs generated tests against a deliberately broken implementation
 to verify that assertions actually catch real bugs.
 """
+
 from __future__ import annotations
 
-import subprocess
 import time
-from typing import Any
 
 from cherenkov.core.errors import get_logger
-from cherenkov.core.config import Config
 
 
 class AssertionGateResult:
@@ -79,12 +77,14 @@ class BrokenImplementation:
             success_code = int(status_code)
             error_code = 400 if success_code == 201 else 500
 
-            bugs.append({
-                "id": f"wrong_status_{status_code}",
-                "description": f"Returns {error_code} instead of {success_code}",
-                "expected_correct": {"status": success_code},
-                "broken_behavior": {"status": error_code},
-            })
+            bugs.append(
+                {
+                    "id": f"wrong_status_{status_code}",
+                    "description": f"Returns {error_code} instead of {success_code}",
+                    "expected_correct": {"status": success_code},
+                    "broken_behavior": {"status": error_code},
+                }
+            )
 
             content = responses.get(status_code, {}).get("content", {})
             for media_type in ("application/json",):
@@ -93,12 +93,14 @@ class BrokenImplementation:
 
                 if props:
                     omitted = list(props.keys())[0]
-                    bugs.append({
-                        "id": f"missing_field_{omitted}",
-                        "description": f"Omits required field '{omitted}' from response",
-                        "expected_correct": {"missing_field": omitted},
-                        "broken_behavior": {"missing_field": omitted},
-                    })
+                    bugs.append(
+                        {
+                            "id": f"missing_field_{omitted}",
+                            "description": f"Omits required field '{omitted}' from response",
+                            "expected_correct": {"missing_field": omitted},
+                            "broken_behavior": {"missing_field": omitted},
+                        }
+                    )
                     break
                 break
 
@@ -247,7 +249,10 @@ class AssertionGate:
         test_files = self._find_test_files(test_dir)
         for tf in test_files:
             content = tf.get("content", "")
-            if f'"{field}" in data' in content or f'toHaveProperty("{field}")' in content:
+            if (
+                f'"{field}" in data' in content
+                or f'toHaveProperty("{field}")' in content
+            ):
                 return True
 
         return False
@@ -266,6 +271,7 @@ class AssertionGate:
     def _find_test_files(self, test_dir: str) -> list[dict]:
         """Find test files in the directory and read their contents."""
         import os
+
         files = []
         if not os.path.exists(test_dir):
             return files

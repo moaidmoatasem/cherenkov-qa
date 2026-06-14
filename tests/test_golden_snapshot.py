@@ -4,6 +4,7 @@ from unittest.mock import patch, MagicMock
 from cherenkov.stages.generate import GenerateStage
 from cherenkov.core.contracts import Scenario
 
+
 class TestGoldenSnapshot(unittest.TestCase):
     @patch("cherenkov.stages.generate.get_client")
     def test_golden_generation(self, mock_get_client):
@@ -18,7 +19,7 @@ class TestGoldenSnapshot(unittest.TestCase):
             case_type="happy_path",
             mutation_id="golden_mut",
             expected_status=200,
-            priority="high"
+            priority="high",
         )
         stage = GenerateStage("golden_run")
         # We also mock subprocess so tsc check passes
@@ -30,14 +31,15 @@ class TestGoldenSnapshot(unittest.TestCase):
                 method="GET",
                 operation={},
                 schemas={},
-                instruction="Do the golden test"
+                instruction="Do the golden test",
             )
-        
+
         # Verify stripped think block and code matches golden snapshot
         self.assertNotIn("<think>", output.test_code)
         self.assertIn("import { client } from '../client';", output.test_code)
         self.assertEqual(output.status, "ok")
         self.assertEqual(output.scenario_id, "golden_mut")
+
 
 if __name__ == "__main__":
     unittest.main()

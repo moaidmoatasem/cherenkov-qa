@@ -212,7 +212,7 @@ export default function AuthorScreen() {
                       <p className="text-xs text-[#7D8DA1] font-mono mt-1">Executing intent against backend pipeline.</p>
                     </div>
                   </div>
-                  
+
                   {/* Live Telemetry Log Box */}
                   <div className="bg-black/50 border border-white/5 rounded-xl p-3 font-mono text-[10px] text-[#7D8DA1] h-32 overflow-y-auto" data-testid="live-logs">
                     {liveLogs.length === 0 ? (

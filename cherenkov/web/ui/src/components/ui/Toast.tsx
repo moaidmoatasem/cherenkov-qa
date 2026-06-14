@@ -36,8 +36,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toast = useCallback((
-    message: string, 
-    type: ToastType = 'info', 
+    message: string,
+    type: ToastType = 'info',
     options?: { actionLabel?: string; onAction?: () => void }
   ) => {
     const id = crypto.randomUUID();
@@ -61,7 +61,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 function ToastContainer({ toasts, dismiss }: { toasts: ToastItem[]; dismiss: (id: string) => void }) {
   return (
-    <div 
+    <div
       className="fixed bottom-6 right-6 flex flex-col gap-3 z-50 pointer-events-none max-w-sm w-full"
       role="status"
       aria-live="assertive"
@@ -120,12 +120,12 @@ function ToastComponent({ item, dismiss }: { item: ToastItem; dismiss: (id: stri
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`pointer-events-auto border bg-bg-base/95 backdrop-blur px-4 py-3 rounded-xl flex items-start gap-3 shadow-lg 
-        ${borders[item.type]} 
+      className={`pointer-events-auto border bg-bg-base/95 backdrop-blur px-4 py-3 rounded-xl flex items-start gap-3 shadow-lg
+        ${borders[item.type]}
         ${isReduced ? '' : 'transition-all duration-300 transform scale-100'}`}
     >
       <div className="mt-0.5">{icons[item.type]}</div>
-      
+
       <div className="flex-1 flex flex-col gap-1.5 min-w-0">
         <p className="text-sm font-medium text-text-primary break-words">
           {item.message}

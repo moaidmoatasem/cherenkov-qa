@@ -1,4 +1,5 @@
 """Tests for E4-3: Oracle SPI."""
+
 import unittest
 from unittest.mock import patch, MagicMock
 
@@ -22,7 +23,13 @@ class TestOracleInterface(unittest.TestCase):
         self.assertIsNone(r.actual)
 
     def test_oracle_result_custom(self):
-        r = OracleResult(is_correct=False, confidence=0.5, detail="mismatch", expected=200, actual=404)
+        r = OracleResult(
+            is_correct=False,
+            confidence=0.5,
+            detail="mismatch",
+            expected=200,
+            actual=404,
+        )
         self.assertFalse(r.is_correct)
         self.assertEqual(r.confidence, 0.5)
         self.assertEqual(r.detail, "mismatch")
@@ -38,7 +45,9 @@ class TestSpecPrismOracle(unittest.TestCase):
             category="endpoint",
             subject="GET /api/health",
             value={"status": 200},
-            provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri="spec.yaml"),
+            provenance=Provenance(
+                source_type=ProvenanceType.SPEC, source_uri="spec.yaml"
+            ),
         )
 
     @patch("cherenkov.oracle.spec_prism.requests.request")
@@ -57,7 +66,9 @@ class TestSpecPrismOracle(unittest.TestCase):
             category="mutation",
             subject="POST /api/users",
             value={},
-            provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri="spec.yaml"),
+            provenance=Provenance(
+                source_type=ProvenanceType.SPEC, source_uri="spec.yaml"
+            ),
         )
         result = self.oracle.evaluate(non_eval_claim)
         self.assertTrue(result.is_correct)
@@ -66,7 +77,10 @@ class TestSpecPrismOracle(unittest.TestCase):
     @patch("cherenkov.oracle.spec_prism.requests.request")
     def test_prism_unreachable(self, mock_request):
         import requests as req_lib
-        mock_request.side_effect = req_lib.exceptions.ConnectionError("Connection refused")
+
+        mock_request.side_effect = req_lib.exceptions.ConnectionError(
+            "Connection refused"
+        )
 
         result = self.oracle.evaluate(self.claim)
         self.assertTrue(result.is_correct)
@@ -81,7 +95,9 @@ class TestProdSnapshotOracle(unittest.TestCase):
             category="endpoint",
             subject="GET /health",
             value={"status": 200},
-            provenance=Provenance(source_type=ProvenanceType.TRAFFIC, source_uri="capture.har"),
+            provenance=Provenance(
+                source_type=ProvenanceType.TRAFFIC, source_uri="capture.har"
+            ),
         )
 
     @patch("cherenkov.oracle.prod_snapshot.requests.request")
@@ -110,7 +126,9 @@ class TestProdSnapshotOracle(unittest.TestCase):
             category="shape",
             subject="UserSchema",
             value={},
-            provenance=Provenance(source_type=ProvenanceType.CODE, source_uri="code.py"),
+            provenance=Provenance(
+                source_type=ProvenanceType.CODE, source_uri="code.py"
+            ),
         )
         result = self.oracle.evaluate(non_eval_claim)
         self.assertTrue(result.is_correct)

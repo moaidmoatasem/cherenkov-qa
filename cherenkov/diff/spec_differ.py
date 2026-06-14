@@ -5,6 +5,7 @@ Authority: v3.1 + delta. Issue #437.
 Detects breaking vs additive changes between two OpenAPI YAML/JSON specs.
 Breaking changes cause `cherenkov diff` to exit with code 1.
 """
+
 from __future__ import annotations
 
 import json
@@ -85,25 +86,29 @@ class SpecDiffer:
         for p in sorted(before_paths - after_paths):
             for method in before["paths"][p]:
                 if method.lower() in _HTTP_METHODS:
-                    report.breaking.append(SpecChange(
-                        change_type=ChangeType.REMOVED_ENDPOINT,
-                        breaking=True,
-                        endpoint=p,
-                        method=method.upper(),
-                        detail=f"Endpoint {method.upper()} {p} was removed",
-                    ))
+                    report.breaking.append(
+                        SpecChange(
+                            change_type=ChangeType.REMOVED_ENDPOINT,
+                            breaking=True,
+                            endpoint=p,
+                            method=method.upper(),
+                            detail=f"Endpoint {method.upper()} {p} was removed",
+                        )
+                    )
 
         # Added endpoints — ADDITIVE
         for p in sorted(after_paths - before_paths):
             for method in after["paths"][p]:
                 if method.lower() in _HTTP_METHODS:
-                    report.additive.append(SpecChange(
-                        change_type=ChangeType.ADDED_ENDPOINT,
-                        breaking=False,
-                        endpoint=p,
-                        method=method.upper(),
-                        detail=f"New endpoint {method.upper()} {p} added",
-                    ))
+                    report.additive.append(
+                        SpecChange(
+                            change_type=ChangeType.ADDED_ENDPOINT,
+                            breaking=False,
+                            endpoint=p,
+                            method=method.upper(),
+                            detail=f"New endpoint {method.upper()} {p} added",
+                        )
+                    )
 
         # Changed endpoints — inspect operations
         for p in sorted(before_paths & after_paths):
@@ -128,13 +133,15 @@ class SpecDiffer:
                 continue
             if method not in after_item:
                 # Method removed — BREAKING (already caught at path level if whole path removed)
-                report.breaking.append(SpecChange(
-                    change_type=ChangeType.REMOVED_ENDPOINT,
-                    breaking=True,
-                    endpoint=path,
-                    method=method.upper(),
-                    detail=f"HTTP method {method.upper()} removed from {path}",
-                ))
+                report.breaking.append(
+                    SpecChange(
+                        change_type=ChangeType.REMOVED_ENDPOINT,
+                        breaking=True,
+                        endpoint=path,
+                        method=method.upper(),
+                        detail=f"HTTP method {method.upper()} removed from {path}",
+                    )
+                )
                 continue
             before_op = before_item[method]
             after_op = after_item[method]
@@ -155,55 +162,63 @@ class SpecDiffer:
         for name, param in before_params.items():
             if name not in after_params:
                 if param.get("required", False):
-                    report.breaking.append(SpecChange(
-                        change_type=ChangeType.REMOVED_REQUIRED_PARAM,
-                        breaking=True,
-                        endpoint=path,
-                        method=method.upper(),
-                        detail=(
-                            f"Required parameter '{name}' removed from "
-                            f"{method.upper()} {path}"
-                        ),
-                    ))
+                    report.breaking.append(
+                        SpecChange(
+                            change_type=ChangeType.REMOVED_REQUIRED_PARAM,
+                            breaking=True,
+                            endpoint=path,
+                            method=method.upper(),
+                            detail=(
+                                f"Required parameter '{name}' removed from "
+                                f"{method.upper()} {path}"
+                            ),
+                        )
+                    )
                 else:
-                    report.additive.append(SpecChange(
-                        change_type=ChangeType.ADDED_OPTIONAL_PARAM,
-                        breaking=False,
-                        endpoint=path,
-                        method=method.upper(),
-                        detail=f"Optional parameter '{name}' removed from {method.upper()} {path}",
-                    ))
+                    report.additive.append(
+                        SpecChange(
+                            change_type=ChangeType.ADDED_OPTIONAL_PARAM,
+                            breaking=False,
+                            endpoint=path,
+                            method=method.upper(),
+                            detail=f"Optional parameter '{name}' removed from {method.upper()} {path}",
+                        )
+                    )
             else:
                 # Check type change
                 before_type = param.get("schema", {}).get("type")
                 after_type = after_params[name].get("schema", {}).get("type")
                 if before_type and after_type and before_type != after_type:
-                    report.breaking.append(SpecChange(
-                        change_type=ChangeType.CHANGED_PARAM_TYPE,
-                        breaking=True,
-                        endpoint=path,
-                        method=method.upper(),
-                        detail=(
-                            f"Parameter '{name}' type changed from "
-                            f"'{before_type}' to '{after_type}' in {method.upper()} {path}"
-                        ),
-                        before=before_type,
-                        after=after_type,
-                    ))
+                    report.breaking.append(
+                        SpecChange(
+                            change_type=ChangeType.CHANGED_PARAM_TYPE,
+                            breaking=True,
+                            endpoint=path,
+                            method=method.upper(),
+                            detail=(
+                                f"Parameter '{name}' type changed from "
+                                f"'{before_type}' to '{after_type}' in {method.upper()} {path}"
+                            ),
+                            before=before_type,
+                            after=after_type,
+                        )
+                    )
 
         for name in after_params:
             if name not in before_params and after_params[name].get("required", False):
                 # New required param — BREAKING (callers don't know to send it)
-                report.breaking.append(SpecChange(
-                    change_type=ChangeType.REMOVED_REQUIRED_PARAM,
-                    breaking=True,
-                    endpoint=path,
-                    method=method.upper(),
-                    detail=(
-                        f"New required parameter '{name}' added to "
-                        f"{method.upper()} {path} — breaks existing callers"
-                    ),
-                ))
+                report.breaking.append(
+                    SpecChange(
+                        change_type=ChangeType.REMOVED_REQUIRED_PARAM,
+                        breaking=True,
+                        endpoint=path,
+                        method=method.upper(),
+                        detail=(
+                            f"New required parameter '{name}' added to "
+                            f"{method.upper()} {path} — breaks existing callers"
+                        ),
+                    )
+                )
 
     def _diff_response_codes(
         self,
@@ -217,17 +232,20 @@ class SpecDiffer:
         after_resp = set(after_op.get("responses", {}).keys())
 
         for code in before_resp - after_resp:
-            report.breaking.append(SpecChange(
-                change_type=ChangeType.REMOVED_RESPONSE_CODE,
-                breaking=True,
-                endpoint=path,
-                method=method.upper(),
-                detail=f"Response status {code} removed from {method.upper()} {path}",
-            ))
+            report.breaking.append(
+                SpecChange(
+                    change_type=ChangeType.REMOVED_RESPONSE_CODE,
+                    breaking=True,
+                    endpoint=path,
+                    method=method.upper(),
+                    detail=f"Response status {code} removed from {method.upper()} {path}",
+                )
+            )
 
     @staticmethod
     def _load(path: str) -> dict:
         import yaml  # pyyaml in requirements.txt
+
         with open(path, "r", encoding="utf-8") as f:
             if path.endswith((".yaml", ".yml")):
                 return yaml.safe_load(f) or {}

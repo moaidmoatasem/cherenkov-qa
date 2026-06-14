@@ -8,6 +8,7 @@ skip the LLM call entirely. Cache key = SHA-256 of (path + method + schema_block
 Two-tier caching: L1 in-process dict (no I/O), L2 SQLite (persists across runs).
 Entries expire after TTL_HOURS (default 24 h) — model or schema changes age out naturally.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -98,7 +99,9 @@ class EndpointCache:
                 return entry
             del self._l1[endpoint_hash]
         # L2 check
-        cutoff = datetime.fromtimestamp(time.time() - self._ttl, tz=timezone.utc).isoformat()
+        cutoff = datetime.fromtimestamp(
+            time.time() - self._ttl, tz=timezone.utc
+        ).isoformat()
         with sqlite3.connect(self.db_path) as conn:
             row = conn.execute(
                 "SELECT endpoint_hash, spec_content_hash, model_name, test_code, created_at "
@@ -136,10 +139,12 @@ class EndpointCache:
     def stats(self) -> dict:
         """Return cache statistics for reporting."""
         with sqlite3.connect(self.db_path) as conn:
-            total = conn.execute(
-                "SELECT COUNT(*) FROM endpoint_cache"
-            ).fetchone()[0]
-        return {"cached_endpoints": total, "cache_db": str(self.db_path), "l1_size": len(self._l1)}
+            total = conn.execute("SELECT COUNT(*) FROM endpoint_cache").fetchone()[0]
+        return {
+            "cached_endpoints": total,
+            "cache_db": str(self.db_path),
+            "l1_size": len(self._l1),
+        }
 
     def clear(self) -> None:
         """Wipe entire cache (e.g. after --no-cache flag or model change)."""

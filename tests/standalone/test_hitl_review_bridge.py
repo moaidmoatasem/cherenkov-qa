@@ -7,18 +7,15 @@ Verifies that ReviewStage correctly bridges Verdict.HITL → HitlQueue.enqueue:
   - item fields (confidence, review_gate_failed, run_id) populated correctly
   - non-fatal: HitlQueue failure does not break ReviewOutput
 """
+
 from __future__ import annotations
 
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, patch, call
-import pytest
 
-from cherenkov.core.contracts import GenerateOutput, Verdict, Status
-from cherenkov.hitl import HitlItem, HitlQueue
+from cherenkov.core.contracts import GenerateOutput, Status
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
+
 
 def _make_generate(scenario_id: str = "test_scenario") -> GenerateOutput:
     """Minimal GenerateOutput to drive ReviewStage.run()."""
@@ -65,6 +62,7 @@ test('hitl_scenario', async () => {
 
 # ── tests using mocked ReviewStage internals ──────────────────────────────────
 
+
 class TestHitlReviewBridge:
     """Test the Verdict.HITL → HitlQueue.enqueue bridge."""
 
@@ -72,7 +70,7 @@ class TestHitlReviewBridge:
         """When REVIEW yields HITL verdict, HitlQueue.enqueue must be called once."""
         # The bridge uses a lazy import inside review.py, so we patch cherenkov.hitl.HitlQueue
         from cherenkov.hitl import HitlItem as RealHitlItem, HitlQueue as RealQueue
-        from cherenkov.core.contracts import Verdict as RealVerdict, GateResult
+        from cherenkov.core.contracts import GateResult
 
         db = str(tmp_path / "direct_bridge.db")
         q = RealQueue(db_path=db)
@@ -91,7 +89,9 @@ class TestHitlReviewBridge:
         first_failing_gate = next((g.gate for g in gates if not g.passed), None)
         assert first_failing_gate == "prism-dryrun"
 
-        confidence_reason = f"Quality score {quality_score:.2f} — gate '{first_failing_gate}' failed"
+        confidence_reason = (
+            f"Quality score {quality_score:.2f} — gate '{first_failing_gate}' failed"
+        )
         hitl_item = RealHitlItem(
             id=scenario_id,
             confidence=round(quality_score, 4),
@@ -109,10 +109,10 @@ class TestHitlReviewBridge:
         assert retrieved.review_gate_failed == "prism-dryrun"
         assert retrieved.confidence_reason == confidence_reason
 
-
     def test_no_enqueue_on_auto_approve(self, tmp_path):
         """Enqueue must NOT fire on AUTO_APPROVE (quality_score >= 0.9)."""
         from cherenkov.hitl import HitlQueue as RealQueue
+
         db = str(tmp_path / "no_enqueue_approve.db")
         q = RealQueue(db_path=db)
 
@@ -124,6 +124,7 @@ class TestHitlReviewBridge:
     def test_no_enqueue_on_regenerate(self, tmp_path):
         """Enqueue must NOT fire on REGENERATE (quality_score < 0.7)."""
         from cherenkov.hitl import HitlQueue as RealQueue
+
         db = str(tmp_path / "no_enqueue_regen.db")
         q = RealQueue(db_path=db)
 
@@ -135,31 +136,41 @@ class TestHitlReviewBridge:
     def test_enqueue_idempotent_on_same_scenario(self, tmp_path):
         """Second enqueue of same scenario_id must NOT resurrect/overwrite resolved item."""
         from cherenkov.hitl import HitlItem as RealHitlItem, HitlQueue as RealQueue
+
         db = str(tmp_path / "idempotent.db")
         q = RealQueue(db_path=db)
 
-        item = RealHitlItem(id="idempotent_test", endpoint="/x", method="GET", confidence=0.75)
+        item = RealHitlItem(
+            id="idempotent_test", endpoint="/x", method="GET", confidence=0.75
+        )
         q.enqueue(item)
         q.approve("idempotent_test", "@reviewer")
 
         # Re-enqueue the same id (simulates REVIEW running again on same scenario)
-        item2 = RealHitlItem(id="idempotent_test", endpoint="/x", method="GET", confidence=0.82)
+        item2 = RealHitlItem(
+            id="idempotent_test", endpoint="/x", method="GET", confidence=0.82
+        )
         q.enqueue(item2)
 
         # The approved item should remain approved (INSERT OR IGNORE semantics)
         retrieved = q.get("idempotent_test")
-        assert retrieved.status.value == "approved", "Approved item must not be overwritten"
+        assert (
+            retrieved.status.value == "approved"
+        ), "Approved item must not be overwritten"
         assert retrieved.approved_by == "@reviewer"
 
     def test_hitl_item_fields_populated_correctly(self, tmp_path):
         """HitlItem must carry confidence, review_gate_failed, and confidence_reason."""
         from cherenkov.hitl import HitlItem as RealHitlItem, HitlQueue as RealQueue
+
         db = str(tmp_path / "fields.db")
         q = RealQueue(db_path=db)
 
         quality_score = 0.7500
         failing_gate = "gate_ast"
-        confidence_reason = f"Quality score {quality_score:.2f} — gate '{failing_gate}' failed"
+        confidence_reason = (
+            f"Quality score {quality_score:.2f} — gate '{failing_gate}' failed"
+        )
 
         item = RealHitlItem(
             id="fields_test",
@@ -198,7 +209,7 @@ class TestHitlReviewBridge:
         try:
             item = RealHitlItem(id="non_fatal_test", endpoint="/x", method="GET")
             BrokenQueue().enqueue(item)
-        except Exception as exc:
+        except Exception:
             # This is what review.py does: log warning, never re-raise
             pass  # non-fatal: warning logged, ReviewOutput still returned
 

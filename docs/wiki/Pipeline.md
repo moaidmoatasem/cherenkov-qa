@@ -119,7 +119,7 @@ User:   Endpoint: POST /users
         Request schema: { email: string, password: string (min 8) }
         Scenario: password_too_short — password.length < 8
         Expected status: 422 (from OpenAPI spec: POST /users → responses.422)
-        
+
         Write a Playwright test for this scenario.
 ```
 

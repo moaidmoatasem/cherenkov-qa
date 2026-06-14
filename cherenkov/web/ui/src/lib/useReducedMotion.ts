@@ -7,12 +7,12 @@ export function useReducedMotion(): boolean {
   const [reducedMotion, setReducedMotion] = useState<boolean>(() => {
     // Initial check
     if (typeof window === 'undefined') return false;
-    
+
     // Check localStorage override
     const override = localStorage.getItem('prefers-reduced-motion');
     if (override === 'reduce') return true;
     if (override === 'no-preference') return false;
-    
+
     // Fallback to system preference
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
@@ -49,7 +49,7 @@ export function useReducedMotion(): boolean {
     window.addEventListener('storage', handleStorageChange);
     // Custom event dispatch setup for same-document changes
     window.addEventListener('reduced-motion-changed', handleStorageChange);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('reduced-motion-changed', handleStorageChange);

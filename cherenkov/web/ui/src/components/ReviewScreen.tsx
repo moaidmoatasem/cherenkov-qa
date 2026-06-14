@@ -5,14 +5,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Check, 
-  X, 
-  AlertTriangle, 
-  Edit3, 
-  FolderCheck, 
-  Tv, 
-  Terminal, 
-  Sparkles, 
+  Check,
+  X,
+  AlertTriangle,
+  Edit3,
+  FolderCheck,
+  Tv,
+  Terminal,
+  Sparkles,
   Code,
   CheckCircle,
   HelpCircle,
@@ -48,7 +48,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
   useEffect(() => {
     onUpdateRef.current = onUpdatePassRateAndCount;
   });
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -268,11 +268,11 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
 
     setTests(prev => prev.map(t => {
       if (t.id === selectedTestId) {
-        return { 
-          ...t, 
+        return {
+          ...t,
           code: editedCode,
           gates: { ...t.gates, quality: true },
-          verdict: 'approved' 
+          verdict: 'approved'
         };
       }
       return t;
@@ -291,10 +291,10 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
 
     setTests(prev => prev.map(t => {
       if (t.id === id) {
-        return { 
-          ...t, 
+        return {
+          ...t,
           verdict: 'rejected' as const,
-          gates: { ...t.gates, quality: false } 
+          gates: { ...t.gates, quality: false }
         };
       }
       return t;
@@ -367,7 +367,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
 
   return (
     <div className="p-6 h-full overflow-hidden flex flex-col justify-between grid-bg bg-transparent relative z-10" id="review-screen" data-testid="review-screen">
-      
+
       {/* Page Header */}
       <div className="flex items-center justify-between border-b border-white/5 pb-4 shrink-0">
         <div className="flex items-center gap-4">
@@ -397,16 +397,16 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
 
       {/* Main Two-Pane Split screen */}
       <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-5 gap-6 mt-6 items-stretch">
-        
+
         {/* LEFT COLUMN: FILTER & QUEUE LIST PANEL (2/5 size) */}
         <div className="lg:col-span-2 flex flex-col bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden h-full">
           {/* Tabs Filter Header */}
           <div className="flex border-b border-white/5 bg-black/40 p-2 gap-1 justify-between shrink-0 select-none">
             {(['all', 'approved', 'review', 'regenerating', 'rejected'] as const).map((filter) => {
-              const count = filter === 'all' 
-                ? tests.length 
+              const count = filter === 'all'
+                ? tests.length
                 : tests.filter(t => t.verdict === filter).length;
-              
+
               return (
                 <button
                   key={filter}
@@ -451,14 +451,14 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                 const isApproved = test.verdict === 'approved';
                 const isReview = test.verdict === 'review';
                 const isRegenerating = test.verdict === 'regenerating';
-                
+
                 return (
                   <div
                     key={test.id}
                     id={`test-row-${test.id}`}
                     onClick={() => setSelectedTestId(test.id)}
                     className={`p-3 rounded-xl border cursor-pointer transition-all duration-300 relative ${
-                      isSelected 
+                      isSelected
                         ? 'bg-white/10 border-glow-blue shadow-lg shadow-cyan-500/5'
                         : 'bg-black/20 border-white/5 hover:border-border-custom hover:bg-white/5'
                     } ${isReview ? 'border-l-2 border-l-amber-500' : ''} ${
@@ -505,8 +505,8 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                                 key={gate}
                                 title={`${gate}: ${isGateOK ? 'Pass' : 'Warning/Failed'}`}
                                 className={`px-1 rounded-[2px] font-bold border ${
-                                  isGateOK 
-                                    ? 'bg-[#3FB950]/10 text-[#3FB950] border-[#3FB950]/35' 
+                                  isGateOK
+                                    ? 'bg-[#3FB950]/10 text-[#3FB950] border-[#3FB950]/35'
                                     : 'bg-[#D29922]/10 text-amber-400 border-amber-500/20 animate-pulse'
                                 }`}
                               >
@@ -536,7 +536,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
         <div className="lg:col-span-3 flex flex-col bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden h-full">
           {activeTest ? (
             <div className="h-full flex flex-col justify-between">
-              
+
               {/* Review Test Header info */}
               <div className="p-4 bg-black/40 border-b border-white/5 shrink-0">
                 <div className="flex items-center justify-between text-xs">
@@ -566,7 +566,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
 
               {/* Middle View: Test editor viewport */}
               <div className="flex-1 p-4 overflow-y-auto space-y-4">
-                
+
                 {/* Visual Code Editor Field */}
                 <div className="bg-black/30 border border-white/10 rounded-xl overflow-hidden flex flex-col">
                   <div className="flex items-center justify-between p-2 px-3 bg-white/5 border-b border-white/5">
@@ -601,7 +601,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                 <div className="space-y-2">
                   <h4 className="text-[10px] font-mono uppercase tracking-wider text-text-muted">Pipeline check details explanation</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    
+
                     {/* Gate 1: semantic quality error explanation */}
                     <div className="p-3 rounded-xl border border-white/5 bg-white/5 space-y-1.5">
                       <div className="flex items-center gap-1.5">
@@ -645,7 +645,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                     </pre>
                   </div>
                 )}
-                
+
                 {/* AI Explanation Area */}
                 {(activeTest.verdict === 'review' || aiExplanation) && (
                   <div className="bg-glow-blue/5 border border-glow-blue/20 rounded-xl p-4 space-y-3">

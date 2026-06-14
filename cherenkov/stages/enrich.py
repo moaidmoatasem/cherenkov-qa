@@ -12,6 +12,7 @@ richer spec context — extracted via RESTGPT-style preprocessing — produces
 achieved 97% rule extraction precision and 73% valid-value generation
 accuracy (vs 17% for the ARTE baseline).
 """
+
 from __future__ import annotations
 
 import re
@@ -100,10 +101,10 @@ class SpecRules:
     """Enrichment payload for one operation: extracted rules + concrete examples."""
 
     def __init__(self) -> None:
-        self.rules: list[str] = []                # constraint sentences from descriptions
+        self.rules: list[str] = []  # constraint sentences from descriptions
         self.param_examples: dict[str, Any] = {}  # param name → example value
-        self.body_examples: dict[str, Any] = {}   # field name → example value
-        self.body_hints: dict[str, list[str]] = {} # field name → pattern/format hints
+        self.body_examples: dict[str, Any] = {}  # field name → example value
+        self.body_hints: dict[str, list[str]] = {}  # field name → pattern/format hints
 
     def render_prompt_block(self) -> str:
         """Render as a compact block suitable for appending to the generator prompt."""
@@ -232,7 +233,9 @@ class SpecEnrichStage:
 
                     prop_desc = prop_schema.get("description", "")
                     if prop_desc:
-                        result.rules.extend(_extract_constraint_sentences(str(prop_desc)))
+                        result.rules.extend(
+                            _extract_constraint_sentences(str(prop_desc))
+                        )
 
                     examples = _collect_examples(prop_schema)
                     if examples:

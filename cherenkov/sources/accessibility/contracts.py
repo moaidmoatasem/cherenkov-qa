@@ -2,6 +2,7 @@
 CHERENKOV cherenkov/sources/accessibility/contracts.py
 Accessibility source Pydantic models.
 """
+
 from __future__ import annotations
 
 from typing import List
@@ -17,5 +18,7 @@ class PageTarget(BaseModel):
 class AccessibilityScenario(BaseModel):
     scenario_id: str
     page_target: PageTarget
-    rules: List[str] = Field(default_factory=lambda: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    rules: List[str] = Field(
+        default_factory=lambda: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
+    )
     tags: List[str] = Field(default_factory=list)

@@ -3,6 +3,7 @@
 ci_docs_check.py -- programmatically validates that all argparse subcommands have corresponding documentation sections.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -19,7 +20,9 @@ if _REPO_ROOT not in sys.path:
 
 def load_cherenkov_cli():
     """Load cherenkov.py as a module directly (not the cherenkov/ package)."""
-    cli_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "cherenkov.py"))
+    cli_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "cherenkov.py")
+    )
     spec = importlib.util.spec_from_file_location("cherenkov_cli", cli_path)
     mod = importlib.util.module_from_spec(spec)
     # Prevent execution of main() during import
@@ -27,12 +30,15 @@ def load_cherenkov_cli():
     spec.loader.exec_module(mod)
     return mod
 
+
 def main():
     print("=======================================================")
     print("     CHERENKOV CI DOCUMENTATION DRIFT CHECKER")
     print("=======================================================\n")
 
-    docs_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "../docs/GETTING_STARTED.md"))
+    docs_file = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../docs/GETTING_STARTED.md")
+    )
     if not os.path.exists(docs_file):
         print(f"[FAIL] Error: GETTING_STARTED.md is missing at: {docs_file}")
         sys.exit(1)
@@ -42,6 +48,7 @@ def main():
 
     # Dynamically load cherenkov.py (not the cherenkov/ package)
     import argparse
+
     cli_mod = load_cherenkov_cli()
     parser = cli_mod.get_parser()
 
@@ -62,12 +69,17 @@ def main():
             missing_docs.append(cmd)
 
     if missing_docs:
-        print(f"\n[FAIL] Error: Documentation drift detected! Undocumented subcommands found: {missing_docs}")
+        print(
+            f"\n[FAIL] Error: Documentation drift detected! Undocumented subcommands found: {missing_docs}"
+        )
         print("Please add documentation sections in docs/GETTING_STARTED.md.")
         sys.exit(1)
 
-    print("\n[PASS] SUCCESS: All CLI subcommands are programmatically fully documented inside docs/GETTING_STARTED.md!")
+    print(
+        "\n[PASS] SUCCESS: All CLI subcommands are programmatically fully documented inside docs/GETTING_STARTED.md!"
+    )
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

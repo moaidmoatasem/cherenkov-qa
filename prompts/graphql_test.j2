@@ -1,0 +1,40 @@
+GRAPHQL OPERATION:
+{
+  "operationName": "{{ operation_name }}",
+  "query": "{{ gql_query }}",
+  "variables": {{ variables | tojson }}
+}
+
+EXPECTED RESPONSE SHAPE:
+{{ expected_response_structure | tojson }}
+
+SCENARIO INSTRUCTION:
+Write a Playwright test to send this GraphQL operation to the API.
+
+=== CRITICAL INSTRUCTIONS ===
+You are writing a Playwright API test in TypeScript for a GraphQL endpoint.
+STRICT RULES:
+- Import `test` and `expect` from '@playwright/test'.
+- Use Playwright's built-in `request.post` inside the test context to send the GraphQL payload. Do NOT use Apollo or urql clients.
+- Send the payload to the generic `/graphql` endpoint.
+- Include `query`, `operationName`, and `variables` in the JSON body.
+- Verify the HTTP status code (e.g. `expect(response.status()).toBe(200)`).
+- Extract the JSON response and assert that the expected structure (e.g. `data.{{ operation_name }}`) exists.
+- Output ONLY the TypeScript code block starting with the imports. No prose, no explanations.
+
+EXAMPLE OF CORRECT USAGE:
+import { test, expect } from '@playwright/test';
+
+test('graphql query {{ operation_name }} {{ kind }}', async ({ request }) => {
+  const response = await request.post('/graphql', {
+    data: {
+      query: `{{ gql_query }}`,
+      operationName: '{{ operation_name }}',
+      variables: {{ variables | tojson }}
+    }
+  });
+  
+  expect(response.status()).toBe(200);
+  const json = await response.json();
+  expect(json.data).toBeDefined();
+});

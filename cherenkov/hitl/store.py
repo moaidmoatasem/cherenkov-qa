@@ -13,6 +13,7 @@ busy-timeout so it survives concurrent runs (same hardening as reflector/store).
 [Issue #196] At-rest encryption: set CHERENKOV_DB_KEY to enable SQLCipher-based
 encryption. Falls back to plain SQLite if pysqlcipher3 is not available.
 """
+
 from __future__ import annotations
 
 import os as _os
@@ -35,11 +36,13 @@ _BUSY_TIMEOUT_S = 30.0
 # ── Issue #196: At-rest encryption ─────────────────────────────────────────
 _DB_KEY = os.getenv("CHERENKOV_DB_KEY", "")
 
+
 def _get_connection(db_path: str) -> sqlite3.Connection:
     """Open a SQLite connection, optionally with encryption if CHERENKOV_DB_KEY is set."""
     if _DB_KEY:
         try:
             import pysqlcipher3.dbapi2 as sqlcipher
+
             con = sqlcipher.connect(db_path, timeout=_BUSY_TIMEOUT_S)
             safe_key = _DB_KEY.replace("'", "''")
             con.execute(f"PRAGMA key='{safe_key}'")
@@ -133,10 +136,23 @@ class HitlQueue:
             "mutation_label,confidence,confidence_reason,review_gate_failed,approved_by,"
             "approved_at,reject_reason,run_id,spec_hash,created_at) "
             "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            (item.id, item.status.value, item.endpoint, item.method, item.mutation_id,
-             item.mutation_label, item.confidence, item.confidence_reason,
-             item.review_gate_failed, item.approved_by, item.approved_at,
-             item.reject_reason, item.run_id, item.spec_hash, item.created_at),
+            (
+                item.id,
+                item.status.value,
+                item.endpoint,
+                item.method,
+                item.mutation_id,
+                item.mutation_label,
+                item.confidence,
+                item.confidence_reason,
+                item.review_gate_failed,
+                item.approved_by,
+                item.approved_at,
+                item.reject_reason,
+                item.run_id,
+                item.spec_hash,
+                item.created_at,
+            ),
         )
         # Back-fill endpoint/method on pending items that were enqueued without them
         if item.endpoint or item.method:
@@ -156,10 +172,13 @@ class HitlQueue:
     def list(self, status: str | None = "pending") -> list[HitlItem]:
         con = self._connect()
         if status:
-            rows = con.execute("SELECT * FROM hitl_queue WHERE status=? ORDER BY created_at",
-                               (status,)).fetchall()
+            rows = con.execute(
+                "SELECT * FROM hitl_queue WHERE status=? ORDER BY created_at", (status,)
+            ).fetchall()
         else:
-            rows = con.execute("SELECT * FROM hitl_queue ORDER BY created_at").fetchall()
+            rows = con.execute(
+                "SELECT * FROM hitl_queue ORDER BY created_at"
+            ).fetchall()
         return [HitlItem(**{k: r[k] for k in r.keys()}) for r in rows]
 
     def audit_rows(self) -> list[dict]:
@@ -168,8 +187,16 @@ class HitlQueue:
         return [dict(r) for r in rows]
 
     # ── atomic mutations → frozen envelope ─────────────────────────────────
-    def _resolve(self, command: str, item_id: str, actor: str, source: str,
-                 new_status: HitlStatus, extra_sql: str, extra_vals: tuple) -> HitlEnvelope:
+    def _resolve(
+        self,
+        command: str,
+        item_id: str,
+        actor: str,
+        source: str,
+        new_status: HitlStatus,
+        extra_sql: str,
+        extra_vals: tuple,
+    ) -> HitlEnvelope:
         con = self._connect()
         sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=? WHERE id=? AND status='pending'"
         vals = (new_status.value, actor, _now(), item_id)
@@ -183,8 +210,11 @@ class HitlQueue:
             if rows == 1:
                 outcome = "success"
             else:
-                exists = con.execute("SELECT status, approved_by, approved_at FROM hitl_queue "
-                                     "WHERE id=?", (item_id,)).fetchone()
+                exists = con.execute(
+                    "SELECT status, approved_by, approved_at FROM hitl_queue "
+                    "WHERE id=?",
+                    (item_id,),
+                ).fetchone()
                 outcome = "not_found" if exists is None else "conflict"
             # audit in the SAME transaction as the status change
             con.execute(
@@ -198,20 +228,34 @@ class HitlQueue:
             raise
 
         if outcome == "success":
-            env = ok_envelope(command, {
-                "id": item_id, "action": command.split(".")[-1],
-                "previous_status": "pending", "current_status": new_status.value,
-                "actor": actor, "actor_at": _now(), "rows_affected": 1,
-            })
+            env = ok_envelope(
+                command,
+                {
+                    "id": item_id,
+                    "action": command.split(".")[-1],
+                    "previous_status": "pending",
+                    "current_status": new_status.value,
+                    "actor": actor,
+                    "actor_at": _now(),
+                    "rows_affected": 1,
+                },
+            )
         elif outcome == "not_found":
-            env = err_envelope(command, "not_found", f"{item_id} not found.", {"id": item_id})
+            env = err_envelope(
+                command, "not_found", f"{item_id} not found.", {"id": item_id}
+            )
         else:
-            env = err_envelope(command, "conflict",
-                               f"{item_id} no longer pending. Already {exists['status']} by "
-                               f"{exists['approved_by']}.",
-                               {"current_status": exists["status"],
-                                "current_actor": exists["approved_by"],
-                                "current_actor_at": exists["approved_at"]})
+            env = err_envelope(
+                command,
+                "conflict",
+                f"{item_id} no longer pending. Already {exists['status']} by "
+                f"{exists['approved_by']}.",
+                {
+                    "current_status": exists["status"],
+                    "current_actor": exists["approved_by"],
+                    "current_actor_at": exists["approved_at"],
+                },
+            )
         return env
 
     def optimistic_lock(self, item_id: str, reviewer: str) -> bool:
@@ -231,12 +275,22 @@ class HitlQueue:
         return locked
 
     def approve(self, item_id: str, actor: str, source: str = "cli") -> HitlEnvelope:
-        return self._resolve("hitl.approve", item_id, actor, source,
-                             HitlStatus.APPROVED, "", ())
+        return self._resolve(
+            "hitl.approve", item_id, actor, source, HitlStatus.APPROVED, "", ()
+        )
 
-    def reject(self, item_id: str, actor: str, reason: str, source: str = "cli") -> HitlEnvelope:
-        return self._resolve("hitl.reject", item_id, actor, source,
-                             HitlStatus.REJECTED, ", reject_reason=?", (reason,))
+    def reject(
+        self, item_id: str, actor: str, reason: str, source: str = "cli"
+    ) -> HitlEnvelope:
+        return self._resolve(
+            "hitl.reject",
+            item_id,
+            actor,
+            source,
+            HitlStatus.REJECTED,
+            ", reject_reason=?",
+            (reason,),
+        )
 
 
 def _now() -> str:

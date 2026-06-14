@@ -1,0 +1,49 @@
+version: 2
+updates:
+  # Maintain dependencies for Python packages
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps): "
+
+  # Maintain dependencies for Node/npm packages (Root)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps): "
+
+  # Maintain dependencies for Node/npm packages (Playwright Suite)
+  - package-ecosystem: "npm"
+    directory: "/playwright-suite"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps): "
+
+  # Maintain Rust dependencies for Tauri Desktop app
+  - package-ecosystem: "cargo"
+    directory: "/desktop/src-tauri"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps): "
+
+  # Maintain Docker base images
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps): "
+
+  # Maintain GitHub Actions versions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps): "

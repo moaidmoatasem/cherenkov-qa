@@ -29,7 +29,12 @@ class InMemoryRunner:
 
 
 class PilotAgent:
-    def __init__(self, runner: InMemoryRunner, max_observations: int = 20, timeout_seconds: int = 300):
+    def __init__(
+        self,
+        runner: InMemoryRunner,
+        max_observations: int = 20,
+        timeout_seconds: int = 300,
+    ):
         self.runner = runner
         self.max_observations = max_observations
         self.timeout_seconds = timeout_seconds
@@ -58,9 +63,21 @@ class PilotAgent:
 
     def _parse_intent(self, intent: str) -> list[PilotStep]:
         return [
-            PilotStep(step_id="1", action="open_app", target="app", expected="app_opened"),
-            PilotStep(step_id="2", action="navigate", target="screen", expected="screen_visible"),
-            PilotStep(step_id="3", action="verify", target="element", expected="element_present"),
+            PilotStep(
+                step_id="1", action="open_app", target="app", expected="app_opened"
+            ),
+            PilotStep(
+                step_id="2",
+                action="navigate",
+                target="screen",
+                expected="screen_visible",
+            ),
+            PilotStep(
+                step_id="3",
+                action="verify",
+                target="element",
+                expected="element_present",
+            ),
         ]
 
     def _recover(self, failed_step: PilotStep):

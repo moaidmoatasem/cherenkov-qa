@@ -4,15 +4,15 @@
  */
 
 import React, { useState } from 'react';
-import { 
-  FolderGit2, 
-  Plus, 
-  TrendingUp, 
-  Calendar, 
-  CircleDot, 
-  Search, 
-  Stethoscope, 
-  CheckCircle2, 
+import {
+  FolderGit2,
+  Plus,
+  TrendingUp,
+  Calendar,
+  CircleDot,
+  Search,
+  Stethoscope,
+  CheckCircle2,
   AlertTriangle,
   Timer
 } from 'lucide-react';
@@ -34,7 +34,7 @@ export default function ProjectsScreen({
 }: ProjectsScreenProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredProjects = projects.filter(p => 
+  const filteredProjects = projects.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -45,7 +45,7 @@ export default function ProjectsScreen({
     const max = Math.max(...data);
     const range = max - min === 0 ? 1 : max - min;
     const xStep = width / (data.length - 1);
-    
+
     return data.map((val, idx) => {
       const x = idx * xStep;
       // Invert Y so higher number is closer to top (0)
@@ -77,7 +77,7 @@ export default function ProjectsScreen({
             </p>
           </div>
         </div>
-        
+
         {/* New Run Button */}
         <button
           onClick={onNewRun}
@@ -138,15 +138,15 @@ export default function ProjectsScreen({
             const sparkPoints = project.sparkline;
             const sparkWidth = 140;
             const sparkHeight = 36;
-            
+
             return (
               <div
                 key={project.id}
                 onClick={() => onSelectProject(project.id)}
                 id={`project-card-${project.id}`}
                 className={`group cursor-pointer rounded-2xl p-5 border transition-all duration-300 relative flex flex-col justify-between ${
-                  isSelected 
-                    ? 'bg-white/10 backdrop-blur-xl border-glow-blue/85 cherenkov-glow shadow-lg shadow-cyan-500/10' 
+                  isSelected
+                    ? 'bg-white/10 backdrop-blur-xl border-glow-blue/85 cherenkov-glow shadow-lg shadow-cyan-500/10'
                     : 'bg-white/5 backdrop-blur-md border-white/10 hover:border-glow-blue/50 hover:bg-white/10'
                 }`}
               >
@@ -188,9 +188,9 @@ export default function ProjectsScreen({
                     const percent = Math.min(100, Math.round((durationMs / limitMs) * 100));
                     const seconds = (durationMs / 1000).toFixed(1);
                     const limitSec = (limitMs / 1000).toFixed(0);
-                    
+
                     const isSlaCritical = percent > 85;
-                    const barColorClass = isSlaCritical 
+                    const barColorClass = isSlaCritical
                       ? 'bg-gradient-to-r from-amber-500 to-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'
                       : 'bg-gradient-to-r from-cyan-400 to-glow-blue shadow-[0_0_8px_rgba(6,182,212,0.4)]';
 
@@ -207,7 +207,7 @@ export default function ProjectsScreen({
                         </div>
                         {/* Track */}
                         <div className="w-full bg-white/5 rounded-full h-1 overflow-hidden border border-white/5">
-                          <div 
+                          <div
                             className={`h-full rounded-full transition-all duration-1000 ${barColorClass}`}
                             style={{ width: `${percent}%` }}
                           />
@@ -229,7 +229,7 @@ export default function ProjectsScreen({
                     <div>
                       <span className="block text-[9px] text-[#7D8DA1]/85 uppercase">Pass Rate</span>
                       <span className={`text-sm font-semibold font-sans ${
-                        project.stats.passRate >= 90 ? 'text-success-custom' : 
+                        project.stats.passRate >= 90 ? 'text-success-custom' :
                         project.stats.passRate >= 70 ? 'text-warning-custom' : 'text-danger-custom'
                       }`}>
                         {project.stats.passRate}%

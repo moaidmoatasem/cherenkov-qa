@@ -1,7 +1,5 @@
 from __future__ import annotations
 import subprocess
-import tempfile
-from pathlib import Path
 
 from cherenkov.execution.mobile_runner_base import MobileRunnerBase
 
@@ -15,7 +13,9 @@ class MaestroRunner(MobileRunnerBase):
             return self._dry_run_result(yaml_path)
         result = subprocess.run(
             [self.maestro_binary, "test", yaml_path],
-            capture_output=True, text=True, timeout=300,
+            capture_output=True,
+            text=True,
+            timeout=300,
         )
         return {
             "status": "passed" if result.returncode == 0 else "failed",
@@ -28,7 +28,9 @@ class MaestroRunner(MobileRunnerBase):
             return self._dry_run_result(directory)
         result = subprocess.run(
             [self.maestro_binary, "test", directory],
-            capture_output=True, text=True, timeout=300,
+            capture_output=True,
+            text=True,
+            timeout=300,
         )
         return {
             "status": "passed" if result.returncode == 0 else "failed",
@@ -40,7 +42,12 @@ class MaestroRunner(MobileRunnerBase):
         if self.dry_run:
             return True
         try:
-            result = subprocess.run([self.maestro_binary, "--version"], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                [self.maestro_binary, "--version"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
             return result.returncode == 0
         except Exception:
             return False

@@ -12,6 +12,7 @@ Usage:
     python -m cherenkov.reflector.cli --audit         # memory self-audit
     python -m cherenkov.reflector.cli --db /path/to/verdicts.db ...
 """
+
 from __future__ import annotations
 
 import argparse
@@ -67,7 +68,9 @@ def main(argv: list[str] | None = None) -> int:
         prog="cherenkov.reflector.cli",
         description="Inspect the Reflector's learned memory (E7).",
     )
-    p.add_argument("--db", default=None, help="verdict store path (default .cherenkov/verdicts.db)")
+    p.add_argument(
+        "--db", default=None, help="verdict store path (default .cherenkov/verdicts.db)"
+    )
     p.add_argument("--stats", action="store_true", help="show verdict/idiom counts")
     p.add_argument("--idioms", action="store_true", help="list ranked idioms")
     p.add_argument("--audit", action="store_true", help="run the memory self-audit")
@@ -89,6 +92,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.stats or not any_flag:
             try:
                 from cherenkov.core.stats_store import StatsStore
+
                 rstats = reflector.get_stats()
                 StatsStore().snapshot(
                     verdict_count=rstats.get("verdict_count", 0),
@@ -99,8 +103,11 @@ def main(argv: list[str] | None = None) -> int:
                 logger.warning("failed to snapshot stats", exc_info=e_snap)
     except sqlite3.OperationalError as e:
         # the verdict store is local SQLite; a concurrent run may hold the lock
-        print(f"reflector store unavailable ({e}); another run may hold the lock — "
-              "retry shortly.", file=sys.stderr)
+        print(
+            f"reflector store unavailable ({e}); another run may hold the lock — "
+            "retry shortly.",
+            file=sys.stderr,
+        )
         return 2
     return 0
 

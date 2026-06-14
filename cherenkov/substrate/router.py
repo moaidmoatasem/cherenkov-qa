@@ -4,13 +4,19 @@ CHERENKOV substrate/router.py — Epoch 1 Substrate Router.
 Picks a provider per request from capability tier + egress policy;
 falls back / spills over on failure.
 """
+
 from __future__ import annotations
 
 import time
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.config import Config
-from cherenkov.core.errors import EgressError, AllProvidersFailedError, CertificationError, get_logger
+from cherenkov.core.errors import (
+    EgressError,
+    AllProvidersFailedError,
+    CertificationError,
+    get_logger,
+)
 from cherenkov.substrate.provider import provider_for_tier, get_provider
 from cherenkov.substrate.certification import ModelCertificationManager
 
@@ -29,7 +35,10 @@ class SubstrateRouter:
         primary_name = primary.capabilities().provider_name
 
         # Enforce model certification (E12 Gold-Set gate)
-        if Config.CERTIFICATION_ENABLED and request.capability_tier not in self._certified_tiers:
+        if (
+            Config.CERTIFICATION_ENABLED
+            and request.capability_tier not in self._certified_tiers
+        ):
             cert_res = self._cert_manager.certify_tier(request.capability_tier, primary)
             if not cert_res.certified:
                 raise CertificationError(
@@ -37,27 +46,27 @@ class SubstrateRouter:
                 )
             self._certified_tiers[request.capability_tier] = True
 
-
-
         self._enforce_egress(primary.capabilities().requires_egress, primary_name)
 
         last_error: Exception | None = None
         try:
-            self.log.info("routing to primary",
-                          provider=primary_name,
-                          tier=request.capability_tier)
+            self.log.info(
+                "routing to primary",
+                provider=primary_name,
+                tier=request.capability_tier,
+            )
             return primary.generate(request)
         except Exception as e:
             last_error = e
-            self.log.warning("primary failed",
-                             provider=primary_name,
-                             error=str(e))
+            self.log.warning("primary failed", provider=primary_name, error=str(e))
 
         if Config.FALLBACK_ENABLED:
             fallback_name = Config.FALLBACK_PROVIDER
             if fallback_name == primary_name:
-                self.log.warning("fallback same as primary, no spillover possible",
-                                 fallback=fallback_name)
+                self.log.warning(
+                    "fallback same as primary, no spillover possible",
+                    fallback=fallback_name,
+                )
                 raise AllProvidersFailedError(
                     f"Primary provider '{primary_name}' failed and "
                     f"fallback is the same provider. Error: {last_error}"
@@ -66,14 +75,17 @@ class SubstrateRouter:
             fallback = get_provider(fallback_name)
             self._enforce_egress(fallback.capabilities().requires_egress, fallback_name)
             try:
-                self.log.info("routing to fallback",
-                              fallback=fallback_name,
-                              tier=request.capability_tier)
+                self.log.info(
+                    "routing to fallback",
+                    fallback=fallback_name,
+                    tier=request.capability_tier,
+                )
                 return fallback.generate(request)
             except Exception as e2:
                 last_error = e2
-                self.log.warning("fallback also failed",
-                                 fallback=fallback_name, error=str(e2))
+                self.log.warning(
+                    "fallback also failed", fallback=fallback_name, error=str(e2)
+                )
 
         dt_ms = int((time.time() - t0) * 1000)
         raise AllProvidersFailedError(

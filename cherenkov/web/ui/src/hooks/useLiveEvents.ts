@@ -15,15 +15,15 @@ function getWsUrl(): string {
 
 function connectWs() {
   if (wsInstance) return;
-  
+
   try {
     wsInstance = new WebSocket(getWsUrl());
-    
+
     wsInstance.onopen = () => {
       isConnected = true;
       statusListeners.forEach(listener => listener(true));
     };
-    
+
     wsInstance.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -32,16 +32,16 @@ function connectWs() {
         console.error('Failed to parse WS message', e);
       }
     };
-    
+
     wsInstance.onclose = () => {
       isConnected = false;
       wsInstance = null;
       statusListeners.forEach(listener => listener(false));
-      
+
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
       reconnectTimeout = setTimeout(connectWs, 3000);
     };
-    
+
     wsInstance.onerror = () => {
       if (wsInstance) wsInstance.close();
     };
@@ -60,13 +60,13 @@ export function useLiveEvents() {
     if (!wsInstance) {
       connectWs();
     }
-    
+
     const onEvent = (data: any) => setLastEvent(data);
     const onStatus = (status: boolean) => setConnected(status);
 
     eventListeners.add(onEvent);
     statusListeners.add(onStatus);
-    
+
     setConnected(isConnected);
 
     return () => {

@@ -1,4 +1,5 @@
 """Unit tests for cherenkov/governance/gen_metrics.py."""
+
 from __future__ import annotations
 
 import tempfile

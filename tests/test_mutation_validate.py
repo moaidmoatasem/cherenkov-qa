@@ -8,4 +8,6 @@ def test_validation_mutation():
     # Test that simulate_fail_stage triggers the circuit breaker or fails the pipeline
     success = engine.run_pipeline("mut_spec.json", simulate_fail_stage="REVIEW")
 
-    assert not success, "Pipeline should fail when REVIEW stage is deliberately mutated to fail."
+    assert (
+        not success
+    ), "Pipeline should fail when REVIEW stage is deliberately mutated to fail."

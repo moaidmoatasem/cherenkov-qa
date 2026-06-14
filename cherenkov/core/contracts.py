@@ -6,6 +6,7 @@ A stage that emits data failing its contract fails LOUDLY here, at the boundary,
 instead of silently corrupting the next stage. Versioned so a model/prompt change
 can't quietly break a downstream consumer.
 """
+
 from __future__ import annotations
 
 from enum import Enum
@@ -46,7 +47,7 @@ def load_versioned(cls, data: dict) -> object:
 
 class Status(str, Enum):
     OK = "ok"
-    DEGRADED = "degraded"   # produced output, but with caveats (e.g. thin spec)
+    DEGRADED = "degraded"  # produced output, but with caveats (e.g. thin spec)
     FAILED = "failed"
 
 
@@ -56,13 +57,13 @@ class StageMeta(BaseModel):
     tokens: int = 0
     duration_ms: int = 0
     schema_version: int = SCHEMA_VERSION
-    run_id: str = Field(default_factory=lambda: str(__import__('uuid').uuid4())[:8])
+    run_id: str = Field(default_factory=lambda: str(__import__("uuid").uuid4())[:8])
 
 
 class StageError(BaseModel):
-    code: str                # machine-readable, e.g. "INVALID_JSON", "REF_DEPTH"
-    detail: str              # human-readable
-    where: str | None = None # endpoint / scenario id, if applicable
+    code: str  # machine-readable, e.g. "INVALID_JSON", "REF_DEPTH"
+    detail: str  # human-readable
+    where: str | None = None  # endpoint / scenario id, if applicable
 
 
 # ── SUBSTRATE ─────────────────────────────────────────────────────────────
@@ -88,25 +89,28 @@ class ReasoningResult(BaseModel):
 # ── INGEST ────────────────────────────────────────────────────────────────
 class Mutation(BaseModel):
     """Deterministic, built in Stage 0. PLAN selects by id; it never invents these."""
-    id: str                            # "omit_email", "email_too_long"
-    case_type: str                     # "validation" | "happy_path" | "auth" | "security"
+
+    id: str  # "omit_email", "email_too_long"
+    case_type: str  # "validation" | "happy_path" | "auth" | "security"
     expected_status: int
-    instruction: str                   # given verbatim to the generator
+    instruction: str  # given verbatim to the generator
     value: object | None = None
 
 
 class EndpointSlice(BaseModel):
     path: str
-    method: str                        # "GET" | "POST" | ...
-    operation: dict                    # the OpenAPI operation object
+    method: str  # "GET" | "POST" | ...
+    operation: dict  # the OpenAPI operation object
     schemas: dict = Field(default_factory=dict)  # depth-limited resolved refs
-    richness: float = 0.0              # 0.0–1.0
-    mutations: list[Mutation] = Field(default_factory=list)  # may be [] (GET) -> happy/auth
+    richness: float = 0.0  # 0.0–1.0
+    mutations: list[Mutation] = Field(
+        default_factory=list
+    )  # may be [] (GET) -> happy/auth
 
 
 class IngestOutput(BaseModel):
     endpoints: list[EndpointSlice]
-    client_stub_path: str              # openapi-fetch client (Delta D1)
+    client_stub_path: str  # openapi-fetch client (Delta D1)
     status: Status = Status.OK
     errors: list[StageError] = Field(default_factory=list)
     metadata: StageMeta
@@ -117,8 +121,8 @@ class Scenario(BaseModel):
     endpoint: str
     method: str
     case_type: str
-    priority: str = "P2"               # P1 | P2 | P3
-    mutation_id: str | None = None     # SELECTED from the menu, never invented
+    priority: str = "P2"  # P1 | P2 | P3
+    mutation_id: str | None = None  # SELECTED from the menu, never invented
     expected_status: int
 
 
@@ -145,14 +149,14 @@ class GenerateOutput(BaseModel):
 
 # ── REVIEW ────────────────────────────────────────────────────────────────
 class GateResult(BaseModel):
-    gate: str                          # "syntax" | "structure" | "ast" | ...
+    gate: str  # "syntax" | "structure" | "ast" | ...
     passed: bool
     detail: str = ""
 
 
 class Verdict(str, Enum):
     AUTO_APPROVE = "auto_approve"
-    HITL = "hitl"                      # → the human review queue (the HITL feature)
+    HITL = "hitl"  # → the human review queue (the HITL feature)
     REGENERATE = "regenerate"
 
 
@@ -171,8 +175,10 @@ class ReviewOutput(BaseModel):
 # Reuses Track A Verdict/Status/StageMeta/StageError. Never replaces Track A.
 # ════════════════════════════════════════════════════════════════════════════
 
+
 class VisualSlice(BaseModel):
     """A single visual target: a URL rendered at a specific viewport."""
+
     name: str
     url: str
     viewport_w: int = 1280
@@ -181,6 +187,7 @@ class VisualSlice(BaseModel):
 
 class VisualScenario(BaseModel):
     """A planned visual check binding a slice to a baseline + tolerance."""
+
     slice_id: str
     baseline_path: str
     threshold_pixels: int = 100
@@ -188,15 +195,17 @@ class VisualScenario(BaseModel):
 
 class VisualGateResult(BaseModel):
     """One gate verdict on a visual comparison."""
-    gate: str                              # e.g. 'pixel_diff'
+
+    gate: str  # e.g. 'pixel_diff'
     passed: bool
     diff_pixels: int = 0
-    baseline_path: str = ''
-    actual_path: str = ''
+    baseline_path: str = ""
+    actual_path: str = ""
 
 
 class VisualReport(BaseModel):
     """VisualStage output: one report per slice processed."""
+
     scenario_id: str
     gates: list[VisualGateResult]
     verdict: Verdict
@@ -212,8 +221,10 @@ class VisualReport(BaseModel):
 # statistical-outlier regressions vs historical mean+stddev (>= 3 runs).
 # ════════════════════════════════════════════════════════════════════════════
 
+
 class PerfSlice(BaseModel):
     """A single perf target: endpoint+method on a base URL with a load profile."""
+
     name: str
     target_url: str
     endpoint: str = "/"
@@ -224,13 +235,15 @@ class PerfSlice(BaseModel):
 
 class PerfScenario(BaseModel):
     """A planned perf check binding a slice to a baseline metrics table."""
+
     slice_id: str
     baseline_db_path: str = ".cherenkov/perf_metrics.db"
 
 
 class PerfGateResult(BaseModel):
     """One gate verdict on a perf measurement."""
-    gate: str                              # e.g. latency_baseline
+
+    gate: str  # e.g. latency_baseline
     passed: bool
     latency_ms: float = 0.0
     baseline_count: int = 0
@@ -243,6 +256,7 @@ class PerfGateResult(BaseModel):
 
 class PerfReport(BaseModel):
     """PerfStage output: one report per slice processed."""
+
     scenario_id: str
     gates: list[PerfGateResult]
     verdict: Verdict
@@ -257,44 +271,49 @@ class PerfReport(BaseModel):
 # confirmed divergences are sealed into a DivergenceReport.
 # ════════════════════════════════════════════════════════════════════════════
 
+
 class DivergenceClass(str, Enum):
     """The five-way divergence space (see docs/vision/01_ARCHITECTURE.md §6)."""
-    D1_SPEC_CODE = "D1_spec_code"   # spec says X, code accepts/returns Y
-    D2_CODE_PROD = "D2_code_prod"   # code does X, prod silently returns Y
-    D3_UI_SPEC   = "D3_ui_spec"     # UI/client sends X, spec expects Y
-    D4_DB_CODE   = "D4_db_code"     # DB constraint vs code enforcement gap
-    D5_SPEC_PROD = "D5_spec_prod"   # spec defines endpoint/shape, prod doesn't
+
+    D1_SPEC_CODE = "D1_spec_code"  # spec says X, code accepts/returns Y
+    D2_CODE_PROD = "D2_code_prod"  # code does X, prod silently returns Y
+    D3_UI_SPEC = "D3_ui_spec"  # UI/client sends X, spec expects Y
+    D4_DB_CODE = "D4_db_code"  # DB constraint vs code enforcement gap
+    D5_SPEC_PROD = "D5_spec_prod"  # spec defines endpoint/shape, prod doesn't
 
 
 class Severity(str, Enum):
-    LOW      = "low"
-    MEDIUM   = "medium"
-    HIGH     = "high"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
     CRITICAL = "critical"
 
 
 class DivergenceHypothesis(BaseModel):
     """A single testable claim that two sources disagree. Emitted by the Skeptic."""
+
     id: str
     divergence_class: DivergenceClass
-    claim_a: str                              # what source A asserts
-    claim_b: str                              # what source B likely does instead
-    predicted_evidence: str                   # observable signal if divergence exists
+    claim_a: str  # what source A asserts
+    claim_b: str  # what source B likely does instead
+    predicted_evidence: str  # observable signal if divergence exists
     severity: Severity
-    endpoint: str | None = None               # "{METHOD} {path}" or None
+    endpoint: str | None = None  # "{METHOD} {path}" or None
     repro_steps: list[str] = Field(default_factory=list)
 
 
 class DivergenceEvidence(BaseModel):
     """Raw evidence captured by the Witness during a reproduction attempt."""
-    request_summary: str                      # "{METHOD} {url} → {status} ({ms}ms)"
-    response_actual: str | dict               # real response body or text
-    response_expected: str | dict             # what the spec/claim_b predicted
-    diff: str                                 # human-readable delta
+
+    request_summary: str  # "{METHOD} {url} → {status} ({ms}ms)"
+    response_actual: str | dict  # real response body or text
+    response_expected: str | dict  # what the spec/claim_b predicted
+    diff: str  # human-readable delta
 
 
 class ReproductionResult(BaseModel):
     """Outcome of one Witness reproduction attempt. Independent of the Skeptic."""
+
     hypothesis_id: str
     reproduced: bool
     evidence: DivergenceEvidence | None = None
@@ -306,6 +325,7 @@ class DivergenceReport(BaseModel):
     Sealed artifact for a confirmed divergence.
     Contract: {claim_a, claim_b, evidence, repro_steps, severity} — typed, serialisable.
     """
+
     id: str
     divergence_class: DivergenceClass
     claim_a: str
@@ -339,8 +359,10 @@ class DivergenceReport(BaseModel):
 # E1-5 Response/prefix cache + cost & latency accounting contracts
 # ════════════════════════════════════════════════════════════════════════════
 
+
 class CacheStats(BaseModel):
     """Cache performance statistics for a run."""
+
     hits: int = 0
     misses: int = 0
     size: int = 0
@@ -350,6 +372,7 @@ class CacheStats(BaseModel):
 
 class CostEntry(BaseModel):
     """A single cost & latency record for one inference request."""
+
     model: str
     provider: str = "ollama"
     duration_ms: int = 0
@@ -360,6 +383,7 @@ class CostEntry(BaseModel):
 
 class AccountingReport(BaseModel):
     """Per-run cost and latency summary."""
+
     entries: list[CostEntry] = Field(default_factory=list)
     total_duration_ms: int = 0
     total_tokens: int = 0
@@ -374,6 +398,7 @@ class AccountingReport(BaseModel):
 # Idiom captures per-system patterns that keep being confirmed.
 # ════════════════════════════════════════════════════════════════════════════
 
+
 class VerdictOutcome(str, Enum):
     ACCEPT = "accept"
     REJECT = "reject"
@@ -382,13 +407,14 @@ class VerdictOutcome(str, Enum):
 
 class VerdictRecord(BaseModel):
     """Persistent record of one accept/reject/escaped-defect decision."""
+
     id: str
     hypothesis_id: str
     outcome: VerdictOutcome
     divergence_class: DivergenceClass | None = None
     endpoint: str | None = None
     failure_class: str | None = None
-    source: str = "skeptic"          # "skeptic" | "healing" | "human"
+    source: str = "skeptic"  # "skeptic" | "healing" | "human"
     detail: str = ""
     timestamp: int = 0
     schema_version: int = SCHEMA_VERSION
@@ -398,6 +424,7 @@ class Idiom(BaseModel):
     """Per-system pattern that keeps being confirmed by verdicts.
     Decay score falls toward 0 over time; re-confirmation resets it.
     """
+
     id: str
     pattern: str
     divergence_class: DivergenceClass
@@ -410,12 +437,14 @@ class Idiom(BaseModel):
 
 class ReflectorConfig(BaseModel):
     """Configuration for the Reflector module."""
+
     enabled: bool = True
     store_path: str = ".cherenkov/verdicts.db"
     decay_half_life_hours: float = 168.0  # 7 days
 
 
 # ── TRUTH MODEL / SOURCE ADAPTER SPI ──────────────────────────────────────────
+
 
 class ProvenanceType(str, Enum):
     SPEC = "spec"
@@ -433,7 +462,7 @@ class Provenance(BaseModel):
 class Claim(BaseModel):
     id: str
     category: str  # e.g., "endpoint" | "request" | "response" | "mutation"
-    subject: str   # e.g., "POST /users" | "POST /users -> body -> email"
+    subject: str  # e.g., "POST /users" | "POST /users -> body -> email"
     value: dict | str | list | None = None
     provenance: Provenance
     schema_version: int = SCHEMA_VERSION
@@ -449,14 +478,16 @@ class Claim(BaseModel):
 # triages failures into the four classes a manual tester actually cares about.
 # ════════════════════════════════════════════════════════════════════════════
 
+
 class ExplorerFindingKind(str, Enum):
     """What the Explorer observed while crawling a live surface."""
-    SERVER_ERROR = "server_error"     # 5xx from an endpoint
-    CLIENT_ERROR = "client_error"     # unexpected 4xx (e.g. 404 on a linked route)
-    JS_ERROR     = "js_error"         # uncaught console/page error in the UI
-    VISUAL_BREAK = "visual_break"     # layout/render anomaly (overflow, blank, etc.)
-    SLOW_RESPONSE = "slow_response"   # latency far above the crawl budget
-    UNREACHABLE  = "unreachable"      # connection refused / timeout
+
+    SERVER_ERROR = "server_error"  # 5xx from an endpoint
+    CLIENT_ERROR = "client_error"  # unexpected 4xx (e.g. 404 on a linked route)
+    JS_ERROR = "js_error"  # uncaught console/page error in the UI
+    VISUAL_BREAK = "visual_break"  # layout/render anomaly (overflow, blank, etc.)
+    SLOW_RESPONSE = "slow_response"  # latency far above the crawl budget
+    UNREACHABLE = "unreachable"  # connection refused / timeout
 
 
 class ExplorerFinding(BaseModel):
@@ -465,23 +496,27 @@ class ExplorerFinding(BaseModel):
     Findings are evidence, not yet hypotheses — they carry enough context for
     the Skeptic to reason about (url, observed signal) and for a human to read.
     """
+
     id: str
     kind: ExplorerFindingKind
     url: str
     method: str = "GET"
-    status: int | None = None         # HTTP status if applicable
+    status: int | None = None  # HTTP status if applicable
     latency_ms: int = 0
-    detail: str = ""                  # human-readable summary of the signal
-    evidence: str = ""                # raw snippet (body excerpt, console line)
+    detail: str = ""  # human-readable summary of the signal
+    evidence: str = ""  # raw snippet (body excerpt, console line)
     severity: Severity = Severity.MEDIUM
 
 
 class IntentStep(BaseModel):
     """A single ordered step parsed from a tester's plain-language intent."""
-    action: str                       # "navigate" | "click" | "fill" | "expect" | "request"
-    target: str = ""                  # human description of the element/route (role+name, not a selector)
-    value: str = ""                   # data to enter, expected text, or URL
-    note: str = ""                    # free-form clarification
+
+    action: str  # "navigate" | "click" | "fill" | "expect" | "request"
+    target: str = (
+        ""  # human description of the element/route (role+name, not a selector)
+    )
+    value: str = ""  # data to enter, expected text, or URL
+    note: str = ""  # free-form clarification
 
 
 class IntentSpec(BaseModel):
@@ -491,10 +526,11 @@ class IntentSpec(BaseModel):
     sentence like "check guest checkout with a discount and confirm the email".
     Consumed by the artifact author to emit an ejectable Playwright test.
     """
+
     id: str
-    raw_intent: str                   # verbatim text the tester typed/spoke
-    title: str                        # short human title for the test
-    target_url: str = ""              # base URL the flow runs against
+    raw_intent: str  # verbatim text the tester typed/spoke
+    title: str  # short human title for the test
+    target_url: str = ""  # base URL the flow runs against
     kind: Literal["ui", "api"] = "ui"
     steps: list[IntentStep] = Field(default_factory=list)
     data_hints: dict = Field(default_factory=dict)  # e.g. {"discount_code": "SAVE10"}
@@ -504,10 +540,11 @@ class IntentSpec(BaseModel):
 
 class RiskItem(BaseModel):
     """One entry in the pre-session 'second pair of eyes' digest."""
+
     title: str
-    score: float                      # 0.0–1.0 ranked risk weight
+    score: float  # 0.0–1.0 ranked risk weight
     severity: Severity
-    source: str                       # "explorer" | "skeptic" | "idiom" | "reflector"
+    source: str  # "explorer" | "skeptic" | "idiom" | "reflector"
     detail: str = ""
     endpoint: str | None = None
     hypothesis_id: str | None = None  # link back to a DivergenceHypothesis, if any
@@ -519,8 +556,9 @@ class RiskDigest(BaseModel):
     The "second pair of eyes": what a careful colleague would tell you to check
     first, assembled from Explorer findings, Skeptic hypotheses, and idioms.
     """
+
     target: str
-    generated_for: str = ""           # optional session/intent label
+    generated_for: str = ""  # optional session/intent label
     items: list[RiskItem] = Field(default_factory=list)
     status: Status = Status.OK
 
@@ -542,21 +580,23 @@ class RiskDigest(BaseModel):
 
 class TriageCategory(str, Enum):
     """The four buckets a manual tester sorts a failure into."""
-    BUG      = "bug"        # a real product defect worth filing
-    FLAKY    = "flaky"      # non-deterministic; passed on retry
-    ENV      = "env"        # environment/infra/auth, not the product
-    INTENDED = "intended"   # behaviour changed on purpose; update the test
+
+    BUG = "bug"  # a real product defect worth filing
+    FLAKY = "flaky"  # non-deterministic; passed on retry
+    ENV = "env"  # environment/infra/auth, not the product
+    INTENDED = "intended"  # behaviour changed on purpose; update the test
 
 
 class TriageResult(BaseModel):
     """Copilot's pre-classification of a failure, with a recommended action."""
+
     scenario_id: str
     category: TriageCategory
-    confidence: float = 0.5           # 0.0–1.0
+    confidence: float = 0.5  # 0.0–1.0
     failure_class: str | None = None  # the healing/diagnose FailureClass it came from
     rationale: str = ""
     suggested_action: str = ""
-    evidence: str = ""                # screenshot path, diverging claim, etc.
+    evidence: str = ""  # screenshot path, diverging claim, etc.
 
 
 # ── CERTIFICATION (E13) ────────────────────────────────────────────────────
@@ -584,6 +624,7 @@ class AssertionGateResult(BaseModel):
     deliberately-broken implementation (delegates to AdversarialSelfPlay). A
     test that passes both has vacuous assertions and is rejected.
     """
+
     test_id: str
     meaningful: bool
     passed_correct: bool
@@ -593,25 +634,28 @@ class AssertionGateResult(BaseModel):
 
 class CoverageItemState(str, Enum):
     """Lifecycle of a single coverage target within the SDET loop."""
-    PENDING   = "pending"     # not yet attempted
-    COVERED   = "covered"     # passing + meaningful test exists
-    UNMET     = "unmet"       # budget exhausted without a meaningful, passing test
+
+    PENDING = "pending"  # not yet attempted
+    COVERED = "covered"  # passing + meaningful test exists
+    UNMET = "unmet"  # budget exhausted without a meaningful, passing test
 
 
 class CoverageItem(BaseModel):
     """One unit of coverage (typically an endpoint+case) tracked by the loop."""
+
     target_id: str
     state: CoverageItemState = CoverageItemState.PENDING
-    attempts: int = 0                 # generate/repair cycles spent
-    passed: bool = False              # the test passed against the correct mock
-    meaningful: bool = False          # cleared the assertion gate
+    attempts: int = 0  # generate/repair cycles spent
+    passed: bool = False  # the test passed against the correct mock
+    meaningful: bool = False  # cleared the assertion gate
     detail: str = ""
 
 
 class CoverageReport(BaseModel):
     """Outcome of a bounded generate→run→read-trace→repair SDET run (E11-1)."""
+
     target: str
-    threshold: float                  # 0.0–1.0 desired coverage
+    threshold: float  # 0.0–1.0 desired coverage
     items: list[CoverageItem] = Field(default_factory=list)
     status: Status = Status.OK
 

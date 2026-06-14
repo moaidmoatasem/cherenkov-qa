@@ -7,11 +7,19 @@ from validator import run_validation
 
 
 def main():
-    parser = argparse.ArgumentParser(description="CHERENKOV Engine — API Conformance Validator")
-    parser.add_argument("--spec", required=True, help="Path to OpenAPI spec (JSON/YAML)")
+    parser = argparse.ArgumentParser(
+        description="CHERENKOV Engine — API Conformance Validator"
+    )
+    parser.add_argument(
+        "--spec", required=True, help="Path to OpenAPI spec (JSON/YAML)"
+    )
     parser.add_argument("--target", required=True, help="Base URL of target API")
-    parser.add_argument("--output", choices=["json", "text"], default="json", help="Output format")
-    parser.add_argument("--strict", action="store_true", default=True, help="Require exact status match")
+    parser.add_argument(
+        "--output", choices=["json", "text"], default="json", help="Output format"
+    )
+    parser.add_argument(
+        "--strict", action="store_true", default=True, help="Require exact status match"
+    )
 
     args = parser.parse_args()
 
@@ -37,7 +45,9 @@ def main():
             print("Details:")
             for c in result["checks"]:
                 status = "PASS" if c["passed"] else "FAIL"
-                print(f"  [{status}] {c['method']} {c['path']} -> {c.get('actual', '?')}")
+                print(
+                    f"  [{status}] {c['method']} {c['path']} -> {c.get('actual', '?')}"
+                )
 
     sys.exit(0 if result["passed"] else 1)
 

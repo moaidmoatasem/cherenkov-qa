@@ -1,7 +1,7 @@
 # Sync Driven Development (SDD) — Token-Efficient Agent Methodology
 
-**Status:** Active · **Date:** 2026-06-10  
-**Author:** Agent-0 / Owner  
+**Status:** Active · **Date:** 2026-06-10
+**Author:** Agent-0 / Owner
 **Applies to:** All autonomous agents working on CHERENKOV-QA
 
 ---
@@ -259,6 +259,6 @@ Long-term vision: The sync layer enables agents that:
 
 ---
 
-*See [agent_memory/sync/MANIFEST.md](../../agent_memory/sync/MANIFEST.md) for the sync runtime files.*  
-*See [skills/sync-driven-dev.md](../../skills/sync-driven-dev.md) for the agent skill file.*  
+*See [agent_memory/sync/MANIFEST.md](../../agent_memory/sync/MANIFEST.md) for the sync runtime files.*
+*See [skills/sync-driven-dev.md](../../skills/sync-driven-dev.md) for the agent skill file.*
 *See [scripts/agent_sync.py](../../scripts/agent_sync.py) for the CLI tool.*

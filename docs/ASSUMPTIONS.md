@@ -1,7 +1,7 @@
 # CHERENKOV-QA Assumptions
 
-**Date:** 2026-06-08  
-**Status:** Active  
+**Date:** 2026-06-08
+**Status:** Active
 **Related EPIC:** #277 (Phase -1)
 
 ---

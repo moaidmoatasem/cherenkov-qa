@@ -1,8 +1,8 @@
 # Cherenkov QA Dashboard - Full Regression Test Suite
 
-> **Document Version:** 1.0.0  
-> **Last Updated:** 2026-06-06  
-> **Owner:** QA Engineering Team  
+> **Document Version:** 1.0.0
+> **Last Updated:** 2026-06-06
+> **Owner:** QA Engineering Team
 > **Test Level:** Full Regression (UI + API + E2E)
 
 ---

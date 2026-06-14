@@ -5,12 +5,11 @@ Uses FastAPI's TestClient (synchronous ASGI wrapper) with minimal mocking of
 external services (Ollama, OrchestrationEngine, ValidationEngine, EjectorEngine)
 so tests run offline and fast.  No CHERENKOV_HITL_API_KEY → auth disabled.
 """
+
 from __future__ import annotations
 
 import os
-import json
 import tempfile
-import threading
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -26,6 +25,7 @@ def _make_client() -> TestClient:
 
 # ── Health ────────────────────────────────────────────────────────────────────
 
+
 class TestHealth(unittest.TestCase):
     def setUp(self):
         self.client = _make_client()
@@ -39,7 +39,10 @@ class TestHealth(unittest.TestCase):
         self.assertIn("device", body)
         self.assertIn("gen_model", body)
 
-    @patch("cherenkov.core.config.Config.detect_ollama_device", side_effect=RuntimeError("no ollama"))
+    @patch(
+        "cherenkov.core.config.Config.detect_ollama_device",
+        side_effect=RuntimeError("no ollama"),
+    )
     def test_health_degrades_gracefully_on_ollama_error(self, _):
         r = self.client.get("/api/v1/health")
         self.assertEqual(r.status_code, 200)
@@ -47,6 +50,7 @@ class TestHealth(unittest.TestCase):
 
 
 # ── Tests list ────────────────────────────────────────────────────────────────
+
 
 class TestListTests(unittest.TestCase):
     def setUp(self):
@@ -75,6 +79,7 @@ class TestListTests(unittest.TestCase):
 
 
 # ── Review queue ──────────────────────────────────────────────────────────────
+
 
 class TestReviewQueue(unittest.TestCase):
     def setUp(self):
@@ -109,6 +114,7 @@ class TestReviewQueue(unittest.TestCase):
 
 # ── Review approve / reject ───────────────────────────────────────────────────
 
+
 class TestReviewApprove(unittest.TestCase):
     def setUp(self):
         self.client = _make_client()
@@ -127,9 +133,9 @@ class TestReviewApprove(unittest.TestCase):
 
     def test_approve_success(self):
         env = MagicMock(ok=True)
-        with patch("cherenkov.web.api.get_queue") as mock_q, \
-             patch("cherenkov.web.api.FeedbackStore"), \
-             patch("cherenkov.reflector.reflector.Reflector"):
+        with patch("cherenkov.web.api.get_queue") as mock_q, patch(
+            "cherenkov.web.api.FeedbackStore"
+        ), patch("cherenkov.reflector.reflector.Reflector"):
             mock_q.return_value.approve.return_value = env
             r = self.client.post(
                 "/api/v1/review/approve",
@@ -169,9 +175,9 @@ class TestReviewReject(unittest.TestCase):
 
     def test_reject_success(self):
         env = MagicMock(ok=True)
-        with patch("cherenkov.web.api.get_queue") as mock_q, \
-             patch("cherenkov.web.api.FeedbackStore"), \
-             patch("cherenkov.reflector.reflector.Reflector"):
+        with patch("cherenkov.web.api.get_queue") as mock_q, patch(
+            "cherenkov.web.api.FeedbackStore"
+        ), patch("cherenkov.reflector.reflector.Reflector"):
             mock_q.return_value.reject.return_value = env
             r = self.client.post(
                 "/api/v1/review/reject",
@@ -183,6 +189,7 @@ class TestReviewReject(unittest.TestCase):
 
 # ── Review edit ───────────────────────────────────────────────────────────────
 
+
 class TestReviewEdit(unittest.TestCase):
     def setUp(self):
         self.client = _make_client()
@@ -192,10 +199,15 @@ class TestReviewEdit(unittest.TestCase):
             with patch("os.getcwd", return_value=tmpdir):
                 r = self.client.post(
                     "/api/v1/review/edit",
-                    json={"scenario_id": "post_users", "test_code": "test('ok', () => {})"},
+                    json={
+                        "scenario_id": "post_users",
+                        "test_code": "test('ok', () => {})",
+                    },
                 )
             self.assertEqual(r.status_code, 200)
-            saved = os.path.join(tmpdir, "stub", "generated_tests", "post_users.spec.ts")
+            saved = os.path.join(
+                tmpdir, "stub", "generated_tests", "post_users.spec.ts"
+            )
             self.assertTrue(os.path.exists(saved))
 
     def test_edit_400_missing_test_code(self):
@@ -214,6 +226,7 @@ class TestReviewEdit(unittest.TestCase):
 
 
 # ── Review classify ───────────────────────────────────────────────────────────
+
 
 class TestReviewClassify(unittest.TestCase):
     def setUp(self):
@@ -251,6 +264,7 @@ class TestReviewClassify(unittest.TestCase):
 
 # ── Eject ─────────────────────────────────────────────────────────────────────
 
+
 class TestEject(unittest.TestCase):
     def setUp(self):
         self.client = _make_client()
@@ -267,8 +281,9 @@ class TestEject(unittest.TestCase):
         mock_engine.eject_suite.return_value = True
         with tempfile.TemporaryDirectory() as tmpdir:
             out = os.path.join(tmpdir, "output")
-            with patch("cherenkov.execution.eject.EjectorEngine", return_value=mock_engine), \
-                 patch("os.getcwd", return_value=tmpdir):
+            with patch(
+                "cherenkov.execution.eject.EjectorEngine", return_value=mock_engine
+            ), patch("os.getcwd", return_value=tmpdir):
                 r = self.client.post("/api/v1/eject", json={"output_path": out})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()["status"], "ejected")
@@ -278,8 +293,9 @@ class TestEject(unittest.TestCase):
         mock_engine.eject_suite.side_effect = RuntimeError("disk full")
         with tempfile.TemporaryDirectory() as tmpdir:
             out = os.path.join(tmpdir, "output")
-            with patch("cherenkov.execution.eject.EjectorEngine", return_value=mock_engine), \
-                 patch("os.getcwd", return_value=tmpdir):
+            with patch(
+                "cherenkov.execution.eject.EjectorEngine", return_value=mock_engine
+            ), patch("os.getcwd", return_value=tmpdir):
                 r = self.client.post("/api/v1/eject", json={"output_path": out})
         self.assertEqual(r.status_code, 500)
 
@@ -288,13 +304,15 @@ class TestEject(unittest.TestCase):
         mock_engine.eject_suite.return_value = False
         with tempfile.TemporaryDirectory() as tmpdir:
             out = os.path.join(tmpdir, "output")
-            with patch("cherenkov.execution.eject.EjectorEngine", return_value=mock_engine), \
-                 patch("os.getcwd", return_value=tmpdir):
+            with patch(
+                "cherenkov.execution.eject.EjectorEngine", return_value=mock_engine
+            ), patch("os.getcwd", return_value=tmpdir):
                 r = self.client.post("/api/v1/eject", json={"output_path": out})
         self.assertEqual(r.status_code, 500)
 
 
 # ── Divergences ───────────────────────────────────────────────────────────────
+
 
 class TestDivergences(unittest.TestCase):
     def setUp(self):
@@ -307,7 +325,9 @@ class TestDivergences(unittest.TestCase):
         self.assertIsInstance(r.json(), list)
 
     def test_act_404_for_unknown_divergence(self):
-        with patch("cherenkov.web.divergences.apply_action", side_effect=KeyError("unknown")):
+        with patch(
+            "cherenkov.web.divergences.apply_action", side_effect=KeyError("unknown")
+        ):
             r = self.client.post(
                 "/api/v1/divergences/act",
                 json={"divergence_id": "x", "action": "accept"},
@@ -315,7 +335,10 @@ class TestDivergences(unittest.TestCase):
         self.assertEqual(r.status_code, 404)
 
     def test_act_400_for_invalid_action(self):
-        with patch("cherenkov.web.divergences.apply_action", side_effect=ValueError("bad action")):
+        with patch(
+            "cherenkov.web.divergences.apply_action",
+            side_effect=ValueError("bad action"),
+        ):
             r = self.client.post(
                 "/api/v1/divergences/act",
                 json={"divergence_id": "d1", "action": "not_a_real_action"},
@@ -324,6 +347,7 @@ class TestDivergences(unittest.TestCase):
 
 
 # ── Overview / Truth-map / Failures / Metrics ─────────────────────────────────
+
 
 class TestDashboardEndpoints(unittest.TestCase):
     def setUp(self):
@@ -338,8 +362,9 @@ class TestDashboardEndpoints(unittest.TestCase):
         }
 
     def test_overview_200(self):
-        with patch("cherenkov.ai.accounting.CostAccountant") as MockCA, \
-             patch("cherenkov.web.api.FeedbackStore") as MockFS:
+        with patch("cherenkov.ai.accounting.CostAccountant") as MockCA, patch(
+            "cherenkov.web.api.FeedbackStore"
+        ) as MockFS:
             MockCA.return_value.get_governance_kpis.return_value = self._mock_kpi()
             MockFS.return_value.get_all.return_value = []
             r = self.client.get("/api/v1/overview")
@@ -365,8 +390,10 @@ class TestDashboardEndpoints(unittest.TestCase):
 
     def test_metrics_200(self):
         report = MagicMock(
-            request_count=10, total_tokens=5000,
-            total_cost=0.02, total_duration_ms=12000,
+            request_count=10,
+            total_tokens=5000,
+            total_cost=0.02,
+            total_duration_ms=12000,
         )
         with patch("cherenkov.ai.accounting.CostAccountant") as MockCA:
             MockCA.return_value.report = report
@@ -378,6 +405,7 @@ class TestDashboardEndpoints(unittest.TestCase):
 
 
 # ── Mobile pilot ──────────────────────────────────────────────────────────────
+
 
 class TestMobilePilot(unittest.TestCase):
     def setUp(self):
@@ -397,6 +425,7 @@ class TestMobilePilot(unittest.TestCase):
 
 
 # ── Ingest edge cases ─────────────────────────────────────────────────────────
+
 
 class TestIngest(unittest.TestCase):
     def setUp(self):

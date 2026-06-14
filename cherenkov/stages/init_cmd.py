@@ -5,12 +5,11 @@ Authority: v3.1 + delta.
 Autodetect spec, pick sane defaults, produce value with no file editing.
 Defaults: offline, free, deterministic.
 """
+
 from __future__ import annotations
 
-import os
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 
 from cherenkov.core.config import Config
@@ -31,7 +30,9 @@ def detect_ollama() -> tuple[bool, str]:
     try:
         result = subprocess.run(
             [ollama_path, "list"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         if result.returncode != 0:
             return False, f"Ollama daemon not running ({result.stderr.strip()})"
@@ -167,7 +168,7 @@ def run_init(profile: str | None = None, force: bool = False) -> int:
         for s in spec_files:
             print(f"         - {s}")
     else:
-        print(f"  [3/4] Spec files: none found (add paths manually to cherenkov.toml)")
+        print("  [3/4] Spec files: none found (add paths manually to cherenkov.toml)")
 
     # 5. Determine profile
     resolved_profile = profile or "laptop"
@@ -186,12 +187,12 @@ def run_init(profile: str | None = None, force: bool = False) -> int:
     print()
     print("-" * 60)
     print("  Next steps:")
-    print(f"    Run:    ./bin/cherenkov doctor    # verify your setup")
+    print("    Run:    ./bin/cherenkov doctor    # verify your setup")
     if spec_files:
-        print(f"    Run:    ./bin/cherenkov validate --target <url>  # run tests")
+        print("    Run:    ./bin/cherenkov validate --target <url>  # run tests")
     else:
         print(f"    Edit:   {toml_path} -- add your OpenAPI spec path under [sources]")
-        print(f"    Then:   ./bin/cherenkov doctor")
+        print("    Then:   ./bin/cherenkov doctor")
     print()
     print("  Defaults: offline, free, deterministic")
     print("  Upgrade:  edit profile in cherenkov.toml, or set CHERENKOV_* env vars")

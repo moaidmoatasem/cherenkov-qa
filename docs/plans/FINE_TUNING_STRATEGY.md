@@ -1,11 +1,11 @@
 # Fine-Tuning Strategy: cherenkov-coder-7b
 
-**Status:** Proposed (Phase 15)  
-**Target Architecture:** Horizon 3  
+**Status:** Proposed (Phase 15)
+**Target Architecture:** Horizon 3
 
 ## 1. The Moat
 
-While base models like `qwen2.5-coder:7b` are highly capable, they often lack the deep, domain-specific intuition required to generate flawless Playwright API tests from complex OpenAPI specifications without multiple healing iterations. 
+While base models like `qwen2.5-coder:7b` are highly capable, they often lack the deep, domain-specific intuition required to generate flawless Playwright API tests from complex OpenAPI specifications without multiple healing iterations.
 
 To build an unassailable technical moat in the AI testing market, CHERENKOV will train its own specialized model: **`cherenkov-coder-7b`**. This model will achieve the highest zero-shot success rate for test generation, drastically reducing compute costs and execution latency.
 
@@ -17,7 +17,7 @@ The most valuable asset for fine-tuning is high-quality data. We will implement 
 2. **The Output**: The generated, typed Playwright test case.
 3. **The Verdict**: The execution result (Pass/Fail) and any syntax/AST gate corrections.
 
-Only tests that successfully pass the 6-gate review and execute flawlessly against a real server will be added to the high-quality fine-tuning corpus. 
+Only tests that successfully pass the 6-gate review and execute flawlessly against a real server will be added to the high-quality fine-tuning corpus.
 
 *Note: All telemetry will be strictly opt-in, anonymized, and scrubbed of PII/secrets before transmission.*
 

@@ -1,7 +1,7 @@
 # Vision 18: Desktop Host (Tauri 2, Hardware Detection, Setup Wizard)
 
-**Date:** 2026-06-08  
-**Status:** Active  
+**Date:** 2026-06-08
+**Status:** Active
 **Related EPIC:** #282 (Phase 3)
 
 ---
@@ -76,11 +76,11 @@ fn main() {
 #[tauri::command]
 fn start_sidecar(state: tauri::State<AppState>) -> Result<(), String> {
     let mut sidecar = state.sidecar.lock().unwrap();
-    
+
     if sidecar.is_some() {
         return Err("Sidecar already running".to_string());
     }
-    
+
     let child = Command::new("cherenkov")
         .arg("review")
         .arg("--port")
@@ -89,7 +89,7 @@ fn start_sidecar(state: tauri::State<AppState>) -> Result<(), String> {
         .stderr(Stdio::piped())
         .spawn()
         .map_err(|e| format!("Failed to start sidecar: {}", e))?;
-    
+
     *sidecar = Some(child);
     Ok(())
 }
@@ -97,11 +97,11 @@ fn start_sidecar(state: tauri::State<AppState>) -> Result<(), String> {
 #[tauri::command]
 fn stop_sidecar(state: tauri::State<AppState>) -> Result<(), String> {
     let mut sidecar = state.sidecar.lock().unwrap();
-    
+
     if let Some(mut child) = sidecar.take() {
         child.kill().map_err(|e| format!("Failed to kill sidecar: {}", e))?;
     }
-    
+
     Ok(())
 }
 
@@ -109,7 +109,7 @@ fn stop_sidecar(state: tauri::State<AppState>) -> Result<(), String> {
 fn get_status() -> Result<String, String> {
     let response = reqwest::blocking::get("http://localhost:8000/healthz")
         .map_err(|e| format!("Failed to get status: {}", e))?;
-    
+
     Ok(response.text().unwrap())
 }
 
@@ -154,10 +154,10 @@ pub fn detect_device_class() -> DeviceClass {
             return DeviceClass::GpuEntry;
         }
     }
-    
+
     let cpu_cores = detect_cpu_cores();
     let ram_gb = detect_ram_gb();
-    
+
     if cpu_cores >= 16 && ram_gb >= 32 {
         DeviceClass::CpuHighEnd
     } else if cpu_cores >= 8 && ram_gb >= 16 {
@@ -176,17 +176,17 @@ fn detect_gpu() -> Option<String> {
             .args(&["path", "win32_VideoController", "get", "name"])
             .output()
             .ok()?;
-        
+
         let stdout = String::from_utf8_lossy(&output.stdout);
         return Some(stdout.to_string());
     }
-    
+
     #[cfg(target_os = "linux")]
     {
         let output = Command::new("lspci")
             .output()
             .ok()?;
-        
+
         let stdout = String::from_utf8_lossy(&output.stdout);
         for line in stdout.lines() {
             if line.contains("VGA") || line.contains("3D") {
@@ -194,18 +194,18 @@ fn detect_gpu() -> Option<String> {
             }
         }
     }
-    
+
     #[cfg(target_os = "macos")]
     {
         let output = Command::new("system_profiler")
             .arg("SPDisplaysDataType")
             .output()
             .ok()?;
-        
+
         let stdout = String::from_utf8_lossy(&output.stdout);
         return Some(stdout.to_string());
     }
-    
+
     None
 }
 
@@ -262,7 +262,7 @@ impl Setup for WindowsSetup {
             check_maestro(),
         ]
     }
-    
+
     fn install_prerequisite(name: &str) -> Result<(), String> {
         match name {
             "ollama" => install_ollama_windows(),
@@ -280,7 +280,7 @@ fn check_ollama() -> Prerequisite {
         .arg("--version")
         .output()
         .is_ok();
-    
+
     Prerequisite {
         name: "ollama".to_string(),
         installed,
@@ -293,7 +293,7 @@ fn check_node() -> Prerequisite {
         .arg("--version")
         .output()
         .is_ok();
-    
+
     Prerequisite {
         name: "node".to_string(),
         installed,
@@ -324,7 +324,7 @@ const STEPS = [
 
 export function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(0);
-  
+
   return (
     <div className="wizard">
       <div className="wizard-steps">
@@ -334,7 +334,7 @@ export function OnboardingWizard() {
           </div>
         ))}
       </div>
-      
+
       <div className="wizard-content">
         {currentStep === 0 && <HardwareScanStep onNext={() => setCurrentStep(1)} />}
         {currentStep === 1 && <EngineSelectionStep onNext={() => setCurrentStep(2)} />}
@@ -402,31 +402,31 @@ interface Device {
 
 export function DeviceManager() {
   const [devices, setDevices] = useState<Device[]>([]);
-  
+
   useEffect(() => {
     fetch('/api/v1/devices')
       .then(r => r.json())
       .then(setDevices);
   }, []);
-  
+
   return (
     <div className="device-manager">
       <h2>Device Manager</h2>
-      
+
       <div className="device-section">
         <h3>Emulators</h3>
         {devices.filter(d => d.type === 'emulator').map(device => (
           <DeviceCard key={device.id} device={device} />
         ))}
       </div>
-      
+
       <div className="device-section">
         <h3>Physical Devices</h3>
         {devices.filter(d => d.type === 'physical').map(device => (
           <DeviceCard key={device.id} device={device} />
         ))}
       </div>
-      
+
       <div className="device-section">
         <h3>Browser Targets</h3>
         {devices.filter(d => d.type === 'browser').map(device => (
@@ -438,9 +438,9 @@ export function DeviceManager() {
 }
 
 function DeviceCard({ device }: { device: Device }) {
-  const statusColor = device.status === 'connected' ? 'green' : 
+  const statusColor = device.status === 'connected' ? 'green' :
                       device.status === 'error' ? 'red' : 'gray';
-  
+
   return (
     <div className="device-card">
       <div className="device-status" style={{ color: statusColor }}>
@@ -478,13 +478,13 @@ export function Settings() {
     redis_url: '',
     egress_policy: 'none',
   });
-  
+
   useEffect(() => {
     fetch('/api/v1/settings')
       .then(r => r.json())
       .then(setSettings);
   }, []);
-  
+
   const saveSettings = () => {
     fetch('/api/v1/settings', {
       method: 'POST',
@@ -492,11 +492,11 @@ export function Settings() {
       body: JSON.stringify(settings),
     });
   };
-  
+
   return (
     <div className="settings">
       <h2>Settings</h2>
-      
+
       <div className="settings-section">
         <h3>VLM Configuration</h3>
         <label>
@@ -517,7 +517,7 @@ export function Settings() {
           </select>
         </label>
       </div>
-      
+
       <div className="settings-section">
         <h3>Redis Configuration</h3>
         <label>
@@ -531,7 +531,7 @@ export function Settings() {
           </label>
         )}
       </div>
-      
+
       <div className="settings-section">
         <h3>Egress Policy</h3>
         <label>
@@ -547,7 +547,7 @@ export function Settings() {
           Any (allow cloud APIs)
         </label>
       </div>
-      
+
       <button onClick={saveSettings}>Save Settings</button>
     </div>
   );
@@ -579,34 +579,34 @@ impl IPCChannel {
     pub fn new(child: &mut Child) -> Self {
         let stdin = child.stdin.take().expect("Failed to open stdin");
         let stdout = child.stdout.take().expect("Failed to open stdout");
-        
+
         IPCChannel {
             stdin,
             stdout: BufReader::new(stdout),
         }
     }
-    
+
     pub fn send(&mut self, message: IPCMessage) -> Result<(), String> {
         let json = serde_json::to_string(&message)
             .map_err(|e| format!("Failed to serialize: {}", e))?;
-        
+
         writeln!(self.stdin, "{}", json)
             .map_err(|e| format!("Failed to write: {}", e))?;
-        
+
         self.stdin.flush()
             .map_err(|e| format!("Failed to flush: {}", e))?;
-        
+
         Ok(())
     }
-    
+
     pub fn receive(&mut self) -> Result<IPCMessage, String> {
         let mut line = String::new();
         self.stdout.read_line(&mut line)
             .map_err(|e| format!("Failed to read: {}", e))?;
-        
+
         let message: IPCMessage = serde_json::from_str(&line)
             .map_err(|e| format!("Failed to parse: {}", e))?;
-        
+
         Ok(message)
     }
 }

@@ -80,7 +80,7 @@ export default function OnboardingWizard({ onComplete, onEnableDemo }: Onboardin
                  <span className="text-orange-400 font-medium">Not Detected (Demo Mode Fallback)</span>}
               </div>
             </div>
-            
+
             <div className="flex space-x-4 pt-4">
               {ollamaStatus === 'missing' ? (
                 <button onClick={handleDemo} className="flex-1 py-3 bg-orange-500/20 text-orange-400 border border-orange-500/50 font-bold rounded-xl hover:bg-orange-500/30 transition">

@@ -7,9 +7,10 @@ Covers:
   E3-2  WitnessAgent (repro_steps parsing, divergence detection, batch)
   E3-3  AdversarialSelfPlay (kill logic, kill rate, BrokenImplServer)
 """
+
 import json
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from cherenkov.core.contracts import (
     DivergenceClass,
@@ -20,7 +21,6 @@ from cherenkov.core.contracts import (
     ReproductionResult,
     Severity,
     StageMeta,
-    Status,
 )
 from cherenkov.divergence.skeptic import SkepticAgent
 from cherenkov.divergence.witness import WitnessAgent, _parse_repro_steps, _diff
@@ -28,6 +28,7 @@ from cherenkov.divergence.self_play import AdversarialSelfPlay, BrokenImplServer
 
 
 # ── fixtures ──────────────────────────────────────────────────────────────
+
 
 def _make_hypothesis(
     divergence_class: DivergenceClass = DivergenceClass.D1_SPEC_CODE,
@@ -42,7 +43,9 @@ def _make_hypothesis(
         predicted_evidence="POST without X returns 200 instead of 422",
         severity=severity,
         endpoint="POST /pet",
-        repro_steps=repro_steps if repro_steps is not None else [
+        repro_steps=repro_steps
+        if repro_steps is not None
+        else [
             "Send POST /pet with body {}",
             "Expect 422 response",
         ],
@@ -54,7 +57,7 @@ def _make_evidence() -> DivergenceEvidence:
         request_summary="POST http://example.com/pet → 200 (42ms)",
         response_actual={"id": 1, "name": "test"},
         response_expected={"error": "required field missing"},
-        diff='status mismatch: expected=422, actual=200',
+        diff="status mismatch: expected=422, actual=200",
     )
 
 
@@ -62,8 +65,8 @@ def _make_evidence() -> DivergenceEvidence:
 # E3-4  Contracts
 # ═══════════════════════════════════════════════════════════════════════════
 
-class TestDivergenceContracts(unittest.TestCase):
 
+class TestDivergenceContracts(unittest.TestCase):
     def test_hypothesis_round_trip(self):
         h = _make_hypothesis()
         data = h.model_dump()
@@ -112,7 +115,13 @@ class TestDivergenceContracts(unittest.TestCase):
         values = {c.value for c in DivergenceClass}
         self.assertSetEqual(
             values,
-            {"D1_spec_code", "D2_code_prod", "D3_ui_spec", "D4_db_code", "D5_spec_prod"},
+            {
+                "D1_spec_code",
+                "D2_code_prod",
+                "D3_ui_spec",
+                "D4_db_code",
+                "D5_spec_prod",
+            },
         )
 
     def test_reproduction_result_without_evidence(self):
@@ -139,8 +148,8 @@ class TestDivergenceContracts(unittest.TestCase):
 # E3-1  SkepticAgent
 # ═══════════════════════════════════════════════════════════════════════════
 
-class TestSkepticAgent(unittest.TestCase):
 
+class TestSkepticAgent(unittest.TestCase):
     def _make_router_mock(self, response_content: str | dict) -> MagicMock:
         mock_router = MagicMock()
         mock_router.route.return_value = ReasoningResult(
@@ -255,8 +264,8 @@ class TestSkepticAgent(unittest.TestCase):
 # E3-2  WitnessAgent — helpers
 # ═══════════════════════════════════════════════════════════════════════════
 
-class TestParseReproSteps(unittest.TestCase):
 
+class TestParseReproSteps(unittest.TestCase):
     def test_parses_get_with_path(self):
         steps = ["Send GET /pet/findByStatus?status=available", "Expect 200"]
         method, path, payload, expected = _parse_repro_steps(steps)
@@ -266,7 +275,10 @@ class TestParseReproSteps(unittest.TestCase):
         self.assertEqual(expected, 200)
 
     def test_parses_post_with_json_body(self):
-        steps = ['Send POST /pet with body {"name": "test", "photoUrls": []}', "Expect 200"]
+        steps = [
+            'Send POST /pet with body {"name": "test", "photoUrls": []}',
+            "Expect 200",
+        ]
         method, path, payload, expected = _parse_repro_steps(steps)
         self.assertEqual(method, "POST")
         self.assertEqual(path, "/pet")
@@ -287,7 +299,6 @@ class TestParseReproSteps(unittest.TestCase):
 
 
 class TestDiff(unittest.TestCase):
-
     def test_status_mismatch(self):
         result = _diff({"error": "not found"}, 200, 404)
         self.assertIn("200", result)
@@ -318,7 +329,6 @@ class TestDiff(unittest.TestCase):
 
 
 class TestWitnessAgent(unittest.TestCase):
-
     def test_reproduce_rejects_when_no_repro_steps(self):
         agent = WitnessAgent(base_url="http://localhost:9999")
         h = _make_hypothesis(repro_steps=[])
@@ -347,9 +357,10 @@ class TestWitnessAgent(unittest.TestCase):
     def test_reproduce_confirmed_when_diff_non_empty(self):
         """Use BrokenImplServer to give the Witness a real server to call."""
         import time
+
         responses = {"/pet/1": (200, {"id": 1, "name": "fluffy"})}
         with BrokenImplServer(port=19990, responses=responses) as server:
-            time.sleep(0.05)   # ensure serve_forever() is running
+            time.sleep(0.05)  # ensure serve_forever() is running
             agent = WitnessAgent(base_url=server.url)
             h = DivergenceHypothesis(
                 id="h-live",
@@ -363,7 +374,9 @@ class TestWitnessAgent(unittest.TestCase):
             )
             result = agent.reproduce(h)
             # The server returns 200 but we expected 404 → divergence confirmed
-            self.assertTrue(result.reproduced, msg=f"rejection_reason={result.rejection_reason}")
+            self.assertTrue(
+                result.reproduced, msg=f"rejection_reason={result.rejection_reason}"
+            )
             self.assertIsNotNone(result.evidence)
             self.assertIn("200", result.evidence.request_summary)
 
@@ -372,10 +385,11 @@ class TestWitnessAgent(unittest.TestCase):
 # E3-3  AdversarialSelfPlay + BrokenImplServer
 # ═══════════════════════════════════════════════════════════════════════════
 
-class TestBrokenImplServer(unittest.TestCase):
 
+class TestBrokenImplServer(unittest.TestCase):
     def test_serves_configured_responses(self):
         import httpx
+
         responses = {"/pet/1": (404, {"error": "deleted"})}
         with BrokenImplServer(port=19991, responses=responses) as server:
             resp = httpx.get(f"{server.url}/pet/1")
@@ -384,12 +398,14 @@ class TestBrokenImplServer(unittest.TestCase):
 
     def test_serves_default_for_unknown_path(self):
         import httpx
+
         with BrokenImplServer(port=19992, responses={}) as server:
             resp = httpx.get(f"{server.url}/unknown/path")
             self.assertEqual(resp.status_code, 500)
 
     def test_all_verbs_work(self):
         import httpx
+
         responses = {"/x": (200, {"ok": True})}
         with BrokenImplServer(port=19993, responses=responses) as server:
             for method in ("get", "post", "put", "delete", "patch"):
@@ -402,7 +418,6 @@ class TestBrokenImplServer(unittest.TestCase):
 
 
 class TestAdversarialSelfPlay(unittest.TestCase):
-
     def test_tautological_test_is_killed(self):
         """A test that always passes — even against broken impl — is tautological."""
         always_pass = lambda url: (True, "ok")
@@ -420,6 +435,7 @@ class TestAdversarialSelfPlay(unittest.TestCase):
 
     def test_good_test_is_not_killed(self):
         """A test that passes correct mock but fails broken impl is good."""
+
         def selective(url: str) -> tuple[bool, str]:
             return ("correct" in url, "output")
 
@@ -465,12 +481,12 @@ class TestAdversarialSelfPlay(unittest.TestCase):
     def test_kill_rate_partial(self):
         sp = AdversarialSelfPlay()
         always_pass = lambda url: (True, "out")
-        selective   = lambda url: ("c" in url, "out")
+        selective = lambda url: ("c" in url, "out")
 
-        sp.validate("taut",  always_pass, "http://c", "http://b")   # killed
-        sp.validate("good1", selective,   "http://c", "http://b")   # kept
-        sp.validate("good2", selective,   "http://c", "http://b")   # kept
-        sp.validate("taut2", always_pass, "http://c", "http://b")   # killed
+        sp.validate("taut", always_pass, "http://c", "http://b")  # killed
+        sp.validate("good1", selective, "http://c", "http://b")  # kept
+        sp.validate("good2", selective, "http://c", "http://b")  # kept
+        sp.validate("taut2", always_pass, "http://c", "http://b")  # killed
 
         self.assertAlmostEqual(sp.kill_rate(), 0.5)
 
@@ -501,12 +517,14 @@ class TestAdversarialSelfPlay(unittest.TestCase):
             except Exception as e:
                 return False, str(e)
 
-        correct_responses   = {"/status": (200, {"ok": True})}
-        broken_responses    = {"/status": (500, {"ok": False})}
+        correct_responses = {"/status": (200, {"ok": True})}
+        broken_responses = {"/status": (500, {"ok": False})}
 
-        with BrokenImplServer(port=19995, responses=correct_responses) as correct_server, \
-             BrokenImplServer(port=19996, responses=broken_responses)   as broken_server:
-
+        with BrokenImplServer(
+            port=19995, responses=correct_responses
+        ) as correct_server, BrokenImplServer(
+            port=19996, responses=broken_responses
+        ) as broken_server:
             sp = AdversarialSelfPlay()
             result = sp.validate(
                 test_id="real_server_test",

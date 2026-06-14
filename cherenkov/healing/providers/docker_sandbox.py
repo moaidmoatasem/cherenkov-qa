@@ -5,6 +5,7 @@ Authority: v3.1 + delta.
 D7 invariant: container boundary enforces isolation — no host filesystem write.
 Anti-lock-in: non-Docker fallback is FilesystemSandboxProvider.
 """
+
 from __future__ import annotations
 
 import os
@@ -32,15 +33,22 @@ class DockerSandboxProvider(SandboxProvider):
         self.log.info("creating docker sandbox container", scenario=scenario_id)
         container_id = subprocess.check_output(
             [
-                "docker", "create",
+                "docker",
+                "create",
                 "--rm",
-                "--network", self.network,
-                "--label", f"cherenkov.scenario={scenario_id}",
-                "--label", "cherenkov.provider=docker",
-                "-v", f"{stub_dir}:/workspace/stub:ro",
-                "-v", f"{self.cherenkov_dir}:/workspace/.cherenkov",
+                "--network",
+                self.network,
+                "--label",
+                f"cherenkov.scenario={scenario_id}",
+                "--label",
+                "cherenkov.provider=docker",
+                "-v",
+                f"{stub_dir}:/workspace/stub:ro",
+                "-v",
+                f"{self.cherenkov_dir}:/workspace/.cherenkov",
                 self.image,
-                "sleep", "3600",
+                "sleep",
+                "3600",
             ],
             text=True,
         ).strip()
@@ -51,17 +59,29 @@ class DockerSandboxProvider(SandboxProvider):
             capture_output=True,
         )
 
-        self.log.info("docker sandbox container created", container_id=container_id[:12])
+        self.log.info(
+            "docker sandbox container created", container_id=container_id[:12]
+        )
         return container_id
 
     def execute_test(self, container_id: str, spec: str, api_url: str) -> SandboxResult:
-        self.log.info("executing test in docker sandbox", container_id=container_id[:12], spec=spec)
+        self.log.info(
+            "executing test in docker sandbox",
+            container_id=container_id[:12],
+            spec=spec,
+        )
         result = subprocess.run(
             [
-                "docker", "exec",
-                "-e", f"API_URL={api_url}",
+                "docker",
+                "exec",
+                "-e",
+                f"API_URL={api_url}",
                 container_id,
-                "npx", "playwright", "test", f"generated_tests/{spec}", "--reporter=json",
+                "npx",
+                "playwright",
+                "test",
+                f"generated_tests/{spec}",
+                "--reporter=json",
             ],
             capture_output=True,
             text=True,
@@ -84,7 +104,9 @@ class DockerSandboxProvider(SandboxProvider):
             capture_output=True,
         )
         if result.returncode != 0:
-            raise FileNotFoundError(f"Cannot read {path} from container {container_id[:12]}")
+            raise FileNotFoundError(
+                f"Cannot read {path} from container {container_id[:12]}"
+            )
         return result.stdout.decode("utf-8")
 
     def write_file(self, container_id: str, path: str, content: str) -> None:

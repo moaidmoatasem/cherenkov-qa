@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import sys
 
 import click
 
@@ -13,10 +12,15 @@ def _detect_ollama_vlm() -> dict:
     result = {"available": False, "model": "", "error": ""}
     try:
         import requests
+
         resp = requests.get("http://localhost:11434/api/tags", timeout=5)
         if resp.status_code == 200:
             models = resp.json().get("models", [])
-            vlm_models = [m["name"] for m in models if "vl" in m["name"].lower() or "vision" in m["name"].lower()]
+            vlm_models = [
+                m["name"]
+                for m in models
+                if "vl" in m["name"].lower() or "vision" in m["name"].lower()
+            ]
             if vlm_models:
                 result["available"] = True
                 result["model"] = vlm_models[0]
@@ -33,6 +37,7 @@ def _detect_localai_vlm() -> dict:
     result = {"available": False, "model": "", "error": ""}
     try:
         import requests
+
         url = Config.VLM_LOCALAI_URL.rstrip("/")
         resp = requests.get(f"{url}/readyz", timeout=5)
         if resp.status_code == 200:
@@ -71,7 +76,7 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool) -> None:
         d = _detect_device()
         report["device"] = d
         if not json_out:
-            click.echo(f"\nDevice Info")
+            click.echo("\nDevice Info")
             click.echo(f"{'=' * 40}")
             click.echo(f"  Class:       {d['device_class']}")
             click.echo(f"  VLM Tier:    {d['vlm_tier']}")
@@ -85,7 +90,7 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool) -> None:
         ollama = _detect_ollama_vlm()
         report["vlm"] = ollama
         if not json_out:
-            click.echo(f"\nOllama VLM")
+            click.echo("\nOllama VLM")
             click.echo(f"{'=' * 40}")
             click.echo(f"  Available:   {'Yes' if ollama['available'] else 'No'}")
             click.echo(f"  Model:       {ollama['model'] or 'N/A'}")
@@ -96,7 +101,7 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool) -> None:
         lai = _detect_localai_vlm()
         report["localai"] = lai
         if not json_out:
-            click.echo(f"\nLocalAI VLM")
+            click.echo("\nLocalAI VLM")
             click.echo(f"{'=' * 40}")
             click.echo(f"  URL:         {Config.VLM_LOCALAI_URL}")
             click.echo(f"  Available:   {'Yes' if lai['available'] else 'No'}")
@@ -117,7 +122,7 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool) -> None:
                 for r in recommendations
             ]
             if not json_out:
-                click.echo(f"\nRecommendations")
+                click.echo("\nRecommendations")
                 click.echo(f"{'=' * 40}")
                 for rec in report["recommendations"]:
                     click.echo(f"  - {rec}")

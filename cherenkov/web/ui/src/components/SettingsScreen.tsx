@@ -4,11 +4,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Settings, 
-  Cpu, 
-  KeyRound, 
-  SlidersHorizontal, 
+import {
+  Settings,
+  Cpu,
+  KeyRound,
+  SlidersHorizontal,
   CheckCircle,
   Database,
   Shield,
@@ -96,7 +96,7 @@ export default function SettingsScreen() {
 
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="settings-screen" data-testid="settings-screen">
-      
+
       {/* Title */}
       <div className="flex items-center gap-4">
         <CherenkovLogo variant="icon" size={42} />
@@ -114,7 +114,7 @@ export default function SettingsScreen() {
         {/* Forms column */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl space-y-6">
-            
+
             {/* Model Provider Section */}
             <div className="space-y-4">
               <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
@@ -124,7 +124,7 @@ export default function SettingsScreen() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                 {/* local option */}
-                <div 
+                <div
                   onClick={() => setModel('qwen-coder')}
                   className={`p-4 rounded-xl border transition cursor-pointer flex flex-col justify-between ${
                     model === 'qwen-coder'
@@ -140,7 +140,7 @@ export default function SettingsScreen() {
                 </div>
 
                 {/* Gemini flash option */}
-                <div 
+                <div
                   onClick={() => setModel('gemini-flash')}
                   className={`p-4 rounded-xl border transition cursor-pointer flex flex-col justify-between ${
                     model === 'gemini-flash'

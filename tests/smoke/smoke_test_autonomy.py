@@ -8,6 +8,7 @@ Verifies:
   4. set_profile() changes config
   5. Each level has proper auto_* flags
 """
+
 from __future__ import annotations
 
 import os
@@ -15,7 +16,12 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cherenkov.copilot.autonomy import AutonomyProfile, get_profile, set_profile, PROFILE_LEVELS
+from cherenkov.copilot.autonomy import (
+    AutonomyProfile,
+    get_profile,
+    set_profile,
+    PROFILE_LEVELS,
+)
 
 
 errors: list[str] = []
@@ -66,7 +72,9 @@ check(current.level in PROFILE_LEVELS, f"current level is valid: {current.level}
 print("\n5. set_profile()")
 original = get_profile()
 updated = set_profile("augmented")
-check(updated.level == "augmented", f"set_profile returns augmented (got {updated.level})")
+check(
+    updated.level == "augmented", f"set_profile returns augmented (got {updated.level})"
+)
 check(updated.auto_triage is True, "augmented has auto_triage=True")
 set_profile(original.level)
 reset = get_profile()

@@ -1,6 +1,6 @@
 from __future__ import annotations
-from typing import Any
 from cherenkov.reflector.store import ReflectorStore
+
 
 class MobileReflectorExtensions:
     def __init__(self, store: ReflectorStore):
@@ -22,7 +22,9 @@ class MobileReflectorExtensions:
         }
         self.store.append(entry)
 
-    def record_screenshot(self, screen_name: str, screenshot_path: str, ocr_text: str | None = None):
+    def record_screenshot(
+        self, screen_name: str, screenshot_path: str, ocr_text: str | None = None
+    ):
         entry = {
             "type": "screenshot",
             "screen_name": screen_name,

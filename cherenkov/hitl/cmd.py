@@ -10,6 +10,7 @@ Design:
   - Human output is a simple table/detail view; no colour codes (stays greppable).
   - Actor defaults to $USER environment variable if --actor is omitted.
 """
+
 from __future__ import annotations
 
 import json
@@ -19,10 +20,8 @@ import sys
 from cherenkov.hitl.contracts import (
     HitlEnvelope,
     HitlItem,
-    HitlStatus,
     err_envelope,
     ok_envelope,
-    SCHEMA_VERSION,
 )
 from cherenkov.hitl.store import HitlQueue
 
@@ -46,8 +45,10 @@ def _emit(envelope: HitlEnvelope, json_out: bool) -> None:
                 for k, v in envelope.payload.items():
                     print(f"  {k}: {v}")
         else:
-            print(f"[ERROR] {envelope.command} — {envelope.error.code}: {envelope.error.message}",
-                  file=sys.stderr)
+            print(
+                f"[ERROR] {envelope.command} — {envelope.error.code}: {envelope.error.message}",
+                file=sys.stderr,
+            )
             if envelope.error.detail:
                 for k, v in envelope.error.detail.items():
                     print(f"  {k}: {v}", file=sys.stderr)
@@ -85,8 +86,9 @@ def _item_detail(item: HitlItem) -> None:
 # ── public command handlers ────────────────────────────────────────────────────
 
 
-def run_list(status: str | None = "pending", json_out: bool = False,
-             db_path: str | None = None) -> int:
+def run_list(
+    status: str | None = "pending", json_out: bool = False, db_path: str | None = None
+) -> int:
     """
     List HITL queue items.
 
@@ -122,8 +124,7 @@ def run_list(status: str | None = "pending", json_out: bool = False,
     return 0
 
 
-def run_show(item_id: str, json_out: bool = False,
-             db_path: str | None = None) -> int:
+def run_show(item_id: str, json_out: bool = False, db_path: str | None = None) -> int:
     """
     Show details of a single HITL item.
 
@@ -135,7 +136,9 @@ def run_show(item_id: str, json_out: bool = False,
 
     if json_out:
         if item is None:
-            env = err_envelope("hitl.show", "not_found", f"{item_id} not found.", {"id": item_id})
+            env = err_envelope(
+                "hitl.show", "not_found", f"{item_id} not found.", {"id": item_id}
+            )
             print(json.dumps(env.model_dump(), indent=2, default=str))
             return 1
         env = ok_envelope("hitl.show", {"id": item_id, "item": item.model_dump()})
@@ -149,8 +152,12 @@ def run_show(item_id: str, json_out: bool = False,
     return 0
 
 
-def run_approve(item_id: str, actor: str | None = None, json_out: bool = False,
-                db_path: str | None = None) -> int:
+def run_approve(
+    item_id: str,
+    actor: str | None = None,
+    json_out: bool = False,
+    db_path: str | None = None,
+) -> int:
     """
     Approve a pending HITL item.
 
@@ -164,8 +171,13 @@ def run_approve(item_id: str, actor: str | None = None, json_out: bool = False,
     return 0 if env.ok else 1
 
 
-def run_reject(item_id: str, reason: str, actor: str | None = None,
-               json_out: bool = False, db_path: str | None = None) -> int:
+def run_reject(
+    item_id: str,
+    reason: str,
+    actor: str | None = None,
+    json_out: bool = False,
+    db_path: str | None = None,
+) -> int:
     """
     Reject a pending HITL item with a reason.
 
@@ -179,9 +191,14 @@ def run_reject(item_id: str, reason: str, actor: str | None = None,
     return 0 if env.ok else 1
 
 
-def run_classify(item_id: str, classification: str, actor: str | None = None,
-                 detail: str = "", json_out: bool = False,
-                 db_path: str | None = None) -> int:
+def run_classify(
+    item_id: str,
+    classification: str,
+    actor: str | None = None,
+    detail: str = "",
+    json_out: bool = False,
+    db_path: str | None = None,
+) -> int:
     """
     Classify a HITL item as regression, intended, or ignore (Tier-2 #150).
 
@@ -189,6 +206,7 @@ def run_classify(item_id: str, classification: str, actor: str | None = None,
     """
     from cherenkov.openclaw.adapter import OpenClawAdapter
     from cherenkov.openclaw.contracts import ClassificationRequest
+
     resolved_actor = actor or _default_actor()
     adapter = OpenClawAdapter()
     req = ClassificationRequest(
@@ -202,12 +220,15 @@ def run_classify(item_id: str, classification: str, actor: str | None = None,
     return 0 if env.ok else 1
 
 
-def run_explain(item_id: str, json_out: bool = False, db_path: str | None = None) -> int:
+def run_explain(
+    item_id: str, json_out: bool = False, db_path: str | None = None
+) -> int:
     """
     Get an AI explanation for why the HITL item was flagged.
     """
     from cherenkov.openclaw.adapter import OpenClawAdapter
     from cherenkov.openclaw.feedback import HealingFeedbackStore
+
     q = HitlQueue(db_path=db_path)
     if db_path:
         feedback_store = HealingFeedbackStore(db_path=":memory:")

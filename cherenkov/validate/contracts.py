@@ -4,6 +4,7 @@ Pydantic v2 result-contract models for the Validation Gate.
 
 schema_version = 'validate/v1'
 """
+
 from __future__ import annotations
 
 from typing import Literal

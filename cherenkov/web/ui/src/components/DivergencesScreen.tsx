@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  PageHeader, 
-  Card, 
-  SeverityPill, 
-  StatusDot, 
-  ProvenanceChip, 
-  Drawer, 
-  useToast, 
-  EmptyState 
+import {
+  PageHeader,
+  Card,
+  SeverityPill,
+  StatusDot,
+  ProvenanceChip,
+  Drawer,
+  useToast,
+  EmptyState
 } from './ui';
 import { fetchDivergences, actOnDivergence } from '../lib/api';
 import { Divergence, SeverityType, StatusType } from '../types';
@@ -18,7 +18,7 @@ export default function DivergencesScreen() {
   const [divergences, setDivergences] = useState<Divergence[]>([]);
   const [selectedDiv, setSelectedDiv] = useState<Divergence | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
-  
+
   // Filters
   const [classFilter, setClassFilter] = useState<string>('ALL');
   const [severityFilter, setSeverityFilter] = useState<string>('ALL');
@@ -49,19 +49,19 @@ export default function DivergencesScreen() {
     const safeDClass = d.divergenceClass ? String(d.divergenceClass).trim().toUpperCase() : '';
     const safeCFilter = classFilter ? classFilter.trim().toUpperCase() : 'ALL';
     const matchesClass = safeCFilter === 'ALL' || safeDClass === safeCFilter;
-    
+
     const safeDSeverity = d.severity ? String(d.severity).trim().toLowerCase() : '';
     const safeSFilter = severityFilter ? severityFilter.trim().toLowerCase() : 'all';
     const matchesSeverity = safeSFilter === 'all' || safeDSeverity === safeSFilter;
-    
+
     const safeDStatus = d.status ? String(d.status).trim().toLowerCase() : '';
     const safeStFilter = statusFilter ? statusFilter.trim().toLowerCase() : 'all';
     const matchesStatus = safeStFilter === 'all' || safeDStatus === safeStFilter;
-    
-    const matchesSearch = !searchQuery || searchQuery.trim() === '' || 
+
+    const matchesSearch = !searchQuery || searchQuery.trim() === '' ||
       (d.endpoint && d.endpoint.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (d.claimB && d.claimB.toLowerCase().includes(searchQuery.toLowerCase()));
-      
+
     return matchesClass && matchesSeverity && matchesStatus && matchesSearch;
   });
 
@@ -93,14 +93,14 @@ export default function DivergencesScreen() {
     // Capture previous state for rollback
     const previousState = divergences.find(d => d.id === id)?.status;
     const targetStatus: StatusType = action === 'mark_intended' ? 'rejected' : 'pending';
-    
+
     setDivergences((prev) =>
       prev.map((d) => (d.id === id ? { ...d, status: targetStatus } : d))
     );
 
     try {
       await actOnDivergence(id, action, reason);
-      
+
       if (action === 'close_with_test') {
         toast(`Divergence resolved by emitting client test suite.`, 'success');
       } else if (action === 'mark_intended') {
@@ -246,7 +246,7 @@ export default function DivergencesScreen() {
                       {d.id}
                     </span>
                   </div>
-                  
+
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
                       <span className="text-xs font-semibold text-glow-bright bg-cyan-950/40 px-2 py-0.5 rounded border border-glow-blue/20">
@@ -371,7 +371,7 @@ export default function DivergencesScreen() {
               >
                 Close with Test
               </button>
-              
+
               <button
                 onClick={() => handleAction(selectedDiv.id, 'mark_intended')}
                 className="flex-1 py-2 px-4 rounded-lg border border-border-custom bg-white/5 hover:bg-white/10 text-text-primary font-semibold text-sm transition-all cursor-pointer"

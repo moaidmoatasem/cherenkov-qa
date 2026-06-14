@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import os
 
-from cherenkov.core.config import Config
-from cherenkov.copilot.autonomy import AutonomyProfile, get_profile, set_profile, PROFILE_LEVELS
+from cherenkov.copilot.autonomy import get_profile, set_profile, PROFILE_LEVELS
 
 
 def run_profile(action: str = "show", level: str | None = None) -> int:
@@ -37,7 +35,7 @@ def run_profile(action: str = "show", level: str | None = None) -> int:
         marker = " <- current" if name == profile.level else ""
         print(f"    {name:14} {p.label}{marker}")
     print()
-    print(f"  Set via:  cherenkov profile set --level <name>")
+    print("  Set via:  cherenkov profile set --level <name>")
     print(f"  Or env:   CHERENKOV_COPILOT_AUTONOMY={profile.level}")
     print("=" * 60)
     return 0

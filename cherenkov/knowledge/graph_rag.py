@@ -12,7 +12,14 @@ class GraphRAG:
         self, query: str, sources: list[str] | None = None, limit: int = 10
     ) -> list[KnowledgeQueryResult]:
         if sources is None:
-            sources = ["verdicts", "idioms", "incidents", "hitl", "feedback", "agent_memory"]
+            sources = [
+                "verdicts",
+                "idioms",
+                "incidents",
+                "hitl",
+                "feedback",
+                "agent_memory",
+            ]
         per_source = max(1, limit // len(sources))
         results = []
         for source in sources:

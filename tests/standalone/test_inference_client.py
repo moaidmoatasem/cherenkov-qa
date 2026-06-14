@@ -3,17 +3,21 @@
 test_inference_client.py — Unit tests for InferenceClient interface and OllamaInferenceClient implementation.
 Verifies the abstraction contract, concrete implementation, and mock-tested behavior.
 """
+
 import unittest
 from unittest.mock import patch, MagicMock
 
 from cherenkov.ai.interface import InferenceClient
-from cherenkov.ai.ollama_client import OllamaInferenceClient, complete_json, complete_code
+from cherenkov.ai.ollama_client import (
+    OllamaInferenceClient,
+    complete_json,
+    complete_code,
+)
 from cherenkov.core.errors import OllamaJSONError, ProviderJSONError
 from cherenkov.ai.openai_client import OpenAIInferenceClient
 
 
 class TestInferenceClient(unittest.TestCase):
-
     def test_interface_cannot_be_instantiated(self):
         """Verify InferenceClient is an abstract class and cannot be directly instantiated."""
         with self.assertRaises(TypeError):
@@ -34,9 +38,7 @@ class TestInferenceClient(unittest.TestCase):
 
         client = OllamaInferenceClient()
         result = client.complete_json(
-            system_prompt="sys",
-            user_prompt="user",
-            model="qwen2.5-coder:7b"
+            system_prompt="sys", user_prompt="user", model="qwen2.5-coder:7b"
         )
         self.assertEqual(result, {"key": "value"})
         mock_post.assert_called_once()
@@ -47,14 +49,14 @@ class TestInferenceClient(unittest.TestCase):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         # First attempt returns malformed but repairable JSON (surrounded by text)
-        mock_resp.json.return_value = {"response": 'Some prose here {"key": "value"} other prose'}
+        mock_resp.json.return_value = {
+            "response": 'Some prose here {"key": "value"} other prose'
+        }
         mock_post.return_value = mock_resp
 
         client = OllamaInferenceClient()
         result = client.complete_json(
-            system_prompt="sys",
-            user_prompt="user",
-            model="qwen2.5-coder:7b"
+            system_prompt="sys", user_prompt="user", model="qwen2.5-coder:7b"
         )
         self.assertEqual(result, {"key": "value"})
 
@@ -72,7 +74,7 @@ class TestInferenceClient(unittest.TestCase):
                 system_prompt="sys",
                 user_prompt="user",
                 model="qwen2.5-coder:7b",
-                max_reprompts=1
+                max_reprompts=1,
             )
         # Should call mock_post twice (1 initial + 1 reprompt)
         self.assertEqual(mock_post.call_count, 2)
@@ -87,9 +89,7 @@ class TestInferenceClient(unittest.TestCase):
 
         client = OllamaInferenceClient()
         result = client.complete_code(
-            system_prompt="sys",
-            user_prompt="user",
-            model="qwen2.5-coder:7b"
+            system_prompt="sys", user_prompt="user", model="qwen2.5-coder:7b"
         )
         self.assertEqual(result, "const a = 1;")
 
@@ -126,9 +126,7 @@ class TestOpenAIInferenceClient(unittest.TestCase):
 
         client = OpenAIInferenceClient()
         result = client.complete_json(
-            system_prompt="sys",
-            user_prompt="user",
-            model="gpt-4o-mini"
+            system_prompt="sys", user_prompt="user", model="gpt-4o-mini"
         )
         self.assertEqual(result, {"key": "value"})
         mock_chat.assert_called_once()
@@ -140,9 +138,7 @@ class TestOpenAIInferenceClient(unittest.TestCase):
 
         client = OpenAIInferenceClient()
         result = client.complete_json(
-            system_prompt="sys",
-            user_prompt="user",
-            model="gpt-4o-mini"
+            system_prompt="sys", user_prompt="user", model="gpt-4o-mini"
         )
         self.assertEqual(result, {"key": "value"})
 
@@ -157,7 +153,7 @@ class TestOpenAIInferenceClient(unittest.TestCase):
                 system_prompt="sys",
                 user_prompt="user",
                 model="gpt-4o-mini",
-                max_reprompts=1
+                max_reprompts=1,
             )
         self.assertEqual(mock_chat.call_count, 2)
 
@@ -168,9 +164,7 @@ class TestOpenAIInferenceClient(unittest.TestCase):
 
         client = OpenAIInferenceClient()
         result = client.complete_code(
-            system_prompt="sys",
-            user_prompt="user",
-            model="gpt-4o-mini"
+            system_prompt="sys", user_prompt="user", model="gpt-4o-mini"
         )
         self.assertEqual(result, "const a = 1;")
 
@@ -184,7 +178,9 @@ class TestOpenAIInferenceClient(unittest.TestCase):
         try:
             Config.PROVIDER = "openai"
             client = get_client()
-            wrapped = client.wrapped_client if hasattr(client, "wrapped_client") else client
+            wrapped = (
+                client.wrapped_client if hasattr(client, "wrapped_client") else client
+            )
             self.assertIsInstance(wrapped, OpenAIInferenceClient)
         finally:
             Config.PROVIDER = original
@@ -202,7 +198,7 @@ class TestOpenAIInferenceClient(unittest.TestCase):
                 system_prompt="sys",
                 user_prompt="user",
                 model="gpt-4o-mini",
-                max_reprompts=0
+                max_reprompts=0,
             )
 
 
@@ -211,10 +207,12 @@ class TestClientMemoization(unittest.TestCase):
 
     def setUp(self):
         import cherenkov.ai as ai_mod
+
         ai_mod.reset_client()
 
     def tearDown(self):
         import cherenkov.ai as ai_mod
+
         ai_mod.reset_client()
 
     def test_get_client_is_memoized_per_provider(self):
@@ -227,8 +225,11 @@ class TestClientMemoization(unittest.TestCase):
             Config.PROVIDER = "ollama"
             first = get_client()
             second = get_client()
-            self.assertIs(first, second,
-                          "get_client() rebuilt the client — cache/accounting would reset")
+            self.assertIs(
+                first,
+                second,
+                "get_client() rebuilt the client — cache/accounting would reset",
+            )
         finally:
             Config.PROVIDER = original
 

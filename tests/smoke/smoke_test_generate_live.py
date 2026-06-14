@@ -17,6 +17,7 @@ self-hosted GPU runner (see the `live-llm-generate` job in .github/workflows/ci.
 
 Exit codes: 0 = passed or cleanly skipped; 1 = real failure (the point of the test).
 """
+
 from __future__ import annotations
 
 import os
@@ -61,9 +62,7 @@ def main() -> None:
         "operationId": "createUser",
         "requestBody": {
             "content": {
-                "application/json": {
-                    "schema": {"$ref": "#/components/schemas/NewUser"}
-                }
+                "application/json": {"schema": {"$ref": "#/components/schemas/NewUser"}}
             }
         },
         "responses": {"201": {"description": "created"}},
@@ -107,8 +106,11 @@ def main() -> None:
     # ways a degraded model/prompt regresses without a GPU compile step.
     checks = {
         "has a Playwright test()": "test(" in code,
-        "uses openapi-fetch client (no raw fetch/axios) — D-invariant":
-            ("client." in code) and ("axios" not in code) and ("fetch(" not in code),
+        "uses openapi-fetch client (no raw fetch/axios) — D-invariant": (
+            "client." in code
+        )
+        and ("axios" not in code)
+        and ("fetch(" not in code),
         "asserts a status (expect)": "expect(" in code,
     }
     failed = [name for name, ok in checks.items() if not ok]
@@ -118,8 +120,10 @@ def main() -> None:
         print("-------------------------")
         _fail("structural checks failed: " + "; ".join(failed))
 
-    print("PASS smoke_test_generate_live: real model produced a structurally valid "
-          f"Playwright test ({len(code)} chars, model={Config.GEN_MODEL})")
+    print(
+        "PASS smoke_test_generate_live: real model produced a structurally valid "
+        f"Playwright test ({len(code)} chars, model={Config.GEN_MODEL})"
+    )
     sys.exit(0)
 
 

@@ -2,10 +2,10 @@
 """
 Tests for Suggest-Only Jira Exporter (Issue #250).
 """
+
 import os
 import tempfile
 import unittest
-from unittest.mock import patch
 
 from cherenkov.validate.jira_exporter import JiraExporter
 
@@ -21,6 +21,7 @@ class TestJiraExporter(unittest.TestCase):
 
     def tearDown(self):
         import shutil
+
         shutil.rmtree(self.tmpdir, ignore_errors=True)
 
     def test_format_ticket_basic(self):
@@ -28,7 +29,7 @@ class TestJiraExporter(unittest.TestCase):
         content = self.exporter.format_ticket(
             scenario_id="SCN-001",
             failure_class="HTTP_500",
-            error_message="Internal server error"
+            error_message="Internal server error",
         )
         self.assertIn("SCN-001", content)
         self.assertIn("HTTP_500", content)
@@ -42,7 +43,7 @@ class TestJiraExporter(unittest.TestCase):
             failure_class="STATUS_MISMATCH",
             error_message="Expected 201 got 500",
             expected_status=201,
-            received_status=500
+            received_status=500,
         )
         self.assertIn("Expected `201`", content)
         self.assertIn("Received `500`", content)
@@ -53,7 +54,7 @@ class TestJiraExporter(unittest.TestCase):
             scenario_id="SCN-003",
             failure_class="TIMEOUT",
             error_message="Request timed out",
-            hypothesis="Database connection pool exhausted"
+            hypothesis="Database connection pool exhausted",
         )
         self.assertIn("AI Root-Cause Hypothesis", content)
         self.assertIn("Database connection pool exhausted", content)
@@ -64,7 +65,7 @@ class TestJiraExporter(unittest.TestCase):
             scenario_id="SCN-004",
             failure_class="VALIDATION_ERROR",
             error_message="Invalid email format",
-            resolution_steps=["Add email validation", "Return 400 with details"]
+            resolution_steps=["Add email validation", "Return 400 with details"],
         )
         self.assertIn("Actionable Resolution Steps", content)
         self.assertIn("1. Add email validation", content)
@@ -76,7 +77,7 @@ class TestJiraExporter(unittest.TestCase):
             scenario_id="SCN-005",
             failure_class="RATE_LIMIT",
             error_message="Too many requests",
-            similar_cases_count=3
+            similar_cases_count=3,
         )
         self.assertIn("RAG Incident Correlation", content)
         self.assertIn("**3** similar historical failure(s)", content)
@@ -87,7 +88,7 @@ class TestJiraExporter(unittest.TestCase):
             scenario_id="SCN-006",
             failure_class="UNKNOWN",
             error_message="Something broke",
-            similar_cases_count=0
+            similar_cases_count=0,
         )
         self.assertIn("No similar historical failure cases detected", content)
 
@@ -97,7 +98,7 @@ class TestJiraExporter(unittest.TestCase):
             scenario_id="SCN-007",
             failure_class="AUTH_FAILURE",
             error_message="Invalid token",
-            compliance_score=60
+            compliance_score=60,
         )
         self.assertIn("Cybersecurity Compliance Status", content)
         self.assertIn("60%", content)
@@ -108,7 +109,7 @@ class TestJiraExporter(unittest.TestCase):
         path = self.exporter.export_ticket(
             scenario_id="SCN-008",
             failure_class="TEST_FAILURE",
-            error_message="Test error"
+            error_message="Test error",
         )
         self.assertTrue(os.path.exists(path))
         self.assertTrue(path.endswith(".md"))
@@ -120,11 +121,11 @@ class TestJiraExporter(unittest.TestCase):
         """Test export_ticket creates ticket directory if missing."""
         new_dir = os.path.join(self.tmpdir, "new_tickets")
         self.exporter.ticket_dir = new_dir
-        
+
         path = self.exporter.export_ticket(
             scenario_id="SCN-009",
             failure_class="TEST_FAILURE",
-            error_message="Test error"
+            error_message="Test error",
         )
         self.assertTrue(os.path.exists(new_dir))
         self.assertTrue(os.path.exists(path))
@@ -132,24 +133,22 @@ class TestJiraExporter(unittest.TestCase):
     def test_filename_includes_timestamp(self):
         """Test exported filename includes timestamp for uniqueness."""
         import time
+
         original_time = time.time
-        
+
         call_count = [0]
+
         def mock_time():
             call_count[0] += 1
             return 1000000 + call_count[0]
-        
+
         time.time = mock_time
         try:
             path1 = self.exporter.export_ticket(
-                scenario_id="SCN-010",
-                failure_class="TEST",
-                error_message="Error 1"
+                scenario_id="SCN-010", failure_class="TEST", error_message="Error 1"
             )
             path2 = self.exporter.export_ticket(
-                scenario_id="SCN-010",
-                failure_class="TEST",
-                error_message="Error 2"
+                scenario_id="SCN-010", failure_class="TEST", error_message="Error 2"
             )
             self.assertNotEqual(path1, path2)
             self.assertTrue(os.path.exists(path1))

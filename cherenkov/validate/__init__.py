@@ -2,6 +2,7 @@
 cherenkov/validate/__init__.py
 Public surface of the validate sub-package.
 """
+
 from __future__ import annotations
 
 from cherenkov.validate.contracts import GateCriteria, GateEvidence, ValidationReport

@@ -8,23 +8,27 @@ Verifies:
   - not_found and conflict error codes
   - Return code semantics (0=success, 1=error)
 """
+
 from __future__ import annotations
 
 import json
 import os
-import sys
-import tempfile
-from io import StringIO
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
 from cherenkov.hitl import HitlItem, HitlQueue, SCHEMA_VERSION
-from cherenkov.hitl.cmd import run_list, run_show, run_approve, run_reject, _default_actor
+from cherenkov.hitl.cmd import (
+    run_list,
+    run_show,
+    run_approve,
+    run_reject,
+    _default_actor,
+)
 
 
 # ── fixture ───────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def tmp_db(tmp_path) -> str:
@@ -36,18 +40,33 @@ def queue_with_items(tmp_db) -> tuple[HitlQueue, list[str]]:
     """Returns a HitlQueue with 2 pending items pre-loaded."""
     q = HitlQueue(db_path=tmp_db)
     ids = ["item_alpha", "item_beta"]
-    q.enqueue(HitlItem(id=ids[0], endpoint="/users", method="POST",
-                       mutation_label="Missing required field",
-                       confidence=0.82, review_gate_failed="gate_ast",
-                       run_id="run_001"))
-    q.enqueue(HitlItem(id=ids[1], endpoint="/orders", method="GET",
-                       mutation_label="Status enum violation",
-                       confidence=0.75, review_gate_failed="gate_assertions",
-                       run_id="run_002"))
+    q.enqueue(
+        HitlItem(
+            id=ids[0],
+            endpoint="/users",
+            method="POST",
+            mutation_label="Missing required field",
+            confidence=0.82,
+            review_gate_failed="gate_ast",
+            run_id="run_001",
+        )
+    )
+    q.enqueue(
+        HitlItem(
+            id=ids[1],
+            endpoint="/orders",
+            method="GET",
+            mutation_label="Status enum violation",
+            confidence=0.75,
+            review_gate_failed="gate_assertions",
+            run_id="run_002",
+        )
+    )
     return q, ids
 
 
 # ── _default_actor ─────────────────────────────────────────────────────────────
+
 
 def test_default_actor_uses_user_env():
     with patch.dict(os.environ, {"USER": "tester_user"}):
@@ -65,6 +84,7 @@ def test_default_actor_fallback_to_username():
 
 
 # ── run_list ───────────────────────────────────────────────────────────────────
+
 
 def test_list_empty_db(tmp_db, capsys):
     rc = run_list(status="pending", json_out=False, db_path=tmp_db)
@@ -112,10 +132,12 @@ def test_list_all_statuses(tmp_db, capsys):
 
 # ── run_show ───────────────────────────────────────────────────────────────────
 
+
 def test_show_found_human(tmp_db, capsys):
     q = HitlQueue(db_path=tmp_db)
-    q.enqueue(HitlItem(id="show_me", endpoint="/pets", method="DELETE",
-                       confidence=0.78))
+    q.enqueue(
+        HitlItem(id="show_me", endpoint="/pets", method="DELETE", confidence=0.78)
+    )
     rc = run_show("show_me", json_out=False, db_path=tmp_db)
     assert rc == 0
     out = capsys.readouterr().out
@@ -150,6 +172,7 @@ def test_show_not_found_json_envelope(tmp_db, capsys):
 
 
 # ── run_approve ────────────────────────────────────────────────────────────────
+
 
 def test_approve_success(tmp_db, capsys):
     q = HitlQueue(db_path=tmp_db)
@@ -202,7 +225,9 @@ def test_approve_uses_default_actor(tmp_db, capsys):
     q = HitlQueue(db_path=tmp_db)
     q.enqueue(HitlItem(id="default_actor_test", endpoint="/y", method="DELETE"))
     with patch.dict(os.environ, {"USER": "env_actor"}):
-        rc = run_approve("default_actor_test", actor=None, json_out=True, db_path=tmp_db)
+        rc = run_approve(
+            "default_actor_test", actor=None, json_out=True, db_path=tmp_db
+        )
     assert rc == 0
     raw = capsys.readouterr().out
     data = json.loads(raw)
@@ -211,11 +236,17 @@ def test_approve_uses_default_actor(tmp_db, capsys):
 
 # ── run_reject ─────────────────────────────────────────────────────────────────
 
+
 def test_reject_success(tmp_db, capsys):
     q = HitlQueue(db_path=tmp_db)
     q.enqueue(HitlItem(id="rej_1", endpoint="/z", method="PATCH"))
-    rc = run_reject("rej_1", reason="spec_says_422_not_400", actor="@carol",
-                    json_out=False, db_path=tmp_db)
+    rc = run_reject(
+        "rej_1",
+        reason="spec_says_422_not_400",
+        actor="@carol",
+        json_out=False,
+        db_path=tmp_db,
+    )
     assert rc == 0
     item = q.get("rej_1")
     assert item.status.value == "rejected"
@@ -226,8 +257,9 @@ def test_reject_success(tmp_db, capsys):
 def test_reject_json_envelope(tmp_db, capsys):
     q = HitlQueue(db_path=tmp_db)
     q.enqueue(HitlItem(id="rej_j", endpoint="/a", method="GET"))
-    rc = run_reject("rej_j", reason="false_positive", actor="@dave",
-                    json_out=True, db_path=tmp_db)
+    rc = run_reject(
+        "rej_j", reason="false_positive", actor="@dave", json_out=True, db_path=tmp_db
+    )
     assert rc == 0
     raw = capsys.readouterr().out
     data = json.loads(raw)
@@ -239,8 +271,9 @@ def test_reject_conflict_returns_1(tmp_db, capsys):
     q = HitlQueue(db_path=tmp_db)
     q.enqueue(HitlItem(id="rej_c", endpoint="/b", method="POST"))
     q.reject("rej_c", "@alice", "fp")
-    rc = run_reject("rej_c", reason="also_fp", actor="@bob",
-                    json_out=True, db_path=tmp_db)
+    rc = run_reject(
+        "rej_c", reason="also_fp", actor="@bob", json_out=True, db_path=tmp_db
+    )
     assert rc == 1
     raw = capsys.readouterr().out
     data = json.loads(raw)

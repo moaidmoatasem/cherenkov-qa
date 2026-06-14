@@ -6,7 +6,6 @@ Read-only by default (Sprint 1). Write endpoints added in Sprint 2.
 from __future__ import annotations
 
 import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -14,16 +13,21 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Query
 
 from cherenkov.web.sdd_models import (
-    SddSession, SddSessionDetail, SddFinding,
-    SddExperience, SddExperienceCreate, SddExperienceUpdate,
-    SddTokenData, TokenSnapshot, TokenHistory, TaskTypeStats,
-    SddContextData, ContextSnippet,
-    GraphStatus, GraphData, GraphNode, GraphEdge,
-    WikiEntry, WikiSearchResult,
-    GitCommit, GitCorrelation, PatternInsight,
+    SddSession,
+    SddTokenData,
+    TokenSnapshot,
+    TokenHistory,
+    TaskTypeStats,
+    SddContextData,
+    ContextSnippet,
+    GraphStatus,
+    GraphData,
+    GraphNode,
+    GraphEdge,
+    WikiEntry,
+    PatternInsight,
     CompactResult,
 )
-from cherenkov.web.sdd_auth import verify_write_access
 
 router = APIRouter(tags=["sdd"])
 
@@ -83,17 +87,23 @@ async def list_sessions(
     if current and current.get("id") and current["id"] != "sess_init":
         result.append(_coerce_session(current))
     for p in reversed(prev[-limit:]):
-        result.append(SddSession(
-            id=p.get("id", ""),
-            status="closed",
-            task=p.get("task"),
-            token_total=p.get("token_total", 0),
-            summary=p.get("summary"),
-            started_at=_parse_dt(p.get("ended_at")),
-            ended_at=_parse_dt(p.get("ended_at")),
-        ).model_dump())
+        result.append(
+            SddSession(
+                id=p.get("id", ""),
+                status="closed",
+                task=p.get("task"),
+                token_total=p.get("token_total", 0),
+                summary=p.get("summary"),
+                started_at=_parse_dt(p.get("ended_at")),
+                ended_at=_parse_dt(p.get("ended_at")),
+            ).model_dump()
+        )
     if task_type:
-        result = [s for s in result if s.get("task_type") == task_type or s.get("task") == task_type]
+        result = [
+            s
+            for s in result
+            if s.get("task_type") == task_type or s.get("task") == task_type
+        ]
     return result[:limit]
 
 
@@ -112,10 +122,14 @@ async def get_session_detail(session_id: str):
             findings = _read_json(FINDINGS_DIR / f"{session_id}.json")
             return {
                 "session": {
-                    "id": p["id"], "status": "closed",
-                    "task": p.get("task"), "token_total": p.get("token_total", 0),
-                    "summary": p.get("summary"), "findings_count": p.get("findings_count", 0),
-                    "started_at": p.get("started_at"), "ended_at": p.get("ended_at"),
+                    "id": p["id"],
+                    "status": "closed",
+                    "task": p.get("task"),
+                    "token_total": p.get("token_total", 0),
+                    "summary": p.get("summary"),
+                    "findings_count": p.get("findings_count", 0),
+                    "started_at": p.get("started_at"),
+                    "ended_at": p.get("ended_at"),
                 },
                 "findings": findings.get("findings", []),
             }
@@ -132,7 +146,9 @@ async def get_token_data():
     hist = raw.get("historical", {})
     by_type = {}
     for k, v in hist.get("by_task_type", {}).items():
-        by_type[k] = TaskTypeStats(sessions=v.get("sessions", 0), total_tokens=v.get("total_tokens", 0))
+        by_type[k] = TaskTypeStats(
+            sessions=v.get("sessions", 0), total_tokens=v.get("total_tokens", 0)
+        )
     return SddTokenData(
         current_session=TokenSnapshot(
             session_id=cur.get("session_id"),
@@ -173,7 +189,12 @@ async def list_experience(
     results = list(raw.get("experiences", []))
     if pattern:
         pl = pattern.lower()
-        results = [r for r in results if pl in " ".join(r.get("patterns", [])).lower() or pl in r.get("action", "").lower()]
+        results = [
+            r
+            for r in results
+            if pl in " ".join(r.get("patterns", [])).lower()
+            or pl in r.get("action", "").lower()
+        ]
     if outcome:
         results = [r for r in results if r.get("outcome") == outcome]
     if sort == "cost":
@@ -217,12 +238,24 @@ async def trigger_compact(force: bool = False):
     session = _read_json(SYNC_DIR / "session.json")
     ssc = session.get("sessions_since_compact", 0)
     if ssc < 3 and not force:
-        return CompactResult(sessions_since=ssc, snippets_before=len(snippets), snippets_after=len(snippets), promoted=0, archived=0).model_dump()
+        return CompactResult(
+            sessions_since=ssc,
+            snippets_before=len(snippets),
+            snippets_after=len(snippets),
+            promoted=0,
+            archived=0,
+        ).model_dump()
     session["sessions_since_compact"] = 0
     _write_json(SYNC_DIR / "session.json", session)
     context["last_refreshed"] = _timestamp()
     _write_json(SYNC_DIR / "context.json", context)
-    return CompactResult(sessions_since=ssc, snippets_before=len(snippets), snippets_after=len(snippets), promoted=0, archived=0).model_dump()
+    return CompactResult(
+        sessions_since=ssc,
+        snippets_before=len(snippets),
+        snippets_after=len(snippets),
+        promoted=0,
+        archived=0,
+    ).model_dump()
 
 
 # ── Graph Endpoints (stub — Sprint 3 fills these) ───────────────────────
@@ -250,11 +283,25 @@ async def export_graph():
         sid = e.get("session_id", "")
         if sid and sid not in session_ids:
             session_ids.add(sid)
-            nodes.append(GraphNode(id=sid, type="session", label=sid[:20], color="#06b6d4", size=1.5))
+            nodes.append(
+                GraphNode(
+                    id=sid, type="session", label=sid[:20], color="#06b6d4", size=1.5
+                )
+            )
         eid = e.get("id", "")
-        nodes.append(GraphNode(id=eid, type="experience", label=e.get("action", "")[:40], color="#10b981", size=1.0))
+        nodes.append(
+            GraphNode(
+                id=eid,
+                type="experience",
+                label=e.get("action", "")[:40],
+                color="#10b981",
+                size=1.0,
+            )
+        )
         if sid:
-            edges.append(GraphEdge(source=sid, target=eid, type="has_experience", weight=1.0))
+            edges.append(
+                GraphEdge(source=sid, target=eid, type="has_experience", weight=1.0)
+            )
     return GraphData(nodes=nodes, edges=edges).model_dump()
 
 
@@ -265,7 +312,12 @@ async def get_pattern_insights():
     for e in exp.get("experiences", []):
         for p in e.get("patterns", []):
             if p not in pattern_map:
-                pattern_map[p] = {"count": 0, "successes": 0, "total_cost": 0.0, "ids": []}
+                pattern_map[p] = {
+                    "count": 0,
+                    "successes": 0,
+                    "total_cost": 0.0,
+                    "ids": [],
+                }
             pattern_map[p]["count"] += 1
             if e.get("outcome") == "success":
                 pattern_map[p]["successes"] += 1
@@ -273,13 +325,19 @@ async def get_pattern_insights():
             pattern_map[p]["ids"].append(e.get("id", ""))
     results = []
     for name, data in pattern_map.items():
-        results.append(PatternInsight(
-            name=name,
-            frequency=data["count"],
-            success_rate=data["successes"] / data["count"] if data["count"] else 0.0,
-            avg_token_cost=data["total_cost"] / data["count"] if data["count"] else 0.0,
-            experience_ids=data["ids"][:10],
-        ).model_dump())
+        results.append(
+            PatternInsight(
+                name=name,
+                frequency=data["count"],
+                success_rate=data["successes"] / data["count"]
+                if data["count"]
+                else 0.0,
+                avg_token_cost=data["total_cost"] / data["count"]
+                if data["count"]
+                else 0.0,
+                experience_ids=data["ids"][:10],
+            ).model_dump()
+        )
     results.sort(key=lambda r: r["frequency"], reverse=True)
     return results
 
@@ -295,12 +353,18 @@ async def get_wiki_tree():
     for f in sorted(MEMORY_DIR.rglob("*.md")):
         rel = f.relative_to(MEMORY_DIR)
         stat = f.stat()
-        entries.append(WikiEntry(
-            path=str(rel).replace("\\", "/"),
-            title=f.stem.replace("-", " ").title(),
-            size=stat.st_size,
-            last_updated=datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat() if hasattr(stat, 'st_mtime') else "",
-        ).model_dump())
+        entries.append(
+            WikiEntry(
+                path=str(rel).replace("\\", "/"),
+                title=f.stem.replace("-", " ").title(),
+                size=stat.st_size,
+                last_updated=datetime.fromtimestamp(
+                    stat.st_mtime, tz=timezone.utc
+                ).isoformat()
+                if hasattr(stat, "st_mtime")
+                else "",
+            ).model_dump()
+        )
     return entries
 
 
@@ -317,7 +381,11 @@ async def get_wiki_file(path: str):
         "path": path,
         "content": content,
         "size": stat.st_size,
-        "last_updated": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat() if hasattr(stat, 'st_mtime') else "",
+        "last_updated": datetime.fromtimestamp(
+            stat.st_mtime, tz=timezone.utc
+        ).isoformat()
+        if hasattr(stat, "st_mtime")
+        else "",
     }
 
 

@@ -3,6 +3,7 @@ test_substrate_router.py — Unit tests for the Substrate Router (Epoch 1).
 
 Tests routing by capability tier + egress policy, and fallback/spillover on failure.
 """
+
 import unittest
 from unittest.mock import patch, MagicMock
 
@@ -39,7 +40,6 @@ def _make_mock_provider(
 
 
 class TestSubstrateRouter(unittest.TestCase):
-
     def setUp(self):
         self.router = SubstrateRouter(run_id="test-run")
 
@@ -137,6 +137,7 @@ class TestSubstrateRouter(unittest.TestCase):
             if name == "openai":
                 return openai_fallback
             return failing_ollama
+
         mock_get_provider.side_effect = get_provider_side_effect
 
         request = ReasoningRequest(
@@ -194,7 +195,10 @@ class TestSubstrateRouter(unittest.TestCase):
         request = ReasoningRequest(
             task="write a test",
             capability_tier="small",
-            output_schema={"type": "object", "properties": {"code": {"type": "string"}}},
+            output_schema={
+                "type": "object",
+                "properties": {"code": {"type": "string"}},
+            },
         )
         result = self.router.route(request)
 

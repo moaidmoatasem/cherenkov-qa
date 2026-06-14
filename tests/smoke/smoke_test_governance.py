@@ -8,16 +8,20 @@ Verifies:
   4. GovernanceCollector collects and persists
   5. Trend retrieval
 """
+
 from __future__ import annotations
 
 import os
 import sys
-import json
 import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cherenkov.governance.kpi import GovernanceKPI, GovernanceReport, GovernanceCollector
+from cherenkov.governance.kpi import (
+    GovernanceKPI,
+    GovernanceReport,
+    GovernanceCollector,
+)
 
 
 errors: list[str] = []
@@ -47,7 +51,10 @@ kpi = GovernanceKPI(
     covered_endpoints=17,
 )
 check(abs(kpi.escape_rate - 0.1) < 0.001, f"escape_rate={kpi.escape_rate}")
-check(abs(kpi.false_positive_rate - 0.05) < 0.001, f"false_positive_rate={kpi.false_positive_rate}")
+check(
+    abs(kpi.false_positive_rate - 0.05) < 0.001,
+    f"false_positive_rate={kpi.false_positive_rate}",
+)
 check(abs(kpi.coverage - 0.85) < 0.001, f"coverage={kpi.coverage}")
 check(kpi.total_tests == 100, f"total_tests={kpi.total_tests}")
 

@@ -4,6 +4,7 @@ Unit tests for the mobile testing pipeline.
 Covers: parsers, adapter, plan/generate/review stages,
         runners (mocked), ejectors, and the MobileRAGIndex.
 """
+
 from __future__ import annotations
 
 import json
@@ -15,7 +16,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from cherenkov.sources.mobile.contracts import MobileApp, MobileFlow, MobileScreen
-from cherenkov.sources.mobile.parsers import APKParser, HARParser, HILParser
+from cherenkov.sources.mobile.parsers import HARParser, HILParser
 from cherenkov.sources.mobile.adapter import MobileSourceAdapter
 from cherenkov.stages.mobile_plan import MobilePlanStage, MobileScenario
 from cherenkov.stages.mobile_generate import MobileGenerateStage, MobileGenerateOutput
@@ -29,24 +30,39 @@ from cherenkov.rag.mobile_index import MobileRAGIndex
 
 # ── Contracts ────────────────────────────────────────────────────────────────
 
+
 class TestContracts(unittest.TestCase):
     def test_mobile_app_fields(self):
-        app = MobileApp(app_id="com.foo", name="Foo", platform="android", version="1.0", package_path="/tmp/foo.apk")
+        app = MobileApp(
+            app_id="com.foo",
+            name="Foo",
+            platform="android",
+            version="1.0",
+            package_path="/tmp/foo.apk",
+        )
         self.assertEqual(app.app_id, "com.foo")
         self.assertEqual(app.platform, "android")
 
     def test_mobile_screen_fields(self):
-        screen = MobileScreen(screen_id="s1", name="Home", elements=[{"id": "btn"}], navigation=["login"])
+        screen = MobileScreen(
+            screen_id="s1", name="Home", elements=[{"id": "btn"}], navigation=["login"]
+        )
         self.assertEqual(screen.screen_id, "s1")
         self.assertEqual(len(screen.elements), 1)
 
     def test_mobile_flow_fields(self):
-        flow = MobileFlow(flow_id="f1", name="Login", screens=["home", "auth"], actions=[{"tap": "submit"}])
+        flow = MobileFlow(
+            flow_id="f1",
+            name="Login",
+            screens=["home", "auth"],
+            actions=[{"tap": "submit"}],
+        )
         self.assertEqual(flow.flow_id, "f1")
         self.assertEqual(flow.screens, ["home", "auth"])
 
 
 # ── HARParser ────────────────────────────────────────────────────────────────
+
 
 class TestHARParser(unittest.TestCase):
     def setUp(self):
@@ -61,14 +77,21 @@ class TestHARParser(unittest.TestCase):
         return path
 
     def test_parse_standard_log_format(self):
-        path = self._write({
-            "log": {
-                "entries": [
-                    {"request": {"url": "https://api.example.com/login", "method": "POST"},
-                     "response": {"status": 200}},
-                ]
+        path = self._write(
+            {
+                "log": {
+                    "entries": [
+                        {
+                            "request": {
+                                "url": "https://api.example.com/login",
+                                "method": "POST",
+                            },
+                            "response": {"status": 200},
+                        },
+                    ]
+                }
             }
-        })
+        )
         entries = HARParser().parse(path)
         self.assertEqual(len(entries), 1)
         self.assertEqual(entries[0]["url"], "https://api.example.com/login")
@@ -76,12 +99,19 @@ class TestHARParser(unittest.TestCase):
         self.assertEqual(entries[0]["status"], 200)
 
     def test_parse_flat_entries_format(self):
-        path = self._write({
-            "entries": [
-                {"request": {"url": "https://api.example.com/data", "method": "GET"},
-                 "response": {"status": 404}},
-            ]
-        })
+        path = self._write(
+            {
+                "entries": [
+                    {
+                        "request": {
+                            "url": "https://api.example.com/data",
+                            "method": "GET",
+                        },
+                        "response": {"status": 404},
+                    },
+                ]
+            }
+        )
         entries = HARParser().parse(path)
         self.assertEqual(len(entries), 1)
         self.assertEqual(entries[0]["status"], 404)
@@ -96,21 +126,33 @@ class TestHARParser(unittest.TestCase):
             HARParser().parse("/nonexistent/path.har")
 
     def test_multiple_entries(self):
-        path = self._write({
-            "log": {
-                "entries": [
-                    {"request": {"url": "/a", "method": "GET"}, "response": {"status": 200}},
-                    {"request": {"url": "/b", "method": "POST"}, "response": {"status": 201}},
-                    {"request": {"url": "/c", "method": "DELETE"}, "response": {"status": 204}},
-                ]
+        path = self._write(
+            {
+                "log": {
+                    "entries": [
+                        {
+                            "request": {"url": "/a", "method": "GET"},
+                            "response": {"status": 200},
+                        },
+                        {
+                            "request": {"url": "/b", "method": "POST"},
+                            "response": {"status": 201},
+                        },
+                        {
+                            "request": {"url": "/c", "method": "DELETE"},
+                            "response": {"status": 204},
+                        },
+                    ]
+                }
             }
-        })
+        )
         entries = HARParser().parse(path)
         self.assertEqual(len(entries), 3)
         self.assertEqual(entries[2]["method"], "DELETE")
 
 
 # ── HILParser ────────────────────────────────────────────────────────────────
+
 
 class TestHILParser(unittest.TestCase):
     def setUp(self):
@@ -125,20 +167,29 @@ class TestHILParser(unittest.TestCase):
         return path
 
     def test_parse_list_format(self):
-        path = self._write([
-            {"flow_id": "f1", "name": "Login", "screens": ["home"], "actions": []},
-        ])
+        path = self._write(
+            [
+                {"flow_id": "f1", "name": "Login", "screens": ["home"], "actions": []},
+            ]
+        )
         flows = HILParser().parse(path)
         self.assertEqual(len(flows), 1)
         self.assertEqual(flows[0].flow_id, "f1")
         self.assertEqual(flows[0].name, "Login")
 
     def test_parse_dict_flows_format(self):
-        path = self._write({
-            "flows": [
-                {"flow_id": "f2", "name": "Checkout", "screens": ["cart", "pay"], "actions": [{"tap": "pay"}]},
-            ]
-        })
+        path = self._write(
+            {
+                "flows": [
+                    {
+                        "flow_id": "f2",
+                        "name": "Checkout",
+                        "screens": ["cart", "pay"],
+                        "actions": [{"tap": "pay"}],
+                    },
+                ]
+            }
+        )
         flows = HILParser().parse(path)
         self.assertEqual(len(flows), 1)
         self.assertEqual(flows[0].flow_id, "f2")
@@ -158,12 +209,22 @@ class TestHILParser(unittest.TestCase):
             HILParser().parse("/nonexistent/path.hil")
 
     def test_actions_preserved(self):
-        path = self._write([{"flow_id": "f3", "name": "Search", "screens": [], "actions": [{"tap": "search"}, {"type": "query"}]}])
+        path = self._write(
+            [
+                {
+                    "flow_id": "f3",
+                    "name": "Search",
+                    "screens": [],
+                    "actions": [{"tap": "search"}, {"type": "query"}],
+                }
+            ]
+        )
         flows = HILParser().parse(path)
         self.assertEqual(len(flows[0].actions), 2)
 
 
 # ── MobileSourceAdapter ──────────────────────────────────────────────────────
+
 
 class TestMobileSourceAdapter(unittest.TestCase):
     def setUp(self):
@@ -204,7 +265,9 @@ class TestMobileSourceAdapter(unittest.TestCase):
 
     def test_apk_dispatches_to_apk_parser(self):
         mock_apk = MagicMock()
-        mock_apk.parse.return_value = MobileApp("com.test", "Test", "android", "1.0", "/tmp/test.apk")
+        mock_apk.parse.return_value = MobileApp(
+            "com.test", "Test", "android", "1.0", "/tmp/test.apk"
+        )
         adapter = MobileSourceAdapter(apk_parser=mock_apk)
 
         path = os.path.join(self.tmp, "app.apk")
@@ -215,6 +278,7 @@ class TestMobileSourceAdapter(unittest.TestCase):
 
 
 # ── MobilePlanStage ──────────────────────────────────────────────────────────
+
 
 class TestMobilePlanStage(unittest.TestCase):
     def test_run_returns_ok(self):
@@ -245,9 +309,15 @@ class TestMobilePlanStage(unittest.TestCase):
 
 # ── MobileGenerateStage ───────────────────────────────────────────────────────
 
+
 class TestMobileGenerateStage(unittest.TestCase):
     def _scenario(self, sid="s001", name="test", steps=None):
-        return MobileScenario(id=sid, name=name, description="desc", steps=steps or ["launch app", "tap button"])
+        return MobileScenario(
+            id=sid,
+            name=name,
+            description="desc",
+            steps=steps or ["launch app", "tap button"],
+        )
 
     def test_run_returns_generate_output(self):
         out = MobileGenerateStage().run(self._scenario())
@@ -290,12 +360,17 @@ class TestMobileGenerateStage(unittest.TestCase):
 
 # ── MobileReviewStage ─────────────────────────────────────────────────────────
 
+
 class TestMobileReviewStage(unittest.TestCase):
-    def _make_output(self, yaml_content: str, sid: str = "s001") -> MobileGenerateOutput:
+    def _make_output(
+        self, yaml_content: str, sid: str = "s001"
+    ) -> MobileGenerateOutput:
         return MobileGenerateOutput(scenario_id=sid, yaml_content=yaml_content)
 
     def test_valid_yaml_passes(self):
-        yaml_content = "appId: com.example.app\n---\nname: test\n\n- tapOn:\n    text: \"Login\"\n"
+        yaml_content = (
+            'appId: com.example.app\n---\nname: test\n\n- tapOn:\n    text: "Login"\n'
+        )
         out = MobileReviewStage().run(self._make_output(yaml_content))
         self.assertTrue(out.passed)
         self.assertEqual(out.errors, [])
@@ -306,7 +381,7 @@ class TestMobileReviewStage(unittest.TestCase):
         self.assertTrue(any("empty" in e.lower() for e in out.errors))
 
     def test_missing_app_id_fails(self):
-        yaml_content = "---\nname: test\n- tapOn:\n    text: \"Login\"\n"
+        yaml_content = '---\nname: test\n- tapOn:\n    text: "Login"\n'
         out = MobileReviewStage().run(self._make_output(yaml_content))
         self.assertFalse(out.passed)
         self.assertTrue(any("appId" in e for e in out.errors))
@@ -317,17 +392,18 @@ class TestMobileReviewStage(unittest.TestCase):
         self.assertFalse(out.passed)
 
     def test_scenario_id_preserved(self):
-        yaml_content = "appId: com.example.app\n---\n- tapOn:\n    text: \"X\"\n"
+        yaml_content = 'appId: com.example.app\n---\n- tapOn:\n    text: "X"\n'
         out = MobileReviewStage().run(self._make_output(yaml_content, "m999"))
         self.assertEqual(out.scenario_id, "m999")
 
     def test_status_ok(self):
-        yaml_content = "appId: com.example.app\n---\n- assertVisible:\n    text: \"Y\"\n"
+        yaml_content = 'appId: com.example.app\n---\n- assertVisible:\n    text: "Y"\n'
         out = MobileReviewStage().run(self._make_output(yaml_content))
         self.assertEqual(out.status, "ok")
 
 
 # ── MaestroRunner ─────────────────────────────────────────────────────────────
+
 
 class TestMaestroRunner(unittest.TestCase):
     def test_health_check_returns_false_when_binary_missing(self):
@@ -362,6 +438,7 @@ class TestMaestroRunner(unittest.TestCase):
 
 
 # ── AppiumRunner ──────────────────────────────────────────────────────────────
+
 
 class TestAppiumRunner(unittest.TestCase):
     def test_health_check_returns_false_when_server_unreachable(self):
@@ -399,6 +476,7 @@ class TestAppiumRunner(unittest.TestCase):
 
 # ── MaestroEjector ────────────────────────────────────────────────────────────
 
+
 class TestMaestroEjector(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp()
@@ -407,7 +485,9 @@ class TestMaestroEjector(unittest.TestCase):
         shutil.rmtree(self.tmp)
 
     def test_eject_single_test(self):
-        yaml_content = "name: login_flow\nappId: com.example.app\nsteps:\n  - tapOn: Login\n"
+        yaml_content = (
+            "name: login_flow\nappId: com.example.app\nsteps:\n  - tapOn: Login\n"
+        )
         ejector = MaestroEjector()
         path = ejector.eject(yaml_content, self.tmp)
         files = list(path.iterdir())
@@ -430,14 +510,17 @@ class TestMaestroEjector(unittest.TestCase):
         self.assertTrue(Path(out_dir).exists())
 
     def test_eject_sanitizes_filenames(self):
-        yaml_content = "name: \"My Test: With Spaces!\"\nappId: com.example.app\n"
+        yaml_content = 'name: "My Test: With Spaces!"\nappId: com.example.app\n'
         path = MaestroEjector().eject(yaml_content, self.tmp)
         yaml_files = [f.name for f in path.iterdir() if f.suffix == ".yaml"]
         for name in yaml_files:
-            self.assertFalse(any(c in name for c in "!: "), f"unsafe chars in filename: {name}")
+            self.assertFalse(
+                any(c in name for c in "!: "), f"unsafe chars in filename: {name}"
+            )
 
 
 # ── AppiumEjector ─────────────────────────────────────────────────────────────
+
 
 class TestAppiumEjector(unittest.TestCase):
     def setUp(self):
@@ -451,7 +534,11 @@ class TestAppiumEjector(unittest.TestCase):
 
     def test_eject_creates_test_file(self):
         path = self._eject("name: login_test\nsteps:\n  - tapOn: Login\n")
-        py_files = [f for f in path.iterdir() if f.name.startswith("test_") and f.suffix == ".py"]
+        py_files = [
+            f
+            for f in path.iterdir()
+            if f.name.startswith("test_") and f.suffix == ".py"
+        ]
         self.assertGreater(len(py_files), 0)
 
     def test_eject_writes_conftest(self):
@@ -478,18 +565,27 @@ class TestAppiumEjector(unittest.TestCase):
 
     def test_eject_tapOn_generates_click(self):
         path = self._eject("name: tap_test\nsteps:\n  - tapOn: Login Button\n")
-        py_files = [f for f in path.iterdir() if f.name.startswith("test_") and f.suffix == ".py"]
+        py_files = [
+            f
+            for f in path.iterdir()
+            if f.name.startswith("test_") and f.suffix == ".py"
+        ]
         content = py_files[0].read_text()
         self.assertIn("click()", content)
 
     def test_eject_assertVisible_generates_assert(self):
         path = self._eject("name: assert_test\nsteps:\n  - assertVisible: Welcome\n")
-        py_files = [f for f in path.iterdir() if f.name.startswith("test_") and f.suffix == ".py"]
+        py_files = [
+            f
+            for f in path.iterdir()
+            if f.name.startswith("test_") and f.suffix == ".py"
+        ]
         content = py_files[0].read_text()
         self.assertIn("assert", content)
 
 
 # ── MobileRAGIndex ────────────────────────────────────────────────────────────
+
 
 class TestMobileRAGIndex(unittest.TestCase):
     def setUp(self):
@@ -504,7 +600,9 @@ class TestMobileRAGIndex(unittest.TestCase):
         self.assertTrue(Path(self.db_path).exists())
 
     def test_index_and_query_app(self):
-        self.idx.index_app("com.myapp", "My App", "android", "e-commerce shopping login")
+        self.idx.index_app(
+            "com.myapp", "My App", "android", "e-commerce shopping login"
+        )
         results = self.idx.query("login")
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["app_id"], "com.myapp")
@@ -517,7 +615,9 @@ class TestMobileRAGIndex(unittest.TestCase):
     def test_screens_and_flows_deserialized(self):
         screens = [{"id": "home"}, {"id": "login"}]
         flows = [{"flow_id": "f1", "name": "Login"}]
-        self.idx.index_app("com.app", "App", "android", "login", screens=screens, flows=flows)
+        self.idx.index_app(
+            "com.app", "App", "android", "login", screens=screens, flows=flows
+        )
         results = self.idx.query("login")
         self.assertIsInstance(results[0]["screens"], list)
         self.assertIsInstance(results[0]["flows"], list)
@@ -532,12 +632,16 @@ class TestMobileRAGIndex(unittest.TestCase):
 
     def test_limit_respected(self):
         for i in range(5):
-            self.idx.index_app(f"com.app{i}", f"App {i}", "android", "common keyword shared")
+            self.idx.index_app(
+                f"com.app{i}", f"App {i}", "android", "common keyword shared"
+            )
         results = self.idx.query("common", limit=3)
         self.assertLessEqual(len(results), 3)
 
     def test_multiple_platforms(self):
-        self.idx.index_app("com.android_app", "Android App", "android", "payment checkout")
+        self.idx.index_app(
+            "com.android_app", "Android App", "android", "payment checkout"
+        )
         self.idx.index_app("com.ios_app", "iOS App", "ios", "payment invoice checkout")
         results = self.idx.query("payment")
         app_ids = {r["app_id"] for r in results}

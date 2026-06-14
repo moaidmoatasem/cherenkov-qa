@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from typing import Any
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.config import Config

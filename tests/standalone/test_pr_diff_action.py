@@ -1,4 +1,5 @@
 """Tests for E4-5: Behavioral diff on PR."""
+
 import unittest
 import tempfile
 from pathlib import Path

@@ -1,8 +1,8 @@
 # ADR-002: Tauri 2 + PyInstaller Sidecar Desktop
 
-**Date:** 2026-06-08  
-**Status:** Accepted  
-**Deciders:** Project Owner + AI Agents  
+**Date:** 2026-06-08
+**Status:** Accepted
+**Deciders:** Project Owner + AI Agents
 **Related EPIC:** #277 (Phase -1), #282 (Phase 3)
 
 ---

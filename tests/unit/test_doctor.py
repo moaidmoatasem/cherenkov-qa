@@ -25,7 +25,11 @@ def test_doctor_device_flag():
 def test_doctor_vlm_flag():
     runner = CliRunner()
     with patch("cherenkov.substrate.doctor._detect_ollama_vlm") as mock:
-        mock.return_value = {"available": False, "model": "", "error": "Connection refused"}
+        mock.return_value = {
+            "available": False,
+            "model": "",
+            "error": "Connection refused",
+        }
         result = runner.invoke(doctor, ["--vlm"])
         assert result.exit_code == 0
         assert "Ollama" in result.output
@@ -83,9 +87,17 @@ def test_doctor_no_flags_shows_all():
             "memory_gb": 32.0,
         }
         with patch("cherenkov.substrate.doctor._detect_ollama_vlm") as mock_ollama:
-            mock_ollama.return_value = {"available": True, "model": "qwen2.5-vl:7b", "error": ""}
+            mock_ollama.return_value = {
+                "available": True,
+                "model": "qwen2.5-vl:7b",
+                "error": "",
+            }
             with patch("cherenkov.substrate.doctor._detect_localai_vlm") as mock_lai:
-                mock_lai.return_value = {"available": False, "model": "", "error": "not ready"}
+                mock_lai.return_value = {
+                    "available": False,
+                    "model": "",
+                    "error": "not ready",
+                }
                 result = runner.invoke(doctor)
                 assert result.exit_code == 0
                 assert "Recommendations" in result.output

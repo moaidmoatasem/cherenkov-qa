@@ -1,10 +1,12 @@
 """Unit tests for cherenkov/stages/ingest.py — resolve_refs_depth and IngestStage error path."""
+
 import unittest
 
 
 class TestResolveRefsDepth(unittest.TestCase):
     def _call(self, node, schemas, resolved=None, depth=0, max_depth=3):
         from cherenkov.stages.ingest import resolve_refs_depth
+
         if resolved is None:
             resolved = {}
         resolve_refs_depth(node, schemas, resolved, depth, max_depth)
@@ -15,7 +17,9 @@ class TestResolveRefsDepth(unittest.TestCase):
         self.assertEqual(resolved, {})
 
     def test_ref_is_resolved_into_dict(self):
-        schemas = {"Pet": {"type": "object", "properties": {"name": {"type": "string"}}}}
+        schemas = {
+            "Pet": {"type": "object", "properties": {"name": {"type": "string"}}}
+        }
         node = {"$ref": "#/components/schemas/Pet"}
         resolved = self._call(node, schemas)
         self.assertIn("Pet", resolved)
@@ -54,6 +58,7 @@ class TestIngestStageMissingSpec(unittest.TestCase):
     def test_missing_spec_returns_failed_status(self):
         from cherenkov.stages.ingest import IngestStage
         from cherenkov.core.contracts import Status
+
         stage = IngestStage(run_id="test")
         result = stage.run("/no/such/spec.yaml")
         self.assertEqual(result.status, Status.FAILED)

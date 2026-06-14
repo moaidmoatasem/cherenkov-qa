@@ -4,12 +4,10 @@ tests/unit/test_mcp_tools.py — unit tests for MCP conformance tools (#441).
 Tests: run_conformance_check, get_last_report, list_drift_findings,
        get_tightening_suggestions, explain_finding.
 """
+
 from __future__ import annotations
 
 import json
-import os
-import tempfile
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -88,7 +86,9 @@ def test_list_drift_findings_limit():
 
 def test_get_tightening_suggestions_no_evidence(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    result = _call("get_tightening_suggestions", {"endpoint": "/users/{id}", "method": "GET"})
+    result = _call(
+        "get_tightening_suggestions", {"endpoint": "/users/{id}", "method": "GET"}
+    )
     payload = json.loads(result["content"][0]["text"])
     assert payload["endpoint"] == "/users/{id}"
     assert payload["method"] == "GET"
@@ -108,7 +108,9 @@ def test_get_tightening_suggestions_with_evidence(tmp_path, monkeypatch):
     }
     (ev_dir / "ev001.json").write_text(json.dumps(ev))
 
-    result = _call("get_tightening_suggestions", {"endpoint": "/users/1", "method": "GET"})
+    result = _call(
+        "get_tightening_suggestions", {"endpoint": "/users/1", "method": "GET"}
+    )
     payload = json.loads(result["content"][0]["text"])
     assert isinstance(payload["suggestions"], list)
 
@@ -125,12 +127,17 @@ def test_explain_finding_not_found():
 
 def test_explain_finding_exists():
     from cherenkov.web.divergences import _DIVERGENCE_CORPUS
+
     if not _DIVERGENCE_CORPUS:
         pytest.skip("No divergence corpus available")
     fid = _DIVERGENCE_CORPUS[0]["id"]
 
-    with patch("cherenkov.chat.tools.explain_divergence", return_value={"explanation": "test"}):
-        result = _call("explain_finding", {"finding_id": fid, "detail_level": "concise"})
+    with patch(
+        "cherenkov.chat.tools.explain_divergence", return_value={"explanation": "test"}
+    ):
+        result = _call(
+            "explain_finding", {"finding_id": fid, "detail_level": "concise"}
+        )
     payload = json.loads(result["content"][0]["text"])
     assert payload["finding_id"] == fid
     assert "explanation" in payload
@@ -191,13 +198,18 @@ def test_new_tools_in_manifest():
 
 def test_visual_diff_baseline_enhanced_valid(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    with patch("cherenkov.execution.visual_diff.VisualDiffEngine.run_visual_validation",
-               return_value={"passed": True, "exit_code": 0, "mismatch_detected": False}):
-        result = _call("visual_diff_baseline_enhanced", {
-            "target_url": "http://localhost:3000",
-            "diff_threshold": 0.3,
-            "comparison_mode": "pixel",
-        })
+    with patch(
+        "cherenkov.execution.visual_diff.VisualDiffEngine.run_visual_validation",
+        return_value={"passed": True, "exit_code": 0, "mismatch_detected": False},
+    ):
+        result = _call(
+            "visual_diff_baseline_enhanced",
+            {
+                "target_url": "http://localhost:3000",
+                "diff_threshold": 0.3,
+                "comparison_mode": "pixel",
+            },
+        )
     payload = json.loads(result["content"][0]["text"])
     assert payload["target_url"] == "http://localhost:3000"
     assert payload["diff_threshold"] == 0.3
@@ -208,8 +220,10 @@ def test_visual_diff_baseline_enhanced_valid(tmp_path, monkeypatch):
 
 def test_visual_diff_baseline_enhanced_with_defaults(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    with patch("cherenkov.execution.visual_diff.VisualDiffEngine.run_visual_validation",
-               return_value={"passed": True, "exit_code": 0, "mismatch_detected": False}):
+    with patch(
+        "cherenkov.execution.visual_diff.VisualDiffEngine.run_visual_validation",
+        return_value={"passed": True, "exit_code": 0, "mismatch_detected": False},
+    ):
         result = _call("visual_diff_baseline_enhanced", {})
     payload = json.loads(result["content"][0]["text"])
     assert "target_url" in payload
@@ -220,9 +234,13 @@ def test_visual_diff_baseline_enhanced_with_defaults(tmp_path, monkeypatch):
 
 def test_visual_diff_baseline_enhanced_failure(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    with patch("cherenkov.execution.visual_diff.VisualDiffEngine.run_visual_validation",
-               return_value={"passed": False, "exit_code": 1, "mismatch_detected": True}):
-        result = _call("visual_diff_baseline_enhanced", {"target_url": "http://localhost:3000"})
+    with patch(
+        "cherenkov.execution.visual_diff.VisualDiffEngine.run_visual_validation",
+        return_value={"passed": False, "exit_code": 1, "mismatch_detected": True},
+    ):
+        result = _call(
+            "visual_diff_baseline_enhanced", {"target_url": "http://localhost:3000"}
+        )
     payload = json.loads(result["content"][0]["text"])
     assert payload["mismatch_detected"] is True
     assert payload["passed"] is False
@@ -239,21 +257,32 @@ def test_scan_mena_compliance_enhanced_valid(tmp_path, monkeypatch):
     spec.write_text("openapi: '3.0.0'\ninfo:\n  title: T\n  version: '1'\npaths: {}\n")
 
     from cherenkov.compliance.mena_scanner import MENAComplianceScanner
+
     with patch.object(handlers, "_validate_spec_path", return_value=str(spec)):
-        with patch.object(MENAComplianceScanner, "run_compliance_audit",
-                          return_value={
-                              "overall_compliance_score": 80,
-                              "audit_results": {},
-                              "framework_mappings": {
-                                  "SAMA_CCSF": {"Domain 3.1": {"status": "COMPLIANT", "remediation": ""}},
-                                  "EGYPT_FinCSF": {"Section 4.2": {"status": "COMPLIANT", "remediation": ""}},
-                              },
-                          }):
-            result = _call("scan_mena_compliance_enhanced", {
-                "target_url": "http://localhost:8000",
-                "spec_path": str(spec),
-                "framework": "sama_ccsf",
-            })
+        with patch.object(
+            MENAComplianceScanner,
+            "run_compliance_audit",
+            return_value={
+                "overall_compliance_score": 80,
+                "audit_results": {},
+                "framework_mappings": {
+                    "SAMA_CCSF": {
+                        "Domain 3.1": {"status": "COMPLIANT", "remediation": ""}
+                    },
+                    "EGYPT_FinCSF": {
+                        "Section 4.2": {"status": "COMPLIANT", "remediation": ""}
+                    },
+                },
+            },
+        ):
+            result = _call(
+                "scan_mena_compliance_enhanced",
+                {
+                    "target_url": "http://localhost:8000",
+                    "spec_path": str(spec),
+                    "framework": "sama_ccsf",
+                },
+            )
     payload = json.loads(result["content"][0]["text"])
     assert payload["framework"] == "sama_ccsf"
     assert payload["compliance_score"] == 80
@@ -262,11 +291,14 @@ def test_scan_mena_compliance_enhanced_valid(tmp_path, monkeypatch):
 
 
 def test_scan_mena_compliance_enhanced_invalid_spec():
-    result = _call("scan_mena_compliance_enhanced", {
-        "target_url": "http://localhost:8000",
-        "spec_path": "../../../etc/passwd",
-        "framework": "sama_ccsf",
-    })
+    result = _call(
+        "scan_mena_compliance_enhanced",
+        {
+            "target_url": "http://localhost:8000",
+            "spec_path": "../../../etc/passwd",
+            "framework": "sama_ccsf",
+        },
+    )
     assert result["isError"] is True
     payload = json.loads(result["content"][0]["text"])
     assert "spec_path" in payload.get("error", "").lower()
@@ -275,6 +307,7 @@ def test_scan_mena_compliance_enhanced_invalid_spec():
 def test_validate_governance_certification(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     from cherenkov.governance.kpi import GovernanceReport, GovernanceKPI
+
     mock_kpi = GovernanceKPI(
         escape_rate=0.05,
         false_positive_rate=0.08,
@@ -294,10 +327,13 @@ def test_validate_governance_certification(tmp_path, monkeypatch):
         mock_instance.collect.return_value = GovernanceReport(kpi=mock_kpi, history=[])
         mock_cls.return_value = mock_instance
 
-        result = _call("validate_governance_certification", {
-            "cert_id": "CERT-001",
-            "validation_criteria": "health_score >= 0.7, escape_rate < 0.1",
-        })
+        result = _call(
+            "validate_governance_certification",
+            {
+                "cert_id": "CERT-001",
+                "validation_criteria": "health_score >= 0.7, escape_rate < 0.1",
+            },
+        )
     payload = json.loads(result["content"][0]["text"])
     assert payload["cert_id"] == "CERT-001"
     assert payload["certified"] is True
@@ -308,6 +344,7 @@ def test_validate_governance_certification(tmp_path, monkeypatch):
 def test_validate_governance_certification_fails(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     from cherenkov.governance.kpi import GovernanceReport, GovernanceKPI
+
     mock_kpi = GovernanceKPI(
         escape_rate=0.25,
         false_positive_rate=0.3,
@@ -318,10 +355,13 @@ def test_validate_governance_certification_fails(tmp_path, monkeypatch):
         mock_instance.collect.return_value = GovernanceReport(kpi=mock_kpi, history=[])
         mock_cls.return_value = mock_instance
 
-        result = _call("validate_governance_certification", {
-            "cert_id": "CERT-002",
-            "validation_criteria": "strict",
-        })
+        result = _call(
+            "validate_governance_certification",
+            {
+                "cert_id": "CERT-002",
+                "validation_criteria": "strict",
+            },
+        )
     payload = json.loads(result["content"][0]["text"])
     assert payload["certified"] is False
     assert len(payload["findings"]) > 0
@@ -330,14 +370,21 @@ def test_validate_governance_certification_fails(tmp_path, monkeypatch):
 
 def test_report_compliance_findings_all(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    with patch("cherenkov.compliance.mena_scanner.MENAComplianceScanner.run_compliance_audit",
-               return_value={
-                   "overall_compliance_score": 60,
-                   "framework_mappings": {
-                       "SAMA_CCSF": {"Domain 3.1": {"status": "COMPLIANT", "remediation": ""}},
-                       "EGYPT_FinCSF": {"Section 4.2": {"status": "NON-COMPLIANT", "remediation": "Fix auth"}},
-                   },
-               }):
+    with patch(
+        "cherenkov.compliance.mena_scanner.MENAComplianceScanner.run_compliance_audit",
+        return_value={
+            "overall_compliance_score": 60,
+            "framework_mappings": {
+                "SAMA_CCSF": {"Domain 3.1": {"status": "COMPLIANT", "remediation": ""}},
+                "EGYPT_FinCSF": {
+                    "Section 4.2": {
+                        "status": "NON-COMPLIANT",
+                        "remediation": "Fix auth",
+                    }
+                },
+            },
+        },
+    ):
         result = _call("report_compliance_findings", {})
     payload = json.loads(result["content"][0]["text"])
     assert "total_findings" in payload
@@ -348,14 +395,21 @@ def test_report_compliance_findings_all(tmp_path, monkeypatch):
 
 def test_report_compliance_findings_filtered(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    with patch("cherenkov.compliance.mena_scanner.MENAComplianceScanner.run_compliance_audit",
-               return_value={
-                   "overall_compliance_score": 60,
-                   "framework_mappings": {
-                       "SAMA_CCSF": {"Domain 3.1": {"status": "COMPLIANT", "remediation": ""}},
-                       "EGYPT_FinCSF": {"Section 4.2": {"status": "NON-COMPLIANT", "remediation": "Fix auth"}},
-                   },
-               }):
+    with patch(
+        "cherenkov.compliance.mena_scanner.MENAComplianceScanner.run_compliance_audit",
+        return_value={
+            "overall_compliance_score": 60,
+            "framework_mappings": {
+                "SAMA_CCSF": {"Domain 3.1": {"status": "COMPLIANT", "remediation": ""}},
+                "EGYPT_FinCSF": {
+                    "Section 4.2": {
+                        "status": "NON-COMPLIANT",
+                        "remediation": "Fix auth",
+                    }
+                },
+            },
+        },
+    ):
         result = _call("report_compliance_findings", {"severity": "high", "limit": 5})
     payload = json.loads(result["content"][0]["text"])
     assert payload["filters_applied"]["severity"] == "high"

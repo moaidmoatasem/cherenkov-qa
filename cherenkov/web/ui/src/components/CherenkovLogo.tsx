@@ -15,7 +15,7 @@ export default function CherenkovLogo({
 }: CherenkovLogoProps) {
   // Common aspect ratio is 1:1 for icon and wireframe, but wider for full logo.
   const isFull = variant === 'full';
-  
+
   return (
     <div className={`inline-flex items-center gap-3.5 select-none ${className}`} id={`cherenkov-logo-${variant}`}>
       <div className="relative flex items-center justify-center shrink-0">
@@ -23,7 +23,7 @@ export default function CherenkovLogo({
         {glow && variant !== 'wireframe' && (
           <div className="absolute inset-0 bg-cyan-400/25 rounded-full blur-[14px] pointer-events-none scale-110 animate-pulse-slow" />
         )}
-        
+
         {variant === 'wireframe' ? (
           // Isometric 3D Hexagon structure (Image 3)
           <svg

@@ -11,8 +11,13 @@ def test_json_formatter_init():
 def test_json_formatter_format_simple_record():
     fmt = JSONFormatter()
     record = logging.LogRecord(
-        name="test", level=logging.INFO, pathname=__file__,
-        lineno=42, msg="hello %s", args=("world",), exc_info=None
+        name="test",
+        level=logging.INFO,
+        pathname=__file__,
+        lineno=42,
+        msg="hello %s",
+        args=("world",),
+        exc_info=None,
     )
     output = fmt.format(record)
     parsed = json.loads(output)

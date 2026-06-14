@@ -1,4 +1,5 @@
 """Unit tests for cherenkov/divergence/witness.py — WitnessAgent, _diff, _parse_repro_steps."""
+
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -6,6 +7,7 @@ from unittest.mock import MagicMock, patch
 class TestParseReproSteps(unittest.TestCase):
     def _call(self, steps):
         from cherenkov.divergence.witness import _parse_repro_steps
+
         return _parse_repro_steps(steps)
 
     def test_get_method_extracted(self):
@@ -15,9 +17,9 @@ class TestParseReproSteps(unittest.TestCase):
         self.assertIsNone(payload)
 
     def test_post_with_body_extracted(self):
-        method, path, payload, expected = self._call([
-            'POST /pets with body {"name": "doggie", "photoUrls": []}'
-        ])
+        method, path, payload, expected = self._call(
+            ['POST /pets with body {"name": "doggie", "photoUrls": []}']
+        )
         self.assertEqual(method, "POST")
         self.assertEqual(path, "/pets")
         self.assertEqual(payload["name"], "doggie")
@@ -41,6 +43,7 @@ class TestParseReproSteps(unittest.TestCase):
 class TestDiff(unittest.TestCase):
     def _call(self, actual, expected, status_code=200):
         from cherenkov.divergence.witness import _diff
+
         return _diff(actual, expected, status_code)
 
     def test_status_mismatch_returns_mismatch_string(self):
@@ -75,8 +78,11 @@ class TestDiff(unittest.TestCase):
 class TestWitnessAgentNoRepro(unittest.TestCase):
     def _make_hypothesis(self, repro_steps=None):
         from cherenkov.core.contracts import (
-            DivergenceHypothesis, DivergenceClass, Severity
+            DivergenceHypothesis,
+            DivergenceClass,
+            Severity,
         )
+
         return DivergenceHypothesis(
             id="h1",
             divergence_class=DivergenceClass.D1_SPEC_CODE,
@@ -90,6 +96,7 @@ class TestWitnessAgentNoRepro(unittest.TestCase):
 
     def test_empty_repro_steps_returns_not_reproduced(self):
         from cherenkov.divergence.witness import WitnessAgent
+
         agent = WitnessAgent("http://localhost:8000")
         result = agent.reproduce(self._make_hypothesis([]))
         self.assertFalse(result.reproduced)
@@ -97,6 +104,7 @@ class TestWitnessAgentNoRepro(unittest.TestCase):
 
     def test_reproduce_batch_returns_one_result_per_hypothesis(self):
         from cherenkov.divergence.witness import WitnessAgent
+
         agent = WitnessAgent("http://localhost:8000")
         hypotheses = [self._make_hypothesis([]), self._make_hypothesis([])]
         results = agent.reproduce_batch(hypotheses)

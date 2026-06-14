@@ -7,6 +7,7 @@ a structured CHERENKOV report dict.
 
 Closes: #451
 """
+
 from __future__ import annotations
 
 import os
@@ -54,7 +55,9 @@ class ZephyrClient:
     ) -> dict[str, Any]:
         """Convert a CHERENKOV report dict and POST results to Zephyr Scale."""
         now = datetime.now(timezone.utc)
-        cycle_name = test_cycle_name or f"CHERENKOV run {now.strftime('%Y-%m-%d %H:%M')}"
+        cycle_name = (
+            test_cycle_name or f"CHERENKOV run {now.strftime('%Y-%m-%d %H:%M')}"
+        )
         cycle_key = self._create_test_cycle(cycle_name, now.isoformat())
 
         results = []
@@ -64,14 +67,16 @@ class ZephyrClient:
             test_case_key = item.get("test_case_key") or item.get("test_key")
             if not test_case_key:
                 continue
-            results.append({
-                "testCaseKey": test_case_key,
-                "testCycleKey": cycle_key,
-                "statusName": zephyr_status,
-                "projectKey": self.config.project_key,
-                "comment": self._build_comment(item),
-                "executionTime": item.get("duration_ms", 0),
-            })
+            results.append(
+                {
+                    "testCaseKey": test_case_key,
+                    "testCycleKey": cycle_key,
+                    "statusName": zephyr_status,
+                    "projectKey": self.config.project_key,
+                    "comment": self._build_comment(item),
+                    "executionTime": item.get("duration_ms", 0),
+                }
+            )
 
         if results:
             self._post_results(results)
@@ -110,14 +115,18 @@ class ZephyrClient:
             "projectKey": self.config.project_key,
             "plannedStartDate": planned_start,
         }
-        resp = httpx.post(url, json=payload, headers=self._headers(), timeout=self.timeout)
+        resp = httpx.post(
+            url, json=payload, headers=self._headers(), timeout=self.timeout
+        )
         resp.raise_for_status()
         return resp.json()["key"]
 
     def _post_results(self, results: list[dict[str, Any]]) -> None:
         url = f"{self.config.base_url}/testexecutions"
         for result in results:
-            resp = httpx.post(url, json=result, headers=self._headers(), timeout=self.timeout)
+            resp = httpx.post(
+                url, json=result, headers=self._headers(), timeout=self.timeout
+            )
             resp.raise_for_status()
 
     @staticmethod

@@ -1,4 +1,5 @@
 """Tests for E2-4: Traffic adapter (HAR parser)."""
+
 import unittest
 import json
 import tempfile
@@ -18,13 +19,16 @@ class TestTrafficSourceAdapter(unittest.TestCase):
                 "entries": entries,
             }
         }
-        tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".har", delete=False, encoding="utf-8")
+        tmp = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".har", delete=False, encoding="utf-8"
+        )
         json.dump(har, tmp)
         tmp.close()
         return tmp.name
 
     def test_adapter_implements_interface(self):
         from cherenkov.truth.sources.interface import SourceAdapter
+
         self.assertIsInstance(self.adapter, SourceAdapter)
 
     def test_discover_claims_raises_on_missing_file(self):
@@ -85,12 +89,15 @@ class TestTrafficSourceAdapter(unittest.TestCase):
             claims = self.adapter.discover_claims(path)
             header_claims = [c for c in claims if c.category == "observed_headers"]
             self.assertEqual(len(header_claims), 1)
-            self.assertEqual(header_claims[0].value.get("Content-Type"), "application/json")
+            self.assertEqual(
+                header_claims[0].value.get("Content-Type"), "application/json"
+            )
         finally:
             os.unlink(path)
 
     def test_discover_claims_provenance_is_traffic(self):
         from cherenkov.core.contracts import ProvenanceType
+
         entry = {
             "request": {"method": "GET", "url": "http://example.com/health"},
             "response": {"status": 200, "statusText": "OK", "headers": []},

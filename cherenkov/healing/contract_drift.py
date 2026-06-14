@@ -2,7 +2,9 @@
 CHERENKOV healing/contract_drift.py -- suggest-only contract-drift diffing and suggestion module.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
+
 
 class ContractDriftHealer:
     """Provides detailed suggest-only reports for contract shape drift with loud visual regression warnings."""
@@ -16,7 +18,7 @@ class ContractDriftHealer:
         endpoint: str,
         method: str,
         missing_fields: list[str],
-        added_fields: list[str]
+        added_fields: list[str],
     ) -> dict:
         """Constructs the suggest-only CLI contract drift warning and correction assertion block.
 
@@ -32,38 +34,48 @@ class ContractDriftHealer:
 
         # 1. Flag RED regression on field removal
         if missing_fields:
-            lines.extend([
-                "",
-                " [RED REGRESSION] - CRITICAL: Fields were REMOVED from the API response!",
-                f"  Missing fields: {missing_fields}",
-                "  Impact: Unhealed clients relying on these properties will CRASH at runtime.",
-            ])
+            lines.extend(
+                [
+                    "",
+                    " [RED REGRESSION] - CRITICAL: Fields were REMOVED from the API response!",
+                    f"  Missing fields: {missing_fields}",
+                    "  Impact: Unhealed clients relying on these properties will CRASH at runtime.",
+                ]
+            )
 
         # 2. Flag YELLOW review warning on field addition
         if added_fields:
-            lines.extend([
-                "",
-                " [YELLOW WARNING] - REVIEW NEEDED: New fields were ADDED to the API response!",
-                f"  Added fields: {added_fields}",
-                "  [LOUD ALERT] is this intended? Please confirm if the API contract expanded.",
-            ])
+            lines.extend(
+                [
+                    "",
+                    " [YELLOW WARNING] - REVIEW NEEDED: New fields were ADDED to the API response!",
+                    f"  Added fields: {added_fields}",
+                    "  [LOUD ALERT] is this intended? Please confirm if the API contract expanded.",
+                ]
+            )
 
         # 3. Suggest updated assertion blocks
-        lines.extend([
-            "",
-            "SUGGESTED CLIENT ASSERTION UPDATE:",
-            "Update your Playwright test assertion to reflect the current contract shape honestly:",
-            "```typescript",
-            f"// In stub/generated_tests/{scenario_id}.spec.ts:",
-        ])
+        lines.extend(
+            [
+                "",
+                "SUGGESTED CLIENT ASSERTION UPDATE:",
+                "Update your Playwright test assertion to reflect the current contract shape honestly:",
+                "```typescript",
+                f"// In stub/generated_tests/{scenario_id}.spec.ts:",
+            ]
+        )
         for am in added_fields:
             lines.append(f"expect(data).toHaveProperty('{am}'); // New property")
         for rm in missing_fields:
-            lines.append(f"// expect(data).toHaveProperty('{rm}'); // REMOVED from contract")
-        lines.extend([
-            "```",
-            "========================================================================  ",
-        ])
+            lines.append(
+                f"// expect(data).toHaveProperty('{rm}'); // REMOVED from contract"
+            )
+        lines.extend(
+            [
+                "```",
+                "========================================================================  ",
+            ]
+        )
 
         return {
             "healed": False,

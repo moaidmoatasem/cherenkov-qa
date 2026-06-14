@@ -1,8 +1,8 @@
 # Skill: Sync Driven Development (SDD)
 
-**Stack:** Python 3.10+, JSON filesystem store  
-**Pattern:** Before/During/After session sync protocol  
-**Invariant:** Session must be open before work, closed after work  
+**Stack:** Python 3.10+, JSON filesystem store
+**Pattern:** Before/During/After session sync protocol
+**Invariant:** Session must be open before work, closed after work
 **Token policy:** Track every meaningful token cost, compact aggressively
 
 ## When To Load This Skill

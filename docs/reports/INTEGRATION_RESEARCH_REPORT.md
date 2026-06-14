@@ -1,10 +1,10 @@
 # CHERENKOV QA - Integration Research Report
 # Complete Analysis: Autonomous Agents, External Repos, LLM Wiki
 
-**Document ID:** INTEGRATION-RESEARCH-2026-06-07  
-**Author:** Vibe Research Agent  
-**Date:** 2026-06-07  
-**Status:** COMPLETE  
+**Document ID:** INTEGRATION-RESEARCH-2026-06-07
+**Author:** Vibe Research Agent
+**Date:** 2026-06-07
+**Status:** COMPLETE
 **Scope:** 5 Topics - Autonomous Agents, mattpocock/skills, claude-elixir-phoenix, MiniGPT, LLM Wiki
 
 ---
@@ -141,13 +141,13 @@ PROFILE_LEVELS = {
 
 ### 1.4 Design Invariants
 
-✅ **D7: Never Auto-Edit Test Code** - Validation/healing produce reports only  
-✅ **Anti-Lock-In** - Eject produces zero-dependency output  
-✅ **Suggest-Only Healing** - Never auto-commits or auto-applies  
-✅ **Spec-Derived** - Expected status from OpenAPI, not hardcoded  
-✅ **Model-Agnostic** - Agents emit ReasoningRequest, never name models  
-✅ **Sovereignty** - Local-first, egress policy honored  
-✅ **Trust Built-In** - No autonomous output without adversarial self-play + independent verification  
+✅ **D7: Never Auto-Edit Test Code** - Validation/healing produce reports only
+✅ **Anti-Lock-In** - Eject produces zero-dependency output
+✅ **Suggest-Only Healing** - Never auto-commits or auto-applies
+✅ **Spec-Derived** - Expected status from OpenAPI, not hardcoded
+✅ **Model-Agnostic** - Agents emit ReasoningRequest, never name models
+✅ **Sovereignty** - Local-first, egress policy honored
+✅ **Trust Built-In** - No autonomous output without adversarial self-play + independent verification
 
 ### 1.5 Trust Mechanism
 
@@ -172,16 +172,16 @@ class SubstrateRouter:
     def route(self, request: ReasoningRequest) -> ReasoningResult:
         # 1. Select provider for tier
         primary = provider_for_tier(request.capability_tier)
-        
+
         # 2. Enforce certification
         if Config.CERTIFICATION_ENABLED:
             cert_res = self._cert_manager.certify_tier(request.capability_tier, primary)
             if not cert_res.certified:
                 raise CertificationError(...)
-        
+
         # 3. Enforce egress
         self._enforce_egress(primary.capabilities().requires_egress)
-        
+
         # 4. Route with fallback
         return primary.generate(request)
 ```
@@ -190,10 +190,10 @@ class SubstrateRouter:
 
 ### 1.7 MCP Server
 
-**Status:** ✅ BUILT  
-**Transport:** JSON-RPC 2.0 over stdio  
-**Tools:** hitl_list, hitl_approve, hitl_reject, validate_run  
-**Resources:** HITL queue, validation reports  
+**Status:** ✅ BUILT
+**Transport:** JSON-RPC 2.0 over stdio
+**Tools:** hitl_list, hitl_approve, hitl_reject, validate_run
+**Resources:** HITL queue, validation reports
 **Trust:** MCP peers untrusted, all inputs validated with Pydantic
 
 ---
@@ -222,8 +222,8 @@ class SubstrateRouter:
 
 ### 2.3 CONTEXT.md Pattern (HIGH VALUE)
 
-**Problem:** Agents use 20 words where 1 will do (jargon mismatch)  
-**Solution:** Shared language document  
+**Problem:** Agents use 20 words where 1 will do (jargon mismatch)
+**Solution:** Shared language document
 **Proven Result:** 75% token reduction
 
 **Example:**
@@ -261,7 +261,7 @@ class SubstrateRouter:
 class SubstrateRouter:
     def __init__(self):
         self._context = self._load_context()  # Load CONTEXT.md
-    
+
     def _enrich_request(self, request: ReasoningRequest):
         # Inject shared language for token efficiency
         pass
@@ -282,7 +282,7 @@ class TDDCoverageLoop:
         if result.passed:
             raise ValueError("Test should FAIL in red phase")
         return test, result.failure
-    
+
     def green(self, test: Test, failure: TestFailure) -> Test:
         """Fix the test so it passes."""
         diagnosis = self.failure_analyzer.analyze(test, failure)
@@ -292,11 +292,11 @@ class TDDCoverageLoop:
             # Try alternatives
             pass
         return fixed_test
-    
+
     def refactor(self, test: Test) -> Test:
         """Improve test quality."""
         return self.test_refactorer.refactor(test)
-    
+
     def run_tdd_loop(self, target: CodeTarget, max_iterations: int = 3) -> Test:
         """Full loop: red → green → refactor."""
         test, failure = self.red(target)
@@ -406,18 +406,18 @@ class ContextSupervisor:
     Ported from oliver-kriska/claude-elixir-phoenix.
     Manages multi-agent output compression and deduplication.
     """
-    
+
     COMPRESSION_THRESHOLDS = {
         "index": 8000,
         "compress": 30000,
     }
-    
+
     def process(self, outputs: list[AgentOutput]) -> ConsolidatedOutput:
         total_tokens = sum(o.token_count for o in outputs)
-        
+
         # Step 1: Deduplicate findings
         deduplicated = self._deduplicate(outputs)
-        
+
         # Step 2: Apply compression
         if total_tokens < self.COMPRESSION_THRESHOLDS["index"]:
             return self._index_strategy(deduplicated)
@@ -425,7 +425,7 @@ class ContextSupervisor:
             return self._compress_strategy(deduplicated)
         else:
             return self._aggressive_strategy(deduplicated)
-    
+
     def _deduplicate(self, outputs: list[AgentOutput]) -> list[AgentOutput]:
         """
         Merge findings from multiple agents that flag the same issue.
@@ -433,7 +433,7 @@ class ContextSupervisor:
         authorization check, merge into one finding with both sources cited.
         """
         findings_map: dict[str, Finding] = {}
-        
+
         for output in outputs:
             for finding in output.findings:
                 key = self._canonical_key(finding)
@@ -444,11 +444,11 @@ class ContextSupervisor:
                     existing.sources.append(output.agent_name)
                     if len(finding.description) > len(existing.description):
                         existing.description = finding.description
-        
+
         # Reconstruct with deduplicated findings
         # ...
         return deduplicated
-    
+
     def _canonical_key(self, finding: Finding) -> str:
         """Create a canonical key for deduplication."""
         return f"{finding.file}:{finding.line}:{finding.error_type}"
@@ -592,7 +592,7 @@ class WorkflowNamespace:
         self.summaries_dir = self.base / "summaries"
         self.progress_file = self.base / "progress.md"
         self.scratchpad_file = self.base / "scratchpad.md"
-    
+
     def get_state(self) -> WorkflowState:
         """Read checkboxes from plan.md to determine state."""
         pass
@@ -600,7 +600,7 @@ class WorkflowNamespace:
 
 #### 3.3.4 Plan Splitting
 
-**Problem:** Large features with 10+ tasks across domains  
+**Problem:** Large features with 10+ tasks across domains
 **Solution:** Auto-split into multiple domain-specific plans
 
 **CHERENKOV Adaptation:**
@@ -615,7 +615,7 @@ class PlanSplitter:
         "content": ["posts", "comments", "articles"],
         "admin": ["dashboard", "roles", "permissions"],
     }
-    
+
     def split_by_domain(self, plan: Plan) -> list[Plan]:
         """Split plan tasks by domain area."""
         domain_plans = {}
@@ -629,8 +629,8 @@ class PlanSplitter:
 
 #### 3.3.5 Autoresearch Loop
 
-**Eval Framework:** Scores skills across 8 dimensions, agents across 5 dimensions  
-**Autoresearch:** Auto-detect and fix quality issues  
+**Eval Framework:** Scores skills across 8 dimensions, agents across 5 dimensions
+**Autoresearch:** Auto-detect and fix quality issues
 **Self-Improving:** Continuous quality improvement
 
 ---
@@ -705,24 +705,24 @@ from cherenkov.substrate.provider import Provider, ProviderCapabilities
 class MiniGPTProvider(Provider):
     """
     MiniGPT Vision-Language Model Provider for CHERENKOV.
-    
+
     Features:
     - Local deployment (no egress required)
     - Single linear projection layer (efficient)
     - Works with frozen vision encoder + frozen LLM
     - Can be fine-tuned for CHERENKOV-specific tasks
     """
-    
+
     TIER = "vision"
-    
-    def __init__(self, 
+
+    def __init__(self,
                  model_path: str | None = None,
                  device: str = "cuda",
                  run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("MINIGPT_PROVIDER", run_id)
         self.model = self._load_model(model_path, device)
-    
+
     def capabilities(self) -> ProviderCapabilities:
         return ProviderCapabilities(
             provider_name="minigpt",
@@ -734,11 +734,11 @@ class MiniGPTProvider(Provider):
             supports_vision=True,
             supports_tools=False,
         )
-    
+
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
         """
         Process vision + text request.
-        
+
         Expected request format:
         {
             "task": "<text instruction>",
@@ -749,10 +749,10 @@ class MiniGPTProvider(Provider):
         # Parse images from request
         images = self._parse_images(request)
         text = request.task
-        
+
         # Generate with MiniGPT
         response = self.model.generate(images, text)
-        
+
         return ReasoningResult(
             content=response,
             provider="minigpt",
@@ -761,7 +761,7 @@ class MiniGPTProvider(Provider):
             latency_ms=latency,
             cached=False,
         )
-    
+
     @property
     def model_name(self) -> str:
         return f"minigpt-4-{self.model_config}"
@@ -818,13 +818,13 @@ class MiniGPTCherenkovTrainer:
     - Visual anomaly classification
     - Test failure screenshot analysis
     """
-    
-    def __init__(self, 
+
+    def __init__(self,
                  base_model: str = "Vision-CAIR/MiniGPT-4",
                  dataset_path: str = "cherenkov/vision_dataset"):
         self.base_model = base_model
         self.dataset = self._load_dataset(dataset_path)
-    
+
     def train(self, output_path: str) -> Path:
         """Fine-tune projection layer on CHERENKOV-specific data."""
         # Load base model
@@ -936,14 +936,14 @@ class MiniGPTCherenkovTrainer:
 
 ```markdown
 > **⚠️ HONEST STATE DISCLAIMER**
-> 
-> This wiki is a **mirror** of the canonical documentation in the repo. 
+>
+> This wiki is a **mirror** of the canonical documentation in the repo.
 > **Source of truth is `docs/` and `AGENTS.md`** — if this wiki contradicts those sources, the repo wins.
-> 
-> **VALIDATION STATUS:** The 5-QA validation gate ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) has **NOT been run** (0/5 real reviews in [VALIDATION_EVIDENCE_LEDGER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/process/VALIDATION_EVIDENCE_LEDGER.md)). 
-> 
-> It was removed as a development blocker on 2026-06-06, but the gate itself remains **unpassed**. 
-> 
+>
+> **VALIDATION STATUS:** The 5-QA validation gate ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) has **NOT been run** (0/5 real reviews in [VALIDATION_EVIDENCE_LEDGER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/process/VALIDATION_EVIDENCE_LEDGER.md)).
+>
+> It was removed as a development blocker on 2026-06-06, but the gate itself remains **unpassed**.
+>
 > For the **authoritative, honest state**, always refer to [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md).
 ```
 
@@ -1268,7 +1268,7 @@ For questions about this report:
 
 ---
 
-**Document generated by:** Mistral Vibe Research Agent  
-**Date:** 2026-06-07  
-**Version:** 1.0  
+**Document generated by:** Mistral Vibe Research Agent
+**Date:** 2026-06-07
+**Version:** 1.0
 **Status:** Ready for review and implementation

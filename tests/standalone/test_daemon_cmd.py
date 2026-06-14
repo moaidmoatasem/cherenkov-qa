@@ -1,9 +1,9 @@
 """Tests for E4-4: Daemon mode."""
+
 import unittest
 import unittest.mock
 import tempfile
 from pathlib import Path
-import json
 
 from cherenkov.stages.daemon_cmd import DivergenceQueue, run_daemon
 
@@ -53,7 +53,9 @@ class TestDivergenceQueue(unittest.TestCase):
         self.assertEqual(len(entries), 3)
 
     def test_count_nonexistent_file(self):
-        queue = DivergenceQueue(path=self.queue_path.parent / "nonexistent" / "queue.jsonl")
+        queue = DivergenceQueue(
+            path=self.queue_path.parent / "nonexistent" / "queue.jsonl"
+        )
         self.assertEqual(queue.count, 0)
 
 

@@ -83,6 +83,7 @@ SMOKE_SCRIPTS: list[dict] = [
 # Result container
 # ---------------------------------------------------------------------------
 
+
 class SmokeResult(NamedTuple):
     name: str
     script: str
@@ -98,6 +99,7 @@ class SmokeResult(NamedTuple):
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def repo_root() -> Path:
     """Return the repository root (parent of this script's directory)."""
@@ -139,6 +141,7 @@ def run_smoke(
         )
 
     import time
+
     start = time.monotonic()
 
     try:
@@ -170,7 +173,9 @@ def run_smoke(
     # Write evidence file
     evidence_filename = f"{ts}_{smoke['name']}.txt"
     evidence_path = ev_dir / evidence_filename
-    _write_evidence(evidence_path, smoke, passed, returncode, stdout, stderr, duration_s)
+    _write_evidence(
+        evidence_path, smoke, passed, returncode, stdout, stderr, duration_s
+    )
 
     return SmokeResult(
         name=smoke["name"],
@@ -209,8 +214,12 @@ def _write_evidence(
         ========================================================
 
     """)
-    stdout_block = f"--- STDOUT ---\n{stdout}\n" if stdout else "--- STDOUT ---\n(empty)\n"
-    stderr_block = f"--- STDERR ---\n{stderr}\n" if stderr else "--- STDERR ---\n(empty)\n"
+    stdout_block = (
+        f"--- STDOUT ---\n{stdout}\n" if stdout else "--- STDOUT ---\n(empty)\n"
+    )
+    stderr_block = (
+        f"--- STDERR ---\n{stderr}\n" if stderr else "--- STDERR ---\n(empty)\n"
+    )
     path.write_text(header + stdout_block + "\n" + stderr_block, encoding="utf-8")
 
 
@@ -266,12 +275,13 @@ def print_dry_run(smokes: list[dict], root: Path) -> None:
         print()
     ev_dir = root / ".cherenkov" / "evidence"
     print(f"  Evidence would be saved to: {ev_dir}/")
-    print(f"  Filename pattern          : <timestamp>_<smoke_name>.txt\n")
+    print("  Filename pattern          : <timestamp>_<smoke_name>.txt\n")
 
 
 # ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -326,7 +336,10 @@ def main() -> int:
         matching = [s for s in smokes if s["name"] == args.smoke]
         if not matching:
             available = ", ".join(s["name"] for s in SMOKE_SCRIPTS)
-            print(f"Error: unknown smoke name '{args.smoke}'. Available: {available}", file=sys.stderr)
+            print(
+                f"Error: unknown smoke name '{args.smoke}'. Available: {available}",
+                file=sys.stderr,
+            )
             return 1
         smokes = matching
 
@@ -357,7 +370,9 @@ def main() -> int:
         print(f"  → [{smoke['name']}] {smoke['description']}")
         result = run_smoke(smoke, root, ev_dir, ts, timeout=args.timeout)
         status = "PASS" if result.passed else "FAIL"
-        print(f"    {status}  ({result.duration_s:.1f}s)  evidence: {Path(result.evidence_path).name if result.evidence_path else 'n/a'}")
+        print(
+            f"    {status}  ({result.duration_s:.1f}s)  evidence: {Path(result.evidence_path).name if result.evidence_path else 'n/a'}"
+        )
         results.append(result)
 
     print_summary(results, ev_dir)

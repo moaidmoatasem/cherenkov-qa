@@ -8,7 +8,7 @@ services:
       - "4010:4010"
     volumes:
       - ./stub:/usr/src/prism/packages/cli/stub
-    
+
   cherenkov:
     build:
       context: .
@@ -34,7 +34,7 @@ services:
       - ./output:/app/output
     environment:
       - DEMO_MODE=1
-    
+
   ollama:
     image: ollama/ollama
     profiles:

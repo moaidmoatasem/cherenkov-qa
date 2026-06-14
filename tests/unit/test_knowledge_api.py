@@ -8,4 +8,5 @@ def test_router_has_route():
 
 def test_router_is_apirouter():
     from fastapi import APIRouter
+
     assert isinstance(router, APIRouter)

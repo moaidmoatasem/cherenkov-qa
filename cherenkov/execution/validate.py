@@ -2,6 +2,7 @@
 CHERENKOV execution/validate.py — validation and value assertion tightening report engine.
 Authority: v3.1 + delta. Track A surface only.
 """
+
 from __future__ import annotations
 
 import os
@@ -19,10 +20,12 @@ def _is_stable_value(v: object) -> bool:
     """Return False for values likely to change between runs (timestamps, UUIDs, large ints)."""
     if isinstance(v, str):
         # Skip UUID-like strings
-        if re.match(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', v, re.I):
+        if re.match(
+            r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", v, re.I
+        ):
             return False
         # Skip ISO timestamps
-        if re.match(r'^\d{4}-\d{2}-\d{2}T', v):
+        if re.match(r"^\d{4}-\d{2}-\d{2}T", v):
             return False
     if isinstance(v, int) and v > 100000:
         return False  # likely auto-increment or timestamp int
@@ -51,7 +54,9 @@ class TighteningAnalyzer:
             for pk, pv in resp_json.items():
                 if rv == pv and rv is not None and _is_stable_value(pv):
                     suggestions.append(
-                        f"expect(data.{pk}).toBe('{pv}')" if isinstance(pv, str) else f"expect(data.{pk}).toBe({pv})"
+                        f"expect(data.{pk}).toBe('{pv}')"
+                        if isinstance(pv, str)
+                        else f"expect(data.{pk}).toBe({pv})"
                     )
                     if rk == pk:
                         suggestions.append(f"expect(data.{pk}).toBe(body.{rk})")
@@ -64,23 +69,31 @@ class ValidationEngine:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id or "validate"
         self.log = get_logger("VALIDATE", self.run_id)
-        self.stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
+        self.stub_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../stub")
+        )
         self.tests_dir = os.path.join(self.stub_dir, "generated_tests")
 
     def validate_suite(self, target_url: str, workers: int = 1) -> Dict[str, Any]:
         """Runs all spec tests in generated_tests against target_url and parses trace files for tightening suggestions."""
-        self.log.info("starting suite validation", target_url=target_url, workers=workers)
+        self.log.info(
+            "starting suite validation", target_url=target_url, workers=workers
+        )
 
         if not os.path.exists(self.tests_dir):
             self.log.warning("no generated tests directory found")
-            return {"status": "empty", "message": "No generated tests found.", "reports": []}
+            return {
+                "status": "empty",
+                "message": "No generated tests found.",
+                "reports": [],
+            }
 
         test_files = [f for f in os.listdir(self.tests_dir) if f.endswith(".spec.ts")]
         if not test_files:
             return {"status": "empty", "message": "No spec files found.", "reports": []}
 
         reports = []
-        
+
         def _run_single_test(t_file: str) -> dict:
             scenario_id = t_file.replace(".spec.ts", "")
             test_path = os.path.join(self.tests_dir, t_file)
@@ -93,9 +106,7 @@ class ValidationEngine:
             self.log.info("validating scenario", scenario_id=scenario_id)
 
             result = runner.execute_test(
-                scenario_id=scenario_id,
-                api_url=target_url,
-                test_code=code
+                scenario_id=scenario_id, api_url=target_url, test_code=code
             )
 
             trace_path = result.get("trace_path", "")
@@ -105,16 +116,30 @@ class ValidationEngine:
             resp_body_str = ""
 
             if passed and trace_path:
-                method_match = re.search(r"client\.(GET|POST|PUT|DELETE|PATCH)\('([^']+)'", code)
+                method_match = re.search(
+                    r"client\.(GET|POST|PUT|DELETE|PATCH)\('([^']+)'", code
+                )
+                gql_match = re.search(r"request\.post\('([^']+)'", code)
+
+                target_method = None
+                target_url_path = None
                 if method_match:
                     target_method = method_match.group(1)
                     target_url_path = method_match.group(2)
+                elif gql_match:
+                    target_method = "POST"
+                    target_url_path = gql_match.group(1)
 
-                    response_info = reader.extract_http_response(trace_path, target_url_path, target_method)
+                if target_method and target_url_path:
+                    response_info = reader.extract_http_response(
+                        trace_path, target_url_path, target_method
+                    )
                     if response_info:
                         req_body_str = response_info.get("request_body_raw", "")
                         resp_body_str = response_info.get("body_raw", "")
-                        suggestions = TighteningAnalyzer.analyze(req_body_str, resp_body_str)
+                        suggestions = TighteningAnalyzer.analyze(
+                            req_body_str, resp_body_str
+                        )
 
             return {
                 "scenario_id": scenario_id,

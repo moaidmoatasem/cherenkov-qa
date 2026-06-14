@@ -19,6 +19,7 @@ the operator knows the prompt/model/spec-context pipeline needs rework.
 Storage: SQLite at .cherenkov/gen_metrics.db (created on first use).
 Thread-safety: per-call connection — no long-lived handle.
 """
+
 from __future__ import annotations
 
 import sqlite3

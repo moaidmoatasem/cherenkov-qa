@@ -4,7 +4,7 @@
 
 Where CHERENKOV came from, where it is now, and where it's going.
 
-> **Canonical status (single source of truth):** [docs/STATUS.md](../STATUS.md)  
+> **Canonical status (single source of truth):** [docs/STATUS.md](../STATUS.md)
 > **Full detailed plan:** [docs/PHASE_PLAN.md](../PHASE_PLAN.md)
 
 ---

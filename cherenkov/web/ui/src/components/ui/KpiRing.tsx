@@ -60,7 +60,7 @@ export function KpiRing({
             strokeLinecap="round"
           />
         </svg>
-        
+
         {/* Centered text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
           <span className="text-xl font-bold font-mono text-text-primary">

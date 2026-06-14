@@ -1,4 +1,8 @@
-from cherenkov.governance.kpi import GovernanceKPI, GovernanceReport, GovernanceCollector
+from cherenkov.governance.kpi import (
+    GovernanceKPI,
+    GovernanceReport,
+    GovernanceCollector,
+)
 
 __all__ = [
     "GovernanceKPI",

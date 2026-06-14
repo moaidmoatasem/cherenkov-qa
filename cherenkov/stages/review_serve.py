@@ -8,6 +8,7 @@ approve/reject, static UI serving) is available on the FastAPI server.
 Keeping this file alive for backwards compatibility only — it prints a
 deprecation warning and delegates to `cherenkov review`.
 """
+
 from __future__ import annotations
 
 import logging
@@ -21,6 +22,7 @@ DEPRECATION_MSG = (
     "This module will be removed in a future release."
 )
 
+
 def run_review_server() -> int:
     """Execute `cherenkov review` — now delegates to the FastAPI server."""
     warnings.warn(DEPRECATION_MSG, DeprecationWarning, stacklevel=2)
@@ -29,7 +31,8 @@ def run_review_server() -> int:
     # Delegate to the canonical FastAPI server
     import uvicorn
     from cherenkov.web.api import app
-    print(f"\nCHERENKOV review dashboard starting on http://0.0.0.0:8000")
+
+    print("\nCHERENKOV review dashboard starting on http://0.0.0.0:8000")
     print("Hit Ctrl+C to stop.\n")
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
     return 0

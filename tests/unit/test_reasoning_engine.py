@@ -1,4 +1,5 @@
 """Unit tests for the QA Reasoning Engine (ADR-007) — pure domain, no I/O."""
+
 from __future__ import annotations
 
 import pytest
@@ -65,12 +66,16 @@ The UI should be fast and user-friendly.
 
 # ── classifier ────────────────────────────────────────────────────────────
 
+
 class TestClassifier:
     def test_openapi_from_parsed(self):
         assert classify_kind(parsed=PETSTORE) == ArtifactKind.OPENAPI_SPEC
 
     def test_figma_url(self):
-        assert classify_kind(uri="https://figma.com/design/abc/My-App") == ArtifactKind.FIGMA_DESIGN
+        assert (
+            classify_kind(uri="https://figma.com/design/abc/My-App")
+            == ArtifactKind.FIGMA_DESIGN
+        )
 
     def test_live_app_url(self):
         assert classify_kind(uri="http://localhost:8000") == ArtifactKind.LIVE_APP
@@ -82,7 +87,10 @@ class TestClassifier:
         assert classify_kind(content=PRD) == ArtifactKind.REQUIREMENTS_DOC
 
     def test_openapi_yaml_by_content(self):
-        assert classify_kind(uri="spec.yaml", content='openapi: "3.0.0"') == ArtifactKind.OPENAPI_SPEC
+        assert (
+            classify_kind(uri="spec.yaml", content='openapi: "3.0.0"')
+            == ArtifactKind.OPENAPI_SPEC
+        )
 
     def test_maturity_zero_version_is_in_development(self):
         spec = {**PETSTORE, "info": {"title": "x", "version": "0.3.0"}}
@@ -102,19 +110,24 @@ class TestClassifier:
 
 # ── strategy: the variation matrix ────────────────────────────────────────
 
+
 class TestStrategy:
     def _ctx(self, kind, maturity, stage):
         return QAContext(artifact_kind=kind, maturity=maturity, stage=stage)
 
     def _spec_artifact(self):
         return Artifact(
-            kind=ArtifactKind.OPENAPI_SPEC, name="s", parsed=PETSTORE,
+            kind=ArtifactKind.OPENAPI_SPEC,
+            name="s",
+            parsed=PETSTORE,
             target_url="http://localhost:8000",
         )
 
     def test_concept_never_executes(self):
         variant = select_variant(
-            self._ctx(ArtifactKind.OPENAPI_SPEC, Maturity.CONCEPT, TestingStage.FUNCTIONAL),
+            self._ctx(
+                ArtifactKind.OPENAPI_SPEC, Maturity.CONCEPT, TestingStage.FUNCTIONAL
+            ),
             self._spec_artifact(),
         )
         assert Activity.EXECUTE not in variant.activities
@@ -123,21 +136,37 @@ class TestStrategy:
 
     def test_static_review_is_critique_only(self):
         variant = select_variant(
-            self._ctx(ArtifactKind.REQUIREMENTS_DOC, Maturity.PRODUCTION, TestingStage.STATIC_REVIEW),
+            self._ctx(
+                ArtifactKind.REQUIREMENTS_DOC,
+                Maturity.PRODUCTION,
+                TestingStage.STATIC_REVIEW,
+            ),
             Artifact(kind=ArtifactKind.REQUIREMENTS_DOC, name="prd", content=PRD),
         )
-        assert variant.activities == [Activity.ANALYZE, Activity.REVIEW, Activity.REPORT]
+        assert variant.activities == [
+            Activity.ANALYZE,
+            Activity.REVIEW,
+            Activity.REPORT,
+        ]
 
     def test_in_development_executes_against_mock_only(self):
         variant = select_variant(
-            self._ctx(ArtifactKind.OPENAPI_SPEC, Maturity.IN_DEVELOPMENT, TestingStage.FUNCTIONAL),
+            self._ctx(
+                ArtifactKind.OPENAPI_SPEC,
+                Maturity.IN_DEVELOPMENT,
+                TestingStage.FUNCTIONAL,
+            ),
             self._spec_artifact(),
         )
         assert variant.execution_mode == ExecutionMode.MOCK
 
     def test_release_gate_is_exhaustive_and_live(self):
         variant = select_variant(
-            self._ctx(ArtifactKind.OPENAPI_SPEC, Maturity.PRODUCTION, TestingStage.RELEASE_GATE),
+            self._ctx(
+                ArtifactKind.OPENAPI_SPEC,
+                Maturity.PRODUCTION,
+                TestingStage.RELEASE_GATE,
+            ),
             self._spec_artifact(),
         )
         assert variant.depth == Depth.EXHAUSTIVE
@@ -146,7 +175,11 @@ class TestStrategy:
 
     def test_prd_without_target_never_executes(self):
         variant = select_variant(
-            self._ctx(ArtifactKind.REQUIREMENTS_DOC, Maturity.PRODUCTION, TestingStage.REGRESSION),
+            self._ctx(
+                ArtifactKind.REQUIREMENTS_DOC,
+                Maturity.PRODUCTION,
+                TestingStage.REGRESSION,
+            ),
             Artifact(kind=ArtifactKind.REQUIREMENTS_DOC, name="prd", content=PRD),
         )
         assert variant.execution_mode == ExecutionMode.NONE
@@ -154,9 +187,15 @@ class TestStrategy:
 
     def test_prd_with_target_may_execute(self):
         variant = select_variant(
-            self._ctx(ArtifactKind.REQUIREMENTS_DOC, Maturity.PRODUCTION, TestingStage.REGRESSION),
+            self._ctx(
+                ArtifactKind.REQUIREMENTS_DOC,
+                Maturity.PRODUCTION,
+                TestingStage.REGRESSION,
+            ),
             Artifact(
-                kind=ArtifactKind.REQUIREMENTS_DOC, name="prd", content=PRD,
+                kind=ArtifactKind.REQUIREMENTS_DOC,
+                name="prd",
+                content=PRD,
                 target_url="http://localhost:8000",
             ),
         )
@@ -173,6 +212,7 @@ class TestStrategy:
 
 
 # ── heuristic reasoner ────────────────────────────────────────────────────
+
 
 class TestHeuristicReasoner:
     def test_spec_analysis_extracts_response_requirements(self):
@@ -210,7 +250,10 @@ class TestHeuristicReasoner:
         scores = [r.score for r in risks]
         assert scores == sorted(scores, reverse=True)
         # payment + password requirements carry higher impact than UI fluff
-        assert "payment" in risks[0].description.lower() or "password" in risks[0].description.lower()
+        assert (
+            "payment" in risks[0].description.lower()
+            or "password" in risks[0].description.lower()
+        )
 
     def test_designed_cases_trace_to_requirements_and_risks(self):
         artifact = Artifact(kind=ArtifactKind.OPENAPI_SPEC, name="s", parsed=PETSTORE)
@@ -242,22 +285,29 @@ class TestHeuristicReasoner:
 
 # ── plan contract ─────────────────────────────────────────────────────────
 
+
 class TestQAPlanContract:
     def test_untraced_case_is_rejected(self):
         context = QAContext(artifact_kind=ArtifactKind.OPENAPI_SPEC)
         variant = WorkflowVariant(
-            name="v", activities=[Activity.DESIGN_CASES],
-            depth=Depth.SHALLOW, execution_mode=ExecutionMode.NONE,
+            name="v",
+            activities=[Activity.DESIGN_CASES],
+            depth=Depth.SHALLOW,
+            execution_mode=ExecutionMode.NONE,
         )
         with pytest.raises(ValueError, match="traces to no known requirement"):
             QAPlan(
                 context=context,
                 variant=variant,
                 artifact_name="s",
-                analysis=AnalysisResult(requirements=[Requirement(id="REQ-001", text="x")]),
+                analysis=AnalysisResult(
+                    requirements=[Requirement(id="REQ-001", text="x")]
+                ),
                 cases=[
                     TestCaseDesign(
-                        id="TC-001", title="orphan", requirement_ref="REQ-999",
+                        id="TC-001",
+                        title="orphan",
+                        requirement_ref="REQ-999",
                         rationale="invented",
                     )
                 ],
@@ -271,6 +321,7 @@ class TestQAPlanContract:
 
 
 # ── end-to-end workflow + Track A bridge ──────────────────────────────────
+
 
 class TestQAWorkflow:
     def test_functional_workflow_on_spec_produces_scenarios(self):

@@ -3,6 +3,7 @@ CHERENKOV security/snyk_bridge.py — import Snyk scan results into agent-access
 Parses `snyk test --json` output, writes structured findings to agent_memory/,
 and surfaces issues for agent-driven remediation.
 """
+
 from __future__ import annotations
 
 import json
@@ -54,9 +55,7 @@ class SnykReport(BaseModel):
     infrastructure_as_code: List[SnykIaCIssue] = Field(
         default_factory=list, alias="infrastructureAsCode"
     )
-    code_issues: List[SnykCodeIssue] = Field(
-        default_factory=list, alias="code"
-    )
+    code_issues: List[SnykCodeIssue] = Field(default_factory=list, alias="code")
 
 
 AGENT_MEMORY_PATH = Path(__file__).resolve().parent.parent.parent / "agent_memory"
@@ -71,13 +70,19 @@ def run_snyk_scan(target_dir: str | None = None) -> dict[str, Any]:
             cmd.extend(["--file", target_dir])
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
     except FileNotFoundError:
-        print("error: `snyk` binary not found. Install from https://snyk.io/download", file=sys.stderr)
+        print(
+            "error: `snyk` binary not found. Install from https://snyk.io/download",
+            file=sys.stderr,
+        )
         sys.exit(1)
     except subprocess.TimeoutExpired:
         print("error: snyk scan timed out after 300s", file=sys.stderr)
         sys.exit(1)
     if result.returncode not in (0, 1):
-        print(f"snyk scan failed (rc={result.returncode}): {result.stderr}", file=sys.stderr)
+        print(
+            f"snyk scan failed (rc={result.returncode}): {result.stderr}",
+            file=sys.stderr,
+        )
         sys.exit(1)
     return json.loads(result.stdout)
 
@@ -139,14 +144,18 @@ def write_findings(report: SnykReport) -> None:
         iac_count = sev_count(report.infrastructure_as_code, sev)
         code_count = sev_count(report.code_issues, sev)
         total = os_count + iac_count + code_count
-        lines.append(f"| {sev.title()} | {os_count} | {iac_count} | {code_count} | {total} |")
+        lines.append(
+            f"| {sev.title()} | {os_count} | {iac_count} | {code_count} | {total} |"
+        )
 
     total_all = (
         len(report.vulnerabilities)
         + len(report.infrastructure_as_code)
         + len(report.code_issues)
     )
-    lines.append(f"| **Total** | **{len(report.vulnerabilities)}** | **{len(report.infrastructure_as_code)}** | **{len(report.code_issues)}** | **{total_all}** |")
+    lines.append(
+        f"| **Total** | **{len(report.vulnerabilities)}** | **{len(report.infrastructure_as_code)}** | **{len(report.code_issues)}** | **{total_all}** |"
+    )
     lines.append("")
 
     if report.vulnerabilities:
@@ -157,7 +166,9 @@ def write_findings(report: SnykReport) -> None:
         for v in report.vulnerabilities:
             fix = ", ".join(v.fixed_in) if v.fixed_in else "no fix"
             em = v.exploit_maturity or "none"
-            lines.append(f"| {v.vuln_id} | {v.package_name} | {v.version} | {v.severity} | {fix} | {em} |")
+            lines.append(
+                f"| {v.vuln_id} | {v.package_name} | {v.version} | {v.severity} | {fix} | {em} |"
+            )
         lines.append("")
 
     if report.infrastructure_as_code:
@@ -175,7 +186,9 @@ def write_findings(report: SnykReport) -> None:
         lines.append("| ID | Title | Severity | File | Lines |")
         lines.append("|----|-------|----------|------|-------|")
         for c in report.code_issues:
-            lines.append(f"| {c.vuln_id} | {c.title} | {c.severity} | {c.file_path} | {c.line_start}-{c.line_end} |")
+            lines.append(
+                f"| {c.vuln_id} | {c.title} | {c.severity} | {c.file_path} | {c.line_start}-{c.line_end} |"
+            )
         lines.append("")
 
     lines.append("## Remediation Log")
@@ -209,11 +222,19 @@ def main() -> None:
     """CLI entry point: parse Snyk JSON and write agent memory."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Import Snyk scan results for agent remediation")
-    parser.add_argument("input", nargs="?", help="Path to snyk JSON file (reads stdin if omitted)")
-    parser.add_argument("--run", action="store_true", help="Run snyk test --json directly")
+    parser = argparse.ArgumentParser(
+        description="Import Snyk scan results for agent remediation"
+    )
+    parser.add_argument(
+        "input", nargs="?", help="Path to snyk JSON file (reads stdin if omitted)"
+    )
+    parser.add_argument(
+        "--run", action="store_true", help="Run snyk test --json directly"
+    )
     parser.add_argument("--dir", help="Target directory for --run")
-    parser.add_argument("--reset", action="store_true", help="Reset findings to clean state")
+    parser.add_argument(
+        "--reset", action="store_true", help="Reset findings to clean state"
+    )
     args = parser.parse_args()
 
     if args.reset:
@@ -235,7 +256,10 @@ def main() -> None:
     else:
         raw_input = sys.stdin.read()
         if not raw_input.strip():
-            print("error: no input provided (pipe JSON or pass a file path)", file=sys.stderr)
+            print(
+                "error: no input provided (pipe JSON or pass a file path)",
+                file=sys.stderr,
+            )
             sys.exit(1)
         try:
             raw = json.loads(raw_input)

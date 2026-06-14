@@ -2,6 +2,7 @@
 CHERENKOV ai/rag_index.py — local RAG vector search index using SQLite.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import json
@@ -10,7 +11,6 @@ import sqlite3
 import threading
 import time
 import requests
-from typing import Any, Dict, List, Optional
 
 from cherenkov.core.errors import get_logger
 from cherenkov.core.config import Config
@@ -22,7 +22,9 @@ class RAGIndex:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("RAG_INDEX", run_id)
-        self.db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.cherenkov/rag_store.db"))
+        self.db_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../.cherenkov/rag_store.db")
+        )
         self._local = threading.local()
         self._initialize_db()
 
@@ -63,30 +65,25 @@ class RAGIndex:
 
         try:
             resp = requests.post(
-                embed_url,
-                json={
-                    "model": "nomic-embed-text",
-                    "input": text
-                },
-                timeout=15
+                embed_url, json={"model": "nomic-embed-text", "input": text}, timeout=15
             )
             if resp.status_code == 200:
                 embeddings = resp.json().get("embeddings", [])
                 if embeddings:
                     return embeddings[0]
         except Exception as e:
-            self.log.warning("Ollama embed API (/api/embed) failed, trying legacy /api/embeddings", error=str(e))
+            self.log.warning(
+                "Ollama embed API (/api/embed) failed, trying legacy /api/embeddings",
+                error=str(e),
+            )
 
         # Legacy fallback (/api/embeddings)
         embeddings_url = f"{base_url}/api/embeddings"
         try:
             resp = requests.post(
                 embeddings_url,
-                json={
-                    "model": "nomic-embed-text",
-                    "prompt": text
-                },
-                timeout=15
+                json={"model": "nomic-embed-text", "prompt": text},
+                timeout=15,
             )
             if resp.status_code == 200:
                 return resp.json().get("embedding", [])
@@ -95,12 +92,20 @@ class RAGIndex:
 
         # Return a deterministic mock vector if Ollama is offline or model not pulled,
         # ensuring the entire pipeline remains robust, testable, and green!
-        self.log.warning("Ollama offline or nomic-embed-text model missing. Emitting mock vector baseline.")
+        self.log.warning(
+            "Ollama offline or nomic-embed-text model missing. Emitting mock vector baseline."
+        )
         return [0.1] * 768
 
-    def add_incident(self, incident_id: str, scenario_id: str, failure_class: str, error_message: str):
+    def add_incident(
+        self, incident_id: str, scenario_id: str, failure_class: str, error_message: str
+    ):
         """Indexes a test failure event into the SQLite RAG vector index."""
-        self.log.info("indexing failure incident", incident_id=incident_id, class_name=failure_class)
+        self.log.info(
+            "indexing failure incident",
+            incident_id=incident_id,
+            class_name=failure_class,
+        )
 
         vector = self._get_embedding(f"{failure_class}: {error_message}")
         embedding_json = json.dumps(vector)
@@ -110,10 +115,19 @@ class RAGIndex:
             """INSERT OR REPLACE INTO incident_vectors
             (id, scenario_id, failure_class, error_message, embedding_json, timestamp)
             VALUES (?, ?, ?, ?, ?, ?)""",
-            (incident_id, scenario_id, failure_class, error_message, embedding_json, int(time.time()))
+            (
+                incident_id,
+                scenario_id,
+                failure_class,
+                error_message,
+                embedding_json,
+                int(time.time()),
+            ),
         )
         conn.commit()
-        self.log.info("incident successfully indexed in RAG database", incident_id=incident_id)
+        self.log.info(
+            "incident successfully indexed in RAG database", incident_id=incident_id
+        )
 
     def query_similar_incidents(self, error_message: str, limit: int = 3) -> list[dict]:
         """Queries the vector index to find top-K closest past incidents based on cosine similarity."""
@@ -143,16 +157,20 @@ class RAGIndex:
                 if norm_q and norm_i:
                     similarity = dot_product / (norm_q * norm_i)
 
-                results.append({
-                    "id": inc_id,
-                    "scenario_id": scen_id,
-                    "failure_class": fail_cls,
-                    "error_message": err_msg,
-                    "similarity": round(similarity, 4),
-                    "timestamp": ts
-                })
+                results.append(
+                    {
+                        "id": inc_id,
+                        "scenario_id": scen_id,
+                        "failure_class": fail_cls,
+                        "error_message": err_msg,
+                        "similarity": round(similarity, 4),
+                        "timestamp": ts,
+                    }
+                )
             except Exception as e:
-                self.log.warning("failed to process vector score", incident_id=inc_id, error=str(e))
+                self.log.warning(
+                    "failed to process vector score", incident_id=inc_id, error=str(e)
+                )
 
         # Sort by similarity descending
         results.sort(key=lambda x: x["similarity"], reverse=True)

@@ -9,6 +9,7 @@ single ranked RiskDigest — "here's what I'd check first if I were you."
 Pure ranking/assembly: it runs nothing live. Callers pass in the findings,
 hypotheses, and (optionally) a Reflector.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -68,8 +69,13 @@ class SecondPairOfEyes:
         items.sort(key=lambda it: it.score, reverse=True)
         items = items[:limit]
 
-        self.log.info("digest built", target=target, items=len(items),
-                      findings=len(findings), hypotheses=len(hypotheses))
+        self.log.info(
+            "digest built",
+            target=target,
+            items=len(items),
+            findings=len(findings),
+            hypotheses=len(hypotheses),
+        )
         return RiskDigest(target=target, generated_for=generated_for, items=items)
 
     # ── sources → items ──────────────────────────────────────────────────────
@@ -80,32 +86,38 @@ class SecondPairOfEyes:
             base = _SEVERITY_WEIGHT.get(f.severity, 0.5)
             # observed > merely hypothesised: Explorer findings get a real signal.
             score = min(1.0, base + 0.15)
-            out.append(RiskItem(
-                title=f"{f.kind.value.replace('_', ' ')} at {f.url}",
-                score=score,
-                severity=f.severity,
-                source="explorer",
-                detail=f.detail,
-                endpoint=f"{f.method.upper()} {f.url}",
-            ))
+            out.append(
+                RiskItem(
+                    title=f"{f.kind.value.replace('_', ' ')} at {f.url}",
+                    score=score,
+                    severity=f.severity,
+                    source="explorer",
+                    detail=f.detail,
+                    endpoint=f"{f.method.upper()} {f.url}",
+                )
+            )
         return out
 
-    def _items_from_hypotheses(self, hypotheses: list[DivergenceHypothesis]) -> list[RiskItem]:
+    def _items_from_hypotheses(
+        self, hypotheses: list[DivergenceHypothesis]
+    ) -> list[RiskItem]:
         out: list[RiskItem] = []
         n = len(hypotheses)
         for rank, h in enumerate(hypotheses):
             base = _SEVERITY_WEIGHT.get(h.severity, 0.5)
             # preserve rerank order with a small positional bonus
             order_bonus = 0.1 * (1.0 - (rank / n)) if n else 0.0
-            out.append(RiskItem(
-                title=f"{h.divergence_class.value}: {h.claim_b[:80]}",
-                score=min(1.0, base + order_bonus),
-                severity=h.severity,
-                source="skeptic",
-                detail=h.predicted_evidence,
-                endpoint=h.endpoint,
-                hypothesis_id=h.id,
-            ))
+            out.append(
+                RiskItem(
+                    title=f"{h.divergence_class.value}: {h.claim_b[:80]}",
+                    score=min(1.0, base + order_bonus),
+                    severity=h.severity,
+                    source="skeptic",
+                    detail=h.predicted_evidence,
+                    endpoint=h.endpoint,
+                    hypothesis_id=h.id,
+                )
+            )
         return out
 
     def _items_from_idioms(self) -> list[RiskItem]:
@@ -118,15 +130,19 @@ class SecondPairOfEyes:
             return []
         out: list[RiskItem] = []
         for idiom in idioms:
-            out.append(RiskItem(
-                title=f"Known idiom: {getattr(idiom, 'pattern', '')[:80]}",
-                # idioms are priors, not live signals → mid weight scaled by decay
-                score=min(0.7, 0.4 + 0.3 * float(getattr(idiom, "decay_score", 0.0))),
-                severity=Severity.MEDIUM,
-                source="idiom",
-                detail=f"Confirmed {getattr(idiom, 'confirm_count', 1)}x previously.",
-                endpoint=getattr(idiom, "endpoint", None),
-            ))
+            out.append(
+                RiskItem(
+                    title=f"Known idiom: {getattr(idiom, 'pattern', '')[:80]}",
+                    # idioms are priors, not live signals → mid weight scaled by decay
+                    score=min(
+                        0.7, 0.4 + 0.3 * float(getattr(idiom, "decay_score", 0.0))
+                    ),
+                    severity=Severity.MEDIUM,
+                    source="idiom",
+                    detail=f"Confirmed {getattr(idiom, 'confirm_count', 1)}x previously.",
+                    endpoint=getattr(idiom, "endpoint", None),
+                )
+            )
         return out
 
     @staticmethod

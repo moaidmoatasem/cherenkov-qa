@@ -5,6 +5,7 @@ Subclasses OpenAIInferenceClient. Changes ONLY:
   - base_url → https://models.inference.ai.azure.com
   - api_key  → CHERENKOV_GITHUB_TOKEN or GITHUB_TOKEN (auto-provided in CI)
 """
+
 from __future__ import annotations
 
 import os
@@ -22,7 +23,5 @@ class GitHubModelsInferenceClient(OpenAIInferenceClient):
             "https://models.inference.ai.azure.com",
         )
         self.api_key = (
-            os.getenv("CHERENKOV_GITHUB_TOKEN")
-            or os.getenv("GITHUB_TOKEN")
-            or ""
+            os.getenv("CHERENKOV_GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN") or ""
         )

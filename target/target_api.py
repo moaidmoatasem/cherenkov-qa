@@ -6,8 +6,9 @@ Run NORMAL (Days 1-3):   uvicorn target_api:app --reload --port 8000
 Run REGRESSION (Day 4):  REGRESSION_MODE=true uvicorn target_api:app --reload --port 8000
 Get the spec:            curl http://localhost:8000/openapi.json > ../stub/target_spec.json
 """
+
 import os
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, HTMLResponse
 from pydantic import BaseModel, Field
@@ -56,7 +57,9 @@ async def create_user(user: UserCreate):
         # A test asserting toHaveProperty('id') will FAIL.
         # Use JSONResponse to bypass FastAPI's response_model validator so the
         # intentionally wrong shape reaches the client (not a 500 internal error).
-        return JSONResponse(status_code=201, content={"user_id": 42, "email": user.email})
+        return JSONResponse(
+            status_code=201, content={"user_id": 42, "email": user.email}
+        )
     return UserResponse(id=42, email=user.email)
 
 
@@ -88,13 +91,13 @@ async def home_page():
       --success: #10b981;
       --error: #ef4444;
     }
-    
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-    
+
     body {
       background-color: var(--bg);
       color: var(--text);
@@ -106,7 +109,7 @@ async def home_page():
       overflow: hidden;
       position: relative;
     }
-    
+
     body::before {
       content: '';
       position: absolute;
@@ -119,7 +122,7 @@ async def home_page():
       z-index: -1;
       filter: blur(80px);
     }
-    
+
     .card {
       background: var(--card-bg);
       backdrop-filter: blur(16px);
@@ -132,7 +135,7 @@ async def home_page():
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
       animation: fadeIn 0.6s ease-out;
     }
-    
+
     h1 {
       font-size: 24px;
       font-weight: 700;
@@ -142,19 +145,19 @@ async def home_page():
       -webkit-text-fill-color: transparent;
       letter-spacing: -0.5px;
     }
-    
+
     p.subtitle {
       color: var(--text-muted);
       font-size: 14px;
       margin-bottom: 24px;
     }
-    
+
     .form-group {
       margin-bottom: 20px;
       display: flex;
       flex-direction: column;
     }
-    
+
     label {
       font-size: 12px;
       font-weight: 600;
@@ -163,7 +166,7 @@ async def home_page():
       color: var(--text-muted);
       margin-bottom: 6px;
     }
-    
+
     input {
       background: rgba(9, 9, 11, 0.8);
       border: 1px solid var(--border);
@@ -174,12 +177,12 @@ async def home_page():
       outline: none;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    
+
     input:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px var(--accent-glow);
     }
-    
+
     .btn {
       width: 100%;
       background: var(--accent);
@@ -195,17 +198,17 @@ async def home_page():
       position: relative;
       overflow: hidden;
     }
-    
+
     .btn:hover {
       background: #1d4ed8;
       box-shadow: 0 6px 18px var(--accent-glow);
       transform: translateY(-1px);
     }
-    
+
     .btn:active {
       transform: translateY(1px);
     }
-    
+
     .message {
       margin-top: 16px;
       padding: 12px;
@@ -216,26 +219,26 @@ async def home_page():
       display: none;
       animation: slideIn 0.3s ease-out;
     }
-    
+
     .message.success {
       background: rgba(16, 185, 129, 0.1);
       border: 1px solid rgba(16, 185, 129, 0.3);
       color: var(--success);
       display: block;
     }
-    
+
     .message.error {
       background: rgba(239, 68, 68, 0.1);
       border: 1px solid rgba(239, 68, 68, 0.3);
       color: var(--error);
       display: block;
     }
-    
+
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
+
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(-5px); }
       to { opacity: 1; transform: translateY(0); }
@@ -247,21 +250,21 @@ async def home_page():
   <div class="card">
     <h1>Create QA User</h1>
     <p class="subtitle">Enter details to register a user on the target mock range.</p>
-    
+
     <form id="user-form" onsubmit="submitForm(event)">
       <div class="form-group">
         <label for="email-input">Email Address</label>
         <input type="text" id="email-input" placeholder="qa@cherenkov.local" required autocomplete="off">
       </div>
-      
+
       <div class="form-group">
         <label for="password-input">Password</label>
         <input type="password" id="password-input" placeholder="••••••••" required autocomplete="off">
       </div>
-      
+
       <button type="submit" id="submit-button" class="btn">Register User</button>
     </form>
-    
+
     <div id="feedback-message" class="message"></div>
   </div>
 
@@ -272,12 +275,12 @@ async def home_page():
       const password = document.getElementById('password-input').value;
       const feedback = document.getElementById('feedback-message');
       const submitBtn = document.getElementById('submit-button');
-      
+
       submitBtn.disabled = true;
       submitBtn.innerText = 'Registering...';
       feedback.className = 'message';
       feedback.style.display = '';
-      
+
       try {
         const response = await fetch('/users', {
           method: 'POST',
@@ -286,9 +289,9 @@ async def home_page():
           },
           body: JSON.stringify({ email, password })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.status === 201) {
           feedback.innerText = `Success: User created with ID ${data.id || data.user_id}`;
           feedback.className = 'message success';
@@ -311,4 +314,3 @@ async def home_page():
   </script>
 </body>
 </html>"""
-

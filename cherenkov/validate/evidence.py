@@ -2,9 +2,9 @@
 cherenkov/validate/evidence.py
 EvidenceCollector – writes per-gate captured output to a base directory.
 """
+
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 
@@ -35,7 +35,9 @@ class EvidenceCollector:
         content = f"STATUS: {status}\nDETAIL: {detail}\n---\n{output}"
         target.write_text(content, encoding="utf-8")
         path = str(target.resolve())
-        self._records.append({"name": name, "path": path, "size": target.stat().st_size})
+        self._records.append(
+            {"name": name, "path": path, "size": target.stat().st_size}
+        )
         return path
 
     def collect_all(self) -> list[dict]:
@@ -45,7 +47,11 @@ class EvidenceCollector:
         if self.base_dir.exists():
             for file in sorted(self.base_dir.glob("*.txt")):
                 results.append(
-                    {"name": file.stem, "path": str(file.resolve()), "size": file.stat().st_size}
+                    {
+                        "name": file.stem,
+                        "path": str(file.resolve()),
+                        "size": file.stat().st_size,
+                    }
                 )
         return results
 
@@ -56,5 +62,7 @@ class EvidenceCollector:
             return "No evidence collected."
         lines = [f"Evidence summary ({len(items)} item(s)) in {self.base_dir}:", ""]
         for item in items:
-            lines.append(f"  {item['name']:<40}  {item['size']:>6} bytes  {item['path']}")
+            lines.append(
+                f"  {item['name']:<40}  {item['size']:>6} bytes  {item['path']}"
+            )
         return "\n".join(lines)

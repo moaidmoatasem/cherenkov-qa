@@ -3,15 +3,12 @@ test_openclaw.py — Unit tests for OpenClaw Tier-1 adapter (Issue #116).
 
 Tests the OpenClawAdapter class and its hitl/v1 envelope operations.
 """
+
 import unittest
-import json
 import os
 import tempfile
-import threading
-import time
-from unittest.mock import MagicMock, patch
 
-from cherenkov.hitl.contracts import HitlItem, HitlStatus, ok_envelope, err_envelope
+from cherenkov.hitl.contracts import HitlItem, HitlStatus, ok_envelope
 from cherenkov.hitl.store import HitlQueue
 from cherenkov.openclaw.adapter import OpenClawAdapter, TriggerRequest
 from cherenkov.openclaw.contracts import OpenClawConfig
@@ -31,7 +28,9 @@ class TestOpenClawAdapter(unittest.TestCase):
     def tearDown(self):
         os.unlink(self.db_path)
 
-    def _seed_item(self, item_id: str = "test-item-1", status: HitlStatus = HitlStatus.PENDING):
+    def _seed_item(
+        self, item_id: str = "test-item-1", status: HitlStatus = HitlStatus.PENDING
+    ):
         item = HitlItem(
             id=item_id,
             status=status,
@@ -139,7 +138,9 @@ class TestOpenClawAdapter(unittest.TestCase):
 
         def handler(req: TriggerRequest) -> str:
             results.append(req.reason)
-            return ok_envelope("openclaw.trigger", {"triggered": True, "reason": req.reason})
+            return ok_envelope(
+                "openclaw.trigger", {"triggered": True, "reason": req.reason}
+            )
 
         # wrap the bare function since on_trigger expects a TriggerCallback
         self.adapter.on_trigger(handler)
@@ -203,8 +204,17 @@ class TestOpenClawAdapter(unittest.TestCase):
 
     def test_error_envelopes_have_valid_error_code(self):
         env = self.adapter.show_envelope("nope")
-        self.assertIn(env.error.code, {"conflict", "not_found", "forbidden",
-                                        "invalid_input", "db_locked", "llm_unavailable"})
+        self.assertIn(
+            env.error.code,
+            {
+                "conflict",
+                "not_found",
+                "forbidden",
+                "invalid_input",
+                "db_locked",
+                "llm_unavailable",
+            },
+        )
 
     # ── config ─────────────────────────────────────────────────────────────
 
@@ -224,6 +234,7 @@ class TestOpenClawAdapter(unittest.TestCase):
 
     def test_schema_version_matches_hitl_contract(self):
         from cherenkov.hitl.contracts import SCHEMA_VERSION as HITL_SCHEMA
+
         env = self.adapter.list_envelope()
         self.assertEqual(env.schema_version, HITL_SCHEMA)
 
@@ -238,8 +249,13 @@ class TestTriggerRequest(unittest.TestCase):
         self.assertIsNone(req.endpoint)
 
     def test_custom_values(self):
-        req = TriggerRequest(run_id="run-1", endpoint="/api/test", method="POST",
-                              reason="ci_callback", params={"key": "value"})
+        req = TriggerRequest(
+            run_id="run-1",
+            endpoint="/api/test",
+            method="POST",
+            reason="ci_callback",
+            params={"key": "value"},
+        )
         self.assertEqual(req.run_id, "run-1")
         self.assertEqual(req.endpoint, "/api/test")
         self.assertEqual(req.method, "POST")

@@ -7,11 +7,10 @@ CHERENKOV_XRAY_* env vars are set.
 
 Closes: #450
 """
+
 from __future__ import annotations
 
-import json
 import os
-import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -71,7 +70,10 @@ class XrayClient:
     def _headers(self) -> dict[str, str]:
         if isinstance(self.config, XrayCloudConfig):
             token = self._authenticate_cloud()
-            return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+            return {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            }
         return {
             "Authorization": f"Bearer {self.config.token}",
             "Content-Type": "application/json",
@@ -138,13 +140,15 @@ class XrayClient:
             xray_status = CHERENKOV_TO_XRAY.get(verdict, "ABORTED")
             endpoint = item.get("endpoint", item.get("path", "unknown"))
             method = item.get("method", "GET")
-            tests.append({
-                "testKey": item.get("test_key"),
-                "start": now,
-                "finish": now,
-                "status": xray_status,
-                "comment": f"{method} {endpoint} — {verdict}",
-            })
+            tests.append(
+                {
+                    "testKey": item.get("test_key"),
+                    "start": now,
+                    "finish": now,
+                    "status": xray_status,
+                    "comment": f"{method} {endpoint} — {verdict}",
+                }
+            )
 
         payload: dict[str, Any] = {
             "testExecutionKey": report.get("execution_key"),

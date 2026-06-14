@@ -2,6 +2,7 @@
 CHERENKOV ai/interface.py — model-agnostic inference client seam.
 Authority: v3.1 + delta.
 """
+
 from __future__ import annotations
 
 import abc
@@ -87,9 +88,11 @@ class CachedInferenceClient(InferenceClient):
 
     def _real_token_usage(self) -> dict[str, int]:
         """Read token counts the underlying client captured from the API response."""
-        return getattr(self._client, "_token_usage", {
-            "prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0
-        })
+        return getattr(
+            self._client,
+            "_token_usage",
+            {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0},
+        )
 
     def complete_json(
         self,
@@ -105,9 +108,13 @@ class CachedInferenceClient(InferenceClient):
         cached = self._cache.get(model, system_prompt, user_prompt)
         if cached is not None:
             self._accountant.record(
-                model=model, duration_ms=0, tokens=0,
-                cache_hit=True, provider=self._provider,
-                stage=stage, run_id=run_id or "",
+                model=model,
+                duration_ms=0,
+                tokens=0,
+                cache_hit=True,
+                provider=self._provider,
+                stage=stage,
+                run_id=run_id or "",
             )
             return cached
 
@@ -125,11 +132,15 @@ class CachedInferenceClient(InferenceClient):
 
         self._cache.set(model, system_prompt, user_prompt, result)
         self._accountant.record_json(
-            model=model, duration_ms=dt_ms, output=result, cache_hit=False,
+            model=model,
+            duration_ms=dt_ms,
+            output=result,
+            cache_hit=False,
             provider=self._provider,
             prompt_tokens=usage.get("prompt_tokens", 0),
             completion_tokens=usage.get("completion_tokens", 0),
-            stage=stage, run_id=run_id or "",
+            stage=stage,
+            run_id=run_id or "",
             reprompts=usage.get("reprompts", 0),
         )
 
@@ -148,9 +159,13 @@ class CachedInferenceClient(InferenceClient):
         cached = self._cache.get(model, system_prompt, user_prompt)
         if cached is not None:
             self._accountant.record(
-                model=model, duration_ms=0, tokens=0,
-                cache_hit=True, provider=self._provider,
-                stage=stage, run_id=run_id or "",
+                model=model,
+                duration_ms=0,
+                tokens=0,
+                cache_hit=True,
+                provider=self._provider,
+                stage=stage,
+                run_id=run_id or "",
             )
             return str(cached)
 
@@ -167,11 +182,15 @@ class CachedInferenceClient(InferenceClient):
 
         self._cache.set(model, system_prompt, user_prompt, result)
         self._accountant.record_code(
-            model=model, duration_ms=dt_ms, output=result, cache_hit=False,
+            model=model,
+            duration_ms=dt_ms,
+            output=result,
+            cache_hit=False,
             provider=self._provider,
             prompt_tokens=usage.get("prompt_tokens", 0),
             completion_tokens=usage.get("completion_tokens", 0),
-            stage=stage, run_id=run_id or "",
+            stage=stage,
+            run_id=run_id or "",
             reprompts=usage.get("reprompts", 0),
         )
 
@@ -205,9 +224,13 @@ class CachedInferenceClient(InferenceClient):
         cached = self._cache.get(model, system_prompt, user_prompt + image_data[:80])
         if cached is not None:
             self._accountant.record(
-                model=model, duration_ms=0, tokens=0,
-                cache_hit=True, provider=self._provider,
-                stage=stage, run_id=run_id or "",
+                model=model,
+                duration_ms=0,
+                tokens=0,
+                cache_hit=True,
+                provider=self._provider,
+                stage=stage,
+                run_id=run_id or "",
             )
             return str(cached)
 
@@ -225,11 +248,15 @@ class CachedInferenceClient(InferenceClient):
 
         self._cache.set(model, system_prompt, user_prompt + image_data[:80], result)
         self._accountant.record_code(
-            model=model, duration_ms=dt_ms, output=result, cache_hit=False,
+            model=model,
+            duration_ms=dt_ms,
+            output=result,
+            cache_hit=False,
             provider=self._provider,
             prompt_tokens=usage.get("prompt_tokens", 0),
             completion_tokens=usage.get("completion_tokens", 0),
-            stage=stage, run_id=run_id or "",
+            stage=stage,
+            run_id=run_id or "",
         )
 
         return result

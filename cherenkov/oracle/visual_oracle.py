@@ -3,6 +3,7 @@ CHERENKOV oracle/visual_oracle.py — Epoch 9 Semantic Visual Oracle.
 Uses VLM to semantically analyse screenshots and classify changes as
 real anomalies vs harmless shifts.
 """
+
 from __future__ import annotations
 
 import json
@@ -19,6 +20,7 @@ from cherenkov.core.contracts import ReasoningRequest
 
 class VisualChangeKind:
     """Classification of a visual change."""
+
     ANOMALY = "anomaly"
     HARMLESS_SHIFT = "harmless_shift"
     REDESIGN = "redesign"
@@ -41,14 +43,20 @@ class VisualOracle(Oracle):
 
     def evaluate(self, claim: Claim, **kwargs: Any) -> OracleResult:
         if claim.category not in ("visual", "visual_diff", "screenshot"):
-            return OracleResult(is_correct=True, confidence=0.5, detail="Non-evaluable visual claim category")
+            return OracleResult(
+                is_correct=True,
+                confidence=0.5,
+                detail="Non-evaluable visual claim category",
+            )
 
         baseline_path = kwargs.get("baseline_path", "")
         actual_path = kwargs.get("actual_path", "")
         diff_pixels = kwargs.get("diff_pixels", -1)
 
         if not actual_path:
-            return OracleResult(is_correct=True, confidence=0.3, detail="No actual screenshot provided")
+            return OracleResult(
+                is_correct=True, confidence=0.3, detail="No actual screenshot provided"
+            )
 
         try:
             result = self._analyse_screenshot(
@@ -99,7 +107,10 @@ class VisualOracle(Oracle):
             "type": "object",
             "properties": {
                 "description": {"type": "string"},
-                "kind": {"type": "string", "enum": ["anomaly", "harmless_shift", "redesign", "unknown"]},
+                "kind": {
+                    "type": "string",
+                    "enum": ["anomaly", "harmless_shift", "redesign", "unknown"],
+                },
                 "confidence": {"type": "number"},
                 "explanation": {"type": "string"},
                 "elements_found": {"type": "array", "items": {"type": "string"}},
@@ -143,18 +154,28 @@ def classify_visual_change(
 ) -> dict:
     """Convenience: run visual classification and return the result dict."""
     from cherenkov.core.contracts import Provenance, ProvenanceType
+
     oracle = VisualOracle()
     claim = Claim(
         id="visual_classify",
         category="visual_diff",
         subject="screenshot",
         value={"diff_pixels": diff_pixels},
-        provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri="visual_oracle"),
+        provenance=Provenance(
+            source_type=ProvenanceType.SPEC, source_uri="visual_oracle"
+        ),
     )
-    result = oracle.evaluate(claim, baseline_path=baseline_path, actual_path=actual_path, diff_pixels=diff_pixels)
+    result = oracle.evaluate(
+        claim,
+        baseline_path=baseline_path,
+        actual_path=actual_path,
+        diff_pixels=diff_pixels,
+    )
     return {
         "is_correct": result.is_correct,
         "confidence": result.confidence,
         "detail": result.detail,
-        "kind": result.detail.split(":")[0] if ":" in result.detail else VisualChangeKind.UNKNOWN,
+        "kind": result.detail.split(":")[0]
+        if ":" in result.detail
+        else VisualChangeKind.UNKNOWN,
     }

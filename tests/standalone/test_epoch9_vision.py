@@ -2,22 +2,28 @@
 test_epoch9_vision.py — Unit tests for Epoch 9 Vision Perception (Issue #90).
 Tests: VLMProvider, VisualOracle, VisualHealer, VisionConfirmPilot, substrate vision tier.
 """
+
 import unittest
-from unittest.mock import patch, MagicMock, mock_open
-import tempfile
-import json
+from unittest.mock import patch, MagicMock
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.config import Config
 from cherenkov.core.config_loader import KNOWN_KEYS, PROFILE_DEFAULTS, BUILTIN_DEFAULTS
-from cherenkov.substrate.provider import provider_for_tier, get_vlm_provider, ProviderCapabilities
-from cherenkov.substrate.vlm_provider import VLMProvider, VLMResult
-from cherenkov.oracle.visual_oracle import VisualOracle, classify_visual_change, VisualChangeKind
+from cherenkov.substrate.provider import provider_for_tier, get_vlm_provider
+from cherenkov.substrate.vlm_provider import VLMProvider
+from cherenkov.oracle.visual_oracle import VisualOracle
 from cherenkov.healing.visual_heal import VisualHealer
 from cherenkov.stages.vision_confirm import VisionConfirmPilot
 from cherenkov.core.contracts import (
-    VisualReport, VisualGateResult, Verdict, Status, StageMeta, StageError,
-    Claim, Provenance, ProvenanceType,
+    VisualReport,
+    VisualGateResult,
+    Verdict,
+    Status,
+    StageMeta,
+    StageError,
+    Claim,
+    Provenance,
+    ProvenanceType,
 )
 
 
@@ -43,8 +49,12 @@ class TestVisionTierConfig(unittest.TestCase):
         self.assertIn("substrate.tiers.vision.model", PROFILE_DEFAULTS["laptop"])
 
     def test_vision_tier_in_frontier_cloud_profile(self):
-        self.assertIn("substrate.tiers.vision.provider", PROFILE_DEFAULTS["frontier-cloud"])
-        self.assertIn("substrate.tiers.vision.model", PROFILE_DEFAULTS["frontier-cloud"])
+        self.assertIn(
+            "substrate.tiers.vision.provider", PROFILE_DEFAULTS["frontier-cloud"]
+        )
+        self.assertIn(
+            "substrate.tiers.vision.model", PROFILE_DEFAULTS["frontier-cloud"]
+        )
 
     def test_vision_tier_in_builtin_defaults(self):
         self.assertIn("substrate.tiers.vision.provider", BUILTIN_DEFAULTS)
@@ -76,7 +86,9 @@ class TestVLMProvider(unittest.TestCase):
     def test_generate_with_image(self, mock_encode):
         mock_encode.return_value = "base64_fake_image_data"
         client = MagicMock()
-        client.complete_vision.return_value = "The screenshot shows a login form with email and password fields."
+        client.complete_vision.return_value = (
+            "The screenshot shows a login form with email and password fields."
+        )
         vlm = VLMProvider(client=client)
 
         request = ReasoningRequest(
@@ -316,6 +328,7 @@ class TestVisionTierProviderForTier(unittest.TestCase):
     def test_provider_for_tier_vision_returns_vlm(self):
         vlm = provider_for_tier("vision")
         from cherenkov.substrate.vlm_provider import VLMProvider
+
         self.assertIsInstance(vlm, VLMProvider)
 
     def test_provider_for_tier_vision_capabilities(self):

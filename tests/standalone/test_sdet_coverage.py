@@ -8,6 +8,7 @@ Covers:
 
 All model/server/trace work is injected as fakes — no live Ollama/Prism/Playwright.
 """
+
 import unittest
 
 from cherenkov.core.contracts import CoverageItemState, Status
@@ -47,8 +48,8 @@ class TestMeaningfulAssertionGate(unittest.TestCase):
 
     def test_kill_rate_accumulates(self):
         gate = MeaningfulAssertionGate()
-        gate.evaluate("ok", lambda u: (u == CORRECT, ""), CORRECT, BROKEN)   # meaningful
-        gate.evaluate("taut", lambda u: (True, ""), CORRECT, BROKEN)         # killed
+        gate.evaluate("ok", lambda u: (u == CORRECT, ""), CORRECT, BROKEN)  # meaningful
+        gate.evaluate("taut", lambda u: (True, ""), CORRECT, BROKEN)  # killed
         self.assertAlmostEqual(gate.kill_rate(), 0.5)
         self.assertIn("kill rate", gate.report())
 
@@ -67,7 +68,9 @@ class TestCoverageLoop(unittest.TestCase):
         )
 
     def test_all_covered_first_try_no_gate(self):
-        loop = self._loop(lambda a, url: RunOutcome(passed=True, exercised=True), threshold=1.0)
+        loop = self._loop(
+            lambda a, url: RunOutcome(passed=True, exercised=True), threshold=1.0
+        )
         report = loop.run(["a", "b", "c"])
         self.assertEqual(report.covered, 3)
         self.assertEqual(report.coverage, 1.0)
@@ -88,7 +91,7 @@ class TestCoverageLoop(unittest.TestCase):
         report = loop.run(["a"])
         item = report.items[0]
         self.assertEqual(item.state, CoverageItemState.COVERED)
-        self.assertEqual(item.attempts, 2)   # 1 generate + 1 repair
+        self.assertEqual(item.attempts, 2)  # 1 generate + 1 repair
 
     def test_bounded_unmet_when_never_passes(self):
         loop = self._loop(
@@ -99,7 +102,7 @@ class TestCoverageLoop(unittest.TestCase):
         report = loop.run(["a"])
         item = report.items[0]
         self.assertEqual(item.state, CoverageItemState.UNMET)
-        self.assertEqual(item.attempts, 3)   # 1 generate + 2 repairs (bounded)
+        self.assertEqual(item.attempts, 3)  # 1 generate + 2 repairs (bounded)
         self.assertEqual(report.status, Status.DEGRADED)
 
     def test_not_exercised_is_not_covered(self):
@@ -114,10 +117,12 @@ class TestCoverageLoop(unittest.TestCase):
         self.assertIn("exercise", item.detail)
 
     def test_early_exit_at_threshold_leaves_pending(self):
-        loop = self._loop(lambda a, url: RunOutcome(passed=True, exercised=True), threshold=0.5)
+        loop = self._loop(
+            lambda a, url: RunOutcome(passed=True, exercised=True), threshold=0.5
+        )
         report = loop.run(["a", "b", "c", "d"])
         self.assertTrue(report.threshold_met)
-        self.assertEqual(report.covered, 2)            # stops once 2/4 == 0.5
+        self.assertEqual(report.covered, 2)  # stops once 2/4 == 0.5
         pending = [i for i in report.items if i.state == CoverageItemState.PENDING]
         self.assertEqual(len(pending), 2)
 
@@ -156,7 +161,9 @@ class TestCoverageLoop(unittest.TestCase):
             self._loop(lambda a, url: RunOutcome(passed=True), max_repairs=-1)
 
     def test_render_is_readable(self):
-        loop = self._loop(lambda a, url: RunOutcome(passed=True, exercised=True), threshold=1.0)
+        loop = self._loop(
+            lambda a, url: RunOutcome(passed=True, exercised=True), threshold=1.0
+        )
         report = loop.run(["a"])
         text = report.render()
         self.assertIn("Coverage SDET", text)

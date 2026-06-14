@@ -9,39 +9,47 @@ Validates:
 - SchemaIndex always unions explicit refs with retrieved schemas
 - Integration with ingest pipeline when CHERENKOV_RAG_ENABLED=1
 """
+
 import json
 import os
 import tempfile
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 try:
     import numpy as np
+
     _NUMPY_AVAILABLE = True
 except ImportError:
     np = None
     _NUMPY_AVAILABLE = False
 
 
-@unittest.skipUnless(_NUMPY_AVAILABLE, "numpy not installed — skipping SchemaIndex tests")
+@unittest.skipUnless(
+    _NUMPY_AVAILABLE, "numpy not installed — skipping SchemaIndex tests"
+)
 class TestSchemaChunking(unittest.TestCase):
     """Tests for schema chunk text building."""
 
     def setUp(self):
         # Import here to avoid import-order issues with mocks
         from cherenkov.rag.schema_index import SchemaIndex
+
         self.SchemaIndex = SchemaIndex
 
     def test_build_chunk_text_includes_name_and_type(self):
-        text = self.SchemaIndex._build_chunk_text("UserCreate", {
-            "type": "object",
-            "description": "A user creation payload",
-            "properties": {
-                "email": {"type": "string", "description": "User email"},
-                "age": {"type": "integer"},
+        text = self.SchemaIndex._build_chunk_text(
+            "UserCreate",
+            {
+                "type": "object",
+                "description": "A user creation payload",
+                "properties": {
+                    "email": {"type": "string", "description": "User email"},
+                    "age": {"type": "integer"},
+                },
+                "required": ["email"],
             },
-            "required": ["email"],
-        })
+        )
         self.assertIn("schema: UserCreate", text)
         self.assertIn("description: A user creation payload", text)
         self.assertIn("type: object", text)
@@ -55,12 +63,15 @@ class TestSchemaChunking(unittest.TestCase):
         self.assertIn("type: object", text)
 
 
-@unittest.skipUnless(_NUMPY_AVAILABLE, "numpy not installed — skipping SchemaIndex tests")
+@unittest.skipUnless(
+    _NUMPY_AVAILABLE, "numpy not installed — skipping SchemaIndex tests"
+)
 class TestSchemaIndexCache(unittest.TestCase):
     """Tests for SchemaIndex disk cache."""
 
     def setUp(self):
         from cherenkov.rag.schema_index import SchemaIndex
+
         self.SchemaIndex = SchemaIndex
         self.tmpdir = tempfile.mkdtemp()
 
@@ -100,15 +111,19 @@ class TestSchemaIndexCache(unittest.TestCase):
 
     def tearDown(self):
         import shutil
+
         shutil.rmtree(self.tmpdir, ignore_errors=True)
 
 
-@unittest.skipUnless(_NUMPY_AVAILABLE, "numpy not installed — skipping SchemaIndex tests")
+@unittest.skipUnless(
+    _NUMPY_AVAILABLE, "numpy not installed — skipping SchemaIndex tests"
+)
 class TestSchemaRetrieval(unittest.TestCase):
     """Tests for RAG-based schema retrieval."""
 
     def setUp(self):
         from cherenkov.rag.schema_index import SchemaIndex
+
         self.SchemaIndex = SchemaIndex
         self.index = SchemaIndex(cache_dir=tempfile.mkdtemp())
 
@@ -116,9 +131,18 @@ class TestSchemaRetrieval(unittest.TestCase):
         spec = {
             "components": {
                 "schemas": {
-                    "UserCreate": {"type": "object", "properties": {"email": {"type": "string"}}},
-                    "UserResponse": {"type": "object", "properties": {"id": {"type": "integer"}}},
-                    "Pagination": {"type": "object", "properties": {"page": {"type": "integer"}}},
+                    "UserCreate": {
+                        "type": "object",
+                        "properties": {"email": {"type": "string"}},
+                    },
+                    "UserResponse": {
+                        "type": "object",
+                        "properties": {"id": {"type": "integer"}},
+                    },
+                    "Pagination": {
+                        "type": "object",
+                        "properties": {"page": {"type": "integer"}},
+                    },
                 }
             }
         }
@@ -165,13 +189,17 @@ class TestSchemaRetrieval(unittest.TestCase):
 
     def tearDown(self):
         import shutil
-        if hasattr(self, 'index') and hasattr(self.index, '_cache_dir'):
+
+        if hasattr(self, "index") and hasattr(self.index, "_cache_dir"):
             cache_dir = self.index._cache_dir
             import shutil
+
             shutil.rmtree(str(cache_dir.parent), ignore_errors=True)
 
 
-@unittest.skipUnless(_NUMPY_AVAILABLE, "numpy not installed — skipping SchemaIndex tests")
+@unittest.skipUnless(
+    _NUMPY_AVAILABLE, "numpy not installed — skipping SchemaIndex tests"
+)
 class TestRAGIngestIntegration(unittest.TestCase):
     """Tests that RAG enriches schemas in the ingest pipeline."""
 
@@ -208,12 +236,18 @@ class TestRAGIngestIntegration(unittest.TestCase):
                         "required": ["email", "password"],
                         "properties": {
                             "email": {"type": "string", "description": "User email"},
-                            "password": {"type": "string", "description": "User password"},
+                            "password": {
+                                "type": "string",
+                                "description": "User password",
+                            },
                         },
                     },
                     "UserResponse": {
                         "type": "object",
-                        "properties": {"id": {"type": "integer"}, "email": {"type": "string"}},
+                        "properties": {
+                            "id": {"type": "integer"},
+                            "email": {"type": "string"},
+                        },
                     },
                 }
             },
@@ -221,6 +255,7 @@ class TestRAGIngestIntegration(unittest.TestCase):
 
     def test_rag_enriches_resolved_schemas(self):
         import cherenkov.stages.ingest as ingest_mod
+
         ingest_mod._rag_enabled = lambda: True
 
         from cherenkov.stages.ingest import IngestStage as IngSt
@@ -239,15 +274,23 @@ class TestRAGIngestIntegration(unittest.TestCase):
                 ]
                 output = stage.run(tmp.name)
             ep = output.endpoints[0]
-            self.assertIn("UserCreate", ep.schemas,
-                          "Depth-limited ref resolution should find UserCreate")
-            self.assertIn("UserResponse", ep.schemas,
-                          "RAG enrichment should add UserResponse schema")
+            self.assertIn(
+                "UserCreate",
+                ep.schemas,
+                "Depth-limited ref resolution should find UserCreate",
+            )
+            self.assertIn(
+                "UserResponse",
+                ep.schemas,
+                "RAG enrichment should add UserResponse schema",
+            )
         finally:
             os.unlink(tmp.name)
             if hasattr(IngSt, "_rag"):
                 IngSt._rag = None  # reset class-level cache
-            ingest_mod._rag_enabled = lambda: bool(os.getenv("CHERENKOV_RAG_ENABLED", "").lower() in ("1", "true", "yes"))
+            ingest_mod._rag_enabled = lambda: bool(
+                os.getenv("CHERENKOV_RAG_ENABLED", "").lower() in ("1", "true", "yes")
+            )
 
 
 if __name__ == "__main__":

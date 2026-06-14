@@ -232,7 +232,7 @@ Same architecture as Slack but using Teams Adaptive Cards (richer than Slack blo
 ```python
 class JiraClient:
     """Real Jira API v3 integration."""
-    
+
     async def create_issue(
         self,
         project_key: str,
@@ -248,7 +248,7 @@ class JiraClient:
         issue_key: str,
         verdict_id: str,
     ) -> None: ...
-    
+
     async def transition_issue(
         self,
         issue_key: str,
@@ -294,14 +294,14 @@ Xray is the #1 test management tool for enterprise Jira shops. 8,000+ companies 
 ```python
 class XrayExporter:
     """Exports CHERENKOV verdicts as Xray test execution results."""
-    
+
     async def import_execution(
-        self, 
+        self,
         verdicts: list[Verdict],
         test_plan_key: str,
         environment: str,
     ) -> XrayExecutionResult: ...
-    
+
     # Xray JSON format: https://docs.getxray.app/display/XRAY/Import+Execution+Results
 ```
 
@@ -397,7 +397,7 @@ class AllureEmitter:
 # cherenkov/substrate/providers/anthropic.py
 class AnthropicProvider(LLMProvider):
     """Claude Sonnet/Opus via Anthropic API — highest quality test generation."""
-    
+
     async def complete(self, request: ReasoningRequest) -> ReasoningResult:
         # Uses claude-sonnet-4-6 for test generation
         # Uses claude-haiku-4-5 for fast healing suggestions
@@ -424,7 +424,7 @@ The MCP server is already built. Cursor and Windsurf both support MCP natively. 
 ### 16. LangChain / LlamaIndex Tool ❌ → Agent Ecosystem
 
 Package CHERENKOV as a LangChain tool and LlamaIndex query engine. This means any team building an AI agent can add `from cherenkov import CherenkovTool` and get:
-- `CherenkovTool.generate_tests(spec_path)` 
+- `CherenkovTool.generate_tests(spec_path)`
 - `CherenkovTool.validate(target_url)`
 - `CherenkovTool.explain_violation(violation_id)`
 
@@ -705,11 +705,11 @@ The desktop app's job is to be a **self-contained onboarding machine**:
 
 **That flow — no terminal, no Docker, no reading docs — is worth more than 6 months of documentation.**
 
-The technical path: unblock `cargo` via `tauri-action` in CI, build the setup wizard as a Tauri native window (not a web view), bundle the Python CLI as a sidecar via PyInstaller. 
+The technical path: unblock `cargo` via `tauri-action` in CI, build the setup wizard as a Tauri native window (not a web view), bundle the Python CLI as a sidecar via PyInstaller.
 
 **This should be Phase 9 after the GitHub Actions action ships.** Order matters: engineers need the CLI to work first, then the desktop app makes it accessible to non-engineers.
 
 ---
 
-*Document authored: 2026-06-09*  
+*Document authored: 2026-06-09*
 *Part of: PRODUCT_STRATEGY_ROADMAP.md series*
