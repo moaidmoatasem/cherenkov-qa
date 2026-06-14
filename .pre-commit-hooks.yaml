@@ -1,0 +1,7 @@
+- id: cherenkov-validate
+  name: cherenkov-validate
+  description: Validates OpenAPI conformance using Cherenkov QA
+  entry: cherenkov validate
+  language: python
+  types: [yaml, json]
+  pass_filenames: false

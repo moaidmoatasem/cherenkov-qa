@@ -46,6 +46,20 @@ class SpecGuardianTriggerLoop:
                 source = GraphQLSourceAdapter(spec_path)
                 planner = GraphQLScenarioPlanner()
                 scenarios = planner.plan(source)
+            elif self.source_type == "grpc":
+                from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
+                from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
+
+                source = gRPCSourceAdapter(spec_path)
+                planner = gRPCScenarioPlanner()
+                scenarios = planner.plan(source)
+            elif self.source_type == "accessibility":
+                from cherenkov.sources.accessibility.adapter import AccessibilitySourceAdapter
+                from cherenkov.stages.plan_accessibility import AccessibilityScenarioPlanner
+
+                source = AccessibilitySourceAdapter(spec_path)
+                planner = AccessibilityScenarioPlanner()
+                scenarios = planner.plan(source)
             else:
                 logger.error(f"[{run_id}] Unsupported source type {self.source_type}")
                 return
