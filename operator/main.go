@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"net/http"
 	"os"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -66,7 +68,12 @@ func main() {
 		setupLog.Error(err, "unable to set up health check")
 		os.Exit(1)
 	}
-	if err := mgr.AddReadyzCheck("readyz", mgr.GetCache().WaitForCacheSync); err != nil {
+	if err := mgr.AddReadyzCheck("readyz", func(req *http.Request) error {
+		if mgr.GetCache().WaitForCacheSync(req.Context()) {
+			return nil
+		}
+		return fmt.Errorf("cache not synced")
+	}); err != nil {
 		setupLog.Error(err, "unable to set up ready check")
 		os.Exit(1)
 	}

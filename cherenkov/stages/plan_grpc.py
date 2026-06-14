@@ -13,26 +13,24 @@ class gRPCScenarioPlanner:
         
         # 1. Happy path
         scenarios.append(gRPCScenario(
-            operation_name=op.rpc_name,
             service=op.service,
             rpc_name=op.rpc_name,
             input_message=op.input_message,
             proto_content=op.proto_content,
-            scenario_type="happy_path",
             case_type="happy_path",
-            mutation_id=f"grpc_{op.service}_{op.rpc_name}_happy"
+            mutation_id=f"grpc_{op.service}_{op.rpc_name}_happy",
+            expected_status=200
         ))
         
         # 2. Missing fields
         scenarios.append(gRPCScenario(
-            operation_name=op.rpc_name,
             service=op.service,
             rpc_name=op.rpc_name,
             input_message=op.input_message,
             proto_content=op.proto_content,
-            scenario_type="missing_fields",
             case_type="missing_fields",
-            mutation_id=f"grpc_{op.service}_{op.rpc_name}_missing"
+            mutation_id=f"grpc_{op.service}_{op.rpc_name}_missing",
+            expected_status=400
         ))
         
         return scenarios

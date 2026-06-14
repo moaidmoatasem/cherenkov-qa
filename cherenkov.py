@@ -680,6 +680,16 @@ def main():
             scenarios = planner.plan(source)
             for sc in scenarios:
                 GenerateStage("cli_validate").run(scenario=sc, source_type="graphql")
+        elif getattr(args, "source", "openapi") == "grpc":
+            from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
+            from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
+            from cherenkov.stages.generate import GenerateStage
+
+            source = gRPCSourceAdapter(args.spec)
+            planner = gRPCScenarioPlanner()
+            scenarios = planner.plan(source)
+            for sc in scenarios:
+                GenerateStage("cli_validate").run(scenario=sc, source_type="grpc")
         elif getattr(args, "source", "openapi") == "accessibility":
             from cherenkov.sources.accessibility.adapter import (
                 AccessibilitySourceAdapter,

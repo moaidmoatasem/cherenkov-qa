@@ -12,8 +12,8 @@ from cherenkov.core.contracts import ReasoningResult
 
 class TestOpenClawTier3(unittest.TestCase):
     def setUp(self):
-        self.db_fd, self.db_path = tempfile.mkstemp()
-        self.fb_fd, self.fb_path = tempfile.mkstemp()
+        self.db_fd, self.db_path = tempfile.mkstemp(suffix=".db")
+        self.fb_fd, self.fb_path = tempfile.mkstemp(suffix=".db")
         self.queue = HitlQueue(db_path=self.db_path)
         self.feedback = HealingFeedbackStore(db_path=self.fb_path)
         self.adapter = OpenClawAdapter(queue=self.queue, feedback_store=self.feedback)

@@ -337,9 +337,7 @@ class GenerateStage:
         return GenerateOutput(
             scenario_id=mutation_id,
             test_code=code,
-            imports=["@playwright/test"]
-            if source_type == "graphql"
-            else ["@playwright/test", "../client"],
+            imports=["@playwright/test"] if source_type in ("graphql", "grpc") else ["@playwright/test", "../client"],
             status=Status.OK,
             metadata=StageMeta(stage="GENERATE", duration_ms=dt),
             endpoint=path,
