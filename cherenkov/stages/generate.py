@@ -61,9 +61,13 @@ class GenerateStage:
         operation: dict[str, Any],
         schemas: dict[str, Any],
         scenario: Scenario,
-        instruction: str
+        instruction: str,
+        spec_rules_block: str = "",
     ) -> str:
         """Constructs a recency-anchored prompt payload, placing strict openapi-fetch rules at the absolute end to override model semantic bias."""
+        enrichment = (
+            f"\n\n{spec_rules_block}" if spec_rules_block else ""
+        )
         return (
             "ENDPOINT SLICE (the only schema you need):\n"
             + json.dumps(
@@ -75,6 +79,7 @@ class GenerateStage:
                 },
                 indent=2,
             )
+            + enrichment
             + "\n\nSCENARIO:\n"
             + f"  endpoint: {method} {path}\n"
             + f"  case_type: {scenario.case_type}\n"
@@ -155,13 +160,31 @@ class GenerateStage:
                 metadata=StageMeta(stage="GENERATE", duration_ms=dt)
             )
         else:
+            # RESTGPT-style spec enrichment: extract rules + example values from
+            # OpenAPI descriptions before building the prompt so the LLM has
+            # concrete values to use rather than inventing them.
+            spec_rules_block = ""
+            try:
+                from cherenkov.stages.enrich import SpecEnrichStage
+                rules = SpecEnrichStage(run_id=self.run_id).enrich(
+                    path=path,
+                    method=method,
+                    operation=operation or {},
+                    schemas=schemas or {},
+                )
+                if not rules.is_empty():
+                    spec_rules_block = rules.render_prompt_block()
+            except Exception as enrich_err:
+                self.log.warning("spec enrichment failed (non-fatal)", error=str(enrich_err))
+
             user_prompt = self._build_user_prompt(
                 path=path,
                 method=method,
                 operation=operation,
                 schemas=schemas,
                 scenario=scenario,
-                instruction=instruction
+                instruction=instruction,
+                spec_rules_block=spec_rules_block,
             )
 
         from cherenkov.cache.endpoint_cache import EndpointCache
