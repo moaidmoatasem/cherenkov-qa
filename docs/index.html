@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CHERENKOV QA — Spec in. Playwright tests out. Zero lock-in.</title>
+  <meta name="description" content="AI-native API conformance testing. Point CHERENKOV at your OpenAPI spec and a live server. Get typed Playwright tests, conformance drift reports, and suggest-only healing — all locally, all private." />
+  <meta property="og:title" content="CHERENKOV QA" />
+  <meta property="og:description" content="Spec in. Playwright tests out. Zero lock-in." />
+  <meta property="og:type" content="website" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0a0e1a;
+      --surface:  #111827;
+      --border:   #1e2d4a;
+      --blue:     #3b82f6;
+      --blue-dim: #1d4ed8;
+      --green:    #22c55e;
+      --purple:   #a855f7;
+      --amber:    #f59e0b;
+      --red:      #ef4444;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --code-bg:  #0d1117;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      height: 56px;
+      background: rgba(10, 14, 26, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-size: 1.1rem; font-weight: 700; letter-spacing: .05em;
+      color: var(--blue); text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: .875rem;
+      transition: color .15s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .btn {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .45rem 1rem; border-radius: 6px;
+      font-size: .875rem; font-weight: 600; text-decoration: none;
+      transition: filter .15s, transform .1s;
+      cursor: pointer; border: none;
+    }
+    .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-outline {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 6rem 1.5rem 4rem;
+      background: radial-gradient(ellipse 80% 40% at 50% -10%, rgba(59,130,246,.15) 0%, transparent 70%);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.3);
+      color: var(--blue); border-radius: 999px;
+      padding: .25rem .9rem; font-size: .8rem; font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 4.5rem);
+      font-weight: 800; line-height: 1.1;
+      letter-spacing: -.03em;
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--muted); max-width: 620px; margin: 0 auto 2rem;
+    }
+    .hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+
+    /* ── PIPELINE DIAGRAM ── */
+    .pipeline {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; flex-wrap: nowrap; overflow-x: auto;
+      padding: 1.5rem; max-width: 860px; margin: 0 auto;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    }
+    .pipe-step {
+      display: flex; flex-direction: column; align-items: center;
+      padding: .75rem 1.25rem; min-width: 80px;
+    }
+    .pipe-icon { font-size: 1.5rem; margin-bottom: .3rem; }
+    .pipe-label { font-size: .7rem; font-weight: 600; color: var(--muted); text-align: center; white-space: nowrap; }
+    .pipe-arrow { color: var(--border); font-size: 1.2rem; flex-shrink: 0; }
+
+    /* ── SECTION LAYOUT ── */
+    section { padding: 5rem 1.5rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: .75rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--blue); margin-bottom: .75rem;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.75rem); font-weight: 800;
+      letter-spacing: -.02em; margin-bottom: 1rem;
+    }
+    .section-sub { font-size: 1.05rem; color: var(--muted); max-width: 560px; }
+
+    /* ── HOW IT WORKS ── */
+    .steps {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem; margin-top: 3rem;
+    }
+    .step {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.75rem;
+      position: relative;
+    }
+    .step-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(59,130,246,.15); border: 1px solid rgba(59,130,246,.3);
+      color: var(--blue); font-size: .8rem; font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
+    .step p { font-size: .875rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── FEATURES GRID ── */
+    .features {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem; margin-top: 3rem;
+    }
+    .feature {
+      display: flex; gap: 1rem; align-items: flex-start;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.25rem;
+      transition: border-color .2s;
+    }
+    .feature:hover { border-color: var(--blue); }
+    .feature-icon {
+      font-size: 1.4rem; flex-shrink: 0;
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(59,130,246,.08); border-radius: 8px;
+    }
+    .feature-body h4 { font-size: .9rem; font-weight: 700; margin-bottom: .3rem; }
+    .feature-body p { font-size: .825rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── CODE BLOCK ── */
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.25rem 1.5rem;
+      overflow-x: auto; font-size: .82rem; line-height: 1.7;
+      font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    }
+    .c-comment { color: #6b7280; }
+    .c-cmd     { color: var(--blue); }
+    .c-pass    { color: var(--green); }
+    .c-fail    { color: var(--red); }
+    .c-note    { color: var(--amber); }
+    .c-path    { color: var(--purple); }
+
+    /* ── TERMINAL WINDOW ── */
+    .terminal {
+      background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; margin-top: 2rem;
+    }
+    .terminal-bar {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .75rem 1rem; background: #161b22; border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #28ca41; }
+    .terminal-title { font-size: .75rem; color: var(--muted); margin-left: auto; }
+    .terminal pre { border: none; border-radius: 0; }
+
+    /* ── LOCK-IN SECTION ── */
+    .lockfree {
+      background: linear-gradient(135deg, rgba(168,85,247,.08) 0%, rgba(59,130,246,.08) 100%);
+      border: 1px solid rgba(168,85,247,.2);
+      border-radius: 16px; padding: 3rem;
+      text-align: center; margin-top: 3rem;
+    }
+    .lockfree h2 { font-size: clamp(1.5rem, 3.5vw, 2.25rem); font-weight: 800; margin-bottom: 1rem; }
+    .lockfree p { color: var(--muted); max-width: 540px; margin: 0 auto 2rem; }
+
+    /* ── TRACKS TABLE ── */
+    table { width: 100%; border-collapse: collapse; margin-top: 2rem; font-size: .875rem; }
+    th {
+      text-align: left; padding: .75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted); font-weight: 600;
+    }
+    td { padding: .75rem 1rem; border-bottom: 1px solid rgba(30,45,74,.5); }
+    tr:last-child td { border-bottom: none; }
+    .badge {
+      display: inline-flex; align-items: center; gap: .35rem;
+      padding: .2rem .6rem; border-radius: 999px; font-size: .72rem; font-weight: 600;
+    }
+    .badge-green  { background: rgba(34,197,94,.12);  color: var(--green); }
+    .badge-amber  { background: rgba(245,158,11,.12); color: var(--amber); }
+    .badge-gray   { background: rgba(100,116,139,.12);color: var(--muted); }
+
+    /* ── QUICK START ── */
+    .qs-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+      margin-top: 3rem;
+    }
+    @media (max-width: 720px) { .qs-grid { grid-template-columns: 1fr; } }
+    .qs-block h3 { font-size: .95rem; font-weight: 700; margin-bottom: .75rem; color: var(--muted); }
+
+    /* ── CTA BANNER ── */
+    .cta-banner {
+      text-align: center; padding: 5rem 1.5rem;
+      background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(59,130,246,.12) 0%, transparent 70%);
+    }
+    .cta-banner h2 { font-size: clamp(1.8rem, 4vw, 2.75rem); font-weight: 800; margin-bottom: 1rem; }
+    .cta-banner p { color: var(--muted); margin-bottom: 2rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-links { display: flex; gap: 1.25rem; }
+    .footer-links a { color: var(--muted); font-size: .8rem; text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-size: .8rem; color: var(--muted); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .pipeline { display: none; }
+      nav .nav-links { gap: .8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="#">&#9889; CHERENKOV</a>
+  <div class="nav-links">
+    <a href="#how-it-works">How It Works</a>
+    <a href="#features">Features</a>
+    <a href="#quick-start">Quick Start</a>
+    <a href="https://github.com/moaidmoatasem/cherenkov-qa" target="_blank" rel="noopener">GitHub</a>
+    <a class="btn btn-primary" href="#quick-start">Get Started</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-badge">
+    <span>&#9889;</span> AI-native API conformance testing &nbsp;·&nbsp; 100% local &nbsp;·&nbsp; zero lock-in
+  </div>
+  <h1>Spec in.<br/>Playwright tests out.</h1>
+  <p class="hero-sub">
+    Point CHERENKOV at your OpenAPI spec and a live server. It generates typed Playwright tests
+    with a local LLM, runs a 6-gate review, executes them, and tells you exactly where your
+    implementation diverges from the contract — all on your machine, no API keys.
+  </p>
+  <div class="hero-ctas">
+    <a class="btn btn-primary" href="#quick-start">&#9654;&nbsp; Quick Start (2 min)</a>
+    <a class="btn btn-outline" href="https://github.com/moaidmoatasem/cherenkov-qa" target="_blank" rel="noopener">&#9670;&nbsp; GitHub</a>
+  </div>
+
+  <!-- Pipeline -->
+  <div class="pipeline">
+    <div class="pipe-step">
+      <div class="pipe-icon">&#128196;</div>
+      <div class="pipe-label">OpenAPI<br/>Spec</div>
+    </div>
+    <div class="pipe-arrow">&#8594;</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">&#128269;</div>
+      <div class="pipe-label">Ingest &amp;<br/>Validate</div>
+    </div>
+    <div class="pipe-arrow">&#8594;</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">&#128203;</div>
+      <div class="pipe-label">Plan<br/>Scenarios</div>
+    </div>
+    <div class="pipe-arrow">&#8594;</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">&#129302;</div>
+      <div class="pipe-label">Generate<br/>Tests (LLM)</div>
+    </div>
+    <div class="pipe-arrow">&#8594;</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">&#10003;</div>
+      <div class="pipe-label">6-Gate<br/>Review</div>
+    </div>
+    <div class="pipe-arrow">&#8594;</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">&#9654;</div>
+      <div class="pipe-label">Run<br/>Tests</div>
+    </div>
+    <div class="pipe-arrow">&#8594;</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">&#128202;</div>
+      <div class="pipe-label">Conformance<br/>Report</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section id="how-it-works" style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="container">
+    <div class="section-label">How It Works</div>
+    <h2 class="section-title">From spec to conformance in one command</h2>
+    <p class="section-sub">No configuration files. No manual test writing. No cloud dependency.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Point at your spec</h3>
+        <p>Give CHERENKOV your OpenAPI 3.x spec and the URL of your live server. That's the only input it needs.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Local LLM generates typed tests</h3>
+        <p>Ollama runs <code>qwen2.5-coder:7b</code> on your machine to write typed <code>openapi-fetch</code> Playwright tests. Your spec never leaves.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>6-gate review catches bad tests early</h3>
+        <p>Every generated test runs through: syntax → structure → AST → assertion quality → TypeScript compile → Prism mock dry-run. Bad tests are regenerated, not shipped.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h3>Conformance report surfaces drift</h3>
+        <p>Expected HTTP status codes come from the spec, not from hardcoded values. Drift shows you exactly which endpoints diverge and how.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <h3>Suggest-only healing</h3>
+        <p>When tests fail CHERENKOV suggests fixes. It never auto-edits your code — humans stay in control of every change.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <h3>Eject to vanilla Playwright</h3>
+        <p><code>cherenkov eject</code> strips every CHERENKOV import and produces standard Playwright + <code>openapi-fetch</code>. Runs in CI forever, no CHERENKOV on PATH.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TERMINAL DEMO ── -->
+<section>
+  <div class="container">
+    <div class="section-label">Live Output</div>
+    <h2 class="section-title">See it catch a real drift</h2>
+    <p class="section-sub">Nobody wrote that test. CHERENKOV derived it from the spec.</p>
+
+    <div class="terminal">
+      <div class="terminal-bar">
+        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+        <span class="terminal-title">cherenkov validate --target http://localhost:8000</span>
+      </div>
+<pre>
+<span class="c-comment">  Ingesting spec …          openapi.yaml (3.1)  32 paths  87 operations</span>
+<span class="c-comment">  Planning scenarios …      112 test cases</span>
+<span class="c-comment">  Generating tests …        qwen2.5-coder:7b (local)</span>
+<span class="c-comment">  Reviewing …               6-gate (syntax → structure → AST → assertions → tsc → Prism)</span>
+<span class="c-comment">  Running …</span>
+
+<span class="c-pass">  ✔  GET   /pets            happy_path              [PASSED]   195ms</span>
+<span class="c-pass">  ✔  POST  /pets            create_pet              [PASSED]   211ms</span>
+<span class="c-pass">  ✔  GET   /pets/{id}       fetch_by_id             [PASSED]   142ms</span>
+<span class="c-pass">  ✔  DELETE /pets/{id}      delete_pet              [PASSED]   178ms</span>
+<span class="c-pass">  ✔  POST  /users           create_user_happy       [PASSED]   204ms</span>
+<span class="c-fail">  ✗  POST  /users           password_too_short      [FAILED]</span>
+<span class="c-fail">       spec says:    422 (validation error)</span>
+<span class="c-fail">       server says:  400  ← implementation diverges from contract</span>
+
+<span class="c-note">  1 conformance drift detected</span>
+<span class="c-note">  nobody wrote that test — CHERENKOV derived it from your OpenAPI spec</span>
+
+<span class="c-comment">  Report → .cherenkov/report.json</span>
+<span class="c-comment">  Eject  → cherenkov eject --output ./my-tests</span>
+</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section id="features" style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="container">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Everything you need. Nothing you don't.</h2>
+    <p class="section-sub">Built for engineers who want conformance confidence without cloud lock-in.</p>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">&#129302;</div>
+        <div class="feature-body">
+          <h4>Local LLM — no API keys</h4>
+          <p>Ollama + <code>qwen2.5-coder:7b</code> runs entirely on your machine. Your spec and server responses never touch a third-party service.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#10003;</div>
+        <div class="feature-body">
+          <h4>6-Gate test review</h4>
+          <p>Every generated test must pass: syntax, structure, AST, assertion quality, TypeScript compile, and Prism mock dry-run before it can run.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128202;</div>
+        <div class="feature-body">
+          <h4>Spec-derived oracle</h4>
+          <p>Expected HTTP status codes come from the OpenAPI spec — never hardcoded. Drift is real drift, not a test that's just wrong.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128274;</div>
+        <div class="feature-body">
+          <h4>Zero lock-in eject</h4>
+          <p><code>cherenkov eject</code> produces vanilla Playwright + <code>openapi-fetch</code>. Zero CHERENKOV imports. Runs in CI forever, even after you stop using CHERENKOV.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128203;</div>
+        <div class="feature-body">
+          <h4>Suggest-only healing</h4>
+          <p>Failing tests get suggested fixes. CHERENKOV never auto-edits your test files — humans approve every change.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128187;</div>
+        <div class="feature-body">
+          <h4>React dashboard</h4>
+          <p><code>cherenkov review --web</code> opens a live browser UI showing test results, spec coverage map, drift findings, and healing suggestions.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128640;</div>
+        <div class="feature-body">
+          <h4>K8s operator</h4>
+          <p><code>ConformanceCheck</code> CRD lets you run conformance tests as native Kubernetes jobs — CI-integrated, GitOps-friendly.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128172;</div>
+        <div class="feature-body">
+          <h4>Chat agent</h4>
+          <p>Ask questions about your spec and test results in natural language. The agent has tool-access to your spec, results, and knowledge mesh.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128268;</div>
+        <div class="feature-body">
+          <h4>MCP integration</h4>
+          <p>First-class Model Context Protocol server — pipe CHERENKOV tools directly into Claude, Cursor, or any MCP-compatible IDE.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128242;</div>
+        <div class="feature-body">
+          <h4>Mobile testing</h4>
+          <p>Maestro + Appium device flows with VLM visual oracle. 4-tier device support from the same spec. Needs ADB.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128270;</div>
+        <div class="feature-body">
+          <h4>Knowledge mesh</h4>
+          <p>GraphRAG second brain that learns from your codebase — past verdicts, idioms, and incidents inform future test generation.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128736;</div>
+        <div class="feature-body">
+          <h4>VS Code extension</h4>
+          <p>Run validate, generate, eject, and doctor from the command palette. CodeLens annotations show drift counts inline on each endpoint.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ZERO LOCK-IN ── -->
+<section>
+  <div class="container">
+    <div class="lockfree">
+      <h2>The Zero Lock-In Promise</h2>
+      <p>
+        <code>cherenkov eject</code> produces vanilla Playwright + <code>openapi-fetch</code>.
+        No CHERENKOV import anywhere in the output. Runs in any CI, on any machine,
+        after you stop using CHERENKOV. The eject invariant is enforced in CI — it never gets disabled.
+      </p>
+      <div style="text-align:left; display:inline-block;">
+        <div class="terminal" style="max-width:620px;">
+          <div class="terminal-bar">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          </div>
+<pre>
+<span class="c-comment"># one command. vanilla Playwright. no CHERENKOV dependency.</span>
+<span class="c-cmd">cherenkov eject --output ./my-tests</span>
+
+<span class="c-comment"># what you get:</span>
+<span class="c-path">my-tests/
+  package.json         </span><span class="c-comment"># "@playwright/test" + "openapi-fetch" — that's it</span>
+<span class="c-path">  tests/
+    happy_path.spec.ts</span>
+<span class="c-path">    edge_cases.spec.ts</span>
+
+<span class="c-cmd">cd my-tests && npm install && npx playwright test</span>
+<span class="c-pass">  ✓ 87 tests passed</span>
+</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TRACK STATUS ── -->
+<section style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="container">
+    <div class="section-label">Track Status</div>
+    <h2 class="section-title">What's built today</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Track</th>
+          <th>What It Covers</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>A — Core</strong></td>
+          <td>OpenAPI ingest → LLM → typed Playwright tests → 6-gate review → conformance validation → eject</td>
+          <td><span class="badge badge-green">&#10003; Production ready</span></td>
+        </tr>
+        <tr>
+          <td><strong>B — VLM</strong></td>
+          <td>Local vision LLM tier routing, offline-first inference, visual oracle</td>
+          <td><span class="badge badge-green">&#10003; Complete</span></td>
+        </tr>
+        <tr>
+          <td><strong>E — Dashboard</strong></td>
+          <td>React 19 dashboard — 9 screens, test results, spec coverage, drift, healing, eject</td>
+          <td><span class="badge badge-green">&#10003; Complete</span></td>
+        </tr>
+        <tr>
+          <td><strong>F — K8s</strong></td>
+          <td>ConformanceCheck CRD + Go operator, GitOps-friendly</td>
+          <td><span class="badge badge-green">&#10003; Complete</span></td>
+        </tr>
+        <tr>
+          <td><strong>VS Code</strong></td>
+          <td>Extension — commands, CodeLens, sidebar tree, conformance panel webview</td>
+          <td><span class="badge badge-green">&#10003; Complete</span></td>
+        </tr>
+        <tr>
+          <td><strong>C — Desktop</strong></td>
+          <td>Tauri 2 app; shell complete, IPC scaffolded; blocked on libwebkit2gtk-4.1-dev</td>
+          <td><span class="badge badge-amber">&#9654; In progress</span></td>
+        </tr>
+        <tr>
+          <td><strong>D — Mobile</strong></td>
+          <td>Maestro + Appium device flows; built, needs ADB + physical device</td>
+          <td><span class="badge badge-amber">&#9654; Needs ADB</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── QUICK START ── -->
+<section id="quick-start">
+  <div class="container">
+    <div class="section-label">Quick Start</div>
+    <h2 class="section-title">Up in 2 minutes</h2>
+    <p class="section-sub">Prerequisites: Python 3.10+, Node 20+, Ollama with <code>qwen2.5-coder:7b</code></p>
+
+    <div class="qs-grid">
+      <div class="qs-block">
+        <h3>Option A — git clone</h3>
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          </div>
+<pre>
+<span class="c-comment"># clone and install</span>
+<span class="c-cmd">git clone https://github.com/moaidmoatasem/cherenkov-qa</span>
+<span class="c-cmd">cd cherenkov-qa</span>
+<span class="c-cmd">python3 -m venv .venv && source .venv/bin/activate</span>
+<span class="c-cmd">pip install -r requirements.txt</span>
+
+<span class="c-comment"># playwright + node deps</span>
+<span class="c-cmd">cd stub && npm install && npx playwright install && cd ..</span>
+
+<span class="c-comment"># start the bundled sample API</span>
+<span class="c-cmd">cd target && uvicorn target_api:app --port 8000 &amp; cd ..</span>
+
+<span class="c-comment"># verify everything is wired up</span>
+<span class="c-cmd">PYTHONPATH=. ./bin/cherenkov doctor</span>
+
+<span class="c-comment"># run</span>
+<span class="c-cmd">PYTHONPATH=. ./bin/cherenkov validate --target http://localhost:8000</span>
+</pre>
+        </div>
+      </div>
+
+      <div class="qs-block">
+        <h3>Option B — npx (npm registry)</h3>
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          </div>
+<pre>
+<span class="c-comment"># one-shot via npx — no global install needed</span>
+<span class="c-cmd">npx cherenkov-qa init</span>
+
+<span class="c-comment"># or point at your existing project</span>
+<span class="c-cmd">npx cherenkov-qa validate --target http://localhost:8000</span>
+
+<span class="c-comment"># eject to vanilla Playwright when you're done</span>
+<span class="c-cmd">npx cherenkov-qa eject --output ./tests</span>
+</pre>
+        </div>
+
+        <h3 style="margin-top:1.5rem;">Option C — VS Code</h3>
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          </div>
+<pre>
+<span class="c-comment"># install the extension, then:</span>
+<span class="c-comment"># Cmd/Ctrl+Shift+P → "CHERENKOV: Validate"</span>
+<span class="c-comment"># or right-click openapi.yaml → "Validate Spec"</span>
+<span class="c-comment"># CodeLens shows drift counts inline on each endpoint</span>
+</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-banner">
+  <div class="container">
+    <h2>Stop writing conformance tests by hand</h2>
+    <p>Your OpenAPI spec already knows what every endpoint is supposed to do. CHERENKOV turns that contract into a living test suite — automatically, locally, privately.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a class="btn btn-primary" href="https://github.com/moaidmoatasem/cherenkov-qa" target="_blank" rel="noopener">
+        &#9670;&nbsp; View on GitHub
+      </a>
+      <a class="btn btn-outline" href="https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/GETTING_STARTED.md" target="_blank" rel="noopener">
+        &#128196;&nbsp; Full setup guide
+      </a>
+      <a class="btn btn-outline" href="https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/INDEX.md" target="_blank" rel="noopener">
+        &#128218;&nbsp; Documentation
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;width:100%;">
+    <a class="nav-logo" href="#">&#9889; CHERENKOV QA</a>
+    <div class="footer-links">
+      <a href="https://github.com/moaidmoatasem/cherenkov-qa" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/GETTING_STARTED.md" target="_blank" rel="noopener">Docs</a>
+      <a href="https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing</a>
+      <a href="https://github.com/moaidmoatasem/cherenkov-qa/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+    </div>
+    <span class="footer-copy">&#169; 2026 Moaid Moatasem &nbsp;&middot;&nbsp; MIT License</span>
+  </div>
+</footer>
+
+</body>
+</html>
