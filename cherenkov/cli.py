@@ -634,6 +634,21 @@ def get_parser() -> argparse.ArgumentParser:
     pub_parser.add_argument(
         "--attestation", default="", help="Optional attestation token"
     )
+    install_parser = mcp_sub.add_parser(
+        "install",
+        help="Generate MCP configuration for Claude Desktop, Cursor, Windsurf",
+    )
+    install_parser.add_argument(
+        "--platform",
+        choices=["claude", "cursor", "windsurf", "all"],
+        default="all",
+        help="Target platform (default: all)",
+    )
+    install_parser.add_argument(
+        "--write",
+        action="store_true",
+        help="Write config file directly (Claude Desktop, Cursor)",
+    )
 
     return parser
 
@@ -1110,6 +1125,26 @@ def main():
                 attestation=args.attestation,
             )
             print(json.dumps({"status": "ok", "registration_id": reg_id}))
+            sys.exit(0)
+        elif args.mcp_command == "install":
+            from cherenkov.mcp.install import MCPConfigGenerator
+
+            gen = MCPConfigGenerator()
+            write = getattr(args, "write", False)
+            platform_target = getattr(args, "platform", "all")
+
+            if write and platform_target == "all":
+                print("Error: --write requires a specific --platform (claude, cursor)")
+                sys.exit(1)
+
+            if write and platform_target == "claude":
+                path = gen.write_claude_config()
+                print(f"Claude Desktop config written to {path}")
+            elif write and platform_target == "cursor":
+                path = gen.write_cursor_config()
+                print(f"Cursor config written to {path}")
+            else:
+                gen.print_configs()
             sys.exit(0)
 
 
