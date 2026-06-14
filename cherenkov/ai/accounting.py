@@ -162,21 +162,15 @@ class CostAccountant:
     def get_governance_kpis(self) -> dict[str, float | int]:
         from cherenkov.reflector.store import VerdictStore
         from cherenkov.core.contracts import VerdictOutcome
-        import sqlite3
 
         store = VerdictStore()
-        db_path = store.db_path
-
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
+        conn = store._connect()
 
         try:
-            cursor.execute("SELECT outcome, COUNT(*) FROM verdicts GROUP BY outcome")
+            cursor = conn.execute("SELECT outcome, COUNT(*) FROM verdicts GROUP BY outcome")
             counts = dict(cursor.fetchall())
-        except sqlite3.OperationalError:
+        except Exception:
             counts = {}
-        finally:
-            conn.close()
 
         accepts = counts.get(VerdictOutcome.ACCEPT.value, 0)
         rejects = counts.get(VerdictOutcome.REJECT.value, 0)
