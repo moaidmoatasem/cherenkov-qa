@@ -637,11 +637,11 @@ LOW EFFORT ──────────────┼────────
 - [x] Pre-commit hook
 
 ### Sprint 3 (Weeks 7-10): Enterprise QA
-- [ ] Xray Cloud import
-- [ ] Zephyr Scale import
-- [ ] TestRail import
-- [ ] Teams Adaptive Card integration
-- [ ] GitHub Issues auto-create
+- [x] Xray Cloud import
+- [x] Zephyr Scale import
+- [x] TestRail import
+- [x] Teams Adaptive Card integration
+- [x] GitHub Issues auto-create
 
 ### Sprint 4 (Weeks 11-14): AI Ecosystem
 - [ ] Anthropic/Claude provider in substrate router
