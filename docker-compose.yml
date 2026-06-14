@@ -3,7 +3,7 @@ version: '3.8'
 services:
   prism:
     image: stoplight/prism:5
-    command: mock -h 0.0.0.0 stub/petstore.json
+    command: mock -h 0.0.0.0 stub/target_spec.json
     ports:
       - "4010:4010"
     volumes:
