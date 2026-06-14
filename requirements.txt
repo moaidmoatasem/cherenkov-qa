@@ -41,7 +41,7 @@ redis>=5.0.0
 # All three are optional. The chat agent works without them.
 
 # Test tooling
-pytest>=8.0.0
+pytest>=9.1.0
 pytest-cov>=5.0.0
 anyio>=4.0.0
 
