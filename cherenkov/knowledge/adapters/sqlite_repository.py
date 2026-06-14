@@ -159,3 +159,9 @@ class SQLiteKnowledgeRepository:
             confidence=1.0,
             metadata=json.loads(row[3]) if row[3] else {},
         )
+
+    def close(self) -> None:
+        con = getattr(self._local, "con", None)
+        if con is not None:
+            con.close()
+            self._local.con = None

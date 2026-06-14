@@ -54,6 +54,8 @@ class TestSQLiteKnowledgeRepository(unittest.TestCase):
         self.repo = SQLiteKnowledgeRepository(self.db_path)
 
     def tearDown(self):
+        if hasattr(self, 'repo'):
+            self.repo.close()
         if os.path.exists(self.db_path):
             os.unlink(self.db_path)
 
@@ -204,6 +206,8 @@ class TestGraphRAG(unittest.TestCase):
         self.graph = GraphRAG(self.repo)
 
     def tearDown(self):
+        if hasattr(self, 'repo'):
+            self.repo.close()
         if os.path.exists(self.db_path):
             os.unlink(self.db_path)
 
