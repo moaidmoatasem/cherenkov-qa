@@ -1,3 +1,4 @@
+from cherenkov.core.settings import get_settings
 import json
 import os
 import tempfile
@@ -14,12 +15,12 @@ def test_localai_provider_init():
 
 
 def test_localai_provider_init_from_config():
-    with patch(
-        "cherenkov.substrate.providers.localai.get_settings().VLM_LOCALAI_URL",
+    with patch.object(
+        get_settings(), "VLM_LOCALAI_URL",
         "http://10.0.0.1:8080",
     ):
-        with patch(
-            "cherenkov.substrate.providers.localai.get_settings().VLM_LOCALAI_MODEL",
+        with patch.object(
+            get_settings(), "VLM_LOCALAI_MODEL",
             "qwen2.5-vl:7b",
         ):
             p = LocalAIVLMProvider()

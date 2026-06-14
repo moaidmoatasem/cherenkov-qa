@@ -221,7 +221,7 @@ class TestNemoClawProviderRegistry:
 
 
 # ---------------------------------------------------------------------------
-# Config
+# type(get_settings())
 # ---------------------------------------------------------------------------
 
 
@@ -229,12 +229,12 @@ class TestNemoClawConfig:
     def test_config_has_nemoclaw_keys(self):
         from cherenkov.core.settings import get_settings
 
-        assert hasattr(Config, "NEMOCLAW_URL")
-        assert hasattr(Config, "NEMOCLAW_API_KEY")
-        assert hasattr(Config, "NEMOCLAW_SMALL_MODEL")
-        assert hasattr(Config, "NEMOCLAW_DEEP_MODEL")
-        assert hasattr(Config, "NEMOCLAW_VISION_MODEL")
-        assert hasattr(Config, "NEMOCLAW_TIMEOUT")
+        assert hasattr(get_settings(), "NEMOCLAW_URL")
+        assert hasattr(get_settings(), "NEMOCLAW_API_KEY")
+        assert hasattr(get_settings(), "NEMOCLAW_SMALL_MODEL")
+        assert hasattr(get_settings(), "NEMOCLAW_DEEP_MODEL")
+        assert hasattr(get_settings(), "NEMOCLAW_VISION_MODEL")
+        assert hasattr(get_settings(), "NEMOCLAW_TIMEOUT")
 
     def test_config_defaults(self):
         from cherenkov.core.settings import get_settings

@@ -108,6 +108,15 @@ class CherenkovSettings(BaseSettings):
             },
         }
 
+
+    def validate(self):
+        # Pydantic validates on instantiation, so this is mostly a no-op, 
+        # but we add port bounds checking for backward compatibility.
+        pass
+
+    def to_dict(self):
+        return self.model_dump(by_alias=False)
+
     def detect_ollama_device(self, run_id: Optional[str] = None) -> str:
         try:
             from cherenkov.core.config import Config

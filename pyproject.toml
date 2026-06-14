@@ -29,7 +29,7 @@ where = ["."]
 include = ["cherenkov*"]
 
 [project.scripts]
-cherenkov = "cherenkov.cli:main"
+cherenkov = "cherenkov.cli.core:main"
 
 [tool.pytest.ini_options]
 addopts = "-q"

@@ -75,7 +75,7 @@ class SpecPrismOracle(Oracle):
         self, observed_ms: float, endpoint: str, method: str
     ) -> OracleResult:
         """Evaluate observed latency against configured SLA threshold."""
-        max_ms = getattr(Config, "MAX_LATENCY_MS", 2000)
+        max_ms = getattr(get_settings(), "MAX_LATENCY_MS", 2000)
         if observed_ms > max_ms:
             return OracleResult(
                 is_correct=False,

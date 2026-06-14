@@ -10,7 +10,7 @@ Uses mocked VLM responses (no actual GPU/Ollama required) to verify:
 2. VisualOracle classifies changes (anomaly/harmless/redesign)
 3. VisualHealer produces suggest-only healing
 4. VisionConfirmPilot detects hallucination risks
-5. Config has [substrate.tiers.vision] registered
+5. type(get_settings()) has [substrate.tiers.vision] registered
 
 Exit code 0 = all criteria passed.
 """
@@ -61,8 +61,8 @@ def test_vlm_provider():
     global PASS, FAIL
     print("\n--- C6 (#121): VLMProvider as [substrate.tiers.vision] ---")
 
-    check("TIER_VISION_PROVIDER in Config", hasattr(Config, "TIER_VISION_PROVIDER"))
-    check("TIER_VISION_MODEL in Config", hasattr(Config, "TIER_VISION_MODEL"))
+    check("TIER_VISION_PROVIDER in type(get_settings())", hasattr(type(get_settings()), "TIER_VISION_PROVIDER"))
+    check("TIER_VISION_MODEL in type(get_settings())", hasattr(type(get_settings()), "TIER_VISION_MODEL"))
     check("vision tier in KNOWN_KEYS", "substrate.tiers.vision.provider" in KNOWN_KEYS)
     check(
         "vision tier in laptop profile",

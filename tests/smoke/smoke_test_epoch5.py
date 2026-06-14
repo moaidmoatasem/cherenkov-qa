@@ -22,14 +22,14 @@ class TestConfigLoader(unittest.TestCase):
         self.LayeredConfig = LayeredConfig
 
     def test_builtin_defaults_loaded(self):
-        cfg = self.LayeredConfig()
+        cfg = self.Layeredget_settings()
         cfg.load_defaults()
         self.assertEqual(cfg.get("profile"), "laptop")
         self.assertEqual(cfg.get("substrate.egress"), "internal")
         self.assertEqual(cfg.get("substrate.tiers.small.model"), "qwen2.5-coder:7b")
 
     def test_profile_overrides(self):
-        cfg = self.LayeredConfig()
+        cfg = self.Layeredget_settings()
         cfg.load_defaults()
         cfg.load_profile("frontier-cloud")
         self.assertEqual(cfg.get("substrate.egress"), "any")
@@ -37,28 +37,28 @@ class TestConfigLoader(unittest.TestCase):
         self.assertEqual(cfg.get("substrate.budgets.max_cost_usd_per_run"), 5.0)
 
     def test_profile_enterprise_vpc(self):
-        cfg = self.LayeredConfig()
+        cfg = self.Layeredget_settings()
         cfg.load_defaults()
         cfg.load_profile("enterprise-vpc")
         self.assertEqual(cfg.get("substrate.egress"), "none")
         self.assertEqual(cfg.get("continuity.mode"), "daemon")
 
     def test_profile_ci(self):
-        cfg = self.LayeredConfig()
+        cfg = self.Layeredget_settings()
         cfg.load_defaults()
         cfg.load_profile("ci")
         self.assertEqual(cfg.get("substrate.tiers.deep.model"), "qwen2.5-coder:7b")
         self.assertEqual(cfg.get("continuity.behavioral_diff_on_pr"), True)
 
     def test_unknown_profile_ignored(self):
-        cfg = self.LayeredConfig()
+        cfg = self.Layeredget_settings()
         cfg.load_defaults()
         cfg.load_profile("nonexistent")
         # Should remain at defaults
         self.assertEqual(cfg.get("profile"), "laptop")
 
     def test_cli_override_wins(self):
-        cfg = self.LayeredConfig()
+        cfg = self.Layeredget_settings()
         cfg.load_defaults()
         cfg.load_profile("enterprise-vpc")
         cfg.load_cli_override("substrate.egress", "internal")
@@ -68,12 +68,12 @@ class TestConfigLoader(unittest.TestCase):
         self.assertEqual(prov[-1][0], "cli flag")
 
     def test_unknown_key_errors(self):
-        cfg = self.LayeredConfig()
+        cfg = self.Layeredget_settings()
         cfg.load_cli_override("nonexistent.key", "value")
         self.assertTrue(len(cfg.errors()) > 0)
 
     def test_to_dict_and_nested(self):
-        cfg = self.LayeredConfig()
+        cfg = self.Layeredget_settings()
         cfg.load_defaults()
         flat = cfg.to_dict()
         self.assertIn("substrate.egress", flat)
@@ -82,14 +82,14 @@ class TestConfigLoader(unittest.TestCase):
         self.assertIn("egress", nested["substrate"])
 
     def test_autodetect_spec_returns_list(self):
-        cfg = self.LayeredConfig()
+        cfg = self.Layeredget_settings()
         specs = cfg.autodetect_spec()
         self.assertIsInstance(specs, list)
 
     def test_env_override(self):
         os.environ["CHERENKOV_EGRESS"] = "any"
         try:
-            cfg = self.LayeredConfig()
+            cfg = self.Layeredget_settings()
             cfg.load_defaults()
             cfg.load_env()
             self.assertEqual(cfg.get("substrate.egress"), "any")
@@ -184,7 +184,7 @@ class TestDoctorCommand(unittest.TestCase):
         from cherenkov.core.config_loader import LayeredConfig
         from cherenkov.stages.doctor_cmd import check_egress_blocked
 
-        cfg = LayeredConfig()
+        cfg = Layeredget_settings()
         cfg.load_defaults()
         healthy, detail = check_egress_blocked(cfg)
         self.assertIsInstance(healthy, bool)
