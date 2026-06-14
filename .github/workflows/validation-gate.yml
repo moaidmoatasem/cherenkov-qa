@@ -33,7 +33,7 @@ jobs:
             --junit-xml=validation-gate-results.xml \
             2>&1 || true
       - name: Upload validation evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: validation-gate-evidence-${{ github.sha }}
