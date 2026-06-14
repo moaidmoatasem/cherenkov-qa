@@ -1,4 +1,5 @@
-from cherenkov.core.settings import get_settings
+from __future__ import annotations
+
 """
 Integration tests for cherenkov/web/api.py — covers all core REST endpoints.
 
@@ -7,7 +8,7 @@ external services (Ollama, OrchestrationEngine, ValidationEngine, EjectorEngine)
 so tests run offline and fast.  No CHERENKOV_HITL_API_KEY → auth disabled.
 """
 
-from __future__ import annotations
+from cherenkov.core.settings import CherenkovSettings, get_settings
 
 import os
 import tempfile
@@ -31,7 +32,7 @@ class TestHealth(unittest.TestCase):
     def setUp(self):
         self.client = _make_client()
 
-    @patch.object(get_settings(), "detect_ollama_device", return_value="cpu")
+    @patch.object(CherenkovSettings, "detect_ollama_device", return_value="cpu")
     def test_health_200(self, _):
         r = self.client.get("/api/v1/health")
         self.assertEqual(r.status_code, 200)
@@ -40,8 +41,9 @@ class TestHealth(unittest.TestCase):
         self.assertIn("device", body)
         self.assertIn("gen_model", body)
 
-    @patch(
-        "cherenkov.core.config.get_settings().detect_ollama_device",
+    @patch.object(
+        CherenkovSettings,
+        "detect_ollama_device",
         side_effect=RuntimeError("no ollama"),
     )
     def test_health_degrades_gracefully_on_ollama_error(self, _):

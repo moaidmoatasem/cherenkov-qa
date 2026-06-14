@@ -27,16 +27,11 @@ def _reload_config():
 class TestHitlAuthVerification(unittest.TestCase):
     """Tests for API key authentication on review endpoints."""
 
-    def _make_vk(self, api_key=""):
-        with patch.dict(os.environ, {"CHERENKOV_HITL_API_KEY": api_key}, clear=True):
-            cfg = _reload_config()
-            import importlib
-            import cherenkov.web.api
-
-            importlib.reload(cherenkov.web.api)
-            from cherenkov.web.api import verify_api_key
-
-            return verify_api_key
+    def _make_vk(self, api_key=''):
+        from cherenkov.core.settings import get_settings
+        get_settings().HITL_API_KEY = api_key
+        from cherenkov.web.api import verify_api_key
+        return verify_api_key
 
     def test_missing_key_raises_401(self):
         import fastapi

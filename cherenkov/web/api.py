@@ -147,15 +147,14 @@ add_security_middleware(app)
 async def verify_api_key(
     x_api_key: str | None = Header(None), authorization: str | None = Header(None)
 ):
-    configured_key = get_settings().HITL_API_KEY
-    if not configured_key:
+    if not get_settings().HITL_API_KEY:
         return  # no auth configured — allow all
-    if x_api_key and x_api_key == configured_key:
+    if x_api_key and x_api_key == get_settings().HITL_API_KEY:
         return
     if (
         authorization
         and authorization.startswith("Bearer ")
-        and authorization[7:] == configured_key
+        and authorization[7:] == get_settings().HITL_API_KEY
     ):
         return
     raise HTTPException(
