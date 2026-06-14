@@ -651,12 +651,12 @@ LOW EFFORT ──────────────┼────────
 - [ ] Desktop auto-setup wizard
 
 ### Sprint 5 (Weeks 15-20): Observability & Platform
-- [ ] OpenTelemetry export
-- [ ] ArgoCD ApplicationSet template
-- [ ] Backstage plugin
-- [ ] Grafana dashboard publish
-- [ ] PagerDuty / OpsGenie adapter
-- [ ] Postman collection import
+- [x] OpenTelemetry export
+- [x] ArgoCD ApplicationSet template
+- [x] Backstage plugin
+- [x] Grafana dashboard publish
+- [x] PagerDuty / OpsGenie adapter
+- [x] Postman collection import
 
 ### Sprint 6 (Weeks 20-28): Market Expansion
 - [x] GraphQL schema support

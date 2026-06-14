@@ -2,7 +2,7 @@ import pytest
 
 
 def test_config_validate_passes_with_defaults():
-    from cherenkov.core.config import Config
+    from cherenkov.core.settings import get_settings
 
     # Should not raise with valid defaults
     try:
@@ -12,47 +12,47 @@ def test_config_validate_passes_with_defaults():
 
 
 def test_config_validate_rejects_bad_egress():
-    from cherenkov.core.config import Config
+    from cherenkov.core.settings import get_settings
 
     original = getattr(Config, "EGRESS", "internal")
-    Config.EGRESS = "invalid_value"
+    get_settings().EGRESS = "invalid_value"
     try:
         with pytest.raises(ValueError, match="EGRESS"):
             Config.validate()
     finally:
-        Config.EGRESS = original
+        get_settings().EGRESS = original
 
 
 def test_config_validate_rejects_bad_timeout():
-    from cherenkov.core.config import Config
+    from cherenkov.core.settings import get_settings
 
-    original = Config.OLLAMA_TIMEOUT
-    Config.OLLAMA_TIMEOUT = 0  # below minimum of 1
+    original = get_settings().OLLAMA_TIMEOUT
+    get_settings().OLLAMA_TIMEOUT = 0  # below minimum of 1
     try:
         with pytest.raises(ValueError, match="OLLAMA_TIMEOUT"):
             Config.validate()
     finally:
-        Config.OLLAMA_TIMEOUT = original
+        get_settings().OLLAMA_TIMEOUT = original
 
 
 def test_config_validate_rejects_bad_port():
-    from cherenkov.core.config import Config
+    from cherenkov.core.settings import get_settings
 
-    original = Config.METRICS_PORT
-    Config.METRICS_PORT = 99999  # above maximum of 65535
+    original = get_settings().METRICS_PORT
+    get_settings().METRICS_PORT = 99999  # above maximum of 65535
     try:
         with pytest.raises(ValueError, match="METRICS_PORT"):
             Config.validate()
     finally:
-        Config.METRICS_PORT = original
+        get_settings().METRICS_PORT = original
 
 
 def test_config_tiers_dict():
-    from cherenkov.core.config import Config
+    from cherenkov.core.settings import get_settings
 
-    assert "small" in Config.TIERS
-    assert "deep" in Config.TIERS
-    assert "provider" in Config.TIERS["small"]
-    assert "model" in Config.TIERS["small"]
-    assert "provider" in Config.TIERS["deep"]
-    assert "model" in Config.TIERS["deep"]
+    assert "small" in get_settings().TIERS
+    assert "deep" in get_settings().TIERS
+    assert "provider" in get_settings().TIERS["small"]
+    assert "model" in get_settings().TIERS["small"]
+    assert "provider" in get_settings().TIERS["deep"]
+    assert "model" in get_settings().TIERS["deep"]

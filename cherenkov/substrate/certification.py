@@ -4,7 +4,7 @@ import json
 import re
 from pathlib import Path
 from typing import Any
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import GoldSet, GoldSetItem, CertResult, ReasoningRequest
 from cherenkov.core.errors import get_logger
 
@@ -154,7 +154,7 @@ class ModelCertificationManager:
         self._rag_triad = RAGTriadEvaluator(run_id=run_id)
 
     def load_gold_set(self) -> GoldSet:
-        path = Path(Config.CERTIFICATION_GOLD_SET_PATH)
+        path = Path(get_settings().CERTIFICATION_GOLD_SET_PATH)
         if not path.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(
@@ -206,12 +206,12 @@ class ModelCertificationManager:
         faithfulness = passed / total if total else 1.0
         rag_overall = sum(rag_scores) / len(rag_scores) if rag_scores else 0.0
         composite = faithfulness * 0.6 + rag_overall * 0.4
-        certified = composite >= Config.CERTIFICATION_MIN_FAITHFULNESS
+        certified = composite >= get_settings().CERTIFICATION_MIN_FAITHFULNESS
 
         detail = (
             f"Passed {passed}/{total} items (faithfulness={faithfulness:.2f}, "
             f"rag-triad={rag_overall:.2f}, composite={composite:.2f}, "
-            f"min_required={Config.CERTIFICATION_MIN_FAITHFULNESS})"
+            f"min_required={get_settings().CERTIFICATION_MIN_FAITHFULNESS})"
         )
         self.log.info(
             "certification complete",
@@ -281,7 +281,7 @@ class ModelCertificationManager:
             else 0.0
         )
         composite = faithfulness * 0.6 + rag_overall * 0.4
-        certified = composite >= Config.CERTIFICATION_MIN_FAITHFULNESS
+        certified = composite >= get_settings().CERTIFICATION_MIN_FAITHFULNESS
 
         cert = CertResult(
             certified=certified,

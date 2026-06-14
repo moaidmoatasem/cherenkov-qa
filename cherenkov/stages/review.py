@@ -312,10 +312,10 @@ class ReviewStage:
         # Runs N independent LLM passes to validate that assertions are correct and
         # meaningful. Only fires when the four static gates all passed (no point
         # spending LLM calls on structurally broken code).
-        from cherenkov.core.config import Config as _Config
+        from cherenkov.core.settings import get_settings
 
         if (
-            _Config.CONSENSUS_ORACLE_ENABLED
+            get_settings().CONSENSUS_ORACLE_ENABLED
             and syntax_passed
             and structure_passed
             and ast_passed
@@ -330,7 +330,7 @@ class ReviewStage:
                 from cherenkov.core.contracts import Claim, Provenance, ProvenanceType
 
                 oracle = ConsensusOracle(
-                    passes=_Config.CONSENSUS_ORACLE_PASSES,
+                    passes=get_settings().CONSENSUS_ORACLE_PASSES,
                     run_id=self.run_id,
                 )
                 claim = Claim(

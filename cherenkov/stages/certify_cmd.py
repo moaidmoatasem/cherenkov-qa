@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
 from cherenkov.substrate.certification import ModelCertificationManager
 from cherenkov.substrate.provider import provider_for_tier
@@ -36,7 +36,7 @@ def run_certify(tier: str = "small", rag_report: bool = False) -> int:
         print("=" * 60)
         print(f"  Certified:        {'YES' if cert.certified else 'NO'}")
         print(f"  Composite Score:  {cert.faithfulness_score:.3f}")
-        print(f"  Min Required:     {Config.CERTIFICATION_MIN_FAITHFULNESS}")
+        print(f"  Min Required:     {get_settings().CERTIFICATION_MIN_FAITHFULNESS}")
         print(f"  Detail:           {cert.detail}")
         print("=" * 60)
 

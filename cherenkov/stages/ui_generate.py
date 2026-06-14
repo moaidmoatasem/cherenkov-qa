@@ -9,7 +9,7 @@ import json
 import time
 
 from cherenkov.core.contracts import GenerateOutput, Status, StageMeta, StageError
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.ai.ollama_client import complete_code, strip_think
 from cherenkov.core.errors import get_logger
 from cherenkov.stages.ui_plan import UIScenario, UISpec
@@ -72,7 +72,7 @@ class UIGenerateStage:
             raw_code = complete_code(
                 system_prompt=SYSTEM_PROMPT,
                 user_prompt=user_prompt,
-                model=Config.GEN_MODEL,
+                model=get_settings().GEN_MODEL,
                 run_id=self.run_id,
             )
 

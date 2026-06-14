@@ -1,7 +1,7 @@
 import json
 import pytest
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import (
     ReasoningRequest,
     ReasoningResult,
@@ -48,17 +48,17 @@ def test_model_certification(tmp_path):
     gold_set_file.write_text(json.dumps(gold_set_data), encoding="utf-8")
 
     # Set Config to use our temp gold set
-    old_path = Config.CERTIFICATION_GOLD_SET_PATH
-    Config.CERTIFICATION_GOLD_SET_PATH = str(gold_set_file)
+    old_path = get_settings().CERTIFICATION_GOLD_SET_PATH
+    get_settings().CERTIFICATION_GOLD_SET_PATH = str(gold_set_file)
 
     try:
         manager = ModelCertificationManager()
 
         # certify_tier now reports a RAG-Triad *composite* score in
         # faithfulness_score (faithfulness*0.6 + rag_overall*0.4), certified when
-        # composite >= Config.CERTIFICATION_MIN_FAITHFULNESS. Assert on the
+        # composite >= get_settings().CERTIFICATION_MIN_FAITHFULNESS. Assert on the
         # contract (certified flag + threshold band), not brittle exact floats.
-        threshold = Config.CERTIFICATION_MIN_FAITHFULNESS
+        threshold = get_settings().CERTIFICATION_MIN_FAITHFULNESS
 
         # Test passing provider
         passing_prov = DummyProvider("Here is the HELLO word.")
@@ -73,7 +73,7 @@ def test_model_certification(tmp_path):
         assert res_fail.faithfulness_score < threshold
 
     finally:
-        Config.CERTIFICATION_GOLD_SET_PATH = old_path
+        get_settings().CERTIFICATION_GOLD_SET_PATH = old_path
 
 
 def test_mentor_and_governance_kpis(tmp_path):
@@ -160,11 +160,11 @@ def test_router_certification_gate(tmp_path):
     }
     gold_set_file.write_text(json.dumps(gold_set_data), encoding="utf-8")
 
-    old_path = Config.CERTIFICATION_GOLD_SET_PATH
-    old_enabled = Config.CERTIFICATION_ENABLED
+    old_path = get_settings().CERTIFICATION_GOLD_SET_PATH
+    old_enabled = get_settings().CERTIFICATION_ENABLED
 
-    Config.CERTIFICATION_GOLD_SET_PATH = str(gold_set_file)
-    Config.CERTIFICATION_ENABLED = True
+    get_settings().CERTIFICATION_GOLD_SET_PATH = str(gold_set_file)
+    get_settings().CERTIFICATION_ENABLED = True
 
     try:
         router = SubstrateRouter()
@@ -192,5 +192,5 @@ def test_router_certification_gate(tmp_path):
 
         cherenkov.substrate.router.provider_for_tier = old_provider_for_tier
     finally:
-        Config.CERTIFICATION_GOLD_SET_PATH = old_path
-        Config.CERTIFICATION_ENABLED = old_enabled
+        get_settings().CERTIFICATION_GOLD_SET_PATH = old_path
+        get_settings().CERTIFICATION_ENABLED = old_enabled

@@ -20,7 +20,7 @@ import requests
 import random as _random
 
 from cherenkov.core.errors import OllamaJSONError, get_logger
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.ai.interface import InferenceClient
 
 
@@ -151,7 +151,7 @@ class OllamaInferenceClient(InferenceClient):
         while attempt <= max_reprompts:
             t0 = time.time()
             resp = _post_with_retry(
-                Config.OLLAMA_URL,
+                get_settings().OLLAMA_URL,
                 {
                     "model": model,
                     "system": system_prompt,  # static -> cached prefix
@@ -160,7 +160,7 @@ class OllamaInferenceClient(InferenceClient):
                     "stream": False,
                     "options": {"temperature": temperature},
                 },
-                Config.OLLAMA_TIMEOUT,
+                get_settings().OLLAMA_TIMEOUT,
             )
             resp.raise_for_status()
             body = resp.json()
@@ -209,7 +209,7 @@ class OllamaInferenceClient(InferenceClient):
         while attempt <= max_reprompts:
             t0 = time.time()
             resp = _post_with_retry(
-                Config.OLLAMA_URL,
+                get_settings().OLLAMA_URL,
                 {
                     "model": model,
                     "system": system_prompt,
@@ -217,7 +217,7 @@ class OllamaInferenceClient(InferenceClient):
                     "stream": False,
                     "options": {"temperature": temperature},
                 },
-                Config.OLLAMA_TIMEOUT,
+                get_settings().OLLAMA_TIMEOUT,
             )
             resp.raise_for_status()
             body = resp.json()
@@ -256,7 +256,7 @@ class OllamaInferenceClient(InferenceClient):
         log = get_logger("ollama-vision", run_id)
         t0 = time.time()
         resp = _post_with_retry(
-            Config.OLLAMA_URL,
+            get_settings().OLLAMA_URL,
             {
                 "model": model,
                 "system": system_prompt,
@@ -265,7 +265,7 @@ class OllamaInferenceClient(InferenceClient):
                 "stream": False,
                 "options": {"temperature": temperature},
             },
-            Config.OLLAMA_TIMEOUT,
+            get_settings().OLLAMA_TIMEOUT,
         )
         resp.raise_for_status()
         text = resp.json().get("response", "").strip()
@@ -283,7 +283,7 @@ class OllamaInferenceClient(InferenceClient):
         """Send a chat completion (message list) and return the raw text response."""
         log = get_logger("ollama-chat", run_id)
         t0 = time.time()
-        base_url = Config.OLLAMA_URL.rsplit("/api/generate", 1)[0]
+        base_url = get_settings().OLLAMA_URL.rsplit("/api/generate", 1)[0]
         chat_url = f"{base_url}/api/chat"
         resp = _post_with_retry(
             chat_url,
@@ -293,7 +293,7 @@ class OllamaInferenceClient(InferenceClient):
                 "stream": False,
                 "options": {"temperature": temperature},
             },
-            Config.OLLAMA_TIMEOUT,
+            get_settings().OLLAMA_TIMEOUT,
         )
         resp.raise_for_status()
         text = resp.json().get("message", {}).get("content", "").strip()

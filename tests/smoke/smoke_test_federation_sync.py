@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.openclaw.feedback import HealingFeedbackStore
 from cherenkov.federation.corpus import Corpus
 
@@ -43,7 +43,7 @@ def run_sync_smoke():
     assert t_b_init["count"] == 0
 
     # 2. Test Egress = 'any'
-    Config.EGRESS = "any"
+    get_settings().EGRESS = "any"
     corp = Corpus()
     data = corp.export_feedback(store_a)
     assert len(data) == 5
@@ -66,7 +66,7 @@ def run_sync_smoke():
     os.close(db_b_fd)
     store_b = HealingFeedbackStore(db_path=db_b_path)
 
-    Config.EGRESS = "internal"
+    get_settings().EGRESS = "internal"
     data_internal = corp.export_feedback(store_a)
     assert len(data_internal) == 5
     # Endpoint should be hashed, not raw
@@ -85,7 +85,7 @@ def run_sync_smoke():
     )
 
     # 4. Test Egress = 'none' (Strictly forbidden)
-    Config.EGRESS = "none"
+    get_settings().EGRESS = "none"
     try:
         corp.export_feedback(store_a)
         raise AssertionError("Egress 'none' did not raise PermissionError on export")

@@ -3,7 +3,7 @@ from cherenkov.ai.interface import InferenceClient, CachedInferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient
 from cherenkov.ai.openai_client import OpenAIInferenceClient
 from cherenkov.ai.rag_index import RAGIndex
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import AccountingReport, CacheStats
 
 
@@ -12,18 +12,18 @@ _current_provider: str | None = None
 
 
 def get_client() -> InferenceClient:
-    """Return the configured provider client based on Config.PROVIDER.
+    """Return the configured provider client based on get_settings().PROVIDER.
 
     The client is **memoized per provider**: repeated calls within a run reuse the
     same CachedInferenceClient so its response cache and cost accounting persist
     across stages/scenarios (previously every call rebuilt the client, silently
     discarding the cache and resetting accounting to the last call only). When
-    Config.PROVIDER changes, the client is rebuilt for the new provider.
+    get_settings().PROVIDER changes, the client is rebuilt for the new provider.
 
     Use set_client()/reset_client() for explicit injection in tests.
     """
     global _current_client, _current_provider
-    provider = Config.PROVIDER.lower().strip()
+    provider = get_settings().PROVIDER.lower().strip()
 
     if _current_client is not None and _current_provider == provider:
         return _current_client
@@ -53,7 +53,7 @@ def get_client() -> InferenceClient:
 def set_client(client: CachedInferenceClient | None) -> None:
     """Inject a client explicitly (e.g. a CachedInferenceClient wrapping a mock).
 
-    Marks the provider as unknown so the next Config.PROVIDER-driven get_client()
+    Marks the provider as unknown so the next get_settings().PROVIDER-driven get_client()
     call rebuilds rather than handing back the injected client for a mismatched
     provider.
     """

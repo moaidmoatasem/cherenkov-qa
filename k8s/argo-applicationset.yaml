@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cherenkov-qa-fleet
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - cluster: dev-cluster
+        url: https://kubernetes.default.svc
+      - cluster: staging-cluster
+        url: https://staging-kubernetes.default.svc
+      - cluster: prod-cluster
+        url: https://prod-kubernetes.default.svc
+  template:
+    metadata:
+      name: 'cherenkov-qa-{{cluster}}'
+    spec:
+      project: default
+      source:
+        repoURL: 'https://github.com/moaidmoatasem/cherenkov-qa.git'
+        targetRevision: main
+        path: k8s
+      destination:
+        server: '{{url}}'
+        namespace: cherenkov-system
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

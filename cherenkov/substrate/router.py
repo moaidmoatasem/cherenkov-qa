@@ -10,7 +10,7 @@ from __future__ import annotations
 import time
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import (
     EgressError,
     AllProvidersFailedError,
@@ -36,7 +36,7 @@ class SubstrateRouter:
 
         # Enforce model certification (E12 Gold-Set gate)
         if (
-            Config.CERTIFICATION_ENABLED
+            get_settings().CERTIFICATION_ENABLED
             and request.capability_tier not in self._certified_tiers
         ):
             cert_res = self._cert_manager.certify_tier(request.capability_tier, primary)
@@ -60,8 +60,8 @@ class SubstrateRouter:
             last_error = e
             self.log.warning("primary failed", provider=primary_name, error=str(e))
 
-        if Config.FALLBACK_ENABLED:
-            fallback_name = Config.FALLBACK_PROVIDER
+        if get_settings().FALLBACK_ENABLED:
+            fallback_name = get_settings().FALLBACK_PROVIDER
             if fallback_name == primary_name:
                 self.log.warning(
                     "fallback same as primary, no spillover possible",
@@ -96,7 +96,7 @@ class SubstrateRouter:
     def _enforce_egress(self, requires_egress: bool, provider_name: str) -> None:
         if not requires_egress:
             return
-        policy = Config.EGRESS
+        policy = get_settings().EGRESS
         if policy == "none":
             raise EgressError(
                 f"Provider '{provider_name}' requires egress but "

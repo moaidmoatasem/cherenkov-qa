@@ -170,7 +170,7 @@ class ConsensusOracle(Oracle):
 
         try:
             from cherenkov.ai import get_client
-            from cherenkov.core.config import Config
+            from cherenkov.core.settings import get_settings
 
             client = get_client()
             # Slightly increasing temperature per pass to obtain independent samples
@@ -178,7 +178,7 @@ class ConsensusOracle(Oracle):
             response = client.complete_json(
                 system_prompt=_EVAL_SYSTEM_PROMPT,
                 user_prompt=user_prompt,
-                model=Config.GEN_MODEL,
+                model=get_settings().GEN_MODEL,
                 temperature=temperature,
                 run_id=None,
             )

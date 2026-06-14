@@ -10,7 +10,7 @@ import time
 from pydantic import BaseModel, Field
 
 from cherenkov.core.contracts import Status, StageMeta, StageError
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
 from cherenkov.ai.rag_index import RAGIndex
 from cherenkov.ai.ollama_client import complete_json
@@ -89,7 +89,7 @@ class DiagnosticsStage:
             parsed = complete_json(
                 system_prompt=SYSTEM_PROMPT,
                 user_prompt=user_prompt,
-                model=Config.GEN_MODEL,
+                model=get_settings().GEN_MODEL,
                 run_id=self.run_id,
             )
             hypothesis = parsed.get(

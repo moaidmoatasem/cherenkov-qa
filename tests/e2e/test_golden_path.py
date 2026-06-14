@@ -234,7 +234,7 @@ def test_gp7_metrics_endpoints_registered():
 
 def test_gp8_config_validate_exists():
     """GP-8: Config.validate() classmethod exists and runs without error on defaults."""
-    from cherenkov.core.config import Config
+    from cherenkov.core.settings import get_settings
 
     assert hasattr(Config, "validate"), "Config.validate() classmethod must exist"
     try:

@@ -79,7 +79,7 @@ class TestSubstrateRouter(unittest.TestCase):
         self.assertEqual(result.provider, "ollama")
         mock_provider_for_tier.assert_called_with("deep")
 
-    @patch("cherenkov.substrate.router.Config.EGRESS", "none")
+    @patch("cherenkov.substrate.router.get_settings().EGRESS", "none")
     @patch("cherenkov.substrate.router.provider_for_tier")
     def test_egress_none_blocks_cloud_provider(self, mock_provider_for_tier):
         cloud_provider = _make_mock_provider("openai", requires_egress=True)
@@ -93,7 +93,7 @@ class TestSubstrateRouter(unittest.TestCase):
             self.router.route(request)
         self.assertIn("EGRESS policy is 'none'", str(ctx.exception))
 
-    @patch("cherenkov.substrate.router.Config.EGRESS", "internal")
+    @patch("cherenkov.substrate.router.get_settings().EGRESS", "internal")
     @patch("cherenkov.substrate.router.provider_for_tier")
     def test_egress_internal_blocks_openai(self, mock_provider_for_tier):
         cloud_provider = _make_mock_provider("openai", requires_egress=True)
@@ -107,7 +107,7 @@ class TestSubstrateRouter(unittest.TestCase):
             self.router.route(request)
         self.assertIn("EGRESS policy is 'internal'", str(ctx.exception))
 
-    @patch("cherenkov.substrate.router.Config.EGRESS", "any")
+    @patch("cherenkov.substrate.router.get_settings().EGRESS", "any")
     @patch("cherenkov.substrate.router.provider_for_tier")
     def test_egress_any_allows_cloud(self, mock_provider_for_tier):
         cloud_provider = _make_mock_provider("openai", requires_egress=True)
@@ -120,9 +120,9 @@ class TestSubstrateRouter(unittest.TestCase):
         result = self.router.route(request)
         self.assertEqual(result.provider, "openai")
 
-    @patch("cherenkov.substrate.router.Config.FALLBACK_ENABLED", True)
-    @patch("cherenkov.substrate.router.Config.FALLBACK_PROVIDER", "openai")
-    @patch("cherenkov.substrate.router.Config.EGRESS", "any")
+    @patch("cherenkov.substrate.router.get_settings().FALLBACK_ENABLED", True)
+    @patch("cherenkov.substrate.router.get_settings().FALLBACK_PROVIDER", "openai")
+    @patch("cherenkov.substrate.router.get_settings().EGRESS", "any")
     @patch("cherenkov.substrate.router.provider_for_tier")
     @patch("cherenkov.substrate.router.get_provider")
     def test_fallback_when_primary_fails(
@@ -150,8 +150,8 @@ class TestSubstrateRouter(unittest.TestCase):
         self.assertEqual(failing_ollama.generate.call_count, 1)
         self.assertEqual(openai_fallback.generate.call_count, 1)
 
-    @patch("cherenkov.substrate.router.Config.FALLBACK_ENABLED", True)
-    @patch("cherenkov.substrate.router.Config.FALLBACK_PROVIDER", "ollama")
+    @patch("cherenkov.substrate.router.get_settings().FALLBACK_ENABLED", True)
+    @patch("cherenkov.substrate.router.get_settings().FALLBACK_PROVIDER", "ollama")
     @patch("cherenkov.substrate.router.provider_for_tier")
     @patch("cherenkov.substrate.router.get_provider")
     def test_fallback_same_as_primary_raises_error(
@@ -168,7 +168,7 @@ class TestSubstrateRouter(unittest.TestCase):
         with self.assertRaises(AllProvidersFailedError):
             self.router.route(request)
 
-    @patch("cherenkov.substrate.router.Config.FALLBACK_ENABLED", False)
+    @patch("cherenkov.substrate.router.get_settings().FALLBACK_ENABLED", False)
     @patch("cherenkov.substrate.router.provider_for_tier")
     def test_no_fallback_when_disabled(self, mock_provider_for_tier):
         failing = _make_mock_provider("ollama", succeed=False)
@@ -181,8 +181,8 @@ class TestSubstrateRouter(unittest.TestCase):
         with self.assertRaises(AllProvidersFailedError):
             self.router.route(request)
 
-    @patch("cherenkov.substrate.router.Config.TIER_SMALL_PROVIDER", "openai")
-    @patch("cherenkov.substrate.router.Config.EGRESS", "any")
+    @patch("cherenkov.substrate.router.get_settings().TIER_SMALL_PROVIDER", "openai")
+    @patch("cherenkov.substrate.router.get_settings().EGRESS", "any")
     @patch("cherenkov.substrate.router.provider_for_tier")
     @patch("cherenkov.substrate.router.get_provider")
     def test_switch_provider_by_config_alone(

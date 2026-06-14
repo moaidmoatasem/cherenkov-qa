@@ -17,7 +17,7 @@ from cherenkov.core.contracts import (
     StageMeta,
     StageError,
 )
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.ai import get_client
 from cherenkov.ai.ollama_client import strip_think
 from cherenkov.core.errors import get_logger
@@ -241,7 +241,7 @@ class GenerateStage:
                 path,
                 method,
                 {"op": operation, "sch": schemas, "mid": mutation_id},
-                Config.GEN_MODEL,
+                get_settings().GEN_MODEL,
             )
             entry = cache.get(cache_hash)
             if entry:
@@ -268,7 +268,7 @@ class GenerateStage:
                 raw_code = client.complete_code(
                     system_prompt=SYSTEM_PROMPT,
                     user_prompt=user_prompt,
-                    model=Config.GEN_MODEL,
+                    model=get_settings().GEN_MODEL,
                     temperature=temp,
                     run_id=self.run_id,
                 )
@@ -332,7 +332,7 @@ class GenerateStage:
         self.log.info("stage success", duration_ms=dt)
 
         if cache_hash:
-            cache.put(cache_hash, code, Config.GEN_MODEL)
+            cache.put(cache_hash, code, get_settings().GEN_MODEL)
 
         return GenerateOutput(
             scenario_id=mutation_id,

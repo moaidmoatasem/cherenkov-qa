@@ -13,7 +13,7 @@ import time
 import requests
 
 from cherenkov.core.errors import ProviderJSONError, get_logger
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.ollama_client import _try_json, _json_repair
 
@@ -22,7 +22,7 @@ class OpenAIInferenceClient(InferenceClient):
     """OpenAI-specific implementation of the InferenceClient interface."""
 
     def __init__(self):
-        self.api_key = Config.OPENAI_API_KEY
+        self.api_key = get_settings().OPENAI_API_KEY
         self.base_url = "https://api.openai.com/v1"
         self._token_usage: dict[str, int] = {
             "prompt_tokens": 0,

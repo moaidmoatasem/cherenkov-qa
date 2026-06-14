@@ -1,7 +1,7 @@
 """Dual auth for SDD write endpoints — localhost skip + API key for remote."""
 
 from fastapi import Request, HTTPException, Header
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 
 
 async def verify_write_access(
@@ -12,7 +12,7 @@ async def verify_write_access(
     host = request.client.host if request.client else "unknown"
     if host in ("127.0.0.1", "::1", "localhost"):
         return
-    configured_key = Config.HITL_API_KEY
+    configured_key = get_settings().HITL_API_KEY
     if not configured_key:
         return
     if x_api_key and x_api_key == configured_key:

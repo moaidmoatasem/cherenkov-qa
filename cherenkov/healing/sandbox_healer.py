@@ -14,7 +14,7 @@ import uuid
 import difflib
 
 from cherenkov.core.errors import get_logger
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.ai.ollama_client import complete_code, strip_think
 from cherenkov.healing.providers.base import SandboxProvider
 from cherenkov.healing.providers.filesystem import FilesystemSandboxProvider
@@ -151,7 +151,7 @@ class SandboxHealer:
                 proposed_raw = complete_code(
                     system_prompt=SYSTEM_PROMPT,
                     user_prompt=user_prompt,
-                    model=Config.GEN_MODEL,
+                    model=get_settings().GEN_MODEL,
                     run_id=self.run_id,
                 )
                 proposed_code = strip_think(proposed_raw)

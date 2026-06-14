@@ -11,7 +11,7 @@ import os
 import re
 import time
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import GenerateOutput, Status, StageMeta, StageError
 from cherenkov.core.errors import get_logger
 
@@ -106,7 +106,7 @@ class UnitTestEmitter:
         Returns:
             list of GenerateOutput with test_code populated
         """
-        base_url = base_url or Config.API_URL
+        base_url = base_url or get_settings().API_URL
         os.makedirs(output_dir, exist_ok=True)
         results: list[GenerateOutput] = []
 

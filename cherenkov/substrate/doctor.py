@@ -4,7 +4,7 @@ import json
 
 import click
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.devices import DeviceInfo, VLMTier
 
 
@@ -38,11 +38,11 @@ def _detect_localai_vlm() -> dict:
     try:
         import requests
 
-        url = Config.VLM_LOCALAI_URL.rstrip("/")
+        url = get_settings().VLM_LOCALAI_URL.rstrip("/")
         resp = requests.get(f"{url}/readyz", timeout=5)
         if resp.status_code == 200:
             result["available"] = True
-            result["model"] = Config.VLM_LOCALAI_MODEL
+            result["model"] = get_settings().VLM_LOCALAI_MODEL
         else:
             result["error"] = f"LocalAI returned status {resp.status_code}"
     except Exception as e:
@@ -103,7 +103,7 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool) -> None:
         if not json_out:
             click.echo("\nLocalAI VLM")
             click.echo(f"{'=' * 40}")
-            click.echo(f"  URL:         {Config.VLM_LOCALAI_URL}")
+            click.echo(f"  URL:         {get_settings().VLM_LOCALAI_URL}")
             click.echo(f"  Available:   {'Yes' if lai['available'] else 'No'}")
             click.echo(f"  Model:       {lai['model'] or 'N/A'}")
             if lai["error"]:

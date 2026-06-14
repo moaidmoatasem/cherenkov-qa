@@ -25,7 +25,7 @@ import sys
 
 import requests
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import Scenario, Status
 from cherenkov.stages.generate import GenerateStage
 
@@ -41,7 +41,7 @@ def _fail(msg: str) -> None:
 
 
 def _ollama_reachable() -> bool:
-    base = Config.OLLAMA_URL.rsplit("/api/generate", 1)[0]
+    base = get_settings().OLLAMA_URL.rsplit("/api/generate", 1)[0]
     try:
         return requests.get(f"{base}/api/tags", timeout=5).status_code == 200
     except requests.RequestException:
@@ -55,7 +55,7 @@ def main() -> None:
     # The flag asserts intent to run the real path — an unreachable model is now a
     # failure, not a skip, so a broken local/self-hosted setup is surfaced loudly.
     if not _ollama_reachable():
-        _skip(f"CHERENKOV_LIVE_LLM=1 but Ollama not reachable at {Config.OLLAMA_URL}")
+        _skip(f"CHERENKOV_LIVE_LLM=1 but Ollama not reachable at {get_settings().OLLAMA_URL}")
 
     # Minimal but real generate input: POST /users creating a user.
     operation = {
@@ -122,7 +122,7 @@ def main() -> None:
 
     print(
         "PASS smoke_test_generate_live: real model produced a structurally valid "
-        f"Playwright test ({len(code)} chars, model={Config.GEN_MODEL})"
+        f"Playwright test ({len(code)} chars, model={get_settings().GEN_MODEL})"
     )
     sys.exit(0)
 

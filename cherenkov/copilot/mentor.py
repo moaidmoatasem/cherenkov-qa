@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import Idiom
 from cherenkov.core.errors import get_logger
 from cherenkov.reflector.store import VerdictStore
@@ -40,7 +40,7 @@ class Mentor:
         Returns:
             Ranked list of Idioms meeting the confirmation threshold.
         """
-        if not Config.COPILOT_MENTOR_ENABLED:
+        if not get_settings().COPILOT_MENTOR_ENABLED:
             self.log.info("mentor is disabled in config")
             return []
 

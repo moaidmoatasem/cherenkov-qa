@@ -12,7 +12,7 @@ cherenkov/stages/copilot_cmd.py — E10 CLI surface for the manual-QA pillar.
 from __future__ import annotations
 
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 
 
 def run_explore(
@@ -29,11 +29,11 @@ def run_explore(
     print("  CHERENKOV explore - second pair of eyes (E10)")
     print("=" * 72)
     print(f"  Target:   {target}")
-    print(f"  Autonomy: {Config.COPILOT_AUTONOMY}")
+    print(f"  Autonomy: {get_settings().COPILOT_AUTONOMY}")
     print(f"  Probing:  {len(paths)} path(s)\n")
 
     explorer = Explorer(
-        base_url=target, run_id="cli_explore", slow_ms=Config.EXPLORER_SLOW_MS
+        base_url=target, run_id="cli_explore", slow_ms=get_settings().EXPLORER_SLOW_MS
     )
     findings = explorer.crawl(paths, method=method)
     hypotheses = explorer.to_hypotheses(findings)

@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import Claim
 from cherenkov.core.errors import get_logger
 from cherenkov.oracle.interface import Oracle, OracleResult
@@ -38,7 +38,7 @@ class VisualOracle(Oracle):
     """
 
     def __init__(self, provider_name: str | None = None):
-        self.provider_name = provider_name or Config.TIER_VISION_PROVIDER
+        self.provider_name = provider_name or get_settings().TIER_VISION_PROVIDER
         self._log = get_logger("oracle-visual")
 
     def evaluate(self, claim: Claim, **kwargs: Any) -> OracleResult:

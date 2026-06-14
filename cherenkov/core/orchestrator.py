@@ -42,7 +42,7 @@ from cherenkov.stages.ingest import IngestStage
 from cherenkov.stages.plan import PlanStage
 from cherenkov.stages.generate import GenerateStage
 from cherenkov.stages.review import ReviewStage
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 
 
 class CircuitBreaker:
@@ -627,7 +627,7 @@ class OrchestrationEngine:
         _all_endpoints: set[str] = set()
         _passed_endpoints: set[str] = set()
 
-        max_workers = min(len(plan.scenarios), Config.MAX_CONCURRENT_SCENARIOS)
+        max_workers = min(len(plan.scenarios), get_settings().MAX_CONCURRENT_SCENARIOS)
         print(
             f"  Running {len(plan.scenarios)} scenario(s) [{max_workers} concurrent]...\n"
         )

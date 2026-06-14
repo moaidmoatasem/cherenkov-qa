@@ -147,7 +147,7 @@ class GenMetricsStore:
                 threshold=f"{GATE_PASS_THRESHOLD:.0%}",
                 hint=(
                     "Inspect prompt (prompts/generator_system.txt), "
-                    "model (Config.GEN_MODEL), and spec-context enrichment."
+                    "model (get_settings().GEN_MODEL), and spec-context enrichment."
                 ),
             )
 

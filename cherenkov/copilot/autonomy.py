@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 
 
 @dataclass
@@ -57,7 +57,7 @@ PROFILE_LEVELS: dict[str, AutonomyProfile] = {
 
 
 def get_profile() -> AutonomyProfile:
-    current = Config.COPILOT_AUTONOMY
+    current = get_settings().COPILOT_AUTONOMY
     return PROFILE_LEVELS.get(current, PROFILE_LEVELS["assisted"])
 
 
@@ -66,5 +66,5 @@ def set_profile(level: str) -> AutonomyProfile:
         raise ValueError(
             f"Unknown autonomy level '{level}'. Valid: {', '.join(PROFILE_LEVELS.keys())}"
         )
-    Config.COPILOT_AUTONOMY = level
+    get_settings().COPILOT_AUTONOMY = level
     return PROFILE_LEVELS[level]

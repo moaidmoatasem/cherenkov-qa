@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import Protocol, Any
 from datetime import datetime, timezone
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.federation.protocol import DivergenceEnvelope
 
 
@@ -61,7 +61,7 @@ class Corpus:
         if backend is not None:
             self._backend = backend
         else:
-            self._backend = JsonlCorpusBackend(path or Config.CORPUS_PATH)
+            self._backend = JsonlCorpusBackend(path or get_settings().CORPUS_PATH)
 
     def submit(self, envelope: DivergenceEnvelope) -> CorpusEntry:
         if not self.opt_in:
@@ -79,7 +79,7 @@ class Corpus:
         return self._backend.query(**kw)
 
     def export_feedback(self, feedback_store: Any) -> list[dict[str, Any]]:
-        policy = Config.EGRESS
+        policy = get_settings().EGRESS
         if policy == "none":
             raise PermissionError(
                 "Egress policy is 'none': federation export forbidden."
@@ -121,7 +121,7 @@ class Corpus:
         return exported
 
     def import_feedback(self, feedback_store: Any, data: list[dict[str, Any]]) -> None:
-        policy = Config.EGRESS
+        policy = get_settings().EGRESS
         if policy == "none":
             raise PermissionError(
                 "Egress policy is 'none': federation import forbidden."

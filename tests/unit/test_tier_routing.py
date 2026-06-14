@@ -9,13 +9,13 @@ from cherenkov.substrate.provider import (
 
 
 def test_ollama_vlm_provider():
-    with patch("cherenkov.substrate.provider.Config.TIER_VISION_PROVIDER", "ollama"):
+    with patch("cherenkov.substrate.provider.get_settings().TIER_VISION_PROVIDER", "ollama"):
         p = get_vlm_provider()
         assert p is not None
 
 
 def test_openai_vlm_provider():
-    with patch("cherenkov.substrate.provider.Config.TIER_VISION_PROVIDER", "openai"):
+    with patch("cherenkov.substrate.provider.get_settings().TIER_VISION_PROVIDER", "openai"):
         with patch("cherenkov.substrate.provider.OpenAIInferenceClient") as mock:
             mock.return_value = MagicMock()
             p = get_vlm_provider()
@@ -23,7 +23,7 @@ def test_openai_vlm_provider():
 
 
 def test_localai_vlm_provider():
-    with patch("cherenkov.substrate.provider.Config.TIER_VISION_PROVIDER", "localai"):
+    with patch("cherenkov.substrate.provider.get_settings().TIER_VISION_PROVIDER", "localai"):
         with patch("cherenkov.substrate.providers.localai.LocalAIVLMProvider") as mock:
             mock.return_value = MagicMock()
             p = get_vlm_provider()
@@ -31,25 +31,25 @@ def test_localai_vlm_provider():
 
 
 def test_unknown_provider_raises():
-    with patch("cherenkov.substrate.provider.Config.TIER_VISION_PROVIDER", "unknown"):
+    with patch("cherenkov.substrate.provider.get_settings().TIER_VISION_PROVIDER", "unknown"):
         with pytest.raises(ValueError):
             get_vlm_provider()
 
 
 def test_provider_for_tier_small():
-    with patch("cherenkov.substrate.provider.Config.TIER_SMALL_PROVIDER", "ollama"):
+    with patch("cherenkov.substrate.provider.get_settings().TIER_SMALL_PROVIDER", "ollama"):
         p = provider_for_tier("small")
         assert p.capabilities().provider_name == "ollama"
 
 
 def test_provider_for_tier_deep():
-    with patch("cherenkov.substrate.provider.Config.TIER_DEEP_PROVIDER", "ollama"):
+    with patch("cherenkov.substrate.provider.get_settings().TIER_DEEP_PROVIDER", "ollama"):
         p = provider_for_tier("deep")
         assert p.capabilities().provider_name == "ollama"
 
 
 def test_provider_for_tier_vision():
-    with patch("cherenkov.substrate.provider.Config.TIER_VISION_PROVIDER", "ollama"):
+    with patch("cherenkov.substrate.provider.get_settings().TIER_VISION_PROVIDER", "ollama"):
         p = provider_for_tier("vision")
         assert p is not None
 
@@ -60,13 +60,13 @@ def test_provider_for_tier_unknown_raises():
 
 
 def test_resolve_configured():
-    with patch("cherenkov.substrate.provider.Config.TIER_VISION_PROVIDER", "openai"):
+    with patch("cherenkov.substrate.provider.get_settings().TIER_VISION_PROVIDER", "openai"):
         result = _resolve_vlm_provider()
         assert result == "openai"
 
 
 def test_resolve_auto_local_docker():
-    with patch("cherenkov.substrate.provider.Config.TIER_VISION_PROVIDER", "auto"):
+    with patch("cherenkov.substrate.provider.get_settings().TIER_VISION_PROVIDER", "auto"):
         with patch("cherenkov.core.devices.DeviceInfo") as mock_info:
             info = MagicMock()
             info.vlm_tier = "local"
@@ -77,7 +77,7 @@ def test_resolve_auto_local_docker():
 
 
 def test_resolve_auto_local_no_docker():
-    with patch("cherenkov.substrate.provider.Config.TIER_VISION_PROVIDER", "auto"):
+    with patch("cherenkov.substrate.provider.get_settings().TIER_VISION_PROVIDER", "auto"):
         with patch("cherenkov.core.devices.DeviceInfo") as mock_info:
             info = MagicMock()
             info.vlm_tier = "local"
@@ -88,7 +88,7 @@ def test_resolve_auto_local_no_docker():
 
 
 def test_resolve_auto_cloud():
-    with patch("cherenkov.substrate.provider.Config.TIER_VISION_PROVIDER", "auto"):
+    with patch("cherenkov.substrate.provider.get_settings().TIER_VISION_PROVIDER", "auto"):
         with patch("cherenkov.core.devices.DeviceInfo") as mock_info:
             info = MagicMock()
             info.vlm_tier = "cloud"

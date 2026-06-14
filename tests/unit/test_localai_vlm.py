@@ -15,11 +15,11 @@ def test_localai_provider_init():
 
 def test_localai_provider_init_from_config():
     with patch(
-        "cherenkov.substrate.providers.localai.Config.VLM_LOCALAI_URL",
+        "cherenkov.substrate.providers.localai.get_settings().VLM_LOCALAI_URL",
         "http://10.0.0.1:8080",
     ):
         with patch(
-            "cherenkov.substrate.providers.localai.Config.VLM_LOCALAI_MODEL",
+            "cherenkov.substrate.providers.localai.get_settings().VLM_LOCALAI_MODEL",
             "qwen2.5-vl:7b",
         ):
             p = LocalAIVLMProvider()

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import subprocess
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
 from cherenkov.coverage.emitter import UnitTestEmitter
 
@@ -116,7 +116,7 @@ class CoverageLoop:
         Returns:
             CoverageReport with coverage metrics
         """
-        target_url = target_url or Config.API_URL
+        target_url = target_url or get_settings().API_URL
         total_endpoints = len(endpoint_slices)
         covered_endpoints = 0
         total_tests = 0
