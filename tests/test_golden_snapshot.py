@@ -7,11 +7,15 @@ from cherenkov.core.contracts import Scenario
 
 class TestGoldenSnapshot(unittest.TestCase):
     @patch("cherenkov.stages.generate.get_client")
-    def test_golden_generation(self, mock_get_client):
+    @patch("cherenkov.cache.endpoint_cache.EndpointCache")
+    def test_golden_generation(self, mock_endpoint_cache, mock_get_client):
         # Mock the raw LLM response (including think block)
         mock_client = MagicMock()
         mock_client.complete_code.return_value = "<think>I am thinking</think>\nimport { client } from '../client';\nimport { test, expect } from '@playwright/test';\ntest('golden test', async () => {});"
         mock_get_client.return_value = mock_client
+        mock_cache_instance = MagicMock()
+        mock_cache_instance.get.return_value = None
+        mock_endpoint_cache.return_value = mock_cache_instance
 
         scenario = Scenario(
             endpoint="/test",
