@@ -539,7 +539,7 @@ Published as a Grafana dashboard JSON to grafana.com/dashboards. **Zero code in 
 
 ## TIER 5 — Where the Market Lives
 
-### 22. GraphQL Schema Support ❌ → 3x Addressable Market
+### 22. GraphQL Schema Support ✅ → 3x Addressable Market
 
 **This is the biggest market expansion move.** GraphQL powers: GitHub, Shopify, Twitter/X, Stripe, every modern frontend. Adding GraphQL support triples the addressable market.
 
@@ -557,7 +557,7 @@ GraphQL Introspection / .graphql schema
 
 ---
 
-### 23. gRPC / Protobuf Support ❌ → Backend Engineering Niche
+### 23. gRPC / Protobuf Support ✅ → Backend Engineering Niche
 
 gRPC is standard in microservices. Every company running K8s microservices has gRPC services. No tool does: `.proto` → LLM → typed gRPC tests.
 
@@ -659,8 +659,8 @@ LOW EFFORT ──────────────┼────────
 - [ ] Postman collection import
 
 ### Sprint 6 (Weeks 20-28): Market Expansion
-- [ ] GraphQL schema support
-- [ ] gRPC / Protobuf support
+- [x] GraphQL schema support
+- [x] gRPC / Protobuf support
 - [ ] AsyncAPI / WebSocket support
 - [ ] Buf schema registry integration
 

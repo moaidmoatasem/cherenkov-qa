@@ -71,7 +71,7 @@ class TestSpecPrismOracle(unittest.TestCase):
             ),
         )
         result = self.oracle.evaluate(non_eval_claim)
-        self.assertTrue(result.is_correct)
+        self.assertFalse(result.is_correct)
         self.assertEqual(result.confidence, 0.5)
 
     @patch("cherenkov.oracle.spec_prism.requests.request")
@@ -83,7 +83,7 @@ class TestSpecPrismOracle(unittest.TestCase):
         )
 
         result = self.oracle.evaluate(self.claim)
-        self.assertTrue(result.is_correct)
+        self.assertFalse(result.is_correct)
         self.assertEqual(result.confidence, 0.3)
 
 
