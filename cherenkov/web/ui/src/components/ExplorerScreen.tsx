@@ -146,7 +146,7 @@ export default function ExplorerScreen() {
     : [];
 
   return (
-    <div className="h-full overflow-y-auto p-6 space-y-6">
+    <div className="h-full overflow-y-auto p-6 space-y-6" data-testid="explorer-screen">
       {/* Header */}
       <div>
         <h2 className="text-lg font-display font-semibold text-text-primary flex items-center gap-2">

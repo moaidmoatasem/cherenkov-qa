@@ -57,7 +57,7 @@ export default function DeviceManagerScreen() {
   };
 
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="devices-screen">
+    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="devices-screen" data-testid="device-manager-screen">
       <PageHeader
         title="Device & Provider Manager"
         description="VLM device detection, provider tiers, and runtime health checks."
@@ -135,7 +135,7 @@ export default function DeviceManagerScreen() {
 
       <Card className="p-6">
         <h3 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted mb-4">Doctor Checks</h3>
-        <div className="space-y-2">
+        <div className="space-y-2" data-testid="device-list">
           {isLoading ? (
             <>
               <Skeleton className="h-10 w-full rounded-xl" />

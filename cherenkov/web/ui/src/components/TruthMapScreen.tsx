@@ -34,7 +34,7 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
 
   if (isLoading) {
     return (
-      <div className="p-6 h-full overflow-hidden flex flex-col grid-bg bg-transparent relative z-10" id="truth-map-screen">
+      <div className="p-6 h-full overflow-hidden flex flex-col grid-bg bg-transparent relative z-10" id="truth-map-screen" data-testid="truth-map-screen">
         <MockBadge />
         <PageHeader title="Endpoint Truth Graph" description="Unified claims graph mapping the alignment between OpenAPI specifications, server source code, and live HTTP database footprints." />
         <div className="flex-1 flex items-center justify-center">
@@ -46,7 +46,7 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
 
   if (error) {
     return (
-      <div className="p-6 h-full overflow-hidden flex flex-col grid-bg bg-transparent relative z-10" id="truth-map-screen">
+      <div className="p-6 h-full overflow-hidden flex flex-col grid-bg bg-transparent relative z-10" id="truth-map-screen" data-testid="truth-map-screen">
         <MockBadge />
         <PageHeader title="Endpoint Truth Graph" description="Unified claims graph mapping the alignment between OpenAPI specifications, server source code, and live HTTP database footprints." />
         <div className="flex-1 flex items-center justify-center">
@@ -64,7 +64,7 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
 
   if (!currentEndpoint) {
     return (
-      <div className="p-6 h-full overflow-hidden flex flex-col grid-bg bg-transparent relative z-10" id="truth-map-screen">
+      <div className="p-6 h-full overflow-hidden flex flex-col grid-bg bg-transparent relative z-10" id="truth-map-screen" data-testid="truth-map-screen">
         <MockBadge />
         <PageHeader title="Endpoint Truth Graph" description="Unified claims graph mapping the alignment between OpenAPI specifications, server source code, and live HTTP database footprints." />
         <div className="flex-1 flex items-center justify-center">
@@ -82,7 +82,7 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
   }
 
   return (
-    <div className="p-6 h-full overflow-hidden flex flex-col justify-between grid-bg bg-transparent relative z-10" id="truth-map-screen">
+    <div className="p-6 h-full overflow-hidden flex flex-col justify-between grid-bg bg-transparent relative z-10" id="truth-map-screen" data-testid="truth-map-screen">
       <MockBadge />
       <PageHeader
         title="Endpoint Truth Graph"
@@ -94,11 +94,12 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
           <div className="p-3 bg-black/40 border-b border-white/5 font-mono text-[10px] text-[#7D8DA1] uppercase tracking-wider">
             Monitored Endpoint Claims
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          <div className="flex-1 overflow-y-auto p-4 space-y-2" data-testid="endpoint-list">
             {nodes.map((node, idx) => (
               <div
                 key={idx}
                 onClick={() => setSelectedIdx(idx)}
+                data-testid="endpoint-item"
                 className={`p-3.5 rounded-xl border transition cursor-pointer flex justify-between items-center ${
                   selectedIdx === idx
                     ? 'bg-white/10 border-glow-blue shadow-lg shadow-cyan-500/5'

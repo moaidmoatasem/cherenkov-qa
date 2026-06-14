@@ -28,7 +28,7 @@ export default function KnowledgeExplorerScreen() {
   };
 
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="knowledge-screen">
+    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="knowledge-screen" data-testid="knowledge-screen">
       <PageHeader
         title="Knowledge Explorer"
         description="Query the Second Brain knowledge mesh for insights, learnings, and patterns."
@@ -43,6 +43,7 @@ export default function KnowledgeExplorerScreen() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search the knowledge mesh..."
+            data-testid="knowledge-search"
             className="w-full bg-black/30 text-text-primary text-sm pl-10 pr-4 py-2.5 rounded-xl border border-white/10 focus:outline-none focus:border-glow-blue transition placeholder:text-[#7D8DA1]/60"
           />
         </div>

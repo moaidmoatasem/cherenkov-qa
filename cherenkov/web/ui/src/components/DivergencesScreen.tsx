@@ -134,7 +134,7 @@ export default function DivergencesScreen() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-bg-base text-text-primary">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-bg-base text-text-primary" data-testid="divergences-screen">
       <PageHeader
         title="Divergence Triage Hub"
         description="Review and resolve inconsistencies between system components, specifications, and databases."
@@ -150,6 +150,7 @@ export default function DivergencesScreen() {
             type="text"
             placeholder="Search endpoints or details..."
             value={searchQuery}
+            data-testid="search-input"
             onChange={(e) => {
               setSearchQuery(e.target.value);
               setFocusedIndex(-1);
@@ -163,6 +164,7 @@ export default function DivergencesScreen() {
           <select
             value={classFilter}
             onChange={(e) => { setClassFilter(e.target.value); setFocusedIndex(-1); }}
+            data-testid="class-filter"
             className="px-3 py-1.5 bg-white/5 border border-border-custom rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-glow-blue/50 text-text-primary cursor-pointer"
           >
             <option value="ALL" className="bg-bg-base">ALL CLASSES</option>
@@ -177,6 +179,7 @@ export default function DivergencesScreen() {
           <select
             value={severityFilter}
             onChange={(e) => { setSeverityFilter(e.target.value); setFocusedIndex(-1); }}
+            data-testid="severity-filter"
             className="px-3 py-1.5 bg-white/5 border border-border-custom rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-glow-blue/50 text-text-primary cursor-pointer"
           >
             <option value="ALL" className="bg-bg-base">ALL SEVERITIES</option>
@@ -201,7 +204,7 @@ export default function DivergencesScreen() {
       </div>
 
       {/* Main List */}
-      <div ref={listRef} className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div ref={listRef} className="flex-1 overflow-y-auto p-6 space-y-4" data-testid="divergence-list">
         <div className="flex justify-between items-center text-xs text-text-muted mb-2 select-none font-mono">
           <span>Keyboard: Navigate list with <kbd className="px-1 text-[10px] bg-white/5 border rounded">j</kbd>/<kbd className="px-1 text-[10px] bg-white/5 border rounded">k</kbd>, open with <kbd className="px-1 text-[10px] bg-white/5 border rounded">Enter</kbd></span>
           <span>Showing {filtered.length} of {divergences.length} active findings</span>

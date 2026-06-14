@@ -143,13 +143,13 @@ export default function ChatScreen() {
   };
 
   return (
-    <div className="h-full flex flex-col grid-bg bg-transparent relative z-10" id="chat-screen">
+    <div className="h-full flex flex-col grid-bg bg-transparent relative z-10" id="chat-screen" data-testid="chat-screen">
       <PageHeader
         title="Chat"
         description="Interact with the CHERENKOV assistant using natural language via SSE streaming."
       />
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4" data-testid="messages-list">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-60">
             <MessageSquare className="w-12 h-12 text-[#7D8DA1]" />
@@ -206,11 +206,13 @@ export default function ChatScreen() {
             onKeyDown={handleKeyDown}
             placeholder={sessionId ? 'Type a message...' : 'Initializing session...'}
             disabled={!sessionId || isStreaming}
+            data-testid="chat-input"
             className="flex-1 bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-sm text-text-primary placeholder-[#7D8DA1] focus:outline-none focus:border-glow-blue/50 transition disabled:opacity-50"
           />
           <button
             onClick={sendMessage}
             disabled={!sessionId || !input.trim() || isStreaming}
+            data-testid="send-btn"
             className="shrink-0 w-11 h-11 rounded-xl bg-glow-blue hover:bg-opacity-90 text-slate-950 flex items-center justify-center transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
           >
             {isStreaming ? (
