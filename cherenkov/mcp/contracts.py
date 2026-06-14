@@ -199,6 +199,35 @@ class ExplainFindingInput(BaseModel):
     detail_level: Literal["concise", "detailed"] = Field(default="concise")
 
 
+# ── Issue #457: Enhanced Visual Diff Baseline ────────────────────────────────
+
+class VisualDiffBaselineInput(BaseModel):
+    target_url: str | None = Field(default=None, description="Optional target URL for visual testing")
+    baseline_dir: str | None = Field(default=None, description="Baseline directory path (default: stub/visual_baselines)")
+    diff_threshold: float | None = Field(default=None, ge=0.0, le=1.0, description="Pixel diff threshold (0.0-1.0, default: 0.5)")
+    comparison_mode: str | None = Field(default=None, description="Comparison mode: pixel, structural, or auto")
+    report_path: str | None = Field(default=None, description="Path to save visual report (default: .cherenkov/visual_report.json)")
+
+
+# ── Issue #458: Compliance and Governance MCP Tools ──────────────────────────
+
+class MenaComplianceEnhancedInput(BaseModel):
+    target_url: str = Field(min_length=1, description="Target API base URL")
+    spec_path: str = Field(default="stub/openapi.yaml", description="Path to OpenAPI spec")
+    framework: str = Field(default="sama_ccsf", description="Compliance framework: sama_ccsf or egypt_cbef")
+
+
+class GovernanceCertificationInput(BaseModel):
+    cert_id: str = Field(min_length=1, description="Certification ID to validate")
+    validation_criteria: str = Field(min_length=1, description="Validation criteria or standards to check against")
+
+
+class ComplianceFindingsInput(BaseModel):
+    severity: Literal["high", "medium", "low", "all"] | None = Field(default=None, description="Filter by severity")
+    endpoint: str | None = Field(default=None, description="Filter by endpoint path (optional)")
+    limit: int = Field(default=20, ge=1, le=200, description="Maximum results to return")
+
+
 # ── JSON-RPC error codes (MCP uses standard JSON-RPC + MCP extensions) ───────
 PARSE_ERROR      = -32700
 INVALID_REQUEST  = -32600
