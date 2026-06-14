@@ -272,6 +272,12 @@ TOOLS: list[MCPTool] = [
         inputSchema=MCPToolInputSchema(
             properties={
                 "item_id": MCPToolParam(
+                    type="string", description="Validation item ID."
+                )
+            },
+            required=["item_id"],
+        ),
+    ),
     MCPTool(
         name="export_linear_ticket",
         description="Suggest-only Linear export for failed validation items.",
