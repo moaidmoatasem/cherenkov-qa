@@ -44,6 +44,10 @@ from cherenkov.mcp.contracts import (
     ListDriftFindingsInput,
     GetTighteningInput,
     ExplainFindingInput,
+    VisualDiffBaselineInput,
+    MenaComplianceEnhancedInput,
+    GovernanceCertificationInput,
+    ComplianceFindingsInput,
     INVALID_PARAMS,
     MCPContent,
     MCPResource,
@@ -200,6 +204,38 @@ TOOLS: list[MCPTool] = [
             required=[]
         ),
     ),
+    # ── Issue #457: Enhanced Visual Diff Baseline Tool ──────────────────────
+    MCPTool(
+        name="visual_diff_baseline_enhanced",
+        description="Run comprehensive visual snapshot regression with baseline management, "
+                    "configurable diff thresholds, pixel/structural/auto comparison modes, "
+                    "and custom report paths.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "target_url": MCPToolParam(
+                    type="string",
+                    description="Optional target URL for visual testing",
+                ),
+                "baseline_dir": MCPToolParam(
+                    type="string",
+                    description="Baseline directory path (default: stub/visual_baselines)",
+                ),
+                "diff_threshold": MCPToolParam(
+                    type="number",
+                    description="Pixel diff threshold (0.0-1.0, default: 0.5)",
+                ),
+                "comparison_mode": MCPToolParam(
+                    type="string",
+                    description="Comparison mode: pixel, structural, or auto",
+                ),
+                "report_path": MCPToolParam(
+                    type="string",
+                    description="Path to save visual report (default: .cherenkov/visual_report.json)",
+                ),
+            },
+            required=[],
+        ),
+    ),
     MCPTool(
         name="run_k6_perf",
         description="Run K6 performance load testing and latency analysis.",
@@ -234,6 +270,67 @@ TOOLS: list[MCPTool] = [
         name="scan_mena_compliance",
         description="Run the MENA compliance localization and data residency checks.",
         inputSchema=MCPToolInputSchema(properties={}, required=[]),
+    ),
+    # ── Issue #458: Compliance and Governance MCP Tools ────────────────────
+    MCPTool(
+        name="scan_mena_compliance_enhanced",
+        description="Run enhanced MENAC compliance checking for SAMA CCSF and Egypt CBE FinCSF frameworks. "
+                    "Takes target_url, spec_path, and framework parameters for targeted scanning.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "target_url": MCPToolParam(
+                    type="string",
+                    description="Target API base URL",
+                ),
+                "spec_path": MCPToolParam(
+                    type="string",
+                    description="Path to OpenAPI spec (default: stub/openapi.yaml)",
+                ),
+                "framework": MCPToolParam(
+                    type="string",
+                    description="Compliance framework: sama_ccsf or egypt_cbef",
+                ),
+            },
+            required=["target_url"],
+        ),
+    ),
+    MCPTool(
+        name="validate_governance_certification",
+        description="Validate governance certifications against established quality standards and requirements.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "cert_id": MCPToolParam(
+                    type="string",
+                    description="Certification ID to validate",
+                ),
+                "validation_criteria": MCPToolParam(
+                    type="string",
+                    description="Validation criteria or standards to check against",
+                ),
+            },
+            required=["cert_id", "validation_criteria"],
+        ),
+    ),
+    MCPTool(
+        name="report_compliance_findings",
+        description="Generate structured compliance reports with filtering options for severity, endpoint, and result limits.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "severity": MCPToolParam(
+                    type="string",
+                    description="Filter by severity: high, medium, low, or all",
+                ),
+                "endpoint": MCPToolParam(
+                    type="string",
+                    description="Filter by endpoint path (optional)",
+                ),
+                "limit": MCPToolParam(
+                    type="integer",
+                    description="Maximum results to return (default: 20)",
+                ),
+            },
+            required=[],
+        ),
     ),
     MCPTool(
         name="chat_query_verdicts",
@@ -472,6 +569,8 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_validate_gate(arguments).model_dump()
         if name == "visual_diff_baseline":
             return _tool_visual_diff(arguments).model_dump()
+        if name == "visual_diff_baseline_enhanced":
+            return _tool_visual_diff_enhanced(arguments).model_dump()
         if name == "run_k6_perf":
             return _tool_run_perf(arguments).model_dump()
         if name == "query_rag_index":
@@ -480,6 +579,12 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_export_jira(arguments).model_dump()
         if name == "scan_mena_compliance":
             return _tool_scan_mena(arguments).model_dump()
+        if name == "scan_mena_compliance_enhanced":
+            return _tool_scan_mena_enhanced(arguments).model_dump()
+        if name == "validate_governance_certification":
+            return _tool_validate_governance(arguments).model_dump()
+        if name == "report_compliance_findings":
+            return _tool_report_compliance(arguments).model_dump()
         if name == "chat_query_verdicts":
             return _tool_chat_query_verdicts(arguments).model_dump()
         if name == "chat_query_idioms":
@@ -583,6 +688,43 @@ def _tool_visual_diff(args: dict[str, Any]) -> MCPToolCallResult:
         return _ok_content(report)
     except Exception as exc:
         return _err_content(f"VisualDiff error: {exc}")
+
+def _tool_visual_diff_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
+    """Enhanced visual diff tool with baseline management, configurable thresholds, and report output."""
+    try:
+        inp = VisualDiffBaselineInput.model_validate(args)
+        target_url = inp.target_url or os.environ.get("API_URL") or "http://localhost:8000"
+        baseline_dir = inp.baseline_dir or os.path.join(os.getcwd(), "stub", "visual_baselines")
+        diff_threshold = inp.diff_threshold or 0.5
+        comparison_mode = inp.comparison_mode or "pixel"
+        report_path = inp.report_path or os.path.join(os.getcwd(), ".cherenkov", "visual_report.json")
+
+        from cherenkov.execution.visual_diff import VisualDiffEngine
+        engine = VisualDiffEngine()
+        base_report = engine.run_visual_validation(api_url=target_url)
+
+        # Build enriched report with baseline management fields
+        enriched = {
+            "target_url": target_url,
+            "baseline_dir": baseline_dir,
+            "diff_threshold": diff_threshold,
+            "comparison_mode": comparison_mode,
+            "report_path": report_path,
+            "passed": base_report.get("passed", False),
+            "exit_code": base_report.get("exit_code", -1),
+            "mismatch_detected": base_report.get("mismatch_detected", True),
+            "message": base_report.get("message", "Visual diff completed."),
+        }
+
+        # Write report to disk
+        os.makedirs(os.path.dirname(report_path), exist_ok=True)
+        with open(report_path, "w") as f:
+            json.dump(enriched, f, indent=2)
+
+        return _ok_content(enriched)
+    except Exception as exc:
+        return _err_content(f"VisualDiff enhanced error: {exc}")
+
 
 def _tool_run_perf(args: dict[str, Any]) -> MCPToolCallResult:
     target_url = args.get("target_url") or os.environ.get("API_URL") or "http://localhost:8000"
