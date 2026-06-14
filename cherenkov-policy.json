@@ -5,48 +5,100 @@
       "servers": {
         "cherenkov": {
           "tools": [
-            "hitl_list", "hitl_approve", "hitl_reject", "validate_run_gate",
-            "visual_diff_baseline", "run_k6_perf", "query_rag_index",
-            "export_jira_ticket", "scan_mena_compliance",
-            "chat_query_verdicts", "chat_query_idioms",
-            "chat_explain_divergence", "chat_run_test",
-            "run_conformance_check", "get_last_report", "list_drift_findings",
-            "get_tightening_suggestions", "explain_finding"
+            "hitl_list",
+            "hitl_approve",
+            "hitl_reject",
+            "validate_run_gate",
+            "visual_diff_baseline",
+            "run_k6_perf",
+            "query_rag_index",
+            "export_jira_ticket",
+            "scan_mena_compliance",
+            "chat_query_verdicts",
+            "chat_query_idioms",
+            "chat_explain_divergence",
+            "chat_run_test",
+            "run_conformance_check",
+            "get_last_report",
+            "list_drift_findings",
+            "get_tightening_suggestions",
+            "explain_finding",
+            "visual_diff_baseline_enhanced",
+            "scan_mena_compliance_enhanced",
+            "validate_governance_certification",
+            "report_compliance_findings"
           ],
           "allow_network": [],
           "allow_filesystem": false
         },
         "github-official": {
           "tools": [
-            "list_issues", "search_code", "get_file_contents",
-            "list_pull_requests", "pull_request_read",
-            "create_branch", "create_pull_request", "push_files"
+            "list_issues",
+            "search_code",
+            "get_file_contents",
+            "list_pull_requests",
+            "pull_request_read",
+            "create_branch",
+            "create_pull_request",
+            "push_files"
           ],
           "blocked_tools": [
-            "delete_file", "create_repository", "fork_repository"
+            "delete_file",
+            "create_repository",
+            "fork_repository"
           ],
-          "allow_network": ["api.github.com:443"]
+          "allow_network": [
+            "api.github.com:443"
+          ]
         },
         "context7": {
-          "tools": ["resolve_library_id", "get_library_docs"],
-          "allow_network": ["*"]
+          "tools": [
+            "resolve_library_id",
+            "get_library_docs"
+          ],
+          "allow_network": [
+            "*"
+          ]
         },
         "sequentialthinking": {
-          "tools": ["sequentialthinking"],
+          "tools": [
+            "sequentialthinking"
+          ],
           "allow_network": [],
           "allow_filesystem": false
         },
         "atlassian-remote": {
-          "tools": ["*"],
-          "allow_network": ["mcp.atlassian.com:443"]
+          "tools": [
+            "*"
+          ],
+          "allow_network": [
+            "mcp.atlassian.com:443"
+          ]
         }
       }
     },
     "ai_coding": {
       "servers": {
-        "cherenkov": { "tools": ["*"], "allow_network": [] },
-        "context7": { "tools": ["*"], "allow_network": ["*"] },
-        "sequentialthinking": { "tools": ["*"], "allow_network": [] }
+        "cherenkov": {
+          "tools": [
+            "*"
+          ],
+          "allow_network": []
+        },
+        "context7": {
+          "tools": [
+            "*"
+          ],
+          "allow_network": [
+            "*"
+          ]
+        },
+        "sequentialthinking": {
+          "tools": [
+            "*"
+          ],
+          "allow_network": []
+        }
       }
     }
   },
