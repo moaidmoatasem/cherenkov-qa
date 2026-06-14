@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -92,10 +93,25 @@ class GovernanceCollector:
         dirname = os.path.dirname(self.db_path)
         if dirname:
             os.makedirs(dirname, exist_ok=True)
+        self._local = threading.local()
         self._init_tables()
 
+    def _connect(self) -> sqlite3.Connection:
+        """Return a per-thread cached connection to governance.db."""
+        con = getattr(self._local, "con", None)
+        if con is not None:
+            try:
+                con.execute("SELECT 1")
+                return con
+            except Exception:
+                pass
+        con = sqlite3.connect(self.db_path, timeout=10.0)
+        con.execute("PRAGMA journal_mode=WAL")
+        self._local.con = con
+        return con
+
     def _init_tables(self) -> None:
-        conn = sqlite3.connect(self.db_path, timeout=10.0)
+        conn = self._connect()
         conn.execute(
             "CREATE TABLE IF NOT EXISTS governance_kpi_history ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -115,7 +131,6 @@ class GovernanceCollector:
             "covered_endpoints INTEGER NOT NULL DEFAULT 0)"
         )
         conn.commit()
-        conn.close()
 
     def collect(self) -> GovernanceReport:
         kpi = GovernanceKPI()
@@ -125,6 +140,7 @@ class GovernanceCollector:
         if os.path.exists(verdict_db):
             try:
                 conn = sqlite3.connect(verdict_db, timeout=5.0)
+                conn.execute("PRAGMA journal_mode=WAL")
                 total = conn.execute("SELECT COUNT(*) FROM verdicts").fetchone()[0]
                 escaped = conn.execute(
                     "SELECT COUNT(*) FROM verdicts WHERE outcome='escaped_defect'"
@@ -158,6 +174,7 @@ class GovernanceCollector:
         if os.path.exists(coverage_db):
             try:
                 conn = sqlite3.connect(coverage_db, timeout=5.0)
+                conn.execute("PRAGMA journal_mode=WAL")
                 total_ep = conn.execute("SELECT COUNT(*) FROM coverage_items").fetchone()[0]
                 covered_ep = conn.execute(
                     "SELECT COUNT(*) FROM coverage_items WHERE state='covered'"
@@ -184,7 +201,7 @@ class GovernanceCollector:
 
     def _persist(self, kpi: GovernanceKPI) -> None:
         try:
-            conn = sqlite3.connect(self.db_path, timeout=10.0)
+            conn = self._connect()
             conn.execute(
                 "INSERT INTO governance_kpi_history "
                 "(timestamp, health_score, escape_rate, false_positive_rate, coverage, "
@@ -198,17 +215,15 @@ class GovernanceCollector:
                  kpi.total_endpoints, kpi.covered_endpoints),
             )
             conn.commit()
-            conn.close()
         except Exception as e:
             self.log.warning("could not persist governance KPI", error=str(e))
 
     def _get_history(self, limit: int = 30) -> list[dict[str, Any]]:
         try:
-            conn = sqlite3.connect(self.db_path, timeout=5.0)
+            conn = self._connect()
             rows = conn.execute(
                 "SELECT * FROM governance_kpi_history ORDER BY timestamp DESC LIMIT ?", (limit,)
             ).fetchall()
-            conn.close()
             return [
                 {
                     "id": r[0],
