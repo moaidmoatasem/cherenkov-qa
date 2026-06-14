@@ -28,13 +28,13 @@ export default function SignalsScreen() {
   ];
 
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="signals-screen">
+    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="signals-screen" data-testid="signals-screen">
       <PageHeader
         title="Telemetry Signals"
         description="Verify performance, visual changes, and functional coverage profiles from live test suite telemetry."
       />
 
-      <div className="border-b border-white/5 pb-2">
+      <div className="border-b border-white/5 pb-2" data-testid="signal-tabs">
         <Tabs items={tabs} activeId={activeTab} onChange={setActiveTab} />
       </div>
 

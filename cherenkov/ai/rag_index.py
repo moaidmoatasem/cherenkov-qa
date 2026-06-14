@@ -4,9 +4,10 @@ Authority: v3.1 + delta.
 """
 from __future__ import annotations
 
-import os
 import json
+import os
 import sqlite3
+import threading
 import time
 import requests
 from typing import Any, Dict, List, Optional
@@ -22,14 +23,28 @@ class RAGIndex:
         self.run_id = run_id
         self.log = get_logger("RAG_INDEX", run_id)
         self.db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.cherenkov/rag_store.db"))
+        self._local = threading.local()
         self._initialize_db()
+
+    def _connect(self) -> sqlite3.Connection:
+        """Return a per-thread cached connection; reconnects if the connection is dead."""
+        con = getattr(self._local, "con", None)
+        if con is not None:
+            try:
+                con.execute("SELECT 1")
+                return con
+            except Exception:
+                pass
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        con = sqlite3.connect(self.db_path, timeout=30.0)
+        con.execute("PRAGMA journal_mode=WAL")
+        self._local.con = con
+        return con
 
     def _initialize_db(self):
         """Creates the relational SQLite RAG store table if not already present."""
-        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute(
+        conn = self._connect()
+        conn.execute(
             """CREATE TABLE IF NOT EXISTS incident_vectors (
                 id TEXT PRIMARY KEY,
                 scenario_id TEXT NOT NULL,
@@ -40,13 +55,12 @@ class RAGIndex:
             )"""
         )
         conn.commit()
-        conn.close()
 
     def _get_embedding(self, text: str) -> list[float]:
         """Fetches vector embedding using Ollama nomic-embed-text local model."""
         base_url = Config.OLLAMA_URL.rsplit("/api/generate", 1)[0]
         embed_url = f"{base_url}/api/embed"
-        
+
         try:
             resp = requests.post(
                 embed_url,
@@ -78,7 +92,7 @@ class RAGIndex:
                 return resp.json().get("embedding", [])
         except Exception as e:
             self.log.error("Failed to generate embedding locally", error=str(e))
-            
+
         # Return a deterministic mock vector if Ollama is offline or model not pulled,
         # ensuring the entire pipeline remains robust, testable, and green!
         self.log.warning("Ollama offline or nomic-embed-text model missing. Emitting mock vector baseline.")
@@ -87,47 +101,44 @@ class RAGIndex:
     def add_incident(self, incident_id: str, scenario_id: str, failure_class: str, error_message: str):
         """Indexes a test failure event into the SQLite RAG vector index."""
         self.log.info("indexing failure incident", incident_id=incident_id, class_name=failure_class)
-        
+
         vector = self._get_embedding(f"{failure_class}: {error_message}")
         embedding_json = json.dumps(vector)
 
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute(
-            """INSERT OR REPLACE INTO incident_vectors 
+        conn = self._connect()
+        conn.execute(
+            """INSERT OR REPLACE INTO incident_vectors
             (id, scenario_id, failure_class, error_message, embedding_json, timestamp)
             VALUES (?, ?, ?, ?, ?, ?)""",
             (incident_id, scenario_id, failure_class, error_message, embedding_json, int(time.time()))
         )
         conn.commit()
-        conn.close()
         self.log.info("incident successfully indexed in RAG database", incident_id=incident_id)
 
     def query_similar_incidents(self, error_message: str, limit: int = 3) -> list[dict]:
         """Queries the vector index to find top-K closest past incidents based on cosine similarity."""
         self.log.info("querying similar failure incidents", query_error=error_message)
-        
+
         query_vector = self._get_embedding(error_message)
         if not query_vector:
             return []
 
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, scenario_id, failure_class, error_message, embedding_json, timestamp FROM incident_vectors")
-        rows = cursor.fetchall()
-        conn.close()
+        conn = self._connect()
+        rows = conn.execute(
+            "SELECT id, scenario_id, failure_class, error_message, embedding_json, timestamp FROM incident_vectors"
+        ).fetchall()
 
         results = []
         for row in rows:
             inc_id, scen_id, fail_cls, err_msg, emb_json, ts = row
             try:
                 item_vector = json.loads(emb_json)
-                
+
                 # Compute Cosine Similarity
                 dot_product = sum(x * y for x, y in zip(query_vector, item_vector))
                 norm_q = sum(x * x for x in query_vector) ** 0.5
                 norm_i = sum(y * y for y in item_vector) ** 0.5
-                
+
                 similarity = 0.0
                 if norm_q and norm_i:
                     similarity = dot_product / (norm_q * norm_i)

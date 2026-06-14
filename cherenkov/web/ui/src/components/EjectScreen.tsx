@@ -104,7 +104,7 @@ export default function EjectScreen() {
   };
 
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="eject-screen">
+    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="eject-screen" data-testid="eject-screen">
       
       {/* Page Header */}
       <div className="flex items-center gap-4">
@@ -180,6 +180,7 @@ export default function EjectScreen() {
                       type="text"
                       value={outputPath}
                       onChange={(e) => setOutputPath(e.target.value)}
+                      data-testid="output-path-input"
                       className="w-full bg-black/30 text-[#E6EDF3] text-xs font-mono pl-32 pr-4 py-3 rounded border border-white/10 focus:outline-none focus:border-glow-blue transition"
                     />
                   </div>
@@ -194,6 +195,7 @@ export default function EjectScreen() {
                     type="button"
                     id="btn-confirm-eject"
                     onClick={handleEject}
+                    data-testid="eject-btn"
                     className="flex-1 h-11 bg-glow-blue hover:bg-opacity-95 text-slate-950 font-bold text-xs rounded-xl uppercase tracking-wider transition duration-300 shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <HardDrive className="w-4 h-4 stroke-[2.5px]" />
@@ -227,7 +229,7 @@ export default function EjectScreen() {
                   <span className="block text-[10px] font-mono text-[#7D8DA1] uppercase tracking-wider font-bold">Copy Instructions terminal</span>
                   
                   <div className="relative flex items-center bg-black/40 border border-white/10 rounded-xl overflow-hidden">
-                    <pre className="flex-1 p-3.5 pr-24 font-mono text-[11px] text-[#E6EDF3] whitespace-pre-wrap select-all">
+                    <pre className="flex-1 p-3.5 pr-24 font-mono text-[11px] text-[#E6EDF3] whitespace-pre-wrap select-all" data-testid="run-command">
                       <code>{runCommandText}</code>
                     </pre>
 

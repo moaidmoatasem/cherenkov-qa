@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import threading
 import time
 from dataclasses import dataclass, field
 from typing import Optional
@@ -125,17 +126,29 @@ class TokenMonitor:
                 ":memory:", check_same_thread=False
             )
             self._mem_conn.row_factory = sqlite3.Row
+            self._local = None
         else:
             self._mem_conn = None
+            self._local = threading.local()
             os.makedirs(os.path.dirname(self.db_path) or ".", exist_ok=True)
         self._init_db()
 
     def _connect(self) -> sqlite3.Connection:
         if self._mem_conn is not None:
             return self._mem_conn
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
-        conn.row_factory = sqlite3.Row
-        return conn
+        # Per-thread cached connection for disk DBs
+        con = getattr(self._local, "con", None)
+        if con is not None:
+            try:
+                con.execute("SELECT 1")
+                return con
+            except Exception:
+                pass
+        con = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        con.row_factory = sqlite3.Row
+        con.execute("PRAGMA journal_mode=WAL")
+        self._local.con = con
+        return con
 
     def _init_db(self) -> None:
         conn = self._connect()
@@ -159,38 +172,28 @@ class TokenMonitor:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_tu_ts   ON token_usage(timestamp)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_tu_prov ON token_usage(provider)")
         conn.commit()
-        if self._mem_conn is None:
-            conn.close()
 
     def record(self, rec: TokenRecord) -> None:
-        try:
-            conn = self._connect()
-            conn.execute(
-                "INSERT INTO token_usage "
-                "(run_id, model, provider, stage, prompt_tokens, completion_tokens, "
-                " total_tokens, cost_usd, cache_hit, reprompts, timestamp) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                (
-                    rec.run_id, rec.model, rec.provider, rec.stage,
-                    rec.prompt_tokens, rec.completion_tokens, rec.total_tokens,
-                    rec.cost_usd, int(rec.cache_hit), rec.reprompts, rec.timestamp,
-                ),
-            )
-            conn.commit()
-        finally:
-            if self._mem_conn is None:
-                conn.close()
+        conn = self._connect()
+        conn.execute(
+            "INSERT INTO token_usage "
+            "(run_id, model, provider, stage, prompt_tokens, completion_tokens, "
+            " total_tokens, cost_usd, cache_hit, reprompts, timestamp) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            (
+                rec.run_id, rec.model, rec.provider, rec.stage,
+                rec.prompt_tokens, rec.completion_tokens, rec.total_tokens,
+                rec.cost_usd, int(rec.cache_hit), rec.reprompts, rec.timestamp,
+            ),
+        )
+        conn.commit()
 
     def get_report(self, days: int = 30) -> TokenUsageReport:
         since = int(time.time()) - days * 86_400
         conn = self._connect()
-        try:
-            rows = conn.execute(
-                "SELECT * FROM token_usage WHERE timestamp >= ?", (since,)
-            ).fetchall()
-        finally:
-            if self._mem_conn is None:
-                conn.close()
+        rows = conn.execute(
+            "SELECT * FROM token_usage WHERE timestamp >= ?", (since,)
+        ).fetchall()
 
         if not rows:
             return TokenUsageReport(

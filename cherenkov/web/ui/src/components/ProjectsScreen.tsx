@@ -62,7 +62,7 @@ export default function ProjectsScreen({
   };
 
   return (
-    <div className="p-8 h-full overflow-y-auto space-y-8 grid-bg bg-transparent flex flex-col relative z-10" id="projects-screen">
+    <div className="p-8 h-full overflow-y-auto space-y-8 grid-bg bg-transparent flex flex-col relative z-10" id="projects-screen" data-testid="projects-screen">
 
       {/* Intro Header Row */}
       <div className="flex items-start justify-between flex-wrap gap-4">
@@ -82,6 +82,7 @@ export default function ProjectsScreen({
         <button
           onClick={onNewRun}
           id="btn-projects-new-run"
+          data-testid="new-run-btn"
           className="flex items-center gap-2 px-5 py-2.5 rounded-md bg-glow-blue hover:bg-opacity-90 text-slate-950 text-sm font-semibold transition-all duration-300 shadow-lg shadow-cyan-500/20"
         >
           <Plus className="w-4 h-4 text-slate-950 stroke-[3px]" />
@@ -99,6 +100,7 @@ export default function ProjectsScreen({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             id="workspace-search-input"
+            data-testid="search-input"
             className="w-full bg-black/20 text-text-primary placeholder:text-text-muted/65 text-sm pl-11 pr-4 py-2 rounded border border-white/10 focus:outline-none focus:border-glow-blue focus:ring-1 focus:ring-glow-blue transition"
           />
         </div>
@@ -130,7 +132,7 @@ export default function ProjectsScreen({
         </div>
       ) : (
         /* Workspaces Grid list */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="project-list">
           {filteredProjects.map((project) => {
             const isSelected = selectedProjectId === project.id;
             const sparkPoints = project.sparkline;

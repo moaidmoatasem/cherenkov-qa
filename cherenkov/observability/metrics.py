@@ -1,6 +1,7 @@
 """Lightweight metrics collector — stores to SQLite, optionally emits Prometheus-format text."""
 from __future__ import annotations
 import sqlite3
+import threading
 import time
 import os
 from dataclasses import dataclass, field
@@ -38,15 +39,29 @@ class MetricsCollector:
         # For :memory: databases, keep a persistent connection so the schema is retained
         if self.db_path == ":memory:":
             self._mem_conn: sqlite3.Connection | None = sqlite3.connect(":memory:", check_same_thread=False)
+            self._local = None
         else:
             self._mem_conn = None
+            self._local = threading.local()
             os.makedirs(os.path.dirname(self.db_path) or ".", exist_ok=True)
         self._init_db()
 
     def _connect(self) -> sqlite3.Connection:
         if self._mem_conn is not None:
             return self._mem_conn
-        return sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        # Per-thread cached connection for disk DBs
+        con = getattr(self._local, "con", None)
+        if con is not None:
+            try:
+                con.execute("SELECT 1")
+                return con
+            except Exception:
+                pass
+        con = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        con.row_factory = sqlite3.Row
+        con.execute("PRAGMA journal_mode=WAL")
+        self._local.con = con
+        return con
 
     def _init_db(self) -> None:
         conn = self._connect()
@@ -68,8 +83,6 @@ class MetricsCollector:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_run_id ON stage_metrics(run_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_timestamp ON stage_metrics(timestamp)")
         conn.commit()
-        if self._mem_conn is None:
-            conn.close()
 
     def record(self, metric: StageMetric) -> None:
         try:
@@ -84,15 +97,11 @@ class MetricsCollector:
             conn.commit()
         except Exception as e:
             log.error("metrics_write_failed: %s (stage=%s)", str(e), metric.stage)
-        finally:
-            if self._mem_conn is None:
-                conn.close()
 
     def get_summary(self, last_n_runs: int = 10) -> list[dict]:
         """Return per-stage summary for the last N run_ids."""
         try:
             conn = self._connect()
-            conn.row_factory = sqlite3.Row
             rows = conn.execute("""
                 SELECT run_id, stage,
                        AVG(latency_ms) as avg_latency_ms,
@@ -113,10 +122,7 @@ class MetricsCollector:
                 GROUP BY run_id, stage
                 ORDER BY MIN(timestamp) DESC
             """, (last_n_runs,)).fetchall()
-            result = [dict(r) for r in rows]
-            if self._mem_conn is None:
-                conn.close()
-            return result
+            return [dict(r) for r in rows]
         except Exception as e:
             log.error("metrics_read_failed: %s", str(e))
             return []

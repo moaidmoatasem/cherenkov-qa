@@ -24,6 +24,7 @@ import re
 import shutil
 import sqlite3
 import subprocess
+import threading
 import time
 from typing import Optional, List, Dict, Any
 from cherenkov.core.contracts import (
@@ -48,7 +49,8 @@ class _BaselineDB:
     def __init__(self, db_path):
         self.db_path = db_path
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
-        conn = sqlite3.connect(db_path)
+        self._local = threading.local()
+        conn = self._connect()
         conn.execute(
             "CREATE TABLE IF NOT EXISTS perf_metrics ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -62,7 +64,20 @@ class _BaselineDB:
             "timestamp INTEGER NOT NULL)"
         )
         conn.commit()
-        conn.close()
+
+    def _connect(self) -> sqlite3.Connection:
+        """Return a per-thread cached connection; reconnects if the connection is dead."""
+        con = getattr(self._local, "con", None)
+        if con is not None:
+            try:
+                con.execute("SELECT 1")
+                return con
+            except Exception:
+                pass
+        con = sqlite3.connect(self.db_path, timeout=30.0)
+        con.execute("PRAGMA journal_mode=WAL")
+        self._local.con = con
+        return con
 
     def record(self, endpoint, method, latency_ms, ttft_ms: Optional[float] = None,
                itl_ms: Optional[float] = None, cost_usd: Optional[float] = None,
@@ -79,22 +94,20 @@ class _BaselineDB:
             cost_usd: Cost in USD for the request (LLM-specific)
             is_llm: Whether this is an LLM request
         """
-        conn = sqlite3.connect(self.db_path)
+        conn = self._connect()
         conn.execute(
             "INSERT INTO perf_metrics (endpoint, method, latency_ms, ttft_ms, itl_ms, cost_usd, is_llm, timestamp) "
             "VALUES (?,?,?,?,?,?,?,?)",
             (endpoint, method, latency_ms, ttft_ms, itl_ms, cost_usd, int(is_llm), int(time.time())),
         )
         conn.commit()
-        conn.close()
 
     def stats(self, endpoint, method):
-        conn = sqlite3.connect(self.db_path)
+        conn = self._connect()
         rows = conn.execute(
             "SELECT latency_ms FROM perf_metrics WHERE endpoint=? AND method=?",
             (endpoint, method),
         ).fetchall()
-        conn.close()
         latencies = [r[0] for r in rows]
         count = len(latencies)
         if count == 0:
@@ -110,13 +123,12 @@ class _BaselineDB:
         Returns:
             Dictionary with LLM performance metrics
         """
-        conn = sqlite3.connect(self.db_path)
+        conn = self._connect()
         rows = conn.execute(
             "SELECT ttft_ms, itl_ms, cost_usd FROM perf_metrics "
             "WHERE endpoint=? AND method=? AND is_llm=1 AND ttft_ms IS NOT NULL",
             (endpoint, method),
         ).fetchall()
-        conn.close()
 
         ttft_values = [r[0] for r in rows if r[0] is not None]
         itl_values = [r[1] for r in rows if r[1] is not None]
@@ -291,7 +303,7 @@ class PerfStage:
             True if update was successful
         """
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = self.db._connect()
             cursor = conn.cursor()
 
             # Get the most recent record for this endpoint/method
@@ -303,7 +315,6 @@ class PerfStage:
 
             if row:
                 record_id = row[0]
-                # Update with LLM metrics
                 cursor.execute(
                     """UPDATE perf_metrics
                     SET ttft_ms=?, itl_ms=?, cost_usd=?, is_llm=1
@@ -311,10 +322,8 @@ class PerfStage:
                     (ttft_ms, itl_ms, cost_usd, record_id)
                 )
                 conn.commit()
-                conn.close()
                 return True
 
-            conn.close()
             return False
         except Exception as e:
             self.log.error("Failed to update LLM metrics", error=str(e))
@@ -336,14 +345,13 @@ class PerfStage:
             return {"anomaly": False, "score": 0.0, "method": "unavailable"}
 
         # Fetch historical data
-        conn = sqlite3.connect(self.db_path)
+        conn = self.db._connect()
         cursor = conn.cursor()
         cursor.execute(
             "SELECT latency_ms, timestamp FROM perf_metrics WHERE endpoint=? AND method=? ORDER BY timestamp",
             (endpoint, method)
         )
         rows = cursor.fetchall()
-        conn.close()
 
         if len(rows) < 10:
             return {"anomaly": False, "score": 0.0, "method": "insufficient_data"}
