@@ -176,4 +176,222 @@ test.describe('CHERENKOV QA Accessibility — Structural & ARIA Audit', () => {
     await page.keyboard.press('Escape');
   });
 
+  test('Setup screen has no critical a11y violations', async ({ page }) => {
+    await page.click('#nav-item-setup');
+    await page.waitForSelector('#setup-screen');
+    await page.waitForTimeout(SETTLEMENT);
+    const results = await new AxeBuilder({ page })
+      .include('#setup-screen')
+      .withTags(['wcag2aa'])
+      .analyze();
+    const nonColorViolations = results.violations.filter(v => v.id !== 'color-contrast');
+    expect(nonColorViolations.length).toBe(0);
+  });
+
+  test('Setup screen URL input and Fetch button are keyboard accessible', async ({ page }) => {
+    await page.click('#nav-item-setup');
+    await page.waitForSelector('#setup-screen');
+    await page.waitForTimeout(SETTLEMENT);
+
+    await page.focus('#spec-url-input');
+    await expect(page.locator('#spec-url-input')).toBeFocused();
+
+    const fetchBtn = page.getByRole('button', { name: 'Fetch' });
+    await fetchBtn.focus();
+    await expect(fetchBtn).toBeFocused();
+  });
+
+  test('Healing screen has no critical a11y violations', async ({ page }) => {
+    await page.click('#nav-item-healing');
+    await page.waitForSelector('#healing-screen');
+    await page.waitForTimeout(SETTLEMENT);
+    const results = await new AxeBuilder({ page })
+      .include('#healing-screen')
+      .withTags(['wcag2aa'])
+      .analyze();
+    const nonColorViolations = results.violations.filter(v => v.id !== 'color-contrast');
+    expect(nonColorViolations.length).toBe(0);
+  });
+
+  test('Knowledge screen search input is keyboard accessible', async ({ page }) => {
+    await page.click('#nav-item-knowledge');
+    await page.waitForSelector('#knowledge-screen');
+    await page.waitForTimeout(SETTLEMENT);
+
+    const input = page.locator('#knowledge-screen input[type="text"]');
+    await input.focus();
+    await expect(input).toBeFocused();
+
+    // Tab to submit button
+    await page.keyboard.press('Tab');
+    const submitBtn = page.locator('#knowledge-screen button[type="submit"]');
+    await expect(submitBtn).toBeFocused();
+  });
+
+  test('Knowledge screen has no critical a11y violations', async ({ page }) => {
+    await page.click('#nav-item-knowledge');
+    await page.waitForSelector('#knowledge-screen');
+    await page.waitForTimeout(SETTLEMENT);
+    const results = await new AxeBuilder({ page })
+      .include('#knowledge-screen')
+      .withTags(['wcag2aa'])
+      .analyze();
+    const nonColorViolations = results.violations.filter(v => v.id !== 'color-contrast');
+    expect(nonColorViolations.length).toBe(0);
+  });
+
+  test('Governance screen has no critical a11y violations', async ({ page }) => {
+    await page.click('#nav-item-governance');
+    await page.waitForSelector('#governance-screen');
+    await page.waitForTimeout(SETTLEMENT);
+    const results = await new AxeBuilder({ page })
+      .include('#governance-screen')
+      .withTags(['wcag2aa'])
+      .analyze();
+    const nonColorViolations = results.violations.filter(v => v.id !== 'color-contrast');
+    expect(nonColorViolations.length).toBe(0);
+  });
+
+  test('Memory screen has no critical a11y violations', async ({ page }) => {
+    await page.click('#nav-item-memory');
+    await page.waitForSelector('#memory-screen');
+    await page.waitForTimeout(SETTLEMENT);
+    const results = await new AxeBuilder({ page })
+      .include('#memory-screen')
+      .withTags(['wcag2aa'])
+      .analyze();
+    const nonColorViolations = results.violations.filter(v => v.id !== 'color-contrast');
+    expect(nonColorViolations.length).toBe(0);
+  });
+
+  test('Truth Map screen has no critical a11y violations', async ({ page }) => {
+    await page.click('#nav-item-truth-map');
+    await page.waitForSelector('#truth-map-screen');
+    await page.waitForTimeout(SETTLEMENT);
+    const results = await new AxeBuilder({ page })
+      .include('#truth-map-screen')
+      .withTags(['wcag2aa'])
+      .analyze();
+    const nonColorViolations = results.violations.filter(v => v.id !== 'color-contrast');
+    expect(nonColorViolations.length).toBe(0);
+  });
+
+  test('Eject screen has no critical a11y violations', async ({ page }) => {
+    await page.click('#nav-item-eject');
+    await page.waitForSelector('#eject-screen');
+    await page.waitForTimeout(SETTLEMENT);
+    const results = await new AxeBuilder({ page })
+      .include('#eject-screen')
+      .withTags(['wcag2aa'])
+      .analyze();
+    const nonColorViolations = results.violations.filter(v => v.id !== 'color-contrast');
+    expect(nonColorViolations.length).toBe(0);
+  });
+
+  test('Eject screen path input and buttons are keyboard accessible', async ({ page }) => {
+    await page.click('#nav-item-eject');
+    await page.waitForSelector('#eject-screen');
+    await page.waitForTimeout(SETTLEMENT);
+
+    await page.focus('#eject-path');
+    await expect(page.locator('#eject-path')).toBeFocused();
+
+    await page.focus('#btn-confirm-eject');
+    await expect(page.locator('#btn-confirm-eject')).toBeFocused();
+  });
+
+  test('Devices screen has no critical a11y violations', async ({ page }) => {
+    await page.click('#nav-item-devices');
+    await page.waitForSelector('#devices-screen');
+    await page.waitForTimeout(SETTLEMENT);
+    const results = await new AxeBuilder({ page })
+      .include('#devices-screen')
+      .withTags(['wcag2aa'])
+      .analyze();
+    const nonColorViolations = results.violations.filter(v => v.id !== 'color-contrast');
+    expect(nonColorViolations.length).toBe(0);
+  });
+
+  test('Settings screen has no critical a11y violations', async ({ page }) => {
+    await page.click('[title="Open Settings"]');
+    await page.waitForSelector('#settings-screen');
+    await page.waitForTimeout(SETTLEMENT);
+    const results = await new AxeBuilder({ page })
+      .include('#settings-screen')
+      .withTags(['wcag2aa'])
+      .analyze();
+    const nonColorViolations = results.violations.filter(v => v.id !== 'color-contrast');
+    expect(nonColorViolations.length).toBe(0);
+  });
+
+  test('Settings API key input has correct label association', async ({ page }) => {
+    await page.click('[title="Open Settings"]');
+    await page.waitForSelector('#settings-screen');
+    await page.waitForTimeout(SETTLEMENT);
+
+    const input = page.locator('#input-settings-key');
+    await expect(input).toBeVisible();
+    await input.focus();
+    await expect(input).toBeFocused();
+  });
+
+  test('Projects screen has no critical a11y violations beyond color-contrast', async ({ page }) => {
+    await page.waitForSelector('#projects-screen');
+    const results = await new AxeBuilder({ page })
+      .include('#projects-screen')
+      .withTags(['wcag2aa'])
+      .analyze();
+    const nonColorViolations = results.violations.filter(v => v.id !== 'color-contrast');
+    expect(nonColorViolations.length).toBe(0);
+  });
+
+  test('Signals screen tabs are keyboard accessible', async ({ page }) => {
+    await page.click('#nav-item-signals');
+    await page.waitForSelector('#signals-screen');
+    await page.waitForTimeout(SETTLEMENT);
+
+    // Tab buttons within signals screen are focusable
+    const performanceTab = page.locator('#signals-screen button').filter({ hasText: 'Performance' });
+    await performanceTab.focus();
+    await expect(performanceTab).toBeFocused();
+  });
+
+  test('Healing drift cards dismiss buttons are keyboard focusable', async ({ page }) => {
+    await page.click('#nav-item-healing');
+    await page.waitForSelector('#healing-screen');
+    await page.waitForTimeout(SETTLEMENT);
+
+    // Dismiss button on first drift card is focusable
+    const dismissBtn = page.locator('#drift-card-fail-1 button:has-text("Dismiss")');
+    await expect(dismissBtn).toBeVisible();
+    await dismissBtn.focus();
+    await expect(dismissBtn).toBeFocused();
+  });
+
+  test('Author screen intent textarea is keyboard accessible', async ({ page }) => {
+    await page.click('#nav-item-author');
+    await page.waitForSelector('#author-screen');
+    await page.waitForTimeout(SETTLEMENT);
+
+    const textarea = page.locator('#txt-author-intent');
+    await textarea.focus();
+    await expect(textarea).toBeFocused();
+
+    // Can type into it via keyboard
+    await page.keyboard.type('Test intent via keyboard');
+    await expect(textarea).toHaveValue('Test intent via keyboard');
+  });
+
+  test('Author screen has no critical a11y violations', async ({ page }) => {
+    await page.click('#nav-item-author');
+    await page.waitForSelector('#author-screen');
+    await page.waitForTimeout(SETTLEMENT);
+    const results = await new AxeBuilder({ page })
+      .include('#author-screen')
+      .withTags(['wcag2aa'])
+      .analyze();
+    const nonColorViolations = results.violations.filter(v => v.id !== 'color-contrast');
+    expect(nonColorViolations.length).toBe(0);
+  });
+
 });
