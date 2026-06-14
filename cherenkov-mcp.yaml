@@ -2,7 +2,36 @@ name: cherenkov
 title: CHERENKOV QA
 type: server
 image: cherenkov-mcp:latest
-description: API conformance testing framework with HITL review queue and Validation Gate tools.
+description: API conformance testing framework with HITL review queue, Validation Gate, Spec Guardian daemon, and multi-agent mesh router.
 env:
   - name: MCP_TRANSPORT
     value: stdio
+registries:
+  - name: official
+    url: https://registry.mcpx.dev
+    description: Official MCP marketplace (Claude Desktop, Cursor, Windsurf)
+  - name: github
+    url: https://github.com/moaidmoatasem/cherenkov-qa
+    description: GitHub releases and container registry
+tools:
+  - hitl_list
+  - hitl_approve
+  - hitl_reject
+  - validate_run_gate
+  - run_conformance_check
+  - get_last_report
+  - visual_diff_baseline
+  - run_k6_perf
+  - query_rag_index
+  - export_jira_ticket
+  - export_linear_ticket
+  - scan_mena_compliance
+  - chat_query_verdicts
+  - chat_query_idioms
+  - chat_explain_divergence
+  - chat_run_test
+  - list_drift_findings
+  - get_tightening_suggestions
+  - explain_finding
+  - mcp_registry_list
+  - mcp_registry_publish
