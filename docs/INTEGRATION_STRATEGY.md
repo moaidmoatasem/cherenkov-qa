@@ -12,7 +12,7 @@ Before strategy, truth:
 |-------------|-----------|---------|
 | **MCP Server** | ✅ Built | 14 tools, 3 resources, full JSON-RPC 2.0, policy engine |
 | **Desktop App (Tauri)** | ⚠️ Shell | Browser wrapper + sidecar launcher. No native UI, no IPC. 30% done. |
-| **VS Code Extension** | ❌ Zero | Not a single file. Completely missing. |
+| **VS Code Extension** | 🔧 Built | `vscode/` scaffold — commands, sidebar tree, CodeLens, status bar, ConformancePanel webview. Needs `npm install` + `vsce package` to publish. |
 | **Slack** | ❌ Zero | `notification_endpoint` declared in config, never called |
 | **Teams** | ❌ Zero | No code |
 | **Jira** | ⚠️ Stub | Local Markdown export only. MCP tool returns "not implemented". |

@@ -1,0 +1,176 @@
+{
+  "name": "cherenkov-qa",
+  "displayName": "Cherenkov QA",
+  "description": "API conformance testing from your OpenAPI spec — spec in, Playwright tests out",
+  "version": "1.0.0",
+  "publisher": "cherenkov-qa",
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moaidmoatasem/cherenkov-qa"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Testing", "Linters", "Other"],
+  "keywords": ["api", "testing", "openapi", "playwright", "conformance", "qa"],
+  "activationEvents": [
+    "onLanguage:yaml",
+    "onLanguage:json",
+    "workspaceContains:**/openapi.yaml",
+    "workspaceContains:**/openapi.json"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cherenkov.validate",
+        "title": "Cherenkov: Run Conformance Tests",
+        "icon": "$(play)"
+      },
+      {
+        "command": "cherenkov.validateFile",
+        "title": "Cherenkov: Run Conformance Tests Against This Spec",
+        "icon": "$(play)"
+      },
+      {
+        "command": "cherenkov.generate",
+        "title": "Cherenkov: Generate Tests from Spec",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "cherenkov.eject",
+        "title": "Cherenkov: Eject to Vanilla Playwright",
+        "icon": "$(export)"
+      },
+      {
+        "command": "cherenkov.doctor",
+        "title": "Cherenkov: Check Environment Health",
+        "icon": "$(pulse)"
+      },
+      {
+        "command": "cherenkov.init",
+        "title": "Cherenkov: Initialize Project",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "cherenkov.openDashboard",
+        "title": "Cherenkov: Open Dashboard",
+        "icon": "$(browser)"
+      },
+      {
+        "command": "cherenkov.refreshTree",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "cherenkov.validateFile",
+          "when": "resourceExtname == .yaml || resourceExtname == .json",
+          "group": "cherenkov@1"
+        },
+        {
+          "command": "cherenkov.generate",
+          "when": "resourceExtname == .yaml || resourceExtname == .json",
+          "group": "cherenkov@2"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "cherenkov.validateFile",
+          "when": "resourceExtname == .yaml || resourceExtname == .json",
+          "group": "cherenkov@1"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "cherenkov.refreshTree",
+          "when": "view == cherenkovExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "cherenkov.validate",
+          "when": "view == cherenkovExplorer",
+          "group": "navigation"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "cherenkov",
+          "title": "Cherenkov QA",
+          "icon": "$(beaker)"
+        }
+      ]
+    },
+    "views": {
+      "cherenkov": [
+        {
+          "id": "cherenkovExplorer",
+          "name": "Conformance Results",
+          "icon": "$(beaker)",
+          "contextualTitle": "Cherenkov QA"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Cherenkov QA",
+      "properties": {
+        "cherenkov.targetUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "Target API URL to run conformance tests against"
+        },
+        "cherenkov.specPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to OpenAPI spec file (auto-detected if empty)"
+        },
+        "cherenkov.pythonPath": {
+          "type": "string",
+          "default": "python3",
+          "description": "Python interpreter to use for running Cherenkov CLI"
+        },
+        "cherenkov.workers": {
+          "type": "number",
+          "default": 1,
+          "description": "Number of parallel workers for running tests"
+        },
+        "cherenkov.autoDetectSpec": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically detect OpenAPI spec files in the workspace"
+        }
+      }
+    },
+    "problemMatchers": [
+      {
+        "name": "cherenkov",
+        "owner": "cherenkov",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "^\\s*(DRIFT|FAIL)\\s+(\\S+)\\s+(\\S+)\\s+(.+)$",
+          "severity": 1,
+          "message": 4,
+          "file": 2,
+          "line": 3
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^2.22.0"
+  }
+}
