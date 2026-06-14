@@ -904,20 +904,26 @@ async def get_failures():
     }
 
     store = VerdictStore()
-    conn = sqlite3.connect(store.db_path, timeout=10.0)
-    conn.row_factory = sqlite3.Row
-    try:
-        cursor = conn.execute(
-            "SELECT id, endpoint, outcome, failure_class, detail, timestamp "
-            "FROM verdicts WHERE outcome IN (?, ?) "
-            "ORDER BY timestamp DESC LIMIT 50",
-            (VerdictOutcome.REJECT.value, VerdictOutcome.ESCAPED_DEFECT.value)
-        )
-        raw = [dict(r) for r in cursor.fetchall()]
-    except Exception:
-        raw = []
-    finally:
-        conn.close()
+    reject_val = VerdictOutcome.REJECT.value
+    escaped_val = VerdictOutcome.ESCAPED_DEFECT.value
+
+    def _query_failures() -> list[dict]:
+        conn = sqlite3.connect(store.db_path, timeout=10.0)
+        conn.row_factory = sqlite3.Row
+        try:
+            cursor = conn.execute(
+                "SELECT id, endpoint, outcome, failure_class, detail, timestamp "
+                "FROM verdicts WHERE outcome IN (?, ?) "
+                "ORDER BY timestamp DESC LIMIT 50",
+                (reject_val, escaped_val)
+            )
+            return [dict(r) for r in cursor.fetchall()]
+        except Exception:
+            return []
+        finally:
+            conn.close()
+
+    raw = await asyncio.to_thread(_query_failures)
 
     # Shape into FailingTest interface expected by HealingScreen
     return [
@@ -972,27 +978,31 @@ async def get_signals():
     import sqlite3, time
 
     store = VerdictStore()
-    # Build performance entries from verdict history (last 20)
-    performance = []
-    try:
+
+    def _query_signals() -> list[dict]:
         conn = sqlite3.connect(store.db_path, timeout=5.0)
         conn.row_factory = sqlite3.Row
-        cursor = conn.execute(
-            "SELECT endpoint, duration_ms, timestamp FROM verdicts ORDER BY timestamp DESC LIMIT 20"
-        )
-        rows = cursor.fetchall()
-        conn.close()
-        for r in rows:
-            dur = r["duration_ms"] if r["duration_ms"] else 0
-            baseline = 200
-            performance.append({
-                "time": r["timestamp"] or "—",
-                "latency": dur,
-                "baseline": baseline,
-                "anomaly": dur > baseline * 3,
-            })
-    except Exception:
-        pass
+        try:
+            cursor = conn.execute(
+                "SELECT endpoint, duration_ms, timestamp FROM verdicts ORDER BY timestamp DESC LIMIT 20"
+            )
+            return [dict(r) for r in cursor.fetchall()]
+        except Exception:
+            return []
+        finally:
+            conn.close()
+
+    # Build performance entries from verdict history (last 20)
+    performance = []
+    for r in await asyncio.to_thread(_query_signals):
+        dur = r["duration_ms"] if r["duration_ms"] else 0
+        baseline = 200
+        performance.append({
+            "time": r["timestamp"] or "—",
+            "latency": dur,
+            "baseline": baseline,
+            "anomaly": dur > baseline * 3,
+        })
 
     # Visual regression entries (stubbed — real data would come from playwright screenshots)
     visual = [
@@ -1089,18 +1099,27 @@ async def get_projects():
     from cherenkov.reflector.store import VerdictStore
 
     store = VerdictStore()
-    try:
+
+    def _query_projects() -> dict:
         conn = sqlite3.connect(store.db_path, timeout=5.0)
         conn.row_factory = sqlite3.Row
-        cursor = conn.execute(
-            "SELECT COUNT(*) as total, "
-            "SUM(CASE WHEN outcome='approve' THEN 1 ELSE 0 END) as approved "
-            "FROM verdicts"
-        )
-        row = dict(cursor.fetchone())
-        conn.close()
-        total = row.get("total") or 0
-        approved = row.get("approved") or 0
+        try:
+            cursor = conn.execute(
+                "SELECT COUNT(*) as total, "
+                "SUM(CASE WHEN outcome='approve' THEN 1 ELSE 0 END) as approved "
+                "FROM verdicts"
+            )
+            row = cursor.fetchone()
+            return dict(row) if row else {}
+        except Exception:
+            return {}
+        finally:
+            conn.close()
+
+    try:
+        row_data = await asyncio.to_thread(_query_projects)
+        total = row_data.get("total") or 0
+        approved = row_data.get("approved") or 0
         pass_rate = round((approved / total) * 100) if total > 0 else 0
     except Exception:
         total, pass_rate = 0, 0

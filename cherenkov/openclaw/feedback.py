@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import threading
 import time
 import hashlib
 from typing import Any
@@ -33,15 +34,25 @@ class HealingFeedbackStore:
             dirname = os.path.dirname(self.db_path)
             if dirname:
                 os.makedirs(dirname, exist_ok=True)
+        self._local = threading.local()
         self._init_tables()
 
     def _connect(self) -> sqlite3.Connection:
+        """Return a per-thread cached connection; reconnects if the connection is dead."""
+        con = getattr(self._local, "con", None)
+        if con is not None:
+            try:
+                con.execute("SELECT 1")
+                return con
+            except Exception:
+                pass
         con = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         con.row_factory = sqlite3.Row
         try:
             con.execute("PRAGMA journal_mode=WAL")
         except sqlite3.OperationalError:
             pass  # WAL may not be available on some filesystems (e.g. WSL UNC paths)
+        self._local.con = con
         return con
 
     def _init_tables(self) -> None:
@@ -63,7 +74,6 @@ class HealingFeedbackStore:
                 "ON healing_feedback_log(endpoint, mutation_id)"
             )
             con.commit()
-            con.close()
         except sqlite3.OperationalError as exc:
             self.log.warning("db init failed (non-fatal on some filesystems)", error=str(exc))
 
@@ -85,7 +95,6 @@ class HealingFeedbackStore:
             (item_id, endpoint, mutation_id, classification, actor, detail, int(time.time())),
         )
         con.commit()
-        con.close()
         self.log.info("recorded healing feedback",
                       item_id=item_id, classification=classification, endpoint=endpoint)
 
@@ -106,7 +115,6 @@ class HealingFeedbackStore:
             "GROUP BY classification",
             (endpoint, hashed_ep, mutation_id, hashed_mut),
         ).fetchall()
-        con.close()
 
         total = sum(r["cnt"] for r in rows)
         if total == 0:
