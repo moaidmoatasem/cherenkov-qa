@@ -57,17 +57,20 @@ class EndpointCache:
         self._init_db()
 
     def _init_db(self) -> None:
-        with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS endpoint_cache (
-                    endpoint_hash     TEXT PRIMARY KEY,
-                    spec_content_hash TEXT NOT NULL,
-                    model_name        TEXT NOT NULL,
-                    test_code         TEXT NOT NULL,
-                    created_at        TEXT NOT NULL
-                )
-            """)
-            conn.commit()
+        conn = sqlite3.connect(self.db_path)
+        try:
+            with conn:
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS endpoint_cache (
+                        endpoint_hash     TEXT PRIMARY KEY,
+                        spec_content_hash TEXT NOT NULL,
+                        model_name        TEXT NOT NULL,
+                        test_code         TEXT NOT NULL,
+                        created_at        TEXT NOT NULL
+                    )
+                """)
+        finally:
+            conn.close()
 
     def compute_hash(
         self,
@@ -102,12 +105,15 @@ class EndpointCache:
         cutoff = datetime.fromtimestamp(
             time.time() - self._ttl, tz=timezone.utc
         ).isoformat()
-        with sqlite3.connect(self.db_path) as conn:
+        conn = sqlite3.connect(self.db_path)
+        try:
             row = conn.execute(
                 "SELECT endpoint_hash, spec_content_hash, model_name, test_code, created_at "
                 "FROM endpoint_cache WHERE endpoint_hash = ? AND created_at >= ?",
                 (endpoint_hash, cutoff),
             ).fetchone()
+        finally:
+            conn.close()
         if row:
             entry = CacheEntry(*row)
             self._l1[endpoint_hash] = (entry, now)
@@ -125,21 +131,27 @@ class EndpointCache:
             created_at=now_iso,
         )
         self._l1[endpoint_hash] = (entry, time.monotonic())
-        with sqlite3.connect(self.db_path) as conn:
-            conn.execute(
-                """
-                INSERT OR REPLACE INTO endpoint_cache
-                    (endpoint_hash, spec_content_hash, model_name, test_code, created_at)
-                VALUES (?, ?, ?, ?, ?)
-                """,
-                (endpoint_hash, endpoint_hash, model_name, test_code, now_iso),
-            )
-            conn.commit()
+        conn = sqlite3.connect(self.db_path)
+        try:
+            with conn:
+                conn.execute(
+                    """
+                    INSERT OR REPLACE INTO endpoint_cache
+                        (endpoint_hash, spec_content_hash, model_name, test_code, created_at)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (endpoint_hash, endpoint_hash, model_name, test_code, now_iso),
+                )
+        finally:
+            conn.close()
 
     def stats(self) -> dict:
         """Return cache statistics for reporting."""
-        with sqlite3.connect(self.db_path) as conn:
+        conn = sqlite3.connect(self.db_path)
+        try:
             total = conn.execute("SELECT COUNT(*) FROM endpoint_cache").fetchone()[0]
+        finally:
+            conn.close()
         return {
             "cached_endpoints": total,
             "cache_db": str(self.db_path),
@@ -149,6 +161,9 @@ class EndpointCache:
     def clear(self) -> None:
         """Wipe entire cache (e.g. after --no-cache flag or model change)."""
         self._l1.clear()
-        with sqlite3.connect(self.db_path) as conn:
-            conn.execute("DELETE FROM endpoint_cache")
-            conn.commit()
+        conn = sqlite3.connect(self.db_path)
+        try:
+            with conn:
+                conn.execute("DELETE FROM endpoint_cache")
+        finally:
+            conn.close()

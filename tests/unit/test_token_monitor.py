@@ -44,7 +44,9 @@ def test_unknown_provider_uses_openai_default():
 
 @pytest.fixture
 def monitor():
-    return TokenMonitor(db_path=":memory:")
+    m = TokenMonitor(db_path=":memory:")
+    yield m
+    m.close()
 
 
 def _make_record(**kwargs) -> TokenRecord:
@@ -186,3 +188,6 @@ def test_get_monitor_returns_same_instance():
     m1 = get_monitor()
     m2 = get_monitor()
     assert m1 is m2
+    m1.close()
+    import cherenkov.observability.token_monitor as tm
+    tm._MONITOR = None
