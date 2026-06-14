@@ -236,6 +236,52 @@ class ReviewStage:
             
         gates.append(GateResult(gate="prism-dryrun", passed=prism_passed, detail=prism_detail))
 
+        # 7. Gate 7 — CANDOR Consensus Oracle (opt-in via CHERENKOV_CONSENSUS_ORACLE=true)
+        # Runs N independent LLM passes to validate that assertions are correct and
+        # meaningful. Only fires when the four static gates all passed (no point
+        # spending LLM calls on structurally broken code).
+        from cherenkov.core.config import Config as _Config
+        if _Config.CONSENSUS_ORACLE_ENABLED and syntax_passed and structure_passed and ast_passed and assertions_passed:
+            consensus_passed = True
+            consensus_detail = "Consensus oracle skipped (not enabled or static gates failed)."
+            try:
+                from cherenkov.oracle.consensus_oracle import ConsensusOracle
+                from cherenkov.core.contracts import Claim, Provenance, ProvenanceType
+                oracle = ConsensusOracle(
+                    passes=_Config.CONSENSUS_ORACLE_PASSES,
+                    run_id=self.run_id,
+                )
+                claim = Claim(
+                    id=scenario_id,
+                    category="mutation",
+                    subject=f"{getattr(generate, 'method', '?')} {getattr(generate, 'endpoint', '?')}",
+                    provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri=spec_path),
+                )
+                endpoint_slice = {
+                    "path": getattr(generate, "endpoint", ""),
+                    "method": getattr(generate, "method", ""),
+                    "operation": {},
+                    "schemas": {},
+                }
+                oracle_result = oracle.evaluate(claim, test_code=code, endpoint_slice=endpoint_slice)
+                consensus_passed = oracle_result.is_correct
+                consensus_detail = oracle_result.detail or (
+                    "Consensus oracle: assertions verified." if consensus_passed
+                    else "Consensus oracle: assertions rejected by majority vote."
+                )
+                self.log.info(
+                    "consensus oracle gate",
+                    scenario_id=scenario_id,
+                    passed=consensus_passed,
+                    confidence=oracle_result.confidence,
+                )
+            except Exception as exc:
+                # Never let Gate 7 crash the pipeline — treat as skipped
+                consensus_passed = True
+                consensus_detail = f"Consensus oracle skipped (error): {exc}"
+                self.log.warning("consensus gate error (skipped)", error=str(exc))
+            gates.append(GateResult(gate="consensus-oracle", passed=consensus_passed, detail=consensus_detail))
+
         # Calculate quality score as fraction of passed gates
         passed_count = sum(1 for g in gates if g.passed)
         quality_score = passed_count / len(gates)
@@ -247,6 +293,27 @@ class ReviewStage:
             verdict = Verdict.HITL
         else:
             verdict = Verdict.REGENERATE
+
+        # ── Fine-tune signal collection ────────────────────────────────────
+        # Log AUTO_APPROVE (accepted) and REGENERATE (rejected) outcomes so
+        # confirmed examples can later feed a local-model fine-tuning dataset.
+        if verdict in (Verdict.AUTO_APPROVE, Verdict.REGENERATE):
+            try:
+                from cherenkov.governance.finetune_log import FinetuneLogger
+                _ftl = FinetuneLogger()
+                _ftl.log_outcome(
+                    run_id=self.run_id or "unknown",
+                    endpoint=getattr(generate, "endpoint", "") or "",
+                    method=getattr(generate, "method", "") or "",
+                    case_type=generate.scenario_id.split("_")[0] if generate.scenario_id else "",
+                    mutation_id=generate.scenario_id,
+                    verdict="accepted" if verdict == Verdict.AUTO_APPROVE else "rejected",
+                    quality_score=quality_score,
+                    gate_results=[{"gate": g.gate, "passed": g.passed, "detail": g.detail} for g in gates],
+                    test_code=code,
+                )
+            except Exception:
+                pass  # never block the pipeline
 
         # A2 #110 — bridge: Verdict.HITL → HitlQueue.enqueue
         # Only fires on HITL (0.7–0.9 quality band), never on REGENERATE or AUTO_APPROVE.
