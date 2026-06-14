@@ -6,6 +6,8 @@ __pycache__/
 
 # node
 node_modules/
+vscode/out/
+vscode/*.vsix
 
 # generated / local
 .cherenkov/
@@ -65,7 +67,9 @@ issue*.json
 
 # IDE/Editor directories
 .kilo/
-.vscode/
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
 .zed/
 
 # K8s test manifests

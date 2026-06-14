@@ -64,7 +64,7 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
   };
 
   return (
-    <div className="p-8 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="healing-screen">
+    <div className="p-8 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="healing-screen" data-testid="healing-screen">
       
       {/* Page Header */}
       <div className="flex items-center gap-4 border-b border-white/5 pb-4 shrink-0">
@@ -100,7 +100,7 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
       </div>
 
       {/* Main Column Listing */}
-      <div className="space-y-6 max-w-5xl">
+      <div className="space-y-6 max-w-5xl" data-testid="failures-list">
         {failures.length === 0 ? (
           <div className="py-24 border border-dashed border-white/10 rounded-2xl bg-white/5 backdrop-blur-md text-center space-y-4">
             <div className="mx-auto w-12 h-12 rounded-full bg-[#3FB950]/10 text-[#3FB950] flex items-center justify-center">
@@ -196,6 +196,7 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => handleDismiss(item.id)}
+                        data-testid="dismiss-btn"
                         className="px-3 py-1.5 text-text-muted hover:text-red-400 transition text-xs font-mono uppercase cursor-pointer"
                       >
                         Dismiss
@@ -203,6 +204,7 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
 
                         <button
                           onClick={() => handleViewDiff(item.id)}
+                          data-testid="view-diff-btn"
                           className="flex items-center gap-1.5 px-4 py-1.5 bg-glow-blue hover:bg-opacity-95 text-slate-950 font-bold rounded-xl text-xs font-mono uppercase tracking-wider transition shadow cursor-pointer"
                         >
                           <span>VIEW SUGGESTION DIFF</span>

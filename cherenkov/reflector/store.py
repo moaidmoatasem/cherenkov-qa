@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
+import threading
 import time
 import uuid
 from typing import Any
@@ -61,12 +62,27 @@ class VerdictStore:
         self.log = get_logger("REFLECTOR", run_id)
         if self.db_path != ":memory:":
             self.db_path = _validate_db_path(self.db_path)
+        self._local = threading.local()
         self._init_tables()
+
+    def _connect(self) -> sqlite3.Connection:
+        """Return a per-thread cached connection; reconnects if the connection is dead."""
+        con = getattr(self._local, "con", None)
+        if con is not None:
+            try:
+                con.execute("SELECT 1")
+                return con
+            except Exception:
+                pass
+        con = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        con.execute("PRAGMA journal_mode=WAL")
+        self._local.con = con
+        return con
 
     # ── schema ────────────────────────────────────────────────────────────
 
     def _init_tables(self) -> None:
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         conn.execute(
             "CREATE TABLE IF NOT EXISTS verdicts ("
             "id TEXT PRIMARY KEY,"
@@ -116,12 +132,11 @@ class VerdictStore:
             "timestamp INTEGER NOT NULL)"
         )
         conn.commit()
-        conn.close()
 
     # ── verdict CRUD ──────────────────────────────────────────────────────
 
     def record_verdict(self, record: VerdictRecord) -> None:
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         try:
             conn.execute(
                 "INSERT OR REPLACE INTO verdicts "
@@ -143,17 +158,15 @@ class VerdictStore:
             )
             conn.commit()
         except Exception as e:
+            conn.rollback()
             self.log.error("verdict_store_write_failed", error=str(e), record_id=getattr(record, 'id', 'unknown'))
             raise  # re-raise so caller knows the write failed
-        finally:
-            conn.close()
 
     def get_verdict(self, verdict_id: str) -> VerdictRecord | None:
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         row = conn.execute(
             "SELECT * FROM verdicts WHERE id=?", (verdict_id,)
         ).fetchone()
-        conn.close()
         if row is None:
             return None
         return self._row_to_verdict(row)
@@ -161,19 +174,18 @@ class VerdictStore:
     def get_verdicts_for_hypothesis(
         self, hypothesis_id: str
     ) -> list[VerdictRecord]:
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         rows = conn.execute(
             "SELECT * FROM verdicts WHERE hypothesis_id=? ORDER BY timestamp DESC",
             (hypothesis_id,),
         ).fetchall()
-        conn.close()
         return [self._row_to_verdict(r) for r in rows]
 
     def get_rejected_hypothesis_ids(
         self, endpoint: str | None = None
     ) -> set[str]:
         """Return hypothesis IDs that were rejected (so they can be suppressed)."""
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         if endpoint:
             rows = conn.execute(
                 "SELECT hypothesis_id FROM verdicts "
@@ -185,7 +197,6 @@ class VerdictStore:
                 "SELECT hypothesis_id FROM verdicts WHERE outcome=?",
                 (VerdictOutcome.REJECT.value,),
             ).fetchall()
-        conn.close()
         return {r[0] for r in rows}
 
     # ── fingerprint-based suppression (E7 fix) ───────────────────────────────
@@ -195,19 +206,18 @@ class VerdictStore:
     ) -> None:
         """Persist a semantic fingerprint so the SAME finding stays suppressed
         across runs even though the Skeptic re-mints a fresh hypothesis_id."""
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         conn.execute(
             "INSERT OR REPLACE INTO rejected_fingerprints "
             "(fingerprint, endpoint, divergence_class, timestamp) VALUES (?,?,?,?)",
             (fingerprint, endpoint, divergence_class, int(time.time())),
         )
         conn.commit()
-        conn.close()
 
     def rejected_fingerprints(self, endpoint: str | None = None) -> set[str]:
         """Fingerprints to suppress. Scoped to an endpoint when given
         (NULL-endpoint rejections always apply)."""
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         if endpoint:
             rows = conn.execute(
                 "SELECT fingerprint FROM rejected_fingerprints "
@@ -218,24 +228,22 @@ class VerdictStore:
             rows = conn.execute(
                 "SELECT fingerprint FROM rejected_fingerprints"
             ).fetchall()
-        conn.close()
         return {r[0] for r in rows}
 
     def get_recent_verdicts(
         self, limit: int = 50
     ) -> list[VerdictRecord]:
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         rows = conn.execute(
             "SELECT * FROM verdicts ORDER BY timestamp DESC LIMIT ?",
             (limit,),
         ).fetchall()
-        conn.close()
         return [self._row_to_verdict(r) for r in rows]
 
     # ── idiom CRUD ────────────────────────────────────────────────────────
 
     def upsert_idiom(self, idiom: Idiom) -> None:
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         conn.execute(
             "INSERT OR REPLACE INTO idioms "
             "(id, pattern, divergence_class, endpoint, confirm_count, "
@@ -253,26 +261,23 @@ class VerdictStore:
             ),
         )
         conn.commit()
-        conn.close()
 
     def get_idioms(
         self, min_decay: float = 0.3, limit: int = 20
     ) -> list[Idiom]:
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         rows = conn.execute(
             "SELECT * FROM idioms WHERE decay_score >= ? "
             "ORDER BY decay_score DESC, confirm_count DESC LIMIT ?",
             (min_decay, limit),
         ).fetchall()
-        conn.close()
         return [self._row_to_idiom(r) for r in rows]
 
     def get_idiom_by_pattern(self, pattern: str) -> Idiom | None:
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         row = conn.execute(
             "SELECT * FROM idioms WHERE pattern=?", (pattern,)
         ).fetchone()
-        conn.close()
         if row is None:
             return None
         return self._row_to_idiom(row)
@@ -289,7 +294,7 @@ class VerdictStore:
         each other's updates.
         """
         now = int(time.time())
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         conn.execute("BEGIN EXCLUSIVE")
         rows = conn.execute(
             "SELECT id, last_confirmed, decay_score FROM idioms"
@@ -305,19 +310,14 @@ class VerdictStore:
                     (round(decay_score, 4), idiom_id),
                 )
         conn.commit()
-        conn.close()
 
     def idiom_count(self) -> int:
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
-        count = conn.execute("SELECT COUNT(*) FROM idioms").fetchone()[0]
-        conn.close()
-        return count
+        conn = self._connect()
+        return conn.execute("SELECT COUNT(*) FROM idioms").fetchone()[0]
 
     def verdict_count(self) -> int:
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
-        count = conn.execute("SELECT COUNT(*) FROM verdicts").fetchone()[0]
-        conn.close()
-        return count
+        conn = self._connect()
+        return conn.execute("SELECT COUNT(*) FROM verdicts").fetchone()[0]
 
     # ── helpers ───────────────────────────────────────────────────────────
 
@@ -360,10 +360,25 @@ class ReflectorStore:
         self.db_path = db_path or _default_db_path().replace("verdicts.db", "reflector.db")
         if self.db_path != ":memory:":
             self.db_path = _validate_db_path(self.db_path)
+        self._local = threading.local()
         self._init_table()
 
+    def _connect(self) -> sqlite3.Connection:
+        """Return a per-thread cached connection; reconnects if the connection is dead."""
+        con = getattr(self._local, "con", None)
+        if con is not None:
+            try:
+                con.execute("SELECT 1")
+                return con
+            except Exception:
+                pass
+        con = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        con.execute("PRAGMA journal_mode=WAL")
+        self._local.con = con
+        return con
+
     def _init_table(self) -> None:
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         conn.execute(
             "CREATE TABLE IF NOT EXISTS entries ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -375,19 +390,17 @@ class ReflectorStore:
             "CREATE INDEX IF NOT EXISTS idx_entries_type ON entries(type)"
         )
         conn.commit()
-        conn.close()
 
     def append(self, entry: dict) -> None:
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         conn.execute(
             "INSERT INTO entries (type, data, timestamp) VALUES (?,?,?)",
             (entry.get("type", "unknown"), json.dumps(entry), int(time.time())),
         )
         conn.commit()
-        conn.close()
 
     def query(self, type: str | None = None, limit: int = 100) -> list[dict]:
-        conn = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
+        conn = self._connect()
         if type:
             rows = conn.execute(
                 "SELECT data FROM entries WHERE type=? ORDER BY timestamp DESC LIMIT ?",
@@ -398,5 +411,4 @@ class ReflectorStore:
                 "SELECT data FROM entries ORDER BY timestamp DESC LIMIT ?",
                 (limit,),
             ).fetchall()
-        conn.close()
         return [json.loads(r[0]) for r in rows]

@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "cherenkov-qa.cherenkov-qa",
+    "redhat.vscode-yaml",
+    "ms-python.python",
+    "ms-playwright.playwright"
+  ]
+}

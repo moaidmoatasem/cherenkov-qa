@@ -83,6 +83,12 @@ class Config:
     # ── Issue #195: Semantic chunking / RAG for large specs ──────────────
     RAG_ENABLED: bool = os.getenv("CHERENKOV_RAG_ENABLED", "false").lower() in ("1", "true", "yes")
 
+    # ── Research: CANDOR consensus oracle (Gate 7 in ReviewStage) ────────
+    # Opt-in: each pass costs one LLM call, so default=off. Enable when you
+    # want multi-pass oracle validation on top of the 6-gate static review.
+    CONSENSUS_ORACLE_ENABLED: bool = os.getenv("CHERENKOV_CONSENSUS_ORACLE", "false").lower() in ("1", "true", "yes")
+    CONSENSUS_ORACLE_PASSES: int = int(os.getenv("CHERENKOV_CONSENSUS_PASSES", "3"))
+
     # ── Issue #196: HITL auth API key + at-rest encryption ───────────────
     HITL_API_KEY: str = os.getenv("CHERENKOV_HITL_API_KEY", "")
     DB_KEY: str = os.getenv("CHERENKOV_DB_KEY", "")

@@ -3,7 +3,7 @@ import React from 'react';
 interface PageHeaderProps {
   title: string;
   description?: string;
-  primaryAction?: React.ReactNode | { label: string; onClick?: () => void };
+  primaryAction?: React.ReactNode | { label: string; onClick?: () => void; testId?: string };
   tabs?: React.ReactNode;
 }
 
@@ -12,10 +12,11 @@ export function PageHeader({ title, description, primaryAction, tabs }: PageHead
   
   if (primaryAction) {
     if (typeof primaryAction === 'object' && 'label' in primaryAction) {
-      const act = primaryAction as { label: string; onClick?: () => void };
+      const act = primaryAction as { label: string; onClick?: () => void; testId?: string };
       actionElement = (
         <button
           onClick={act.onClick}
+          data-testid={act.testId}
           className="px-4 py-2 bg-glow-blue hover:bg-opacity-90 text-slate-950 font-bold text-xs rounded-xl uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-lg shadow-cyan-500/10"
         >
           {act.label}

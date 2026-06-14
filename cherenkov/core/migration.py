@@ -27,8 +27,8 @@ class SchemaMigration:
             "applied_at INTEGER NOT NULL)"
         )
 
-    def get_applied_version(self) -> int:
-        conn = sqlite3.connect(self.db_path, timeout=10.0)
+    def _applied_version(self, conn: sqlite3.Connection) -> int:
+        """Return the highest applied version using an existing connection."""
         try:
             self._ensure_schema_table(conn)
             row = conn.execute(
@@ -37,6 +37,11 @@ class SchemaMigration:
             return row[0] if row and row[0] else 0
         except sqlite3.OperationalError:
             return 0
+
+    def get_applied_version(self) -> int:
+        conn = sqlite3.connect(self.db_path, timeout=10.0)
+        try:
+            return self._applied_version(conn)
         finally:
             conn.close()
 
@@ -46,8 +51,7 @@ class SchemaMigration:
     def apply(self, migrations: list[tuple[int, str]]) -> bool:
         conn = sqlite3.connect(self.db_path, timeout=10.0)
         try:
-            self._ensure_schema_table(conn)
-            applied = self.get_applied_version()
+            applied = self._applied_version(conn)
             for version, sql in migrations:
                 if version > applied and version <= self.target_version:
                     logger.info("applying migration v%s", version)
@@ -68,7 +72,7 @@ class SchemaMigration:
     def rollback(self, migrations: list[tuple[int, str]]) -> bool:
         conn = sqlite3.connect(self.db_path, timeout=10.0)
         try:
-            applied = self.get_applied_version()
+            applied = self._applied_version(conn)
             for version, sql in reversed(migrations):
                 if version <= applied and version > self.current_version:
                     logger.info("rolling back migration v%s", version)

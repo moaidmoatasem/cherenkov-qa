@@ -16,7 +16,7 @@ export default function MemoryScreen() {
   const idioms = mem.idioms || [];
   const pairing = mem.pairing || [];
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="memory-screen">
+    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="memory-screen" data-testid="memory-screen">
       <PageHeader
         title="Reflector Memory & Pairing"
         description="Verify stored testing idioms and view context-specific guidelines explained by the Mentor assistant agent."
@@ -29,7 +29,7 @@ export default function MemoryScreen() {
           <div className="p-4 bg-black/40 border-b border-white/5 font-mono text-[10px] text-[#7D8DA1] uppercase tracking-wider">
             Accumulated Senior Testing Idioms
           </div>
-          <div className="p-4 space-y-4">
+          <div className="p-4 space-y-4" data-testid="idioms-list">
             {idioms.map((idm: any, idx: number) => (
               <div key={idm.id || idx} className="p-4 rounded-xl border border-white/5 bg-black/20 space-y-2">
                 <p className="text-xs text-[#E6EDF3] leading-relaxed font-mono">{idm.pattern || idm.text}</p>

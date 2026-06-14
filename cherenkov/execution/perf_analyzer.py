@@ -4,11 +4,14 @@ Authority: v3.1 + delta.
 """
 from __future__ import annotations
 
+import math
 import os
 import sqlite3
+import threading
 import time
-import math
+
 from cherenkov.core.errors import get_logger
+
 
 class PerformanceAnalyzer:
     """Records round-trip latency data inside local SQLite database and flags latency regressions."""
@@ -17,14 +20,28 @@ class PerformanceAnalyzer:
         self.run_id = run_id
         self.log = get_logger("PERF_ANALYZER", run_id)
         self.db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.cherenkov/perf_store.db"))
+        self._local = threading.local()
         self._initialize_db()
+
+    def _connect(self) -> sqlite3.Connection:
+        """Return a per-thread cached connection; reconnects if the connection is dead."""
+        con = getattr(self._local, "con", None)
+        if con is not None:
+            try:
+                con.execute("SELECT 1")
+                return con
+            except Exception:
+                pass
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        con = sqlite3.connect(self.db_path, timeout=30.0)
+        con.execute("PRAGMA journal_mode=WAL")
+        self._local.con = con
+        return con
 
     def _initialize_db(self):
         """Creates the relational SQLite performance table if not already present."""
-        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute(
+        conn = self._connect()
+        conn.execute(
             """CREATE TABLE IF NOT EXISTS perf_metrics (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 endpoint TEXT NOT NULL,
@@ -34,41 +51,33 @@ class PerformanceAnalyzer:
             )"""
         )
         conn.commit()
-        conn.close()
 
     def record_latency(self, endpoint: str, method: str, latency_ms: float):
         """Inserts a fresh latency round-trip duration record into the SQLite store."""
         self.log.info("recording execution latency", endpoint=endpoint, method=method, latency=latency_ms)
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute(
+        conn = self._connect()
+        conn.execute(
             """INSERT INTO perf_metrics (endpoint, method, latency_ms, timestamp)
             VALUES (?, ?, ?, ?)""",
             (endpoint, method, latency_ms, int(time.time()))
         )
         conn.commit()
-        conn.close()
 
     def get_baseline_stats(self, endpoint: str, method: str) -> dict:
         """Retrieves history count, mean, and standard deviation for the given endpoint and method."""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute(
+        conn = self._connect()
+        rows = conn.execute(
             "SELECT latency_ms FROM perf_metrics WHERE endpoint = ? AND method = ?",
             (endpoint, method)
-        )
-        rows = cursor.fetchall()
-        conn.close()
+        ).fetchall()
 
         latencies = [row[0] for row in rows]
         count = len(latencies)
-        
+
         if count == 0:
             return {"count": 0, "mean": 0.0, "stddev": 0.0}
 
         mean = sum(latencies) / count
-        
-        # Calculate standard deviation
         variance = sum((x - mean) ** 2 for x in latencies) / count if count > 1 else 0.0
         stddev = math.sqrt(variance)
 
