@@ -198,7 +198,7 @@ jobs:
             --ignore=tests/test_legacy_visual.py \
             --ignore=tests/test_legacy_deep_healing.py
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage-report
@@ -503,7 +503,7 @@ jobs:
           fi
 
       - name: Upload Snyk report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: snyk-report
           path: /tmp/snyk-report.json
