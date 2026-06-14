@@ -184,3 +184,190 @@ def test_new_tools_in_manifest():
         "explain_finding",
     }
     assert expected.issubset(tool_names), f"Missing: {expected - tool_names}"
+
+
+# ── Issue #457: Enhanced Visual Diff Baseline Tool ─────────────────────────────
+
+
+def test_visual_diff_baseline_enhanced_valid(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    with patch("cherenkov.execution.visual_diff.VisualDiffEngine.run_visual_validation",
+               return_value={"passed": True, "exit_code": 0, "mismatch_detected": False}):
+        result = _call("visual_diff_baseline_enhanced", {
+            "target_url": "http://localhost:3000",
+            "diff_threshold": 0.3,
+            "comparison_mode": "pixel",
+        })
+    payload = json.loads(result["content"][0]["text"])
+    assert payload["target_url"] == "http://localhost:3000"
+    assert payload["diff_threshold"] == 0.3
+    assert payload["comparison_mode"] == "pixel"
+    assert payload["passed"] is True
+    assert result["isError"] is False
+
+
+def test_visual_diff_baseline_enhanced_with_defaults(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    with patch("cherenkov.execution.visual_diff.VisualDiffEngine.run_visual_validation",
+               return_value={"passed": True, "exit_code": 0, "mismatch_detected": False}):
+        result = _call("visual_diff_baseline_enhanced", {})
+    payload = json.loads(result["content"][0]["text"])
+    assert "target_url" in payload
+    assert "diff_threshold" in payload
+    assert "report_path" in payload
+    assert result["isError"] is False
+
+
+def test_visual_diff_baseline_enhanced_failure(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    with patch("cherenkov.execution.visual_diff.VisualDiffEngine.run_visual_validation",
+               return_value={"passed": False, "exit_code": 1, "mismatch_detected": True}):
+        result = _call("visual_diff_baseline_enhanced", {"target_url": "http://localhost:3000"})
+    payload = json.loads(result["content"][0]["text"])
+    assert payload["mismatch_detected"] is True
+    assert payload["passed"] is False
+    assert result["isError"] is False
+
+
+# ── Issue #458: Compliance and Governance MCP Tools ────────────────────────────
+
+
+def test_scan_mena_compliance_enhanced_valid(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    # Create minimal spec
+    spec = tmp_path / "openapi.yaml"
+    spec.write_text("openapi: '3.0.0'\ninfo:\n  title: T\n  version: '1'\npaths: {}\n")
+
+    from cherenkov.compliance.mena_scanner import MENAComplianceScanner
+    with patch.object(handlers, "_validate_spec_path", return_value=str(spec)):
+        with patch.object(MENAComplianceScanner, "run_compliance_audit",
+                          return_value={
+                              "overall_compliance_score": 80,
+                              "audit_results": {},
+                              "framework_mappings": {
+                                  "SAMA_CCSF": {"Domain 3.1": {"status": "COMPLIANT", "remediation": ""}},
+                                  "EGYPT_FinCSF": {"Section 4.2": {"status": "COMPLIANT", "remediation": ""}},
+                              },
+                          }):
+            result = _call("scan_mena_compliance_enhanced", {
+                "target_url": "http://localhost:8000",
+                "spec_path": str(spec),
+                "framework": "sama_ccsf",
+            })
+    payload = json.loads(result["content"][0]["text"])
+    assert payload["framework"] == "sama_ccsf"
+    assert payload["compliance_score"] == 80
+    assert "SAMA_CCSF" in payload["mappings"]
+    assert result["isError"] is False
+
+
+def test_scan_mena_compliance_enhanced_invalid_spec():
+    result = _call("scan_mena_compliance_enhanced", {
+        "target_url": "http://localhost:8000",
+        "spec_path": "../../../etc/passwd",
+        "framework": "sama_ccsf",
+    })
+    assert result["isError"] is True
+    payload = json.loads(result["content"][0]["text"])
+    assert "spec_path" in payload.get("error", "").lower()
+
+
+def test_validate_governance_certification(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    with patch("cherenkov.governance.kpi.GovernanceCollector.collect") as mock_collect:
+        from cherenkov.governance.kpi import GovernanceReport, GovernanceKPI
+        mock_kpi = GovernanceKPI(
+            escape_rate=0.05,
+            false_positive_rate=0.08,
+            coverage=0.75,
+            maintenance_score=0.9,
+            total_tests=100,
+            passed_tests=80,
+            failed_tests=15,
+            escaped_defects=5,
+            false_positives=8,
+            idiom_count=3,
+            total_endpoints=20,
+            covered_endpoints=15,
+        )
+        mock_collect.return_value = GovernanceReport(kpi=mock_kpi, history=[])
+
+        result = _call("validate_governance_certification", {
+            "cert_id": "CERT-001",
+            "validation_criteria": "health_score >= 0.7, escape_rate < 0.1",
+        })
+    payload = json.loads(result["content"][0]["text"])
+    assert payload["cert_id"] == "CERT-001"
+    assert payload["certified"] is True
+    assert payload["health_score"] == 0.85
+    assert result["isError"] is False
+
+
+def test_validate_governance_certification_fails(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    with patch("cherenkov.governance.kpi.GovernanceCollector.collect") as mock_collect:
+        from cherenkov.governance.kpi import GovernanceReport, GovernanceKPI
+        mock_kpi = GovernanceKPI(
+            escape_rate=0.25,
+            false_positive_rate=0.3,
+            coverage=0.2,
+        )
+        mock_collect.return_value = GovernanceReport(kpi=mock_kpi, history=[])
+
+        result = _call("validate_governance_certification", {
+            "cert_id": "CERT-002",
+            "validation_criteria": "strict",
+        })
+    payload = json.loads(result["content"][0]["text"])
+    assert payload["certified"] is False
+    assert len(payload["findings"]) > 0
+    assert result["isError"] is False
+
+
+def test_report_compliance_findings_all(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    with patch("cherenkov.compliance.mena_scanner.MENAComplianceScanner.run_compliance_audit",
+               return_value={
+                   "overall_compliance_score": 60,
+                   "framework_mappings": {
+                       "SAMA_CCSF": {"Domain 3.1": {"status": "COMPLIANT", "remediation": ""}},
+                       "EGYPT_FinCSF": {"Section 4.2": {"status": "NON-COMPLIANT", "remediation": "Fix auth"}},
+                   },
+               }):
+        result = _call("report_compliance_findings", {})
+    payload = json.loads(result["content"][0]["text"])
+    assert "total_findings" in payload
+    assert "findings" in payload
+    assert payload["compliance_score"] == 60
+    assert result["isError"] is False
+
+
+def test_report_compliance_findings_filtered(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    with patch("cherenkov.compliance.mena_scanner.MENAComplianceScanner.run_compliance_audit",
+               return_value={
+                   "overall_compliance_score": 60,
+                   "framework_mappings": {
+                       "SAMA_CCSF": {"Domain 3.1": {"status": "COMPLIANT", "remediation": ""}},
+                       "EGYPT_FinCSF": {"Section 4.2": {"status": "NON-COMPLIANT", "remediation": "Fix auth"}},
+                   },
+               }):
+        result = _call("report_compliance_findings", {"severity": "high", "limit": 5})
+    payload = json.loads(result["content"][0]["text"])
+    assert payload["filters_applied"]["severity"] == "high"
+    assert result["isError"] is False
+
+
+# ── Issue #457+#458: New tools in manifest ─────────────────────────────────────
+
+
+def test_issue_457_458_tools_in_manifest():
+    result = handlers.handle_tools_list({})
+    tool_names = {t["name"] for t in result["tools"]}
+    expected = {
+        "visual_diff_baseline_enhanced",
+        "scan_mena_compliance_enhanced",
+        "validate_governance_certification",
+        "report_compliance_findings",
+    }
+    assert expected.issubset(tool_names), f"Missing: {expected - tool_names}"

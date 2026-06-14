@@ -840,6 +840,128 @@ def _tool_scan_mena(args: dict[str, Any]) -> MCPToolCallResult:
         return _err_content(f"MENA error: {exc}")
 
 
+def _tool_scan_mena_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
+    """Enhanced MENA compliance tool with framework-specific scanning."""
+    try:
+        inp = MenaComplianceEnhancedInput.model_validate(args)
+        spec_path = inp.spec_path
+        try:
+            spec_path = _validate_spec_path(spec_path)
+        except ValueError as exc:
+            return _err_content(f"Invalid spec_path: {exc}")
+
+        from cherenkov.compliance.mena_scanner import MENAComplianceScanner
+        scanner = MENAComplianceScanner()
+        report = scanner.run_compliance_audit(target_url=inp.target_url, spec_path=spec_path)
+
+        # Filter by requested framework
+        framework_key = inp.framework.upper()
+        if framework_key == "SAMA_CCSF":
+            mappings = {"SAMA_CCSF": report["framework_mappings"]["SAMA_CCSF"]}
+        elif framework_key == "EGYPT_CBEF" or framework_key == "EGYPT_FINCSF":
+            mappings = {"EGYPT_FinCSF": report["framework_mappings"]["EGYPT_FinCSF"]}
+        else:
+            mappings = report["framework_mappings"]
+
+        violations = []
+        for domain, details in mappings.items():
+            for sub_domain, sub_details in details.items() if isinstance(details, dict) else []:
+                if isinstance(sub_details, dict) and sub_details.get("status") == "NON-COMPLIANT":
+                    violations.append(f"{sub_domain}: {sub_details.get('remediation', '')}")
+
+        return _ok_content({
+            "compliance_score": report["overall_compliance_score"],
+            "framework": inp.framework,
+            "violations": violations,
+            "mappings": mappings,
+            "audit_results": report.get("audit_results", {}),
+        })
+    except Exception as exc:
+        return _err_content(f"MENA enhanced error: {exc}")
+
+
+def _tool_validate_governance(args: dict[str, Any]) -> MCPToolCallResult:
+    """Validate governance certifications against established standards."""
+    try:
+        inp = GovernanceCertificationInput.model_validate(args)
+        from cherenkov.governance.kpi import GovernanceCollector
+
+        collector = GovernanceCollector()
+        report = collector.collect()
+        kpi_json = report.render_json()
+
+        # Simulate certification validation against criteria
+        cert_valid = kpi_json["health_score"] >= 0.7
+        findings = []
+        if kpi_json["escape_rate"] > 0.1:
+            findings.append(f"Escape rate ({kpi_json['escape_rate']:.1%}) exceeds 10% threshold")
+        if kpi_json["false_positive_rate"] > 0.15:
+            findings.append(f"False positive rate ({kpi_json['false_positive_rate']:.1%}) exceeds 15% threshold")
+        if kpi_json["coverage"] < 0.5:
+            findings.append(f"Coverage ({kpi_json['coverage']:.1%}) below 50% threshold")
+
+        return _ok_content({
+            "cert_id": inp.cert_id,
+            "validation_criteria": inp.validation_criteria,
+            "certified": cert_valid,
+            "health_score": kpi_json["health_score"],
+            "findings": findings,
+            "kpi_summary": kpi_json,
+        })
+    except Exception as exc:
+        return _err_content(f"Governance validation error: {exc}")
+
+
+def _tool_report_compliance(args: dict[str, Any]) -> MCPToolCallResult:
+    """Generate structured compliance reports with filtering."""
+    try:
+        inp = ComplianceFindingsInput.model_validate(args)
+        from cherenkov.compliance.mena_scanner import MENAComplianceScanner
+
+        scanner = MENAComplianceScanner()
+        report = scanner.run_compliance_audit(
+            target_url=os.environ.get("API_URL", "http://localhost:8000"),
+            spec_path="stub/openapi.yaml",
+        )
+
+        # Build compliance findings from the report
+        all_findings = []
+        for domain, details in report["framework_mappings"].items():
+            for sub_domain, sub_details in details.items() if isinstance(details, dict) else []:
+                if isinstance(sub_details, dict):
+                    severity = "high" if sub_details.get("status") == "NON-COMPLIANT" else "low"
+                    finding = {
+                        "domain": sub_domain,
+                        "framework": domain,
+                        "severity": severity,
+                        "status": sub_details.get("status", "UNKNOWN"),
+                        "remediation": sub_details.get("remediation", ""),
+                        "endpoint": "/",
+                    }
+                    all_findings.append(finding)
+
+        # Apply filters
+        filtered = all_findings
+        if inp.severity and inp.severity != "all":
+            filtered = [f for f in filtered if f["severity"] == inp.severity]
+        if inp.endpoint:
+            filtered = [f for f in filtered if inp.endpoint in f.get("endpoint", "")]
+        filtered = filtered[: inp.limit]
+
+        return _ok_content({
+            "total_findings": len(all_findings),
+            "displayed": len(filtered),
+            "findings": filtered,
+            "filters_applied": {
+                "severity": inp.severity or "all",
+                "endpoint": inp.endpoint or "none",
+            },
+            "compliance_score": report.get("overall_compliance_score", 0),
+        })
+    except Exception as exc:
+        return _err_content(f"Compliance report error: {exc}")
+
+
 
 # ── Chat knowledge tools ──────────────────────────────────────────────────────
 
