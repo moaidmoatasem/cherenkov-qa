@@ -570,8 +570,9 @@ Shows or sets the autonomy level the pipeline operates at.
 
 #### `mcp` (X4 — Model Context Protocol server)
 Exposes CHERENKOV over the [Model Context Protocol](https://modelcontextprotocol.io)
-(JSON-RPC 2.0 over stdio) so Claude Desktop, Cursor, and other MCP clients can read
-the HITL queue and run the Validation Gate without leaving their IDE.
+(JSON-RPC 2.0 over stdio) so Claude Desktop, Open Interpreter, Cursor, and other MCP
+clients can run conformance checks, query drift findings, and manage the HITL queue
+without leaving their editor or terminal.
 
 ```bash
 # Start the MCP server (blocks until stdin closes)
@@ -591,12 +592,19 @@ the HITL queue and run the Validation Gate without leaving their IDE.
 
 | Tool | Description |
 |------|-------------|
+| `run_conformance_check` | Trigger `cherenkov validate` against a target URL; returns report summary |
+| `get_last_report` | Return last `.cherenkov/report.json` without a new run |
+| `list_drift_findings` | Drift findings from the last run, filterable by severity / endpoint |
+| `get_tightening_suggestions` | OpenAPI spec tightening suggestions for a specific endpoint |
+| `explain_finding` | LLM natural-language explanation of a finding |
 | `hitl_list` | List HITL queue items by status |
 | `hitl_approve` | Approve a pending item (atomic SQL gatekeeper) |
 | `hitl_reject` | Reject a pending item (atomic SQL gatekeeper) |
 | `validate_run_gate` | Run the Validation Gate in report-only mode (suggest-only, D7 honored) |
+| `chat_explain_divergence` | GraphRAG explanation of an endpoint divergence |
+| `chat_run_test` | Plan test scenarios for an endpoint (suggest-only) |
 
-**Claude Desktop config** (add to `claude_desktop_config.json → mcpServers`):
+**Claude Desktop** (add to `claude_desktop_config.json → mcpServers`):
 
 ```json
 {
@@ -604,6 +612,29 @@ the HITL queue and run the Validation Gate without leaving their IDE.
     "command": "python3",
     "args": ["/home/you/cherenkov-qa/cherenkov.py", "mcp", "serve"],
     "cwd": "/home/you/cherenkov-qa"
+  }
+}
+```
+
+**Open Interpreter** — one-command setup:
+
+```bash
+bash scripts/setup_oi.sh   # writes ~/.openinterpreter/mcp.json
+interpreter                # cherenkov tools appear automatically
+```
+
+See [docs/guides/OPEN_INTERPRETER_SETUP.md](guides/OPEN_INTERPRETER_SETUP.md) for full walkthrough and example prompts.
+
+**Cursor / VS Code** (`.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "cherenkov": {
+      "command": "python3",
+      "args": ["cherenkov.py", "mcp", "serve"],
+      "cwd": "/home/you/cherenkov-qa"
+    }
   }
 }
 ```
