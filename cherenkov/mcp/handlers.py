@@ -303,6 +303,18 @@ TOOLS: list[MCPTool] = [
         ),
     ),
     MCPTool(
+        name="auto_heal_code",
+        description="Automatically diagnose and generate a self-healing code patch for a failed validation item using the AI router.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "item_id": MCPToolParam(
+                    type="string", description="Validation item ID."
+                )
+            },
+            required=["item_id"],
+        ),
+    ),
+    MCPTool(
         name="scan_mena_compliance",
         description="Run the MENA compliance localization and data residency checks.",
         inputSchema=MCPToolInputSchema(properties={}, required=[]),

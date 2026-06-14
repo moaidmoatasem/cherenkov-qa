@@ -644,8 +644,8 @@ LOW EFFORT ──────────────┼────────
 - [x] GitHub Issues auto-create
 
 ### Sprint 4 (Weeks 11-14): AI Ecosystem
-- [ ] Anthropic/Claude provider in substrate router
-- [ ] OpenAI provider (for BYOK enterprise tier)
+- [x] Anthropic/Claude provider in substrate router
+- [x] OpenAI provider (for BYOK enterprise tier)
 - [ ] LangChain tool package
 - [ ] Publish MCP server to official registry
 - [ ] Desktop auto-setup wizard
