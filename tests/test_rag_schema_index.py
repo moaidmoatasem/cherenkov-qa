@@ -194,7 +194,7 @@ class TestSchemaRetrieval(unittest.TestCase):
             cache_dir = self.index._cache_dir
             import shutil
 
-            shutil.rmtree(str(cache_dir.parent), ignore_errors=True)
+            shutil.rmtree(str(cache_dir), ignore_errors=True)
 
 
 @unittest.skipUnless(

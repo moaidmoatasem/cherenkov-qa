@@ -116,7 +116,7 @@ def test_daily_trend(monitor):
     monitor.record(_make_record(total_tokens=1000))
     report = monitor.get_report(days=7)
     assert len(report.daily_trend) == 1
-    today = time.strftime("%Y-%m-%d")
+    today = time.strftime("%Y-%m-%d", time.gmtime())
     assert report.daily_trend[0]["date"] == today
     assert report.daily_trend[0]["tokens"] == 1000
 

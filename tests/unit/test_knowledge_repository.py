@@ -57,7 +57,10 @@ class TestSQLiteKnowledgeRepository(unittest.TestCase):
         if hasattr(self, 'repo'):
             self.repo.close()
         if os.path.exists(self.db_path):
-            os.unlink(self.db_path)
+            try:
+                os.unlink(self.db_path)
+            except PermissionError:
+                pass
 
     def test_query_empty(self):
         q = KnowledgeQuery(query="test")

@@ -355,7 +355,10 @@ class TestChatAPIIntegration(unittest.TestCase):
         if hasattr(self, 'memory'):
             self.memory.close()
         if os.path.exists(self.db_path):
-            os.unlink(self.db_path)
+            try:
+                os.unlink(self.db_path)
+            except PermissionError:
+                pass
 
     def test_create_session(self):
         resp = self.client.post(
