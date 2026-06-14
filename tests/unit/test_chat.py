@@ -129,6 +129,8 @@ class TestSQLiteConversationMemory(unittest.TestCase):
         self.memory = SQLiteConversationMemory(self.db_path)
 
     def tearDown(self):
+        if hasattr(self, 'memory'):
+            self.memory.close()
         if os.path.exists(self.db_path):
             os.unlink(self.db_path)
 
@@ -208,6 +210,8 @@ class TestQAChatAgent(unittest.TestCase):
         self.agent = QAChatAgent(memory=self.memory, persona_registry=self.registry)
 
     def tearDown(self):
+        if hasattr(self, 'memory'):
+            self.memory.close()
         if os.path.exists(self.db_path):
             os.unlink(self.db_path)
 
@@ -348,6 +352,8 @@ class TestChatAPIIntegration(unittest.TestCase):
         self.client = TestClient(self.app)
 
     def tearDown(self):
+        if hasattr(self, 'memory'):
+            self.memory.close()
         if os.path.exists(self.db_path):
             os.unlink(self.db_path)
 
