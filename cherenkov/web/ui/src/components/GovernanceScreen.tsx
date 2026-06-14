@@ -21,13 +21,14 @@ export default function GovernanceScreen() {
   };
 
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="governance-screen">
+    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="governance-screen" data-testid="governance-screen">
       <PageHeader
         title="Governance & Model Certification"
         description="Verify LLM model performance tier bounds, audit compliance reports, and trace generated Playwright files to original intents."
         primaryAction={{
           label: 'Export Compliance Log',
           onClick: handleExport,
+          testId: 'export-compliance-btn',
         }}
       />
 

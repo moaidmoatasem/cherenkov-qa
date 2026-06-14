@@ -95,7 +95,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="settings-screen">
+    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="settings-screen" data-testid="settings-screen">
       
       {/* Title */}
       <div className="flex items-center gap-4">
@@ -164,7 +164,7 @@ export default function SettingsScreen() {
                 <span>Substrate Router Capability Tier</span>
               </h2>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs font-mono">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs font-mono" data-testid="model-tier-select">
                 {(['small', 'deep', 'vision', 'ml'] as const).map((t) => (
                   <button
                     key={t}
@@ -298,6 +298,7 @@ export default function SettingsScreen() {
                 onClick={handleSave}
                 disabled={isSaving}
                 id="btn-settings-save"
+                data-testid="save-settings-btn"
                 className="px-6 py-2 bg-glow-blue hover:bg-opacity-95 text-slate-950 font-bold text-xs rounded-xl uppercase tracking-wider transition-all duration-300 pointer shadow-lg shadow-cyan-500/10 disabled:opacity-50"
               >
                 {isSaving ? 'Saving...' : 'Apply Parameters'}
