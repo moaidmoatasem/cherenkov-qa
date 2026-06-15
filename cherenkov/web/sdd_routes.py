@@ -252,7 +252,10 @@ async def trigger_compact(force: bool = False):
         ).model_dump()
     session["sessions_since_compact"] = 0
     context["last_refreshed"] = _timestamp()
-    _write_json(SYNC_DIR / "context.json", context)
+    await asyncio.gather(
+        asyncio.to_thread(_write_json, SYNC_DIR / "context.json", context),
+        asyncio.to_thread(_write_json, SYNC_DIR / "session.json", session),
+    )
     return CompactResult(
         sessions_since=ssc,
         snippets_before=len(snippets),
