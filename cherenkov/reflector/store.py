@@ -283,6 +283,7 @@ class VerdictStore:
         """
         now = int(time.time())
         conn = self._connect()
+        conn.rollback()  # clear any pending implicit transaction before acquiring exclusive lock
         conn.execute("BEGIN EXCLUSIVE")
         rows = conn.execute(
             "SELECT id, last_confirmed, decay_score FROM idioms"

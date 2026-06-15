@@ -89,7 +89,6 @@ class Corpus:
         rows = con.execute(
             "SELECT item_id, endpoint, mutation_id, classification, actor, detail, timestamp FROM healing_feedback_log"
         ).fetchall()
-        con.close()
 
         exported = []
         for r in rows:
@@ -144,7 +143,6 @@ class Corpus:
                 ),
             )
         con.commit()
-        con.close()
 
     @staticmethod
     def _anon(e: DivergenceEnvelope) -> dict:
