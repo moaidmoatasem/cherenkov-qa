@@ -1,7 +1,7 @@
 {
   "name": "cherenkov-qa",
   "version": "1.0.0",
-  "description": "Spec in. Playwright tests out. Zero lock-in. — AI-native API conformance test generator.",
+  "description": "Catch where your software lies — before your users do. Local-first AI-native API conformance engine.",
   "keywords": ["api-testing", "playwright", "openapi", "conformance", "qa", "llm"],
   "homepage": "https://github.com/moaidmoatasem/cherenkov-qa",
   "bugs": {
@@ -11,8 +11,8 @@
     "type": "git",
     "url": "git+https://github.com/moaidmoatasem/cherenkov-qa.git"
   },
-  "license": "MIT",
-  "author": "Moaid Moatasem",
+  "license": "Apache-2.0",
+  "author": "Moayed Badawy",
   "bin": {
     "cherenkov": "./bin/cherenkov-npm.js"
   },

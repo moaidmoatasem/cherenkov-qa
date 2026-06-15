@@ -624,10 +624,10 @@ LOW EFFORT ──────────────┼────────
 
 ### Sprint 1 (Weeks 1-2): Foundation
 - [ ] Complete 3 MCP stub tools (`run_k6_perf`, `export_jira_ticket`, `scan_mena_compliance`)
-- [ ] GitHub Actions marketplace action (SARIF output included)
-- [ ] JUnit XML output format (unblocks Xray/Zephyr/TestRail at zero extra cost)
+- [x] GitHub Actions marketplace action (SARIF output included)
+- [x] JUnit XML output format (unblocks Xray/Zephyr/TestRail at zero extra cost)
 - [x] `SlackNotifier` adapter wired to `OpenClawAdapter`
-- [ ] Wire `notification_endpoint` for outbound webhooks (generic HTTP POST)
+- [x] Wire `notification_endpoint` for outbound webhooks (generic HTTP POST)
 
 ### Sprint 2 (Weeks 3-6): Developer Tools
 - [x] VS Code extension beta (generate + validate commands + gutter icons)
