@@ -75,11 +75,27 @@ class OpenClawAdapter:
         self._trigger_handlers.append(handler)
 
     def _notify(self, envelope: HitlEnvelope) -> None:
+        import urllib.request
+        import json
+
         for cb in self._notify_callbacks:
             try:
                 cb(envelope)
             except Exception as exc:
                 self._log.warning("notify callback failed", error=str(exc))
+        
+        if self._config.notification_endpoint:
+            try:
+                req = urllib.request.Request(
+                    self._config.notification_endpoint,
+                    data=json.dumps(envelope.model_dump()).encode("utf-8"),
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                )
+                with urllib.request.urlopen(req, timeout=5.0) as response:
+                    pass
+            except Exception as exc:
+                self._log.warning("webhook notification failed", error=str(exc))
 
     # ── Tier-2: pre-check before mutation (#149) ──────────────────────────
 
