@@ -48,6 +48,7 @@ _PROMPT_INJECTION_MARKERS = [
     (r"<\|im_end\|>", "Prompt injection marker: im_end"),
     (r"<\|system\|>", "Prompt injection marker: system role"),
     (r"###\s*System:", "Prompt injection marker: system directive"),
+    (r"\nSystem:", "Prompt injection marker: bare system directive"),
     (r"---\s*INSTRUCT", "Prompt injection marker: instruction override"),
 ]
 
