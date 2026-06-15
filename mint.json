@@ -1,0 +1,66 @@
+{
+  "name": "CHERENKOV-QA",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#FF3366",
+    "light": "#FF85A3",
+    "dark": "#CC0033"
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/cherenkov-qa/cherenkov"
+    }
+  ],
+  "topbarCtaButton": {
+    "type": "github",
+    "url": "https://github.com/cherenkov-qa/cherenkov"
+  },
+  "anchors": [
+    {
+      "name": "Documentation",
+      "icon": "book-open-cover",
+      "url": "/"
+    },
+    {
+      "name": "Community",
+      "icon": "discord",
+      "url": "https://discord.gg/cherenkov"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "quickstart",
+        "installation",
+        "concepts"
+      ]
+    },
+    {
+      "group": "Core Features",
+      "pages": [
+        "features/ai-generation",
+        "features/self-healing",
+        "features/conformance"
+      ]
+    },
+    {
+      "group": "Advanced",
+      "pages": [
+        "advanced/local-llms",
+        "advanced/ci-cd-integration",
+        "advanced/custom-reporters"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "x": "https://x.com/cherenkovqa",
+    "github": "https://github.com/cherenkov-qa/cherenkov",
+    "discord": "https://discord.gg/cherenkov"
+  }
+}

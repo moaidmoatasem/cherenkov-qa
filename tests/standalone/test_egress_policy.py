@@ -63,7 +63,7 @@ class TestEgressPolicy(unittest.TestCase):
         external_provider = _make_mock_provider("openai", requires_egress=True)
         mock_provider_for_tier.return_value = external_provider
 
-        with patch.object(type(get_settings()), "EGRESS", "none"):
+        with patch.object(get_settings(), "EGRESS", "none"):
             request = ReasoningRequest(task="test", capability_tier="small")
 
             with self.assertRaises(EgressError) as ctx:
@@ -80,7 +80,7 @@ class TestEgressPolicy(unittest.TestCase):
         local_provider = _make_mock_provider("ollama", requires_egress=False)
         mock_provider_for_tier.return_value = local_provider
 
-        with patch.object(type(get_settings()), "EGRESS", "none"):
+        with patch.object(get_settings(), "EGRESS", "none"):
             request = ReasoningRequest(task="test", capability_tier="small")
             result = self.router.route(request)
 
@@ -121,7 +121,7 @@ class TestEgressPolicy(unittest.TestCase):
         external_provider = _make_mock_provider("openai", requires_egress=True)
         mock_provider_for_tier.return_value = external_provider
 
-        with patch.object(type(get_settings()), "EGRESS", "any"):
+        with patch.object(get_settings(), "EGRESS", "any"):
             request = ReasoningRequest(task="test", capability_tier="small")
             result = self.router.route(request)
 

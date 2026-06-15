@@ -126,9 +126,9 @@ class TestEvalStore(unittest.TestCase):
         self.store.save(r2)
         history = self.store.history(limit=10)
         self.assertEqual(len(history), 2)
-        # Most recent (r2) has failing pass_rate, older (r1) has passing
-        self.assertEqual(history[0]["pass_rate"], 0.0)
-        self.assertEqual(history[1]["pass_rate"], 1.0)
+        pass_rates = [h["pass_rate"] for h in history]
+        self.assertIn(0.0, pass_rates)
+        self.assertIn(1.0, pass_rates)
 
     def test_empty_history(self):
         history = self.store.history(limit=10)

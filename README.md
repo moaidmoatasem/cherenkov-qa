@@ -39,7 +39,7 @@ cherenkov validate --target http://localhost:8000
 
 ```bash
 # Export to vanilla Playwright — zero CHERENKOV import, runs forever
-./bin/cherenkov eject --output ./my-tests
+npx cherenkov eject --output ./my-tests
 cd my-tests && npx playwright test   # ✓ works. always will.
 ```
 

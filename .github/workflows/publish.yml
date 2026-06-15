@@ -17,6 +17,15 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Build and push core image
+        uses: docker/build-push-action@v5
+        with:
+          file: Dockerfile
+          tags: |
+            ${{ vars.DOCKER_ORG }}/cherenkov:latest
+            ${{ vars.DOCKER_ORG }}/cherenkov:${{ github.sha }}
+          push: true
+
       - name: Build and push MCP image
         uses: docker/build-push-action@v5
         with:

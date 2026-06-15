@@ -20,3 +20,6 @@
 - Backstage plugin — conformance status on service catalog pages
 - MCP mesh registry — dynamic server discovery and tool routing
 - Spec Guardian daemon — continuous conformance monitoring
+- AsyncAPI Pub/Sub verification — Kafka/RabbitMQ schema validation
+- Slack & Teams ChatOps — proactive divergence alerts and slash commands
+- Buf Schema Registry (BSR) sync — auto-pull latest Protobuf schemas
