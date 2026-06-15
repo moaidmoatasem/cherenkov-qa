@@ -14,6 +14,8 @@ from cherenkov.openclaw.contracts import (
     TriggerRequest,
     ClassificationRequest,
 )
+from cherenkov.adapters.notifiers.slack import SlackNotifier
+from cherenkov.adapters.notifiers.webhook import WebhookNotifier
 
 _HAS_FASTAPI = False
 try:
@@ -42,6 +44,13 @@ def create_app(
     app = FastAPI(title="OpenClaw Tier-1 Adapter", version="1.0.0")
     cfg = config or OpenClawConfig()
     adp = adapter or OpenClawAdapter(config=cfg)
+
+    # Wire up notifiers
+    slack_notifier = SlackNotifier()
+    adp.on_notify(slack_notifier.notify)
+
+    webhook_notifier = WebhookNotifier(webhook_url=cfg.notification_endpoint)
+    adp.on_notify(webhook_notifier.notify)
 
     def _to_json_response(env: HitlEnvelope, status_code: int = 200) -> JSONResponse:
         data = env.model_dump()
