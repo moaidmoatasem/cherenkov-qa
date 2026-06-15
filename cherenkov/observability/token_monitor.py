@@ -189,27 +189,30 @@ class TokenMonitor:
         conn.commit()
 
     def record(self, rec: TokenRecord) -> None:
-        conn = self._connect()
-        conn.execute(
-            "INSERT INTO token_usage "
-            "(run_id, model, provider, stage, prompt_tokens, completion_tokens, "
-            " total_tokens, cost_usd, cache_hit, reprompts, timestamp) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            (
-                rec.run_id,
-                rec.model,
-                rec.provider,
-                rec.stage,
-                rec.prompt_tokens,
-                rec.completion_tokens,
-                rec.total_tokens,
-                rec.cost_usd,
-                int(rec.cache_hit),
-                rec.reprompts,
-                rec.timestamp,
-            ),
-        )
-        conn.commit()
+        try:
+            conn = self._connect()
+            conn.execute(
+                "INSERT INTO token_usage "
+                "(run_id, model, provider, stage, prompt_tokens, completion_tokens, "
+                " total_tokens, cost_usd, cache_hit, reprompts, timestamp) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                (
+                    rec.run_id,
+                    rec.model,
+                    rec.provider,
+                    rec.stage,
+                    rec.prompt_tokens,
+                    rec.completion_tokens,
+                    rec.total_tokens,
+                    rec.cost_usd,
+                    int(rec.cache_hit),
+                    rec.reprompts,
+                    rec.timestamp,
+                ),
+            )
+            conn.commit()
+        except Exception:
+            pass
 
     def get_report(self, days: int = 30) -> TokenUsageReport:
         since = int(time.time()) - days * 86_400

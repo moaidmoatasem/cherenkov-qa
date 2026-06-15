@@ -97,7 +97,7 @@ async def list_sessions(
                 task=p.get("task"),
                 token_total=p.get("token_total", 0),
                 summary=p.get("summary"),
-                started_at=_parse_dt(p.get("ended_at")),
+                started_at=_parse_dt(p.get("started_at")),
                 ended_at=_parse_dt(p.get("ended_at")),
             ).model_dump()
         )
