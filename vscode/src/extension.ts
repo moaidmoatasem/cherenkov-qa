@@ -5,6 +5,9 @@ import { runEject } from './commands/eject';
 import { runDoctor, runInit } from './commands/doctor';
 import { ConformanceTreeProvider } from './providers/TreeDataProvider';
 import { CherenkovCodeLensProvider } from './providers/CodeLensProvider';
+import { CherenkovDiagnosticsProvider } from './providers/DiagnosticsProvider';
+import { CherenkovHoverProvider } from './providers/HoverProvider';
+import { CherenkovQuickFixProvider } from './providers/QuickFixProvider';
 import { ConformancePanel } from './views/ConformancePanel';
 import { fetchHealth, fetchLastReport } from './api/CherenkovClient';
 
@@ -27,6 +30,22 @@ export function activate(context: vscode.ExtensionContext): void {
     codeLensProvider
   );
 
+  // Diagnostics, hover, and quick fix providers
+  const diagnosticsProvider = new CherenkovDiagnosticsProvider();
+  const hoverProvider = new CherenkovHoverProvider();
+  const quickFixProvider = new CherenkovQuickFixProvider();
+
+  const hoverDisposable = vscode.languages.registerHoverProvider(
+    [{ language: 'yaml' }, { language: 'json' }],
+    hoverProvider
+  );
+
+  const quickFixDisposable = vscode.languages.registerCodeActionsProvider(
+    [{ language: 'yaml' }, { language: 'json' }],
+    quickFixProvider,
+    { providedCodeActionKinds: [vscode.CodeActionKind.QuickFix] }
+  );
+
   // Status bar item
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
   statusBar.text = '$(beaker) Cherenkov';
@@ -42,10 +61,16 @@ export function activate(context: vscode.ExtensionContext): void {
     if (health.online) {
       statusBar.text = `$(pass) Cherenkov ${health.demoMode ? '(demo)' : '(live)'}`;
       statusBar.backgroundColor = undefined;
-      // Refresh tree with latest report
       const report = await fetchLastReport(currentUrl);
       treeProvider.setReport(report);
       codeLensProvider.setReport(report);
+      hoverProvider.setReport(report);
+      vscode.workspace.textDocuments.forEach(doc => {
+        const ext = doc.uri.fsPath.toLowerCase();
+        if (ext.endsWith('.yaml') || ext.endsWith('.yml') || ext.endsWith('.json')) {
+          diagnosticsProvider.updateDiagnostics(doc, report);
+        }
+      });
     } else {
       statusBar.text = '$(warning) Cherenkov (offline)';
     }
@@ -88,6 +113,18 @@ export function activate(context: vscode.ExtensionContext): void {
       await treeProvider.refresh();
     }),
 
+    vscode.commands.registerCommand('cherenkov.generateAssertion', async () => {
+      await runValidate(outputChannel);
+      await treeProvider.refresh();
+      const report = await fetchLastReport(baseUrl);
+      codeLensProvider.setReport(report);
+      hoverProvider.setReport(report);
+    }),
+
+    vscode.commands.registerCommand('cherenkov.viewDrift', () => {
+      ConformancePanel.createOrShow(context.extensionUri, treeProvider.getReport());
+    }),
+
     // Config change listener
     vscode.workspace.onDidChangeConfiguration(e => {
       if (e.affectsConfiguration('cherenkov')) {
@@ -98,6 +135,9 @@ export function activate(context: vscode.ExtensionContext): void {
     outputChannel,
     treeView,
     codeLensDisposable,
+    hoverDisposable,
+    quickFixDisposable,
+    diagnosticsProvider,
     statusBar,
     { dispose: () => clearInterval(healthPoller) }
   );

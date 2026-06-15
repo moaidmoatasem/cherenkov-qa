@@ -7,12 +7,15 @@ import json
 import urllib.request
 from typing import Any, Dict
 from cherenkov.core.errors import get_logger
+from cherenkov.core.events import CHERENKOVEvent
 
 _log = get_logger("SLACK_NOTIFIER")
 
 
 class SlackNotifier:
     """Sends rich Block Kit messages to Slack."""
+
+    name: str = "slack"
 
     def __init__(self):
         self.webhook_url = os.environ.get("CHERENKOV_SLACK_WEBHOOK_URL")
@@ -79,3 +82,9 @@ class SlackNotifier:
         except Exception as exc:
             _log.error("Failed to send Slack message", error=str(exc))
             return False
+
+    def send(self, report: Dict[str, Any]) -> bool:
+        return self.send_report(report)
+
+    def notify_event(self, event: CHERENKOVEvent) -> None:
+        self.send_report(event.to_dict())

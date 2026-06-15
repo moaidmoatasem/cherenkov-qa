@@ -35,6 +35,7 @@ import GuidedTour from './components/GuidedTour';
 import { Drawer, OfflineOverlay } from './components/ui';
 import { useToast } from './components/ui/Toast';
 import OnboardingWizard from './components/OnboardingWizard';
+import SetupWizard from './components/SetupWizard';
 
 import { Project, EndpointRichness } from './types';
 import { runPipeline, fetchProjects, fetchMetricsData, fetchReviewQueue } from './lib/api';
@@ -317,6 +318,8 @@ function InnerApp() {
                 onStartPipeline={handleStartPipeline}
               />
             )}
+
+            {activeTab === 'setup-wizard' && <SetupWizard />}
 
             {activeTab === 'pipeline' && (
               <PipelineScreen

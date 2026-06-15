@@ -44,6 +44,10 @@ export class ConformanceTreeProvider implements vscode.TreeDataProvider<Conforma
     this._onDidChangeTreeData.fire(null);
   }
 
+  getReport(): ConformanceReport | null {
+    return this.report;
+  }
+
   getTreeItem(element: ConformanceTreeItem): vscode.TreeItem {
     return element;
   }

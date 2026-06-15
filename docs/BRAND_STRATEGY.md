@@ -42,7 +42,9 @@ Wordmark: **CHERENKOV** (all caps). Product descriptor: **"the conformance engin
 
 ## 3. Positioning
 
-**Category (own this phrase):** *AI-native API conformance & drift detection — local-first.*
+> **Market elevation (2026):** the entry category below is the *wedge*; the durable category CHERENKOV should own is **the trust/verification layer for Autonomous Quality Engineering** — see [VISION_AQE_2026.md](VISION_AQE_2026.md). Lead with conformance to prove it; position as the integrity layer to win the market and avoid the commoditized "AI writes tests" corner.
+
+**Category (own this phrase):** *AI-native API conformance & drift detection — local-first* → expanding to *verifiable autonomous quality* ("trust your test agents").
 
 **Positioning statement:**
 > For backend and platform engineers who ship API-first software, **CHERENKOV** is the local-first AI tool that **finds where your running service and its spec disagree — and proves each gap with a reproducible test.** Unlike Postman, Schemathesis, or GPT-wrapper test generators, CHERENKOV needs no cloud, no API keys, and no lock-in: your code never leaves your machine, and you can eject to vanilla Playwright at any time.

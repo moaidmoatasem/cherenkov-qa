@@ -2,11 +2,14 @@ from typing import Any, Dict, Optional
 import os
 import json
 import urllib.request
-from cherenkov.hitl.contracts import HitlEnvelope
+from cherenkov.hitl.contracts import HitlEnvelope, ok_envelope, err_envelope
+from cherenkov.core.events import CHERENKOVEvent
 from cherenkov.core.errors import get_logger
 
 class LinearNotifier:
     """Sends notifications to Linear via its GraphQL API."""
+
+    name: str = "linear"
 
     def __init__(self, api_key: Optional[str] = None, team_id: Optional[str] = None):
         self.api_key = api_key or os.environ.get("CHERENKOV_LINEAR_API_KEY")
@@ -72,3 +75,25 @@ class LinearNotifier:
                     self.log.error("Failed to create Linear issue", response=res_data)
         except Exception as e:
             self.log.error("Failed to call Linear API", error=str(e))
+    def send(self, report: Dict[str, Any]) -> bool:
+        envelope = ok_envelope(
+            command=report.get("command", "notify"),
+            payload=report,
+        )
+        try:
+            import asyncio
+            asyncio.run(self.notify(envelope))
+            return True
+        except RuntimeError:
+            return False
+
+    def notify_event(self, event: CHERENKOVEvent) -> None:
+        envelope = ok_envelope(
+            command=event.name,
+            payload=event.to_dict(),
+        )
+        try:
+            import asyncio
+            asyncio.run(self.notify(envelope))
+        except RuntimeError:
+            pass

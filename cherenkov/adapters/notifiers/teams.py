@@ -6,9 +6,12 @@ import os
 import json
 import urllib.request
 from typing import Any, Dict
+from cherenkov.core.events import CHERENKOVEvent
 
 class TeamsNotifier:
     """Sends CHERENKOV reports to Microsoft Teams via Incoming Webhooks (Adaptive Cards)."""
+
+    name: str = "teams"
 
     def __init__(self, webhook_url: str | None = None):
         self.webhook_url = webhook_url or os.environ.get("CHERENKOV_TEAMS_WEBHOOK_URL")
@@ -68,3 +71,9 @@ class TeamsNotifier:
                 return response.status == 200
         except Exception:
             return False
+
+    def send(self, report: Dict[str, Any]) -> bool:
+        return self.send_report(report)
+
+    def notify_event(self, event: CHERENKOVEvent) -> None:
+        self.send_report(event.to_dict())

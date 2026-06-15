@@ -54,6 +54,11 @@ async fn run_setup_wizard(app: AppHandle, model: String) -> Result<setup_wizard:
 }
 
 #[tauri::command]
+async fn install_ollama_command(app: AppHandle) -> Result<setup_wizard::SetupStep, String> {
+    Ok(setup_wizard::install_ollama(&app).await)
+}
+
+#[tauri::command]
 async fn watch_spec_dir(app: AppHandle, path: String) -> Result<(), String> {
     file_watcher::start_watcher(app, PathBuf::from(path))
 }
@@ -247,6 +252,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             get_api_port,
             run_setup_wizard,
+            install_ollama_command,
             watch_spec_dir,
             check_for_updates,
             install_update,

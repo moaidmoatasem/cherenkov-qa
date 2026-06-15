@@ -1,0 +1,45 @@
+{
+  "name": "@cherenkov-qa/mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server wrapper for CHERENKOV QA — exposes conformance, drift, HITL, and compliance tools over stdio.",
+  "keywords": ["mcp", "api-testing", "conformance", "qa", "llm-tools"],
+  "homepage": "https://github.com/moaidmoatasem/cherenkov-qa",
+  "bugs": {
+    "url": "https://github.com/moaidmoatasem/cherenkov-qa/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moaidmoatasem/cherenkov-qa.git"
+  },
+  "license": "Apache-2.0",
+  "author": "Moayed Badawy",
+  "bin": {
+    "cherenkov-mcp-server": "./index.js"
+  },
+  "main": "./index.js",
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node ./index.js"
+  },
+  "smithery": {
+    "name": "CHERENKOV QA",
+    "description": "AI-native API conformance testing MCP server.",
+    "command": "npx @cherenkov-qa/mcp-server",
+    "tools": [
+      "hitl_list",
+      "validate_run_gate",
+      "run_conformance_check",
+      "run_k6_perf",
+      "export_jira_ticket",
+      "scan_mena_compliance",
+      "explain_finding"
+    ]
+  }
+}
