@@ -61,8 +61,8 @@ class TestVisionTierConfig(unittest.TestCase):
         self.assertIn("substrate.tiers.vision.model", BUILTIN_DEFAULTS)
 
     def test_vision_tier_env_vars_exist(self):
-        self.assertTrue(hasattr(type(get_settings()), "TIER_VISION_PROVIDER"))
-        self.assertTrue(hasattr(type(get_settings()), "TIER_VISION_MODEL"))
+        self.assertTrue(hasattr(get_settings(), "TIER_VISION_PROVIDER"))
+        self.assertTrue(hasattr(get_settings(), "TIER_VISION_MODEL"))
 
 
 class TestVLMProvider(unittest.TestCase):

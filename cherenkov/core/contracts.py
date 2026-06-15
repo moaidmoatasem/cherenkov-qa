@@ -320,6 +320,20 @@ class ReproductionResult(BaseModel):
     rejection_reason: str | None = None
 
 
+class DivergenceFinding(BaseModel):
+    """Legacy finding for older interfaces."""
+    violation_type: str
+    endpoint: str
+    http_method: str
+    expected: str
+    actual: str
+    summary: str
+    description: str
+    severity: str
+    remediation: str
+
+
+
 class DivergenceReport(BaseModel):
     """
     Sealed artifact for a confirmed divergence.
@@ -338,6 +352,7 @@ class DivergenceReport(BaseModel):
     errors: list[StageError] = Field(default_factory=list)
     metadata: StageMeta
     scope: Literal["intra", "cross"] = "intra"
+    findings: list[DivergenceFinding] = Field(default_factory=list)
 
     def render(self) -> str:
         """Human-readable summary."""

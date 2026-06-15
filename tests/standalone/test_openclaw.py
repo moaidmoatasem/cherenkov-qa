@@ -219,7 +219,7 @@ class TestOpenClawAdapter(unittest.TestCase):
     # ── config ─────────────────────────────────────────────────────────────
 
     def test_default_config_values(self):
-        cfg = OpenClawget_settings()
+        cfg = OpenClawConfig()
         self.assertEqual(cfg.host, "127.0.0.1")
         self.assertEqual(cfg.port, 8721)
         self.assertEqual(cfg.poll_interval_sec, 5.0)
