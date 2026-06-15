@@ -1,16 +1,20 @@
 <div align="center">
 
-# ⚡ CHERENKOV QA
+# ⚡ CHERENKOV
 
-### Spec in. Playwright tests out. Zero lock-in.
+### Catch where your software lies — before your users do.
+
+**The conformance engine.** Local-first AI that finds where your running service and its
+spec disagree — and proves each gap with a reproducible test.
+**Model-agnostic. Zero lock-in. Nothing leaves your machine.**
 
 [![CI](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/ci.yml/badge.svg)](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/ci.yml)
 [![Security](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/security-scan.yml/badge.svg)](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/security-scan.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776ab.svg?logo=python&logoColor=white)](https://python.org)
 [![TypeScript](https://img.shields.io/badge/typescript-5.0%2B-3178c6.svg?logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Playwright](https://img.shields.io/badge/playwright-1.49%2B-2ead33.svg?logo=playwright&logoColor=white)](https://playwright.dev)
-[![License: MIT](https://img.shields.io/badge/license-MIT-22c55e.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-2563eb.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-22d3ee.svg)](CONTRIBUTING.md)
 
 </div>
 
@@ -24,6 +28,10 @@ Give CHERENKOV your OpenAPI spec and a live server URL.
 It generates typed Playwright tests using a local LLM, runs a 6-gate review on every test,
 executes them, and surfaces exactly where your implementation diverges from your spec.
 No cloud. No API keys. When you're done, eject to vanilla Playwright — runs forever without CHERENKOV.
+
+> **CHERENKOV is the AI-native API conformance engine — built by a QA lead, for engineering teams that
+> ship API-first.** Today it owns spec↔implementation drift; the north star is the **Reality Engine**:
+> continuous truth across every source (spec, code, traffic, schema, UI). See [Brand & Strategy](docs/BRAND_STRATEGY.md).
 
 ```
 cherenkov validate --target http://localhost:8000
