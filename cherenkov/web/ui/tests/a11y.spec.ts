@@ -222,6 +222,10 @@ test.describe('CHERENKOV QA Accessibility — Structural & ARIA Audit', () => {
     await input.focus();
     await expect(input).toBeFocused();
 
+    // Type something to enable the submit button
+    await input.fill('test query');
+    await page.waitForTimeout(100);
+
     // Tab to submit button
     await page.keyboard.press('Tab');
     const submitBtn = page.locator('#knowledge-screen button[type="submit"]');
