@@ -682,6 +682,99 @@ class OrchestrationEngine:
                 "pipeline completed with failures", total=total, passed=successes
             )
 
+        # ── Phase 1: Post-generation eval judge (optional) ────────────────
+        # Runs LLM-as-judge on generated tests to assess quality metrics
+        if _os.getenv("CHERENKOV_EVALS_ENABLED", "0") == "1":
+            try:
+                from pathlib import Path
+                from cherenkov.evals.core import EvalSample
+                from cherenkov.evals.runner import run_evals
+                from cherenkov.evals.store import EvalStore
+                
+                self.log.info("running post-generation eval judge")
+                print("\n  EVALS   [ Running LLM-as-judge... ]")
+                
+                output_dir = Path(get_settings().OUTPUT_DIR)
+                if output_dir.exists():
+                    test_files = list(output_dir.glob("*.spec.ts"))
+                    if test_files:
+                        samples = []
+                        for test_file in test_files[:10]:  # Limit for performance
+                            try:
+                                code = test_file.read_text(encoding="utf-8")
+                                # Extract scenario info from filename or content
+                                scenario_id = test_file.stem
+                                samples.append(EvalSample(
+                                    scenario_id=scenario_id,
+                                    endpoint="unknown",  # Would need to parse from test
+                                    method="GET",
+                                    expected_status=200,
+                                    test_code=code,
+                                    spec_summary="",
+                                ))
+                            except Exception as e:
+                                self.log.warning("failed to read test file", file=str(test_file), error=str(e))
+                        
+                        if samples:
+                            report = run_evals(samples)
+                            store = EvalStore()
+                            store.save(report)
+                            
+                            print(f"  EVALS   [ DONE ] pass_rate={report.pass_rate():.1%}, saved to .cherenkov/evals.db")
+                            self.log.info("eval judge complete", pass_rate=report.pass_rate(), total=len(samples))
+                        else:
+                            print("  EVALS   [ SKIPPED ] no test files found")
+                    else:
+                        print("  EVALS   [ SKIPPED ] no test files found")
+                else:
+                    print("  EVALS   [ SKIPPED ] output directory not found")
+            except Exception as e:
+                self.log.warning("post-generation evals failed (non-fatal)", error=str(e))
+                print(f"  EVALS   [ SKIPPED ] {e}")
+
+        # ── Phase 2: Post-generation adversarial scan (optional) ──────────
+        # Scans generated tests for prompt injection, data exfiltration, etc.
+        if _os.getenv("CHERENKOV_ADVERSARIAL_ENABLED", "0") == "1":
+            try:
+                from pathlib import Path
+                from cherenkov.adversarial.runner import run_adversarial_tests, save_report
+                
+                self.log.info("running post-generation adversarial scan")
+                print("\n  ADVERSARIAL [ Scanning for injection patterns... ]")
+                
+                output_dir = Path(get_settings().OUTPUT_DIR)
+                if output_dir.exists():
+                    test_files = list(output_dir.glob("*.spec.ts"))
+                    if test_files:
+                        test_codes = {}
+                        for test_file in test_files[:20]:  # Limit for performance
+                            try:
+                                code = test_file.read_text(encoding="utf-8")
+                                test_codes[test_file.stem] = code
+                            except Exception as e:
+                                self.log.warning("failed to read test file", file=str(test_file), error=str(e))
+                        
+                        if test_codes:
+                            report = run_adversarial_tests(test_codes, spec_path=spec_path)
+                            output_path = save_report(report)
+                            
+                            criticals = report.critical_findings()
+                            if criticals:
+                                print(f"  ADVERSARIAL [ WARN ] {len(criticals)} critical findings, saved to {output_path}")
+                                self.log.warning("adversarial scan found critical issues", count=len(criticals))
+                            else:
+                                print(f"  ADVERSARIAL [ PASS ] no critical findings, saved to {output_path}")
+                                self.log.info("adversarial scan complete", pass_rate=report.pass_rate())
+                        else:
+                            print("  ADVERSARIAL [ SKIPPED ] no test files found")
+                    else:
+                        print("  ADVERSARIAL [ SKIPPED ] no test files found")
+                else:
+                    print("  ADVERSARIAL [ SKIPPED ] output directory not found")
+            except Exception as e:
+                self.log.warning("post-generation adversarial scan failed (non-fatal)", error=str(e))
+                print(f"  ADVERSARIAL [ SKIPPED ] {e}")
+
         print("================= PIPELINE RESULT =================")
         total_duration = sum(all_durations)
         status_str = (

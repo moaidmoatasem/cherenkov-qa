@@ -30,7 +30,8 @@ import {
   Eye,
   Map,
   Layers,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Wand2
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
 import GuidedFlow from './GuidedFlow';
@@ -160,6 +161,7 @@ export default function Sidebar({
         { id: 'mobile', label: 'Mobile', icon: Smartphone, desc: 'Mobile device testing' },
         { id: 'eject', label: 'Eject Suite', icon: Download, desc: 'Export plain Playwright' },
         { id: 'sdd', label: 'SDD Cockpit', icon: Gauge, desc: 'Agent sync & tokens' },
+        { id: 'setup-wizard', label: 'Setup Wizard', icon: Wand2, desc: 'Desktop dependency checks' },
       ]
     },
   ];

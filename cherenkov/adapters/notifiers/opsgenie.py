@@ -6,6 +6,7 @@ import os
 import json
 import urllib.request
 from typing import Any, Dict
+from cherenkov.core.events import CHERENKOVEvent
 from cherenkov.core.errors import get_logger
 
 _log = get_logger("OPSGENIE_NOTIFIER")
@@ -13,6 +14,8 @@ _log = get_logger("OPSGENIE_NOTIFIER")
 
 class OpsGenieNotifier:
     """Sends alerts to OpsGenie."""
+
+    name: str = "opsgenie"
 
     def __init__(self):
         self.api_key = os.environ.get("CHERENKOV_OPSGENIE_API_KEY")
@@ -55,3 +58,9 @@ class OpsGenieNotifier:
         except Exception as exc:
             _log.error("Failed to create OpsGenie alert", error=str(exc))
             return False
+
+    def send(self, report: Dict[str, Any]) -> bool:
+        return self.send_report(report)
+
+    def notify_event(self, event: CHERENKOVEvent) -> None:
+        self.send_report(event.to_dict())

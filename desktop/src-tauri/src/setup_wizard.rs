@@ -61,6 +61,8 @@ pub fn is_model_available(model: &str) -> bool {
 pub async fn run_setup(app: AppHandle, required_model: String) -> SetupState {
     let steps = vec![
         check_python(&app).await,
+        check_node(&app).await,
+        check_docker(&app).await,
         check_ollama(&app).await,
         check_model(&app, &required_model).await,
     ];
@@ -73,6 +75,54 @@ pub async fn run_setup(app: AppHandle, required_model: String) -> SetupState {
         steps,
         complete,
         error: None,
+    }
+}
+
+/// Install Ollama using the official install script. Linux/macOS only.
+pub async fn install_ollama(app: &AppHandle) -> SetupStep {
+    emit_progress(app, SetupProgress {
+        step_id: "ollama".into(),
+        status: StepStatus::Installing,
+        detail: Some("Installing Ollama?".into()),
+        progress_pct: Some(0),
+    });
+
+    let output = tokio::process::Command::new("sh")
+        .args(["-c", "curl -fsSL https://ollama.com/install.sh | sh"])
+        .output()
+        .await;
+
+    match output {
+        Ok(out) if out.status.success() => {
+            let step = SetupStep {
+                id: "ollama".into(),
+                label: "Ollama (local LLM runtime)".into(),
+                status: StepStatus::Ok,
+                detail: Some("Ollama installed successfully".into()),
+            };
+            emit_progress(app, SetupProgress {
+                step_id: "ollama".into(),
+                status: StepStatus::Ok,
+                detail: Some("Ollama installed".into()),
+                progress_pct: Some(100),
+            });
+            step
+        }
+        _ => {
+            let step = SetupStep {
+                id: "ollama".into(),
+                label: "Ollama (local LLM runtime)".into(),
+                status: StepStatus::Failed,
+                detail: Some("Ollama installation failed. Install manually from ollama.com".into()),
+            };
+            emit_progress(app, SetupProgress {
+                step_id: "ollama".into(),
+                status: StepStatus::Failed,
+                detail: Some("Ollama installation failed".into()),
+                progress_pct: None,
+            });
+            step
+        }
     }
 }
 
@@ -100,6 +150,68 @@ async fn check_python(app: &AppHandle) -> SetupStep {
     };
     emit_progress(app, SetupProgress {
         step_id: "python".into(),
+        status,
+        detail,
+        progress_pct: None,
+    });
+    step
+}
+
+async fn check_node(app: &AppHandle) -> SetupStep {
+    emit_progress(app, SetupProgress {
+        step_id: "node".into(),
+        status: StepStatus::Checking,
+        detail: Some("Checking Node.js?".into()),
+        progress_pct: None,
+    });
+
+    let found = is_installed("node");
+    let status = if found { StepStatus::Ok } else { StepStatus::Failed };
+    let detail = if found {
+        Some("Node.js found".into())
+    } else {
+        Some("Node.js is required for the CHERENKOV web UI. Install from nodejs.org".into())
+    };
+
+    let step = SetupStep {
+        id: "node".into(),
+        label: "Node.js".into(),
+        status: status.clone(),
+        detail: detail.clone(),
+    };
+    emit_progress(app, SetupProgress {
+        step_id: "node".into(),
+        status,
+        detail,
+        progress_pct: None,
+    });
+    step
+}
+
+async fn check_docker(app: &AppHandle) -> SetupStep {
+    emit_progress(app, SetupProgress {
+        step_id: "docker".into(),
+        status: StepStatus::Checking,
+        detail: Some("Checking Docker?".into()),
+        progress_pct: None,
+    });
+
+    let found = is_installed("docker");
+    let status = if found { StepStatus::Ok } else { StepStatus::Skipped };
+    let detail = if found {
+        Some("Docker found".into())
+    } else {
+        Some("Docker not found. Optional for local sandboxes; install from docker.com if needed.".into())
+    };
+
+    let step = SetupStep {
+        id: "docker".into(),
+        label: "Docker".into(),
+        status: status.clone(),
+        detail: detail.clone(),
+    };
+    emit_progress(app, SetupProgress {
+        step_id: "docker".into(),
         status,
         detail,
         progress_pct: None,

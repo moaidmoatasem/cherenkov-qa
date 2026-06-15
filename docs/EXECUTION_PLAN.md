@@ -56,6 +56,8 @@
 
 **Pass criteria:** ≥2/3 APIs yield a real divergence **and** ≥3 practitioners complete the quickstart and rate it useful **and** you can articulate the Schemathesis differentiation in one honest sentence.
 
+6. **Integrity test (proves the trust-layer thesis — see [VISION_AQE_2026.md](VISION_AQE_2026.md)).** Have an AI/agentic generator produce a test suite, then run CHERENKOV's review gates against it and confirm it **catches a weakened/hallucinated assertion or a deleted check** the generator let through. One such result validates the entire "trust layer for autonomous quality" positioning — capture it for the "Catch the AI cheating" demo.
+
 **Kill/pivot criteria:** if it can't beat or meaningfully complement Schemathesis on real APIs, **stop and pivot the positioning** (e.g. "AI test *authoring & maintenance* on top of deterministic conformance," or narrow to a niche) *before* spending reach. Better to learn this privately in 2 weeks than publicly at launch.
 
 ### ⚠️ Methodological caveat (read before picking targets)

@@ -1,0 +1,55 @@
+name: Build Tauri Desktop App
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'desktop/**'
+      - 'cherenkov/web/ui/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'desktop/**'
+      - 'cherenkov/web/ui/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install frontend dependencies
+        working-directory: cherenkov/web/ui
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: cherenkov/web/ui
+        run: npm run build
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: ./desktop
+          args: --verbose

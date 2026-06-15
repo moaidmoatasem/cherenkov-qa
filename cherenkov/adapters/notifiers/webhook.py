@@ -10,13 +10,16 @@ import requests
 import threading
 
 from cherenkov.core.errors import get_logger
-from cherenkov.hitl.contracts import HitlEnvelope
+from cherenkov.hitl.contracts import HitlEnvelope, ok_envelope, err_envelope
+from cherenkov.core.events import CHERENKOVEvent
 
 _log = get_logger("WEBHOOK_NOTIFIER")
 
 
 class WebhookNotifier:
     """Sends CHERENKOV HitlEnvelopes to a generic HTTP endpoint."""
+
+    name: str = "webhook"
 
     def __init__(self, webhook_url: str | None = None):
         self.webhook_url = webhook_url or os.environ.get("CHERENKOV_WEBHOOK_URL")
@@ -42,3 +45,17 @@ class WebhookNotifier:
 
         t = threading.Thread(target=_send, daemon=True)
         t.start()
+    def send(self, report: Dict[str, Any]) -> bool:
+        envelope = ok_envelope(
+            command=report.get("command", "notify"),
+            payload=report,
+        )
+        self.notify(envelope)
+        return True
+
+    def notify_event(self, event: CHERENKOVEvent) -> None:
+        envelope = ok_envelope(
+            command=event.name,
+            payload=event.to_dict(),
+        )
+        self.notify(envelope)

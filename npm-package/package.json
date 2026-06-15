@@ -1,9 +1,10 @@
-{
+﻿{
   "name": "cherenkov",
   "version": "1.0.0",
   "description": "AI-powered API conformance testing from your OpenAPI spec",
   "bin": {
-    "cherenkov": "bin/cherenkov.js"
+    "cherenkov": "bin/cherenkov.js",
+    "cherenkov-init": "bin/cherenkov-init.js"
   },
   "scripts": {
     "postinstall": "node bin/install.js"

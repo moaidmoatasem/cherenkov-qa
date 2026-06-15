@@ -73,6 +73,16 @@
         "command": "cherenkov.refreshTree",
         "title": "Refresh",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "cherenkov.generateAssertion",
+        "title": "Cherenkov: Generate Conformance Assertion",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "cherenkov.viewDrift",
+        "title": "Cherenkov: View Drift Details",
+        "icon": "$(eye)"
       }
     ],
     "menus": {
