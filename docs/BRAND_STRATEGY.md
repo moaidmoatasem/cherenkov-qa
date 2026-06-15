@@ -164,7 +164,7 @@ This profile makes CHERENKOV unusually authentic — and it shifts the strategy 
 
 - [ ] Adopt this doc as canonical; demote `00_VISION.md` to "vision layer."
 - [ ] Relicense core MIT → Apache-2.0; update README badges + hero to the blue identity & three-layer message.
-- [ ] Decide `cherenkov.dev` (primary) vs `cherenkov-security.com` (enterprise/redirect).
+- [ ] Buy `cherenkov.io` (primary — `cherenkov.dev` is taken) + optional `cherenkov.sh` alias; `cherenkov-security.com` (owned) → enterprise/redirect.
 - [ ] Build the visual identity in Figma (see `docs/brand/` once generated).
 - [ ] Ship P0 GTM list (§6).
 - [ ] First "30-Minute Divergence Challenge" write-up.
