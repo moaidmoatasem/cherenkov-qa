@@ -139,11 +139,24 @@ Gradient signature: `--cherenkov-deep → --cherenkov` (cobalt-to-cyan glow).
 
 ## 8. Career & wealth alignment (your profile)
 
-Your authentic authority is **software quality/testing** (QC engineer, Eventtus/Cairo) reaching toward **AI + autonomy + security**. CHERENKOV sits *exactly* on that vector — you are building the AI-native future of the discipline you already practice. That authenticity is a moat in itself; lead with it.
+**Founder:** Moayed Badawy — **QA Lead** (currently Celfocus; prev. Lead/Senior QA at Nomo Fintech [London], Capiter, Eventtus, Eye ADV). 8 years, test engineer → QA Lead. ISTQB CTFL + ICAgile. BSc Computer Science (El Shorouk Academy). Built & led a 13-person QA team; cut manual testing 40% via Selenium/Java/JMeter/Appium; **API testing (Postman, REST) is a through-line across every role.**
 
-- **Career:** the OSS project is your portfolio. Be the visible maintainer — your name on the commits, the talks, the divergence write-ups. Target outcome (12 mo): a tool with real adoption that makes "remote staff QA/platform/AI-infra engineer" a buyer's market for you.
-- **Wealth:** open-core gives optionality — lifestyle business (Team tier MRR), acquihire, or fundable startup. The Apache-2.0 + future-BSL structure keeps that door open without committing now.
-- **Sequencing:** ship the wedge → grow OSS adoption → introduce Team tier once you have weekly-active installs → decide raise-vs-bootstrap from a position of traction.
+This profile makes CHERENKOV unusually authentic — and it shifts the strategy in four concrete ways:
+
+1. **You are the buyer you're selling to.** You're not an IC dev who'd *use* a CLI — you're a QA *Lead* who sets automation strategy, builds QMS, and reports quality to stakeholders. So CHERENKOV's voice should speak to **QA leads / SDETs / heads of quality** (the economic buyer) as much as to developers. Your credibility line: *"I led QA automation at fintech and telecom — CHERENKOV is the tool I wished existed."*
+
+2. **API conformance is literally your career, productized.** Postman at Eye ADV → REST APIs at Capiter → automation strategy at Nomo. You have unimpeachable authority to define the "AI-native API conformance" category. Lead with that lived expertise in every write-up and talk.
+
+3. **The local-first / sovereign trust pillar is validated by your résumé.** Fintech (Nomo, regulated) + telecom consultancy (Celfocus/Vodafone-sphere) + UK delivery = you've lived *why* regulated buyers reject SaaS and demand air-gapped tooling. That's not a marketing guess; it's your buyer context. Sell it from experience.
+
+4. **Your leadership profile unlocks a faster wealth path than pure product.** You've recruited and led teams and sold quality strategy to stakeholders — so an **open-core + expert-services wedge** is viable *now*: offer "QA automation strategy / AI-in-testing" consulting under the CHERENKOV brand while the OSS builds adoption. Services fund the runway and generate design-partner accounts that convert to the Team/Enterprise tier. This de-risks wealth vs. waiting on product MRR alone.
+
+**Plays:**
+- **Career:** be the visible maintainer (commits, talks, divergence write-ups under *Moayed Badawy*). Target (12 mo): a tool with real adoption that makes you a globally legible "Head of Quality Engineering / founder," not a regional QA Lead.
+- **Wealth:** open-core gives optionality — services revenue now → Team-tier MRR → fundable startup or acquihire. Apache-2.0 + future-BSL keeps every door open.
+- **Sequencing:** ship the wedge → publish Divergence Challenges (your expertise on display) → land 2–3 services/design-partner accounts → introduce Team tier once you have weekly-active installs → decide raise-vs-bootstrap from traction.
+
+> **Name note:** professional brand name is **Moayed Badawy** (GitHub/handle `MoayedBadawy`); the repo currently lives under `moaidmoatasem`. Pick one public identity and use it consistently across GitHub org, site, and talks.
 
 ---
 
