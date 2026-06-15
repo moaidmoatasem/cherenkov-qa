@@ -38,7 +38,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": ["binaries/cherenkov-launcher"],
+    "externalBin": [],
     "shortDescription": "AI-native API conformance test generator",
     "longDescription": "CHERENKOV reads your OpenAPI spec, generates typed Playwright tests using a local LLM, runs them against your real server, and catches spec-conformance drift. Zero lock-in.",
     "macOS": {
@@ -53,10 +53,14 @@
       "digestAlgorithm": "sha256",
       "certificateThumbprint": null,
       "timestampUrl": "",
-      "webviewInstallMode": { "type": "downloadBootstrapper" }
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      }
     },
     "linux": {
-      "deb": { "depends": [] }
+      "deb": {
+        "depends": []
+      }
     },
     "createUpdaterArtifacts": true
   },
