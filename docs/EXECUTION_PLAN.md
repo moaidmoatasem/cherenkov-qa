@@ -58,6 +58,17 @@
 
 **Kill/pivot criteria:** if it can't beat or meaningfully complement Schemathesis on real APIs, **stop and pivot the positioning** (e.g. "AI test *authoring & maintenance* on top of deterministic conformance," or narrow to a niche) *before* spending reach. Better to learn this privately in 2 weeks than publicly at launch.
 
+### ⚠️ Methodological caveat (read before picking targets)
+**Auto-generated OpenAPI specs barely drift by construction.** Frameworks that *derive* the spec from the code (FastAPI, PostgREST, drf-spectacular, most Go `swag` setups) will show little spec↔impl divergence because the spec *is* the impl — running G0 against them will under-sell the tool and risk a false "it doesn't find anything" (premortem F1). **Drift lives where the spec is authored separately from the server** (spec-first projects, hand-maintained docs, or one shared spec with multiple independent implementations). Pick those.
+
+### Recommended G0 targets (systems you don't own)
+1. **RealWorld / Conduit API** — one community-authored OpenAPI spec with *many independent backend implementations* (Node, Go, Rust, etc.). Drift across impls is near-guaranteed and the spec is maintained separately → the ideal headline target and a clean Schemathesis head-to-head. Runnable via the reference Docker images.
+2. **Gitea** — mature, self-hostable Git service; Docker-runnable in minutes; ships a Swagger/OpenAPI spec (`/swagger.v1.json`) maintained alongside (not purely generated from) the Go handlers → real-world, credible, large surface.
+3. **A third spec-first OSS service you can run** — e.g. **Gotify** (notifications, OpenAPI + Docker) or **Kanboard**/**Miniflux**; pick one that runs locally and whose spec is hand-maintained.
+4. **Positive control — Swagger Petstore (with an injected divergence).** Run Petstore, deliberately change the server to violate the spec (e.g. return 400 where spec says 422), and confirm CHERENKOV catches the *known* drift. This proves the detector works even if the wild targets happen to be clean — and makes the demo bulletproof.
+
+> Source a 5th wildcard from APIs.guru if needed, but it must be **runnable locally** — never test against someone's production API.
+
 ---
 
 ## 4. Detailed plan (phased, gated, time-boxed for a solo founder with a day job)
@@ -66,7 +77,7 @@
 
 ### Phase 0 — Unblock & de-risk (Weeks 1–3)  ·  *cost: low · leverage: highest*
 **0.0 Legal/CoI check (do first, ~1 evening).** Read your Celfocus contract for moonlighting / IP-assignment / non-compete. If unclear, ask HR or a lawyer. Decide: OSS-only-for-now vs cleared-for-services. **Blocks all paid-services work.**
-**0.1 Identity lockdown.** Pick ONE public name (recommend **Moayed Badawy**). Secure domain(s): decide `cherenkov.dev` (primary, check availability/buy) vs keep `cherenkov-security.com` as enterprise/redirect. Reserve GitHub org `cherenkov` (or `cherenkov-dev`), npm name, PyPI name.
+**0.1 Identity lockdown.** Pick ONE public name (recommend **Moayed Badawy**). Secure domains: **`cherenkov.dev` is already taken (registered)** — recommend **`cherenkov.io`** as primary (both available as of 2026-06-16: `cherenkov.io`, `cherenkov.sh`, `getcherenkov.com`, `cherenkov-engine.dev`), **`cherenkov.sh`** as a CLI alias, and keep **`cherenkov-security.com`** (already owned) as the enterprise/redirect. Reserve GitHub org `cherenkov`, npm name, PyPI name.
 **0.2 Integrity sweep.** Re-run the test suite yourself; confirm the 258-passing claim. Grep docs for unverifiable benchmarks/"production ready"/version matrices; delete or caveat anything you can't reproduce. Add a one-line "claims policy: nothing stated unless reproduced."
 **0.3 Run Gate G0 (§3).** This is the bulk of the phase.
 **Exit gate:** G0 passed (or pivot decided) + legal cleared + one name/domain chosen.
@@ -102,7 +113,7 @@ From a position of traction + revenue signal, choose: lifestyle open-core + serv
 
 **Decisions (yours, this week)**
 - [ ] One public name (rec: Moayed Badawy) — used everywhere
-- [ ] Primary domain (rec: buy `cherenkov.dev`; `cherenkov-security.com` → enterprise/redirect)
+- [ ] Primary domain (rec: buy `cherenkov.io` — `cherenkov.dev` is taken; optional `cherenkov.sh` CLI alias; `cherenkov-security.com` → enterprise/redirect)
 - [ ] Go/no-go on paid services pending §4.0 legal check
 
 **Accounts/assets to secure**
