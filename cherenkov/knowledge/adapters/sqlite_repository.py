@@ -13,8 +13,6 @@ from cherenkov.knowledge.domain.models import (
 
 _BUSY_TIMEOUT_S = 30.0
 
-_BUSY_TIMEOUT_S = 30.0
-
 
 class SQLiteKnowledgeRepository:
     def __init__(self, db_path: str = "data/knowledge.db"):
