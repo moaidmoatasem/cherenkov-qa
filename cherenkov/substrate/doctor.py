@@ -152,5 +152,30 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool, 
         except Exception as e:
             report["latest_evals"] = {"error": str(e)}
 
+    if show_all or adversarial:
+        try:
+            from pathlib import Path
+            import json as json_module
+            adv_path = Path(".cherenkov/adversarial_report.json")
+            if adv_path.exists():
+                latest = json_module.loads(adv_path.read_text())
+                report["latest_adversarial"] = latest
+                if not json_out:
+                    click.echo("\nLatest Adversarial Report")
+                    click.echo(f"{'=' * 40}")
+                    click.echo(f"  Timestamp:   {latest['timestamp']}")
+                    click.echo(f"  Model:       {latest['model']}")
+                    click.echo(f"  Pass rate:   {latest['pass_rate']:.1%}")
+                    click.echo(f"  Total:       {latest['total_payloads']}")
+                    click.echo(f"  Detected:    {latest['detected']}")
+                    click.echo(f"  Critical:    {latest['critical']}")
+                    click.echo(f"  Garak:       {'available' if latest.get('garak_available') else 'not installed'}")
+            else:
+                report["latest_adversarial"] = None
+                if not json_out:
+                    click.echo("\nNo adversarial reports found. Run adversarial tests first.")
+        except Exception as e:
+            report["latest_adversarial"] = {"error": str(e)}
+
     if json_out:
         click.echo(json.dumps(report, indent=2))
