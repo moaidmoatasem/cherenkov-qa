@@ -69,7 +69,8 @@ def _detect_device() -> dict:
 @click.option("--device", is_flag=True, help="Show device info")
 @click.option("--json-output", "json_out", is_flag=True, help="Output as JSON")
 @click.option("--evals", is_flag=True, help="Show latest eval report")
-def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool) -> None:
+@click.option("--adversarial", is_flag=True, help="Show latest adversarial report")
+def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool, adversarial: bool) -> None:
     report = {"device": {}, "vlm": {}, "localai": {}, "recommendations": []}
     show_all = not vlm and not localai and not device
 
