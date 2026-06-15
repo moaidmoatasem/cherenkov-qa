@@ -100,7 +100,7 @@ The instinct behind `cherenkov-security.com` was right; the framing was prematur
 4. This **doubles as your career proof** — every divergence found in a known project is a public artifact of staff-level skill.
 
 **Channels & sequence (P0 → P1):**
-- **P0:** Landing page (`cherenkov.dev`), 2-min demo video, `npx cherenkov init` frictionless quickstart, GitHub Actions in marketplace, docs site. (Most already scoped in `PRODUCT_STRATEGY_ROADMAP.md §2.3`.)
+- **P0:** Landing page (`cherenkov.io` — note `cherenkov.dev` is taken), 2-min demo video, `npx cherenkov init` frictionless quickstart, GitHub Actions in marketplace, docs site. (Most already scoped in `PRODUCT_STRATEGY_ROADMAP.md §2.3`.)
 - **P0 content:** Show HN + Product Hunt (kit exists at `docs/marketing/product_hunt_kit.md`) + 3 divergence-challenge write-ups.
 - **P1:** VS Code extension, hosted no-install demo, dev.to/blog cadence, the divergence corpus as recurring content.
 
