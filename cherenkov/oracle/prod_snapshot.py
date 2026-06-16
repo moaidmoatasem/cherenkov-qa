@@ -1,6 +1,5 @@
 """
 cherenkov/oracle/prod_snapshot.py — E4-3: Production-snapshot oracle.
-Authority: v3.1 + delta.
 
 Uses a captured production traffic snapshot as the oracle for 'correct' behaviour.
 """

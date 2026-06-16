@@ -59,3 +59,14 @@ def test_get_recent_runs_limit(stats_store):
 
 def test_snapshot(stats_store):
     stats_store.snapshot(verdict_count=10, idiom_count=5, source="cli")
+    # Read back via the underlying SQLite connection to assert the row was persisted.
+    import sqlite3
+    conn = sqlite3.connect(stats_store.db_path)
+    rows = conn.execute(
+        "SELECT verdict_count, idiom_count, source FROM snapshot_stats"
+    ).fetchall()
+    conn.close()
+    assert len(rows) == 1, "snapshot() should have inserted exactly one row"
+    assert rows[0][0] == 10, f"Expected verdict_count=10, got {rows[0][0]}"
+    assert rows[0][1] == 5, f"Expected idiom_count=5, got {rows[0][1]}"
+    assert rows[0][2] == "cli", f"Expected source='cli', got {rows[0][2]!r}"

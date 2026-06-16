@@ -1,6 +1,5 @@
 """
 CHERENKOV stages/ingest.py — real OpenAPI spec ingestion and depth-limited slicing stage.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations
@@ -101,12 +100,17 @@ class IngestStage:
         # Mobile format detection
         if path.suffix in (".apk", ".har", ".hil"):
             self.log.info("detected mobile source", format=path.suffix)
-            mobile_result = self.mobile_adapter.ingest(spec_path)
-            # Convert mobile result to IngestOutput format
+            self.mobile_adapter.ingest(spec_path)
+            # Mobile sources do not produce API endpoint slices for the standard pipeline.
+            # Return DEGRADED so callers know no scenarios will be planned.
             return IngestOutput(
                 endpoints=[],
                 client_stub_path="stub/client.ts",
-                status=Status.OK,
+                status=Status.DEGRADED,
+                errors=[StageError(
+                    code="MOBILE_SOURCE",
+                    detail=f"Mobile source ({path.suffix}) ingested but produces no REST endpoint slices. Use Track B mobile pipeline.",
+                )],
                 metadata=StageMeta(
                     stage="INGEST-mobile", duration_ms=int((time.time() - t0) * 1000)
                 ),
@@ -133,6 +137,7 @@ class IngestStage:
 
         components = spec.get("components", {}).get("schemas", {})
         endpoints: list[EndpointSlice] = []
+        skipped_low_richness: list[StageError] = []
 
         paths_and_webhooks = {}
         paths_and_webhooks.update(spec.get("paths", {}))
@@ -208,6 +213,12 @@ class IngestStage:
                         path=url_path,
                         method=method.upper(),
                         richness=richness,
+                    )
+                    skipped_low_richness.append(
+                        StageError(
+                            code="LOW_RICHNESS",
+                            detail=f"{method.upper()} {url_path} skipped: richness {richness:.2f} < 0.2",
+                        )
                     )
                     continue
 
@@ -369,6 +380,7 @@ class IngestStage:
         return IngestOutput(
             endpoints=endpoints,
             client_stub_path="stub/client.ts",
-            status=Status.OK,
+            status=Status.DEGRADED if skipped_low_richness else Status.OK,
+            errors=skipped_low_richness,
             metadata=StageMeta(stage="INGEST", duration_ms=dt),
         )

@@ -299,7 +299,7 @@ Everything runs locally. You choose how much infrastructure you want.
 | **E** Dashboard | React UI (9 screens) | ✅ All screens shipped |
 | **F** K8s | Operator + CRDs | ✅ Phase 8 complete |
 
-**Active work:** Phase 8 — K8s CRD sync + cloud readiness.
+**Active work:** Phases 9–16 — market launch, CI/CD integration, VS Code extension, enterprise tier.
 **Canonical status:** [docs/STATUS.md](docs/STATUS.md)
 **Phase roadmap:** [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)
 
@@ -378,7 +378,7 @@ See also: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) · [SECURITY.md](SECURITY.md)
 
 ## License
 
-[MIT](LICENSE) — Copyright © 2026 Moaid Moatasem
+[Apache 2.0](LICENSE) — Copyright © 2026 Moaid Moatasem
 
 ---
 

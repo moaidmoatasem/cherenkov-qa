@@ -1,6 +1,5 @@
 """
 CHERENKOV ai/model_runner_client.py — Docker Model Runner adapter.
-Authority: v3.1 + delta.
 
 Anti-lock-in: conforms to the same interface as OllamaClient.
 Non-Docker fallback: ollama_client.py.

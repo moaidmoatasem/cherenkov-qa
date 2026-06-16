@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 ci_docs_check.py -- programmatically validates that all argparse subcommands have corresponding documentation sections.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

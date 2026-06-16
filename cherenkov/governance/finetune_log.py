@@ -1,6 +1,5 @@
 """
 CHERENKOV governance/finetune_log.py — fine-tune signal collector.
-Authority: v3.1 + delta.
 
 Appends accepted and rejected test-case records to a JSONL file so that
 confirmed examples can later feed a fine-tuning dataset for local models.

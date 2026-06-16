@@ -1,6 +1,5 @@
 """
 cherenkov/stages/init_cmd.py — E5-1: cherenkov init zero-config happy path.
-Authority: v3.1 + delta.
 
 Autodetect spec, pick sane defaults, produce value with no file editing.
 Defaults: offline, free, deterministic.

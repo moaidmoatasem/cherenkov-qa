@@ -1,6 +1,5 @@
 """
 CHERENKOV execution/visual_diff.py — Visual snapshot baseline and comparison engine.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations
@@ -25,9 +24,14 @@ VISUAL_SPEC_TEMPLATE = """import { test, expect } from '@playwright/test';
 test('visual regression baseline ui', async ({ page }) => {
   await page.goto(process.env.API_URL ?? 'http://localhost:8000');
   await page.waitForLoadState('networkidle');
+  // Web fonts can finish swapping in after 'networkidle', and CSS entrance
+  // animations otherwise land the screenshot mid-transition — both make the
+  // capture non-deterministic between baseline and comparison runs.
+  await page.evaluate(() => document.fonts.ready);
   await expect(page).toHaveScreenshot('baseline_ui.png', {
     fullPage: true,
     maxDiffPixelRatio: 0.02,
+    animations: 'disabled',
   });
 });
 """

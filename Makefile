@@ -2,22 +2,50 @@ DOCKER_REGISTRY ?= localhost:5000/cherenkov
 NAMESPACE ?= cherenkov
 K3D ?= ./scripts/k3d
 
-.PHONY: demo full k3d-up k3d-down k3d-reset k3d-test operator-image engine-image all-images scripts-setup install-tools
+.PHONY: help demo full install test lint typecheck format \
+        k3d-up k3d-down k3d-reset k3d-test \
+        operator-image engine-image all-images sandbox-image \
+        scripts-setup install-tools operator-build clean-k8s mobile-smoke
 
-demo:
+## Show this help
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
+	  awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+## Install Python + Node dependencies
+install:
+	pip install -r requirements.txt
+	cd stub && npm install && npx playwright install && cd ..
+
+## Run the full test suite (pytest + Playwright smoke)
+test:
+	PYTHONPATH=. python -m pytest tests/ -q
+
+## Run linting (ruff)
+lint:
+	python -m ruff check cherenkov/ cherenkov.py
+
+## Run type checking (mypy)
+typecheck:
+	python -m mypy cherenkov/ cherenkov.py --ignore-missing-imports
+
+## Auto-format code (ruff format)
+format:
+	python -m ruff format cherenkov/ cherenkov.py
+
+demo: ## Start demo environment (mock data, no GPU required)
 	docker compose --profile demo up
 
-full:
+full: ## Start full environment (LocalAI + Redis + CHERENKOV, requires GPU)
 	docker compose --profile full up
 
-# Install dev tools (one-time setup)
-install-tools:
+install-tools: ## Install dev tools (one-time setup, requires sudo)
 	sudo bash scripts/install-tools.sh
 
 # k3d targets
 K3D_KUBECONFIG := $$HOME/.config/k3d/kubeconfig-cherenkov.yaml
 
-k3d-up: all-images
+k3d-up: all-images ## Create k3d cluster, import images, apply manifests
 	@echo "Creating k3d cluster..."
 	@$(K3D) cluster create cherenkov --config k8s/k3d-cluster.yaml 2>/dev/null || $(K3D) cluster start cherenkov
 	@echo "Importing images into k3d..."
@@ -30,13 +58,13 @@ k3d-up: all-images
 	@KUBECONFIG=$(K3D_KUBECONFIG) kubectl wait --for=condition=complete job/ollama-model-pull -n $(NAMESPACE) --timeout=300s 2>/dev/null || true
 	@echo "k3d cluster is ready!"
 
-k3d-down:
+k3d-down: ## Delete k3d cluster
 	@echo "Deleting k3d cluster..."
 	@$(K3D) cluster delete cherenkov 2>/dev/null || true
 
-k3d-reset: k3d-down k3d-up
+k3d-reset: k3d-down k3d-up ## Tear down and recreate k3d cluster
 
-k3d-test: k3d-up
+k3d-test: k3d-up ## Run integration tests against k3d cluster
 	@echo "=== Test 1: CLI bridge happy path ==="
 	@KUBECONFIG=$(K3D_KUBECONFIG) ./scripts/k8s-run --spec petstore-spec --target prism --port 4010 --timeout 60s
 	@echo ""
@@ -45,33 +73,28 @@ k3d-test: k3d-up
 	@echo ""
 	@echo "=== Tests complete ==="
 
-# Image builds
-all-images: operator-image engine-image
+all-images: operator-image engine-image ## Build all Docker images
 
-operator-image:
+operator-image: ## Build the K8s operator Docker image
 	docker build -t cherenkov-operator:latest -f operator/Dockerfile operator/
 
-engine-image:
+engine-image: ## Build the CHERENKOV engine Docker image
 	docker build -t cherenkov-engine:latest engine/
 
-sandbox-image:
+sandbox-image: ## Build the sandbox Docker image
 	docker build -t cherenkov-sandbox:latest --target=build -f operator/Dockerfile operator/
 
-# Scripts setup
-scripts-setup:
+scripts-setup: ## Make scripts executable (one-time)
 	chmod +x scripts/k3d-setup.sh 2>/dev/null || true
 
-# Go build (requires Go installed)
-operator-build:
+operator-build: ## Build the K8s operator binary (requires Go)
 	cd operator && CGO_ENABLED=0 go build -o manager main.go
 	cd operator && CGO_ENABLED=0 go build -o k8s-run ./cmd/k8s-run/main.go
 
-# Cleanup
-clean-k8s:
+clean-k8s: ## Delete k3d cluster and namespace
 	KUBECONFIG=$(K3D_KUBECONFIG) kubectl delete namespace $(NAMESPACE) 2>/dev/null || true
 	$(K3D) cluster delete cherenkov 2>/dev/null || true
 
-.PHONY: mobile-smoke
-mobile-smoke:  ## Run mobile smoke tests (requires Maestro)
+mobile-smoke: ## Run mobile smoke tests (requires Maestro)
 	@echo "Running mobile smoke tests..."
 	cd tests/mobile && maestro test --format junit --output results.xml . 2>/dev/null || echo "Maestro not installed — install via: curl -Ls https://get.maestro.mobile.dev | bash"

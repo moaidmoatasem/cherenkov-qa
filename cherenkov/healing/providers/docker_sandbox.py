@@ -1,6 +1,5 @@
 """
 CHERENKOV healing/providers/docker_sandbox.py — Docker E2B sandbox provider.
-Authority: v3.1 + delta.
 
 D7 invariant: container boundary enforces isolation — no host filesystem write.
 Anti-lock-in: non-Docker fallback is FilesystemSandboxProvider.

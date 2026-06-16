@@ -1,6 +1,5 @@
 """
 cherenkov/stages/map_cmd.py — E2-6: cherenkov map command.
-Authority: v3.1 + delta.
 
 Build + inspect the Truth Model for a target from all configured sources.
 """

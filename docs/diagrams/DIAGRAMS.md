@@ -379,3 +379,57 @@ flowchart TB
   DH -.-> CK
   Dash -.-> KB
 ```
+
+---
+
+## 16. Validation Gate flow (5-QA runbook)
+
+```mermaid
+sequenceDiagram
+  participant CI as CI / PR check
+  participant VG as validate/gate.py
+  participant TR as Test Runner (Playwright)
+  participant DB as verdicts.db
+  participant HITL as HITL Queue
+  participant QA as QA Reviewer
+
+  CI->>VG: cherenkov validate --target <url>
+  VG->>TR: spawn Playwright suite (stub/generated_tests/)
+  TR-->>VG: JUnit XML + trace files
+  VG->>DB: persist VerdictRecord per test
+  loop per failing/uncertain test
+    VG->>HITL: enqueue HITLItem (confidence 0.7-0.9)
+    QA->>HITL: cherenkov hitl list / approve / reject
+    HITL-->>DB: update verdict (approved | rejected)
+  end
+  VG->>VG: tally: pass_rate = approved / total
+  alt pass_rate >= gate_threshold (default 0.8)
+    VG-->>CI: exit 0 — gate PASSED
+  else pass_rate < gate_threshold
+    VG-->>CI: exit 1 — gate FAILED (report.json written)
+  end
+  Note over VG,DB: Evidence written to .cherenkov/evidence/<run_id>/
+```
+
+## 17. Certificate issuance flow (Spec Guardian / Phase 14)
+
+```mermaid
+sequenceDiagram
+  participant Dev as Developer / CI
+  participant CK as CHERENKOV Engine
+  participant VG as Validation Gate
+  participant SG as Spec Guardian
+  participant CA as Certificate Authority (local key)
+  participant Reg as Certificate Registry
+
+  Dev->>CK: cherenkov certify --tier deep
+  CK->>VG: run full validation suite
+  VG-->>CK: ValidationReport (pass_rate, evidence_dir)
+  CK->>SG: evaluate_claims(spec, report)
+  SG-->>CK: ClaimSet{verified, unverified, disputed}
+  CK->>CA: sign(ClaimSet + run_id + timestamp)
+  CA-->>CK: CherenkovCertificate{sig, fingerprint, expiry}
+  CK->>Reg: store(certificate)
+  CK-->>Dev: certificate.json + fingerprint
+  Note over CA,Reg: Certificate is portable — forward to auditors,<br/>CI gates, or marketplaces via fingerprint URL
+```

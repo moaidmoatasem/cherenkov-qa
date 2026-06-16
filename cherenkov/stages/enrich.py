@@ -1,6 +1,5 @@
 """
 CHERENKOV stages/enrich.py — RESTGPT-inspired spec enhancement preprocessor.
-Authority: v3.1 + delta.
 
 Extracts constraint rules and example values from OpenAPI natural-language
 descriptions, examples, defaults, enums, and patterns. Enriched context is

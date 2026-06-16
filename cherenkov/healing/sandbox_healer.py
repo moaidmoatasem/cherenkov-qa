@@ -1,6 +1,5 @@
 """
 CHERENKOV healing/sandbox_healer.py -- premium isolated deep self-healing sandbox engine.
-Authority: v3.1 + delta.
 
 D7 invariant: never auto-edits test code. All heal output is diff-only suggestions.
 Anti-lock-in: provider abstraction allows filesystem (default) or Docker sandbox.

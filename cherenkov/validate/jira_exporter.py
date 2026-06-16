@@ -1,6 +1,5 @@
 ﻿"""
 CHERENKOV validate/jira_exporter.py - Suggest-Only Jira Ticket Exporter.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations
@@ -94,7 +93,7 @@ class JiraExporter:
             lines.append("")
 
         lines.append("---")
-        lines.append("*Report generated automatically by CHERENKOV QA (v3.1 + delta).*")
+        lines.append("*Report generated automatically by CHERENKOV QA.*")
         return "\n".join(lines)
 
     def export_ticket(

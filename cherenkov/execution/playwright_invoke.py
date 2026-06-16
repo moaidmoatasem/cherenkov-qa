@@ -1,6 +1,5 @@
 """
 CHERENKOV execution/playwright_invoke.py — native Playwright test execution runner.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

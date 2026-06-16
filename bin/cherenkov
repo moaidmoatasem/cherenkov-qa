@@ -1,6 +1,6 @@
 #!/bin/bash
 # CHERENKOV CLI Unified Executable Wrapper
-# Authority: v3.1 + delta.
+#
 
 export PYTHONPATH=.
 python3 cherenkov/cli/core.py "$@"

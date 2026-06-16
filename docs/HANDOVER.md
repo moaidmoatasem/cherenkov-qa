@@ -101,8 +101,8 @@ to [docs/STATUS.md](STATUS.md) instead.
 - Track B/C + Horizon 2: **built, unit-tested, re-integrated** into the live tree
   (`track-b-c-deferred/` was deleted; see [AGENTS.md](../AGENTS.md)).
 - Active tracks: A (core), B (VLM), C (desktop), D (mobile), E (dashboard), F (K8s).
-- Active phase work: Phase 8 (K8s + Cloud + Gate) is in progress; Phase 3
-  (Desktop) and Phase 5–6 (Mobile) are blocked on `cargo` / ADB.
+- All phases 0–8 complete. Next: Phases 9–16 (market launch, CI/CD, VS Code, enterprise).
+  Phase 3 (Desktop) and Phase 5–6 (Mobile) have tools installed; blocked on `libwebkit2gtk-4.1-dev` and physical ADB device respectively.
 - The consolidated Phase -1 → 8 plan with tickets, parallel tracks, and
   agent guidance lives in [docs/PHASE_PLAN.md](PHASE_PLAN.md).
 - All tickets (#277–#391) are tracked in GitHub.

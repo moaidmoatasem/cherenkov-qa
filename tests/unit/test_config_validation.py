@@ -9,18 +9,30 @@ def test_config_validate_passes_with_defaults():
         pytest.fail(f"CherenkovSettings() raised with defaults: {e}")
 
 def test_config_validate_rejects_bad_egress():
-    # Pydantic doesn't strict check EGRESS in the provided settings.py (no literal),
-    # but let's test if we can pass invalid. If it doesn't fail, we skip.
-    pass
+    # EGRESS is a plain str with no Literal constraint in settings.py, so any string
+    # is accepted.  Assert the default is one of the expected modes.
+    settings = CherenkovSettings()
+    assert settings.EGRESS in ("internal", "external", "blocked"), (
+        f"Unexpected default EGRESS value: {settings.EGRESS!r}"
+    )
 
 def test_config_validate_rejects_bad_timeout():
-    # pydantic doesn't have ge=1 on OLLAMA_TIMEOUT in the user's settings.py
-    # So it won't raise unless we test what the user actually wants.
-    pass
+    # OLLAMA_TIMEOUT is a plain int with no ge= constraint, but a negative timeout
+    # makes no sense.  Assert the default is positive.
+    settings = CherenkovSettings()
+    assert settings.OLLAMA_TIMEOUT > 0, (
+        f"OLLAMA_TIMEOUT default should be positive, got {settings.OLLAMA_TIMEOUT}"
+    )
 
 def test_config_validate_rejects_bad_port():
-    # Similarly, no le=65535 in settings.py
-    pass
+    # Ports are plain ints without le=65535 constraint.  Assert defaults are in
+    # the valid port range (1-65535).
+    settings = CherenkovSettings()
+    for attr in ("DESKTOP_WS_PORT", "CHAT_WS_PORT", "METRICS_PORT"):
+        port = getattr(settings, attr)
+        assert 1 <= port <= 65535, (
+            f"{attr} default {port} is outside valid port range 1-65535"
+        )
 
 def test_config_tiers_dict():
     settings = get_settings()

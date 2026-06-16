@@ -1,6 +1,5 @@
 """
 CHERENKOV oracle/consensus_oracle.py — CANDOR-inspired multi-agent consensus oracle.
-Authority: v3.1 + delta.
 
 Runs 2-4 independent LLM evaluation passes to determine whether the assertions
 in a generated test correctly verify the expected endpoint behavior. A verdict

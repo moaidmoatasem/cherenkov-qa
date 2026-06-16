@@ -32,12 +32,16 @@ class TestOtelTracer:
     def test_record_llm_usage_noop_when_disabled(self, monkeypatch):
         monkeypatch.setenv("CHERENKOV_OTEL_ENABLED", "false")
         tracer = CherenkovTracer()
-        tracer.record_llm_usage(None, 100, 50, "test-model")  # should not raise
+        result = tracer.record_llm_usage(None, 100, 50, "test-model")
+        # No-op methods must return None and must not raise
+        assert result is None
 
     def test_record_conformance_noop_when_disabled(self, monkeypatch):
         monkeypatch.setenv("CHERENKOV_OTEL_ENABLED", "false")
         tracer = CherenkovTracer()
-        tracer.record_conformance(None, 3, 15, "v1", "http://localhost")  # should not raise
+        result = tracer.record_conformance(None, 3, 15, "v1", "http://localhost")
+        # No-op methods must return None and must not raise
+        assert result is None
 
     @pytest.mark.skipif(not OTEL_AVAILABLE, reason="opentelemetry not installed")
     def test_active_span_when_enabled(self, monkeypatch):

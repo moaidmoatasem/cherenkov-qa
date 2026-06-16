@@ -1,6 +1,5 @@
 """
 CHERENKOV stages/visual/visual_stage.py — Phase B1 Visual Regression stage.
-Authority: v3.1 + delta.
 
 Optional capability layer on top of Track A. Never replaces API conformance.
 Reuses Track A contracts (VisualSlice/VisualReport/Verdict/GateResult) and the

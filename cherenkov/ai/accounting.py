@@ -1,6 +1,5 @@
 """
-CHERENKOV ai/accounting.py — per-request cost & latency accounting.
-Authority: v3.1 + delta. E1-5.
+CHERENKOV ai/accounting.py — per-request cost & latency accounting. E1-5.
 """
 
 from __future__ import annotations

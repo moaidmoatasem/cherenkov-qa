@@ -1,6 +1,5 @@
 """
 CHERENKOV execution/trace_reader.py — programmatic Playwright trace.zip parser.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

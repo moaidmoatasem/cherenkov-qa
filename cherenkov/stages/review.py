@@ -1,6 +1,5 @@
 """
 CHERENKOV stages/review.py — real test review stage enforcing 6 quality gates including TSC & Prism mock.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations
@@ -168,6 +167,7 @@ class ReviewStage:
 
         # 6. Gate 6 — Prism dynamic-mode dry-run (Ephemerally spins stoplight/prism in Docker)
         prism_passed = True
+        prism_skipped = False
         prism_detail = "Dynamic Stoplight Prism mock server dry-run check passed."
 
         if syntax_passed and structure_passed and tsc_passed:
@@ -296,16 +296,24 @@ class ReviewStage:
                     # Tear down Prism container
                     prism_server.stop()
             else:
-                # Prism container failed to start — treat as skipped (optional infrastructure)
+                # Prism container failed to start — genuinely skipped (optional infra),
+                # not passed. Excluded from quality_score via skipped=True.
                 prism_passed = True
+                prism_skipped = True
                 prism_detail = "Prism mock container unavailable (Docker not present); gate skipped."
                 self.log.warning("prism gate skipped — Docker unavailable")
         else:
             prism_passed = True
+            prism_skipped = True
             prism_detail = "Prism gate skipped: earlier gates failed; code not submitted to mock server."
 
         gates.append(
-            GateResult(gate="prism-dryrun", passed=prism_passed, detail=prism_detail)
+            GateResult(
+                gate="prism-dryrun",
+                passed=prism_passed,
+                detail=prism_detail,
+                skipped=prism_skipped,
+            )
         )
 
         # 7. Gate 7 — CANDOR Consensus Oracle (opt-in via CHERENKOV_CONSENSUS_ORACLE=true)
@@ -375,9 +383,12 @@ class ReviewStage:
                 )
             )
 
-        # Calculate quality score as fraction of passed gates
-        passed_count = sum(1 for g in gates if g.passed)
-        quality_score = passed_count / len(gates)
+        # Calculate quality score as fraction of passed gates, excluding gates
+        # that were skipped due to unavailable infra (e.g. no Docker) rather
+        # than actually evaluated.
+        scored_gates = [g for g in gates if not g.skipped]
+        passed_count = sum(1 for g in scored_gates if g.passed)
+        quality_score = passed_count / len(scored_gates) if scored_gates else 1.0
 
         # Enforce Verdict thresholds
         if quality_score >= 0.9:

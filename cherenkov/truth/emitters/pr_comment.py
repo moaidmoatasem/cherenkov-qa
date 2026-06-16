@@ -1,6 +1,5 @@
 """
 cherenkov/truth/emitters/pr_comment.py — E4-2: PR-comment emitter.
-Authority: v3.1 + delta.
 
 Emit a Markdown summary suitable for posting as a PR comment when closing a
 divergence is better handled by human review than by generating a test.

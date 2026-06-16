@@ -1,6 +1,5 @@
 """
 CHERENKOV execution/k6_runner.py — local k6 performance script exporter and validation runner.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

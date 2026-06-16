@@ -1,6 +1,5 @@
 """
 CHERENKOV adapters/notifiers/webhook.py — Generic HTTP POST Webhook Notifier.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

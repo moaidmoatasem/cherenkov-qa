@@ -1,6 +1,5 @@
 """
 CHERENKOV governance/gen_metrics.py — LlamaRestTest-aligned generation quality metrics.
-Authority: v3.1 + delta.
 
 Tracks and persists per-run quality metrics aligned with the LlamaRestTest
 evaluation methodology (FSE 2025, arXiv 2501.08598):

@@ -1,6 +1,5 @@
 """
 CHERENKOV stages/ui_plan.py — UI scenario and specification Pydantic models.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

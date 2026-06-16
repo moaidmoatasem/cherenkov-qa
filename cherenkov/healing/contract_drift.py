@@ -1,6 +1,5 @@
 """
 CHERENKOV healing/contract_drift.py -- suggest-only contract-drift diffing and suggestion module.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

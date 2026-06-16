@@ -1,6 +1,5 @@
 """
 cherenkov/rag/ — Issue #195: Semantic chunking / RAG for large OpenAPI specs.
-Authority: v3.1 + delta.
 """
 
 try:

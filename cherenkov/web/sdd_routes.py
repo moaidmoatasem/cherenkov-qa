@@ -7,12 +7,14 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re as _re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from cherenkov.web.sdd_auth import verify_write_access
 from cherenkov.web.sdd_models import (
     SddSession,
     SddTokenData,
@@ -42,6 +44,15 @@ def _read_json(path: Path) -> dict[str, Any]:
         return {}
     with open(path, "r") as f:
         return json.load(f)
+
+
+def _validate_session_id(session_id: str) -> str:
+    if not _re.match(r"^[a-zA-Z0-9_\-]{1,128}$", session_id):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid session_id: must be alphanumeric/underscore/hyphen, max 128 chars",
+        )
+    return session_id
 
 
 def _write_json(path: Path, data: dict[str, Any]) -> None:
@@ -112,6 +123,7 @@ async def list_sessions(
 
 @router.get("/api/v1/sdd/sessions/{session_id}")
 async def get_session_detail(session_id: str):
+    session_id = _validate_session_id(session_id)
     session = await asyncio.to_thread(_read_json, SYNC_DIR / "session.json")
     s = session.get("session", {})
     if s.get("id") == session_id:
@@ -235,7 +247,7 @@ async def get_context():
 
 
 @router.post("/api/v1/sdd/compact")
-async def trigger_compact(force: bool = False):
+async def trigger_compact(force: bool = False, _auth=Depends(verify_write_access)):
     context, session = await asyncio.gather(
         asyncio.to_thread(_read_json, SYNC_DIR / "context.json"),
         asyncio.to_thread(_read_json, SYNC_DIR / "session.json"),

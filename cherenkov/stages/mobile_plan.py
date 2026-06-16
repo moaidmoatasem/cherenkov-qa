@@ -1,6 +1,5 @@
 """
 CHERENKOV stages/mobile_plan.py — mobile test scenario planner stage.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

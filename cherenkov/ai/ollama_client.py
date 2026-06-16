@@ -1,6 +1,5 @@
 """
 CHERENKOV ai/ollama_client.py — the single doorway to local models.
-Authority: v3.1 + delta.
 
 Enforces the decisions that took the whole spec arc to settle:
   - JSON forced at the GPU (format="json"), not begged for in the prompt (D-9)

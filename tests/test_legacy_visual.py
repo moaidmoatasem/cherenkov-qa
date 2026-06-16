@@ -5,6 +5,7 @@ Proves snapshot baseline initialization and layout validation checks.
 """
 
 import os
+import socket
 import subprocess
 import time
 import sys
@@ -12,6 +13,19 @@ import shutil
 import pytest
 
 from cherenkov.execution.visual_diff import VisualDiffEngine
+
+
+def _wait_for_port(host: str, port: int, timeout: float = 10.0) -> None:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(0.5)
+            try:
+                s.connect((host, port))
+                return
+            except OSError:
+                time.sleep(0.2)
+    raise RuntimeError(f"Target API server did not start listening on {host}:{port} within {timeout}s")
 
 
 def start_target_server():
@@ -33,7 +47,7 @@ def start_target_server():
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    time.sleep(2)  # Wait for startup
+    _wait_for_port("127.0.0.1", 8000)  # Wait for startup instead of a fixed sleep
     return proc
 
 

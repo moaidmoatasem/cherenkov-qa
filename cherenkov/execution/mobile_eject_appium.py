@@ -1,6 +1,5 @@
 """
 CHERENKOV execution/mobile_eject_appium.py — Appium Python test ejector.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

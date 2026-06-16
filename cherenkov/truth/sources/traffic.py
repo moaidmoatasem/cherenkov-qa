@@ -1,6 +1,5 @@
 """
 cherenkov/truth/sources/traffic.py — E2-4: Traffic adapter (HAR / proxy replay).
-Authority: v3.1 + delta.
 
 Turn a captured traffic sample into observed-behaviour claims (enables D2/D5).
 """
