@@ -117,21 +117,33 @@ class SQLiteKnowledgeRepository:
 
     def search(self, pattern: str, limit: int = 10) -> list[KnowledgeQueryResult]:
         conn = self._connect()
-        # FTS5 match (indexed) — falls back to LIKE scan if FTS table is missing
+        # FTS5 match (indexed) — falls back to LIKE scan if FTS table is missing.
+        # Tokenize and quote each term individually (AND-joined) rather than wrapping
+        # the whole pattern in one phrase query: a literal phrase match only finds
+        # exact contiguous substrings and also lets raw FTS5 syntax (NEAR, -, *) leak
+        # in from user input. Per-term quoting keeps multi-word queries matchable
+        # while still escaping special characters safely.
+        terms = [t for t in pattern.split() if t]
         try:
+            if not terms:
+                raise sqlite3.OperationalError("empty pattern")
+            fts_query = " AND ".join(f'"{t}"' for t in terms)
             cursor = conn.execute(
                 "SELECT k.item_id, k.source, k.data, k.metadata "
                 "FROM knowledge_items k "
                 "JOIN knowledge_fts f ON k.item_id = f.item_id "
                 "WHERE knowledge_fts MATCH ? LIMIT ?",
-                (f'"{pattern}"', limit),
+                (fts_query, limit),
             )
+            rows = cursor.fetchall()
+            if not rows:
+                raise sqlite3.OperationalError("no FTS matches, falling back to LIKE")
         except sqlite3.OperationalError:
             cursor = conn.execute(
                 "SELECT item_id, source, data, metadata FROM knowledge_items WHERE data LIKE ? LIMIT ?",
                 (f"%{pattern}%", limit),
             )
-        rows = cursor.fetchall()
+            rows = cursor.fetchall()
         results = []
         for row in rows:
             results.append(
