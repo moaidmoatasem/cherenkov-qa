@@ -1,4 +1,4 @@
-﻿"""
+"""
 CHERENKOV validate/jira_exporter.py - Suggest-Only Jira Ticket Exporter.
 """
 
