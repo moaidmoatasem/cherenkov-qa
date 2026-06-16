@@ -36,7 +36,7 @@ router = APIRouter(tags=["sdd"])
 
 SYNC_DIR = Path("agent_memory/sync")
 FINDINGS_DIR = SYNC_DIR / "findings"
-MEMORY_DIR = Path("agent_memory")
+MEMORY_DIR = Path("agent_memory").resolve()
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -395,10 +395,10 @@ async def get_wiki_tree():
 
 def _read_wiki_file(path: str) -> dict[str, Any]:
     full = (MEMORY_DIR / path).resolve()
+    if not full.is_relative_to(MEMORY_DIR.resolve()):
+        raise PermissionError(path)
     if not full.exists() or not full.is_file():
         raise FileNotFoundError(path)
-    if not str(full).startswith(str(MEMORY_DIR.resolve())):
-        raise PermissionError(path)
     content = full.read_text(encoding="utf-8")
     stat = full.stat()
     return {
