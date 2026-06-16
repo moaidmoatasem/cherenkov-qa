@@ -1,6 +1,5 @@
 """
 CHERENKOV core/orchestrator.py — real orchestration engine.
-Authority: v3.1 + delta.
 
 Wires the real E2E flow: INGEST -> PLAN -> GENERATE -> REVIEW.
 Includes:
@@ -13,6 +12,7 @@ Includes:
 
 from __future__ import annotations
 
+import os
 import random
 import threading
 import time
@@ -115,11 +115,9 @@ class OrchestrationEngine:
     ) -> IngestOutput:
         self.log.info("stage run", stage="INGEST", spec_path=spec_path)
 
-        import os as _os
-
         if simulate_malformed:
             assert (
-                _os.getenv("CHERENKOV_ENV", "production") != "production"
+                os.getenv("CHERENKOV_ENV", "production") != "production"
             ), "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
 
         # Test Mutation Trigger: return dict lacking required Fields (fails Pydantic schema validation)
@@ -136,11 +134,9 @@ class OrchestrationEngine:
     ) -> PlanOutput:
         self.log.info("stage run", stage="PLAN", endpoints_count=len(ingest.endpoints))
 
-        import os as _os
-
         if simulate_malformed:
             assert (
-                _os.getenv("CHERENKOV_ENV", "production") != "production"
+                os.getenv("CHERENKOV_ENV", "production") != "production"
             ), "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
 
         if simulate_malformed:
@@ -154,11 +150,9 @@ class OrchestrationEngine:
     ) -> GenerateOutput:
         self.log.info("stage run", stage="GENERATE", scenario_id=scenario.mutation_id)
 
-        import os as _os
-
         if simulate_malformed:
             assert (
-                _os.getenv("CHERENKOV_ENV", "production") != "production"
+                os.getenv("CHERENKOV_ENV", "production") != "production"
             ), "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
 
         if simulate_malformed:
@@ -207,11 +201,9 @@ class OrchestrationEngine:
     ) -> ReviewOutput:
         self.log.info("stage run", stage="REVIEW", scenario_id=generate.scenario_id)
 
-        import os as _os
-
         if simulate_malformed:
             assert (
-                _os.getenv("CHERENKOV_ENV", "production") != "production"
+                os.getenv("CHERENKOV_ENV", "production") != "production"
             ), "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
 
         if simulate_malformed:
@@ -334,7 +326,7 @@ class OrchestrationEngine:
                         "endpoint": current_scenario.endpoint,
                         "method": current_scenario.method,
                         "code": generate.test_code,
-                        "agent": "qwen2.5-coder:7b",
+                        "agent": get_settings().GEN_MODEL,
                     },
                 )
 
@@ -501,11 +493,9 @@ class OrchestrationEngine:
         spec_path: str,
         simulate_fail_stage: str | None = None,
     ) -> bool:
-        import os as _os
-
         if simulate_fail_stage:
             assert (
-                _os.getenv("CHERENKOV_ENV", "production") != "production"
+                os.getenv("CHERENKOV_ENV", "production") != "production"
             ), "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
 
         # Reset circuit breaker state for this fresh pipeline run
@@ -691,7 +681,7 @@ class OrchestrationEngine:
 
         # ── Phase 1: Post-generation eval judge (optional) ────────────────
         # Runs LLM-as-judge on generated tests to assess quality metrics
-        if _os.getenv("CHERENKOV_EVALS_ENABLED", "0") == "1":
+        if os.getenv("CHERENKOV_EVALS_ENABLED", "0") == "1":
             try:
                 from pathlib import Path
                 from cherenkov.evals.core import EvalSample
@@ -741,7 +731,7 @@ class OrchestrationEngine:
                 print(f"  EVALS   [ SKIPPED ] {e}")
 
         # ── Phase 2: Post-generation adversarial scan (optional) ──────────
-        if _os.getenv("CHERENKOV_ADVERSARIAL_ENABLED", "0") == "1":
+        if os.getenv("CHERENKOV_ADVERSARIAL_ENABLED", "0") == "1":
             try:
                 from pathlib import Path
                 from cherenkov.adversarial.runner import run_adversarial_tests, save_report

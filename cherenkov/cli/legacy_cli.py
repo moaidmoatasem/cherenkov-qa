@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-cherenkov.py — Unified CLI for CHERENKOV E2E Suite operations.
-Authority: v3.1 + delta. Track A surface + optional B1 visual capability.
+cherenkov.py — Unified CLI for CHERENKOV E2E Suite operations. Track A surface + optional B1 visual capability.
 """
 
 import json
@@ -752,13 +751,11 @@ def main():
 
             os.makedirs(".cherenkov", exist_ok=True)
             emitter = SARIFEmitter()
-            from cherenkov.core.contracts import DivergenceReport
+            from types import SimpleNamespace
+            from cherenkov.core.contracts import DivergenceFinding
 
-            # Mapping reports dict to DivergenceReport finding format dynamically.
-            report_obj = DivergenceReport(findings=[])
+            report_obj = SimpleNamespace(findings=[])
             for r in results.get("reports", []):
-                from cherenkov.core.contracts import DivergenceFinding
-
                 if not r.get("passed", False):
                     report_obj.findings.append(
                         DivergenceFinding(
@@ -837,7 +834,7 @@ def main():
 
         if results.get("status") == "empty":
             msg = results.get("message", "Unknown error")
-            if args.output == "json":
+            if args.format == "json":
                 print(
                     json.dumps(
                         {
@@ -851,7 +848,7 @@ def main():
             else:
                 print(f"\nError: {msg}\n")
             sys.exit(1)
-        if args.output == "json":
+        if args.format == "json":
             reports = results.get("reports", [])
             divergences = []
             checks = []

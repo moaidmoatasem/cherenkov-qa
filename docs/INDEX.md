@@ -6,6 +6,14 @@ docs tree. Pick the path that matches who you are.
 > **Status check first?** → [STATUS.md](STATUS.md) — the one place that says
 > what's done, what's blocked, and what's next.
 
+> **Where we're going (strategy):** [NORTH_STAR.md](NORTH_STAR.md) (the world-class
+> 10-year product) · [VISION_AQE_2026.md](VISION_AQE_2026.md) (why — the market) ·
+> [ROADMAP_AQE.md](ROADMAP_AQE.md) (phased epics/tickets) ·
+> [EXECUTION_PLAN.md](EXECUTION_PLAN.md) (gate discipline). Specs:
+> [specs/MCP_VERIFICATION_SERVER.md](specs/MCP_VERIFICATION_SERVER.md),
+> [specs/CHERENKOV_CERTIFICATE.md](specs/CHERENKOV_CERTIFICATE.md). Demo:
+> [demos/CATCH_THE_AI_CHEATING.md](demos/CATCH_THE_AI_CHEATING.md).
+
 ---
 
 ## 🚀 If you're new here
@@ -119,7 +127,7 @@ These exist for context. Most readers don't need them.
 - [wiki/](wiki/) — lightweight wiki (FAQ, Way of Work, Roadmap)
 
 ### Diagrams
-- [diagrams/](diagrams/) — system diagrams ([DIAGRAMS.md](diagrams/DIAGRAMS.md) is the index)
+- [diagrams/DIAGRAMS.md](diagrams/DIAGRAMS.md) — 17 Mermaid diagrams: system context, Track A pipeline, divergence loop, reflector loop, FE user journey, lifecycle state machine, git/PR flow, release flow, second brain, event bus, clean architecture, desktop IPC, chat agent, mobile tiers, extended system context, **validation gate flow (new)**, **certificate issuance flow (new)**
 
 ---
 

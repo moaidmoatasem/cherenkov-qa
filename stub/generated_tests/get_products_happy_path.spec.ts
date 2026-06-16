@@ -6,4 +6,9 @@ test('get /products happy_path - returns product list', async () => {
   expect(response.status).toBe(200);
   expect(Array.isArray(data)).toBe(true);
   expect((data as any[]).length).toBeGreaterThan(0);
+  const firstProduct = (data as any[])[0];
+  expect(firstProduct).toHaveProperty('id');
+  expect(firstProduct).toHaveProperty('name');
+  expect(firstProduct).toHaveProperty('price');
+  expect(typeof firstProduct.price).toBe('number');
 });

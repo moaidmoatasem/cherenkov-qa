@@ -1,6 +1,5 @@
 """
 CHERENKOV stages/generate.py — real recency-anchored test generator stage.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations
@@ -8,7 +7,7 @@ from __future__ import annotations
 import json
 import os
 import time
-from typing import Any
+from typing import Any, Optional
 
 from cherenkov.core.contracts import (
     GenerateOutput,
@@ -132,8 +131,8 @@ class GenerateStage:
         scenario: Any,
         path: str = "",
         method: str = "",
-        operation: dict[str, Any] = None,
-        schemas: dict[str, Any] = None,
+        operation: Optional[dict[str, Any]] = None,
+        schemas: Optional[dict[str, Any]] = None,
         instruction: str = "",
         source_type: str = "openapi",
     ) -> GenerateOutput:

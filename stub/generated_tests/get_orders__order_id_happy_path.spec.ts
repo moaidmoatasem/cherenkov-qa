@@ -2,9 +2,12 @@ import { client } from '../client';
 import { test, expect } from '@playwright/test';
 
 test('get /orders/{order_id} happy_path - returns order details', async () => {
-  // Create user + order
   const { data: user, response: ur } = await client.POST('/users', {
-    body: { email: 'getorder_test@cherenkov.dev', password: 'TestPass99!', name: 'Order Reader' }
+    body: {
+      email: `getorder_${Date.now()}@cherenkov.dev`,
+      password: 'TestPass99!',
+      name: 'Order Reader'
+    }
   });
   expect(ur.status).toBeLessThan(300);
   const userId = (user as any).id ?? (user as any).user_id;
@@ -20,5 +23,12 @@ test('get /orders/{order_id} happy_path - returns order details', async () => {
   });
   expect(response.status).toBe(200);
   expect(data).toHaveProperty('id');
+  expect((data as any).id).toBe(orderId);
   expect(data).toHaveProperty('total_price');
+  expect(data).toHaveProperty('user_id');
+  expect(data).toHaveProperty('quantity');
+  expect((data as any).user_id).toBe(userId);
+  expect((data as any).quantity).toBe(1);
+  expect(typeof (data as any).total_price).toBe('number');
+  expect((data as any).total_price).toBeGreaterThan(0);
 });
