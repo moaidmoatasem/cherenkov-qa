@@ -93,7 +93,8 @@ class Corpus:
         exported = []
         for r in rows:
             if policy == "internal":
-                h = lambda v: hashlib.sha256(v.encode()).hexdigest()[:12] if v else ""
+                def h(v):
+                    return hashlib.sha256(v.encode()).hexdigest()[:12] if v else ""
                 exported.append(
                     {
                         "item_id": h(r["item_id"]),
@@ -146,7 +147,8 @@ class Corpus:
 
     @staticmethod
     def _anon(e: DivergenceEnvelope) -> dict:
-        h = lambda v: hashlib.sha256(v.encode()).hexdigest()[:12]
+        def h(v):
+            return hashlib.sha256(v.encode()).hexdigest()[:12]
         return {
             "from_service": h(e.from_service),
             "to_service": h(e.to_service),

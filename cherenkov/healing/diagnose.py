@@ -19,12 +19,9 @@ def hash_test_content(test_content: str) -> str:
     return hashlib.sha256(test_content.strip().encode("utf-8")).hexdigest()
 
 
-import hashlib as _hashlib
-
-
 def _compute_snapshot_hash(test_code: str, spec_path: str | None = None) -> str:
     """Hash both the test code and the spec it was generated from."""
-    hasher = _hashlib.sha256()
+    hasher = hashlib.sha256()
     hasher.update(test_code.encode())
     if spec_path and __import__("os").path.exists(spec_path):
         with open(spec_path, "rb") as f:

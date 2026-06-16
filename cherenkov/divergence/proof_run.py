@@ -358,7 +358,8 @@ def _offline_hypotheses(endpoint: str, method: str) -> list[DivergenceHypothesis
     deterministically against the live server.
     """
     h: list[DivergenceHypothesis] = []
-    hid = lambda: str(uuid.uuid4())
+    def hid():
+        return str(uuid.uuid4())
 
     from cherenkov.core.contracts import DivergenceClass, Severity
 

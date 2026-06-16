@@ -114,7 +114,7 @@ class UnitTestEmitter:
             t0 = time.time()
             path = slice_data.get("path", "/")
             method = slice_data.get("method", "GET").lower()
-            operation = slice_data.get("operation", {})
+            slice_data.get("operation", {})
             scenario_id = f"{method}_{path.replace('/', '_').strip('_')}"
 
             try:

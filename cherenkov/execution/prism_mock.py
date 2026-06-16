@@ -75,7 +75,7 @@ class PrismMockServer:
         for attempt in range(1, max_attempts + 1):
             try:
                 # We hit health or query the root to verify server is listening
-                resp = requests.get(url, timeout=1)
+                requests.get(url, timeout=1)
                 self.log.info("prism dynamic mock server is online", attempts=attempt)
                 return True
             except requests.RequestException:

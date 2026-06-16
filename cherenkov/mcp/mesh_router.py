@@ -5,11 +5,10 @@ Provides dynamic MCP server registration and discovery.
 
 from __future__ import annotations
 
-import json
 import hashlib
 import time
-from dataclasses import dataclass, field
-from typing import Any, Callable
+from dataclasses import dataclass
+from typing import Any
 
 from cherenkov.core.errors import get_logger
 

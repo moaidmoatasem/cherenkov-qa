@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional
 import os
 import json
 import urllib.request
-from cherenkov.hitl.contracts import HitlEnvelope, ok_envelope, err_envelope
+from cherenkov.hitl.contracts import HitlEnvelope, ok_envelope
 from cherenkov.core.events import CHERENKOVEvent
 from cherenkov.core.errors import get_logger
 

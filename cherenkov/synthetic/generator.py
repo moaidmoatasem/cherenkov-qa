@@ -128,7 +128,7 @@ class SyntheticDataGenerator:
     def _generate_object(self, schema: dict[str, Any], field_path: str) -> dict[str, Any]:
         result: dict[str, Any] = {}
         properties = schema.get("properties", {})
-        required = set(schema.get("required", []))
+        set(schema.get("required", []))
 
         for prop_name, prop_schema in properties.items():
             child_path = f"{field_path}.{prop_name}" if field_path else prop_name

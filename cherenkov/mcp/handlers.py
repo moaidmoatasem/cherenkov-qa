@@ -1341,7 +1341,7 @@ def _tool_run_conformance_check(args: dict[str, Any]) -> MCPToolCallResult:
     """Trigger a validate run against target_url; return summary. D7: suggest-only."""
     inp = RunConformanceCheckInput.model_validate(args)
     try:
-        spec_path = _validate_spec_path(inp.spec_path)
+        _validate_spec_path(inp.spec_path)
     except ValueError as exc:
         return _err_content(f"Invalid spec_path: {exc}")
     try:
@@ -1452,7 +1452,7 @@ def _tool_explain_finding(args: dict[str, Any]) -> MCPToolCallResult:
             if inp.detail_level == "concise"
             else "Be thorough, covering root cause and remediation steps."
         )
-        prompt = (
+        (
             f"Explain this API conformance finding to a developer:\n"
             f"Endpoint: {finding.get('endpoint')}\n"
             f"Issue: {finding.get('claimB', finding.get('summary', ''))}\n"

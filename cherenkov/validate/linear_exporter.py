@@ -29,7 +29,7 @@ class LinearExporter:
     ) -> str:
         """Formats failed scenario information into a descriptive Markdown ticket payload for Linear."""
         lines = []
-        lines.append(f"## 🔍 Incident Details")
+        lines.append("## 🔍 Incident Details")
         lines.append(f"- **Scenario ID**: `{scenario_id}`")
         lines.append(f"- **Failure Classification**: `{failure_class}`")
         if expected_status is not None or received_status is not None:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import click
 
-from cherenkov.synthetic.generator import GenerationStrategy, generate_from_spec
+from cherenkov.synthetic.generator import GenerationStrategy
 from cherenkov.synthetic.runner import generate_for_endpoints
 
 
@@ -27,7 +27,7 @@ def synthetic_cmd(spec_path: str, endpoints: int, output: str | None, strategy: 
         output_path=output,
     )
 
-    click.echo(f"\nSynthetic Data Generation Complete")
+    click.echo("\nSynthetic Data Generation Complete")
     click.echo(f"{'=' * 40}")
     click.echo(f"  Spec:          {spec_path}")
     click.echo(f"  Strategy:      {strategy}")

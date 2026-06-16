@@ -108,17 +108,17 @@ app = FastAPI(
 )
 
 # ── Phase 1: Knowledge Mesh API ─────────────────────────────────────────────────
-from cherenkov.knowledge.api.routes import router as knowledge_router
+from cherenkov.knowledge.api.routes import router as knowledge_router  # noqa: E402
 
 app.include_router(knowledge_router)
 
 # ── Phase 4: Chat Agent API ────────────────────────────────────────────────────
-from cherenkov.chat.api.routes import router as chat_router
+from cherenkov.chat.api.routes import router as chat_router  # noqa: E402
 
 app.include_router(chat_router)
 
 # ── Sprint 1: SDD Agent Cockpit API ─────────────────────────────────────────
-from cherenkov.web.sdd_routes import router as sdd_router
+from cherenkov.web.sdd_routes import router as sdd_router  # noqa: E402
 
 app.include_router(sdd_router)
 
@@ -136,11 +136,11 @@ app.add_middleware(
 )
 
 # ── Phase 0b: Monitoring & Security (conditionally added) ────────────
-from cherenkov.web.monitoring import router as monitor_router
+from cherenkov.web.monitoring import router as monitor_router  # noqa: E402
 
 app.include_router(monitor_router)
 
-from cherenkov.web.middleware.security import add_security_middleware
+from cherenkov.web.middleware.security import add_security_middleware  # noqa: E402
 
 add_security_middleware(app)
 
@@ -626,7 +626,6 @@ async def approve_review_item(
     actor = os.environ.get("USER", "dashboard")
     envelope = queue.approve(payload.scenario_id, actor=actor, source="web")
     if not envelope.ok:
-        detail = envelope.error.detail if envelope.error else {}
         raise HTTPException(
             status_code=409
             if envelope.error and envelope.error.code == "conflict"

@@ -19,7 +19,7 @@ from cherenkov.adapters.notifiers.webhook import WebhookNotifier
 
 _HAS_FASTAPI = False
 try:
-    from fastapi import FastAPI, HTTPException, Request
+    from fastapi import FastAPI, Request
     from fastapi.responses import JSONResponse
 
     _HAS_FASTAPI = True
