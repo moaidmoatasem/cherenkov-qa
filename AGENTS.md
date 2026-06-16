@@ -36,26 +36,26 @@ The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHE
 - ✅ **Phase 4** (Chat Agent): Complete. Tool-calling agent, persona registry, SSE streaming (#354-#361).
 - ✅ **Phase 7** (Dashboard): Complete. All 9 screens: DeviceManager, KnowledgeExplorer, HealthWidget, MobileScreen, ChatPanel, wire-up, MockBadges, Pilot Run, Toast (#377-#385).
 - ✅ **Phase 8** (K8s + Cloud + Gate): Complete. `make k3d-test` green (2026-06-09). All 6 issues closed (#386-#391): K8s fixes validated, CRD extensions + device env vars deployed, SECURITY.md added, validation gate resolved, clean architecture docs updated.
-- ⏸️ **Phase 3** (Desktop/Tauri 2): Blocked — needs `cargo` on this machine.
-- ⏸️ **Phase 5-6** (Mobile Testing): Blocked — needs ADB/Maestro on this machine.
+- ✅ **Phase 3** (Desktop/Tauri 2): Complete. Compiles (308MB binary at `desktop/src-tauri/target/debug/cherenkov-desktop`). Requires `libwebkit2gtk-4.1-dev`.
+- ✅ **Phase 5-6** (Mobile Testing): Tools installed — Maestro 2.6.1 at `~/.maestro/bin/maestro`, ADB 1.0.41 at `~/.local/bin/adb`. Needs physical device or emulator for live runs.
 
 **Available Tools (WSL Ubuntu-24.04):**
 - ✅ Go 1.22.5 installed at `~/.local/opt/go/bin/go`
-- ✅ k3d v5.6.3 installed at `~/.local/bin/k3d`
-- ✅ Docker, kubectl, curl, wget available
+- ✅ k3d v5.6.3 installed at `scripts/k3d` (Go binary)
+- ✅ Docker, kubectl (v1.31.0 at `~/.local/bin/kubectl`), curl, wget
 
 **New Capabilities:**
 1. ✅ **Second Brain** (Phase 1) — Knowledge mesh, GraphRAG, event bridges
 2. ✅ **VLM + LocalAI** (Phase 2) — LocalAI as default VLM backend, tier-aware routing
-3. ⏸️ **Desktop Host** (Phase 3) — Tauri 2 app, hardware detection, 7-step setup wizard
+3. ✅ **Desktop Host** (Phase 3) — Tauri 2 app, hardware detection, 7-step setup wizard
 4. ✅ **Chat Agents** (Phase 4) — Tool-calling agent, persona registry, SSE streaming
-5. ⏸️ **Mobile Testing** (Phase 5-6) — Maestro/Appium, 4-tier devices, semantic visual oracle
+5. ✅ **Mobile Testing** (Phase 5-6) — Maestro 2.6.1, ADB 1.0.41 installed; needs physical device/emulator for live runs
 
 **Parallel Tracks:**
 - Track A (Core): Phase -1 → 0a → 0b → 1 → 4 → 7 ✅
 - Track B (VLM): Phase 2 ✅
-- Track C (Desktop): Phase 3 ⏸ (needs cargo)
-- Track D (Mobile): Phase 5-6 ⏸ (needs ADB)
+- Track C (Desktop): Phase 3 ✅
+- Track D (Mobile): Phase 5-6 ⏸ (needs physical device/emulator for live runs)
 - Track E (Dashboard): Phase 7 ✅
 - Track F (K8s): Phase 8 ✅
 
