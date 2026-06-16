@@ -820,9 +820,13 @@ def _tool_registry_list(args: dict[str, Any]) -> MCPToolCallResult:
 def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     """Register an external MCP server with the mesh registry."""
     import json
+    from urllib.parse import urlparse
     from cherenkov.mcp.mesh_router import get_registry
 
     inp = args
+    parsed_url = urlparse(inp.get("url", ""))
+    if parsed_url.scheme not in ("http", "https"):
+        return _err_content("Only http/https server URLs allowed")
     tools = json.loads(inp.get("tools", "[]"))
     resources = json.loads(inp.get("resources", "[]"))
     reg_id = get_registry().register_server(
