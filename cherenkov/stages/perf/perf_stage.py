@@ -44,7 +44,7 @@ try:
     from sklearn.ensemble import IsolationForest
     import numpy as np
     import pandas as pd
-    from datetime import datetime, timedelta
+    from datetime import datetime
 
     ML_AVAILABLE = True
 except ImportError:
@@ -311,11 +311,9 @@ class PerfStage:
         if use_ml and ml_anomaly:
             anomaly_detected = True
             detection_method = f"ml_{ml_method}"
-            limit_used = ml_score
         else:
             anomaly_detected = statistical_anomaly
             detection_method = "statistical"
-            limit_used = statistical_limit
 
         return {
             "count": count,
@@ -546,7 +544,7 @@ class PerfStage:
                 return None
 
             # Calculate traffic-based load profile
-            avg_latency = sum(request_timings) / len(request_timings)
+            sum(request_timings) / len(request_timings)
             requests_per_second = (
                 total_requests / 60.0
             )  # Assuming 60 second capture window

@@ -78,7 +78,8 @@ class SAMLServiceProvider:
 
     def _build_authn_request(self) -> str:
         """Build base64-encoded SAML AuthnRequest."""
-        import base64, xml.etree.ElementTree as ET
+        import base64
+        import xml.etree.ElementTree as ET
 
         root = ET.Element(
             "{urn:oasis:names:tc:SAML:2.0:protocol}AuthnRequest"
@@ -97,7 +98,8 @@ class SAMLServiceProvider:
 
     def _parse_assertion(self, saml_response: str) -> SAMLAssertion:
         """Parse SAML response XML and extract assertion data."""
-        import base64, xml.etree.ElementTree as ET
+        import base64
+        import xml.etree.ElementTree as ET
 
         try:
             xml_bytes = base64.b64decode(saml_response)

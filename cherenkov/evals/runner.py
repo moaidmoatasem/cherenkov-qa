@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import time
 from datetime import datetime, timezone
 from typing import Any
 
 from cherenkov.core.config import Config
-from cherenkov.evals.core import EvalMetric, EvalReport, EvalResult, EvalSample, EvalScore, EvalStatus
+from cherenkov.evals.core import EvalMetric, EvalReport, EvalResult, EvalSample, EvalStatus
 from cherenkov.evals.judge import judge_sample
 
 
@@ -70,7 +69,7 @@ def run_evals(samples: list[EvalSample], max_workers: int = 2) -> EvalReport:
 
 def print_report(report: EvalReport) -> None:
     print(f"\n{'='*60}")
-    print(f"  CHERENKOV EVAL REPORT")
+    print("  CHERENKOV EVAL REPORT")
     print(f"{'='*60}")
     print(f"  Model:         {report.model}")
     print(f"  Scenarios:     {report.to_dict()['total_scenarios']}")

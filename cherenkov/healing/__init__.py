@@ -1,14 +1,14 @@
 from cherenkov.healing.diagnose import (
-    Diagnoser,
-    FailureClass,
-    DiagnosisResult,
-    hash_test_content,
+    Diagnoser as Diagnoser,
+    FailureClass as FailureClass,
+    DiagnosisResult as DiagnosisResult,
+    hash_test_content as hash_test_content,
 )
-from cherenkov.healing.auth_expiry import AuthExpiryHealer
-from cherenkov.healing.contract_drift import ContractDriftHealer
+from cherenkov.healing.auth_expiry import AuthExpiryHealer as AuthExpiryHealer
+from cherenkov.healing.contract_drift import ContractDriftHealer as ContractDriftHealer
 from cherenkov.healing.providers import (
-    SandboxProvider,
-    SandboxResult,
-    FilesystemSandboxProvider,
-    DockerSandboxProvider,
+    SandboxProvider as SandboxProvider,
+    SandboxResult as SandboxResult,
+    FilesystemSandboxProvider as FilesystemSandboxProvider,
+    DockerSandboxProvider as DockerSandboxProvider,
 )

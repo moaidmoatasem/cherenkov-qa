@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import signal
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -14,7 +14,6 @@ import requests
 from cherenkov.spec_guardian.core import (
     DriftEvent,
     DriftReport,
-    DriftSeverity,
 )
 from cherenkov.spec_guardian.detector import SpecDriftDetector
 from cherenkov.spec_guardian.store import DriftStore
@@ -78,7 +77,7 @@ class SpecGuardianDaemon:
             try:
                 self._run_check_cycle()
                 time.sleep(self.check_interval)
-            except Exception as e:
+            except Exception:
                 logger.error("Error in check cycle", exc_info=True)
                 time.sleep(self.check_interval)
     

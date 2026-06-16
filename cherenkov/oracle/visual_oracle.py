@@ -88,7 +88,7 @@ class VisualOracle(Oracle):
         diff_pixels: int,
     ) -> dict:
         """Use VLM to semantically analyse a screenshot."""
-        vlm = get_vlm_provider(self.provider_name)
+        get_vlm_provider(self.provider_name)
 
         analysis_prompt = (
             "You are a UI regression analyst. Examine this screenshot and answer in JSON:\n"

@@ -13,7 +13,6 @@ from cherenkov.adversarial.core import (
 )
 from cherenkov.adversarial.detector import scan_test_code
 from cherenkov.adversarial.garak_adapter import is_garak_available, run_garak
-from cherenkov.adversarial.injector import get_payloads
 
 
 def run_adversarial_tests(
@@ -73,7 +72,7 @@ def run_adversarial_tests(
 def print_report(report: AdversarialReport) -> None:
     d = report.to_dict()
     print(f"\n{'='*60}")
-    print(f"  CHERENKOV ADVERSARIAL REPORT")
+    print("  CHERENKOV ADVERSARIAL REPORT")
     print(f"{'='*60}")
     print(f"  Model:         {report.model}")
     print(f"  Pass rate:     {d['pass_rate']:.1%}")
@@ -85,7 +84,7 @@ def print_report(report: AdversarialReport) -> None:
 
     criticals = report.critical_findings()
     if criticals:
-        print(f"\n  CRITICAL FINDINGS:")
+        print("\n  CRITICAL FINDINGS:")
         for f in criticals:
             print(f"    [{f.severity.value.upper()}] {f.category.value}: {f.detail}")
             if f.test_code_snippet:

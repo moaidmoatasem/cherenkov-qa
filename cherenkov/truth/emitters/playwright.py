@@ -42,7 +42,7 @@ class PlaywrightEmitter(Emitter):
             label = ep.label.replace("{", "").replace("}", "")
             method = label.split(" ")[0].lower() if " " in label else "get"
             path_part = label.split(" ")[-1] if " " in label else label
-            safe_name = (
+            (
                 path_part.replace("/", "_")
                 .replace("-", "_")
                 .replace("{", "")

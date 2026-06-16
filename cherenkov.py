@@ -226,7 +226,7 @@ def get_parser() -> argparse.ArgumentParser:
         "shell", choices=["bash", "zsh", "fish"], help="Target shell"
     )
 
-    self_test_parser = subparsers.add_parser(
+    subparsers.add_parser(
         "self-test",
         help="Run a deterministic dry-run of the pipeline (mocking Ollama and the server)",
     )
@@ -304,7 +304,7 @@ def get_parser() -> argparse.ArgumentParser:
         "--desktop", action="store_true", help="Include Track C (Desktop/Tauri) checks"
     )
 
-    dashboard_parser = subparsers.add_parser(
+    subparsers.add_parser(
         "dashboard", help="Visualise Truth Model + divergences (E5-4, defer-first)"
     )
 

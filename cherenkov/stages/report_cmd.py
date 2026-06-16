@@ -15,7 +15,7 @@ def get_latest_run_dir() -> str:
 
 
 def run_report(output: str, diff: str = None) -> int:
-    log = get_logger("REPORT")
+    get_logger("REPORT")
     latest_run = get_latest_run_dir()
     if not latest_run:
         print("Error: No runs found in .cherenkov/runs/")

@@ -10,7 +10,7 @@ import threading
 from typing import Any, Dict
 
 from cherenkov.core.errors import get_logger
-from cherenkov.hitl.contracts import HitlEnvelope, ok_envelope, err_envelope
+from cherenkov.hitl.contracts import HitlEnvelope, ok_envelope
 from cherenkov.core.events import CHERENKOVEvent
 
 _log = get_logger("WEBHOOK_NOTIFIER")

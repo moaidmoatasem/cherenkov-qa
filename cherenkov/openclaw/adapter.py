@@ -101,7 +101,7 @@ class OpenClawAdapter:
                     headers={"Content-Type": "application/json"},
                     method="POST",
                 )
-                with urllib.request.urlopen(req, timeout=5.0) as response:
+                with urllib.request.urlopen(req, timeout=5.0):
                     pass
             except Exception as exc:
                 self._log.warning("webhook notification failed", error=str(exc))
@@ -298,7 +298,7 @@ class OpenClawAdapter:
         maintain a persistent connection.
         """
         current = self._queue.list(status="pending")
-        current_ids = {item.id for item in current}
+        {item.id for item in current}
         seen_ids = {item.id for item in self._last_poll}
         new_items = [item for item in current if item.id not in seen_ids]
         self._last_poll = current
