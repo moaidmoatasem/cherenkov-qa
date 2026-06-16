@@ -71,13 +71,19 @@ def _validate_spec_url(url: str) -> str:
     host = parsed.hostname or ""
     try:
         addr = _ipaddress.ip_address(host)
-        if addr.is_private or addr.is_loopback or addr.is_link_local:
+        if addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved:
             raise HTTPException(
                 status_code=400, detail="Internal network URLs not allowed"
             )
     except ValueError:
-        # It's a hostname, not an IP - block obvious localhost names
-        if host.lower() in ("localhost", "127.0.0.1", "::1", "0.0.0.0"):
+        # It's a hostname, not an IP - block obvious localhost / cloud-metadata names
+        if host.lower() in (
+            "localhost",
+            "127.0.0.1",
+            "::1",
+            "0.0.0.0",
+            "metadata.google.internal",
+        ):
             raise HTTPException(
                 status_code=400, detail="Internal network URLs not allowed"
             )
@@ -786,7 +792,7 @@ async def validate_test_suite(payload: ValidatePayload, _auth=Depends(verify_api
 # Eject
 #
 @app.post("/api/v1/eject")
-async def eject_test_suite(payload: EjectPayload):
+async def eject_test_suite(payload: EjectPayload, _auth=Depends(verify_api_key)):
     try:
         safe_path = _validate_output_path(payload.output_path)
         from cherenkov.execution.eject import EjectorEngine
@@ -1400,12 +1406,19 @@ async def api_get_settings(_auth=Depends(verify_api_key)):
     return redacted
 
 
+_SETTINGS_PROTECTED_FIELDS = {"security": {"auth_secret", "egress_policy"}}
+
+
 @app.put("/api/v1/settings")
 async def update_settings(body: dict, _auth=Depends(verify_api_key)):
     for key, val in body.items():
         if key in _settings and isinstance(val, dict):
-            _settings[key].update(val)
-        elif key in _settings:
+            protected = _SETTINGS_PROTECTED_FIELDS.get(key, set())
+            for sub_key, sub_val in val.items():
+                if sub_key in protected:
+                    continue
+                _settings[key][sub_key] = sub_val
+        elif key in _settings and key not in _SETTINGS_PROTECTED_FIELDS:
             _settings[key] = val
     return _settings
 
