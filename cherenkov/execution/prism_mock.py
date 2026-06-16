@@ -9,6 +9,7 @@ import subprocess
 import time
 import requests
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 
 
 class PrismMockServer:
@@ -51,9 +52,21 @@ class PrismMockServer:
         ]
 
         try:
-            subprocess.run(cmd, check=True, capture_output=True, text=True)
+            subprocess.run(
+                cmd,
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=get_settings().PRISM_DOCKER_START_TIMEOUT_SECONDS,
+            )
         except subprocess.CalledProcessError as e:
             self.log.error("failed to start prism container", error=e.stderr)
+            return False
+        except subprocess.TimeoutExpired:
+            self.log.error("timed out starting prism container")
+            return False
+        except FileNotFoundError:
+            self.log.error("docker executable not found")
             return False
 
         # 3. Wait for the mock server to respond to requests
@@ -77,9 +90,18 @@ class PrismMockServer:
         # Stop and remove the container
         stop_cmd = ["docker", "stop", self.container_name]
         try:
-            subprocess.run(stop_cmd, capture_output=True, text=True)
+            subprocess.run(
+                stop_cmd,
+                capture_output=True,
+                text=True,
+                timeout=get_settings().PRISM_DOCKER_STOP_TIMEOUT_SECONDS,
+            )
             self.log.info(
                 "prism container stopped and removed", container=self.container_name
             )
-        except Exception:
+        except subprocess.TimeoutExpired:
+            self.log.warning("timed out stopping prism container", container=self.container_name)
+        except FileNotFoundError:
             pass
+        except Exception as e:
+            self.log.debug("error stopping prism container", error=str(e))
