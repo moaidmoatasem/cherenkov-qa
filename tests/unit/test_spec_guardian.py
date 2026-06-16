@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import pytest
@@ -161,7 +161,7 @@ class TestDriftEvent:
             "expected": "200",
             "actual": "500",
             "message": "Status mismatch",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         event = DriftEvent.from_dict(d)
         assert event.drift_type == DriftType.STATUS_DRIFT
@@ -176,8 +176,8 @@ class TestDriftReport:
         report = DriftReport(
             spec_path="spec.yaml",
             events=[],
-            start_time=datetime.utcnow() - timedelta(hours=1),
-            end_time=datetime.utcnow(),
+            start_time=datetime.now(timezone.utc) - timedelta(hours=1),
+            end_time=datetime.now(timezone.utc),
             total_checks=100,
             compliant_checks=90,
         )
@@ -188,8 +188,8 @@ class TestDriftReport:
         report = DriftReport(
             spec_path="spec.yaml",
             events=[],
-            start_time=datetime.utcnow(),
-            end_time=datetime.utcnow(),
+            start_time=datetime.now(timezone.utc),
+            end_time=datetime.now(timezone.utc),
             total_checks=0,
             compliant_checks=0,
         )
@@ -222,8 +222,8 @@ class TestDriftReport:
         report = DriftReport(
             spec_path="spec.yaml",
             events=events,
-            start_time=datetime.utcnow(),
-            end_time=datetime.utcnow(),
+            start_time=datetime.now(timezone.utc),
+            end_time=datetime.now(timezone.utc),
             total_checks=2,
             compliant_checks=0,
         )
@@ -387,8 +387,8 @@ class TestDriftStore:
         report = DriftReport(
             spec_path="spec.yaml",
             events=[],
-            start_time=datetime.utcnow() - timedelta(hours=1),
-            end_time=datetime.utcnow(),
+            start_time=datetime.now(timezone.utc) - timedelta(hours=1),
+            end_time=datetime.now(timezone.utc),
             total_checks=10,
             compliant_checks=8,
         )

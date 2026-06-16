@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import dataclasses
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 
@@ -41,7 +41,7 @@ class DriftEvent:
     expected: Any
     actual: Any
     message: str
-    timestamp: datetime = dataclasses.field(default_factory=datetime.utcnow)
+    timestamp: datetime = dataclasses.field(default_factory=lambda: datetime.now(timezone.utc))
     
     def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""

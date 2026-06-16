@@ -22,7 +22,12 @@ class GenerationStrategy(enum.Enum):
 
 
 class SyntheticDataGenerator:
-    """Generates synthetic values from OpenAPI schema definitions."""
+    """Generates synthetic values from OpenAPI schema definitions.
+
+    Two strategies:
+    - RANDOM: values randomly generated per type with semantic heuristics (UUID, email, etc.)
+    - LLM: uses local Ollama to generate semantically realistic values for each field.
+    """
 
     def __init__(self, strategy: GenerationStrategy = GenerationStrategy.RANDOM):
         self.strategy = strategy
@@ -33,17 +38,13 @@ class SyntheticDataGenerator:
         self._seed.update(overrides)
 
     def generate(self, schema: dict[str, Any], field_path: str = "") -> Any:
-        """Generate a synthetic value matching the given JSON Schema.
-        
-        Args:
-            schema: JSON Schema dict (type, properties, items, etc.)
-            field_path: Dot-separated path for nested fields (for seeding).
-            
-        Returns:
-            A synthetic value matching the schema type.
-        """
+        """Generate a synthetic value matching the given JSON Schema."""
         if field_path in self._seed:
             return self._seed[field_path]
+
+        # Dispatch to LLM or random strategy
+        if self.strategy == GenerationStrategy.LLM:
+            return self._generate_with_llm(schema, field_path)
 
         schema_type = schema.get("type", "string")
 
@@ -60,18 +61,69 @@ class SyntheticDataGenerator:
         else:
             return "synthetic_value"
 
-    def generate_batch(self, schemas: dict[str, dict[str, Any]]) -> dict[str, Any]:
-        """Generate synthetic data for multiple schemas.
-        
-        Args:
-            schemas: Dict mapping schema name to JSON Schema dict.
-            
-        Returns:
-            Dict mapping schema name to generated data.
-        """
-        return {name: self.generate(schema) for name, schema in schemas.items()}
+    def _generate_with_llm(self, schema: dict[str, Any], field_path: str) -> Any:
+        """Generate a value using Ollama for semantically realistic output."""
+        try:
+            from cherenkov.ai import get_client
+            from cherenkov.ai.ollama_client import strip_think
 
-    # ── Private generators ──────────────────────────────────────────────
+            client = get_client()
+            schema_type = schema.get("type", "string")
+            enum_vals = schema.get("enum")
+            field_hint = field_path.split(".")[-1] if field_path else "value"
+
+            prompt_parts = [
+                f"Generate a single realistic {schema_type} value for field '{field_hint}'.",
+            ]
+            if enum_vals:
+                prompt_parts.append(f"Choose from: {enum_vals}")
+            if schema_type in ("integer", "number"):
+                min_v = schema.get("minimum", 0)
+                max_v = schema.get("maximum", 100000)
+                prompt_parts.append(f"Range: [{min_v}, {max_v}]")
+            if schema_type == "string":
+                min_l = schema.get("minLength", 1)
+                max_l = schema.get("maxLength", 255)
+                pattern = schema.get("pattern")
+                prompt_parts.append(f"Length: {min_l}-{max_l} chars")
+                if pattern:
+                    prompt_parts.append(f"Pattern: {pattern}")
+            prompt_parts.append("Respond with ONLY the value, no explanation.")
+
+            raw = client.complete_code(
+                system_prompt="You generate realistic test data values. Return ONLY the value.",
+                user_prompt="\n".join(prompt_parts),
+                model="qwen2.5-coder:7b",
+                temperature=0.7,
+                run_id="synthetic-llm",
+            )
+            cleaned = strip_think(raw).strip()
+
+            if schema_type == "integer":
+                return int(cleaned)
+            elif schema_type == "number":
+                return float(cleaned)
+            elif schema_type == "boolean":
+                return cleaned.lower() in ("true", "yes", "1")
+            else:
+                return cleaned
+        except Exception:
+            return self._generate_random(schema, field_path)
+
+    def _generate_random(self, schema: dict[str, Any], field_path: str) -> Any:
+        """Fallback random generation (same as RANDOM strategy)."""
+        schema_type = schema.get("type", "string")
+        if schema_type == "object":
+            return self._generate_object(schema, field_path)
+        elif schema_type == "array":
+            return self._generate_array(schema, field_path)
+        elif schema_type in ("integer", "number"):
+            return self._generate_number(schema)
+        elif schema_type == "boolean":
+            return self._generate_boolean()
+        elif schema_type == "string":
+            return self._generate_string(schema, field_path)
+        return "synthetic_value"
 
     def _generate_object(self, schema: dict[str, Any], field_path: str) -> dict[str, Any]:
         result: dict[str, Any] = {}

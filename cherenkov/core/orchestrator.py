@@ -514,6 +514,13 @@ class OrchestrationEngine:
         # Dynamic GPU/CPU device detection health check at startup
         get_settings().detect_ollama_device(self.run_id)
 
+        # Optional observability trace: pipeline start
+        try:
+            from cherenkov.observability.llm_tracer import trace_event
+            trace_event("pipeline-start", run_id=self.run_id, spec_path=spec_path)
+        except Exception:
+            pass
+
         print(
             f"\n================ CHERENKOV PIPELINE RUN [{self.run_id}] ================"
         )
@@ -690,6 +697,7 @@ class OrchestrationEngine:
                 from cherenkov.evals.core import EvalSample
                 from cherenkov.evals.runner import run_evals
                 from cherenkov.evals.store import EvalStore
+                from cherenkov.observability.llm_tracer import trace_event
                 
                 self.log.info("running post-generation eval judge")
                 print("\n  EVALS   [ Running LLM-as-judge... ]")
@@ -699,14 +707,13 @@ class OrchestrationEngine:
                     test_files = list(output_dir.glob("*.spec.ts"))
                     if test_files:
                         samples = []
-                        for test_file in test_files[:10]:  # Limit for performance
+                        for test_file in test_files[:10]:
                             try:
                                 code = test_file.read_text(encoding="utf-8")
-                                # Extract scenario info from filename or content
                                 scenario_id = test_file.stem
                                 samples.append(EvalSample(
                                     scenario_id=scenario_id,
-                                    endpoint="unknown",  # Would need to parse from test
+                                    endpoint="unknown",
                                     method="GET",
                                     expected_status=200,
                                     test_code=code,
@@ -719,6 +726,7 @@ class OrchestrationEngine:
                             report = run_evals(samples)
                             store = EvalStore()
                             store.save(report)
+                            trace_event("pipeline-evals", pass_rate=report.pass_rate(), scenarios=len(samples))
                             
                             print(f"  EVALS   [ DONE ] pass_rate={report.pass_rate():.1%}, saved to .cherenkov/evals.db")
                             self.log.info("eval judge complete", pass_rate=report.pass_rate(), total=len(samples))
@@ -733,11 +741,11 @@ class OrchestrationEngine:
                 print(f"  EVALS   [ SKIPPED ] {e}")
 
         # ── Phase 2: Post-generation adversarial scan (optional) ──────────
-        # Scans generated tests for prompt injection, data exfiltration, etc.
         if _os.getenv("CHERENKOV_ADVERSARIAL_ENABLED", "0") == "1":
             try:
                 from pathlib import Path
                 from cherenkov.adversarial.runner import run_adversarial_tests, save_report
+                from cherenkov.observability.llm_tracer import trace_event
                 
                 self.log.info("running post-generation adversarial scan")
                 print("\n  ADVERSARIAL [ Scanning for injection patterns... ]")
@@ -747,7 +755,7 @@ class OrchestrationEngine:
                     test_files = list(output_dir.glob("*.spec.ts"))
                     if test_files:
                         test_codes = {}
-                        for test_file in test_files[:20]:  # Limit for performance
+                        for test_file in test_files[:20]:
                             try:
                                 code = test_file.read_text(encoding="utf-8")
                                 test_codes[test_file.stem] = code
@@ -757,6 +765,7 @@ class OrchestrationEngine:
                         if test_codes:
                             report = run_adversarial_tests(test_codes, spec_path=spec_path)
                             output_path = save_report(report)
+                            trace_event("pipeline-adversarial", pass_rate=report.pass_rate(), critical=len(report.critical_findings()))
                             
                             criticals = report.critical_findings()
                             if criticals:
@@ -813,6 +822,20 @@ class OrchestrationEngine:
                 "scenarios_total": total,
             },
         )
+
+        # Optional observability trace: pipeline complete
+        try:
+            from cherenkov.observability.llm_tracer import trace_event
+            trace_event(
+                "pipeline-complete",
+                run_id=self.run_id,
+                success=pipeline_success,
+                duration_ms=total_duration,
+                scenarios_passed=successes,
+                scenarios_total=total,
+            )
+        except Exception:
+            pass
 
         # ── Research: LlamaRestTest-aligned generation quality metrics ─────
         try:

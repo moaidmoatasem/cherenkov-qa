@@ -22,11 +22,13 @@ def main():
     # However, to perfectly emulate legacy behavior for un-ported commands,
     # we intercept args and see if it's a known click command.
     
-    known_commands = ["validate"] # populate as we port commands
-    
+    known_commands = ["validate", "synthetic"]
+
     if len(sys.argv) > 1 and sys.argv[1] in known_commands:
         from cherenkov.cli.commands.validate import validate_cmd
+        from cherenkov.synthetic.cmd import synthetic_cmd
         cli.add_command(validate_cmd, name="validate")
+        cli.add_command(synthetic_cmd, name="synthetic")
         cli()
     else:
         legacy_main()
