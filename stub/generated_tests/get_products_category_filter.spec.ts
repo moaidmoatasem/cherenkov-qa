@@ -7,8 +7,11 @@ test('get /products with category filter - only returns matching products', asyn
   });
   expect(response.status).toBe(200);
   expect(Array.isArray(data)).toBe(true);
-  // All returned products must belong to 'tools' category
+  expect((data as any[]).length).toBeGreaterThan(0);
   for (const product of (data as any[])) {
+    expect(product).toHaveProperty('id');
+    expect(product).toHaveProperty('name');
+    expect(product).toHaveProperty('price');
     expect(product.category).toBe('tools');
   }
 });

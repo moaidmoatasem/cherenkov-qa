@@ -94,6 +94,8 @@ class CherenkovSettings(BaseSettings):
     OTEL_ENDPOINT: str = Field(default='http://localhost:4317', validation_alias='CHERENKOV_OTEL_ENDPOINT')
     OTEL_SERVICE_NAME: str = Field(default='cherenkov', validation_alias='CHERENKOV_OTEL_SERVICE_NAME')
     OTEL_ENVIRONMENT: str = Field(default='production', validation_alias='CHERENKOV_OTEL_ENVIRONMENT')
+
+    OUTPUT_DIR: str = Field(default='output', validation_alias='CHERENKOV_OUTPUT_DIR')
     
     @property
     def TIERS(self) -> Dict[str, Dict[str, str]]:

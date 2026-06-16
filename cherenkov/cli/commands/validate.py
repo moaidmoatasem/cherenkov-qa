@@ -20,6 +20,34 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         from cherenkov.cache.endpoint_cache import EndpointCache
         EndpointCache().clear()
 
+    if source == 'graphql':
+        from cherenkov.sources.graphql.adapter import GraphQLSourceAdapter
+        from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
+        from cherenkov.stages.generate import GenerateStage
+
+        gql_source = GraphQLSourceAdapter(spec)
+        scenarios = GraphQLScenarioPlanner().plan(gql_source)
+        for sc in scenarios:
+            GenerateStage('cli_validate').run(scenario=sc, source_type='graphql')
+    elif source == 'grpc':
+        from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
+        from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
+        from cherenkov.stages.generate import GenerateStage
+
+        grpc_source = gRPCSourceAdapter(spec)
+        scenarios = gRPCScenarioPlanner().plan(grpc_source)
+        for sc in scenarios:
+            GenerateStage('cli_validate').run(scenario=sc, source_type='grpc')
+    elif source == 'accessibility':
+        from cherenkov.sources.accessibility.adapter import AccessibilitySourceAdapter
+        from cherenkov.stages.plan_accessibility import AccessibilityScenarioPlanner
+        from cherenkov.stages.generate import GenerateStage
+
+        a11y_source = AccessibilitySourceAdapter(spec)
+        scenarios = AccessibilityScenarioPlanner().plan(a11y_source)
+        for sc in scenarios:
+            GenerateStage('cli_validate').run(scenario=sc, source_type='accessibility')
+
     # The engine handles the heavy lifting
     engine = ValidationEngine('cli_validate')
     results = engine.validate_suite(target, workers=workers)
@@ -28,8 +56,9 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         from cherenkov.execution.emitters.sarif import SARIFEmitter
         os.makedirs('.cherenkov', exist_ok=True)
         emitter = SARIFEmitter()
-        from cherenkov.core.contracts import DivergenceReport, DivergenceFinding
-        report_obj = DivergenceReport(findings=[])
+        from types import SimpleNamespace
+        from cherenkov.core.contracts import DivergenceFinding
+        report_obj = SimpleNamespace(findings=[])
         for r in results.get('reports', []):
             if not r.get('passed', False):
                 report_obj.findings.append(DivergenceFinding(
