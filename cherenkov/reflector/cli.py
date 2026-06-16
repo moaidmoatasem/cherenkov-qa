@@ -93,14 +93,15 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 from cherenkov.core.stats_store import StatsStore
 
-                rstats = reflector.get_stats()
+                store = VerdictStore(db_path=args.db) if args.db else VerdictStore()
+                rstats = Reflector(store).get_stats()
                 StatsStore().snapshot(
                     verdict_count=rstats.get("verdict_count", 0),
                     idiom_count=rstats.get("idiom_count", 0),
                     source="cli",
                 )
             except Exception as e_snap:
-                logger.warning("failed to snapshot stats", exc_info=e_snap)
+                print(f"failed to snapshot stats: {e_snap}", file=sys.stderr)
     except sqlite3.OperationalError as e:
         # the verdict store is local SQLite; a concurrent run may hold the lock
         print(

@@ -1110,7 +1110,6 @@ def main():
             run_mcp_server()
             sys.exit(0)
         elif args.mcp_command == "publish":
-            import json
             from cherenkov.mcp.mesh_router import get_registry
 
             registry = get_registry()

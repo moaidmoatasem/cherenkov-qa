@@ -8,6 +8,7 @@ from __future__ import annotations
 import os
 import requests
 import threading
+from typing import Any, Dict
 
 from cherenkov.core.errors import get_logger
 from cherenkov.hitl.contracts import HitlEnvelope, ok_envelope, err_envelope

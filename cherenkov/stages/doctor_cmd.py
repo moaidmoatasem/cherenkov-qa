@@ -206,7 +206,7 @@ def run_doctor(desktop: bool = False) -> int:
             f"  {'ollama daemon':<30} {'[OK]' if ollama_daemon else '[NO]'}  {ollama_daemon_detail}"
         )
 
-    device = Config.detect_ollama_device()
+    device = get_settings().detect_ollama_device()
     is_gpu = device == "GPU"
     print(f"  {'device':<30} {'[OK]' if is_gpu else '[WARN]'}  {device}")
     if not is_gpu:
