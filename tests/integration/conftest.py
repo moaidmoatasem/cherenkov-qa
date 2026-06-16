@@ -176,11 +176,3 @@ def mock_spec_summaries() -> dict[str, str]:
         "POST /users": "Creates a new user and returns 201",
         "POST /login": "Authenticates a user",
     }
-
-
-@pytest.fixture
-def mock_settings(tmp_path: Path):
-    """Override OUTPUT_DIR to a temp path so file-based pipeline stages work."""
-    with patch("cherenkov.core.config.Config.OUTPUT_DIR", new_callable=PropertyMock) as mock:
-        mock.return_value = str(tmp_path)
-        yield mock
