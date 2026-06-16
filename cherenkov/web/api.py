@@ -305,7 +305,7 @@ async def tokens_recommendations(days: int = 30):
 async def health_check():
     try:
         device = await asyncio.wait_for(
-            asyncio.to_thread(Config.detect_ollama_device), timeout=2.0
+            asyncio.to_thread(get_settings().detect_ollama_device), timeout=2.0
         )
     except Exception:
         device = "unknown"
@@ -393,7 +393,7 @@ async def run_doctor_api():
         }
     )
 
-    device = Config.detect_ollama_device()
+    device = get_settings().detect_ollama_device()
     is_gpu = device == "GPU"
     checks.append(
         {

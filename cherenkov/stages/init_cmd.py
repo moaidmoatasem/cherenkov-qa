@@ -46,7 +46,7 @@ def detect_device() -> str:
 
     Returns one of: "GPU", "CPU", "UNKNOWN"
     """
-    device = Config.detect_ollama_device()
+    device = get_settings().detect_ollama_device()
     if device in ("GPU", "CPU"):
         return device
     return "UNKNOWN"

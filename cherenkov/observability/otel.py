@@ -50,10 +50,14 @@ def setup_otel_provider() -> None:
 
 
 def get_tracer():
-    """Return a tracer. Returns a no-op tracer if OTEL is disabled."""
+    """Return a tracer, or None if OTEL is disabled/unavailable.
+
+    When disabled, callers never touch the tracer: ``CherenkovTracer.span``
+    short-circuits and yields ``None``. Returning ``None`` here keeps the
+    disabled path free of any ``opentelemetry`` import (it is an optional dep).
+    """
     if not _is_enabled():
-        from opentelemetry import trace as _trace
-        return _trace.get_tracer("cherenkov.noop")
+        return None
     return trace.get_tracer("cherenkov")
 
 
