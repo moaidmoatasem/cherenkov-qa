@@ -1,10 +1,5 @@
 import * as vscode from 'vscode';
-
-interface ReportFinding {
-  endpoint: string;
-  status: string;
-  message?: string;
-}
+import { ConformanceReport } from '../api/CherenkovClient';
 
 export class CherenkovDiagnosticsProvider {
   private collection: vscode.DiagnosticCollection;
@@ -13,7 +8,7 @@ export class CherenkovDiagnosticsProvider {
     this.collection = vscode.languages.createDiagnosticCollection('cherenkov');
   }
 
-  updateDiagnostics(document: vscode.TextDocument, report: { findings: ReportFinding[] } | null): void {
+  updateDiagnostics(document: vscode.TextDocument, report: ConformanceReport | null): void {
     this.collection.delete(document.uri);
 
     if (!report || !report.findings) {
@@ -29,13 +24,11 @@ export class CherenkovDiagnosticsProvider {
     const diagnostics: vscode.Diagnostic[] = [];
 
     for (const finding of report.findings) {
-      if (finding.status !== 'FAIL' && finding.status !== 'DRIFT') {
+      if (finding.severity !== 'high') {
         continue;
       }
 
-      const severity = finding.status === 'FAIL'
-        ? vscode.DiagnosticSeverity.Error
-        : vscode.DiagnosticSeverity.Warning;
+      const severity = vscode.DiagnosticSeverity.Error;
 
       let lineIndex = lines.findIndex(line => {
         const trimmed = line.trim();
@@ -52,9 +45,7 @@ export class CherenkovDiagnosticsProvider {
 
       const lineLength = lines[lineIndex].length;
       const range = new vscode.Range(lineIndex, 0, lineIndex, lineLength);
-      const message = finding.message
-        ? `${finding.status}: ${finding.endpoint} — ${finding.message}`
-        : `${finding.status}: ${finding.endpoint}`;
+      const message = `FAIL: ${finding.endpoint} — expected: ${finding.expected}, actual: ${finding.actual}`;
 
       const diagnostic = new vscode.Diagnostic(range, message, severity);
       diagnostic.source = 'cherenkov';

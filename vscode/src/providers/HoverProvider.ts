@@ -1,20 +1,15 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-
-interface ReportFinding {
-  endpoint: string;
-  status: string;
-  message?: string;
-}
+import { ConformanceReport } from '../api/CherenkovClient';
 
 export class CherenkovHoverProvider implements vscode.HoverProvider {
-  private report: { findings: ReportFinding[] } | null = null;
+  private report: ConformanceReport | null = null;
 
-  constructor(report: { findings: ReportFinding[] } | null = null) {
+  constructor(report: ConformanceReport | null = null) {
     this.report = report;
   }
 
-  setReport(report: { findings: ReportFinding[] } | null): void {
+  setReport(report: ConformanceReport | null): void {
     this.report = report;
   }
 
@@ -51,8 +46,8 @@ export class CherenkovHoverProvider implements vscode.HoverProvider {
 
     const lines: string[] = [`**${endpoint}**`];
     for (const f of findings) {
-      const statusLabel = f.status === 'PASS' ? '✓ PASS' : f.status === 'FAIL' ? '✗ FAIL' : '⚠ DRIFT';
-      lines.push(`${statusLabel}${f.message ? ` — ${f.message}` : ''}`);
+      const statusLabel = f.severity === 'high' ? '✗ FAIL' : '⚠ DRIFT';
+      lines.push(`${statusLabel} — expected: ${f.expected}, actual: ${f.actual}`);
     }
 
     const range = new vscode.Range(position.line, 0, position.line, line.length);
