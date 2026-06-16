@@ -35,7 +35,7 @@ under the consolidated Phase -1 through Phase 8 plan.
 
 | Track | Scope | State |
 |-------|-------|-------|
-| A (Core) | API conformance testing | ✅ Built; validation gate passed (2026-06-08); **258 tests passing, 0 failures** |
+| A (Core) | API conformance testing | ✅ Built; validation gate passed (2026-06-08); **691 unit tests passing, 0 failures** (2026-06-16 recount) |
 | B (VLM) | LocalAI / Ollama substrate | ✅ Built; MCP policy engine + Docker Model Runner adapter added |
 | C (Desktop) | Tauri 2 host | 🔧 Shell complete; `cargo check` green, valid Tauri 2 config, icons; IPC bridge scaffolded but not integration-tested; full build blocked on `libwebkit2gtk-4.1-dev` + PyInstaller sidecar (`packaging/build.sh`) |
 | D (Mobile) | Maestro / Appium | ✅ Built, unit-tested; E2E dashboard tests added; runtime blocked on ADB |
