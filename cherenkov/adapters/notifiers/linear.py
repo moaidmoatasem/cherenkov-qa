@@ -16,14 +16,18 @@ class LinearNotifier:
         self.team_id = team_id or os.environ.get("CHERENKOV_LINEAR_TEAM_ID")
         self.log = get_logger("LINEAR_NOTIFIER")
 
-    async def notify(self, envelope: HitlEnvelope) -> None:
-        """Process an incoming HITL envelope and create a Linear issue if it's a failure."""
+    def notify(self, envelope: HitlEnvelope) -> bool:
+        """Process an incoming HITL envelope and create a Linear issue if it's a failure.
+
+        Returns True if no notification was needed or the issue was created
+        successfully; False if Linear is unconfigured or the API call failed.
+        """
         if not self.api_key or not self.team_id:
             self.log.debug("LinearNotifier skipped: CHERENKOV_LINEAR_API_KEY or TEAM_ID not set")
-            return
+            return False
 
         if envelope.ok:
-            return  # Only notify on failure
+            return True  # Only notify on failure
 
         # Format issue
         title = f"API Drift: {envelope.scenario_id or 'Unknown Endpoint'}"
@@ -71,29 +75,23 @@ class LinearNotifier:
                 if res_data.get("data", {}).get("issueCreate", {}).get("success"):
                     issue_url = res_data["data"]["issueCreate"]["issue"]["url"]
                     self.log.info("Linear issue created successfully", url=issue_url)
-                else:
-                    self.log.error("Failed to create Linear issue", response=res_data)
+                    return True
+                self.log.error("Failed to create Linear issue", response=res_data)
+                return False
         except Exception as e:
             self.log.error("Failed to call Linear API", error=str(e))
+            return False
+
     def send(self, report: Dict[str, Any]) -> bool:
         envelope = ok_envelope(
             command=report.get("command", "notify"),
             payload=report,
         )
-        try:
-            import asyncio
-            asyncio.run(self.notify(envelope))
-            return True
-        except RuntimeError:
-            return False
+        return self.notify(envelope)
 
     def notify_event(self, event: CHERENKOVEvent) -> None:
         envelope = ok_envelope(
             command=event.name,
             payload=event.to_dict(),
         )
-        try:
-            import asyncio
-            asyncio.run(self.notify(envelope))
-        except RuntimeError:
-            pass
+        self.notify(envelope)

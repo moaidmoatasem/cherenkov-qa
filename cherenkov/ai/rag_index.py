@@ -1,6 +1,5 @@
 """
 CHERENKOV ai/rag_index.py — local RAG vector search index using SQLite.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

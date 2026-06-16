@@ -1,6 +1,5 @@
 """
-CHERENKOV cherenkov/cache/endpoint_cache.py — SQLite-backed incremental generation cache.
-Authority: v3.1 + delta. Issue #433.
+CHERENKOV cherenkov/cache/endpoint_cache.py — SQLite-backed incremental generation cache. Issue #433.
 
 Maps (endpoint_hash) → generated test code so repeated runs on unchanged specs
 skip the LLM call entirely. Cache key = SHA-256 of (path + method + schema_block + model_name).

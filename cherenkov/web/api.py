@@ -1,6 +1,5 @@
 """
 CHERENKOV web/api.py — FastAPI review backend, wired to the real HitlQueue.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations
@@ -763,7 +762,8 @@ async def classify_review_item(payload: ClassifyPayload, _auth=Depends(verify_ap
 # Validate
 #
 @app.post("/api/v1/validate")
-async def validate_test_suite(payload: ValidatePayload):
+async def validate_test_suite(payload: ValidatePayload, _auth=Depends(verify_api_key)):
+    _validate_spec_url(payload.target_url)
     try:
         engine = ValidationEngine("api_validate")
         results = await asyncio.wait_for(
@@ -822,7 +822,7 @@ async def list_divergences():
 
 
 @app.post("/api/v1/divergences/act")
-async def act_on_divergence(payload: DivergenceActionPayload):
+async def act_on_divergence(payload: DivergenceActionPayload, _auth=Depends(verify_api_key)):
     try:
         new_status = divergence_store.apply_action(
             payload.divergence_id, payload.action
@@ -900,107 +900,6 @@ async def get_truth_map():
 # ── Explore ──────────────────────────────────────────────────────────────────
 
 
-@app.get("/api/v1/governance")
-async def get_governance():
-    """Return governance score and traceability data."""
-    from cherenkov.ai.accounting import CostAccountant
-
-    accountant = CostAccountant()
-    kpi = accountant.get_governance_kpis()
-    return {
-        "score": int(kpi.get("maintenance_efficiency", 1.0) * 100),
-        "defectEscapeRate": kpi.get("defect_escape_rate", 0.0),
-        "falsePositiveRate": kpi.get("false_positive_rate", 0.0),
-        "modelCertification": [
-            {
-                "model": "claude-3-5-sonnet",
-                "status": "certified",
-                "tier": "expert",
-                "reason": "Automated clearance via CI/CD",
-            },
-            {
-                "model": "llama-3-8b",
-                "status": "pending",
-                "tier": "fast",
-                "reason": "Awaiting human review",
-            },
-        ],
-        "traceability": [
-            {
-                "action": "Validation",
-                "target": "/api/pets",
-                "user": "AI Pilot",
-                "timestamp": "2026-06-12T10:00:00Z",
-            }
-        ],
-    }
-
-
-@app.get("/api/v1/memory")
-async def get_memory():
-    """Return testing idioms and pairing context."""
-    from cherenkov.reflector.store import VerdictStore
-
-    store = VerdictStore()
-    idioms = []
-    try:
-        idiom_objs = store.list_idioms(limit=20)
-        idioms = [
-            {
-                "id": i.id,
-                "pattern": i.pattern,
-                "confidence": getattr(i, "confidence", 0.9),
-                "uses": getattr(i, "confirm_count", 0),
-            }
-            for i in idiom_objs
-        ]
-    except Exception:
-        pass
-
-    return {
-        "idioms": idioms,
-        "pairing": [
-            {
-                "rule": "Always check 422 responses for 'detail' field format.",
-                "source": "Reflector",
-            },
-            {
-                "rule": "Ensure Authorization headers are strictly 'Bearer <token>'.",
-                "source": "Human",
-            },
-        ],
-    }
-
-
-@app.get("/api/v1/signals")
-async def get_signals():
-    """Return observability signals."""
-    return {
-        "performance": [
-            {"time": "10:00:00Z", "latency": 350, "baseline": 200, "anomaly": True},
-            {"time": "10:05:00Z", "latency": 85, "baseline": 90, "anomaly": False},
-        ],
-        "visual": [
-            {
-                "id": "v1",
-                "name": "CheckoutFlow",
-                "difference": "0.02%",
-                "status": "matched",
-            },
-            {
-                "id": "v2",
-                "name": "HeaderNav",
-                "difference": "15.0%",
-                "status": "warning",
-            },
-        ],
-        "coverage": [
-            {"path": "/api/orders", "cherenkov": 95, "sdet": 45},
-            {"path": "/api/pets", "cherenkov": 100, "sdet": 80},
-        ],
-    }
-
-
 # ── Explore ──────────────────────────────────────────────────────────────────
 
 
@@ -1012,9 +911,13 @@ class ExplorePayload(BaseModel):
 
 
 @app.post("/api/v1/explore")
-async def run_explorer(payload: ExplorePayload):
+async def run_explorer(payload: ExplorePayload, _auth=Depends(verify_api_key)):
     """Run the autonomous Explorer: discover flows then crawl for anomalies."""
     from cherenkov.divergence.explorer import Explorer
+
+    _validate_spec_url(payload.base_url)
+    if payload.ui_url:
+        _validate_spec_url(payload.ui_url)
 
     ui_probe = None
     if payload.use_ui_probe and payload.ui_url:
@@ -1104,7 +1007,10 @@ async def list_visual_scenarios():
 
 @app.post("/api/v1/visual/check")
 async def run_visual_check(
-    background_tasks: BackgroundTasks, target_url: str = "", name: str = "page"
+    background_tasks: BackgroundTasks,
+    target_url: str = "",
+    name: str = "page",
+    _auth=Depends(verify_api_key),
 ):
     """Run a single visual regression check against target_url."""
     from cherenkov.core.contracts import VisualSlice
@@ -1112,6 +1018,7 @@ async def run_visual_check(
 
     if not target_url:
         raise HTTPException(status_code=400, detail="target_url is required")
+    _validate_spec_url(target_url)
 
     safe_name = _re.sub(r"[^a-zA-Z0-9_\-]", "_", name)[:64]
     sl = VisualSlice(name=safe_name, url=target_url)
@@ -1486,12 +1393,15 @@ _settings: dict = {
 
 
 @app.get("/api/v1/settings")
-async def api_get_settings():
-    return _settings
+async def api_get_settings(_auth=Depends(verify_api_key)):
+    redacted = {k: (dict(v) if isinstance(v, dict) else v) for k, v in _settings.items()}
+    if "auth_secret" in redacted.get("security", {}):
+        redacted["security"]["auth_secret"] = "***" if redacted["security"]["auth_secret"] else ""
+    return redacted
 
 
 @app.put("/api/v1/settings")
-async def update_settings(body: dict):
+async def update_settings(body: dict, _auth=Depends(verify_api_key)):
     for key, val in body.items():
         if key in _settings and isinstance(val, dict):
             _settings[key].update(val)
@@ -1505,7 +1415,7 @@ async def update_settings(body: dict):
 
 @app.get("/api/v1/governance")
 async def get_governance():
-    """Return governance health score and policy issues."""
+    """Return governance health score, policy issues, model certification, and traceability."""
     from cherenkov.ai.accounting import CostAccountant
 
     accountant = CostAccountant()
@@ -1521,7 +1431,34 @@ async def get_governance():
                 "message": f"False positive rate {fp_rate:.1%} exceeds 5% threshold",
             }
         )
-    return {"score": score, "issues": issues}
+    return {
+        "score": score,
+        "issues": issues,
+        "defectEscapeRate": kpi.get("defect_escape_rate", 0.0),
+        "falsePositiveRate": fp_rate,
+        "modelCertification": [
+            {
+                "model": "claude-3-5-sonnet",
+                "status": "certified",
+                "tier": "expert",
+                "reason": "Automated clearance via CI/CD",
+            },
+            {
+                "model": "llama-3-8b",
+                "status": "pending",
+                "tier": "fast",
+                "reason": "Awaiting human review",
+            },
+        ],
+        "traceability": [
+            {
+                "action": "Validation",
+                "target": "/api/pets",
+                "user": "AI Pilot",
+                "timestamp": "2026-06-12T10:00:00Z",
+            }
+        ],
+    }
 
 
 #

@@ -1,6 +1,5 @@
 """
 CHERENKOV execution/perf_analyzer.py — local performance baseline and anomaly analyzer.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

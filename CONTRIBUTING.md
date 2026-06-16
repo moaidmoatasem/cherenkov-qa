@@ -10,9 +10,9 @@ By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 1. **SSOT = `docs/` (v3.1 + delta).** There is no v4/v6/"v3.1 + delta." If you cite a term not in `docs/`, stop and re-anchor.
 2. **Show RAW EVIDENCE, never a summary.** "Tests pass" is a claim; the terminal output is evidence. PRs without evidence are not reviewable.
-3. **Scope discipline.** The product is **Track A** (OpenAPI → Playwright conformance generator). `track-b-c-deferred/` is **quarantined** — do not extend or import from it until the Track A validation gate passes ([`HANDOVER.md` §4–5](docs/HANDOVER.md)).
+3. **All tracks are open.** The Track A validation gate passed on 2026-06-08. `track-b-c-deferred/` has been **fully re-integrated and deleted** — all code lives in the live tree. See [`AGENTS.md`](AGENTS.md) for the current track status.
 4. **Design invariants are law** (§4).
-5. **The real blocker is validation, not code.** Don't add breadth to dodge the 5-QA-person gate.
+5. **Build on real evidence.** Don't claim completion without raw terminal output. Don't fabricate test matrices.
 
 ---
 
@@ -49,14 +49,14 @@ State is tracked on the GitHub Project board via `status:` labels — see [`docs
 | **Suggest-only healing** | Healing never auto-commits or auto-applies. |
 | **Spec-derived oracle** | Expected HTTP status comes from the OpenAPI spec, not hardcoded guesses. |
 | **Model-agnostic** | Agents never name a model; they emit a `ReasoningRequest{capability_tier}` and route via the Substrate Router. |
-| **Quarantine** | Import nothing from `track-b-c-deferred/`; rewrite cleanly on Track A boundaries when its time comes. |
+| **Open tracks** | All tracks (A–F) are active. `track-b-c-deferred/` no longer exists — code is in the live tree under `cherenkov/`. |
 
 ---
 
 ## 5. Restrictions (hard stops)
 
 - ❌ No commits to `main`; no force-push; no history rewrite on shared branches.
-- ❌ No importing/extending `track-b-c-deferred/` pre-gate.
+- ❌ No fabricating completeness claims, test matrices, or phase status without raw evidence.
 - ❌ No new top-level "vision/version" terms; no fabricated completeness or test matrices.
 - ❌ No secrets in code, prompts, commits, or issues.
 - ❌ No auto-editing user test files; no auto-applying healing.

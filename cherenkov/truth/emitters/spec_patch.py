@@ -1,6 +1,5 @@
 """
 cherenkov/truth/emitters/spec_patch.py — E4-2: Spec-patch emitter.
-Authority: v3.1 + delta.
 
 Emit a unified diff patch against the OpenAPI spec when a spec divergence
 is better resolved by updating the spec than by generating a test.

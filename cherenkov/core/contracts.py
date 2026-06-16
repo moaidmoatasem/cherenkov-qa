@@ -1,6 +1,5 @@
 """
-CHERENKOV core/contracts.py — the typed boundaries between every pipeline stage.
-Authority: v3.1 + delta. These are the Pydantic contracts the whole DAG enforces.
+CHERENKOV core/contracts.py — the typed boundaries between every pipeline stage. These are the Pydantic contracts the whole DAG enforces.
 
 A stage that emits data failing its contract fails LOUDLY here, at the boundary,
 instead of silently corrupting the next stage. Versioned so a model/prompt change
@@ -135,6 +134,8 @@ class PlanOutput(BaseModel):
 
 # ── GENERATE ──────────────────────────────────────────────────────────────
 class GenerateOutput(BaseModel):
+    model_config = {"protected_namespaces": ()}
+
     scenario_id: str
     test_code: str
     imports: list[str] = Field(default_factory=list)
@@ -152,6 +153,7 @@ class GateResult(BaseModel):
     gate: str  # "syntax" | "structure" | "ast" | ...
     passed: bool
     detail: str = ""
+    skipped: bool = False  # infra-unavailable (e.g. no Docker) — excluded from quality_score
 
 
 class Verdict(str, Enum):

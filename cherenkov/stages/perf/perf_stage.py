@@ -1,6 +1,5 @@
 """
 CHERENKOV stages/perf/perf_stage.py - Phase B2 Perf Baseline stage.
-Authority: v3.1 + delta.
 
 Optional capability layer on top of Track A. Never replaces API conformance.
 Records run latencies in local SQLite (.cherenkov/perf_metrics.db) and flags

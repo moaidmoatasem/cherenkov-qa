@@ -1,6 +1,5 @@
 """
 CHERENKOV mcp/policy.py — Policy enforcement for MCP tool access.
-Authority: v3.1 + delta.
 
 Reads cherenkov-policy.json and validates tool calls against allowlists.
 D7 invariant: policy gates are suggest-only; they block execution, not auto-edit.

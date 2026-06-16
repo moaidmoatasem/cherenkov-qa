@@ -1,6 +1,5 @@
 """
 CHERENKOV execution/prism_mock.py — dynamic mock server using Stoplight/Prism inside Docker.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

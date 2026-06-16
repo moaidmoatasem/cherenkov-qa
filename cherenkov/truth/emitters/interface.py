@@ -1,6 +1,5 @@
 """
 cherenkov/truth/emitters/interface.py — E4-1: Artifact Emitter SPI.
-Authority: v3.1 + delta.
 
 Plugin interface for outputs. Each emitter produces an artifact from a truth model
 or divergence report.

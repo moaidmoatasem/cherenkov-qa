@@ -58,8 +58,7 @@ def generate_demo_findings() -> None:
                 endpoint=mf["endpoint"],
                 method=mf["method"],
                 mutation_id=mf["mutation_id"],
-                diff=mf["diff"],
-                rationale=mf["rationale"],
+                confidence_reason=f"{mf['diff']}\n\n{mf['rationale']}",
             )
             queue.enqueue(item)
             logger.info(f"Enqueued demo item {mf['id']}")

@@ -1,6 +1,5 @@
 """
 cherenkov/stages/daemon_cmd.py — E4-4: Daemon mode.
-Authority: v3.1 + delta.
 
 Watch sources, keep the Truth Model fresh, queue divergences.
 """

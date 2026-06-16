@@ -1,6 +1,5 @@
 """
 cherenkov/stages/doctor_cmd.py — E5-3: cherenkov doctor.
-Authority: v3.1 + delta.
 
 Report effective config, device/model/egress health, and where each value came from.
 """

@@ -1,4 +1,4 @@
-﻿"""Unit tests for JiraExporter enhanced methods."""
+"""Unit tests for JiraExporter enhanced methods."""
 
 import json
 import os

@@ -1,6 +1,5 @@
 """
 CHERENKOV ai/openai_client.py — OpenAI provider implementing InferenceClient.
-Authority: v3.1 + delta.
 
 Proves agnosticism: a cloud provider implementing the same SPI as Ollama.
 """

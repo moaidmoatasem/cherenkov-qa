@@ -1,6 +1,5 @@
 """
 CHERENKOV stages/mobile_cmd.py — click command for mobile test generation pipeline.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

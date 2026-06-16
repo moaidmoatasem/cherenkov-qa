@@ -1,6 +1,5 @@
 """
-CHERENKOV execution/validate.py — validation and value assertion tightening report engine.
-Authority: v3.1 + delta. Track A surface only.
+CHERENKOV execution/validate.py — validation and value assertion tightening report engine. Track A surface only.
 """
 
 from __future__ import annotations

@@ -1,6 +1,5 @@
 """
 cherenkov/truth/emitters/playwright.py — E4-1: Playwright emitter.
-Authority: v3.1 + delta.
 
 Produces a Playwright test suite from the Truth Model endpoints. Reuses the Track A
 GENERATE/REVIEW/EJECT pattern.

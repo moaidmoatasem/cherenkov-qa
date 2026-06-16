@@ -1,6 +1,5 @@
 """
 CHERENKOV stages/mobile_generate.py — Maestro YAML test generator stage.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

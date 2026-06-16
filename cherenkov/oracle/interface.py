@@ -1,6 +1,5 @@
 """
 cherenkov/oracle/interface.py — E4-3: Oracle SPI.
-Authority: v3.1 + delta.
 
 Pluggable definition of 'correct'. Each oracle evaluates whether an observed
 system behaviour matches the expected 'correct' behaviour.

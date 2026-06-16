@@ -181,4 +181,4 @@ The grep analysis revealed one notable cross-layer import:
 - Tests: 200 unit + 108 smoke + 11 integration test files
 
 ---
-*Last updated: 2026-06-09 | Run `pydeps cherenkov/ --max-bacon=2` to regenerate the graph*
+*Last updated: 2026-06-16 | Run `pydeps cherenkov/ --max-bacon=2` to regenerate the graph*

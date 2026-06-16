@@ -1,6 +1,5 @@
 """
 CHERENKOV compliance/mena_scanner.py — MENA Cyber Security Framework Compliance Auditor.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

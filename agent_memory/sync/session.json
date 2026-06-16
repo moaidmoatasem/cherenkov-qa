@@ -1,14 +1,14 @@
 {
   "session": {
     "id": "sess_20260616010121_88e84d",
-    "status": "open",
+    "status": "closed",
     "task": "integration-tests",
     "started_at": "2026-06-16T01:01:21.824426+00:00",
-    "ended_at": null,
+    "ended_at": "2026-06-16T01:21:24.399466+00:00",
     "findings_count": 0,
     "token_total": 0,
-    "summary": null,
-    "compacted": false,
+    "summary": "Built 18 integration tests bridging evals, adversarial, and synthetic modules, verifying post-generation pipeline stages with mocked LLM and filesystem. All 100 tests pass.",
+    "compacted": true,
     "task_type": "integration-tests"
   },
   "previous_sessions": [

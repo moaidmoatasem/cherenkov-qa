@@ -1,6 +1,5 @@
 """
 CHERENKOV ai/router.py — Inference provider router.
-Authority: v3.1 + delta.
 
 Anti-lock-in: providers are swappable via config.
 Non-Docker fallback: Ollama provider is always available.

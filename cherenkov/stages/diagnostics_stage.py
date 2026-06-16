@@ -1,6 +1,5 @@
 """
 CHERENKOV stages/diagnostics_stage.py — AI Root-Cause Diagnostics Synthesis Stage.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

@@ -1,6 +1,5 @@
 """
 cherenkov/truth/index.py — E2-3: Embedding index over claims.
-Authority: v3.1 + delta.
 
 Index claims via nomic-embed-text for retrieval by the Skeptic.
 Uses numpy for cosine similarity (no external vector DB dependency).

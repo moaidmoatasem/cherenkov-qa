@@ -1,6 +1,5 @@
 """
 cherenkov/continuity/pr_diff_action.py — E4-5: Behavioral diff on PR (GitHub Action).
-Authority: v3.1 + delta.
 
 On a PR, comment which endpoints changed actual behaviour vs base.
 Distinguishes intended vs unintended drift.

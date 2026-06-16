@@ -1,6 +1,5 @@
 """
 CHERENKOV core/config.py — structured configuration and environment loading.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

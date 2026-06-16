@@ -1,6 +1,5 @@
 """
 CHERENKOV healing/auth_expiry.py -- suggest-only auth-expiry failure healing module.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

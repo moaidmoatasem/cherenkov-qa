@@ -1,6 +1,5 @@
 """
 CHERENKOV healing/providers/filesystem.py — filesystem sandbox provider.
-Authority: v3.1 + delta.
 
 Anti-lock-in: this is the default fallback when Docker is unavailable.
 D7 invariant: operations are confined to .cherenkov/sandbox_* directories.

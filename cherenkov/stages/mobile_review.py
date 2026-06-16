@@ -1,6 +1,5 @@
 """
 CHERENKOV stages/mobile_review.py — Maestro YAML review and validation stage.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

@@ -1,3 +1,9 @@
+> # ⚠️ SUPERSEDED — See [PHASE_PLAN.md](PHASE_PLAN.md)
+>
+> This was the authoritative roadmap as of 2026-06-08. It has since been
+> consolidated into **[docs/PHASE_PLAN.md](PHASE_PLAN.md)**, which is now the
+> single source of truth for all phases and tickets. Do not add new content here.
+
 # CHERENKOV — Forward Roadmap: "Consolidated Plan" (Horizon V)
 
 **Date:** 2026-06-08 (consolidated plan) · **Status:** Authoritative for *what's next* (supersedes the disputed

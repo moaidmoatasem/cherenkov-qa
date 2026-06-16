@@ -1,6 +1,5 @@
 """
 cherenkov/oracle/spec_prism.py — E4-3: Spec+Prism oracle.
-Authority: v3.1 + delta.
 
 Uses the OpenAPI spec (via Prism mock server) as the oracle for 'correct' behaviour.
 """

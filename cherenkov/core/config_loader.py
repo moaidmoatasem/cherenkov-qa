@@ -1,6 +1,5 @@
 """
-cherenkov/core/config_loader.py — Layered configuration with provenance.
-Authority: v3.1 + delta. Epoch 5 (E5-2).
+cherenkov/core/config_loader.py — Layered configuration with provenance. Epoch 5 (E5-2).
 
 Resolution order (lowest → highest precedence):
   built-in defaults

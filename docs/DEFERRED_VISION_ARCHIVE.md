@@ -1,8 +1,15 @@
+> # ⚠️ ARCHIVED — DO NOT CITE AS CURRENT
+>
+> This document captures vision material that was deferred pending Track A validation.
+> **Track A has since been built and the validation gate passed (2026-06-08).** All
+> tracks (B–F) are now open and active in the live tree. For the current plan see
+> **[PHASE_PLAN.md](PHASE_PLAN.md)** and **[STATUS.md](STATUS.md)**.
+
 # CHERENKOV QA — Deferred Vision Archive
 
-**Authority:** v3.1 + delta · **Status:** DEFERRED (Archived Candidates)
+**Status:** ARCHIVED · **Superseded by:** [PHASE_PLAN.md](PHASE_PLAN.md)
 
-This document archives tools and frameworks evaluated for Track B and Track C. None of these tools change our current architecture or step. They are explicitly deferred until **Track A** is shipped and verified by 5 real users (yielding at least 3 "Yes" answers).
+This document archives tools and frameworks that were evaluated for Track B and Track C before Track A validation. It is preserved for historical traceability only.
 
 ---
 

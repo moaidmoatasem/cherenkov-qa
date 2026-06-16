@@ -1,6 +1,5 @@
 """
-cherenkov/dashboard/render.py -- CLI-based renderer for Truth Model + divergences.
-Authority: v3.1 + delta. Epoch 5 (E5-4).
+cherenkov/dashboard/render.py -- CLI-based renderer for Truth Model + divergences. Epoch 5 (E5-4).
 
 Renders the claim graph and open divergences to the terminal from mock/data.
 """

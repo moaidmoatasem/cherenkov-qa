@@ -1,6 +1,5 @@
 """
-CHERENKOV cherenkov/diff/spec_differ.py — OpenAPI spec diff and breaking-change detection.
-Authority: v3.1 + delta. Issue #437.
+CHERENKOV cherenkov/diff/spec_differ.py — OpenAPI spec diff and breaking-change detection. Issue #437.
 
 Detects breaking vs additive changes between two OpenAPI YAML/JSON specs.
 Breaking changes cause `cherenkov diff` to exit with code 1.

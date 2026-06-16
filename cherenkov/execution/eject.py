@@ -1,6 +1,5 @@
 """
 CHERENKOV execution/eject.py — engine for ejecting standalone Playwright test suites.
-Authority: v3.1 + delta.
 """
 
 from __future__ import annotations

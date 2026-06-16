@@ -1,6 +1,5 @@
 """
 cherenkov/truth/sources/db_schema.py — E2-5: DB-schema adapter.
-Authority: v3.1 + delta.
 
 Turn DB schema constraints into claims (enables D4: spec-vs-db divergence).
 """

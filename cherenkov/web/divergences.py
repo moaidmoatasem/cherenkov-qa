@@ -12,6 +12,7 @@ dashboard, so an in-memory store is sufficient.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Dict, List
 
 _DIVERGENCE_CORPUS: List[dict] = [
@@ -180,3 +181,36 @@ def get_finding_by_id(finding_id: str) -> DivergenceFindingNamespace | None:
         if f.id == finding_id:
             return f
     return None
+
+
+class _ConformanceStatusNamespace:
+    def __init__(self, drift_count: int, endpoints_tested: int, run_at: datetime):
+        self.drift_count = drift_count
+        self.endpoints_tested = endpoints_tested
+        self.run_at = run_at
+
+
+def get_latest_status(service: str) -> _ConformanceStatusNamespace | None:
+    """Return the latest conformance status for a service, derived from the
+    divergence corpus. `service` is currently unused for filtering (the
+    corpus is not yet partitioned by target service) but is accepted to
+    match the dashboard's per-service status contract."""
+    divs = list_divergences()
+    active = [d for d in divs if d.get("status") not in ("rejected", "live")]
+    endpoints_tested = len({d.get("endpoint") for d in divs})
+    return _ConformanceStatusNamespace(
+        drift_count=len(active),
+        endpoints_tested=endpoints_tested,
+        run_at=datetime.now(timezone.utc),
+    )
+
+
+def get_latest_report(service: str) -> dict:
+    """Return the latest conformance report for a service, derived from the
+    divergence corpus."""
+    divs = list_divergences()
+    return {
+        "service": service,
+        "divergences": divs,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }

@@ -1,6 +1,5 @@
 """
-CHERENKOV ai/cache.py — response prefix cache with LRU eviction and TTL.
-Authority: v3.1 + delta. E1-5.
+CHERENKOV ai/cache.py — response prefix cache with LRU eviction and TTL. E1-5.
 """
 
 from __future__ import annotations
