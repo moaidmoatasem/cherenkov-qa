@@ -36,7 +36,9 @@ def _post_with_retry(
             if attempt < max_retries - 1:
                 wait = (2**attempt) * 0.5 + _random.uniform(0, 0.5)
                 time.sleep(wait)
-    raise last_err  # type: ignore[misc]
+    if last_err is None:
+        raise RuntimeError("_post_with_retry called with max_retries=0")
+    raise last_err
 
 
 class OllamaClient(InferenceClient):

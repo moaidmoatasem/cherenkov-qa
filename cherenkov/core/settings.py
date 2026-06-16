@@ -15,6 +15,11 @@ class CherenkovSettings(BaseSettings):
     SCHEMA_DEPTH: int = Field(default=1, validation_alias='SCHEMA_DEPTH')
     ERROR_THRESHOLD: int = Field(default=2, validation_alias='ERROR_THRESHOLD')
 
+    PLAYWRIGHT_TIMEOUT_SECONDS: int = Field(default=120, validation_alias='CHERENKOV_PLAYWRIGHT_TIMEOUT_SECONDS')
+    TSC_TIMEOUT_SECONDS: int = Field(default=60, validation_alias='CHERENKOV_TSC_TIMEOUT_SECONDS')
+    PRISM_DOCKER_START_TIMEOUT_SECONDS: int = Field(default=30, validation_alias='CHERENKOV_PRISM_DOCKER_START_TIMEOUT_SECONDS')
+    PRISM_DOCKER_STOP_TIMEOUT_SECONDS: int = Field(default=15, validation_alias='CHERENKOV_PRISM_DOCKER_STOP_TIMEOUT_SECONDS')
+
     EGRESS: str = Field(default='internal', validation_alias='CHERENKOV_EGRESS')
 
     TIER_SMALL_PROVIDER: str = Field(default='ollama', validation_alias='CHERENKOV_TIER_SMALL_PROVIDER')
