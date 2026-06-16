@@ -40,7 +40,7 @@ test.describe('Truth Map Screen — Deep Coverage', () => {
   test('all four mock endpoints are listed in the endpoint panel', async ({ page }) => {
     await gotoTruthMap(page);
 
-    await expect(page.getByText('POST /pets')).toBeVisible();
+    await expect(page.getByText('POST /pets').first()).toBeVisible();
     await expect(page.getByText('GET /pet/findByStatus')).toBeVisible();
     await expect(page.getByText('GET /store/inventory')).toBeVisible();
     await expect(page.getByText('GET /user/login')).toBeVisible();

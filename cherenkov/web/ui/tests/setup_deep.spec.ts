@@ -64,7 +64,7 @@ test.describe('Setup & Spec Ingest Screen — Deep Coverage', () => {
   test('Fetch button renders next to URL input', async ({ page }) => {
     await gotoSetup(page);
 
-    await expect(page.getByRole('button', { name: 'Fetch' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Fetch' }).first()).toBeVisible();
   });
 
   // ── Preset shortcuts render ───────────────────────────────────────
@@ -236,7 +236,7 @@ test.describe('Setup & Spec Ingest Screen — Deep Coverage', () => {
     await page.waitForTimeout(800);
 
     await expect(page.locator('[data-testid="ingest-error-card"]')).toBeVisible();
-    await expect(page.getByText('Spec Ingestion Failed')).toBeVisible();
+    await expect(page.getByText('Spec Ingestion Failed').first()).toBeVisible();
   });
 
 });

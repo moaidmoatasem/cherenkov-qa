@@ -45,9 +45,9 @@ test.describe('AI Code Generation Pipeline Screen — Deep Coverage', () => {
   test('pipeline stage labels INGEST, PLAN, GENERATE are visible', async ({ page }) => {
     await gotoPipeline(page);
 
-    await expect(page.getByText('INGEST')).toBeVisible();
-    await expect(page.getByText('PLAN')).toBeVisible();
-    await expect(page.getByText('GENERATE')).toBeVisible();
+    await expect(page.getByText('INGEST').first()).toBeVisible();
+    await expect(page.getByText('PLAN').first()).toBeVisible();
+    await expect(page.getByText('GENERATE').first()).toBeVisible();
   });
 
   // ── Initial stage statuses ────────────────────────────────────────

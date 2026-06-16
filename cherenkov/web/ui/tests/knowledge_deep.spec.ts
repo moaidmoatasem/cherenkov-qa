@@ -80,7 +80,7 @@ test.describe('Knowledge Explorer Screen — Deep Coverage', () => {
     const input = page.locator('#knowledge-screen input[type="text"]');
     await input.fill('cross-tenant verification');
 
-    await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: /Query/i }).click();
     await page.waitForTimeout(500);
 
     // k-1: confidence 0.92 → 92%, k-2: confidence 0.85 → 85%
@@ -95,7 +95,7 @@ test.describe('Knowledge Explorer Screen — Deep Coverage', () => {
     const input = page.locator('#knowledge-screen input[type="text"]');
     await input.fill('known-noise findings');
 
-    await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: /Query/i }).click();
     await page.waitForTimeout(500);
 
     await expect(page.getByText(/Stopped re-surfacing known-noise findings/)).toBeVisible();
@@ -109,7 +109,7 @@ test.describe('Knowledge Explorer Screen — Deep Coverage', () => {
     const input = page.locator('#knowledge-screen input[type="text"]');
     await input.fill('login endpoint');
 
-    await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: /Query/i }).click();
     await page.waitForTimeout(500);
 
     // k-1 has metadata.endpoint: 'POST /user/login'
@@ -122,7 +122,7 @@ test.describe('Knowledge Explorer Screen — Deep Coverage', () => {
 
     const input = page.locator('#knowledge-screen input[type="text"]');
     await input.fill('API contract patterns');
-    await input.press('Enter');
+    await page.getByRole('button', { name: /Query/i }).click();
     await page.waitForTimeout(500);
 
     await expect(page.getByText(/Stopped re-surfacing|Accrued senior/).first()).toBeVisible();
@@ -131,7 +131,7 @@ test.describe('Knowledge Explorer Screen — Deep Coverage', () => {
   // ── Empty query shows no results state ───────────────────────────
   test('empty results state shows when query has no matches', async ({ page }) => {
     await setupApiMocks(page);
-    await page.route('**/api/v1/knowledge/query*', route =>
+    await page.route('**/api/v1/chat/knowledge/query*', route =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
     );
 
@@ -150,17 +150,17 @@ test.describe('Knowledge Explorer Screen — Deep Coverage', () => {
 
     const input = page.locator('#knowledge-screen input[type="text"]');
     await input.fill('something unknown xyz');
-    await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: /Query/i }).click();
     await page.waitForTimeout(500);
 
-    await expect(page.getByText('No Results')).toBeVisible();
+    await expect(page.getByText('No Results').first()).toBeVisible();
     await expect(page.getByText('Your query returned no results.')).toBeVisible();
   });
 
   // ── API error shows Query Failed state ───────────────────────────
   test('query failure shows Query Failed empty state with Retry', async ({ page }) => {
     await setupApiMocks(page);
-    await page.route('**/api/v1/knowledge/query*', route =>
+    await page.route('**/api/v1/chat/knowledge/query*', route =>
       route.fulfill({ status: 500, body: '{"detail":"error"}' })
     );
 
@@ -179,10 +179,10 @@ test.describe('Knowledge Explorer Screen — Deep Coverage', () => {
 
     const input = page.locator('#knowledge-screen input[type="text"]');
     await input.fill('trigger error');
-    await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: /Query/i }).click();
     await page.waitForTimeout(500);
 
-    await expect(page.getByText('Query Failed')).toBeVisible();
+    await expect(page.getByText('Query Failed').first()).toBeVisible();
     await expect(page.getByText('Retry')).toBeVisible();
   });
 

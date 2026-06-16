@@ -41,9 +41,9 @@ test.describe('Projects Screen — Deep Coverage', () => {
   test('project card names match mock data', async ({ page }) => {
     await gotoProjects(page);
 
-    await expect(page.getByText('Swagger Petstore v2')).toBeVisible();
-    await expect(page.getByText('Checkout Gateway API')).toBeVisible();
-    await expect(page.getByText('Identity Provider OAuth')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Swagger Petstore v2' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Checkout Gateway API' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Identity Provider OAuth' })).toBeVisible();
   });
 
   // ── Last run labels render ────────────────────────────────────────
@@ -124,7 +124,7 @@ test.describe('Projects Screen — Deep Coverage', () => {
 
     await expect(page.getByText('Pass-rate Trend').first()).toBeVisible();
     // SVG path should be in the DOM
-    const svgPath = page.locator('#project-card-proj-petstore svg path');
+    const svgPath = page.locator('#project-card-proj-petstore svg path').first();
     await expect(svgPath).toBeAttached();
   });
 

@@ -34,10 +34,10 @@ test.describe('Visual Regression Screen — Deep Coverage', () => {
   test('four VLM kind filter cards render: Anomaly, Harmless Shift, Redesign, Unknown', async ({ page }) => {
     await gotoVisualRegression(page);
 
-    await expect(page.getByText('Anomaly')).toBeVisible();
-    await expect(page.getByText('Harmless Shift')).toBeVisible();
-    await expect(page.getByText('Redesign')).toBeVisible();
-    await expect(page.getByText('Unknown')).toBeVisible();
+    await expect(page.getByText('Anomaly').first()).toBeVisible();
+    await expect(page.getByText('Harmless Shift').first()).toBeVisible();
+    await expect(page.getByText('Redesign').first()).toBeVisible();
+    await expect(page.getByText('Unknown').first()).toBeVisible();
   });
 
   // ── Filter card counts ────────────────────────────────────────────
@@ -88,7 +88,7 @@ test.describe('Visual Regression Screen — Deep Coverage', () => {
   test('scenario URLs from mock data are visible', async ({ page }) => {
     await gotoVisualRegression(page);
 
-    await expect(page.getByText('http://localhost:8000/')).toBeVisible();
+    await expect(page.getByText('http://localhost:8000/').first()).toBeVisible();
     await expect(page.getByText('http://localhost:8000/checkout')).toBeVisible();
   });
 
