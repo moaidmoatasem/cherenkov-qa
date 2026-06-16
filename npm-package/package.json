@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "cherenkov",
   "version": "1.0.0",
   "description": "AI-powered API conformance testing from your OpenAPI spec",
@@ -6,6 +6,11 @@
     "cherenkov": "bin/cherenkov.js",
     "cherenkov-init": "bin/cherenkov-init.js"
   },
+  "files": [
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "postinstall": "node bin/install.js"
   },
@@ -21,5 +26,5 @@
     "testing",
     "ai-testing"
   ],
-  "license": "MIT"
+  "license": "Apache-2.0"
 }
