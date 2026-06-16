@@ -369,7 +369,7 @@ class OrchestrationEngine:
                 "stage_success",
                 {
                     "stage": "REVIEW",
-                    "summary": f"Review complete with verdict: {review.verdict.upper()}",
+                    "summary": f"Review complete with verdict: {review.verdict.value.upper()}",
                     "duration_ms": review.metadata.duration_ms,
                 },
             )
@@ -542,7 +542,7 @@ class OrchestrationEngine:
             ),
         )
         print(
-            f"\033[F\033[F\033[F\033[F  INGEST  [ {ingest.status.upper()} ] ({ingest.metadata.duration_ms}ms)"
+            f"\033[F\033[F\033[F\033[F  INGEST  [ {ingest.status.value.upper()} ] ({ingest.metadata.duration_ms}ms)"
         )
 
         self._emit_event(
@@ -587,7 +587,7 @@ class OrchestrationEngine:
             ),
         )
         print(
-            f"\033[F  PLAN    [ {plan.status.upper()} ] ({plan.metadata.duration_ms}ms)"
+            f"\033[F  PLAN    [ {plan.status.value.upper()} ] ({plan.metadata.duration_ms}ms)"
         )
 
         self._emit_event(
