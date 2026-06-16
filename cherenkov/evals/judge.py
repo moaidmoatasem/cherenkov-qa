@@ -71,6 +71,14 @@ def _parse_score(name: str, entry: dict[str, Any]) -> EvalScore:
 
 def judge_sample(sample: EvalSample) -> EvalResult:
     t0 = time.time()
+
+    # Optional LLM observability tracing
+    try:
+        from cherenkov.observability.llm_tracer import get_tracer as _get_tracer
+        _tracer = _get_tracer()
+    except Exception:
+        _tracer = None
+
     try:
         client = get_client()
         prompt = _build_judge_prompt(sample)

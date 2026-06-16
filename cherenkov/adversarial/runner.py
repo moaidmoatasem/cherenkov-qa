@@ -46,13 +46,28 @@ def run_adversarial_tests(
         garak_result = run_garak(spec_path)
         garak_findings = garak_result.get("findings", [])
 
-    return AdversarialReport(
+    report = AdversarialReport(
         results=results,
         model=model,
         timestamp=datetime.now(timezone.utc).isoformat(),
         garak_available=garak_available,
         garak_findings=garak_findings,
     )
+
+    # Optional observability trace
+    try:
+        from cherenkov.observability.llm_tracer import trace_event
+        trace_event(
+            "adversarial-complete",
+            pass_rate=report.pass_rate(),
+            total_payloads=len(report.results),
+            critical_findings=len(report.critical_findings()),
+            garak_available=garak_available,
+        )
+    except Exception:
+        pass
+
+    return report
 
 
 def print_report(report: AdversarialReport) -> None:

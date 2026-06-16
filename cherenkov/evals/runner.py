@@ -46,11 +46,26 @@ def run_evals(samples: list[EvalSample], max_workers: int = 2) -> EvalReport:
     for sample in samples:
         result = judge_sample(sample)
         results.append(result)
-    return EvalReport(
+
+    report = EvalReport(
         results=results,
         model=Config.GEN_MODEL,
         eval_timestamp=datetime.now(timezone.utc).isoformat(),
     )
+
+    # Optional observability trace
+    try:
+        from cherenkov.observability.llm_tracer import trace_event
+        trace_event(
+            "evals-complete",
+            pass_rate=report.pass_rate(),
+            scenarios=len(report.results),
+            model=report.model,
+        )
+    except Exception:
+        pass
+
+    return report
 
 
 def print_report(report: EvalReport) -> None:
