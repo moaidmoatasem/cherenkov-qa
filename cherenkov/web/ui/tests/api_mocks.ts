@@ -565,8 +565,8 @@ export const MOCK_SIGNALS = {
 };
 
 export const MOCK_IDIOMS = [
-  { id: 'idm-1', text: 'Confirm CORS policy is strictly defined for API origins', count: 14, decay: 'Active' },
-  { id: 'idm-2', text: 'Validate OAuth state token integrity validation', count: 9, decay: 'Slightly Decayed' }
+  { id: 'idm-1', pattern: 'Confirm CORS policy is strictly defined for API origins', desc: 'CORS policy enforcement for API origins prevents cross-origin data leaks.', text: 'Confirm CORS policy is strictly defined for API origins', count: 14, decay: 'Active' },
+  { id: 'idm-2', pattern: 'Validate OAuth state token integrity validation', desc: 'OAuth state token validation prevents CSRF attacks during auth flow.', text: 'Validate OAuth state token integrity validation', count: 9, decay: 'Slightly Decayed' }
 ];
 
 export const MOCK_PAIRING = [
@@ -721,7 +721,7 @@ export async function setupApiMocks(page: any) {
   await page.route('**/api/v1/eject', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'success', path: '/out' }) });
   });
-  await page.route('**/api/v1/knowledge/query*', async (route: any) => {
+  await page.route('**/api/v1/chat/knowledge/query*', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
       { id: 'k-1', source: 'reflector', confidence: 0.92, data: { text: 'Stopped re-surfacing known-noise findings on POST /user/login redirects after third occurrence.' }, metadata: { endpoint: 'POST /user/login', timestamp: '2026-06-07T10:00:00Z' } },
       { id: 'k-2', source: 'idiom', confidence: 0.85, data: { text: 'Accrued senior testing idiom regarding cross-tenant resource verification.' }, metadata: { timestamp: '2026-06-06T14:30:00Z' } },

@@ -35,7 +35,7 @@ test.describe('Telemetry Signals Screen — Deep Coverage', () => {
 
     // Scope to the signals screen to avoid sidebar nav item for "Visual Regression"
     const screen = page.locator('#signals-screen');
-    await expect(screen.getByText('Performance')).toBeVisible();
+    await expect(screen.getByText('Performance').first()).toBeVisible();
     await expect(screen.getByText('Visual Regression')).toBeVisible();
     await expect(screen.getByText('SDET Coverage')).toBeVisible();
   });
@@ -168,7 +168,7 @@ test.describe('Telemetry Signals Screen — Deep Coverage', () => {
     await expect(page.getByText('API Latency & Anomaly Baselines')).not.toBeVisible();
 
     // Go back to Performance
-    await page.getByText('Performance').click();
+    await page.getByRole('tab', { name: 'Performance' }).click();
     await page.waitForTimeout(300);
     await expect(page.getByText('API Latency & Anomaly Baselines')).toBeVisible();
   });

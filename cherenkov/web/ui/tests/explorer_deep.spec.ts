@@ -35,9 +35,9 @@ test.describe('Autonomous Explorer Screen — Deep Coverage', () => {
   test('API Target URL input renders with default value', async ({ page }) => {
     await gotoExplorer(page);
 
-    const inputs = page.locator('input[type="text"]');
+    const screen = page.locator('[data-testid="explorer-screen"]');
     // First input is API Target URL
-    const targetInput = inputs.first();
+    const targetInput = screen.locator('input[type="text"]').first();
     await expect(targetInput).toBeVisible();
     await expect(targetInput).toHaveValue('http://localhost:8000');
   });
@@ -46,9 +46,9 @@ test.describe('Autonomous Explorer Screen — Deep Coverage', () => {
   test('UI URL input renders with default value', async ({ page }) => {
     await gotoExplorer(page);
 
-    const inputs = page.locator('input[type="text"]');
+    const screen = page.locator('[data-testid="explorer-screen"]');
     // Second input is UI URL
-    const uiInput = inputs.nth(1);
+    const uiInput = screen.locator('input[type="text"]').nth(1);
     await expect(uiInput).toBeVisible();
     await expect(uiInput).toHaveValue('http://localhost:3000');
   });

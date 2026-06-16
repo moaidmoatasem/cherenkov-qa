@@ -141,7 +141,7 @@ test.describe('Export & Eject Suite Screen — Deep Coverage', () => {
     await page.waitForTimeout(800);
 
     // Default path is ./playwright-suite
-    await expect(page.getByText('./playwright-suite')).toBeVisible();
+    await expect(page.getByText('./playwright-suite').first()).toBeVisible();
   });
 
   // ── Copy command button shows after eject ────────────────────────
@@ -187,7 +187,7 @@ test.describe('Export & Eject Suite Screen — Deep Coverage', () => {
     await page.locator('#btn-confirm-eject').click();
     await page.waitForTimeout(800);
 
-    await expect(page.getByText('./my-tests')).toBeVisible();
+    await expect(page.getByText('./my-tests').first()).toBeVisible();
   });
 
   // ── Error state on API failure ────────────────────────────────────

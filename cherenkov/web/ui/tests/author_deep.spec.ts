@@ -85,7 +85,7 @@ test.describe('Author by Intent Screen — Deep Coverage', () => {
 
     // Success state: run result panel
     await expect(page.getByText('Run completed')).toBeVisible();
-    await expect(page.getByText(/Run ID: test-run-id/)).toBeVisible();
+    await expect(page.getByText(/Run ID: test-run-id/).first()).toBeVisible();
     await expect(page.getByText(/Status: started/)).toBeVisible();
   });
 
@@ -223,7 +223,7 @@ test.describe('Author by Intent Screen — Deep Coverage', () => {
     await page.getByText('Initialize Pilot Run').click();
     await page.waitForTimeout(600);
 
-    await expect(page.getByText('Pipeline run failed')).toBeVisible();
+    await expect(page.getByText('Pipeline run failed').first()).toBeVisible();
   });
 
   // ── Intent area is focusable ──────────────────────────────────────
