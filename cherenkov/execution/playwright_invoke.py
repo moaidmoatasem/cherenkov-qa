@@ -11,6 +11,7 @@ import sys
 import subprocess
 from cherenkov.core.errors import get_logger
 from cherenkov.core.compat import npx as _npx
+from cherenkov.core.settings import get_settings
 
 
 _WSL_PREFIX = "\\\\wsl.localhost\\"
@@ -116,9 +117,17 @@ class PlaywrightRunner:
             api_url=api_url,
         )
 
-        process = subprocess.run(
-            cmd, cwd=self.stub_dir, env=env, capture_output=True, text=True
-        )
+        try:
+            process = subprocess.run(
+                cmd,
+                cwd=self.stub_dir,
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=get_settings().PLAYWRIGHT_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired:
+            return 1, "Playwright test timed out.", ""
         return self._parse_result(process.stdout, process.stderr, process.returncode)
 
     def _exec_via_wsl(
@@ -140,7 +149,8 @@ class PlaywrightRunner:
         # API_URL must be exported inside the WSL bash session
         shell_cmd = (
             f"export API_URL={shlex.quote(api_url)}; "
-            f"cd {shlex.quote(linux_stub)} && " + " ".join(cmd_parts)
+            f"cd {shlex.quote(linux_stub)} && "
+            + " ".join(shlex.quote(p) for p in cmd_parts)
         )
         wsl_cmd = ["wsl.exe", "-e", "bash", "-c", shell_cmd]
 
@@ -150,7 +160,15 @@ class PlaywrightRunner:
             api_url=api_url,
         )
 
-        process = subprocess.run(wsl_cmd, capture_output=True, text=True)
+        try:
+            process = subprocess.run(
+                wsl_cmd,
+                capture_output=True,
+                text=True,
+                timeout=get_settings().PLAYWRIGHT_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired:
+            return 1, "Playwright test timed out (WSL).", ""
         return self._parse_result(process.stdout, process.stderr, process.returncode)
 
     @staticmethod
