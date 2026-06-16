@@ -35,9 +35,8 @@ class EjectorEngine:
         return [
             f
             for f in os.listdir(directory)
-            if f.endswith(".spec.ts")
-            and os.path.getsize(os.path.join(directory, f)) > 0
-            or f == "_scores.json"
+            if os.path.getsize(os.path.join(directory, f)) > 0
+            and (f.endswith(".spec.ts") or f == "_scores.json")
         ]
 
     def _resolve_tests_src(self) -> tuple[str | None, list[str]]:
