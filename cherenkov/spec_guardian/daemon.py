@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import signal
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -58,7 +58,7 @@ class SpecGuardianDaemon:
     def start(self) -> None:
         """Start the monitoring daemon."""
         self.running = True
-        self.session_start = datetime.utcnow()
+        self.session_start = datetime.now(timezone.utc)
         
         # Handle shutdown signals
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -94,7 +94,7 @@ class SpecGuardianDaemon:
     
     def _run_check_cycle(self) -> None:
         """Run a single check cycle across all configured endpoints."""
-        cycle_start = datetime.utcnow()
+        cycle_start = datetime.now(timezone.utc)
         cycle_events: list[DriftEvent] = []
         
         for endpoint_config in self.endpoints:
@@ -123,7 +123,7 @@ class SpecGuardianDaemon:
                 spec_path=self.spec_path,
                 events=self.all_events + cycle_events,
                 start_time=self.session_start or cycle_start,
-                end_time=datetime.utcnow(),
+                end_time=datetime.now(timezone.utc),
                 total_checks=self.total_checks,
                 compliant_checks=self.compliant_checks,
             )
@@ -200,14 +200,14 @@ class SpecGuardianDaemon:
         
         Useful for testing or one-off checks.
         """
-        self.session_start = datetime.utcnow()
+        self.session_start = datetime.now(timezone.utc)
         self._run_check_cycle()
         
         return DriftReport(
             spec_path=self.spec_path,
             events=self.all_events,
             start_time=self.session_start,
-            end_time=datetime.utcnow(),
+            end_time=datetime.now(timezone.utc),
             total_checks=self.total_checks,
             compliant_checks=self.compliant_checks,
         )

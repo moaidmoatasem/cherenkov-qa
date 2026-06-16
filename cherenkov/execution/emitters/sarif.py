@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class SARIFEmitter:
@@ -62,7 +62,7 @@ class SARIFEmitter:
                     "invocations": [
                         {
                             "executionSuccessful": len(results) == 0,
-                            "endTimeUtc": datetime.utcnow().isoformat() + "Z",
+                            "endTimeUtc": datetime.now(timezone.utc).isoformat() + "Z",
                         }
                     ],
                     "results": results,
