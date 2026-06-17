@@ -1,5 +1,5 @@
 # Agent Handover — CHERENKOV QA
-**Date:** 2026-06-18 | **Session:** security/reliability hardening + QA-18 fix
+**Date:** 2026-06-18 | **Session:** QA-18 Playwright fix merged; branch aligned to main HEAD=32e850a3
 
 ---
 
@@ -7,11 +7,12 @@
 
 | Item | Value |
 |---|---|
-| Active branch | `fix/playwright-qa-18-failures` |
-| Remote | pushed to `origin/fix/playwright-qa-18-failures` |
-| Commits ahead of `origin/main` | 4 |
-| Unit tests | all passing (clean exit) |
-| `tsc --noEmit` | clean |
+| Active branch | `main` |
+| HEAD | `32e850a3` |
+| `origin/main` | `32e850a3` (identical — fully aligned) |
+| PR #543 | merged + branch deleted |
+| Python tests | all passing (100% dots, exit 0 — confirmed post-rebase) |
+| Working tree | clean (only `?? .pr-body.md` + `?? stub/…failing_assertion.spec.ts` untracked noise) |
 
 ---
 
