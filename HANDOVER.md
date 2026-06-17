@@ -1,81 +1,77 @@
-# Agent Handover — CHERENKOV QA
-**Date:** 2026-06-18 | **Session:** QA-18 Playwright fix merged; branch aligned to main HEAD=32e850a3
+# CHERENKOV — Session Handover
+
+**Date:** 2026-06-18
+**HEAD:** `d5fda086`
+**Branch:** `main` — fully pushed to `origin/main`
+**Tests:** 691 unit tests, 0 failures
 
 ---
 
-## Current State
+## What was done this session
 
-| Item | Value |
-|---|---|
-| Active branch | `main` |
-| HEAD | `32e850a3` |
-| `origin/main` | `32e850a3` (identical — fully aligned) |
-| PR #543 | merged + branch deleted |
-| Python tests | all passing (100% dots, exit 0 — confirmed post-rebase) |
-| Working tree | clean (only `?? .pr-body.md` + `?? stub/…failing_assertion.spec.ts` untracked noise) |
+Merged `fix/playwright-qa-18-failures` into `main`. All security hardening + runtime fixes are now on `main` at `d5fda086`.
 
----
+### Fixes committed
 
-## What Was Done This Session
-
-### Security hardening (all committed to `origin/main` via earlier commits)
 | File | Fix |
-|---|---|
-| `cherenkov/core/settings.py` | Added 4 configurable timeout fields: `PLAYWRIGHT_TIMEOUT_SECONDS` (120), `TSC_TIMEOUT_SECONDS` (60), `PRISM_DOCKER_START_TIMEOUT_SECONDS` (30), `PRISM_DOCKER_STOP_TIMEOUT_SECONDS` (15) |
-| `cherenkov/ai/ollama_client.py` | Guard `raise last_err` when `last_err is None` (prevented TypeError on `max_retries=0`) |
-| `cherenkov/execution/playwright_invoke.py` | Subprocess timeouts on native + WSL paths; `shlex.quote` each WSL cmd part (shell-injection fix) |
-| `cherenkov/execution/prism_mock.py` | Docker start/stop timeouts; `FileNotFoundError` handled explicitly; bare `except Exception: pass` replaced |
-| `cherenkov/mcp/handlers.py` | URL scheme check in `_tool_registry_publish` (SSRF hardening) |
-| `cherenkov/web/api.py` | Auth on `eject_test_suite` (was missing); SSRF blocklist adds `is_reserved` + `metadata.google.internal`; `update_settings` guards `security.auth_secret` and `security.egress_policy` from being overwritten |
-| `cherenkov/stages/review.py` | TSC gate timeout reads from settings; two silent `except Exception: pass` blocks now log warnings |
-| `.gitignore` | Secrets section (`.env`, `.env.*`) |
-| `requirements.txt` | Upper-bound pins on all deps |
-
-### QA Playwright suite (4 commits on `fix/playwright-qa-18-failures`)
-- `bb2421ff` — resolved 18 Playwright test failures (259/259 passing)
-- `3db84d3d` — review.py TSC timeout + exception logging
-- `3142ec13` — three runtime correctness fixes (chat, knowledge, rate-limiter)
-- `e420903e` — HitlQueue.ignore() method
+|------|-----|
+| `cherenkov/knowledge/adapters/sqlite_repository.py` | makedirs guard in `_connect()` — prevents OperationalError on fresh checkout with no `data/` dir |
+| `cherenkov/knowledge/adapters/sqlite_repository.py` | FTS5 JOIN on `rowid` not `UNINDEXED item_id` — fixes full-table-scan in `search()` |
+| `cherenkov/knowledge/api/routes.py` | `dataclasses.asdict()` on `KnowledgeItem` objects — fixes JSON serialization of query results |
+| `cherenkov/chat/agent.py` | `chat_stream` wraps `_call_llm` with `await asyncio.to_thread(...)` — stops blocking the event loop |
+| `cherenkov/web/middleware/security.py` | Rate limiter: evict idle IPs from `_requests` dict — prevents unbounded memory growth |
+| `cherenkov/web/middleware/security.py` | Remove `/metrics` `/truth-map` `/failures` from public `_CACHEABLE_PATHS` |
+| `cherenkov/hitl/store.py` | Add public `HitlQueue.ignore()` method |
+| `cherenkov/web/api.py` | `classify` endpoint uses `queue.ignore()` instead of private `queue._resolve()` |
+| `cherenkov/web/api.py` | `_validate_spec_url`: `socket.getaddrinfo` DNS-rebinding SSRF fix |
 
 ---
 
-## Immediate Next Step (One Action)
+## Remaining known issues (ordered by impact)
 
-**Create a PR and merge `fix/playwright-qa-18-failures` → `main`.**
+### High
 
-```bash
-# The PR body is pre-written at .pr-body.md in the repo root
-# gh CLI needs auth — run this from a terminal where you're logged in:
-gh pr create \
-  --base main \
-  --head fix/playwright-qa-18-failures \
-  --title "fix(qa): resolve 18 Playwright test failures + reliability hardening" \
-  --body-file .pr-body.md
+1. **Desktop/Tauri config** (`desktop/src-tauri/tauri.conf.json`)
+   - `bundle.externalBin` missing `"cherenkov-launcher"` — app panics on launch
+   - `plugins.updater.pubkey` is empty — auto-update non-functional
+   - `capabilities/main.json` missing `"fs:default"` and `"http:default"`
+   - Needs: signing key generation (terminal op) + config edits
 
-# Then merge:
-gh pr merge --squash --delete-branch
-```
+2. **CSP `unsafe-inline`/`unsafe-eval`** (`cherenkov/web/middleware/security.py:73-74`)
+   - React dashboard requires them today; fix needs Vite nonce-based CSP build config
 
-Or open the PR manually at:  
-`https://github.com/moaidmoatasem/cherenkov-qa/compare/main...fix/playwright-qa-18-failures`
+### Medium (each is < 10 lines)
+
+3. **`/api/v1/knowledge/query` has no auth guard**
+   - File: `cherenkov/knowledge/api/routes.py`
+   - Fix: add `_auth=Depends(verify_api_key)` to `get_knowledge()` signature
+   - Import `verify_api_key` from `cherenkov.web.sdd_auth` or define alongside existing auth helpers
+
+4. **`_validate_spec_url` blocks the async event loop**
+   - File: `cherenkov/web/api.py` — `_validate_spec_url` calls `_socket.getaddrinfo` synchronously
+   - Fix: make an async wrapper or call it via `await asyncio.to_thread(_socket.getaddrinfo, host, None)` at the call site
+
+5. **FTS5 rowid triggers not retroactive on existing DBs**
+   - Existing deployed DBs need: `INSERT INTO knowledge_fts(knowledge_fts) VALUES('rebuild')`
+   - Add to `_init_db()` as a safe idempotent migration or document in `docs/MIGRATIONS.md`
+
+6. **`chat/agent.py` sync `chat()` method** — still calls `_call_llm` blocking; low risk today (only called from sync handlers)
 
 ---
 
-## Recurring Hazard: Shared Working Tree
+## Environment state
 
-The WSL path `~/cherenkov-qa` is a single git worktree shared across multiple concurrent agent sessions. This causes:
-- Files edited by one session to be silently overwritten by another within seconds
-- Branch checkouts happening under you mid-session
-- Commits appearing on a different branch than expected
-
-**Mitigation for future agents:** commit each fix file immediately after editing — do not batch edits before committing. Verify `git branch` before every commit.
+- **main HEAD:** `d5fda086` pushed to `origin/main`
+- **`fix/playwright-qa-18-failures`:** merged; remote still exists — delete: `git push origin --delete fix/playwright-qa-18-failures`
+- **Stash:** 19 stash entries on old branches — safe to ignore
+- **Scratch file:** `/home/moaid/fix_ssrf.py` — delete: `rm ~/fix_ssrf.py`
 
 ---
 
-## What Remains (Backlog for Next Session)
+## Next agent: priority order
 
-1. **Gate G0 validation** — EPIC #535 is the active gate; no new Track B/C features ship until it passes. See `docs/ROADMAP_AQE.md`.
-2. **`cherenkov/web/api.py` — `_validate_spec_url` DNS rebinding** — current check resolves the IP at validation time, but DNS rebinding can defeat this. A fix would re-resolve at request time or use `curl --resolve`. Low priority but worth tracking.
-3. **HITL backend** — the OpenClaw chat spec assumes a HITL backend that doesn't exist yet. Build terminal HITL first (see `memory/openclaw-integration-review.md`).
-4. **npm-package** — `npm-package/bin/cherenkov.js` and `package.json` have uncommitted changes (line-ending noise from concurrent session). Check before publishing.
-5. **Generated test files** — `stub/generated_tests/*.spec.ts` show as modified (CRLF churn from background process). Either configure `core.autocrlf` in git or add a `.gitattributes` rule to normalize.
+1. `python3 -m pytest tests/unit/ -q` — confirm 691 pass, 0 fail
+2. Add auth guard to `/api/v1/knowledge/query` (issue 3 above) — commit + push
+3. Make `_validate_spec_url` non-blocking (issue 4 above) — commit + push
+4. `git push origin --delete fix/playwright-qa-18-failures` — clean up stale remote branch
+5. `rm ~/fix_ssrf.py` — clean up scratch file from home dir
