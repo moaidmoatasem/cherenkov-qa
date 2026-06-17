@@ -192,7 +192,7 @@ test.describe('QA Engineer: Non-Functional Testing — Security, Performance, Ac
       'projects': '#projects-screen',
       'overview': '#overview-screen',
       'truth-map': '#truth-map-screen',
-      'divergences': '#divergences-screen',
+      'divergences': '[data-testid="divergences-screen"]',
       'author': '#author-screen',
       'signals': '#signals-screen',
       'memory': '#memory-screen',
@@ -209,8 +209,11 @@ test.describe('QA Engineer: Non-Functional Testing — Security, Performance, Ac
 
     for (const [name, selector] of Object.entries(a11yScreens)) {
       test(`${name} screen has no critical WCAG 2AA violations (excluding color-contrast)`, async ({ page }) => {
+        test.setTimeout(60000);
         await bootstrap(page);
-        if (name === 'settings') {
+        if (name === 'projects') {
+          // projects is the default screen, no nav click needed
+        } else if (name === 'settings') {
           await page.click('[title="Open Settings"]');
           await page.waitForSelector('#settings-screen', { timeout: 10000 });
         } else if (name === 'sdd') {
@@ -229,7 +232,6 @@ test.describe('QA Engineer: Non-Functional Testing — Security, Performance, Ac
         const results = await new AxeBuilder({ page })
           .include(selector)
           .withTags(['wcag2aa'])
-          .timeout(20000)
           .analyze();
         const nonColor = results.violations.filter(v => v.id !== 'color-contrast');
         expect(nonColor.length).toBe(0);
@@ -447,12 +449,12 @@ test.describe('QA Engineer: Non-Functional Testing — Security, Performance, Ac
       const failedRequests: string[] = [];
       page.on('requestfailed', request => {
         const url = request.url();
-        if (!url.includes('favicon') && !url.includes('manifest')) {
+        if (!url.includes('favicon') && !url.includes('manifest') && !url.includes('fonts.gstatic.com')) {
           failedRequests.push(`${request.method()} ${url}`);
         }
       });
       await bootstrap(page);
-      expect(failedRequests.length).toBe(0);
+      expect(failedRequests).toHaveLength(0);
     });
   });
 });

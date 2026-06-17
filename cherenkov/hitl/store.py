@@ -292,6 +292,11 @@ class HitlQueue:
             (reason,),
         )
 
+    def ignore(self, item_id: str, actor: str, source: str = "web") -> HitlEnvelope:
+        return self._resolve(
+            "hitl.classify", item_id, actor, source, HitlStatus.IGNORED, "", ()
+        )
+
 
 def _now() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
