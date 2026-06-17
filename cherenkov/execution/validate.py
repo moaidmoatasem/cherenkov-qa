@@ -104,7 +104,7 @@ class ValidationEngine:
         self.stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../stub"))
         self.tests_dir = os.path.join(self.stub_dir, "generated_tests")
 
-    def validate_suite(self, target_url: str) -> Dict[str, Any]:
+    def validate_suite(self, target_url: str, headed: bool = False) -> Dict[str, Any]:
         """Runs all spec tests in generated_tests against target_url and parses trace files for tightening suggestions."""
         self.log.info("starting suite validation", target_url=target_url)
 
@@ -132,7 +132,8 @@ class ValidationEngine:
             result = runner.execute_test(
                 scenario_id=scenario_id,
                 api_url=target_url,
-                test_code=code
+                test_code=code,
+                headed=headed
             )
 
             trace_path = result.get("trace_path", "")

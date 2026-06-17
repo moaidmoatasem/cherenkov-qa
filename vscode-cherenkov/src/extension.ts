@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import { CherenkovClient, Violation } from './backend/client';
-import { ConformanceDiagnosticsProvider } from './providers/DiagnosticsProvider';
-import { ConformanceCodeLensProvider } from './providers/CodeLensProvider';
-import { ConformanceDecorationProvider } from './providers/DecorationProvider';
+import { ConformanceDiagnosticsProvider } from './features/conformance';
+import { ConformanceCodeLensProvider } from './features/codeLens';
+import { ConformanceDecorationProvider } from './features/decorations';
 
 export function activate(context: vscode.ExtensionContext) {
     const client = new CherenkovClient();

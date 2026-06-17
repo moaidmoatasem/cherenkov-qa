@@ -4,15 +4,15 @@ exports.activate = activate;
 exports.deactivate = deactivate;
 const vscode = require("vscode");
 const client_1 = require("./backend/client");
-const DiagnosticsProvider_1 = require("./providers/DiagnosticsProvider");
-const CodeLensProvider_1 = require("./providers/CodeLensProvider");
-const DecorationProvider_1 = require("./providers/DecorationProvider");
+const conformance_1 = require("./features/conformance");
+const codeLens_1 = require("./features/codeLens");
+const decorations_1 = require("./features/decorations");
 function activate(context) {
     const client = new client_1.CherenkovClient();
     const diagnosticsCollection = vscode.languages.createDiagnosticCollection('cherenkov');
-    const diagnosticsProvider = new DiagnosticsProvider_1.ConformanceDiagnosticsProvider(diagnosticsCollection);
-    const decorationProvider = new DecorationProvider_1.ConformanceDecorationProvider(context);
-    const codeLensProvider = new CodeLensProvider_1.ConformanceCodeLensProvider();
+    const diagnosticsProvider = new conformance_1.ConformanceDiagnosticsProvider(diagnosticsCollection);
+    const decorationProvider = new decorations_1.ConformanceDecorationProvider(context);
+    const codeLensProvider = new codeLens_1.ConformanceCodeLensProvider();
     // Register Code Lens provider for OpenAPI files
     const codeLensDisposable = vscode.languages.registerCodeLensProvider([{ pattern: '**/*.yaml' }, { pattern: '**/*.yml' }, { pattern: '**/*.json' }], codeLensProvider);
     // ── Commands ──────────────────────────────────────────────────────────────

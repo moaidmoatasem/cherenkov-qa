@@ -118,6 +118,7 @@ def get_parser() -> argparse.ArgumentParser:
 
     validate_parser = subparsers.add_parser('validate', help='Validate E2E test suite against a real server')
     validate_parser.add_argument('--target', '-t', required=True, help='The real server target base URL')
+    validate_parser.add_argument('--headed', action='store_true', help='Run Playwright in headed (visible browser) mode')
     # Legacy engine CLI compatibility: operator passes --spec and --output
     validate_parser.add_argument('--spec', help='Path to OpenAPI spec (JSON/YAML) — legacy compat')
     validate_parser.add_argument('--output', choices=['json', 'text'], default=None, help='Output format — legacy compat')
@@ -309,7 +310,7 @@ def main():
 
     if args.command == 'validate':
         engine = ValidationEngine('cli_validate')
-        results = engine.validate_suite(args.target)
+        results = engine.validate_suite(args.target, headed=getattr(args, 'headed', False))
         if results.get('status') == 'empty':
             msg = results.get('message', 'Unknown error')
             if args.output == 'json':

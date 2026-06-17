@@ -98,3 +98,7 @@ operator/manager
 stub/generated_tests/visual_regression_baseline_ui.spec.ts
 stub/generated_tests/*-snapshots/
 stub/generated_tests/visual_cli_*.spec.ts
+
+# vscode test framework
+vscode-cherenkov/.vscode-test/
+
