@@ -43,6 +43,7 @@ import re as _re
 import contextlib as _contextlib
 from urllib.parse import urlparse as _urlparse
 import ipaddress as _ipaddress
+import socket as _socket
 
 
 def _validate_scenario_id(scenario_id: str) -> str:
@@ -76,17 +77,27 @@ def _validate_spec_url(url: str) -> str:
                 status_code=400, detail="Internal network URLs not allowed"
             )
     except ValueError:
-        # It's a hostname, not an IP - block obvious localhost / cloud-metadata names
-        if host.lower() in (
-            "localhost",
-            "127.0.0.1",
-            "::1",
-            "0.0.0.0",
-            "metadata.google.internal",
-        ):
-            raise HTTPException(
-                status_code=400, detail="Internal network URLs not allowed"
-            )
+        # Resolve hostname to IPs and validate each — blocks DNS-rebinding attacks
+        # where a benign hostname later resolves to an internal address.
+        try:
+            infos = _socket.getaddrinfo(host, None)
+        except _socket.gaierror:
+            raise HTTPException(status_code=400, detail="Cannot resolve host")
+        for info in infos:
+            addr_str = info[4][0]
+            try:
+                resolved_addr = _ipaddress.ip_address(addr_str)
+                if (
+                    resolved_addr.is_private
+                    or resolved_addr.is_loopback
+                    or resolved_addr.is_link_local
+                    or resolved_addr.is_reserved
+                ):
+                    raise HTTPException(
+                        status_code=400, detail="Internal network URLs not allowed"
+                    )
+            except ValueError:
+                pass
     return url
 
 
