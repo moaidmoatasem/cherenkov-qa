@@ -740,11 +740,7 @@ async def classify_review_item(payload: ClassifyPayload, _auth=Depends(verify_ap
             source="web",
         )
     elif payload.classification == "ignore":
-        from cherenkov.hitl.contracts import HitlStatus
-
-        envelope = queue._resolve(
-            "hitl.classify", payload.item_id, actor, "web", HitlStatus.IGNORED, "", ()
-        )
+        envelope = queue.ignore(payload.item_id, actor, source="web")
     else:
         raise HTTPException(
             status_code=400, detail=f"Unknown classification: {payload.classification}"
