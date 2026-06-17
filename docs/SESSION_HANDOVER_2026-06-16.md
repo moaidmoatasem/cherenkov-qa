@@ -3,7 +3,7 @@
 > Authoritative for *this* session's work. For overall project status see [STATUS.md](STATUS.md) / [HANDOVER.md](HANDOVER.md). Strategy: [NORTH_STAR.md](NORTH_STAR.md) → [VISION_AQE_2026.md](VISION_AQE_2026.md) → [ROADMAP_AQE.md](ROADMAP_AQE.md) → [EXECUTION_PLAN.md](EXECUTION_PLAN.md).
 
 ## TL;DR
-Full-project review done. All correctness bugs found are fixed and **merged to `origin/main`**. Strategy docs + future-work package shipped. Root scratch-script cruft removed. One small fix (`.gitignore` encoding corruption) is the last open mechanical item.
+Full-project review done. All correctness bugs found are fixed and **merged to `origin/main`**. Strategy docs + future-work package shipped. Root scratch-script cruft removed, `.gitignore` corruption fixed. Roadmap filed as GitHub EPICs #535–538 (#535 = Gate G0, ACTIVE). All mechanical work is done; remaining work is gated on G0 or needs a product decision (see OPEN below).
 
 ## Shipped to `origin/main` this session
 | What | Where |
@@ -33,7 +33,9 @@ The `run_e2e.py` entry (~byte 2553) is UTF-16LE-encoded inside a UTF-8 file (`fi
 Left in place intentionally; confirm intent before removing: `run_tests.py`, `run_e2e.py`, `run_dashboard_tests.py` (possible convenience runners), `fetch_issues.py`, `issue.json`, `issue244.json`, `mut_spec.json`, `stripe_spec.json`, `5_QA_REPORT.md`, `simple_test.py` (gitignored). Decision for Moayed: keep as dev helpers, or move under `scripts/` / delete.
 
 ### 3. Strategy execution (the real forward work) — see [ROADMAP_AQE.md](ROADMAP_AQE.md)
-Everything is **gated on Gate G0** (prove the wow + catch a real agent-cheat). Nothing below G0 is greenlit to build. First buildable artifact once G0 passes: the "Catch the AI cheating" demo fixtures ([demos/CATCH_THE_AI_CHEATING.md](demos/CATCH_THE_AI_CHEATING.md)). GitHub epics for the roadmap are **not yet filed** (awaiting go-ahead).
+Everything is **gated on Gate G0** (prove the wow + catch a real agent-cheat). Nothing below G0 is greenlit to build. First buildable artifact once G0 passes: the "Catch the AI cheating" demo fixtures ([demos/CATCH_THE_AI_CHEATING.md](demos/CATCH_THE_AI_CHEATING.md)).
+
+**GitHub EPICs filed (2026-06-17):** #535 Phase 0 / Gate G0 **(ACTIVE — start here)**, #536 Rung 1 (Tool), #537 Rung 2 (Platform/MCP), #538 Rung 3 (Certificate). Each has its sub-tickets as checklists. Begin at #535; #536–538 are blocked until G0's checklist is complete. **Do not re-file these.**
 
 ## CRITICAL OPERATING NOTES FOR THE NEXT AGENT
 - **Concurrent multi-agent system is active.** Gemini Antigravity subagents edit the shared tree `~/cherenkov-qa` in parallel and branch-switch/commit to local `main`. They WILL revert in-place edits. **Always work in an isolated `git worktree` off `origin/main`** and merge via PR. Details + detection commands in [[concurrent-agent-shared-tree]] memory.
