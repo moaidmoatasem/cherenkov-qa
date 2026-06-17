@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import threading
 from typing import Any
@@ -29,6 +30,9 @@ class SQLiteKnowledgeRepository:
                 return con
             except Exception:
                 pass
+        db_dir = os.path.dirname(self.db_path)
+        if db_dir:
+            os.makedirs(db_dir, exist_ok=True)
         con = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         con.execute("PRAGMA journal_mode=WAL")
         self._local.con = con
@@ -95,7 +99,7 @@ class SQLiteKnowledgeRepository:
                 )
             )
         return KnowledgeQueryResult(
-            data=results,
+            data=[r.to_dict() for r in results],
             source=query.source or "all",
             confidence=1.0,
             metadata={"count": len(results)},
@@ -128,10 +132,12 @@ class SQLiteKnowledgeRepository:
             if not terms:
                 raise sqlite3.OperationalError("empty pattern")
             fts_query = " AND ".join(f'"{t}"' for t in terms)
+            # Join on rowid (the FTS shadow-table integer key) rather than item_id TEXT
+            # to avoid an UNINDEXED join predicate that forces a full-table scan.
             cursor = conn.execute(
                 "SELECT k.item_id, k.source, k.data, k.metadata "
                 "FROM knowledge_items k "
-                "JOIN knowledge_fts f ON k.item_id = f.item_id "
+                "JOIN knowledge_fts f ON k.rowid = f.rowid "
                 "WHERE knowledge_fts MATCH ? LIMIT ?",
                 (fts_query, limit),
             )
