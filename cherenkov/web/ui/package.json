@@ -11,7 +11,16 @@
     "lint": "tsc --noEmit",
     "test": "playwright test",
     "test:a11y": "playwright test tests/a11y.spec.ts",
-    "test:e2e": "playwright test tests/dashboard_e2e.spec.ts"
+    "test:e2e": "playwright test tests/dashboard_e2e.spec.ts",
+    "test:qa": "playwright test tests/qa/",
+    "test:qa:headed": "playwright test tests/qa/ --headed",
+    "test:qa:functional": "playwright test tests/qa/functional-suite.spec.ts",
+    "test:qa:api": "playwright test tests/qa/api-contract-integration.spec.ts",
+    "test:qa:journeys": "playwright test tests/qa/e2e-journeys.spec.ts",
+    "test:qa:nonfunctional": "playwright test tests/qa/nonfunctional-suite.spec.ts",
+    "test:qa:smoke": "playwright test tests/qa/smoke-regression-exploratory.spec.ts",
+    "test:qa:all": "playwright test tests/qa/ --reporter=list",
+    "test:qa:all:headed": "playwright test tests/qa/ --headed --reporter=list"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
