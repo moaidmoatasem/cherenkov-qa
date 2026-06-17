@@ -1,4 +1,5 @@
 from typing import Dict, Optional
+import threading as _threading
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 import os
@@ -129,8 +130,6 @@ class CherenkovSettings(BaseSettings):
             return Config.detect_ollama_device(run_id)
         except ImportError:
             return "UNKNOWN"
-
-import threading as _threading
 
 _settings_instance: "CherenkovSettings | None" = None
 _settings_lock = _threading.Lock()
