@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import uuid
@@ -93,7 +94,7 @@ class QAChatAgent:
             self.memory.create_session(session_id)
         self.add_user_message(session_id, user_message)
         llm_messages = self._prepare_llm_context(session_id)
-        full_content = self._call_llm(llm_messages)
+        full_content = await asyncio.to_thread(self._call_llm, llm_messages)
         get_guard().record_llm_call(llm_messages, full_content)
         words = full_content.split()
         for i, word in enumerate(words):
