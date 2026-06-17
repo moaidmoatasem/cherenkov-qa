@@ -169,6 +169,9 @@ def get_parser() -> argparse.ArgumentParser:
         "--target", "-t", required=True, help="The real server target base URL"
     )
     validate_parser.add_argument(
+        "--headed", action="store_true", help="Run Playwright in headed (visible browser) mode"
+    )
+    validate_parser.add_argument(
         "--source",
         choices=["openapi", "graphql", "grpc", "accessibility"],
         default="openapi",
@@ -729,7 +732,7 @@ def main():
 
         engine = ValidationEngine("cli_validate")
         results = engine.validate_suite(
-            args.target, workers=getattr(args, "workers", 1)
+            args.target, workers=getattr(args, "workers", 1), headed=getattr(args, "headed", False)
         )
 
         if getattr(args, "format", None) == "sarif":
