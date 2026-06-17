@@ -81,6 +81,7 @@ test.describe('QA Engineer: API Contract & Integration Testing', () => {
 
     test('POST /api/v1/run contract: requires spec_path and demo_mode', async ({ page }) => {
       let runPayload: any = null;
+      await setupApiMocks(page);
       await page.route('**/api/v1/run', async route => {
         if (route.request().method() === 'POST') {
           runPayload = JSON.parse(route.request().postData() || '{}');
@@ -89,7 +90,6 @@ test.describe('QA Engineer: API Contract & Integration Testing', () => {
           await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
         }
       });
-      await setupApiMocks(page);
       await page.goto('/');
       await page.evaluate(() => {
         localStorage.setItem('[copilot] tour_seen', 'true');
