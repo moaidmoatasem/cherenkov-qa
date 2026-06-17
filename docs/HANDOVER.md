@@ -7,6 +7,59 @@
 
 ---
 
+## SESSION HANDOVER — 2026-06-17 (latest)
+
+**Branch:** `main` at `8236f69f` — **clean working tree, pushed to origin.**
+
+**Pytest suite:** Running in background (buaorgx83); prior runs all green (exit 0).
+
+### What was done this session (2026-06-17)
+
+A thorough project-wide code review and fix session. All changes committed to main and pushed.
+
+**Security fixes (prior session, now on main):**
+- Timing-safe API key comparison (`hmac.compare_digest`) in `web/api.py`
+- Path-traversal fix: `str.startswith()` → `Path.is_relative_to()` in `sdd_routes.py`
+- Subprocess injection fix: `shlex.quote` in `playwright_invoke.py`
+- Auth guard on `/eject` endpoint
+
+**Bug fixes committed:**
+- `DivergenceReport(findings=[])` Pydantic crash → replaced with `SimpleNamespace`
+- `self.Layeredget_settings()` typo (×11) in `smoke_test_epoch5.py` → `self.LayeredConfig()`
+- Division-by-zero in `review.py` quality_score calculation
+- `LinearNotifier.notify()` async/sync mismatch → made plain sync `bool`
+- Subprocess timeout added to `playwright_invoke.py`
+- Thread-safe double-checked locking in `get_settings()` singleton
+- `import threading` moved to top-level in `settings.py` (cosmetic but correct)
+- SQLite repo: auto-create db parent dir, fix FTS join on rowid, serialize query results
+
+**Test improvements (20 spec files + 1 TS type stub):**
+- All generated tests use `Date.now()` emails for idempotency
+- Missing-field tests send all valid sibling fields, omit only the field under test
+- Validation tests assert error body is truthy (not just status code)
+- CRUD tests verify actual mutations (e.g. PATCH confirms `.name === 'After Patch'`)
+- Category filter test guards against vacuous loop on empty array
+- `stub/generated-types.ts` regenerated to match `extended_spec.json`
+
+**Mojibake (double-encoded UTF-8) in 8 files:** fixed — em-dashes restored from `â€"` to `—`.
+
+### Recurring hazards for next agent
+
+1. **Concurrent agent in same WSL working tree** — changes appear in the working tree from other sessions. Before committing, run `git diff HEAD` to inspect. Do NOT blindly `git add -A`.
+2. **`.git/index.lock` stale lock** — if another session crashes, `rm .git/index.lock` is safe, then retry.
+3. **CRLF warnings on Windows** — phantom `git status -M` on files with CRLF/LF mismatch. Check `git diff --stat HEAD` to confirm there's a real change.
+4. **`DivergenceReport` Pydantic trap** — all fields are required; never instantiate with keyword-only args unless providing all. Use `SimpleNamespace` for duck-typed emitters.
+
+### Immediate next work (priority order)
+
+1. **Playwright QA tests against live stub server** — `stub/generated_tests/*.spec.ts` (21 files) need a live server. Run: `npm run test:stub` from `stub/`. Requires the stub FastAPI server running on port 8000.
+2. **Phase 9 market launch** — landing page, `npx cherenkov init` flow, Product Hunt prep. See `docs/PRODUCT_STRATEGY_ROADMAP.md`.
+3. **Phase 10 CI/CD** — GitHub Actions integration, SARIF output. See `.github/workflows/`.
+4. **Security review of 9 concurrent-agent commits** (pushed to main 2026-06-16): `c57c40a5` through `878ab009` — SSRF hardening, auth on eject, command-injection npm wrapper. Worth a second-opinion review.
+5. **Unblock Phase 3 (Desktop)** — needs `libwebkit2gtk-4.1-dev` on the WSL machine.
+
+---
+
 ## 1. What CHERENKOV is (one paragraph)
 
 A localhost-first tool that reads an OpenAPI spec and uses a local 7B model

@@ -78,8 +78,6 @@ class OrchestrationEngine:
         self.run_id = run_id or str(uuid.uuid4())[:8]
 
         # Setup run directory and per-thread events log (Issue 186)
-        import os
-
         run_dir = os.path.abspath(f".cherenkov/runs/{self.run_id}")
         os.makedirs(run_dir, exist_ok=True)
         self._events_file = open(
