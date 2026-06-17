@@ -1,76 +1,80 @@
 # Agent Handover — CHERENKOV QA
+**Date:** 2026-06-18 | **Session:** security/reliability hardening + QA-18 fix
+
+---
 
 ## Current State
-- **691 unit tests passing, 0 failed, 0 deprecation warnings**
-- **Commit**: `c026c087` on `main`, aligned with `origin/main` (0 behind/0 ahead)
-- **CI**: Billing issue prevents workflow runs (GitHub payments), not a code problem
 
-## What Was Built (This Session)
+| Item | Value |
+|---|---|
+| Active branch | `fix/playwright-qa-18-failures` |
+| Remote | pushed to `origin/fix/playwright-qa-18-failures` |
+| Commits ahead of `origin/main` | 4 |
+| Unit tests | all passing (clean exit) |
+| `tsc --noEmit` | clean |
 
-### Horizon 1: Developer Ecosystem & QA Platforms (Complete)
-- **VS Code Extension**: DiagnosticsProvider (red/green squiggles), HoverProvider (verdict on hover), QuickFixProvider (generate/view drift code actions)
-- **NotifierPort/Registry**: Clean Architecture `NotifierPort` protocol in `cherenkov/ports/notifier.py`, `NotifierRegistry` in `cherenkov/adapters/notifiers/registry.py` with `from_env()` auto-discovery
-- **Adapter interface methods**: Added `send()` and `notify_event()` to all 6 notifiers (Slack, Teams, Linear, Webhook, OpsGenie, PagerDuty) — backward-compatible
-- **Jira enhancements**: `create_jira_issue_full()` (labels, priority, components), `bulk_create()`, `add_comment()`, `add_attachment()`
-- **npx init script**: `npm-package/bin/cherenkov-init.js` — zero-install bootstrap with Python detection, pip install, config setup
+---
 
-### Horizon 2: AI Ecosystem & Desktop (Complete)
-- **LangChain Tool**: `cherenkov/langchain/tool.py` — `CherenkovTool.generate_tests()` and `validate()` for multi-agent frameworks
-- **MCP npm package**: `packages/mcp-server/` with package.json, index.js, README, LICENSE
-- **Desktop Setup Wizard**: `desktop/src-tauri/src/setup_wizard.rs`, `cherenkov/web/ui/src/components/SetupWizard.tsx`
-- **Desktop build verified**: `cargo check` succeeds (14s)
+## What Was Done This Session
 
-### Horizon 3: Observability & Spec Guardian (Complete)
-- **Spec Guardian**: Full module at `cherenkov/spec_guardian/` with core.py, daemon.py, detector.py, store.py — wired to CLI via `legacy_cli.py daemon --guardian`
-- **OTEL tracer**: `cherenkov/observability/llm_tracer.py`, `cherenkov/observability/otel.py`
-- **Synthetic data generator**: `cherenkov/synthetic/generator.py`, `runner.py`, `cmd.py`
-- **Spec Guardian tests**: 18 tests in `tests/unit/test_spec_guardian.py`
+### Security hardening (all committed to `origin/main` via earlier commits)
+| File | Fix |
+|---|---|
+| `cherenkov/core/settings.py` | Added 4 configurable timeout fields: `PLAYWRIGHT_TIMEOUT_SECONDS` (120), `TSC_TIMEOUT_SECONDS` (60), `PRISM_DOCKER_START_TIMEOUT_SECONDS` (30), `PRISM_DOCKER_STOP_TIMEOUT_SECONDS` (15) |
+| `cherenkov/ai/ollama_client.py` | Guard `raise last_err` when `last_err is None` (prevented TypeError on `max_retries=0`) |
+| `cherenkov/execution/playwright_invoke.py` | Subprocess timeouts on native + WSL paths; `shlex.quote` each WSL cmd part (shell-injection fix) |
+| `cherenkov/execution/prism_mock.py` | Docker start/stop timeouts; `FileNotFoundError` handled explicitly; bare `except Exception: pass` replaced |
+| `cherenkov/mcp/handlers.py` | URL scheme check in `_tool_registry_publish` (SSRF hardening) |
+| `cherenkov/web/api.py` | Auth on `eject_test_suite` (was missing); SSRF blocklist adds `is_reserved` + `metadata.google.internal`; `update_settings` guards `security.auth_secret` and `security.egress_policy` from being overwritten |
+| `cherenkov/stages/review.py` | TSC gate timeout reads from settings; two silent `except Exception: pass` blocks now log warnings |
+| `.gitignore` | Secrets section (`.env`, `.env.*`) |
+| `requirements.txt` | Upper-bound pins on all deps |
 
-### Horizon 4: Market Expansion (Complete)
-- **AsyncAPI source adapter**: `cherenkov/sources/asyncapi/` (adapter.py, contracts.py) + `cherenkov/stages/plan_asyncapi.py` — 12 tests
-- **Training pipeline**: `cherenkov/training/` (collector.py, dataset.py, trainer.py) — DataCollector (SQLite telemetry), TrainingDataset (JSONL/format), Trainer (LoRA simulation mode) — 12 tests
-- **Postman importer tests**: 9 tests in `tests/unit/test_postman_importer.py`
+### QA Playwright suite (4 commits on `fix/playwright-qa-18-failures`)
+- `bb2421ff` — resolved 18 Playwright test failures (259/259 passing)
+- `3db84d3d` — review.py TSC timeout + exception logging
+- `3142ec13` — three runtime correctness fixes (chat, knowledge, rate-limiter)
+- `e420903e` — HitlQueue.ignore() method
 
-### Quality Improvements
-- **Fixed all `datetime.utcnow()` deprecation warnings** across codebase and tests
-- **Adversarial testing module**: detector, garak_adapter, runner — 14 tests
-- **GraphQL source adapter**: 14 tests in `tests/unit/test_graphql_source.py`
-- **gRPC source adapter**: 12 tests in `tests/unit/test_grpc_source.py`
+---
 
-## What Remains (Not Started / Incomplete)
+## Immediate Next Step (One Action)
 
-### Low Priority / Stretch
-1. **Fine-tuned model training** — The pipeline is built (`cherenkov/training/`) but actual LoRA fine-tuning requires GPU hardware. The `Trainer` runs in simulation mode. To productionize: install `unsloth`, `peft`, `transformers` and replace the simulation methods.
-2. **npm/marketplace publishing** — VS Code extension (`vsce package`) and npm package (`npm publish`) never executed. Needs GitHub token and marketplace auth setup.
-3. **CI/CD billing fix** — GitHub Actions billing issue blocks workflow runs. Needs payment method update in GitHub settings.
-4. **Backstage plugin** — `cherenkov-backstage-plugin/` exists but deployment/testing not verified.
-5. **ArgoCD ApplicationSet** — Spec Guardian CRD deployment template not integrated.
+**Create a PR and merge `fix/playwright-qa-18-failures` → `main`.**
 
-## Key Files for Next Agent
-
-| Area | Path |
-|------|------|
-| VS Code extension | `vscode/` (12 files) |
-| Notifier registry | `cherenkov/adapters/notifiers/registry.py` |
-| Training pipeline | `cherenkov/training/` |
-| AsyncAPI adapter | `cherenkov/sources/asyncapi/` |
-| Spec Guardian | `cherenkov/spec_guardian/` |
-| LangChain tool | `cherenkov/langchain/tool.py` |
-| MCP server package | `packages/mcp-server/` |
-| Desktop Tauri | `desktop/src-tauri/` |
-| Synthetic data | `cherenkov/synthetic/` |
-
-## Quick Commands
 ```bash
-# Run tests
-python3 -m pytest tests/unit/ --no-header
+# The PR body is pre-written at .pr-body.md in the repo root
+# gh CLI needs auth — run this from a terminal where you're logged in:
+gh pr create \
+  --base main \
+  --head fix/playwright-qa-18-failures \
+  --title "fix(qa): resolve 18 Playwright test failures + reliability hardening" \
+  --body-file .pr-body.md
 
-# Run specific test file
-python3 -m pytest tests/unit/test_asyncapi_adapter.py -v
-
-# Build desktop
-export PATH=$HOME/.cargo/bin:$PATH; cd desktop/src-tauri && cargo check
-
-# Check issues
-gh issue list --state open
+# Then merge:
+gh pr merge --squash --delete-branch
 ```
+
+Or open the PR manually at:  
+`https://github.com/moaidmoatasem/cherenkov-qa/compare/main...fix/playwright-qa-18-failures`
+
+---
+
+## Recurring Hazard: Shared Working Tree
+
+The WSL path `~/cherenkov-qa` is a single git worktree shared across multiple concurrent agent sessions. This causes:
+- Files edited by one session to be silently overwritten by another within seconds
+- Branch checkouts happening under you mid-session
+- Commits appearing on a different branch than expected
+
+**Mitigation for future agents:** commit each fix file immediately after editing — do not batch edits before committing. Verify `git branch` before every commit.
+
+---
+
+## What Remains (Backlog for Next Session)
+
+1. **Gate G0 validation** — EPIC #535 is the active gate; no new Track B/C features ship until it passes. See `docs/ROADMAP_AQE.md`.
+2. **`cherenkov/web/api.py` — `_validate_spec_url` DNS rebinding** — current check resolves the IP at validation time, but DNS rebinding can defeat this. A fix would re-resolve at request time or use `curl --resolve`. Low priority but worth tracking.
+3. **HITL backend** — the OpenClaw chat spec assumes a HITL backend that doesn't exist yet. Build terminal HITL first (see `memory/openclaw-integration-review.md`).
+4. **npm-package** — `npm-package/bin/cherenkov.js` and `package.json` have uncommitted changes (line-ending noise from concurrent session). Check before publishing.
+5. **Generated test files** — `stub/generated_tests/*.spec.ts` show as modified (CRLF churn from background process). Either configure `core.autocrlf` in git or add a `.gitattributes` rule to normalize.
