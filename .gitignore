@@ -134,3 +134,6 @@ run_e2e.py
 # PyInstaller root build/dist
 build/
 dist/
+
+# vscode test framework
+vscode-cherenkov/.vscode-test/
