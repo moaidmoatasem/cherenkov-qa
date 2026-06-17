@@ -130,10 +130,15 @@ class CherenkovSettings(BaseSettings):
         except ImportError:
             return "UNKNOWN"
 
-_settings_instance = None
+import threading as _threading
 
-def get_settings() -> CherenkovSettings:
+_settings_instance: "CherenkovSettings | None" = None
+_settings_lock = _threading.Lock()
+
+def get_settings() -> "CherenkovSettings":
     global _settings_instance
     if _settings_instance is None:
-        _settings_instance = CherenkovSettings()
+        with _settings_lock:
+            if _settings_instance is None:
+                _settings_instance = CherenkovSettings()
     return _settings_instance
