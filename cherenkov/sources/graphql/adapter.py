@@ -29,7 +29,8 @@ class GraphQLSourceAdapter:
         self.schema = self._load_schema()
 
     def _load_schema(self):
-        content = open(self.spec_path).read()
+        with open(self.spec_path) as _f:
+            content = _f.read()
         if self.spec_path.endswith(".json"):
             import json
             data = json.loads(content)
