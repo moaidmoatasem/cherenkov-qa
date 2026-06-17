@@ -88,21 +88,21 @@ class SQLiteKnowledgeRepository:
         params.append(query.limit)
         cursor = conn.execute(sql, params)
         rows = cursor.fetchall()
-        results = []
+        items = []
         for row in rows:
-            results.append(
-                KnowledgeQueryResult(
-                    data=json.loads(row[2]),
+            items.append(
+                KnowledgeItem(
+                    item_id=row[0],
                     source=row[1],
-                    confidence=1.0,
+                    data=json.loads(row[2]),
                     metadata=json.loads(row[3]) if row[3] else {},
                 )
             )
         return KnowledgeQueryResult(
-            data=[r.to_dict() for r in results],
+            data=items,
             source=query.source or "all",
             confidence=1.0,
-            metadata={"count": len(results)},
+            metadata={"count": len(items)},
         )
 
     def store(self, item: KnowledgeItem) -> str:
