@@ -9,29 +9,38 @@
 
 ## SESSION HANDOVER — 2026-06-17 (latest)
 
-**Branch:** `main` at `8236f69f` — **clean working tree, pushed to origin.**
+**Branch:** `main` at `4a65a546` — **clean working tree, 0 unstaged changes, pushed to origin.**
 
-**Pytest suite:** Running in background (buaorgx83); prior runs all green (exit 0).
+**Pytest suite:** Confirmed exit code 0 across multiple runs this session.
+
+**Ruff:** 0 errors (verified: `python -m ruff check cherenkov/ --statistics`).
 
 ### What was done this session (2026-06-17)
 
-A thorough project-wide code review and fix session. All changes committed to main and pushed.
+Full tech-debt audit + fix cycle, all changes committed to `main` and pushed.
 
-**Security fixes (prior session, now on main):**
+**Security fixes:**
 - Timing-safe API key comparison (`hmac.compare_digest`) in `web/api.py`
 - Path-traversal fix: `str.startswith()` → `Path.is_relative_to()` in `sdd_routes.py`
 - Subprocess injection fix: `shlex.quote` in `playwright_invoke.py`
 - Auth guard on `/eject` endpoint
 
-**Bug fixes committed:**
-- `DivergenceReport(findings=[])` Pydantic crash → replaced with `SimpleNamespace`
+**Bug fixes committed (all confirmed importable):**
+- `DivergenceReport(findings=[])` Pydantic crash → `SimpleNamespace` in `legacy_cli.py` + `validate.py`
+- Inline `import os` inside `OrchestrationEngine.__init__` removed (redundant, E402)
+- `import threading` moved to module top-level in `settings.py` (E402)
+- Thread-safe double-checked locking in `get_settings()` singleton
+- `operation`/`schemas` params in `generate.py` changed from `= None` to `Optional[dict]`
+- `OUTPUT_DIR` field added to `CherenkovSettings` (was missing, caused `AttributeError`)
+- FTS5 SQLite search: tokenize + AND-join + fallback on empty in `sqlite_repository.py`
+- Unused `import os` removed from `sqlite_repository.py` (F401)
+- File-handle leak: `open(self.spec_path)` → `with open(...) as _f` in `graphql/adapter.py`
+- Operator-precedence bug in `eject.py` `_scores.json` size check
+- BOM removed from `jira_exporter.py`
 - `self.Layeredget_settings()` typo (×11) in `smoke_test_epoch5.py` → `self.LayeredConfig()`
 - Division-by-zero in `review.py` quality_score calculation
-- `LinearNotifier.notify()` async/sync mismatch → made plain sync `bool`
-- Subprocess timeout added to `playwright_invoke.py`
-- Thread-safe double-checked locking in `get_settings()` singleton
-- `import threading` moved to top-level in `settings.py` (cosmetic but correct)
-- SQLite repo: auto-create db parent dir, fix FTS join on rowid, serialize query results
+- `LinearNotifier.notify()` async/sync mismatch → plain sync `bool`
+- SQLite repo: auto-create db parent dir, fix FTS rowid join, serialize query results
 
 **Test improvements (20 spec files + 1 TS type stub):**
 - All generated tests use `Date.now()` emails for idempotency
