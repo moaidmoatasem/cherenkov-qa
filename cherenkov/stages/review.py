@@ -321,8 +321,6 @@ class ReviewStage:
         # Runs N independent LLM passes to validate that assertions are correct and
         # meaningful. Only fires when the four static gates all passed (no point
         # spending LLM calls on structurally broken code).
-        from cherenkov.core.settings import get_settings
-
         if (
             get_settings().CONSENSUS_ORACLE_ENABLED
             and syntax_passed
