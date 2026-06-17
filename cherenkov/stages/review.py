@@ -20,6 +20,7 @@ from cherenkov.core.contracts import (
 )
 from cherenkov.core.errors import get_logger
 from cherenkov.core.compat import npx as _npx
+from cherenkov.core.settings import get_settings
 from cherenkov.execution.prism_mock import PrismMockServer
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.trace_reader import TraceReader
@@ -141,7 +142,7 @@ class ReviewStage:
                 cwd=self.stub_dir,
                 capture_output=True,
                 text=True,
-                timeout=30,
+                timeout=get_settings().TSC_TIMEOUT_SECONDS,
             )
             if process.returncode != 0:
                 our_file = f"generated_tests/{scenario_id}.spec.ts"
@@ -246,8 +247,8 @@ class ReviewStage:
                                             body_data = json.loads(
                                                 response_info["body_raw"]
                                             )
-                                    except Exception:
-                                        pass
+                                    except (json.JSONDecodeError, ValueError) as parse_err:
+                                        self.log.warning("trace body parse failed", error=str(parse_err))
 
                                     diag = diagnoser.diagnose_failure(
                                         scenario_id=scenario_id,
@@ -424,8 +425,8 @@ class ReviewStage:
                     ],
                     test_code=code,
                 )
-            except Exception:
-                pass  # never block the pipeline
+            except Exception as _fte:
+                self.log.warning("finetune_log_failed", error=str(_fte))
 
         # A2 #110 — bridge: Verdict.HITL → HitlQueue.enqueue
         # Only fires on HITL (0.7–0.9 quality band), never on REGENERATE or AUTO_APPROVE.
