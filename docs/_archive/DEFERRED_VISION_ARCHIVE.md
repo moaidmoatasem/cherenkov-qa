@@ -1,4 +1,8 @@
-> # ⚠️ ARCHIVED — DO NOT CITE AS CURRENT
+> # ⚠️ ARCHIVED — MOVED TO _archive/ — DO NOT CITE AS CURRENT
+>
+> This document has been moved to `docs/_archive/`. For the current plan see
+> [docs/PHASE_PLAN.md](../PHASE_PLAN.md). For current status see
+> [docs/STATUS.md](../STATUS.md).
 >
 > This document captures vision material that was deferred pending Track A validation.
 > **Track A has since been built and the validation gate passed (2026-06-08).** All

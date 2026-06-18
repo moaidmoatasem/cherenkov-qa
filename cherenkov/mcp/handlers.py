@@ -1008,8 +1008,8 @@ def _tool_verify_suite(args: dict[str, Any]) -> MCPToolCallResult:
                 "title": f"Gate '{gate.gate}' failed",
                 "evidence": gate.detail,
                 "reproduction": (
-                    f"Run: python demos/catch-the-ai-cheating/run_demo.py\n"
-                    f"Or call verify_suite with the same suite_inline."
+                    "Run: python demos/catch-the-ai-cheating/run_demo.py\n"
+                    "Or call verify_suite with the same suite_inline."
                 ),
                 "suggested_fix": (
                     "Review the gate description at cherenkov://gates for what "
@@ -1101,7 +1101,9 @@ def _tool_registry_list(args: dict[str, Any]) -> MCPToolCallResult:
 
 def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     """Register an external MCP server with the mesh registry."""
+    import ipaddress
     import json
+    import socket
     from urllib.parse import urlparse
     from cherenkov.mcp.mesh_router import get_registry
 
@@ -1109,6 +1111,26 @@ def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     parsed_url = urlparse(inp.get("url", ""))
     if parsed_url.scheme not in ("http", "https"):
         return _err_content("Only http/https server URLs allowed")
+    host = parsed_url.hostname or ""
+    _BLOCKED_HOSTS = {"localhost", "127.0.0.1", "::1", "0.0.0.0", "metadata.google.internal"}
+    if host.lower() in _BLOCKED_HOSTS:
+        return _err_content("Internal network URLs not allowed")
+    try:
+        addr = ipaddress.ip_address(host)
+        if addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved:
+            return _err_content("Internal network URLs not allowed")
+    except ValueError:
+        try:
+            infos = socket.getaddrinfo(host, None)
+        except socket.gaierror:
+            return _err_content("Cannot resolve server host")
+        for info in infos:
+            try:
+                resolved = ipaddress.ip_address(info[4][0])
+                if resolved.is_private or resolved.is_loopback or resolved.is_link_local or resolved.is_reserved:
+                    return _err_content("Internal network URLs not allowed")
+            except ValueError:
+                pass
     tools = json.loads(inp.get("tools", "[]"))
     resources = json.loads(inp.get("resources", "[]"))
     reg_id = get_registry().register_server(

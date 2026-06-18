@@ -506,7 +506,7 @@ class OrchestrationEngine:
         try:
             from cherenkov.observability.llm_tracer import trace_event
             trace_event("pipeline-start", run_id=self.run_id, spec_path=spec_path)
-        except Exception:
+        except Exception:  # noqa: E722 — observability is optional; graceful degradation
             pass
 
         print(
@@ -822,7 +822,7 @@ class OrchestrationEngine:
                 scenarios_passed=successes,
                 scenarios_total=total,
             )
-        except Exception:
+        except Exception:  # noqa: E722 — observability trace is optional; graceful degradation
             pass
 
         # ── Research: LlamaRestTest-aligned generation quality metrics ─────
