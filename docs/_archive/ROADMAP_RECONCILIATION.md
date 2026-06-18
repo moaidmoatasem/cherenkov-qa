@@ -1,5 +1,9 @@
 # CHERENKOV — Unified Roadmap Reconciliation
 
+> ⚠️ **ARCHIVED — SUPERSEDED.** This document is archived and no longer current.
+> The authoritative plan is [docs/PHASE_PLAN.md](../PHASE_PLAN.md).
+> The authoritative status is [docs/STATUS.md](../STATUS.md).
+>
 > ⚠️ **DISPUTED — DO NOT TREAT AS SSOT.** A 2026-06-05 review found that the
 > central claim of this document — that the QA validation gate "officially
 > passed (4/5 YES)" — is **not supported by real evidence**. The only backing
