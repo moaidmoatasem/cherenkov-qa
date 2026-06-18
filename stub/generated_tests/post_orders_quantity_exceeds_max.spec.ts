@@ -12,10 +12,10 @@ test('post /orders quantity_exceeds_max - returns 422 when quantity is above max
   expect(ur.status).toBeLessThan(300);
   const userId = (user as any).id ?? (user as any).user_id;
 
-  const { data, response } = await client.POST('/orders', {
+  const { data, error, response } = await client.POST('/orders', {
     body: { user_id: userId, product_id: 1, quantity: 999999 }
   });
   expect(response.status).toBe(422);
-  expect(data).toBeTruthy();
-  expect((data as any).detail ?? (data as any).message ?? (data as any).error).toBeTruthy();
+  expect(error ?? data).toBeTruthy();
+  expect((error as any)?.detail ?? (data as any)?.detail ?? (data as any)?.message).toBeTruthy();
 });
