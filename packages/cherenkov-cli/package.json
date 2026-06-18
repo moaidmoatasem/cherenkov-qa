@@ -1,0 +1,27 @@
+{
+  "name": "cherenkov-cli",
+  "version": "1.0.0",
+  "description": "Zero-install quickstart for CHERENKOV — AI-native API conformance test generator",
+  "keywords": ["api", "testing", "openapi", "playwright", "conformance", "ai", "llm", "spec-drift"],
+  "homepage": "https://moaidmoatasem.github.io/cherenkov-qa",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moaidmoatasem/cherenkov-qa.git"
+  },
+  "bugs": {
+    "url": "https://github.com/moaidmoatasem/cherenkov-qa/issues"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "bin": {
+    "cherenkov-cli": "bin/cherenkov-init.js"
+  },
+  "files": [
+    "bin/"
+  ],
+  "scripts": {
+    "test": "node bin/cherenkov-init.js --help"
+  }
+}

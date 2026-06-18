@@ -1,7 +1,13 @@
-- id: cherenkov-validate
-  name: cherenkov-validate
-  description: Validates OpenAPI conformance using Cherenkov QA
+- id: cherenkov-conformance-check
+  name: CHERENKOV Conformance Check
+  description: >
+    Run API conformance tests from an OpenAPI spec. Catches spec drift before
+    it reaches production. Exits 1 if violations are found (configurable).
   entry: cherenkov validate
   language: python
-  types: [yaml, json]
+  additional_dependencies: ['cherenkov-qa']
+  args:
+    - --fail-on-drift
+  types_or: [yaml, json]
+  files: (openapi|swagger|api.*)\.(yaml|yml|json)$
   pass_filenames: false
