@@ -136,6 +136,40 @@ min_faithfulness = 0.8
 """
 
 
+def generate_github_actions_workflow() -> str:
+    """Generate a template GitHub Actions workflow."""
+    return """name: CHERENKOV Conformance Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run CHERENKOV
+        uses: cherenkov-qa/action@v1
+        with:
+          openapi-spec-path: './path/to/openapi.yaml'
+          target-url: 'http://localhost:8000'
+"""
+
+
 def run_init(profile: str | None = None, force: bool = False) -> int:
     """Execute `cherenkov init`.
 
@@ -182,7 +216,20 @@ def run_init(profile: str | None = None, force: bool = False) -> int:
         print(f"\n  [FAIL] Failed to write {toml_path}: {e}")
         return 1
 
-    # 7. Summary
+    # 7. Scaffold GitHub Actions Workflow
+    workflow_dir = Path.cwd() / ".github" / "workflows"
+    workflow_path = workflow_dir / "cherenkov.yml"
+    if not workflow_path.exists():
+        workflow_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            workflow_path.write_text(generate_github_actions_workflow(), encoding="utf-8")
+            print(f"  [OK] Generated {workflow_path}")
+        except OSError as e:
+            print(f"  [WARN] Failed to write GitHub Actions workflow: {e}")
+    else:
+        print(f"  [SKIP] {workflow_path} already exists")
+
+    # 8. Summary
     print()
     print("-" * 60)
     print("  Next steps:")

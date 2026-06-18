@@ -32,6 +32,7 @@ CHERENKOV can also call Qwen Code via the `run_qwen_code_agent` MCP tool.
 
 ### 3. Sync Driven Development (SDD)
 All Qwen Code sessions are logged to `agent_memory/sync/` just like CHERENKOV sessions.
+Run `python3 scripts/agent_sync.py before --task code-review --source qwen-code` before starting a Qwen Code session to ensure correct tagging.
 Use `agent_sync.py status` to view combined token usage and experience records.
 
 ## Design Invariants
