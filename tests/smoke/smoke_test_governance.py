@@ -92,7 +92,10 @@ for v in trend:
     check(0.0 <= v <= 1.0, f"trend value in range: {v}")
 
 if os.path.exists(db.name):
-    os.unlink(db.name)
+    try:
+        os.unlink(db.name)
+    except PermissionError:
+        pass  # Windows SQLite locking quirk
 
 print(f"\n{'='*40}")
 if errors:

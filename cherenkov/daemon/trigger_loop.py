@@ -15,7 +15,7 @@ class SpecGuardianTriggerLoop:
     """
 
     def __init__(self, target_url: str, source_type: str = "openapi"):
-        self.active_runs = {}
+        self.active_runs = {}  # type: ignore
         self.target_url = target_url
         self.source_type = source_type
 
@@ -45,21 +45,25 @@ class SpecGuardianTriggerLoop:
 
                 source = GraphQLSourceAdapter(spec_path)
                 planner = GraphQLScenarioPlanner()
-                scenarios = planner.plan(source)
+                scenarios = planner.plan(source)  # type: ignore
             elif self.source_type == "grpc":
                 from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
                 from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
 
-                source = gRPCSourceAdapter(spec_path)
-                planner = gRPCScenarioPlanner()
-                scenarios = planner.plan(source)
+                source = gRPCSourceAdapter(spec_path)  # type: ignore
+                planner = gRPCScenarioPlanner()  # type: ignore
+                scenarios = planner.plan(source)  # type: ignore
             elif self.source_type == "accessibility":
-                from cherenkov.sources.accessibility.adapter import AccessibilitySourceAdapter
-                from cherenkov.stages.plan_accessibility import AccessibilityScenarioPlanner
+                from cherenkov.sources.accessibility.adapter import (
+                    AccessibilitySourceAdapter,
+                )
+                from cherenkov.stages.plan_accessibility import (
+                    AccessibilityScenarioPlanner,
+                )
 
-                source = AccessibilitySourceAdapter(spec_path)
-                planner = AccessibilityScenarioPlanner()
-                scenarios = planner.plan(source)
+                source = AccessibilitySourceAdapter(spec_path)  # type: ignore
+                planner = AccessibilityScenarioPlanner()  # type: ignore
+                scenarios = planner.plan(source)  # type: ignore
             else:
                 logger.error(f"[{run_id}] Unsupported source type {self.source_type}")
                 return

@@ -1,0 +1,55 @@
+ASYNCAPI OPERATION:
+Channel: {{ channel }}
+Operation: {{ operation }} (publish/subscribe)
+Message: {{ message }}
+Scenario Type: {{ scenario_type }}
+Required Fields: {{ required_fields | tojson }}
+
+SCENARIO INSTRUCTION:
+Write a Playwright test to send or receive this message over WebSockets.
+
+=== CRITICAL INSTRUCTIONS ===
+You are writing a Playwright API test in TypeScript for an AsyncAPI WebSocket channel.
+STRICT RULES:
+- Import `test` and `expect` from '@playwright/test'.
+- Use standard `WebSocket` client to connect to the broker since Playwright API contexts don't natively expose WS. 
+- Provide a structured test block that sends a JSON payload with `{{ required_fields | join(', ') }}` if it's a publish operation.
+- If it's a subscribe operation, write a test that listens for a message.
+- Output ONLY the TypeScript code block starting with the imports. No prose, no explanations.
+
+EXAMPLE OF CORRECT USAGE:
+import { test, expect } from '@playwright/test';
+import WebSocket from 'ws';
+
+test('AsyncAPI {{ operation }} on {{ channel }} ({{ scenario_type }})', async () => {
+  // Replace with actual WS/Kafka broker URL
+  const wsUrl = process.env.WS_URL || 'ws://localhost:8080{{ channel }}';
+  
+  const ws = new WebSocket(wsUrl);
+  
+  await new Promise((resolve, reject) => {
+    ws.on('open', resolve);
+    ws.on('error', reject);
+  });
+
+  // Construct payload
+  const payload = {
+    // Fill in required fields: {{ required_fields | join(', ') }}
+  };
+
+  {% if operation == 'publish' %}
+  ws.send(JSON.stringify(payload));
+  // Wait for acknowledgment or verify success
+  {% else %}
+  // Wait for message
+  await new Promise((resolve) => {
+    ws.on('message', (data) => {
+      const msg = JSON.parse(data.toString());
+      expect(msg).toBeDefined();
+      resolve(true);
+    });
+  });
+  {% endif %}
+
+  ws.close();
+});

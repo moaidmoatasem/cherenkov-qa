@@ -12,7 +12,7 @@ triggers:
 # Skill: governance-check
 
 ## Purpose
-Perform a full governance snapshot: validation gate, drift findings, HITL queue status, and spec tightening opportunities.  
+Perform a full governance snapshot: validation gate, drift findings, HITL queue status, and spec tightening opportunities.
 Output is a structured report — **suggest-only, no auto-fixes**.
 
 ## Workflow
@@ -49,7 +49,7 @@ Output a structured markdown report:
 
 ## High-Severity Findings: N
 | Finding ID | Endpoint | Method | Description |
-|...| 
+|...|
 
 ## HITL Queue: N pending
 | ID | Description | Created |

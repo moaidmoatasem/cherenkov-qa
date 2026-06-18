@@ -211,33 +211,33 @@ Mapping the full day-to-day QA activity list to CHERENKOV coverage:
 The five test suites in `cherenkov/web/ui/tests/qa/` implement this strategy as applied to CHERENKOV's own dashboard — dogfooding the approach:
 
 ### `functional-suite.spec.ts` (926 lines)
-**Strategy mapping:** Automate Always — functional testing  
-Covers: Projects screen (display, search, CRUD), pipeline execution flows, review screen (filtering, divergence display), healing screen (D7 invariant), eject screen (anti-lock-in), truth map, signals, knowledge, author intent, chat, governance  
+**Strategy mapping:** Automate Always — functional testing
+Covers: Projects screen (display, search, CRUD), pipeline execution flows, review screen (filtering, divergence display), healing screen (D7 invariant), eject screen (anti-lock-in), truth map, signals, knowledge, author intent, chat, governance
 **Key invariants tested:**
 - D7: all repairs are suggest-only (never auto-applied) — core CHERENKOV integrity promise
 - Spec-derived status codes appear in UI (not hardcoded)
 - Anti-lock-in: eject produces standalone suite with no CHERENKOV imports
 
 ### `smoke-regression-exploratory.spec.ts` (519 lines)
-**Strategy mapping:** Automate (smoke + regression) + Charter-based (exploratory)  
-Smoke section: every build, 2-minute pass/fail gate (all 15 screens render, health widget, command palette)  
-Regression section: key invariants every sprint (D7, autonomy toggle, settings persistence, toast system, anti-lock-in eject, SDD sessions, chat SSE, mobile devices)  
+**Strategy mapping:** Automate (smoke + regression) + Charter-based (exploratory)
+Smoke section: every build, 2-minute pass/fail gate (all 15 screens render, health widget, command palette)
+Regression section: key invariants every sprint (D7, autonomy toggle, settings persistence, toast system, anti-lock-in eject, SDD sessions, chat SSE, mobile devices)
 Exploratory section: structured edge-case charters (spec ingestion edge cases, autonomy toggle extremes, concurrent data loading, overlay stacking, offline handling)
 
 ### `api-contract-integration.spec.ts` (367 lines)
-**Strategy mapping:** Automate Always — API contract and integration testing  
+**Strategy mapping:** Automate Always — API contract and integration testing
 Covers: REST API endpoint contracts (/api/projects, /api/tests, /api/run, /api/eject, /api/ingest, /api/divergences, /api/healing), schema validation, error handling, backward compatibility, service integration between screens
 
 ### `e2e-journeys.spec.ts` (250 lines)
-**Strategy mapping:** Automate Always — end-to-end happy path journeys  
-Covers: J1 (Manual QA / Maya — author intent to result), J2 (QA Lead / Sam — divergence triage), J3 (SDET / Jordan — deep analysis + pattern learning), J4 (DevOps / Alex — scheduled validation), plus error recovery and performance under load  
+**Strategy mapping:** Automate Always — end-to-end happy path journeys
+Covers: J1 (Manual QA / Maya — author intent to result), J2 (QA Lead / Sam — divergence triage), J3 (SDET / Jordan — deep analysis + pattern learning), J4 (DevOps / Alex — scheduled validation), plus error recovery and performance under load
 These journeys map to the 4 QA personas from `docs/FE_QA_WORKFLOW_REQUIREMENTS.md`
 
 ### `nonfunctional-suite.spec.ts` (457 lines)
-**Strategy mapping:** Automate Always — security, performance, accessibility, compatibility  
-Security: XSS injection across all input surfaces, localStorage credential leak, API key masking  
-Performance: render budgets per screen (200–800ms), command palette < 500ms, DOM growth limits  
-Accessibility: axe-core WCAG 2AA on all 12 screens, ARIA radiogroup, keyboard navigation, landmark structure, form label coverage  
+**Strategy mapping:** Automate Always — security, performance, accessibility, compatibility
+Security: XSS injection across all input surfaces, localStorage credential leak, API key masking
+Performance: render budgets per screen (200–800ms), command palette < 500ms, DOM growth limits
+Accessibility: axe-core WCAG 2AA on all 12 screens, ARIA radiogroup, keyboard navigation, landmark structure, form label coverage
 Compatibility: 7 viewport sizes (mobile portrait through 4K), responsive sidebar behavior
 
 ---

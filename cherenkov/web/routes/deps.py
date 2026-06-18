@@ -24,6 +24,7 @@ from cherenkov.hitl.store import HitlQueue
 
 # ── WebSocket Manager (singleton) ─────────────────────────────────────
 
+
 class ConnectionManager:
     def __init__(self):
         self.active_connections: list[WebSocket] = []
@@ -77,6 +78,7 @@ def get_queue() -> HitlQueue:
 
 # ── Security helpers ──────────────────────────────────────────────────
 
+
 def _is_safe_ip(addr: _ipaddress.IPv4Address | _ipaddress.IPv6Address) -> bool:
     return not (
         addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved
@@ -89,19 +91,28 @@ async def _validate_spec_url(url: str) -> str:
         raise HTTPException(status_code=400, detail="Only http/https URLs allowed")
     host = parsed.hostname or ""
     if host.lower() in (
-        "localhost", "127.0.0.1", "::1", "0.0.0.0", "metadata.google.internal",
+        "localhost",
+        "127.0.0.1",
+        "::1",
+        "0.0.0.0",
+        "metadata.google.internal",
     ):
         raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
     try:
         addr = _ipaddress.ip_address(host)
         if not _is_safe_ip(addr):
-            raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
+            raise HTTPException(
+                status_code=400, detail="Internal network URLs not allowed"
+            )
         return url
     except ValueError:
         pass
     try:
         ips = await asyncio.to_thread(
-            lambda: [info[4][0] for info in _socket.getaddrinfo(host, 80, family=_socket.AF_INET)]
+            lambda: [
+                info[4][0]
+                for info in _socket.getaddrinfo(host, 80, family=_socket.AF_INET)
+            ]
         )
     except Exception:
         raise HTTPException(status_code=400, detail="Could not resolve host")
@@ -111,7 +122,9 @@ async def _validate_spec_url(url: str) -> str:
         except ValueError:
             continue
         if not _is_safe_ip(addr):
-            raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
+            raise HTTPException(
+                status_code=400, detail="Internal network URLs not allowed"
+            )
     safe_host = ips[0]
     safe_url = url.replace(f"://{host}", f"://{safe_host}", 1)
     return safe_url
@@ -128,7 +141,11 @@ async def verify_api_key(
         return
     if x_api_key and _hmac.compare_digest(x_api_key, configured_key):
         return
-    if authorization and authorization.startswith("Bearer ") and _hmac.compare_digest(authorization[7:], configured_key):
+    if (
+        authorization
+        and authorization.startswith("Bearer ")
+        and _hmac.compare_digest(authorization[7:], configured_key)
+    ):
         return
     raise HTTPException(status_code=401, detail="Missing or invalid API key")
 
@@ -160,6 +177,7 @@ def ws_event_callback(type_: str, payload: dict):
 
 
 # ── Lifespan ──────────────────────────────────────────────────────────
+
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):

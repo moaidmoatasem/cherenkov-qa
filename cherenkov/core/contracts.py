@@ -153,7 +153,9 @@ class GateResult(BaseModel):
     gate: str  # "syntax" | "structure" | "ast" | ...
     passed: bool
     detail: str = ""
-    skipped: bool = False  # infra-unavailable (e.g. no Docker) — excluded from quality_score
+    skipped: bool = (
+        False  # infra-unavailable (e.g. no Docker) — excluded from quality_score
+    )
 
 
 class Verdict(str, Enum):
@@ -324,6 +326,7 @@ class ReproductionResult(BaseModel):
 
 class DivergenceFinding(BaseModel):
     """Legacy finding for older interfaces."""
+
     violation_type: str
     endpoint: str
     http_method: str
@@ -333,7 +336,6 @@ class DivergenceFinding(BaseModel):
     description: str
     severity: str
     remediation: str
-
 
 
 class DivergenceReport(BaseModel):

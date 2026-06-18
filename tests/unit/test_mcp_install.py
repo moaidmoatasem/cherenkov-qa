@@ -1,7 +1,6 @@
 """Unit tests for MCP install config generator."""
 
 import json
-import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -108,6 +107,7 @@ class TestMCPConfigGenerator(unittest.TestCase):
 
     def test_run_mcp_install_all(self):
         from cherenkov.mcp.install import run_mcp_install
+
         try:
             run_mcp_install(platform_target="all", python_path="/usr/bin/python3")
         except Exception as e:

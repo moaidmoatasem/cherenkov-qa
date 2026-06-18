@@ -6,14 +6,17 @@ import os
 
 
 class TestSAMLServiceProvider(unittest.TestCase):
-
     def setUp(self):
         from cherenkov.enterprise.saml import SAMLServiceProvider, SAMLConfig
-        config = SAMLConfig(idp_metadata_url="https://idp.example.com/saml", enabled=True)
+
+        config = SAMLConfig(
+            idp_metadata_url="https://idp.example.com/saml", enabled=True
+        )
         self.sp = SAMLServiceProvider(config)
 
     def test_not_enabled_when_disabled(self):
         from cherenkov.enterprise.saml import SAMLServiceProvider
+
         sp = SAMLServiceProvider()
         self.assertFalse(sp.is_enabled())
 
@@ -27,11 +30,11 @@ class TestSAMLServiceProvider(unittest.TestCase):
 
     def test_get_login_url_empty_when_disabled(self):
         from cherenkov.enterprise.saml import SAMLServiceProvider
+
         sp = SAMLServiceProvider()
         self.assertEqual(sp.get_login_url(), "")
 
     def test_empty_response_returns_none(self):
-        from cherenkov.enterprise.saml import SAMLAssertion
         result = self.sp.process_response("")
         self.assertIsNotNone(result)
         self.assertEqual(result.name_id, "")
@@ -42,7 +45,10 @@ class TestSAMLServiceProvider(unittest.TestCase):
 
     def test_end_session_works(self):
         from cherenkov.enterprise.saml import SAMLAssertion
-        self.sp._sessions["test-user"] = SAMLAssertion(name_id="test-user", email="test@test.com")
+
+        self.sp._sessions["test-user"] = SAMLAssertion(
+            name_id="test-user", email="test@test.com"
+        )
         self.assertTrue(self.sp.end_session("test-user"))
 
     def test_end_session_nonexistent(self):
@@ -50,44 +56,57 @@ class TestSAMLServiceProvider(unittest.TestCase):
 
 
 class TestRBACEngine(unittest.TestCase):
-
     def setUp(self):
         from cherenkov.enterprise.rbac import RBACEngine, User, Role
+
         self.rbac = RBACEngine()
-        self.admin = User(id="admin-1", name="Admin", email="admin@test.com", role=Role.ADMIN)
-        self.viewer = User(id="viewer-1", name="Viewer", email="viewer@test.com", role=Role.VIEWER)
+        self.admin = User(
+            id="admin-1", name="Admin", email="admin@test.com", role=Role.ADMIN
+        )
+        self.viewer = User(
+            id="viewer-1", name="Viewer", email="viewer@test.com", role=Role.VIEWER
+        )
         self.rbac.register_user(self.admin)
         self.rbac.register_user(self.viewer)
 
     def test_register_user(self):
-        from cherenkov.enterprise.rbac import Role, Permission, User
-        self.rbac.register_user(User(id="new", name="New", email="new@test.com", role=Role.READ_ONLY))
+        from cherenkov.enterprise.rbac import Role, User
+
+        self.rbac.register_user(
+            User(id="new", name="New", email="new@test.com", role=Role.READ_ONLY)
+        )
         self.assertIsNotNone(self.rbac.get_user("new"))
 
     def test_admin_has_all_permissions(self):
-        from cherenkov.enterprise.rbac import Permission, Role
+        from cherenkov.enterprise.rbac import Permission
+
         for perm in Permission:
             self.assertTrue(self.rbac.has_permission("admin-1", perm))
 
     def test_viewer_lacks_approve(self):
         from cherenkov.enterprise.rbac import Permission
+
         self.assertFalse(self.rbac.has_permission("viewer-1", Permission.HITL_APPROVE))
 
     def test_viewer_has_list(self):
         from cherenkov.enterprise.rbac import Permission
+
         self.assertTrue(self.rbac.has_permission("viewer-1", Permission.HITL_LIST))
 
     def test_nonexistent_user_has_no_permissions(self):
         from cherenkov.enterprise.rbac import Permission
+
         self.assertFalse(self.rbac.has_permission("ghost", Permission.VALIDATE_VIEW))
 
     def test_require_permission_raises(self):
         from cherenkov.enterprise.rbac import Permission
+
         with self.assertRaises(PermissionError):
             self.rbac.require_permission("viewer-1", Permission.HITL_APPROVE)
 
     def test_set_role(self):
         from cherenkov.enterprise.rbac import Role, Permission
+
         self.rbac.set_role("viewer-1", Role.ADMIN)
         self.assertTrue(self.rbac.has_permission("viewer-1", Permission.HITL_APPROVE))
 
@@ -101,20 +120,30 @@ class TestRBACEngine(unittest.TestCase):
 
     def test_user_has_any(self):
         from cherenkov.enterprise.rbac import Permission
-        self.assertTrue(self.rbac.user_has_any("viewer-1", [Permission.HITL_APPROVE, Permission.HITL_LIST]))
-        self.assertFalse(self.rbac.user_has_any("viewer-1", [Permission.HITL_APPROVE, Permission.HITL_REJECT]))
+
+        self.assertTrue(
+            self.rbac.user_has_any(
+                "viewer-1", [Permission.HITL_APPROVE, Permission.HITL_LIST]
+            )
+        )
+        self.assertFalse(
+            self.rbac.user_has_any(
+                "viewer-1", [Permission.HITL_APPROVE, Permission.HITL_REJECT]
+            )
+        )
 
 
 class TestGDPRManager(unittest.TestCase):
-
     def setUp(self):
         from cherenkov.enterprise.gdpr import GDPRManager, GDPRConfig
+
         tmpdir = tempfile.mkdtemp()
         config = GDPRConfig(enabled=True, data_directory=tmpdir)
         self.gdpr = GDPRManager(config)
 
     def test_disabled_by_default(self):
         from cherenkov.enterprise.gdpr import GDPRManager
+
         gdpr = GDPRManager()
         self.assertFalse(gdpr.is_enabled())
 
@@ -161,7 +190,6 @@ class TestGDPRManager(unittest.TestCase):
         self.assertEqual(result["format"], "json")
 
     def test_purge_old_data(self):
-        import time
         self.gdpr.create_request("user-1", "access")
         purged = self.gdpr.purge_old_data()
         # Should not purge recent data
@@ -169,9 +197,9 @@ class TestGDPRManager(unittest.TestCase):
 
 
 class TestSOC2ReportGenerator(unittest.TestCase):
-
     def setUp(self):
         from cherenkov.enterprise.soc2 import SOC2ReportGenerator
+
         self.soc2 = SOC2ReportGenerator()
 
     def test_get_controls_returns_defaults(self):
@@ -179,7 +207,9 @@ class TestSOC2ReportGenerator(unittest.TestCase):
         self.assertGreater(len(controls), 0)
 
     def test_update_control(self):
-        self.assertTrue(self.soc2.update_control("CC1.1", evidence="Policy document v2"))
+        self.assertTrue(
+            self.soc2.update_control("CC1.1", evidence="Policy document v2")
+        )
         controls = self.soc2.get_controls()
         c = next(c for c in controls if c.id == "CC1.1")
         self.assertEqual(c.evidence, "Policy document v2")
@@ -225,6 +255,7 @@ class TestSOC2ReportGenerator(unittest.TestCase):
 
     def test_compliance_summary_coverage(self):
         from cherenkov.enterprise.soc2 import ControlStatus
+
         for c in self.soc2.get_controls():
             self.soc2.update_control(c.id, status=ControlStatus.OPERATIONAL)
         summary = self.soc2.get_compliance_summary()

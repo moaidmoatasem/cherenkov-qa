@@ -141,7 +141,7 @@ def test_cached_client():
     assert mock.json_call_count == 1, "Should NOT have called mock again"
 
     # Different user prompt should miss cache
-    r3 = client.complete_json("sys", "user-different", "m1")
+    client.complete_json("sys", "user-different", "m1")
     assert mock.json_call_count == 2
 
     # Verify cache stats

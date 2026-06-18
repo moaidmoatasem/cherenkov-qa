@@ -178,7 +178,7 @@ def get_divergences(
 
 def get_finding_by_id(finding_id: str) -> DivergenceFindingNamespace | None:
     for f in get_divergences(limit=100):
-        if f.id == finding_id:
+        if f.id == finding_id:  # type: ignore
             return f
     return None
 

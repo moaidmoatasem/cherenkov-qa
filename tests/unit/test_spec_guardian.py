@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-import tempfile
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -40,7 +38,10 @@ def sample_spec(tmp_path: Path) -> Path:
                                             "properties": {
                                                 "id": {"type": "integer"},
                                                 "name": {"type": "string"},
-                                                "email": {"type": "string", "pattern": "^[^@]+@[^@]+$"},
+                                                "email": {
+                                                    "type": "string",
+                                                    "pattern": "^[^@]+@[^@]+$",
+                                                },
                                             },
                                             "required": ["id", "name"],
                                         },
@@ -82,7 +83,11 @@ def sample_spec(tmp_path: Path) -> Path:
                                         "properties": {
                                             "id": {"type": "integer"},
                                             "name": {"type": "string"},
-                                            "age": {"type": "integer", "minimum": 0, "maximum": 150},
+                                            "age": {
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "maximum": 150,
+                                            },
                                         },
                                         "required": ["id", "name"],
                                     }
@@ -94,9 +99,10 @@ def sample_spec(tmp_path: Path) -> Path:
             },
         },
     }
-    
+
     spec_path = tmp_path / "spec.yaml"
     import yaml
+
     spec_path.write_text(yaml.dump(spec))
     return spec_path
 
@@ -116,7 +122,7 @@ def store(tmp_path: Path) -> DriftStore:
 
 class TestDriftEvent:
     """Tests for DriftEvent dataclass."""
-    
+
     def test_create_event(self):
         """Test creating a drift event."""
         event = DriftEvent(
@@ -132,7 +138,7 @@ class TestDriftEvent:
         assert event.drift_type == DriftType.TYPE_MISMATCH
         assert event.severity == DriftSeverity.CRITICAL
         assert event.endpoint == "/users"
-    
+
     def test_event_to_dict(self):
         """Test serializing event to dict."""
         event = DriftEvent(
@@ -149,7 +155,7 @@ class TestDriftEvent:
         assert d["drift_type"] == "field_missing"
         assert d["severity"] == "warning"
         assert d["endpoint"] == "/users"
-    
+
     def test_event_from_dict(self):
         """Test deserializing event from dict."""
         d = {
@@ -170,7 +176,7 @@ class TestDriftEvent:
 
 class TestDriftReport:
     """Tests for DriftReport dataclass."""
-    
+
     def test_drift_rate_calculation(self):
         """Test drift rate calculation."""
         report = DriftReport(
@@ -182,7 +188,7 @@ class TestDriftReport:
             compliant_checks=90,
         )
         assert abs(report.drift_rate - 0.1) < 1e-9
-    
+
     def test_drift_rate_zero_checks(self):
         """Test drift rate with zero checks."""
         report = DriftReport(
@@ -194,7 +200,7 @@ class TestDriftReport:
             compliant_checks=0,
         )
         assert report.drift_rate == 0.0
-    
+
     def test_critical_count(self):
         """Test counting critical events."""
         events = [
@@ -233,7 +239,7 @@ class TestDriftReport:
 
 class TestSpecDriftDetector:
     """Tests for SpecDriftDetector."""
-    
+
     def test_compliant_response(self, detector: SpecDriftDetector):
         """Test a fully compliant response."""
         events = detector.check_response(
@@ -246,7 +252,7 @@ class TestSpecDriftDetector:
             ],
         )
         assert len(events) == 0
-    
+
     def test_missing_required_field(self, detector: SpecDriftDetector):
         """Test detection of missing required field."""
         events = detector.check_response(
@@ -261,7 +267,7 @@ class TestSpecDriftDetector:
         assert events[0].drift_type == DriftType.REQUIRED_MISSING
         assert events[0].severity == DriftSeverity.CRITICAL
         assert "name" in events[0].message
-    
+
     def test_extra_field(self, detector: SpecDriftDetector):
         """Test detection of extra field not in spec."""
         events = detector.check_response(
@@ -277,7 +283,7 @@ class TestSpecDriftDetector:
         assert len(events) == 1
         assert events[0].drift_type == DriftType.FIELD_EXTRA
         assert events[0].severity == DriftSeverity.INFO
-    
+
     def test_type_mismatch(self, detector: SpecDriftDetector):
         """Test detection of type mismatch."""
         events = detector.check_response(
@@ -292,7 +298,7 @@ class TestSpecDriftDetector:
         assert len(events) == 1
         assert events[0].drift_type == DriftType.TYPE_MISMATCH
         assert events[0].severity == DriftSeverity.CRITICAL
-    
+
     def test_range_violation(self, detector: SpecDriftDetector):
         """Test detection of range violation."""
         events = detector.check_response(
@@ -308,7 +314,7 @@ class TestSpecDriftDetector:
         assert len(events) == 1
         assert events[0].drift_type == DriftType.RANGE_VIOLATION
         assert events[0].severity == DriftSeverity.WARNING
-    
+
     def test_pattern_violation(self, detector: SpecDriftDetector):
         """Test detection of pattern violation."""
         events = detector.check_response(
@@ -322,7 +328,7 @@ class TestSpecDriftDetector:
         assert len(events) == 1
         assert events[0].drift_type == DriftType.PATTERN_VIOLATION
         assert events[0].severity == DriftSeverity.WARNING
-    
+
     def test_status_code_not_in_spec(self, detector: SpecDriftDetector):
         """Test detection of status code not in spec."""
         events = detector.check_response(
@@ -334,7 +340,7 @@ class TestSpecDriftDetector:
         assert len(events) == 1
         assert events[0].drift_type == DriftType.STATUS_DRIFT
         assert events[0].severity == DriftSeverity.WARNING
-    
+
     def test_endpoint_not_in_spec(self, detector: SpecDriftDetector):
         """Test detection of endpoint not in spec."""
         events = detector.check_response(
@@ -346,7 +352,7 @@ class TestSpecDriftDetector:
         assert len(events) == 1
         assert events[0].drift_type == DriftType.SCHEMA_DRIFT
         assert events[0].severity == DriftSeverity.CRITICAL
-    
+
     def test_path_parameter_matching(self, detector: SpecDriftDetector):
         """Test that path parameters are matched correctly."""
         events = detector.check_response(
@@ -360,7 +366,7 @@ class TestSpecDriftDetector:
 
 class TestDriftStore:
     """Tests for DriftStore."""
-    
+
     def test_save_and_retrieve_event(self, store: DriftStore):
         """Test saving and retrieving a drift event."""
         event = DriftEvent(
@@ -373,15 +379,15 @@ class TestDriftStore:
             actual="string",
             message="Type mismatch",
         )
-        
+
         event_id = store.save_event(event)
         assert event_id > 0
-        
+
         events = store.recent_events(limit=10)
         assert len(events) == 1
         assert events[0].drift_type == DriftType.TYPE_MISMATCH
         assert events[0].endpoint == "/users"
-    
+
     def test_save_and_retrieve_report(self, store: DriftStore):
         """Test saving and retrieving a drift report."""
         report = DriftReport(
@@ -392,16 +398,16 @@ class TestDriftStore:
             total_checks=10,
             compliant_checks=8,
         )
-        
+
         report_id = store.save_report(report)
         assert report_id > 0
-        
+
         retrieved = store.latest_report()
         assert retrieved is not None
         assert retrieved.spec_path == "spec.yaml"
         assert retrieved.total_checks == 10
         assert retrieved.compliant_checks == 8
-    
+
     def test_drift_trend(self, store: DriftStore):
         """Test drift trend calculation."""
         # Add some events
@@ -417,7 +423,7 @@ class TestDriftStore:
                 message=f"Event {i}",
             )
             store.save_event(event)
-        
+
         trend = store.drift_trend(hours=24)
         assert trend["total_events"] == 5
         assert trend["critical_events"] == 2

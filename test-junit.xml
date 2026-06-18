@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites><testsuite name="cherenkov" tests="2" failures="2"><testcase name="unknown" classname="cherenkov.review"><failure message="Conformance or quality check failed">Verdict: regenerate
+Score: 0.5</failure></testcase><testcase name="unknown" classname="cherenkov.review"><failure message="Conformance or quality check failed">Verdict: None
+Score: None</failure></testcase></testsuite></testsuites>

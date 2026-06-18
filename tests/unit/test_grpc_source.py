@@ -58,7 +58,9 @@ class TestGRPCSourceAdapter(unittest.TestCase):
     """Tests for gRPCSourceAdapter."""
 
     def setUp(self):
-        self.proto_file = tempfile.NamedTemporaryFile(mode='w', suffix='.proto', delete=False)
+        self.proto_file = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".proto", delete=False
+        )
         self.proto_file.write(TEST_PROTO)
         self.proto_file.close()
 
@@ -81,21 +83,21 @@ class TestGRPCSourceAdapter(unittest.TestCase):
         adapter = gRPCSourceAdapter(self.proto_file.name)
         ops = list(adapter.iter_operations())
 
-        user_svc_ops = [op for op in ops if op.service == 'UserService']
+        user_svc_ops = [op for op in ops if op.service == "UserService"]
         self.assertEqual(len(user_svc_ops), 2)
 
-        get_user = next((op for op in user_svc_ops if op.rpc_name == 'GetUser'), None)
+        get_user = next((op for op in user_svc_ops if op.rpc_name == "GetUser"), None)
         self.assertIsNotNone(get_user)
-        self.assertIn('GetUserRequest', get_user.input_message)
-        self.assertIn('User', get_user.output_message)
+        self.assertIn("GetUserRequest", get_user.input_message)
+        self.assertIn("User", get_user.output_message)
 
     def test_multiple_services(self):
         adapter = gRPCSourceAdapter(self.proto_file.name)
         ops = list(adapter.iter_operations())
 
         services = set(op.service for op in ops)
-        self.assertIn('UserService', services)
-        self.assertIn('HealthService', services)
+        self.assertIn("UserService", services)
+        self.assertIn("HealthService", services)
 
     def test_operation_attributes(self):
         adapter = gRPCSourceAdapter(self.proto_file.name)
@@ -111,14 +113,16 @@ class TestGRPCSourceAdapter(unittest.TestCase):
 
     def test_handles_missing_file_gracefully(self):
         with self.assertRaises(FileNotFoundError):
-            gRPCSourceAdapter('/nonexistent/file.proto')
+            gRPCSourceAdapter("/nonexistent/file.proto")
 
 
 class TestGRPCScenarioPlanner(unittest.TestCase):
     """Tests for gRPCScenarioPlanner."""
 
     def setUp(self):
-        self.proto_file = tempfile.NamedTemporaryFile(mode='w', suffix='.proto', delete=False)
+        self.proto_file = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".proto", delete=False
+        )
         self.proto_file.write(TEST_PROTO)
         self.proto_file.close()
         self.adapter = gRPCSourceAdapter(self.proto_file.name)
@@ -133,14 +137,14 @@ class TestGRPCScenarioPlanner(unittest.TestCase):
 
     def test_happy_path_scenario(self):
         scenarios = self.planner.plan(self.adapter)
-        happy = [s for s in scenarios if s.case_type == 'happy_path']
+        happy = [s for s in scenarios if s.case_type == "happy_path"]
         self.assertTrue(len(happy) > 0)
         for s in happy:
             self.assertEqual(s.expected_status, 200)
 
     def test_missing_fields_scenario(self):
         scenarios = self.planner.plan(self.adapter)
-        missing = [s for s in scenarios if s.case_type == 'missing_fields']
+        missing = [s for s in scenarios if s.case_type == "missing_fields"]
         self.assertTrue(len(missing) > 0)
         for s in missing:
             self.assertEqual(s.expected_status, 400)
@@ -153,15 +157,15 @@ class TestGRPCScenarioPlanner(unittest.TestCase):
             self.assertIsInstance(s.rpc_name, str)
             self.assertIsInstance(s.input_message, str)
             self.assertIsInstance(s.case_type, str)
-            self.assertIn(s.case_type, ['happy_path', 'missing_fields'])
+            self.assertIn(s.case_type, ["happy_path", "missing_fields"])
             self.assertIn(s.expected_status, [200, 400])
 
     def test_scenario_per_operation(self):
         scenarios = self.planner.plan(self.adapter)
         unique_rpcs = set((s.service, s.rpc_name) for s in scenarios)
-        self.assertIn(('UserService', 'GetUser'), unique_rpcs)
-        self.assertIn(('UserService', 'ListUsers'), unique_rpcs)
-        self.assertIn(('HealthService', 'Check'), unique_rpcs)
+        self.assertIn(("UserService", "GetUser"), unique_rpcs)
+        self.assertIn(("UserService", "ListUsers"), unique_rpcs)
+        self.assertIn(("HealthService", "Check"), unique_rpcs)
 
 
 class TestGRPCContracts(unittest.TestCase):
@@ -169,13 +173,13 @@ class TestGRPCContracts(unittest.TestCase):
 
     def test_scenario_serialization(self):
         scenario = gRPCScenario(
-            service='UserService',
-            rpc_name='GetUser',
-            input_message='GetUserRequest',
+            service="UserService",
+            rpc_name="GetUser",
+            input_message="GetUserRequest",
             proto_content='syntax = "proto3";',
-            case_type='happy_path',
-            mutation_id='grpc_UserService_GetUser_happy',
-            expected_status=200
+            case_type="happy_path",
+            mutation_id="grpc_UserService_GetUser_happy",
+            expected_status=200,
         )
         dumped = scenario.model_dump_json()
         restored = gRPCScenario.model_validate_json(dumped)
@@ -185,5 +189,5 @@ class TestGRPCContracts(unittest.TestCase):
         self.assertEqual(restored.expected_status, scenario.expected_status)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

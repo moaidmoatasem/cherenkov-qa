@@ -7,7 +7,6 @@ from cherenkov.training import DataCollector, TrainingDataset, Trainer, TrainerC
 
 
 class TestTrainingPipeline(unittest.TestCase):
-
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp()
         self.db_path = os.path.join(self.tmpdir, "test_telemetry.db")
@@ -54,8 +53,32 @@ class TestTrainingPipeline(unittest.TestCase):
     def test_dataset_from_jsonl(self):
         path = os.path.join(self.tmpdir, "data.jsonl")
         with open(path, "w") as f:
-            f.write(json.dumps({"spec_slice": "s1", "test_code": "t1", "verdict": "pass", "endpoint": "/a", "duration_ms": 1.0, "created_at": "now"}) + "\n")
-            f.write(json.dumps({"spec_slice": "s2", "test_code": "t2", "verdict": "fail", "endpoint": "/b", "duration_ms": 2.0, "created_at": "now"}) + "\n")
+            f.write(
+                json.dumps(
+                    {
+                        "spec_slice": "s1",
+                        "test_code": "t1",
+                        "verdict": "pass",
+                        "endpoint": "/a",
+                        "duration_ms": 1.0,
+                        "created_at": "now",
+                    }
+                )
+                + "\n"
+            )
+            f.write(
+                json.dumps(
+                    {
+                        "spec_slice": "s2",
+                        "test_code": "t2",
+                        "verdict": "fail",
+                        "endpoint": "/b",
+                        "duration_ms": 2.0,
+                        "created_at": "now",
+                    }
+                )
+                + "\n"
+            )
         ds = TrainingDataset.from_jsonl(path)
         self.assertEqual(len(ds), 2)
 
@@ -79,7 +102,9 @@ class TestTrainingPipeline(unittest.TestCase):
 
     def test_dataset_train_test_split(self):
         for i in range(10):
-            self.collector.record(f"spec_{i}", f"test_{i}", "pass" if i % 2 == 0 else "fail")
+            self.collector.record(
+                f"spec_{i}", f"test_{i}", "pass" if i % 2 == 0 else "fail"
+            )
         ds = TrainingDataset.from_collector(self.collector)
         train, test = ds.train_test_split(test_size=0.2, shuffle=False)
         self.assertEqual(len(train), 8)
@@ -106,8 +131,14 @@ class TestTrainingPipeline(unittest.TestCase):
 
     def test_trainer_evaluate(self):
         records = [
-            {"spec_slice": f"s{i}", "test_code": f"t{i}", "verdict": "pass",
-             "endpoint": "", "duration_ms": 0.0, "created_at": "now"}
+            {
+                "spec_slice": f"s{i}",
+                "test_code": f"t{i}",
+                "verdict": "pass",
+                "endpoint": "",
+                "duration_ms": 0.0,
+                "created_at": "now",
+            }
             for i in range(10)
         ]
         test_ds = TrainingDataset(records)

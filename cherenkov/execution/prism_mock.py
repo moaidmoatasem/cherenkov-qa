@@ -100,8 +100,10 @@ class PrismMockServer:
                 "prism container stopped and removed", container=self.container_name
             )
         except subprocess.TimeoutExpired:
-            self.log.warning("timed out stopping prism container", container=self.container_name)
+            self.log.warning(
+                "timed out stopping prism container", container=self.container_name
+            )
         except FileNotFoundError:
             pass
         except Exception as e:
-            self.log.debug("error stopping prism container", error=str(e))
+            self.log.debug("error stopping prism container", error=str(e))  # type: ignore

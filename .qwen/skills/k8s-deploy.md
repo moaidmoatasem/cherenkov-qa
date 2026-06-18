@@ -12,7 +12,7 @@ triggers:
 # Skill: k8s-deploy
 
 ## Purpose
-Deploy CHERENKOV to a local k3d cluster and run the full k8s conformance suite.  
+Deploy CHERENKOV to a local k3d cluster and run the full k8s conformance suite.
 This validates the Kubernetes packaging and engine (Go binary) alongside the Python core.
 
 ## Prerequisites

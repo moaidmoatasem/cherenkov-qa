@@ -62,6 +62,16 @@ export class CherenkovCodeLensProvider implements vscode.CodeLensProvider {
             : `Run Cherenkov conformance tests`,
         });
         lenses.push(validateLens);
+
+        if (driftCount > 0) {
+          const healLens = new vscode.CodeLens(range, {
+            title: '→ Heal',
+            command: 'editor.action.quickFix',
+            arguments: [document.uri, range],
+            tooltip: 'Show suggested fixes for drift violations',
+          });
+          lenses.push(healLens);
+        }
       }
       // Stop when we hit a top-level key that isn't paths content
       if (/^\S/.test(line) && line.trim() !== 'paths:') {

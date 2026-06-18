@@ -3,7 +3,6 @@
 import json
 import os
 import unittest
-from io import BytesIO
 from unittest.mock import MagicMock, patch
 
 from cherenkov.validate.jira_exporter import JiraExporter
@@ -43,7 +42,9 @@ class TestJiraExporterFull(unittest.TestCase):
             return _mock_response({"key": "QA-101"})
 
         with patch("urllib.request.Request", side_effect=capture_request):
-            with patch("urllib.request.urlopen", return_value=_mock_response({"key": "QA-101"})):
+            with patch(
+                "urllib.request.urlopen", return_value=_mock_response({"key": "QA-101"})
+            ):
                 exporter = JiraExporter()
                 result = exporter.create_jira_issue_full(
                     summary="Test with labels",
@@ -64,7 +65,9 @@ class TestJiraExporterFull(unittest.TestCase):
             return _mock_response({"key": "QA-102"})
 
         with patch("urllib.request.Request", side_effect=capture_request):
-            with patch("urllib.request.urlopen", return_value=_mock_response({"key": "QA-102"})):
+            with patch(
+                "urllib.request.urlopen", return_value=_mock_response({"key": "QA-102"})
+            ):
                 exporter = JiraExporter()
                 result = exporter.create_jira_issue_full(
                     summary="Test with priority",
@@ -84,7 +87,9 @@ class TestJiraExporterFull(unittest.TestCase):
             return _mock_response({"key": "QA-103"})
 
         with patch("urllib.request.Request", side_effect=capture_request):
-            with patch("urllib.request.urlopen", return_value=_mock_response({"key": "QA-103"})):
+            with patch(
+                "urllib.request.urlopen", return_value=_mock_response({"key": "QA-103"})
+            ):
                 exporter = JiraExporter()
                 result = exporter.create_jira_issue_full(
                     summary="Test with components",
@@ -165,7 +170,10 @@ class TestJiraExporterFull(unittest.TestCase):
                 result = exporter.add_comment("QA-100", "This is a test comment")
 
         self.assertTrue(result)
-        self.assertEqual(captured_data["body"]["content"][0]["content"][0]["text"], "This is a test comment")
+        self.assertEqual(
+            captured_data["body"]["content"][0]["content"][0]["text"],
+            "This is a test comment",
+        )
 
     def test_add_attachment_file_not_found(self):
         exporter = JiraExporter()

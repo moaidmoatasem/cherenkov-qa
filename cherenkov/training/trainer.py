@@ -5,7 +5,9 @@ from pathlib import Path
 @dataclass
 class TrainerConfig:
     base_model: str = "qwen2.5-coder:7b"
-    output_dir: str = str(Path.home() / ".cherenkov" / "models" / "cherenkov-coder-7b-lora")
+    output_dir: str = str(
+        Path.home() / ".cherenkov" / "models" / "cherenkov-coder-7b-lora"
+    )
     learning_rate: float = 2e-4
     num_epochs: int = 3
     batch_size: int = 4

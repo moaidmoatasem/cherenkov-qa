@@ -7,6 +7,24 @@
 
 ---
 
+## SESSION HANDOVER — 2026-06-19 (session 3 — Product Expansion & Market Launch)
+
+> **This section is a summary.** For the full consolidated handover with all recent work completing the extended roadmap (Phases 9-16), read **`docs/HANDOVER_SESSION_2026-06-19.md`**.
+
+**Branch:** `main`  
+**Tests:** Full `pytest` suite green across integration and unit adapters.  
+**Ruff:** ✅ 0 errors.  
+**Phase 9-16:** Fully completed.
+
+**What landed this session:** 
+- **Phase 12 (Protocols):** Added GraphQL, gRPC (with Buf CLI dynamic export), and AsyncAPI parsing. A new `asyncapi_test.j2` template was built to dynamically generate Playwright WebSocket publishers/subscribers.
+- **Phase 10 (Jira CI/CD Integration):** Fully re-wrote `cherenkov/validate/jira_exporter.py` from a local-markdown stub into a live REST v3 client. Added `--export-jira` and `--jira-project` to `cherenkov/cli/commands/validate.py` to allow CI runners to automatically publish drift issues to an active Jira board.
+- **Phase 9 (Market Launch Kit):** Scaffolded all external launch materials into `docs/launch/` (Discord, Product Hunt, Demo Script).
+
+**All immediate next steps from previous session are COMPLETE.** The software is feature-complete for v1.0.0 and all planned ecosystem integrations (Tier 0 through Tier 5) are built.
+
+---
+
 ## SESSION HANDOVER — 2026-06-18 (session 2 — route split, legacy_cli deletion, Phase 3 unblocked)
 
 > **This section is a summary.** For the full consolidated handover with all Claude session work, parallel agent plan, and alignment with open issues, read **`docs/HANDOVER_SESSION_2026-06-18.md`** and **`docs/PARALLEL_AGENT_PLAN_2026-06-18.md`**.

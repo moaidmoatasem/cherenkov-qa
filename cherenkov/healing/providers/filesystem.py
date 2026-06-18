@@ -33,9 +33,7 @@ class FilesystemSandboxProvider(SandboxProvider):
             shutil.rmtree(sandbox_path)
         os.makedirs(sandbox_path, exist_ok=True)
 
-        shutil.ignore_patterns(
-            "node_modules", "generated_tests", "test-results"
-        )
+        shutil.ignore_patterns("node_modules", "generated_tests", "test-results")
         for item in os.listdir(stub_dir):
             s = os.path.join(stub_dir, item)
             d = os.path.join(sandbox_path, item)

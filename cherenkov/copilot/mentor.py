@@ -48,7 +48,9 @@ class Mentor:
             min_confirmations
             if min_confirmations is not None
             else getattr(
-                get_settings(), "COPILOT_MENTOR_MIN_CONFIRMATIONS", _DEFAULT_MIN_CONFIRMATIONS
+                get_settings(),
+                "COPILOT_MENTOR_MIN_CONFIRMATIONS",
+                _DEFAULT_MIN_CONFIRMATIONS,
             )
         )
         all_active = self.store.get_idioms(min_decay=min_decay)

@@ -1,0 +1,53 @@
+name: VS Code Extension CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "vscode/**"
+      - ".github/workflows/vscode-ci.yml"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "vscode/**"
+      - ".github/workflows/vscode-ci.yml"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: vscode
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: vscode/package-lock.json
+
+    - name: Install dependencies
+      # We skip cache lock generation since we're injecting it directly
+      run: npm install --no-package-lock
+      
+    - name: Compile
+      run: npm run compile
+      
+    - name: Run Headless Tests
+      run: xvfb-run -a npm test
+      env:
+        # To run vscode tests headlessly on linux
+        DISPLAY: ':99.0'
+        
+    - name: Package VSIX
+      run: npx vsce package
+      
+    - name: Upload VSIX Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: cherenkov-qa-vsix
+        path: vscode/*.vsix

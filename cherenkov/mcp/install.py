@@ -54,9 +54,19 @@ class MCPConfigGenerator:
     def claude_config_path(self) -> Optional[Path]:
         system = platform.system()
         if system == "Darwin":
-            return Path.home() / "Library" / "Application Support" / "Claude" / "claude_desktop_config.json"
+            return (
+                Path.home()
+                / "Library"
+                / "Application Support"
+                / "Claude"
+                / "claude_desktop_config.json"
+            )
         elif system == "Windows":
-            return Path(os.environ.get("APPDATA", "")) / "Claude" / "claude_desktop_config.json"
+            return (
+                Path(os.environ.get("APPDATA", ""))
+                / "Claude"
+                / "claude_desktop_config.json"
+            )
         elif system == "Linux":
             return Path.home() / ".config" / "Claude" / "claude_desktop_config.json"
         return None
@@ -100,7 +110,9 @@ class MCPConfigGenerator:
         return config_path
 
 
-def run_mcp_install(platform_target: str = "all", python_path: Optional[str] = None) -> None:
+def run_mcp_install(
+    platform_target: str = "all", python_path: Optional[str] = None
+) -> None:
     """Run the MCP install/setup process."""
     if python_path is None:
         python_path = sys.executable
@@ -121,4 +133,6 @@ def run_mcp_install(platform_target: str = "all", python_path: Optional[str] = N
         print(json.dumps(config, indent=2))
         print(f"\nPlace this in: {gen.windsurf_config_path()}")
     else:
-        print(f"Unknown platform: {platform_target}, supported: claude, cursor, windsurf, all")
+        print(
+            f"Unknown platform: {platform_target}, supported: claude, cursor, windsurf, all"
+        )

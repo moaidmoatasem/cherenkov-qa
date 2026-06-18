@@ -1,14 +1,12 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-from cherenkov.core.events import CHERENKOVEvent, EventCategory, EventSeverity
+from cherenkov.core.events import CHERENKOVEvent, EventCategory
 from cherenkov.adapters.notifiers.registry import NotifierRegistry
 from cherenkov.adapters.notifiers.slack import SlackNotifier
 from cherenkov.adapters.notifiers.teams import TeamsNotifier
 from cherenkov.adapters.notifiers.linear import LinearNotifier
 from cherenkov.adapters.notifiers.webhook import WebhookNotifier
-from cherenkov.adapters.notifiers.opsgenie import OpsGenieNotifier
-from cherenkov.adapters.notifiers.pagerduty import PagerDutyNotifier
 
 
 class StubNotifier:
@@ -28,7 +26,6 @@ class StubNotifier:
 
 
 class TestNotifierRegistry(unittest.TestCase):
-
     def test_registry_register_and_list(self):
         registry = NotifierRegistry()
         notifier = StubNotifier()
@@ -66,14 +63,17 @@ class TestNotifierRegistry(unittest.TestCase):
         registry = NotifierRegistry()
         self.assertIsNone(registry.get("nonexistent"))
 
-    @patch.dict("os.environ", {
-        "CHERENKOV_SLACK_WEBHOOK_URL": "https://hooks.slack.com/test",
-        "CHERENKOV_TEAMS_WEBHOOK_URL": "https://outlook.office.com/test",
-        "CHERENKOV_LINEAR_API_KEY": "lin-key",
-        "CHERENKOV_WEBHOOK_URL": "https://example.com/hook",
-        "CHERENKOV_OPSGENIE_API_KEY": "og-key",
-        "CHERENKOV_PAGERDUTY_ROUTING_KEY": "pd-key",
-    })
+    @patch.dict(
+        "os.environ",
+        {
+            "CHERENKOV_SLACK_WEBHOOK_URL": "https://hooks.slack.com/test",
+            "CHERENKOV_TEAMS_WEBHOOK_URL": "https://outlook.office.com/test",
+            "CHERENKOV_LINEAR_API_KEY": "lin-key",
+            "CHERENKOV_WEBHOOK_URL": "https://example.com/hook",
+            "CHERENKOV_OPSGENIE_API_KEY": "og-key",
+            "CHERENKOV_PAGERDUTY_ROUTING_KEY": "pd-key",
+        },
+    )
     def test_registry_from_env_auto_discovers(self):
         registry = NotifierRegistry.from_env()
         names = registry.list_notifiers()

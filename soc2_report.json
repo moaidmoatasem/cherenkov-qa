@@ -1,0 +1,143 @@
+{
+  "report_id": "soc2-c93e7462",
+  "organization": "DefaultOrg",
+  "report_date": "2026-06-18",
+  "reporting_period": "2025-12-18 to 2026-06-18",
+  "controls": [
+    {
+      "id": "CC1.1",
+      "name": "Access Control Policy",
+      "category": "security",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    },
+    {
+      "id": "CC1.2",
+      "name": "Authentication",
+      "category": "security",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    },
+    {
+      "id": "CC1.3",
+      "name": "Authorization (RBAC)",
+      "category": "security",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    },
+    {
+      "id": "CC2.1",
+      "name": "Audit Logging",
+      "category": "security",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    },
+    {
+      "id": "CC3.1",
+      "name": "Encryption at Rest",
+      "category": "confidentiality",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    },
+    {
+      "id": "CC3.2",
+      "name": "Encryption in Transit",
+      "category": "confidentiality",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    },
+    {
+      "id": "CC4.1",
+      "name": "Incident Response",
+      "category": "security",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    },
+    {
+      "id": "CC5.1",
+      "name": "Change Management",
+      "category": "processing_integrity",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    },
+    {
+      "id": "CC6.1",
+      "name": "Data Retention",
+      "category": "privacy",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    },
+    {
+      "id": "CC6.2",
+      "name": "Data Backup",
+      "category": "availability",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    },
+    {
+      "id": "CC7.1",
+      "name": "Availability Monitoring",
+      "category": "availability",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    },
+    {
+      "id": "CC7.2",
+      "name": "Disaster Recovery",
+      "category": "availability",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    },
+    {
+      "id": "CC8.1",
+      "name": "Vulnerability Management",
+      "category": "security",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    },
+    {
+      "id": "CC9.1",
+      "name": "Vendor Management",
+      "category": "security",
+      "status": "not_implemented",
+      "evidence": "",
+      "last_tested": "Not tested",
+      "owner": ""
+    }
+  ],
+  "summary": {
+    "total_controls": 14,
+    "operational": 0,
+    "partially_implemented": 0,
+    "not_implemented": 14,
+    "coverage_pct": 0.0,
+    "status": "non_compliant"
+  },
+  "status": "draft"
+}

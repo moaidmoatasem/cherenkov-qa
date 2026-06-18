@@ -14,10 +14,10 @@ References:
   Yuan et al. FSE 2024 — ChatGPT generated tests: 39% compile, 22.3% pass
   Cherenkov target     — gate quality score ≥ 85% on correct tests
 """
+
 from __future__ import annotations
 
 import os
-import pytest
 
 from cherenkov.core.contracts import GenerateOutput, StageMeta, Status
 from cherenkov.core.errors import LoggerConfig
@@ -59,7 +59,9 @@ def _gate(result, name: str):
 
 def _static_gates_only(result) -> list:
     """Gates 1–4 — always evaluated without external infra."""
-    return [g for g in result.gates if g.gate in ("syntax", "structure", "ast", "assertion")]
+    return [
+        g for g in result.gates if g.gate in ("syntax", "structure", "ast", "assertion")
+    ]
 
 
 # ── Demo fixtures (catch-the-ai-cheating) ─────────────────────────────────────
@@ -72,9 +74,9 @@ class TestDemoFixtures:
         path = os.path.join(_DEMO_DIR, "correct_test.spec.ts")
         result = _review(_load(path), "demo_correct")
         for gate in _static_gates_only(result):
-            assert gate.passed or gate.skipped, (
-                f"Gate [{gate.gate}] should pass on a correct test — got: {gate.detail}"
-            )
+            assert (
+                gate.passed or gate.skipped
+            ), f"Gate [{gate.gate}] should pass on a correct test — got: {gate.detail}"
 
     def test_correct_test_quality_score_high(self):
         path = os.path.join(_DEMO_DIR, "correct_test.spec.ts")
@@ -94,32 +96,32 @@ class TestDemoFixtures:
         result = _review(_load(path), "demo_weakened")
         gate4 = _gate(result, "assertion")
         assert gate4 is not None, "Gate 4 (assertion) must be present"
-        assert not gate4.passed, (
-            "Gate 4 must FAIL on weakened assertion (toBeLessThan instead of toBe)"
-        )
+        assert (
+            not gate4.passed
+        ), "Gate 4 must FAIL on weakened assertion (toBeLessThan instead of toBe)"
 
     def test_deleted_check_caught_by_gate4(self):
         path = os.path.join(_DEMO_DIR, "cheat_deleted_check.spec.ts")
         result = _review(_load(path), "demo_deleted")
         gate4 = _gate(result, "assertion")
         assert gate4 is not None, "Gate 4 (assertion) must be present"
-        assert not gate4.passed, (
-            "Gate 4 must FAIL when body shape assertions are deleted"
-        )
+        assert (
+            not gate4.passed
+        ), "Gate 4 must FAIL when body shape assertions are deleted"
 
     def test_weakened_verdict_not_auto_approve(self):
         path = os.path.join(_DEMO_DIR, "cheat_weakened_assertion.spec.ts")
         result = _review(_load(path), "demo_weakened_v")
-        assert result.verdict.value != "AUTO_APPROVE", (
-            f"Weakened assertion must not AUTO_APPROVE; got {result.verdict.value}"
-        )
+        assert (
+            result.verdict.value != "AUTO_APPROVE"
+        ), f"Weakened assertion must not AUTO_APPROVE; got {result.verdict.value}"
 
     def test_deleted_check_verdict_not_auto_approve(self):
         path = os.path.join(_DEMO_DIR, "cheat_deleted_check.spec.ts")
         result = _review(_load(path), "demo_deleted_v")
-        assert result.verdict.value != "AUTO_APPROVE", (
-            f"Deleted body check must not AUTO_APPROVE; got {result.verdict.value}"
-        )
+        assert (
+            result.verdict.value != "AUTO_APPROVE"
+        ), f"Deleted body check must not AUTO_APPROVE; got {result.verdict.value}"
 
     def test_hallucinated_oracle_passes_static_gates(self):
         """Gate 6 (Prism) catches hallucinated oracles; static gates pass.
@@ -143,23 +145,27 @@ class TestGoldenFixtures:
         path = os.path.join(_GOLDEN_DIR, "correct_petstore.spec.ts")
         result = _review(_load(path), "golden_correct")
         for gate in _static_gates_only(result):
-            assert gate.passed or gate.skipped, (
-                f"Gate [{gate.gate}] should pass on correct Petstore test — {gate.detail}"
-            )
+            assert (
+                gate.passed or gate.skipped
+            ), f"Gate [{gate.gate}] should pass on correct Petstore test — {gate.detail}"
 
     def test_weakened_assertion_petstore_caught(self):
         path = os.path.join(_GOLDEN_DIR, "weakened_assertion_petstore.spec.ts")
         result = _review(_load(path), "golden_weakened")
         gate4 = _gate(result, "assertion")
         assert gate4 is not None
-        assert not gate4.passed, "Gate 4 must catch weakened assertion in Petstore fixture"
+        assert (
+            not gate4.passed
+        ), "Gate 4 must catch weakened assertion in Petstore fixture"
 
     def test_deleted_check_petstore_caught(self):
         path = os.path.join(_GOLDEN_DIR, "deleted_check_petstore.spec.ts")
         result = _review(_load(path), "golden_deleted")
         gate4 = _gate(result, "assertion")
         assert gate4 is not None
-        assert not gate4.passed, "Gate 4 must catch missing body check in Petstore fixture"
+        assert (
+            not gate4.passed
+        ), "Gate 4 must catch missing body check in Petstore fixture"
 
 
 # ── Bench runner smoke test ───────────────────────────────────────────────────
@@ -170,10 +176,11 @@ class TestBenchRunner:
 
     def test_bench_golden_dir_runs(self):
         from cherenkov.bench.runner import bench_directory
+
         result = bench_directory(_GOLDEN_DIR, spec_path=_SPEC_PATH)
-        assert result.scenario_count == 3, (
-            f"Expected 3 golden fixtures, got {result.scenario_count}"
-        )
+        assert (
+            result.scenario_count == 3
+        ), f"Expected 3 golden fixtures, got {result.scenario_count}"
         assert result.avg_quality_score >= 0.0
         assert "assertion" in result.gate_summaries
         assert "auto_approve" in result.verdict_distribution
@@ -181,6 +188,7 @@ class TestBenchRunner:
     def test_bench_correct_fixture_quality(self):
         """The correct fixture should pull avg quality score above 0 (static gates pass)."""
         from cherenkov.bench.runner import bench_directory
+
         correct_only = os.path.join(_GOLDEN_DIR)
         result = bench_directory(correct_only, spec_path=_SPEC_PATH)
         assert result.avg_quality_score > 0.0
@@ -188,6 +196,7 @@ class TestBenchRunner:
     def test_bench_report_populated(self):
         from cherenkov.bench.runner import run_bench
         from cherenkov.bench.metrics import BenchReport
+
         report = run_bench([_GOLDEN_DIR], spec_path=_SPEC_PATH)
         assert isinstance(report, BenchReport)
         assert report.total_scenarios == 3

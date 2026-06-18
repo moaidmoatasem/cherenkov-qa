@@ -1112,12 +1112,23 @@ def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     if parsed_url.scheme not in ("http", "https"):
         return _err_content("Only http/https server URLs allowed")
     host = parsed_url.hostname or ""
-    _BLOCKED_HOSTS = {"localhost", "127.0.0.1", "::1", "0.0.0.0", "metadata.google.internal"}
+    _BLOCKED_HOSTS = {
+        "localhost",
+        "127.0.0.1",
+        "::1",
+        "0.0.0.0",
+        "metadata.google.internal",
+    }
     if host.lower() in _BLOCKED_HOSTS:
         return _err_content("Internal network URLs not allowed")
     try:
         addr = ipaddress.ip_address(host)
-        if addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved:
+        if (
+            addr.is_private
+            or addr.is_loopback
+            or addr.is_link_local
+            or addr.is_reserved
+        ):
             return _err_content("Internal network URLs not allowed")
     except ValueError:
         try:
@@ -1127,7 +1138,12 @@ def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
         for info in infos:
             try:
                 resolved = ipaddress.ip_address(info[4][0])
-                if resolved.is_private or resolved.is_loopback or resolved.is_link_local or resolved.is_reserved:
+                if (
+                    resolved.is_private
+                    or resolved.is_loopback
+                    or resolved.is_link_local
+                    or resolved.is_reserved
+                ):
                     return _err_content("Internal network URLs not allowed")
             except ValueError:
                 pass
@@ -1259,7 +1275,7 @@ def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
         from cherenkov.ai.rag_index import RAGIndex
 
         rag = RAGIndex()
-        res = rag.query(query)
+        res = rag.query(query)  # type: ignore
         return _ok_content({"query": query, "results": res})
     except Exception as exc:
         return _err_content(f"RAG error: {exc}")
@@ -1321,6 +1337,7 @@ def _tool_export_linear(args: dict[str, Any]) -> MCPToolCallResult:
             return _err_content(f"HITL item {item_id} not found in queue.")
 
         from cherenkov.validate.linear_exporter import LinearExporter
+
         exporter = LinearExporter()
 
         file_path = exporter.export_ticket(
@@ -1329,7 +1346,7 @@ def _tool_export_linear(args: dict[str, Any]) -> MCPToolCallResult:
             error_message=item.review_gate_failed or "Validation failed",
             expected_status="Valid response",
             received_status="Divergent response",
-            hypothesis=item.confidence_reason
+            hypothesis=item.confidence_reason,
         )
 
         summary = f"🛑 CHERENKOV QA — DRIFT DETECTED: {item.id}"
@@ -1339,7 +1356,7 @@ def _tool_export_linear(args: dict[str, Any]) -> MCPToolCallResult:
             error_message=item.review_gate_failed or "Validation failed",
             expected_status="Valid response",
             received_status="Divergent response",
-            hypothesis=item.confidence_reason
+            hypothesis=item.confidence_reason,
         )
 
         issue_key = exporter.create_linear_issue(summary, description)
@@ -1366,7 +1383,7 @@ def _tool_export_github(args: dict[str, Any]) -> MCPToolCallResult:
 
         from cherenkov.validate.github_exporter import GitHubExporter
         from cherenkov.validate.linear_exporter import LinearExporter
-        
+
         # We reuse LinearExporter's format_ticket for markdown generation
         formatter = LinearExporter()
         summary = f"🛑 CHERENKOV QA — DRIFT DETECTED: {item.id}"
@@ -1376,7 +1393,7 @@ def _tool_export_github(args: dict[str, Any]) -> MCPToolCallResult:
             error_message=item.review_gate_failed or "Validation failed",
             expected_status="Valid response",
             received_status="Divergent response",
-            hypothesis=item.confidence_reason
+            hypothesis=item.confidence_reason,
         )
 
         exporter = GitHubExporter()

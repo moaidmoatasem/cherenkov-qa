@@ -7,7 +7,7 @@ def test_get_order_ok(resp):
     assert body["id"] == 42
     assert body["total"] == 99.5
     assert body["status"] == "paid"
-    assert body["discount_code"] == "SAVE10"   # no such field in the spec
+    assert body["discount_code"] == "SAVE10"  # no such field in the spec
 
 
 def test_get_order_not_found(resp404):

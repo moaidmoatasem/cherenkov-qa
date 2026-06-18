@@ -125,7 +125,9 @@ class SyntheticDataGenerator:
             return self._generate_string(schema, field_path)
         return "synthetic_value"
 
-    def _generate_object(self, schema: dict[str, Any], field_path: str) -> dict[str, Any]:
+    def _generate_object(
+        self, schema: dict[str, Any], field_path: str
+    ) -> dict[str, Any]:
         result: dict[str, Any] = {}
         properties = schema.get("properties", {})
         set(schema.get("required", []))
@@ -172,7 +174,9 @@ class SyntheticDataGenerator:
         if any(kw in field_lower for kw in ("date", "time")):
             return f"2026-{random.randint(1,12):02d}-{random.randint(1,28):02d}"
         if any(kw in field_lower for kw in ("phone", "tel")):
-            return f"+1-555-{random.randint(100,999):03d}-{random.randint(1000,9999):04d}"
+            return (
+                f"+1-555-{random.randint(100,999):03d}-{random.randint(1000,9999):04d}"
+            )
         if any(kw in field_lower for kw in ("name", "title", "label")):
             return random.choice(["Alice", "Bob", "Charlie", "Diana", "Eve", "Frank"])
         if any(kw in field_lower for kw in ("address", "city", "street")):
@@ -253,5 +257,6 @@ def _load_spec(spec_path: str) -> dict[str, Any]:
     content = path.read_text(encoding="utf-8")
     if path.suffix in (".yaml", ".yml"):
         import yaml
+
         return yaml.safe_load(content)
     return json.loads(content)

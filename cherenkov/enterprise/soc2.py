@@ -150,9 +150,7 @@ class SOC2ReportGenerator:
     """
 
     def __init__(self):
-        self._controls: dict[str, Control] = {
-            c.id: c for c in DEFAULT_CONTROLS
-        }
+        self._controls: dict[str, Control] = {c.id: c for c in DEFAULT_CONTROLS}
         self._reports: dict[str, SOC2Report] = {}
 
     def get_controls(self) -> list[Control]:
@@ -199,7 +197,9 @@ class SOC2ReportGenerator:
                 "status": c.status.value,
                 "evidence": c.evidence,
                 "last_tested": (
-                    datetime.fromtimestamp(c.last_tested, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+                    datetime.fromtimestamp(c.last_tested, tz=timezone.utc).strftime(
+                        "%Y-%m-%d %H:%M:%S UTC"
+                    )
                     if c.last_tested > 0
                     else "Not tested"
                 ),
@@ -264,7 +264,9 @@ class SOC2ReportGenerator:
             category: {
                 "total": v["total"],
                 "operational": v["operational"],
-                "coverage_pct": round(v["operational"] / v["total"] * 100, 1) if v["total"] > 0 else 0.0,
+                "coverage_pct": round(v["operational"] / v["total"] * 100, 1)
+                if v["total"] > 0
+                else 0.0,
             }
             for category, v in by_category.items()
         }

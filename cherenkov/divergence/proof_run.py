@@ -358,6 +358,7 @@ def _offline_hypotheses(endpoint: str, method: str) -> list[DivergenceHypothesis
     deterministically against the live server.
     """
     h: list[DivergenceHypothesis] = []
+
     def hid():
         return str(uuid.uuid4())
 

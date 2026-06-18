@@ -78,7 +78,7 @@ class NemoClawProvider:
                 f"\n\nPlease output JSON matching this schema: "
                 f"{json.dumps(request.output_schema)}"
             )
-            content = self.client.complete_json(
+            content = self.client.complete_json(  # type: ignore
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 model=model,

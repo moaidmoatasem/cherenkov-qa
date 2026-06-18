@@ -137,9 +137,7 @@ class TestMENAComplianceScanner(unittest.TestCase):
 
         with patch("requests.get") as mock_get:
             mock_get.return_value = MagicMock(headers={})
-            result = self.scanner.run_compliance_audit(
-                "http://localhost:8000", spec_path
-            )
+            self.scanner.run_compliance_audit("http://localhost:8000", spec_path)
 
         self.assertTrue(os.path.exists(self.scanner.report_path))
         with open(self.scanner.report_path) as f:

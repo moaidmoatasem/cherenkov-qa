@@ -25,18 +25,20 @@ class OpsGenieNotifier:
             _log.info("CHERENKOV_OPSGENIE_API_KEY not set; skipping OpsGenie.")
             return False
 
-        failed_items = [item for item in report.get("items", []) if item.get("status") == "FAIL"]
+        failed_items = [
+            item for item in report.get("items", []) if item.get("status") == "FAIL"
+        ]
         if not failed_items:
             # Only page if there are failures
             return True
 
         url = "https://api.opsgenie.com/v2/alerts"
-        
+
         payload = {
             "message": f"CHERENKOV QA Drift Detected: {len(failed_items)} failures",
             "alias": report.get("execution_key", "cherenkov-run"),
             "description": json.dumps(report, indent=2),
-            "priority": "P1"
+            "priority": "P1",
         }
 
         req = urllib.request.Request(
@@ -44,9 +46,9 @@ class OpsGenieNotifier:
             data=json.dumps(payload).encode("utf-8"),
             headers={
                 "Content-Type": "application/json",
-                "Authorization": f"GenieKey {self.api_key}"
+                "Authorization": f"GenieKey {self.api_key}",
             },
-            method="POST"
+            method="POST",
         )
 
         try:

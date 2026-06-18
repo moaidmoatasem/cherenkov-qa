@@ -17,8 +17,8 @@ _db_dir = tempfile.mkdtemp()
 _db_path = os.path.join(_db_dir, "gp.db")
 os.environ["CHERENKOV_HITL_DB"] = _db_path
 
-from cherenkov.hitl import HitlItem, HitlQueue
-from cherenkov.web.api import app
+from cherenkov.hitl import HitlItem, HitlQueue  # noqa: E402
+from cherenkov.web.api import app  # noqa: E402
 
 client = TestClient(app)
 

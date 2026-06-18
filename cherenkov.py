@@ -168,7 +168,9 @@ def get_parser() -> argparse.ArgumentParser:
         "--target", "-t", required=True, help="The real server target base URL"
     )
     validate_parser.add_argument(
-        "--headed", action="store_true", help="Run Playwright in headed (visible browser) mode"
+        "--headed",
+        action="store_true",
+        help="Run Playwright in headed (visible browser) mode",
     )
     validate_parser.add_argument(
         "--source",
@@ -197,6 +199,15 @@ def get_parser() -> argparse.ArgumentParser:
         "--no-cache",
         action="store_true",
         help="Disable incremental test generation cache",
+    )
+    validate_parser.add_argument(
+        "--json-summary",
+        help="Output path for a machine-readable JSON summary of the run",
+    ).completer = argcomplete.completers.FilesCompleter()
+    validate_parser.add_argument(
+        "--fail-on-drift",
+        action="store_true",
+        help="Exit with code 1 if any API drift is detected",
     )
     # Legacy engine CLI compatibility: operator passes --spec and --output
     validate_parser.add_argument(
@@ -241,6 +252,9 @@ def get_parser() -> argparse.ArgumentParser:
     )
     report_parser.add_argument(
         "--diff", "-d", help="Path to previous report.json for diff comparison"
+    )
+    report_parser.add_argument(
+        "--format", choices=["json", "junit", "sarif"], default="json", help="Output format for the report"
     )
 
     eject_parser = subparsers.add_parser(
@@ -630,12 +644,28 @@ def get_parser() -> argparse.ArgumentParser:
         default="[]",
         help="JSON list of resource definitions this server provides",
     )
-    pub_parser.add_argument(
-        "--version", default="1.0.0", help="Server version"
-    )
+    pub_parser.add_argument("--version", default="1.0.0", help="Server version")
     pub_parser.add_argument(
         "--attestation", default="", help="Optional attestation token"
     )
+
+    # ── Phase 13: Enterprise Tier ──────────────────────────────────────────
+    enterprise_parser = subparsers.add_parser("enterprise", help="Manage enterprise features (org, audit, compliance)")
+    ent_sub = enterprise_parser.add_subparsers(dest="enterprise_command", required=True)
+    
+    ent_org = ent_sub.add_parser("org", help="Manage multi-tenant organizations")
+    ent_org.add_argument("action", choices=["create", "list"], help="Action to perform")
+    ent_org.add_argument("--name", help="Organization name")
+    ent_org.add_argument("--owner", help="Owner ID")
+
+    ent_audit = ent_sub.add_parser("audit", help="Manage enterprise audit logs")
+    ent_audit.add_argument("action", choices=["export"], help="Action to perform")
+    ent_audit.add_argument("--format", choices=["json", "csv"], default="csv", dest="export_format", help="Export format")
+    ent_audit.add_argument("--output", "-o", default="audit_export.csv", help="Output file path")
+
+    ent_comp = ent_sub.add_parser("compliance", help="Generate compliance reports")
+    ent_comp.add_argument("action", choices=["generate"], help="Action to perform")
+    ent_comp.add_argument("--output", "-o", default="soc2_report.json", help="Output file path")
 
     return parser
 
@@ -669,6 +699,7 @@ def main():
             "tokens",
             "diff",
             "completion",
+            "enterprise",
         ]
     ):
         sys.argv.insert(1, "validate")
@@ -731,7 +762,9 @@ def main():
 
         engine = ValidationEngine("cli_validate")
         results = engine.validate_suite(
-            args.target, workers=getattr(args, "workers", 1), headed=getattr(args, "headed", False)
+            args.target,
+            workers=getattr(args, "workers", 1),
+            headed=getattr(args, "headed", False),
         )
 
         if getattr(args, "format", None) == "sarif":
@@ -803,17 +836,17 @@ def main():
                     )
             setattr(report_obj, "_total_tests", total_tests)
             allure_data = emitter.emit(report_obj, args.spec or "openapi.yaml")
-            
+
             out_dir = getattr(args, "output", ".cherenkov/allure-results")
             if out_dir.endswith(".json") or out_dir.endswith(".xml"):
                 out_dir = ".cherenkov/allure-results"
             os.makedirs(out_dir, exist_ok=True)
-            
+
             for item in allure_data:
                 file_path = os.path.join(out_dir, f"{item['uuid']}-result.json")
                 with open(file_path, "w") as f:
                     json.dump(item, f, indent=2)
-            
+
             print(f"Allure results written to {out_dir}")
             sys.exit(
                 0
@@ -882,6 +915,16 @@ def main():
         stats = EndpointCache().stats()
         print(f"Cache Stats: {stats}")
 
+        json_summary_path = getattr(args, "json_summary", None)
+        drift_count = sum(1 for r in results.get("reports", []) if not r.get("passed", False))
+        if json_summary_path:
+            with open(json_summary_path, "w") as f:
+                json.dump({"violation_count": drift_count}, f)
+
+        if getattr(args, "fail_on_drift", False) and drift_count > 0:
+            print(f"\n[FAIL-ON-DRIFT] Exiting with code 1 due to {drift_count} conformance violations.")
+            sys.exit(1)
+
         sys.exit(0)
 
     elif args.command == "diff":
@@ -910,7 +953,7 @@ def main():
     elif args.command == "report":
         from cherenkov.stages.report_cmd import run_report
 
-        sys.exit(run_report(output=args.output, diff=args.diff))
+        sys.exit(run_report(output=args.output, diff=args.diff, format=getattr(args, "format", "json")))
 
     elif args.command == "eject":
         ejector = EjectorEngine("cli_eject")
@@ -1113,6 +1156,17 @@ def main():
             print(json.dumps({"status": "ok", "registration_id": reg_id}))
             sys.exit(0)
 
+    # ── Phase 13: Enterprise ────────────────────────────────────────────────
+    elif args.command == "enterprise":
+        from cherenkov.stages.enterprise_cmd import (
+            run_enterprise_org, run_enterprise_audit, run_enterprise_compliance
+        )
+        if args.enterprise_command == "org":
+            sys.exit(run_enterprise_org(args.action, name=getattr(args, "name", None), owner=getattr(args, "owner", None)))
+        elif args.enterprise_command == "audit":
+            sys.exit(run_enterprise_audit(args.action, output=args.output, export_format=args.export_format))
+        elif args.enterprise_command == "compliance":
+            sys.exit(run_enterprise_compliance(args.action, output=args.output))
 
 if __name__ == "__main__":
     main()

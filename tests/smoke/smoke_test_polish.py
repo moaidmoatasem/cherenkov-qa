@@ -80,7 +80,7 @@ def main():
         # Find where eject subparser is defined and inject mockcmd there
         injection_index = -1
         for idx, line in enumerate(lines):
-            if 'subparsers.add_parser("eject"' in line:
+            if "eject_parser = subparsers.add_parser(" in line:
                 injection_index = idx
                 break
 

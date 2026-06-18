@@ -12,6 +12,7 @@ Exit codes:
   1 — bench failed (below threshold or errors)
   2 — misconfiguration / bad arguments
 """
+
 from __future__ import annotations
 
 import os
@@ -27,31 +28,48 @@ _DEFAULT_SPEC = os.path.join(_REPO_ROOT, "stub", "openapi_3_1.yaml")
 
 @click.command("bench")
 @click.option(
-    "--dir", "test_dirs", multiple=True, type=click.Path(exists=True),
+    "--dir",
+    "test_dirs",
+    multiple=True,
+    type=click.Path(exists=True),
     help="Directory of .spec.ts files to review. Repeatable.",
 )
 @click.option(
-    "--spec", "spec_path", type=click.Path(exists=True),
-    help=f"OpenAPI spec for Prism gate (default: stub/openapi_3_1.yaml).",
+    "--spec",
+    "spec_path",
+    type=click.Path(exists=True),
+    help="OpenAPI spec for Prism gate (default: stub/openapi_3_1.yaml).",
 )
 @click.option(
-    "--golden/--no-golden", default=True, show_default=True,
+    "--golden/--no-golden",
+    default=True,
+    show_default=True,
     help="Include bundled golden fixtures from bench/fixtures/golden_tests/.",
 )
 @click.option(
-    "--threshold-compile", default=0.9, show_default=True, type=float,
+    "--threshold-compile",
+    default=0.9,
+    show_default=True,
+    type=float,
     help="Min tsc gate pass rate (0–1). Bench fails below this.",
 )
 @click.option(
-    "--threshold-quality", default=0.85, show_default=True, type=float,
+    "--threshold-quality",
+    default=0.85,
+    show_default=True,
+    type=float,
     help="Min average quality score (0–1). Bench fails below this.",
 )
 @click.option(
-    "--output", "-o", type=click.Path(),
+    "--output",
+    "-o",
+    type=click.Path(),
     help="Write full JSON report to file.",
 )
 @click.option(
-    "--verbose", "-v", is_flag=True,
+    "--verbose",
+    "-v",
+    is_flag=True,
     help="Show per-file errors and extra detail.",
 )
 def bench_cmd(
@@ -94,7 +112,9 @@ def bench_cmd(
         )
         sys.exit(2)
 
-    effective_spec = spec_path or (_DEFAULT_SPEC if os.path.exists(_DEFAULT_SPEC) else None)
+    effective_spec = spec_path or (
+        _DEFAULT_SPEC if os.path.exists(_DEFAULT_SPEC) else None
+    )
 
     thresholds = {
         "compile_rate": threshold_compile,

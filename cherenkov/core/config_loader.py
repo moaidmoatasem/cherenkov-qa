@@ -343,7 +343,7 @@ class LayeredConfig:
             import tomllib
         except ImportError:
             try:
-                import tomli as tomllib
+                import tomli as tomllib  # type: ignore
             except ImportError:
                 raise ConfigError(
                     "tomllib/tomli not available. Install tomli for Python < 3.11: "

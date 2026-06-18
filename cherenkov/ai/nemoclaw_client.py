@@ -35,7 +35,9 @@ class NemoClawInferenceClient(InferenceClient):
         timeout: int | None = None,
     ) -> None:
         self.base_url = (base_url or get_settings().NEMOCLAW_URL).rstrip("/")
-        self.api_key = api_key if api_key is not None else get_settings().NEMOCLAW_API_KEY
+        self.api_key = (
+            api_key if api_key is not None else get_settings().NEMOCLAW_API_KEY
+        )
         self.timeout = timeout or get_settings().NEMOCLAW_TIMEOUT
         self._token_usage: dict[str, int] = {
             "prompt_tokens": 0,

@@ -102,7 +102,7 @@ async def list_sessions(
         result.append(_coerce_session(current))
     for p in reversed(prev[-limit:]):
         result.append(
-            SddSession(
+            SddSession(  # type: ignore
                 id=p.get("id", ""),
                 status="closed",
                 task=p.get("task"),
@@ -116,7 +116,7 @@ async def list_sessions(
         result = [
             s
             for s in result
-            if s.get("task_type") == task_type or s.get("task") == task_type
+            if s.get("task_type") == task_type or s.get("task") == task_type  # type: ignore
         ]
     return result[:limit]
 
@@ -127,14 +127,18 @@ async def get_session_detail(session_id: str):
     session = await asyncio.to_thread(_read_json, SYNC_DIR / "session.json")
     s = session.get("session", {})
     if s.get("id") == session_id:
-        findings = await asyncio.to_thread(_read_json, FINDINGS_DIR / f"{session_id}.json")
+        findings = await asyncio.to_thread(
+            _read_json, FINDINGS_DIR / f"{session_id}.json"
+        )
         return {
             "session": _coerce_session(s).model_dump(),
             "findings": findings.get("findings", []),
         }
     for p in session.get("previous_sessions", []):
         if p.get("id") == session_id:
-            findings = await asyncio.to_thread(_read_json, FINDINGS_DIR / f"{session_id}.json")
+            findings = await asyncio.to_thread(
+                _read_json, FINDINGS_DIR / f"{session_id}.json"
+            )
             return {
                 "session": {
                     "id": p["id"],

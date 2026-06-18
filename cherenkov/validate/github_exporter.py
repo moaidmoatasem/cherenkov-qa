@@ -3,12 +3,13 @@ import json
 import urllib.request
 from typing import Optional
 
+
 class GitHubExporter:
     """Creates GitHub issues for failed validation items."""
 
     def __init__(self):
         self.token = os.environ.get("CHERENKOV_GITHUB_TOKEN", "")
-        self.repo = os.environ.get("CHERENKOV_GITHUB_REPO", "") # Format: owner/repo
+        self.repo = os.environ.get("CHERENKOV_GITHUB_REPO", "")  # Format: owner/repo
 
     def create_github_issue(self, title: str, body: str) -> Optional[str]:
         """Creates a real GitHub issue using the GitHub REST API if token is present."""
@@ -20,20 +21,20 @@ class GitHubExporter:
             "Authorization": f"Bearer {self.token}",
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         payload = {
             "title": title,
             "body": body,
-            "labels": ["bug", "conformance-drift", "cherenkov-qa"]
+            "labels": ["bug", "conformance-drift", "cherenkov-qa"],
         }
 
         req = urllib.request.Request(
             url,
             data=json.dumps(payload).encode("utf-8"),
             headers=headers,
-            method="POST"
+            method="POST",
         )
 
         try:

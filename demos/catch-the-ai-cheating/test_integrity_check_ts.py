@@ -1,5 +1,6 @@
 """Proves the TS-edition integrity checker catches each canonical cheat in
 Playwright `.spec.ts` suites (CHERENKOV's real artifact format)."""
+
 import pathlib
 import sys
 

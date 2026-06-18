@@ -190,4 +190,5 @@ def test_get_monitor_returns_same_instance():
     assert m1 is m2
     m1.close()
     import cherenkov.observability.token_monitor as tm
+
     tm._MONITOR = None

@@ -556,7 +556,7 @@ class PerfStage:
             )  # 3x capture window
 
             # Find most common endpoint pattern
-            endpoint_counts = {}
+            endpoint_counts = {}  # type: ignore
             for entry in entries:
                 request = entry.get("request", {})
                 url = request.get("url", "")

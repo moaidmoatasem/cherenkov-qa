@@ -1,4 +1,5 @@
 """cherenkov/bench/metrics.py — data containers for benchmark results."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -53,7 +54,9 @@ class SpecBenchResult:
 
     @property
     def overall_gate_pass_rate(self) -> float:
-        rates = [g.pass_rate for g in self.gate_summaries.values() if g.pass_rate is not None]
+        rates = [
+            g.pass_rate for g in self.gate_summaries.values() if g.pass_rate is not None
+        ]
         return sum(rates) / len(rates) if rates else 0.0
 
     def to_dict(self) -> dict[str, Any]:

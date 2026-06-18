@@ -211,7 +211,7 @@ def run_classify(
     adapter = OpenClawAdapter()
     req = ClassificationRequest(
         item_id=item_id,
-        classification=classification,
+        classification=classification,  # type: ignore
         actor=resolved_actor,
         detail=detail,
     )

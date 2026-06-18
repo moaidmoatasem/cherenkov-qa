@@ -37,6 +37,17 @@ export class CherenkovQuickFixProvider implements vscode.CodeActionProvider {
     };
     actions.push(driftAction);
 
+    const healAction = new vscode.CodeAction(
+      'Cherenkov: Apply suggested assertion (Suggest-only)',
+      vscode.CodeActionKind.QuickFix
+    );
+    healAction.command = {
+      command: 'cherenkov.applySuggestedAssertion',
+      title: 'Apply Suggested Assertion',
+      arguments: [context.diagnostics[0].message] // Pass the diagnostic message to the command
+    };
+    actions.push(healAction);
+
     return actions;
   }
 }

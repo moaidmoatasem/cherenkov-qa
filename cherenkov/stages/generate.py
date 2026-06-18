@@ -172,13 +172,38 @@ class GenerateStage:
             )
         elif source_type == "grpc":
             import jinja2
-            env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))))
+
+            env = jinja2.Environment(
+                loader=jinja2.FileSystemLoader(
+                    os.path.abspath(
+                        os.path.join(os.path.dirname(__file__), "../../prompts")
+                    )
+                )
+            )
             template = env.get_template("grpc_test.j2")
             user_prompt = template.render(
                 service=scenario.service,
                 rpc_name=scenario.rpc_name,
                 input_message=scenario.input_message,
-                proto_content=scenario.proto_content
+                proto_content=scenario.proto_content,
+            )
+        elif source_type == "asyncapi":
+            import jinja2
+
+            env = jinja2.Environment(
+                loader=jinja2.FileSystemLoader(
+                    os.path.abspath(
+                        os.path.join(os.path.dirname(__file__), "../../prompts")
+                    )
+                )
+            )
+            template = env.get_template("asyncapi_test.j2")
+            user_prompt = template.render(
+                channel=scenario.channel,
+                operation=scenario.operation,
+                message=scenario.message,
+                scenario_type=scenario.scenario_type,
+                required_fields=scenario.required_fields,
             )
         elif source_type == "accessibility":
             import jinja2
@@ -346,7 +371,9 @@ class GenerateStage:
         return GenerateOutput(
             scenario_id=mutation_id,
             test_code=code,
-            imports=["@playwright/test"] if source_type in ("graphql", "grpc") else ["@playwright/test", "../client"],
+            imports=["@playwright/test"]
+            if source_type in ("graphql", "grpc")
+            else ["@playwright/test", "../client"],
             status=Status.OK,
             metadata=StageMeta(stage="GENERATE", duration_ms=dt),
             endpoint=path,

@@ -38,7 +38,7 @@ class HuggingFaceInferenceClient(InferenceClient):
             raise ImportError(
                 "huggingface_hub package not installed. Run: pip install huggingface_hub"
             ) from exc
-        
+
         self._client = HFClient(token=self.token)
         return self._client
 
@@ -59,14 +59,11 @@ class HuggingFaceInferenceClient(InferenceClient):
         messages.append({"role": "user", "content": user_prompt})
 
         response = client.chat_completion(
-            model=model,
-            messages=messages,
-            max_tokens=4096,
-            temperature=temperature
+            model=model, messages=messages, max_tokens=4096, temperature=temperature
         )
-        
+
         text = response.choices[0].message.content
-        
+
         # Approximate token usage if not provided natively by the endpoint
         input_tokens = getattr(response.usage, "prompt_tokens", len(user_prompt) // 4)
         output_tokens = getattr(response.usage, "completion_tokens", len(text) // 4)

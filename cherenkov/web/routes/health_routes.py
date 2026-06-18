@@ -13,6 +13,7 @@ async def healthz():
 @router.get("/api/v1/tokens/report")
 async def tokens_report(days: int = 30):
     from cherenkov.observability.token_monitor import get_monitor
+
     monitor = get_monitor()
     return monitor.get_dashboard_data(days=days)
 
@@ -20,6 +21,7 @@ async def tokens_report(days: int = 30):
 @router.get("/api/v1/tokens/recommendations")
 async def tokens_recommendations(days: int = 30):
     from cherenkov.observability.token_monitor import get_monitor
+
     monitor = get_monitor()
     report = monitor.get_report(days=days)
     return {
@@ -34,6 +36,7 @@ async def health_check():
     import asyncio
     from cherenkov.core.settings import get_settings
     import os
+
     try:
         device = await asyncio.wait_for(
             asyncio.to_thread(get_settings().detect_ollama_device), timeout=2.0
@@ -53,8 +56,12 @@ async def health_check():
 @router.get("/api/v1/doctor")
 async def run_doctor_api():
     from cherenkov.stages.doctor_cmd import (
-        check_ollama_binary, check_ollama_daemon, check_node,
-        check_npx_playwright, check_prism_docker, check_egress_blocked,
+        check_ollama_binary,
+        check_ollama_daemon,
+        check_node,
+        check_npx_playwright,
+        check_prism_docker,
+        check_egress_blocked,
     )
     from cherenkov.core.config_loader import load_effective_config
     from cherenkov.core.settings import get_settings
@@ -63,27 +70,69 @@ async def run_doctor_api():
     checks = []
 
     ollama_bin, bin_det = check_ollama_binary()
-    checks.append({"name": "Ollama Binary", "status": "passed" if ollama_bin else "failed", "message": bin_det})
+    checks.append(
+        {
+            "name": "Ollama Binary",
+            "status": "passed" if ollama_bin else "failed",
+            "message": bin_det,
+        }
+    )
 
     if ollama_bin:
         ollama_daemon, daemon_det = check_ollama_daemon()
-        checks.append({"name": "Ollama Daemon", "status": "passed" if ollama_daemon else "failed", "message": daemon_det})
+        checks.append(
+            {
+                "name": "Ollama Daemon",
+                "status": "passed" if ollama_daemon else "failed",
+                "message": daemon_det,
+            }
+        )
 
     node_ok, node_det = check_node()
-    checks.append({"name": "Node.js", "status": "passed" if node_ok else "failed", "message": node_det})
+    checks.append(
+        {
+            "name": "Node.js",
+            "status": "passed" if node_ok else "failed",
+            "message": node_det,
+        }
+    )
 
     pw_ok, pw_det = check_npx_playwright()
-    checks.append({"name": "Playwright", "status": "passed" if pw_ok else "failed", "message": pw_det})
+    checks.append(
+        {
+            "name": "Playwright",
+            "status": "passed" if pw_ok else "failed",
+            "message": pw_det,
+        }
+    )
 
     prism_ok, prism_det = check_prism_docker()
-    checks.append({"name": "Prism Docker", "status": "passed" if prism_ok else "failed", "message": prism_det})
+    checks.append(
+        {
+            "name": "Prism Docker",
+            "status": "passed" if prism_ok else "failed",
+            "message": prism_det,
+        }
+    )
 
     egress_ok, egress_det = check_egress_blocked(cfg)
-    checks.append({"name": "Egress Policy", "status": "passed" if egress_ok else "failed", "message": egress_det})
+    checks.append(
+        {
+            "name": "Egress Policy",
+            "status": "passed" if egress_ok else "failed",
+            "message": egress_det,
+        }
+    )
 
     device = get_settings().detect_ollama_device()
     is_gpu = device == "GPU"
-    checks.append({"name": "Device", "status": "passed" if is_gpu else "failed", "message": device + " (GPU recommended)"})
+    checks.append(
+        {
+            "name": "Device",
+            "status": "passed" if is_gpu else "failed",
+            "message": device + " (GPU recommended)",
+        }
+    )
 
     ready = ollama_bin and node_ok and pw_ok and prism_ok
     return {"checks": checks, "ready": ready}

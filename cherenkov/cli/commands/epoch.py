@@ -1,5 +1,6 @@
 """Epoch-specific CLI commands — dashboard, map, daemon, explore, author,
 tokens, governance, certify, profile."""
+
 from __future__ import annotations
 
 import sys
@@ -24,35 +25,67 @@ def map_cmd(detailed: bool) -> None:
 
 
 @click.command("daemon")
-@click.option("--interval", "-i", type=int, default=60,
-              help="Poll interval in seconds (default: 60)")
-@click.option("--max-loops", "-n", "max_loops", type=int, default=0,
-              help="Max rebuild iterations (0=infinite)")
+@click.option(
+    "--interval",
+    "-i",
+    type=int,
+    default=60,
+    help="Poll interval in seconds (default: 60)",
+)
+@click.option(
+    "--max-loops",
+    "-n",
+    "max_loops",
+    type=int,
+    default=0,
+    help="Max rebuild iterations (0=infinite)",
+)
 @click.option("--guardian", is_flag=True, help="Run in Spec Guardian mode")
 @click.option("--spec", default=None, help="Path to spec (required for --guardian)")
 @click.option("--target", default=None, help="Target URL (required for --guardian)")
-@click.option("--source", type=click.Choice(["openapi", "graphql", "grpc", "accessibility"]),
-              default="openapi", help="Source type for guardian mode")
-def daemon_cmd(interval: int, max_loops: int, guardian: bool,
-               spec: str | None, target: str | None, source: str) -> None:
+@click.option(
+    "--source",
+    type=click.Choice(["openapi", "graphql", "grpc", "accessibility"]),
+    default="openapi",
+    help="Source type for guardian mode",
+)
+def daemon_cmd(
+    interval: int,
+    max_loops: int,
+    guardian: bool,
+    spec: str | None,
+    target: str | None,
+    source: str,
+) -> None:
     """Continuously watch sources and rebuild Truth Model, or run Spec Guardian."""
     from cherenkov.stages.daemon_cmd import run_daemon, run_guardian_daemon
 
     if guardian:
         if not spec or not target:
-            raise click.UsageError("--spec and --target are required for --guardian mode")
-        sys.exit(run_guardian_daemon(
-            target_url=target, spec_path=spec,
-            source_type=source, interval_seconds=interval,
-        ))
+            raise click.UsageError(
+                "--spec and --target are required for --guardian mode"
+            )
+        sys.exit(
+            run_guardian_daemon(
+                target_url=target,
+                spec_path=spec,
+                source_type=source,
+                interval_seconds=interval,
+            )
+        )
     else:
         sys.exit(run_daemon(interval_seconds=interval, max_loops=max_loops))
 
 
 @click.command("explore")
 @click.option("--target", "-t", required=True, help="Base URL of the app/API to crawl")
-@click.option("--path", "-p", "paths", multiple=True,
-              help="Route to probe (repeatable); default: /")
+@click.option(
+    "--path",
+    "-p",
+    "paths",
+    multiple=True,
+    help="Route to probe (repeatable); default: /",
+)
 @click.option("--method", "-m", default="GET", help="HTTP method (default: GET)")
 def explore_cmd(target: str, paths: tuple[str, ...], method: str) -> None:
     """Crawl a live surface and print a risk digest."""
@@ -63,8 +96,13 @@ def explore_cmd(target: str, paths: tuple[str, ...], method: str) -> None:
 
 @click.command("author")
 @click.argument("intent")
-@click.option("--output", "-o", required=True, type=click.Path(),
-              help="Directory to write the .spec.ts test into")
+@click.option(
+    "--output",
+    "-o",
+    required=True,
+    type=click.Path(),
+    help="Directory to write the .spec.ts test into",
+)
 @click.option("--target", "-t", default="", help="Base URL the flow runs against")
 def author_cmd(intent: str, output: str, target: str) -> None:
     """Turn plain-language intent into an ejectable Playwright test."""
@@ -79,7 +117,9 @@ def tokens_cmd() -> None:
 
 
 @tokens_cmd.command("report")
-@click.option("--days", "-d", type=int, default=30, help="Lookback window in days (default: 30)")
+@click.option(
+    "--days", "-d", type=int, default=30, help="Lookback window in days (default: 30)"
+)
 @click.option("--json", "json_out", is_flag=True, help="Output as JSON")
 def tokens_report(days: int, json_out: bool) -> None:
     """Full usage report with recommendations."""
@@ -90,7 +130,9 @@ def tokens_report(days: int, json_out: bool) -> None:
 
 @tokens_cmd.command("breakdown")
 @click.option("--stage", is_flag=True, help="Break down by stage instead of provider")
-@click.option("--days", "-d", type=int, default=30, help="Lookback window in days (default: 30)")
+@click.option(
+    "--days", "-d", type=int, default=30, help="Lookback window in days (default: 30)"
+)
 def tokens_breakdown(stage: bool, days: int) -> None:
     """Per-provider or per-stage breakdown."""
     from cherenkov.stages.tokens_cmd import run_tokens_breakdown
@@ -100,8 +142,13 @@ def tokens_breakdown(stage: bool, days: int) -> None:
 
 @click.command("governance")
 @click.option("--json", "json_out", is_flag=True, help="Emit JSON report")
-@click.option("--trend", "-t", metavar="METRIC", default=None,
-              help="Show trend for a metric (health_score, escape_rate, …)")
+@click.option(
+    "--trend",
+    "-t",
+    metavar="METRIC",
+    default=None,
+    help="Show trend for a metric (health_score, escape_rate, …)",
+)
 def governance_cmd(json_out: bool, trend: str | None) -> None:
     """Governance KPI panel (escape/FP/coverage/maintenance)."""
     from cherenkov.stages.governance_cmd import run_governance
@@ -110,10 +157,20 @@ def governance_cmd(json_out: bool, trend: str | None) -> None:
 
 
 @click.command("certify")
-@click.option("--tier", "-T", type=click.Choice(["small", "deep", "vision"]),
-              default="small", help="Capability tier to certify (default: small)")
-@click.option("--rag-report", "-r", "rag_report", is_flag=True,
-              help="Show per-item RAG-Triad metrics")
+@click.option(
+    "--tier",
+    "-T",
+    type=click.Choice(["small", "deep", "vision"]),
+    default="small",
+    help="Capability tier to certify (default: small)",
+)
+@click.option(
+    "--rag-report",
+    "-r",
+    "rag_report",
+    is_flag=True,
+    help="Show per-item RAG-Triad metrics",
+)
 def certify_cmd(tier: str, rag_report: bool) -> None:
     """Gold-Set + RAG-Triad model tier certification."""
     from cherenkov.stages.certify_cmd import run_certify
@@ -122,10 +179,16 @@ def certify_cmd(tier: str, rag_report: bool) -> None:
 
 
 @click.command("profile")
-@click.argument("action", type=click.Choice(["show", "set"]), default="show", required=False)
-@click.option("--level", "-l",
-              type=click.Choice(["assisted", "augmented", "agentic", "predictive"]),
-              default=None, help="Autonomy level to set")
+@click.argument(
+    "action", type=click.Choice(["show", "set"]), default="show", required=False
+)
+@click.option(
+    "--level",
+    "-l",
+    type=click.Choice(["assisted", "augmented", "agentic", "predictive"]),
+    default=None,
+    help="Autonomy level to set",
+)
 def profile_cmd(action: str, level: str | None) -> None:
     """Autonomy-ladder profile (assisted/augmented/agentic/predictive)."""
     from cherenkov.stages.profile_cmd import run_profile

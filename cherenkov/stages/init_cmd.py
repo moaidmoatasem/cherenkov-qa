@@ -222,7 +222,9 @@ def run_init(profile: str | None = None, force: bool = False) -> int:
     if not workflow_path.exists():
         workflow_dir.mkdir(parents=True, exist_ok=True)
         try:
-            workflow_path.write_text(generate_github_actions_workflow(), encoding="utf-8")
+            workflow_path.write_text(
+                generate_github_actions_workflow(), encoding="utf-8"
+            )
             print(f"  [OK] Generated {workflow_path}")
         except OSError as e:
             print(f"  [WARN] Failed to write GitHub Actions workflow: {e}")

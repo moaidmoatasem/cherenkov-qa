@@ -40,16 +40,41 @@ class NotifierRegistry:
     def from_env(cls) -> NotifierRegistry:
         registry = cls()
         env_map = {
-            "slack": ("CHERENKOV_SLACK_WEBHOOK_URL", "cherenkov.adapters.notifiers.slack", "SlackNotifier"),
-            "teams": ("CHERENKOV_TEAMS_WEBHOOK_URL", "cherenkov.adapters.notifiers.teams", "TeamsNotifier"),
-            "linear": ("CHERENKOV_LINEAR_API_KEY", "cherenkov.adapters.notifiers.linear", "LinearNotifier"),
-            "webhook": ("CHERENKOV_WEBHOOK_URL", "cherenkov.adapters.notifiers.webhook", "WebhookNotifier"),
-            "opsgenie": ("CHERENKOV_OPSGENIE_API_KEY", "cherenkov.adapters.notifiers.opsgenie", "OpsGenieNotifier"),
-            "pagerduty": ("CHERENKOV_PAGERDUTY_ROUTING_KEY", "cherenkov.adapters.notifiers.pagerduty", "PagerDutyNotifier"),
+            "slack": (
+                "CHERENKOV_SLACK_WEBHOOK_URL",
+                "cherenkov.adapters.notifiers.slack",
+                "SlackNotifier",
+            ),
+            "teams": (
+                "CHERENKOV_TEAMS_WEBHOOK_URL",
+                "cherenkov.adapters.notifiers.teams",
+                "TeamsNotifier",
+            ),
+            "linear": (
+                "CHERENKOV_LINEAR_API_KEY",
+                "cherenkov.adapters.notifiers.linear",
+                "LinearNotifier",
+            ),
+            "webhook": (
+                "CHERENKOV_WEBHOOK_URL",
+                "cherenkov.adapters.notifiers.webhook",
+                "WebhookNotifier",
+            ),
+            "opsgenie": (
+                "CHERENKOV_OPSGENIE_API_KEY",
+                "cherenkov.adapters.notifiers.opsgenie",
+                "OpsGenieNotifier",
+            ),
+            "pagerduty": (
+                "CHERENKOV_PAGERDUTY_ROUTING_KEY",
+                "cherenkov.adapters.notifiers.pagerduty",
+                "PagerDutyNotifier",
+            ),
         }
         for key, (env_var, module_path, class_name) in env_map.items():
             if os.environ.get(env_var):
                 import importlib
+
                 module = importlib.import_module(module_path)
                 notifier_cls = getattr(module, class_name)
                 registry.register(notifier_cls())

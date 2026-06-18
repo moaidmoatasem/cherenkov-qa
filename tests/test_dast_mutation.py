@@ -1,4 +1,5 @@
 from cherenkov.core.settings import get_settings
+
 # TODO: convert to pytest — complex file (>150 lines, setUp/tearDown)
 """
 Tests for Issue #194 — Lightweight DAST Mutation Profile.
@@ -11,12 +12,11 @@ Validates:
 - The value field is set to the hostile payload string
 """
 
-import os
-import unittest
-from unittest.mock import patch
-import cherenkov.core.config
+import os  # noqa: E402
+import unittest  # noqa: E402
+from unittest.mock import patch  # noqa: E402
 
-from cherenkov.stages.ingest import DAST_PAYLOADS
+from cherenkov.stages.ingest import DAST_PAYLOADS  # noqa: E402
 
 
 class TestDASTPayloads(unittest.TestCase):

@@ -39,9 +39,9 @@ message PongReply { string ok = 1; }
 
 
 class TestgRPCSourceAdapter(unittest.TestCase):
-
     def test_parses_single_service_single_rpc(self):
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
+
         path = _make_proto(SIMPLE_PROTO)
         adapter = gRPCSourceAdapter(path)
         ops = list(adapter.iter_operations())
@@ -51,6 +51,7 @@ class TestgRPCSourceAdapter(unittest.TestCase):
 
     def test_parses_multi_service_multi_rpc(self):
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
+
         path = _make_proto(MULTI_SERVICE_PROTO)
         adapter = gRPCSourceAdapter(path)
         ops = list(adapter.iter_operations())
@@ -58,6 +59,7 @@ class TestgRPCSourceAdapter(unittest.TestCase):
 
     def test_extracts_input_output_messages(self):
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
+
         path = _make_proto(SIMPLE_PROTO)
         adapter = gRPCSourceAdapter(path)
         ops = list(adapter.iter_operations())
@@ -66,6 +68,7 @@ class TestgRPCSourceAdapter(unittest.TestCase):
 
     def test_proto_content_is_stored(self):
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
+
         path = _make_proto(SIMPLE_PROTO)
         adapter = gRPCSourceAdapter(path)
         ops = list(adapter.iter_operations())
@@ -74,6 +77,7 @@ class TestgRPCSourceAdapter(unittest.TestCase):
 
     def test_empty_proto_yields_no_operations(self):
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
+
         path = _make_proto("")
         adapter = gRPCSourceAdapter(path)
         ops = list(adapter.iter_operations())
@@ -81,6 +85,7 @@ class TestgRPCSourceAdapter(unittest.TestCase):
 
     def test_proto_with_no_service_yields_no_operations(self):
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
+
         path = _make_proto("message Foo {}")
         adapter = gRPCSourceAdapter(path)
         ops = list(adapter.iter_operations())
@@ -88,10 +93,10 @@ class TestgRPCSourceAdapter(unittest.TestCase):
 
 
 class TestgRPCScenarioPlanner(unittest.TestCase):
-
     def test_plan_creates_happy_path_scenario(self):
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
         from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
+
         path = _make_proto(SIMPLE_PROTO)
         adapter = gRPCSourceAdapter(path)
         planner = gRPCScenarioPlanner()
@@ -103,6 +108,7 @@ class TestgRPCScenarioPlanner(unittest.TestCase):
     def test_plan_creates_missing_fields_scenario(self):
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
         from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
+
         path = _make_proto(SIMPLE_PROTO)
         adapter = gRPCSourceAdapter(path)
         planner = gRPCScenarioPlanner()
@@ -113,6 +119,7 @@ class TestgRPCScenarioPlanner(unittest.TestCase):
     def test_plan_creates_two_scenarios_per_rpc(self):
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
         from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
+
         path = _make_proto(SIMPLE_PROTO)
         adapter = gRPCSourceAdapter(path)
         planner = gRPCScenarioPlanner()
@@ -122,6 +129,7 @@ class TestgRPCScenarioPlanner(unittest.TestCase):
     def test_plan_creates_correct_mutation_ids(self):
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
         from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
+
         path = _make_proto(SIMPLE_PROTO)
         adapter = gRPCSourceAdapter(path)
         planner = gRPCScenarioPlanner()
@@ -134,6 +142,7 @@ class TestgRPCScenarioPlanner(unittest.TestCase):
     def test_plan_expected_status_correct(self):
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
         from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
+
         path = _make_proto(SIMPLE_PROTO)
         adapter = gRPCSourceAdapter(path)
         planner = gRPCScenarioPlanner()

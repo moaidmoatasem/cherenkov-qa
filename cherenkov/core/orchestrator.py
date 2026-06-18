@@ -299,10 +299,10 @@ class OrchestrationEngine:
 
             generate = self._execute_stage_with_retry(
                 "GENERATE",
-                lambda cs=current_scenario: self.run_generate(
+                lambda cs=current_scenario: self.run_generate(  # type: ignore
                     cs, simulate_malformed=(simulate_fail_stage == "GENERATE")
                 ),
-                lambda cs=current_scenario: GenerateOutput(
+                lambda cs=current_scenario: GenerateOutput(  # type: ignore
                     scenario_id=cs.mutation_id or "unknown",
                     test_code="",
                     imports=[],
@@ -345,10 +345,10 @@ class OrchestrationEngine:
 
             review = self._execute_stage_with_retry(
                 "REVIEW",
-                lambda g=generate: self.run_review(
+                lambda g=generate: self.run_review(  # type: ignore
                     g, spec_path, simulate_malformed=(simulate_fail_stage == "REVIEW")
                 ),
-                lambda g=generate: ReviewOutput(
+                lambda g=generate: ReviewOutput(  # type: ignore
                     scenario_id=g.scenario_id,
                     gates=[],
                     quality_score=0.0,
@@ -505,6 +505,7 @@ class OrchestrationEngine:
         # Optional observability trace: pipeline start
         try:
             from cherenkov.observability.llm_tracer import trace_event
+
             trace_event("pipeline-start", run_id=self.run_id, spec_path=spec_path)
         except Exception:  # noqa: E722 — observability is optional; graceful degradation
             pass
@@ -686,10 +687,10 @@ class OrchestrationEngine:
                 from cherenkov.evals.runner import run_evals
                 from cherenkov.evals.store import EvalStore
                 from cherenkov.observability.llm_tracer import trace_event
-                
+
                 self.log.info("running post-generation eval judge")
                 print("\n  EVALS   [ Running LLM-as-judge... ]")
-                
+
                 output_dir = Path(get_settings().OUTPUT_DIR)
                 if output_dir.exists():
                     test_files = list(output_dir.glob("*.spec.ts"))
@@ -699,25 +700,41 @@ class OrchestrationEngine:
                             try:
                                 code = test_file.read_text(encoding="utf-8")
                                 scenario_id = test_file.stem
-                                samples.append(EvalSample(
-                                    scenario_id=scenario_id,
-                                    endpoint="unknown",
-                                    method="GET",
-                                    expected_status=200,
-                                    test_code=code,
-                                    spec_summary="",
-                                ))
+                                samples.append(
+                                    EvalSample(
+                                        scenario_id=scenario_id,
+                                        endpoint="unknown",
+                                        method="GET",
+                                        expected_status=200,
+                                        test_code=code,
+                                        spec_summary="",
+                                    )
+                                )
                             except Exception as e:
-                                self.log.warning("failed to read test file", file=str(test_file), error=str(e))
-                        
+                                self.log.warning(
+                                    "failed to read test file",
+                                    file=str(test_file),
+                                    error=str(e),
+                                )
+
                         if samples:
                             report = run_evals(samples)
                             store = EvalStore()
                             store.save(report)
-                            trace_event("pipeline-evals", pass_rate=report.pass_rate(), scenarios=len(samples))
-                            
-                            print(f"  EVALS   [ DONE ] pass_rate={report.pass_rate():.1%}, saved to .cherenkov/evals.db")
-                            self.log.info("eval judge complete", pass_rate=report.pass_rate(), total=len(samples))
+                            trace_event(
+                                "pipeline-evals",
+                                pass_rate=report.pass_rate(),
+                                scenarios=len(samples),
+                            )
+
+                            print(
+                                f"  EVALS   [ DONE ] pass_rate={report.pass_rate():.1%}, saved to .cherenkov/evals.db"
+                            )
+                            self.log.info(
+                                "eval judge complete",
+                                pass_rate=report.pass_rate(),
+                                total=len(samples),
+                            )
                         else:
                             print("  EVALS   [ SKIPPED ] no test files found")
                     else:
@@ -725,19 +742,24 @@ class OrchestrationEngine:
                 else:
                     print("  EVALS   [ SKIPPED ] output directory not found")
             except Exception as e:
-                self.log.warning("post-generation evals failed (non-fatal)", error=str(e))
+                self.log.warning(
+                    "post-generation evals failed (non-fatal)", error=str(e)
+                )
                 print(f"  EVALS   [ SKIPPED ] {e}")
 
         # ── Phase 2: Post-generation adversarial scan (optional) ──────────
         if os.getenv("CHERENKOV_ADVERSARIAL_ENABLED", "0") == "1":
             try:
                 from pathlib import Path
-                from cherenkov.adversarial.runner import run_adversarial_tests, save_report
+                from cherenkov.adversarial.runner import (
+                    run_adversarial_tests,
+                    save_report,
+                )
                 from cherenkov.observability.llm_tracer import trace_event
-                
+
                 self.log.info("running post-generation adversarial scan")
                 print("\n  ADVERSARIAL [ Scanning for injection patterns... ]")
-                
+
                 output_dir = Path(get_settings().OUTPUT_DIR)
                 if output_dir.exists():
                     test_files = list(output_dir.glob("*.spec.ts"))
@@ -748,20 +770,40 @@ class OrchestrationEngine:
                                 code = test_file.read_text(encoding="utf-8")
                                 test_codes[test_file.stem] = code
                             except Exception as e:
-                                self.log.warning("failed to read test file", file=str(test_file), error=str(e))
-                        
+                                self.log.warning(
+                                    "failed to read test file",
+                                    file=str(test_file),
+                                    error=str(e),
+                                )
+
                         if test_codes:
-                            report = run_adversarial_tests(test_codes, spec_path=spec_path)
-                            output_path = save_report(report)
-                            trace_event("pipeline-adversarial", pass_rate=report.pass_rate(), critical=len(report.critical_findings()))
-                            
-                            criticals = report.critical_findings()
+                            report = run_adversarial_tests(  # type: ignore
+                                test_codes, spec_path=spec_path
+                            )
+                            output_path = save_report(report)  # type: ignore
+                            trace_event(
+                                "pipeline-adversarial",
+                                pass_rate=report.pass_rate(),
+                                critical=len(report.critical_findings()),  # type: ignore
+                            )
+
+                            criticals = report.critical_findings()  # type: ignore
                             if criticals:
-                                print(f"  ADVERSARIAL [ WARN ] {len(criticals)} critical findings, saved to {output_path}")
-                                self.log.warning("adversarial scan found critical issues", count=len(criticals))
+                                print(
+                                    f"  ADVERSARIAL [ WARN ] {len(criticals)} critical findings, saved to {output_path}"
+                                )
+                                self.log.warning(
+                                    "adversarial scan found critical issues",
+                                    count=len(criticals),
+                                )
                             else:
-                                print(f"  ADVERSARIAL [ PASS ] no critical findings, saved to {output_path}")
-                                self.log.info("adversarial scan complete", pass_rate=report.pass_rate())
+                                print(
+                                    f"  ADVERSARIAL [ PASS ] no critical findings, saved to {output_path}"
+                                )
+                                self.log.info(
+                                    "adversarial scan complete",
+                                    pass_rate=report.pass_rate(),
+                                )
                         else:
                             print("  ADVERSARIAL [ SKIPPED ] no test files found")
                     else:
@@ -769,7 +811,9 @@ class OrchestrationEngine:
                 else:
                     print("  ADVERSARIAL [ SKIPPED ] output directory not found")
             except Exception as e:
-                self.log.warning("post-generation adversarial scan failed (non-fatal)", error=str(e))
+                self.log.warning(
+                    "post-generation adversarial scan failed (non-fatal)", error=str(e)
+                )
                 print(f"  ADVERSARIAL [ SKIPPED ] {e}")
 
         print("================= PIPELINE RESULT =================")
@@ -814,6 +858,7 @@ class OrchestrationEngine:
         # Optional observability trace: pipeline complete
         try:
             from cherenkov.observability.llm_tracer import trace_event
+
             trace_event(
                 "pipeline-complete",
                 run_id=self.run_id,

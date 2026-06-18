@@ -148,7 +148,7 @@ def main() -> int:
     print("\n6. Polling")
     env = adapter.poll_envelope()
     check("poll returns envelope", env.ok)
-    initial_pending = env.payload["pending_count"]
+    env.payload["pending_count"]
 
     queue.enqueue(HitlItem(id="poll-fresh", endpoint="/api/new", method="POST"))
     env = adapter.poll_envelope()

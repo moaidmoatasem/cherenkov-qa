@@ -247,8 +247,14 @@ class ReviewStage:
                                             body_data = json.loads(
                                                 response_info["body_raw"]
                                             )
-                                    except (json.JSONDecodeError, ValueError) as parse_err:
-                                        self.log.warning("trace body parse failed", error=str(parse_err))
+                                    except (
+                                        json.JSONDecodeError,
+                                        ValueError,
+                                    ) as parse_err:
+                                        self.log.warning(
+                                            "trace body parse failed",
+                                            error=str(parse_err),
+                                        )
 
                                     diag = diagnoser.diagnose_failure(
                                         scenario_id=scenario_id,
@@ -267,14 +273,14 @@ class ReviewStage:
                                     # Run Healers (Suggest-only!)
                                     suggestion = ""
                                     if diag.failure_class == FailureClass.AUTH_EXPIRY:
-                                        suggestion = AuthExpiryHealer(
+                                        suggestion = AuthExpiryHealer(  # type: ignore
                                             self.run_id
                                         ).suggest_heal(scenario_id, target_url_path)
                                     elif (
                                         diag.failure_class
                                         == FailureClass.CONTRACT_DRIFT
                                     ):
-                                        suggestion = ContractDriftHealer(
+                                        suggestion = ContractDriftHealer(  # type: ignore
                                             self.run_id
                                         ).suggest_heal(
                                             scenario_id=scenario_id,
@@ -284,8 +290,8 @@ class ReviewStage:
                                             added_fields=diag.added_fields,
                                         )
 
-                                    if suggestion and suggestion.get("suggestion"):
-                                        print(suggestion["suggestion"])
+                                    if suggestion and suggestion.get("suggestion"):  # type: ignore
+                                        print(suggestion["suggestion"])  # type: ignore
                                         self.log.info(
                                             "generated healing suggestion",
                                             failure_class=diag.failure_class.value,
@@ -348,7 +354,7 @@ class ReviewStage:
                         source_type=ProvenanceType.SPEC, source_uri=spec_path
                     ),
                 )
-                endpoint_slice = {
+                endpoint_slice = {  # type: ignore
                     "path": getattr(generate, "endpoint", ""),
                     "method": getattr(generate, "method", ""),
                     "operation": {},

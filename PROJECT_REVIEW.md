@@ -1,9 +1,9 @@
 # CHERENKOV-QA — Comprehensive Project Review
 
-**Reviewed:** 2026-06-15  
-**Reviewer:** AI Code Review Agent  
-**Project:** [cherenkov-qa](https://github.com/moaidmoatasem/cherenkov-qa)  
-**Version:** 0.1.0  
+**Reviewed:** 2026-06-15
+**Reviewer:** AI Code Review Agent
+**Project:** [cherenkov-qa](https://github.com/moaidmoatasem/cherenkov-qa)
+**Version:** 0.1.0
 
 ---
 

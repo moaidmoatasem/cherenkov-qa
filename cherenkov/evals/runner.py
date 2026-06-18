@@ -4,7 +4,13 @@ from datetime import datetime, timezone
 from typing import Any
 
 from cherenkov.core.config import Config
-from cherenkov.evals.core import EvalMetric, EvalReport, EvalResult, EvalSample, EvalStatus
+from cherenkov.evals.core import (
+    EvalMetric,
+    EvalReport,
+    EvalResult,
+    EvalSample,
+    EvalStatus,
+)
 from cherenkov.evals.judge import judge_sample
 
 
@@ -19,7 +25,11 @@ def build_samples_from_pipeline(
         go = generate_outputs.get(mutation_id)
         if go is None:
             continue
-        test_code = getattr(go, "test_code", "") if not isinstance(go, dict) else go.get("test_code", "")
+        test_code = (
+            getattr(go, "test_code", "")
+            if not isinstance(go, dict)
+            else go.get("test_code", "")
+        )
         if not test_code:
             continue
         endpoint = getattr(s, "endpoint", getattr(s, "path", ""))
@@ -55,6 +65,7 @@ def run_evals(samples: list[EvalSample], max_workers: int = 2) -> EvalReport:
     # Optional observability trace
     try:
         from cherenkov.observability.llm_tracer import trace_event
+
         trace_event(
             "evals-complete",
             pass_rate=report.pass_rate(),
@@ -87,5 +98,7 @@ def print_report(report: EvalReport) -> None:
         if not r.passed():
             for s in r.scores:
                 if s.status != EvalStatus.PASS:
-                    print(f"  ❌ {r.sample.scenario_id}: {s.metric.value}={s.score:.2f} — {s.detail}")
+                    print(
+                        f"  ❌ {r.sample.scenario_id}: {s.metric.value}={s.score:.2f} — {s.detail}"
+                    )
     print(f"{'='*60}\n")

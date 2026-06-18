@@ -231,7 +231,9 @@ class TestEgressPolicy(unittest.TestCase):
         """Verify the implementation uses property-driven checks, not hardcoded provider names."""
         # This is a meta-test to verify our implementation
         # Get the directory where this test file is located
-        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        project_root = os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        )
         # The router.py file should be in cherenkov/substrate/router.py relative to project root
         router_path = os.path.join(project_root, "cherenkov", "substrate", "router.py")
         with open(router_path, "r") as f:

@@ -53,7 +53,11 @@ class AdversarialReport:
         return sum(1 for r in self.results if not r.detected) / len(self.results)
 
     def critical_findings(self) -> list[DetectionResult]:
-        return [r for r in self.results if r.detected and r.severity in (Severity.HIGH, Severity.CRITICAL)]
+        return [
+            r
+            for r in self.results
+            if r.detected and r.severity in (Severity.HIGH, Severity.CRITICAL)
+        ]
 
     def to_dict(self) -> dict[str, Any]:
         return {

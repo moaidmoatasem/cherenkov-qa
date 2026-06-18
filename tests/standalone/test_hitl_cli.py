@@ -74,7 +74,6 @@ def test_default_actor_uses_user_env():
 
 
 def test_default_actor_fallback_to_username():
-    env = {"USERNAME": "win_user"}
     # Remove USER if set, set USERNAME
     env_copy = {k: v for k, v in os.environ.items() if k != "USER"}
     env_copy["USERNAME"] = "win_user"

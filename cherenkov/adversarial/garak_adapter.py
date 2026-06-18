@@ -14,7 +14,11 @@ def is_garak_available() -> bool:
 
 def run_garak(spec_path: str, probes: list[str] | None = None) -> dict[str, Any]:
     if not is_garak_available():
-        return {"available": False, "error": "garak not installed (pip install garak)", "findings": []}
+        return {
+            "available": False,
+            "error": "garak not installed (pip install garak)",
+            "findings": [],
+        }
 
     if probes is None:
         probes = ["promptinject", "lmrc", "realtoxicityprompts"]
@@ -23,10 +27,14 @@ def run_garak(spec_path: str, probes: list[str] | None = None) -> dict[str, Any]
         report_path = Path(tmpdir) / "garak_report.jsonl"
         cmd = [
             "garak",
-            "--model_type", "rest",
-            "--model_name", spec_path,
-            "--probes", ",".join(probes),
-            "--report_prefix", str(report_path),
+            "--model_type",
+            "rest",
+            "--model_name",
+            spec_path,
+            "--probes",
+            ",".join(probes),
+            "--report_prefix",
+            str(report_path),
         ]
         try:
             result = subprocess.run(
@@ -39,12 +47,20 @@ def run_garak(spec_path: str, probes: list[str] | None = None) -> dict[str, Any]
             return {
                 "available": True,
                 "returncode": result.returncode,
-                "stdout_lines": result.stdout.splitlines()[-10:] if result.stdout else [],
-                "stderr_lines": result.stderr.splitlines()[-5:] if result.stderr else [],
+                "stdout_lines": result.stdout.splitlines()[-10:]
+                if result.stdout
+                else [],
+                "stderr_lines": result.stderr.splitlines()[-5:]
+                if result.stderr
+                else [],
                 "findings": findings,
             }
         except subprocess.TimeoutExpired:
-            return {"available": True, "error": "garak timed out after 120s", "findings": []}
+            return {
+                "available": True,
+                "error": "garak timed out after 120s",
+                "findings": [],
+            }
         except Exception as e:
             return {"available": True, "error": str(e), "findings": []}
 
@@ -63,13 +79,15 @@ def _parse_garak_output(report_path: Path) -> list[dict[str, Any]]:
                 continue
             entry = json.loads(line)
             if entry.get("entry_type") == "attempt":
-                findings.append({
-                    "probe": entry.get("probe", "unknown"),
-                    "detector": entry.get("detector", "unknown"),
-                    "prompt": entry.get("prompt", "")[:200],
-                    "output": entry.get("output", "")[:200],
-                    "passed": entry.get("passed", False),
-                })
+                findings.append(
+                    {
+                        "probe": entry.get("probe", "unknown"),
+                        "detector": entry.get("detector", "unknown"),
+                        "prompt": entry.get("prompt", "")[:200],
+                        "output": entry.get("output", "")[:200],
+                        "passed": entry.get("passed", False),
+                    }
+                )
     except Exception:
         pass
     return findings

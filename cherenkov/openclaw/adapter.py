@@ -50,15 +50,16 @@ class OpenClawAdapter:
         self._last_poll: list[HitlItem] = []
         # Tier-2: chat_user_id -> @cli_user identity map
         self._identity_map: dict[str, str] = {}
-        
+
         # Wire Tier-1 notifications
         if self._config.notification_endpoint:
             if "hooks.slack.com" in self._config.notification_endpoint:
                 from cherenkov.adapters.notifiers.slack import SlackNotifier
-                notifier = SlackNotifier(self._config.notification_endpoint)
-                self.on_notify(notifier.notify)
+
+                notifier = SlackNotifier(self._config.notification_endpoint)  # type: ignore
+                self.on_notify(notifier.notify)  # type: ignore
             else:
-                self.on_notify(self._generic_webhook_notify)
+                self.on_notify(self._generic_webhook_notify)  # type: ignore
 
     # ── Tier-2: identity mapping (#149) ───────────────────────────────────
 
@@ -92,7 +93,7 @@ class OpenClawAdapter:
                 cb(envelope)
             except Exception as exc:
                 self._log.warning("notify callback failed", error=str(exc))
-        
+
         if self._config.notification_endpoint:
             try:
                 req = urllib.request.Request(

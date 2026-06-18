@@ -51,7 +51,7 @@ class Test<EndpointName>:
 ```
 
 ### Step 3 — Eject check
-Verify the generated test has NO `from cherenkov import` statements.  
+Verify the generated test has NO `from cherenkov import` statements.
 Run: `python3 -c "import ast; ast.parse(open('<test_file>').read()); print('OK')"`
 
 ### Step 4 — Output as suggestion

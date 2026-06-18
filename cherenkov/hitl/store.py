@@ -181,7 +181,7 @@ class HitlQueue:
             ).fetchall()
         return [HitlItem(**{k: r[k] for k in r.keys()}) for r in rows]
 
-    def audit_rows(self) -> list[dict]:
+    def audit_rows(self) -> list[dict]:  # type: ignore
         con = self._connect()
         rows = con.execute("SELECT * FROM audit_log ORDER BY id").fetchall()
         return [dict(r) for r in rows]
@@ -202,7 +202,7 @@ class HitlQueue:
         vals = (new_status.value, actor, _now(), item_id)
         if extra_sql:
             sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=?, reject_reason=? WHERE id=? AND status='pending'"
-            vals = (new_status.value, actor, _now(), extra_vals[0], item_id)
+            vals = (new_status.value, actor, _now(), extra_vals[0], item_id)  # type: ignore
 
         try:
             cur = con.execute(sql, vals)

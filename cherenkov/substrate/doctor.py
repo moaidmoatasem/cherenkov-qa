@@ -70,8 +70,15 @@ def _detect_device() -> dict:
 @click.option("--json-output", "json_out", is_flag=True, help="Output as JSON")
 @click.option("--evals", is_flag=True, help="Show latest eval report")
 @click.option("--adversarial", is_flag=True, help="Show latest adversarial report")
-def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool, adversarial: bool) -> None:
-    report = {"device": {}, "vlm": {}, "localai": {}, "recommendations": []}
+def doctor(
+    vlm: bool,
+    localai: bool,
+    device: bool,
+    json_out: bool,
+    evals: bool,
+    adversarial: bool,
+) -> None:
+    report = {"device": {}, "vlm": {}, "localai": {}, "recommendations": []}  # type: ignore
     show_all = not vlm and not localai and not device
 
     if show_all or device:
@@ -113,7 +120,7 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool, 
 
     if show_all or device:
         recommendations = []
-        d = report["device"]
+        d = report["device"]  # type: ignore
         if d["vlm_tier"] == VLMTier.LOCAL.value:
             recommendations.append("localai" if d["has_docker"] else "ollama")
         elif d["vlm_tier"] == VLMTier.CLOUD.value:
@@ -132,6 +139,7 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool, 
     if show_all or evals:
         try:
             from cherenkov.evals.store import EvalStore
+
             store = EvalStore()
             latest = store.latest()
             if latest:
@@ -142,13 +150,17 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool, 
                     click.echo(f"  Timestamp:   {latest['timestamp']}")
                     click.echo(f"  Model:       {latest['model']}")
                     click.echo(f"  Pass rate:   {latest['pass_rate']:.1%}")
-                    click.echo(f"  Scenarios:   {latest['passed']}/{latest['total']} passed")
+                    click.echo(
+                        f"  Scenarios:   {latest['passed']}/{latest['total']} passed"
+                    )
                     for metric, avg in latest.get("metrics", {}).items():
                         click.echo(f"  {metric:20s} {avg:.2f}")
             else:
                 report["latest_evals"] = None
                 if not json_out:
-                    click.echo("\nNo eval reports found. Run the generator pipeline first.")
+                    click.echo(
+                        "\nNo eval reports found. Run the generator pipeline first."
+                    )
         except Exception as e:
             report["latest_evals"] = {"error": str(e)}
 
@@ -156,6 +168,7 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool, 
         try:
             from pathlib import Path
             import json as json_module
+
             adv_path = Path(".cherenkov/adversarial_report.json")
             if adv_path.exists():
                 latest = json_module.loads(adv_path.read_text())
@@ -169,11 +182,15 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool, 
                     click.echo(f"  Total:       {latest['total_payloads']}")
                     click.echo(f"  Detected:    {latest['detected']}")
                     click.echo(f"  Critical:    {latest['critical']}")
-                    click.echo(f"  Garak:       {'available' if latest.get('garak_available') else 'not installed'}")
+                    click.echo(
+                        f"  Garak:       {'available' if latest.get('garak_available') else 'not installed'}"
+                    )
             else:
                 report["latest_adversarial"] = None
                 if not json_out:
-                    click.echo("\nNo adversarial reports found. Run adversarial tests first.")
+                    click.echo(
+                        "\nNo adversarial reports found. Run adversarial tests first."
+                    )
         except Exception as e:
             report["latest_adversarial"] = {"error": str(e)}
 

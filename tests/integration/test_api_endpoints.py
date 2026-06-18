@@ -8,17 +8,17 @@ external services (Ollama, OrchestrationEngine, ValidationEngine, EjectorEngine)
 so tests run offline and fast.  No CHERENKOV_HITL_API_KEY → auth disabled.
 """
 
-from cherenkov.core.settings import CherenkovSettings, get_settings
+from cherenkov.core.settings import CherenkovSettings  # noqa: E402
 
-import os
-import tempfile
-import unittest
-from unittest.mock import MagicMock, patch
+import os  # noqa: E402
+import tempfile  # noqa: E402
+import unittest  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
 os.environ.setdefault("CHERENKOV_ENV", "development")
 
-from fastapi.testclient import TestClient
-from cherenkov.web.api import app
+from fastapi.testclient import TestClient  # noqa: E402
+from cherenkov.web.api import app  # noqa: E402
 
 
 def _make_client() -> TestClient:

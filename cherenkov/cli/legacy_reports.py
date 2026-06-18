@@ -1,5 +1,6 @@
 """Report-printing functions extracted from legacy_cli.py during CLI unification."""
 
+
 def print_visual_report(target_url: str, reports):
     print("\n" + "=" * 80)
     print("CHERENKOV VISUAL REGRESSION REPORT (B1 — optional Track B layer)")

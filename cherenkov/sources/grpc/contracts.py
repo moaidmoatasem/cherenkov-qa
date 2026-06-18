@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class gRPCScenario(BaseModel):
     service: str = ""
     rpc_name: str = ""

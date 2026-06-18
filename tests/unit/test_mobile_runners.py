@@ -101,5 +101,5 @@ def test_maestro_real_mode_calls_subprocess(monkeypatch):
         mock_run.return_value = type(
             "R", (), {"returncode": 0, "stdout": "ok", "stderr": ""}
         )()
-        result = runner.run_test("/some/test.yaml")
+        runner.run_test("/some/test.yaml")
         assert mock_run.called

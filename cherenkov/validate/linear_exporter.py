@@ -6,6 +6,7 @@ from typing import List, Optional
 
 from cherenkov.core.errors import get_logger
 
+
 class LinearExporter:
     """Generates sandboxed, copy-ready Linear issue payloads inside .cherenkov/linear_tickets/ on test execution failure."""
 
@@ -58,7 +59,9 @@ class LinearExporter:
             lines.append("")
 
         if similar_cases_count > 0:
-            lines.append(f"- Found **{similar_cases_count}** similar historical failure(s) in local DB.")
+            lines.append(
+                f"- Found **{similar_cases_count}** similar historical failure(s) in local DB."
+            )
 
         lines.append("\n*Report generated automatically by CHERENKOV QA.*")
         return "\n".join(lines)
@@ -80,12 +83,20 @@ class LinearExporter:
         file_path = os.path.join(self.ticket_dir, filename)
 
         ticket_content = self.format_ticket(
-            scenario_id, failure_class, error_message, expected_status, received_status,
-            hypothesis, resolution_steps, similar_cases_count
+            scenario_id,
+            failure_class,
+            error_message,
+            expected_status,
+            received_status,
+            hypothesis,
+            resolution_steps,
+            similar_cases_count,
         )
 
         with open(file_path, "w", encoding="utf-8") as f:
-            f.write(f"# 🛑 CHERENKOV QA — DRIFT DETECTED: {scenario_id}\n\n{ticket_content}")
+            f.write(
+                f"# 🛑 CHERENKOV QA — DRIFT DETECTED: {scenario_id}\n\n{ticket_content}"
+            )
 
         self.log.info(
             "suggest-only linear ticket exported successfully",
@@ -100,14 +111,13 @@ class LinearExporter:
         team_id = os.environ.get("CHERENKOV_LINEAR_TEAM_ID")
 
         if not linear_key or not team_id:
-            self.log.warning("Linear API Key or Team ID not set. Skipping real Linear issue creation.")
+            self.log.warning(
+                "Linear API Key or Team ID not set. Skipping real Linear issue creation."
+            )
             return None
 
         url = "https://api.linear.app/graphql"
-        headers = {
-            "Authorization": linear_key,
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": linear_key, "Content-Type": "application/json"}
 
         query = """
         mutation IssueCreate($title: String!, $description: String, $teamId: String!) {
@@ -131,15 +141,15 @@ class LinearExporter:
             "variables": {
                 "title": title,
                 "description": description,
-                "teamId": team_id
-            }
+                "teamId": team_id,
+            },
         }
 
         req = urllib.request.Request(
             url,
             data=json.dumps(payload).encode("utf-8"),
             headers=headers,
-            method="POST"
+            method="POST",
         )
 
         try:
@@ -148,10 +158,14 @@ class LinearExporter:
                 if "errors" in res_data:
                     self.log.error(f"Linear GraphQL error: {res_data['errors']}")
                     return None
-                
-                issue_data = res_data.get("data", {}).get("issueCreate", {}).get("issue", {})
+
+                issue_data = (
+                    res_data.get("data", {}).get("issueCreate", {}).get("issue", {})
+                )
                 issue_identifier = issue_data.get("identifier")
-                self.log.info("Linear issue created successfully", identifier=issue_identifier)
+                self.log.info(
+                    "Linear issue created successfully", identifier=issue_identifier
+                )
                 return issue_identifier
         except Exception as e:
             self.log.error("Failed to create Linear issue", error=str(e))

@@ -15,7 +15,7 @@ jobs:
         uses: dependabot/fetch-metadata@v3
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
-          
+
       - name: Enable auto-merge for Dependabot PRs
         # Only auto-merge if it's a minor or patch update. Major updates require human/agent review.
         if: steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch'

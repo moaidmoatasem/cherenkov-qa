@@ -23,8 +23,11 @@ BROKEN = "http://broken.mock"
 class TestMeaningfulAssertionGate(unittest.TestCase):
     def test_meaningful_when_passes_correct_and_fails_broken(self):
         gate = MeaningfulAssertionGate()
+
         # passes on correct, fails on broken → meaningful
-        run = lambda url: (url == CORRECT, f"ran @ {url}")
+        def run(url):
+            return (url == CORRECT, f"ran @ {url}")
+
         res = gate.evaluate("t1", run, CORRECT, BROKEN)
         self.assertTrue(res.meaningful)
         self.assertTrue(res.passed_correct)
@@ -33,7 +36,10 @@ class TestMeaningfulAssertionGate(unittest.TestCase):
 
     def test_tautological_when_passes_both(self):
         gate = MeaningfulAssertionGate()
-        run = lambda url: (True, "always passes")
+
+        def run(url):
+            return (True, "always passes")
+
         res = gate.evaluate("t2", run, CORRECT, BROKEN)
         self.assertFalse(res.meaningful)
         self.assertFalse(res.failed_broken)
@@ -41,7 +47,10 @@ class TestMeaningfulAssertionGate(unittest.TestCase):
 
     def test_not_meaningful_when_fails_correct(self):
         gate = MeaningfulAssertionGate()
-        run = lambda url: (False, "always fails")
+
+        def run(url):
+            return (False, "always fails")
+
         res = gate.evaluate("t3", run, CORRECT, BROKEN)
         self.assertFalse(res.meaningful)
         self.assertIn("spec-conforming", res.reason)
@@ -57,7 +66,9 @@ class TestMeaningfulAssertionGate(unittest.TestCase):
 # ── E11-1: coverage loop ───────────────────────────────────────────────────
 class TestCoverageLoop(unittest.TestCase):
     def _loop(self, run_fn, repair_fn=None, **kw):
-        gen = lambda t: {"id": t, "fixed": False}
+        def gen(t):
+            return {"id": t, "fixed": False}
+
         rep = repair_fn or (lambda t, a, o: a)
         return CoverageLoop(
             generate_fn=gen,

@@ -38,9 +38,7 @@ def _port_in_use(port: int) -> bool:
 def _free_port(port: int, timeout: float = 8.0) -> None:
     """Kill any process holding the given port, then wait for it to be released."""
     try:
-        result = subprocess.run(
-            ["fuser", "-k", f"{port}/tcp"], capture_output=True, timeout=5
-        )
+        subprocess.run(["fuser", "-k", f"{port}/tcp"], capture_output=True, timeout=5)
     except (FileNotFoundError, subprocess.TimeoutExpired):
         pass
     deadline = time.monotonic() + timeout

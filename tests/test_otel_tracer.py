@@ -2,9 +2,9 @@
 tests/test_otel_tracer.py — Unit tests for CherenkovTracer (Issue #457).
 Tests no-op mode when disabled and active mode when enabled.
 """
+
 from __future__ import annotations
 
-import os
 from unittest.mock import patch
 
 import pytest

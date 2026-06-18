@@ -1,4 +1,5 @@
 """Shared Pydantic models for web API route modules."""
+
 from pydantic import BaseModel
 
 

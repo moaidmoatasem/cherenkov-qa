@@ -81,9 +81,7 @@ SAMPLE_SPEC_REF = {
     },
     "channels": {
         "users/events": {
-            "publish": {
-                "message": {"$ref": "#/components/messages/UserEvent"}
-            }
+            "publish": {"message": {"$ref": "#/components/messages/UserEvent"}}
         }
     },
 }
@@ -109,7 +107,11 @@ class TestAsyncAPIAdapter(unittest.TestCase):
         path = self._write_spec(SAMPLE_SPEC)
         adapter = AsyncAPISourceAdapter(path)
         ops = list(adapter.iter_operations())
-        publish_ops = [op for op in ops if op.channel == "orders/created" and op.operation == "publish"]
+        publish_ops = [
+            op
+            for op in ops
+            if op.channel == "orders/created" and op.operation == "publish"
+        ]
         self.assertEqual(len(publish_ops), 1)
         self.assertEqual(publish_ops[0].operation, "publish")
 

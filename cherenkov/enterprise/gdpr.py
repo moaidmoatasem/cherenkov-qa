@@ -115,9 +115,7 @@ class GDPRManager:
 
     # ── Data Subject Requests ─────────────────────────────────────────────────
 
-    def create_request(
-        self, user_id: str, request_type: str
-    ) -> DataSubjectRequest:
+    def create_request(self, user_id: str, request_type: str) -> DataSubjectRequest:
         import uuid
 
         req = DataSubjectRequest(
@@ -172,7 +170,11 @@ class GDPRManager:
     def _handle_portability_request(self, user_id: str) -> dict[str, Any]:
         return {
             "user_id": user_id,
-            "data": {"consent": self._consents.get(user_id).__dict__ if user_id in self._consents else None},
+            "data": {
+                "consent": self._consents.get(user_id).__dict__
+                if user_id in self._consents
+                else None
+            },
             "format": "json",
             "exported_at": time.time(),
         }
@@ -204,7 +206,10 @@ class GDPRManager:
         path = os.path.join(self.config.data_directory, filename)
         with open(path, "w") as f:
             json.dump(
-                {k: v.__dict__ if hasattr(v, "__dict__") else v for k, v in data.items()},
+                {
+                    k: v.__dict__ if hasattr(v, "__dict__") else v
+                    for k, v in data.items()
+                },
                 f,
                 indent=2,
             )

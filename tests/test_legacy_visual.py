@@ -25,7 +25,9 @@ def _wait_for_port(host: str, port: int, timeout: float = 10.0) -> None:
                 return
             except OSError:
                 time.sleep(0.2)
-    raise RuntimeError(f"Target API server did not start listening on {host}:{port} within {timeout}s")
+    raise RuntimeError(
+        f"Target API server did not start listening on {host}:{port} within {timeout}s"
+    )
 
 
 def start_target_server():

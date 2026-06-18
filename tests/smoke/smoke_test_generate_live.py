@@ -55,7 +55,9 @@ def main() -> None:
     # The flag asserts intent to run the real path — an unreachable model is now a
     # failure, not a skip, so a broken local/self-hosted setup is surfaced loudly.
     if not _ollama_reachable():
-        _skip(f"CHERENKOV_LIVE_LLM=1 but Ollama not reachable at {get_settings().OLLAMA_URL}")
+        _skip(
+            f"CHERENKOV_LIVE_LLM=1 but Ollama not reachable at {get_settings().OLLAMA_URL}"
+        )
 
     # Minimal but real generate input: POST /users creating a user.
     operation = {

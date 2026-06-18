@@ -4,9 +4,9 @@ import unittest
 
 
 class TestMCPRegistry(unittest.TestCase):
-
     def setUp(self):
         from cherenkov.mcp.mesh_router import MCPRegistry
+
         self.reg = MCPRegistry()
 
     def test_register_server_returns_id(self):
@@ -84,7 +84,6 @@ class TestMCPRegistry(unittest.TestCase):
         self.assertEqual(server.url, "http://localhost:8080/mcp")
 
     def test_prune_stale(self):
-        import time
         self.reg.register_server(
             "srv1", "http://localhost:8080/mcp", [{"name": "tool1"}]
         )

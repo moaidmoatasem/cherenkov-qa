@@ -170,7 +170,7 @@ class TestUnitTestEmitter(unittest.TestCase):
                 },
             )
             tm.add_node(node)
-        result = self.emitter.emit(tm, Path(self.tmp.name), framework="pytest")
+        self.emitter.emit(tm, Path(self.tmp.name), framework="pytest")
         py_files = list(Path(self.tmp.name).glob("*.py"))
         self.assertGreaterEqual(len(py_files), 1)
 

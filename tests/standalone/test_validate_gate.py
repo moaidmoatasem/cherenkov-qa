@@ -250,5 +250,5 @@ class TestEvidenceCollector:
     def test_base_dir_created_if_missing(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             nested = os.path.join(tmpdir, "a", "b", "c")
-            col = EvidenceCollector(base_dir=nested)
+            EvidenceCollector(base_dir=nested)
             assert Path(nested).exists()

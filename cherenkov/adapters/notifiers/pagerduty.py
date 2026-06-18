@@ -25,13 +25,15 @@ class PagerDutyNotifier:
             _log.info("CHERENKOV_PAGERDUTY_ROUTING_KEY not set; skipping PagerDuty.")
             return False
 
-        failed_items = [item for item in report.get("items", []) if item.get("status") == "FAIL"]
+        failed_items = [
+            item for item in report.get("items", []) if item.get("status") == "FAIL"
+        ]
         if not failed_items:
             # Only page if there are failures
             return True
 
         url = "https://events.pagerduty.com/v2/enqueue"
-        
+
         payload = {
             "routing_key": self.routing_key,
             "event_action": "trigger",
@@ -39,15 +41,15 @@ class PagerDutyNotifier:
                 "summary": f"CHERENKOV QA Drift Detected: {len(failed_items)} failures in {report.get('execution_key', 'Unknown Run')}",
                 "source": "cherenkov-qa-engine",
                 "severity": "critical",
-                "custom_details": report
-            }
+                "custom_details": report,
+            },
         }
 
         req = urllib.request.Request(
             url,
             data=json.dumps(payload).encode("utf-8"),
             headers={"Content-Type": "application/json"},
-            method="POST"
+            method="POST",
         )
 
         try:

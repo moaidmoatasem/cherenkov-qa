@@ -1,4 +1,5 @@
 """cherenkov/bench/report.py — Rich-formatted bench report output."""
+
 from __future__ import annotations
 
 import json
@@ -8,8 +9,8 @@ from cherenkov.bench.metrics import BenchReport, SpecBenchResult
 
 try:
     from rich.console import Console
-    from rich.table import Table
-    from rich import box as rich_box
+    from rich.table import Table  # noqa: F401
+    from rich import box as rich_box  # noqa: F401
 
     _RICH = True
 except ImportError:
@@ -64,14 +65,18 @@ def print_report(report: BenchReport, verbose: bool = False) -> None:
     console.print()
 
 
-def _print_spec_result(console: Any, result: SpecBenchResult, verbose: bool = False) -> None:
+def _print_spec_result(
+    console: Any, result: SpecBenchResult, verbose: bool = False
+) -> None:
     from rich.table import Table
     import rich.box as rich_box
 
-    label = result.spec_path.split("/")[-1]
+    # label = result.spec_path.split("/")[-1]
     console.print(f"  [dim]spec:[/dim] {result.spec_path}")
-    console.print(f"  [dim]tests:[/dim] {result.scenario_count}  "
-                  f"[dim]elapsed:[/dim] {result.elapsed_s:.1f}s")
+    console.print(
+        f"  [dim]tests:[/dim] {result.scenario_count}  "
+        f"[dim]elapsed:[/dim] {result.elapsed_s:.1f}s"
+    )
     console.print()
 
     tbl = Table(box=rich_box.SIMPLE, show_header=True, header_style="bold")
@@ -93,8 +98,12 @@ def _print_spec_result(console: Any, result: SpecBenchResult, verbose: bool = Fa
         )
     console.print(tbl)
 
-    console.print(f"  [bold]Avg quality score:[/bold] {_rate_str(result.avg_quality_score)}")
-    console.print(f"  [bold]Verdicts:[/bold] {_verdict_str(result.verdict_distribution)}")
+    console.print(
+        f"  [bold]Avg quality score:[/bold] {_rate_str(result.avg_quality_score)}"
+    )
+    console.print(
+        f"  [bold]Verdicts:[/bold] {_verdict_str(result.verdict_distribution)}"
+    )
 
     if verbose and result.errors:
         console.print()
@@ -114,17 +123,25 @@ def _print_summary(console: Any, report: BenchReport) -> None:
     thr_q = report.thresholds.get("quality_score", 0.85)
 
     console.print(f"  Total tests      : {report.total_scenarios}")
-    console.print(f"  Compile rate     : {_rate_str(cr)}  [dim](threshold ≥ {thr_c:.0%})[/dim]")
-    console.print(f"  Avg quality score: {_rate_str(qs)}  [dim](threshold ≥ {thr_q:.0%})[/dim]")
+    console.print(
+        f"  Compile rate     : {_rate_str(cr)}  [dim](threshold ≥ {thr_c:.0%})[/dim]"
+    )
+    console.print(
+        f"  Avg quality score: {_rate_str(qs)}  [dim](threshold ≥ {thr_q:.0%})[/dim]"
+    )
     console.print()
 
     if passed:
         console.print("  [bold green]✓ BENCH PASSED[/bold green]  — quality bar met")
     else:
-        console.print("  [bold red]✗ BENCH FAILED[/bold red]  — below threshold; do not market yet")
+        console.print(
+            "  [bold red]✗ BENCH FAILED[/bold red]  — below threshold; do not market yet"
+        )
 
     console.print()
-    console.print("  [dim]Thresholds from: Yuan et al. FSE 2024 (compile ≥ 90%, pass ≥ 85%)[/dim]")
+    console.print(
+        "  [dim]Thresholds from: Yuan et al. FSE 2024 (compile ≥ 90%, pass ≥ 85%)[/dim]"
+    )
     console.print("  [dim]Run with --output bench_report.json to persist results[/dim]")
 
 
@@ -137,10 +154,14 @@ def _print_plain(report: BenchReport) -> None:
         for name, summary in result.gate_summaries.items():
             rate = summary.pass_rate
             rate_s = f"{rate * 100:.1f}%" if rate is not None else "N/A"
-            print(f"  [{name}] pass={summary.pass_count} fail={summary.fail_count} skip={summary.skip_count} rate={rate_s}")
+            print(
+                f"  [{name}] pass={summary.pass_count} fail={summary.fail_count} skip={summary.skip_count} rate={rate_s}"
+            )
         print(f"  Avg quality: {result.avg_quality_score:.1%}")
         dist = result.verdict_distribution
-        print(f"  Verdicts: approve={dist.get('auto_approve',0)} hitl={dist.get('hitl',0)} regenerate={dist.get('regenerate',0)}")
+        print(
+            f"  Verdicts: approve={dist.get('auto_approve',0)} hitl={dist.get('hitl',0)} regenerate={dist.get('regenerate',0)}"
+        )
         print()
 
     cr = report.overall_compile_rate

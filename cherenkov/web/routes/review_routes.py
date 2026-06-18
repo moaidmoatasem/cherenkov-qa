@@ -7,9 +7,12 @@ router = APIRouter(tags=["review"])
 
 
 @router.get("/api/v1/review/queue")
-async def list_review_queue(status: str | None = "pending", _auth=Depends(verify_api_key)):
+async def list_review_queue(
+    status: str | None = "pending", _auth=Depends(verify_api_key)
+):
     import os
     import asyncio
+
     queue = get_queue()
     items = queue.list(status=status)
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
@@ -43,7 +46,9 @@ async def list_review_queue(status: str | None = "pending", _auth=Depends(verify
 
 
 @router.post("/api/v1/review/approve")
-async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
+async def approve_review_item(
+    payload: ReviewActionPayload, _auth=Depends(verify_api_key)
+):
     import os
     from cherenkov.core.feedback_store import FeedbackStore, FeedbackEntry
 
@@ -52,53 +57,78 @@ async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify
     envelope = queue.approve(payload.scenario_id, actor=actor, source="web")
     if not envelope.ok:
         raise HTTPException(
-            status_code=409 if envelope.error and envelope.error.code == "conflict" else 404,
+            status_code=409
+            if envelope.error and envelope.error.code == "conflict"
+            else 404,
             detail=envelope.error.message if envelope.error else "approve failed",
         )
     store = FeedbackStore()
     store.record_feedback(
-        FeedbackEntry(hitl_item_id=payload.scenario_id, action="approve", reason=payload.reason or "Approved by reviewer")
+        FeedbackEntry(
+            hitl_item_id=payload.scenario_id,
+            action="approve",
+            reason=payload.reason or "Approved by reviewer",
+        )
     )
     try:
         from cherenkov.reflector.reflector import Reflector
         from cherenkov.core.contracts import VerdictOutcome
+
         reflector = Reflector(run_id="web")
         reflector.ingest_human_verdict(
-            hypothesis_id=payload.scenario_id, outcome=VerdictOutcome.ACCEPT,
+            hypothesis_id=payload.scenario_id,
+            outcome=VerdictOutcome.ACCEPT,
             detail=payload.reason or "Approved via review dashboard",
         )
     except Exception as e:
         import logging
-        logging.getLogger("HITL").warning("failed to feed approve verdict to Reflector", exc_info=e)
+
+        logging.getLogger("HITL").warning(
+            "failed to feed approve verdict to Reflector", exc_info=e
+        )
     return {"status": "approved", "scenario_id": payload.scenario_id}
 
 
 @router.post("/api/v1/review/reject")
-async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
+async def reject_review_item(
+    payload: ReviewActionPayload, _auth=Depends(verify_api_key)
+):
     import os
     from cherenkov.core.feedback_store import FeedbackStore, FeedbackEntry
 
     queue = get_queue()
     actor = os.environ.get("USER", "dashboard")
     reason = payload.reason or "Rejected by reviewer"
-    envelope = queue.reject(payload.scenario_id, actor=actor, reason=reason, source="web")
+    envelope = queue.reject(
+        payload.scenario_id, actor=actor, reason=reason, source="web"
+    )
     if not envelope.ok:
         raise HTTPException(
-            status_code=409 if envelope.error and envelope.error.code == "conflict" else 404,
+            status_code=409
+            if envelope.error and envelope.error.code == "conflict"
+            else 404,
             detail=envelope.error.message if envelope.error else "reject failed",
         )
     store = FeedbackStore()
-    store.record_feedback(FeedbackEntry(hitl_item_id=payload.scenario_id, action="reject", reason=reason))
+    store.record_feedback(
+        FeedbackEntry(hitl_item_id=payload.scenario_id, action="reject", reason=reason)
+    )
     try:
         from cherenkov.reflector.reflector import Reflector
         from cherenkov.core.contracts import VerdictOutcome
+
         reflector = Reflector(run_id="web")
         reflector.ingest_human_verdict(
-            hypothesis_id=payload.scenario_id, outcome=VerdictOutcome.REJECT, detail=reason,
+            hypothesis_id=payload.scenario_id,
+            outcome=VerdictOutcome.REJECT,
+            detail=reason,
         )
     except Exception as e:
         import logging
-        logging.getLogger("HITL").warning("failed to feed reject verdict to Reflector", exc_info=e)
+
+        logging.getLogger("HITL").warning(
+            "failed to feed reject verdict to Reflector", exc_info=e
+        )
     return {"status": "rejected", "scenario_id": payload.scenario_id}
 
 
@@ -106,8 +136,11 @@ async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_
 async def edit_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
     import os
     import asyncio
+
     if not payload.test_code:
-        raise HTTPException(status_code=400, detail="Missing updated test code content.")
+        raise HTTPException(
+            status_code=400, detail="Missing updated test code content."
+        )
     _validate_scenario_id(payload.scenario_id)
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
     os.makedirs(tests_dir, exist_ok=True)
@@ -125,19 +158,33 @@ async def edit_review_item(payload: ReviewActionPayload, _auth=Depends(verify_ap
 @router.post("/api/v1/review/classify")
 async def classify_review_item(payload: ClassifyPayload, _auth=Depends(verify_api_key)):
     import os
+
     queue = get_queue()
     actor = payload.actor or os.environ.get("USER", "dashboard")
     if payload.classification == "regression":
         envelope = queue.approve(payload.item_id, actor=actor, source="web")
     elif payload.classification == "intended":
-        envelope = queue.reject(payload.item_id, actor=actor, reason=payload.detail or "classified as intended", source="web")
+        envelope = queue.reject(
+            payload.item_id,
+            actor=actor,
+            reason=payload.detail or "classified as intended",
+            source="web",
+        )
     elif payload.classification == "ignore":
         envelope = queue.ignore(payload.item_id, actor, source="web")
     else:
-        raise HTTPException(status_code=400, detail=f"Unknown classification: {payload.classification}")
+        raise HTTPException(
+            status_code=400, detail=f"Unknown classification: {payload.classification}"
+        )
     if not envelope.ok:
         raise HTTPException(
-            status_code=409 if envelope.error and envelope.error.code == "conflict" else 404,
+            status_code=409
+            if envelope.error and envelope.error.code == "conflict"
+            else 404,
             detail=envelope.error.message if envelope.error else "classify failed",
         )
-    return {"status": "classified", "item_id": payload.item_id, "classification": payload.classification}
+    return {
+        "status": "classified",
+        "item_id": payload.item_id,
+        "classification": payload.classification,
+    }

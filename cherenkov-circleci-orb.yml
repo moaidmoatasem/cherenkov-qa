@@ -1,0 +1,37 @@
+version: 2.1
+description: "Run CHERENKOV AI-native API conformance tests"
+
+executors:
+  python-playwright:
+    docker:
+      - image: mcr.microsoft.com/playwright/python:v1.49.0-jammy
+
+commands:
+  run-tests:
+    description: "Run Cherenkov validate and output JUnit and SARIF reports"
+    parameters:
+      spec_path:
+        type: string
+        default: "./openapi.yaml"
+      target_url:
+        type: string
+    steps:
+      - run:
+          name: "Install CHERENKOV-QA"
+          command: pip install cherenkov-qa
+      - run:
+          name: "Run API Conformance Validation"
+          command: |
+            cherenkov init
+            cherenkov validate --spec << parameters.spec_path >> --target << parameters.target_url >> --fail-on-drift
+      - run:
+          name: "Generate Test Artifacts (JUnit / SARIF)"
+          when: always
+          command: |
+            mkdir -p test-results/cherenkov
+            cherenkov report --format junit --output test-results/cherenkov/junit.xml
+            cherenkov report --format sarif --output test-results/cherenkov/results.sarif
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results/cherenkov/results.sarif

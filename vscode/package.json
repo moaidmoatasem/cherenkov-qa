@@ -1,7 +1,7 @@
 {
   "name": "cherenkov-qa",
   "displayName": "Cherenkov QA",
-  "description": "API conformance testing from your OpenAPI spec \u2014 spec in, Playwright tests out",
+  "description": "API conformance testing from your OpenAPI spec — spec in, Playwright tests out",
   "version": "1.0.0",
   "publisher": "cherenkov-qa",
   "icon": "images/icon.png",
@@ -83,6 +83,11 @@
         "command": "cherenkov.viewDrift",
         "title": "Cherenkov: View Drift Details",
         "icon": "$(eye)"
+      },
+      {
+        "command": "cherenkov.applySuggestedAssertion",
+        "title": "Cherenkov: Apply Suggested Assertion (Suggest-only)",
+        "icon": "$(edit)"
       }
     ],
     "menus": {
@@ -186,12 +191,21 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "package": "vsce package",
-    "lint": "eslint src --ext ts"
+    "lint": "eslint src --ext ts",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
+    "@types/mocha": "^10.0.1",
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.85.0",
-    "typescript": "^5.3.0",
-    "@vscode/vsce": "^2.22.0"
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^2.22.0",
+    "eslint": "^8.57.1",
+    "glob": "^10.3.3",
+    "mocha": "^10.2.0",
+    "typescript": "^5.3.0"
   }
 }

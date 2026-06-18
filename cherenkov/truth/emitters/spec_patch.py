@@ -32,7 +32,7 @@ class SpecPatchEmitter(Emitter):
                 d
                 for d in divergences
                 if d.divergence_class
-                in (DivergenceClass.D1_SPEC_CODE, DivergenceClass.D4_SPEC_DB)
+                in (DivergenceClass.D1_SPEC_CODE, DivergenceClass.D4_SPEC_DB)  # type: ignore
             ]
 
         if not spec_divergences:
@@ -42,10 +42,10 @@ class SpecPatchEmitter(Emitter):
 
         patch_lines = []
         for d in spec_divergences:
-            patch_lines.append(f"--- a/spec divergence: {d.endpoint_id}")
-            patch_lines.append(f"+++ b/suggested fix: {d.description}")
+            patch_lines.append(f"--- a/spec divergence: {d.endpoint_id}")  # type: ignore
+            patch_lines.append(f"+++ b/suggested fix: {d.description}")  # type: ignore
             patch_lines.append("@@ -0,0 +1 @@")
-            patch_lines.append(f"+# {d.description}")
+            patch_lines.append(f"+# {d.description}")  # type: ignore
             patch_lines.append("")
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
