@@ -25,7 +25,6 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from cherenkov.core.settings import get_settings
 from cherenkov.stages.ingest import IngestStage
 from cherenkov.core.orchestrator import OrchestrationEngine
 from cherenkov.execution.validate import ValidationEngine
@@ -105,6 +104,10 @@ from cherenkov.web.routes.data_routes import router as data_router  # noqa: E402
 
 app.include_router(data_router)
 
+from cherenkov.web.routes.health_routes import router as health_router  # noqa: E402
+
+app.include_router(health_router)
+
 from cherenkov.web.middleware.security import add_security_middleware  # noqa: E402
 
 add_security_middleware(app)
@@ -148,150 +151,6 @@ class ClassifyPayload(BaseModel):
 
 
 # ── Endpoints ──────────────────────────────────────────────────────────
-
-
-#
-# Sidecar health — used by Tauri desktop host to detect engine readiness
-#
-@app.get("/healthz")
-async def healthz():
-    return {"ok": True, "version": "1.0.0"}
-
-
-#
-# Token consumption monitor
-#
-@app.get("/api/v1/tokens/report")
-async def tokens_report(days: int = 30):
-    """Token consumption report: usage by provider/stage, daily trend, recommendations."""
-    from cherenkov.observability.token_monitor import get_monitor
-
-    monitor = get_monitor()
-    return monitor.get_dashboard_data(days=days)
-
-
-@app.get("/api/v1/tokens/recommendations")
-async def tokens_recommendations(days: int = 30):
-    """Return only the actionable cost-reduction recommendations."""
-    from cherenkov.observability.token_monitor import get_monitor
-
-    monitor = get_monitor()
-    report = monitor.get_report(days=days)
-    return {
-        "recommendations": report.recommendations,
-        "total_cost_usd": report.total_cost_usd,
-        "period_days": days,
-    }
-
-
-#
-# Health
-#
-@app.get("/api/v1/health")
-async def health_check():
-    try:
-        device = await asyncio.wait_for(
-            asyncio.to_thread(get_settings().detect_ollama_device), timeout=2.0
-        )
-    except Exception:
-        device = "unknown"
-    return {
-        "status": "online",
-        "device": device,
-        "gen_model": get_settings().GEN_MODEL,
-        "active_connections": len(manager.active_connections),
-        "workspace_root": os.getcwd(),
-        "demo_mode": os.environ.get("DEMO_MODE") == "1",
-    }
-
-
-#
-# Doctor
-#
-@app.get("/api/v1/doctor")
-async def run_doctor_api():
-    from cherenkov.stages.doctor_cmd import (
-        check_ollama_binary,
-        check_ollama_daemon,
-        check_node,
-        check_npx_playwright,
-        check_prism_docker,
-        check_egress_blocked,
-    )
-    from cherenkov.core.config_loader import load_effective_config
-    from cherenkov.core.settings import get_settings
-
-    cfg = load_effective_config()
-    checks = []
-
-    ollama_bin, bin_det = check_ollama_binary()
-    checks.append(
-        {
-            "name": "Ollama Binary",
-            "status": "passed" if ollama_bin else "failed",
-            "message": bin_det,
-        }
-    )
-
-    if ollama_bin:
-        ollama_daemon, daemon_det = check_ollama_daemon()
-        checks.append(
-            {
-                "name": "Ollama Daemon",
-                "status": "passed" if ollama_daemon else "failed",
-                "message": daemon_det,
-            }
-        )
-
-    node_ok, node_det = check_node()
-    checks.append(
-        {
-            "name": "Node.js",
-            "status": "passed" if node_ok else "failed",
-            "message": node_det,
-        }
-    )
-
-    pw_ok, pw_det = check_npx_playwright()
-    checks.append(
-        {
-            "name": "Playwright",
-            "status": "passed" if pw_ok else "failed",
-            "message": pw_det,
-        }
-    )
-
-    prism_ok, prism_det = check_prism_docker()
-    checks.append(
-        {
-            "name": "Prism Docker",
-            "status": "passed" if prism_ok else "failed",
-            "message": prism_det,
-        }
-    )
-
-    egress_ok, egress_det = check_egress_blocked(cfg)
-    checks.append(
-        {
-            "name": "Egress Policy",
-            "status": "passed" if egress_ok else "failed",
-            "message": egress_det,
-        }
-    )
-
-    device = get_settings().detect_ollama_device()
-    is_gpu = device == "GPU"
-    checks.append(
-        {
-            "name": "Device",
-            "status": "passed" if is_gpu else "failed",
-            "message": device + " (GPU recommended)",
-        }
-    )
-
-    ready = ollama_bin and node_ok and pw_ok and prism_ok
-
-    return {"checks": checks, "ready": ready}
 
 
 #
