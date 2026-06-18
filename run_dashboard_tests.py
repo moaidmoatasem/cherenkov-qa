@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# DEPRECATED: track-b-c-deferred/ was re-integrated and deleted.
+# Dashboard now lives in cherenkov/web/. This script is dead code.
 import os
 import sys
 import subprocess

@@ -1,7 +1,6 @@
-import asyncio
 from deepeval import evaluate
 from deepeval.test_case import LLMTestCase
-from deepeval.metrics import AnswerRelevancyMetric, CodeCorrectnessMetric
+from deepeval.metrics import AnswerRelevancyMetric
 from cherenkov.mcp.server import run_qwen_code_agent
 from cherenkov.agents.copilot import CopilotAgent
 

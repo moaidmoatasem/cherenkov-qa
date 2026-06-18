@@ -50,7 +50,6 @@ Closes #
 **Quality**
 - [ ] No secrets or API keys committed
 - [ ] CodeQL scan clean
-- [ ] No import from `track-b-c-deferred/` (quarantined)
 - [ ] `docs/HANDOVER.md` updated if project state changed
 
 <!-- AI agent? Add co-author trailer to your commit message. -->

@@ -7,7 +7,6 @@ A small script that demonstrates invoking Qwen Code via Python subprocess
 """
 
 import subprocess
-import json
 
 def generate_test_snippet(prompt: str) -> str:
     print(f"Asking Qwen Code: {prompt}")

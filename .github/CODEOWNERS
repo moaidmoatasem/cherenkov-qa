@@ -8,6 +8,3 @@
 /cherenkov/core/        @moaidmoatasem
 /cherenkov/substrate/   @moaidmoatasem
 /.github/               @moaidmoatasem
-
-# Quarantined — should not change pre-gate
-/track-b-c-deferred/    @moaidmoatasem

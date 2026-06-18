@@ -9,8 +9,8 @@ def cli(ctx):
     if ctx.invoked_subcommand is None:
         click.echo(ctx.get_help())
 
-# All commands ported to Click. legacy_main() is the fallback for any unknown
-# subcommand (e.g. the bare `cherenkov --spec foo.yaml` legacy invocation).
+# All commands ported to Click. The legacy argparse CLI (legacy_cli.py) has been
+# deleted — these are the only entry points.
 _CLICK_COMMANDS = [
     "validate", "synthetic",
     "diff", "report", "eject", "self-test", "completion", "init", "doctor",

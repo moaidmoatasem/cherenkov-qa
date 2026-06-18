@@ -80,7 +80,8 @@ def _http_post(base_url: str, path: str, expect_status: int) -> tuple[bool, str]
 
 def test_create_user_strict(base_url: str) -> tuple[bool, str]:
     """MEANINGFUL: asserts status==201 (correct) and email field present."""
-    import http.client, json as _json
+    import http.client
+    import json as _json
     from urllib.parse import urlparse
 
     parsed = urlparse(base_url)
@@ -103,7 +104,8 @@ def test_create_user_strict(base_url: str) -> tuple[bool, str]:
 def test_create_user_weakened(base_url: str) -> tuple[bool, str]:
     """WEAKENED (cheat): AI changed assert status==201 to status < 500.
     This passes even when the broken impl returns 200 with a missing field."""
-    import http.client, json as _json
+    import http.client
+    import json as _json
     from urllib.parse import urlparse
 
     parsed = urlparse(base_url)
@@ -124,7 +126,8 @@ def test_create_user_weakened(base_url: str) -> tuple[bool, str]:
 
 def test_create_order_strict(base_url: str) -> tuple[bool, str]:
     """MEANINGFUL: asserts status==201 for order creation."""
-    import http.client, json as _json
+    import http.client
+    import json as _json
     from urllib.parse import urlparse
 
     parsed = urlparse(base_url)

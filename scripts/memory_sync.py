@@ -9,7 +9,6 @@ Usage:
   python3 scripts/memory_sync.py [--dry-run]
 """
 
-import os
 import json
 import sqlite3
 import hashlib
