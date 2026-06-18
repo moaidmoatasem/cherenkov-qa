@@ -7,7 +7,44 @@
 
 ---
 
-## SESSION HANDOVER — 2026-06-17 (latest)
+## SESSION HANDOVER — 2026-06-18 (latest)
+
+**Branch:** `fix/playwright-qa-18-failures` at `e7643556` — pushed to `origin/fix/playwright-qa-18-failures`.
+**Origin/main:** `4026cecd`. Branch is **7 commits ahead of main** (not yet merged — see next steps).
+
+**Pytest suite:** Confirmed exit code 0 (multiple runs this session + background task b6w1ehskx).
+
+**Ruff:** 0 errors (all checks passed after removing duplicate local import in `review.py`).
+
+### What was done this session (2026-06-18)
+
+Alignment + fix cycle while battling volatile concurrent-agent tree. All changes committed and pushed.
+
+**Fixes committed this session:**
+- `chat/agent.py`: `respond()` offloads blocking `_call_llm()` to `asyncio.to_thread` (prevents event loop stall)
+- `knowledge/api/routes.py`: serialize `KnowledgeItem` dataclass to plain dict before JSON response
+- `web/middleware/security.py`: evict stale IPs from `RateLimitMiddleware._requests` to bound memory growth
+- `hitl/store.py`: add `ignore()` method to `HitlQueue` (extracts private `_resolve()` call)
+- `web/api.py`: call `queue.ignore()` in classify endpoint; DNS-rebinding SSRF fix (resolve hostname via `socket.getaddrinfo`, reject private/loopback/link-local/reserved IPs)
+- `stages/review.py`: remove duplicate local `from cherenkov.core.settings import get_settings` that caused ruff F823
+- `review.py` also has `refactor: use settings for tsc timeout, log swallowed exceptions` (committed by concurrent agent earlier, now confirmed in log)
+
+**Recurring hazard encountered:** concurrent agents (`.agents/`, `.kilo/`) held `.git/index.lock` and reverted files between Edit and commit. Mitigation: `sleep 3` before retry; stage + commit immediately after each diff.
+
+### Immediate next steps (for next agent)
+
+1. **Merge the PR** — `fix/playwright-qa-18-failures` → `main`.
+   - `gh` CLI needs re-auth: `gh auth login -h github.com` (token expired mid-session).
+   - Then: `gh pr create --base main --head fix/playwright-qa-18-failures` (or merge via GitHub UI).
+   - `.pr-body.md` at repo root is an untracked draft PR body (from a concurrent agent).
+
+2. **After merge** — run `python -m pytest tests/ -q` on `main` to confirm clean.
+
+3. **Ruff** stays at 0 — do not introduce local imports inside functions that shadow module-level names.
+
+---
+
+## SESSION HANDOVER — 2026-06-17 (previous)
 
 **Branch:** `main` at `4a65a546` — **clean working tree, 0 unstaged changes, pushed to origin.**
 

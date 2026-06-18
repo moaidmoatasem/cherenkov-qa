@@ -13,10 +13,10 @@ test('post /orders missing_product_id - returns 422', async () => {
   const userId = (user as any).id ?? (user as any).user_id;
 
   // Send a body with user_id and quantity but no product_id
-  const { data, response } = await client.POST('/orders', {
+  const { data, error, response } = await client.POST('/orders', {
     body: { user_id: userId, quantity: 1 } as any
   });
   expect(response.status).toBe(422);
-  expect(data).toBeTruthy();
-  expect((data as any).detail ?? (data as any).message ?? (data as any).error).toBeTruthy();
+  expect(error ?? data).toBeTruthy();
+  expect((error as any)?.detail ?? (data as any)?.detail ?? (data as any)?.message).toBeTruthy();
 });

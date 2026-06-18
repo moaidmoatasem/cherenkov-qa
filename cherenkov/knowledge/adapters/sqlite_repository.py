@@ -76,6 +76,20 @@ class SQLiteKnowledgeRepository:
                 END;
         """)
         conn.commit()
+        self._ensure_fts_populated(conn)
+
+    def _ensure_fts_populated(self, conn: sqlite3.Connection) -> None:
+        """Retroactively populate the FTS shadow table on existing DBs.
+
+        The triggers only fire on future writes, so a DB created before the FTS
+        table was added has an empty shadow table.  `INSERT INTO … rebuild` is a
+        safe no-op when the shadow table is already in sync.
+        """
+        (fts_count,) = conn.execute("SELECT COUNT(*) FROM knowledge_fts").fetchone()
+        (items_count,) = conn.execute("SELECT COUNT(*) FROM knowledge_items").fetchone()
+        if fts_count < items_count:
+            conn.execute("INSERT INTO knowledge_fts(knowledge_fts) VALUES ('rebuild')")
+            conn.commit()
 
     def query(self, query: KnowledgeQuery) -> KnowledgeQueryResult:
         conn = self._connect()

@@ -33,6 +33,16 @@ def _is_unc_path(path: str) -> bool:
     return path.startswith("\\\\") or path.startswith("//")
 
 
+def _wsl_distro_from_unc(path: str) -> str | None:
+    """Extract WSL distro name from a \\\\wsl.localhost\\<distro>\\... UNC path."""
+    if not path.startswith(_WSL_PREFIX):
+        return None
+    parts = path.split("\\")
+    if len(parts) < 5:
+        return None
+    return parts[3]
+
+
 class PlaywrightRunner:
     """Invokes pure Playwright test command line in the stub workspace and parses native JSON results."""
 
@@ -45,6 +55,7 @@ class PlaywrightRunner:
         self.tests_dir = os.path.join(self.stub_dir, "generated_tests")
         # Detect Windows UNC path — cmd.exe cannot use UNC as cwd
         self._use_wsl = sys.platform == "win32" and _is_unc_path(self.stub_dir)
+        self._wsl_distro = _wsl_distro_from_unc(self.stub_dir) if self._use_wsl else None
 
     def execute_test(
         self,
@@ -52,6 +63,7 @@ class PlaywrightRunner:
         api_url: str,
         test_code: str | None = None,
         update_snapshots: bool = False,
+        headed: bool = False,
     ) -> dict:
         """Writes the generated TypeScript test code, executes Playwright natively, and parses the JSON results."""
         os.makedirs(self.tests_dir, exist_ok=True)
@@ -68,11 +80,11 @@ class PlaywrightRunner:
 
         if self._use_wsl:
             exit_code, failure_msg, trace_path = self._exec_via_wsl(
-                scenario_id, api_url, update_snapshots
+                scenario_id, api_url, update_snapshots, headed
             )
         else:
             exit_code, failure_msg, trace_path = self._exec_native(
-                scenario_id, api_url, update_snapshots
+                scenario_id, api_url, update_snapshots, headed
             )
 
         self.log.info(
@@ -91,7 +103,7 @@ class PlaywrightRunner:
         }
 
     def _exec_native(
-        self, scenario_id: str, api_url: str, update_snapshots: bool
+        self, scenario_id: str, api_url: str, update_snapshots: bool, headed: bool = False
     ) -> tuple:
         env = os.environ.copy()
         env["API_URL"] = api_url
@@ -108,6 +120,8 @@ class PlaywrightRunner:
             "--reporter=json",
         ]
         cmd.append("--trace=on")
+        if headed:
+            cmd.append("--headed")
         if update_snapshots:
             cmd.append("--update-snapshots")
 
@@ -131,7 +145,7 @@ class PlaywrightRunner:
         return self._parse_result(process.stdout, process.stderr, process.returncode)
 
     def _exec_via_wsl(
-        self, scenario_id: str, api_url: str, update_snapshots: bool
+        self, scenario_id: str, api_url: str, update_snapshots: bool, headed: bool = False
     ) -> tuple:
         linux_stub = _wsl_path(self.stub_dir)
         test_rel = f"generated_tests/{scenario_id}.spec.ts"
@@ -143,6 +157,8 @@ class PlaywrightRunner:
             "--reporter=json",
             "--trace=on",
         ]
+        if headed:
+            cmd_parts.append("--headed")
         if update_snapshots:
             cmd_parts.append("--update-snapshots")
 
@@ -152,7 +168,10 @@ class PlaywrightRunner:
             f"cd {shlex.quote(linux_stub)} && "
             + " ".join(shlex.quote(p) for p in cmd_parts)
         )
-        wsl_cmd = ["wsl.exe", "-e", "bash", "-c", shell_cmd]
+        wsl_cmd = ["wsl.exe"]
+        if self._wsl_distro:
+            wsl_cmd.extend(["-d", self._wsl_distro])
+        wsl_cmd.extend(["-e", "bash", "-c", shell_cmd])
 
         self.log.info(
             "invoking playwright runner (wsl)",
