@@ -5,27 +5,18 @@ from cherenkov.cli.legacy_cli import main as legacy_main
 @click.group(invoke_without_command=True, context_settings=dict(ignore_unknown_options=True))
 @click.pass_context
 def cli(ctx):
-    """CHERENKOV E2E Suite Command Line Interface (Modular)"""
+    """CHERENKOV E2E Suite Command Line Interface"""
     if ctx.invoked_subcommand is None:
         legacy_main()
 
-# Commands fully ported to Click — no longer handled by legacy_main().
-# Add names here as they are migrated; everything else falls back to legacy_main().
+# All commands ported to Click. legacy_main() is the fallback for any unknown
+# subcommand (e.g. the bare `cherenkov --spec foo.yaml` legacy invocation).
 _CLICK_COMMANDS = [
-    "validate",
-    "synthetic",
-    "diff",
-    "report",
-    "eject",
-    "self-test",
-    "completion",
-    "init",
-    "doctor",
-    "visual",
-    "perf",
-    "hitl",
-    "review",
-    "mcp",
+    "validate", "synthetic",
+    "diff", "report", "eject", "self-test", "completion", "init", "doctor",
+    "visual", "perf", "hitl", "review", "mcp",
+    "dashboard", "map", "daemon", "explore", "author",
+    "tokens", "governance", "certify", "profile",
 ]
 
 
@@ -39,20 +30,23 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.advanced import (
         visual_cmd, perf_cmd, hitl_cmd, review_cmd, mcp_cmd,
     )
-    cli.add_command(validate_cmd, name="validate")
-    cli.add_command(synthetic_cmd, name="synthetic")
-    cli.add_command(diff_cmd, name="diff")
-    cli.add_command(report_cmd, name="report")
-    cli.add_command(eject_cmd, name="eject")
-    cli.add_command(self_test_cmd, name="self-test")
-    cli.add_command(completion_cmd, name="completion")
-    cli.add_command(init_cmd, name="init")
-    cli.add_command(doctor_cmd, name="doctor")
-    cli.add_command(visual_cmd, name="visual")
-    cli.add_command(perf_cmd, name="perf")
-    cli.add_command(hitl_cmd, name="hitl")
-    cli.add_command(review_cmd, name="review")
-    cli.add_command(mcp_cmd, name="mcp")
+    from cherenkov.cli.commands.epoch import (
+        dashboard_cmd, map_cmd, daemon_cmd, explore_cmd, author_cmd,
+        tokens_cmd, governance_cmd, certify_cmd, profile_cmd,
+    )
+    for cmd, name in [
+        (validate_cmd, "validate"), (synthetic_cmd, "synthetic"),
+        (diff_cmd, "diff"), (report_cmd, "report"), (eject_cmd, "eject"),
+        (self_test_cmd, "self-test"), (completion_cmd, "completion"),
+        (init_cmd, "init"), (doctor_cmd, "doctor"),
+        (visual_cmd, "visual"), (perf_cmd, "perf"),
+        (hitl_cmd, "hitl"), (review_cmd, "review"), (mcp_cmd, "mcp"),
+        (dashboard_cmd, "dashboard"), (map_cmd, "map"), (daemon_cmd, "daemon"),
+        (explore_cmd, "explore"), (author_cmd, "author"),
+        (tokens_cmd, "tokens"), (governance_cmd, "governance"),
+        (certify_cmd, "certify"), (profile_cmd, "profile"),
+    ]:
+        cli.add_command(cmd, name=name)
 
 
 def main():
