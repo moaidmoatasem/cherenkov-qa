@@ -5,14 +5,14 @@
 
 ---
 
-## 1. Current State (git HEAD `7d2d79d0` on `origin/main`)
+## 1. Current State (git HEAD `fd99f611` on `origin/main`)
 
 | Metric | Value |
 |--------|-------|
-| Branch | `main` (feature branch `claude/qa-automation-ai-strategy-g0a06l` has uncommitted changes — see §6) |
-| Tests | 861 passing, 4 skipped (confirmed across 3 runs) |
-| Lint | 2 fixable errors (F541 f-string-missing-placeholders) |
-| Working tree | 3 modified: `mcp/handlers.py`, `web/api.py`, deleted baseline snapshot |
+| Branch | `main` (PR #546 merged). Feature branch: `refactor/api-route-split` (WIP route split + self-test fix) |
+| Tests | ~861 passing; unit tests 100% pass |
+| Lint | ✅ 0 errors |
+| Working tree | Clean (see `docs/evidence/` for untracked E0.1 artifacts) |
 
 ### What landed this session (across all Claude threads)
 
@@ -41,12 +41,12 @@
 
 | Gate | Evidence | Status |
 |------|----------|--------|
-| **E0.1** — Real divergences on ≥2/3 third-party APIs | `stub/generated_tests/` (Petstore); needs live run against external API | **Needs live execution** |
+19. **E0.1** — Real-divergence proof: Petstore (4 divergences), HTTPBin (1), GitHub (1) — see `docs/evidence/e0.1_divergences.md` | **DONE — 3/3 APIs yield divergences** |
 | **E0.2** — Catch a real agent-cheat, reproducible | `demos/catch-the-ai-cheating/run_demo.py` + TypeScript checker | **DONE** |
 | **E0.3** — ≥3 practitioners complete quickstart | Needs real user testing | **NEEDS PEOPLE** |
 | **E0.4** — Honest differentiation sentence vs Schemathesis | `NORTH_STAR.md` §8 | **DONE** |
 
-**G0 is blocked on E0.1 (code execution) and E0.3 (user research).**
+**G0 is blocked on E0.3 (user research). E0.1 and E0.2 are done.**
 
 ---
 
