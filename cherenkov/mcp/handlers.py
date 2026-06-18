@@ -1008,8 +1008,8 @@ def _tool_verify_suite(args: dict[str, Any]) -> MCPToolCallResult:
                 "title": f"Gate '{gate.gate}' failed",
                 "evidence": gate.detail,
                 "reproduction": (
-                    f"Run: python demos/catch-the-ai-cheating/run_demo.py\n"
-                    f"Or call verify_suite with the same suite_inline."
+                    "Run: python demos/catch-the-ai-cheating/run_demo.py\n"
+                    "Or call verify_suite with the same suite_inline."
                 ),
                 "suggested_fix": (
                     "Review the gate description at cherenkov://gates for what "
