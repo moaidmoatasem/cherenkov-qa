@@ -8,10 +8,36 @@ Non-Docker fallback: Ollama provider is always available.
 from __future__ import annotations
 
 import os
+from typing import Callable
 
 from cherenkov.ai.ollama_client import OllamaClient
 from cherenkov.ai.model_runner_client import ModelRunnerClient
 from cherenkov.ai.interface import InferenceClient
+
+
+def _make_anthropic() -> InferenceClient:
+    from cherenkov.ai.anthropic_client import AnthropicInferenceClient
+    return AnthropicInferenceClient()
+
+
+def _make_bedrock() -> InferenceClient:
+    from cherenkov.ai.bedrock_client import BedrockInferenceClient
+    return BedrockInferenceClient()
+
+
+def _make_huggingface() -> InferenceClient:
+    from cherenkov.ai.huggingface_client import HuggingFaceInferenceClient
+    return HuggingFaceInferenceClient()
+
+
+# Add new providers here without touching InferenceRouter.
+_REGISTRY: dict[str, Callable[[], InferenceClient]] = {
+    "ollama": OllamaClient,
+    "model-runner": ModelRunnerClient,
+    "anthropic": _make_anthropic,
+    "bedrock": _make_bedrock,
+    "huggingface": _make_huggingface,
+}
 
 
 class InferenceRouter:
@@ -19,18 +45,8 @@ class InferenceRouter:
         self.provider = provider or os.getenv("CHERENKOV_INFERENCE_PROVIDER", "ollama")
 
     def resolve_client(self) -> InferenceClient:
-        if self.provider == "model-runner":
-            return ModelRunnerClient()
-        if self.provider == "anthropic":
-            from cherenkov.ai.anthropic_client import AnthropicInferenceClient
-            return AnthropicInferenceClient()
-        if self.provider == "bedrock":
-            from cherenkov.ai.bedrock_client import BedrockInferenceClient
-            return BedrockInferenceClient()
-        if self.provider == "huggingface":
-            from cherenkov.ai.huggingface_client import HuggingFaceInferenceClient
-            return HuggingFaceInferenceClient()
-        return OllamaClient()
+        factory = _REGISTRY.get(self.provider, OllamaClient)
+        return factory()
 
     def complete(self, prompt: str, system_prompt: str | None = None) -> str:
         client = self.resolve_client()
