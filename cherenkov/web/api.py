@@ -14,7 +14,6 @@ from contextlib import asynccontextmanager
 
 
 from fastapi import (
-    Query,
     FastAPI,
     WebSocket,
     WebSocketDisconnect,
@@ -27,7 +26,6 @@ from fastapi import (
     Header,
 )
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from cherenkov.core.settings import get_settings
@@ -183,6 +181,14 @@ app.include_router(monitor_router)
 from cherenkov.web.routes.metrics_routes import router as metrics_router  # noqa: E402
 
 app.include_router(metrics_router)
+
+from cherenkov.web.routes.conformance_routes import router as conformance_router  # noqa: E402
+
+app.include_router(conformance_router)
+
+from cherenkov.web.routes.static_routes import router as static_router  # noqa: E402
+
+app.include_router(static_router)
 
 from cherenkov.web.middleware.security import add_security_middleware  # noqa: E402
 
@@ -1488,45 +1494,4 @@ async def websocket_endpoint(websocket: WebSocket):
         await manager.disconnect(websocket)
 
 
-@app.get("/api/conformance/status")
-async def conformance_status(service: str = Query(...)):
-    """Return latest conformance status for a service URL."""
-    from cherenkov.web.divergences import get_latest_status
-    status = get_latest_status(service)
-    return {
-        "service": service,
-        "violations": status.drift_count if status else 0,
-        "endpointsTested": status.endpoints_tested if status else 0,
-        "lastChecked": status.run_at.isoformat() if status else None,
-        "status": "pass" if (status and status.drift_count == 0) else "fail",
-    }
-
-
-@app.get("/api/conformance/report")
-async def conformance_report(service: str = Query(...)):
-    """Return detailed conformance report for a service."""
-    from cherenkov.web.divergences import get_latest_report
-    report = get_latest_report(service)
-    return report
-
-
 #
-# Static file serving for prebuilt UI
-#
-_ui_dist = os.path.join(os.path.dirname(__file__), "ui", "dist")
-
-
-@app.get("/")
-async def serve_index():
-    index = os.path.join(_ui_dist, "index.html")
-    if os.path.exists(index):
-        return FileResponse(index)
-    return {"status": "UI not built. Run `npm run build` in cherenkov/web/ui/."}
-
-
-@app.get("/assets/{path:path}")
-async def serve_assets(path: str):
-    asset = os.path.join(_ui_dist, "assets", path)
-    if os.path.exists(asset):
-        return FileResponse(asset)
-    raise HTTPException(status_code=404, detail="Asset not found")
