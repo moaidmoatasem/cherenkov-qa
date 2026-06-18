@@ -1,61 +1,80 @@
 # CHERENKOV -- Session Handover
 
 **Date:** 2026-06-18
-**HEAD:** `6ef541fb` on `main` -- synced with `origin/main`
-**Tests:** all unit tests passing (clean exit)
-**Branch:** `main` -- no open fix branches, tree clean (generated-test CRLF noise is cosmetic)
+**HEAD:** `b98cbdfd` on `main` -- synced with `origin/main`
+**Tests:** unit tests passing (clean); G0 integrity suite 5/5
+**Branch:** `main` -- working tree clean (generated-test CRLF noise is cosmetic)
+
+---
+
+## Gate G0 status (EPIC #535 -- the shipping blocker)
+
+G0 requires E0.1 AND E0.2 AND E0.3 AND E0.4.
+
+| Exit criterion | Status | Evidence |
+|---|---|---|
+| E0.1 -- real divergences on 3rd-party APIs | NOT YET | Needs a live run against real APIs |
+| E0.2 -- integrity catch (catch the AI cheating) | DONE | `demos/catch-the-ai-cheating/`; CI-gated; 4/4 scenarios pass |
+| E0.3 -- 3 practitioners complete quickstart unaided | NOT YET | User-research activity |
+| E0.4 -- honest differentiation sentence vs Schemathesis | DONE | `docs/NORTH_STAR.md` section 8 |
+
+**Gate G0 is 2/4. E0.1 is the only purely-code blocker remaining.**
 
 ---
 
 ## What landed this session
 
-All security/reliability hardening is on `origin/main`. Key commits (newest first):
-
 | SHA | What |
 |---|---|
-| `6ef541fb` | Merge origin/main (CLI Click port) |
-| `0bbb0d00` | feat(cli): diff/report/eject/self-test/completion/init/doctor ported to Click |
-| `323f0805` | feat(g0): "Catch the AI cheating" integrity demo (EPIC #535 / E0.2) |
-| `837e19c4` | fix(api): auth on /knowledge/query + `_validate_spec_url` made async (DNS-rebinding) |
+| `b98cbdfd` | docs(g0): E0.4 differentiation statement (EPIC #535) |
+| `7a93fd81` | ci: gate-g0 + unit-test jobs added to cherenkov-ci.yml |
+| `5c6b500c` | docs: previous handover |
+| `837e19c4` | fix(api): auth on /knowledge/query + _validate_spec_url async |
 | `d5fda086` | merge: QA-18 fix + security hardening + HITL ignore |
 
-Security fixes confirmed on `origin/main`:
-- `settings.py` -- 4 configurable timeout env-vars
-- `ollama_client.py` -- None-guard before `raise last_err`
-- `playwright_invoke.py` -- subprocess timeouts; shlex.quote WSL cmd parts
-- `prism_mock.py` -- Docker start/stop timeouts; FileNotFoundError explicit
-- `mcp/handlers.py` -- URL scheme check in `_tool_registry_publish`
-- `api.py` -- eject auth; SSRF blocklist (is_reserved + GCP metadata); settings protection
-- `review.py` -- TSC timeout from settings; two silent-swallow exceptions now log
-- `.gitignore` -- secrets section; `requirements.txt` -- dep upper bounds
+Security fixes on `origin/main` (all done, not to revisit):
+settings.py timeouts, ollama_client None-guard, playwright_invoke timeouts+shlex,
+prism_mock timeouts+FileNotFoundError, mcp/handlers URL scheme check,
+api.py eject auth + SSRF blocklist + settings protection,
+review.py TSC timeout from settings + silent-exception logging,
+.gitignore secrets, requirements.txt upper bounds.
 
 ---
 
-## Remaining work (ordered by impact)
+## Next action: E0.1 (the remaining code-side G0 blocker)
 
-### 1. Gate G0 -- EPIC #535 (ACTIVE BLOCKER)
-Gate G0 must pass before any Track B/C features ship. Demo is committed at `demos/catch-the-ai-cheating/`. Next: run the gate evaluation and record the result.
-- Spec: `docs/ROADMAP_AQE.md`, `docs/NORTH_STAR.md`
-- Issues: #535 (G0), #536-538 (subsequent gates)
+Run CHERENKOV against at least 3 real public APIs and capture at least 2 genuine divergences.
 
-### 2. Tauri updater signing key (requires terminal with Tauri toolchain)
-`desktop/src-tauri/tauri.conf.json` has `"pubkey": ""` -- auto-update silently fails.
+Suggested targets (all have public OpenAPI specs, no auth for basic endpoints):
+1. **JSONPlaceholder** -- `https://jsonplaceholder.typicode.com` (fake REST; no real divergences likely, but validates the runner)
+2. **PetStore** -- `https://petstore3.swagger.io/api/v3` (the canonical demo spec, will likely show real divergences)
+3. **dog.ceo** or **open-meteo.com** -- small public APIs with published specs
+
+Steps:
 ```bash
-cargo tauri signer generate -w ~/.tauri/cherenkov.key
-# Copy the public key output into tauri.conf.json plugins.updater.pubkey
+# Install the CLI
+pip install -e .
+
+# Run against PetStore (or replace with a real local target)
+cherenkov run --spec https://petstore3.swagger.io/api/v3/openapi.json \
+              --url https://petstore3.swagger.io/api/v3
+
+# Capture any divergences to docs/evidence/e0.1_divergences.md
 ```
-Blocked on Tauri CLI being available in the agent environment.
-
-### 3. FTS5 retroactive migration -- already handled
-`_ensure_fts_populated()` in `sqlite_repository.py` line 81 handles this as a safe no-op on every startup. No action needed.
-
-### 4. CSP -- already correct
-`middleware/security.py` has `script-src 'self'` (no unsafe-inline/unsafe-eval). Tauri `csp: null` is intentional for localhost-first dev. No action needed.
+Record the run output (divergences found, gates passed/failed) as evidence in `docs/evidence/` so E0.1 is anchored to a real artefact, not a claim.
 
 ---
 
-## Environment hazards for next agent
+## Remaining backlog (post-G0)
 
-- **Shared working tree**: `~/cherenkov-qa` is one git checkout shared by multiple concurrent sessions. Always run `git branch` before committing; commit each file immediately after editing, not in batches.
-- **CRLF noise**: `stub/generated_tests/*.spec.ts` and `npm-package/` files show as modified constantly due to Windows/WSL line-ending mismatch. Cosmetic only -- do not commit unless there are real content changes.
-- **GitHub CLI**: `gh auth login` not configured in this agent environment -- PR creation must be done from a terminal where the user is already authenticated.
+1. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` from a terminal with the Tauri CLI installed.
+2. **E1.2 -- meaningful-assertion gate** -- port the `feat/92-coverage-sdet` concept cleanly onto main (do NOT merge the stale branch -- it has 542k-line deletions). This is the product version of E0.2.
+3. **E0.3** -- 3 practitioners complete quickstart unaided (user-research, not a code task).
+
+---
+
+## Environment hazards
+
+- **Shared working tree**: `~/cherenkov-qa` shared across concurrent agent sessions. Always `git branch` before committing; commit each file immediately after editing.
+- **CRLF noise**: `stub/generated_tests/*.spec.ts` and `npm-package/` show as modified constantly -- cosmetic, do not commit.
+- **GitHub CLI**: not authenticated in this agent environment -- PRs must be created manually.
