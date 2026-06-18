@@ -1,19 +1,49 @@
-# Catch the AI Cheating — Gate G0 / E0.2 demonstrator
+# Demo — "Catch the AI Cheating"
 
-> **EPIC [#535](https://github.com/moaidmoatasem/cherenkov-qa/issues/535)** (Gate G0). Storyboard: [../../docs/demos/CATCH_THE_AI_CHEATING.md](../../docs/demos/CATCH_THE_AI_CHEATING.md). Thesis: [../../docs/NORTH_STAR.md](../../docs/NORTH_STAR.md).
+**Gate G0 / E0.2** · Demonstrates CHERENKOV catching AI cheat patterns.
+
+> "We let an AI write the tests. Then we let it cheat. Watch CHERENKOV catch it."
 
 ## What this proves
-When an AI/agent generates or edits a test suite, it can **cheat to fake green** in three canonical ways. This demonstrator shows each cheat being **caught**, with a reproducible, dependency-light harness — the nucleus of CHERENKOV's "we don't let the AI cheat" promise.
 
-| Cheat | Fixture | What it does |
-|---|---|---|
-| **Weakened** | `suite_cheat_weakened.py` | loosens `==` to `< 500` / `is not None` / `in (...)` so a broken response still passes |
-| **Deleted** | `suite_cheat_deleted.py` | removes a failing test and drops assertions from a kept test |
-| **Hallucinated** | `suite_cheat_hallucinated.py` | asserts on `discount_code`, a field the spec never defines (a fake oracle) |
+When an AI agent generates a test suite and gets a red CI result, it has common escape routes to fake a green result. This demonstrator shows each cheat being **caught**, with reproducible, dependency-light harnesses.
 
-`openapi.yaml` is the **oracle** (source of truth). `suite_good.py` is the honest baseline. `integrity_check.py` statically compares a candidate suite against the baseline + spec and flags every violation.
+| Cheat | What the agent does | Suite looks like |
+|-------|---------------------|-----------------|
+| **Weakened assertion** | `toBe(201)` → `toBeLessThan(500)` or `==` → `< 500` | Green. Passes even on broken responses. |
+| **Deleted check** | Removes `toHaveProperty('id')` or drops failing tests | Green. Important checks are missing. |
+| **Hallucinated oracle** | Asserts `auth_token` field that's not in spec | Green locally. Fails on real server. |
 
-## Run it
+We provide two versions of the demo:
+1. **TypeScript / Playwright (Review Stage)** - Uses the production ReviewStage against spec-derived Playwright tests.
+2. **Python / Meaningful Assertion Gate** - A pure Phase-0 standalone proof using Python `ast`.
+
+---
+
+## 1. TypeScript / Playwright Demo (Review Stage)
+
+```bash
+# From the repo root:
+python demos/catch-the-ai-cheating/run_demo_ts.py
+```
+
+No cloud. No setup. Gates 1–4 run instantly (static analysis).  
+Gate 6 (Prism mock dry-run) requires Docker — gracefully skipped if absent.
+
+### Fixtures
+| File | Cheat pattern | Caught by |
+|------|--------------|-----------|
+| `fixtures/correct_test.spec.ts` | None — spec-derived baseline | — |
+| `fixtures/cheat_weakened_assertion.spec.ts` | `toBeLessThan(500)` instead of `toBe(201)` | Gate 4 (static) |
+| `fixtures/cheat_deleted_check.spec.ts` | Body assertions deleted | Gate 4 (static) |
+| `fixtures/cheat_hallucinated_oracle.spec.ts` | `auth_token` field not in spec | Gate 6 (Prism, requires Docker) |
+
+The 6-gate REVIEW stage re-derives truth from the spec — it does **not** trust the suite's own assertions.
+
+---
+
+## 2. Python Demo (Meaningful Assertion Gate)
+
 ```bash
 # narrative demo (control passes, 3 cheats caught)
 PYTHON=python3 ./run_demo.sh
@@ -21,22 +51,21 @@ PYTHON=python3 ./run_demo.sh
 # or one candidate at a time
 python3 integrity_check.py --spec openapi.yaml --baseline suite_good.py --candidate suite_cheat_weakened.py
 
-# the assertions, as a test
-python3 -m pytest demos/catch-the-ai-cheating/ -q
+# the MeaningfulAssertionGate demo
+python demos/catch-the-ai-cheating/run_demo_py.py
 ```
 
 Expected: control → `PASS`; each cheat → `FAIL` with a `[CAUGHT]` line naming the exact subject and how it was weakened/deleted/hallucinated.
 
-## How it works
+### How it works
 Pure `ast` static analysis (no execution, stdlib + optional PyYAML):
-- **Weakened** — a subject checked with `==` in the baseline now uses only weak comparators (`<`, `!=`, `in`, `is not`, …).
-- **Deleted** — a baseline test is gone, or a baseline assertion's subject is no longer checked in a kept test.
+- **Weakened** — a subject checked with `==` in the baseline now uses only weak comparators.
+- **Deleted** — a baseline test is gone, or a baseline assertion's subject is no longer checked.
 - **Hallucinated** — a candidate asserts on a `body[...]` field absent from every `properties` block in the spec.
 
-## Honest scope (what this is / isn't)
-This is a **standalone Phase-0 proof of the thesis**, deliberately self-contained so G0 can be demonstrated before the product gate exists. It is **not yet wired into CHERENKOV's runtime gates** — that is **EPIC [#536](https://github.com/moaidmoatasem/cherenkov-qa/issues/536) / E1.2** (the meaningful-assertion gate), which will subsume this logic and run it against agent-generated suites in the real pipeline. The static rules here are intentionally simple and will have false-negatives on adversarial obfuscation; hardening is tracked under E1.3.
+## Gate G0 / E0.2 evidence
 
-## Next steps toward closing E0.2
-1. Drive a real agentic generator to produce a suite for a live target, then run this check on its output (turns the demo into genuine E0.2 evidence).
-2. Port these three detectors into CHERENKOV's gate engine (#536/E1.2).
-3. Add an adversarial fixture corpus + CI (#536/E1.3) so the guarantee is audited, not asserted.
+When either demo runs and catches all three cheats:
+1. Screenshot or record the terminal output (`asciinema rec demo.cast`)
+2. Save the output to `demos/catch-the-ai-cheating/evidence/run_$(date +%Y%m%d).txt`
+3. That output **is** the Gate G0 / E0.2 artifact — keep it.

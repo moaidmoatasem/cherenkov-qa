@@ -275,6 +275,46 @@ class ComplianceFindingsInput(BaseModel):
     )
 
 
+# ── verify_suite (E2.1 — integrity check for AI-generated suites) ────────────
+
+
+class VerifySuiteInput(BaseModel):
+    """Input for the verify_suite MCP tool (MCP_VERIFICATION_SERVER.md §4.1).
+
+    Exactly one of suite_path or suite_inline must be provided.
+    spec_source defaults to stub/openapi_3_1.yaml when omitted.
+    """
+
+    suite_path: str | None = Field(
+        default=None,
+        description="Filesystem path to a .spec.ts file to verify. "
+        "Must be within the working directory.",
+    )
+    suite_inline: str | None = Field(
+        default=None,
+        description="Raw TypeScript test code to verify inline "
+        "(use when the file hasn't been written to disk yet).",
+    )
+    spec_source: str | None = Field(
+        default=None,
+        description="Path to the OpenAPI spec used to re-derive expected behaviour. "
+        "Defaults to stub/openapi_3_1.yaml when omitted.",
+    )
+    scenario_id: str | None = Field(
+        default=None,
+        description="Logical identifier for the scenario (used in finding IDs). "
+        "Defaults to a hash of the suite content.",
+    )
+    endpoint: str | None = Field(
+        default=None,
+        description="API endpoint under test (e.g. /users). Used in finding context.",
+    )
+    method: str | None = Field(
+        default="POST",
+        description="HTTP method (GET, POST, PUT, DELETE, PATCH).",
+    )
+
+
 # ── JSON-RPC error codes (MCP uses standard JSON-RPC + MCP extensions) ───────
 PARSE_ERROR = -32700
 INVALID_REQUEST = -32600

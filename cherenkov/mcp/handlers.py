@@ -48,6 +48,7 @@ from cherenkov.mcp.contracts import (
     MenaComplianceEnhancedInput,
     GovernanceCertificationInput,
     ComplianceFindingsInput,
+    VerifySuiteInput,
     MCPContent,
     MCPResource,
     MCPResourceContent,
@@ -106,6 +107,13 @@ RESOURCES: list[MCPResource] = [
         name="Active Chat Sessions",
         description="List of active chat sessions from the Chat Agent.",
     ),
+    MCPResource(
+        uri="cherenkov://gates",
+        name="CHERENKOV Integrity Gates",
+        description="Machine-readable description of the 6 REVIEW gates so agents can "
+        "self-correct before calling verify_suite. Each entry explains what the gate "
+        "checks, what a passing test must contain, and what cheat pattern it catches.",
+    ),
 ]
 
 # ── Tool catalogue ────────────────────────────────────────────────────────────
@@ -159,6 +167,47 @@ TOOLS: list[MCPTool] = [
                 "reason": MCPToolParam(type="string", description="Rejection reason."),
             },
             required=["item_id"],
+        ),
+    ),
+    MCPTool(
+        name="verify_suite",
+        description=(
+            "Verify the integrity of an AI-generated (or any) test suite. "
+            "Runs the full 6-gate REVIEW stage — syntax, structure, AST, assertion "
+            "meaningfulness, TypeScript compilation, and Prism dynamic dry-run — "
+            "and returns a VerificationReport (verify/v1). "
+            "Catches: weakened assertions, deleted checks, hallucinated oracles. "
+            "Suggest-only: never auto-applies fixes. "
+            "Call this before reporting a generated suite as 'done'."
+        ),
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "suite_path": MCPToolParam(
+                    type="string",
+                    description="Path to a .spec.ts file to verify (must be within working directory).",
+                ),
+                "suite_inline": MCPToolParam(
+                    type="string",
+                    description="Raw TypeScript test code to verify inline.",
+                ),
+                "spec_source": MCPToolParam(
+                    type="string",
+                    description="Path to the OpenAPI spec for oracle derivation. Defaults to stub/openapi_3_1.yaml.",
+                ),
+                "scenario_id": MCPToolParam(
+                    type="string",
+                    description="Scenario identifier used in finding IDs.",
+                ),
+                "endpoint": MCPToolParam(
+                    type="string",
+                    description="API endpoint under test, e.g. /users.",
+                ),
+                "method": MCPToolParam(
+                    type="string",
+                    description="HTTP method (GET, POST, PUT, DELETE, PATCH). Default: POST.",
+                ),
+            },
+            required=[],
         ),
     ),
     MCPTool(
@@ -649,6 +698,57 @@ def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
         payload = {"sessions": [s.to_dict() for s in sessions]}
         return _resource_content(uri, payload).model_dump()
 
+    if uri == "cherenkov://gates":
+        payload = {
+            "schema_version": "verify/v1",
+            "description": "CHERENKOV 6-gate REVIEW stage — integrity contract for AI-generated test suites.",
+            "gates": [
+                {
+                    "id": "syntax",
+                    "name": "Syntax Gate",
+                    "catches": "Empty code; markdown code-fence leakage",
+                    "pass_requires": "Non-empty code with no stray ``` fences",
+                },
+                {
+                    "id": "structure",
+                    "name": "Structure Gate",
+                    "catches": "Missing framework or client imports",
+                    "pass_requires": "Both '@playwright/test' and '../client' imports present",
+                },
+                {
+                    "id": "ast",
+                    "name": "AST Gate",
+                    "catches": "Raw fetch/axios bypass of the openapi-fetch client",
+                    "pass_requires": "client.GET|POST|PUT|DELETE|PATCH call; no raw fetch/axios/throw",
+                },
+                {
+                    "id": "assertion",
+                    "name": "Assertion Gate",
+                    "catches": "Weakened assertions (e.g. toBeLessThan instead of toBe); deleted body checks",
+                    "pass_requires": "At least one .toBe(<3-digit-status>) AND one toHaveProperty()/typeof check",
+                },
+                {
+                    "id": "tsc",
+                    "name": "TypeScript Compilation Gate",
+                    "catches": "Type errors; assertions against fields absent from spec-generated types",
+                    "pass_requires": "tsc --noEmit passes with zero errors in the test file",
+                },
+                {
+                    "id": "prism-dryrun",
+                    "name": "Prism Dynamic Dry-Run Gate",
+                    "catches": "Hallucinated oracles; wrong status codes; fields absent from spec response",
+                    "pass_requires": "Test passes execution against a spec-derived Prism mock server",
+                    "requires_docker": True,
+                },
+            ],
+            "integrity_contract": (
+                "Gates are declarative and independent of the suite's own claims. "
+                "CHERENKOV re-derives expected behaviour from the spec — it does not "
+                "trust what the assertions say, only what the spec says they must say."
+            ),
+        }
+        return _resource_content(uri, payload).model_dump()
+
     raise ValueError(f"Unknown resource URI: {uri!r}")
 
 
@@ -679,6 +779,8 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             ).model_dump()
 
     try:
+        if name == "verify_suite":
+            return _tool_verify_suite(arguments).model_dump()
         if name == "hitl_list":
             return _tool_hitl_list(arguments).model_dump()
         if name == "hitl_approve":
@@ -774,6 +876,186 @@ def _tool_hitl_reject(args: dict[str, Any]) -> MCPToolCallResult:
         item_id=inp.item_id, actor=inp.actor, reason=inp.reason, source="mcp"
     )
     return _ok_content(env.model_dump())
+
+
+def _tool_verify_suite(args: dict[str, Any]) -> MCPToolCallResult:
+    """Verify the integrity of a test suite via the 6-gate REVIEW stage.
+
+    Returns a VerificationReport (verify/v1) flagging weakened assertions,
+    deleted checks, or hallucinated oracles. Suggest-only — never auto-applies.
+
+    This is the headline integrity tool from MCP_VERIFICATION_SERVER.md §4.1.
+    It is the machine-facing twin of the catch-the-AI-cheating demo.
+    """
+    import hashlib
+    import time
+    import uuid
+
+    inp = VerifySuiteInput.model_validate(args)
+
+    # ── Load test code ────────────────────────────────────────────────────────
+    if inp.suite_inline:
+        code = inp.suite_inline
+        suite_ref = f"inline:{hashlib.sha256(code.encode()).hexdigest()[:12]}"
+    elif inp.suite_path:
+        resolved = os.path.realpath(os.path.abspath(inp.suite_path))
+        cwd = os.path.realpath(os.path.abspath("."))
+        if not resolved.startswith(cwd):
+            return _err_content("suite_path must be within the working directory.")
+        if not os.path.isfile(resolved):
+            return _err_content(f"File not found: {inp.suite_path}")
+        with open(resolved, encoding="utf-8") as fh:
+            code = fh.read()
+        suite_ref = inp.suite_path
+    else:
+        return _err_content("One of suite_path or suite_inline is required.")
+
+    code_hash = hashlib.sha256(code.encode()).hexdigest()[:16]
+    scenario_id = inp.scenario_id or f"mcp_verify_{code_hash}"
+    spec_source = inp.spec_source or "stub/openapi_3_1.yaml"
+
+    # ── Resolve spec path ─────────────────────────────────────────────────────
+    spec_resolved = os.path.realpath(os.path.abspath(spec_source))
+    if not os.path.isfile(spec_resolved):
+        return _err_content(f"spec_source not found: {spec_source}")
+
+    # ── Run the 6-gate REVIEW stage ───────────────────────────────────────────
+    try:
+        from cherenkov.stages.review import ReviewStage
+        from cherenkov.core.contracts import (
+            GenerateOutput,
+            StageMeta,
+            Status,
+            Verdict,
+        )
+        from cherenkov.core.errors import LoggerConfig
+
+        LoggerConfig.suppress_stderr = True  # keep MCP output clean
+
+        generate_out = GenerateOutput(
+            scenario_id=scenario_id,
+            test_code=code,
+            endpoint=inp.endpoint,
+            method=inp.method or "POST",
+            status=Status.OK,
+            metadata=StageMeta(stage="GENERATE"),
+        )
+
+        t0 = time.time()
+        stage = ReviewStage(run_id=f"mcp-{scenario_id}")
+        review = stage.run(generate_out, spec_path=spec_resolved)
+        duration_ms = int((time.time() - t0) * 1000)
+
+    except Exception as exc:
+        return _err_content(f"verify_suite error running ReviewStage: {exc}")
+
+    # ── Map ReviewOutput → VerificationReport (verify/v1) ────────────────────
+    verdict_map = {
+        Verdict.AUTO_APPROVE: "pass",
+        Verdict.HITL: "warn",
+        Verdict.REGENERATE: "fail",
+    }
+    report_verdict = verdict_map.get(review.verdict, "warn")
+
+    # Classify failed gates into integrity categories
+    weakened_assertions = []
+    deleted_checks = []
+    hallucinated_oracles = []
+    findings = []
+
+    for gate in review.gates:
+        if gate.passed or gate.skipped:
+            continue
+
+        finding_id = f"{scenario_id}:{gate.gate}"
+        severity = "high" if gate.gate in ("assertion", "prism-dryrun") else "med"
+
+        if gate.gate == "assertion":
+            detail_lower = gate.detail.lower()
+            if "status" in detail_lower:
+                # Weakened assertion — specific status code check failed
+                weakened_assertions.append(
+                    {
+                        "test": scenario_id,
+                        "before": "expect(response.status).toBe(<spec-status>)",
+                        "after": "(loosened or missing — no .toBe(<3-digit-code>) found)",
+                        "evidence": gate.detail,
+                    }
+                )
+            elif "body" in detail_lower or "property" in detail_lower:
+                # Deleted body-shape check
+                deleted_checks.append(
+                    {
+                        "test": scenario_id,
+                        "evidence": gate.detail,
+                    }
+                )
+        elif gate.gate == "prism-dryrun":
+            # Dynamic gate failure — hallucinated oracle or wrong expected value
+            hallucinated_oracles.append(
+                {
+                    "test": scenario_id,
+                    "missing_target": "Field/status not present in spec-derived Prism response",
+                    "evidence": gate.detail,
+                }
+            )
+
+        findings.append(
+            {
+                "id": finding_id,
+                "severity": severity,
+                "category": gate.gate,
+                "title": f"Gate '{gate.gate}' failed",
+                "evidence": gate.detail,
+                "reproduction": (
+                    f"Run: python demos/catch-the-ai-cheating/run_demo.py\n"
+                    f"Or call verify_suite with the same suite_inline."
+                ),
+                "suggested_fix": (
+                    "Review the gate description at cherenkov://gates for what "
+                    "a passing test must contain. Fix applied as suggestion only — "
+                    "CHERENKOV never auto-modifies test code (D7 invariant)."
+                ),
+            }
+        )
+
+    report = {
+        "schema_version": "verify/v1",
+        "report_id": str(uuid.uuid4()),
+        "target": {
+            "kind": "suite",
+            "ref": suite_ref,
+            "hash": code_hash,
+        },
+        "verdict": report_verdict,
+        "integrity": {
+            "weakened_assertions": weakened_assertions,
+            "deleted_checks": deleted_checks,
+            "hallucinated_oracles": hallucinated_oracles,
+        },
+        "findings": findings,
+        "gates": [
+            {
+                "gate": g.gate,
+                "passed": g.passed,
+                "skipped": g.skipped,
+                "detail": g.detail,
+            }
+            for g in review.gates
+        ],
+        "coverage": {
+            "claimed": review.quality_score,
+            "verified": review.quality_score,
+        },
+        "meta": {
+            "engine_version": "1.0.0",
+            "model_used": None,
+            "duration_ms": duration_ms,
+            "local_only": True,
+        },
+    }
+
+    return _ok_content(report)
 
 
 def _tool_validate_gate(args: dict[str, Any]) -> MCPToolCallResult:
