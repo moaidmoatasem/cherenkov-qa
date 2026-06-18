@@ -17,6 +17,7 @@ _CLICK_COMMANDS = [
     "visual", "perf", "hitl", "review", "mcp",
     "dashboard", "map", "daemon", "explore", "author",
     "tokens", "governance", "certify", "profile",
+    "bench",
 ]
 
 
@@ -34,6 +35,7 @@ def _register_commands() -> None:
         dashboard_cmd, map_cmd, daemon_cmd, explore_cmd, author_cmd,
         tokens_cmd, governance_cmd, certify_cmd, profile_cmd,
     )
+    from cherenkov.cli.commands.bench import bench_cmd
     for cmd, name in [
         (validate_cmd, "validate"), (synthetic_cmd, "synthetic"),
         (diff_cmd, "diff"), (report_cmd, "report"), (eject_cmd, "eject"),
@@ -45,6 +47,7 @@ def _register_commands() -> None:
         (explore_cmd, "explore"), (author_cmd, "author"),
         (tokens_cmd, "tokens"), (governance_cmd, "governance"),
         (certify_cmd, "certify"), (profile_cmd, "profile"),
+        (bench_cmd, "bench"),
     ]:
         cli.add_command(cmd, name=name)
 
