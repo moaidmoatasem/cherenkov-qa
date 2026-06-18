@@ -89,7 +89,7 @@ class TestReviewQueue(unittest.TestCase):
         self.client = _make_client()
 
     def test_queue_returns_list(self):
-        with patch("cherenkov.web.api.get_queue") as mock_q:
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q:
             mock_q.return_value.list.return_value = []
             r = self.client.get("/api/v1/review/queue")
         self.assertEqual(r.status_code, 200)
@@ -105,7 +105,7 @@ class TestReviewQueue(unittest.TestCase):
         item.review_gate_failed = False
         item.status.value = "pending"
         item.created_at = "2026-01-01T00:00:00Z"
-        with patch("cherenkov.web.api.get_queue") as mock_q:
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q:
             mock_q.return_value.list.return_value = [item]
             r = self.client.get("/api/v1/review/queue")
         self.assertEqual(r.status_code, 200)
@@ -126,7 +126,7 @@ class TestReviewApprove(unittest.TestCase):
         err = MagicMock()
         err.ok = False
         err.error = MagicMock(code="not_found", message="not found")
-        with patch("cherenkov.web.api.get_queue") as mock_q:
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q:
             mock_q.return_value.approve.return_value = err
             r = self.client.post(
                 "/api/v1/review/approve",
@@ -136,8 +136,8 @@ class TestReviewApprove(unittest.TestCase):
 
     def test_approve_success(self):
         env = MagicMock(ok=True)
-        with patch("cherenkov.web.api.get_queue") as mock_q, patch(
-            "cherenkov.web.api.FeedbackStore"
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q, patch(
+            "cherenkov.core.feedback_store.FeedbackStore"
         ), patch("cherenkov.reflector.reflector.Reflector"):
             mock_q.return_value.approve.return_value = env
             r = self.client.post(
@@ -151,7 +151,7 @@ class TestReviewApprove(unittest.TestCase):
         err = MagicMock()
         err.ok = False
         err.error = MagicMock(code="conflict", message="already approved")
-        with patch("cherenkov.web.api.get_queue") as mock_q:
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q:
             mock_q.return_value.approve.return_value = err
             r = self.client.post(
                 "/api/v1/review/approve",
@@ -168,7 +168,7 @@ class TestReviewReject(unittest.TestCase):
         err = MagicMock()
         err.ok = False
         err.error = MagicMock(code="not_found", message="not found")
-        with patch("cherenkov.web.api.get_queue") as mock_q:
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q:
             mock_q.return_value.reject.return_value = err
             r = self.client.post(
                 "/api/v1/review/reject",
@@ -178,8 +178,8 @@ class TestReviewReject(unittest.TestCase):
 
     def test_reject_success(self):
         env = MagicMock(ok=True)
-        with patch("cherenkov.web.api.get_queue") as mock_q, patch(
-            "cherenkov.web.api.FeedbackStore"
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q, patch(
+            "cherenkov.core.feedback_store.FeedbackStore"
         ), patch("cherenkov.reflector.reflector.Reflector"):
             mock_q.return_value.reject.return_value = env
             r = self.client.post(
@@ -236,7 +236,7 @@ class TestReviewClassify(unittest.TestCase):
         self.client = _make_client()
 
     def test_classify_400_for_unknown_value(self):
-        with patch("cherenkov.web.api.get_queue"):
+        with patch("cherenkov.web.routes.review_routes.get_queue"):
             r = self.client.post(
                 "/api/v1/review/classify",
                 json={"item_id": "s1", "classification": "not-a-real-class"},
@@ -245,7 +245,7 @@ class TestReviewClassify(unittest.TestCase):
 
     def test_classify_regression_routes_to_approve(self):
         env = MagicMock(ok=True)
-        with patch("cherenkov.web.api.get_queue") as mock_q:
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q:
             mock_q.return_value.approve.return_value = env
             r = self.client.post(
                 "/api/v1/review/classify",
@@ -256,7 +256,7 @@ class TestReviewClassify(unittest.TestCase):
 
     def test_classify_intended_routes_to_reject(self):
         env = MagicMock(ok=True)
-        with patch("cherenkov.web.api.get_queue") as mock_q:
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q:
             mock_q.return_value.reject.return_value = env
             r = self.client.post(
                 "/api/v1/review/classify",
@@ -358,7 +358,7 @@ class TestDashboardEndpoints(unittest.TestCase):
 
     def test_overview_200(self):
         with patch("cherenkov.ai.accounting.CostAccountant") as MockCA, patch(
-            "cherenkov.web.api.FeedbackStore"
+            "cherenkov.core.feedback_store.FeedbackStore"
         ) as MockFS:
             MockCA.return_value.get_governance_kpis.return_value = self._mock_kpi()
             MockFS.return_value.get_all.return_value = []
