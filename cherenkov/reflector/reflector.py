@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+import threading
 import time
 import uuid
 from typing import Any
@@ -317,9 +318,33 @@ class Reflector:
     def get_stats(self) -> dict[str, Any]:
         """Return high-level reflector statistics."""
         self.store.decay_all_idioms(self.config.decay_half_life_hours)
+        verdict_count = self.store.verdict_count()
+        idiom_count = self.store.idiom_count()
+        recent_verdicts = self.store.get_recent_verdicts(10)
+        recent_idioms = self.store.get_idioms(limit=10)
         return {
-            "verdict_count": self.store.verdict_count(),
-            "idiom_count": self.store.idiom_count(),
+            "verdict_count": verdict_count,
+            "idiom_count": idiom_count,
             "enabled": self.config.enabled,
             "store_path": self.store.db_path,
+            "total_verdicts": verdict_count,
+            "total_idioms": idiom_count,
+            "recent_verdicts": [v.model_dump() for v in recent_verdicts],
+            "recent_idioms": [i.model_dump() for i in recent_idioms],
         }
+
+
+# ── Module-level singleton (for MCP chat tools) ────────────────────────────
+
+_singleton_lock = threading.Lock()
+_singleton: Reflector | None = None
+
+
+def get_reflector() -> Reflector:
+    """Return the process-wide Reflector singleton, creating it on first call."""
+    global _singleton
+    if _singleton is None:
+        with _singleton_lock:
+            if _singleton is None:
+                _singleton = Reflector()
+    return _singleton
