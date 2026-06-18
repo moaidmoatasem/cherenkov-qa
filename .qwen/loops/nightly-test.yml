@@ -1,0 +1,29 @@
+name: nightly-test
+description: Nightly durable loop that runs CHERENKOV validation and posts results via MCP.
+trigger: cron(0 2 * * *) # Run at 2:00 AM every night
+
+steps:
+  - name: run_validation
+    action: mcp
+    tool: validate_run_gate
+    server: cherenkov
+    args: {}
+
+  - name: fetch_report
+    action: mcp
+    tool: get_last_report
+    server: cherenkov
+    args: {}
+
+  - name: summarize
+    action: prompt
+    prompt: |
+      Analyze the validation report from {{fetch_report.output}} and gate status {{run_validation.output}}.
+      Provide a brief markdown summary. Do NOT attempt to fix any failing tests or source code.
+      (D7 invariant: report-only).
+
+  - name: notify_channel
+    action: shell
+    # Example of alerting a channel. In Phase 4 this uses the CHERENKOV Event Bus.
+    command: |
+      echo "Nightly Test Result: {{summarize.output}}" >> /tmp/nightly_cherenkov.log
