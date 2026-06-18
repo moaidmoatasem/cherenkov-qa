@@ -23,6 +23,15 @@ dependencies = [
 [project.optional-dependencies]
 redis = ["redis>=5.0.0"]
 mobile = ["Appium-Python-Client>=3.0.0"]
+bench = [
+    # DeepEval adds LLM-as-judge metrics on top of the built-in static gates.
+    # Install with: pip install cherenkov[bench]
+    "deepeval>=0.21.0",
+]
+dev = [
+    "pytest>=7.4",
+    "deepeval>=0.21.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]
