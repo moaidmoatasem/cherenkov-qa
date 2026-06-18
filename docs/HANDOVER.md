@@ -7,44 +7,32 @@
 
 ---
 
-## SESSION HANDOVER — 2026-06-18 (latest)
+## SESSION HANDOVER — 2026-06-18 (consolidated)
 
-**Branch:** `fix/playwright-qa-18-failures` at `e7643556` — pushed to `origin/fix/playwright-qa-18-failures`.
-**Origin/main:** `4026cecd`. Branch is **7 commits ahead of main** (not yet merged — see next steps).
+> **This section is a summary.** For the full consolidated handover with all Claude session work, parallel agent plan, and alignment with open issues, read **`docs/HANDOVER_SESSION_2026-06-18.md`** and **`docs/PARALLEL_AGENT_PLAN_2026-06-18.md`**.
 
-**Pytest suite:** Confirmed exit code 0 (multiple runs this session + background task b6w1ehskx).
+**Branch:** `main` at `7d2d79d0`. Feature branch `claude/qa-automation-ai-strategy-g0a06l` has 3 uncommitted changes (MCP handlers + api.py security fixes + baseline snapshot).
+**Tests:** 861 passing, 4 skipped.
+**Ruff:** 2 fixable F541 errors (f-string missing placeholders).
 
-**Ruff:** 0 errors (all checks passed after removing duplicate local import in `review.py`).
+**Gate G0 (EPIC #535) — 2/4 complete:**
+- ✅ E0.2: Integrity catch demo (`demos/catch-the-ai-cheating/run_demo.py`)
+- ✅ E0.4: Differentiation sentence (`NORTH_STAR.md` §8)
+- ❌ E0.1: Needs live run against ≥3 third-party APIs
+- ❌ E0.3: Needs ≥3 real QA practitioners
 
-### What was done this session (2026-06-18)
+**What landed this session (all Claude threads combined):** 18 Playwright fixes, DNS-rebinding SSRF patch, HITL ignore() + classify, asyncio thread fix, Knowledge serialization, rate-limiter memory leak fix, review.py ruff fix, CSP tightening, FTS5 retroactive rebuild, CLI migration to Click (all 23 commands), Gate G0 E0.2 demo, E0.4 differentiation, CI gate-g0 job, meaningful-assertion gate, verify_suite MCP tool, Tauri config fixes, security hardening (auth guard on eject/knowledge, timing-safe API key, subprocess injection fix, path traversal fix).
 
-Alignment + fix cycle while battling volatile concurrent-agent tree. All changes committed and pushed.
-
-**Fixes committed this session:**
-- `chat/agent.py`: `respond()` offloads blocking `_call_llm()` to `asyncio.to_thread` (prevents event loop stall)
-- `knowledge/api/routes.py`: serialize `KnowledgeItem` dataclass to plain dict before JSON response
-- `web/middleware/security.py`: evict stale IPs from `RateLimitMiddleware._requests` to bound memory growth
-- `hitl/store.py`: add `ignore()` method to `HitlQueue` (extracts private `_resolve()` call)
-- `web/api.py`: call `queue.ignore()` in classify endpoint; DNS-rebinding SSRF fix (resolve hostname via `socket.getaddrinfo`, reject private/loopback/link-local/reserved IPs)
-- `stages/review.py`: remove duplicate local `from cherenkov.core.settings import get_settings` that caused ruff F823
-- `review.py` also has `refactor: use settings for tsc timeout, log swallowed exceptions` (committed by concurrent agent earlier, now confirmed in log)
-
-**Recurring hazard encountered:** concurrent agents (`.agents/`, `.kilo/`) held `.git/index.lock` and reverted files between Edit and commit. Mitigation: `sleep 3` before retry; stage + commit immediately after each diff.
-
-### Immediate next steps (for next agent)
-
-1. **Merge the PR** — `fix/playwright-qa-18-failures` → `main`.
-   - `gh` CLI needs re-auth: `gh auth login -h github.com` (token expired mid-session).
-   - Then: `gh pr create --base main --head fix/playwright-qa-18-failures` (or merge via GitHub UI).
-   - `.pr-body.md` at repo root is an untracked draft PR body (from a concurrent agent).
-
-2. **After merge** — run `python -m pytest tests/ -q` on `main` to confirm clean.
-
-3. **Ruff** stays at 0 — do not introduce local imports inside functions that shadow module-level names.
+**Immediate next steps:**
+1. Commit the 3 uncommitted files on feature branch and PR to main
+2. Run Gate G0 E0.1 against 3 third-party APIs (see `docs/EXECUTION_PLAN.md` §3)
+3. Fix the 2 ruff F541 errors (`python3 -m ruff check cherenkov/ --fix`)
+4. Address P1-P4 debt queue (api.py split, AI provider registry, legacy_cli cleanup, silent exceptions)
+5. Unblock Phase 3/5-6 (install `libwebkit2gtk-4.1-dev` and `android-tools-adb`)
 
 ---
 
-## SESSION HANDOVER — 2026-06-17 (previous)
+## SESSION HANDOVER — 2026-06-17 (archived)
 
 **Branch:** `main` at `4a65a546` — **clean working tree, 0 unstaged changes, pushed to origin.**
 
