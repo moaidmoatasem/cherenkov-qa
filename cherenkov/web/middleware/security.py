@@ -28,16 +28,18 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         client_ip = request.client.host if request.client else "unknown"
         now = time.time()
         window_start = now - self.window_seconds
-        self._requests[client_ip] = [
-            t for t in self._requests[client_ip] if t > window_start
-        ]
-        if len(self._requests[client_ip]) >= self.max_requests:
+        filtered = [t for t in self._requests[client_ip] if t > window_start]
+        # Evict IPs with no recent requests to prevent unbounded dict growth
+        if not filtered and client_ip in self._requests:
+            del self._requests[client_ip]
+        if len(filtered) >= self.max_requests:
             logger.warning("rate limit exceeded", extra={"client_ip": client_ip})
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Too many requests. Try again later."},
             )
-        self._requests[client_ip].append(now)
+        filtered.append(now)
+        self._requests[client_ip] = filtered
         return await call_next(request)
 
 
@@ -68,9 +70,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         "X-XSS-Protection": "1; mode=block",
         "Referrer-Policy": "strict-origin-when-cross-origin",
         "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
+        # React 19 + Vite production build produces no inline scripts, so
+        # unsafe-inline and unsafe-eval are not needed on script-src.
+        # style-src keeps unsafe-inline for React's style={{}} prop; removing it
+        # would require hashing every inline style at build time.
         "Content-Security-Policy": (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "script-src 'self'; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data: blob:; "
             "connect-src 'self' ws: wss:; "
@@ -79,16 +85,15 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         ),
     }
 
-    # Read-only polling endpoints safe to cache briefly (polled every 10s by dashboard)
+    # Only truly public, non-sensitive read-only endpoints.
+    # /api/v1/metrics, /api/v1/truth-map, /api/v1/failures were removed —
+    # they expose internal state that must not be publicly cached by CDNs/proxies.
     _CACHEABLE_PATHS = {
         "/api/v1/health",
         "/healthz",
-        "/api/v1/metrics",
         "/api/v1/tokens/report",
         "/api/v1/tokens/recommendations",
         "/api/v1/overview",
-        "/api/v1/truth-map",
-        "/api/v1/failures",
     }
 
     async def dispatch(self, request: Request, call_next):

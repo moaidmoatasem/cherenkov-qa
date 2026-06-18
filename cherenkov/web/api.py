@@ -43,6 +43,7 @@ import re as _re
 import contextlib as _contextlib
 from urllib.parse import urlparse as _urlparse
 import ipaddress as _ipaddress
+import socket as _socket
 
 
 def _validate_scenario_id(scenario_id: str) -> str:
@@ -64,7 +65,7 @@ def _validate_output_path(path: str) -> str:
     return resolved
 
 
-def _validate_spec_url(url: str) -> str:
+async def _validate_spec_url(url: str) -> str:
     parsed = _urlparse(url)
     if parsed.scheme not in ("http", "https"):
         raise HTTPException(status_code=400, detail="Only http/https URLs allowed")
@@ -76,17 +77,27 @@ def _validate_spec_url(url: str) -> str:
                 status_code=400, detail="Internal network URLs not allowed"
             )
     except ValueError:
-        # It's a hostname, not an IP - block obvious localhost / cloud-metadata names
-        if host.lower() in (
-            "localhost",
-            "127.0.0.1",
-            "::1",
-            "0.0.0.0",
-            "metadata.google.internal",
-        ):
-            raise HTTPException(
-                status_code=400, detail="Internal network URLs not allowed"
-            )
+        # Resolve hostname to IPs and validate each — blocks DNS-rebinding attacks
+        # where a benign hostname later resolves to an internal address.
+        try:
+            infos = await asyncio.to_thread(_socket.getaddrinfo, host, None)
+        except _socket.gaierror:
+            raise HTTPException(status_code=400, detail="Cannot resolve host")
+        for info in infos:
+            addr_str = info[4][0]
+            try:
+                resolved_addr = _ipaddress.ip_address(addr_str)
+                if (
+                    resolved_addr.is_private
+                    or resolved_addr.is_loopback
+                    or resolved_addr.is_link_local
+                    or resolved_addr.is_reserved
+                ):
+                    raise HTTPException(
+                        status_code=400, detail="Internal network URLs not allowed"
+                    )
+            except ValueError:
+                pass
     return url
 
 
@@ -443,7 +454,7 @@ async def ingest_spec_file(
         elif url:
             import requests
 
-            _validate_spec_url(url)
+            await _validate_spec_url(url)
             resp = await asyncio.to_thread(requests.get, url, timeout=15)
             resp.raise_for_status()
             with open(spec_path, "w", encoding="utf-8") as f:
@@ -740,11 +751,7 @@ async def classify_review_item(payload: ClassifyPayload, _auth=Depends(verify_ap
             source="web",
         )
     elif payload.classification == "ignore":
-        from cherenkov.hitl.contracts import HitlStatus
-
-        envelope = queue._resolve(
-            "hitl.classify", payload.item_id, actor, "web", HitlStatus.IGNORED, "", ()
-        )
+        envelope = queue.ignore(payload.item_id, actor, source="web")
     else:
         raise HTTPException(
             status_code=400, detail=f"Unknown classification: {payload.classification}"
@@ -768,7 +775,7 @@ async def classify_review_item(payload: ClassifyPayload, _auth=Depends(verify_ap
 #
 @app.post("/api/v1/validate")
 async def validate_test_suite(payload: ValidatePayload, _auth=Depends(verify_api_key)):
-    _validate_spec_url(payload.target_url)
+    await _validate_spec_url(payload.target_url)
     try:
         engine = ValidationEngine("api_validate")
         results = await asyncio.wait_for(
@@ -920,9 +927,9 @@ async def run_explorer(payload: ExplorePayload, _auth=Depends(verify_api_key)):
     """Run the autonomous Explorer: discover flows then crawl for anomalies."""
     from cherenkov.divergence.explorer import Explorer
 
-    _validate_spec_url(payload.base_url)
+    await _validate_spec_url(payload.base_url)
     if payload.ui_url:
-        _validate_spec_url(payload.ui_url)
+        await _validate_spec_url(payload.ui_url)
 
     ui_probe = None
     if payload.use_ui_probe and payload.ui_url:
@@ -1023,7 +1030,7 @@ async def run_visual_check(
 
     if not target_url:
         raise HTTPException(status_code=400, detail="target_url is required")
-    _validate_spec_url(target_url)
+    await _validate_spec_url(target_url)
 
     safe_name = _re.sub(r"[^a-zA-Z0-9_\-]", "_", name)[:64]
     sl = VisualSlice(name=safe_name, url=target_url)

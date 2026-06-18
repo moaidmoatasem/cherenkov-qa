@@ -8,6 +8,39 @@ on:
   workflow_dispatch:
 
 jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Unit tests
+        run: python -m pytest tests/unit/ -q --tb=short
+
+  gate-g0:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install pyyaml
+      - name: Gate G0 -- integrity demonstrator (EPIC 535)
+        run: python -m pytest demos/catch-the-ai-cheating/test_integrity_check.py -v
+      - name: Gate G0 -- end-to-end cheat detection smoke test
+        run: |
+          cd demos/catch-the-ai-cheating
+          # Good suite must pass
+          python3 integrity_check.py --spec openapi.yaml --baseline suite_good.py --candidate suite_good.py
+          # All cheat variants must be caught (non-zero exit)
+          ! python3 integrity_check.py --spec openapi.yaml --baseline suite_good.py --candidate suite_cheat_weakened.py
+          ! python3 integrity_check.py --spec openapi.yaml --baseline suite_good.py --candidate suite_cheat_deleted.py
+          ! python3 integrity_check.py --spec openapi.yaml --baseline suite_good.py --candidate suite_cheat_hallucinated.py
+
   conformance:
     runs-on: ubuntu-latest
     steps:
