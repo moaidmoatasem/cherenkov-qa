@@ -162,7 +162,17 @@ PYTHONPATH=. ./bin/cherenkov validate --target http://localhost:8000
 ./bin/cherenkov explore --spec <file>          # Interactive spec explorer
 ./bin/cherenkov chat                           # AI chat agent with tool access to your spec + results
 ./bin/cherenkov daemon                         # Watch mode — re-runs on spec change
+./bin/cherenkov mcp                            # Start MCP server (stdio) — exposes verify_suite + 29 tools
 ```
+
+The MCP server exposes `verify_suite` so any coding agent (Claude, Cursor, Copilot) can call CHERENKOV before claiming "done":
+
+```json
+{ "tool": "verify_suite", "suite_inline": "<generated test code>", "spec_source": "openapi.yaml" }
+// → VerificationReport: { "verdict": "warn", "integrity": { "weakened_assertions": [...] } }
+```
+
+Read the gate contract first: resource `cherenkov://gates` lists what every passing test must contain.
 
 > **Complete CLI reference with all flags:** [docs/wiki/CLI-Reference.md](docs/wiki/CLI-Reference.md)
 
@@ -209,20 +219,34 @@ The eject invariant is enforced in CI by `smoke_test_eject.py` — it verifies e
 
 ## How It Compares
 
-Spec-conformance testing isn't new — the difference is what you're left holding afterward.
+Spec-conformance testing isn't new — the difference is what you're left holding afterward, and whether the tool can verify the verifier.
 
-| | What it leaves you | Conformance source | Runs offline |
-|--|--|--|:--:|
-| **CHERENKOV** | A typed Playwright + `openapi-fetch` suite your team owns forever | OpenAPI spec | ✅ local LLM |
-| **Schemathesis** | A fuzz run report — findings, not tests | OpenAPI spec | ✅ |
-| **Dredd** | A validation run against spec examples | API Blueprint / OpenAPI | ✅ |
-| **Postman / contract tools** | Collections tied to the platform | hand-written assertions | varies |
+| | What it leaves you | Conformance source | Runs offline | Catches agent cheats |
+|--|--|--|:--:|:--:|
+| **CHERENKOV** | A typed Playwright + `openapi-fetch` suite your team owns forever | OpenAPI spec | ✅ local LLM | ✅ 6-gate REVIEW |
+| **Schemathesis** | A fuzz run report — findings, not tests | OpenAPI spec | ✅ | ❌ |
+| **Dredd** | A validation run against spec examples | API Blueprint / OpenAPI | ✅ | ❌ |
+| **playwright-mcp** | A recorded or generated Playwright session | browser DOM / intent | ✅ | ❌ |
+| **antiwork/shortest** | Plain-English tests via Claude API | natural language | ❌ cloud | ❌ |
+| **Postman / contract tools** | Collections tied to the platform | hand-written assertions | varies | ❌ |
 
-If you want property-based fuzzing today, Schemathesis is excellent — use it.
-CHERENKOV is for when the deliverable is a **readable regression suite**: tests
-your team can read, review in a PR, extend by hand, and keep running in plain
-`npx playwright test` long after removing CHERENKOV itself. The drift findings
-are the demo; the ejected suite is the product.
+**The one-sentence differentiation:** Schemathesis, playwright-mcp, and shortest all generate or verify tests — CHERENKOV is the only tool that *independently* checks whether the generated tests actually enforce the spec, so an AI agent can't quietly weaken an assertion to fake a green CI run.
+
+If you want property-based fuzzing today, Schemathesis is excellent — use it alongside CHERENKOV.
+CHERENKOV is for when the deliverable is a **readable regression suite**: tests your team
+can read, review in a PR, extend by hand, and keep running in plain `npx playwright test`
+long after removing CHERENKOV itself — and when you need to trust that an AI didn't quietly
+hollow out the assertions while making them pass.
+
+### "Catch the AI Cheating" — Gate G0 / E0.2
+
+```bash
+# See the integrity catch in action — 5 seconds, no cloud, no Docker required
+python demos/catch-the-ai-cheating/run_demo.py
+```
+
+Three injected cheat patterns. The production `ReviewStage` catches each one.
+See [`demos/catch-the-ai-cheating/README.md`](demos/catch-the-ai-cheating/README.md) for the beat sheet and evidence checklist.
 
 ---
 
