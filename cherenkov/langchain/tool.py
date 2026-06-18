@@ -130,7 +130,7 @@ class CherenkovValidateTool(BaseTool):
                 f"{drift} drift finding(s). Report written to .cherenkov/report.json"
             )
         except Exception as exc:
-            return f"validate_target failed: {exc}"
+            return f"Validation failed: {exc}"
 
     def _explain_violation(self, args: dict[str, Any]) -> str:
         try:
