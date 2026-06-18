@@ -931,7 +931,7 @@ async def get_truth_map():
     try:
         idioms = store.list_idioms(limit=50)
     except Exception as _e:
-        logger.warning("idioms_list_failed", error=str(_e))
+        logging.getLogger(__name__).warning("idioms_list_failed", error=str(_e))
         idioms = []
     return [
         {
@@ -1049,7 +1049,7 @@ async def list_visual_scenarios():
                 except Exception:  # noqa: E722 — optional visual scan, non-fatal
                     continue
         except Exception as _e:  # noqa: E722 — scan_dir failure, return what was found
-            logger.debug("visual_scan_failed", error=str(_e))
+            logging.getLogger(__name__).debug("visual_scan_failed", error=str(_e))
             pass
         return out
 

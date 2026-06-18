@@ -91,16 +91,18 @@ findings, and context to prevent AI amnesia.
 
 These exist for context. Most readers don't need them.
 
-- [ROADMAP_NEXT.md](ROADMAP_NEXT.md), [ROADMAP_PACKAGING.md](ROADMAP_PACKAGING.md),
-  [ROADMAP_RECONCILIATION.md](ROADMAP_RECONCILIATION.md) — earlier roadmap
-  drafts. The consolidated [PHASE_PLAN.md](PHASE_PLAN.md) supersedes them.
 - [SCOPE_LEDGER.md](SCOPE_LEDGER.md) — honest scope map
 - [GAP_REPORT.md](GAP_REPORT.md) — known gaps
-- [DEFERRED_VISION_ARCHIVE.md](DEFERRED_VISION_ARCHIVE.md) — earlier vision
-  material kept for history. **Do not cite as current.**
-- [INTEGRATION_HANDOVER_REPORT.md](INTEGRATION_HANDOVER_REPORT.md) —
-  ⚠️ **DEPRECATED.** Superseded by [HANDOVER.md](HANDOVER.md) and
-  [PHASE_PLAN.md](PHASE_PLAN.md). Retained for traceability only.
+
+### 🗑️ Archived (do not cite as current)
+
+These documents have been moved to `_archive/`. They are kept for historical
+traceability but are **superseded** by the documents listed above.
+
+- [_archive/INTEGRATION_HANDOVER_REPORT.md](_archive/INTEGRATION_HANDOVER_REPORT.md) — ⚠️ **FABRICATED.** Do not cite.
+- [_archive/ROADMAP_RECONCILIATION.md](_archive/ROADMAP_RECONCILIATION.md) — ⚠️ **DISPUTED.** Gate claim was fabricated.
+- [_archive/ROADMAP_NEXT.md](_archive/ROADMAP_NEXT.md) — Superseded by [PHASE_PLAN.md](PHASE_PLAN.md).
+- [_archive/DEFERRED_VISION_ARCHIVE.md](_archive/DEFERRED_VISION_ARCHIVE.md) — Earlier vision material. Superseded by [PHASE_PLAN.md](PHASE_PLAN.md).
 
 ### Process and reviews
 - [process/GITHUB_PM.md](process/GITHUB_PM.md) — GitHub project management
@@ -118,8 +120,7 @@ These exist for context. Most readers don't need them.
 
 ### Vision
 - [vision/](vision/) — earlier vision docs. Many are stale; for current
-  direction use [PHASE_PLAN.md](PHASE_PLAN.md). The archive of the deferred
-  vision lives at [DEFERRED_VISION_ARCHIVE.md](DEFERRED_VISION_ARCHIVE.md).
+   direction use [PHASE_PLAN.md](PHASE_PLAN.md).
 
 ### Dashboard, engineering, wiki
 - [dashboard/](dashboard/) — frontend design + audit docs
@@ -143,6 +144,7 @@ docs/
 ├── HANDOVER.md          ← agent + contributor handover (authoritative)
 ├── PHASE_PLAN.md        ← consolidated plan
 ├── TECHNICAL_DESIGN.md  ← core arch policy
+├── _archive/            ← DEPRECATED/FABRICATED docs (do not cite)
 ├── adr/                 ← architecture decision records
 ├── engineering/         ← system design, principles, best practices
 ├── dashboard/           ← frontend design + audit
@@ -154,7 +156,7 @@ docs/
 ├── qa/                  ← test plan, regression suite
 ├── reviews/             ← external + internal reviews
 ├── spikes/              ← investigation notes
-├── vision/              ← earlier vision (most is stale; see DEFERRED_VISION_ARCHIVE.md)
+├── vision/              ← earlier vision (most is stale)
 └── wiki/                ← lightweight wiki
 ```
 
