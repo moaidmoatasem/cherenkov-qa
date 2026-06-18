@@ -88,7 +88,7 @@ LABELS = [
 
 
 def ensure_labels():
-    existing = {l["name"] for l in get_all("/labels")}
+    existing = {label["name"] for label in get_all("/labels")}
     for name, color, desc in LABELS:
         if name in existing:
             continue

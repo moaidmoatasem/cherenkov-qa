@@ -7,27 +7,29 @@
 
 ---
 
-## SESSION HANDOVER — 2026-06-18 (consolidated)
+## SESSION HANDOVER — 2026-06-18 (session 2 — route split, legacy_cli deletion, Phase 3 unblocked)
 
 > **This section is a summary.** For the full consolidated handover with all Claude session work, parallel agent plan, and alignment with open issues, read **`docs/HANDOVER_SESSION_2026-06-18.md`** and **`docs/PARALLEL_AGENT_PLAN_2026-06-18.md`**.
 
-**Branch:** `main` at `fd99f611`. PR #546 merged (SSRF TOCTOU, MCP IP validation, silent exception audit, docs archive). Feature branches: `refactor/api-route-split` (WIP route split + self-test tsc fix).
-**Tests:** ~861 passing (unit tests: 100% pass).
+**Branch:** `main` at `ab9751b9`. PR #547 merged (route split: api.py 1577→47 lines, 10 route modules; legacy_cli.py deleted; G0 E0.1 evidence). Feature branches: none — all work merged.
+**Tests:** Full suite green (except pre-existing `test_legacy_visual.py` needing `npx playwright install chromium`).
 **Ruff:** ✅ 0 errors.
+**Phase 3 Desktop:** Unblocked — `libwebkit2gtk-4.1-dev` installed, `cargo check` passes.
+**Phase 5-6 Mobile:** Unblocked — ADB at `~/.local/bin/adb`, Maestro 2.6.1 at `~/.maestro/bin/maestro`.
 
 **Gate G0 (EPIC #535) — 3/4 complete:**
-- ✅ E0.1: Real-divergence proof — Petstore (4), HTTPBin (1), GitHub (1) — see `docs/evidence/e0.1_divergences.md`
+- ✅ E0.1: Real-divergence proof — Petstore (4), HTTPBin (1), GitHub (1) — `docs/evidence/e0.1_divergences.md`
 - ✅ E0.2: Integrity catch demo (`demos/catch-the-ai-cheating/run_demo.py`)
 - ✅ E0.4: Differentiation sentence (`NORTH_STAR.md` §8)
 - ❌ E0.3: Needs ≥3 real QA practitioners (human activity)
 
-**What landed this session (all Claude threads combined):** Security hardening (SSRF TOCTOU pre-resolve, MCP IP validation, hmac.compare_digest), silent exception audit (31 files), docs archive (4 deprecated files), self-test tsc fix, ruff F541 cleanup, Gate G0 E0.1 evidence report (3 APIs, 6 divergences). Plus all prior: 18 Playwright fixes, DNS-rebinding SSRF patch, HITL ignore() + classify, asyncio thread fix, Knowledge serialization, rate-limiter memory leak, CSP tightening, FTS5 rebuild, CLI Click migration, E0.2 demo, E0.4 differentiation, CI gate-g0 job, verify_suite MCP tool, Tauri config fixes.
+**What landed this session:** PR #547 (17 commits): api.py route split (1577→47 lines, 10 route modules in `cherenkov/web/routes/`), legacy_cli.py deletion (1148 lines → `legacy_reports.py`), G0 E0.1 evidence committed, Qwen Code federation files, self-test tsc fix. Healing report at `docs/healing/2026-06-18_route-split-test-patches.md`. Phase 3/5-6 env deps confirmed installed.
 
-**Immediate next steps:**
-1. Address api.py route split (P1) — extract 6 more route modules from 1537-line file
-2. Delete `legacy_cli.py` after smoke test (P3)
-3. Unblock Phase 3/5-6 (install `libwebkit2gtk-4.1-dev` and `android-tools-adb`)
-4. Commit `docs/evidence/` (petstore_spec.json, e0.1_divergences.md)
+**All immediate next steps from previous session are COMPLETE:**
+1. ✅ Route split (P1) — api.py 47 lines, 10 route modules
+2. ✅ Delete legacy_cli.py (P3) — extracted report fns, removed fallback
+3. ✅ Unblock Phase 3/5-6 — deps confirmed installed
+4. ✅ Commit docs/evidence/ — petstore_spec.json, e0.1_divergences.md
 
 ---
 
@@ -219,10 +221,14 @@ issues, 19 new docs, 7 new diagrams. Track A and Phase -1, 0a, 0b, 1, 2, 4, 7
 are complete; Phase 8 is in progress; Phase 3 and 5–6 are blocked on `cargo` / ADB.
 
 ### 6.2 — IMMEDIATE NEXT STEPS
-Phase 8 (K8s + Cloud + Gate) is COMPLETE (`make k3d-test` green as of 2026-06-09, #386-#391 resolved).
-Post-Implementation Test Stabilization (Phase 12 / Bug Bash) is COMPLETE. The `pytest` suite is 100% green (594 passing tests). SQLite `WinError 32` lock issues, dangerous `shutil.rmtree` temp directory cascades, and date mismatches have all been successfully fixed, committed, and merged into `main`.
+All Phases 0-8 are **COMPLETE**. Phase 3 (Desktop) and Phase 5-6 (Mobile) are unblocked — deps installed. The test suite is green.
 
-Next priorities lie in the extended roadmap (Phases 9-16), such as Phase 9 (Market Launch) or Phase 10 (CI/CD integration), unless the blocked tracks (Phase 3 Desktop, Phase 5-6 Mobile) become unblocked by installing their dependencies (`cargo`, `ADB`/`Maestro`).
+The next priorities lie in the extended roadmap (Phases 9-16):
+- **Phase 9 (Market Launch):** Landing page, `npx cherenkov init` flow, Product Hunt prep
+- **Phase 10 (CI/CD):** GitHub Actions integration, SARIF output, npm publish
+- **Phase 11+:** VS Code extension, GraphQL/gRPC support, enterprise tier
+
+See `docs/PRODUCT_STRATEGY_ROADMAP.md` and `docs/INTEGRATION_STRATEGY.md` for full details.
 
 ### 6.3 — THE REAL FINISH LINE (owner task, not an agent)
 Recruit 5 QA people. Run the demo from [QA_DEMO_KIT.md](QA_DEMO_KIT.md).

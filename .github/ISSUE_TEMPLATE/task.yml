@@ -38,4 +38,3 @@ body:
       label: Invariant check
       options:
         - label: Respects design invariants (D7, anti-lock-in, suggest-only, spec-derived, model-agnostic)
-        - label: Does not import from track-b-c-deferred/

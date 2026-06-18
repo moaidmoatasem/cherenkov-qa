@@ -31,8 +31,8 @@ cherenkov.toml
 # local harness / editor config
 .claude/
 
-# playbook screenshot output (regenerate via tests/capture_screens.spec.ts)
-track-b-c-deferred/dashboard/playbook/
+
+# (track-b-c-deferred/ was re-integrated and deleted)
 
 # temporary / adhoc
 scratch/

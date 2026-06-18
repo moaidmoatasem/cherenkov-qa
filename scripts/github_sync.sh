@@ -118,7 +118,7 @@ mk "EPIC E13 · Copilot v2 + Pairing" "type:epic,priority:P3,area:frontend,block
 
 mk "EPIC FE · Dashboard Redesign" "type:epic,priority:P3,area:frontend,blocked:validation-gate,do-not-extend-until-gate" "M5 · Pairing & FE" \
 "Redesign the (quarantined) dashboard per docs/dashboard/FE_REDESIGN.md (FE-0…FE-10). $GATE_NOTE
-NOTE: dashboard lives in track-b-c-deferred/ — do not extend until gate."
+NOTE: track-b-c-deferred/ was re-integrated and deleted. Dashboard lives in the live tree."
 
 echo
 echo "Done. ${APPLY:+}$([ "$APPLY" = 1 ] && echo 'Applied.' || echo 'Dry-run only — re-run with --apply to mutate.')"

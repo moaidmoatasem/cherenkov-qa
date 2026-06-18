@@ -31,6 +31,6 @@ class QwenCodeChannelAdapter(EventBus):
                 text=True,
                 check=False
             )
-        except Exception as e:
+        except Exception:
             # Fallback or log if Qwen Code is unreachable
             pass
