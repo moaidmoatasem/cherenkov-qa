@@ -1,16 +1,13 @@
 import sys
 import click
-from cherenkov.cli.legacy_cli import main as legacy_main
 
-@click.group(invoke_without_command=True, context_settings=dict(ignore_unknown_options=True))
+@click.group(invoke_without_command=True)
 @click.pass_context
 def cli(ctx):
     """CHERENKOV E2E Suite Command Line Interface"""
     if ctx.invoked_subcommand is None:
-        legacy_main()
+        click.echo(ctx.get_help())
 
-# All commands ported to Click. legacy_main() is the fallback for any unknown
-# subcommand (e.g. the bare `cherenkov --spec foo.yaml` legacy invocation).
 _CLICK_COMMANDS = [
     "validate", "synthetic",
     "diff", "report", "eject", "self-test", "completion", "init", "doctor",
@@ -53,11 +50,11 @@ def _register_commands() -> None:
 
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] in _CLICK_COMMANDS:
-        _register_commands()
-        cli()
-    else:
-        legacy_main()
+    # Legacy bare invocation: `cherenkov --spec foo.yaml` → `cherenkov validate --spec foo.yaml`
+    if len(sys.argv) > 1 and sys.argv[1].startswith("-") and "--spec" in sys.argv[1:]:
+        sys.argv.insert(1, "validate")
+    _register_commands()
+    cli()
 
 
 if __name__ == '__main__':
