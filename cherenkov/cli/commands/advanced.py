@@ -13,7 +13,7 @@ def visual_cmd(target: str, baseline_dir: str) -> None:
     """Run optional visual-regression checks against a rendered URL (Track B)."""
     from cherenkov.core.orchestrator import OrchestrationEngine
     from cherenkov.core.contracts import VisualSlice
-    from cherenkov.cli.legacy_cli import print_visual_report
+    from cherenkov.cli.legacy_reports import print_visual_report
 
     slices = [VisualSlice(name="cli_default", url=target)]
     engine = OrchestrationEngine(run_id="cli_visual")
@@ -32,7 +32,7 @@ def perf_cmd(target: str, endpoint: str, method: str, vus: int, duration: int) -
     """Run optional performance baseline checks (Track B)."""
     from cherenkov.core.orchestrator import OrchestrationEngine
     from cherenkov.core.contracts import PerfSlice
-    from cherenkov.cli.legacy_cli import print_perf_report
+    from cherenkov.cli.legacy_reports import print_perf_report
 
     slices = [PerfSlice(
         name="cli_default",
