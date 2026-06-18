@@ -38,7 +38,7 @@ def run_self_test() -> int:
         client = get_client()
         from cherenkov.stages.generate import SYSTEM_PROMPT
 
-        user_prompt = "Generate a Playwright API test for GET /self-test asserting 200 OK using import { client } from '../client';"
+        user_prompt = "Generate a Playwright API test for GET /health asserting 200 OK using import { client } from '../client';"
         raw_code = client.complete_code(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=user_prompt,
