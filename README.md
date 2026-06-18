@@ -10,6 +10,10 @@ spec disagree — and proves each gap with a reproducible test.
 
 [![CI](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/ci.yml/badge.svg)](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/ci.yml)
 [![Security](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/security-scan.yml/badge.svg)](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/security-scan.yml)
+[![PyPI](https://img.shields.io/pypi/v/cherenkov-qa.svg?logo=pypi&logoColor=white&color=0a7bca)](https://pypi.org/project/cherenkov-qa/)
+[![npm](https://img.shields.io/npm/v/cherenkov-cli.svg?logo=npm&logoColor=white&color=cb3837)](https://www.npmjs.com/package/cherenkov-cli)
+[![Docker Hub](https://img.shields.io/docker/pulls/cherenkov-qa/cli.svg?logo=docker&logoColor=white&color=2496ed)](https://hub.docker.com/r/cherenkov-qa/cli)
+[![GitHub Marketplace](https://img.shields.io/badge/GitHub-Marketplace-24292e.svg?logo=github)](https://github.com/marketplace/actions/cherenkov-conformance-check)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776ab.svg?logo=python&logoColor=white)](https://python.org)
 [![TypeScript](https://img.shields.io/badge/typescript-5.0%2B-3178c6.svg?logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Playwright](https://img.shields.io/badge/playwright-1.49%2B-2ead33.svg?logo=playwright&logoColor=white)](https://playwright.dev)
@@ -118,6 +122,42 @@ flowchart LR
 ---
 
 ## Quick Start (2 minutes)
+
+### Option A — Zero install (npx)
+
+```bash
+npx cherenkov-cli init
+```
+
+### Option B — pip
+
+```bash
+pip install cherenkov-qa
+cherenkov init
+cherenkov validate --spec openapi.yaml --target http://localhost:3000
+```
+
+### Option C — Docker
+
+```bash
+docker run --rm cherenkov-qa/cli:latest cherenkov --version
+docker run --rm -v $(pwd):/app cherenkov-qa/cli:latest \
+  cherenkov validate --spec /app/openapi.yaml --target http://host.docker.internal:3000
+```
+
+### Option D — GitHub Actions CI gate
+
+```yaml
+- uses: moaidmoatasem/cherenkov-qa@v1.0.0
+  with:
+    spec: ./api/openapi.yaml
+    target: http://localhost:8080
+    fail-on-drift: 'true'
+```
+
+---
+
+### Full local setup (clone + build)
 
 **Prerequisites:** Python 3.10+, Node 20+, [Ollama](https://ollama.com) with `qwen2.5-coder:7b`
 

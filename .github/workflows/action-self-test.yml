@@ -1,0 +1,72 @@
+name: Action Self-Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - action.yml
+      - cherenkov/**
+      - .github/workflows/action-self-test.yml
+  pull_request:
+    paths:
+      - action.yml
+      - cherenkov/**
+  workflow_dispatch:
+
+jobs:
+  self-test:
+    name: Verify action.yml against Petstore
+    runs-on: ubuntu-latest
+
+    services:
+      petstore:
+        image: swaggerapi/petstore3:unstable
+        ports:
+          - 8080:8080
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for Petstore to be ready
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8080/api/v3/openapi.json && break
+            echo "Waiting for Petstore... ($i/30)"
+            sleep 2
+          done
+
+      - name: Download Petstore spec
+        run: curl -sf http://localhost:8080/api/v3/openapi.json -o /tmp/petstore.json
+
+      - name: Run CHERENKOV conformance check
+        id: cherenkov
+        uses: ./
+        with:
+          spec: /tmp/petstore.json
+          target: http://localhost:8080
+          fail-on-drift: 'false'  # Self-test: don't fail on drift, just verify the action runs
+          output-format: sarif
+          output-path: cherenkov-self-test.sarif
+          llm-provider: openai
+
+      - name: Show results
+        run: |
+          echo "Violations: ${{ steps.cherenkov.outputs.violations }}"
+          echo "Drift detected: ${{ steps.cherenkov.outputs.drift-detected }}"
+          echo "Report path: ${{ steps.cherenkov.outputs.report-path }}"
+
+      - name: Upload SARIF to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: cherenkov-self-test.sarif
+          category: cherenkov-conformance
+        continue-on-error: true  # SARIF upload needs Advanced Security; don't block on it
+
+      - name: Verify action outputs are set
+        run: |
+          if [ -z "${{ steps.cherenkov.outputs.violations }}" ]; then
+            echo "ERROR: violations output not set"
+            exit 1
+          fi
+          echo "Action self-test passed — all outputs set correctly."
