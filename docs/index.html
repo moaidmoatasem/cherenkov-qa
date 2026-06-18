@@ -5,140 +5,85 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CHERENKOV — API Conformance Testing</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a2e; background: #f8f9fa; }
-.container { max-width: 800px; margin: 0 auto; padding: 2rem; }
-header { background: #1a1a2e; color: #fff; padding: 4rem 0; text-align: center; }
-header h1 { font-size: 2.5rem; margin-bottom: 1rem; }
-header p { font-size: 1.2rem; color: #a0a0c0; margin-bottom: 2rem; }
-.btn { display: inline-block; padding: 0.8rem 1.5rem; background: #4a6cf7; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 0.25rem; }
-.btn:hover { background: #3b5de7; }
-.btn-green { background: #2e7d32; }
-.btn-green:hover { background: #1b5e20; }
-section { padding: 3rem 0; }
-h2 { font-size: 1.8rem; margin-bottom: 1.5rem; color: #1a1a2e; }
-.pains ul { list-style: none; }
-.pains li { padding: 0.8rem 0; font-size: 1.1rem; border-bottom: 1px solid #e0e0e0; }
-.pains li:last-child { border-bottom: none; }
-.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
-.step { background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-.step h3 { color: #4a6cf7; margin-bottom: 0.5rem; }
-pre { background: #1a1a2e; color: #e0e0e0; padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; font-size: 0.85rem; }
-.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-.feature { background: #fff; padding: 1.2rem; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-.feature h3 { font-size: 1rem; margin-bottom: 0.3rem; }
-.feature p { font-size: 0.9rem; color: #666; }
-footer { text-align: center; padding: 2rem; color: #666; font-size: 0.9rem; }
-.badge { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; margin-right: 0.5rem; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; color: #e2e8f0; background: #0f172a;
+    max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem;
+  }
+  h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+  h1 span { color: #38bdf8; }
+  .subtitle { font-size: 1.15rem; color: #94a3b8; margin-bottom: 2rem; }
+  .tagline {
+    background: #1e293b; border-left: 4px solid #38bdf8;
+    padding: 1rem 1.25rem; border-radius: 0 8px 8px 0; margin-bottom: 2rem;
+    font-size: 1.05rem;
+  }
+  h2 { font-size: 1.3rem; margin: 1.5rem 0 0.75rem; color: #f1f5f9; }
+  p { margin-bottom: 1rem; color: #cbd5e1; }
+  ul { list-style: none; padding: 0; }
+  li { padding: 0.4rem 0; color: #94a3b8; }
+  li::before { content: "✓ "; color: #22c55e; font-weight: 700; }
+  code {
+    background: #1e293b; padding: 0.15rem 0.4rem; border-radius: 4px;
+    font-size: 0.9rem; color: #38bdf8;
+  }
+  .cmd {
+    background: #0f172a; border: 1px solid #334155; padding: 0.75rem 1rem;
+    border-radius: 6px; margin: 0.75rem 0;
+  }
+  .footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #334155; font-size: 0.85rem; color: #64748b; }
+  a { color: #38bdf8; }
 </style>
 </head>
 <body>
+<h1>CHERENKOV<span>.</span></h1>
+<p class="subtitle">API Conformance Test Generator</p>
 
-<header>
-<div class="container">
-<h1>Stop maintaining manual API tests.</h1>
-<p>CHERENKOV reads your OpenAPI spec and generates conformance tests automatically.<br>Catches spec drift before your users do.</p>
-<a class="btn" href="#demo">See how it works →</a>
-<a class="btn btn-green" href="#start">Get started →</a>
+<div class="tagline">
+  <strong>Spec in → Playwright tests out → zero lock-in.</strong>
+  A local-first tool that reads your OpenAPI spec and generates pure Playwright
+  API tests using a local 7B LLM — no cloud, no API keys, no vendor lock.
 </div>
-</header>
 
-<section class="pains">
-<div class="container">
-<h2>Sound familiar?</h2>
+<h2>How it works</h2>
 <ul>
-<li>❌ "The spec says 422 but the server returns 400 — caught in prod"</li>
-<li>❌ "We have 200 endpoints, there's no way to test them all manually"</li>
-<li>❌ "Postman tests break every sprint when the schema changes"</li>
-<li>❌ "We spend 40% of sprint time on test maintenance"</li>
+  <li>Point at your OpenAPI spec — INGEST parses every endpoint</li>
+  <li>LLM generates Playwright tests with openapi-fetch client</li>
+  <li>6-gate review: syntax, structure, AST, assertions, tsc, Prism dry-run</li>
+  <li>Run against your real server with <code>cherenkov validate</code></li>
+  <li>Eject to standalone Playwright — zero dependency on CHERENKOV</li>
 </ul>
-</div>
-</section>
 
-<section id="demo">
-<div class="container">
-<h2>From spec to conformance tests in 3 commands</h2>
-<div class="steps">
-<div class="step">
-<h3>1. Point</h3>
-<p>Specify your OpenAPI spec and target URL.</p>
-<pre><code>cherenkov validate \
-  --spec openapi.yaml \
-  --target http://localhost:8000</code></pre>
+<h2>Quick start</h2>
+<div class="cmd">
+  <code>pip install cherenkov<br>
+  cherenkov init<br>
+  cherenkov validate --spec openapi.yaml --target http://localhost:3000</code>
 </div>
-<div class="step">
-<h3>2. Generate</h3>
-<p>AI generates 200+ conformance tests per endpoint.</p>
-<pre><code># Covers: happy path, null fields,
-# missing required, type mismatch,
-# auth, pagination</code></pre>
-</div>
-<div class="step">
-<h3>3. Eject</h3>
-<p>Export vanilla Playwright tests. Zero lock-in.</p>
-<pre><code>cherenkov eject \
-  --output ./tests
-# Produces plain .spec.ts files</code></pre>
-</div>
-</div>
-</div>
-</section>
 
-<section id="start" style="background:#fff;">
-<div class="container">
-<h2>Get started in 5 minutes</h2>
-<pre><code>pip install cherenkov && cherenkov doctor</code></pre>
-<p style="margin-top:1rem;color:#666;">
-Requires Python 3.10+ and <a href="https://ollama.com">Ollama</a>.
-</p>
-<a class="btn" href="https://github.com/moaidmoatasem/cherenkov-qa">Star on GitHub →</a>
-<a class="btn btn-green" href="https://github.com/moaidmoatasem/cherenkov-qa#quick-start">Read the docs →</a>
-</div>
-</section>
+<h2>Key features</h2>
+<ul>
+  <li>Spec-derived expected status codes (catches 422-vs-400 bugs)</li>
+  <li>Suggest-only healing — never auto-edits test code</li>
+  <li>Human-in-the-loop review queue with confidence scoring</li>
+  <li>MCP server for Claude Desktop / Cursor integration</li>
+  <li>SARIF output for GitHub Security tab</li>
+  <li>Desktop app (Tauri), mobile testing (Maestro), K8s operator</li>
+</ul>
 
-<section>
-<div class="container">
-<h2>Why CHERENKOV?</h2>
-<div class="features">
-<div class="feature">
-<span class="badge">Offline</span>
-<h3>100% local</h3>
-<p>Uses local LLMs via Ollama. No API costs, no data leaving your machine.</p>
-</div>
-<div class="feature">
-<span class="badge">Multi-spec</span>
-<h3>OpenAPI + GraphQL + gRPC</h3>
-<p>Supports REST, GraphQL, and gRPC APIs from a single tool.</p>
-</div>
-<div class="feature">
-<span class="badge">MCP</span>
-<h3>AI assistant ready</h3>
-<p>Built-in MCP server for Claude Desktop and Cursor integration.</p>
-</div>
-<div class="feature">
-<span class="badge">CI/CD</span>
-<h3>GitHub Actions + K8s</h3>
-<p>Composite action and Kubernetes operator for pipeline integration.</p>
-</div>
-<div class="feature">
-<span class="badge">Observability</span>
-<h3>OpenTelemetry + Backstage</h3>
-<p>Export conformance spans to Datadog, Grafana, or Jaeger.</p>
-</div>
-<div class="feature">
-<span class="badge">No lock-in</span>
-<h3>Ejectable tests</h3>
-<p>Generated tests are vanilla Playwright with zero CHERENKOV imports.</p>
-</div>
-</div>
-</div>
-</section>
+<h2>Architecture</h2>
+<p>Local LLM (qwen2.5-coder:7b via Ollama) — GPU or CPU — runs entirely
+on your machine. No telemetry, no API calls, no data leaves your network.
+Enterprise tier adds SSO, RBAC, audit logs.</p>
 
-<footer>
-<div class="container">
-<p>CHERENKOV — MIT License · <a href="https://github.com/moaidmoatasem/cherenkov-qa">GitHub</a> · <a href="https://github.com/moaidmoatasem/cherenkov-qa#readme">Documentation</a></p>
-</div>
-</footer>
+<h2>License</h2>
+<p>Apache 2.0. Fully open source.</p>
 
+<div class="footer">
+  <a href="https://github.com/moaidmoatasem/cherenkov-qa">GitHub</a> ·
+  <a href="https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/GETTING_STARTED.md">Getting Started</a> ·
+  <a href="https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/CLI_DEMO.md">CLI Demo</a>
+</div>
 </body>
 </html>
