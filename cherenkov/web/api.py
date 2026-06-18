@@ -930,7 +930,8 @@ async def get_truth_map():
     store = VerdictStore()
     try:
         idioms = store.list_idioms(limit=50)
-    except Exception:
+    except Exception as _e:
+        logger.warning("idioms_list_failed", error=str(_e))
         idioms = []
     return [
         {
@@ -975,7 +976,7 @@ async def run_explorer(payload: ExplorePayload, _auth=Depends(verify_api_key)):
             from cherenkov.execution.ui_probe import PlaywrightUiProbe
 
             ui_probe = PlaywrightUiProbe()
-        except Exception:
+        except Exception:  # noqa: E722 — UI probe is optional; crawl works without it
             pass
 
     def _run_sync():
@@ -1045,9 +1046,10 @@ async def list_visual_scenarios():
                         data = _json.load(fh)
                         if isinstance(data, dict) and "scenario_id" in data:
                             out.append(data)
-                except Exception:
+                except Exception:  # noqa: E722 — optional visual scan, non-fatal
                     continue
-        except Exception:
+        except Exception as _e:  # noqa: E722 — scan_dir failure, return what was found
+            logger.debug("visual_scan_failed", error=str(_e))
             pass
         return out
 
