@@ -1,28 +1,40 @@
 import subprocess
+from typing import Callable
 from cherenkov.ports.event_bus import EventBus
+from cherenkov.core.events import CHERENKOVEvent
 
-class QwenCodeChannelAdapter(EventBus):
+class QwenCodeChannelAdapter:
     """
     Publishes CHERENKOV divergence events to Qwen Code's IM channels
     (Telegram, DingTalk, WeChat) via Qwen Code's headless CLI.
     """
     
     def __init__(self):
-        super().__init__()
+        self._handlers = {}
         
-    def publish(self, topic: str, payload: dict) -> None:
-        if topic == "divergence_detected":
-            self._notify_qwen_channel(payload)
+    def publish(self, event: CHERENKOVEvent) -> None:
+        if event.name == "divergence_detected" or event.category == "DIVERGENCE":
+            self._notify_qwen_channel(event)
             
-    def _notify_qwen_channel(self, payload: dict) -> None:
+    def subscribe(self, event_name: str, handler: Callable[[CHERENKOVEvent], None]) -> None:
+        pass
+        
+    def unsubscribe(self, event_name: str, handler: Callable[[CHERENKOVEvent], None]) -> None:
+        pass
+        
+    @property
+    def handlers(self) -> dict[str, list[Callable[[CHERENKOVEvent], None]]]:
+        return self._handlers
+            
+    def _notify_qwen_channel(self, event: CHERENKOVEvent) -> None:
         """Send notification via Qwen Code channel hook."""
+        payload = event.payload or {}
         endpoint = payload.get("endpoint", "unknown")
         severity = payload.get("severity", "low")
         message = f"🚨 Spec Divergence Detected: {endpoint} (Severity: {severity})"
         
         # Use Qwen Code CLI to send notification through configured channels
-        # E.g., qwen channel send --message "..."
-        cmd = ["qwen", "channel", "send", "--message", message]
+        cmd = ["qwen", "channel", "--message", message]
         
         try:
             subprocess.run(
@@ -32,5 +44,4 @@ class QwenCodeChannelAdapter(EventBus):
                 check=False
             )
         except Exception:
-            # Fallback or log if Qwen Code is unreachable
             pass

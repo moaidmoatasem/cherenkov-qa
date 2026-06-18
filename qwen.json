@@ -31,8 +31,8 @@
   "mcpServers": {
     "cherenkov": {
       "command": "python3",
-      "args": ["/home/moaid/cherenkov-qa/cherenkov.py", "mcp", "serve"],
-      "cwd": "/home/moaid/cherenkov-qa",
+      "args": ["cherenkov.py", "mcp", "serve"],
+      "cwd": ".",
       "env": {
         "MCP_TRANSPORT": "stdio"
       }
