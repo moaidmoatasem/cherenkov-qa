@@ -1,4 +1,4 @@
-**Last updated:** 2026-06-16
+**Last updated:** 2026-06-18
 **Branch:** `main`
 
 ---
@@ -49,6 +49,17 @@ under the consolidated Phase -1 through Phase 8 plan.
 > elsewhere, treat it as stale.
 
 ---
+
+## Gate G0 (EPIC #535) — 3/4 complete
+
+| ID | Criteria | Status | Evidence |
+|----|----------|--------|----------|
+| E0.1 | Real divergence proof: ≥2/3 APIs yield ≥1 divergence | ✅ DONE | 3/3 APIs: Petstore (4), HTTPBin (1), GitHub (1) — `docs/evidence/e0.1_divergences.md` |
+| E0.2 | Catch a real agent-cheat, reproducible | ✅ DONE | `demos/catch-the-ai-cheating/run_demo.py` + TypeScript checker |
+| E0.3 | ≥3 QA practitioners complete quickstart | ❌ HUMAN | Needs real users |
+| E0.4 | Honest differentiation vs Schemathesis | ✅ DONE | `NORTH_STAR.md` §8 |
+
+**Blocking state:** Only E0.3 (human recruitment) remains. All code gates passed.
 
 ## Design invariants (deltas — non-negotiable)
 
