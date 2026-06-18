@@ -1,74 +1,61 @@
 # CHERENKOV -- Session Handover
 
 **Date:** 2026-06-18
-**HEAD:** `c2340131`
-**Branch:** `main` -- fully pushed to `origin/main`
-**Tests:** 691 unit tests, 0 failures
+**HEAD:** `6ef541fb` on `main` -- synced with `origin/main`
+**Tests:** all unit tests passing (clean exit)
+**Branch:** `main` -- no open fix branches, tree clean (generated-test CRLF noise is cosmetic)
 
 ---
 
-## Completed this session (full list)
+## What landed this session
 
-| Commit | Fix |
-|--------|-----|
-| `d5fda086` | Merged `fix/playwright-qa-18-failures`: makedirs, FTS5 rowid join, knowledge serialization, chat async, rate-limiter eviction, cache headers, HITL ignore(), DNS-rebinding SSRF |
-| `837e19c4` | Auth guard on `/api/v1/knowledge/query`; `_validate_spec_url` made async (non-blocking) |
-| `c2340131` | Desktop/Tauri: `externalBin` wired, `shell:allow-spawn/kill` + `fs:default` + `http:default` added to capabilities |
+All security/reliability hardening is on `origin/main`. Key commits (newest first):
 
----
+| SHA | What |
+|---|---|
+| `6ef541fb` | Merge origin/main (CLI Click port) |
+| `0bbb0d00` | feat(cli): diff/report/eject/self-test/completion/init/doctor ported to Click |
+| `323f0805` | feat(g0): "Catch the AI cheating" integrity demo (EPIC #535 / E0.2) |
+| `837e19c4` | fix(api): auth on /knowledge/query + `_validate_spec_url` made async (DNS-rebinding) |
+| `d5fda086` | merge: QA-18 fix + security hardening + HITL ignore |
 
-## Remaining known issues
-
-### One item needing human action (terminal)
-
-1. **Tauri updater signing key** -- `plugins.updater.pubkey` in `desktop/src-tauri/tauri.conf.json` is empty.
-   Auto-update signing won't work until a keypair is generated:
-   ```bash
-   cd ~/cherenkov-qa/desktop/src-tauri
-   cargo tauri signer generate -w ~/.tauri/cherenkov.key
-   # Copy the public key printed to stdout into tauri.conf.json:
-   # "plugins": { "updater": { "pubkey": "<paste here>", ... } }
-   # Set TAURI_SIGNING_PRIVATE_KEY=~/.tauri/cherenkov.key in CI secrets
-   ```
-   Without this, `createUpdaterArtifacts: true` will cause the release build to fail.
-   Workaround for now: set `"createUpdaterArtifacts": false` in `tauri.conf.json`.
-
-### Low-priority code items (no urgency)
-
-2. **FTS5 rowid rebuild for existing DBs** -- Existing deployed `data/knowledge.db` files
-   won't have the rowid-based FTS triggers for pre-existing rows.
-   Fix: add to `_init_db()` in `sqlite_repository.py`:
-   ```python
-   conn.execute("INSERT INTO knowledge_fts(knowledge_fts) VALUES('rebuild')")
-   ```
-   This is a no-op on empty DBs and safe to run repeatedly.
-
-3. **`chat/agent.py` sync `chat()` method** -- `chat()` (non-async) still calls `_call_llm`
-   blocking. Only affects callers in an async context; current callers are all sync. Low risk.
-
-4. **CSP `style-src unsafe-inline`** -- Kept for React inline styles (`style={{...}}`).
-   To remove: audit and replace all inline style props with CSS classes.
+Security fixes confirmed on `origin/main`:
+- `settings.py` -- 4 configurable timeout env-vars
+- `ollama_client.py` -- None-guard before `raise last_err`
+- `playwright_invoke.py` -- subprocess timeouts; shlex.quote WSL cmd parts
+- `prism_mock.py` -- Docker start/stop timeouts; FileNotFoundError explicit
+- `mcp/handlers.py` -- URL scheme check in `_tool_registry_publish`
+- `api.py` -- eject auth; SSRF blocklist (is_reserved + GCP metadata); settings protection
+- `review.py` -- TSC timeout from settings; two silent-swallow exceptions now log
+- `.gitignore` -- secrets section; `requirements.txt` -- dep upper bounds
 
 ---
 
-## Environment
+## Remaining work (ordered by impact)
 
-- **main HEAD:** `c2340131` = `origin/main`
-- **All prior fix branches:** merged and deleted
-- **Stash:** 19 entries on old branches -- safe to ignore
+### 1. Gate G0 -- EPIC #535 (ACTIVE BLOCKER)
+Gate G0 must pass before any Track B/C features ship. Demo is committed at `demos/catch-the-ai-cheating/`. Next: run the gate evaluation and record the result.
+- Spec: `docs/ROADMAP_AQE.md`, `docs/NORTH_STAR.md`
+- Issues: #535 (G0), #536-538 (subsequent gates)
 
-## Next agent: quick-wins only
-
+### 2. Tauri updater signing key (requires terminal with Tauri toolchain)
+`desktop/src-tauri/tauri.conf.json` has `"pubkey": ""` -- auto-update silently fails.
 ```bash
-# 1. Confirm tests green
-python3 -m pytest tests/unit/ -q
-
-# 2. Fix updater workaround (avoids release build failure)
-# In desktop/src-tauri/tauri.conf.json, change:
-#   "createUpdaterArtifacts": true
-# to:
-#   "createUpdaterArtifacts": false
-# ...until the signing key is generated via terminal.
-
-# 3. Add FTS5 rebuild migration to sqlite_repository.py _init_db()
+cargo tauri signer generate -w ~/.tauri/cherenkov.key
+# Copy the public key output into tauri.conf.json plugins.updater.pubkey
 ```
+Blocked on Tauri CLI being available in the agent environment.
+
+### 3. FTS5 retroactive migration -- already handled
+`_ensure_fts_populated()` in `sqlite_repository.py` line 81 handles this as a safe no-op on every startup. No action needed.
+
+### 4. CSP -- already correct
+`middleware/security.py` has `script-src 'self'` (no unsafe-inline/unsafe-eval). Tauri `csp: null` is intentional for localhost-first dev. No action needed.
+
+---
+
+## Environment hazards for next agent
+
+- **Shared working tree**: `~/cherenkov-qa` is one git checkout shared by multiple concurrent sessions. Always run `git branch` before committing; commit each file immediately after editing, not in batches.
+- **CRLF noise**: `stub/generated_tests/*.spec.ts` and `npm-package/` files show as modified constantly due to Windows/WSL line-ending mismatch. Cosmetic only -- do not commit unless there are real content changes.
+- **GitHub CLI**: `gh auth login` not configured in this agent environment -- PR creation must be done from a terminal where the user is already authenticated.
