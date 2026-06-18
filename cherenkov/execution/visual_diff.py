@@ -68,6 +68,7 @@ class VisualDiffEngine:
         cmd = [npx_cmd, "playwright", "test", VISUAL_SPEC_RELPATH, *extra_args]
         env = os.environ.copy()
         env["API_URL"] = url
+        env["RUN_VISUAL_TESTS"] = "1"
         return subprocess.run(
             cmd, cwd=self.stub_dir, env=env, capture_output=True, text=True
         )
