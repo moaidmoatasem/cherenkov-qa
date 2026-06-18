@@ -29,6 +29,8 @@ It generates typed Playwright tests using a local LLM, runs a 6-gate review on e
 executes them, and surfaces exactly where your implementation diverges from your spec.
 No cloud. No API keys. When you're done, eject to vanilla Playwright — runs forever without CHERENKOV.
 
+> 🤖 **Qwen Code Users**: CHERENKOV deeply integrates with [Qwen Code](https://github.com/QwenLM/qwen-code) to provide an end-to-end autonomous QA and coding pipeline. See [QWEN_CODE_ALIGNMENT.md](docs/QWEN_CODE_ALIGNMENT.md) for setup and MCP federation details.
+
 > **CHERENKOV is the AI-native API conformance engine — built by a QA lead, for engineering teams that
 > ship API-first.** Today it owns spec↔implementation drift; the north star is the **Reality Engine**:
 > continuous truth across every source (spec, code, traffic, schema, UI). See [Brand & Strategy](docs/BRAND_STRATEGY.md).

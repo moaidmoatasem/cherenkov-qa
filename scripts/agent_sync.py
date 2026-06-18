@@ -2,7 +2,7 @@
 """Agent Sync — CLI tool for Sync Driven Development (SDD).
 
 Usage:
-    agent_sync before --task <type> [--budget <n>]
+    agent_sync before --task <type> [--budget <n>] [--source <name>]
     agent_sync after --summary <text>
     agent_sync log --type <finding|decision|pitfall|context> <message>
     agent_sync token [--action <type> --count <n> --item <name>]
@@ -76,7 +76,7 @@ def _timestamp() -> str:
 # ── Subcommands ──────────────────────────────────────────────────────
 
 
-def cmd_before(task_type: str, budget: Optional[int] = None):
+def cmd_before(task_type: str, budget: Optional[int] = None, source: str = "cherenkov"):
     """Start a new agent session: load context, init state."""
     session_id = _new_session_id()
     now = _timestamp()
@@ -94,6 +94,7 @@ def cmd_before(task_type: str, budget: Optional[int] = None):
             "summary": None,
             "compacted": False,
             "task_type": task_type,
+            "source": source,
         },
         "previous_sessions": [],
         "sessions_since_compact": 0,
@@ -509,15 +510,18 @@ def main():
     if cmd == "before":
         task = None
         budget = None
+        source = "cherenkov"
         for i, arg in enumerate(sys.argv[2:], start=3):
             if arg == "--task" and i < len(sys.argv):
                 task = sys.argv[i]
-            if arg == "--budget" and i < len(sys.argv):
+            elif arg == "--budget" and i < len(sys.argv):
                 budget = int(sys.argv[i])
+            elif arg == "--source" and i < len(sys.argv):
+                source = sys.argv[i]
         if not task:
-            print("Usage: agent_sync before --task <type>")
+            print("Usage: agent_sync before --task <type> [--source <name>]")
             sys.exit(1)
-        cmd_before(task, budget)
+        cmd_before(task, budget, source)
 
     elif cmd == "after":
         summary = None

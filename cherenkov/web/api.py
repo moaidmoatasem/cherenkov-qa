@@ -7,14 +7,11 @@ from __future__ import annotations
 import os
 import uuid
 import asyncio
-import sqlite3
 import threading
 import logging
 
 from fastapi import (
     FastAPI,
-    WebSocket,
-    WebSocketDisconnect,
     BackgroundTasks,
     HTTPException,
     UploadFile,
@@ -29,11 +26,9 @@ from cherenkov.stages.ingest import IngestStage
 from cherenkov.core.orchestrator import OrchestrationEngine
 from cherenkov.execution.validate import ValidationEngine
 
-from cherenkov.web import divergences as divergence_store
 from cherenkov.core.feedback_store import FeedbackStore, FeedbackEntry
 
 from cherenkov.web.routes.deps import (
-    manager,
     get_queue,
     verify_api_key,
     _validate_spec_url,
@@ -108,6 +103,18 @@ from cherenkov.web.routes.health_routes import router as health_router  # noqa: 
 
 app.include_router(health_router)
 
+from cherenkov.web.routes.divergence_routes import router as divergence_router  # noqa: E402
+
+app.include_router(divergence_router)
+
+from cherenkov.web.routes.mobile_routes import router as mobile_router  # noqa: E402
+
+app.include_router(mobile_router)
+
+from cherenkov.web.routes.workspace_routes import router as workspace_router  # noqa: E402
+
+app.include_router(workspace_router)
+
 from cherenkov.web.middleware.security import add_security_middleware  # noqa: E402
 
 add_security_middleware(app)
@@ -135,12 +142,6 @@ class ValidatePayload(BaseModel):
 
 class EjectPayload(BaseModel):
     output_path: str
-
-
-class DivergenceActionPayload(BaseModel):
-    divergence_id: str
-    action: str
-    reason: str | None = None
 
 
 class ClassifyPayload(BaseModel):
@@ -566,258 +567,5 @@ async def eject_test_suite(payload: EjectPayload, _auth=Depends(verify_api_key))
 
 
 #
-# Divergences
-#
-@app.get("/api/v1/divergences")
-async def list_divergences():
-    return divergence_store.list_divergences()
-
-
-@app.post("/api/v1/divergences/act")
-async def act_on_divergence(payload: DivergenceActionPayload, _auth=Depends(verify_api_key)):
-    try:
-        new_status = divergence_store.apply_action(
-            payload.divergence_id, payload.action
-        )
-    except KeyError:
-        raise HTTPException(
-            status_code=404, detail=f"Unknown divergence id: {payload.divergence_id}"
-        )
-    except ValueError:
-        raise HTTPException(status_code=400, detail=f"Unknown action: {payload.action}")
-    return {
-        "status": "ok",
-        "divergence_id": payload.divergence_id,
-        "action": payload.action,
-        "new_status": new_status,
-    }
-
-
-#
 # Mobile Pilot
-#
-_mobile_pilot_status = {
-    "status": "idle",
-    "current_step": 0,
-    "total_steps": 6,
-    "steps": [
-        {
-            "step_id": "1",
-            "action": "Connect device",
-            "target": "android-emulator",
-            "expected": "device online",
-            "actual": "",
-            "status": "pending",
-        },
-        {
-            "step_id": "2",
-            "action": "Install APK",
-            "target": "app-debug.apk",
-            "expected": "install success",
-            "actual": "",
-            "status": "pending",
-        },
-        {
-            "step_id": "3",
-            "action": "Launch app",
-            "target": "com.example.app",
-            "expected": "app foreground",
-            "actual": "",
-            "status": "pending",
-        },
-        {
-            "step_id": "4",
-            "action": "Run login test",
-            "target": "LoginScreen",
-            "expected": "200 OK",
-            "actual": "",
-            "status": "pending",
-        },
-        {
-            "step_id": "5",
-            "action": "Run checkout flow",
-            "target": "CheckoutScreen",
-            "expected": "order confirmed",
-            "actual": "",
-            "status": "pending",
-        },
-        {
-            "step_id": "6",
-            "action": "Collect logs",
-            "target": "logcat",
-            "expected": "logs saved",
-            "actual": "",
-            "status": "pending",
-        },
-    ],
-}
-
-
-@app.get("/api/v1/mobile/pilot/status")
-async def get_mobile_pilot_status():
-    return _mobile_pilot_status
-
-
-@app.post("/api/v1/mobile/pilot/start")
-async def start_mobile_pilot():
-    _mobile_pilot_status["status"] = "running"
-    return {"status": "started"}
-
-
-# ── Projects ─────────────────────────────────────────────────────────────────
-
-
-@app.get("/api/v1/projects")
-async def get_projects():
-    """Return a list of projects derived from the workspace layout."""
-    workspace = os.getcwd()
-    from cherenkov.reflector.store import VerdictStore
-
-    store = VerdictStore()
-
-    def _query_projects() -> dict:
-        conn = sqlite3.connect(store.db_path, timeout=5.0)
-        conn.row_factory = sqlite3.Row
-        try:
-            cursor = conn.execute(
-                "SELECT COUNT(*) as total, "
-                "SUM(CASE WHEN outcome='approve' THEN 1 ELSE 0 END) as approved "
-                "FROM verdicts"
-            )
-            row = cursor.fetchone()
-            return dict(row) if row else {}
-        except Exception:
-            return {}
-        finally:
-            conn.close()
-
-    try:
-        row_data = await asyncio.to_thread(_query_projects)
-        total = row_data.get("total") or 0
-        approved = row_data.get("approved") or 0
-        pass_rate = round((approved / total) * 100) if total > 0 else 0
-    except Exception:
-        total, pass_rate = 0, 0
-
-    return [
-        {
-            "id": "default",
-            "name": os.path.basename(workspace) or "cherenkov",
-            "lastRun": "",
-            "pipelineStatus": {
-                "ingest": "queued",
-                "plan": "queued",
-                "generate": "queued",
-                "review": "queued",
-            },
-            "stats": {"testsCount": total, "passRate": pass_rate, "healingCount": 0},
-            "sparkline": [],
-        }
-    ]
-
-
-# ── Settings ──────────────────────────────────────────────────────────────────
-
-_settings: dict = {
-    "target": {"url": "http://localhost:8000", "auth_header": ""},
-    "engine": {
-        "model_tier": "local",
-        "enable_demo_mode": False,
-        "execution_budget": 100,
-        "workers": 4,
-    },
-    "security": {"egress_policy": "strict", "auth_secret": ""},
-    "ui": {"density": "comfortable", "reduced_motion": False},
-}
-
-
-@app.get("/api/v1/settings")
-async def api_get_settings(_auth=Depends(verify_api_key)):
-    redacted = {k: (dict(v) if isinstance(v, dict) else v) for k, v in _settings.items()}
-    if "auth_secret" in redacted.get("security", {}):
-        redacted["security"]["auth_secret"] = "***" if redacted["security"]["auth_secret"] else ""
-    return redacted
-
-
-_SETTINGS_PROTECTED_FIELDS = {"security": {"auth_secret", "egress_policy"}}
-
-
-@app.put("/api/v1/settings")
-async def update_settings(body: dict, _auth=Depends(verify_api_key)):
-    for key, val in body.items():
-        if key in _settings and isinstance(val, dict):
-            protected = _SETTINGS_PROTECTED_FIELDS.get(key, set())
-            for sub_key, sub_val in val.items():
-                if sub_key in protected:
-                    continue
-                _settings[key][sub_key] = sub_val
-        elif key in _settings and key not in _SETTINGS_PROTECTED_FIELDS:
-            _settings[key] = val
-    return _settings
-
-
-# ── Governance ────────────────────────────────────────────────────────────────
-
-
-@app.get("/api/v1/governance")
-async def get_governance():
-    """Return governance health score, policy issues, model certification, and traceability."""
-    from cherenkov.ai.accounting import CostAccountant
-
-    accountant = CostAccountant()
-    kpi = accountant.get_governance_kpis()
-    fp_rate = kpi.get("false_positive_rate", 0.0)
-    score = max(0, round(100 - fp_rate * 100))
-    issues = []
-    if fp_rate > 0.05:
-        issues.append(
-            {
-                "id": "high-fp",
-                "severity": "high",
-                "message": f"False positive rate {fp_rate:.1%} exceeds 5% threshold",
-            }
-        )
-    return {
-        "score": score,
-        "issues": issues,
-        "defectEscapeRate": kpi.get("defect_escape_rate", 0.0),
-        "falsePositiveRate": fp_rate,
-        "modelCertification": [
-            {
-                "model": "claude-3-5-sonnet",
-                "status": "certified",
-                "tier": "expert",
-                "reason": "Automated clearance via CI/CD",
-            },
-            {
-                "model": "llama-3-8b",
-                "status": "pending",
-                "tier": "fast",
-                "reason": "Awaiting human review",
-            },
-        ],
-        "traceability": [
-            {
-                "action": "Validation",
-                "target": "/api/pets",
-                "user": "AI Pilot",
-                "timestamp": "2026-06-12T10:00:00Z",
-            }
-        ],
-    }
-
-
-#
-# WebSocket
-#
-@app.websocket("/ws/live")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    try:
-        while True:
-            await websocket.receive_text()
-    except WebSocketDisconnect:
-        await manager.disconnect(websocket)
-
-
 #
