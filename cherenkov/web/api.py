@@ -58,47 +58,76 @@ def _validate_scenario_id(scenario_id: str) -> str:
 def _validate_output_path(path: str) -> str:
     resolved = os.path.realpath(os.path.abspath(path))
     allowed_base = os.path.realpath(os.path.abspath("."))
-    if not resolved.startswith(allowed_base):
+    # Use os.sep suffix to avoid prefix collision (e.g. /app vs /app_secret).
+    if resolved != allowed_base and not resolved.startswith(allowed_base + os.sep):
         raise HTTPException(
             status_code=400, detail="Output path must be within the working directory"
         )
     return resolved
 
 
+def _is_safe_ip(addr: "_ipaddress.IPv4Address | _ipaddress.IPv6Address") -> bool:
+    return not (
+        addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved
+    )
+
+
 async def _validate_spec_url(url: str) -> str:
+    """Validate URL and return a TOCTOU-safe fetch URL.
+
+    Resolves the hostname once, validates every returned IP, then rewrites the
+    URL to use the first resolved IP so the subsequent requests.get call never
+    triggers a second DNS lookup.  This closes the DNS-rebinding window between
+    validation and fetch.
+    """
     parsed = _urlparse(url)
     if parsed.scheme not in ("http", "https"):
         raise HTTPException(status_code=400, detail="Only http/https URLs allowed")
     host = parsed.hostname or ""
+    if host.lower() in (
+        "localhost",
+        "127.0.0.1",
+        "::1",
+        "0.0.0.0",
+        "metadata.google.internal",
+    ):
+        raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
     try:
+        # Literal IP in the URL — validate in-place, no rewrite needed.
         addr = _ipaddress.ip_address(host)
-        if addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved:
+        if not _is_safe_ip(addr):
             raise HTTPException(
                 status_code=400, detail="Internal network URLs not allowed"
             )
+        return url
     except ValueError:
-        # Resolve hostname to IPs and validate each — blocks DNS-rebinding attacks
-        # where a benign hostname later resolves to an internal address.
+        pass
+    # Hostname: resolve once, validate all IPs, return URL rewritten to the
+    # first safe IP so requests.get never does a second DNS lookup.
+    try:
+        infos = await asyncio.to_thread(_socket.getaddrinfo, host, None)
+    except _socket.gaierror:
+        raise HTTPException(status_code=400, detail="Cannot resolve host")
+    if not infos:
+        raise HTTPException(status_code=400, detail="Cannot resolve host")
+    first_ip: str | None = None
+    for info in infos:
+        addr_str = info[4][0]
         try:
-            infos = await asyncio.to_thread(_socket.getaddrinfo, host, None)
-        except _socket.gaierror:
-            raise HTTPException(status_code=400, detail="Cannot resolve host")
-        for info in infos:
-            addr_str = info[4][0]
-            try:
-                resolved_addr = _ipaddress.ip_address(addr_str)
-                if (
-                    resolved_addr.is_private
-                    or resolved_addr.is_loopback
-                    or resolved_addr.is_link_local
-                    or resolved_addr.is_reserved
-                ):
-                    raise HTTPException(
-                        status_code=400, detail="Internal network URLs not allowed"
-                    )
-            except ValueError:
-                pass
-    return url
+            resolved_addr = _ipaddress.ip_address(addr_str)
+            if not _is_safe_ip(resolved_addr):
+                raise HTTPException(
+                    status_code=400, detail="Internal network URLs not allowed"
+                )
+            if first_ip is None:
+                first_ip = addr_str
+        except ValueError:
+            pass
+    if first_ip is None:
+        raise HTTPException(status_code=400, detail="Cannot resolve host")
+    # Rewrite to pre-resolved IP; requests must send Host header for SNI/vhosts.
+    safe_url = parsed._replace(netloc=parsed.netloc.replace(host, first_ip, 1)).geturl()
+    return safe_url
 
 
 main_loop = None
@@ -163,14 +192,17 @@ add_security_middleware(app)
 async def verify_api_key(
     x_api_key: str | None = Header(None), authorization: str | None = Header(None)
 ):
-    if not get_settings().HITL_API_KEY:
+    import hmac as _hmac
+
+    configured_key = get_settings().HITL_API_KEY
+    if not configured_key:
         return  # no auth configured — allow all
-    if x_api_key and x_api_key == get_settings().HITL_API_KEY:
+    if x_api_key and _hmac.compare_digest(x_api_key, configured_key):
         return
     if (
         authorization
         and authorization.startswith("Bearer ")
-        and authorization[7:] == get_settings().HITL_API_KEY
+        and _hmac.compare_digest(authorization[7:], configured_key)
     ):
         return
     raise HTTPException(
@@ -454,8 +486,14 @@ async def ingest_spec_file(
         elif url:
             import requests
 
-            await _validate_spec_url(url)
-            resp = await asyncio.to_thread(requests.get, url, timeout=15)
+            original_host = _urlparse(url).hostname or ""
+            safe_url = await _validate_spec_url(url)
+            # Pass original Host header so SNI / virtual-hosting works when
+            # the URL was rewritten to a pre-resolved IP.
+            resp = await asyncio.to_thread(
+                requests.get, safe_url, timeout=15,
+                headers={"Host": original_host} if safe_url != url else {},
+            )
             resp.raise_for_status()
             with open(spec_path, "w", encoding="utf-8") as f:
                 f.write(resp.text)
