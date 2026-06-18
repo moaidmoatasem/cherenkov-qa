@@ -70,12 +70,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         "X-XSS-Protection": "1; mode=block",
         "Referrer-Policy": "strict-origin-when-cross-origin",
         "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
-        # unsafe-inline/unsafe-eval are required by the Vite-bundled React dashboard
-        # (inline event handlers + dynamic imports). Tighten to nonce-based CSP when
-        # the frontend build pipeline supports it.
+        # React 19 + Vite production build produces no inline scripts, so
+        # unsafe-inline and unsafe-eval are not needed on script-src.
+        # style-src keeps unsafe-inline for React's style={{}} prop; removing it
+        # would require hashing every inline style at build time.
         "Content-Security-Policy": (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "script-src 'self'; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data: blob:; "
             "connect-src 'self' ws: wss:; "
