@@ -30,7 +30,7 @@ class TestHitlAuthVerification(unittest.TestCase):
     def _make_vk(self, api_key=''):
         from cherenkov.core.settings import get_settings
         get_settings().HITL_API_KEY = api_key
-        from cherenkov.web.api import verify_api_key
+        from cherenkov.web.routes.deps import verify_api_key
         return verify_api_key
 
     def test_missing_key_raises_401(self):

@@ -11,24 +11,23 @@
 
 > **This section is a summary.** For the full consolidated handover with all Claude session work, parallel agent plan, and alignment with open issues, read **`docs/HANDOVER_SESSION_2026-06-18.md`** and **`docs/PARALLEL_AGENT_PLAN_2026-06-18.md`**.
 
-**Branch:** `main` at `7d2d79d0`. Feature branch `claude/qa-automation-ai-strategy-g0a06l` has 3 uncommitted changes (MCP handlers + api.py security fixes + baseline snapshot).
-**Tests:** 861 passing, 4 skipped.
-**Ruff:** 2 fixable F541 errors (f-string missing placeholders).
+**Branch:** `main` at `fd99f611`. PR #546 merged (SSRF TOCTOU, MCP IP validation, silent exception audit, docs archive). Feature branches: `refactor/api-route-split` (WIP route split + self-test tsc fix).
+**Tests:** ~861 passing (unit tests: 100% pass).
+**Ruff:** ✅ 0 errors.
 
-**Gate G0 (EPIC #535) — 2/4 complete:**
+**Gate G0 (EPIC #535) — 3/4 complete:**
+- ✅ E0.1: Real-divergence proof — Petstore (4), HTTPBin (1), GitHub (1) — see `docs/evidence/e0.1_divergences.md`
 - ✅ E0.2: Integrity catch demo (`demos/catch-the-ai-cheating/run_demo.py`)
 - ✅ E0.4: Differentiation sentence (`NORTH_STAR.md` §8)
-- ❌ E0.1: Needs live run against ≥3 third-party APIs
-- ❌ E0.3: Needs ≥3 real QA practitioners
+- ❌ E0.3: Needs ≥3 real QA practitioners (human activity)
 
-**What landed this session (all Claude threads combined):** 18 Playwright fixes, DNS-rebinding SSRF patch, HITL ignore() + classify, asyncio thread fix, Knowledge serialization, rate-limiter memory leak fix, review.py ruff fix, CSP tightening, FTS5 retroactive rebuild, CLI migration to Click (all 23 commands), Gate G0 E0.2 demo, E0.4 differentiation, CI gate-g0 job, meaningful-assertion gate, verify_suite MCP tool, Tauri config fixes, security hardening (auth guard on eject/knowledge, timing-safe API key, subprocess injection fix, path traversal fix).
+**What landed this session (all Claude threads combined):** Security hardening (SSRF TOCTOU pre-resolve, MCP IP validation, hmac.compare_digest), silent exception audit (31 files), docs archive (4 deprecated files), self-test tsc fix, ruff F541 cleanup, Gate G0 E0.1 evidence report (3 APIs, 6 divergences). Plus all prior: 18 Playwright fixes, DNS-rebinding SSRF patch, HITL ignore() + classify, asyncio thread fix, Knowledge serialization, rate-limiter memory leak, CSP tightening, FTS5 rebuild, CLI Click migration, E0.2 demo, E0.4 differentiation, CI gate-g0 job, verify_suite MCP tool, Tauri config fixes.
 
 **Immediate next steps:**
-1. Commit the 3 uncommitted files on feature branch and PR to main
-2. Run Gate G0 E0.1 against 3 third-party APIs (see `docs/EXECUTION_PLAN.md` §3)
-3. Fix the 2 ruff F541 errors (`python3 -m ruff check cherenkov/ --fix`)
-4. Address P1-P4 debt queue (api.py split, AI provider registry, legacy_cli cleanup, silent exceptions)
-5. Unblock Phase 3/5-6 (install `libwebkit2gtk-4.1-dev` and `android-tools-adb`)
+1. Address api.py route split (P1) — extract 6 more route modules from 1537-line file
+2. Delete `legacy_cli.py` after smoke test (P3)
+3. Unblock Phase 3/5-6 (install `libwebkit2gtk-4.1-dev` and `android-tools-adb`)
+4. Commit `docs/evidence/` (petstore_spec.json, e0.1_divergences.md)
 
 ---
 

@@ -108,3 +108,9 @@ As of June 2026, CHERENKOV adopts the following advanced orchestration patterns 
 **Skip the skill sync-driven-dev** at `skills/sync-driven-dev.md` for the full workflow reference.
 
 The SDD runtime lives in `agent_memory/sync/` (JSON state files + findings log).
+
+### Qwen Code Federation
+As of Phase 5, CHERENKOV federates generation and coding tasks to **Qwen Code**. 
+- CHERENKOV retains control over the D7 invariant (testing/validation).
+- Qwen Code uses `.qwen/skills/` and `.qwen/memory/` synchronized with CHERENKOV.
+- Cross-agent communication runs over MCP. Do not duplicate generation logic in CHERENKOV; instead, call the `run_qwen_code_agent` MCP tool.

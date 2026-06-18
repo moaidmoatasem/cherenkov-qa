@@ -1,0 +1,57 @@
+{
+  "_comment": "Qwen Code project config for CHERENKOV QA. See docs/QWEN_CODE_ALIGNMENT.md for full guide.",
+  "model": {
+    "name": "qwen2.5-coder:7b"
+  },
+  "modelProviders": {
+    "ollama": [
+      {
+        "id": "qwen2.5-coder:7b",
+        "name": "[Ollama] qwen2.5-coder:7b",
+        "baseUrl": "http://localhost:11434",
+        "generationConfig": {
+          "contextWindowSize": 32768
+        }
+      },
+      {
+        "id": "qwen2.5-coder:14b",
+        "name": "[Ollama] qwen2.5-coder:14b (heavy)",
+        "baseUrl": "http://localhost:11434",
+        "generationConfig": {
+          "contextWindowSize": 65536
+        }
+      }
+    ]
+  },
+  "security": {
+    "auth": {
+      "selectedType": "ollama"
+    }
+  },
+  "mcpServers": {
+    "cherenkov": {
+      "command": "python3",
+      "args": ["/home/moaid/cherenkov-qa/cherenkov.py", "mcp", "serve"],
+      "cwd": "/home/moaid/cherenkov-qa",
+      "env": {
+        "MCP_TRANSPORT": "stdio"
+      }
+    }
+  },
+  "approvalMode": "manual",
+  "sandbox": {
+    "enabled": false,
+    "_note": "Enable firejail or Docker sandbox when running in CI"
+  },
+  "compact": true,
+  "telemetry": {
+    "enabled": false
+  },
+  "memory": {
+    "dir": ".qwen/memory",
+    "autoLoad": true
+  },
+  "skills": {
+    "dirs": [".qwen/skills"]
+  }
+}

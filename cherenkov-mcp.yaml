@@ -35,3 +35,4 @@ tools:
   - explain_finding
   - mcp_registry_list
   - mcp_registry_publish
+  - run_qwen_code_agent

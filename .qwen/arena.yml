@@ -1,0 +1,24 @@
+name: cherenkov-test-arena
+description: Compare models on generating spec-derived tests for CHERENKOV
+models:
+  - ollama/qwen2.5-coder:7b
+  - ollama/qwen2.5-coder:14b
+  - openai/gpt-4o-mini
+tasks:
+  - name: generate_basic_test
+    prompt: |
+      Write a pytest test for the POST /api/v1/users endpoint.
+      Use httpx. Verify 201 Created and that the 'id' field is present.
+      Ensure the test is completely standalone (no cherenkov imports).
+  - name: generate_edge_case
+    prompt: |
+      Write a pytest test that sends an invalid email format to POST /api/v1/users.
+      Verify that a 400 Bad Request is returned and the error message mentions "email".
+      Ensure the test is completely standalone.
+evaluators:
+  - type: exact_match
+    target: "def test_"
+  - type: not_contains
+    target: "from cherenkov import"
+  - type: not_contains
+    target: "import cherenkov"
