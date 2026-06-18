@@ -86,7 +86,17 @@ Every CI pipeline has a CHERENKOV gate. Every agentic coding tool calls CHERENKO
 
 ---
 
-## 8. What has to be true (so this isn't fantasy)
+## 8. Differentiation (E0.4 — one honest sentence)
+
+> **Schemathesis and property-based fuzzers generate inputs to find crashes; CHERENKOV generates *and audits* the tests themselves — so it catches the case where the AI wrote a test that can never fail, not just the case where the API crashes.**
+
+The distinction in one line: fuzzers question the server. CHERENKOV questions the test suite.
+Schemathesis will surface a 500. It will not surface a suite where every assertion is `assert response.status_code != 999` — assertions that are vacuously true and certify nothing.
+CHERENKOV's integrity gates (weakening detection, deletion detection, hallucination detection) operate on the *test oracle itself*, making it the only tool that treats the test suite as an attack surface, not just the API under test.
+
+---
+
+## 9. What has to be true (so this isn't fantasy)
 
 1. **The wow is real and reproducible** (Gate G0): finds genuine divergences on systems it doesn't own, and catches a real agent-cheat.
 2. **The integrity guarantee is rigorous** — guardrails actually can't be weakened, and it's demonstrable.
