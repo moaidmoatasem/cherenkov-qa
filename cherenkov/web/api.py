@@ -180,6 +180,10 @@ from cherenkov.web.monitoring import router as monitor_router  # noqa: E402
 
 app.include_router(monitor_router)
 
+from cherenkov.web.routes.metrics_routes import router as metrics_router  # noqa: E402
+
+app.include_router(metrics_router)
+
 from cherenkov.web.middleware.security import add_security_middleware  # noqa: E402
 
 add_security_middleware(app)
@@ -1255,55 +1259,6 @@ async def get_signals():
     ]
 
     return {"performance": performance, "visual": visual, "coverage": coverage}
-
-
-@app.get("/api/v1/metrics")
-async def get_metrics():
-    """Return aggregated cost and latency metrics."""
-    from cherenkov.ai.accounting import CostAccountant
-
-    accountant = CostAccountant()
-    report = accountant.report
-    kpi = accountant.get_governance_kpis()
-    return {
-        "status": "ok",
-        "metrics": {
-            "requestCount": report.request_count,
-            "totalTokens": report.total_tokens,
-            "totalCost": report.total_cost,
-            "totalDurationMs": report.total_duration_ms,
-            "defectEscapeCount": kpi["defect_escape_count"],
-            "falsePositiveRate": kpi["false_positive_rate"],
-            "maintenanceEfficiency": kpi["maintenance_efficiency"],
-        },
-    }
-
-
-@app.get("/api/v1/metrics/pipeline")
-def get_pipeline_metrics(last_runs: int = 10):
-    """Return pipeline stage metrics for the last N runs."""
-    try:
-        from cherenkov.observability.metrics import MetricsCollector
-
-        collector = MetricsCollector()
-        return {"metrics": collector.get_summary(last_n_runs=last_runs)}
-    except Exception:
-        raise HTTPException(status_code=500, detail="Could not load metrics")
-
-
-@app.get("/api/v1/metrics/prometheus")
-def get_metrics_prometheus():
-    """Return metrics in Prometheus text format."""
-    from cherenkov.observability.metrics import MetricsCollector
-    from fastapi.responses import PlainTextResponse
-
-    try:
-        collector = MetricsCollector()
-        return PlainTextResponse(
-            collector.to_prometheus(), media_type="text/plain; version=0.0.4"
-        )
-    except Exception:
-        raise HTTPException(status_code=500, detail="Could not load metrics")
 
 
 #
