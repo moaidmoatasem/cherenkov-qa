@@ -12,6 +12,7 @@ def cli(ctx):
 
 _CLICK_COMMANDS = [
     "verify",
+    "check-suite",
     "validate",
     "synthetic",
     "diff",
@@ -42,6 +43,7 @@ _CLICK_COMMANDS = [
 def _register_commands() -> None:
     from cherenkov.cli.commands.validate import validate_cmd
     from cherenkov.cli.commands.verify import verify_cmd
+    from cherenkov.cli.commands.check_suite import check_suite_cmd
     from cherenkov.synthetic.cmd import synthetic_cmd
     from cherenkov.cli.commands.simple import (
         diff_cmd,
@@ -74,6 +76,7 @@ def _register_commands() -> None:
 
     for cmd, name in [
         (verify_cmd, "verify"),
+        (check_suite_cmd, "check-suite"),
         (validate_cmd, "validate"),
         (synthetic_cmd, "synthetic"),
         (diff_cmd, "diff"),
