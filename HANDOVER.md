@@ -32,7 +32,7 @@ All code-deliverable Phase 1 items are DONE:
 | E1.2 -- meaningful-assertion gate | **DONE** | `cherenkov/sdet/`; 60 tests (E11 landed via #92) |
 | E1.3 -- guardrails-can't-be-weakened proof | **DONE** | `demos/catch-the-ai-cheating/`; CI-gated |
 | E1.4 -- eject command hardening | **DONE** | `cherenkov/execution/eject.py`; 10 unit tests |
-| E1.5 -- install friction to near-zero | PENDING | Needs PyPI publish or Docker image (packaging epic #200-#207) |
+| E1.5 -- install friction to near-zero | **DONE** | `install.sh` (git+pip/pipx one-liner); Dockerfile fixed (3.12, `pip install .`, `cherenkov` entrypoint); `dist/cherenkov-1.0.0.whl` built and verified |
 
 ---
 
@@ -60,10 +60,12 @@ All code-deliverable Phase 1 items are DONE:
 
 ## Next code actions (ordered by impact)
 
-1. **E1.5 -- one-line install** -- publish to PyPI (`python3 -m build && twine upload`) or build the Docker image (Packaging EPIC #200-#207, ticket P-1). This is the last E1 gate item.
-2. **E2.2 -- MCP context consumer** -- consume MCP for richer system context (four open seams in `cherenkov/mcp/`).
-3. **E2.3 -- Continuous engine** -- watch spec/code/traffic/schema changes and surface divergence on change; `daemon_cmd.py` exists, needs divergence integration.
-4. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` (`cargo install tauri-cli` first).
+1. **E2.2 -- MCP context consumer** -- consume MCP for richer system context (four open seams in `cherenkov/mcp/`; spec: `docs/specs/MCP_VERIFICATION_SERVER.md §4.2`).
+2. **E2.3 -- Continuous engine** -- watch spec/code/traffic/schema changes and surface divergence on change; `daemon_cmd.py` exists, needs divergence integration.
+3. **E2.4 -- Source adapters (gRPC/GraphQL)** -- add to `cherenkov/truth/sources/`; OpenAPI/AsyncAPI/Postman already exist.
+4. **E0.3 -- Human validation gate** -- recruit ≥3 QA practitioners to complete quickstart unaided. `install.sh` now reduces their install burden. Cannot be automated.
+5. **PyPI publish** -- `twine upload dist/*` once PyPI credentials are available; `dist/cherenkov-1.0.0.whl` is already built.
+6. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` (`cargo install tauri-cli` first).
 
 ---
 
