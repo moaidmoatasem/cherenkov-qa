@@ -1,24 +1,38 @@
 # CHERENKOV -- Session Handover
 
 **Date:** 2026-06-20
-**HEAD:** `1ca48e4` on `main`
-**Tests:** unit tests passing (clean); G0 integrity suite 5/5
+**HEAD:** `f66a4da` on `main`
+**Tests:** 696 unit tests passing; G0 integrity suite 10/10; E11 60/60
 **Branch:** `main` -- working tree clean (generated-test CRLF noise is cosmetic)
 
 ---
 
-## Gate G0 status (EPIC #535 -- the shipping blocker)
+## Gate G0 status (EPIC #535)
 
 G0 requires E0.1 AND E0.2 AND E0.3 AND E0.4.
 
 | Exit criterion | Status | Evidence |
 |---|---|---|
 | E0.1 -- real divergences on 3rd-party APIs | **DONE** | `docs/evidence/e0.1_divergences.md` -- 6 divergences across 3 APIs |
-| E0.2 -- integrity catch (catch the AI cheating) | DONE | `demos/catch-the-ai-cheating/`; CI-gated; 4/4 scenarios pass |
-| E0.3 -- 3 practitioners complete quickstart unaided | NOT YET | User-research activity |
+| E0.2 -- integrity catch (catch the AI cheating) | DONE | `demos/catch-the-ai-cheating/`; CI-gated; 10/10 pass |
+| E0.3 -- 3 practitioners complete quickstart unaided | NOT YET | User-research activity (can't code our way out) |
 | E0.4 -- honest differentiation sentence vs Schemathesis | DONE | `docs/NORTH_STAR.md` section 8 |
 
-**Gate G0 is 2/4. E0.1 is the only purely-code blocker remaining.**
+**Gate G0: 3/4. Only E0.3 (human recruitment) remains.**
+
+---
+
+## AQE Phase 1 status (Rung 1 -- "the Tool people love")
+
+All code-deliverable Phase 1 items are DONE:
+
+| Item | Status | Where |
+|---|---|---|
+| E1.1 -- `cherenkov verify` UX | **DONE** | `cherenkov/cli/commands/verify.py`; 8 unit tests |
+| E1.2 -- meaningful-assertion gate | **DONE** | `cherenkov/sdet/`; 60 tests (E11 landed via #92) |
+| E1.3 -- guardrails-can't-be-weakened proof | **DONE** | `demos/catch-the-ai-cheating/`; CI-gated |
+| E1.4 -- eject command hardening | **DONE** | `cherenkov/execution/eject.py`; 10 unit tests |
+| E1.5 -- install friction to near-zero | PENDING | Needs PyPI publish or Docker image (packaging epic #200-#207) |
 
 ---
 
@@ -26,55 +40,23 @@ G0 requires E0.1 AND E0.2 AND E0.3 AND E0.4.
 
 | SHA | What |
 |---|---|
-| `b98cbdfd` | docs(g0): E0.4 differentiation statement (EPIC #535) |
-| `7a93fd81` | ci: gate-g0 + unit-test jobs added to cherenkov-ci.yml |
-| `5c6b500c` | docs: previous handover |
-| `837e19c4` | fix(api): auth on /knowledge/query + _validate_spec_url async |
-| `d5fda086` | merge: QA-18 fix + security hardening + HITL ignore |
-
-Security fixes on `origin/main` (all done, not to revisit):
-settings.py timeouts, ollama_client None-guard, playwright_invoke timeouts+shlex,
-prism_mock timeouts+FileNotFoundError, mcp/handlers URL scheme check,
-api.py eject auth + SSRF blocklist + settings protection,
-review.py TSC timeout from settings + silent-exception logging,
-.gitignore secrets, requirements.txt upper bounds.
+| `f66a4da` | feat(e1.1): `cherenkov verify` command (E1.1) -- 8 tests |
+| `3075235` | feat(g0): E0.1 DONE -- 6 real divergences across 3 public APIs |
+| `1ca48e4` | feat(reflector): offline idiom replay + Skeptic/Generate injection (--learn) |
 
 ---
 
-## Next action: E0.1 (the remaining code-side G0 blocker)
+## Next code actions (ordered by impact)
 
-Run CHERENKOV against at least 3 real public APIs and capture at least 2 genuine divergences.
-
-Suggested targets (all have public OpenAPI specs, no auth for basic endpoints):
-1. **JSONPlaceholder** -- `https://jsonplaceholder.typicode.com` (fake REST; no real divergences likely, but validates the runner)
-2. **PetStore** -- `https://petstore3.swagger.io/api/v3` (the canonical demo spec, will likely show real divergences)
-3. **dog.ceo** or **open-meteo.com** -- small public APIs with published specs
-
-Steps:
-```bash
-# Install the CLI
-pip install -e .
-
-# Run against PetStore (or replace with a real local target)
-cherenkov run --spec https://petstore3.swagger.io/api/v3/openapi.json \
-              --url https://petstore3.swagger.io/api/v3
-
-# Capture any divergences to docs/evidence/e0.1_divergences.md
-```
-Record the run output (divergences found, gates passed/failed) as evidence in `docs/evidence/` so E0.1 is anchored to a real artefact, not a claim.
-
----
-
-## Remaining backlog (post-G0)
-
-1. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` from a terminal with the Tauri CLI installed.
-2. **E1.2 -- meaningful-assertion gate** -- port the `feat/92-coverage-sdet` concept cleanly onto main (do NOT merge the stale branch -- it has 542k-line deletions). This is the product version of E0.2.
-3. **E0.3** -- 3 practitioners complete quickstart unaided (user-research, not a code task).
+1. **E1.5 -- one-line install** -- publish to PyPI (`python3 -m build && twine upload`) or build the Docker image (Packaging EPIC #200-#207, ticket P-1). This is the last E1 gate item.
+2. **Phase 2 -- MCP verification server (E2.1)** -- publish `cherenkov mcp` as an installable MCP server so any agent can call CHERENKOV to verify a suite. Spec: `docs/specs/MCP_VERIFICATION_SERVER.md`.
+3. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` from a terminal with the Tauri CLI installed (`cargo install tauri-cli`).
 
 ---
 
 ## Environment hazards
 
-- **Shared working tree**: `~/cherenkov-qa` shared across concurrent agent sessions. Always `git branch` before committing; commit each file immediately after editing.
+- **Shared working tree**: `~/cherenkov-qa` shared across concurrent agent sessions. Always check `git branch` before committing.
 - **CRLF noise**: `stub/generated_tests/*.spec.ts` and `npm-package/` show as modified constantly -- cosmetic, do not commit.
 - **GitHub CLI**: not authenticated in this agent environment -- PRs must be created manually.
+- **Note on E1.2 warning in ROADMAP_AQE.md**: the "do NOT merge the stale branch" caveat is outdated -- `cherenkov/sdet/` is already on `main` via #92. E1.2 is done.
