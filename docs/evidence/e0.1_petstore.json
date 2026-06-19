@@ -1,0 +1,131 @@
+[
+  {
+    "id": "358bd808-0e4b-4f88-b636-ce452cc0e666",
+    "divergence_class": "D1_spec_code",
+    "claim_a": "spec: Pet.photoUrls is a required field; omitting it \u2192 4xx",
+    "claim_b": "implementation accepts Pet without photoUrls and returns 200",
+    "evidence": {
+      "request_summary": "POST https://petstore3.swagger.io/api/v3/pet \u2192 500 (546ms)",
+      "response_actual": {
+        "code": 500,
+        "message": "There was an error processing your request. It has been logged (ID: 958f2f94c177cd4f)"
+      },
+      "response_expected": "HTTP 400 per spec",
+      "diff": "status mismatch: expected=400, actual=500"
+    },
+    "repro_steps": [
+      "Send POST /pet with body {\"name\": \"test-dog\", \"status\": \"available\"}",
+      "Expect 400 or 422 because photoUrls is required per schema"
+    ],
+    "severity": "high",
+    "endpoint": "POST /pet",
+    "status": "ok",
+    "errors": [],
+    "metadata": {
+      "stage": "divergence_engine",
+      "model": null,
+      "tokens": 0,
+      "duration_ms": 1509,
+      "schema_version": 1,
+      "run_id": "cadabf30"
+    },
+    "scope": "intra",
+    "findings": []
+  },
+  {
+    "id": "b4674ca4-6b0c-41ee-a12e-5e8fc97ad6ab",
+    "divergence_class": "D5_spec_prod",
+    "claim_a": "spec: petId=0 is 'Invalid ID supplied' \u2192 400",
+    "claim_b": "production returns 404 Not Found instead of 400 for petId=0",
+    "evidence": {
+      "request_summary": "GET https://petstore3.swagger.io/api/v3/pet/0 \u2192 500 (543ms)",
+      "response_actual": {
+        "code": 500,
+        "message": "There was an error processing your request. It has been logged (ID: 52b01622b7133170)"
+      },
+      "response_expected": "HTTP 400 per spec",
+      "diff": "status mismatch: expected=400, actual=500"
+    },
+    "repro_steps": [
+      "Send GET /pet/0",
+      "Expect 400 Invalid ID per spec"
+    ],
+    "severity": "low",
+    "endpoint": "GET /pet/{petId}",
+    "status": "ok",
+    "errors": [],
+    "metadata": {
+      "stage": "divergence_engine",
+      "model": null,
+      "tokens": 0,
+      "duration_ms": 2053,
+      "schema_version": 1,
+      "run_id": "38e17e40"
+    },
+    "scope": "intra",
+    "findings": []
+  },
+  {
+    "id": "9aac3b32-1686-4dc5-90a4-d1f9ad6ae235",
+    "divergence_class": "D2_code_prod",
+    "claim_a": "spec: response is additionalProperties{integer} \u2014 a non-empty status map",
+    "claim_b": "production returns an empty object {} even when pets are present",
+    "evidence": {
+      "request_summary": "GET https://petstore3.swagger.io/api/v3/store/inventory \u2192 500 (538ms)",
+      "response_actual": {
+        "code": 500,
+        "message": "There was an error processing your request. It has been logged (ID: 32d3c6c93043e12d)"
+      },
+      "response_expected": "production returns an empty object {} even when pets are present",
+      "diff": "actual={\"code\": 500, \"message\": \"There was an error processing your request. It has been logged (ID: 32d3c6c93043e12d)\"}, expected=\"production returns an empty object {} even when pets are present\""
+    },
+    "repro_steps": [
+      "Send GET /store/inventory",
+      "Expect non-empty JSON object mapping status strings to integer counts"
+    ],
+    "severity": "medium",
+    "endpoint": "GET /store/inventory",
+    "status": "ok",
+    "errors": [],
+    "metadata": {
+      "stage": "divergence_engine",
+      "model": null,
+      "tokens": 0,
+      "duration_ms": 2591,
+      "schema_version": 1,
+      "run_id": "ff005103"
+    },
+    "scope": "intra",
+    "findings": []
+  },
+  {
+    "id": "ff630181-43c6-4589-948f-fd5c78ffe181",
+    "divergence_class": "D5_spec_prod",
+    "claim_a": "spec: 200 response MUST include X-Rate-Limit and X-Expires-After headers",
+    "claim_b": "production omits these response headers on login",
+    "evidence": {
+      "request_summary": "HEAD https://petstore3.swagger.io/api/v3/user/login?username=test&password=abc123 \u2192 200 (536ms)",
+      "response_actual": "",
+      "response_expected": "production omits these response headers on login",
+      "diff": "actual=\"\", expected=\"production omits these response headers on login\""
+    },
+    "repro_steps": [
+      "Send GET /user/login?username=test&password=abc123",
+      "Expect X-Rate-Limit header in response per spec"
+    ],
+    "severity": "medium",
+    "endpoint": "GET /user/login",
+    "status": "ok",
+    "errors": [],
+    "metadata": {
+      "stage": "divergence_engine",
+      "model": null,
+      "tokens": 0,
+      "duration_ms": 3128,
+      "schema_version": 1,
+      "run_id": "005fe224"
+    },
+    "scope": "intra",
+    "findings": []
+  }
+]

@@ -1,7 +1,7 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-06-18
-**HEAD:** `b98cbdfd` on `main` -- synced with `origin/main`
+**Date:** 2026-06-20
+**HEAD:** `1ca48e4` on `main`
 **Tests:** unit tests passing (clean); G0 integrity suite 5/5
 **Branch:** `main` -- working tree clean (generated-test CRLF noise is cosmetic)
 
@@ -13,7 +13,7 @@ G0 requires E0.1 AND E0.2 AND E0.3 AND E0.4.
 
 | Exit criterion | Status | Evidence |
 |---|---|---|
-| E0.1 -- real divergences on 3rd-party APIs | NOT YET | Needs a live run against real APIs |
+| E0.1 -- real divergences on 3rd-party APIs | **DONE** | `docs/evidence/e0.1_divergences.md` -- 6 divergences across 3 APIs |
 | E0.2 -- integrity catch (catch the AI cheating) | DONE | `demos/catch-the-ai-cheating/`; CI-gated; 4/4 scenarios pass |
 | E0.3 -- 3 practitioners complete quickstart unaided | NOT YET | User-research activity |
 | E0.4 -- honest differentiation sentence vs Schemathesis | DONE | `docs/NORTH_STAR.md` section 8 |
