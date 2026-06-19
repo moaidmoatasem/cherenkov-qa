@@ -25,7 +25,7 @@ print("=== CHERENKOV Backwards Compatibility Smoke Test ===\n")
 print("--- Core imports ---")
 check("cherenkov package importable", True)
 
-from cherenkov.core.contracts import (  # noqa: E402
+from cherenkov.core.contracts import (
     Verdict,
     Status,
     StageMeta,
@@ -39,7 +39,7 @@ check("core.errors importable", True)
 
 check("core.feedback_store importable", True)
 
-from cherenkov.core.stats_store import StatsStore  # noqa: E402
+from cherenkov.core.stats_store import StatsStore
 
 check("core.stats_store importable", True)
 
@@ -53,22 +53,22 @@ check("stages.review_serve importable (deprecated)", True)
 
 # 3. Healer imports — all return structured dicts now
 print("\n--- Healer imports ---")
-from cherenkov.healing.auth_expiry import AuthExpiryHealer  # noqa: E402
+from cherenkov.healing.auth_expiry import AuthExpiryHealer
 
 ah = AuthExpiryHealer("test")
 result = ah.suggest_heal("test_id", "/test")
 check("AuthExpiryHealer returns dict", isinstance(result, dict))
 check("AuthExpiryHealer has suggestion key", "suggestion" in result)
 
-from cherenkov.healing.contract_drift import ContractDriftHealer  # noqa: E402
+from cherenkov.healing.contract_drift import ContractDriftHealer
 
 ch = ContractDriftHealer("test")
 result = ch.suggest_heal("test_id", "/test", "GET", ["email"], ["name"])
 check("ContractDriftHealer returns dict", isinstance(result, dict))
 check("ContractDriftHealer has suggestion key", "suggestion" in result)
 
-from cherenkov.healing.visual_heal import VisualHealer  # noqa: E402
-from cherenkov.core.contracts import VisualReport, VisualGateResult  # noqa: E402
+from cherenkov.healing.visual_heal import VisualHealer
+from cherenkov.core.contracts import VisualReport, VisualGateResult
 
 report = VisualReport(
     scenario_id="test",
@@ -123,21 +123,21 @@ check("substrate.providers.vlm importable", True)
 
 # 12. Phase 0b new modules
 print("\n--- Phase 0b: Core extensions ---")
-from cherenkov.core.devices import DeviceInfo  # noqa: E402
+from cherenkov.core.devices import DeviceInfo
 
 check("core.devices importable", True)
 di = DeviceInfo()
 check("DeviceInfo instantiable", True)
 check("DeviceInfo.to_dict works", isinstance(di.to_dict(), dict))
 
-from cherenkov.core.events import CHERENKOVEvent  # noqa: E402
+from cherenkov.core.events import CHERENKOVEvent
 
 check("core.events importable", True)
 ev = CHERENKOVEvent.pipeline_start("test")
 check("CHERENKOVEvent factory works", ev.name == "pipeline.start")
 check("CHERENKOVEvent.to_dict works", "event_id" in ev.to_dict())
 
-from cherenkov.core.knowledge_result import KnowledgeResult, KnowledgeKind  # noqa: E402
+from cherenkov.core.knowledge_result import KnowledgeResult, KnowledgeKind
 
 check("core.knowledge_result importable", True)
 kr = KnowledgeResult(id="t1", kind=KnowledgeKind.IDIOM, key="/api/test", summary="test")
@@ -146,7 +146,7 @@ check("KnowledgeResult.to_event_payload works", "key" in kr.to_event_payload())
 
 check("core.migration importable", True)
 
-from cherenkov.core.error_handling import GracefulDegradation, DegradationLevel  # noqa: E402
+from cherenkov.core.error_handling import GracefulDegradation, DegradationLevel
 
 check("core.error_handling importable", True)
 gd = GracefulDegradation()
@@ -180,7 +180,7 @@ check("StatsStore.get_run_summary exists", hasattr(ss, "get_run_summary"))
 
 # 13. OrchesrationEngine backwards compat
 print("\n--- OrchestrationEngine ---")
-from cherenkov.core.orchestrator import OrchestrationEngine  # noqa: E402
+from cherenkov.core.orchestrator import OrchestrationEngine
 
 check("OrchestrationEngine importable", True)
 check(

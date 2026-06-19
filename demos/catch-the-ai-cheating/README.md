@@ -27,7 +27,7 @@ We provide two versions of the demo:
 python demos/catch-the-ai-cheating/run_demo_ts.py
 ```
 
-No cloud. No setup. Gates 1–4 run instantly (static analysis).
+No cloud. No setup. Gates 1–4 run instantly (static analysis).  
 Gate 6 (Prism mock dry-run) requires Docker — gracefully skipped if absent.
 
 ### Fixtures

@@ -55,9 +55,7 @@ class PlaywrightRunner:
         self.tests_dir = os.path.join(self.stub_dir, "generated_tests")
         # Detect Windows UNC path — cmd.exe cannot use UNC as cwd
         self._use_wsl = sys.platform == "win32" and _is_unc_path(self.stub_dir)
-        self._wsl_distro = (
-            _wsl_distro_from_unc(self.stub_dir) if self._use_wsl else None
-        )
+        self._wsl_distro = _wsl_distro_from_unc(self.stub_dir) if self._use_wsl else None
 
     def execute_test(
         self,
@@ -105,11 +103,7 @@ class PlaywrightRunner:
         }
 
     def _exec_native(
-        self,
-        scenario_id: str,
-        api_url: str,
-        update_snapshots: bool,
-        headed: bool = False,
+        self, scenario_id: str, api_url: str, update_snapshots: bool, headed: bool = False
     ) -> tuple:
         env = os.environ.copy()
         env["API_URL"] = api_url
@@ -151,11 +145,7 @@ class PlaywrightRunner:
         return self._parse_result(process.stdout, process.stderr, process.returncode)
 
     def _exec_via_wsl(
-        self,
-        scenario_id: str,
-        api_url: str,
-        update_snapshots: bool,
-        headed: bool = False,
+        self, scenario_id: str, api_url: str, update_snapshots: bool, headed: bool = False
     ) -> tuple:
         linux_stub = _wsl_path(self.stub_dir)
         test_rel = f"generated_tests/{scenario_id}.spec.ts"

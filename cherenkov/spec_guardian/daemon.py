@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 class SpecGuardianDaemon:
     """Daemon that continuously monitors API endpoints for spec drift."""
-
+    
     def __init__(
         self,
         spec_path: str,
@@ -34,7 +34,7 @@ class SpecGuardianDaemon:
         db_path: Path | None = None,
     ):
         """Initialize the daemon.
-
+        
         Args:
             spec_path: Path to OpenAPI spec file
             base_url: Base URL of the API to monitor
@@ -47,22 +47,22 @@ class SpecGuardianDaemon:
         self.check_interval = check_interval
         self.endpoints = endpoints or []
         self.detector = SpecDriftDetector(spec_path)
-        self.store = DriftStore(db_path or DriftStore.DRIFT_DB)  # type: ignore
+        self.store = DriftStore(db_path or DriftStore.DRIFT_DB)
         self.running = False
         self.session_start: datetime | None = None
         self.total_checks = 0
         self.compliant_checks = 0
         self.all_events: list[DriftEvent] = []
-
+    
     def start(self) -> None:
         """Start the monitoring daemon."""
         self.running = True
         self.session_start = datetime.now(timezone.utc)
-
+        
         # Handle shutdown signals
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
-
+        
         logger.info(
             "Spec Guardian daemon started",
             extra={
@@ -72,7 +72,7 @@ class SpecGuardianDaemon:
                 "endpoints": len(self.endpoints),
             },
         )
-
+        
         while self.running:
             try:
                 self._run_check_cycle()
@@ -80,42 +80,42 @@ class SpecGuardianDaemon:
             except Exception:
                 logger.error("Error in check cycle", exc_info=True)
                 time.sleep(self.check_interval)
-
+    
     def stop(self) -> None:
         """Stop the monitoring daemon."""
         self.running = False
         logger.info("Spec Guardian daemon stopping")
-
+    
     def _signal_handler(self, signum: int, frame: Any) -> None:
         """Handle shutdown signals."""
         logger.info(f"Received signal {signum}, shutting down")
         self.stop()
-
+    
     def _run_check_cycle(self) -> None:
         """Run a single check cycle across all configured endpoints."""
         cycle_start = datetime.now(timezone.utc)
         cycle_events: list[DriftEvent] = []
-
+        
         for endpoint_config in self.endpoints:
             try:
                 events = self._check_endpoint(endpoint_config)
                 cycle_events.extend(events)
-
+                
                 # Save each event immediately
                 for event in events:
                     self.store.save_event(event)
-
+                
                 self.total_checks += 1
                 if not events:
                     self.compliant_checks += 1
-
+                
             except Exception as e:
                 logger.error(
                     "Failed to check endpoint",
                     extra={"endpoint": endpoint_config, "error": str(e)},
                     exc_info=True,
                 )
-
+        
         # Generate and save report every cycle
         if cycle_events or self.total_checks > 0:
             report = DriftReport(
@@ -128,7 +128,7 @@ class SpecGuardianDaemon:
             )
             self.store.save_report(report)
             self.all_events.extend(cycle_events)
-
+            
             # Log summary
             drift_rate = report.drift_rate
             if drift_rate > 0.1:
@@ -149,13 +149,13 @@ class SpecGuardianDaemon:
                         "total_checks": self.total_checks,
                     },
                 )
-
+    
     def _check_endpoint(self, endpoint_config: dict[str, Any]) -> list[DriftEvent]:
         """Check a single endpoint against the spec.
-
+        
         Args:
             endpoint_config: Dict with 'method', 'path', and optional 'params', 'headers'
-
+            
         Returns:
             List of drift events detected
         """
@@ -163,11 +163,11 @@ class SpecGuardianDaemon:
         path = endpoint_config["path"]
         params = endpoint_config.get("params", {})
         headers = endpoint_config.get("headers", {})
-
+        
         url = f"{self.base_url}{path}"
-
+        
         logger.debug(f"Checking {method} {url}")
-
+        
         # Make the actual API call
         response = requests.request(
             method=method,
@@ -176,13 +176,13 @@ class SpecGuardianDaemon:
             headers=headers,
             timeout=30,
         )
-
+        
         # Parse response body
         try:
             response_body = response.json() if response.content else None
         except Exception:
             response_body = None
-
+        
         # Check against spec
         events = self.detector.check_response(
             endpoint=path,
@@ -191,17 +191,17 @@ class SpecGuardianDaemon:
             response_body=response_body,
             response_headers=dict(response.headers),
         )
-
+        
         return events
-
+    
     def run_once(self) -> DriftReport:
         """Run a single check cycle and return the report.
-
+        
         Useful for testing or one-off checks.
         """
         self.session_start = datetime.now(timezone.utc)
         self._run_check_cycle()
-
+        
         return DriftReport(
             spec_path=self.spec_path,
             events=self.all_events,

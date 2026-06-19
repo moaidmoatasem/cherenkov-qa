@@ -11,9 +11,11 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 
 
+
 from cherenkov.web.routes.deps import (
     lifespan,
 )
+
 
 
 app = FastAPI(

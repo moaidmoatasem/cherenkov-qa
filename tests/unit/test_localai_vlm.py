@@ -16,13 +16,11 @@ def test_localai_provider_init():
 
 def test_localai_provider_init_from_config():
     with patch.object(
-        get_settings(),
-        "VLM_LOCALAI_URL",
+        get_settings(), "VLM_LOCALAI_URL",
         "http://10.0.0.1:8080",
     ):
         with patch.object(
-            get_settings(),
-            "VLM_LOCALAI_MODEL",
+            get_settings(), "VLM_LOCALAI_MODEL",
             "qwen2.5-vl:7b",
         ):
             p = LocalAIVLMProvider()

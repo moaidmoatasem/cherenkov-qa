@@ -154,6 +154,7 @@ def main():
             check=True,
         )
         stdout = val_proc.stdout
+        stderr = val_proc.stderr
 
         print("\n--- CLI TIGHTENING REPORT OUTPUT ---")
         print(stdout)

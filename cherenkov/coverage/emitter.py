@@ -250,15 +250,15 @@ class UnitTestEmitter:
                 if prop_type == "string":
                     body[prop_name] = "test"
                 elif prop_type == "integer":
-                    body[prop_name] = 1  # type: ignore
+                    body[prop_name] = 1
                 elif prop_type == "boolean":
-                    body[prop_name] = True  # type: ignore
+                    body[prop_name] = True
                 elif prop_type == "number":
-                    body[prop_name] = 1.0  # type: ignore
+                    body[prop_name] = 1.0
                 elif prop_type == "array":
-                    body[prop_name] = []  # type: ignore
+                    body[prop_name] = []
                 elif prop_type == "object":
-                    body[prop_name] = {}  # type: ignore
+                    body[prop_name] = {}
                 else:
                     body[prop_name] = "test"
             break

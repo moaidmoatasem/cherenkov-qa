@@ -72,22 +72,22 @@ def _infer_body(
         elif t == "boolean":
             val = True
         elif t == "array":
-            val = []  # type: ignore
+            val = []
         elif t == "object":
-            val = {}  # type: ignore
+            val = {}
         else:
             if "email" in key:
-                val = "test@cherenkov.dev"  # type: ignore
+                val = "test@cherenkov.dev"
             elif "password" in key or "secret" in key:
-                val = "Password123!"  # type: ignore
+                val = "Password123!"
             elif "url" in key:
-                val = "https://example.com"  # type: ignore
+                val = "https://example.com"
             elif "name" in key:
-                val = "Cherenkov Test"  # type: ignore
+                val = "Cherenkov Test"
             elif key in ("status",):
-                val = "available"  # type: ignore
+                val = "available"
             else:
-                val = f"test_{key}"  # type: ignore
+                val = f"test_{key}"
         body[key] = val
 
     return body or None

@@ -6,18 +6,12 @@ import json
 import time
 from pathlib import Path
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 import yaml
 
-from cherenkov.evals.core import (
-    EvalSample,
-    EvalResult,
-    EvalScore,
-    EvalMetric,
-    EvalStatus,
-)
+from cherenkov.evals.core import EvalSample, EvalResult, EvalScore, EvalMetric, EvalStatus
 
 
 # ── Sample test code simulating GENERATE stage output ───────────────────
@@ -61,88 +55,44 @@ test('admin bypass', async () => {
 
 # ── Helpers ────────────────────────────────────────────────────────────
 
-
 def make_eval_result(sample: EvalSample, passed: bool = True) -> EvalResult:
     """Build an EvalResult without calling the LLM."""
     scores = [
-        EvalScore(
-            metric=EvalMetric.FAITHFULNESS,
-            score=0.95 if passed else 0.3,
-            status=EvalStatus.PASS if passed else EvalStatus.FAIL,
-            detail="Spec-aligned status assertion" if passed else "Status mismatch",
-        ),
-        EvalScore(
-            metric=EvalMetric.HALLUCINATION,
-            score=0.9 if passed else 0.4,
-            status=EvalStatus.PASS if passed else EvalStatus.FAIL,
-            detail="No hallucinated properties" if passed else "Extra properties found",
-        ),
-        EvalScore(
-            metric=EvalMetric.ASSERTION_QUALITY,
-            score=0.85 if passed else 0.5,
-            status=EvalStatus.PASS if passed else EvalStatus.FAIL,
-            detail="Meaningful assertion" if passed else "Weak assertion",
-        ),
-        EvalScore(
-            metric=EvalMetric.SPEC_ALIGNMENT,
-            score=0.95 if passed else 0.3,
-            status=EvalStatus.PASS if passed else EvalStatus.FAIL,
-            detail="Spec-aligned" if passed else "Mismatch",
-        ),
-        EvalScore(
-            metric=EvalMetric.COMPLETENESS,
-            score=0.85 if passed else 0.4,
-            status=EvalStatus.PASS if passed else EvalStatus.FAIL,
-            detail="Adequate coverage" if passed else "Missing coverage",
-        ),
+        EvalScore(metric=EvalMetric.FAITHFULNESS, score=0.95 if passed else 0.3,
+                  status=EvalStatus.PASS if passed else EvalStatus.FAIL,
+                  detail="Spec-aligned status assertion" if passed else "Status mismatch"),
+        EvalScore(metric=EvalMetric.HALLUCINATION, score=0.9 if passed else 0.4,
+                  status=EvalStatus.PASS if passed else EvalStatus.FAIL,
+                  detail="No hallucinated properties" if passed else "Extra properties found"),
+        EvalScore(metric=EvalMetric.ASSERTION_QUALITY, score=0.85 if passed else 0.5,
+                  status=EvalStatus.PASS if passed else EvalStatus.FAIL,
+                  detail="Meaningful assertion" if passed else "Weak assertion"),
+        EvalScore(metric=EvalMetric.SPEC_ALIGNMENT, score=0.95 if passed else 0.3,
+                  status=EvalStatus.PASS if passed else EvalStatus.FAIL,
+                  detail="Spec-aligned" if passed else "Mismatch"),
+        EvalScore(metric=EvalMetric.COMPLETENESS, score=0.85 if passed else 0.4,
+                  status=EvalStatus.PASS if passed else EvalStatus.FAIL,
+                  detail="Adequate coverage" if passed else "Missing coverage"),
     ]
     return EvalResult(sample=sample, scores=scores, duration_ms=int(time.time()))
 
 
 # ── Fixtures ───────────────────────────────────────────────────────────
 
-
 @pytest.fixture
 def mock_llm_client():
     """Mock the AI client so no Ollama is needed in integration tests."""
     mock = MagicMock()
-    mock.complete_code.return_value = json.dumps(
-        {
-            "scores": [
-                {
-                    "metric": "faithfulness",
-                    "score": 0.95,
-                    "detail": "Correct status asserted",
-                    "status": "pass",
-                },
-                {
-                    "metric": "hallucination",
-                    "score": 0.9,
-                    "detail": "No hallucinations",
-                    "status": "pass",
-                },
-                {
-                    "metric": "assertion_quality",
-                    "score": 0.85,
-                    "detail": "Valid assertion pattern",
-                    "status": "pass",
-                },
-                {
-                    "metric": "spec_alignment",
-                    "score": 0.95,
-                    "detail": "Spec-aligned",
-                    "status": "pass",
-                },
-                {
-                    "metric": "completeness",
-                    "score": 0.85,
-                    "detail": "Adequate coverage",
-                    "status": "pass",
-                },
-            ],
-            "evidence": "Test is well-formed and spec-aligned.",
-        }
-    )
+    mock.complete_code.return_value = json.dumps({
+        "scores": [
+            {"metric": "faithfulness", "score": 0.95, "detail": "Correct status asserted", "status": "pass"},
+            {"metric": "hallucination", "score": 0.9, "detail": "No hallucinations", "status": "pass"},
+            {"metric": "assertion_quality", "score": 0.85, "detail": "Valid assertion pattern", "status": "pass"},
+            {"metric": "spec_alignment", "score": 0.95, "detail": "Spec-aligned", "status": "pass"},
+            {"metric": "completeness", "score": 0.85, "detail": "Adequate coverage", "status": "pass"},
+        ],
+        "evidence": "Test is well-formed and spec-aligned.",
+    })
     with patch("cherenkov.evals.judge.get_client", return_value=mock):
         yield mock
 
@@ -161,10 +111,7 @@ def mock_openapi_spec(tmp_path: Path) -> Path:
                 },
                 "post": {
                     "summary": "Create user",
-                    "requestBody": {
-                        "required": True,
-                        "content": {"application/json": {"schema": {"type": "object"}}},
-                    },
+                    "requestBody": {"required": True, "content": {"application/json": {"schema": {"type": "object"}}}},
                     "responses": {"201": {"description": "Created"}},
                 },
             },
@@ -189,11 +136,8 @@ def mock_generated_tests(tmp_path: Path) -> Path:
 @pytest.fixture
 def mock_scenarios() -> list[Any]:
     """Simulate scenarios output from the PLAN stage."""
-
     class FakeScenario:
-        def __init__(
-            self, mutation_id: str, endpoint: str, method: str, expected_status: int
-        ):
+        def __init__(self, mutation_id: str, endpoint: str, method: str, expected_status: int):
             self.mutation_id = mutation_id
             self.endpoint = endpoint
             self.method = method
@@ -211,7 +155,6 @@ def mock_scenarios() -> list[Any]:
 @pytest.fixture
 def mock_gen_outputs() -> dict[str, Any]:
     """Simulate generate_outputs from the GENERATE stage."""
-
     class FakeGenOutput:
         def __init__(self, mutation_id: str, test_code: str):
             self.mutation_id = mutation_id

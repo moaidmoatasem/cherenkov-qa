@@ -61,14 +61,8 @@ def test_vlm_provider():
     global PASS, FAIL
     print("\n--- C6 (#121): VLMProvider as [substrate.tiers.vision] ---")
 
-    check(
-        "TIER_VISION_PROVIDER in type(get_settings())",
-        hasattr(type(get_settings()), "TIER_VISION_PROVIDER"),
-    )
-    check(
-        "TIER_VISION_MODEL in type(get_settings())",
-        hasattr(type(get_settings()), "TIER_VISION_MODEL"),
-    )
+    check("TIER_VISION_PROVIDER in type(get_settings())", hasattr(type(get_settings()), "TIER_VISION_PROVIDER"))
+    check("TIER_VISION_MODEL in type(get_settings())", hasattr(type(get_settings()), "TIER_VISION_MODEL"))
     check("vision tier in KNOWN_KEYS", "substrate.tiers.vision.provider" in KNOWN_KEYS)
     check(
         "vision tier in laptop profile",

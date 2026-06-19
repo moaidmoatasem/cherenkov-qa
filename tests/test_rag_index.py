@@ -25,12 +25,11 @@ class TestRAGIndex(unittest.TestCase):
         self.index.log = get_logger("RAG_INDEX", "test_run")
         self.index.db_path = self.db_path
         import threading
-
         self.index._local = threading.local()
         self.index._initialize_db()
 
     def tearDown(self):
-        if hasattr(self, "index") and hasattr(self.index, "close"):
+        if hasattr(self, 'index') and hasattr(self.index, 'close'):
             self.index.close()
         import shutil
 

@@ -49,7 +49,7 @@ def _adapter_for_source_type(source_type: str) -> SourceAdapter:
     cls = mapping.get(source_type)
     if cls is None:
         raise ValueError(f"Unknown source type: {source_type}")
-    return cls()  # type: ignore
+    return cls()
 
 
 def build_truth_model(sources: dict[str, list[str]]) -> TruthModel:

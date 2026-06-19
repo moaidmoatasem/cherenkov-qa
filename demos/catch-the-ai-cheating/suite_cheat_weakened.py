@@ -2,9 +2,9 @@
 
 
 def test_get_order_ok(resp):
-    assert resp.status_code < 500  # was == 200
+    assert resp.status_code < 500            # was == 200
     body = resp.json()
-    assert body["id"] is not None  # was == 42
+    assert body["id"] is not None           # was == 42
     assert body["total"] == 99.5
     assert body["status"] in ("paid", "pending", "cancelled")  # was == "paid"
 

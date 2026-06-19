@@ -8,8 +8,6 @@ import { CherenkovCodeLensProvider } from './providers/CodeLensProvider';
 import { CherenkovDiagnosticsProvider } from './providers/DiagnosticsProvider';
 import { CherenkovHoverProvider } from './providers/HoverProvider';
 import { CherenkovQuickFixProvider } from './providers/QuickFixProvider';
-import { CherenkovGutterProvider } from './providers/GutterProvider';
-import { CherenkovTestExplorer } from './providers/TestExplorer';
 import { ConformancePanel } from './views/ConformancePanel';
 import { fetchHealth, fetchLastReport } from './api/CherenkovClient';
 
@@ -36,8 +34,6 @@ export function activate(context: vscode.ExtensionContext): void {
   const diagnosticsProvider = new CherenkovDiagnosticsProvider();
   const hoverProvider = new CherenkovHoverProvider();
   const quickFixProvider = new CherenkovQuickFixProvider();
-  const gutterProvider = new CherenkovGutterProvider();
-  const testExplorer = new CherenkovTestExplorer(outputChannel, baseUrl);
 
   const hoverDisposable = vscode.languages.registerHoverProvider(
     [{ language: 'yaml' }, { language: 'json' }],
@@ -61,7 +57,6 @@ export function activate(context: vscode.ExtensionContext): void {
   async function pollHealth(): Promise<void> {
     const currentUrl = vscode.workspace.getConfiguration('cherenkov').get<string>('targetUrl', 'http://localhost:8000');
     treeProvider.updateBaseUrl(currentUrl);
-    testExplorer.updateBaseUrl(currentUrl);
     const health = await fetchHealth(currentUrl);
     if (health.online) {
       statusBar.text = `$(pass) Cherenkov ${health.demoMode ? '(demo)' : '(live)'}`;
@@ -75,10 +70,6 @@ export function activate(context: vscode.ExtensionContext): void {
         if (ext.endsWith('.yaml') || ext.endsWith('.yml') || ext.endsWith('.json')) {
           diagnosticsProvider.updateDiagnostics(doc, report);
         }
-      });
-      // Update gutters for visible editors
-      vscode.window.visibleTextEditors.forEach(editor => {
-        gutterProvider.updateDecorations(editor, report);
       });
     } else {
       statusBar.text = '$(warning) Cherenkov (offline)';
@@ -134,55 +125,10 @@ export function activate(context: vscode.ExtensionContext): void {
       ConformancePanel.createOrShow(context.extensionUri, treeProvider.getReport());
     }),
 
-    vscode.commands.registerCommand('cherenkov.applySuggestedAssertion', async (diagnosticMessage: string) => {
-      // Parse the diagnostic message "FAIL: /endpoint — expected: X, actual: Y"
-      let expected = '200';
-      let actual = '500';
-      const parts = diagnosticMessage.match(/expected: (.*?), actual: (.*)$/);
-      if (parts) {
-        expected = parts[1];
-        actual = parts[2];
-      }
-      
-      const snippet = `// ---------------------------------------------------------
-// CHERENKOV HEAL SUGGESTION (D7 Suggest-Only Invariant)
-// ---------------------------------------------------------
-// Drift detected. Expected ${expected}, but actual was ${actual}.
-// Suggested assertion patch for your Playwright test:
-
-import { expect, test } from '@playwright/test';
-
-test('Healed Endpoint Conformance', async ({ request }) => {
-  const response = await request.get('/YOUR_ENDPOINT_HERE');
-  
-  // CHERENKOV suggests updating your assertion to match reality:
-  expect(response.status()).toBe(${actual});
-});
-`;
-      const doc = await vscode.workspace.openTextDocument({
-        language: 'typescript',
-        content: snippet
-      });
-      await vscode.window.showTextDocument(doc);
-    }),
-
     // Config change listener
     vscode.workspace.onDidChangeConfiguration(e => {
       if (e.affectsConfiguration('cherenkov')) {
         void pollHealth();
-      }
-    }),
-
-    vscode.window.onDidChangeActiveTextEditor(editor => {
-      if (editor) {
-        gutterProvider.updateDecorations(editor, treeProvider.getReport());
-      }
-    }),
-
-    vscode.workspace.onDidChangeTextDocument(e => {
-      const editor = vscode.window.activeTextEditor;
-      if (editor && e.document === editor.document) {
-        gutterProvider.updateDecorations(editor, treeProvider.getReport());
       }
     }),
 
@@ -192,8 +138,6 @@ test('Healed Endpoint Conformance', async ({ request }) => {
     hoverDisposable,
     quickFixDisposable,
     diagnosticsProvider,
-    gutterProvider,
-    testExplorer,
     statusBar,
     { dispose: () => clearInterval(healthPoller) }
   );

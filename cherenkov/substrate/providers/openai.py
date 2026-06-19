@@ -16,7 +16,7 @@ class OpenAIProvider:
         self.client = client or OpenAIInferenceClient()
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
-        content = self.client.complete(  # type: ignore
+        content = self.client.complete(
             system_prompt="You are a logical AI.",
             user_prompt=request.task,
             model=get_settings().OPENAI_MODEL,

@@ -33,7 +33,7 @@ test('graphql query {{ operation_name }} {{ kind }}', async ({ request }) => {
       variables: {{ variables | tojson }}
     }
   });
-
+  
   expect(response.status()).toBe(200);
   const json = await response.json();
   expect(json.data).toBeDefined();

@@ -54,10 +54,7 @@ class EvalResult:
             "scenario_id": self.sample.scenario_id,
             "endpoint": f"{self.sample.method} {self.sample.endpoint}",
             "passed": self.passed(),
-            "scores": {
-                s.metric.value: {"score": s.score, "status": s.status.value}
-                for s in self.scores
-            },
+            "scores": {s.metric.value: {"score": s.score, "status": s.status.value} for s in self.scores},
             "duration_ms": self.duration_ms,
         }
 

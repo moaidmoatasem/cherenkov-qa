@@ -183,13 +183,13 @@ def run() -> None:
     inp = io.StringIO(two_pings)
     out = io.StringIO()
     serve_stdio(table, input_stream=inp, output_stream=out)
-    lines = [line for line in out.getvalue().splitlines() if line.strip()]
+    lines = [l for l in out.getvalue().splitlines() if l.strip()]
     check(
         "stdio transport: 2 ping requests → 2 responses",
         len(lines) == 2,
         str(len(lines)),
     )
-    ids_seen = {json.loads(line)["id"] for line in lines}
+    ids_seen = {json.loads(l)["id"] for l in lines}
     check(
         "stdio transport: response IDs match request IDs",
         ids_seen == {1, 2},

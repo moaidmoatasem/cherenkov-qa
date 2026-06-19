@@ -122,10 +122,8 @@ class HealingFeedbackStore:
         Returns:
             count, dominant_classification, confidence, votes per classification.
         """
-
         def h(v):
             return hashlib.sha256(v.encode()).hexdigest()[:12] if v else ""
-
         hashed_ep = h(endpoint)
         hashed_mut = h(mutation_id)
 

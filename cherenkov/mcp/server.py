@@ -63,7 +63,7 @@ def _handle_initialize(params: dict[str, Any]) -> dict[str, Any]:
 
 def _handle_initialized(params: dict[str, Any]) -> None:
     """MCP initialized notification — no reply required (notification handler)."""
-    log.debug("MCP client initialized")  # type: ignore
+    log.debug("MCP client initialized")
     return None
 
 

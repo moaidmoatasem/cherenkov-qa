@@ -25,10 +25,8 @@ class SlackNotifier:
             _log.info("CHERENKOV_SLACK_WEBHOOK_URL not set; skipping Slack.")
             return False
 
-        failed_items = [
-            item for item in report.get("items", []) if item.get("status") == "FAIL"
-        ]
-
+        failed_items = [item for item in report.get("items", []) if item.get("status") == "FAIL"]
+        
         if not failed_items:
             color = "#36a64f"  # Green
             text = f"✅ CHERENKOV QA: All tests passed for {report.get('execution_key', 'Unknown Run')}!"
@@ -39,16 +37,20 @@ class SlackNotifier:
         payload = {
             "text": text,
             "blocks": [
-                {"type": "header", "text": {"type": "plain_text", "text": text}},
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": text
+                    }
+                },
                 {
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": "*Review the failure details and hit auto-heal using the MCP extension!*"
-                        if failed_items
-                        else "Systems normal.",
-                    },
-                },
+                        "text": "*Review the failure details and hit auto-heal using the MCP extension!*" if failed_items else "Systems normal."
+                    }
+                }
             ],
             "attachments": [
                 {
@@ -56,21 +58,19 @@ class SlackNotifier:
                     "fields": [
                         {
                             "title": "Failed Endpoint" if failed_items else "Status",
-                            "value": str(failed_items[0].get("id"))
-                            if failed_items
-                            else "OK",
-                            "short": False,
+                            "value": str(failed_items[0].get("id")) if failed_items else "OK",
+                            "short": False
                         }
-                    ],
+                    ]
                 }
-            ],
+            ]
         }
 
         req = urllib.request.Request(
             self.webhook_url,
             data=json.dumps(payload).encode("utf-8"),
             headers={"Content-Type": "application/json"},
-            method="POST",
+            method="POST"
         )
 
         try:

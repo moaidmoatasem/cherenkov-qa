@@ -21,14 +21,14 @@ class VLMProvider:
         from cherenkov.substrate.vlm_provider import VLMProvider as OldVLM
 
         old = OldVLM()
-        raw = old.describe_image(image_path, prompt)  # type: ignore
+        raw = old.describe_image(image_path, prompt)
         return VLMResult(description=raw, raw=raw)
 
     def compare_images(self, baseline_path: str, actual_path: str) -> dict[str, Any]:
         from cherenkov.substrate.vlm_provider import VLMProvider as OldVLM
 
         old = OldVLM()
-        return old.compare_images(baseline_path, actual_path)  # type: ignore
+        return old.compare_images(baseline_path, actual_path)
 
     def health(self) -> bool:
         return self.provider_name == "ollama"

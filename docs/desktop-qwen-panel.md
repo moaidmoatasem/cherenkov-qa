@@ -12,11 +12,11 @@ Embed the Qwen Code interactive UI within the CHERENKOV Desktop Tauri 2 applicat
 ### Option 1: Webview Embedded `qwen serve` (Recommended)
 Run `qwen serve` as a background sidecar process in Tauri. Embed a WebView panel in the React frontend pointing to `localhost:<port>`.
 
-**Pros**:
+**Pros**: 
 - Native Qwen Code UI with all features.
 - Very little frontend code required in CHERENKOV Desktop.
 
-**Cons**:
+**Cons**: 
 - Requires shipping Node.js or a compiled Qwen Code binary with the Tauri app.
 
 ### Option 2: Terminal Emulator (xterm.js)

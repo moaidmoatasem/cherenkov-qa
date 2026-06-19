@@ -1,14 +1,14 @@
 {
   "session": {
     "id": "sess_20260618212938_e64967",
-    "status": "closed",
+    "status": "open",
     "task": "qa_report",
     "started_at": "2026-06-18T21:29:38.853366+00:00",
-    "ended_at": "2026-06-18T22:41:05.925525+00:00",
+    "ended_at": null,
     "findings_count": 0,
     "token_total": 0,
-    "summary": "Completed Phase 9 Market Launch kit (Discord, PH/HN copy, Demo script) and Phase 10 Jira CI CLI integration (--export-jira).",
-    "compacted": true,
+    "summary": null,
+    "compacted": false,
     "task_type": "qa_report",
     "source": "cherenkov"
   },

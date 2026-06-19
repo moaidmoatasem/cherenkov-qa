@@ -4,7 +4,6 @@ Implements the generate→review→repair cycle from Yuan et al. FSE 2024.
 Feeds failing gate details back into a new GenerateStage prompt, repeating
 up to max_attempts times. Raises compile rate from ~39% to ~73%.
 """
-
 from __future__ import annotations
 
 from typing import Any, Optional
@@ -90,9 +89,7 @@ class RepairLoop:
 
             feedback = _extract_error_feedback(review)
             if not feedback:
-                self.log.info(
-                    "no actionable feedback; stopping repair", attempt=attempt
-                )
+                self.log.info("no actionable feedback; stopping repair", attempt=attempt)
                 break
 
             # Keep feedback under 300 chars so _sanitize_prompt_input doesn't truncate the critical rules
@@ -101,9 +98,7 @@ class RepairLoop:
                 f"REPAIR {attempt}: Previous test failed quality gate — {feedback_short}. "
                 f"Fix it: use .toBe(NNN) for status, .toHaveProperty() for body shape."
             )
-            self.log.info(
-                "repair instruction set", attempt=attempt, feedback=feedback_short
-            )
+            self.log.info("repair instruction set", attempt=attempt, feedback=feedback_short)
 
         if best_generate is None:
             # All attempts produced empty output; do one plain generation as fallback

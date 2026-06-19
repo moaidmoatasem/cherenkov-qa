@@ -137,9 +137,9 @@ dist/
 
 # vscode test framework
 vscode-cherenkov/.vscode-test/
-vscode/.vscode-test/
 
 # Qwen Code agent artifacts (auto-generated memory, session state)
 .qwen/memory/
 .qwen/arena.yml
 .qwen/arena.yml.lock
+.mypy_cache/

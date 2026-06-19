@@ -61,7 +61,6 @@ def test_snapshot(stats_store):
     stats_store.snapshot(verdict_count=10, idiom_count=5, source="cli")
     # Read back via the underlying SQLite connection to assert the row was persisted.
     import sqlite3
-
     conn = sqlite3.connect(stats_store.db_path)
     rows = conn.execute(
         "SELECT verdict_count, idiom_count, source FROM snapshot_stats"

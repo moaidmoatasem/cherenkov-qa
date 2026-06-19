@@ -4,11 +4,4 @@ from cherenkov.ports.device_registry import DeviceRegistry
 from cherenkov.ports.vlm_provider import VLMProvider
 from cherenkov.ports.notifier import NotifierPort, ExporterPort
 
-__all__ = [
-    "EventBus",
-    "KnowledgeRepository",
-    "DeviceRegistry",
-    "VLMProvider",
-    "NotifierPort",
-    "ExporterPort",
-]
+__all__ = ["EventBus", "KnowledgeRepository", "DeviceRegistry", "VLMProvider", "NotifierPort", "ExporterPort"]

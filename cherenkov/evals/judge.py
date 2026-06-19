@@ -74,8 +74,7 @@ def judge_sample(sample: EvalSample) -> EvalResult:
 
     # Optional LLM observability tracing
     try:
-        from cherenkov.observability.llm_tracer import get_tracer as _get_tracer  # type: ignore
-
+        from cherenkov.observability.llm_tracer import get_tracer as _get_tracer
         _tracer = _get_tracer()
     except Exception:
         _tracer = None

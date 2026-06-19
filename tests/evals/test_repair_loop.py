@@ -3,9 +3,9 @@
 Verifies the RepairLoop contract without LLM, Docker, or network.
 Uses monkeypatching to inject deterministic GenerateStage outputs.
 """
-
 from __future__ import annotations
 
+import pytest
 
 from cherenkov.core.contracts import GenerateOutput, Scenario, StageMeta, Status
 from cherenkov.core.errors import LoggerConfig
@@ -26,9 +26,7 @@ def _make_scenario(mutation_id: str = "test_scenario") -> Scenario:
     )
 
 
-def _make_gen_output(
-    code: str, scenario_id: str = "s1", ok: bool = True
-) -> GenerateOutput:
+def _make_gen_output(code: str, scenario_id: str = "s1", ok: bool = True) -> GenerateOutput:
     return GenerateOutput(
         scenario_id=scenario_id,
         test_code=code,
@@ -89,9 +87,7 @@ class TestRepairLoopContract:
             calls.append(kwargs.get("instruction", ""))
             return _make_gen_output(_GOOD_CODE)
 
-        monkeypatch.setattr(
-            "cherenkov.stages.repair.GenerateStage.__init__", fake_gen_init
-        )
+        monkeypatch.setattr("cherenkov.stages.repair.GenerateStage.__init__", fake_gen_init)
         monkeypatch.setattr("cherenkov.stages.repair.GenerateStage.run", fake_gen_run)
 
         loop = RepairLoop(run_id="test-contract")
@@ -115,9 +111,7 @@ class TestRepairLoopContract:
             call_count[0] += 1
             return _make_gen_output(_GOOD_CODE)
 
-        monkeypatch.setattr(
-            "cherenkov.stages.repair.GenerateStage.__init__", fake_gen_init
-        )
+        monkeypatch.setattr("cherenkov.stages.repair.GenerateStage.__init__", fake_gen_init)
         monkeypatch.setattr("cherenkov.stages.repair.GenerateStage.run", fake_gen_run)
 
         loop = RepairLoop(run_id="test-no-spec", max_attempts=3)
@@ -133,9 +127,7 @@ class TestRepairLoopContract:
         def fake_gen_run(self, **kwargs):
             return _make_gen_output("", ok=False)
 
-        monkeypatch.setattr(
-            "cherenkov.stages.repair.GenerateStage.__init__", fake_gen_init
-        )
+        monkeypatch.setattr("cherenkov.stages.repair.GenerateStage.__init__", fake_gen_init)
         monkeypatch.setattr("cherenkov.stages.repair.GenerateStage.run", fake_gen_run)
 
         loop = RepairLoop(run_id="test-failed", max_attempts=3)
@@ -160,28 +152,15 @@ class TestRepairLoopContract:
             verdict = type("V", (), {"value": "hitl"})()
             quality_score = 0.5
             gates = [
-                type(
-                    "G",
-                    (),
-                    {
-                        "gate": "assertion",
-                        "passed": False,
-                        "skipped": False,
-                        "detail": "no specific status code",
-                    },
-                )()
+                type("G", (), {"gate": "assertion", "passed": False, "skipped": False, "detail": "no specific status code"})()
             ]
 
         def fake_rev_run(self, gen_out, spec_path=None):
             return _FakeReview()
 
-        monkeypatch.setattr(
-            "cherenkov.stages.repair.GenerateStage.__init__", fake_gen_init
-        )
+        monkeypatch.setattr("cherenkov.stages.repair.GenerateStage.__init__", fake_gen_init)
         monkeypatch.setattr("cherenkov.stages.repair.GenerateStage.run", fake_gen_run)
-        monkeypatch.setattr(
-            "cherenkov.stages.repair.ReviewStage.__init__", fake_rev_init
-        )
+        monkeypatch.setattr("cherenkov.stages.repair.ReviewStage.__init__", fake_rev_init)
         monkeypatch.setattr("cherenkov.stages.repair.ReviewStage.run", fake_rev_run)
 
         loop = RepairLoop(run_id="test-repair-instr", max_attempts=2)
@@ -218,27 +197,14 @@ class TestRepairLoopContract:
                 verdict = type("V", (), {"value": "hitl"})()
                 quality_score = score
                 gates = [
-                    type(
-                        "G",
-                        (),
-                        {
-                            "gate": "assertion",
-                            "passed": False,
-                            "skipped": False,
-                            "detail": "weak",
-                        },
-                    )()
+                    type("G", (), {"gate": "assertion", "passed": False, "skipped": False, "detail": "weak"})()
                 ]
 
             return _R()
 
-        monkeypatch.setattr(
-            "cherenkov.stages.repair.GenerateStage.__init__", fake_gen_init
-        )
+        monkeypatch.setattr("cherenkov.stages.repair.GenerateStage.__init__", fake_gen_init)
         monkeypatch.setattr("cherenkov.stages.repair.GenerateStage.run", fake_gen_run)
-        monkeypatch.setattr(
-            "cherenkov.stages.repair.ReviewStage.__init__", fake_rev_init
-        )
+        monkeypatch.setattr("cherenkov.stages.repair.ReviewStage.__init__", fake_rev_init)
         monkeypatch.setattr("cherenkov.stages.repair.ReviewStage.run", fake_rev_run)
 
         loop = RepairLoop(run_id="test-best-score", max_attempts=3)

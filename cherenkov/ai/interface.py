@@ -115,7 +115,7 @@ class CachedInferenceClient(InferenceClient):
                 stage=stage,
                 run_id=run_id or "",
             )
-            return cached  # type: ignore
+            return cached
 
         t0 = time.time()
         result = self._client.complete_json(
@@ -268,7 +268,7 @@ class CachedInferenceClient(InferenceClient):
         temperature: float = 0.1,
         run_id: str | None = None,
     ) -> str:
-        return self._client.chat(  # type: ignore
+        return self._client.chat(
             messages=messages,
             model=model,
             temperature=temperature,

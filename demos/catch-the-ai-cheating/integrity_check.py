@@ -21,7 +21,6 @@ This is a standalone Phase-0 *proof of the thesis*, not yet wired into
 CHERENKOV's product gates — EPIC #535 (Gate G0). The real meaningful-assertion
 gate is EPIC #536 / E1.2, which will subsume this logic.
 """
-
 from __future__ import annotations
 
 import argparse
@@ -164,9 +163,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     for f in findings:
         print("  [CAUGHT] " + f)
-    print(
-        f"FAIL — {len(findings)} integrity violation(s). The AI cheated; we caught it."
-    )
+    print(f"FAIL — {len(findings)} integrity violation(s). The AI cheated; we caught it.")
     return 1
 
 

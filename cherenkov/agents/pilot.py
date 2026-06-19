@@ -42,7 +42,7 @@ class PilotAgent:
         self.start_time = None
 
     def run(self, intent: str) -> list[PilotStep]:
-        self.start_time = time.time()  # type: ignore
+        self.start_time = time.time()
         self.observations = 0
         steps = self._parse_intent(intent)
         for step in steps:

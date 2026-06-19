@@ -18,13 +18,6 @@ from cherenkov.healing.providers.base import SandboxResult
 from cherenkov.healing.providers.filesystem import FilesystemSandboxProvider
 from cherenkov.healing.providers.docker_sandbox import DockerSandboxProvider
 
-def is_docker_running() -> bool:
-    try:
-        subprocess.run(["docker", "info"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return True
-    except Exception:
-        return False
-
 
 class TestSandboxResult(unittest.TestCase):
     def test_sandbox_result_defaults(self):
@@ -98,7 +91,6 @@ class TestFilesystemSandboxProvider(unittest.TestCase):
     shutil.which("docker") is not None,
     "Docker not available — skipping Docker sandbox tests",
 )
-@unittest.skipIf(not is_docker_running(), "Docker is not running or not installed")
 class TestDockerSandboxProvider(unittest.TestCase):
     def setUp(self):
         self.tmp_dir = tempfile.mkdtemp()

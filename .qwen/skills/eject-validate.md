@@ -11,7 +11,7 @@ triggers:
 # Skill: eject-validate
 
 ## Purpose
-Verify that CHERENKOV-generated tests can run without any CHERENKOV dependencies.
+Verify that CHERENKOV-generated tests can run without any CHERENKOV dependencies.  
 This is the **anti-lock-in** invariant check.
 
 ## Workflow
@@ -48,7 +48,7 @@ Eject Result:
 **Do NOT modify any test files.** Report-only. (D7 invariant)
 
 ## On Failure
-If any test imports CHERENKOV, suggest which imports to remove.
+If any test imports CHERENKOV, suggest which imports to remove.  
 Output as a diff — do NOT auto-apply.
 
 ## References

@@ -1,6 +1,6 @@
 # ADR-010: Benchmark command and eval quality gate
 
-**Status:** Accepted
+**Status:** Accepted  
 **Date:** 2026-06-18
 
 ## Context
@@ -66,18 +66,18 @@ or CI gate — it is opt-in so the tool stays offline-capable by default.
 
 ## Alternatives considered
 
-**Run `cherenkov bench` against generated tests (full pipeline)**
+**Run `cherenkov bench` against generated tests (full pipeline)**  
 Requires Ollama running locally. The practitioner's guide calls for benchmarking
 generation quality, which ultimately requires LLM access. This is the right
 long-term direction but is gated on `--generate` (not yet implemented) to keep
 the initial bench offline-capable.
 
-**Use DeepEval as the primary eval framework**
+**Use DeepEval as the primary eval framework**  
 DeepEval is the right addition for LLM-based metrics; however, making it
 mandatory would break offline/airgapped deployments. Optional dependency is the
 correct pattern.
 
-**Ship benchmark numbers in the README now**
+**Ship benchmark numbers in the README now**  
 Cannot publish numbers until the bench command runs against a representative
 corpus with a real LLM. The README will be updated once `cherenkov bench --generate`
 is implemented and numbers are collected.

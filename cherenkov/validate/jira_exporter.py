@@ -28,9 +28,7 @@ class JiraExporter:
         )
         self.jira_url = jira_url or os.environ.get("CHERENKOV_JIRA_URL")
         self.jira_token = jira_token or os.environ.get("CHERENKOV_JIRA_TOKEN")
-        self.jira_project = jira_project or os.environ.get(
-            "CHERENKOV_JIRA_PROJECT", "QA"
-        )
+        self.jira_project = jira_project or os.environ.get("CHERENKOV_JIRA_PROJECT", "QA")
 
     def format_ticket(
         self,
@@ -213,9 +211,7 @@ class JiraExporter:
             auth_bytes = self.jira_token.encode("utf-8")
             auth_b64 = base64.b64encode(auth_bytes).decode("utf-8")
             headers = {"Authorization": f"Basic {auth_b64}"}
-        elif self.jira_token.startswith("Basic ") or self.jira_token.startswith(
-            "Bearer "
-        ):
+        elif self.jira_token.startswith("Basic ") or self.jira_token.startswith("Bearer "):
             headers = {"Authorization": self.jira_token}
         else:
             headers = {"Authorization": f"Bearer {self.jira_token}"}
@@ -273,7 +269,7 @@ class JiraExporter:
                 fields["priority"] = {"name": priority}
 
         if components:
-            fields["components"] = [{"name": comp} for comp in components]  # type: ignore
+            fields["components"] = [{"name": comp} for comp in components]
 
         payload = {"fields": fields}
 
@@ -400,14 +396,8 @@ class JiraExporter:
 
         try:
             with urllib.request.urlopen(req, timeout=30):
-                self.log.info(
-                    "Attachment added successfully",
-                    issue_key=issue_key,
-                    file_path=file_path,
-                )
+                self.log.info("Attachment added successfully", issue_key=issue_key, file_path=file_path)
                 return True
         except Exception as e:
-            self.log.error(
-                "Failed to add attachment", issue_key=issue_key, error=str(e)
-            )
+            self.log.error("Failed to add attachment", issue_key=issue_key, error=str(e))
             return False

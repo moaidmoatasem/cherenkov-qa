@@ -594,7 +594,7 @@ class TestMobileRAGIndex(unittest.TestCase):
         self.idx = MobileRAGIndex(self.db_path)
 
     def tearDown(self):
-        shutil.rmtree(self.tmp, ignore_errors=True)
+        shutil.rmtree(self.tmp)
 
     def test_creates_database(self):
         self.assertTrue(Path(self.db_path).exists())

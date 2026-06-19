@@ -48,42 +48,8 @@ class gRPCSourceAdapter:
 
     def __init__(self, spec_path: str):
         self.spec_path = spec_path
-        if spec_path.startswith("buf:"):
-            # Shell out to `buf export`
-            import subprocess
-            import tempfile
-            import os
-            
-            buf_module = spec_path[4:]
-            self.temp_dir = tempfile.mkdtemp()
-            try:
-                subprocess.run(
-                    ["buf", "export", buf_module, "--output", self.temp_dir],
-                    check=True,
-                    capture_output=True
-                )
-                # Find the first .proto file
-                proto_file = None
-                for root, _, files in os.walk(self.temp_dir):
-                    for f in files:
-                        if f.endswith(".proto"):
-                            proto_file = os.path.join(root, f)
-                            break
-                    if proto_file:
-                        break
-                        
-                if proto_file:
-                    with open(proto_file, "r", encoding="utf-8") as f:
-                        self.proto_content = f.read()
-                else:
-                    self.proto_content = ""
-            except FileNotFoundError:
-                raise RuntimeError("The 'buf' CLI is not installed. Please install it to use buf: schema sources.")
-            except subprocess.CalledProcessError as e:
-                raise RuntimeError(f"buf export failed: {e.stderr.decode()}")
-        else:
-            with open(self.spec_path, "r", encoding="utf-8") as f:
-                self.proto_content = f.read()
+        with open(self.spec_path, "r", encoding="utf-8") as f:
+            self.proto_content = f.read()
 
     def iter_operations(self) -> Iterator[gRPCOperation]:
         # Remove single-line and multi-line comments before parsing

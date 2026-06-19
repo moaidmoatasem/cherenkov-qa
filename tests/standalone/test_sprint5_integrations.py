@@ -7,15 +7,14 @@ from cherenkov.adapters.notifiers.pagerduty import PagerDutyNotifier
 from cherenkov.adapters.notifiers.opsgenie import OpsGenieNotifier
 from cherenkov.adapters.postman_importer import PostmanImporter
 
-
 class TestSprint5Integrations(unittest.TestCase):
     def test_pagerduty_notifier(self):
         notifier = PagerDutyNotifier()
         self.assertIsNone(notifier.routing_key)
-
+        
         # Test no failures
         result = notifier.send_report({"items": [{"status": "PASS"}]})
-        self.assertFalse(result)  # Fails fast due to missing key
+        self.assertFalse(result) # Fails fast due to missing key
 
         # Test failures without key
         result = notifier.send_report({"items": [{"status": "FAIL"}]})
@@ -37,17 +36,21 @@ class TestSprint5Integrations(unittest.TestCase):
                     "name": "Get User",
                     "request": {
                         "method": "GET",
-                        "url": {"raw": "https://api.example.com/users/1"},
-                        "header": [{"key": "Authorization", "value": "Bearer test"}],
-                    },
+                        "url": {
+                            "raw": "https://api.example.com/users/1"
+                        },
+                        "header": [
+                            {"key": "Authorization", "value": "Bearer test"}
+                        ]
+                    }
                 }
-            ],
+            ]
         }
-
-        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
+        
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
             json.dump(mock_data, f)
             temp_path = f.name
-
+            
         try:
             importer = PostmanImporter()
             scenarios = importer.import_collection(temp_path)
@@ -57,7 +60,6 @@ class TestSprint5Integrations(unittest.TestCase):
             self.assertEqual(scenarios[0].expected_status, 200)
         finally:
             os.remove(temp_path)
-
 
 if __name__ == "__main__":
     unittest.main()

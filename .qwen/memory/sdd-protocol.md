@@ -1,8 +1,8 @@
 # SDD Protocol — Sync Driven Development (Qwen Code Reference)
 
 ## What is SDD?
-Token-efficient agent protocol that prevents AI amnesia by compounding experience across sessions.
-Runtime: `agent_memory/sync/` (JSON state files + findings log)
+Token-efficient agent protocol that prevents AI amnesia by compounding experience across sessions.  
+Runtime: `agent_memory/sync/` (JSON state files + findings log)  
 Script: `scripts/agent_sync.py`
 
 ## Before Any Work

@@ -35,17 +35,16 @@ class WebhookNotifier:
 
         def _send() -> None:
             try:
-                resp = requests.post(self.webhook_url, json=payload, timeout=5)
+                resp = requests.post(
+                    self.webhook_url, json=payload, timeout=5
+                )
                 resp.raise_for_status()
                 _log.info("generic webhook notification sent successfully")
             except Exception as e:
-                _log.warning(
-                    "failed to send generic webhook notification", error=str(e)
-                )
+                _log.warning("failed to send generic webhook notification", error=str(e))
 
         t = threading.Thread(target=_send, daemon=True)
         t.start()
-
     def send(self, report: Dict[str, Any]) -> bool:
         envelope = ok_envelope(
             command=report.get("command", "notify"),

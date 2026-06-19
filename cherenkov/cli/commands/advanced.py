@@ -1,5 +1,4 @@
 """Advanced CLI commands — visual, perf, hitl, review, mcp."""
-
 from __future__ import annotations
 
 import sys
@@ -7,14 +6,9 @@ import click
 
 
 @click.command("visual")
-@click.option(
-    "--target", "-t", required=True, help="Absolute URL of the page to snapshot"
-)
-@click.option(
-    "--baseline-dir",
-    default="stub/visual_baselines",
-    help="Baseline directory (default: stub/visual_baselines)",
-)
+@click.option("--target", "-t", required=True, help="Absolute URL of the page to snapshot")
+@click.option("--baseline-dir", default="stub/visual_baselines",
+              help="Baseline directory (default: stub/visual_baselines)")
 def visual_cmd(target: str, baseline_dir: str) -> None:
     """Run optional visual-regression checks against a rendered URL (Track B)."""
     from cherenkov.core.orchestrator import OrchestrationEngine
@@ -33,25 +27,21 @@ def visual_cmd(target: str, baseline_dir: str) -> None:
 @click.option("--endpoint", default="/", help="Endpoint path (default: /)")
 @click.option("--method", default="GET", help="HTTP method (default: GET)")
 @click.option("--vus", type=int, default=5, help="Virtual users (default: 5)")
-@click.option(
-    "--duration", type=int, default=5, help="Duration in seconds (default: 5)"
-)
+@click.option("--duration", type=int, default=5, help="Duration in seconds (default: 5)")
 def perf_cmd(target: str, endpoint: str, method: str, vus: int, duration: int) -> None:
     """Run optional performance baseline checks (Track B)."""
     from cherenkov.core.orchestrator import OrchestrationEngine
     from cherenkov.core.contracts import PerfSlice
     from cherenkov.cli.legacy_reports import print_perf_report
 
-    slices = [
-        PerfSlice(
-            name="cli_default",
-            target_url=target,
-            endpoint=endpoint,
-            method=method,
-            vus=vus,
-            duration_sec=duration,
-        )
-    ]
+    slices = [PerfSlice(
+        name="cli_default",
+        target_url=target,
+        endpoint=endpoint,
+        method=method,
+        vus=vus,
+        duration_sec=duration,
+    )]
     engine = OrchestrationEngine(run_id="cli_perf")
     reports = engine.run_perf_stage(slices)
     print_perf_report(target, reports)
@@ -64,12 +54,8 @@ def hitl_cmd() -> None:
 
 
 @hitl_cmd.command("list")
-@click.option(
-    "--status",
-    type=click.Choice(["pending", "approved", "rejected", "ignored"]),
-    default="pending",
-    help="Filter by status (default: pending)",
-)
+@click.option("--status", type=click.Choice(["pending", "approved", "rejected", "ignored"]),
+              default="pending", help="Filter by status (default: pending)")
 @click.option("--all", "-a", "list_all", is_flag=True, help="Show all statuses")
 @click.option("--json", "json_out", is_flag=True, help="Emit JSON envelope")
 def hitl_list(status: str, list_all: bool, json_out: bool) -> None:
@@ -114,31 +100,19 @@ def hitl_reject(item_id: str, reason: str, actor: str | None, json_out: bool) ->
 
 @hitl_cmd.command("classify")
 @click.argument("item_id")
-@click.option(
-    "--classification",
-    "-c",
-    required=True,
-    type=click.Choice(["regression", "intended", "ignore"]),
-    help="Classification label",
-)
+@click.option("--classification", "-c", required=True,
+              type=click.Choice(["regression", "intended", "ignore"]),
+              help="Classification label")
 @click.option("--actor", default=None, help="Reviewer identity (default: $USER)")
 @click.option("--detail", "-d", default="", help="Free-text detail")
 @click.option("--json", "json_out", is_flag=True, help="Emit JSON envelope")
-def hitl_classify(
-    item_id: str, classification: str, actor: str | None, detail: str, json_out: bool
-) -> None:
+def hitl_classify(item_id: str, classification: str, actor: str | None,
+                  detail: str, json_out: bool) -> None:
     """Classify a HITL item (Tier-2)."""
     from cherenkov.hitl.cmd import run_classify
 
-    sys.exit(
-        run_classify(
-            item_id=item_id,
-            classification=classification,
-            actor=actor,
-            detail=detail,
-            json_out=json_out,
-        )
-    )
+    sys.exit(run_classify(item_id=item_id, classification=classification,
+                          actor=actor, detail=detail, json_out=json_out))
 
 
 @hitl_cmd.command("explain")
@@ -152,12 +126,8 @@ def hitl_explain(item_id: str, json_out: bool) -> None:
 
 
 @click.command("review")
-@click.option(
-    "--port", "-p", type=int, default=8000, help="Port to bind (default: 8000)"
-)
-@click.option(
-    "--demo", is_flag=True, help="Load demo fixture data into HITL queue on startup"
-)
+@click.option("--port", "-p", type=int, default=8000, help="Port to bind (default: 8000)")
+@click.option("--demo", is_flag=True, help="Load demo fixture data into HITL queue on startup")
 def review_cmd(port: int, demo: bool) -> None:
     """Start the review dashboard web UI (FastAPI + prebuilt frontend)."""
     import os
@@ -195,41 +165,31 @@ def mcp_serve() -> None:
 @click.option("--resources", default="[]", help="JSON list of resource definitions")
 @click.option("--version", default="1.0.0", help="Server version")
 @click.option("--attestation", default="", help="Optional attestation token")
-def mcp_publish(
-    name: str, url: str, tools: str, resources: str, version: str, attestation: str
-) -> None:
+def mcp_publish(name: str, url: str, tools: str, resources: str,
+                version: str, attestation: str) -> None:
     """Register an external MCP server with the mesh registry."""
     import json
     from cherenkov.mcp.mesh_router import get_registry
 
     registry = get_registry()
     reg_id = registry.register_server(
-        name=name,
-        url=url,
-        tools=json.loads(tools),
-        resources=json.loads(resources),
-        version=version,
-        attestation=attestation,
+        name=name, url=url,
+        tools=json.loads(tools), resources=json.loads(resources),
+        version=version, attestation=attestation,
     )
     click.echo(json.dumps({"status": "ok", "registration_id": reg_id}))
 
 
 @mcp_cmd.command("install")
-@click.option(
-    "--platform",
-    type=click.Choice(["claude", "cursor", "windsurf", "all"]),
-    default="all",
-    help="Target platform (default: all)",
-)
+@click.option("--platform", type=click.Choice(["claude", "cursor", "windsurf", "all"]),
+              default="all", help="Target platform (default: all)")
 @click.option("--write", is_flag=True, help="Write config file directly")
 def mcp_install(platform: str, write: bool) -> None:
     """Generate MCP configuration for Claude Desktop, Cursor, Windsurf."""
     from cherenkov.mcp.install import MCPConfigGenerator
 
     if write and platform == "all":
-        raise click.UsageError(
-            "--write requires a specific --platform (claude, cursor)"
-        )
+        raise click.UsageError("--write requires a specific --platform (claude, cursor)")
 
     gen = MCPConfigGenerator()
     if write and platform == "claude":

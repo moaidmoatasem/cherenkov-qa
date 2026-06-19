@@ -73,9 +73,7 @@ class MCPRegistry:
             tool_name = tool.get("name", "")
             if tool_name:
                 self._tool_map[tool_name] = reg_id
-        log.info(
-            "Registered MCP server", name=name, reg_id=reg_id, tools_count=len(tools)
-        )
+        log.info("Registered MCP server", name=name, reg_id=reg_id, tools_count=len(tools))
         return reg_id
 
     def unregister_server(self, reg_id: str) -> bool:

@@ -669,30 +669,6 @@ so verdicts can be inspected and actioned from the browser instead of the termin
 
 ---
 
-#### `diff`
-Visualizes test drift and variations from expected models.
-```bash
-./bin/cherenkov diff --help
-```
-
----
-
-#### `completion`
-Generates shell completion scripts for your current shell.
-```bash
-./bin/cherenkov completion --help
-```
-
----
-
-#### `tokens`
-Analyzes token usage across tasks to inform billing and optimizations.
-```bash
-./bin/cherenkov tokens --help
-```
-
----
-
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client.
 

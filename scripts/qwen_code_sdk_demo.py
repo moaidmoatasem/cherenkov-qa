@@ -8,7 +8,6 @@ A small script that demonstrates invoking Qwen Code via Python subprocess
 
 import subprocess
 
-
 def generate_test_snippet(prompt: str) -> str:
     print(f"Asking Qwen Code: {prompt}")
     cmd = ["qwen", "-p", prompt]
@@ -18,7 +17,6 @@ def generate_test_snippet(prompt: str) -> str:
         return result.stdout
     except subprocess.CalledProcessError as e:
         return f"Error running Qwen Code: {e.stderr}"
-
 
 if __name__ == "__main__":
     prompt = "Write a basic pytest function that asserts 1 + 1 == 2. Output only code."

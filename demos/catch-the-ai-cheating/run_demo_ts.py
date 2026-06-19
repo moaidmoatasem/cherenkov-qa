@@ -123,11 +123,7 @@ def main() -> None:
     print("  Watch CHERENKOV catch it — using the same 6-gate REVIEW stage")
     print("  that runs in production on every generated suite.")
     print()
-    print(
-        _colour(
-            "  Beat 1 — Baseline: what a correct spec-derived test looks like", CYAN
-        )
-    )
+    print(_colour("  Beat 1 — Baseline: what a correct spec-derived test looks like", CYAN))
 
     _run_and_print(
         label="Correct test (spec-derived baseline)",
@@ -136,9 +132,7 @@ def main() -> None:
     )
 
     print()
-    print(
-        _colour("  Beat 2+3 — The cheats: suite is 'green' — but should it be?", CYAN)
-    )
+    print(_colour("  Beat 2+3 — The cheats: suite is 'green' — but should it be?", CYAN))
 
     _run_and_print(
         label="Cheat 1: Weakened assertion  [toBeLessThan(500) instead of toBe(201)]",
@@ -162,9 +156,7 @@ def main() -> None:
     print(_colour("─" * 70, DIM))
     print()
     print("  Verdicts: PASS = suite is trustworthy | HITL = flagged for human review")
-    print(
-        "            (HITL = Human-In-The-Loop — goes to review queue, not auto-merged)"
-    )
+    print("            (HITL = Human-In-The-Loop — goes to review queue, not auto-merged)")
     print()
     print("  Cheats 1 + 2: caught STATICALLY by Gate 4 — zero server, zero runtime.")
     print("  Gate 4 re-derives what assertions a spec-derived test MUST contain.")
@@ -172,9 +164,7 @@ def main() -> None:
     print()
     print("  Cheat 3: passes all static gates — 'auth_token' looks structurally valid.")
     print("  Caught by Gate 6 (Prism dynamic dry-run) when Docker is available.")
-    print(
-        "  If Docker is absent, the gate is skipped — reported honestly, never faked."
-    )
+    print("  If Docker is absent, the gate is skipped — reported honestly, never faked.")
     print()
     print("  Core property: CHERENKOV re-derives truth from the spec — it does NOT")
     print("  trust what the suite's own assertions claim. It goes back to the source.")
@@ -183,11 +173,7 @@ def main() -> None:
     print(_colour("  CHERENKOV is the part that doesn't let the AI lie to you.", BOLD))
     print()
     print(_colour("─" * 70, DIM))
-    print(
-        _colour(
-            "  Gate G0 / E0.2 evidence: screenshot or `asciinema rec` this output.", DIM
-        )
-    )
+    print(_colour("  Gate G0 / E0.2 evidence: screenshot or `asciinema rec` this output.", DIM))
     print(_colour("─" * 70, DIM))
     print()
 

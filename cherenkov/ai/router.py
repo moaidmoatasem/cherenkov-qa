@@ -17,26 +17,23 @@ from cherenkov.ai.interface import InferenceClient
 
 def _make_anthropic() -> InferenceClient:
     from cherenkov.ai.anthropic_client import AnthropicInferenceClient
-
     return AnthropicInferenceClient()
 
 
 def _make_bedrock() -> InferenceClient:
     from cherenkov.ai.bedrock_client import BedrockInferenceClient
-
     return BedrockInferenceClient()
 
 
 def _make_huggingface() -> InferenceClient:
     from cherenkov.ai.huggingface_client import HuggingFaceInferenceClient
-
     return HuggingFaceInferenceClient()
 
 
 # Add new providers here without touching InferenceRouter.
 _REGISTRY: dict[str, Callable[[], InferenceClient]] = {
     "ollama": OllamaClient,
-    "model-runner": ModelRunnerClient,  # type: ignore
+    "model-runner": ModelRunnerClient,
     "anthropic": _make_anthropic,
     "bedrock": _make_bedrock,
     "huggingface": _make_huggingface,

@@ -8,8 +8,6 @@
 spec disagree — and proves each gap with a reproducible test.
 **Model-agnostic. Zero lock-in. Nothing leaves your machine.**
 
-🎉 **v1.0.0 Released!** Check out the [Release Notes](docs/RELEASE_NOTES_v1.0.0.md).
-
 [![CI](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/ci.yml/badge.svg)](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/ci.yml)
 [![Security](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/security-scan.yml/badge.svg)](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/security-scan.yml)
 [![PyPI](https://img.shields.io/pypi/v/cherenkov-qa.svg?logo=pypi&logoColor=white&color=0a7bca)](https://pypi.org/project/cherenkov-qa/)

@@ -19,13 +19,9 @@ def _get_repo() -> SQLiteKnowledgeRepository:
 
 
 @router.get("/api/v1/knowledge/query")
-async def get_knowledge(
-    q: str, source: str | None = None, limit: int = 10, _auth=Depends(verify_api_key)
-):
+async def get_knowledge(q: str, source: str | None = None, limit: int = 10, _auth=Depends(verify_api_key)):
     repo = _get_repo()
-    result = await asyncio.to_thread(
-        repo.query, KnowledgeQuery(query=q, source=source, limit=limit)
-    )
+    result = await asyncio.to_thread(repo.query, KnowledgeQuery(query=q, source=source, limit=limit))
     d = result.to_dict()
     # data may contain KnowledgeItem dataclass objects — convert to plain dicts
     if isinstance(d.get("data"), list):

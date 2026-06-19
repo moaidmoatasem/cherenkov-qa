@@ -65,7 +65,7 @@ class MENAComplianceScanner:
                 "failed to actively query target headers, performing static contract-only audit",
                 error=str(e),
             )
-            audit_results["errors"].append(f"Target connection failed: {e}")  # type: ignore
+            audit_results["errors"].append(f"Target connection failed: {e}")
 
         # 2. Static OpenAPI Contract Audit (Authentication structures)
         try:
@@ -84,7 +84,7 @@ class MENAComplianceScanner:
             self.log.error(
                 "failed to parse OpenAPI spec for compliance check", error=str(e)
             )
-            audit_results["errors"].append(f"Spec parsing failed: {e}")  # type: ignore
+            audit_results["errors"].append(f"Spec parsing failed: {e}")
 
         # 3. Formulate CCSF & FinCSF Compliance Matrices
         score = 0

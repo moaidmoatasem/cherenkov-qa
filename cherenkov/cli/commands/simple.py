@@ -1,5 +1,4 @@
 """Simple CLI commands — each delegates to a single module function."""
-
 from __future__ import annotations
 
 import sys
@@ -7,25 +6,9 @@ import click
 
 
 @click.command("diff")
-@click.option(
-    "--before",
-    required=True,
-    type=click.Path(exists=True),
-    help="Path to the original spec",
-)
-@click.option(
-    "--after",
-    required=True,
-    type=click.Path(exists=True),
-    help="Path to the modified spec",
-)
-@click.option(
-    "--format",
-    "fmt",
-    type=click.Choice(["text", "json"]),
-    default="text",
-    help="Output format",
-)
+@click.option("--before", required=True, type=click.Path(exists=True), help="Path to the original spec")
+@click.option("--after", required=True, type=click.Path(exists=True), help="Path to the modified spec")
+@click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text", help="Output format")
 def diff_cmd(before: str, after: str, fmt: str) -> None:
     """Compare two OpenAPI specs for breaking changes."""
     from cherenkov.diff.spec_differ import SpecDiffer, print_diff_report
@@ -36,16 +19,8 @@ def diff_cmd(before: str, after: str, fmt: str) -> None:
 
 
 @click.command("report")
-@click.option(
-    "--output", "-o", default=None, help="JSON output file path (e.g. report.json)"
-)
-@click.option(
-    "--diff",
-    "-d",
-    "diff_path",
-    default=None,
-    help="Path to previous report.json for diff comparison",
-)
+@click.option("--output", "-o", default=None, help="JSON output file path (e.g. report.json)")
+@click.option("--diff", "-d", "diff_path", default=None, help="Path to previous report.json for diff comparison")
 def report_cmd(output: str | None, diff_path: str | None) -> None:
     """Generate test coverage and diff reports from run logs."""
     from cherenkov.stages.report_cmd import run_report
@@ -54,13 +29,7 @@ def report_cmd(output: str | None, diff_path: str | None) -> None:
 
 
 @click.command("eject")
-@click.option(
-    "--output",
-    "-o",
-    required=True,
-    type=click.Path(),
-    help="Target output directory for the standalone suite",
-)
+@click.option("--output", "-o", required=True, type=click.Path(), help="Target output directory for the standalone suite")
 def eject_cmd(output: str) -> None:
     """Eject generated tests to a standalone Playwright suite."""
     from cherenkov.execution.eject import EjectorEngine
@@ -95,13 +64,9 @@ def completion_cmd(shell: str) -> None:
 
 
 @click.command("init")
-@click.option(
-    "--profile",
-    "-p",
-    default=None,
-    type=click.Choice(["laptop", "ci", "enterprise-vpc", "frontier-cloud"]),
-    help="Configuration profile (default: autodetect)",
-)
+@click.option("--profile", "-p", default=None,
+              type=click.Choice(["laptop", "ci", "enterprise-vpc", "frontier-cloud"]),
+              help="Configuration profile (default: autodetect)")
 @click.option("--force", "-f", is_flag=True, help="Overwrite existing cherenkov.toml")
 def init_cmd(profile: str | None, force: bool) -> None:
     """Zero-config project setup."""

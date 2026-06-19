@@ -10,7 +10,7 @@ from cherenkov.adapters.postman_importer import PostmanImporter
 SAMPLE_COLLECTION = {
     "info": {
         "name": "Sample API",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
         {
@@ -22,9 +22,9 @@ SAMPLE_COLLECTION = {
                     "raw": "https://api.example.com/users",
                     "protocol": "https",
                     "host": ["api", "example", "com"],
-                    "path": ["users"],
-                },
-            },
+                    "path": ["users"]
+                }
+            }
         },
         {
             "name": "Create User",
@@ -38,11 +38,11 @@ SAMPLE_COLLECTION = {
                     "raw": "https://api.example.com/users",
                     "protocol": "https",
                     "host": ["api", "example", "com"],
-                    "path": ["users"],
-                },
-            },
-        },
-    ],
+                    "path": ["users"]
+                }
+            }
+        }
+    ]
 }
 
 SAMPLE_COLLECTION_WITH_FOLDER = {
@@ -55,19 +55,19 @@ SAMPLE_COLLECTION_WITH_FOLDER = {
                     "name": "Get User",
                     "request": {
                         "method": "GET",
-                        "url": {"raw": "https://api.example.com/users/1"},
-                    },
+                        "url": {"raw": "https://api.example.com/users/1"}
+                    }
                 }
-            ],
+            ]
         },
         {
             "name": "Health Check",
             "request": {
                 "method": "GET",
-                "url": {"raw": "https://api.example.com/health"},
-            },
-        },
-    ],
+                "url": {"raw": "https://api.example.com/health"}
+            }
+        }
+    ]
 }
 
 SAMPLE_COLLECTION_STRING_URL = {
@@ -75,9 +75,12 @@ SAMPLE_COLLECTION_STRING_URL = {
     "item": [
         {
             "name": "Get Items",
-            "request": {"method": "GET", "url": "https://api.example.com/items"},
+            "request": {
+                "method": "GET",
+                "url": "https://api.example.com/items"
+            }
         }
-    ],
+    ]
 }
 
 
@@ -141,7 +144,9 @@ class TestPostmanImporter(unittest.TestCase):
     def test_skips_items_without_request(self):
         data = {
             "info": {"name": "Bad", "schema": ""},
-            "item": [{"name": "No request here"}],
+            "item": [
+                {"name": "No request here"}
+            ]
         }
         path = self._write_collection(data)
         importer = PostmanImporter()
@@ -157,7 +162,7 @@ class TestPostmanImporter(unittest.TestCase):
                     {"key": "Authorization", "value": "Bearer token123"},
                     {"key": "Content-Type", "value": "application/json"},
                 ],
-                "url": {"raw": "https://api.example.com/data"},
+                "url": {"raw": "https://api.example.com/data"}
             }
         }
         result = importer._parse_item(item)

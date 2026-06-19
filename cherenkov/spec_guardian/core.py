@@ -10,7 +10,7 @@ from typing import Any
 
 class DriftType(enum.Enum):
     """Types of spec drift that can be detected."""
-
+    
     SCHEMA_DRIFT = "schema_drift"
     STATUS_DRIFT = "status_drift"
     FIELD_MISSING = "field_missing"
@@ -23,7 +23,7 @@ class DriftType(enum.Enum):
 
 class DriftSeverity(enum.Enum):
     """Severity levels for drift events."""
-
+    
     INFO = "info"
     WARNING = "warning"
     CRITICAL = "critical"
@@ -32,7 +32,7 @@ class DriftSeverity(enum.Enum):
 @dataclasses.dataclass
 class DriftEvent:
     """A single drift detection event."""
-
+    
     drift_type: DriftType
     severity: DriftSeverity
     endpoint: str
@@ -41,10 +41,8 @@ class DriftEvent:
     expected: Any
     actual: Any
     message: str
-    timestamp: datetime = dataclasses.field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
-
+    timestamp: datetime = dataclasses.field(default_factory=lambda: datetime.now(timezone.utc))
+    
     def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
@@ -58,7 +56,7 @@ class DriftEvent:
             "message": self.message,
             "timestamp": self.timestamp.isoformat(),
         }
-
+    
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> DriftEvent:
         """Deserialize from dictionary."""
@@ -78,31 +76,31 @@ class DriftEvent:
 @dataclasses.dataclass
 class DriftReport:
     """Aggregated drift report for a monitoring session."""
-
+    
     spec_path: str
     events: list[DriftEvent]
     start_time: datetime
     end_time: datetime
     total_checks: int
     compliant_checks: int
-
+    
     @property
     def drift_rate(self) -> float:
         """Calculate drift rate (0.0 = fully compliant, 1.0 = all drifted)."""
         if self.total_checks == 0:
             return 0.0
         return 1.0 - (self.compliant_checks / self.total_checks)
-
+    
     @property
     def critical_count(self) -> int:
         """Count of critical severity events."""
         return sum(1 for e in self.events if e.severity == DriftSeverity.CRITICAL)
-
+    
     @property
     def warning_count(self) -> int:
         """Count of warning severity events."""
         return sum(1 for e in self.events if e.severity == DriftSeverity.WARNING)
-
+    
     def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
@@ -116,7 +114,7 @@ class DriftReport:
             "critical_count": self.critical_count,
             "warning_count": self.warning_count,
         }
-
+    
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> DriftReport:
         """Deserialize from dictionary."""

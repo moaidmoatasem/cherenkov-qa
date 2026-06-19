@@ -90,7 +90,6 @@ async def get_failures():
             conn.close()
 
     import asyncio
-
     raw = await asyncio.to_thread(_query_failures)
 
     return [
@@ -167,7 +166,6 @@ async def get_signals():
             conn.close()
 
     import asyncio
-
     performance = []
     for r in await asyncio.to_thread(_query_signals):
         dur = r["duration_ms"] if r["duration_ms"] else 0
@@ -182,12 +180,7 @@ async def get_signals():
         )
 
     visual = [
-        {
-            "id": "v1",
-            "name": "Overview Dashboard",
-            "difference": "0.0%",
-            "status": "ok",
-        },
+        {"id": "v1", "name": "Overview Dashboard", "difference": "0.0%", "status": "ok"},
         {"id": "v2", "name": "Divergences Table", "difference": "0.0%", "status": "ok"},
     ]
 

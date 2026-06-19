@@ -56,7 +56,6 @@ def run_adversarial_tests(
     # Optional observability trace
     try:
         from cherenkov.observability.llm_tracer import trace_event
-
         trace_event(
             "adversarial-complete",
             pass_rate=report.pass_rate(),
@@ -80,9 +79,7 @@ def print_report(report: AdversarialReport) -> None:
     print(f"  Total checks:  {d['total_payloads']}")
     print(f"  Detected:      {d['detected']}")
     print(f"  Critical:      {d['critical']}")
-    print(
-        f"  Garak:         {'available' if report.garak_available else 'not installed'}"
-    )
+    print(f"  Garak:         {'available' if report.garak_available else 'not installed'}")
     print(f"{'-'*60}")
 
     criticals = report.critical_findings()
@@ -102,9 +99,7 @@ def print_report(report: AdversarialReport) -> None:
     print(f"{'='*60}\n")
 
 
-def save_report(
-    report: AdversarialReport, output_path: str = ".cherenkov/adversarial_report.json"
-) -> str:
+def save_report(report: AdversarialReport, output_path: str = ".cherenkov/adversarial_report.json") -> str:
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(report.to_dict(), indent=2))

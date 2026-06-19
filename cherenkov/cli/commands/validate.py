@@ -10,7 +10,7 @@ from cherenkov.execution.validate import ValidationEngine
 @click.option("--target", "-t", required=True, help="The real server target base URL")
 @click.option(
     "--source",
-    type=click.Choice(["openapi", "graphql", "grpc", "accessibility", "asyncapi"]),
+    type=click.Choice(["openapi", "graphql", "grpc", "accessibility"]),
     default="openapi",
     help="Source type for ingestion",
 )
@@ -51,30 +51,7 @@ from cherenkov.execution.validate import ValidationEngine
     default=None,
     help="Write a machine-readable JSON summary to this path (used by CI integrations)",
 )
-@click.option(
-    "--export-jira",
-    is_flag=True,
-    help="Automatically create Jira tickets for failed conformance tests using CHERENKOV_JIRA_TOKEN",
-)
-@click.option(
-    "--jira-project",
-    default="QA",
-    help="The Jira Project key to assign tickets to (default: QA)",
-)
-def validate_cmd(
-    target,
-    source,
-    format,
-    workers,
-    no_html,
-    spec,
-    output,
-    fail_on_drift,
-    json_summary,
-    export_jira,
-    jira_project,
-    no_cache,
-):
+def validate_cmd(target, source, format, workers, no_html, no_cache, spec, output, fail_on_drift, json_summary):
     """Validate E2E test suite against a real server"""
     if no_cache:
         from cherenkov.cache.endpoint_cache import EndpointCache
@@ -108,15 +85,6 @@ def validate_cmd(
         scenarios = AccessibilityScenarioPlanner().plan(a11y_source)
         for sc in scenarios:
             GenerateStage("cli_validate").run(scenario=sc, source_type="accessibility")
-    elif source == "asyncapi":
-        from cherenkov.sources.asyncapi.adapter import AsyncAPISourceAdapter
-        from cherenkov.stages.plan_asyncapi import AsyncAPIScenarioPlanner
-        from cherenkov.stages.generate import GenerateStage
-
-        asyncapi_source = AsyncAPISourceAdapter(spec)
-        scenarios = AsyncAPIScenarioPlanner().plan(asyncapi_source)
-        for sc in scenarios:
-            GenerateStage("cli_validate").run(scenario=sc, source_type="asyncapi")
 
     # The engine handles the heavy lifting
     engine = ValidationEngine("cli_validate")
@@ -165,10 +133,7 @@ def validate_cmd(
 
     # Write machine-readable JSON summary (consumed by CI integrations, action.yml)
     if json_summary:
-        os.makedirs(
-            os.path.dirname(json_summary) if os.path.dirname(json_summary) else ".",
-            exist_ok=True,
-        )
+        os.makedirs(os.path.dirname(json_summary) if os.path.dirname(json_summary) else ".", exist_ok=True)
         reports = results.get("reports", [])
         violations = [r for r in reports if not r.get("passed", True)]
         summary = {
@@ -181,34 +146,12 @@ def validate_cmd(
         with open(json_summary, "w") as f:
             json.dump(summary, f, indent=2)
 
-    # Determine exit code and process Jira export
+    # Determine exit code
     reports = results.get("reports", [])
-    violations = [r for r in reports if not r.get("passed", True)]
-    has_violations = len(violations) > 0
-
-    if export_jira and has_violations:
-        from cherenkov.validate.jira_exporter import JiraExporter
-        exporter = JiraExporter(run_id="cli_validate", jira_project=jira_project)
-        jira_items = []
-        for v in violations:
-            scenario_id = v.get("scenario_id", "unknown")
-            error_msg = v.get("error", "Unknown drift error")
-            desc = exporter.format_ticket(
-                scenario_id=scenario_id,
-                failure_class="Conformance Drift",
-                error_message=error_msg,
-            )
-            jira_items.append({
-                "summary": f"CHERENKOV: Conformance Drift on {scenario_id}",
-                "description": desc,
-                "issuetype": "Bug"
-            })
-        created_keys = exporter.bulk_create(jira_items)
-        if created_keys:
-            click.echo(f"\n✅ Automatically exported {len(created_keys)} bug ticket(s) to Jira.")
+    has_violations = any(not r.get("passed", True) for r in reports)
 
     if fail_on_drift and has_violations:
-        violation_count = len(violations)
+        violation_count = sum(1 for r in reports if not r.get("passed", True))
         click.echo(
             click.style(
                 f"\n❌ {violation_count} conformance violation(s) detected. Exiting 1 (--fail-on-drift).",

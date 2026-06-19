@@ -272,7 +272,7 @@ class AssertionGate:
         """Find test files in the directory and read their contents."""
         import os
 
-        files = []  # type: ignore
+        files = []
         if not os.path.exists(test_dir):
             return files
         for fname in os.listdir(test_dir):

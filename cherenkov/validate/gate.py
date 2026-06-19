@@ -129,7 +129,7 @@ class ValidationGate:
         return ValidationReport(
             run_id=run_id,
             timestamp=timestamp,
-            result=result,  # type: ignore
+            result=result,
             gates=gate_results,
             summary=summary,
             evidence_dir=evidence_dir,

@@ -7,7 +7,6 @@ router = APIRouter(tags=["conformance"])
 async def conformance_status(service: str = Query(...)):
     """Return latest conformance status for a service URL."""
     from cherenkov.web.divergences import get_latest_status
-
     status = get_latest_status(service)
     return {
         "service": service,
@@ -22,6 +21,5 @@ async def conformance_status(service: str = Query(...)):
 async def conformance_report(service: str = Query(...)):
     """Return detailed conformance report for a service."""
     from cherenkov.web.divergences import get_latest_report
-
     report = get_latest_report(service)
     return report

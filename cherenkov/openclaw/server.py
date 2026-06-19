@@ -47,7 +47,7 @@ def create_app(
 
     # Wire up notifiers
     slack_notifier = SlackNotifier()
-    adp.on_notify(slack_notifier.notify)  # type: ignore
+    adp.on_notify(slack_notifier.notify)
 
     webhook_notifier = WebhookNotifier(webhook_url=cfg.notification_endpoint)
     adp.on_notify(webhook_notifier.notify)

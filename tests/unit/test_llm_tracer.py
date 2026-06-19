@@ -54,9 +54,7 @@ class TestLlmTracer(unittest.TestCase):
         with patch.dict(os.environ, {"CHERENKOV_LLM_OBSERVABILITY": "langsmith"}):
             # langsmith is not installed, so it should silently no-op
             result = trace_event("test", scenario="test")
-        self.assertIsNone(
-            result, "trace_event() must return None even when library is missing"
-        )
+        self.assertIsNone(result, "trace_event() must return None even when library is missing")
 
     def test_trace_event_multiple_calls(self):
         """Multiple trace_event calls should not interfere."""
@@ -65,9 +63,7 @@ class TestLlmTracer(unittest.TestCase):
             trace_event("event2", key="val2"),
             trace_event("event3"),
         ]
-        self.assertTrue(
-            all(r is None for r in results), "all trace_event() calls must return None"
-        )
+        self.assertTrue(all(r is None for r in results), "all trace_event() calls must return None")
 
     def test_trace_event_special_chars(self):
         """Should handle special characters in event names."""

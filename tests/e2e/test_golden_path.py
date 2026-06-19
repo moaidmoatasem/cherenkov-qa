@@ -236,9 +236,7 @@ def test_gp8_config_validate_exists():
     """GP-8: get_settings().validate() classmethod exists and runs without error on defaults."""
     from cherenkov.core.settings import get_settings
 
-    assert hasattr(
-        type(get_settings()), "validate"
-    ), "get_settings().validate() classmethod must exist"
+    assert hasattr(type(get_settings()), "validate"), "get_settings().validate() classmethod must exist"
     try:
         get_settings().validate()
     except Exception as exc:

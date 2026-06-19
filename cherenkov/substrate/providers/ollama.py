@@ -38,7 +38,7 @@ class OllamaProvider:
                 run_id=request.task[:32] if request.task else None,
             )
         else:
-            content = self.client.complete(  # type: ignore
+            content = self.client.complete(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 model=model,

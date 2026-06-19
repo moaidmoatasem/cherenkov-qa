@@ -36,7 +36,7 @@ class TighteningAnalyzer:
 
     @staticmethod
     def analyze(request_body_raw: str, response_body_raw: str) -> List[str]:
-        suggestions = []  # type: ignore
+        suggestions = []
         if not request_body_raw or not response_body_raw:
             return suggestions
 
@@ -73,15 +73,10 @@ class ValidationEngine:
         )
         self.tests_dir = os.path.join(self.stub_dir, "generated_tests")
 
-    def validate_suite(
-        self, target_url: str, workers: int = 1, headed: bool = False
-    ) -> Dict[str, Any]:
+    def validate_suite(self, target_url: str, workers: int = 1, headed: bool = False) -> Dict[str, Any]:
         """Runs all spec tests in generated_tests against target_url and parses trace files for tightening suggestions."""
         self.log.info(
-            "starting suite validation",
-            target_url=target_url,
-            workers=workers,
-            headed=headed,
+            "starting suite validation", target_url=target_url, workers=workers, headed=headed
         )
 
         if not os.path.exists(self.tests_dir):
@@ -110,10 +105,7 @@ class ValidationEngine:
             self.log.info("validating scenario", scenario_id=scenario_id)
 
             result = runner.execute_test(
-                scenario_id=scenario_id,
-                api_url=target_url,
-                test_code=code,
-                headed=headed,
+                scenario_id=scenario_id, api_url=target_url, test_code=code, headed=headed
             )
 
             trace_path = result.get("trace_path", "")

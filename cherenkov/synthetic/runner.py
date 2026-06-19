@@ -24,9 +24,7 @@ class SyntheticDataReport:
     generated_samples: int
     strategy: str
     duration_ms: int
-    timestamp: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -85,14 +83,11 @@ def generate_for_endpoints(
     if output_path:
         path = Path(output_path)
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
-            json.dumps({"report": report.to_dict(), "data": data}, indent=2)
-        )
+        path.write_text(json.dumps({"report": report.to_dict(), "data": data}, indent=2))
 
     # Optional observability trace
     try:
         from cherenkov.observability.llm_tracer import trace_event
-
         trace_event(
             "synthetic-generation-complete",
             endpoints=report.endpoint_count,

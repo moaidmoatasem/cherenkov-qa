@@ -18,7 +18,6 @@ Detections (regex-based — Playwright assertion grammar, no TS parser needed):
 Exit 0 if honest vs baseline+spec, else 1. Stdlib only (optional PyYAML).
 Standalone Phase-0 demonstrator — the runtime gate is EPIC #536 / E1.2.
 """
-
 from __future__ import annotations
 
 import argparse
@@ -28,20 +27,9 @@ from pathlib import Path
 STRONG = {"toBe", "toEqual", "toStrictEqual"}
 # everything else seen in practice is weaker than an exact-value assertion
 WEAK = {
-    "toBeLessThan",
-    "toBeGreaterThan",
-    "toBeLessThanOrEqual",
-    "toBeGreaterThanOrEqual",
-    "toBeTruthy",
-    "toBeFalsy",
-    "toBeDefined",
-    "toBeUndefined",
-    "toContain",
-    "toMatch",
-    "toHaveProperty",
-    "not.toBeNull",
-    "not.toBeUndefined",
-    "toBeNull",
+    "toBeLessThan", "toBeGreaterThan", "toBeLessThanOrEqual", "toBeGreaterThanOrEqual",
+    "toBeTruthy", "toBeFalsy", "toBeDefined", "toBeUndefined", "toContain", "toMatch",
+    "toHaveProperty", "not.toBeNull", "not.toBeUndefined", "toBeNull",
 }
 DATA_NAMES = ("data", "body", "json", "payload")
 
@@ -156,9 +144,7 @@ def check(spec: Path, baseline: Path, candidate: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(
-        description="Catch the AI cheating — TS edition (G0/E0.2)."
-    )
+    p = argparse.ArgumentParser(description="Catch the AI cheating — TS edition (G0/E0.2).")
     p.add_argument("--spec", required=True, type=Path)
     p.add_argument("--baseline", required=True, type=Path)
     p.add_argument("--candidate", required=True, type=Path)
@@ -173,9 +159,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     for f in findings:
         print("  [CAUGHT] " + f)
-    print(
-        f"FAIL — {len(findings)} integrity violation(s). The AI cheated; we caught it."
-    )
+    print(f"FAIL — {len(findings)} integrity violation(s). The AI cheated; we caught it.")
     return 1
 
 

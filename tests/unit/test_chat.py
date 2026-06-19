@@ -129,7 +129,7 @@ class TestSQLiteConversationMemory(unittest.TestCase):
         self.memory = SQLiteConversationMemory(self.db_path)
 
     def tearDown(self):
-        if hasattr(self, "memory"):
+        if hasattr(self, 'memory'):
             self.memory.close()
         if os.path.exists(self.db_path):
             os.unlink(self.db_path)
@@ -210,7 +210,7 @@ class TestQAChatAgent(unittest.TestCase):
         self.agent = QAChatAgent(memory=self.memory, persona_registry=self.registry)
 
     def tearDown(self):
-        if hasattr(self, "memory"):
+        if hasattr(self, 'memory'):
             self.memory.close()
         if os.path.exists(self.db_path):
             os.unlink(self.db_path)
@@ -352,7 +352,7 @@ class TestChatAPIIntegration(unittest.TestCase):
         self.client = TestClient(self.app)
 
     def tearDown(self):
-        if hasattr(self, "memory"):
+        if hasattr(self, 'memory'):
             self.memory.close()
         if os.path.exists(self.db_path):
             try:
@@ -456,7 +456,7 @@ class TestChatAPIIntegration(unittest.TestCase):
             resp.headers["content-type"], "text/event-stream; charset=utf-8"
         )
         lines = resp.text.strip().split("\n")
-        events = [line for line in lines if line.startswith("event:")]
+        events = [l for l in lines if l.startswith("event:")]
         self.assertTrue(len(events) >= 2)
         self.assertTrue(any("token" in e for e in events))
         self.assertTrue(any("complete" in e for e in events))

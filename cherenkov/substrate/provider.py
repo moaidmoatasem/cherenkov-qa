@@ -48,7 +48,7 @@ class OllamaProvider:
                 model=model,
             )
         else:
-            content = self.client.complete_code(  # type: ignore
+            content = self.client.complete_code(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 model=model,
@@ -92,7 +92,7 @@ class OpenAIProvider:
                 model=model,
             )
         else:
-            content = self.client.complete_code(  # type: ignore
+            content = self.client.complete_code(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 model=model,
@@ -146,7 +146,7 @@ class GitHubModelsProvider:
                 system_prompt=system_prompt, user_prompt=user_prompt, model=model
             )
         else:
-            content = self.client.complete_code(  # type: ignore
+            content = self.client.complete_code(
                 system_prompt=system_prompt, user_prompt=user_prompt, model=model
             )
 
@@ -204,7 +204,7 @@ def get_vlm_provider(name: str | None = None) -> VLMProvider:
     if provider_name == "localai":
         from cherenkov.substrate.providers.localai import LocalAIVLMProvider
 
-        p: VLMProvider = LocalAIVLMProvider()  # type: ignore
+        p: VLMProvider = LocalAIVLMProvider()
     elif provider_name == "ollama":
         p = VLMProvider(OllamaInferenceClient())
     elif provider_name == "openai":

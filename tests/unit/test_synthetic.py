@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -201,9 +202,7 @@ class TestSyntheticDataGenerator:
         get_data = result["GET /users"]
         assert any(k.startswith("response_") for k in get_data)
         post_data = result["POST /users"]
-        assert "request_body" in post_data or any(
-            k.startswith("response_") for k in post_data
-        )
+        assert "request_body" in post_data or any(k.startswith("response_") for k in post_data)
 
     def test_generate_nested_object(self):
         """Generate nested object structures."""
@@ -242,7 +241,7 @@ class TestSyntheticRunner:
     def test_generate_with_output(self, spec_file: Path, tmp_path: Path):
         """Test writing output to a file."""
         output = tmp_path / "synthetic_output.json"
-        generate_for_endpoints(str(spec_file), output_path=str(output))
+        report = generate_for_endpoints(str(spec_file), output_path=str(output))
         assert output.exists()
         content = json.loads(output.read_text())
         assert "report" in content

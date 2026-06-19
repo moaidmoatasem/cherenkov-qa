@@ -420,10 +420,7 @@ class TestBrokenImplServer(unittest.TestCase):
 class TestAdversarialSelfPlay(unittest.TestCase):
     def test_tautological_test_is_killed(self):
         """A test that always passes — even against broken impl — is tautological."""
-
-        def always_pass(url):
-            return (True, "ok")
-
+        always_pass = lambda url: (True, "ok")
         sp = AdversarialSelfPlay()
         result = sp.validate(
             test_id="always_pass",
@@ -456,10 +453,7 @@ class TestAdversarialSelfPlay(unittest.TestCase):
 
     def test_test_that_always_fails_is_not_tautological_but_useless(self):
         """A test that fails even the correct mock is broken, not tautological."""
-
-        def always_fail(url):
-            return (False, "failed")
-
+        always_fail = lambda url: (False, "failed")
         sp = AdversarialSelfPlay()
         result = sp.validate(
             test_id="always_fail",
@@ -472,32 +466,22 @@ class TestAdversarialSelfPlay(unittest.TestCase):
 
     def test_kill_rate_zero_when_no_tautological(self):
         sp = AdversarialSelfPlay()
-
-        def selective(url):
-            return ("correct" in url, "out")
-
+        selective = lambda url: ("correct" in url, "out")
         for _ in range(5):
             sp.validate("t", selective, "http://correct", "http://broken")
         self.assertEqual(sp.kill_rate(), 0.0)
 
     def test_kill_rate_one_when_all_tautological(self):
         sp = AdversarialSelfPlay()
-
-        def always_pass(url):
-            return (True, "out")
-
+        always_pass = lambda url: (True, "out")
         for _ in range(4):
             sp.validate("t", always_pass, "http://c", "http://b")
         self.assertEqual(sp.kill_rate(), 1.0)
 
     def test_kill_rate_partial(self):
         sp = AdversarialSelfPlay()
-
-        def always_pass(url):
-            return (True, "out")
-
-        def selective(url):
-            return ("c" in url, "out")
+        always_pass = lambda url: (True, "out")
+        selective = lambda url: ("c" in url, "out")
 
         sp.validate("taut", always_pass, "http://c", "http://b")  # killed
         sp.validate("good1", selective, "http://c", "http://b")  # kept
@@ -508,10 +492,7 @@ class TestAdversarialSelfPlay(unittest.TestCase):
 
     def test_report_string(self):
         sp = AdversarialSelfPlay()
-
-        def always_pass(url):
-            return (True, "out")
-
+        always_pass = lambda url: (True, "out")
         sp.validate("t", always_pass, "http://c", "http://b")
         report = sp.report()
         self.assertIn("1 tests evaluated", report)

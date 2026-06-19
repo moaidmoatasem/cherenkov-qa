@@ -16,7 +16,7 @@ class PostmanImporter:
 
     def import_collection(self, file_path: str) -> List[Scenario]:
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
         except Exception as exc:
             _log.error("Failed to read Postman collection", error=str(exc))
@@ -24,7 +24,7 @@ class PostmanImporter:
 
         scenarios = []
         items = data.get("item", [])
-
+        
         # Flattens folders
         def _extract_items(item_list: List[Dict[str, Any]]):
             for it in item_list:
@@ -50,7 +50,7 @@ class PostmanImporter:
             raw_url = url_obj.get("raw", "")
 
         method = request.get("method", "GET").upper()
-
+        
         headers = {}
         for h in request.get("header", []):
             headers[h.get("key")] = h.get("value")
@@ -59,5 +59,5 @@ class PostmanImporter:
             case_type="api_conformance",
             method=method,
             endpoint=raw_url,
-            expected_status=200,
+            expected_status=200
         )

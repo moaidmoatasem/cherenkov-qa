@@ -9,7 +9,6 @@ Usage:
     with tracer.span("cherenkov.validate") as span:
         ...
 """
-
 from __future__ import annotations
 
 import os
@@ -22,17 +21,13 @@ try:
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
     from opentelemetry.sdk.resources import Resource
-
     OTEL_AVAILABLE = True
 except ImportError:
     OTEL_AVAILABLE = False
 
 
 def _is_enabled() -> bool:
-    return (
-        os.getenv("CHERENKOV_OTEL_ENABLED", "false").lower() == "true"
-        and OTEL_AVAILABLE
-    )
+    return os.getenv("CHERENKOV_OTEL_ENABLED", "false").lower() == "true" and OTEL_AVAILABLE
 
 
 def setup_otel_provider() -> None:
@@ -44,12 +39,10 @@ def setup_otel_provider() -> None:
     service_name = os.getenv("CHERENKOV_OTEL_SERVICE_NAME", "cherenkov")
     environment = os.getenv("CHERENKOV_OTEL_ENVIRONMENT", "production")
 
-    resource = Resource.create(
-        {
-            "service.name": service_name,
-            "deployment.environment": environment,
-        }
-    )
+    resource = Resource.create({
+        "service.name": service_name,
+        "deployment.environment": environment,
+    })
     provider = TracerProvider(resource=resource)
     exporter = OTLPSpanExporter(endpoint=endpoint, insecure=True)
     provider.add_span_processor(BatchSpanProcessor(exporter))
@@ -91,14 +84,8 @@ class CherenkovTracer:
                 span.set_status(trace.StatusCode.ERROR, str(e))
                 raise
 
-    def record_llm_usage(
-        self,
-        span,
-        input_tokens: int,
-        output_tokens: int,
-        model: str,
-        cost_usd: float | None = None,
-    ) -> None:
+    def record_llm_usage(self, span, input_tokens: int, output_tokens: int,
+                         model: str, cost_usd: float | None = None) -> None:
         if span is None:
             return
         span.set_attribute("llm.model", model)
@@ -107,14 +94,8 @@ class CherenkovTracer:
         if cost_usd is not None:
             span.set_attribute("llm.cost_usd", cost_usd)
 
-    def record_conformance(
-        self,
-        span,
-        violations: int,
-        endpoints_tested: int,
-        spec_version: str,
-        target_url: str,
-    ) -> None:
+    def record_conformance(self, span, violations: int, endpoints_tested: int,
+                           spec_version: str, target_url: str) -> None:
         if span is None:
             return
         span.set_attribute("cherenkov.violations", violations)

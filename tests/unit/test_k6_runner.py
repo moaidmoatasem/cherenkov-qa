@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import tempfile
 import unittest
@@ -20,9 +21,7 @@ class TestK6Runner(unittest.TestCase):
 
     def test_run_k6_validation_degraded_when_k6_missing(self):
         runner = K6Runner(run_id="test")
-        with mock.patch(
-            "cherenkov.execution.k6_runner.shutil.which", return_value=None
-        ):
+        with mock.patch("cherenkov.execution.k6_runner.shutil.which", return_value=None):
             report = runner.run_k6_validation("http://localhost:8000")
         self.assertEqual(report["status"], "degraded")
         self.assertIn("k6 binary is not installed", report["message"])
@@ -39,13 +38,9 @@ class TestK6Runner(unittest.TestCase):
             stdout=fake_stdout,
             stderr="",
         )
-        with mock.patch(
-            "cherenkov.execution.k6_runner.shutil.which", return_value="/usr/bin/k6"
-        ):
+        with mock.patch("cherenkov.execution.k6_runner.shutil.which", return_value="/usr/bin/k6"):
             with mock.patch("subprocess.run", return_value=fake_process):
-                with mock.patch(
-                    "cherenkov.execution.perf_analyzer.PerformanceAnalyzer"
-                ) as MockAnalyzer:
+                with mock.patch("cherenkov.execution.perf_analyzer.PerformanceAnalyzer") as MockAnalyzer:
                     instance = MockAnalyzer.return_value
                     instance.record_latency.return_value = None
                     instance.analyze_anomaly.return_value = {

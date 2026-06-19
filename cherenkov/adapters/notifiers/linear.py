@@ -6,7 +6,6 @@ from cherenkov.hitl.contracts import HitlEnvelope, ok_envelope
 from cherenkov.core.events import CHERENKOVEvent
 from cherenkov.core.errors import get_logger
 
-
 class LinearNotifier:
     """Sends notifications to Linear via its GraphQL API."""
 
@@ -24,16 +23,14 @@ class LinearNotifier:
         successfully; False if Linear is unconfigured or the API call failed.
         """
         if not self.api_key or not self.team_id:
-            self.log.debug(  # type: ignore
-                "LinearNotifier skipped: CHERENKOV_LINEAR_API_KEY or TEAM_ID not set"
-            )
+            self.log.debug("LinearNotifier skipped: CHERENKOV_LINEAR_API_KEY or TEAM_ID not set")
             return False
 
         if envelope.ok:
             return True  # Only notify on failure
 
         # Format issue
-        title = f"API Drift: {envelope.scenario_id or 'Unknown Endpoint'}"  # type: ignore
+        title = f"API Drift: {envelope.scenario_id or 'Unknown Endpoint'}"
         description = (
             f"CHERENKOV detected an API conformance drift.\n\n"
             f"**Error**:\n{envelope.error.message if envelope.error else 'Unknown error'}\n\n"
@@ -56,7 +53,11 @@ class LinearNotifier:
         }
         """
 
-        variables = {"title": title, "teamId": self.team_id, "description": description}
+        variables = {
+            "title": title,
+            "teamId": self.team_id,
+            "description": description
+        }
 
         req = urllib.request.Request(
             "https://api.linear.app/graphql",

@@ -19,22 +19,14 @@ async def list_divergences():
 
 
 @router.post("/api/v1/divergences/act")
-async def act_on_divergence(
-    payload: DivergenceActionPayload, _auth=Depends(verify_api_key)
-):
+async def act_on_divergence(payload: DivergenceActionPayload, _auth=Depends(verify_api_key)):
     try:
-        new_status = divergence_store.apply_action(
-            payload.divergence_id, payload.action
-        )
+        new_status = divergence_store.apply_action(payload.divergence_id, payload.action)
     except KeyError:
         from fastapi import HTTPException
-
-        raise HTTPException(
-            status_code=404, detail=f"Unknown divergence id: {payload.divergence_id}"
-        )
+        raise HTTPException(status_code=404, detail=f"Unknown divergence id: {payload.divergence_id}")
     except ValueError:
         from fastapi import HTTPException
-
         raise HTTPException(status_code=400, detail=f"Unknown action: {payload.action}")
     return {
         "status": "ok",

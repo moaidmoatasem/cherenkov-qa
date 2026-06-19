@@ -1,14 +1,9 @@
 from __future__ import annotations
 
+import json
+from unittest import mock
 
-from cherenkov.evals.core import (
-    EvalMetric,
-    EvalReport,
-    EvalResult,
-    EvalSample,
-    EvalScore,
-    EvalStatus,
-)
+from cherenkov.evals.core import EvalMetric, EvalReport, EvalResult, EvalSample, EvalScore, EvalStatus
 from cherenkov.evals.runner import build_samples_from_pipeline, print_report
 from cherenkov.evals.judge import judge_sample
 
@@ -16,9 +11,7 @@ from cherenkov.evals.judge import judge_sample
 
 
 class FakeScenario:
-    def __init__(
-        self, mutation_id: str, endpoint: str, method: str, expected_status: int
-    ):
+    def __init__(self, mutation_id: str, endpoint: str, method: str, expected_status: int):
         self.mutation_id = mutation_id
         self.endpoint = endpoint
         self.method = method
@@ -41,12 +34,8 @@ SCENARIOS = [
 ]
 
 GEN_OUTPUTS = {
-    "create_user_happy": FakeGenOutput(
-        'test("creates user", async () => {\n  const res = await api.post("/api/users", {name: "Alice"});\n  expect(res.status).toBe(201);\n  expect(res.body).toHaveProperty("id");\n});'
-    ),
-    "list_users": FakeGenOutput(
-        'test("lists users", async () => {\n  const res = await api.get("/api/users");\n  expect(res.status).toBe(200);\n  expect(Array.isArray(res.body)).toBe(true);\n});'
-    ),
+    "create_user_happy": FakeGenOutput('test("creates user", async () => {\n  const res = await api.post("/api/users", {name: "Alice"});\n  expect(res.status).toBe(201);\n  expect(res.body).toHaveProperty("id");\n});'),
+    "list_users": FakeGenOutput('test("lists users", async () => {\n  const res = await api.get("/api/users");\n  expect(res.status).toBe(200);\n  expect(Array.isArray(res.body)).toBe(true);\n});'),
 }
 
 
@@ -66,16 +55,13 @@ def test_build_samples():
 
 
 def test_build_samples_missing_scenario():
-    samples = build_samples_from_pipeline(
-        [FakeScenario("orphan", "/x", "GET", 200)], {}, SPEC_SUMMARIES
-    )
+    samples = build_samples_from_pipeline([FakeScenario("orphan", "/x", "GET", 200)], {}, SPEC_SUMMARIES)
     assert samples == []
 
 
 def test_build_samples_missing_code():
     class EmptyGenOutput:
         test_code = ""
-
     samples = build_samples_from_pipeline(
         [FakeScenario("empty", "/x", "GET", 200)],
         {"empty": EmptyGenOutput()},
@@ -86,31 +72,15 @@ def test_build_samples_missing_code():
 
 def test_print_report(capsys):
     sample = EvalSample(
-        scenario_id="t1",
-        endpoint="/x",
-        method="GET",
-        expected_status=200,
-        test_code="",
-        spec_summary="",
+        scenario_id="t1", endpoint="/x", method="GET",
+        expected_status=200, test_code="", spec_summary="",
     )
     scores = [
-        EvalScore(
-            metric=EvalMetric.FAITHFULNESS,
-            score=0.95,
-            status=EvalStatus.PASS,
-            detail="correct status",
-        ),
-        EvalScore(
-            metric=EvalMetric.HALLUCINATION,
-            score=0.8,
-            status=EvalStatus.PASS,
-            detail="no hallucination",
-        ),
+        EvalScore(metric=EvalMetric.FAITHFULNESS, score=0.95, status=EvalStatus.PASS, detail="correct status"),
+        EvalScore(metric=EvalMetric.HALLUCINATION, score=0.8, status=EvalStatus.PASS, detail="no hallucination"),
     ]
     result = EvalResult(sample=sample, scores=scores, duration_ms=50)
-    report = EvalReport(
-        results=[result], model="test-model", eval_timestamp="2026-01-01T00:00:00"
-    )
+    report = EvalReport(results=[result], model="test-model", eval_timestamp="2026-01-01T00:00:00")
     print_report(report)
     captured = capsys.readouterr()
     assert "CHERENKOV EVAL REPORT" in captured.out
@@ -121,19 +91,10 @@ def test_print_report(capsys):
 
 def test_print_report_with_failures(capsys):
     sample = EvalSample(
-        scenario_id="t1",
-        endpoint="/x",
-        method="GET",
-        expected_status=200,
-        test_code="",
-        spec_summary="",
+        scenario_id="t1", endpoint="/x", method="GET",
+        expected_status=200, test_code="", spec_summary="",
     )
-    passed = EvalScore(
-        metric=EvalMetric.FAITHFULNESS,
-        score=0.3,
-        status=EvalStatus.FAIL,
-        detail="wrong status",
-    )
+    passed = EvalScore(metric=EvalMetric.FAITHFULNESS, score=0.3, status=EvalStatus.FAIL, detail="wrong status")
     result = EvalResult(sample=sample, scores=[passed], duration_ms=10)
     report = EvalReport(results=[result], model="test", eval_timestamp="now")
     print_report(report)
@@ -144,12 +105,8 @@ def test_print_report_with_failures(capsys):
 def test_judge_sample_without_llm():
     """judge_sample should either return scores (if LLM available) or error (if not)."""
     sample = EvalSample(
-        scenario_id="no_llm",
-        endpoint="/test",
-        method="GET",
-        expected_status=200,
-        test_code="expect(res.status).toBe(200)",
-        spec_summary="returns 200",
+        scenario_id="no_llm", endpoint="/test", method="GET",
+        expected_status=200, test_code="expect(res.status).toBe(200)", spec_summary="returns 200",
     )
     result = judge_sample(sample)
     # Either LLM is available and returns scores, or it's not and returns error

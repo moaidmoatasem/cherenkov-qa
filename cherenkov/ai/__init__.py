@@ -31,15 +31,15 @@ def get_client() -> InferenceClient:
     if provider == "ollama":
         raw_client = OllamaInferenceClient()
     elif provider == "openai":
-        raw_client = OpenAIInferenceClient()  # type: ignore
+        raw_client = OpenAIInferenceClient()
     elif provider == "nemoclaw":
         from cherenkov.ai.nemoclaw_client import NemoClawInferenceClient
 
-        raw_client = NemoClawInferenceClient()  # type: ignore
+        raw_client = NemoClawInferenceClient()
     elif provider == "anthropic":
         from cherenkov.ai.anthropic_client import AnthropicInferenceClient
 
-        raw_client = AnthropicInferenceClient()  # type: ignore
+        raw_client = AnthropicInferenceClient()
     else:
         raise ValueError(
             f"Unknown provider '{provider}'. Expected 'ollama', 'openai', 'nemoclaw', or 'anthropic'."

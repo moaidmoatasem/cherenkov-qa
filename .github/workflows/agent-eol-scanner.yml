@@ -11,11 +11,11 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-
+    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
+      
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -30,7 +30,7 @@ jobs:
         run: |
           # This simulates scanning for EOL and serious vulnerabilities
           pip-audit -r requirements.txt || echo "vuln_found=true" >> $GITHUB_ENV
-
+          
       - name: Setup Node
         uses: actions/setup-node@v6
         with:

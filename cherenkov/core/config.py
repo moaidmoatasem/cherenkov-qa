@@ -200,11 +200,10 @@ class Config:
     ).lower() in ("1", "true", "yes")
     METRICS_PORT: int = int(os.getenv("CHERENKOV_METRICS_PORT", "8001"))
 
+
     # ── Issue #457: OpenTelemetry export ──────────────────────────────────
     OTEL_ENABLED: bool = os.getenv("CHERENKOV_OTEL_ENABLED", "false").lower() in (
-        "1",
-        "true",
-        "yes",
+        "1", "true", "yes"
     )
     OTEL_ENDPOINT: str = os.getenv("CHERENKOV_OTEL_ENDPOINT", "http://localhost:4317")
     OTEL_SERVICE_NAME: str = os.getenv("CHERENKOV_OTEL_SERVICE_NAME", "cherenkov")
@@ -303,7 +302,7 @@ class Config:
             "COPILOT_MENTOR_MIN_CONFIRMATIONS": cls.COPILOT_MENTOR_MIN_CONFIRMATIONS,
             "CERTIFICATION_ENABLED": cls.CERTIFICATION_ENABLED,
             "CERTIFICATION_GOLD_SET_PATH": cls.CERTIFICATION_GOLD_SET_PATH,
-            "CERTIFICATION_MIN_FAITHFULNESS": cls.CERTIFICATION_MIN_FAITHFULNESS,  # type: ignore
+            "CERTIFICATION_MIN_FAITHFULNESS": cls.CERTIFICATION_MIN_FAITHFULNESS,
             "DAST_ENABLED": cls.DAST_ENABLED,
             "RAG_ENABLED": cls.RAG_ENABLED,
             "HITL_API_KEY": bool(cls.HITL_API_KEY),

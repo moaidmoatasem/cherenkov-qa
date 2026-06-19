@@ -39,10 +39,10 @@ def render_truth_model(model: TruthModel | None = None) -> str:
         )
     else:
         for ep in endpoints:
-            lines.append(f"\n  {ep.method} {ep.path}")  # type: ignore
-            lines.append(f"  {'-' * (len(ep.method) + len(ep.path) + 2)}")  # type: ignore
+            lines.append(f"\n  {ep.method} {ep.path}")
+            lines.append(f"  {'-' * (len(ep.method) + len(ep.path) + 2)}")
             claims = (
-                model.get_claims_by_endpoint(ep.path, ep.method)  # type: ignore
+                model.get_claims_by_endpoint(ep.path, ep.method)
                 if hasattr(model, "get_claims_by_endpoint")
                 else []
             )

@@ -81,13 +81,17 @@ class SAMLServiceProvider:
         import base64
         import xml.etree.ElementTree as ET
 
-        root = ET.Element("{urn:oasis:names:tc:SAML:2.0:protocol}AuthnRequest")
+        root = ET.Element(
+            "{urn:oasis:names:tc:SAML:2.0:protocol}AuthnRequest"
+        )
         root.set("AssertionConsumerServiceURL", self.config.acs_url)
         root.set("Destination", self.config.idp_metadata_url)
         root.set("ProtocolBinding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST")
         root.set("ID", self._generate_id())
         root.set("Version", "2.0")
-        issuer = ET.SubElement(root, "{urn:oasis:names:tc:SAML:2.0:assertion}Issuer")
+        issuer = ET.SubElement(
+            root, "{urn:oasis:names:tc:SAML:2.0:assertion}Issuer"
+        )
         issuer.text = self.config.entity_id
         xml_bytes = ET.tostring(root, encoding="unicode").encode("utf-8")
         return base64.b64encode(xml_bytes).decode("utf-8")
@@ -119,7 +123,8 @@ class SAMLServiceProvider:
             for attr in assertion.findall(".//saml2:Attribute", ns):
                 name = attr.get("Name", "")
                 values = [
-                    v.text or "" for v in attr.findall("saml2:AttributeValue", ns)
+                    v.text or ""
+                    for v in attr.findall("saml2:AttributeValue", ns)
                 ]
                 if values:
                     attrs[name] = values[0] if len(values) == 1 else values

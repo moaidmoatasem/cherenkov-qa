@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import tempfile
 import unittest
@@ -19,25 +20,19 @@ from cherenkov.evals.store import EvalStore
 
 class TestEvalCore(unittest.TestCase):
     def test_eval_score_passing(self):
-        s = _parse_score(
-            "faithfulness", {"score": 0.95, "detail": "good", "status": "pass"}
-        )
+        s = _parse_score("faithfulness", {"score": 0.95, "detail": "good", "status": "pass"})
         self.assertEqual(s.metric, EvalMetric.FAITHFULNESS)
         self.assertEqual(s.score, 0.95)
         self.assertEqual(s.status, EvalStatus.PASS)
 
     def test_eval_score_failing(self):
-        s = _parse_score(
-            "hallucination", {"score": 0.3, "detail": "hallucinates", "status": "fail"}
-        )
+        s = _parse_score("hallucination", {"score": 0.3, "detail": "hallucinates", "status": "fail"})
         self.assertEqual(s.metric, EvalMetric.HALLUCINATION)
         self.assertEqual(s.score, 0.3)
         self.assertEqual(s.status, EvalStatus.FAIL)
 
     def test_eval_score_edge(self):
-        s = _parse_score(
-            "assertion_quality", {"score": 0.5, "detail": "basic", "status": "pass"}
-        )
+        s = _parse_score("assertion_quality", {"score": 0.5, "detail": "basic", "status": "pass"})
         self.assertEqual(s.status, EvalStatus.WARN)
 
     def test_build_judge_prompt(self):
@@ -55,122 +50,36 @@ class TestEvalCore(unittest.TestCase):
         self.assertIn("happy_path", prompt)
 
     def test_eval_result_passed(self):
-        sample = EvalSample(
-            scenario_id="t1",
-            endpoint="/x",
-            method="GET",
-            expected_status=200,
-            test_code="",
-            spec_summary="",
-        )
-        scores = [
-            EvalScore(
-                metric=EvalMetric.FAITHFULNESS,
-                score=0.9,
-                status=EvalStatus.PASS,
-                detail="ok",
-            )
-        ]
+        sample = EvalSample(scenario_id="t1", endpoint="/x", method="GET", expected_status=200, test_code="", spec_summary="")
+        scores = [EvalScore(metric=EvalMetric.FAITHFULNESS, score=0.9, status=EvalStatus.PASS, detail="ok")]
         r = EvalResult(sample=sample, scores=scores, duration_ms=100)
         self.assertTrue(r.passed())
 
     def test_eval_result_failed(self):
-        sample = EvalSample(
-            scenario_id="t1",
-            endpoint="/x",
-            method="GET",
-            expected_status=200,
-            test_code="",
-            spec_summary="",
-        )
-        scores = [
-            EvalScore(
-                metric=EvalMetric.FAITHFULNESS,
-                score=0.3,
-                status=EvalStatus.FAIL,
-                detail="bad",
-            )
-        ]
+        sample = EvalSample(scenario_id="t1", endpoint="/x", method="GET", expected_status=200, test_code="", spec_summary="")
+        scores = [EvalScore(metric=EvalMetric.FAITHFULNESS, score=0.3, status=EvalStatus.FAIL, detail="bad")]
         r = EvalResult(sample=sample, scores=scores, duration_ms=100)
         self.assertFalse(r.passed())
 
     def test_eval_report_pass_rate(self):
-        sample = EvalSample(
-            scenario_id="t1",
-            endpoint="/x",
-            method="GET",
-            expected_status=200,
-            test_code="",
-            spec_summary="",
-        )
-        r1 = EvalResult(
-            sample=sample,
-            scores=[
-                EvalScore(
-                    metric=EvalMetric.FAITHFULNESS,
-                    score=0.9,
-                    status=EvalStatus.PASS,
-                    detail="ok",
-                )
-            ],
-            duration_ms=10,
-        )
-        r2 = EvalResult(
-            sample=sample,
-            scores=[
-                EvalScore(
-                    metric=EvalMetric.FAITHFULNESS,
-                    score=0.3,
-                    status=EvalStatus.FAIL,
-                    detail="bad",
-                )
-            ],
-            duration_ms=10,
-        )
+        sample = EvalSample(scenario_id="t1", endpoint="/x", method="GET", expected_status=200, test_code="", spec_summary="")
+        r1 = EvalResult(sample=sample, scores=[EvalScore(metric=EvalMetric.FAITHFULNESS, score=0.9, status=EvalStatus.PASS, detail="ok")], duration_ms=10)
+        r2 = EvalResult(sample=sample, scores=[EvalScore(metric=EvalMetric.FAITHFULNESS, score=0.3, status=EvalStatus.FAIL, detail="bad")], duration_ms=10)
         report = EvalReport(results=[r1, r2], model="test", eval_timestamp="now")
         self.assertEqual(report.pass_rate(), 0.5)
 
     def test_eval_report_metric_averages(self):
-        sample = EvalSample(
-            scenario_id="t1",
-            endpoint="/x",
-            method="GET",
-            expected_status=200,
-            test_code="",
-            spec_summary="",
-        )
-        s1 = EvalScore(
-            metric=EvalMetric.FAITHFULNESS,
-            score=0.9,
-            status=EvalStatus.PASS,
-            detail="ok",
-        )
-        s2 = EvalScore(
-            metric=EvalMetric.FAITHFULNESS,
-            score=0.7,
-            status=EvalStatus.PASS,
-            detail="ok",
-        )
+        sample = EvalSample(scenario_id="t1", endpoint="/x", method="GET", expected_status=200, test_code="", spec_summary="")
+        s1 = EvalScore(metric=EvalMetric.FAITHFULNESS, score=0.9, status=EvalStatus.PASS, detail="ok")
+        s2 = EvalScore(metric=EvalMetric.FAITHFULNESS, score=0.7, status=EvalStatus.PASS, detail="ok")
         r = EvalResult(sample=sample, scores=[s1, s2], duration_ms=10)
         report = EvalReport(results=[r], model="test", eval_timestamp="now")
         avgs = report.metric_averages()
         self.assertAlmostEqual(avgs["faithfulness"], 0.8)
 
     def test_eval_report_to_dict(self):
-        sample = EvalSample(
-            scenario_id="t1",
-            endpoint="/x",
-            method="GET",
-            expected_status=200,
-            test_code="",
-            spec_summary="",
-        )
-        s = EvalScore(
-            metric=EvalMetric.FAITHFULNESS,
-            score=0.9,
-            status=EvalStatus.PASS,
-            detail="ok",
-        )
+        sample = EvalSample(scenario_id="t1", endpoint="/x", method="GET", expected_status=200, test_code="", spec_summary="")
+        s = EvalScore(metric=EvalMetric.FAITHFULNESS, score=0.9, status=EvalStatus.PASS, detail="ok")
         r = EvalResult(sample=sample, scores=[s], duration_ms=10)
         report = EvalReport(results=[r], model="test", eval_timestamp="now")
         d = report.to_dict()
@@ -196,19 +105,11 @@ class TestEvalStore(unittest.TestCase):
                 pass
 
     def _make_report(self, pass_rate: float = 1.0) -> EvalReport:
-        sample = EvalSample(
-            scenario_id="t1",
-            endpoint="/x",
-            method="GET",
-            expected_status=200,
-            test_code="",
-            spec_summary="",
-        )
+        sample = EvalSample(scenario_id="t1", endpoint="/x", method="GET", expected_status=200, test_code="", spec_summary="")
         status = EvalStatus.PASS if pass_rate >= 0.7 else EvalStatus.FAIL
-        s = EvalScore(
-            metric=EvalMetric.FAITHFULNESS, score=pass_rate, status=status, detail="ok"
-        )
+        s = EvalScore(metric=EvalMetric.FAITHFULNESS, score=pass_rate, status=status, detail="ok")
         r = EvalResult(sample=sample, scores=[s], duration_ms=10)
+        passed = status == EvalStatus.PASS
         return EvalReport(results=[r], model="test", eval_timestamp="now")
 
     def test_save_and_latest(self):

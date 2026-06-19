@@ -15,9 +15,7 @@ class BufRegistryClient:
 
     def __init__(self):
         self.token = os.environ.get("BUF_TOKEN")
-        self.base_url = (
-            "https://buf.build/buf.alpha.registry.v1alpha1.RepositoryService"
-        )
+        self.base_url = "https://buf.build/buf.alpha.registry.v1alpha1.RepositoryService"
 
     def fetch_schema(self, module_name: str) -> str | None:
         """
@@ -35,8 +33,11 @@ class BufRegistryClient:
             return None
 
         owner, repo = parts[0], parts[1]
-
-        payload = {"repositoryName": repo, "ownerName": owner}
+        
+        payload = {
+            "repositoryName": repo,
+            "ownerName": owner
+        }
 
         url = f"{self.base_url}/GetRepository"
         req = urllib.request.Request(
@@ -44,9 +45,9 @@ class BufRegistryClient:
             data=json.dumps(payload).encode("utf-8"),
             headers={
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.token}",
+                "Authorization": f"Bearer {self.token}"
             },
-            method="POST",
+            method="POST"
         )
 
         try:

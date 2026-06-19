@@ -13,9 +13,7 @@ class AsyncAPIScenarioPlanner:
 
     def _scenarios_for(self, op) -> list[AsyncAPIScenario]:
         scenarios = []
-        required = (
-            list(op.payload_schema.get("required", [])) if op.payload_schema else []
-        )
+        required = list(op.payload_schema.get("required", [])) if op.payload_schema else []
 
         scenarios.append(
             AsyncAPIScenario(

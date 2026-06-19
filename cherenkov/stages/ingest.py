@@ -107,12 +107,10 @@ class IngestStage:
                 endpoints=[],
                 client_stub_path="stub/client.ts",
                 status=Status.DEGRADED,
-                errors=[
-                    StageError(
-                        code="MOBILE_SOURCE",
-                        detail=f"Mobile source ({path.suffix}) ingested but produces no REST endpoint slices. Use Track B mobile pipeline.",
-                    )
-                ],
+                errors=[StageError(
+                    code="MOBILE_SOURCE",
+                    detail=f"Mobile source ({path.suffix}) ingested but produces no REST endpoint slices. Use Track B mobile pipeline.",
+                )],
                 metadata=StageMeta(
                     stage="INGEST-mobile", duration_ms=int((time.time() - t0) * 1000)
                 ),
@@ -169,7 +167,7 @@ class IngestStage:
                         if _rag_index is None:
                             _rag_index = SchemaIndex()
                             _rag_index.index_spec(spec)
-                            IngestStage._rag = _rag_index  # type: ignore
+                            IngestStage._rag = _rag_index
                         # Build query text from operation summary + parameter names
                         query_parts = [url_path, method.upper()]
                         if "summary" in op:

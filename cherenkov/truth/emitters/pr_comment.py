@@ -34,7 +34,7 @@ class PRCommentEmitter(Emitter):
 
         if divergences:
             for d in divergences:
-                endpoint = d.endpoint_id or "unknown"  # type: ignore
+                endpoint = d.endpoint_id or "unknown"
                 cls = (
                     d.divergence_class.value
                     if hasattr(d.divergence_class, "value")
@@ -45,7 +45,7 @@ class PRCommentEmitter(Emitter):
                     if hasattr(d.severity, "value")
                     else str(d.severity)
                 )
-                desc = d.description.replace("|", "\\|") if d.description else ""  # type: ignore
+                desc = d.description.replace("|", "\\|") if d.description else ""
                 lines.append(f"| {endpoint} | {cls} | {sev} | {desc} |")
         else:
             lines.append("| _No divergences detected_ | | | |")

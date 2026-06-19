@@ -30,7 +30,9 @@ class AsyncAPISourceAdapter:
                 return {}
         return current if isinstance(current, dict) else {}
 
-    def _extract_schema(self, payload: dict, root: dict[str, Any]) -> dict[str, Any]:
+    def _extract_schema(
+        self, payload: dict, root: dict[str, Any]
+    ) -> dict[str, Any]:
         if "$ref" in payload:
             return self._resolve_ref(payload["$ref"], root)
         if "payload" in payload:

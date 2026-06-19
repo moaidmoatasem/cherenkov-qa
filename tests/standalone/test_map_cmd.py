@@ -11,10 +11,7 @@ class TestBuildTruthModel(unittest.TestCase):
     def test_build_from_openapi(self):
         # Use absolute path to stripe_spec.json
         stripe_spec_path = os.path.join(
-            os.path.dirname(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            ),
-            "stripe_spec.json",
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "stripe_spec.json"
         )
         sources = {"openapi": [stripe_spec_path]}
         tm = build_truth_model(sources)
@@ -45,10 +42,7 @@ class TestBuildTruthModel(unittest.TestCase):
     def test_render_with_sources(self):
         # Use absolute path to stripe_spec.json
         stripe_spec_path = os.path.join(
-            os.path.dirname(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            ),
-            "stripe_spec.json",
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "stripe_spec.json"
         )
         sources = {"openapi": [stripe_spec_path]}
         tm = build_truth_model(sources)
@@ -59,10 +53,7 @@ class TestBuildTruthModel(unittest.TestCase):
     def test_render_detailed_shows_provenance(self):
         # Use absolute path to stripe_spec.json
         stripe_spec_path = os.path.join(
-            os.path.dirname(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            ),
-            "stripe_spec.json",
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "stripe_spec.json"
         )
         sources = {"openapi": [stripe_spec_path]}
         tm = build_truth_model(sources)

@@ -178,7 +178,7 @@ class XrayClient:
             return cls(cfg)
         if server_url and server_token:
             project_key = os.getenv("CHERENKOV_XRAY_PROJECT_KEY", "")
-            cfg = XrayServerConfig(  # type: ignore
+            cfg = XrayServerConfig(
                 base_url=server_url, token=server_token, project_key=project_key
             )
             return cls(cfg)

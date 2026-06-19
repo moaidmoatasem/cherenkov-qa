@@ -3,7 +3,6 @@
 Self-contained: imports the sibling `integrity_check` module by path so it runs
 whether or not `demos/` is on the default pytest path.
 """
-
 import pathlib
 import sys
 
