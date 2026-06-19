@@ -31,7 +31,7 @@ This kit provides the exact copy, taglines, and "Maker Comments" needed for a su
 > 1. **Zero Data Egress:** CHERENKOV uses local LLMs (like `qwen2.5-coder:7b`) to generate tests. Your proprietary API specs never leave your laptop. No API keys, no cloud dependencies.
 > 2. **Zero Lock-In:** Most testing platforms trap your test suites inside their walled garden. With CHERENKOV, a single command (`cherenkov eject`) strips our framework entirely, leaving you with vanilla, human-readable Playwright tests that run natively in your CI forever.
 >
-> Today, with our v1.0.0 release, CHERENKOV officially supports REST, GraphQL, gRPC (via Buf), and AsyncAPI/WebSockets. It even exports Jira tickets automatically on pipeline failure.
+> Today, with our v1.1.0 release, CHERENKOV officially supports REST, GraphQL, gRPC (via Buf), and AsyncAPI/WebSockets. It even exports Jira tickets automatically on pipeline failure.
 >
 > We're building the **Reality Engine**—the platform that maintains continuous truth across every source.
 >

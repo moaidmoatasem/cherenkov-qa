@@ -1,6 +1,6 @@
 # CHERENKOV Discord Community Setup
 
-This document serves as the architectural blueprint for the official CHERENKOV Discord server. As we launch v1.0.0 and step into the Reality Engine phase, cultivating a technical, high-signal community is paramount.
+This document serves as the architectural blueprint for the official CHERENKOV Discord server. As we launch v1.1.0 and step into the Reality Engine phase, cultivating a technical, high-signal community is paramount.
 
 ## 1. Server Architecture (Channels)
 
@@ -28,7 +28,7 @@ This document serves as the architectural blueprint for the official CHERENKOV D
 
 - **Admin/Maintainer**: Full access. (Color: Red/Pink #e91e63)
 - **Core Contributor**: Given to users with merged PRs. Can bypass slowmode. (Color: Gold #f1c40f)
-- **Early Adopter**: Special vanity role given to the first 500 members to join after the v1.0.0 launch. (Color: Purple #9b59b6)
+- **Early Adopter**: Special vanity role given to the first 500 members to join after the v1.1.0 launch. (Color: Purple #9b59b6)
 - **Member**: Default role. (Color: Default)
 
 ---
