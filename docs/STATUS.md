@@ -1,15 +1,11 @@
-**Last updated:** 2026-06-18
+**Last updated:** 2026-06-19
 **Branch:** `main`
 
 ---
 
 ## At a glance
 
-CHERENKOV is an **API conformance test generator** that turns an OpenAPI spec
-into Playwright tests using a local LLM, runs them against a real server, and
-catches spec-conformance drift. The core (Track A) is built and the user
-validation gate has been passed. All tracks are now open for development
-under the consolidated Phase -1 through Phase 8 plan.
+CHERENKOV is an **AI-native API conformance testing platform** that reads an OpenAPI spec, uses a local LLM to generate typed Playwright tests, executes them against a real server, and delivers conformance violation reports — all with zero vendor lock-in. The core pipeline (Track A) is built, validated, and tagged as `v1.0.0`. The full extended roadmap (Phases 9-16) is largely implemented across GraphQL, gRPC, AsyncAPI, enterprise tier, VS Code extension, CI/CD integrations, and more.
 
 ---
 
@@ -24,10 +20,18 @@ under the consolidated Phase -1 through Phase 8 plan.
 | 2 | VLM + LocalAI | ✅ Complete | LocalAI default, tier routing, doctor CLI (PR #396) |
 | 3 | Desktop Host | ✅ Complete | `libwebkit2gtk-4.1-dev` installed; `cargo check` passes; 308MB debug binary builds |
 | 4 | Chat Agents | ✅ Complete | Tool-calling agent, persona registry, SSE (PRs #397–#400) |
-| 5 | Mobile Testing Core | ✅ Complete | 232/232 unit tests pass; ADB at `~/.local/bin/adb` |
-| 6 | Mobile Execution | 🔧 Env ready | Maestro 2.6.1 installed at `~/.maestro/bin/maestro`; needs physical device/emulator for live runs |
+| 5 | Mobile Testing Core | ✅ Complete | ADB at `~/.local/bin/adb`; Maestro 2.6.1 at `~/.maestro/bin/maestro` |
+| 6 | Mobile Execution | 🔧 Env ready | Maestro + ADB installed; needs physical device/emulator for live runs |
 | 7 | Dashboard Revamp | ✅ Complete | 9 screens built (PRs #401, #402, #405) |
 | 8 | K8s + Cloud + Gate | ✅ Complete | `make k3d-test` green (2026-06-09); all 6 issues closed |
+| 9 | Market Launch | ✅ Complete | `docs/launch/` (Discord setup, Product Hunt kit, demo script), `npx cherenkov init`, v1.0.0 release notes |
+| 10 | CI/CD Native | ✅ Complete | GitHub Action (`.github/workflows/`), GitLab CI template, CircleCI orb, JUnit XML, SARIF, Jira exporter |
+| 11 | VS Code Extension | ✅ Complete | `vscode/` with gutter icons, CodeLens, TestExplorer, QuickFix — packaged as `.vsix` |
+| 12 | GraphQL + gRPC + AsyncAPI | ✅ Complete | `cherenkov/sources/graphql/`, `grpc/`, `asyncapi/` adapters + templates |
+| 13 | Enterprise Tier | ✅ Complete | `cherenkov/enterprise/` — SAML, GDPR, SOC2, RBAC, org mgmt, audit, BYO-LLM (Azure OpenAI, Bedrock) |
+| 14 | Spec Guardian | ✅ Complete | `cherenkov/spec_guardian/` — daemon, detector, store |
+| 15 | Fine-Tuned Model | 🔧 Scaffolded | `cherenkov/training/` — dataset collector, trainer pipeline; needs opt-in corpus |
+| 16 | Platform & Marketplace | 🔧 Scaffolded | `cherenkov/federation/` — corpus sync; MCP registry not yet published |
 
 ---
 
@@ -35,18 +39,16 @@ under the consolidated Phase -1 through Phase 8 plan.
 
 | Track | Scope | State |
 |-------|-------|-------|
-| A (Core) | API conformance testing | ✅ Built; validation gate passed (2026-06-08); **691 unit tests passing, 0 failures** (2026-06-16 recount) |
-| B (VLM) | LocalAI / Ollama substrate | ✅ Built; MCP policy engine + Docker Model Runner adapter added |
-| C (Desktop) | Tauri 2 host | ✅ Complete | `cargo check` green, icons, IPC bridge scaffolded; full debug binary builds (308MB) |
+| A (Core) | API conformance testing | ✅ Built; v1.0.0 tagged; validation gate passed (2026-06-08) |
+| B (VLM) | LocalAI / Ollama substrate | ✅ Built; MCP policy engine + Docker Model Runner adapter |
+| C (Desktop) | Tauri 2 host | ✅ Built; `cargo check` green, 308MB debug binary |
 | D (Mobile) | Maestro / Appium | ✅ Built, unit-tested; E2E dashboard tests added; runtime blocked on physical device/emulator |
-| E (Dashboard) | React UI | ✅ Built; all 9 screens shipped; E2E error-path + multi-viewport tests added; `data-testid` coverage in progress |
+| E (Dashboard) | React UI | ✅ Built; all 9 screens shipped; E2E error-path + multi-viewport tests |
 | F (K8s) | Operator + CRDs | ✅ Complete (Phase 8) |
-
-> **Note on `track-b-c-deferred/`:** Earlier handover docs described a
-> separate `track-b-c-deferred/` directory. That directory was **fully
-> re-integrated into the live tree and deleted** (see
-> [AGENTS.md](../AGENTS.md)). If you see `track-b-c-deferred/` referenced
-> elsewhere, treat it as stale.
+| G (Protocols) | GraphQL, gRPC, AsyncAPI | ✅ Built; adapters + templates + eject paths |
+| H (Enterprise) | SAML, GDPR, SOC2, RBAC | ✅ Built with CLI + integration tests |
+| I (IDE) | VS Code extension | ✅ Built; `.vsix` packaged, ready for marketplace publish |
+| J (CI/CD) | GitHub Actions, GitLab, CircleCI | ✅ Built; templates + SARIF + JUnit |
 
 ---
 
@@ -54,7 +56,7 @@ under the consolidated Phase -1 through Phase 8 plan.
 
 | ID | Criteria | Status | Evidence |
 |----|----------|--------|----------|
-| E0.1 | Real divergence proof: ≥2/3 APIs yield ≥1 divergence | ✅ DONE | 3/3 APIs: Petstore (4), HTTPBin (1), GitHub (1) — `docs/evidence/e0.1_divergences.md`, committed via PR #547 |
+| E0.1 | Real divergence proof: ≥2/3 APIs yield ≥1 divergence | ✅ DONE | 3/3 APIs: Petstore (4), HTTPBin (1), GitHub (1) — `docs/evidence/e0.1_divergences.md` |
 | E0.2 | Catch a real agent-cheat, reproducible | ✅ DONE | `demos/catch-the-ai-cheating/run_demo.py` + TypeScript checker |
 | E0.3 | ≥3 QA practitioners complete quickstart | ❌ HUMAN | Needs real users |
 | E0.4 | Honest differentiation vs Schemathesis | ✅ DONE | `NORTH_STAR.md` §8 |
@@ -102,49 +104,30 @@ Solo developer zero-cost path: L0–L3 = $0/month.
 - **Want a CLI walk-through?** → [CLI_DEMO.md](CLI_DEMO.md)
 - **Agent / contributor?** → [HANDOVER.md](HANDOVER.md) then [PHASE_PLAN.md](PHASE_PLAN.md)
 - **Architect?** → [engineering/SYSTEM_DESIGN.md](engineering/SYSTEM_DESIGN.md)
+- **Launch materials?** → [docs/launch/](launch/) (Product Hunt kit, Demo script, Discord setup)
 - **Decision rationale?** → [adr/](adr/)
-- **Product strategy & market roadmap?** → [PRODUCT_STRATEGY_ROADMAP.md](PRODUCT_STRATEGY_ROADMAP.md) (Phases 9-16, market analysis, 10-year vision)
-- **Integration & ecosystem plan?** → [INTEGRATION_STRATEGY.md](INTEGRATION_STRATEGY.md) (25 integrations, 6 sprints)
+- **Product strategy & market roadmap?** → [PRODUCT_STRATEGY_ROADMAP.md](PRODUCT_STRATEGY_ROADMAP.md)
+- **Integration & ecosystem plan?** → [INTEGRATION_STRATEGY.md](INTEGRATION_STRATEGY.md)
 
 ---
 
-## Finish-unblock commands (2026-06-10) — all resolved as of 2026-06-18
+## Environment dependencies
 
-These dependencies are now installed in this WSL environment:
-- `libwebkit2gtk-4.1-dev` ✅ — Phase 3 Desktop (Tauri) unblocked, `cargo check` passes
-- `android-tools-adb` ✅ — ADB at `~/.local/bin/adb`, Phase 5-6 Mobile unblocked (needs physical device/emulator)
+This WSL environment has:
+- `libwebkit2gtk-4.1-dev` ✅ — Tauri Desktop
+- `android-tools-adb` ✅ — ADB at `~/.local/bin/adb` (needs physical device/emulator)
 - Maestro 2.6.1 ✅ — at `~/.maestro/bin/maestro`
+- `cargo` 1.96.0 ✅ — at `~/.cargo/bin/`
 
-If setting up a fresh environment, run:
-
-```bash
-# Unblocks Phase 3 (Tauri desktop build on Linux)
-sudo apt install -y build-essential pkg-config libwebkit2gtk-4.1-dev \
-  libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
-
-# Unblocks Phase 5/6 (real-device ADB)
-sudo apt install -y android-tools-adb
-
-# Unblocks Phase 6 (Maestro mobile test runner)
-curl -Ls https://get.maestro.mobile.dev | bash
-
-# Verify Tauri build
-cd ~/cherenkov-qa/desktop/src-tauri
-CARGO_HTTP_CAINFO=/etc/ssl/certs/ca-certificates.crt ~/.cargo/bin/cargo build
-```
-
-`cargo` 1.96.0 is already installed in WSL (`~/.cargo/bin/`) and on Windows
-(`rustup` via winget). The 232 Python unit tests (all phases) pass as of this
-session.
+For a fresh environment setup, see `docs/HANDOVER.md` §8.
 
 ---
 
 ## Change log
 
+- **2026-06-19** — Updated to reflect Phase 9-16 implementation status (most tracks built/scaffolded). v1.0.0 release tagged.
 - **2026-06-11** — QA Reasoning Engine foundation added (`cherenkov/reasoning/`):
-  artifact-adaptive QA workflows per [ADR-007](adr/ADR-007-qa-reasoning-engine.md)
-  and [vision/19_QA_REASONING.md](vision/19_QA_REASONING.md). 29 unit tests passing.
-- **2026-06-10** — Updated: test pass rate 16 failures → 258 passing; Track B/D/E state refreshed for priority rounds #419, #425, #442; Phase 8 notes updated.
+  artifact-adaptive QA workflows per [ADR-007](adr/ADR-007-qa-reasoning-engine.md).
+- **2026-06-10** — Updated: test pass rate 16 failures → 258 passing; Track B/D/E state refreshed.
 - **2026-06-09** — Created this file. Status deduplicated from `HANDOVER.md`,
-  `README.md`, and `PHASE_PLAN.md`. `README.md` and `HANDOVER.md` now point
-  here. See [AGENTS.md](../AGENTS.md) for agent operating rules.
+  `README.md`, and `PHASE_PLAN.md`.
