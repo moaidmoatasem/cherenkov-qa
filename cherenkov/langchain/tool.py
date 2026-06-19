@@ -16,8 +16,10 @@ from pydantic import BaseModel, Field
 try:
     from langchain_core.tools import BaseTool
 except ImportError:  # pragma: no cover - fallback when langchain is not installed
+
     class BaseTool:  # type: ignore
         """Placeholder for environments without langchain_core."""
+
 
 from cherenkov.execution.validate import ValidationEngine
 from cherenkov.web.divergences import _DIVERGENCE_CORPUS
