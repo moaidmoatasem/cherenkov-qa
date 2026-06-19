@@ -1,8 +1,8 @@
 # CHERENKOV -- Session Handover
 
 **Date:** 2026-06-20
-**HEAD:** `f66a4da` on `main`
-**Tests:** 696 unit tests passing; G0 integrity suite 10/10; E11 60/60
+**HEAD:** `588d9d4` on `main`
+**Tests:** 728 unit tests passing; G0 integrity suite 10/10; E11 60/60
 **Branch:** `main` -- working tree clean (generated-test CRLF noise is cosmetic)
 
 ---
@@ -36,11 +36,23 @@ All code-deliverable Phase 1 items are DONE:
 
 ---
 
+## Phase 2 status (Rung 2 -- "the Platform")
+
+| Item | Status | Where |
+|---|---|---|
+| E2.1 -- `verify_system` MCP tool | **DONE** | `cherenkov/mcp/handlers.py`; 11 unit tests; `cherenkov mcp install` |
+| E2.5 -- `cherenkov check-suite` | **DONE** | `cherenkov/cli/commands/check_suite.py`; 13 unit tests |
+| E2.2 -- MCP context consumer | PENDING | Four open seams in `cherenkov/mcp/` |
+| E2.3 -- Continuous engine | PENDING | Watch spec/code/traffic changes |
+| E2.4 -- Source adapters (gRPC/GraphQL) | PENDING | `cherenkov/truth/sources/` |
+
 ## What landed this session
 
 | SHA | What |
 |---|---|
-| `f66a4da` | feat(e1.1): `cherenkov verify` command (E1.1) -- 8 tests |
+| `588d9d4` | feat(e2.5): `cherenkov check-suite` — catch AI cheating (13 tests) |
+| `8b50b9d` | feat(e2.1): `verify_system` MCP tool — system conformance over MCP (11 tests) |
+| `f66a4da` | feat(e1.1): `cherenkov verify` command (E1.1, 8 tests) |
 | `3075235` | feat(g0): E0.1 DONE -- 6 real divergences across 3 public APIs |
 | `1ca48e4` | feat(reflector): offline idiom replay + Skeptic/Generate injection (--learn) |
 
@@ -49,8 +61,9 @@ All code-deliverable Phase 1 items are DONE:
 ## Next code actions (ordered by impact)
 
 1. **E1.5 -- one-line install** -- publish to PyPI (`python3 -m build && twine upload`) or build the Docker image (Packaging EPIC #200-#207, ticket P-1). This is the last E1 gate item.
-2. **Phase 2 -- MCP verification server (E2.1)** -- publish `cherenkov mcp` as an installable MCP server so any agent can call CHERENKOV to verify a suite. Spec: `docs/specs/MCP_VERIFICATION_SERVER.md`.
-3. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` from a terminal with the Tauri CLI installed (`cargo install tauri-cli`).
+2. **E2.2 -- MCP context consumer** -- consume MCP for richer system context (four open seams in `cherenkov/mcp/`).
+3. **E2.3 -- Continuous engine** -- watch spec/code/traffic/schema changes and surface divergence on change; `daemon_cmd.py` exists, needs divergence integration.
+4. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` (`cargo install tauri-cli` first).
 
 ---
 
