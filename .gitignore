@@ -142,3 +142,4 @@ vscode-cherenkov/.vscode-test/
 .qwen/memory/
 .qwen/arena.yml
 .qwen/arena.yml.lock
+.mypy_cache/
