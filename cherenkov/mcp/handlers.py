@@ -28,6 +28,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from cherenkov.hitl.store import HitlQueue
+from cherenkov.divergence.proof_run import run_proof
 from cherenkov.validate.gate import ValidationGate
 from cherenkov.mcp.policy import PolicyEngine
 from cherenkov.chat.guard import get_guard
@@ -49,6 +50,7 @@ from cherenkov.mcp.contracts import (
     GovernanceCertificationInput,
     ComplianceFindingsInput,
     VerifySuiteInput,
+    VerifySystemInput,
     MCPContent,
     MCPResource,
     MCPResourceContent,
@@ -208,6 +210,39 @@ TOOLS: list[MCPTool] = [
                 ),
             },
             required=[],
+        ),
+    ),
+    MCPTool(
+        name="verify_system",
+        description=(
+            "Verify a live server against its OpenAPI spec — find spec↔implementation "
+            "divergences (status-code mismatches, missing required response headers, "
+            "schema violations). Runs the Skeptic→Witness divergence engine. "
+            "Offline mode by default (no LLM, no Ollama required). "
+            "Returns a VerificationReport (verify/v1) with each divergence, its "
+            "severity, and a curl repro. "
+            "This is the system-facing twin of `cherenkov verify` (E2.1)."
+        ),
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "base_url": MCPToolParam(
+                    type="string",
+                    description="Base URL of the live server to probe (e.g. https://petstore3.swagger.io/api/v3).",
+                ),
+                "spec_source": MCPToolParam(
+                    type="string",
+                    description="Path or HTTP URL to the OpenAPI spec JSON/YAML. Omit for built-in Petstore demo.",
+                ),
+                "use_llm": MCPToolParam(
+                    type="boolean",
+                    description="If true, use the LLM Skeptic (requires Ollama). Default: false (offline mode).",
+                ),
+                "run_id": MCPToolParam(
+                    type="string",
+                    description="Optional run identifier for correlation.",
+                ),
+            },
+            required=["base_url"],
         ),
     ),
     MCPTool(
@@ -781,6 +816,8 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
     try:
         if name == "verify_suite":
             return _tool_verify_suite(arguments).model_dump()
+        if name == "verify_system":
+            return _tool_verify_system(arguments).model_dump()
         if name == "hitl_list":
             return _tool_hitl_list(arguments).model_dump()
         if name == "hitl_approve":
@@ -1050,6 +1087,109 @@ def _tool_verify_suite(args: dict[str, Any]) -> MCPToolCallResult:
         "meta": {
             "engine_version": "1.0.0",
             "model_used": None,
+            "duration_ms": duration_ms,
+            "local_only": True,
+        },
+    }
+
+    return _ok_content(report)
+
+
+def _tool_verify_system(args: dict[str, Any]) -> MCPToolCallResult:
+    """Verify a live server against its OpenAPI spec — find spec↔impl divergences.
+
+    Wraps the Skeptic→Witness divergence engine (cherenkov verify CLI).
+    Offline mode by default — no LLM or Ollama required.
+    Returns a VerificationReport (verify/v1) with each divergence, its
+    severity, and a curl-repro command.  This is the system-facing MCP twin
+    of `cherenkov verify` (E2.1 / MCP_VERIFICATION_SERVER.md §4.2).
+    """
+    import time
+    import uuid
+
+    inp = VerifySystemInput.model_validate(args)
+
+    # ── Load spec (optional) ──────────────────────────────────────────────────
+    spec_dict: dict | None = None
+    if inp.spec_source:
+        if inp.spec_source.startswith("http://") or inp.spec_source.startswith("https://"):
+            import urllib.request
+            try:
+                with urllib.request.urlopen(inp.spec_source, timeout=15) as resp:  # noqa: S310
+                    import json as _json
+                    spec_dict = _json.loads(resp.read())
+            except Exception as exc:
+                return _err_content(f"Could not fetch spec from {inp.spec_source}: {exc}")
+        else:
+            import json as _json
+            resolved = os.path.realpath(os.path.abspath(inp.spec_source))
+            cwd = os.path.realpath(os.path.abspath("."))
+            if not resolved.startswith(cwd):
+                return _err_content("spec_source must be within the working directory.")
+            if not os.path.isfile(resolved):
+                return _err_content(f"spec_source not found: {inp.spec_source}")
+            try:
+                with open(resolved, encoding="utf-8") as fh:
+                    spec_dict = _json.load(fh)
+            except Exception as exc:
+                return _err_content(f"Could not parse spec: {exc}")
+
+    # ── Run divergence engine ──────────────────────────────────────────────────
+    try:
+        t0 = time.time()
+        reports = run_proof(
+            base_url=inp.base_url,
+            spec=spec_dict,
+            use_llm=inp.use_llm,
+        )
+        duration_ms = int((time.time() - t0) * 1000)
+    except Exception as exc:
+        return _err_content(f"verify_system error running divergence engine: {exc}")
+
+    # ── Map DivergenceReport list → VerificationReport (verify/v1) ────────────
+    findings = []
+    for r in reports:
+        sev = getattr(r.severity, "value", str(r.severity))
+        dc = getattr(r.divergence_class, "value", str(r.divergence_class))
+        ev = r.evidence
+        reproduction = ""
+        if r.repro_steps:
+            reproduction = "\n".join(r.repro_steps[:3])
+        findings.append(
+            {
+                "id": r.id,
+                "severity": sev,
+                "category": dc,
+                "title": f"{dc} — {r.endpoint or 'unknown'}",
+                "evidence": ev.request_summary if ev else "",
+                "diff": ev.diff if ev else "",
+                "claim_a": r.claim_a,
+                "claim_b": r.claim_b,
+                "reproduction": reproduction,
+                "suggested_fix": "Investigate the divergence and fix the implementation or spec.",
+            }
+        )
+
+    verdict = "fail" if findings else "pass"
+    report = {
+        "schema_version": "verify/v1",
+        "report_id": inp.run_id or str(uuid.uuid4()),
+        "target": {
+            "kind": "system",
+            "ref": inp.base_url,
+            "spec": inp.spec_source or "built-in Petstore demo",
+        },
+        "verdict": verdict,
+        "divergences": findings,
+        "summary": {
+            "total": len(findings),
+            "high": sum(1 for f in findings if f["severity"] == "high"),
+            "medium": sum(1 for f in findings if f["severity"] == "medium"),
+            "low": sum(1 for f in findings if f["severity"] == "low"),
+        },
+        "meta": {
+            "engine_version": "1.0.0",
+            "mode": "llm" if inp.use_llm else "offline",
             "duration_ms": duration_ms,
             "local_only": True,
         },

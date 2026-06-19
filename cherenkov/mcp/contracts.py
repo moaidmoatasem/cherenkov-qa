@@ -315,6 +315,37 @@ class VerifySuiteInput(BaseModel):
     )
 
 
+# ── verify_system (E2.1 — conformance/drift of a live system) ────────────────
+
+
+class VerifySystemInput(BaseModel):
+    """Input for the verify_system MCP tool (MCP_VERIFICATION_SERVER.md §4.2).
+
+    Probes a live server for spec↔implementation divergences using the
+    CHERENKOV divergence engine (Skeptic → Witness loop).  No LLM required
+    in the default offline mode.
+    """
+
+    base_url: str = Field(
+        description="Base URL of the live server to probe "
+        "(e.g. https://petstore3.swagger.io/api/v3).",
+    )
+    spec_source: str | None = Field(
+        default=None,
+        description="Path or URL to the OpenAPI spec JSON/YAML.  "
+        "Omit to use the built-in Petstore demo spec.",
+    )
+    use_llm: bool = Field(
+        default=False,
+        description="If true, use the LLM Skeptic for hypothesis generation "
+        "(requires Ollama). Default: offline mode (no LLM required).",
+    )
+    run_id: str | None = Field(
+        default=None,
+        description="Optional run identifier for correlation.",
+    )
+
+
 # ── JSON-RPC error codes (MCP uses standard JSON-RPC + MCP extensions) ───────
 PARSE_ERROR = -32700
 INVALID_REQUEST = -32600
