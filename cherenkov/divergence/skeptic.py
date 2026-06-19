@@ -109,7 +109,8 @@ class SkepticAgent:
             List of DivergenceHypothesis, one per plausible divergence found.
             Empty list if the model returns no parseable hypotheses.
         """
-        task = self._build_task(endpoint, method, spec_claims, context)
+        idioms_block = self._idioms_prompt(endpoint, method) if self.reflector else ""
+        task = self._build_task(endpoint, method, spec_claims, context, idioms_block)
         request = ReasoningRequest(
             task=task,
             output_schema=_HYPOTHESIS_SCHEMA,
@@ -147,12 +148,36 @@ class SkepticAgent:
 
     # ── private ───────────────────────────────────────────────────────────
 
+    def _idioms_prompt(self, endpoint: str, method: str) -> str:
+        """Build a prompt block from top idioms for the given endpoint.
+
+        Injects learned patterns (E7) as adversarial context so the Skeptic
+        prioritises divergence classes with a confirmed history.
+        """
+        if self.reflector is None:
+            return ""
+        idioms = self.reflector.get_top_idioms(min_decay=0.3, limit=5)
+        if not idioms:
+            return ""
+        lines = ["\nKnown patterns from past runs (high-confidence idioms):"]
+        for i in idioms:
+            ep = i.endpoint or "*"
+            lines.append(
+                f"  [{i.decay_score:.2f} x{i.confirm_count}] "
+                f"{i.divergence_class.value} {ep}: {i.pattern[:100]}"
+            )
+        lines.append(
+            "Pay special attention to these divergence classes on matching endpoints."
+        )
+        return "\n".join(lines)
+
     def _build_task(
         self,
         endpoint: str,
         method: str,
         spec_claims: dict[str, Any],
         context: str,
+        idioms_block: str = "",
     ) -> str:
         spec_json = json.dumps(spec_claims, indent=2)
         ctx_block = f"\nAdditional context:\n{context}" if context else ""
@@ -161,7 +186,8 @@ class SkepticAgent:
             f"{_DIVERGENCE_SPACE}\n"
             f"Target: {method.upper()} {endpoint}\n\n"
             f"OpenAPI spec fragment:\n{spec_json}"
-            f"{ctx_block}\n\n"
+            f"{ctx_block}"
+            f"{idioms_block}\n\n"
             "Generate hypotheses for every plausible divergence class.\n"
             "For each hypothesis supply:\n"
             "  claim_a      — what source A asserts (spec, DB schema, etc.)\n"

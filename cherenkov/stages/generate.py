@@ -77,9 +77,11 @@ class GenerateStage:
         scenario: Scenario,
         instruction: str,
         spec_rules_block: str = "",
+        strategies_block: str = "",
     ) -> str:
         """Constructs a recency-anchored prompt payload, placing strict openapi-fetch rules at the absolute end to override model semantic bias."""
         enrichment = f"\n\n{spec_rules_block}" if spec_rules_block else ""
+        strategies = f"\n\nKnown patterns from past runs:\n{strategies_block}" if strategies_block else ""
         return (
             "ENDPOINT SLICE (the only schema you need):\n"
             + json.dumps(
@@ -92,6 +94,7 @@ class GenerateStage:
                 indent=2,
             )
             + enrichment
+            + strategies
             + "\n\nSCENARIO:\n"
             + f"  endpoint: {method} {path}\n"
             + f"  case_type: {scenario.case_type}\n"
@@ -145,6 +148,7 @@ class GenerateStage:
         schemas: Optional[dict[str, Any]] = None,
         instruction: str = "",
         source_type: str = "openapi",
+        strategies_block: str = "",
     ) -> GenerateOutput:
         t0 = time.time()
         mutation_id = getattr(
@@ -236,6 +240,7 @@ class GenerateStage:
                 scenario=scenario,
                 instruction=instruction,
                 spec_rules_block=spec_rules_block,
+                strategies_block=strategies_block,
             )
 
         from cherenkov.cache.endpoint_cache import EndpointCache

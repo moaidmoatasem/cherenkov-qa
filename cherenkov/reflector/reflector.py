@@ -315,6 +315,55 @@ class Reflector:
         """Surface ranked Idioms for Mentor (E13) or CLI inspection."""
         return self.store.get_idioms(min_decay=min_decay, limit=limit)
 
+    def learn_from_history(
+        self,
+        min_decay: float = 0.1,
+        max_idioms: int = 50,
+    ) -> int:
+        """Offline replay: re-learn idioms from stored verdict history.
+
+        Re-processes all stored ACCEPT verdicts through _reinforce_idiom()
+        to discover idioms from past runs without re-running the Witness.
+        Useful for mining cross-session patterns after CI/CD runs.
+
+        Args:
+            min_decay: Minimum decay score to consider when reading existing idioms.
+            max_idioms: Maximum number of idioms to extract.
+
+        Returns:
+            Number of idioms reinforced or created.
+        """
+        self.store.decay_all_idioms(self.config.decay_half_life_hours)
+        accepted = self.store.get_recent_verdicts(limit=10_000)
+        count = 0
+        for v in accepted:
+            if v.outcome != VerdictOutcome.ACCEPT:
+                continue
+            if not v.divergence_class:
+                continue
+            try:
+                from cherenkov.core.contracts import DivergenceHypothesis, Severity
+                h = DivergenceHypothesis(
+                    id=v.hypothesis_id,
+                    divergence_class=v.divergence_class,
+                    claim_a=v.detail or "replayed",
+                    claim_b=v.detail or "replayed",
+                    predicted_evidence=v.detail or "",
+                    severity=Severity.MEDIUM,
+                    endpoint=v.endpoint,
+                    repro_steps=[],
+                )
+                self._reinforce_idiom(h)
+                count += 1
+            except Exception:
+                continue
+        self.log.info(
+            "learn_from_history complete",
+            verdicts_scanned=len(accepted),
+            idioms_reinforced=count,
+        )
+        return count
+
     def get_stats(self) -> dict[str, Any]:
         """Return high-level reflector statistics."""
         self.store.decay_all_idioms(self.config.decay_half_life_hours)

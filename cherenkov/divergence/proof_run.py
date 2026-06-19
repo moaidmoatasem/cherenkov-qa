@@ -484,6 +484,11 @@ def _cli() -> None:
         help="Print reflector statistics after the run",
     )
     parser.add_argument(
+        "--learn",
+        action="store_true",
+        help="Offline replay: re-learn idioms from stored verdict history before the run",
+    )
+    parser.add_argument(
         "--output",
         help="Write divergence reports to this JSON file",
     )
@@ -501,6 +506,10 @@ def _cli() -> None:
     if args.reflector:
         store = VerdictStore()
         reflector = Reflector(store=store)
+
+    if args.learn and reflector:
+        n = reflector.learn_from_history()
+        print(f"  Offline replay : {n} idiom(s) reinforced from verdict history")
 
     print("CHERENKOV Proof Run")
     print(f"  Target : {args.base_url}")
