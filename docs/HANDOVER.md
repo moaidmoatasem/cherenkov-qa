@@ -7,27 +7,6 @@
 
 ---
 
-## SESSION HANDOVER — 2026-06-19 (session 4 — Phase 13 Enterprise Tier)
-
-**Branch:** `main`  
-**Tests:** Full `pytest` suite green across integration and unit adapters.  
-**Ruff:** ✅ 0 errors.  
-**Phase 13:** Fully completed.
-
-**What landed this session:** 
-- **Phase 13 (Enterprise Tier):** 
-  - Created `cherenkov/enterprise/org.py` for Multi-tenant Organization/Team/Project management with quotas.
-  - Created `cherenkov/enterprise/audit.py` for append-only JSONL-based audit logging and CSV/JSON export.
-  - Integrated `SOC2ReportGenerator` (`soc2.py`) and `GDPRManager` (`gdpr.py`) with `__init__.py`.
-  - Added BYO-LLM wrappers for Azure OpenAI and AWS Bedrock (`cherenkov/substrate/providers/azure_openai.py`, `bedrock.py`).
-  - Added CLI bindings for enterprise functions: `cherenkov enterprise [org|audit|compliance]`.
-  - Added full end-to-end integration tests in `tests/integration/test_enterprise.py`.
-
-**Immediate next steps for next agent:** 
-- Review `docs/PRODUCT_STRATEGY_ROADMAP.md` for remaining Phase 14 (Spec Guardian) and Phase 15 (Fine-tuned model) tasks.
-
----
-
 ## SESSION HANDOVER — 2026-06-19 (session 3 — Product Expansion & Market Launch)
 
 > **This section is a summary.** For the full consolidated handover with all recent work completing the extended roadmap (Phases 9-16), read **`docs/HANDOVER_SESSION_2026-06-19.md`**.

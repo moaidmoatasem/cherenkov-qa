@@ -21,9 +21,11 @@ _SETTINGS_PROTECTED_FIELDS = {"security": {"auth_secret", "egress_policy"}}
 
 @router.get("/api/v1/settings")
 async def api_get_settings(_auth=Depends(verify_api_key)):
-    redacted = {
-        k: (dict(v) if isinstance(v, dict) else v) for k, v in _settings.items()
-    }
+    return _redact_settings(_settings)
+
+
+def _redact_settings(s: dict) -> dict:
+    redacted = {k: (dict(v) if isinstance(v, dict) else v) for k, v in s.items()}
     if "auth_secret" in redacted.get("security", {}):
         redacted["security"]["auth_secret"] = (
             "***" if redacted["security"]["auth_secret"] else ""
@@ -42,7 +44,7 @@ async def update_settings(body: dict, _auth=Depends(verify_api_key)):
                 _settings[key][sub_key] = sub_val
         elif key in _settings and key not in _SETTINGS_PROTECTED_FIELDS:
             _settings[key] = val
-    return _settings
+    return _redact_settings(_settings)
 
 
 @router.get("/api/v1/governance")

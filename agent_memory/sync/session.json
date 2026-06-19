@@ -1,15 +1,15 @@
 {
   "session": {
-    "id": "sess_20260618231915_7f9c27",
+    "id": "sess_20260618212938_e64967",
     "status": "closed",
-    "task": "Handover wrap-up",
-    "started_at": "2026-06-18T23:19:15.345136+00:00",
-    "ended_at": "2026-06-18T23:19:22.285714+00:00",
-    "findings_count": 1,
+    "task": "qa_report",
+    "started_at": "2026-06-18T21:29:38.853366+00:00",
+    "ended_at": "2026-06-18T22:41:05.925525+00:00",
+    "findings_count": 0,
     "token_total": 0,
-    "summary": "Completed final system regression testing and prepared handover for next agent.",
+    "summary": "Completed Phase 9 Market Launch kit (Discord, PH/HN copy, Demo script) and Phase 10 Jira CI CLI integration (--export-jira).",
     "compacted": true,
-    "task_type": "Handover wrap-up",
+    "task_type": "qa_report",
     "source": "cherenkov"
   },
   "previous_sessions": [
@@ -33,14 +33,7 @@
       "ended_at": "2026-06-16T01:21:24.399466+00:00",
       "summary": "Built 18 integration tests bridging evals, adversarial, and synthetic modules, verifying post-generation pipeline stages with mocked LLM and filesystem. All 100 tests pass.",
       "token_total": 0
-    },
-    {
-      "id": "sess_20260618212938_e64967",
-      "task": "qa_report",
-      "ended_at": "2026-06-18T22:41:05.925525+00:00",
-      "summary": "Completed Phase 9 Market Launch kit (Discord, PH/HN copy, Demo script) and Phase 10 Jira CI CLI integration (--export-jira).",
-      "token_total": 0
     }
   ],
-  "sessions_since_compact": 4
+  "sessions_since_compact": 3
 }
