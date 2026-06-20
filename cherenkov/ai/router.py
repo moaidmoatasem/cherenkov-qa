@@ -58,5 +58,13 @@ class InferenceRouter:
             model=os.getenv("GEN_MODEL", "qwen2.5-coder:7b"),
         )
 
+    # Alias for backward compatibility (used in mcp/handlers.py)
+    def generate(self, prompt: str, system_prompt: str | None = None) -> str:
+        return self.complete(prompt, system_prompt)
+
     def set_provider(self, name: str) -> None:
         self.provider = name
+
+
+# Alias for backward compatibility (used in mcp/handlers.py)
+AIRouter = InferenceRouter

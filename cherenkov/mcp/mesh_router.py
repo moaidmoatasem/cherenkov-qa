@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from cherenkov.core.errors import get_logger
+from cherenkov.mcp.client import MCPClient
 
 log = get_logger(__name__)
 
@@ -150,6 +151,29 @@ class MCPRegistry:
         for reg_id in stale:
             self.unregister_server(reg_id)
         return len(stale)
+
+    def forward_tool_call(
+        self, tool_name: str, arguments: dict[str, Any]
+    ) -> dict[str, Any] | None:
+        """Forward a tool call to the registered server that owns it.
+
+        Returns the raw result dict from the remote server, or None if no
+        registered server handles this tool.  Raises MCPClientError on
+        transport / protocol failure.
+        """
+        server = self.resolve_tool(tool_name)
+        if server is None:
+            return None
+        client = MCPClient(server.url)
+        result = client.call_tool(tool_name, arguments)
+        # Mark server as healthy after a successful call
+        self.health_check(
+            next(
+                (rid for rid, s in self._servers.items() if s is server),
+                "",
+            )
+        )
+        return result
 
 
 # Global singleton

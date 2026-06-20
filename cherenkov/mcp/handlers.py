@@ -32,6 +32,8 @@ from cherenkov.divergence.proof_run import run_proof
 from cherenkov.validate.gate import ValidationGate
 from cherenkov.mcp.policy import PolicyEngine
 from cherenkov.chat.guard import get_guard
+from cherenkov.mcp.mesh_router import get_registry
+from cherenkov.mcp.client import MCPClientError
 from cherenkov.mcp.contracts import (
     HitlApproveInput,
     HitlListInput,
@@ -874,10 +876,22 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_registry_list(arguments).model_dump()
         if name == "mcp_registry_publish":
             return _tool_registry_publish(arguments).model_dump()
+        if name == "auto_heal_code":
+            return _tool_auto_heal_code(arguments).model_dump()
     except ValidationError as exc:
         return _err_content(f"Invalid input: {exc}").model_dump()
     except Exception as exc:
         return _err_content(f"Handler error: {exc}").model_dump()
+
+    # ── Mesh forwarding: try registered external servers (E2.2) ───────────────
+    try:
+        result = get_registry().forward_tool_call(name, arguments)
+        if result is not None:
+            return result
+    except MCPClientError as exc:
+        return _err_content(f"Mesh forward error for '{name}': {exc}").model_dump()
+    except Exception as exc:
+        return _err_content(f"Mesh routing error: {exc}").model_dump()
 
     return _err_content(f"Unknown tool: {name!r}").model_dump()
 
@@ -1920,6 +1934,58 @@ def _tool_explain_finding(args: dict[str, Any]) -> MCPToolCallResult:
         return _ok_content({"finding_id": inp.finding_id, "explanation": explanation})
     except Exception as exc:
         return _err_content(f"explain_finding error: {exc}")
+
+
+def _tool_auto_heal_code(args: dict[str, Any]) -> MCPToolCallResult:
+    """Diagnose a failed validation item and generate a suggested code patch.
+
+    Suggest-only (D7 invariant): the patch is returned as a string, never
+    written to disk automatically. The caller decides whether to apply it.
+    """
+    item_id = args.get("item_id", "")
+    if not item_id:
+        return _err_content("item_id is required.")
+    try:
+        q = _queue()
+        item = q.get(item_id)
+        if not item:
+            return _err_content(f"HITL item {item_id} not found.")
+
+        # Attempt LLM-assisted repair via the AI router
+        try:
+            from cherenkov.ai.router import AIRouter
+
+            router = AIRouter()
+            prompt = (
+                f"A CHERENKOV HITL validation item failed.\n"
+                f"Item ID: {item.id}\n"
+                f"Failure: {item.review_gate_failed or 'unknown gate'}\n"
+                f"Label: {item.mutation_label or 'unknown'}\n"
+                f"Reason: {item.confidence_reason or 'no detail'}\n\n"
+                "Produce a minimal Python or TypeScript code patch that fixes the "
+                "failing assertion. Return only the patch — no explanation. "
+                "IMPORTANT: Suggest-only; the caller applies the patch."
+            )
+            patch = router.generate(prompt)
+        except Exception:
+            patch = (
+                f"# Auto-heal unavailable (LLM/router error).\n"
+                f"# Manual fix required for item {item_id}.\n"
+                f"# Gate that failed: {item.review_gate_failed or 'unknown'}\n"
+                f"# Hint: {item.confidence_reason or 'no detail available'}"
+            )
+
+        return _ok_content(
+            {
+                "item_id": item_id,
+                "gate_failed": item.review_gate_failed,
+                "suggested_patch": patch,
+                "applied": False,
+                "note": "Suggest-only (D7 invariant). Review before applying.",
+            }
+        )
+    except Exception as exc:
+        return _err_content(f"auto_heal_code error: {exc}")
 
 
 def _get_evidence_listing() -> dict[str, Any]:
