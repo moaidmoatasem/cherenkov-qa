@@ -64,6 +64,7 @@ class EvalReport:
     results: list[EvalResult]
     model: str
     eval_timestamp: str
+    prompt_fingerprint: dict = dataclasses.field(default_factory=dict)
 
     def pass_rate(self) -> float:
         if not self.results:
@@ -90,6 +91,7 @@ class EvalReport:
             "results": [r.summary() for r in self.results],
             "model": self.model,
             "timestamp": self.eval_timestamp,
+            "prompt_fingerprint": self.prompt_fingerprint,
         }
 
     @classmethod
@@ -124,4 +126,5 @@ class EvalReport:
             results=results,
             model=data.get("model", "unknown"),
             eval_timestamp=data.get("timestamp", ""),
+            prompt_fingerprint=data.get("prompt_fingerprint", {}),
         )

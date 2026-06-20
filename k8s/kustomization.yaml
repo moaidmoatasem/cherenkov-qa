@@ -17,3 +17,6 @@ resources:
   - operator-rbac.yaml
   - operator-deployment.yaml
   - crd-conformancecheck.yaml
+  - cherenkov-hpa.yaml
+  - cherenkov-pdb.yaml
+  - cherenkov-network-policy.yaml

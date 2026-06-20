@@ -1,0 +1,100 @@
+name: Self-Dogfood — CHERENKOV verifies itself
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cherenkov/web/**"
+      - "cherenkov/cli/**"
+      - "cherenkov/core/**"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  dogfood:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install CHERENKOV
+        run: pip install -e ".[dev]"
+
+      - name: Start CHERENKOV server
+        run: |
+          cherenkov review --host 0.0.0.0 --port 8765 &
+          echo "CHERENKOV_PID=$!" >> "$GITHUB_ENV"
+        env:
+          CHERENKOV_ENV: ci
+          SUBSTRATE_PROVIDER: mock
+
+      - name: Wait for /health
+        run: |
+          for i in $(seq 1 20); do
+            if curl -sf http://localhost:8765/health; then
+              echo "Server ready after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server did not start in 20s" >&2
+          exit 1
+
+      - name: Fetch self-generated OpenAPI spec
+        run: |
+          curl -sf http://localhost:8765/openapi.json > /tmp/cherenkov-openapi.json
+          echo "=== OpenAPI endpoint count ==="
+          python3 -c "
+          import json, sys
+          spec = json.load(open('/tmp/cherenkov-openapi.json'))
+          paths = spec.get('paths', {})
+          print(f'{len(paths)} paths in spec')
+          sys.exit(0 if paths else 1)
+          "
+
+      - name: Run cherenkov verify against self
+        run: |
+          cherenkov verify \
+            --spec /tmp/cherenkov-openapi.json \
+            --base-url http://localhost:8765 \
+            --output /tmp/self-verify-report.json \
+            --format json
+        env:
+          SUBSTRATE_PROVIDER: mock
+
+      - name: Assert pass rate ≥ 90%
+        run: |
+          python3 - << 'PYEOF'
+          import json, sys
+          report = json.load(open("/tmp/self-verify-report.json"))
+          pass_rate = report.get("pass_rate", 0)
+          total = report.get("total", 0)
+          passed = report.get("passed", 0)
+          print(f"Self-verify: {passed}/{total} passed ({pass_rate:.1%})")
+          if pass_rate < 0.90:
+              print(f"FAIL: pass rate {pass_rate:.1%} < 90% threshold", file=sys.stderr)
+              sys.exit(1)
+          print("PASS: self-dogfood gate cleared")
+          PYEOF
+
+      - name: Upload self-verify report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-verify-report
+          path: /tmp/self-verify-report.json
+          retention-days: 14
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -n "${CHERENKOV_PID:-}" ]; then
+            kill "$CHERENKOV_PID" 2>/dev/null || true
+          fi

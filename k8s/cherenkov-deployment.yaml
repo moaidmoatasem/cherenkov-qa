@@ -4,7 +4,7 @@ metadata:
   name: cherenkov
   namespace: cherenkov
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: cherenkov
@@ -12,21 +12,57 @@ spec:
     metadata:
       labels:
         app: cherenkov
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
         - name: cherenkov
           image: cherenkov-qa:latest
           imagePullPolicy: IfNotPresent
-          command: ["sleep", "infinity"]
+          command: ["cherenkov", "review", "--host", "0.0.0.0", "--port", "8000"]
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
           env:
             - name: OLLAMA_HOST
               value: http://ollama:11434
             - name: PRISM_HOST
               value: http://prism:4010
+            - name: CHERENKOV_EGRESS
+              value: "external"
+          envFrom:
+            - secretRef:
+                name: cherenkov-secrets
+                optional: true
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
           resources:
             limits:
-              cpu: "0.5"
-              memory: 256Mi
+              cpu: "2"
+              memory: 1Gi
             requests:
-              cpu: "0.1"
-              memory: 64Mi
+              cpu: "250m"
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop: ["ALL"]

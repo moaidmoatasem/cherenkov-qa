@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any
 
 from cherenkov.evals.core import EvalReport
+from cherenkov.evals.prompt_version import get_prompt_fingerprint, prompt_changed
 
 
 _BASELINE_PATH = Path("bench/eval-baseline.json")
@@ -96,11 +97,13 @@ class RegressionGuard:
         """Write the current report as the new baseline (call after a green run)."""
         self.baseline_path.parent.mkdir(parents=True, exist_ok=True)
         metrics = {"pass_rate": report.pass_rate(), **report.metric_averages()}
+        pf = report.prompt_fingerprint or get_prompt_fingerprint()
         baseline = {
             "metrics": metrics,
             "model": report.model,
             "timestamp": report.eval_timestamp,
             "total_scenarios": report.total_scenarios(),
+            "prompt_fingerprint": pf,
         }
         self.baseline_path.write_text(
             json.dumps(baseline, indent=2), encoding="utf-8"
@@ -151,8 +154,16 @@ class RegressionGuard:
         findings = self.check(report)
         baseline = self.load_baseline() or {}
         current = {"pass_rate": report.pass_rate(), **report.metric_averages()}
+        baseline_pf = (self.load_baseline() or {}).get("prompt_fingerprint", {}) if self.baseline_path.exists() else {}
+        current_pf = report.prompt_fingerprint or get_prompt_fingerprint()
+        changed_prompts = prompt_changed(baseline_pf, current_pf) if baseline_pf else []
         return {
             "regression_detected": bool(findings),
+            "prompt_changed": changed_prompts,
+            "prompt_change_warning": (
+                f"Prompt files changed since baseline: {changed_prompts}. "
+                "Metric shift may reflect prompt change, not model regression."
+            ) if changed_prompts else None,
             "findings": [asdict(f) for f in findings],
             "baseline": baseline,
             "current": current,

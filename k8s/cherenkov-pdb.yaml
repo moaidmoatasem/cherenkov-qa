@@ -1,0 +1,11 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cherenkov
+  namespace: cherenkov
+spec:
+  # Ensure at least 1 pod survives voluntary disruptions (node drain, upgrades)
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cherenkov
