@@ -1953,9 +1953,9 @@ def _tool_auto_heal_code(args: dict[str, Any]) -> MCPToolCallResult:
 
         # Attempt LLM-assisted repair via the AI router
         try:
-            from cherenkov.ai.router import AIRouter
+            from cherenkov.ai.router import InferenceRouter
 
-            router = AIRouter()
+            router = InferenceRouter()
             prompt = (
                 f"A CHERENKOV HITL validation item failed.\n"
                 f"Item ID: {item.id}\n"
