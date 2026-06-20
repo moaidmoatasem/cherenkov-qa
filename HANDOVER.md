@@ -1,8 +1,8 @@
 # CHERENKOV -- Session Handover
 
 **Date:** 2026-06-20
-**HEAD:** `588d9d4` on `main`
-**Tests:** 728 unit tests passing; G0 integrity suite 10/10; E11 60/60
+**HEAD:** `d0f3c17` on `main`
+**Tests:** 795 unit tests passing (3 pre-existing OCR failures unrelated to AQE); G0 integrity suite 10/10; E11 60/60
 **Branch:** `main` -- working tree clean (generated-test CRLF noise is cosmetic)
 
 ---
@@ -42,7 +42,7 @@ All code-deliverable Phase 1 items are DONE:
 |---|---|---|
 | E2.1 -- `verify_system` MCP tool | **DONE** | `cherenkov/mcp/handlers.py`; 11 unit tests; `cherenkov mcp install` |
 | E2.5 -- `cherenkov check-suite` | **DONE** | `cherenkov/cli/commands/check_suite.py`; 13 unit tests |
-| E2.2 -- MCP context consumer | PENDING | Four open seams in `cherenkov/mcp/` |
+| E2.2 -- MCP context consumer | **DONE** | `cherenkov/mcp/client.py` (MCPClient); mesh forwarding; `auto_heal_code` dispatch; 19 unit tests |
 | E2.3 -- Continuous engine | PENDING | Watch spec/code/traffic changes |
 | E2.4 -- Source adapters (gRPC/GraphQL) | PENDING | `cherenkov/truth/sources/` |
 
@@ -60,8 +60,7 @@ All code-deliverable Phase 1 items are DONE:
 
 ## Next code actions (ordered by impact)
 
-1. **E2.2 -- MCP context consumer** -- consume MCP for richer system context (four open seams in `cherenkov/mcp/`; spec: `docs/specs/MCP_VERIFICATION_SERVER.md §4.2`).
-2. **E2.3 -- Continuous engine** -- watch spec/code/traffic/schema changes and surface divergence on change; `daemon_cmd.py` exists, needs divergence integration.
+1. **E2.3 -- Continuous engine** -- watch spec/code/traffic/schema changes and surface divergence on change; `daemon_cmd.py` exists, needs divergence integration.
 3. **E2.4 -- Source adapters (gRPC/GraphQL)** -- add to `cherenkov/truth/sources/`; OpenAPI/AsyncAPI/Postman already exist.
 4. **E0.3 -- Human validation gate** -- recruit ≥3 QA practitioners to complete quickstart unaided. `install.sh` now reduces their install burden. Cannot be automated.
 5. **PyPI publish** -- `twine upload dist/*` once PyPI credentials are available; `dist/cherenkov-1.0.0.whl` is already built.
