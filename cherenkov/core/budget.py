@@ -58,6 +58,8 @@ class _ChargeRecord:
     cost_usd: float
     tokens: int
     cache_hit: bool = False
+    org_id: str = "default"
+    run_id: str = ""
 
 
 @dataclass
@@ -138,6 +140,8 @@ class RunBudget:
         model: str = "unknown",
         provider: str = "unknown",
         cache_hit: bool = False,
+        org_id: str = "default",
+        run_id: str = "",
     ) -> None:
         """Record actual post-request cost.
 
@@ -147,6 +151,8 @@ class RunBudget:
             model: Model identifier string.
             provider: Provider name (openai, anthropic, ollama, …).
             cache_hit: Whether the response was served from provider cache.
+            org_id: Organisation identifier for cost attribution (enterprise).
+            run_id: Run/session identifier for per-run breakdown.
         """
         cap = self._effective_cap()
         with self._lock:
@@ -158,6 +164,8 @@ class RunBudget:
                     cost_usd=cost_usd,
                     tokens=tokens,
                     cache_hit=cache_hit,
+                    org_id=org_id,
+                    run_id=run_id,
                 )
             )
             spent = self._spent
@@ -182,6 +190,7 @@ class RunBudget:
             spent = self._spent
 
         by_model: dict[str, dict] = {}
+        by_org: dict[str, dict] = {}
         for r in records:
             key = f"{r.provider}/{r.model}"
             if key not in by_model:
@@ -192,6 +201,13 @@ class RunBudget:
             if r.cache_hit:
                 by_model[key]["cache_hits"] += 1
 
+            org = r.org_id or "default"
+            if org not in by_org:
+                by_org[org] = {"requests": 0, "tokens": 0, "cost_usd": 0.0}
+            by_org[org]["requests"] += 1
+            by_org[org]["tokens"] += r.tokens
+            by_org[org]["cost_usd"] += r.cost_usd
+
         return {
             "spent_usd": spent,
             "cap_usd": None if cap == _NO_CAP else cap,
@@ -201,6 +217,7 @@ class RunBudget:
             "total_tokens": sum(r.tokens for r in records),
             "cache_hits": sum(1 for r in records if r.cache_hit),
             "by_model": by_model,
+            "by_org": by_org,
         }
 
     def reset(self) -> None:
