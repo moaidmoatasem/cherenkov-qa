@@ -87,3 +87,10 @@ async def run_doctor_api():
 
     ready = ollama_bin and node_ok and pw_ok and prism_ok
     return {"checks": checks, "ready": ready}
+
+
+@router.get("/api/v1/flags")
+async def get_feature_flags():
+    """Return all feature flag values (resolved with env var / file / default priority)."""
+    from cherenkov.core.flags import all_flags
+    return {"flags": all_flags()}
