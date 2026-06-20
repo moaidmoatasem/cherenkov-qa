@@ -55,6 +55,7 @@ function InnerApp() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [status, setStatus] = useState<'Live' | 'Idle'>('Idle');
   const [activeSpecPath, setActiveSpecPath] = useState<string>('');
+  const [projectContext, setProjectContext] = useState<{ specPath: string; targetUrl: string; projectName: string } | null>(null);
 
   React.useEffect(() => {
     fetchProjects().then(data => {
@@ -166,6 +167,21 @@ function InnerApp() {
   const handleNewRun = () => {
     setActiveTab('setup');
     setStatus('Idle');
+  };
+
+  // Called when the New Project Wizard finishes — lands user on Author tab pre-seeded with project context
+  const handleProjectCreated = (project: any, specPath: string) => {
+    setProjects(prev => {
+      const exists = prev.find(p => p.id === project.id);
+      return exists ? prev : [project, ...prev];
+    });
+    setSelectedProjectId(project.id);
+    setProjectContext({
+      specPath: specPath || project.spec_path || '',
+      targetUrl: project.target_url || '',
+      projectName: project.name,
+    });
+    setActiveTab('author');
   };
 
   // Triggers active pipeline execution monitor
@@ -310,6 +326,7 @@ function InnerApp() {
                 selectedProjectId={selectedProjectId}
                 onSelectProject={handleSelectProject}
                 onNewRun={handleNewRun}
+                onProjectCreated={handleProjectCreated}
               />
             )}
 
@@ -380,7 +397,10 @@ function InnerApp() {
             )}
 
             {activeTab === 'author' && (
-              <AuthorScreen />
+              <AuthorScreen
+                projectContext={projectContext}
+                onStartPipeline={handleStartPipeline}
+              />
             )}
 
             {activeTab === 'signals' && (

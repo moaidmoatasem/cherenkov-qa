@@ -36,7 +36,7 @@ async def get_truth_map():
 
     store = VerdictStore()
     try:
-        idioms = store.list_idioms(limit=50)
+        idioms = store.get_idioms(limit=50)
     except Exception:
         idioms = []
     return [
@@ -117,7 +117,7 @@ async def get_memory():
 
     store = VerdictStore()
     try:
-        raw_idioms = store.list_idioms(limit=50)
+        raw_idioms = store.get_idioms(limit=50)
     except Exception:
         raw_idioms = []
 

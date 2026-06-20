@@ -9,8 +9,14 @@ import { Card, PageHeader } from './ui';
 import { fetchMemory } from '../lib/api';
 import { useToast } from './ui/Toast';
 import { runPipeline } from '../lib/api';
+import { EndpointRichness } from '../types';
 
-export default function AuthorScreen() {
+interface AuthorScreenProps {
+  projectContext?: { specPath: string; targetUrl: string; projectName: string } | null;
+  onStartPipeline?: (endpoints: EndpointRichness[], specPath: string, targetUrl?: string) => void;
+}
+
+export default function AuthorScreen({ projectContext, onStartPipeline }: AuthorScreenProps) {
   const [mentorIdioms, setIdioms] = useState<any[]>([]);
   useEffect(() => {
     fetchMemory().then(d => setIdioms(d.idioms || []));
@@ -18,6 +24,13 @@ export default function AuthorScreen() {
   const { toast: addToast } = useToast();
   const [intent, setIntent] = useState('');
   const [isRunning, setIsRunning] = useState(false);
+
+  // Pre-seed intent when a project context arrives (e.g. after New Project Wizard)
+  useEffect(() => {
+    if (projectContext?.projectName && !intent) {
+      setIntent(`Verify the key user flows for the ${projectContext.projectName} API are working correctly.`);
+    }
+  }, [projectContext?.projectName]);
   const [runResult, setRunResult] = useState<{ run_id: string; status: string } | null>(null);
   const [isDone, setIsDone] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
@@ -53,9 +66,11 @@ export default function AuthorScreen() {
     setLiveLogs([]);
 
     const payloadIntent = authorMode === 'intent' ? intent : `Select: ${detSelector} | Action: ${detAction} | Expected: ${detExpected}`;
+    const specPath = projectContext?.specPath || 'stub/target_spec.json';
+    const targetUrl = projectContext?.targetUrl || undefined;
 
     try {
-      const result = await runPipeline({ spec_path: 'stub/target_spec.json', intent: payloadIntent });
+      const result = await runPipeline({ spec_path: specPath, intent: payloadIntent, target_url: targetUrl });
       setRunResult(result);
       setIsRunning(false);
       setIsDone(true);
@@ -89,6 +104,22 @@ export default function AuthorScreen() {
         title="Author by Intent"
         description="Transform natural language test goals into active client browser runs and eject standalone Playwright specifications."
       />
+
+      {projectContext && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-glow-blue/10 border border-glow-blue/30 text-sm">
+          <CheckCircle2 className="w-4 h-4 text-glow-blue shrink-0" />
+          <div className="flex-1 min-w-0">
+            <span className="text-glow-bright font-semibold">{projectContext.projectName}</span>
+            {projectContext.targetUrl && (
+              <span className="ml-2 text-text-muted font-mono text-xs">{projectContext.targetUrl}</span>
+            )}
+            {projectContext.specPath && (
+              <span className="ml-2 text-text-muted font-mono text-xs">· spec: {projectContext.specPath.split('/').pop()}</span>
+            )}
+          </div>
+          <span className="text-xs text-glow-blue font-mono uppercase tracking-wider shrink-0">Project Active</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Left 2 columns: Authoring core */}

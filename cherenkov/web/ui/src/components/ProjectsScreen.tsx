@@ -18,21 +18,25 @@ import {
 } from 'lucide-react';
 import { Project } from '../types';
 import CherenkovLogo from './CherenkovLogo';
+import NewProjectWizard from './NewProjectWizard';
 
 interface ProjectsScreenProps {
   projects: Project[];
   selectedProjectId: string | null;
   onSelectProject: (id: string) => void;
   onNewRun: () => void;
+  onProjectCreated?: (project: any, specPath: string) => void;
 }
 
 export default function ProjectsScreen({
   projects,
   selectedProjectId,
   onSelectProject,
-  onNewRun
+  onNewRun,
+  onProjectCreated,
 }: ProjectsScreenProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [showWizard, setShowWizard] = useState(false);
 
   const filteredProjects = projects.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -78,15 +82,15 @@ export default function ProjectsScreen({
           </div>
         </div>
 
-        {/* New Run Button */}
+        {/* New Project Button */}
         <button
-          onClick={onNewRun}
+          onClick={() => setShowWizard(true)}
           id="btn-projects-new-run"
           data-testid="new-run-btn"
           className="flex items-center gap-2 px-5 py-2.5 rounded-md bg-glow-blue hover:bg-opacity-90 text-slate-950 text-sm font-semibold transition-all duration-300 shadow-lg shadow-cyan-500/20"
         >
           <Plus className="w-4 h-4 text-slate-950 stroke-[3px]" />
-          <span>New Validation Run</span>
+          <span>New Project</span>
         </button>
       </div>
 
@@ -124,10 +128,10 @@ export default function ProjectsScreen({
             "See your tests being born."
           </div>
           <button
-            onClick={onNewRun}
+            onClick={() => setShowWizard(true)}
             className="mt-6 px-4 py-2 rounded bg-accent-bg border border-glow-blue text-glow-bright text-sm hover:bg-glow-blue hover:text-bg-base transition duration-300"
           >
-            Create Your First Run
+            Create Your First Project
           </button>
         </div>
       ) : (
@@ -286,6 +290,16 @@ export default function ProjectsScreen({
             "See your tests being born."
           </p>
         </div>
+      )}
+
+      {showWizard && (
+        <NewProjectWizard
+          onClose={() => setShowWizard(false)}
+          onCreated={(project, specPath) => {
+            setShowWizard(false);
+            if (onProjectCreated) onProjectCreated(project, specPath);
+          }}
+        />
       )}
     </div>
   );
