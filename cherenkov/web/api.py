@@ -105,3 +105,6 @@ app.include_router(ops_router)
 from cherenkov.web.middleware.security import add_security_middleware  # noqa: E402
 
 add_security_middleware(app)
+
+from cherenkov.web.errors import install_error_handlers  # noqa: E402
+install_error_handlers(app)
