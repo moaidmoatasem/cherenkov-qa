@@ -1,9 +1,9 @@
 # CHERENKOV -- Session Handover
 
 **Date:** 2026-06-20
-**HEAD:** `d0f3c17` on `main`
-**Tests:** 795 unit tests passing (3 pre-existing OCR failures unrelated to AQE); G0 integrity suite 10/10; E11 60/60
-**Branch:** `main` -- working tree clean (generated-test CRLF noise is cosmetic)
+**HEAD:** see `git log`
+**Tests:** 770 unit tests passing (3 pre-existing OCR failures unrelated to AQE); G0 integrity suite 10/10; E11 60/60; +12 E2.3 daemon tests
+**Branch:** `main`
 
 ---
 
@@ -43,7 +43,7 @@ All code-deliverable Phase 1 items are DONE:
 | E2.1 -- `verify_system` MCP tool | **DONE** | `cherenkov/mcp/handlers.py`; 11 unit tests; `cherenkov mcp install` |
 | E2.5 -- `cherenkov check-suite` | **DONE** | `cherenkov/cli/commands/check_suite.py`; 13 unit tests |
 | E2.2 -- MCP context consumer | **DONE** | `cherenkov/mcp/client.py` (MCPClient); mesh forwarding; `auto_heal_code` dispatch; 19 unit tests |
-| E2.3 -- Continuous engine | PENDING | Watch spec/code/traffic changes |
+| E2.3 -- Continuous engine | **DONE** | `cherenkov daemon --url <target>` polls on interval, detects spec file changes, runs `run_proof`, queues divergences to HitlQueue; 12 unit tests |
 | E2.4 -- Source adapters (gRPC/GraphQL) | PENDING | `cherenkov/truth/sources/` |
 
 ## What landed this session

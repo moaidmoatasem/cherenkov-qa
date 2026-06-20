@@ -207,15 +207,6 @@ def get_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Exit with code 1 if any API drift is detected",
     )
-    # Legacy engine CLI compatibility: operator passes --spec and --output
-    validate_parser.add_argument(
-        "--spec", help="Path to OpenAPI spec (JSON/YAML) — legacy compat"
-    ).completer = argcomplete.completers.FilesCompleter()
-    validate_parser.add_argument(
-        "--output",
-        default=".cherenkov/report",
-        help="Output path (extension inferred from --format if not given)",
-    ).completer = argcomplete.completers.FilesCompleter()
 
     diff_parser = subparsers.add_parser(
         "diff", help="Compare two OpenAPI specs for breaking changes"

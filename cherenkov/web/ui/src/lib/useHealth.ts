@@ -30,7 +30,7 @@ export function useHealth(intervalMs = 10000): HealthState {
   const [genModel, setGenModel] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
   const [lastCheckedAt, setLastCheckedAt] = useState<Date | null>(null);
-  const tick = useRef(0);
+  const [refreshCount, setRefreshCount] = useState(0);
 
   const probe = useCallback(async () => {
     try {
@@ -52,10 +52,9 @@ export function useHealth(intervalMs = 10000): HealthState {
   }, []);
 
   const refresh = useCallback(() => {
-    tick.current += 1;
     setChecking(true);
-    void probe();
-  }, [probe]);
+    setRefreshCount(c => c + 1);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,7 +62,7 @@ export function useHealth(intervalMs = 10000): HealthState {
     run();
     const id = window.setInterval(run, intervalMs);
     return () => { cancelled = true; window.clearInterval(id); };
-  }, [probe, intervalMs, tick.current]);
+  }, [probe, intervalMs, refreshCount]);
 
   return { online, demoMode, genModel, checking, refresh, lastCheckedAt };
 }

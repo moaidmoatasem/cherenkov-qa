@@ -1,455 +1,75 @@
-<div align="center">
+# ☢️ CHERENKOV-QA
 
-# ⚡ CHERENKOV
+**The AI-Native API Conformance Testing Platform**
 
-### Catch where your software lies — before your users do.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-green.svg)](https://github.com/moaidmoatasem/cherenkov-qa/releases/tag/v1.0.0)
 
-**The conformance engine.** Local-first AI that finds where your running service and its
-spec disagree — and proves each gap with a reproducible test.
-**Model-agnostic. Zero lock-in. Nothing leaves your machine.**
+Every API has an OpenAPI spec, but those specs silently drift from the real server implementations every day. Writing tests to catch this manually is tedious and slow. 
 
-[![CI](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/ci.yml/badge.svg)](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/ci.yml)
-[![Security](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/security-scan.yml/badge.svg)](https://github.com/moaidmoatasem/cherenkov-qa/actions/workflows/security-scan.yml)
-[![PyPI](https://img.shields.io/pypi/v/cherenkov-qa.svg?logo=pypi&logoColor=white&color=0a7bca)](https://pypi.org/project/cherenkov-qa/)
-[![npm](https://img.shields.io/npm/v/cherenkov-cli.svg?logo=npm&logoColor=white&color=cb3837)](https://www.npmjs.com/package/cherenkov-cli)
-[![Docker Hub](https://img.shields.io/docker/pulls/cherenkov-qa/cli.svg?logo=docker&logoColor=white&color=2496ed)](https://hub.docker.com/r/cherenkov-qa/cli)
-[![GitHub Marketplace](https://img.shields.io/badge/GitHub-Marketplace-24292e.svg?logo=github)](https://github.com/marketplace/actions/cherenkov-conformance-check)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776ab.svg?logo=python&logoColor=white)](https://python.org)
-[![TypeScript](https://img.shields.io/badge/typescript-5.0%2B-3178c6.svg?logo=typescript&logoColor=white)](https://typescriptlang.org)
-[![Playwright](https://img.shields.io/badge/playwright-1.49%2B-2ead33.svg?logo=playwright&logoColor=white)](https://playwright.dev)
-[![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-2563eb.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-22d3ee.svg)](CONTRIBUTING.md)
+**CHERENKOV-QA** solves this. It ingests your OpenAPI spec, uses a local LLM to generate a fully typed Playwright test suite, executes it against your real server, and delivers a conformance report. 
 
-</div>
+*Zero vendor lock-in. 100% private. Spec-derived truth.*
 
 ---
 
-```
-openapi.yaml  ──▶  cherenkov validate  ──▶  Playwright tests  ──▶  eject  ──▶  run anywhere
-```
+## 🚀 Quickstart (Zero Install)
 
-Give CHERENKOV your OpenAPI spec and a live server URL.
-It generates typed Playwright tests using a local LLM, runs a 6-gate review on every test,
-executes them, and surfaces exactly where your implementation diverges from your spec.
-No cloud. No API keys. When you're done, eject to vanilla Playwright — runs forever without CHERENKOV.
-
-> 🤖 **Qwen Code Users**: CHERENKOV deeply integrates with [Qwen Code](https://github.com/QwenLM/qwen-code) to provide an end-to-end autonomous QA and coding pipeline. See [QWEN_CODE_ALIGNMENT.md](docs/QWEN_CODE_ALIGNMENT.md) for setup and MCP federation details.
-
-> **CHERENKOV is the AI-native API conformance engine — built by a QA lead, for engineering teams that
-> ship API-first.** Today it owns spec↔implementation drift; the north star is the **Reality Engine**:
-> continuous truth across every source (spec, code, traffic, schema, UI). See [Brand & Strategy](docs/BRAND_STRATEGY.md).
-
-```
-cherenkov validate --target http://localhost:8000
-
-  ✔  GET  /pets          happy_path             [PASSED]   195ms
-  ✔  POST /pets          create_pet             [PASSED]   211ms
-  ✗  POST /users         password_too_short     [FAILED]
-       spec says: 422 (validation error)
-       server returned: 400
-
-  1 conformance drift detected — nobody wrote that test, CHERENKOV found it from the spec
-```
+Generate a test suite for your API in under 60 seconds.
 
 ```bash
-# Export to vanilla Playwright — zero CHERENKOV import, runs forever
-npx cherenkov eject --output ./my-tests
-cd my-tests && npx playwright test   # ✓ works. always will.
+# 1. Start the local LLM (if not already running)
+ollama run qwen2.5-coder:7b
+
+# 2. Run the interactive quickstart in your project directory
+npx cherenkov init
+
+# 3. Generate and run the tests!
+npx cherenkov generate --spec ./api.yaml
 ```
 
-<div align="center">
-
-[**Quick Start**](#quick-start-2-minutes) · [**How It Works**](#how-it-works) · [**Commands**](#commands) · [**Wiki**](docs/wiki/Home.md) · [**Docs**](docs/INDEX.md) · [**Architecture**](docs/wiki/Architecture.md)
-
-</div>
-
 ---
 
-## What It Tests
+## 💡 Why CHERENKOV?
 
-CHERENKOV generates and runs tests across three layers — from the same spec, the same command.
+### 1. Stop Spec Drift Automatically
+Your OpenAPI spec is the contract. CHERENKOV generates the tests to ensure your backend actually honors it. If the spec says `422` and the server returns `400`, CHERENKOV catches it before you commit.
 
-| Layer | What It Tests | Status |
-|-------|--------------|:------:|
-| **API** | REST endpoints — status codes, response schemas, auth flows vs your spec | ✅ Production ready |
-| **Web** | Browser UI flows via Playwright — headed or headless, VLM visual regression | ✅ Playwright ready |
-| **Mobile** | Device flows via Maestro + Appium, VLM visual oracle — 4-tier device support | ✅ Built · needs ADB |
+### 2. Hallucination-Resistant by Design
+Other AI tools hallucinate assertions. CHERENKOV only uses the LLM to write the *structure* of the test. The *expected values* (status codes, response schemas) are derived strictly from your OpenAPI spec.
 
-All three modes run locally. No data leaves your machine.
+### 3. Suggest-Only Healing
+When tests fail, CHERENKOV suggests how to tighten your backend validations or fix the spec. But it **never auto-edits** your code. You stay in control.
 
----
-
-## How It Works
-
-```mermaid
-flowchart LR
-    SPEC([📄 OpenAPI Spec])
-    INGEST[🔍 Ingest\n& Validate]
-    PLAN[📋 Plan\nScenarios]
-    GEN[🤖 Generate Tests\nLocal LLM]
-    REVIEW[✅ 6-Gate\nReview]
-
-    subgraph RUN ["🚀 Run Tests"]
-        API_RUN[API\nConformance]
-        WEB_RUN[Web UI\nPlaywright]
-        MOB_RUN[Mobile\nMaestro/Appium]
-    end
-
-    REPORT([📊 Report\n+ Drift Detection])
-    SUGGEST([💡 Tightening\nSuggestions])
-    EJECT([📦 Standalone\nPlaywright Tests])
-
-    SPEC --> INGEST --> PLAN --> GEN --> REVIEW --> RUN
-    RUN --> REPORT
-    RUN --> SUGGEST
-    RUN --> EJECT
-
-    style SPEC fill:#dbeafe,stroke:#3b82f6
-    style REPORT fill:#dcfce7,stroke:#16a34a
-    style SUGGEST fill:#fef9c3,stroke:#ca8a04
-    style EJECT fill:#f3e8ff,stroke:#9333ea
-```
-
-| Stage | What Happens |
-|-------|-------------|
-| **Ingest** | Parses and validates your OpenAPI 3.x spec — catches malformed specs before they generate bad tests |
-| **Plan** | Produces test scenarios: happy paths, edge cases, auth flows, error branches |
-| **Generate** | Local LLM writes typed `openapi-fetch` Playwright tests — your spec never leaves your machine |
-| **Review** | 6-gate check: syntax → structure → AST → assertions → TypeScript → Prism mock server |
-| **Run** | Executes tests against your live server, API layer + web UI layer + mobile layer |
-| **Report** | Identifies spec drift, surfaced as structured findings; generates tightening suggestions; ejects standalone tests |
-
----
-
-## Quick Start (2 minutes)
-
-### Option A — Zero install (npx)
-
+### 4. Zero Vendor Lock-in (Eject Anytime)
+We believe in open standards. You can eject the generated tests into standard, standalone Playwright code at any time:
 ```bash
-npx cherenkov-cli init
+npx cherenkov eject --output ./tests
 ```
+Your tests will run perfectly with `npx playwright test`, completely detached from CHERENKOV.
 
-### Option B — pip
-
-```bash
-pip install cherenkov-qa
-cherenkov init
-cherenkov validate --spec openapi.yaml --target http://localhost:3000
-```
-
-### Option C — Docker
-
-```bash
-docker run --rm cherenkov-qa/cli:latest cherenkov --version
-docker run --rm -v $(pwd):/app cherenkov-qa/cli:latest \
-  cherenkov validate --spec /app/openapi.yaml --target http://host.docker.internal:3000
-```
-
-### Option D — GitHub Actions CI gate
-
-```yaml
-- uses: moaidmoatasem/cherenkov-qa@v1.0.0
-  with:
-    spec: ./api/openapi.yaml
-    target: http://localhost:8080
-    fail-on-drift: 'true'
-```
+### 5. 100% Private (Local LLM First)
+By default, CHERENKOV uses `qwen2.5-coder:7b` running locally via Ollama. Your proprietary API specs never leave your laptop. (Cloud models like OpenAI are supported as opt-in).
 
 ---
 
-### Full local setup (clone + build)
-
-**Prerequisites:** Python 3.10+, Node 20+, [Ollama](https://ollama.com) with `qwen2.5-coder:7b`
-
-```bash
-# 1. Clone and install
-git clone https://github.com/moaidmoatasem/cherenkov-qa.git
-cd cherenkov-qa
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-
-# 2. Playwright + Node deps
-cd stub && npm install && npx playwright install && cd ..
-
-# 3. Start the bundled sample API (or point at your own)
-cd target && source ../.venv/bin/activate
-uvicorn target_api:app --host 127.0.0.1 --port 8000 &
-cd ..
-
-# 4. Check everything is wired up
-PYTHONPATH=. ./bin/cherenkov doctor
-
-# 5. Run — watch it catch a real conformance bug
-PYTHONPATH=. ./bin/cherenkov validate --target http://localhost:8000
-```
-
-> **Full setup guide (prerequisites, Docker option, troubleshooting):** [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)
+## 🛠️ Features
+- **6-Gate Review Pipeline**: Tests are syntax-checked, AST-validated, type-checked, and mock-tested before ever hitting a real server.
+- **OWASP Mutation Engine**: Automatically injects DAST (Dynamic Application Security Testing) payloads to test edge-cases.
+- **Visual Dashboard**: Explore conformance maps and test results via the built-in React UI (`npx cherenkov dashboard`).
+- **K8s Native Operator**: Deploy the `ConformanceCheck` CRD to run CHERENKOV natively in your Kubernetes CI/CD pipelines.
 
 ---
 
-## Commands
-
-```bash
-# Core workflow
-./bin/cherenkov validate --target <url>       # Run conformance tests + generate report
-./bin/cherenkov eject   --output <dir>         # Export standalone Playwright tests (zero lock-in)
-./bin/cherenkov review  --web                  # Open browser dashboard
-
-# Diagnostics
-./bin/cherenkov doctor                         # Check environment (Ollama, Node, Playwright, etc.)
-./bin/cherenkov --help                         # All commands and options
-
-# Advanced
-./bin/cherenkov heal    --report <file>        # Get fix suggestions for failing tests
-./bin/cherenkov explore --spec <file>          # Interactive spec explorer
-./bin/cherenkov chat                           # AI chat agent with tool access to your spec + results
-./bin/cherenkov daemon                         # Watch mode — re-runs on spec change
-./bin/cherenkov mcp                            # Start MCP server (stdio) — exposes verify_suite + 29 tools
-```
-
-The MCP server exposes `verify_suite` so any coding agent (Claude, Cursor, Copilot) can call CHERENKOV before claiming "done":
-
-```json
-{ "tool": "verify_suite", "suite_inline": "<generated test code>", "spec_source": "openapi.yaml" }
-// → VerificationReport: { "verdict": "warn", "integrity": { "weakened_assertions": [...] } }
-```
-
-Read the gate contract first: resource `cherenkov://gates` lists what every passing test must contain.
-
-> **Complete CLI reference with all flags:** [docs/wiki/CLI-Reference.md](docs/wiki/CLI-Reference.md)
+## 📚 Documentation
+- [Getting Started Guide](https://docs.cherenkov.dev/getting-started)
+- [CLI Reference](https://docs.cherenkov.dev/cli)
+- [Architecture & Design Decisions](https://docs.cherenkov.dev/architecture)
 
 ---
 
-## Features
-
-| Feature | What It Means |
-|---------|--------------|
-| **API conformance** | Expected status codes come from the OpenAPI spec — never hardcoded |
-| **Web testing** | Playwright browser flows, headed or headless, visual regression via VLM |
-| **Mobile testing** | Maestro + Appium device flows, VLM visual oracle, 4-tier device support |
-| **Local LLM only** | Ollama + `qwen2.5-coder:7b` runs on your machine; your spec never leaves |
-| **Zero lock-in** | `eject` produces vanilla Playwright + `openapi-fetch` — no CHERENKOV import anywhere |
-| **Suggest-only healing** | CHERENKOV suggests fixes for failures; it never auto-edits your code |
-| **6-gate review** | Every generated test passes syntax → structure → AST → assertions → TypeScript → Prism |
-| **React dashboard** | `--web` opens a live browser UI showing test results, spec coverage, drift findings |
-| **K8s operator** | `ConformanceCheck` CRD runs tests as native Kubernetes jobs |
-| **Chat agent** | Ask questions about your spec and results in natural language |
-| **Knowledge mesh** | GraphRAG-powered second brain that learns from your codebase over time |
-| **MCP integration** | First-class Model Context Protocol server for IDE and agent use |
+## 🤝 Contributing
+We love community contributions! Whether it's adding support for a new OpenAPI standard, improving the prompt chains, or building integrations with CI/CD platforms, please see our [CONTRIBUTING.md](./CONTRIBUTING.md) for how to get started.
 
 ---
-
-## The Zero Lock-In Promise
-
-```bash
-# One command. Vanilla Playwright. No CHERENKOV dependency anywhere.
-./bin/cherenkov eject --output ./my-tests
-
-# What you get: standard Playwright + openapi-fetch
-# Zero CHERENKOV imports. Zero CHERENKOV on PATH.
-# Runs in any CI. Runs on any machine. Runs after you stop using CHERENKOV.
-
-cd my-tests
-cat package.json        # "@playwright/test" + "openapi-fetch" — that's it
-npm install
-npx playwright test     # ✓ passes
-```
-
-The eject invariant is enforced in CI by `smoke_test_eject.py` — it verifies every ejected test file contains zero CHERENKOV imports. That check never gets disabled.
-
----
-
-## How It Compares
-
-Spec-conformance testing isn't new — the difference is what you're left holding afterward, and whether the tool can verify the verifier.
-
-| | What it leaves you | Conformance source | Runs offline | Catches agent cheats |
-|--|--|--|:--:|:--:|
-| **CHERENKOV** | A typed Playwright + `openapi-fetch` suite your team owns forever | OpenAPI spec | ✅ local LLM | ✅ 6-gate REVIEW |
-| **Schemathesis** | A fuzz run report — findings, not tests | OpenAPI spec | ✅ | ❌ |
-| **Dredd** | A validation run against spec examples | API Blueprint / OpenAPI | ✅ | ❌ |
-| **playwright-mcp** | A recorded or generated Playwright session | browser DOM / intent | ✅ | ❌ |
-| **antiwork/shortest** | Plain-English tests via Claude API | natural language | ❌ cloud | ❌ |
-| **Postman / contract tools** | Collections tied to the platform | hand-written assertions | varies | ❌ |
-
-**The one-sentence differentiation:** Schemathesis, playwright-mcp, and shortest all generate or verify tests — CHERENKOV is the only tool that *independently* checks whether the generated tests actually enforce the spec, so an AI agent can't quietly weaken an assertion to fake a green CI run.
-
-If you want property-based fuzzing today, Schemathesis is excellent — use it alongside CHERENKOV.
-CHERENKOV is for when the deliverable is a **readable regression suite**: tests your team
-can read, review in a PR, extend by hand, and keep running in plain `npx playwright test`
-long after removing CHERENKOV itself — and when you need to trust that an AI didn't quietly
-hollow out the assertions while making them pass.
-
-### "Catch the AI Cheating" — Gate G0 / E0.2
-
-```bash
-# See the integrity catch in action — 5 seconds, no cloud, no Docker required
-python demos/catch-the-ai-cheating/run_demo.py
-```
-
-Three injected cheat patterns. The production `ReviewStage` catches each one.
-See [`demos/catch-the-ai-cheating/README.md`](demos/catch-the-ai-cheating/README.md) for the beat sheet and evidence checklist.
-
----
-
-## Architecture
-
-```mermaid
-graph TB
-    subgraph CLI ["🖥️  CLI  (cherenkov.py)"]
-        CMD[validate · eject · heal · chat · daemon · doctor]
-    end
-
-    subgraph ORCH ["⚙️  Orchestration"]
-        ORC[Orchestrator]
-        STAGES["ingest → plan → generate → review → run"]
-        EVENTS[Event Bus]
-    end
-
-    subgraph DOMAIN ["📐  Domain  (pure Python — no I/O)"]
-        TRUTH[Truth Model\nOpenAPI · Traffic]
-        ORACLE[Verdict Oracle\nSpec-derived expected status]
-        KNOWLEDGE[Knowledge Mesh\nGraphRAG · Second Brain]
-        DIVERGENCE[Divergence Engine\nSelf-play · Proof runs]
-    end
-
-    subgraph INFRA ["🔧  Infrastructure Adapters"]
-        LLM[LLM Router\nOllama · LocalAI · OpenAI]
-        PLAYWRIGHT[Playwright Runner]
-        PRISM[Prism Mock Server]
-        K8S[K8s Operator\nConformanceCheck CRD]
-    end
-
-    subgraph UI ["🎨  Interfaces"]
-        WEB[React Dashboard\n9 screens · Vite]
-        MCP_S[MCP Server\nIDE + agent]
-        CHAT[Chat Agent\nSSE streaming]
-    end
-
-    CLI --> ORCH
-    ORCH --> DOMAIN
-    DOMAIN --> INFRA
-    CLI --> UI
-    UI --> ORCH
-```
-
-> **Deep-dive:** [docs/wiki/Architecture.md](docs/wiki/Architecture.md) · [docs/engineering/SYSTEM_DESIGN.md](docs/engineering/SYSTEM_DESIGN.md) · [ADRs](docs/adr/)
-
----
-
-## Cost Tiers
-
-Everything runs locally. You choose how much infrastructure you want.
-
-| Tier | Monthly Cost | What You Get |
-|------|:-----------:|-------------|
-| **L0** Bare CLI | **$0** | Python + SQLite, no Docker required |
-| **L1** + Ollama | **$0** | L0 + local LLM, full API + visual testing |
-| **L2** + Docker Compose | **$0** | L1 + LocalAI (VLM), Redis (vector store + sessions) |
-| **L3** + Full Stack | **$0** | L2 + Android emulator, Maestro, mobile testing, desktop app |
-| **L4** + Cloud | ~$50–100 | L3 + optional cloud VLM / cloud device farms |
-| **L5** + Enterprise | $300+ | L4 + K8s operator, SSO, audit logs, SLA |
-
-**Solo developer zero-cost path: L0 through L3 = $0/month.**
-
----
-
-## Project Status
-
-| Track | Scope | State |
-|-------|-------|-------|
-| **A** Core engine | API conformance testing | ✅ Built · Validation gate passed 2026-06-08 |
-| **B** VLM substrate | LocalAI / Ollama routing | ✅ Built and integrated |
-| **C** Desktop | Tauri 2 host app | 🔧 Shell complete · Blocked on `libwebkit2gtk-4.1-dev` + PyInstaller sidecar |
-| **D** Mobile | Maestro / Appium | ✅ Built · Runtime blocked on ADB |
-| **E** Dashboard | React UI (9 screens) | ✅ All screens shipped |
-| **F** K8s | Operator + CRDs | ✅ Phase 8 complete |
-
-**Active work:** Phases 9–16 — market launch, CI/CD integration, VS Code extension, enterprise tier.
-**Canonical status:** [docs/STATUS.md](docs/STATUS.md)
-**Phase roadmap:** [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)
-
----
-
-## Documentation
-
-<details>
-<summary><strong>New here? Start here.</strong></summary>
-
-| | |
-|--|--|
-| [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) | Install and run your first test in 5 minutes |
-| [docs/CLI_DEMO.md](docs/CLI_DEMO.md) | Full terminal walk-through of every command |
-| [docs/wiki/FAQ.md](docs/wiki/FAQ.md) | Common questions answered |
-| [docs/wiki/Troubleshooting.md](docs/wiki/Troubleshooting.md) | Things that go wrong and how to fix them |
-
-</details>
-
-<details>
-<summary><strong>Building on CHERENKOV?</strong></summary>
-
-**Key docs:**
-- **[docs/STATUS.md](docs/STATUS.md)** — canonical project state
-- **[docs/PRODUCT_STRATEGY_ROADMAP.md](docs/PRODUCT_STRATEGY_ROADMAP.md)** — market strategy, Phases 9-16, revenue model, 10-year vision
-- **[docs/INTEGRATION_STRATEGY.md](docs/INTEGRATION_STRATEGY.md)** — 25-integration ecosystem plan (VS Code, Slack, Jira, GraphQL, and more)
-- **[AGENTS.md](AGENTS.md)** — agent operating rules, deltas, track status
-
-| | |
-|--|--|
-| [docs/wiki/Architecture.md](docs/wiki/Architecture.md) | Full system architecture with diagrams |
-| [docs/wiki/Pipeline.md](docs/wiki/Pipeline.md) | Pipeline stages in depth |
-| [docs/wiki/CLI-Reference.md](docs/wiki/CLI-Reference.md) | Every command, flag, and option |
-| [docs/wiki/Configuration.md](docs/wiki/Configuration.md) | All config knobs and environment variables |
-| [docs/wiki/Deployment.md](docs/wiki/Deployment.md) | Docker, K8s, and production deployment |
-| [docs/engineering/SYSTEM_DESIGN.md](docs/engineering/SYSTEM_DESIGN.md) | System design and clean architecture |
-| [docs/adr/](docs/adr/) | Architecture Decision Records |
-
-</details>
-
-<details>
-<summary><strong>Contributing?</strong></summary>
-
-| | |
-|--|--|
-| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute (humans and agents) |
-| [docs/wiki/Roadmap.md](docs/wiki/Roadmap.md) | Where the project is going |
-| [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md) | Detailed phase plan with all tickets |
-| [docs/STATUS.md](docs/STATUS.md) | What is built, what is blocked, what is next |
-| [AGENTS.md](AGENTS.md) | Rules for AI agents working on this project |
-
-</details>
-
-<details>
-<summary><strong>Full documentation index</strong></summary>
-
-See **[docs/INDEX.md](docs/INDEX.md)** for the complete documentation tree.
-
-</details>
-
----
-
-## Contributing
-
-Read [CONTRIBUTING.md](CONTRIBUTING.md) first. The short version:
-
-1. Pick a `status:ready` issue
-2. Branch: `feat/<issue>-slug` or `fix/…`
-3. Write tests; keep them green
-4. Open a PR with the template filled and raw evidence attached
-5. Get a human review — no self-merge to `main`
-
-See also: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) · [SECURITY.md](SECURITY.md) · [AGENTS.md](AGENTS.md)
-
----
-
-## License
-
-[Apache 2.0](LICENSE) — Copyright © 2026 Moaid Moatasem
-
----
-
-<div align="center">
-
-*Built to find the gap between what your API claims and what it does.*
-
-</div>
+*Built with ❤️ for developers who hate writing manual API tests.*

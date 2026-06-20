@@ -205,6 +205,8 @@ export default function Sidebar({
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-[#7D8DA1]" />
               <input
+                id="nav-search-input"
+                data-testid="nav-search-input"
                 type="text"
                 placeholder="Search..."
                 value={searchQuery}

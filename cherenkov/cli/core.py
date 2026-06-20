@@ -37,6 +37,7 @@ _CLICK_COMMANDS = [
     "certify",
     "profile",
     "bench",
+    "ocr",
 ]
 
 
@@ -54,6 +55,7 @@ def _register_commands() -> None:
         init_cmd,
         doctor_cmd,
     )
+    from cherenkov.cli.commands.generate_cmd import generate_cmd
     from cherenkov.cli.commands.advanced import (
         visual_cmd,
         perf_cmd,
@@ -73,6 +75,7 @@ def _register_commands() -> None:
         profile_cmd,
     )
     from cherenkov.cli.commands.bench import bench_cmd
+    from cherenkov.cli.commands.ocr_cmd import ocr_cmd
 
     for cmd, name in [
         (verify_cmd, "verify"),
@@ -91,6 +94,7 @@ def _register_commands() -> None:
         (hitl_cmd, "hitl"),
         (review_cmd, "review"),
         (mcp_cmd, "mcp"),
+        (generate_cmd, "generate"),
         (dashboard_cmd, "dashboard"),
         (map_cmd, "map"),
         (daemon_cmd, "daemon"),
@@ -101,6 +105,7 @@ def _register_commands() -> None:
         (certify_cmd, "certify"),
         (profile_cmd, "profile"),
         (bench_cmd, "bench"),
+        (ocr_cmd, "ocr"),
     ]:
         cli.add_command(cmd, name=name)
 

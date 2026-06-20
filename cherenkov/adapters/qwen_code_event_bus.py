@@ -1,6 +1,5 @@
 import subprocess
 from typing import Callable
-from cherenkov.ports.event_bus import EventBus
 from cherenkov.core.events import CHERENKOVEvent
 
 class QwenCodeChannelAdapter:

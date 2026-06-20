@@ -6,12 +6,12 @@ import os
 print('Starting uvicorn...')
 env = os.environ.copy()
 env['PYTHONPATH'] = '.'
-api_proc = subprocess.Popen(['uvicorn', 'cherenkov.web.api:app', '--port', '8000'], env=env)
+api_proc = subprocess.Popen(['uvicorn', 'target.target_api:app', '--port', '8000'], env=env)
 
 # Wait for API to boot
 for _ in range(30):
     try:
-        if urllib.request.urlopen('http://127.0.0.1:8000/api/health').getcode() == 200:
+        if urllib.request.urlopen('http://127.0.0.1:8000/health').getcode() == 200:
             print('API is up!')
             break
     except:

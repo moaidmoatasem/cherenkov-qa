@@ -37,9 +37,8 @@ def test_graphql_generate_integration(mock_validate, mock_cache):
 
     old_argv = sys.argv
     try:
-        sys.argv = ["cherenkov.py", "validate", "--source", "graphql", "--spec", temp_path, "--target", "http://mock-target.local"]
-        # runpy runs the script as __main__
-        runpy.run_path("cherenkov.py", run_name="__main__")
+        sys.argv = ["cherenkov", "validate", "--source", "graphql", "--spec", temp_path, "--target", "http://mock-target.local"]
+        runpy.run_module("cherenkov.cli.core", run_name="__main__")
         
         mock_validate.assert_called_once()
     except SystemExit as e:

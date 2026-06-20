@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from cherenkov.core.errors import get_logger
-from cherenkov.stages.map_cmd import build_truth_model, render_truth_model
+from cherenkov.stages.map_cmd import build_truth_model
 
 
 class DivergenceQueue:
@@ -50,14 +50,27 @@ class DivergenceQueue:
         return count
 
 
-def run_daemon(interval_seconds: int = 60, max_loops: int = 0) -> int:
+def _get_spec_mtimes(spec_paths: list[str]) -> dict[str, float]:
+    mtimes = {}
+    for p in spec_paths:
+        try:
+            mtimes[p] = Path(p).stat().st_mtime
+        except OSError:
+            mtimes[p] = 0.0
+    return mtimes
+
+
+def run_daemon(interval_seconds: int = 60, max_loops: int = 0, target_url: str | None = None) -> int:
     """Execute `cherenkov daemon`.
 
-    Continuously watches sources, rebuilds the Truth Model, and queues divergences.
+    Continuously watches sources, rebuilds the Truth Model, and runs divergence
+    proof against target_url on each cycle (or when specs change).
 
     Args:
         interval_seconds: Poll interval between rebuilds.
         max_loops: Max rebuild iterations (0 = infinite).
+        target_url: Live server URL to probe each cycle. If omitted, only truth
+            model is rebuilt (no live divergence check).
 
     Returns:
         Exit code.
@@ -65,37 +78,83 @@ def run_daemon(interval_seconds: int = 60, max_loops: int = 0) -> int:
     log = get_logger("daemon")
     queue = DivergenceQueue()
     loop_count = 0
+    last_mtimes: dict[str, float] = {}
 
-    log.info("daemon started", interval_seconds=interval_seconds)
+    log.info("daemon started", interval_seconds=interval_seconds, target_url=target_url or "none")
 
     while max_loops == 0 or loop_count < max_loops:
         loop_count += 1
-        log.info("rebuilding truth model", loop=loop_count)
 
         from cherenkov.core.config_loader import load_effective_config
 
         cfg = load_effective_config()
+        specs = cfg.autodetect_spec() or []
+        sources = {"openapi": specs} if specs else {}
 
-        sources = {}
-        specs = cfg.autodetect_spec()
-        if specs:
-            sources["openapi"] = specs
+        # Detect spec file changes
+        current_mtimes = _get_spec_mtimes(specs)
+        changed = [p for p, mt in current_mtimes.items() if last_mtimes.get(p, -1) != mt]
+        last_mtimes = current_mtimes
+
+        if changed:
+            log.info("spec change detected", files=changed)
+
+        log.info("rebuilding truth model", loop=loop_count)
 
         if sources:
             tm = build_truth_model(sources)
-            summary = render_truth_model(tm)
             log.info("truth model built", nodes=len(tm.nodes), edges=len(tm.edges))
         else:
             log.warning("no sources configured, skipping rebuild")
-            summary = ""
+            tm = None  # type: ignore[assignment]
+
+        # Run divergence proof if a target URL is configured
+        divergences = []
+        if target_url:
+            log.info("running divergence proof", url=target_url)
+            try:
+                import json as _json
+                from cherenkov.divergence.proof_run import run_proof
+
+                # Load first spec file as dict if available, else use bundled Petstore
+                spec_dict = None
+                if specs:
+                    try:
+                        spec_dict = _json.loads(Path(specs[0]).read_text(encoding="utf-8"))
+                    except Exception:
+                        spec_dict = None
+
+                divergences = run_proof(base_url=target_url, spec=spec_dict, use_llm=False)
+
+                if divergences:
+                    log.warning("divergences found", count=len(divergences))
+                    from cherenkov.hitl import HitlItem, HitlQueue
+                    import uuid as _uuid
+
+                    hitl = HitlQueue()
+                    run_id = f"daemon_{loop_count}_{int(time.time())}"
+                    for r in divergences:
+                        item = HitlItem(
+                            id=str(_uuid.uuid4()),
+                            endpoint=r.endpoint,
+                            run_id=run_id,
+                            mutation_label=r.divergence_class.value,
+                            confidence_reason=r.evidence.diff[:200] if r.evidence and r.evidence.diff else r.claim_b[:200],
+                        )
+                        hitl.enqueue(item)
+                else:
+                    log.info("no divergences found")
+            except Exception as exc:
+                log.error("divergence proof failed", error=str(exc))
 
         queue.push(
             {
                 "loop": loop_count,
                 "timestamp": time.time(),
-                "nodes": len(tm.nodes) if sources else 0,
-                "edges": len(tm.edges) if sources else 0,
-                "summary": summary,
+                "nodes": len(tm.nodes) if tm else 0,
+                "edges": len(tm.edges) if tm else 0,
+                "spec_changes": changed,
+                "divergences": len(divergences),
             }
         )
 

@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import json
 import os
-import re
 from pathlib import Path
 from typing import Optional
 
-from cherenkov.review_ocr.models import OCRSeverity
 
 BUILT_IN_RULES: list[dict] = [
     {"path": "**/*.spec.ts", "rule": "Check Playwright assertions reference valid HTTP status codes and response body properties"},
@@ -28,7 +26,6 @@ SUPPORTED_EXTENSIONS = {".ts", ".tsx", ".js", ".jsx", ".py", ".yaml", ".yml", ".
 
 
 def _brace_expand(pattern: str) -> list[str]:
-    import fnmatch
     if "{" not in pattern or "}" not in pattern:
         return [pattern]
     start = pattern.index("{")

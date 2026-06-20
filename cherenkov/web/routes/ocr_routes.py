@@ -15,9 +15,12 @@ class OcrReviewPayload(BaseModel):
 
 @router.get("/status")
 async def ocr_status():
-    stage = ReviewStageOCR()
-    installed = stage._check_ocr_installed()
-    binary = stage._get_ocr_binary()
+    try:
+        stage = ReviewStageOCR()
+        installed = stage._check_ocr_installed()
+        binary = stage._get_ocr_binary()
+    except Exception as e:
+        return {"installed": False, "binary": "ocr", "version": "", "error": str(e)}
     import subprocess
     version = ""
     try:

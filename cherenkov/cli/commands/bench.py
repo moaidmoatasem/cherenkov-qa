@@ -32,7 +32,7 @@ _DEFAULT_SPEC = os.path.join(_REPO_ROOT, "stub", "openapi_3_1.yaml")
 )
 @click.option(
     "--spec", "spec_path", type=click.Path(exists=True),
-    help=f"OpenAPI spec for Prism gate (default: stub/openapi_3_1.yaml).",
+    help="OpenAPI spec for Prism gate (default: stub/openapi_3_1.yaml).",
 )
 @click.option(
     "--golden/--no-golden", default=True, show_default=True,

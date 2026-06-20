@@ -6,10 +6,9 @@ import subprocess
 import time
 import tempfile
 import re
-from pathlib import Path
 from typing import Optional
 
-from cherenkov.core.contracts import GateResult, ReviewOutput, Verdict, Status, StageMeta
+from cherenkov.core.contracts import GateResult
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 from cherenkov.review_ocr.models import OCRFinding, OCRReviewOutput, OCRSeverity
@@ -30,7 +29,7 @@ class ReviewStageOCR:
             try:
                 subprocess.run([candidate, "--version"], capture_output=True, text=True, timeout=5)
                 return candidate
-            except (FileNotFoundError, subprocess.TimeoutExpired):
+            except (FileNotFoundError, PermissionError, subprocess.TimeoutExpired):
                 continue
         return "ocr"
 
@@ -39,7 +38,7 @@ class ReviewStageOCR:
         try:
             result = subprocess.run([binary, "--version"], capture_output=True, text=True, timeout=5)
             return result.returncode == 0
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, PermissionError, subprocess.TimeoutExpired):
             return False
 
     def _parse_ocr_json(self, raw: str) -> OCRReviewOutput:

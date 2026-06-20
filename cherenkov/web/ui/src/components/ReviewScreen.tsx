@@ -25,7 +25,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { TestItem, TestGate } from '../types';
-import { approveTestScenario, rejectTestScenario, editTestScenario, fetchGeneratedTests, fetchReviewQueue, ReviewQueueItem, explainTestScenario, createChatSession, streamChatMessage } from '../lib/api';
+import { approveTestScenario, rejectTestScenario, editTestScenario, fetchGeneratedTests, fetchReviewQueue, ReviewQueueItem, explainTestScenario, createChatSession, streamChatMessage, fetchOcrReview, runOcrReview, OCRFindingResponse } from '../lib/api';
 import { useToast } from './ui/Toast';
 import CherenkovLogo from './CherenkovLogo';
 import { Skeleton } from './ui';
@@ -107,6 +107,9 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
   const [rejectReason, setRejectReason] = useState('');
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [isExplaining, setIsExplaining] = useState(false);
+  const [ocrFindings, setOcrFindings] = useState<OCRFindingResponse[] | null>(null);
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrScoreDeduction, setOcrScoreDeduction] = useState(0);
   const [showChat, setShowChat] = useState(false);
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([]);
   const [chatInput, setChatInput] = useState('');
@@ -152,6 +155,8 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
       setIsEditing(false);
       setAiExplanation(null);
       setIsExplaining(false);
+      setOcrFindings(null);
+      setOcrScoreDeduction(0);
       setChatMessages([]);
       setChatSessionId(null);
     }
@@ -300,6 +305,19 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
       return t;
     }));
     setRejectingId(null);
+  };
+
+  const handleOcrReview = async (id: string, code: string) => {
+    setOcrLoading(true);
+    try {
+      const data = await runOcrReview(id, code);
+      setOcrFindings(data.findings);
+      setOcrScoreDeduction(data.score_deduction);
+    } catch (err) {
+      toast(`OCR review failed: ${(err as Error).message}`, 'error');
+    } finally {
+      setOcrLoading(false);
+    }
   };
 
   const handleExplain = async (id: string) => {
@@ -625,6 +643,53 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                     </div>
 
                   </div>
+                </div>
+
+                {/* OCR Findings Panel */}
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Code className={`w-3.5 h-3.5 ${ocrFindings && ocrFindings.length > 0 ? 'text-amber-400' : 'text-[#7D8DA1]'}`} />
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-text-muted">OCR Agent Review</span>
+                    </div>
+                    <button
+                      onClick={() => handleOcrReview(activeTest.id, activeTest.code)}
+                      disabled={ocrLoading}
+                      className="px-2 py-1 bg-glow-blue/10 hover:bg-glow-blue/20 text-glow-bright border border-glow-blue/30 rounded text-[9px] font-mono font-bold uppercase transition disabled:opacity-50"
+                    >
+                      {ocrLoading ? 'RUNNING...' : (ocrFindings ? 'RE-RUN' : 'RUN OCR')}
+                    </button>
+                  </div>
+                  {ocrFindings && ocrFindings.length > 0 && (
+                    <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                      {ocrFindings.map((f, i) => (
+                        <div key={i} className={`flex items-start gap-2 text-[11px] p-1.5 rounded ${
+                          f.severity === 'critical' || f.severity === 'high'
+                            ? 'bg-red-500/10 border border-red-500/20'
+                            : f.severity === 'medium'
+                            ? 'bg-amber-500/10 border border-amber-500/20'
+                            : 'bg-white/5 border border-white/5'
+                        }`}>
+                          <span className={`shrink-0 font-mono font-bold text-[9px] uppercase ${
+                            f.severity === 'critical' || f.severity === 'high'
+                              ? 'text-red-400'
+                              : f.severity === 'medium'
+                              ? 'text-amber-400'
+                              : 'text-[#7D8DA1]'
+                          }`}>{f.severity}</span>
+                          <span className="text-[#E6EDF3]/80">{f.message}</span>
+                        </div>
+                      ))}
+                      {ocrScoreDeduction > 0 && (
+                        <p className="text-[10px] text-amber-400/80 font-mono">
+                          Score deduction: {ocrScoreDeduction.toFixed(2)}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {ocrFindings && ocrFindings.length === 0 && (
+                    <p className="text-[11px] text-[#3FB950]/80">No issues found by OCR review.</p>
+                  )}
                 </div>
 
                 {/* Dry Run Console trace */}

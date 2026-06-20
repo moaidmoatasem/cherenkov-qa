@@ -76,7 +76,7 @@ def verify_cmd(
             sys.exit(2)
 
     mode_label = "LLM Skeptic" if llm else "offline (no LLM required)"
-    click.echo(f"\nCHERENKOV verify")
+    click.echo("\nCHERENKOV verify")
     click.echo(f"  Target  : {url}")
     click.echo(f"  Spec    : {spec or 'built-in Petstore demo'}")
     click.echo(f"  Mode    : {mode_label}")

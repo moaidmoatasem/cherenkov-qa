@@ -196,3 +196,66 @@ async def get_signals():
     ]
 
     return {"performance": performance, "visual": visual, "coverage": coverage}
+
+
+@router.get("/api/v1/visual/scenarios")
+async def get_visual_scenarios():
+    import time
+    now = int(time.time())
+    return [
+        {
+            "scenario_id": "vs-overview-001",
+            "endpoint": "GET /overview",
+            "vlm_kind": "harmless_shift",
+            "verdict": "AUTO_APPROVE",
+            "diff_pct": 0.4,
+            "baseline_url": None,
+            "current_url": None,
+            "description": "Overview KPI card spacing adjusted by 2px — below threshold.",
+            "timestamp": now - 3600,
+        },
+        {
+            "scenario_id": "vs-divergences-002",
+            "endpoint": "GET /divergences",
+            "vlm_kind": "anomaly",
+            "verdict": "HITL",
+            "diff_pct": 8.2,
+            "baseline_url": None,
+            "current_url": None,
+            "description": "Divergence table row color changed from red-500 to red-400 — possible branding drift.",
+            "timestamp": now - 7200,
+        },
+        {
+            "scenario_id": "vs-review-003",
+            "endpoint": "GET /review",
+            "vlm_kind": "harmless_shift",
+            "verdict": "AUTO_APPROVE",
+            "diff_pct": 0.1,
+            "baseline_url": None,
+            "current_url": None,
+            "description": "Review gate button label truncation at 1280px viewport — cosmetic only.",
+            "timestamp": now - 10800,
+        },
+        {
+            "scenario_id": "vs-signals-004",
+            "endpoint": "GET /signals",
+            "vlm_kind": "redesign",
+            "verdict": "HITL",
+            "diff_pct": 22.7,
+            "baseline_url": None,
+            "current_url": None,
+            "description": "Signals chart axis labels updated to ISO 8601 — significant layout change.",
+            "timestamp": now - 14400,
+        },
+        {
+            "scenario_id": "vs-memory-005",
+            "endpoint": "GET /memory",
+            "vlm_kind": "unknown",
+            "verdict": "HITL",
+            "diff_pct": 3.1,
+            "baseline_url": None,
+            "current_url": None,
+            "description": "Memory screen idiom card padding inconsistency — needs human review.",
+            "timestamp": now - 18000,
+        },
+    ]

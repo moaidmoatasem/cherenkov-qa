@@ -405,6 +405,32 @@ export async function fetchProjects() {
   return res.json();
 }
 
+export async function createProject(payload: {
+  name: string;
+  target_url?: string;
+  spec_path?: string;
+  repo_type?: 'new' | 'existing';
+  repo_path?: string;
+}) {
+  const res = await fetch(`${API_BASE}/projects`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error('Failed to create project');
+  return res.json();
+}
+
+export async function updateProject(id: string, payload: Record<string, unknown>) {
+  const res = await fetch(`${API_BASE}/projects/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error('Failed to update project');
+  return res.json();
+}
+
 export async function fetchTruthMap() {
   const res = await fetch(`${API_BASE}/truth-map`);
   if (!res.ok) return [];
@@ -637,5 +663,52 @@ export async function runExplorer(payload: { base_url: string; ui_url?: string; 
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`Explorer run failed: ${res.status}`);
+  return res.json();
+}
+
+// ── OCR Review API ──────────────────────────────────────────────────
+
+export interface OCRFindingResponse {
+  file: string;
+  line: number;
+  column: number;
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+  rule: string;
+  message: string;
+  suggestion: string;
+}
+
+export interface OCRReviewResponse {
+  passed: boolean;
+  findings: OCRFindingResponse[];
+  score_deduction: number;
+  agent_summary: string;
+  llm_model: string;
+  duration_ms: number;
+  error: string;
+}
+
+export async function fetchOcrReview(scenarioId: string): Promise<OCRReviewResponse> {
+  const res = await fetch(`${API_BASE}/ocr/review/${encodeURIComponent(scenarioId)}`);
+  if (!res.ok) {
+    if (res.status === 404) throw new Error('No OCR review available for this scenario');
+    throw new Error(`OCR review fetch failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function runOcrReview(scenarioId: string, code: string): Promise<OCRReviewResponse> {
+  const res = await fetch(`${API_BASE}/ocr/review/${encodeURIComponent(scenarioId)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
+  });
+  if (!res.ok) throw new Error(`OCR review run failed: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchOcrStatus(): Promise<{ installed: boolean; binary: string; version: string; error: string }> {
+  const res = await fetch(`${API_BASE}/ocr/status`);
+  if (!res.ok) return { installed: false, binary: 'ocr', version: '', error: 'Could not check status' };
   return res.json();
 }

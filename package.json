@@ -2,7 +2,14 @@
   "name": "cherenkov-qa",
   "version": "1.0.0",
   "description": "Catch where your software lies — before your users do. Local-first AI-native API conformance engine.",
-  "keywords": ["api-testing", "playwright", "openapi", "conformance", "qa", "llm"],
+  "keywords": [
+    "api-testing",
+    "playwright",
+    "openapi",
+    "conformance",
+    "qa",
+    "llm"
+  ],
   "homepage": "https://github.com/moaidmoatasem/cherenkov-qa",
   "bugs": {
     "url": "https://github.com/moaidmoatasem/cherenkov-qa/issues"
@@ -27,5 +34,8 @@
     "stub/",
     "README.md",
     "LICENSE"
-  ]
+  ],
+  "dependencies": {
+    "create-cherenkov": "file:packages/create-cherenkov"
+  }
 }

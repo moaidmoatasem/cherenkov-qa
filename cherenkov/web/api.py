@@ -91,6 +91,10 @@ from cherenkov.web.routes.review_routes import router as review_router  # noqa: 
 
 app.include_router(review_router)
 
+from cherenkov.web.routes.ocr_routes import router as ocr_router  # noqa: E402
+
+app.include_router(ocr_router)
+
 from cherenkov.web.routes.ops_routes import router as ops_router  # noqa: E402
 
 app.include_router(ops_router)

@@ -84,13 +84,13 @@ export default function ProjectsScreen({
 
         {/* New Project Button */}
         <button
-          onClick={() => setShowWizard(true)}
+          onClick={onNewRun}
           id="btn-projects-new-run"
           data-testid="new-run-btn"
           className="flex items-center gap-2 px-5 py-2.5 rounded-md bg-glow-blue hover:bg-opacity-90 text-slate-950 text-sm font-semibold transition-all duration-300 shadow-lg shadow-cyan-500/20"
         >
           <Plus className="w-4 h-4 text-slate-950 stroke-[3px]" />
-          <span>New Project</span>
+          <span>New Validation Run</span>
         </button>
       </div>
 

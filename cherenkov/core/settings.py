@@ -63,6 +63,11 @@ class CherenkovSettings(BaseSettings):
     CONSENSUS_ORACLE_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_CONSENSUS_ORACLE')
     CONSENSUS_ORACLE_PASSES: int = Field(default=3, validation_alias='CHERENKOV_CONSENSUS_PASSES')
 
+    OCR_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_OCR_ENABLED')
+    OCR_TIMEOUT_SECONDS: int = Field(default=120, validation_alias='CHERENKOV_OCR_TIMEOUT_SECONDS')
+    OCR_BINARY: str = Field(default='', validation_alias='CHERENKOV_OCR_BINARY')
+    OCR_SEVERITY_THRESHOLD: str = Field(default='high', validation_alias='CHERENKOV_OCR_SEVERITY_THRESHOLD')
+
     HITL_API_KEY: str = Field(default='', validation_alias='CHERENKOV_HITL_API_KEY')
     DB_KEY: str = Field(default='', validation_alias='CHERENKOV_DB_KEY')
 

@@ -8,8 +8,6 @@ from cherenkov.bench.metrics import BenchReport, SpecBenchResult
 
 try:
     from rich.console import Console
-    from rich.table import Table
-    from rich import box as rich_box
 
     _RICH = True
 except ImportError:
@@ -68,7 +66,6 @@ def _print_spec_result(console: Any, result: SpecBenchResult, verbose: bool = Fa
     from rich.table import Table
     import rich.box as rich_box
 
-    label = result.spec_path.split("/")[-1]
     console.print(f"  [dim]spec:[/dim] {result.spec_path}")
     console.print(f"  [dim]tests:[/dim] {result.scenario_count}  "
                   f"[dim]elapsed:[/dim] {result.elapsed_s:.1f}s")

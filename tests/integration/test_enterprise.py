@@ -4,7 +4,7 @@ import pytest
 from cherenkov.enterprise import (
     get_org_manager,
     get_audit_log,
-    get_soc2_generator,
+    get_soc2,
 )
 
 
@@ -68,7 +68,7 @@ def test_audit_log_records_and_exports(tmp_path):
 
 
 def test_soc2_generator_exports_json():
-    generator = get_soc2_generator()
+    generator = get_soc2()
     report = generator.generate_report("Acme")
     
     # Needs to be serialized, as it returns an object

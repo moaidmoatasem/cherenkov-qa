@@ -28,12 +28,14 @@ def map_cmd(detailed: bool) -> None:
               help="Poll interval in seconds (default: 60)")
 @click.option("--max-loops", "-n", "max_loops", type=int, default=0,
               help="Max rebuild iterations (0=infinite)")
+@click.option("--url", "-u", default=None,
+              help="Live server URL to probe for divergences on each cycle")
 @click.option("--guardian", is_flag=True, help="Run in Spec Guardian mode")
 @click.option("--spec", default=None, help="Path to spec (required for --guardian)")
 @click.option("--target", default=None, help="Target URL (required for --guardian)")
 @click.option("--source", type=click.Choice(["openapi", "graphql", "grpc", "accessibility"]),
               default="openapi", help="Source type for guardian mode")
-def daemon_cmd(interval: int, max_loops: int, guardian: bool,
+def daemon_cmd(interval: int, max_loops: int, url: str | None, guardian: bool,
                spec: str | None, target: str | None, source: str) -> None:
     """Continuously watch sources and rebuild Truth Model, or run Spec Guardian."""
     from cherenkov.stages.daemon_cmd import run_daemon, run_guardian_daemon
@@ -46,7 +48,7 @@ def daemon_cmd(interval: int, max_loops: int, guardian: bool,
             source_type=source, interval_seconds=interval,
         ))
     else:
-        sys.exit(run_daemon(interval_seconds=interval, max_loops=max_loops))
+        sys.exit(run_daemon(interval_seconds=interval, max_loops=max_loops, target_url=url))
 
 
 @click.command("explore")
