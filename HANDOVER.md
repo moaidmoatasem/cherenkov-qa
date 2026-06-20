@@ -44,12 +44,15 @@ All code-deliverable Phase 1 items are DONE:
 | E2.5 -- `cherenkov check-suite` | **DONE** | `cherenkov/cli/commands/check_suite.py`; 13 unit tests |
 | E2.2 -- MCP context consumer | **DONE** | `cherenkov/mcp/client.py` (MCPClient); mesh forwarding; `auto_heal_code` dispatch; 19 unit tests |
 | E2.3 -- Continuous engine | **DONE** | `cherenkov daemon --url <target>` polls on interval, detects spec file changes, runs `run_proof`, queues divergences to HitlQueue; 12 unit tests |
-| E2.4 -- Source adapters (gRPC/GraphQL) | **DONE** | `cherenkov/truth/sources/grpc.py`, `graphql.py`; exported from `__init__`; 20 tests |
+| E2.4 -- Source adapters + validate integration | **DONE** | `cherenkov/truth/sources/grpc.py`, `graphql.py`; planners wired into `cherenkov validate` with ingestion counts, per-scenario feedback, human-readable summary; 31 tests |
 
 ## What landed this session (2026-06-21)
 
 | SHA | What |
 |---|---|
+| `4bf529a` | feat(platform): K8s HA (HPA/PDB/NetworkPolicy), prompt versioning + regression-guard integration, self-dogfood CI (13 tests) |
+| `fe738c8` | chore(qa): align session — 347 UI tests green, update HANDOVER |
+| `515a49a` | feat(platform): close 5 architectural gaps — PII redaction, supply chain, eval regression, cost budget, E2.4 adapters |
 | `a4f104b` | feat(e2.4): wire gRPC + GraphQL SourceAdapters into truth/sources (20 tests) |
 | `0590092` | feat: landing page, docs site, npm packages, GitHub Action |
 | `5656ca5` | chore(qa): finalize E2.3 merge — fix UI test suite bugs (347 UI tests green) |
@@ -65,10 +68,14 @@ All code-deliverable Phase 1 items are DONE:
 | Area | Deliverable | Files |
 |---|---|---|
 | E2.4 truth sources | gRPC + GraphQL SourceAdapter (claim extraction layer) | `cherenkov/truth/sources/grpc.py`, `graphql.py` |
+| E2.4 validate UX | gRPC/GraphQL planners wired into `cherenkov validate`; ingestion + result summary always printed | `cherenkov/cli/commands/validate.py`; 11 tests |
 | Supply chain | SBOM + SLSA + CVE scan + dependency review | `.github/workflows/supply-chain.yml` |
 | PII redaction | Pattern-based email/phone/SSN/key/card scrubber | `cherenkov/security/redact.py` (24 tests) |
 | Eval regression | Baseline-vs-current metric comparison, CI gate | `cherenkov/evals/regression.py`, `bench/eval-baseline.json` (11 tests) |
+| Prompt versioning | SHA-256 fingerprints, regression-guard warns on prompt change vs model drift | `cherenkov/evals/prompt_version.py` (13 tests) |
 | Cost budget | Per-run USD cap with pre-check, warn threshold, env override | `cherenkov/core/budget.py` (16 tests) |
+| K8s HA | HPA 2-10 replicas, PDB minAvailable=1, NetworkPolicy, production deployment | `k8s/cherenkov-hpa.yaml`, `pdb.yaml`, `network-policy.yaml` |
+| Self-dogfood CI | Server starts, fetches own /openapi.json, runs `cherenkov verify` against itself | `.github/workflows/self-dogfood.yml` |
 | CI | LLM eval regression workflow (daily + on PR) | `.github/workflows/eval-regression.yml` |
 
 ---
@@ -76,7 +83,7 @@ All code-deliverable Phase 1 items are DONE:
 ## Next code actions (ordered by impact)
 
 1. **E0.3 -- Human validation gate** -- recruit ≥3 QA practitioners to complete quickstart unaided. Cannot be automated.
-2. **E2.4 -- gRPC/GraphQL planner integration** -- wire `gRPCScenarioPlanner` + `GraphQLScenarioPlanner` into `cherenkov validate` so gRPC/GraphQL specs flow end-to-end.
+2. ~~E2.4 gRPC/GraphQL planner integration~~ **DONE** -- `cherenkov validate --source grpc/graphql` now prints ingestion counts + pass/fail summary.
 3. **Budget integration with substrate** -- call `get_run_budget().pre_check()` + `.charge()` in `cherenkov/substrate/` providers so the cap is actually enforced at runtime.
 4. **PII integration with observability** -- wrap `cherenkov/observability/llm_tracer.py` trace spans with `redact_dict()` before writing.
 5. **PyPI publish** -- `twine upload dist/*` once PyPI credentials are available; `dist/cherenkov-1.0.0.whl` is already built.

@@ -63,19 +63,43 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
         from cherenkov.stages.generate import GenerateStage
 
+        if not spec:
+            click.echo(click.style("Error: --spec is required for --source graphql", fg="red"), err=True)
+            sys.exit(1)
+        click.echo(f"Ingesting GraphQL SDL: {spec}")
         gql_source = GraphQLSourceAdapter(spec)
         scenarios = GraphQLScenarioPlanner().plan(gql_source)
+        click.echo(f"Planned {len(scenarios)} scenarios from {len(set(s.operation_name for s in scenarios))} operations")
+        generator = GenerateStage("cli_validate")
+        generated = 0
         for sc in scenarios:
-            GenerateStage("cli_validate").run(scenario=sc, source_type="graphql")
+            try:
+                generator.run(scenario=sc, source_type="graphql")
+                generated += 1
+            except Exception as e:
+                click.echo(click.style(f"  warn: skipped {sc.operation_name}/{sc.scenario_type}: {e}", fg="yellow"), err=True)
+        click.echo(f"Generated {generated}/{len(scenarios)} test files")
     elif source == "grpc":
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
         from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
         from cherenkov.stages.generate import GenerateStage
 
+        if not spec:
+            click.echo(click.style("Error: --spec is required for --source grpc", fg="red"), err=True)
+            sys.exit(1)
+        click.echo(f"Ingesting gRPC proto: {spec}")
         grpc_source = gRPCSourceAdapter(spec)
         scenarios = gRPCScenarioPlanner().plan(grpc_source)
+        click.echo(f"Planned {len(scenarios)} scenarios from {len(set(s.service for s in scenarios))} services")
+        generator = GenerateStage("cli_validate")
+        generated = 0
         for sc in scenarios:
-            GenerateStage("cli_validate").run(scenario=sc, source_type="grpc")
+            try:
+                generator.run(scenario=sc, source_type="grpc")
+                generated += 1
+            except Exception as e:
+                click.echo(click.style(f"  warn: skipped {sc.service}/{sc.rpc_name}: {e}", fg="yellow"), err=True)
+        click.echo(f"Generated {generated}/{len(scenarios)} test files")
     elif source == "accessibility":
         from cherenkov.sources.accessibility.adapter import AccessibilitySourceAdapter
         from cherenkov.stages.plan_accessibility import AccessibilityScenarioPlanner
@@ -83,12 +107,29 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
 
         a11y_source = AccessibilitySourceAdapter(spec)
         scenarios = AccessibilityScenarioPlanner().plan(a11y_source)
+        click.echo(f"Planned {len(scenarios)} accessibility scenarios")
+        generator = GenerateStage("cli_validate")
         for sc in scenarios:
-            GenerateStage("cli_validate").run(scenario=sc, source_type="accessibility")
+            generator.run(scenario=sc, source_type="accessibility")
 
     # The engine handles the heavy lifting
+    click.echo(f"\nRunning tests against {target} ...")
     engine = ValidationEngine("cli_validate")
     results = engine.validate_suite(target, workers=workers)
+
+    # Always print a human-readable summary so every source type gets output
+    _reports = results.get("reports", [])
+    _passed = sum(1 for r in _reports if r.get("passed", False))
+    _total = len(_reports)
+    _status_color = "green" if _passed == _total else ("yellow" if _passed > 0 else "red")
+    click.echo(click.style(
+        f"\nResults: {_passed}/{_total} passed  [{results.get('status', 'done').upper()}]",
+        fg=_status_color,
+        bold=True,
+    ))
+    for r in _reports:
+        if not r.get("passed", False):
+            click.echo(f"  FAIL  {r.get('scenario_id', '?')}  {r.get('error', '')[:120]}")
 
     if format == "sarif":
         from cherenkov.execution.emitters.sarif import SARIFEmitter
