@@ -317,7 +317,31 @@ class ReviewStage:
             )
         )
 
-        # 7. Gate 7 — CANDOR Consensus Oracle (opt-in via CHERENKOV_CONSENSUS_ORACLE=true)
+        # 7b. Gate 7b — OCR Agent Review (opt-in via CHERENKOV_OCR_ENABLED=true)
+        if get_settings().OCR_ENABLED:
+            self.log.info("ocr gate: running OCR agent review", scenario_id=scenario_id)
+            try:
+                from cherenkov.review_ocr.stage import ReviewStageOCR
+                ocr_stage = ReviewStageOCR(run_id=self.run_id)
+                ocr_gate = ocr_stage.run(
+                    test_code=code,
+                    filepath=test_file_path,
+                    scenario_id=scenario_id,
+                )
+                if not ocr_gate.passed and not ocr_gate.skipped:
+                    self.log.info(
+                        "ocr gate flagged issues",
+                        scenario_id=scenario_id,
+                        detail=ocr_gate.detail[:200],
+                    )
+                gates.append(ocr_gate)
+            except Exception as ocr_err:
+                self.log.warning("ocr gate error (skipped)", error=str(ocr_err))
+                gates.append(
+                    GateResult(gate="ocr", passed=True, detail=f"OCR gate skipped (error): {ocr_err}", skipped=True)
+                )
+
+        # 8. Gate 8 — CANDOR Consensus Oracle (opt-in via CHERENKOV_CONSENSUS_ORACLE=true)
         # Runs N independent LLM passes to validate that assertions are correct and
         # meaningful. Only fires when the four static gates all passed (no point
         # spending LLM calls on structurally broken code).
