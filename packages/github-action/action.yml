@@ -1,0 +1,64 @@
+name: 'CHERENKOV-QA API Conformance Check'
+description: 'Generate and run AI-native Playwright tests against an API using an OpenAPI spec to detect drift.'
+branding:
+  icon: 'shield'
+  color: 'purple'
+
+inputs:
+  spec-path:
+    description: 'Path to the OpenAPI/Swagger specification file.'
+    required: true
+    default: './api.yaml'
+  target-url:
+    description: 'The real server target base URL to validate against.'
+    required: true
+  provider:
+    description: 'LLM provider to use (ollama, openai, azure).'
+    required: false
+    default: 'openai'
+  model:
+    description: 'Model name to use for test generation.'
+    required: false
+    default: 'gpt-4o'
+  fail-on-drift:
+    description: 'Whether to fail the CI job if conformance drift is detected.'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Install CHERENKOV-QA
+      shell: bash
+      run: |
+        pip install cherenkov-qa
+        playwright install --with-deps chromium
+
+    - name: Run Conformance Check
+      shell: bash
+      env:
+        OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
+        CHERENKOV_PROVIDER: ${{ inputs.provider }}
+        CHERENKOV_MODEL: ${{ inputs.model }}
+      run: |
+        # Build the command based on inputs
+        CMD="cherenkov validate --target ${{ inputs.target-url }} --spec ${{ inputs.spec-path }} --format sarif"
+        
+        if [ "${{ inputs.fail-on-drift }}" = "true" ]; then
+          CMD="$CMD --fail-on-drift"
+        fi
+        
+        echo "Running: $CMD"
+        eval $CMD
+        
+    - name: Upload SARIF report
+      if: always()
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: .cherenkov/report.sarif
+        category: cherenkov-conformance
