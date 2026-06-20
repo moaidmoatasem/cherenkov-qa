@@ -50,6 +50,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from cherenkov.web.middleware.rate_limit import RateLimitMiddleware  # noqa: E402
+app.add_middleware(RateLimitMiddleware)
+
 # ── Phase 0b: Monitoring & Security (conditionally added) ────────────
 from cherenkov.web.monitoring import router as monitor_router  # noqa: E402
 
