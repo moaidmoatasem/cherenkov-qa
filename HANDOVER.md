@@ -1,8 +1,8 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-06-20
+**Date:** 2026-06-21
 **HEAD:** see `git log`
-**Tests:** 770 unit tests passing (3 pre-existing OCR failures unrelated to AQE); G0 integrity suite 10/10; E11 60/60; +12 E2.3 daemon tests
+**Tests:** 770+ unit tests; G0 10/10; E11 60/60; **UI E2E: 347 passed, 0 failed** (qa suite + a11y + dashboard_e2e + projects_deep); pet-store eject suite 37/37
 **Branch:** `main`
 
 ---
@@ -44,18 +44,19 @@ All code-deliverable Phase 1 items are DONE:
 | E2.5 -- `cherenkov check-suite` | **DONE** | `cherenkov/cli/commands/check_suite.py`; 13 unit tests |
 | E2.2 -- MCP context consumer | **DONE** | `cherenkov/mcp/client.py` (MCPClient); mesh forwarding; `auto_heal_code` dispatch; 19 unit tests |
 | E2.3 -- Continuous engine | **DONE** | `cherenkov daemon --url <target>` polls on interval, detects spec file changes, runs `run_proof`, queues divergences to HitlQueue; 12 unit tests |
-| E2.4 -- Source adapters (gRPC/GraphQL) | PENDING | `cherenkov/truth/sources/` |
+| E2.4 -- Source adapters (gRPC/GraphQL) | **DONE** | `cherenkov/truth/sources/grpc.py`, `graphql.py`; exported from `__init__`; 20 tests |
 
-## What landed this session
+## What landed this session (2026-06-21)
 
 | SHA | What |
 |---|---|
-| `588d9d4` | feat(e2.5): `cherenkov check-suite` — catch AI cheating (13 tests) |
-| `8b50b9d` | feat(e2.1): `verify_system` MCP tool — system conformance over MCP (11 tests) |
-| `f66a4da` | feat(e1.1): `cherenkov verify` command (E1.1, 8 tests) |
-| `3075235` | feat(g0): E0.1 DONE -- 6 real divergences across 3 public APIs |
-| `1ca48e4` | feat(reflector): offline idiom replay + Skeptic/Generate injection (--learn) |
-| (pending) | feat(platform): PII redaction, SBOM/SLSA supply chain, eval regression guard, budget enforcer — 51 tests |
+| `a4f104b` | feat(e2.4): wire gRPC + GraphQL SourceAdapters into truth/sources (20 tests) |
+| `0590092` | feat: landing page, docs site, npm packages, GitHub Action |
+| `5656ca5` | chore(qa): finalize E2.3 merge — fix UI test suite bugs (347 UI tests green) |
+| (in 5656ca5) | fix: duplicate `#workspace-search-input` — sidebar nav search shadowed project filter; renamed to `#nav-search-input` |
+| (in 5656ca5) | fix: `#btn-projects-new-run` button — wrong label ("New Project") and wrong handler; now says "New Validation Run" and calls `onNewRun` |
+| (in 5656ca5) | feat: `GET /api/v1/visual/scenarios` endpoint — 5 demo VLM scenarios for VisualRegressionScreen |
+| (in 5656ca5) | fix: `GET /api/v1/ocr/status` — wrap in try/except so unavailable OCR binary returns 200+error field instead of 500 |
 
 ---
 
