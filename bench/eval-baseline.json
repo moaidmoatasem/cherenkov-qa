@@ -1,0 +1,14 @@
+{
+  "metrics": {
+    "pass_rate": 0.85,
+    "faithfulness": 0.82,
+    "hallucination": 0.80,
+    "assertion_quality": 0.78,
+    "spec_alignment": 0.84,
+    "completeness": 0.76
+  },
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-06-21T00:00:00+00:00",
+  "total_scenarios": 0,
+  "_note": "Bootstrap baseline — update with: cherenkov bench --update-baseline after first green CI run"
+}

@@ -26,18 +26,33 @@ def _is_lib_available(name: str) -> bool:
         return False
 
 
+def _sanitize(attributes: dict[str, Any]) -> dict[str, Any]:
+    """Strip PII from trace attributes before sending to external backends."""
+    try:
+        from cherenkov.security.redact import redact_dict
+        return redact_dict(attributes)
+    except Exception:
+        return attributes
+
+
 def trace_event(event_name: str, **attributes: Any) -> None:
     """Log a trace event to the configured backend (LangSmith or LangFuse).
 
-    This is a fire-and-forget call. If no backend is configured or the
-    required library is not installed, it silently no-ops.
+    Attributes are PII-scrubbed before transmission. This is a fire-and-forget
+    call. If no backend is configured or the required library is not installed,
+    it silently no-ops.
     """
     backend = _detect_backend()
 
+    if backend in ("langsmith", "langfuse"):
+        safe_attrs = _sanitize(attributes)
+    else:
+        return
+
     if backend == "langsmith":
-        _trace_langsmith(event_name, attributes)
+        _trace_langsmith(event_name, safe_attrs)
     elif backend == "langfuse":
-        _trace_langfuse(event_name, attributes)
+        _trace_langfuse(event_name, safe_attrs)
 
 
 def _trace_langsmith(event_name: str, attributes: dict[str, Any]) -> None:

@@ -1,0 +1,100 @@
+name: LLM Eval Regression Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'cherenkov/stages/generate.py'
+      - 'cherenkov/stages/plan.py'
+      - 'cherenkov/prompts/**'
+      - 'cherenkov/substrate/**'
+      - 'cherenkov/reasoning/**'
+      - 'cherenkov/evals/**'
+      - 'bench/eval-baseline.json'
+  schedule:
+    # Daily at 02:00 UTC against main (catches model drift)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      update-baseline:
+        description: Update baseline after a green run
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # baseline update push
+  pull-requests: write
+
+jobs:
+  eval-regression:
+    name: Eval Regression Check
+    runs-on: ubuntu-latest
+    env:
+      CHERENKOV_LLM_PROVIDER: ${{ secrets.CHERENKOV_LLM_PROVIDER || 'openai' }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install CHERENKOV
+        run: pip install -e ".[dev]" --quiet
+
+      - name: Run eval suite against golden fixtures
+        id: eval
+        run: |
+          python -m cherenkov.cli.core bench \
+            --spec stub/openapi_3_1.yaml \
+            --test-dir bench/fixtures/golden_tests \
+            --json-output /tmp/eval-report.json \
+          || true
+          echo "Eval complete."
+
+      - name: Check for regression
+        id: regression
+        run: |
+          python -m cherenkov.evals.regression \
+            --report /tmp/eval-report.json \
+            --baseline bench/eval-baseline.json \
+            --tolerance 0.05 \
+            ${{ inputs.update-baseline && '--update-baseline' || '' }} \
+          | tee /tmp/regression-result.json
+          echo "regression_json=$(cat /tmp/regression-result.json | jq -c .)" >> "$GITHUB_OUTPUT"
+
+      - name: Post regression summary to PR
+        if: github.event_name == 'pull_request' && always()
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: eval-regression
+          message: |
+            ## LLM Eval Regression Report
+
+            ```json
+            ${{ steps.regression.outputs.regression_json }}
+            ```
+
+            > Baseline: `bench/eval-baseline.json`
+            > Tolerance: ±0.05 per metric
+
+      - name: Upload eval report artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-report
+          path: /tmp/eval-report.json
+          retention-days: 30
+
+      - name: Commit updated baseline (scheduled only)
+        if: github.event_name == 'schedule' && inputs.update-baseline
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add bench/eval-baseline.json
+          git diff --cached --quiet || \
+            git commit -m "chore(eval): update regression baseline [skip ci]"
+          git push

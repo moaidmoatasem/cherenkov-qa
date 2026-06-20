@@ -17,6 +17,7 @@ from cherenkov.core.errors import (
     CertificationError,
     get_logger,
 )
+from cherenkov.core.budget import get_run_budget, BudgetExceededError
 from cherenkov.substrate.provider import provider_for_tier, get_provider
 from cherenkov.substrate.certification import ModelCertificationManager
 
@@ -48,6 +49,10 @@ class SubstrateRouter:
 
         self._enforce_egress(primary.capabilities().requires_egress, primary_name)
 
+        # Budget pre-check (raises BudgetExceededError if cap would be breached)
+        budget = get_run_budget()
+        budget.pre_check(request.max_cost)
+
         last_error: Exception | None = None
         try:
             self.log.info(
@@ -55,7 +60,16 @@ class SubstrateRouter:
                 provider=primary_name,
                 tier=request.capability_tier,
             )
-            return primary.generate(request)
+            result = primary.generate(request)
+            budget.charge(
+                cost_usd=result.cost_usd,
+                model=result.model,
+                provider=result.provider,
+                cache_hit=result.cached,
+            )
+            return result
+        except BudgetExceededError:
+            raise
         except Exception as e:
             last_error = e
             self.log.warning("primary failed", provider=primary_name, error=str(e))
@@ -80,7 +94,16 @@ class SubstrateRouter:
                     fallback=fallback_name,
                     tier=request.capability_tier,
                 )
-                return fallback.generate(request)
+                result = fallback.generate(request)
+                budget.charge(
+                    cost_usd=result.cost_usd,
+                    model=result.model,
+                    provider=result.provider,
+                    cache_hit=result.cached,
+                )
+                return result
+            except BudgetExceededError:
+                raise
             except Exception as e2:
                 last_error = e2
                 self.log.warning(

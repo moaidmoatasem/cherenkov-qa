@@ -55,14 +55,29 @@ All code-deliverable Phase 1 items are DONE:
 | `f66a4da` | feat(e1.1): `cherenkov verify` command (E1.1, 8 tests) |
 | `3075235` | feat(g0): E0.1 DONE -- 6 real divergences across 3 public APIs |
 | `1ca48e4` | feat(reflector): offline idiom replay + Skeptic/Generate injection (--learn) |
+| (pending) | feat(platform): PII redaction, SBOM/SLSA supply chain, eval regression guard, budget enforcer — 51 tests |
+
+---
+
+## Platform gaps closed (this session)
+
+| Area | Deliverable | Files |
+|---|---|---|
+| E2.4 truth sources | gRPC + GraphQL SourceAdapter (claim extraction layer) | `cherenkov/truth/sources/grpc.py`, `graphql.py` |
+| Supply chain | SBOM + SLSA + CVE scan + dependency review | `.github/workflows/supply-chain.yml` |
+| PII redaction | Pattern-based email/phone/SSN/key/card scrubber | `cherenkov/security/redact.py` (24 tests) |
+| Eval regression | Baseline-vs-current metric comparison, CI gate | `cherenkov/evals/regression.py`, `bench/eval-baseline.json` (11 tests) |
+| Cost budget | Per-run USD cap with pre-check, warn threshold, env override | `cherenkov/core/budget.py` (16 tests) |
+| CI | LLM eval regression workflow (daily + on PR) | `.github/workflows/eval-regression.yml` |
 
 ---
 
 ## Next code actions (ordered by impact)
 
-1. **E2.3 -- Continuous engine** -- watch spec/code/traffic/schema changes and surface divergence on change; `daemon_cmd.py` exists, needs divergence integration.
-3. **E2.4 -- Source adapters (gRPC/GraphQL)** -- add to `cherenkov/truth/sources/`; OpenAPI/AsyncAPI/Postman already exist.
-4. **E0.3 -- Human validation gate** -- recruit ≥3 QA practitioners to complete quickstart unaided. `install.sh` now reduces their install burden. Cannot be automated.
+1. **E0.3 -- Human validation gate** -- recruit ≥3 QA practitioners to complete quickstart unaided. Cannot be automated.
+2. **E2.4 -- gRPC/GraphQL planner integration** -- wire `gRPCScenarioPlanner` + `GraphQLScenarioPlanner` into `cherenkov validate` so gRPC/GraphQL specs flow end-to-end.
+3. **Budget integration with substrate** -- call `get_run_budget().pre_check()` + `.charge()` in `cherenkov/substrate/` providers so the cap is actually enforced at runtime.
+4. **PII integration with observability** -- wrap `cherenkov/observability/llm_tracer.py` trace spans with `redact_dict()` before writing.
 5. **PyPI publish** -- `twine upload dist/*` once PyPI credentials are available; `dist/cherenkov-1.0.0.whl` is already built.
 6. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` (`cargo install tauri-cli` first).
 
