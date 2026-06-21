@@ -5,9 +5,40 @@ CHERENKOV execution/eject.py — engine for ejecting standalone Playwright test 
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import json
+from dataclasses import dataclass, field
 from cherenkov.core.errors import get_logger
+
+# Patterns that would indicate a cherenkov dependency leaked into ejected output
+_LOCK_IN_PATTERNS: list[tuple[str, str]] = [
+    (r"from\s+['\"]cherenkov", "import from cherenkov package"),
+    (r"require\s*\(\s*['\"]cherenkov", "require('cherenkov') call"),
+    (r"@cherenkov/", "@cherenkov scoped package reference"),
+    (r"cherenkov[_-]trace", "cherenkov trace hook"),
+    (r"CHERENKOV_", "CHERENKOV_ environment variable"),
+]
+
+
+@dataclass
+class LockInAudit:
+    """Result of the zero-lock-in verification scan."""
+
+    files_scanned: int = 0
+    violations: list[dict] = field(default_factory=list)
+
+    @property
+    def clean(self) -> bool:
+        return len(self.violations) == 0
+
+    def summary(self) -> str:
+        if self.clean:
+            return f"Lock-in audit PASSED ({self.files_scanned} file(s) scanned, 0 violations)"
+        lines = [f"Lock-in audit FAILED ({len(self.violations)} violation(s)):"]
+        for v in self.violations:
+            lines.append(f"  {v['file']}: {v['reason']}")
+        return "\n".join(lines)
 
 
 class EjectorEngine:
@@ -169,9 +200,48 @@ export default defineConfig({
                 json.dump(clean_tsconfig, f, indent=2)  # type: ignore
             self.log.info("emitted standard tsconfig.json")
 
+            # 8. Zero-lock-in audit — fail hard if any file leaks a cherenkov dependency
+            audit = self._verify_no_lock_in(output_path)
+            self.log.info(
+                "lock-in audit",
+                clean=audit.clean,
+                files_scanned=audit.files_scanned,
+                violations=len(audit.violations),
+            )
+            if not audit.clean:
+                self.log.error("lock-in violations found", summary=audit.summary())
+                return False
+
             self.log.info("standalone test suite ejection completed successfully")
             return True
 
         except Exception as e:
             self.log.error("failed during standalone test suite ejection", error=str(e))
             return False
+
+    def audit_lock_in(self, output_dir: str) -> LockInAudit:
+        """Public entry point: scan an already-ejected directory for lock-in violations.
+
+        Safe to call independently of ``eject_suite`` — e.g. in tests or CI.
+        """
+        return self._verify_no_lock_in(os.path.abspath(output_dir))
+
+    def _verify_no_lock_in(self, output_path: str) -> LockInAudit:
+        """Scan every text file in *output_path* for cherenkov lock-in patterns."""
+        audit = LockInAudit()
+        for root, _dirs, files in os.walk(output_path):
+            for fname in files:
+                if not fname.endswith((".ts", ".js", ".json", ".md", ".txt")):
+                    continue
+                fpath = os.path.join(root, fname)
+                rel = os.path.relpath(fpath, output_path)
+                try:
+                    content = open(fpath, encoding="utf-8", errors="replace").read()
+                except OSError:
+                    continue
+                audit.files_scanned += 1
+                for pattern, reason in _LOCK_IN_PATTERNS:
+                    if re.search(pattern, content, re.IGNORECASE):
+                        audit.violations.append({"file": rel, "reason": reason})
+                        break
+        return audit
