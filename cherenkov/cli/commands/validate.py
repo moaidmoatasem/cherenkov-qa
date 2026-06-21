@@ -130,6 +130,18 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         for sc in scenarios:
             generator.run(scenario=sc, source_type="accessibility")
 
+    # Record manifest so `cherenkov check-stale` can detect spec drift later
+    if source == "openapi" and spec:
+        import glob as _glob
+        from cherenkov.core.staleness import TestManifest
+
+        tests_dir = os.path.join(
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../stub")),
+            "generated_tests",
+        )
+        test_files = _glob.glob(os.path.join(tests_dir, "*.spec.ts"))
+        TestManifest().record(spec_path=spec, test_files=test_files)
+
     # The engine handles the heavy lifting
     click.echo(f"\nRunning tests against {target} ...")
     engine = ValidationEngine("cli_validate")

@@ -76,6 +76,7 @@ def _register_commands() -> None:
     )
     from cherenkov.cli.commands.bench import bench_cmd
     from cherenkov.cli.commands.ocr_cmd import ocr_cmd
+    from cherenkov.cli.commands.check_stale import check_stale_cmd
 
     for cmd, name in [
         (verify_cmd, "verify"),
@@ -106,6 +107,7 @@ def _register_commands() -> None:
         (profile_cmd, "profile"),
         (bench_cmd, "bench"),
         (ocr_cmd, "ocr"),
+        (check_stale_cmd, "check-stale"),
     ]:
         cli.add_command(cmd, name=name)
 
