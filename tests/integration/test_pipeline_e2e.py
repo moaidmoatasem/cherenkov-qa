@@ -286,3 +286,37 @@ class TestFullPipelineSmoke:
         total = len(result.get("reports", []))
         passed = sum(1 for r in result.get("reports", []) if r.get("passed"))
         assert passed == total, f"expected all {total} tests to pass with mocked Playwright"
+
+
+# ── Schema check integration ──────────────────────────────────────────────────
+
+class TestSchemaCheckIntegration:
+    """SchemaCheckStage validates petstore responses against the real spec schema."""
+
+    def test_valid_pet_list_passes(self):
+        from cherenkov.stages.schema_check import SchemaCheckStage
+
+        stage = SchemaCheckStage.from_file(str(PETSTORE_YAML))
+        result = stage.check("/pets", "GET", 200, [{"id": 1, "name": "Fido"}])
+        assert result.ok, result.issues
+
+    def test_invalid_pet_fails(self):
+        from cherenkov.stages.schema_check import SchemaCheckStage
+
+        stage = SchemaCheckStage.from_file(str(PETSTORE_YAML))
+        result = stage.check("/pets", "GET", 200, [{"name": "NoId"}])
+        assert not result.ok
+
+    def test_check_many_mixed_validity(self):
+        from cherenkov.stages.schema_check import SchemaCheckStage
+
+        stage = SchemaCheckStage.from_file(str(PETSTORE_YAML))
+        entries = [
+            {"endpoint": "/pets", "method": "GET", "status_code": 200,
+             "response_body": [{"id": 1, "name": "A"}]},
+            {"endpoint": "/pets", "method": "POST", "status_code": 201,
+             "response_body": {"name": "missing-id"}},
+        ]
+        results = stage.check_many(entries)
+        assert results[0].ok
+        assert not results[1].ok
