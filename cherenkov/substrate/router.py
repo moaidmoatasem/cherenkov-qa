@@ -20,6 +20,7 @@ from cherenkov.core.errors import (
 from cherenkov.core.budget import get_run_budget, BudgetExceededError
 from cherenkov.substrate.provider import provider_for_tier, get_provider
 from cherenkov.substrate.certification import ModelCertificationManager
+from cherenkov.substrate.retry import with_retry
 
 
 class SubstrateRouter:
@@ -60,7 +61,7 @@ class SubstrateRouter:
                 provider=primary_name,
                 tier=request.capability_tier,
             )
-            result = primary.generate(request)
+            result = with_retry(primary.generate, request)
             budget.charge(
                 cost_usd=result.cost_usd,
                 model=result.model,
@@ -94,7 +95,7 @@ class SubstrateRouter:
                     fallback=fallback_name,
                     tier=request.capability_tier,
                 )
-                result = fallback.generate(request)
+                result = with_retry(fallback.generate, request)
                 budget.charge(
                     cost_usd=result.cost_usd,
                     model=result.model,
