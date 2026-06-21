@@ -47,5 +47,5 @@ anyio>=4.13.0
 
 # Templated prompts (GraphQL/accessibility) + CLI completion
 jinja2>=3.1.0
-argcomplete>=3.3.0
+argcomplete>=3.6.3
 graphql-core>=3.2.0
