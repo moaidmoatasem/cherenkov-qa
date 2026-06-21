@@ -31,17 +31,19 @@ def report_cmd(output: str | None, diff_path: str | None) -> None:
 @click.command("eject")
 @click.option("--output", "-o", required=True, type=click.Path(), help="Target output directory for the standalone suite")
 def eject_cmd(output: str) -> None:
-    """Eject generated tests to a standalone Playwright suite."""
+    """Eject generated tests to a standalone Playwright suite (zero lock-in)."""
     from cherenkov.execution.eject import EjectorEngine
 
     ejector = EjectorEngine("cli_eject")
     if ejector.eject_suite(output):
-        click.echo(f"\nCHERENKOV E2E suite ejected successfully to: {output}")
-        click.echo("All CHERENKOV metadata and hooks stripped successfully.")
-        click.echo("Ejected folder is 100% standard and runs standalone.\n")
+        audit = ejector.audit_lock_in(output)
+        click.echo(f"\nCHERENKOV E2E suite ejected to: {output}")
+        click.echo(click.style(f"  {audit.summary()}", fg="green"))
+        click.echo("\nRun your tests without CHERENKOV:")
+        click.echo(f"  cd {output} && npm install && npx playwright test\n")
         sys.exit(0)
     else:
-        click.echo("\nError: Standalone test suite ejection failed.\n", err=True)
+        click.echo("\nError: Standalone test suite ejection failed (lock-in check).\n", err=True)
         sys.exit(1)
 
 
