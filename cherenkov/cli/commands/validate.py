@@ -58,6 +58,24 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
 
         EndpointCache().clear()
 
+    # Pre-ingest spec validation for OpenAPI specs
+    if source == "openapi" and spec:
+        from cherenkov.truth.spec_validator import validate_spec, Severity
+
+        result = validate_spec(spec)
+        for issue in result.issues:
+            color = "red" if issue.severity == Severity.ERROR else "yellow"
+            prefix = "error" if issue.severity == Severity.ERROR else "warn"
+            loc = f" [{issue.location}]" if issue.location else ""
+            click.echo(click.style(f"  {prefix}: {issue.message}{loc}", fg=color), err=True)
+        if not result.ok:
+            click.echo(click.style(f"Spec validation failed: {spec}", fg="red", bold=True), err=True)
+            sys.exit(1)
+        if result.issues:
+            click.echo(click.style(
+                f"Spec OK with {len(result.warnings)} warning(s) — proceeding.", fg="yellow"
+            ))
+
     if source == "graphql":
         from cherenkov.sources.graphql.adapter import GraphQLSourceAdapter
         from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
