@@ -83,11 +83,20 @@ All code-deliverable Phase 1 items are DONE:
 ## Next code actions (ordered by impact)
 
 1. **E0.3 -- Human validation gate** -- recruit ≥3 QA practitioners to complete quickstart unaided. Cannot be automated.
-2. ~~E2.4 gRPC/GraphQL planner integration~~ **DONE** -- `cherenkov validate --source grpc/graphql` now prints ingestion counts + pass/fail summary.
-3. **Budget integration with substrate** -- call `get_run_budget().pre_check()` + `.charge()` in `cherenkov/substrate/` providers so the cap is actually enforced at runtime.
-4. **PII integration with observability** -- wrap `cherenkov/observability/llm_tracer.py` trace spans with `redact_dict()` before writing.
-5. **PyPI publish** -- `twine upload dist/*` once PyPI credentials are available; `dist/cherenkov-1.0.0.whl` is already built.
-6. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` (`cargo install tauri-cli` first).
+2. ~~E2.4 gRPC/GraphQL planner integration~~ **DONE**
+3. ~~Budget integration with substrate~~ **DONE** -- `SubstrateRouter.route()` calls `pre_check()` + `charge()` on every dispatch; `by_org` attribution added to `summary()`.
+4. ~~PII integration with observability~~ **DONE** -- `llm_tracer._sanitize()` wraps `redact_dict()` before span writes.
+5. **Full pipeline integration test** -- smoke test: OpenAPI spec → claim extraction → scenario planner → generate → validate_suite end-to-end without a live LLM (mock substrate).
+6. **PyPI publish** -- `twine upload dist/*` once PyPI credentials are available; `dist/cherenkov-1.0.0.whl` is already built.
+7. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` (`cargo install tauri-cli` first).
+
+### Also shipped last session (2026-06-21 continued)
+| What | Files | Tests |
+|---|---|---|
+| Per-IP token-bucket rate limiting (stdlib-only) | `cherenkov/web/middleware/rate_limit.py` | 13 |
+| Feature flags (env/file/runtime priority) + `/api/v1/flags` endpoint | `cherenkov/core/flags.py` | 16 |
+| Cost attribution by `org_id` in `RunBudget.summary()` | `cherenkov/core/budget.py` | 0 new (additive) |
+| Structured API error codes (17 codes, 3 handlers) | `cherenkov/web/errors.py` | 11 |
 
 ---
 
