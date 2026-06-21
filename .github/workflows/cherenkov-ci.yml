@@ -19,6 +19,12 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Unit tests
         run: python -m pytest tests/unit/ -q --tb=short
+      - name: Pipeline integration smoke
+        run: |
+          python -m pytest tests/integration/test_pipeline_e2e.py -q --tb=short \
+            -W ignore::DeprecationWarning
+        env:
+          CHERENKOV_RATE_LIMIT_ENABLED: "false"
 
   gate-g0:
     runs-on: ubuntu-latest
