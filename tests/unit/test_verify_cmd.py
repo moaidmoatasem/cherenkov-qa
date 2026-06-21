@@ -48,7 +48,18 @@ class TestVerifyCmd:
         assert result.exit_code == 0
         assert "--url" in result.output
         assert "--spec" in result.output
-        assert "--offline" in result.output
+
+    def test_zero_config_uses_petstore_default(self) -> None:
+        """E1.1: no --url should probe the Petstore demo, not error."""
+        from cherenkov.divergence.proof_run import PETSTORE_BASE_URL
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.verify.run_proof", return_value=[]) as mock:
+            result = runner.invoke(verify_cmd, [])
+        assert result.exit_code == 0, result.output
+        assert "demo mode" in result.output
+        mock.assert_called_once_with(
+            base_url=PETSTORE_BASE_URL, spec=None, use_llm=False
+        )
 
     def test_no_divergences_exits_0(self) -> None:
         runner = CliRunner()

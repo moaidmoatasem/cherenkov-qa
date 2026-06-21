@@ -13,15 +13,18 @@ import sys
 from pathlib import Path
 
 import click
-from cherenkov.divergence.proof_run import run_proof
+from cherenkov.divergence.proof_run import PETSTORE_BASE_URL, run_proof
 
 
 @click.command("verify")
 @click.option(
     "--url",
     "-u",
-    required=True,
-    help="Base URL of the live server to probe (e.g. https://petstore3.swagger.io/api/v3)",
+    default=None,
+    help=(
+        "Base URL of the live server to probe.  "
+        "Defaults to the public Petstore demo when omitted."
+    ),
 )
 @click.option(
     "--spec",
@@ -47,7 +50,7 @@ from cherenkov.divergence.proof_run import run_proof
     help="Exit with code 1 if any divergences are found (CI gate mode).",
 )
 def verify_cmd(
-    url: str,
+    url: str | None,
     spec: str | None,
     llm: bool,
     output: str | None,
@@ -60,8 +63,8 @@ def verify_cmd(
 
     \b
     Examples:
-      # Zero-config demo against the public Petstore:
-      cherenkov verify --url https://petstore3.swagger.io/api/v3
+      # Zero-config demo (no arguments needed):
+      cherenkov verify
 
       # Point at your own service:
       cherenkov verify --url http://localhost:8080 --spec ./openapi.json
@@ -69,6 +72,9 @@ def verify_cmd(
       # CI gate: fail if divergences are found:
       cherenkov verify --url http://localhost:8080 --spec ./openapi.json --fail-on-divergence
     """
+    using_demo = url is None
+    effective_url = url or PETSTORE_BASE_URL
+
     spec_dict: dict | None = None
     if spec is not None:
         spec_dict = _load_spec(spec)
@@ -77,13 +83,15 @@ def verify_cmd(
 
     mode_label = "LLM Skeptic" if llm else "offline (no LLM required)"
     click.echo("\nCHERENKOV verify")
-    click.echo(f"  Target  : {url}")
+    if using_demo:
+        click.echo(click.style("  (demo mode — no --url given, probing public Petstore)", fg="yellow"))
+    click.echo(f"  Target  : {effective_url}")
     click.echo(f"  Spec    : {spec or 'built-in Petstore demo'}")
     click.echo(f"  Mode    : {mode_label}")
     click.echo("")
 
     try:
-        reports = run_proof(base_url=url, spec=spec_dict, use_llm=llm)
+        reports = run_proof(base_url=effective_url, spec=spec_dict, use_llm=llm)
     except Exception as exc:
         click.echo(f"\n[ERROR] Probe failed: {exc}", err=True)
         sys.exit(2)
