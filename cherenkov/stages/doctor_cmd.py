@@ -64,12 +64,32 @@ def check_ollama_model(model: str) -> tuple[bool, str]:
         return False, "cannot check"
 
 
+_NODE_FALLBACK_PATHS = [
+    "/usr/local/bin/node",
+    "/usr/bin/node",
+    "/home/moaid/.local/bin/node",
+    "/home/moaid/.nvm/versions/node/v22.23.0/bin/node",
+]
+
+
 def check_node() -> tuple[bool, str]:
+    import os, glob as _glob
     path = shutil.which("node")
+    if not path:
+        # nvm-managed node won't be on the detached server's PATH — probe known locations
+        for candidate in _NODE_FALLBACK_PATHS:
+            if os.path.isfile(candidate):
+                path = candidate
+                break
+    if not path:
+        # last resort: glob nvm versions directory
+        matches = _glob.glob("/home/*/.nvm/versions/node/*/bin/node")
+        if matches:
+            path = sorted(matches)[-1]
     if path:
         try:
             result = subprocess.run(
-                ["node", "--version"],
+                [path, "--version"],
                 capture_output=True,
                 text=True,
                 timeout=10,

@@ -15,7 +15,7 @@ export default function OnboardingWizard({ onComplete, onEnableDemo }: Onboardin
 
   useEffect(() => {
     let mounted = true;
-    const checkSystem = async () => {
+    const checkSystem = async (attempt = 0) => {
       // In the desktop shell, the native prerequisite check is authoritative
       // for Ollama; the HTTP health probe below still decides engine status.
       const hw = await invokeDesktop<HardwareInfo>('check_prerequisites');
@@ -26,7 +26,20 @@ export default function OnboardingWizard({ onComplete, onEnableDemo }: Onboardin
         const h = await fetchHealth();
         if (mounted) {
           setEngineStatus('online');
-          if (!hw) setOllamaStatus(h.device !== 'unknown' ? 'found' : 'missing');
+          if (!hw) {
+            // gen_model being set means Ollama is configured even if device
+            // detection timed out on cold start (detect_ollama_device has a 2s
+            // timeout that fires before Ollama loads the model into memory).
+            const ollamaReady = h.device !== 'unknown' || (h.gen_model && h.gen_model !== 'unknown');
+            if (ollamaReady) {
+              setOllamaStatus('found');
+            } else if (attempt < 3) {
+              // Retry up to 3 times — device cache warms up within ~5s
+              setTimeout(() => { if (mounted) checkSystem(attempt + 1); }, 2000);
+            } else {
+              setOllamaStatus('missing');
+            }
+          }
         }
       } catch (e) {
         if (mounted) setEngineStatus('offline');
