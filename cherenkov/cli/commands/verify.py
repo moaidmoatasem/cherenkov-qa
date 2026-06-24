@@ -53,7 +53,7 @@ def verify_cmd(
     output: str | None,
     fail_on_divergence: bool,
 ) -> None:
-    """Verify a live API against its OpenAPI spec — find spec↔implementation divergences.
+    """Verify a live API against its OpenAPI spec -- find spec<->implementation divergences.
 
     Runs in offline mode by default (no LLM, no Ollama required).  Pass --llm
     to engage the full Skeptic agent for richer hypothesis generation.

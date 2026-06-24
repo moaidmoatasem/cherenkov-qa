@@ -44,11 +44,9 @@ class SandboxHealer:
     def __init__(self, run_id: str | None = None, provider: str = "filesystem"):
         self.run_id = run_id or str(uuid.uuid4())[:8]
         self.log = get_logger("SANDBOX_HEALER", self.run_id)
-        self.stub_dir = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../../stub")
-        )
-        self.cherenkov_dir = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../../.cherenkov")
+        from pathlib import Path as _Path
+        self.stub_dir = str(_Path(__file__).parent.parent.parent / "stub")
+        self.cherenkov_dir = str(_Path(__file__).parent.parent.parent / ".cherenkov"
         )
         self.provider = self._resolve_provider(provider)
 

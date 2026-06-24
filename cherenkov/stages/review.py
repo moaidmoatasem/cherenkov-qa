@@ -38,9 +38,8 @@ class ReviewStage:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("REVIEW", run_id)
-        self.stub_dir = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../../stub")
-        )
+        from pathlib import Path as _Path
+        self.stub_dir = str(_Path(__file__).parent.parent.parent / "stub")
 
     def run(self, generate: GenerateOutput, spec_path: str) -> ReviewOutput:
         t0 = time.time()

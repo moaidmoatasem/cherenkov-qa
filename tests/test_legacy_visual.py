@@ -118,13 +118,37 @@ def main():
 
 
 def _stub_browser_available() -> bool:
-    """The visual check drives a real Chromium via the stub's Playwright install."""
-    import glob
+    """Returns True only if the stub's Playwright install can find its Chromium browser."""
+    import json, glob
 
+    stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../stub"))
     browsers_path = os.environ.get(
         "PLAYWRIGHT_BROWSERS_PATH", os.path.expanduser("~/.cache/ms-playwright")
     )
-    return bool(glob.glob(os.path.join(browsers_path, "chromium*")))
+
+    # Derive the exact browser revision the stub's Playwright expects
+    browsers_json = os.path.join(
+        stub_dir, "node_modules", "playwright-core", "browsers.json"
+    )
+    if os.path.isfile(browsers_json):
+        try:
+            data = json.loads(open(browsers_json).read())
+            for b in data.get("browsers", []):
+                if b.get("name") == "chromium":
+                    rev = b.get("revision", "")
+                    for pattern in [
+                        os.path.join(browsers_path, f"chromium-{rev}", "chrome-linux64", "chrome"),
+                        os.path.join(browsers_path, f"chromium-{rev}", "chrome-linux", "chrome"),
+                        os.path.join(browsers_path, f"chromium_headless_shell-{rev}", "chrome-headless-shell-linux64", "chrome-headless-shell"),
+                    ]:
+                        if os.path.isfile(pattern):
+                            return True
+                    return False  # right revision directory missing
+        except Exception:
+            pass
+
+    # Fallback: any full Chromium executable
+    return bool(glob.glob(os.path.join(browsers_path, "chromium-*/chrome-linux64/chrome")))
 
 
 @pytest.mark.skipif(

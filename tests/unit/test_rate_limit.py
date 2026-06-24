@@ -87,7 +87,7 @@ class TestRateLimitMiddleware:
         await middleware(scope, receive, send)
         return responses
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_allows_normal_request(self):
         calls = []
 
@@ -99,7 +99,7 @@ class TestRateLimitMiddleware:
         await self._call(mw, scope)
         assert len(calls) == 1
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_disabled_allows_all(self):
         calls = []
 
@@ -111,7 +111,7 @@ class TestRateLimitMiddleware:
             await self._call(mw, self._make_scope())
         assert len(calls) == 50
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_exempt_paths_bypass_limiter(self):
         calls = []
 
@@ -124,7 +124,7 @@ class TestRateLimitMiddleware:
             await self._call(mw, scope)
         assert len(calls) == 3
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_rate_limit_returns_429(self):
         async def app(scope, receive, send):
             pass
@@ -144,7 +144,7 @@ class TestRateLimitMiddleware:
 
         assert 429 in status_codes
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_different_clients_isolated(self):
         calls = []
 
@@ -157,7 +157,7 @@ class TestRateLimitMiddleware:
             await self._call(mw, self._make_scope(client_ip=ip))
         assert len(calls) == 2
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_non_http_scope_passes_through(self):
         calls = []
 

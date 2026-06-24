@@ -7,7 +7,8 @@ from __future__ import annotations
 import os
 import re
 import json
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed, Future
 from typing import Any, Dict, List
 
 from cherenkov.core.errors import get_logger
@@ -68,10 +69,8 @@ class ValidationEngine:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id or "validate"
         self.log = get_logger("VALIDATE", self.run_id)
-        self.stub_dir = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../../stub")
-        )
-        self.tests_dir = os.path.join(self.stub_dir, "generated_tests")
+        self.stub_dir = str(Path(__file__).parent.parent.parent / "stub")
+        self.tests_dir = str(Path(self.stub_dir) / "generated_tests")
 
     def validate_suite(self, target_url: str, workers: int = 1, headed: bool = False) -> Dict[str, Any]:
         """Runs all spec tests in generated_tests against target_url and parses trace files for tightening suggestions."""
@@ -149,10 +148,15 @@ class ValidationEngine:
                 "error": result.get("failure_message", "") if not passed else "",
             }
 
-        with ThreadPoolExecutor(max_workers=workers) as executor:
-            futures = [executor.submit(_run_single_test, tf) for tf in test_files]
-            for future in as_completed(futures):
-                reports.append(future.result())
+        if workers <= 1:
+            # Sequential: avoids thread+subprocess interaction on Windows
+            for tf in test_files:
+                reports.append(_run_single_test(tf))
+        else:
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                futures = [executor.submit(_run_single_test, tf) for tf in test_files]
+                for future in as_completed(futures):
+                    reports.append(future.result())
 
         return {
             "status": "success",

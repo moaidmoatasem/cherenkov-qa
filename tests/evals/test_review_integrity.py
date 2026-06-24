@@ -23,8 +23,11 @@ from cherenkov.core.contracts import GenerateOutput, StageMeta, Status
 from cherenkov.core.errors import LoggerConfig
 from cherenkov.stages.review import ReviewStage
 
-# Silence JSON-lines log output during test runs
-LoggerConfig.suppress_stderr = True
+@pytest.fixture(autouse=True)
+def _suppress_logging():
+    LoggerConfig.suppress_stderr = True
+    yield
+    LoggerConfig.suppress_stderr = False
 
 _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 _DEMO_DIR = os.path.join(_REPO_ROOT, "demos", "catch-the-ai-cheating", "fixtures")

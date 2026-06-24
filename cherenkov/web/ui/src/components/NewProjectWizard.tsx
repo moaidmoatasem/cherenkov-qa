@@ -349,7 +349,7 @@ export default function NewProjectWizard({ onClose, onCreated }: Props) {
           </button>
 
           <div className="flex items-center gap-3">
-            {step === 1 && !ingestResult && (specFile || specUrl) === false && (
+            {step === 1 && !ingestResult && !specFile && !specUrl && (
               <button onClick={() => setStep(2)} className="text-xs text-white/40 hover:text-white/70 transition">
                 Skip spec →
               </button>

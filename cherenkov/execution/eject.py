@@ -7,6 +7,7 @@ from __future__ import annotations
 import os
 import shutil
 import json
+from pathlib import Path
 from cherenkov.core.errors import get_logger
 
 
@@ -16,16 +17,12 @@ class EjectorEngine:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id or "eject"
         self.log = get_logger("EJECT", self.run_id)
-        self.stub_dir = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../../stub")
-        )
-        self.tests_src_dir = os.path.join(self.stub_dir, "generated_tests")
+        self.stub_dir = str(Path(__file__).parent.parent.parent / "stub")
+        self.tests_src_dir = str(Path(self.stub_dir) / "generated_tests")
         # Tracked reference specs. `stub/generated_tests/` is gitignored, so on a
         # fresh checkout (e.g. CI) it is empty; fall back to these committed
         # fixtures so the eject path stays exercisable end-to-end.
-        self.fixtures_dir = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../../tests/eject_fixtures")
-        )
+        self.fixtures_dir = str(Path(__file__).parent.parent.parent / "tests" / "eject_fixtures")
 
     @staticmethod
     def _spec_files_in(directory: str) -> list[str]:

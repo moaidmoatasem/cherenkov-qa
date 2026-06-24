@@ -2,6 +2,7 @@ import click
 import os
 import json
 import sys
+from pathlib import Path as _Path
 
 from cherenkov.execution.validate import ValidationEngine
 
@@ -135,10 +136,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         import glob as _glob
         from cherenkov.core.staleness import TestManifest
 
-        tests_dir = os.path.join(
-            os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../stub")),
-            "generated_tests",
-        )
+        tests_dir = str(_Path(__file__).parent.parent.parent.parent / "stub" / "generated_tests")
         test_files = _glob.glob(os.path.join(tests_dir, "*.spec.ts"))
         TestManifest().record(spec_path=spec, test_files=test_files)
 

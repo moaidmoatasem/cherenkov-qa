@@ -43,9 +43,8 @@ class VisualDiffEngine:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("VISUAL_DIFF", run_id)
-        self.stub_dir = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../../stub")
-        )
+        from pathlib import Path as _Path
+        self.stub_dir = str(_Path(__file__).parent.parent.parent / "stub")
         self.spec_path = os.path.join(self.stub_dir, VISUAL_SPEC_RELPATH)
         # Playwright writes snapshots beside the spec by default.
         self.snapshots_dir = self.spec_path + "-snapshots"

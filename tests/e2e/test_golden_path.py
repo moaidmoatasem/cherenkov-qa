@@ -220,7 +220,7 @@ def test_gp7_metrics_endpoints_registered():
     except Exception as exc:
         pytest.skip(f"API app not importable: {exc}")
 
-    routes = {r.path for r in app.routes}
+    routes = set(app.openapi().get("paths", {}).keys())
     assert (
         "/api/v1/metrics/pipeline" in routes
     ), f"Missing /api/v1/metrics/pipeline. Routes: {routes}"

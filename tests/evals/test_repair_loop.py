@@ -11,7 +11,11 @@ from cherenkov.core.contracts import GenerateOutput, Scenario, StageMeta, Status
 from cherenkov.core.errors import LoggerConfig
 from cherenkov.stages.repair import RepairLoop, _extract_error_feedback
 
-LoggerConfig.suppress_stderr = True
+@pytest.fixture(autouse=True)
+def _suppress_logging():
+    LoggerConfig.suppress_stderr = True
+    yield
+    LoggerConfig.suppress_stderr = False
 
 _SPEC_PATH = "stub/openapi_3_1.yaml"
 

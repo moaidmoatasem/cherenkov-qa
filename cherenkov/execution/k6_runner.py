@@ -17,10 +17,9 @@ class K6Runner:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("K6_RUNNER", run_id)
-        self.stub_dir = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../../stub")
-        )
-        self.tests_dir = os.path.join(self.stub_dir, "generated_tests")
+        from pathlib import Path as _Path
+        self.stub_dir = str(_Path(__file__).parent.parent.parent / "stub")
+        self.tests_dir = str(_Path(self.stub_dir) / "generated_tests")
         self.k6_script_path = os.path.join(self.tests_dir, "k6_perf.js")
 
     def export_k6_script(self, target_url: str) -> str:

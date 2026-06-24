@@ -49,10 +49,9 @@ class PlaywrightRunner:
     def __init__(self, run_id: str | None = None):
         self.log = get_logger("PLAYWRIGHT", run_id)
         # Root is cherenkov-qa, stub is inside it
-        self.stub_dir = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../../stub")
-        )
-        self.tests_dir = os.path.join(self.stub_dir, "generated_tests")
+        from pathlib import Path as _Path
+        self.stub_dir = str(_Path(__file__).parent.parent.parent / "stub")
+        self.tests_dir = str(_Path(self.stub_dir) / "generated_tests")
         # Detect Windows UNC path — cmd.exe cannot use UNC as cwd
         self._use_wsl = sys.platform == "win32" and _is_unc_path(self.stub_dir)
         self._wsl_distro = _wsl_distro_from_unc(self.stub_dir) if self._use_wsl else None
