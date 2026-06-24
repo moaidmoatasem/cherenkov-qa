@@ -5,8 +5,8 @@ from cherenkov.web.routes.deps import manager
 router = APIRouter(tags=["health"])
 
 
-@router.get("/healthz")
-async def healthz():
+@router.get("/healthz", operation_id="healthz_simple")
+async def healthz_simple():
     return {"ok": True, "version": "1.0.0"}
 
 

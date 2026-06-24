@@ -1,8 +1,8 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-06-21
+**Date:** 2026-06-25
 **HEAD:** see `git log`
-**Tests:** 770+ unit tests; G0 10/10; E11 60/60; **UI E2E: 347 passed, 0 failed** (qa suite + a11y + dashboard_e2e + projects_deep); pet-store eject suite 37/37
+**Tests:** 770+ unit/integration tests (0 failures); **UI E2E: 294 headed, 0 failed** (smoke 39 + journeys 24 + functional 97 + dashboard 34 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
 **Branch:** `main`
 
 ---
@@ -46,7 +46,14 @@ All code-deliverable Phase 1 items are DONE:
 | E2.3 -- Continuous engine | **DONE** | `cherenkov daemon --url <target>` polls on interval, detects spec file changes, runs `run_proof`, queues divergences to HitlQueue; 12 unit tests |
 | E2.4 -- Source adapters + validate integration | **DONE** | `cherenkov/truth/sources/grpc.py`, `graphql.py`; planners wired into `cherenkov validate` with ingestion counts, per-scenario feedback, human-readable summary; 31 tests |
 
-## What landed this session (2026-06-21)
+## What landed this session (2026-06-25)
+
+| SHA | What |
+|---|---|
+| `49e2079` | fix(test): async rate-limit tests + Path cleanup (19 tests green) — replaced pytest.mark.asyncio with pytest.mark.anyio; pathlib.Path throughout execution/; sequential workers=1 fallback in ValidationEngine |
+| `fix` | fix(api): duplicate FastAPI operation ID `healthz_healthz_get` — renamed trivial healthz in health_routes.py to `healthz_simple` with explicit operation_id |
+
+## What landed previous session (2026-06-21)
 
 | SHA | What |
 |---|---|
@@ -83,12 +90,9 @@ All code-deliverable Phase 1 items are DONE:
 ## Next code actions (ordered by impact)
 
 1. **E0.3 -- Human validation gate** -- recruit ≥3 QA practitioners to complete quickstart unaided. Cannot be automated.
-2. ~~E2.4 gRPC/GraphQL planner integration~~ **DONE**
-3. ~~Budget integration with substrate~~ **DONE** -- `SubstrateRouter.route()` calls `pre_check()` + `charge()` on every dispatch; `by_org` attribution added to `summary()`.
-4. ~~PII integration with observability~~ **DONE** -- `llm_tracer._sanitize()` wraps `redact_dict()` before span writes.
-5. **Full pipeline integration test** -- smoke test: OpenAPI spec → claim extraction → scenario planner → generate → validate_suite end-to-end without a live LLM (mock substrate).
-6. **PyPI publish** -- `twine upload dist/*` once PyPI credentials are available; `dist/cherenkov-1.0.0.whl` is already built.
-7. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` (`cargo install tauri-cli` first).
+2. ~~Full pipeline integration test~~ **DONE** -- `tests/integration/test_pipeline_e2e.py` 15/15 green; ingest→plan→generate(mocked LLM)→validate(mocked Playwright)→schema check.
+3. **PyPI publish** -- `twine upload dist/*` once PyPI credentials are available; `dist/cherenkov-1.0.0.whl` is already built.
+4. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` (`cargo install tauri-cli` first).
 
 ### Also shipped last session (2026-06-21 continued)
 | What | Files | Tests |
