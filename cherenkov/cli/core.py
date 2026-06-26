@@ -71,9 +71,9 @@ def _register_commands() -> None:
         author_cmd,
         tokens_cmd,
         governance_cmd,
-        certify_cmd,
         profile_cmd,
     )
+    from cherenkov.cli.commands.certify import certify_cmd
     from cherenkov.cli.commands.bench import bench_cmd
     from cherenkov.cli.commands.ocr_cmd import ocr_cmd
     from cherenkov.cli.commands.check_stale import check_stale_cmd

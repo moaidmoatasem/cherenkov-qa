@@ -1,0 +1,71 @@
+name: Certify Gate (E3.3)
+
+# Runs the CHERENKOV Certificate workflow:
+#   1. Verifies a live API and issues a signed certificate
+#   2. Fails the build if the verdict is FAIL (--fail-on-fail)
+#   3. Uploads the certificate as a build artifact for audit trail
+
+on:
+  push:
+    branches: [main, "claude/*", "qa/*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "API base URL to certify"
+        required: false
+        default: ""
+
+jobs:
+  certify:
+    name: Issue Verification Certificate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install cherenkov
+        run: pip install -e "." --quiet
+
+      - name: Run cherenkov certify
+        env:
+          CHERENKOV_CERT_KEY: ${{ secrets.CHERENKOV_CERT_KEY }}
+        run: |
+          TARGET="${{ github.event.inputs.target_url }}"
+          if [ -z "$TARGET" ]; then
+            # Zero-config: probe the Petstore demo
+            cherenkov certify \
+              --output cert.json \
+              --fail-on-fail
+          else
+            cherenkov certify \
+              --url "$TARGET" \
+              --output cert.json \
+              --fail-on-fail
+          fi
+
+      - name: Verify certificate integrity
+        run: cherenkov certify --verify cert.json
+
+      - name: Upload certificate artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cherenkov-certificate-${{ github.run_id }}
+          path: cert.json
+          retention-days: 90
+
+      - name: Print certificate badge hint
+        if: success()
+        run: |
+          echo ""
+          echo "Certificate issued.  Add this badge to your README:"
+          echo ""
+          echo "  ![CHERENKOV Verified](https://img.shields.io/badge/CHERENKOV-verified-brightgreen?logo=checkmarx)"
+          echo ""
