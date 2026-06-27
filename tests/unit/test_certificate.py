@@ -1,4 +1,4 @@
-"""Unit tests for cherenkov/core/certificate.py — E3.1 / E3.2."""
+"""Unit tests for cherenkov/core/certificate.py — E3.1 / E3.2 / E3.5."""
 from __future__ import annotations
 
 import json
@@ -12,6 +12,7 @@ from cherenkov.core.certificate import (
     CertSubject,
     CertSummary,
     VerificationCertificate,
+    compliance_profile,
     issue_certificate,
     load_certificate,
 )
@@ -281,3 +282,75 @@ class TestCertifyCmd:
         result = runner.invoke(certify_cmd, ["--verify", str(p)])
         assert result.exit_code == 3
         assert "TAMPERED" in result.output
+
+
+# ── E3.5: compliance profile ──────────────────────────────────────────────────
+
+class TestComplianceProfile:
+    def test_returns_10_items(self):
+        cert = issue_certificate(reports=[], base_url="http://localhost")
+        items = compliance_profile(cert)
+        assert len(items) == 10
+
+    def test_covers_three_frameworks(self):
+        cert = issue_certificate(reports=[], base_url="http://localhost")
+        frameworks = {i.framework for i in compliance_profile(cert)}
+        assert "EU AI Act (2024/1689)" in frameworks
+        assert "SOC 2 Type II (AICPA 2022)" in frameworks
+        assert "ISO/IEC 25010:2023" in frameworks
+
+    def test_evidence_reflects_verdict(self):
+        cert = issue_certificate(
+            reports=[_make_report(Severity.MEDIUM)],
+            base_url="http://localhost",
+        )
+        assert cert.verdict == "WARN"
+        items = compliance_profile(cert)
+        art9 = next(i for i in items if i.provision == "Art. 9 §4")
+        assert "WARN" in art9.evidence
+        assert "HIGH=0" in art9.evidence
+
+    def test_evidence_reflects_fail(self):
+        cert = issue_certificate(
+            reports=[_make_report(Severity.HIGH)],
+            base_url="http://localhost",
+        )
+        assert cert.verdict == "FAIL"
+        items = compliance_profile(cert)
+        art9 = next(i for i in items if i.provision == "Art. 9 §4")
+        assert "FAIL" in art9.evidence
+
+    def test_fingerprint_in_art12_evidence(self):
+        cert = issue_certificate(reports=[], base_url="http://localhost")
+        items = compliance_profile(cert)
+        art12 = next(i for i in items if i.provision == "Art. 12 §1")
+        assert cert.fingerprint[:16] in art12.evidence
+
+    def test_divergence_count_in_art13_evidence(self):
+        cert = issue_certificate(
+            reports=[_make_report(), _make_report(Severity.MEDIUM)],
+            base_url="http://localhost",
+        )
+        items = compliance_profile(cert)
+        art13 = next(i for i in items if i.provision == "Art. 13 §3")
+        assert "2 divergence" in art13.evidence
+
+    def test_compliance_does_not_mutate_cert(self):
+        cert = issue_certificate(reports=[], base_url="http://localhost")
+        original_fp = cert.fingerprint
+        compliance_profile(cert)
+        assert cert.fingerprint == original_fp
+        assert cert.verify() is True
+
+    def test_compliance_flag_in_cli(self):
+        from cherenkov.cli.commands.certify import certify_cmd
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.certify.run_proof", return_value=[]):
+            result = runner.invoke(
+                certify_cmd,
+                ["--url", "http://localhost:9", "--compliance"],
+            )
+        assert result.exit_code == 0
+        assert "EU AI Act" in result.output
+        assert "SOC 2" in result.output
+        assert "ISO/IEC 25010" in result.output

@@ -140,3 +140,119 @@ def issue_certificate(
 def load_certificate(data: dict) -> VerificationCertificate:
     """Deserialise a cert from a dict (parsed JSON)."""
     return VerificationCertificate.model_validate(data)
+
+
+# ── E3.5: compliance profile ───────────────────────────────────────────────────
+
+class ComplianceEvidence(BaseModel):
+    framework: str
+    provision: str
+    title: str
+    cert_fields: list[str]
+    evidence: str
+    caveat: str = ""
+
+
+def compliance_profile(cert: VerificationCertificate) -> list[ComplianceEvidence]:
+    """Return the compliance evidence items satisfied by this certificate.
+
+    Maps certificate fields to specific provisions in EU AI Act, SOC 2, and
+    ISO/IEC 25010:2023.  See docs/compliance/CERT_COMPLIANCE_MAPPING.md for
+    the authoritative prose version.
+    """
+    items: list[ComplianceEvidence] = [
+        # ── EU AI Act ────────────────────────────────────────────────────────
+        ComplianceEvidence(
+            framework="EU AI Act (2024/1689)",
+            provision="Art. 9 §4",
+            title="Risk-management system — record of residual risk",
+            cert_fields=["verdict", "summary"],
+            evidence=(
+                f"Verdict={cert.verdict}; "
+                f"total={cert.summary.total} divergences "
+                f"(HIGH={cert.summary.high}, CRITICAL={cert.summary.critical})"
+            ),
+            caveat="Integrator must set --fail-on-fail as risk-acceptance policy.",
+        ),
+        ComplianceEvidence(
+            framework="EU AI Act (2024/1689)",
+            provision="Art. 12 §1",
+            title="Logging — authenticity & integrity",
+            cert_fields=["fingerprint", "signature"],
+            evidence=(
+                f"SHA-256 fingerprint={cert.fingerprint[:16]}...; "
+                f"signature={'present' if cert.signature else 'absent (unsigned)'}"
+            ),
+            caveat="Unsigned certs provide integrity only; add --signing-key for authorship.",
+        ),
+        ComplianceEvidence(
+            framework="EU AI Act (2024/1689)",
+            provision="Art. 12 §2",
+            title="Logging — traceability",
+            cert_fields=["issued_at", "run_id", "cert_id"],
+            evidence=(
+                f"cert_id={cert.cert_id}; run_id={cert.run_id}; issued_at={cert.issued_at}"
+            ),
+        ),
+        ComplianceEvidence(
+            framework="EU AI Act (2024/1689)",
+            provision="Art. 13 §3",
+            title="Transparency — instructions for use",
+            cert_fields=["divergences_json"],
+            evidence=f"{len(cert.divergences_json)} divergence(s) with claim_a/claim_b/repro_steps.",
+            caveat="Natural language; not yet machine-processable by regulators without cherenkov tooling.",
+        ),
+        # ── SOC 2 ────────────────────────────────────────────────────────────
+        ComplianceEvidence(
+            framework="SOC 2 Type II (AICPA 2022)",
+            provision="CC4.1",
+            title="COSO Principle 9 — Identifies and analyzes risk",
+            cert_fields=["verdict", "summary", "divergences_json"],
+            evidence=(
+                f"Automated risk analysis: verdict={cert.verdict}, "
+                f"{cert.summary.total} divergences documented."
+            ),
+        ),
+        ComplianceEvidence(
+            framework="SOC 2 Type II (AICPA 2022)",
+            provision="CC6.7",
+            title="Transmission integrity",
+            cert_fields=["fingerprint", "signature"],
+            evidence="SHA-256 fingerprint prevents undetected modification in transit.",
+            caveat="HMAC key must be managed per key-management policy.",
+        ),
+        ComplianceEvidence(
+            framework="SOC 2 Type II (AICPA 2022)",
+            provision="CC7.2",
+            title="Evaluates and communicates deficiencies",
+            cert_fields=["summary", "divergences_json"],
+            evidence=(
+                f"Severity-classified deficiency list: "
+                f"HIGH={cert.summary.high}, MEDIUM={cert.summary.medium}, "
+                f"LOW={cert.summary.low}."
+            ),
+        ),
+        # ── ISO/IEC 25010 ─────────────────────────────────────────────────────
+        ComplianceEvidence(
+            framework="ISO/IEC 25010:2023",
+            provision="4.2.2",
+            title="Functional suitability — Functional completeness",
+            cert_fields=["verdict"],
+            evidence=f"Graded verdict: {cert.verdict} (PASS/WARN/FAIL).",
+        ),
+        ComplianceEvidence(
+            framework="ISO/IEC 25010:2023",
+            provision="4.2.5",
+            title="Functional correctness",
+            cert_fields=["divergences_json"],
+            evidence=f"{len(cert.divergences_json)} spec↔impl comparison(s) documented.",
+        ),
+        ComplianceEvidence(
+            framework="ISO/IEC 25010:2023",
+            provision="4.2.9",
+            title="Security — Integrity",
+            cert_fields=["fingerprint", "signature"],
+            evidence="Tamper-evidence of the quality record itself via SHA-256.",
+        ),
+    ]
+    return items
