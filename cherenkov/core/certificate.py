@@ -69,11 +69,16 @@ class VerificationCertificate(BaseModel):
         return self
 
     def verify(self, signing_key: bytes | None = None) -> bool:
-        """Return True if the certificate has not been tampered with."""
+        """Return True if the certificate has not been tampered with.
+
+        An unsigned cert (empty signature) passes fingerprint-only verification
+        regardless of whether a signing_key is supplied.  Signature checking
+        only activates when both a key AND a non-empty signature are present.
+        """
         expected_fp = self.compute_fingerprint()
         if self.fingerprint != expected_fp:
             return False
-        if signing_key:
+        if signing_key and self.signature:
             expected_sig = hmac.new(
                 signing_key, self.fingerprint.encode(), hashlib.sha256
             ).hexdigest()
