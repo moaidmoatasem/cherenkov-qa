@@ -35,6 +35,10 @@ from cherenkov.healing import (
 class ReviewStage:
     """Enforces 6 static and dynamic quality gates (syntax, structure, AST, assertions, TSC, and Prism mock dry-run) on generated tests."""
 
+    _AUTO_APPROVE_THRESHOLD = 0.9
+    _HITL_THRESHOLD = 0.7
+    _PRISM_PORT = 4015
+
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("REVIEW", run_id)
@@ -172,7 +176,7 @@ class ReviewStage:
         prism_detail = "Dynamic Stoplight Prism mock server dry-run check passed."
 
         if syntax_passed and structure_passed and tsc_passed:
-            prism_port = 4015  # Use port 4015 to prevent conflict
+            prism_port = self._PRISM_PORT
             prism_server = PrismMockServer(
                 spec_path=spec_path, port=prism_port, run_id=self.run_id
             )
@@ -414,9 +418,9 @@ class ReviewStage:
         quality_score = passed_count / len(scored_gates) if scored_gates else 1.0
 
         # Enforce Verdict thresholds
-        if quality_score >= 0.9:
+        if quality_score >= self._AUTO_APPROVE_THRESHOLD:
             verdict = Verdict.AUTO_APPROVE
-        elif quality_score >= 0.7:
+        elif quality_score >= self._HITL_THRESHOLD:
             verdict = Verdict.HITL
         else:
             verdict = Verdict.REGENERATE
