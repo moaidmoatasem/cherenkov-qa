@@ -233,3 +233,71 @@ class DriftLoop:
     def _default_approval(proposals: list[ReconciliationProposal]) -> bool:
         """Stub approval gate — always returns False (requires real human input)."""
         return False
+
+    # ── Phase 13 factories ────────────────────────────────────────────────────
+
+    @classmethod
+    def with_real_maker(
+        cls,
+        spec: dict[str, Any],
+        **kwargs: Any,
+    ) -> "DriftLoop":
+        """Return a DriftLoop wired with the schema-driven maker."""
+        from cherenkov.drift.maker import make_proposal as _make
+
+        return cls(maker_fn=lambda f: _make(f, spec), **kwargs)
+
+    @classmethod
+    def with_real_checker(cls, **kwargs: Any) -> "DriftLoop":
+        """Return a DriftLoop wired with the banned-pattern checker."""
+        from cherenkov.drift.checker import check_proposal
+
+        return cls(checker_fn=check_proposal, **kwargs)
+
+    @classmethod
+    def l2_interactive(
+        cls,
+        spec: dict[str, Any],
+        suite_path: "Path | None" = None,  # noqa: F821
+        auto_approve: bool = False,
+    ) -> "DriftLoop":
+        """Full L2 loop: real maker + real checker + interactive (or auto) approval.
+
+        Args:
+            spec:         Current OpenAPI spec dict (for schema-driven maker).
+            suite_path:   Path to the suite JSON file; passed to commit_fn.
+                          If None, commit is a no-op (proposals are returned only).
+            auto_approve: If True, bypass human confirmation (CI/scripted use).
+        """
+        from cherenkov.drift.maker import make_proposal as _make, patch_suite
+        from cherenkov.drift.checker import check_proposal
+
+        def _approval(proposals: list[ReconciliationProposal]) -> bool:
+            if auto_approve:
+                return True
+            try:
+                import click
+
+                for p in proposals:
+                    click.echo(f"\n  Proposal for '{p.operation_id}':")
+                    click.echo(f"    action : {p.action}")
+                    click.echo(f"    kind   : {p.drift_kind.value}")
+                if not click.confirm(
+                    f"\n  Approve {len(proposals)} proposal(s)?", default=False
+                ):
+                    return False
+                return True
+            except Exception:
+                return False
+
+        def _commit(proposals: list[ReconciliationProposal]) -> None:
+            if suite_path is not None:
+                patch_suite(proposals, suite_path)
+
+        return cls(
+            level=AutonomyLevel.L2_ASSISTED,
+            maker_fn=lambda f: _make(f, spec),
+            checker_fn=check_proposal,
+            approval_fn=_approval,
+            commit_fn=_commit,
+        )
