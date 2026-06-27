@@ -16,6 +16,46 @@ from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.trace_reader import TraceReader
 
 
+def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
+    """Return warnings for tests that assert fields not present in the spec's response schemas."""
+    warnings: list[str] = []
+    if not spec_path or not os.path.exists(spec_path):
+        return warnings
+    try:
+        with open(spec_path, encoding="utf-8") as f:
+            spec = json.load(f) if spec_path.endswith(".json") else __import__("yaml").safe_load(f)
+    except Exception:
+        return warnings
+
+    # Collect all property names defined in response schemas
+    spec_fields: set[str] = set()
+    components = spec.get("components", {}).get("schemas", {})
+    for schema in components.values():
+        props = schema.get("properties", {})
+        spec_fields.update(props.keys())
+
+    if not spec_fields or not os.path.isdir(tests_dir):
+        return warnings
+
+    # Scan test files for toHaveProperty('field') assertions
+    field_re = re.compile(r"toHaveProperty\(['\"](\w+)['\"]")
+    for fname in os.listdir(tests_dir):
+        if not fname.endswith(".spec.ts"):
+            continue
+        fpath = os.path.join(tests_dir, fname)
+        try:
+            code = open(fpath, encoding="utf-8").read()
+        except Exception:
+            continue
+        for match in field_re.finditer(code):
+            field = match.group(1)
+            if field not in spec_fields:
+                warnings.append(
+                    f"  [{fname}] asserts toHaveProperty('{field}') — field not in spec schemas"
+                )
+    return warnings
+
+
 def _is_stable_value(v: object) -> bool:
     """Return False for values likely to change between runs (timestamps, UUIDs, large ints)."""
     if isinstance(v, str):
@@ -72,11 +112,25 @@ class ValidationEngine:
         self.stub_dir = str(Path(__file__).parent.parent.parent / "stub")
         self.tests_dir = str(Path(self.stub_dir) / "generated_tests")
 
-    def validate_suite(self, target_url: str, workers: int = 1, headed: bool = False) -> Dict[str, Any]:
+    def validate_suite(
+        self,
+        target_url: str,
+        workers: int = 1,
+        headed: bool = False,
+        spec_path: str | None = None,
+    ) -> Dict[str, Any]:
         """Runs all spec tests in generated_tests against target_url and parses trace files for tightening suggestions."""
         self.log.info(
             "starting suite validation", target_url=target_url, workers=workers, headed=headed
         )
+
+        preflight = _preflight_check(self.tests_dir, spec_path)
+        if preflight:
+            self.log.warning("pre-flight spec/test drift warnings", warnings=preflight)
+            print("\nPRE-FLIGHT WARNINGS — tests assert fields not found in spec schemas:")
+            for w in preflight:
+                print(w)
+            print()
 
         if not os.path.exists(self.tests_dir):
             self.log.warning("no generated tests directory found")

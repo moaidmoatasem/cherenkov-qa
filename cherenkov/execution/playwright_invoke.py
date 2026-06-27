@@ -68,6 +68,13 @@ class PlaywrightRunner:
         os.makedirs(self.tests_dir, exist_ok=True)
         test_file_path = os.path.join(self.tests_dir, f"{scenario_id}.spec.ts")
 
+        # Guard: ensure npm packages are installed in stub/
+        node_modules = os.path.join(self.stub_dir, "node_modules")
+        if not os.path.isdir(node_modules):
+            raise RuntimeError(
+                f"Playwright dependencies not installed. Run: cd {self.stub_dir} && npm install"
+            )
+
         # 1. Write pure Playwright TS test code if provided
         if test_code is not None:
             with open(test_file_path, "w", encoding="utf-8") as f:
