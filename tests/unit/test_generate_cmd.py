@@ -15,7 +15,12 @@ from cherenkov.cli.commands.generate_cmd import generate_cmd
 from cherenkov.core.contracts import GenerateOutput, StageMeta, Status
 from cherenkov.core.errors import LoggerConfig
 
-LoggerConfig.suppress_stderr = True
+
+@pytest.fixture(autouse=True)
+def _suppress_logging():
+    LoggerConfig.suppress_stderr = True
+    yield
+    LoggerConfig.suppress_stderr = False
 
 
 # ── shared stubs ──────────────────────────────────────────────────────────────
