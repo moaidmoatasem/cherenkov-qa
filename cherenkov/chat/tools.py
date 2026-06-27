@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from cherenkov.chat.guard import get_guard
 
@@ -47,12 +48,10 @@ def query_idioms(pattern: str | None = None, limit: int = 10) -> dict[str, Any]:
 @_guard.wrap_tool(name="explain_divergence")
 def explain_divergence(endpoint: str, method: str = "GET") -> dict[str, Any]:
     try:
+        from cherenkov.knowledge import get_repository
         from cherenkov.knowledge.graph_rag import GraphRAG
-        from cherenkov.knowledge.adapters.sqlite_repository import (
-            SQLiteKnowledgeRepository,
-        )
 
-        repo = SQLiteKnowledgeRepository()
+        repo = get_repository()
         graph = GraphRAG(repo)
         result = graph.explain_divergence(endpoint, method)
         return result.data
@@ -71,9 +70,10 @@ def run_test(
     endpoint: str, method: str = "GET", spec_path: str | None = None
 ) -> dict[str, Any]:
     try:
+        import os
+
         from cherenkov.stages.ingest import IngestStage
         from cherenkov.stages.plan import PlanStage
-        import os
 
         effective_spec = spec_path or "stub/openapi.yaml"
         if not os.path.exists(effective_spec):

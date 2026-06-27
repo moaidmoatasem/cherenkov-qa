@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import Protocol
 
 from cherenkov.knowledge.domain.models import (
+    KnowledgeItem,
     KnowledgeQuery,
     KnowledgeQueryResult,
-    KnowledgeItem,
 )
 
 
-class KnowledgeRepository(Protocol):
+class KnowledgeMeshRepository(Protocol):
     def query(self, query: KnowledgeQuery) -> KnowledgeQueryResult: ...
 
     def store(self, item: KnowledgeItem) -> str: ...

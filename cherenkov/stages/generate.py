@@ -141,7 +141,7 @@ class GenerateStage:
 
     def run(
         self,
-        scenario: Any,
+        scenario: Scenario,
         path: str = "",
         method: str = "",
         operation: Optional[dict[str, Any]] = None,

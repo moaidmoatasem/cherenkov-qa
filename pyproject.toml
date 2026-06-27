@@ -41,7 +41,7 @@ include = ["cherenkov*"]
 cherenkov = "cherenkov.cli.core:main"
 
 [tool.pytest.ini_options]
-addopts = "-q"
+addopts = "-q --tb=short --timeout=30"
 testpaths = ["tests"]
 # tests/standalone holds suites invoked directly via unittest in CI
 # (service/env-dependent); they are not part of pytest discovery.

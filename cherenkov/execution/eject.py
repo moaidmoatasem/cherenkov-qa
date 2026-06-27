@@ -104,8 +104,8 @@ export const client = createClient<paths>({
 });
 """
             client_dest = os.path.join(output_path, "client.ts")
-            with open(client_dest, "w", encoding="utf-8") as f:  # type: ignore
-                f.write(clean_client_content)  # type: ignore
+            with open(client_dest, "w", encoding="utf-8") as f:
+                f.write(clean_client_content)
             self.log.info("emitted clean standalone client.ts")
 
             # 5. Emit a standard playwright.config.ts configured to run tests/ folder
@@ -128,8 +128,8 @@ export default defineConfig({
 });
 """
             config_dest = os.path.join(output_path, "playwright.config.ts")
-            with open(config_dest, "w", encoding="utf-8") as f:  # type: ignore
-                f.write(clean_playwright_config)  # type: ignore
+            with open(config_dest, "w", encoding="utf-8") as f:
+                f.write(clean_playwright_config)
             self.log.info("emitted standard playwright.config.ts")
 
             # 6. Emit a standard package.json with standard devDependencies
@@ -146,8 +146,8 @@ export default defineConfig({
                 "dependencies": {"openapi-fetch": "^0.17.0"},
             }
             package_json_dest = os.path.join(output_path, "package.json")
-            with open(package_json_dest, "w", encoding="utf-8") as f:  # type: ignore
-                json.dump(clean_package_json, f, indent=2)  # type: ignore
+            with open(package_json_dest, "w", encoding="utf-8") as f:
+                json.dump(clean_package_json, f, indent=2)
             self.log.info("emitted standalone package.json")
 
             # 7. Emit standard tsconfig.json
@@ -162,8 +162,8 @@ export default defineConfig({
                 }
             }
             tsconfig_dest = os.path.join(output_path, "tsconfig.json")
-            with open(tsconfig_dest, "w", encoding="utf-8") as f:  # type: ignore
-                json.dump(clean_tsconfig, f, indent=2)  # type: ignore
+            with open(tsconfig_dest, "w", encoding="utf-8") as f:
+                json.dump(clean_tsconfig, f, indent=2)
             self.log.info("emitted standard tsconfig.json")
 
             self.log.info("standalone test suite ejection completed successfully")

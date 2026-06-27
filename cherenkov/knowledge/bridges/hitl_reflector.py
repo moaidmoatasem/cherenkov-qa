@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from cherenkov.knowledge.domain.models import KnowledgeItem
-from cherenkov.knowledge.ports.repository import KnowledgeRepository
+from cherenkov.knowledge.ports.repository import KnowledgeMeshRepository
 
 
 class HITLReflectorBridge:
-    def __init__(self, repository: KnowledgeRepository, reflector):
+    def __init__(self, repository: KnowledgeMeshRepository, reflector):
         self.repository = repository
         self.reflector = reflector
 

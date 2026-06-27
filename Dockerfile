@@ -9,19 +9,17 @@ RUN npx vite build
 # Stage 2: Main CLI Engine
 FROM python:3.12-slim
 
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Node.js (for Playwright browsers + openapi-typescript)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
+    nodejs \
+    npm \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install Python package (reads pyproject.toml; registers `cherenkov` CLI entrypoint)
+# Install Python package
 COPY pyproject.toml README.md ./
 COPY cherenkov/ ./cherenkov/
 RUN pip install --no-cache-dir ".[dev]"
@@ -29,11 +27,18 @@ RUN pip install --no-cache-dir ".[dev]"
 # Playwright browsers
 RUN pip install --no-cache-dir playwright && npx playwright install --with-deps chromium
 
-# Copy remaining project files (stubs, demos, docs)
+# Copy remaining project files
 COPY . /app
 
 # Pull in built UI
 COPY --from=ui-build /app/cherenkov/web/ui/dist /app/cherenkov/web/ui/dist
+
+# Non-root user for security
+RUN adduser --system --group --uid 1000 cherenkov && chown -R cherenkov:cherenkov /app
+USER cherenkov
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)" || exit 1
 
 ENTRYPOINT ["cherenkov"]
 CMD ["--help"]

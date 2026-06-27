@@ -3,12 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 
 from cherenkov.knowledge.domain.models import KnowledgeItem
-from cherenkov.knowledge.ports.repository import KnowledgeRepository
+from cherenkov.knowledge.ports.repository import KnowledgeMeshRepository
 
 
 class AgentMemoryRAGBridge:
     def __init__(
-        self, repository: KnowledgeRepository, memory_dir: str = "agent_memory"
+        self, repository: KnowledgeMeshRepository, memory_dir: str = "agent_memory"
     ):
         self.repository = repository
         self.memory_dir = Path(memory_dir)
