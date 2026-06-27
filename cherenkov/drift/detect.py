@@ -285,23 +285,20 @@ def detect_findings(
             )
 
     # B3: ADDED_OPTIONAL_PARAM — informational
-    # New optional params in ops that existed in baseline
+    # New optional params in ops that existed in baseline.
+    # Use all_param_set (includes optional params) so we don't falsely flag
+    # optional params that already existed in the baseline spec.
+    baseline_all_params = baseline_snapshot.fingerprint.all_param_set
     for op_id, current_op in current_spec_ops.items():
         if op_id not in baseline_op_ids:
             continue  # new op, handled above
-        baseline_params = {
-            key.split(":", 1)[1]
-            for key in baseline_required_params
-            if key.startswith(f"{op_id}:")
-        }
         for param in current_op.get("parameters", []):
             if not isinstance(param, dict):
                 continue
             name = param.get("name", "")
-            if not param.get("required", False) and name not in baseline_params:
-                # Check that this param was actually absent from baseline
+            if not param.get("required", False):
                 param_key = f"{op_id}:{name}"
-                if param_key not in baseline_required_params:
+                if param_key not in baseline_all_params:
                     findings.append(
                         DriftFinding(
                             kind=DriftKind.ADDED_OPTIONAL_PARAM,

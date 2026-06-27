@@ -73,7 +73,7 @@ class VerificationCertificate(BaseModel):
         expected_fp = self.compute_fingerprint()
         if self.fingerprint != expected_fp:
             return False
-        if signing_key:
+        if signing_key and self.signature:
             expected_sig = hmac.new(
                 signing_key, self.fingerprint.encode(), hashlib.sha256
             ).hexdigest()

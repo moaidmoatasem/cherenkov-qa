@@ -98,6 +98,7 @@ class SpecSuiteSnapshot:
                 "operation_set": sorted(fp.operation_set),
                 "tag_set": sorted(fp.tag_set),
                 "required_param_set": sorted(fp.required_param_set),
+                "all_param_set": sorted(fp.all_param_set),
             },
             "generation_profile": self.generation_profile,
             "created_at": self.created_at,
@@ -120,6 +121,7 @@ class SpecSuiteSnapshot:
             operation_set=frozenset(fp_data["operation_set"]),
             tag_set=frozenset(fp_data["tag_set"]),
             required_param_set=frozenset(fp_data["required_param_set"]),
+            all_param_set=frozenset(fp_data.get("all_param_set", [])),
         )
         return cls(
             snapshot_id=data["snapshot_id"],
