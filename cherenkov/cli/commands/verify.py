@@ -14,6 +14,7 @@ from pathlib import Path
 
 import click
 from cherenkov.divergence.proof_run import run_proof
+from cherenkov.divergence.coverage import compute_coverage, CoverageReport
 
 
 @click.command("verify")
@@ -46,12 +47,19 @@ from cherenkov.divergence.proof_run import run_proof
     default=False,
     help="Exit with code 1 if any divergences are found (CI gate mode).",
 )
+@click.option(
+    "--coverage-report",
+    is_flag=True,
+    default=False,
+    help="Print a spec coverage-gap report after the proof run (requires --spec).",
+)
 def verify_cmd(
     url: str,
     spec: str | None,
     llm: bool,
     output: str | None,
     fail_on_divergence: bool,
+    coverage_report: bool,
 ) -> None:
     """Verify a live API against its OpenAPI spec -- find spec<->implementation divergences.
 
@@ -89,6 +97,16 @@ def verify_cmd(
         sys.exit(2)
 
     _print_summary(reports)
+
+    if coverage_report:
+        if spec_dict is None:
+            click.echo(
+                "[WARN] --coverage-report requires --spec; skipping coverage output.",
+                err=True,
+            )
+        else:
+            cov = compute_coverage(spec_dict, reports)
+            _print_coverage(cov)
 
     if output:
         _write_json(reports, output)
@@ -184,3 +202,28 @@ def _write_json(reports: list, path: str) -> None:
         except Exception:
             data.append(str(r))
     Path(path).write_text(json.dumps(data, indent=2, default=str))
+
+
+def _print_coverage(cov: CoverageReport) -> None:
+    width = 68
+    click.echo("\n" + "─" * width)
+    pct = cov.coverage_pct
+    colour = "green" if pct >= 80 else "yellow" if pct >= 50 else "red"
+    click.echo(
+        f"  Spec coverage: "
+        + click.style(f"{pct:.1f}%", fg=colour, bold=True)
+        + f"  ({cov.tested_count}/{cov.total_endpoints} endpoints probed)"
+    )
+    if cov.gap_endpoints:
+        click.echo(f"\n  Gap — {cov.untested_count} endpoint(s) NOT probed:")
+        for ep in cov.gap_endpoints:
+            op = f"  [{ep.operation_id}]" if ep.operation_id else ""
+            click.echo(f"    {ep.method:<7} {ep.path}{op}")
+    else:
+        click.echo("  All spec endpoints were probed.")
+    if cov.tested_endpoints:
+        click.echo(f"\n  Probed — {cov.tested_count} endpoint(s):")
+        for ep in cov.tested_endpoints:
+            div_tag = f"  ({ep.divergence_count} divergence(s))" if ep.divergence_count else ""
+            click.echo(f"    {ep.method:<7} {ep.path}{div_tag}")
+    click.echo("─" * width + "\n")

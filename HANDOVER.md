@@ -1,8 +1,8 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-06-25
+**Date:** 2026-06-27
 **HEAD:** see `git log`
-**Tests:** 770+ unit/integration tests (0 failures); **UI E2E: 294 headed, 0 failed** (smoke 39 + journeys 24 + functional 97 + dashboard 34 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
+**Tests:** 788+ unit/integration tests (0 failures); **UI E2E: 294 headed, 0 failed** (smoke 39 + journeys 24 + functional 97 + dashboard 34 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
 **Branch:** `main`
 
 ---
@@ -45,6 +45,33 @@ All code-deliverable Phase 1 items are DONE:
 | E2.2 -- MCP context consumer | **DONE** | `cherenkov/mcp/client.py` (MCPClient); mesh forwarding; `auto_heal_code` dispatch; 19 unit tests |
 | E2.3 -- Continuous engine | **DONE** | `cherenkov daemon --url <target>` polls on interval, detects spec file changes, runs `run_proof`, queues divergences to HitlQueue; 12 unit tests |
 | E2.4 -- Source adapters + validate integration | **DONE** | `cherenkov/truth/sources/grpc.py`, `graphql.py`; planners wired into `cherenkov validate` with ingestion counts, per-scenario feedback, human-readable summary; 31 tests |
+
+## Phase 3 status (Rung 3 — Protocol / Authority / Certificate)
+
+All Rung 3 items are DONE (merged 2026-06-27):
+
+| Item | Status | Where | PR |
+|---|---|---|---|
+| E3.1 — Certificate format + signing | **DONE** | `cherenkov/core/certificate.py`; 18 unit tests | #572 |
+| E3.2 — `cherenkov certify` CLI | **DONE** | `cherenkov/cli/commands/certify.py`; 9 CLI tests | #572 |
+| E3.3 — CI gate + badge | **DONE** | `.github/workflows/certify-gate.yml`; `workflow_dispatch` only (demo probes live Petstore) | #572 |
+| E3.4 — Open cert spec | **DONE** | `docs/specs/CHERENKOV_CERTIFICATE.md` promoted to STABLE v1.0 | #575 |
+| E3.5 — Compliance mapping | **DONE** | `docs/compliance/CERT_COMPLIANCE_MAPPING.md`; `compliance_profile()` function; 8 tests | #575 |
+
+**Rung 3: 5/5. Complete.**
+
+---
+
+## Spec coverage-gap report (2026-06-27)
+
+| Item | Status | Where |
+|---|---|---|
+| `cherenkov/divergence/coverage.py` | **DONE** | `compute_coverage(spec, reports) → CoverageReport`; 12 unit tests |
+| `cherenkov verify --coverage-report` | **DONE** | Prints per-endpoint table, gap list, coverage %; warns if no `--spec` |
+| `cherenkov certify --coverage-report` | **DONE** | Same output, combined with certificate print |
+| Tests | **DONE** | `tests/unit/test_coverage.py`; 18 tests total |
+
+---
 
 ## What landed this session (2026-06-25)
 
@@ -90,9 +117,12 @@ All code-deliverable Phase 1 items are DONE:
 ## Next code actions (ordered by impact)
 
 1. **E0.3 -- Human validation gate** -- recruit ≥3 QA practitioners to complete quickstart unaided. Cannot be automated.
-2. ~~Full pipeline integration test~~ **DONE** -- `tests/integration/test_pipeline_e2e.py` 15/15 green; ingest→plan→generate(mocked LLM)→validate(mocked Playwright)→schema check.
-3. **PyPI publish** -- `twine upload dist/*` once PyPI credentials are available; `dist/cherenkov-1.0.0.whl` is already built.
-4. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` (`cargo install tauri-cli` first).
+2. ~~Full pipeline integration test~~ **DONE** -- `tests/integration/test_pipeline_e2e.py` 15/15 green.
+3. ~~Spec coverage-gap report~~ **DONE** -- `cherenkov/divergence/coverage.py`; `--coverage-report` flag on `verify` + `certify`; 18 tests.
+4. **`cherenkov report --output report.json`** (+ `--diff`) -- structured CI-friendly JSON summary of divergence results; diffable across runs.
+5. **Mutation test for the validation engine** -- break a test → `cherenkov validate` must catch it. Proves the detector works E2E.
+6. **PyPI publish** -- `twine upload dist/*` once PyPI credentials are available; `dist/cherenkov-1.0.0.whl` is already built.
+7. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` (`cargo install tauri-cli` first).
 
 ### Also shipped last session (2026-06-21 continued)
 | What | Files | Tests |
