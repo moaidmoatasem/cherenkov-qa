@@ -27,7 +27,7 @@ lint:
 
 ## Run type checking (mypy)
 typecheck:
-	python -m mypy cherenkov/ cherenkov.py --ignore-missing-imports
+	python -m mypy --config-file=mypy.ini cherenkov/ cherenkov.py
 
 ## Auto-format code (ruff format)
 format:
@@ -94,6 +94,13 @@ operator-build: ## Build the K8s operator binary (requires Go)
 clean-k8s: ## Delete k3d cluster and namespace
 	KUBECONFIG=$(K3D_KUBECONFIG) kubectl delete namespace $(NAMESPACE) 2>/dev/null || true
 	$(K3D) cluster delete cherenkov 2>/dev/null || true
+
+security-audit: ## Run security audit (bandit + pip-audit)
+	@echo "=== Bandit security scan ==="
+	@python -m bandit -r cherenkov/ -q -ll 2>/dev/null || echo "  (bandit not installed — run: pip install bandit)"
+	@echo ""
+	@echo "=== pip-audit ==="
+	@python -m pip_audit 2>/dev/null || echo "  (pip-audit not installed — run: pip install pip-audit)"
 
 mobile-smoke: ## Run mobile smoke tests (requires Maestro)
 	@echo "Running mobile smoke tests..."

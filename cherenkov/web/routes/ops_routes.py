@@ -1,3 +1,5 @@
+import threading
+
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 
 from cherenkov.web.routes.deps import (
@@ -62,6 +64,9 @@ async def ingest_spec_file(file: UploadFile | None = File(None), url: str | None
         raise HTTPException(status_code=500, detail="Spec parsing failed. Check that the file is a valid OpenAPI 3.x document.")
 
 
+_pipeline_threads: dict[str, threading.Thread] = {}
+
+
 def _run_pipeline_thread(spec_path: str, run_id: str):
     from cherenkov.core.orchestrator import OrchestrationEngine
     try:
@@ -69,13 +74,14 @@ def _run_pipeline_thread(spec_path: str, run_id: str):
         engine.run_pipeline(spec_path)
     except Exception as e:
         ws_event_callback("pipeline_error", {"detail": str(e)})
+    finally:
+        _pipeline_threads.pop(run_id, None)
 
 
 @router.post("/api/v1/run")
 async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: BackgroundTasks, _auth=Depends(verify_api_key)):
     import os
     import uuid
-    import threading
     import io
     import contextlib as _contextlib
     from cherenkov.stages.doctor_cmd import run_doctor
@@ -91,8 +97,8 @@ async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: Ba
     run_id = str(uuid.uuid4())[:8]
     if not os.path.exists(payload.spec_path):
         raise HTTPException(status_code=404, detail="Ingested spec file path not found.")
-    thread = threading.Thread(target=_run_pipeline_thread, args=(payload.spec_path, run_id))
-    thread.daemon = True
+    thread = threading.Thread(target=_run_pipeline_thread, args=(payload.spec_path, run_id), name=f"pipeline-{run_id}")
+    _pipeline_threads[run_id] = thread
     thread.start()
     return {"run_id": run_id, "status": "launched"}
 

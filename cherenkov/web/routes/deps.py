@@ -16,10 +16,10 @@ import socket as _socket
 from contextlib import asynccontextmanager
 from urllib.parse import urlparse as _urlparse
 
-from fastapi import FastAPI, Header, HTTPException, WebSocket
+from fastapi import FastAPI, HTTPException, WebSocket
 
-from cherenkov.core.settings import get_settings
 from cherenkov.hitl.store import HitlQueue
+from cherenkov.security.auth import verify_api_key  # noqa: F401 (re-exported for route modules)
 
 
 # ── WebSocket Manager (singleton) ─────────────────────────────────────
@@ -115,22 +115,6 @@ async def _validate_spec_url(url: str) -> str:
     safe_host = ips[0]
     safe_url = url.replace(f"://{host}", f"://{safe_host}", 1)
     return safe_url
-
-
-async def verify_api_key(
-    x_api_key: str | None = Header(None),
-    authorization: str | None = Header(None),
-):
-    import hmac as _hmac
-
-    configured_key = get_settings().HITL_API_KEY
-    if not configured_key:
-        return
-    if x_api_key and _hmac.compare_digest(x_api_key, configured_key):
-        return
-    if authorization and authorization.startswith("Bearer ") and _hmac.compare_digest(authorization[7:], configured_key):
-        return
-    raise HTTPException(status_code=401, detail="Missing or invalid API key")
 
 
 def _validate_scenario_id(scenario_id: str) -> str:

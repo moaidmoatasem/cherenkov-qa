@@ -103,7 +103,8 @@ class SAMLServiceProvider:
 
         try:
             xml_bytes = base64.b64decode(saml_response)
-            root = ET.fromstring(xml_bytes)
+            parser = ET.XMLParser(target=ET.TreeBuilder())
+            root = ET.fromstring(xml_bytes, parser=parser)
             ns = {
                 "saml2": "urn:oasis:names:tc:SAML:2.0:assertion",
                 "saml2p": "urn:oasis:names:tc:SAML:2.0:protocol",
