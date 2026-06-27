@@ -18,14 +18,8 @@ def diff_cmd(before: str, after: str, fmt: str) -> None:
     sys.exit(1 if report.has_breaking_changes else 0)
 
 
-@click.command("report")
-@click.option("--output", "-o", default=None, help="JSON output file path (e.g. report.json)")
-@click.option("--diff", "-d", "diff_path", default=None, help="Path to previous report.json for diff comparison")
-def report_cmd(output: str | None, diff_path: str | None) -> None:
-    """Generate test coverage and diff reports from run logs."""
-    from cherenkov.stages.report_cmd import run_report
-
-    sys.exit(run_report(output=output, diff=diff_path))
+# report_cmd is implemented in cherenkov.cli.commands.report (divergence JSON reports + diff)
+from cherenkov.cli.commands.report import report_cmd  # noqa: F401
 
 
 @click.command("eject")
