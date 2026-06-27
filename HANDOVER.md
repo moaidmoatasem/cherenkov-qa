@@ -1,6 +1,6 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-06-25
+**Date:** 2026-06-27
 **HEAD:** see `git log`
 **Tests:** 770+ unit/integration tests (0 failures); **UI E2E: 294 headed, 0 failed** (smoke 39 + journeys 24 + functional 97 + dashboard 34 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
 **Branch:** `main`
@@ -46,7 +46,14 @@ All code-deliverable Phase 1 items are DONE:
 | E2.3 -- Continuous engine | **DONE** | `cherenkov daemon --url <target>` polls on interval, detects spec file changes, runs `run_proof`, queues divergences to HitlQueue; 12 unit tests |
 | E2.4 -- Source adapters + validate integration | **DONE** | `cherenkov/truth/sources/grpc.py`, `graphql.py`; planners wired into `cherenkov validate` with ingestion counts, per-scenario feedback, human-readable summary; 31 tests |
 
-## What landed this session (2026-06-25)
+## What landed this session (2026-06-27)
+
+| SHA | What |
+|---|---|
+| `9e49d48` | feat(generate): wire RepairLoop into generate CLI command (11 tests) — `cherenkov generate` now routes through RepairLoop by default (--repair/--no-repair flag, --max-attempts 1-10); PR #574 |
+| `ef616f9` | fix(test): scope LoggerConfig.suppress_stderr to autouse fixture — module-level assignment was poisoning test_errors_logging.py (5 tests) across the full suite; PR #576 |
+
+## What landed previous session (2026-06-25)
 
 | SHA | What |
 |---|---|
