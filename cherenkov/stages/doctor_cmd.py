@@ -10,7 +10,7 @@ import shutil
 import subprocess
 
 from cherenkov.core.settings import get_settings
-from cherenkov.core.compat import npx as _npx
+from cherenkov.core.compat import npx as _npx, subprocess_env as _subprocess_env
 from cherenkov.core.config_loader import (
     LayeredConfig,
     load_effective_config,
@@ -107,6 +107,7 @@ def check_npx_playwright() -> tuple[bool, str]:
             capture_output=True,
             text=True,
             timeout=30,
+            env=_subprocess_env(),
         )
         if result.returncode == 0:
             return True, result.stdout.strip()

@@ -10,7 +10,7 @@ import shlex
 import sys
 import subprocess
 from cherenkov.core.errors import get_logger
-from cherenkov.core.compat import npx as _npx
+from cherenkov.core.compat import npx as _npx, subprocess_env as _subprocess_env
 from cherenkov.core.settings import get_settings
 
 
@@ -104,7 +104,7 @@ class PlaywrightRunner:
     def _exec_native(
         self, scenario_id: str, api_url: str, update_snapshots: bool, headed: bool = False
     ) -> tuple:
-        env = os.environ.copy()
+        env = _subprocess_env()
         env["API_URL"] = api_url
         playwright_out = os.environ.get("PLAYWRIGHT_OUTPUT_DIR") or os.path.join(
             os.environ.get("TEMP", "/tmp"), "pw_test_results"

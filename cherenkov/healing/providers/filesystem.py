@@ -11,7 +11,7 @@ import os
 import shutil
 import subprocess
 
-from cherenkov.core.compat import npx as _npx
+from cherenkov.core.compat import npx as _npx, subprocess_env as _subprocess_env
 from cherenkov.core.errors import get_logger
 from cherenkov.healing.providers.base import SandboxProvider, SandboxResult
 
@@ -69,7 +69,7 @@ class FilesystemSandboxProvider(SandboxProvider):
         spec_path = f"generated_tests/{spec}"
         self.log.info("executing playwright test in filesystem sandbox", spec=spec_path)
 
-        env = os.environ.copy()
+        env = _subprocess_env()
         env["API_URL"] = api_url
 
         process = subprocess.run(

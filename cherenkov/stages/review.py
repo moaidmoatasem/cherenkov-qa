@@ -19,7 +19,7 @@ from cherenkov.core.contracts import (
     StageMeta,
 )
 from cherenkov.core.errors import get_logger
-from cherenkov.core.compat import npx as _npx
+from cherenkov.core.compat import npx as _npx, subprocess_env as _subprocess_env
 from cherenkov.core.settings import get_settings
 from cherenkov.execution.prism_mock import PrismMockServer
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
@@ -142,6 +142,7 @@ class ReviewStage:
                 capture_output=True,
                 text=True,
                 timeout=get_settings().TSC_TIMEOUT_SECONDS,
+                env=_subprocess_env(),
             )
             if process.returncode != 0:
                 our_file = f"generated_tests/{scenario_id}.spec.ts"
