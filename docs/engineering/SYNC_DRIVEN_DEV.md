@@ -201,17 +201,15 @@ Every session tracks:
 ```
 agent_memory/sync/
 ├── MANIFEST.md              # What's here and how it works
-├── session.json             # Active/last session state
 ├── tokens.json              # Token budget tracker (persistent)
-├── context.json             # Pre-computed context snippets
-├── experience.json          # Structured experience records
-└── findings/                # Per-session finding logs
-    ├── sess_abc123.json
-    └── sess_def456.json
+└── .memsearch/              # Zilliz MemSearch semantic storage
+    └── memory/              # Markdown-first persistent logs
+        ├── sess_abc123.md
+        └── sess_def456.md
 ```
 
 ```
-scripts/agent_sync.py        # The sync tool
+scripts/agent_sync.py        # The sync tool (powered by MemSearch API)
 ```
 
 ```

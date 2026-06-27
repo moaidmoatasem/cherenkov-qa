@@ -40,6 +40,9 @@ redis>=5.0.0,<6.0.0
 #
 # All three are optional. The chat agent works without them.
 
+# Semantic Memory Layer
+memsearch>=0.1.0
+
 # Test tooling
 pytest>=9.1.0
 pytest-cov>=7.1.0

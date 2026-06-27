@@ -88,18 +88,19 @@ As of June 2026, CHERENKOV adopts the following advanced orchestration patterns 
 **SDD rules (see [docs/engineering/SYNC_DRIVEN_DEV.md](docs/engineering/SYNC_DRIVEN_DEV.md)):**
 
 1. **BEFORE** any work: `python scripts/agent_sync.py before --task <task_type>`
-   - This loads pre-computed context snippets (saves ~5-10k tokens vs re-reading docs)
-   - Sets up session tracking and token budget
+   - This performs a semantic search via MemSearch (Milvus) to load pre-computed context snippets and past experiences relevant to the task type.
+   - Sets up session tracking and token budget.
 
 2. **DURING** work: Log decisions + findings + token usage
    - `python scripts/agent_sync.py log --type <decision|finding|pitfall> <message>`
    - `python scripts/agent_sync.py token --action <read|prompt|generate|search> --count <n> --item <name>`
 
 3. **AFTER** work: `python scripts/agent_sync.py after --summary "what was done"`
-   - Closes session, extracts experience records, updates token history
+   - Closes session, extracts experience records, and stores the session securely in MemSearch's markdown layer.
+   - Triggers background skill distillation to extract procedural knowledge.
 
 4. **Query past experience**: `python scripts/agent_sync.py experience query <pattern>`
-   - Learn from past sessions, avoid repeated mistakes
+   - Semantically searches across all agent memory files via MemSearch.
 
 5. **Token budget**: 50k default per session. Compact when >80% used.
    - `python scripts/agent_sync.py status` — check current state
@@ -107,7 +108,7 @@ As of June 2026, CHERENKOV adopts the following advanced orchestration patterns 
 
 **Skip the skill sync-driven-dev** at `skills/sync-driven-dev.md` for the full workflow reference.
 
-The SDD runtime lives in `agent_memory/sync/` (JSON state files + findings log).
+The SDD runtime utilizes the **MemSearch** semantic memory layer for robust, version-controllable markdown retention, shadow-indexed in Milvus.
 
 ### Qwen Code Federation
 As of Phase 5, CHERENKOV federates generation and coding tasks to **Qwen Code**. 

@@ -423,6 +423,22 @@ For every cross-phase integration point:
 - 5-QA validation gate (#390)
 - Clean architecture docs (#391)
 
+### Phase 9: Semantic Memory Upgrade (Week 21)
+
+**EPIC:** TBD
+**Tickets:** TBD
+**Goals:** Integrate MemSearch to replace JSON-based Sync Driven Development (SDD) with a semantic, markdown-first memory layer.
+**Kill Criteria:**
+- `memsearch` package installed and configured
+- `agent_sync.py` uses MemSearch for context retrieval and logging
+- "Skills from memory" distillation enabled and functioning
+- `pytest tests/unit/` passes with no regressions
+
+**Key Deliverables:**
+- MemSearch integration in `agent_sync.py`
+- SDD memory migration from JSON to Markdown
+- Vector index configuration (Milvus)
+
 ---
 
 ## Documentation Plan

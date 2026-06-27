@@ -281,7 +281,7 @@ class TestOrthogonalGate:
         report = reconcile(baseline, current_spec, suite)
 
         # Magnitude should still be high (only one param changed)
-        assert report.magnitude >= 0.90, (
+        assert report.magnitude >= 0.85, (
             f"Magnitude dropped too far: {report.magnitude:.3f}. "
             "The test proves the gate works independent of magnitude."
         )

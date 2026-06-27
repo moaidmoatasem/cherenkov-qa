@@ -22,6 +22,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+try:
+    import memsearch
+except ImportError:
+    memsearch = None
+
 
 # ── Path resolution ──────────────────────────────────────────────────
 
@@ -149,14 +154,23 @@ def cmd_before(task_type: str, budget: Optional[int] = None, source: str = "cher
     _write_json(TOKENS_FILE, tokens)
 
     # Load context snippets for this task type
-    context = _read_json(CONTEXT_FILE)
-    snippets = context.get("snippets", [])
-    task_map = context.get("task_type_map", {})
-    keys_to_load = set(task_map.get("*", []))
-    keys_to_load.update(task_map.get(task_type, []))
+    loaded = []
+    if memsearch:
+        print("[SDD] MemSearch enabled: retrieving semantic context from Milvus...")
+        ms = memsearch.MemSearch(workspace_dir=str(ROOT))
+        results = ms.search(task_type, limit=5)
+        for r in results:
+            loaded.append({"key": getattr(r, "id", "doc"), "content": getattr(r, "content", ""), "tokens_estimate": 200})
+        total_est = len(loaded) * 200
+    else:
+        context = _read_json(CONTEXT_FILE)
+        snippets = context.get("snippets", [])
+        task_map = context.get("task_type_map", {})
+        keys_to_load = set(task_map.get("*", []))
+        keys_to_load.update(task_map.get(task_type, []))
 
-    loaded = [s for s in snippets if s["key"] in keys_to_load]
-    total_est = sum(s["tokens_estimate"] for s in loaded)
+        loaded = [s for s in snippets if s["key"] in keys_to_load]
+        total_est = sum(s["tokens_estimate"] for s in loaded)
 
     print(f"[SDD] Session started: {session_id}")
     print(f"   Task type: {task_type}")
@@ -258,6 +272,10 @@ def cmd_after(summary: str):
                 pidx[pat].append(rec["id"])
     exp["pattern_index"] = pidx
     _write_json(EXPERIENCE_FILE, exp)
+
+    if memsearch:
+        ms = memsearch.MemSearch(workspace_dir=str(ROOT))
+        ms.add_memory(f"Session {sid} Summary", summary, metadata={"task_type": tt, "token_total": total})
 
     print(f"Session closed: {sid}")
     print(f"   Summary: {summary}")
@@ -409,8 +427,11 @@ def cmd_status(json_output: bool = False):
     print(f"Experience: {exp.get('experience_count', 0)} records")
     prev = session.get("previous_sessions", [])
     if prev:
+        summary_text = prev[-1].get('summary')
+        if not summary_text:
+            summary_text = 'no summary'
         print(
-            f"Last session: {prev[-1].get('id')} - {prev[-1].get('summary', 'no summary')[:80]}"
+            f"Last session: {prev[-1].get('id')} - {summary_text[:80]}"
         )
 
 
@@ -464,6 +485,19 @@ def cmd_experience_query(
     pattern: str, outcome: Optional[str] = None, sort: Optional[str] = None
 ):
     """Query past experiences by pattern."""
+    if memsearch:
+        print(f"[SDD] Using MemSearch to query for: {pattern}")
+        ms = memsearch.MemSearch(workspace_dir=str(ROOT))
+        results = ms.search(pattern, limit=10)
+        if not results:
+            print(f"No experiences match pattern '{pattern}'.")
+            return
+        print(f"Found {len(results)} experience(s) for '{pattern}':")
+        for r in results:
+            content = getattr(r, "content", "")[:100]
+            print(f"\n  [memsearch] {content}")
+        return
+
     exp = _read_json(EXPERIENCE_FILE)
     results = []
 

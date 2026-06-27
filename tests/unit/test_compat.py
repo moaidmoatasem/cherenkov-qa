@@ -29,7 +29,9 @@ class TestNpx:
 
     def test_falls_back_to_npx_on_posix_when_not_found(self):
         with patch("shutil.which", return_value=None), \
-             patch("sys.platform", "linux"):
+             patch("sys.platform", "linux"), \
+             patch("os.path.isfile", return_value=False), \
+             patch("cherenkov.core.compat._glob.glob", return_value=[]):
             import cherenkov.core.compat as compat
             result = compat.npx()
         assert result == "npx"
