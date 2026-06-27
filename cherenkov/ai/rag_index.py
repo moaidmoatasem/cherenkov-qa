@@ -89,17 +89,15 @@ class RAGIndex:
         except Exception as e:
             self.log.error("Failed to generate embedding locally", error=str(e))
 
-        # Return a deterministic mock vector if Ollama is offline or model not pulled,
-        # ensuring the entire pipeline remains robust, testable, and green!
         self.log.warning(
-            "Ollama offline or nomic-embed-text model missing. Emitting mock vector baseline."
+            "Ollama offline or nomic-embed-text model missing. Embedding unavailable."
         )
-        return [0.1] * 768
+        return []
 
     def add_incident(
         self, incident_id: str, scenario_id: str, failure_class: str, error_message: str
-    ):
-        """Indexes a test failure event into the SQLite RAG vector index."""
+    ) -> bool:
+        """Index a test failure into the RAG store. Returns False if embedding unavailable."""
         self.log.info(
             "indexing failure incident",
             incident_id=incident_id,
@@ -107,6 +105,12 @@ class RAGIndex:
         )
 
         vector = self._get_embedding(f"{failure_class}: {error_message}")
+        if not vector:
+            self.log.warning(
+                "skipping incident index — embedding unavailable (Ollama offline?)",
+                incident_id=incident_id,
+            )
+            return False
         embedding_json = json.dumps(vector)
 
         conn = self._connect()
@@ -127,13 +131,15 @@ class RAGIndex:
         self.log.info(
             "incident successfully indexed in RAG database", incident_id=incident_id
         )
+        return True
 
     def query_similar_incidents(self, error_message: str, limit: int = 3) -> list[dict]:
-        """Queries the vector index to find top-K closest past incidents based on cosine similarity."""
+        """Return top-K past incidents by cosine similarity, or [] if embedding unavailable."""
         self.log.info("querying similar failure incidents", query_error=error_message)
 
         query_vector = self._get_embedding(error_message)
         if not query_vector:
+            self.log.warning("similarity search skipped — embedding unavailable (Ollama offline?)")
             return []
 
         conn = self._connect()
