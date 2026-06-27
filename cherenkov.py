@@ -844,7 +844,7 @@ def main():
 
         if results.get("status") == "empty":
             msg = results.get("message", "Unknown error")
-            if args.output == "json":
+            if getattr(args, "output", None) == "json":
                 print(
                     json.dumps(
                         {
@@ -858,7 +858,7 @@ def main():
             else:
                 print(f"\nError: {msg}\n")
             sys.exit(1)
-        if args.output == "json":
+        if getattr(args, "output", None) == "json":
             reports = results.get("reports", [])
             divergences = []
             checks = []

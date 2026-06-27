@@ -137,9 +137,39 @@ dist/
 
 # vscode test framework
 vscode-cherenkov/.vscode-test/
+vscode/.vscode-test/
 
 # Qwen Code agent artifacts (auto-generated memory, session state)
 .qwen/memory/
 .qwen/arena.yml
 .qwen/arena.yml.lock
 .mypy_cache/
+
+# Agent review cache
+.opencodereview/
+
+# SDD agent session data
+agent_memory/
+
+# Runtime data
+data/
+
+# Ejected test suites
+eject/
+
+# Test run artifacts
+pytest_results.txt
+tests/__init__.py
+tests/_*_results*.txt
+tests/_*_results.log
+
+# Generated Playwright tests (API-spec-generated / MCP-verify / petstore / visual-regression)
+playwright-suite/tests/*petstore*.spec.ts
+playwright-suite/tests/mcp_verify_*.spec.ts
+playwright-suite/tests/visual_regression_baseline_ui.spec.ts
+
+# Generated conformance tests from API spec (HTTP-verb-prefixed — generated at runtime)
+playwright-suite/tests/delete_*.spec.ts
+playwright-suite/tests/get_*.spec.ts
+playwright-suite/tests/patch_*.spec.ts
+playwright-suite/tests/post_*.spec.ts
