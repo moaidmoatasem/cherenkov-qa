@@ -13,19 +13,19 @@ Every API has an OpenAPI spec, but those specs silently drift from the real serv
 
 ---
 
-## 🚀 Quickstart (Zero Install)
-
-Generate a test suite for your API in under 60 seconds.
+## 🚀 See it in 60 seconds (no setup required)
 
 ```bash
-# 1. Start the local LLM (if not already running)
-ollama run qwen2.5-coder:7b
+pip install cherenkov-qa
+cherenkov demo
+```
 
-# 2. Run the interactive quickstart in your project directory
-npx cherenkov init
+No Ollama. No API key. No running server. It shows you exactly what CHERENKOV catches that every other tool misses.
 
-# 3. Generate and run the tests!
-npx cherenkov generate --spec ./api.yaml
+**Then point it at your own API:**
+
+```bash
+cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml
 ```
 
 ---
