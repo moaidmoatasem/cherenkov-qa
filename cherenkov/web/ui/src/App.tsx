@@ -29,6 +29,7 @@ import DeviceManagerScreen from './components/DeviceManagerScreen';
 import MobileScreen from './components/MobileScreen';
 import KnowledgeExplorerScreen from './components/KnowledgeExplorerScreen';
 import SddDashboardScreen from './components/SddDashboardScreen';
+import VerdictScreen from './screens/VerdictScreen';
 import VisualRegressionScreen from './components/VisualRegressionScreen';
 import ExplorerScreen from './components/ExplorerScreen';
 import GlobalShortcuts from './components/GlobalShortcuts';
@@ -476,6 +477,9 @@ function InnerApp() {
 
             {activeTab === 'sdd' && (
               <SddDashboardScreen />
+            )}
+            {activeTab === 'verdict' && (
+              <VerdictScreen />
             )}
           </main>
         </div>

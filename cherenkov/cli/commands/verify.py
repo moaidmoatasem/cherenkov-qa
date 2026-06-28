@@ -163,7 +163,7 @@ def verify_cmd(
             _write_rich_json(rich, reports, output)
             click.echo(f"\nReport written to {output}")
 
-        _persist_run(url, spec_dict, rich.overall.value, len(reports), rich.coverage_pct, duration_ms)
+        _persist_run(url, spec_dict, rich.overall.value, len(reports), rich.coverage_pct, duration_ms, rich=rich)
 
         if fail_on_divergence and reports:
             sys.exit(1)
@@ -252,8 +252,15 @@ def _persist_run(
     divergence_count: int,
     coverage_pct: float | None,
     duration_ms: int,
+    rich: object | None = None,
 ) -> None:
     try:
+        meta: dict = {}
+        if rich is not None:
+            try:
+                meta["rich_verdict"] = rich.model_dump() if hasattr(rich, "model_dump") else {}  # type: ignore[union-attr]
+            except Exception:
+                pass
         record = RunRecord(
             command="verify",
             target_url=url,
@@ -262,6 +269,7 @@ def _persist_run(
             divergence_count=divergence_count,
             coverage_pct=coverage_pct,
             duration_ms=duration_ms,
+            meta_json=json.dumps(meta, default=str),
         )
         saved = get_run_store().save(record)
         click.echo(f"  Run ID: {saved.run_id}", err=True)

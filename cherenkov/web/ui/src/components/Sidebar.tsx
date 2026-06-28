@@ -31,7 +31,8 @@ import {
   Map,
   Layers,
   SlidersHorizontal,
-  Wand2
+  Wand2,
+  ShieldCheck
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
 import GuidedFlow from './GuidedFlow';
@@ -148,6 +149,7 @@ export default function Sidebar({
       label: 'RELEASE',
       demoLabel: true,
       items: [
+        { id: 'verdict', label: 'Verdict', icon: ShieldCheck, desc: 'Run grades & history' },
         { id: 'overview', label: 'Release Readiness', icon: Map, desc: 'Ship/no-ship gate' },
         { id: 'truth-map', label: 'Truth Map', icon: Network, desc: 'Endpoint claim graph', isDemo: true },
         { id: 'signals', label: 'Signals', icon: TrendingUp, desc: 'Perf & Coverage telemetry', isDemo: true },
