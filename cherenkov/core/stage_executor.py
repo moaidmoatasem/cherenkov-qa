@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 import random
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from pydantic import ValidationError
@@ -146,6 +147,114 @@ class StageExecutor:
                         break
                     wait = (2**attempts) * 0.5 + random.uniform(0, 0.5)
                     time.sleep(wait)
+
+            if report is not None:
+                results.append(report)
+
+        return results
+
+    async def execute_async(
+        self,
+        stage_name: str,
+        stage_func: Callable[[], Awaitable[Any]],
+        fallback_factory: Callable[[], Awaitable[Any]],
+    ) -> Any:
+        attempts = 0
+        max_attempts = 3
+
+        while attempts < max_attempts:
+            try:
+                result = await stage_func()
+
+                if not isinstance(result, _PIPELINE_OUTPUT_TYPES):
+                    raise ContractError(
+                        f"Stage {stage_name} returned unvalidated raw types."
+                    )
+
+                self.log.info(
+                    "stage success",
+                    stage=stage_name,
+                    duration_ms=result.metadata.duration_ms,
+                )
+                return result
+
+            except (ValidationError, ContractError, Exception) as e:
+                attempts += 1
+                self.log.warning(
+                    "stage boundary violation",
+                    stage=stage_name,
+                    attempt=attempts,
+                    error=str(e),
+                )
+
+                if attempts >= max_attempts:
+                    self.log.error(
+                        "retry ladder exhausted",
+                        stage=stage_name,
+                        detail="triggering fallback schema",
+                    )
+                    self.breaker.record_failure()
+                    return await fallback_factory()
+
+                wait = (2**attempts) * 0.5 + random.uniform(0, 0.5)
+                await asyncio.sleep(wait)
+
+        return None
+
+    async def execute_with_vlm_retry_async(
+        self,
+        stage_name: str,
+        slices: list[Any],
+        stage_factory: Callable[[], Awaitable[Any]],
+        run_slice: Callable[..., Awaitable[Any]],
+        fallback_report_factory: Callable[[str, str], Awaitable[Any]],
+        report_type: type,
+        contract_error_msg: str,
+    ) -> list[Any]:
+        stage = await stage_factory()
+        results: list[Any] = []
+
+        for sl in slices:
+            attempts = 0
+            max_attempts = 3
+            report: Any = None
+
+            while attempts < max_attempts:
+                try:
+                    candidate = await run_slice(stage, sl)
+                    if not isinstance(candidate, report_type):
+                        raise ContractError(
+                            contract_error_msg.format(slice_name=sl.name)
+                        )
+                    self.log.info(
+                        "stage success",
+                        stage=stage_name,
+                        slice=sl.name,
+                        duration_ms=candidate.metadata.duration_ms,
+                    )
+                    report = candidate
+                    break
+                except (ValidationError, ContractError, Exception) as e:
+                    attempts += 1
+                    self.log.warning(
+                        "stage boundary violation",
+                        stage=stage_name,
+                        slice=sl.name,
+                        attempt=attempts,
+                        error=str(e),
+                    )
+                    if attempts >= max_attempts:
+                        self.log.error(
+                            "retry ladder exhausted",
+                            stage=stage_name,
+                            slice=sl.name,
+                            detail="triggering fallback report",
+                        )
+                        self.breaker.record_failure()
+                        report = await fallback_report_factory(sl.name, stage_name)
+                        break
+                    wait = (2**attempts) * 0.5 + random.uniform(0, 0.5)
+                    await asyncio.sleep(wait)
 
             if report is not None:
                 results.append(report)

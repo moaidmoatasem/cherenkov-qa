@@ -44,7 +44,7 @@ class OrchestrationEngine:
 
         run_dir = os.path.abspath(f".cherenkov/runs/{self.run_id}")
         os.makedirs(run_dir, exist_ok=True)
-        self._events_file = open(
+        self._events_file = open(  # noqa: SIM115 — kept open for pipeline duration
             os.path.join(run_dir, "events.jsonl"), "a", encoding="utf-8"
         )
         set_events_file(self._events_file)
@@ -60,6 +60,9 @@ class OrchestrationEngine:
         if self._events_file and not self._events_file.closed:
             self._events_file.close()
             self._events_file = None
+
+    def _progress(self, *args, **kwargs) -> None:
+        self._progress(*args, **kwargs)
 
     def _emit_event(self, event: str, data: dict) -> None:
         if self.event_callback:
@@ -271,7 +274,7 @@ class OrchestrationEngine:
     # ── Pipeline stage helpers ─────────────────────────────────────
     def _run_ingest_stage(self, spec_path: str, simulate_fail_stage: str | None) -> IngestOutput:
         self._emit_event("stage_start", {"stage": "INGEST"})
-        print("  INGEST  [ Running... ]")
+        self._progress("  INGEST  [ Running... ]")
         ingest = self.executor.execute(
             "INGEST",
             lambda: self.run_ingest(spec_path, simulate_malformed=(simulate_fail_stage == "INGEST")),
@@ -281,7 +284,7 @@ class OrchestrationEngine:
                 metadata=StageMeta(stage="INGEST", duration_ms=0),
             ),
         )
-        print(f"  INGEST  [ {ingest.status.value.upper()} ] ({ingest.metadata.duration_ms}ms")
+        self._progress(f"  INGEST  [ {ingest.status.value.upper()} ] ({ingest.metadata.duration_ms}ms")
         self._emit_event("stage_success", {
             "stage": "INGEST",
             "summary": f"{len(ingest.endpoints)} endpoints indexed",
@@ -291,7 +294,7 @@ class OrchestrationEngine:
 
     def _run_plan_stage(self, ingest: IngestOutput, simulate_fail_stage: str | None) -> PlanOutput:
         self._emit_event("stage_start", {"stage": "PLAN"})
-        print("  PLAN    [ Running... ]")
+        self._progress("  PLAN    [ Running... ]")
         plan = self.executor.execute(
             "PLAN",
             lambda: self.run_plan(ingest, simulate_malformed=(simulate_fail_stage == "PLAN")),
@@ -301,7 +304,7 @@ class OrchestrationEngine:
                 metadata=StageMeta(stage="PLAN", duration_ms=0),
             ),
         )
-        print(f"  PLAN    [ {plan.status.value.upper()} ] ({plan.metadata.duration_ms}ms")
+        self._progress(f"  PLAN    [ {plan.status.value.upper()} ] ({plan.metadata.duration_ms}ms")
         self._emit_event("stage_success", {
             "stage": "PLAN",
             "summary": f"{len(plan.scenarios)} scenarios planned",
@@ -314,12 +317,12 @@ class OrchestrationEngine:
     ) -> tuple[bool, list[bool], list[int], set[str], set[str]]:
         if not plan.scenarios:
             self.log.warning("no scenarios available", stage="PLAN")
-            print("  GENERATE[ SKIPPED ]")
-            print("  REVIEW  [ SKIPPED ]")
+            self._progress("  GENERATE[ SKIPPED ]")
+            self._progress("  REVIEW  [ SKIPPED ]")
             return True, [], [], set(), set()
 
         max_workers = min(len(plan.scenarios), get_settings().MAX_CONCURRENT_SCENARIOS)
-        print(f"  Running {len(plan.scenario)} scenario(s) [{max_workers} concurrent]...\n")
+        self._progress(f"  Running {len(plan.scenario)} scenario(s) [{max_workers} concurrent]...\n")
 
         scenario_results: list[bool] = []
         all_durations: list[int] = []
@@ -346,11 +349,11 @@ class OrchestrationEngine:
                 scenario_results.append(ok)
                 all_durations.extend(ms for ms in (gen_ms, rev_ms) if ms)
                 label = s.mutation_id or f"{s.method} {s.endpoint}"
-                print(f"  {'PASS' if ok else 'FAIL'}  {label} (gen {gen_ms}ms, rev {rev_ms}ms)")
+                self._progress(f"  {'PASS' if ok else 'FAIL'}  {label} (gen {gen_ms}ms, rev {rev_ms}ms)")
 
                 if self.breaker.tripped:
                     self.log.error("pipeline aborted", reason="circuit breaker tripped")
-                    print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
+                    self._progress(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
                     for f in futures:
                         f.cancel()
                     return False, scenario_results, all_durations, all_endpoints, passed_endpoints
@@ -370,16 +373,16 @@ class OrchestrationEngine:
             from cherenkov.observability.llm_tracer import trace_event
 
             self.log.info("running post-generation eval judge")
-            print("\n  EVALS   [ Running LLM-as-judge... ]")
+            self._progress("\n  EVALS   [ Running LLM-as-judge... ]")
 
             output_dir = Path(get_settings().OUTPUT_DIR)
             if not output_dir.exists():
-                print("  EVALS   [ SKIPPED ] output directory not found")
+                self._progress("  EVALS   [ SKIPPED ] output directory not found")
                 return
 
             test_files = list(output_dir.glob("*.spec.ts"))
             if not test_files:
-                print("  EVALS   [ SKIPPED ] no test files found")
+                self._progress("  EVALS   [ SKIPPED ] no test files found")
                 return
 
             samples = []
@@ -394,17 +397,17 @@ class OrchestrationEngine:
                     self.log.warning("failed to read test file", file=str(test_file), error=str(e))
 
             if not samples:
-                print("  EVALS   [ SKIPPED ] no test files found")
+                self._progress("  EVALS   [ SKIPPED ] no test files found")
                 return
 
             report = run_evals(samples)
             EvalStore().save(report)
             trace_event("pipeline-evals", pass_rate=report.pass_rate(), scenarios=len(samples))
-            print(f"  EVALS   [ DONE ] pass_rate={report.pass_rate():.1%}, saved to .cherenkov/evals.db")
+            self._progress(f"  EVALS   [ DONE ] pass_rate={report.pass_rate():.1%}, saved to .cherenkov/evals.db")
             self.log.info("eval judge complete", pass_rate=report.pass_rate(), total=len(samples))
         except Exception as e:
             self.log.warning("post-generation evals failed (non-fatal)", error=str(e))
-            print(f"  EVALS   [ SKIPPED ] {e}")
+            self._progress(f"  EVALS   [ SKIPPED ] {e}")
 
     def _run_adversarial_scan(self) -> None:
         if os.getenv("CHERENKOV_ADVERSARIAL_ENABLED", "0") != "1":
@@ -416,16 +419,16 @@ class OrchestrationEngine:
             from cherenkov.observability.llm_tracer import trace_event
 
             self.log.info("running post-generation adversarial scan")
-            print("\n  ADVERSARIAL [ Scanning for injection patterns... ]")
+            self._progress("\n  ADVERSARIAL [ Scanning for injection patterns... ]")
 
             output_dir = Path(get_settings().OUTPUT_DIR)
             if not output_dir.exists():
-                print("  ADVERSARIAL [ SKIPPED ] output directory not found")
+                self._progress("  ADVERSARIAL [ SKIPPED ] output directory not found")
                 return
 
             test_files = list(output_dir.glob("*.spec.ts"))
             if not test_files:
-                print("  ADVERSARIAL [ SKIPPED ] no test files found")
+                self._progress("  ADVERSARIAL [ SKIPPED ] no test files found")
                 return
 
             test_codes = {}
@@ -436,7 +439,7 @@ class OrchestrationEngine:
                     self.log.warning("failed to read test file", file=str(test_file), error=str(e))
 
             if not test_codes:
-                print("  ADVERSARIAL [ SKIPPED ] no test files found")
+                self._progress("  ADVERSARIAL [ SKIPPED ] no test files found")
                 return
 
             report = run_adversarial_tests(test_codes, spec_path=str(output_dir))
@@ -445,14 +448,14 @@ class OrchestrationEngine:
 
             criticals = report.critical_findings()
             if criticals:
-                print(f"  ADVERSARIAL [ WARN ] {len(criticals)} critical findings, saved to {output_path}")
+                self._progress(f"  ADVERSARIAL [ WARN ] {len(criticals)} critical findings, saved to {output_path}")
                 self.log.warning("adversarial scan found critical issues", count=len(criticals))
             else:
-                print(f"  ADVERSARIAL [ PASS ] no critical findings, saved to {output_path}")
+                self._progress(f"  ADVERSARIAL [ PASS ] no critical findings, saved to {output_path}")
                 self.log.info("adversarial scan complete", pass_rate=report.pass_rate())
         except Exception as e:
             self.log.warning("post-generation adversarial scan failed (non-fatal)", error=str(e))
-            print(f"  ADVERSARIAL [ SKIPPED ] {e}")
+            self._progress(f"  ADVERSARIAL [ SKIPPED ] {e}")
 
     def _report_and_persist(
         self, pipeline_success: bool, scenario_results: list[bool],
@@ -465,24 +468,24 @@ class OrchestrationEngine:
         if not pipeline_success:
             self.log.warning("pipeline completed with failures", total=total, passed=successes)
 
-        print("================= PIPELINE RESULT =================")
+        self._progress("================= PIPELINE RESULT =================")
         status_str = f"PASS ({successes}/{total})" if successes == total else f"FAIL ({successes}/{total} passed)"
-        print(f"  Status: {status_str}")
-        print(f"  Scenarios: {successes}/{total} passed")
-        print(f"  Total Duration: {total_duration}ms")
+        self._progress(f"  Status: {status_str}")
+        self._progress(f"  Scenarios: {successes}/{total} passed")
+        self._progress(f"  Total Duration: {total_duration}ms")
 
         cache_stats = get_cache_stats()
         if cache_stats:
-            print(f"  Cache - hits: {cache_stats.hits}, misses: {cache_stats.misses}, "
+            self._progress(f"  Cache - hits: {cache_stats.hits}, misses: {cache_stats.misses}, "
                   f"size: {cache_stats.size}/{cache_stats.max_size}, "
                   f"hit ratio: {cache_stats.hit_ratio:.2%}")
         accounting = get_accounting_report()
         if accounting and accounting.request_count > 0:
-            print(f"  Accounting - requests: {accounting.request_count}, "
+            self._progress(f"  Accounting - requests: {accounting.request_count}, "
                   f"total tokens: {accounting.total_tokens}, "
                   f"total latency: {accounting.total_duration_ms}ms, "
                   f"total cost: ${accounting.total_cost:.6f}")
-        print("===================================================\n")
+        self._progress("===================================================\n")
 
         self._emit_event("pipeline_complete", {
             "success": pipeline_success, "total_duration_ms": total_duration,
@@ -504,7 +507,7 @@ class OrchestrationEngine:
             for ep in all_endpoints:
                 metrics.record_operation(covered=(ep in passed_endpoints))
             GenMetricsStore().save(metrics)
-            print(metrics.render())
+            self._progress(metrics.render())
         except Exception as me:
             self.log.warning("gen_metrics_save_failed", error=str(me))
 
@@ -556,18 +559,18 @@ class OrchestrationEngine:
         except Exception:
             pass
 
-        print(f"\n================ CHERENKOV PIPELINE RUN [{self.run_id}] ================")
-        print("  INGEST  [ Waiting... ]")
-        print("  PLAN    [ Waiting... ]")
-        print("  GENERATE[ Waiting... ]")
-        print("  REVIEW  [ Waiting... ]")
-        print("========================================================\n")
+        self._progress(f"\n================ CHERENKOV PIPELINE RUN [{self.run_id}] ================")
+        self._progress("  INGEST  [ Waiting... ]")
+        self._progress("  PLAN    [ Waiting... ]")
+        self._progress("  GENERATE[ Waiting... ]")
+        self._progress("  REVIEW  [ Waiting... ]")
+        self._progress("========================================================\n")
 
         ingest = self._run_ingest_stage(spec_path, simulate_fail_stage)
 
         if self.breaker.tripped:
             self.log.error("pipeline aborted", reason="circuit breaker tripped")
-            print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
+            self._progress(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
             self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
             return False
 
@@ -575,7 +578,7 @@ class OrchestrationEngine:
 
         if self.breaker.tripped:
             self.log.error("pipeline aborted", reason="circuit breaker tripped")
-            print(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
+            self._progress(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
             self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
             return False
 

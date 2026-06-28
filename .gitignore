@@ -58,6 +58,7 @@ scripts/k8s-run
 # coverage artifacts
 .coverage
 .coverage.*
+coverage.xml
 
 # PR body drafts
 .github/pr-body*
@@ -173,3 +174,6 @@ playwright-suite/tests/delete_*.spec.ts
 playwright-suite/tests/get_*.spec.ts
 playwright-suite/tests/patch_*.spec.ts
 playwright-suite/tests/post_*.spec.ts
+
+# Ad-hoc/debug scripts
+__test_review.py
