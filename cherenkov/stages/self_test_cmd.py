@@ -89,7 +89,7 @@ def run_self_test() -> int:
                 if "self_test.spec.ts" in line
             ]
             if our_errors:
-                print(f"FAILED\n" + "\n".join(our_errors[:5]))
+                print("FAILED\n" + "\n".join(our_errors[:5]))
                 return 1
         print(f"OK ({dt}ms)")
     except Exception as e:

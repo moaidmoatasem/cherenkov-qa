@@ -38,7 +38,7 @@ class TestRailClient:
             verdict = str(item.get("verdict", item.get("status", "SKIP"))).upper()
             status_id = CHERENKOV_TO_TESTRAIL.get(verdict, 4)
             test_case_id = item.get("test_case_id") or item.get("test_key")
-            
+
             # Extract numbers only (e.g. C1234 -> 1234)
             if test_case_id and isinstance(test_case_id, str):
                 test_case_id = test_case_id.lstrip("C")
@@ -67,7 +67,7 @@ class TestRailClient:
             headers=self._headers(),
             method="POST"
         )
-        
+
         try:
             with urllib.request.urlopen(req, timeout=10) as response:
                 return json.loads(response.read().decode("utf-8"))

@@ -34,9 +34,21 @@ class WebhookNotifier:
         payload = envelope.model_dump()
 
         def _send() -> None:
+            import hmac
+            import hashlib
+            import json
             try:
+                # Optional HMAC signing for secure webhook dispatch
+                headers = {"Content-Type": "application/json"}
+                secret = os.environ.get("CHERENKOV_WEBHOOK_SECRET")
+                body_bytes = json.dumps(payload).encode("utf-8")
+                
+                if secret:
+                    signature = hmac.new(secret.encode("utf-8"), msg=body_bytes, digestmod=hashlib.sha256).hexdigest()
+                    headers["X-Cherenkov-Signature-256"] = f"sha256={signature}"
+
                 resp = requests.post(
-                    self.webhook_url, json=payload, timeout=5
+                    self.webhook_url, data=body_bytes, headers=headers, timeout=5
                 )
                 resp.raise_for_status()
                 _log.info("generic webhook notification sent successfully")

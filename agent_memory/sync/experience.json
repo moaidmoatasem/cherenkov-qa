@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "last_updated": "2026-06-16T01:21:24.460773+00:00",
-  "experience_count": 3,
-  "sessions_contributing": 5,
+  "last_updated": "2026-06-28T12:19:40.845446+00:00",
+  "experience_count": 5,
+  "sessions_contributing": 10,
   "experiences": [
     {
       "id": "exp_seed_001",
@@ -49,6 +49,32 @@
         "push-and-merge"
       ],
       "session_id": "sess_20260614191338_21833c"
+    },
+    {
+      "id": "exp_sess_20260628114354_58dfce_c02a",
+      "timestamp": "2026-06-28T11:45:18.108801+00:00",
+      "task": "general",
+      "action": "decision Using SDD protocol for this session to demonstrate token-efficient agent workflow",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 1500,
+      "patterns": [
+        "general"
+      ],
+      "session_id": "sess_20260628114354_58dfce"
+    },
+    {
+      "id": "exp_sess_20260628121416_870da2_0228",
+      "timestamp": "2026-06-28T12:14:16.508850+00:00",
+      "task": "cc1-memory-smoke",
+      "action": "decision SQLite FTS5 chosen over MemSearch for L0 tier",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "cc1-memory-smoke"
+      ],
+      "session_id": "sess_20260628121416_870da2"
     }
   ],
   "pattern_index": {
@@ -66,6 +92,12 @@
     ],
     "push-and-merge": [
       "exp_sess_20260614191338_21833c_f1da"
+    ],
+    "general": [
+      "exp_sess_20260628114354_58dfce_c02a"
+    ],
+    "cc1-memory-smoke": [
+      "exp_sess_20260628121416_870da2_0228"
     ]
   }
 }

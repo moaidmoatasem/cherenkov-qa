@@ -258,9 +258,8 @@ def reconcile_cmd(spec, suite, baseline_id, baseline_file, ledger_path,
         cherenkov drift reconcile --spec openapi.yaml --suite suite.json \\
             --level L2 --suite-out suite-updated.json
     """
-    from cherenkov.drift.reconcile import DriftVerdict, MagnitudeVerdict, SEVERITY
-    from cherenkov.drift.detect import DriftKind
-    from cherenkov.drift.loop import DriftLoop, AutonomyLevel
+    from cherenkov.drift.reconcile import DriftVerdict
+    from cherenkov.drift.loop import DriftLoop
 
     spec_dict = _load_yaml_or_json(spec, "spec")
     suite_dict = _load_json(suite, "suite")
@@ -323,16 +322,16 @@ def _print_report(report) -> None:
     click.echo()
     click.echo(click.style("── Drift Report ──────────────────────────────────────", bold=True))
     click.echo(
-        f"  magnitude  : "
+        "  magnitude  : "
         + click.style(f"{report.magnitude:.3f} ({report.magnitude_label.value})", fg=mag_color)
     )
     click.echo(
-        f"  gate       : "
+        "  gate       : "
         + click.style(report.gate_verdict.value.upper(), fg=gate_color, bold=True)
     )
     click.echo(f"  findings   : {len(report.findings)}")
     click.echo(
-        f"  blocked    : "
+        "  blocked    : "
         + click.style(str(report.blocked), fg="red" if report.blocked else "green")
     )
     click.echo()
@@ -372,14 +371,13 @@ def _print_report(report) -> None:
 
 
 def _print_loop_result(result) -> None:
-    from cherenkov.drift.loop import AutonomyLevel
 
     click.echo()
     click.echo(click.style("── L2 Reconciliation ─────────────────────────────────", bold=True))
     click.echo(f"  proposals  : {len(result.proposals)}")
     click.echo(f"  escalations: {len(result.escalations)}")
     click.echo(
-        f"  committed  : "
+        "  committed  : "
         + click.style(str(result.committed), fg="green" if result.committed else "yellow")
     )
 

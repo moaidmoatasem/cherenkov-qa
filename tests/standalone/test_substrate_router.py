@@ -43,6 +43,14 @@ def _make_mock_provider(
 class TestSubstrateRouter(unittest.TestCase):
     def setUp(self):
         self.router = SubstrateRouter(run_id="test-run")
+        self._retry_patcher = patch(
+            "cherenkov.substrate.router.with_retry",
+            side_effect=lambda fn, *args, **kwargs: fn(*args, **kwargs),
+        )
+        self._retry_patcher.start()
+
+    def tearDown(self):
+        self._retry_patcher.stop()
 
     @patch("cherenkov.substrate.router.provider_for_tier")
     @patch("cherenkov.substrate.router.get_provider")

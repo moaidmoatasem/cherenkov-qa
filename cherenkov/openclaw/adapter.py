@@ -50,7 +50,7 @@ class OpenClawAdapter:
         self._last_poll: list[HitlItem] = []
         # Tier-2: chat_user_id -> @cli_user identity map
         self._identity_map: dict[str, str] = {}
-        
+
         # Wire Tier-1 notifications
         if self._config.notification_endpoint:
             if "hooks.slack.com" in self._config.notification_endpoint:
@@ -92,7 +92,7 @@ class OpenClawAdapter:
                 cb(envelope)
             except Exception as exc:
                 self._log.warning("notify callback failed", error=str(exc))
-        
+
         if self._config.notification_endpoint:
             try:
                 req = urllib.request.Request(

@@ -15,6 +15,39 @@ def _resolve_python() -> str:
     return os.path.abspath(sys.executable)
 
 
+def install_marketplace_tool(tool_id: str) -> bool:
+    """Install a tool from the MCP Marketplace."""
+    import subprocess
+    from cherenkov.mcp.marketplace.registry import MarketplaceRegistry
+    from cherenkov.mcp.marketplace.sandbox import SandboxValidator
+
+    registry = MarketplaceRegistry()
+    tool = registry.get_tool_info(tool_id)
+    if not tool:
+        print(f"Tool {tool_id} not found in marketplace.")
+        return False
+
+    validator = SandboxValidator()
+    # Mocking manifest validation since we don't fetch full raw manifests yet
+    manifest = {"id": tool.id, "name": tool.name, "install_command": tool.install_command}
+    if not validator.validate_tool_manifest(manifest):
+        print(f"Tool {tool_id} failed sandbox validation.")
+        return False
+
+    print(f"Installing {tool.name}...")
+    if validator.run_in_sandbox(tool.install_command):
+        try:
+            # Execute install locally (simulating the sandbox action)
+            subprocess.run(tool.install_command, shell=True, check=True)
+            print(f"Successfully installed {tool.name}")
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"Installation failed: {e}")
+            return False
+    return False
+
+
+
 class MCPConfigGenerator:
     """Generates configuration snippets for MCP-compatible AI assistants."""
 

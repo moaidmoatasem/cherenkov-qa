@@ -198,3 +198,44 @@ def mcp_install(platform: str, write: bool) -> None:
         click.echo(f"Cursor config written to {gen.write_cursor_config()}")
     else:
         gen.print_configs()
+
+
+@mcp_cmd.command("discover")
+def mcp_discover() -> None:
+    """Discover available tools in the MCP Marketplace."""
+    from cherenkov.mcp.marketplace.registry import MarketplaceRegistry
+
+    registry = MarketplaceRegistry()
+    tools = registry.discover_tools()
+    if not tools:
+        click.echo("No tools found in the marketplace.")
+        return
+
+    click.echo(f"Found {len(tools)} tools in the marketplace:")
+    for t in tools:
+        click.echo(f"- {t.id} (v{t.version}): {t.description}")
+
+
+@mcp_cmd.command("install-tool")
+@click.argument("tool_id")
+def mcp_install_tool(tool_id: str) -> None:
+    """Install a tool from the MCP Marketplace."""
+    from cherenkov.mcp.install import install_marketplace_tool
+
+    success = install_marketplace_tool(tool_id)
+    if not success:
+        raise click.ClickException(f"Failed to install {tool_id}")
+
+
+@mcp_cmd.command("remove")
+@click.argument("tool_id")
+def mcp_remove(tool_id: str) -> None:
+    """Remove a marketplace tool."""
+    import subprocess
+    click.echo(f"Removing {tool_id}...")
+    try:
+        # In a real scenario, map tool_id to package name
+        subprocess.run(f"pip uninstall -y cherenkov-mcp-{tool_id.split('-')[0]}", shell=True, check=True)
+        click.echo("Successfully removed tool.")
+    except subprocess.CalledProcessError as e:
+        raise click.ClickException(f"Removal failed: {e}")

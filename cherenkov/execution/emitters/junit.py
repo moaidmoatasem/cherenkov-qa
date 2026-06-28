@@ -30,7 +30,7 @@ class JUnitEmitter:
                 classname=getattr(finding, "endpoint", "unknown").replace("/", "."),
                 time="0",
             )
-            
+
             # Since these are all findings from a DivergenceReport, they are considered failures/drifts
             failure = ET.SubElement(
                 testcase,
@@ -38,11 +38,11 @@ class JUnitEmitter:
                 message=getattr(finding, "description", ""),
                 type=getattr(finding, "violation_type", "conformance-drift")
             )
-            
+
             actual = getattr(finding, "actual", "")
             expected = getattr(finding, "expected", "")
             method = getattr(finding, "http_method", "ANY")
-            
+
             details = (
                 f"Endpoint: {getattr(finding, 'endpoint', 'unknown')}\n"
                 f"Method: {method}\n"

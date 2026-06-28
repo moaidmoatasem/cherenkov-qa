@@ -569,6 +569,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                     <div className="w-px h-6 bg-white/10 mx-1" />
                     <button
                       onClick={() => setShowChat(!showChat)}
+                      title="Discuss this test with AI"
                       className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[9px] font-mono uppercase font-bold tracking-wider border transition cursor-pointer ${
                         showChat
                           ? 'bg-glow-blue/20 border-glow-blue/40 text-glow-bright'
@@ -576,7 +577,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                       }`}
                     >
                       <MessageSquare className="w-3 h-3" />
-                      Chat
+                      Ask Copilot
                     </button>
                   </div>
                 </div>

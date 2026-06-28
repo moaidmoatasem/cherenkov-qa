@@ -31,7 +31,7 @@ class PagerDutyNotifier:
             return True
 
         url = "https://events.pagerduty.com/v2/enqueue"
-        
+
         payload = {
             "routing_key": self.routing_key,
             "event_action": "trigger",

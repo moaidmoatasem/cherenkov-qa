@@ -1,15 +1,15 @@
 {
   "session": {
-    "id": "sess_20260618212938_e64967",
-    "status": "open",
-    "task": "qa_report",
-    "started_at": "2026-06-18T21:29:38.853366+00:00",
-    "ended_at": null,
-    "findings_count": 0,
-    "token_total": 0,
-    "summary": null,
-    "compacted": false,
-    "task_type": "qa_report",
+    "id": "sess_20260628121512_b409ba",
+    "status": "closed",
+    "task": "cc2-multi-agent-conductor",
+    "started_at": "2026-06-28T12:15:12.540584+00:00",
+    "ended_at": "2026-06-28T12:19:40.844287+00:00",
+    "findings_count": 1,
+    "token_total": 1500,
+    "summary": "Completed Phase CC-2 Multi-Agent Conductor implementation",
+    "compacted": true,
+    "task_type": "cc2-multi-agent-conductor",
     "source": "cherenkov"
   },
   "previous_sessions": [
@@ -33,7 +33,35 @@
       "ended_at": "2026-06-16T01:21:24.399466+00:00",
       "summary": "Built 18 integration tests bridging evals, adversarial, and synthetic modules, verifying post-generation pipeline stages with mocked LLM and filesystem. All 100 tests pass.",
       "token_total": 0
+    },
+    {
+      "id": "sess_20260618212938_e64967",
+      "task": "qa_report",
+      "ended_at": "2026-06-27T14:40:40.028197+00:00",
+      "summary": "Completed Phases 0-2 architecture improvements. Renamed port, decomposed orchestrator (1016->627 lines), built event bus, added use_cases layers, hardened Dockerfiles + security. All 173 tests passing. 29 files changed, +895/-767. Committed to feat/arch-improvement-phases-0-2. Ready for human review PR.",
+      "token_total": 0
+    },
+    {
+      "id": "sess_20260628114354_58dfce",
+      "task": "general",
+      "ended_at": "2026-06-28T11:45:18.107578+00:00",
+      "summary": "Explored SDD system: agent_sync.py operational, context.json has 2 snippets, 4 prior sessions, 3 experience records. SDD protocol demonstrated with before/log/token/after workflow.",
+      "token_total": 1500
+    },
+    {
+      "id": "sess_20260628120453_e38cc9",
+      "task": "cc1-auto-memory-hooks",
+      "ended_at": "2026-06-28T12:11:33.272663+00:00",
+      "summary": "CC-1: built cherenkov/memory/ (SQLite FTS5 MemoryRepository) and cherenkov/hooks/ (SubprocessHookExecutor + HookRegistry). ADR-011 + ADR-012 written. 32 tests all pass, ruff clean, committed de4a5bb",
+      "token_total": 0
+    },
+    {
+      "id": "sess_20260628121416_870da2",
+      "task": "cc1-memory-smoke",
+      "ended_at": "2026-06-28T12:14:16.505256+00:00",
+      "summary": "Memory smoke test session",
+      "token_total": 0
     }
   ],
-  "sessions_since_compact": 3
+  "sessions_since_compact": 7
 }

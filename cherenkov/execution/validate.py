@@ -8,7 +8,7 @@ import os
 import re
 import json
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor, as_completed, Future
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List
 
 from cherenkov.core.errors import get_logger

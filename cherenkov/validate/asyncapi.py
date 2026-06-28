@@ -23,7 +23,7 @@ class AsyncAPIParser:
 
         scenarios = []
         channels = data.get("channels", {})
-        
+
         for channel_name, channel_item in channels.items():
             # Check for publish/subscribe methods
             for operation in ["publish", "subscribe"]:

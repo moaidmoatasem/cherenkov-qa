@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import sqlite3
-import threading
 import time
 import hashlib
 from typing import Any
@@ -13,8 +12,11 @@ _BUSY_TIMEOUT_S = 30.0
 
 
 def _default_db_path() -> str:
-    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-    return os.path.join(root, ".cherenkov", "healing_feedback.db")
+    data_dir = os.environ.get(
+        "CHERENKOV_DATA_DIR",
+        os.path.join(os.path.expanduser("~"), ".cherenkov"),
+    )
+    return os.path.join(data_dir, "healing_feedback.db")
 
 
 class HealingFeedbackStore:
@@ -34,46 +36,36 @@ class HealingFeedbackStore:
             dirname = os.path.dirname(self.db_path)
             if dirname:
                 os.makedirs(dirname, exist_ok=True)
-        self._local = threading.local()
         self._init_tables()
 
     def _connect(self) -> sqlite3.Connection:
-        """Return a per-thread cached connection; reconnects if the connection is dead."""
-        con = getattr(self._local, "con", None)
-        if con is not None:
-            try:
-                con.execute("SELECT 1")
-                return con
-            except Exception:
-                pass
+        """Return a new connection (not cached, to avoid file-lock issues on Windows)."""
         con = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         con.row_factory = sqlite3.Row
-        try:
-            con.execute("PRAGMA journal_mode=WAL")
-        except sqlite3.OperationalError:
-            pass  # WAL may not be available on some filesystems (e.g. WSL UNC paths)
-        self._local.con = con
         return con
 
     def _init_tables(self) -> None:
         try:
             con = self._connect()
-            con.execute(
-                "CREATE TABLE IF NOT EXISTS healing_feedback_log ("
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                "item_id TEXT NOT NULL, "
-                "endpoint TEXT NOT NULL, "
-                "mutation_id TEXT NOT NULL, "
-                "classification TEXT NOT NULL CHECK(classification IN ('regression','intended','ignore')), "
-                "actor TEXT NOT NULL DEFAULT 'unknown', "
-                "detail TEXT DEFAULT '', "
-                "timestamp INTEGER NOT NULL)"
-            )
-            con.execute(
-                "CREATE INDEX IF NOT EXISTS idx_feedback_endpoint_mutation "
-                "ON healing_feedback_log(endpoint, mutation_id)"
-            )
-            con.commit()
+            try:
+                con.execute(
+                    "CREATE TABLE IF NOT EXISTS healing_feedback_log ("
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    "item_id TEXT NOT NULL, "
+                    "endpoint TEXT NOT NULL, "
+                    "mutation_id TEXT NOT NULL, "
+                    "classification TEXT NOT NULL CHECK(classification IN ('regression','intended','ignore')), "
+                    "actor TEXT NOT NULL DEFAULT 'unknown', "
+                    "detail TEXT DEFAULT '', "
+                    "timestamp INTEGER NOT NULL)"
+                )
+                con.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_feedback_endpoint_mutation "
+                    "ON healing_feedback_log(endpoint, mutation_id)"
+                )
+                con.commit()
+            finally:
+                con.close()
         except sqlite3.OperationalError as exc:
             self.log.warning(
                 "db init failed (non-fatal on some filesystems)", error=str(exc)
@@ -94,21 +86,24 @@ class HealingFeedbackStore:
             "ignore",
         ), f"Invalid classification: {classification}"
         con = self._connect()
-        con.execute(
-            "INSERT INTO healing_feedback_log "
-            "(item_id, endpoint, mutation_id, classification, actor, detail, timestamp) "
-            "VALUES (?,?,?,?,?,?,?)",
-            (
-                item_id,
-                endpoint,
-                mutation_id,
-                classification,
-                actor,
-                detail,
-                int(time.time()),
-            ),
-        )
-        con.commit()
+        try:
+            con.execute(
+                "INSERT INTO healing_feedback_log "
+                "(item_id, endpoint, mutation_id, classification, actor, detail, timestamp) "
+                "VALUES (?,?,?,?,?,?,?)",
+                (
+                    item_id,
+                    endpoint,
+                    mutation_id,
+                    classification,
+                    actor,
+                    detail,
+                    int(time.time()),
+                ),
+            )
+            con.commit()
+        finally:
+            con.close()
         self.log.info(
             "recorded healing feedback",
             item_id=item_id,
@@ -128,12 +123,15 @@ class HealingFeedbackStore:
         hashed_mut = h(mutation_id)
 
         con = self._connect()
-        rows = con.execute(
-            "SELECT classification, COUNT(*) as cnt FROM healing_feedback_log "
-            "WHERE (endpoint=? OR endpoint=?) AND (mutation_id=? OR mutation_id=?) "
-            "GROUP BY classification",
-            (endpoint, hashed_ep, mutation_id, hashed_mut),
-        ).fetchall()
+        try:
+            rows = con.execute(
+                "SELECT classification, COUNT(*) as cnt FROM healing_feedback_log "
+                "WHERE (endpoint=? OR endpoint=?) AND (mutation_id=? OR mutation_id=?) "
+                "GROUP BY classification",
+                (endpoint, hashed_ep, mutation_id, hashed_mut),
+            ).fetchall()
+        finally:
+            con.close()
 
         total = sum(r["cnt"] for r in rows)
         if total == 0:

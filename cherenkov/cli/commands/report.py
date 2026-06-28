@@ -233,7 +233,7 @@ def _md_summary(divs: list[dict], label: str) -> str:
 
 def _md_diff(diff: ReportDiff, current: str, baseline: str) -> str:
     lines = [
-        f"# CHERENKOV Diff\n",
+        "# CHERENKOV Diff\n",
         f"**Current:** `{current}`  \n**Baseline:** `{baseline}`\n",
         f"**Result:** {diff.summary_line}\n",
     ]

@@ -33,7 +33,7 @@ class BufRegistryClient:
             return None
 
         owner, repo = parts[0], parts[1]
-        
+
         payload = {
             "repositoryName": repo,
             "ownerName": owner

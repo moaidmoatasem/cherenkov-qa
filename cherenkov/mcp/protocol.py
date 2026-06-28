@@ -36,6 +36,13 @@ def _write_response(resp: JsonRpcResponse) -> None:
     sys.stdout.write(line + "\n")
     sys.stdout.flush()
 
+def send_notification(method: str, params: dict[str, Any] | None = None) -> None:
+    """Send a JSON-RPC notification to the client."""
+    from cherenkov.mcp.contracts import JsonRpcRequest
+    req = JsonRpcRequest(method=method, params=params or {})
+    line = req.model_dump_json(exclude_none=True)
+    sys.stdout.write(line + "\n")
+    sys.stdout.flush()
 
 def _make_error(id: Any, code: int, message: str, data: Any = None) -> JsonRpcResponse:
     from cherenkov.mcp.contracts import JsonRpcError

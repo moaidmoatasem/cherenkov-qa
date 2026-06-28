@@ -1,1 +1,0 @@
-{"schema_version": 1, "scores": [{"scenario_id": "happy_path", "meaningful_assertion_rate": 1.0}, {"scenario_id": "password_too_short", "meaningful_assertion_rate": 1.0}]}

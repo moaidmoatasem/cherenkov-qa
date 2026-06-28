@@ -8,6 +8,7 @@ const S = 400;
 test.describe('QA Engineer Day-to-Day: Functional Testing — Happy Paths & Business Rules', () => {
 
   test.beforeEach(async ({ page }) => {
+    await setupApiMocks(page);
     await bootstrap(page);
   });
 

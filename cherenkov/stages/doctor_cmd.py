@@ -73,7 +73,8 @@ _NODE_FALLBACK_PATHS = [
 
 
 def check_node() -> tuple[bool, str]:
-    import os, glob as _glob
+    import os
+    import glob as _glob
     path = shutil.which("node")
     if not path:
         # nvm-managed node won't be on the detached server's PATH — probe known locations

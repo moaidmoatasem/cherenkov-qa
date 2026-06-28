@@ -230,7 +230,7 @@ def _print_coverage(cov: CoverageReport) -> None:
     pct = cov.coverage_pct
     colour = "green" if pct >= 80 else "yellow" if pct >= 50 else "red"
     click.echo(
-        f"  Spec coverage: "
+        "  Spec coverage: "
         + click.style(f"{pct:.1f}%", fg=colour, bold=True)
         + f"  ({cov.tested_count}/{cov.total_endpoints} endpoints probed)"
     )

@@ -114,7 +114,7 @@ class CherenkovSettings(BaseSettings):
     OTEL_ENVIRONMENT: str = Field(default='production', validation_alias='CHERENKOV_OTEL_ENVIRONMENT')
 
     OUTPUT_DIR: str = Field(default='output', validation_alias='CHERENKOV_OUTPUT_DIR')
-    
+
     @property
     def TIERS(self) -> Dict[str, Dict[str, str]]:
         return {
@@ -130,7 +130,7 @@ class CherenkovSettings(BaseSettings):
 
 
     def validate(self):
-        # Pydantic validates on instantiation, so this is mostly a no-op, 
+        # Pydantic validates on instantiation, so this is mostly a no-op,
         # but we add port bounds checking for backward compatibility.
         pass
 
@@ -151,7 +151,7 @@ class CherenkovSettings(BaseSettings):
             self._device_cache is not None
             and (now - self._device_cache_ts) < self._DEVICE_CACHE_TTL
         ):
-            return self._device_cache_ts
+            return self._device_cache
 
         log = get_logger("SYSTEM", run_id)
         base_url = self.OLLAMA_URL.rsplit("/api/generate", 1)[0]

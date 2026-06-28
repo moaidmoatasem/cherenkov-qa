@@ -8,10 +8,10 @@ import { test, expect } from '@playwright/test';
  * This means the test now passes even if the server returns 400, 404, or 422.
  *
  * CHERENKOV catch: Gate 4 (assertion gate) requires a .toBe() call with a
- * specific 3-digit status code. A less-than check does not satisfy this —
+ * specific 3-digit status code. A less-than check does not satisfy this â€”
  * the gate FAILS with finding: "Missing expectation asserting specific status code."
  */
-test('post /users happy_path — creates user [agent-mutated]', async () => {
+test('post /users happy_path â€” creates user [agent-mutated]', async () => {
   const { data, response } = await client.POST('/users', {
     body: {
       email: `demo_${Date.now()}@cherenkov.dev`,

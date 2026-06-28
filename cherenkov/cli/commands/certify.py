@@ -23,7 +23,7 @@ from pathlib import Path
 import click
 
 from cherenkov.core.certificate import compliance_profile, issue_certificate, load_certificate
-from cherenkov.divergence.coverage import compute_coverage, CoverageReport
+from cherenkov.divergence.coverage import compute_coverage
 from cherenkov.divergence.proof_run import PETSTORE_BASE_URL, run_proof
 
 

@@ -31,7 +31,7 @@ class OpsGenieNotifier:
             return True
 
         url = "https://api.opsgenie.com/v2/alerts"
-        
+
         payload = {
             "message": f"CHERENKOV QA Drift Detected: {len(failed_items)} failures",
             "alias": report.get("execution_key", "cherenkov-run"),

@@ -10,7 +10,6 @@ Phase 14+.
 
 from __future__ import annotations
 
-import re
 from typing import Any
 
 from cherenkov.drift.loop import ReconciliationProposal

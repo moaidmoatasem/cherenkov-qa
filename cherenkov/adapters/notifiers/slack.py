@@ -26,7 +26,7 @@ class SlackNotifier:
             return False
 
         failed_items = [item for item in report.get("items", []) if item.get("status") == "FAIL"]
-        
+
         if not failed_items:
             color = "#36a64f"  # Green
             text = f"✅ CHERENKOV QA: All tests passed for {report.get('execution_key', 'Unknown Run')}!"
@@ -77,10 +77,37 @@ class SlackNotifier:
             with urllib.request.urlopen(req, timeout=10) as response:
                 if response.status == 200:
                     _log.info("Slack message sent successfully.")
-                    return True
+                    resp_body = response.read().decode("utf-8")
+                    if resp_body == "ok":
+                        return True
+                    try:
+                        data = json.loads(resp_body)
+                        return data.get("ok", False)
+                    except json.JSONDecodeError:
+                        return True
                 return False
         except Exception as exc:
             _log.error("Failed to send Slack message", error=str(exc))
+            return False
+
+    def send_thread_reply(self, thread_ts: str, text: str) -> bool:
+        """Send a reply to an existing Slack thread."""
+        if not self.webhook_url:
+            return False
+        payload = {
+            "text": text,
+            "thread_ts": thread_ts
+        }
+        req = urllib.request.Request(
+            self.webhook_url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=10) as response:
+                return response.status == 200
+        except Exception:
             return False
 
     def send(self, report: Dict[str, Any]) -> bool:

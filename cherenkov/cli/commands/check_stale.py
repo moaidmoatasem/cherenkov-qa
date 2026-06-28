@@ -49,7 +49,6 @@ def check_stale_cmd(spec, manifest, fail_on_stale, as_json):
             sys.exit(1 if fail_on_stale else 0)
         from cherenkov.core.staleness import _file_sha256, StalenessReport
         from pathlib import Path as _Path
-        import json as _json
         current_hash = _file_sha256(spec)
         recorded_hash = data.get("spec_hash", "")
         test_files = data.get("tests", [])
@@ -97,7 +96,7 @@ def check_stale_cmd(spec, manifest, fail_on_stale, as_json):
                 click.echo(f"    ... and {len(report.stale_files) - 10} more")
 
         if report.missing_files:
-            click.echo(click.style(f"  Missing files:", fg="red"))
+            click.echo(click.style("  Missing files:", fg="red"))
             for f in report.missing_files[:10]:
                 click.echo(f"    - {f}")
 

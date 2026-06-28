@@ -10,7 +10,6 @@ import json
 import logging
 from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +26,8 @@ class RejectionReason:
 class FeedbackEntry:
     hitl_item_id: str
     action: str  # "reject" or "approve"
-    reason: Optional[str] = None
-    notes: Optional[str] = None
+    reason: str | None = None
+    notes: str | None = None
 
 
 class FeedbackStore:
@@ -41,7 +40,7 @@ class FeedbackStore:
 
     def record_feedback(self, entry: FeedbackEntry) -> None:
         try:
-            with open(self.store_path, "r") as f:
+            with open(self.store_path) as f:
                 data = json.load(f)
 
             data.append(asdict(entry))
@@ -59,7 +58,7 @@ class FeedbackStore:
         try:
             if not self.store_path.exists():
                 return []
-            with open(self.store_path, "r") as f:
+            with open(self.store_path) as f:
                 data = json.load(f)
             return [FeedbackEntry(**item) for item in data]
         except Exception as e:

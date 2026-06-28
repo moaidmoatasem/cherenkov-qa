@@ -116,7 +116,7 @@ class DriftLedger:
           CI-fast      — pass explicit baseline_id.
           CI-fastest   — pass baseline_file path (JSONL single-line or full JSON).
         """
-        from cherenkov.drift.reconcile import reconcile, DriftReport
+        from cherenkov.drift.reconcile import reconcile
 
         if current_spec is None or current_suite is None:
             raise ValueError("current_spec and current_suite are required")

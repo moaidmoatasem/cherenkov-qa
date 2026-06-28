@@ -22,9 +22,7 @@ import os
 import threading
 import time
 from collections import defaultdict
-from typing import Callable
 
-from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 

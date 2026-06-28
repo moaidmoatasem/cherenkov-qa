@@ -49,7 +49,6 @@ def _get_connection(db_path: str) -> sqlite3.Connection:
             con.execute("PRAGMA cipher_page_size=4096")
             con.execute("PRAGMA kdf_iter=64000")
             con.row_factory = sqlite3.Row
-            con.execute("PRAGMA journal_mode=WAL")
             return con
         except ImportError:
             logging.getLogger("HITL").warning(
@@ -62,13 +61,15 @@ def _get_connection(db_path: str) -> sqlite3.Connection:
             )
     con = sqlite3.connect(db_path, timeout=_BUSY_TIMEOUT_S)
     con.row_factory = sqlite3.Row
-    con.execute("PRAGMA journal_mode=WAL")
     return con
 
 
 def _default_db_path() -> str:
-    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-    return os.path.join(root, ".cherenkov", "hitl.db")
+    data_dir = os.environ.get(
+        "CHERENKOV_DATA_DIR",
+        os.path.join(os.path.expanduser("~"), ".cherenkov"),
+    )
+    return os.path.join(data_dir, "hitl.db")
 
 
 def _validate_db_path(path: str) -> str:
@@ -90,40 +91,34 @@ class HitlQueue:
         self._init()
 
     def _connect(self) -> sqlite3.Connection:
-        """Return a per-thread cached connection; reconnects if the connection is dead."""
-        con = getattr(self._local, "con", None)
-        if con is not None:
-            try:
-                con.execute("SELECT 1")
-                return con
-            except Exception:
-                pass
-        con = _get_connection(self.db_path)
-        self._local.con = con
-        return con
+        """Return a new connection (not cached, to avoid file-lock issues on Windows)."""
+        return _get_connection(self.db_path)
 
     def _init(self) -> None:
-        con = self._connect()
-        con.executescript(
-            """
-            CREATE TABLE IF NOT EXISTS hitl_queue (
-                id TEXT PRIMARY KEY,
-                status TEXT NOT NULL DEFAULT 'pending',
-                endpoint TEXT, method TEXT, mutation_id TEXT, mutation_label TEXT,
-                confidence REAL, confidence_reason TEXT, review_gate_failed TEXT,
-                approved_by TEXT, approved_at TEXT, reject_reason TEXT,
-                run_id TEXT, spec_hash TEXT, created_at TEXT
-            );
-            CREATE INDEX IF NOT EXISTS idx_hitl_status
-                ON hitl_queue(status, created_at);
-            CREATE TABLE IF NOT EXISTS audit_log (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                command TEXT NOT NULL, actor TEXT NOT NULL, source TEXT NOT NULL,
-                item_id TEXT, outcome TEXT, rows_affected INTEGER, timestamp TEXT
-            );
-            """
-        )
-        con.commit()
+        con = _get_connection(self.db_path)
+        try:
+            con.executescript(
+                """
+                CREATE TABLE IF NOT EXISTS hitl_queue (
+                    id TEXT PRIMARY KEY,
+                    status TEXT NOT NULL DEFAULT 'pending',
+                    endpoint TEXT, method TEXT, mutation_id TEXT, mutation_label TEXT,
+                    confidence REAL, confidence_reason TEXT, review_gate_failed TEXT,
+                    approved_by TEXT, approved_at TEXT, reject_reason TEXT,
+                    run_id TEXT, spec_hash TEXT, created_at TEXT
+                );
+                CREATE INDEX IF NOT EXISTS idx_hitl_status
+                    ON hitl_queue(status, created_at);
+                CREATE TABLE IF NOT EXISTS audit_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    command TEXT NOT NULL, actor TEXT NOT NULL, source TEXT NOT NULL,
+                    item_id TEXT, outcome TEXT, rows_affected INTEGER, timestamp TEXT
+                );
+                """
+            )
+            con.commit()
+        finally:
+            con.close()
 
     # ── reads ────────────────────────────────────────────────────────────
     def enqueue(self, item: HitlItem) -> HitlItem:
@@ -131,60 +126,72 @@ class HitlQueue:
         # After insert, update endpoint/method on still-pending items so re-runs
         # back-fill metadata that was missing on first enqueue.
         con = self._connect()
-        con.execute(
-            "INSERT OR IGNORE INTO hitl_queue (id,status,endpoint,method,mutation_id,"
-            "mutation_label,confidence,confidence_reason,review_gate_failed,approved_by,"
-            "approved_at,reject_reason,run_id,spec_hash,created_at) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            (
-                item.id,
-                item.status.value,
-                item.endpoint,
-                item.method,
-                item.mutation_id,
-                item.mutation_label,
-                item.confidence,
-                item.confidence_reason,
-                item.review_gate_failed,
-                item.approved_by,
-                item.approved_at,
-                item.reject_reason,
-                item.run_id,
-                item.spec_hash,
-                item.created_at,
-            ),
-        )
-        # Back-fill endpoint/method on pending items that were enqueued without them
-        if item.endpoint or item.method:
+        try:
             con.execute(
-                "UPDATE hitl_queue SET endpoint=?, method=? "
-                "WHERE id=? AND status='pending' AND (endpoint IS NULL OR method IS NULL)",
-                (item.endpoint, item.method, item.id),
+                "INSERT OR IGNORE INTO hitl_queue (id,status,endpoint,method,mutation_id,"
+                "mutation_label,confidence,confidence_reason,review_gate_failed,approved_by,"
+                "approved_at,reject_reason,run_id,spec_hash,created_at) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (
+                    item.id,
+                    item.status.value,
+                    item.endpoint,
+                    item.method,
+                    item.mutation_id,
+                    item.mutation_label,
+                    item.confidence,
+                    item.confidence_reason,
+                    item.review_gate_failed,
+                    item.approved_by,
+                    item.approved_at,
+                    item.reject_reason,
+                    item.run_id,
+                    item.spec_hash,
+                    item.created_at,
+                ),
             )
-        con.commit()
+            # Back-fill endpoint/method on pending items that were enqueued without them
+            if item.endpoint or item.method:
+                con.execute(
+                    "UPDATE hitl_queue SET endpoint=?, method=? "
+                    "WHERE id=? AND status='pending' AND (endpoint IS NULL OR method IS NULL)",
+                    (item.endpoint, item.method, item.id),
+                )
+            con.commit()
+        finally:
+            con.close()
         return self.get(item.id) or item
 
     def get(self, item_id: str) -> HitlItem | None:
         con = self._connect()
-        row = con.execute("SELECT * FROM hitl_queue WHERE id=?", (item_id,)).fetchone()
-        return HitlItem(**{k: row[k] for k in row.keys()}) if row else None
+        try:
+            row = con.execute("SELECT * FROM hitl_queue WHERE id=?", (item_id,)).fetchone()
+            return HitlItem(**{k: row[k] for k in row.keys()}) if row else None
+        finally:
+            con.close()
 
     def list(self, status: str | None = "pending") -> list[HitlItem]:
         con = self._connect()
-        if status:
-            rows = con.execute(
-                "SELECT * FROM hitl_queue WHERE status=? ORDER BY created_at", (status,)
-            ).fetchall()
-        else:
-            rows = con.execute(
-                "SELECT * FROM hitl_queue ORDER BY created_at"
-            ).fetchall()
-        return [HitlItem(**{k: r[k] for k in r.keys()}) for r in rows]
+        try:
+            if status:
+                rows = con.execute(
+                    "SELECT * FROM hitl_queue WHERE status=? ORDER BY created_at", (status,)
+                ).fetchall()
+            else:
+                rows = con.execute(
+                    "SELECT * FROM hitl_queue ORDER BY created_at"
+                ).fetchall()
+            return [HitlItem(**{k: r[k] for k in r.keys()}) for r in rows]
+        finally:
+            con.close()
 
     def audit_rows(self) -> list[dict]:
         con = self._connect()
-        rows = con.execute("SELECT * FROM audit_log ORDER BY id").fetchall()
-        return [dict(r) for r in rows]
+        try:
+            rows = con.execute("SELECT * FROM audit_log ORDER BY id").fetchall()
+            return [dict(r) for r in rows]
+        finally:
+            con.close()
 
     # ── atomic mutations → frozen envelope ─────────────────────────────────
     def _resolve(
@@ -198,34 +205,37 @@ class HitlQueue:
         extra_vals: tuple,
     ) -> HitlEnvelope:
         con = self._connect()
-        sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=? WHERE id=? AND status='pending'"
-        vals = (new_status.value, actor, _now(), item_id)
-        if extra_sql:
-            sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=?, reject_reason=? WHERE id=? AND status='pending'"
-            vals = (new_status.value, actor, _now(), extra_vals[0], item_id)
-
         try:
-            cur = con.execute(sql, vals)
-            rows = cur.rowcount
-            if rows == 1:
-                outcome = "success"
-            else:
-                exists = con.execute(
-                    "SELECT status, approved_by, approved_at FROM hitl_queue "
-                    "WHERE id=?",
-                    (item_id,),
-                ).fetchone()
-                outcome = "not_found" if exists is None else "conflict"
-            # audit in the SAME transaction as the status change
-            con.execute(
-                "INSERT INTO audit_log (command,actor,source,item_id,outcome,rows_affected,timestamp) "
-                "VALUES (?,?,?,?,?,?,?)",
-                (command, actor, source, item_id, outcome, rows, _now()),
-            )
-            con.commit()
-        except Exception:
-            con.rollback()
-            raise
+            sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=? WHERE id=? AND status='pending'"
+            vals = (new_status.value, actor, _now(), item_id)
+            if extra_sql:
+                sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=?, reject_reason=? WHERE id=? AND status='pending'"
+                vals = (new_status.value, actor, _now(), extra_vals[0], item_id)
+
+            try:
+                cur = con.execute(sql, vals)
+                rows = cur.rowcount
+                if rows == 1:
+                    outcome = "success"
+                else:
+                    exists = con.execute(
+                        "SELECT status, approved_by, approved_at FROM hitl_queue "
+                        "WHERE id=?",
+                        (item_id,),
+                    ).fetchone()
+                    outcome = "not_found" if exists is None else "conflict"
+                # audit in the SAME transaction as the status change
+                con.execute(
+                    "INSERT INTO audit_log (command,actor,source,item_id,outcome,rows_affected,timestamp) "
+                    "VALUES (?,?,?,?,?,?,?)",
+                    (command, actor, source, item_id, outcome, rows, _now()),
+                )
+                con.commit()
+            except Exception:
+                con.rollback()
+                raise
+        finally:
+            con.close()
 
         if outcome == "success":
             env = ok_envelope(
@@ -265,14 +275,17 @@ class HitlQueue:
         Returns True if lock acquired, False if already locked/resolved.
         """
         con = self._connect()
-        cur = con.execute(
-            "UPDATE hitl_queue SET approved_by=?, approved_at=? "
-            "WHERE id=? AND status='pending' AND approved_by IS NULL",
-            (reviewer, _now(), item_id),
-        )
-        locked = cur.rowcount == 1
-        con.commit()
-        return locked
+        try:
+            cur = con.execute(
+                "UPDATE hitl_queue SET approved_by=?, approved_at=? "
+                "WHERE id=? AND status='pending' AND approved_by IS NULL",
+                (reviewer, _now(), item_id),
+            )
+            locked = cur.rowcount == 1
+            con.commit()
+            return locked
+        finally:
+            con.close()
 
     def approve(self, item_id: str, actor: str, source: str = "cli") -> HitlEnvelope:
         return self._resolve(

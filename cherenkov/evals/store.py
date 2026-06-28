@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
+import tempfile
 import threading
 from pathlib import Path
 from typing import Any
@@ -17,43 +19,70 @@ class EvalStore:
 
     def __init__(self, db_path: Path = EVALS_DB):
         self.db_path = db_path
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self._fallback = False
         self._init_db()
 
     def _init_db(self) -> None:
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=10.0)
             try:
-                con.execute("PRAGMA journal_mode=WAL")
-            except Exception:
-                pass
-            try:
-                with con:
-                    con.execute("""
-                        CREATE TABLE IF NOT EXISTS eval_reports (
-                            id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                            timestamp   TEXT NOT NULL,
-                            model       TEXT NOT NULL,
-                            pass_rate   REAL NOT NULL,
-                            total       INTEGER NOT NULL,
-                            passed      INTEGER NOT NULL,
-                            failed      INTEGER NOT NULL,
-                            metrics     TEXT NOT NULL,
-                            details     TEXT NOT NULL
-                        )
-                    """)
-            finally:
-                con.close()
+                self.db_path.parent.mkdir(parents=True, exist_ok=True)
+                con = sqlite3.connect(str(self.db_path), timeout=0.5)
+                try:
+                    with con:
+                        con.execute("""
+                            CREATE TABLE IF NOT EXISTS eval_reports (
+                                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                                timestamp   TEXT NOT NULL,
+                                model       TEXT NOT NULL,
+                                pass_rate   REAL NOT NULL,
+                                total       INTEGER NOT NULL,
+                                passed      INTEGER NOT NULL,
+                                failed      INTEGER NOT NULL,
+                                metrics     TEXT NOT NULL,
+                                details     TEXT NOT NULL
+                            )
+                        """)
+                finally:
+                    con.close()
+            except sqlite3.OperationalError:
+                self.db_path = Path(os.path.join(tempfile.gettempdir(), "cherenkov", "evals.db"))
+                self.db_path.parent.mkdir(parents=True, exist_ok=True)
+                try:
+                    con = sqlite3.connect(str(self.db_path), timeout=0.5)
+                    try:
+                        with con:
+                            con.execute("""
+                                CREATE TABLE IF NOT EXISTS eval_reports (
+                                    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    timestamp   TEXT NOT NULL,
+                                    model       TEXT NOT NULL,
+                                    pass_rate   REAL NOT NULL,
+                                    total       INTEGER NOT NULL,
+                                    passed      INTEGER NOT NULL,
+                                    failed      INTEGER NOT NULL,
+                                    metrics     TEXT NOT NULL,
+                                    details     TEXT NOT NULL
+                                )
+                            """)
+                    finally:
+                        con.close()
+                except Exception:
+                    self._fallback = True
+
+    def _connect(self) -> sqlite3.Connection | None:
+        if self._fallback:
+            return None
+        return sqlite3.connect(str(self.db_path), timeout=0.5)
 
     def save(self, report: EvalReport) -> int:
+        if self._fallback:
+            return -1
         d = report.to_dict()
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=10.0)
+            con = self._connect()
+            if con is None:
+                return -1
             try:
-                try:
-                    con.execute("PRAGMA journal_mode=WAL")
-                except Exception:
-                    pass
                 cur = con.execute(
                     "INSERT INTO eval_reports (timestamp, model, pass_rate, total, passed, failed, metrics, details) "
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -74,13 +103,13 @@ class EvalStore:
                 con.close()
 
     def latest(self) -> dict[str, Any] | None:
+        if self._fallback:
+            return None
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=10.0)
+            con = self._connect()
+            if con is None:
+                return None
             try:
-                try:
-                    con.execute("PRAGMA journal_mode=WAL")
-                except Exception:
-                    pass
                 row = con.execute(
                     "SELECT timestamp, model, pass_rate, total, passed, failed, metrics, details "
                     "FROM eval_reports ORDER BY id DESC LIMIT 1"
@@ -101,13 +130,13 @@ class EvalStore:
                 con.close()
 
     def history(self, limit: int = 10) -> list[dict[str, Any]]:
+        if self._fallback:
+            return []
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=10.0)
+            con = self._connect()
+            if con is None:
+                return []
             try:
-                try:
-                    con.execute("PRAGMA journal_mode=WAL")
-                except Exception:
-                    pass
                 rows = con.execute(
                     "SELECT timestamp, model, pass_rate, total, passed, failed, metrics "
                     "FROM eval_reports ORDER BY id DESC LIMIT ?",

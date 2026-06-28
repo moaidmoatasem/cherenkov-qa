@@ -125,6 +125,12 @@ function InnerApp() {
 
   // Guided Tour state
   const [showTour, setShowTour] = useState(() => {
+    const path = window.location.pathname;
+    const isDeepLink = path !== '/' && path !== '/index.html' && path !== '/setup' && path !== '/projects';
+    if (isDeepLink) {
+      localStorage.setItem('[copilot] tour_seen', 'true');
+      return false;
+    }
     return localStorage.getItem('[copilot] tour_seen') !== 'true';
   });
 
@@ -132,6 +138,12 @@ function InnerApp() {
     setShowTour(false);
     localStorage.setItem('[copilot] tour_seen', 'true');
   };
+
+  React.useEffect(() => {
+    if (showTour && !['setup', 'projects', 'pipeline', 'review', 'eject'].includes(activeTab)) {
+      handleCloseTour();
+    }
+  }, [activeTab, showTour]);
 
   // Onboarding Wizard state
   const [showOnboarding, setShowOnboarding] = useState(() => {

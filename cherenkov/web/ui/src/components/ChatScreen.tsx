@@ -142,85 +142,118 @@ export default function ChatScreen() {
     }
   };
 
-  return (
-    <div className="h-full flex flex-col grid-bg bg-transparent relative z-10" id="chat-screen" data-testid="chat-screen">
-      <PageHeader
-        title="Chat"
-        description="Interact with the CHERENKOV assistant using natural language via SSE streaming."
-      />
+  const [selectedPersona, setSelectedPersona] = useState('developer');
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-4" data-testid="messages-list">
-        {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-60">
-            <MessageSquare className="w-12 h-12 text-[#7D8DA1]" />
-            <p className="text-sm text-[#7D8DA1]">
-              Start a conversation with the CHERENKOV assistant.
-            </p>
+  return (
+    <div className="h-full flex grid-bg bg-transparent relative z-10" id="chat-screen" data-testid="chat-screen">
+      {/* Conversation History Panel Placeholder */}
+      <div className="w-64 border-r border-white/10 bg-black/20 hidden md:flex flex-col shrink-0">
+        <div className="p-4 border-b border-white/10">
+          <h3 className="text-sm font-semibold text-[#E6EDF3]">History</h3>
+        </div>
+        <div className="flex-1 p-4 overflow-y-auto space-y-2">
+          <div className="p-2 text-xs text-[#7D8DA1] bg-white/5 rounded-md cursor-pointer hover:bg-white/10 transition">
+            Previous Session A
+          </div>
+          <div className="p-2 text-xs text-[#7D8DA1] bg-white/5 rounded-md cursor-pointer hover:bg-white/10 transition">
+            Previous Session B
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col min-w-0">
+        <PageHeader
+          title="Chat"
+          description="Interact with the CHERENKOV assistant using natural language via SSE streaming."
+        >
+          {/* Persona Selector */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[#7D8DA1]">Persona:</span>
+            <select
+              value={selectedPersona}
+              onChange={(e) => setSelectedPersona(e.target.value)}
+              className="bg-black/30 border border-white/10 rounded-md px-2 py-1 text-xs text-text-primary focus:outline-none focus:border-glow-blue/50"
+            >
+              <option value="developer">Developer</option>
+              <option value="qa">QA Engineer</option>
+              <option value="manager">Product Manager</option>
+            </select>
+          </div>
+        </PageHeader>
+
+        <div className="flex-1 overflow-y-auto p-6 space-y-4" data-testid="messages-list">
+          {messages.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-60">
+              <MessageSquare className="w-12 h-12 text-[#7D8DA1]" />
+              <p className="text-sm text-[#7D8DA1]">
+                Start a conversation with the CHERENKOV assistant.
+              </p>
+            </div>
+          )}
+
+          {messages.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              {msg.role === 'assistant' && (
+                <div className="shrink-0 w-8 h-8 rounded-full bg-glow-blue/10 border border-glow-blue/30 flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-glow-bright" />
+                </div>
+              )}
+              <div
+                className={`max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                  msg.role === 'user'
+                    ? 'bg-glow-blue/20 border border-glow-blue/30 text-text-primary'
+                    : 'bg-white/5 border border-white/10 text-[#E6EDF3]'
+                }`}
+              >
+                <p className="whitespace-pre-wrap">{msg.content}</p>
+                {msg.role === 'assistant' && isStreaming && idx === messages.length - 1 && (
+                  <span className="inline-block w-1.5 h-4 bg-glow-bright animate-pulse ml-0.5 align-middle" />
+                )}
+              </div>
+              {msg.role === 'user' && (
+                <div className="shrink-0 w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
+                  <User className="w-4 h-4 text-[#7D8DA1]" />
+                </div>
+              )}
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {error && (
+          <div className="px-6 pb-2">
+            <p className="text-xs text-red-400 font-mono">{error}</p>
           </div>
         )}
 
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            {msg.role === 'assistant' && (
-              <div className="shrink-0 w-8 h-8 rounded-full bg-glow-blue/10 border border-glow-blue/30 flex items-center justify-center">
-                <Bot className="w-4 h-4 text-glow-bright" />
-              </div>
-            )}
-            <div
-              className={`max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                msg.role === 'user'
-                  ? 'bg-glow-blue/20 border border-glow-blue/30 text-text-primary'
-                  : 'bg-white/5 border border-white/10 text-[#E6EDF3]'
-              }`}
+        <div className="p-4 border-t border-white/10 bg-black/20 backdrop-blur-xl shrink-0">
+          <div className="flex items-center gap-3 max-w-4xl mx-auto">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={sessionId ? 'Type a message...' : 'Initializing session...'}
+              disabled={!sessionId || isStreaming}
+              data-testid="chat-input"
+              className="flex-1 bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-sm text-text-primary placeholder-[#7D8DA1] focus:outline-none focus:border-glow-blue/50 transition disabled:opacity-50"
+            />
+            <button
+              onClick={sendMessage}
+              disabled={!sessionId || !input.trim() || isStreaming}
+              data-testid="send-btn"
+              className="shrink-0 w-11 h-11 rounded-xl bg-glow-blue hover:bg-opacity-90 text-slate-950 flex items-center justify-center transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
             >
-              <p className="whitespace-pre-wrap">{msg.content}</p>
-              {msg.role === 'assistant' && isStreaming && idx === messages.length - 1 && (
-                <span className="inline-block w-1.5 h-4 bg-glow-bright animate-pulse ml-0.5 align-middle" />
+              {isStreaming ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
               )}
-            </div>
-            {msg.role === 'user' && (
-              <div className="shrink-0 w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
-                <User className="w-4 h-4 text-[#7D8DA1]" />
-              </div>
-            )}
+            </button>
           </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {error && (
-        <div className="px-6 pb-2">
-          <p className="text-xs text-red-400 font-mono">{error}</p>
-        </div>
-      )}
-
-      <div className="p-4 border-t border-white/10 bg-black/20 backdrop-blur-xl shrink-0">
-        <div className="flex items-center gap-3 max-w-4xl mx-auto">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={sessionId ? 'Type a message...' : 'Initializing session...'}
-            disabled={!sessionId || isStreaming}
-            data-testid="chat-input"
-            className="flex-1 bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-sm text-text-primary placeholder-[#7D8DA1] focus:outline-none focus:border-glow-blue/50 transition disabled:opacity-50"
-          />
-          <button
-            onClick={sendMessage}
-            disabled={!sessionId || !input.trim() || isStreaming}
-            data-testid="send-btn"
-            className="shrink-0 w-11 h-11 rounded-xl bg-glow-blue hover:bg-opacity-90 text-slate-950 flex items-center justify-center transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-          >
-            {isStreaming ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
-          </button>
         </div>
       </div>
     </div>

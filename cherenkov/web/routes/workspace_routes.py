@@ -155,6 +155,47 @@ async def get_projects():
         for row in rows
     ]
 
+@router.get("/api/v1/projects/{project_id}")
+async def get_project(project_id: str):
+    def _query():
+        conn = _db()
+        try:
+            row = conn.execute(
+                "SELECT * FROM projects WHERE id = ?", (project_id,)
+            ).fetchone()
+            return dict(row) if row else None
+        finally:
+            conn.close()
+
+    row = await asyncio.to_thread(_query)
+    if not row:
+        if project_id == "default":
+            workspace = os.getcwd()
+            return {
+                "id": "default",
+                "name": os.path.basename(workspace) or "cherenkov-qa",
+                "target_url": "",
+                "spec_path": "",
+                "repo_type": "existing",
+                "repo_path": workspace,
+                "status": "queued",
+                "created_at": "",
+                "run_count": 0,
+                "pass_rate": 0,
+                "lastRun": "",
+                "pipelineStatus": {"ingest": "queued", "plan": "queued", "generate": "queued", "review": "queued"},
+                "stats": {"testsCount": 0, "passRate": 0, "healingCount": 0},
+                "sparkline": [],
+            }
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    return {
+        **row,
+        "lastRun": row.get("created_at", ""),
+        "pipelineStatus": {"ingest": "done", "plan": "done", "generate": "done", "review": "pending"},
+        "stats": {"testsCount": row.get("run_count", 0), "passRate": row.get("pass_rate", 0), "healingCount": 0},
+        "sparkline": [],
+    }
 
 @router.post("/api/v1/projects")
 async def create_project(payload: NewProjectPayload):

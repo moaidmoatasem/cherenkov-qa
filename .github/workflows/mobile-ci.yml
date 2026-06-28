@@ -31,7 +31,7 @@ jobs:
       - name: Run mobile unit tests
         env:
           CHERENKOV_MOBILE_DRY_RUN: "1"
-        run: pytest tests/unit/test_mobile_runners.py -v 2>&1 || true
+        run: pytest tests/unit/test_mobile_runners.py -v
 
   integration-android-emulator:
     name: Android emulator integration (optional)

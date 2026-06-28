@@ -29,7 +29,6 @@ import json
 import os
 import threading
 from pathlib import Path
-from typing import Any
 
 _LOCK = threading.RLock()
 

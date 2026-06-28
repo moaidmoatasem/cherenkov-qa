@@ -22,14 +22,14 @@ DRIFT_DB = Path(".cherenkov/drift.db")
 
 class DriftStore:
     """Thread-safe SQLite store for drift events."""
-    
+
     _lock = threading.Lock()
-    
+
     def __init__(self, db_path: Path = DRIFT_DB):
         self.db_path = db_path
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_db()
-    
+
     def _init_db(self) -> None:
         """Initialize database schema."""
         with self._lock:
@@ -68,7 +68,7 @@ class DriftStore:
                     """)
             finally:
                 con.close()
-    
+
     def save_event(self, event: DriftEvent) -> int:
         """Save a single drift event. Returns event ID."""
         with self._lock:
@@ -95,7 +95,7 @@ class DriftStore:
                 return cur.lastrowid or 0
             finally:
                 con.close()
-    
+
     def save_report(self, report: DriftReport) -> int:
         """Save a drift report. Returns report ID."""
         with self._lock:
@@ -124,7 +124,7 @@ class DriftStore:
                 return cur.lastrowid or 0
             finally:
                 con.close()
-    
+
     def latest_report(self) -> DriftReport | None:
         """Get the most recent drift report."""
         with self._lock:
@@ -141,7 +141,7 @@ class DriftStore:
                 return None
             finally:
                 con.close()
-    
+
     def recent_events(self, limit: int = 100) -> list[DriftEvent]:
         """Get recent drift events."""
         with self._lock:
@@ -170,7 +170,7 @@ class DriftStore:
                 ]
             finally:
                 con.close()
-    
+
     def drift_trend(self, hours: int = 24) -> dict[str, Any]:
         """Get drift trend statistics for the last N hours."""
         with self._lock:
@@ -178,29 +178,29 @@ class DriftStore:
             try:
                 con.execute("PRAGMA journal_mode=WAL")
                 cutoff = (datetime.now(timezone.utc) - __import__('datetime').timedelta(hours=hours)).isoformat()
-                
+
                 total = con.execute(
                     "SELECT COUNT(*) FROM drift_events WHERE timestamp >= ?",
                     (cutoff,),
                 ).fetchone()[0]
-                
+
                 critical = con.execute(
                     "SELECT COUNT(*) FROM drift_events WHERE timestamp >= ? AND severity = 'critical'",
                     (cutoff,),
                 ).fetchone()[0]
-                
+
                 warning = con.execute(
                     "SELECT COUNT(*) FROM drift_events WHERE timestamp >= ? AND severity = 'warning'",
                     (cutoff,),
                 ).fetchone()[0]
-                
+
                 by_type = {}
                 for row in con.execute(
                     "SELECT drift_type, COUNT(*) FROM drift_events WHERE timestamp >= ? GROUP BY drift_type",
                     (cutoff,),
                 ).fetchall():
                     by_type[row[0]] = row[1]
-                
+
                 return {
                     "hours": hours,
                     "total_events": total,

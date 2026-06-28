@@ -47,6 +47,14 @@ class TestEgressPolicy(unittest.TestCase):
 
     def setUp(self):
         self.router = SubstrateRouter(run_id="test-egress")
+        self._retry_patcher = patch(
+            "cherenkov.substrate.router.with_retry",
+            side_effect=lambda fn, *args, **kwargs: fn(*args, **kwargs),
+        )
+        self._retry_patcher.start()
+
+    def tearDown(self):
+        self._retry_patcher.stop()
 
     def test_default_egress_policy_is_internal(self):
         """AC4: Verify default policy is 'internal' when env var is unset."""

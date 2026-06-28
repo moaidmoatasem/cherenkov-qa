@@ -24,7 +24,7 @@ class TeamsNotifier:
         failed_count = sum(1 for i in report.get("items", []) if str(i.get("status", "")).upper() in ["FAIL", "DRIFT"])
         total_count = len(report.get("items", []))
         color = "Attention" if failed_count > 0 else "Good"
-        
+
         facts = [
             {"title": "Execution Key", "value": report.get("execution_key", "N/A")},
             {"title": "Total Tests", "value": str(total_count)},
@@ -53,7 +53,14 @@ class TeamsNotifier:
                                 "type": "FactSet",
                                 "facts": facts
                             }
-                        ]
+                        ],
+                        "actions": [
+                            {
+                                "type": "Action.OpenUrl",
+                                "title": "View Dashboard",
+                                "url": "http://localhost:5173"
+                            }
+                        ] if failed_count > 0 else []
                     }
                 }
             ]

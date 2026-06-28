@@ -10,7 +10,7 @@ comparisons against the fingerprint + spec + suite data.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
@@ -204,7 +204,6 @@ def detect_findings(
     Returns:
         List of DriftFinding, deterministically derived.
     """
-    from cherenkov.drift.snapshot import SpecSuiteSnapshot
 
     findings: list[DriftFinding] = []
 

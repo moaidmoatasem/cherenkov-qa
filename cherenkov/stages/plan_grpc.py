@@ -10,7 +10,7 @@ class gRPCScenarioPlanner:
 
     def _scenarios_for(self, op: gRPCOperation) -> list[gRPCScenario]:
         scenarios = []
-        
+
         # 1. Happy path
         scenarios.append(gRPCScenario(
             service=op.service,
@@ -21,7 +21,7 @@ class gRPCScenarioPlanner:
             mutation_id=f"grpc_{op.service}_{op.rpc_name}_happy",
             expected_status=200
         ))
-        
+
         # 2. Missing fields
         scenarios.append(gRPCScenario(
             service=op.service,
@@ -32,5 +32,5 @@ class gRPCScenarioPlanner:
             mutation_id=f"grpc_{op.service}_{op.rpc_name}_missing",
             expected_status=400
         ))
-        
+
         return scenarios

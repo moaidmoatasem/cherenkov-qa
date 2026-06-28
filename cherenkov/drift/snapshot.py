@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
@@ -79,7 +79,6 @@ class SpecSuiteSnapshot:
         )
 
     def to_dict(self) -> dict[str, Any]:
-        from cherenkov.drift.fingerprint import Fingerprint
 
         fp = self.fingerprint
         return {

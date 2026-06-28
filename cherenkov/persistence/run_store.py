@@ -6,7 +6,6 @@ This is the foundation for `cherenkov report --diff` and trend analysis.
 from __future__ import annotations
 
 import hashlib
-import json
 import os
 import sqlite3
 import threading

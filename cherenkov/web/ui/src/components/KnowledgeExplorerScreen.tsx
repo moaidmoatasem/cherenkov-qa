@@ -33,7 +33,6 @@ export default function KnowledgeExplorerScreen() {
         title="Knowledge Explorer"
         description="Query the Second Brain knowledge mesh for insights, learnings, and patterns."
       />
-      <MockBadge />
 
       <form onSubmit={handleSubmit} className="flex gap-3 items-start">
         <div className="relative flex-1">

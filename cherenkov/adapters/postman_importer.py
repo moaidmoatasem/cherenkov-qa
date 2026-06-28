@@ -24,7 +24,7 @@ class PostmanImporter:
 
         scenarios = []
         items = data.get("item", [])
-        
+
         # Flattens folders
         def _extract_items(item_list: List[Dict[str, Any]]):
             for it in item_list:
@@ -50,7 +50,7 @@ class PostmanImporter:
             raw_url = url_obj.get("raw", "")
 
         method = request.get("method", "GET").upper()
-        
+
         headers = {}
         for h in request.get("header", []):
             headers[h.get("key")] = h.get("value")

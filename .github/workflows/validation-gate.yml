@@ -30,8 +30,7 @@ jobs:
         run: |
           pytest tests/e2e/test_golden_path.py -v \
             --tb=short \
-            --junit-xml=validation-gate-results.xml \
-            2>&1 || true
+            --junit-xml=validation-gate-results.xml
       - name: Upload validation evidence
         uses: actions/upload-artifact@v7
         if: always()

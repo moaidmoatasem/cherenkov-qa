@@ -35,10 +35,10 @@ class AuditLog:
             "resource": resource,
             "details": details or {},
         }
-        
+
         with open(self.current_log_file, "a", encoding="utf-8") as f:
             f.write(json.dumps(event) + "\n")
-            
+
         log.info("Audit event logged", event_id=event_id, action=action, actor=actor)
         return event_id
 
@@ -50,7 +50,7 @@ class AuditLog:
                 for line in f:
                     if line.strip():
                         events.append(json.loads(line))
-        
+
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(events, f, indent=2)
 
@@ -62,7 +62,7 @@ class AuditLog:
                 for line in f:
                     if line.strip():
                         events.append(json.loads(line))
-        
+
         if not events:
             with open(output_path, "w", encoding="utf-8", newline="") as f:
                 writer = csv.writer(f)

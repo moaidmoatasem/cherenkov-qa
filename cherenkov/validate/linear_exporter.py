@@ -148,7 +148,7 @@ class LinearExporter:
                 if "errors" in res_data:
                     self.log.error(f"Linear GraphQL error: {res_data['errors']}")
                     return None
-                
+
                 issue_data = res_data.get("data", {}).get("issueCreate", {}).get("issue", {})
                 issue_identifier = issue_data.get("identifier")
                 self.log.info("Linear issue created successfully", identifier=issue_identifier)

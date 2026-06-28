@@ -1,7 +1,6 @@
 """Auth API routes: token, me, user management (admin)."""
 from __future__ import annotations
 
-import os
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm

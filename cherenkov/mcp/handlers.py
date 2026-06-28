@@ -1520,7 +1520,7 @@ def _tool_export_github(args: dict[str, Any]) -> MCPToolCallResult:
 
         from cherenkov.validate.github_exporter import GitHubExporter
         from cherenkov.validate.linear_exporter import LinearExporter
-        
+
         # We reuse LinearExporter's format_ticket for markdown generation
         formatter = LinearExporter()
         summary = f"🛑 CHERENKOV QA — DRIFT DETECTED: {item.id}"
