@@ -20,7 +20,6 @@ import sys
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 try:
     import memsearch
@@ -54,7 +53,7 @@ EXPERIENCE_FILE = SYNC_DIR / "experience.json"
 def _read_json(path: Path):
     if not path.exists():
         return {}
-    with open(path, "r") as f:
+    with open(path) as f:
         return json.load(f)
 
 
@@ -81,7 +80,7 @@ def _timestamp() -> str:
 # ── Subcommands ──────────────────────────────────────────────────────
 
 
-def cmd_before(task_type: str, budget: Optional[int] = None, source: str = "cherenkov"):
+def cmd_before(task_type: str, budget: int | None = None, source: str = "cherenkov"):
     """Start a new agent session: load context, init state."""
     session_id = _new_session_id()
     now = _timestamp()
@@ -297,12 +296,21 @@ def _memory_collect(session_id: str, task_type: str, findings: list) -> None:
     (e.g., in a fresh env without the package installed).
     """
     try:
-        from cherenkov.memory.adapters.sqlite_memory import get_default_repository
+        def _get_repo():
+            try:
+                import memsearch
+
+                from cherenkov.memory.adapters.memsearch_memory import MemSearchMemoryRepository
+                return MemSearchMemoryRepository(ROOT / "agent_memory" / "cherenkov_memory.db", ROOT)
+            except ImportError:
+                from cherenkov.memory.adapters.sqlite_memory import get_default_repository
+                return get_default_repository(ROOT)
+
         from cherenkov.memory.domain.models import PromotionRule
         from cherenkov.memory.use_cases.collect import collect_from_findings
         from cherenkov.memory.use_cases.promote import run_promotion
 
-        repo = get_default_repository(ROOT)
+        repo = _get_repo()
         if findings:
             collect_from_findings(
                 session_id=session_id,
@@ -322,14 +330,23 @@ def _memory_collect(session_id: str, task_type: str, findings: list) -> None:
 def cmd_memory(action: str, args: list) -> None:
     """CC-1: Memory subcommand — list, promote, search, status."""
     try:
-        from cherenkov.memory.adapters.sqlite_memory import get_default_repository
+        def _get_repo():
+            try:
+                import memsearch
+
+                from cherenkov.memory.adapters.memsearch_memory import MemSearchMemoryRepository
+                return MemSearchMemoryRepository(ROOT / "agent_memory" / "cherenkov_memory.db", ROOT)
+            except ImportError:
+                from cherenkov.memory.adapters.sqlite_memory import get_default_repository
+                return get_default_repository(ROOT)
+
         from cherenkov.memory.domain.models import MemoryQuery, PromotionRule
         from cherenkov.memory.use_cases.promote import run_promotion
     except ImportError:
         print("[memory] cherenkov package not installed. Run: pip install -e .")
         sys.exit(1)
 
-    repo = get_default_repository(ROOT)
+    repo = _get_repo()
 
     if action == "list":
         limit = 20
@@ -418,7 +435,7 @@ def cmd_log(log_type: str, message: str):
     print(f"Logged [{log_type}]: {message[:120]}")
 
 
-def cmd_token(action_type: Optional[str], count: Optional[int], item: Optional[str]):
+def cmd_token(action_type: str | None, count: int | None, item: str | None):
     """Track token usage for this session."""
     if action_type is None and count is None and item is None:
         # Just show token status
@@ -587,7 +604,7 @@ def cmd_compact(force: bool = False):
 
 
 def cmd_experience_query(
-    pattern: str, outcome: Optional[str] = None, sort: Optional[str] = None
+    pattern: str, outcome: str | None = None, sort: str | None = None
 ):
     """Query past experiences by pattern."""
     if memsearch:
