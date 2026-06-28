@@ -121,7 +121,7 @@ def _register_commands() -> None:
         (drift_cmd, "drift"),
         (demo_cmd, "demo"),
         (eval_cmd, "eval"),
-        (examples_cmd, "examples")
+        (examples_cmd, "examples"),
         (routine_cmd, "routine"),
         (teleport_cmd, "teleport"),
     ]:

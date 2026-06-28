@@ -1,7 +1,7 @@
 {
   "name": "cherenkov-qa",
   "displayName": "Cherenkov QA",
-  "description": "API conformance testing from your OpenAPI spec \u2014 spec in, Playwright tests out",
+  "description": "API conformance testing from your OpenAPI spec — spec in, Playwright tests out",
   "version": "1.0.0",
   "publisher": "cherenkov-qa",
   "icon": "images/icon.png",
@@ -189,9 +189,13 @@
     "lint": "eslint src --ext ts"
   },
   "devDependencies": {
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.85.0",
-    "typescript": "^5.3.0",
-    "@vscode/vsce": "^2.22.0"
+    "@vscode/test-electron": "^3.0.0",
+    "@vscode/vsce": "^2.22.0",
+    "glob": "^13.0.6",
+    "mocha": "^11.7.6",
+    "typescript": "^5.3.0"
   }
 }
