@@ -10,7 +10,6 @@ from typing import Any
 
 from cherenkov.evals.core import EvalReport
 
-
 EVALS_DB = Path(".cherenkov/evals.db")
 
 

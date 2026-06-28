@@ -40,6 +40,8 @@ _CLICK_COMMANDS = [
     "ocr",
     "drift",
     "eval",
+    "routine",
+    "teleport",
 ]
 
 
@@ -82,6 +84,9 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.drift_cmd import drift_cmd
     from cherenkov.cli.commands.demo_cmd import demo_cmd
     from cherenkov.cli.commands.eval_cmd import eval_cmd
+    from cherenkov.cli.commands.examples_cmd import examples_cmd
+    from cherenkov.cli.commands.routine_cmd import routine_cmd
+    from cherenkov.cli.commands.teleport_cmd import teleport_cmd
 
     for cmd, name in [
         (verify_cmd, "verify"),
@@ -116,6 +121,9 @@ def _register_commands() -> None:
         (drift_cmd, "drift"),
         (demo_cmd, "demo"),
         (eval_cmd, "eval"),
+        (examples_cmd, "examples")
+        (routine_cmd, "routine"),
+        (teleport_cmd, "teleport"),
     ]:
         cli.add_command(cmd, name=name)
 
