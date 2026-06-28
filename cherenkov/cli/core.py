@@ -39,6 +39,7 @@ _CLICK_COMMANDS = [
     "bench",
     "ocr",
     "drift",
+    "eval",
 ]
 
 
@@ -80,6 +81,7 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.check_stale import check_stale_cmd
     from cherenkov.cli.commands.drift_cmd import drift_cmd
     from cherenkov.cli.commands.demo_cmd import demo_cmd
+    from cherenkov.cli.commands.eval_cmd import eval_cmd
 
     for cmd, name in [
         (verify_cmd, "verify"),
@@ -113,6 +115,7 @@ def _register_commands() -> None:
         (check_stale_cmd, "check-stale"),
         (drift_cmd, "drift"),
         (demo_cmd, "demo"),
+        (eval_cmd, "eval"),
     ]:
         cli.add_command(cmd, name=name)
 
