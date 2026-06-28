@@ -3,6 +3,7 @@ import unittest
 import asyncio
 import os
 import tempfile
+from unittest.mock import MagicMock, patch
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -207,9 +208,15 @@ class TestQAChatAgent(unittest.TestCase):
         self.tmp.close()
         self.memory = SQLiteConversationMemory(self.db_path)
         self.registry = PersonaRegistry()
+
+        self._reflector_patcher = patch("cherenkov.reflector.reflector.get_reflector")
+        mock_ref = self._reflector_patcher.start()
+        mock_ref.return_value.get_stats.return_value = {"recent_idioms": []}
+
         self.agent = QAChatAgent(memory=self.memory, persona_registry=self.registry)
 
     def tearDown(self):
+        self._reflector_patcher.stop()
         if hasattr(self, 'memory'):
             self.memory.close()
         if os.path.exists(self.db_path):
@@ -317,6 +324,13 @@ class TestQAChatAgent(unittest.TestCase):
 
 
 class TestTools(unittest.TestCase):
+    def setUp(self):
+        self._reflector_patcher = patch("cherenkov.reflector.reflector.get_reflector")
+        mock_ref = self._reflector_patcher.start()
+        mock_ref.return_value.get_stats.return_value = {"recent_idioms": []}
+
+    def tearDown(self):
+        self._reflector_patcher.stop()
     def test_tool_registry_has_expected_tools(self):
         self.assertIn("query_verdicts", TOOL_REGISTRY)
         self.assertIn("query_idioms", TOOL_REGISTRY)
@@ -340,6 +354,10 @@ class TestTools(unittest.TestCase):
 
 class TestChatAPIIntegration(unittest.TestCase):
     def setUp(self):
+        self._reflector_patcher = patch("cherenkov.reflector.reflector.get_reflector")
+        mock_ref = self._reflector_patcher.start()
+        mock_ref.return_value.get_stats.return_value = {"recent_idioms": []}
+
         self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         self.db_path = self.tmp.name
         self.tmp.close()
@@ -352,6 +370,7 @@ class TestChatAPIIntegration(unittest.TestCase):
         self.client = TestClient(self.app)
 
     def tearDown(self):
+        self._reflector_patcher.stop()
         if hasattr(self, 'memory'):
             self.memory.close()
         if os.path.exists(self.db_path):

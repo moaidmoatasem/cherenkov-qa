@@ -109,9 +109,11 @@ class TestRunDaemonE23:
             patch("cherenkov.stages.daemon_cmd.build_truth_model", return_value=MagicMock(nodes={}, edges={})),
             patch("cherenkov.stages.daemon_cmd.DivergenceQueue") as mock_queue_cls,
             patch("cherenkov.divergence.proof_run.run_proof", return_value=[report]),
+            patch("cherenkov.hitl.HitlQueue") as mock_hitl_cls,
         ):
             mock_q = MagicMock()
             mock_queue_cls.return_value = mock_q
+            mock_hitl_cls.return_value = MagicMock()
 
             result = run_daemon(
                 interval_seconds=0,
@@ -152,8 +154,10 @@ class TestRunDaemonE23:
             patch("cherenkov.stages.daemon_cmd.build_truth_model", return_value=MagicMock(nodes={}, edges={})),
             patch("cherenkov.stages.daemon_cmd.DivergenceQueue") as mock_queue_cls,
             patch("cherenkov.divergence.proof_run.run_proof", side_effect=RuntimeError("network error")),
+            patch("cherenkov.hitl.HitlQueue") as mock_hitl_cls,
         ):
             mock_queue_cls.return_value = MagicMock()
+            mock_hitl_cls.return_value = MagicMock()
             result = run_daemon(interval_seconds=0, max_loops=1, target_url="http://bad-host")
 
         assert result == 0
