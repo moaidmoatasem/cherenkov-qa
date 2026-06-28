@@ -24,7 +24,10 @@ class K6Runner:
 
     def export_k6_script(self, target_url: str) -> str:
         """Generates a standard JavaScript k6 performance script targeting the user creation API."""
-        os.makedirs(self.tests_dir, exist_ok=True)
+        try:
+            os.makedirs(self.tests_dir, exist_ok=True)
+        except FileExistsError:
+            pass
 
         k6_code = f"""import http from 'k6/http';
 import {{ check, sleep }} from 'k6';
