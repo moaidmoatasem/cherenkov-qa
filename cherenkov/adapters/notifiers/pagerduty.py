@@ -2,12 +2,13 @@
 CHERENKOV adapters/notifiers/pagerduty.py — PagerDuty Events API V2 Notifier.
 """
 
-import os
 import json
+import os
 import urllib.request
-from typing import Any, Dict
-from cherenkov.core.events import CHERENKOVEvent
+from typing import Any
+
 from cherenkov.core.errors import get_logger
+from cherenkov.core.events import CHERENKOVEvent
 
 _log = get_logger("PAGERDUTY_NOTIFIER")
 
@@ -20,7 +21,7 @@ class PagerDutyNotifier:
     def __init__(self):
         self.routing_key = os.environ.get("CHERENKOV_PAGERDUTY_ROUTING_KEY")
 
-    def send_report(self, report: Dict[str, Any]) -> bool:
+    def send_report(self, report: dict[str, Any]) -> bool:
         if not self.routing_key:
             _log.info("CHERENKOV_PAGERDUTY_ROUTING_KEY not set; skipping PagerDuty.")
             return False
@@ -60,7 +61,7 @@ class PagerDutyNotifier:
             _log.error("Failed to trigger PagerDuty incident", error=str(exc))
             return False
 
-    def send(self, report: Dict[str, Any]) -> bool:
+    def send(self, report: dict[str, Any]) -> bool:
         return self.send_report(report)
 
     def notify_event(self, event: CHERENKOVEvent) -> None:

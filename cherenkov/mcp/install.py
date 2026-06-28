@@ -8,7 +8,6 @@ import platform
 import shutil
 import sys
 from pathlib import Path
-from typing import Optional
 
 
 def _resolve_python() -> str:
@@ -18,6 +17,7 @@ def _resolve_python() -> str:
 def install_marketplace_tool(tool_id: str) -> bool:
     """Install a tool from the MCP Marketplace."""
     import subprocess
+
     from cherenkov.mcp.marketplace.registry import MarketplaceRegistry
     from cherenkov.mcp.marketplace.sandbox import SandboxValidator
 
@@ -51,7 +51,7 @@ def install_marketplace_tool(tool_id: str) -> bool:
 class MCPConfigGenerator:
     """Generates configuration snippets for MCP-compatible AI assistants."""
 
-    def __init__(self, python_path: Optional[str] = None):
+    def __init__(self, python_path: str | None = None):
         self.python_path = python_path or _resolve_python()
         self.module_args = ["-m", "cherenkov.mcp.server"]
 
@@ -84,13 +84,13 @@ class MCPConfigGenerator:
             print(f"{'='*60}")
             print(json.dumps(config, indent=2))
 
-    def claude_config_path(self) -> Optional[Path]:
+    def claude_config_path(self) -> Path | None:
         system = platform.system()
         if system == "Darwin":
             return Path.home() / "Library" / "Application Support" / "Claude" / "claude_desktop_config.json"
-        elif system == "Windows":
+        if system == "Windows":
             return Path(os.environ.get("APPDATA", "")) / "Claude" / "claude_desktop_config.json"
-        elif system == "Linux":
+        if system == "Linux":
             return Path.home() / ".config" / "Claude" / "claude_desktop_config.json"
         return None
 
@@ -100,7 +100,7 @@ class MCPConfigGenerator:
     def windsurf_config_path(self) -> Path:
         return Path.cwd() / ".windsurf" / "mcp_config.json"
 
-    def write_claude_config(self, backup: bool = True) -> Optional[Path]:
+    def write_claude_config(self, backup: bool = True) -> Path | None:
         config_path = self.claude_config_path()
         if config_path is None:
             return None
@@ -133,7 +133,7 @@ class MCPConfigGenerator:
         return config_path
 
 
-def run_mcp_install(platform_target: str = "all", python_path: Optional[str] = None) -> None:
+def run_mcp_install(platform_target: str = "all", python_path: str | None = None) -> None:
     """Run the MCP install/setup process."""
     if python_path is None:
         python_path = sys.executable

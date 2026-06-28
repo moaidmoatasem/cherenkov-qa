@@ -42,12 +42,12 @@ class JsonRpcResponse(BaseModel):
     result: Any | None = None
     error: JsonRpcError | None = None
 
-    def to_success(self, id: int | str | None, result: Any) -> "JsonRpcResponse":
+    def to_success(self, id: int | str | None, result: Any) -> JsonRpcResponse:
         return JsonRpcResponse(id=id, result=result)
 
     def to_error(
         self, id: int | str | None, code: int, message: str, data: Any = None
-    ) -> "JsonRpcResponse":
+    ) -> JsonRpcResponse:
         return JsonRpcResponse(
             id=id, error=JsonRpcError(code=code, message=message, data=data)
         )

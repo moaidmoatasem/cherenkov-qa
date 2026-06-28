@@ -23,36 +23,28 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from pydantic import ValidationError
 
-from cherenkov.hitl.store import HitlQueue
-from cherenkov.divergence.proof_run import run_proof
-from cherenkov.validate.gate import ValidationGate
-from cherenkov.mcp.policy import PolicyEngine
 from cherenkov.chat.guard import get_guard
-from cherenkov.mcp.mesh_router import get_registry
+from cherenkov.divergence.proof_run import run_proof
+from cherenkov.hitl.store import HitlQueue
 from cherenkov.mcp.client import MCPClientError
 from cherenkov.mcp.contracts import (
+    ChatExplainDivergenceInput,
+    ChatQueryIdiomsInput,
+    ChatQueryVerdictsInput,
+    ChatRunTestInput,
+    ComplianceFindingsInput,
+    ExplainFindingInput,
+    GetTighteningInput,
+    GovernanceCertificationInput,
     HitlApproveInput,
     HitlListInput,
     HitlRejectInput,
-    ValidateRunGateInput,
-    ChatQueryVerdictsInput,
-    ChatQueryIdiomsInput,
-    ChatExplainDivergenceInput,
-    ChatRunTestInput,
-    RunConformanceCheckInput,
     ListDriftFindingsInput,
-    GetTighteningInput,
-    ExplainFindingInput,
-    VisualDiffBaselineInput,
-    MenaComplianceEnhancedInput,
-    GovernanceCertificationInput,
-    ComplianceFindingsInput,
-    VerifySuiteInput,
-    VerifySystemInput,
     MCPContent,
     MCPResource,
     MCPResourceContent,
@@ -63,8 +55,16 @@ from cherenkov.mcp.contracts import (
     MCPToolInputSchema,
     MCPToolListResult,
     MCPToolParam,
+    MenaComplianceEnhancedInput,
+    RunConformanceCheckInput,
+    ValidateRunGateInput,
+    VerifySuiteInput,
+    VerifySystemInput,
+    VisualDiffBaselineInput,
 )
-
+from cherenkov.mcp.mesh_router import get_registry
+from cherenkov.mcp.policy import PolicyEngine
+from cherenkov.validate.gate import ValidationGate
 
 # ── Policy engine instance ─────────────────────────────────────────────────────
 _policy = PolicyEngine()
@@ -972,7 +972,6 @@ def _tool_verify_suite(args: dict[str, Any]) -> MCPToolCallResult:
 
     # ── Run the 6-gate REVIEW stage ───────────────────────────────────────────
     try:
-        from cherenkov.stages.review import ReviewStage
         from cherenkov.core.contracts import (
             GenerateOutput,
             StageMeta,
@@ -980,6 +979,7 @@ def _tool_verify_suite(args: dict[str, Any]) -> MCPToolCallResult:
             Verdict,
         )
         from cherenkov.core.errors import LoggerConfig
+        from cherenkov.stages.review import ReviewStage
 
         LoggerConfig.suppress_stderr = True  # keep MCP output clean
 
@@ -1129,7 +1129,7 @@ def _tool_verify_system(args: dict[str, Any]) -> MCPToolCallResult:
         if inp.spec_source.startswith("http://") or inp.spec_source.startswith("https://"):
             import urllib.request
             try:
-                with urllib.request.urlopen(inp.spec_source, timeout=15) as resp:  # noqa: S310
+                with urllib.request.urlopen(inp.spec_source, timeout=15) as resp:
                     import json as _json
                     spec_dict = _json.loads(resp.read())
             except Exception as exc:
@@ -1259,6 +1259,7 @@ def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     import json
     import socket
     from urllib.parse import urlparse
+
     from cherenkov.mcp.mesh_router import get_registry
 
     inp = args
@@ -1776,8 +1777,8 @@ def _tool_chat_run_test(args: dict[str, Any]) -> MCPToolCallResult:
 
 def _get_latest_validation_report() -> dict[str, Any]:
     """Return the most recent ValidationReport from evidence/, or a stub."""
-    import os
     import glob
+    import os
 
     evidence_dir = os.path.join(os.getcwd(), ".cherenkov", "evidence")
     pattern = os.path.join(evidence_dir, "*.json")

@@ -26,7 +26,6 @@ from collections import defaultdict
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-
 _RPS: float = float(os.getenv("CHERENKOV_RATE_LIMIT_RPS", "10"))
 _BURST: float = float(os.getenv("CHERENKOV_RATE_LIMIT_BURST", "20"))
 _ENABLED: bool = os.getenv("CHERENKOV_RATE_LIMIT_ENABLED", "true").lower() not in ("false", "0", "no")
@@ -38,7 +37,7 @@ _EXEMPT_PREFIXES: tuple[str, ...] = ("/health", "/metrics", "/docs", "/openapi.j
 class _Bucket:
     """Single-client token bucket (thread-safe)."""
 
-    __slots__ = ("tokens", "last_refill", "_lock")
+    __slots__ = ("_lock", "last_refill", "tokens")
 
     def __init__(self, capacity: float) -> None:
         self.tokens: float = capacity

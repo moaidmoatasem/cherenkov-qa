@@ -1,0 +1,95 @@
+﻿
+[1m======================================================================[0m
+[1m  CHERENKOV ΓÇö 'Catch the AI Cheating' Demo[0m
+[2m  Gate G0 / E0.2 ΓÇö integrity catch proof[0m
+[1m======================================================================[0m
+
+  We let an AI write the tests.  Then we let it cheat.
+  Watch CHERENKOV catch it ΓÇö using the same 6-gate REVIEW stage
+  that runs in production on every generated suite.
+
+[96m  Beat 1 ΓÇö Baseline: what a correct spec-derived test looks like[0m
+
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[1m  FIXTURE: Correct test (spec-derived baseline)[0m
+[2m  File:    fixtures/correct_test.spec.ts[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+  Gate [syntax            ]  [92mΓ£ô PASS[0m
+  Gate [structure         ]  [92mΓ£ô PASS[0m
+  Gate [ast               ]  [92mΓ£ô PASS[0m
+  Gate [assertion         ]  [92mΓ£ô PASS[0m
+  Gate [tsc               ]  [92mΓ£ô PASS[0m
+  Gate [prism-dryrun      ]  [2mΓùï SKIP[0m
+
+  Verdict : [92mPASS Γ£ô[0m
+  Score   : 100%  (5776ms)
+
+[96m  Beat 2+3 ΓÇö The cheats: suite is 'green' ΓÇö but should it be?[0m
+
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[1m  FIXTURE: Cheat 1: Weakened assertion  [toBeLessThan(500) instead of toBe(201)][0m
+[2m  File:    fixtures/cheat_weakened_assertion.spec.ts[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+  Gate [syntax            ]  [92mΓ£ô PASS[0m
+  Gate [structure         ]  [92mΓ£ô PASS[0m
+  Gate [ast               ]  [92mΓ£ô PASS[0m
+  Gate [assertion         ]  [91mΓ£ù FAIL[0m
+[91m             Γå│ Missing expectation asserting specific status code (toBe(code)).[0m
+  Gate [tsc               ]  [92mΓ£ô PASS[0m
+  Gate [prism-dryrun      ]  [2mΓùï SKIP[0m
+
+  Verdict : [93mHITL Γåæ[0m
+  Score   : 80%  (44408ms)
+
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[1m  FIXTURE: Cheat 2: Deleted check  [body assertions removed][0m
+[2m  File:    fixtures/cheat_deleted_check.spec.ts[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+  Gate [syntax            ]  [92mΓ£ô PASS[0m
+  Gate [structure         ]  [92mΓ£ô PASS[0m
+  Gate [ast               ]  [92mΓ£ô PASS[0m
+  Gate [assertion         ]  [91mΓ£ù FAIL[0m
+[91m             Γå│ Missing expectation asserting response body property structure (toHaveProperty).[0m
+  Gate [tsc               ]  [92mΓ£ô PASS[0m
+  Gate [prism-dryrun      ]  [2mΓùï SKIP[0m
+
+  Verdict : [93mHITL Γåæ[0m
+  Score   : 80%  (45324ms)
+
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[1m  FIXTURE: Cheat 3: Hallucinated oracle  ['auth_token' not in spec][0m
+[2m  File:    fixtures/cheat_hallucinated_oracle.spec.ts[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+  Gate [syntax            ]  [92mΓ£ô PASS[0m
+  Gate [structure         ]  [92mΓ£ô PASS[0m
+  Gate [ast               ]  [92mΓ£ô PASS[0m
+  Gate [assertion         ]  [92mΓ£ô PASS[0m
+  Gate [tsc               ]  [92mΓ£ô PASS[0m
+  Gate [prism-dryrun      ]  [2mΓùï SKIP[0m
+
+  Verdict : [92mPASS Γ£ô[0m
+  Score   : 100%  (4775ms)
+
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+
+  Verdicts: PASS = suite is trustworthy | HITL = flagged for human review
+            (HITL = Human-In-The-Loop ΓÇö goes to review queue, not auto-merged)
+
+  Cheats 1 + 2: caught STATICALLY by Gate 4 ΓÇö zero server, zero runtime.
+  Gate 4 re-derives what assertions a spec-derived test MUST contain.
+  If the check is loosened or deleted, the gate flags it for human review.
+
+  Cheat 3: passes all static gates ΓÇö 'auth_token' looks structurally valid.
+  Caught by Gate 6 (Prism dynamic dry-run) when Docker is available.
+  If Docker is absent, the gate is skipped ΓÇö reported honestly, never faked.
+
+  Core property: CHERENKOV re-derives truth from the spec ΓÇö it does NOT
+  trust what the suite's own assertions claim. It goes back to the source.
+
+[1m  Generation is free now. Trust isn't.[0m
+[1m  CHERENKOV is the part that doesn't let the AI lie to you.[0m
+
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[2m  Gate G0 / E0.2 evidence: screenshot or `asciinema rec` this output.[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+

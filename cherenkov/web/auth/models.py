@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
+
 from pydantic import BaseModel
 
 
@@ -10,10 +11,10 @@ class Role(str, Enum):
     admin    = "admin"     # user management + full access
 
     @classmethod
-    def hierarchy(cls) -> list["Role"]:
+    def hierarchy(cls) -> list[Role]:
         return [cls.viewer, cls.reviewer, cls.admin]
 
-    def __ge__(self, other: "Role") -> bool:
+    def __ge__(self, other: Role) -> bool:
         h = Role.hierarchy()
         return h.index(self) >= h.index(other)
 

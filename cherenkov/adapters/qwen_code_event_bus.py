@@ -1,6 +1,8 @@
 import subprocess
-from typing import Callable
+from collections.abc import Callable
+
 from cherenkov.core.events import CHERENKOVEvent
+
 
 class QwenCodeChannelAdapter:
     """

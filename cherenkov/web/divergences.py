@@ -13,9 +13,8 @@ dashboard, so an in-memory store is sufficient.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Dict, List
 
-_DIVERGENCE_CORPUS: List[dict] = [
+_DIVERGENCE_CORPUS: list[dict] = [
     {
         "id": "D-01",
         "divergenceClass": "D1",
@@ -108,10 +107,10 @@ _ACTION_STATUS = {
     "reject": "rejected",
 }
 
-_STATUS_OVERRIDES: Dict[str, str] = {}
+_STATUS_OVERRIDES: dict[str, str] = {}
 
 
-def list_divergences() -> List[dict]:
+def list_divergences() -> list[dict]:
     out = []
     for d in _DIVERGENCE_CORPUS:
         item = dict(d)
@@ -145,7 +144,7 @@ class DivergenceFindingNamespace:
 
 def get_divergences(
     severity: str | None = None, endpoint: str | None = None, limit: int = 20
-) -> List[DivergenceFindingNamespace]:
+) -> list[DivergenceFindingNamespace]:
     res = list_divergences()
     if severity:
         res = [d for d in res if d.get("severity") == severity]

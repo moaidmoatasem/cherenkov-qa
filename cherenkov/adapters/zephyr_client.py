@@ -141,7 +141,7 @@ class ZephyrClient:
     # ── Factory from env ──────────────────────────────────────────────────────
 
     @classmethod
-    def from_env(cls) -> "ZephyrClient | None":
+    def from_env(cls) -> ZephyrClient | None:
         """Build ZephyrClient from environment variables. Returns None if not configured."""
         token = os.getenv("CHERENKOV_ZEPHYR_TOKEN")
         project_key = os.getenv("CHERENKOV_ZEPHYR_PROJECT_KEY")

@@ -56,8 +56,8 @@ async def get_truth_map():
 
 @router.get("/api/v1/failures")
 async def get_failures():
-    from cherenkov.reflector.store import VerdictStore
     from cherenkov.core.contracts import VerdictOutcome
+    from cherenkov.reflector.store import VerdictStore
 
     _FAILURE_TYPE_MAP = {
         "CONTRACT_DRIFT": "CONTRACT_DRIFT",

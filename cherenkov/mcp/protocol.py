@@ -15,7 +15,8 @@ from __future__ import annotations
 
 import json
 import sys
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from cherenkov.mcp.contracts import (
     INTERNAL_ERROR,
@@ -25,7 +26,6 @@ from cherenkov.mcp.contracts import (
     JsonRpcRequest,
     JsonRpcResponse,
 )
-
 
 DispatchTable = dict[str, Callable[[dict[str, Any]], Any]]
 

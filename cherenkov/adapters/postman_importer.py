@@ -4,7 +4,8 @@ Converts Postman v2.1 collection format into CHERENKOV Scenario definitions.
 """
 
 import json
-from typing import List, Dict, Any
+from typing import Any
+
 from cherenkov.core.contracts import Scenario
 from cherenkov.core.errors import get_logger
 
@@ -14,9 +15,9 @@ _log = get_logger("POSTMAN_IMPORTER")
 class PostmanImporter:
     """Parses Postman Collections and generates Cherenkov Scenarios."""
 
-    def import_collection(self, file_path: str) -> List[Scenario]:
+    def import_collection(self, file_path: str) -> list[Scenario]:
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding='utf-8') as f:
                 data = json.load(f)
         except Exception as exc:
             _log.error("Failed to read Postman collection", error=str(exc))
@@ -26,7 +27,7 @@ class PostmanImporter:
         items = data.get("item", [])
 
         # Flattens folders
-        def _extract_items(item_list: List[Dict[str, Any]]):
+        def _extract_items(item_list: list[dict[str, Any]]):
             for it in item_list:
                 if "item" in it:
                     _extract_items(it["item"])
@@ -37,7 +38,7 @@ class PostmanImporter:
         _log.info("Postman collection imported", count=len(scenarios))
         return [s for s in scenarios if s is not None]
 
-    def _parse_item(self, item: Dict[str, Any]) -> Scenario | None:
+    def _parse_item(self, item: dict[str, Any]) -> Scenario | None:
         request = item.get("request")
         if not request:
             return None

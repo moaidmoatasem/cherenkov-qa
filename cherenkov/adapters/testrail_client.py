@@ -1,8 +1,8 @@
-import os
-import json
 import base64
+import json
+import os
 import urllib.request
-from typing import Any, Dict
+from typing import Any
 
 CHERENKOV_TO_TESTRAIL = {
     "PASS": 1,   # Passed
@@ -20,7 +20,7 @@ class TestRailClient:
         self.user = os.environ.get("CHERENKOV_TESTRAIL_USER", "")
         self.token = os.environ.get("CHERENKOV_TESTRAIL_TOKEN", "")
 
-    def _headers(self) -> Dict[str, str]:
+    def _headers(self) -> dict[str, str]:
         auth_str = f"{self.user}:{self.token}"
         auth_bytes = base64.b64encode(auth_str.encode("utf-8")).decode("utf-8")
         return {
@@ -28,7 +28,7 @@ class TestRailClient:
             "Content-Type": "application/json",
         }
 
-    def import_execution(self, report: Dict[str, Any], run_id: str) -> Dict[str, Any]:
+    def import_execution(self, report: dict[str, Any], run_id: str) -> dict[str, Any]:
         """Convert a CHERENKOV report dict and POST results to TestRail."""
         if not self.base_url or not self.token:
             return {"error": "TestRail configuration missing"}
@@ -74,6 +74,6 @@ class TestRailClient:
         except Exception as e:
             return {"error": str(e)}
 
-    def import_junit_xml(self, junit_xml_path: str, project_id: str) -> Dict[str, Any]:
+    def import_junit_xml(self, junit_xml_path: str, project_id: str) -> dict[str, Any]:
         """Not natively supported by TestRail REST API without a middleware script, stubbed."""
         return {"status": "unsupported_by_native_api_use_cli"}

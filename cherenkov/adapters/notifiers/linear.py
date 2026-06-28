@@ -1,17 +1,19 @@
-from typing import Any, Dict, Optional
-import os
 import json
+import os
 import urllib.request
-from cherenkov.hitl.contracts import HitlEnvelope, ok_envelope
-from cherenkov.core.events import CHERENKOVEvent
+from typing import Any
+
 from cherenkov.core.errors import get_logger
+from cherenkov.core.events import CHERENKOVEvent
+from cherenkov.hitl.contracts import HitlEnvelope, ok_envelope
+
 
 class LinearNotifier:
     """Sends notifications to Linear via its GraphQL API."""
 
     name: str = "linear"
 
-    def __init__(self, api_key: Optional[str] = None, team_id: Optional[str] = None):
+    def __init__(self, api_key: str | None = None, team_id: str | None = None):
         self.api_key = api_key or os.environ.get("CHERENKOV_LINEAR_API_KEY")
         self.team_id = team_id or os.environ.get("CHERENKOV_LINEAR_TEAM_ID")
         self.log = get_logger("LINEAR_NOTIFIER")
@@ -82,7 +84,7 @@ class LinearNotifier:
             self.log.error("Failed to call Linear API", error=str(e))
             return False
 
-    def send(self, report: Dict[str, Any]) -> bool:
+    def send(self, report: dict[str, Any]) -> bool:
         envelope = ok_envelope(
             command=report.get("command", "notify"),
             payload=report,

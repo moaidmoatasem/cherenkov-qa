@@ -32,8 +32,9 @@ async def tokens_recommendations(days: int = 30):
 @router.get("/api/v1/health")
 async def health_check():
     import asyncio
-    from cherenkov.core.settings import get_settings
     import os
+
+    from cherenkov.core.settings import get_settings
     try:
         device = await asyncio.wait_for(
             asyncio.to_thread(get_settings().detect_ollama_device), timeout=2.0
@@ -52,12 +53,16 @@ async def health_check():
 
 @router.get("/api/v1/doctor")
 async def run_doctor_api():
-    from cherenkov.stages.doctor_cmd import (
-        check_ollama_binary, check_ollama_daemon, check_node,
-        check_npx_playwright, check_prism_docker, check_egress_blocked,
-    )
     from cherenkov.core.config_loader import load_effective_config
     from cherenkov.core.settings import get_settings
+    from cherenkov.stages.doctor_cmd import (
+        check_egress_blocked,
+        check_node,
+        check_npx_playwright,
+        check_ollama_binary,
+        check_ollama_daemon,
+        check_prism_docker,
+    )
 
     cfg = load_effective_config()
     checks = []

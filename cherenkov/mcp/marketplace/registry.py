@@ -1,10 +1,8 @@
 """MCP Marketplace Registry Client (CC-3)."""
 from __future__ import annotations
 
-import httpx
 import logging
 from dataclasses import dataclass
-from typing import Any
 
 _log = logging.getLogger(__name__)
 

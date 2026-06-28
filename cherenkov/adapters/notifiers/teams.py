@@ -2,11 +2,13 @@
 cherenkov/adapters/notifiers/teams.py — Microsoft Teams Adaptive Card Notifier.
 """
 
-import os
 import json
+import os
 import urllib.request
-from typing import Any, Dict
+from typing import Any
+
 from cherenkov.core.events import CHERENKOVEvent
+
 
 class TeamsNotifier:
     """Sends CHERENKOV reports to Microsoft Teams via Incoming Webhooks (Adaptive Cards)."""
@@ -16,7 +18,7 @@ class TeamsNotifier:
     def __init__(self, webhook_url: str | None = None):
         self.webhook_url = webhook_url or os.environ.get("CHERENKOV_TEAMS_WEBHOOK_URL")
 
-    def send_report(self, report: Dict[str, Any]) -> bool:
+    def send_report(self, report: dict[str, Any]) -> bool:
         """Formats and sends a DivergenceReport to Teams."""
         if not self.webhook_url:
             return False
@@ -79,7 +81,7 @@ class TeamsNotifier:
         except Exception:
             return False
 
-    def send(self, report: Dict[str, Any]) -> bool:
+    def send(self, report: dict[str, Any]) -> bool:
         return self.send_report(report)
 
     def notify_event(self, event: CHERENKOVEvent) -> None:

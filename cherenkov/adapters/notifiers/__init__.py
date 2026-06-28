@@ -1,17 +1,17 @@
-from .slack import SlackNotifier
-from .teams import TeamsNotifier
 from .linear import LinearNotifier
-from .webhook import WebhookNotifier
 from .opsgenie import OpsGenieNotifier
 from .pagerduty import PagerDutyNotifier
 from .registry import NotifierRegistry
+from .slack import SlackNotifier
+from .teams import TeamsNotifier
+from .webhook import WebhookNotifier
 
 __all__ = [
-    "SlackNotifier",
-    "TeamsNotifier",
     "LinearNotifier",
-    "WebhookNotifier",
+    "NotifierRegistry",
     "OpsGenieNotifier",
     "PagerDutyNotifier",
-    "NotifierRegistry",
+    "SlackNotifier",
+    "TeamsNotifier",
+    "WebhookNotifier",
 ]

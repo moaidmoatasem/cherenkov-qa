@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 
 from cherenkov.core.events import CHERENKOVEvent
 from cherenkov.ports.notifier import NotifierPort
@@ -14,8 +14,8 @@ class NotifierRegistry:
     def register(self, notifier: NotifierPort) -> None:
         self._notifiers[notifier.name] = notifier
 
-    def notify_all(self, report: Dict[str, Any]) -> Dict[str, bool]:
-        results: Dict[str, bool] = {}
+    def notify_all(self, report: dict[str, Any]) -> dict[str, bool]:
+        results: dict[str, bool] = {}
         for name, notifier in self._notifiers.items():
             try:
                 results[name] = notifier.send(report)
@@ -30,7 +30,7 @@ class NotifierRegistry:
             except Exception:
                 pass
 
-    def get(self, name: str) -> Optional[NotifierPort]:
+    def get(self, name: str) -> NotifierPort | None:
         return self._notifiers.get(name)
 
     def list_notifiers(self) -> list[str]:

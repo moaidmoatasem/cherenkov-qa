@@ -2,12 +2,13 @@
 CHERENKOV adapters/notifiers/opsgenie.py — OpsGenie Alert API Notifier.
 """
 
-import os
 import json
+import os
 import urllib.request
-from typing import Any, Dict
-from cherenkov.core.events import CHERENKOVEvent
+from typing import Any
+
 from cherenkov.core.errors import get_logger
+from cherenkov.core.events import CHERENKOVEvent
 
 _log = get_logger("OPSGENIE_NOTIFIER")
 
@@ -20,7 +21,7 @@ class OpsGenieNotifier:
     def __init__(self):
         self.api_key = os.environ.get("CHERENKOV_OPSGENIE_API_KEY")
 
-    def send_report(self, report: Dict[str, Any]) -> bool:
+    def send_report(self, report: dict[str, Any]) -> bool:
         if not self.api_key:
             _log.info("CHERENKOV_OPSGENIE_API_KEY not set; skipping OpsGenie.")
             return False
@@ -59,7 +60,7 @@ class OpsGenieNotifier:
             _log.error("Failed to create OpsGenie alert", error=str(exc))
             return False
 
-    def send(self, report: Dict[str, Any]) -> bool:
+    def send(self, report: dict[str, Any]) -> bool:
         return self.send_report(report)
 
     def notify_event(self, event: CHERENKOVEvent) -> None:

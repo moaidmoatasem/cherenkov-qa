@@ -5,13 +5,14 @@ CHERENKOV adapters/notifiers/webhook.py — Generic HTTP POST Webhook Notifier.
 from __future__ import annotations
 
 import os
-import requests
 import threading
-from typing import Any, Dict
+from typing import Any
+
+import requests
 
 from cherenkov.core.errors import get_logger
-from cherenkov.hitl.contracts import HitlEnvelope, ok_envelope
 from cherenkov.core.events import CHERENKOVEvent
+from cherenkov.hitl.contracts import HitlEnvelope, ok_envelope
 
 _log = get_logger("WEBHOOK_NOTIFIER")
 
@@ -34,15 +35,15 @@ class WebhookNotifier:
         payload = envelope.model_dump()
 
         def _send() -> None:
-            import hmac
             import hashlib
+            import hmac
             import json
             try:
                 # Optional HMAC signing for secure webhook dispatch
                 headers = {"Content-Type": "application/json"}
                 secret = os.environ.get("CHERENKOV_WEBHOOK_SECRET")
                 body_bytes = json.dumps(payload).encode("utf-8")
-                
+
                 if secret:
                     signature = hmac.new(secret.encode("utf-8"), msg=body_bytes, digestmod=hashlib.sha256).hexdigest()
                     headers["X-Cherenkov-Signature-256"] = f"sha256={signature}"
@@ -57,7 +58,7 @@ class WebhookNotifier:
 
         t = threading.Thread(target=_send, name="webhook-send")
         t.start()
-    def send(self, report: Dict[str, Any]) -> bool:
+    def send(self, report: dict[str, Any]) -> bool:
         envelope = ok_envelope(
             command=report.get("command", "notify"),
             payload=report,

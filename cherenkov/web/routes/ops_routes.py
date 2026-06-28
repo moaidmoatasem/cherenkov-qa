@@ -3,19 +3,22 @@ import threading
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 
 from cherenkov.web.routes.deps import (
-    verify_api_key, _validate_spec_url, _validate_output_path,
+    _validate_output_path,
+    _validate_spec_url,
+    verify_api_key,
     ws_event_callback,
 )
-from cherenkov.web.routes.models import RunPipelinePayload, ValidatePayload, EjectPayload
+from cherenkov.web.routes.models import EjectPayload, RunPipelinePayload, ValidatePayload
 
 router = APIRouter(tags=["operations"])
 
 
 @router.post("/api/v1/ingest")
 async def ingest_spec_file(file: UploadFile | None = File(None), url: str | None = Form(None)):
+    import asyncio
     import os
     import uuid
-    import asyncio
+
     from cherenkov.stages.ingest import IngestStage
 
     run_id = str(uuid.uuid4())[:8]
@@ -80,10 +83,11 @@ def _run_pipeline_thread(spec_path: str, run_id: str):
 
 @router.post("/api/v1/run")
 async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: BackgroundTasks, _auth=Depends(verify_api_key)):
+    import contextlib as _contextlib
+    import io
     import os
     import uuid
-    import io
-    import contextlib as _contextlib
+
     from cherenkov.stages.doctor_cmd import run_doctor
 
     with _contextlib.redirect_stdout(io.StringIO()):
@@ -105,8 +109,8 @@ async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: Ba
 
 @router.get("/api/v1/tests")
 async def list_generated_tests():
-    import os
     import asyncio
+    import os
     import re as _re
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
     if not os.path.exists(tests_dir):
@@ -119,7 +123,7 @@ async def list_generated_tests():
                 continue
             file_path = os.path.join(tests_dir, f)
             try:
-                with open(file_path, "r", encoding="utf-8") as fh:
+                with open(file_path, encoding="utf-8") as fh:
                     code = fh.read()
             except OSError:
                 continue
@@ -138,6 +142,7 @@ async def list_generated_tests():
 @router.post("/api/v1/validate")
 async def validate_test_suite(payload: ValidatePayload, _auth=Depends(verify_api_key)):
     import asyncio
+
     from cherenkov.execution.validate import ValidationEngine
 
     await _validate_spec_url(payload.target_url)

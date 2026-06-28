@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from cherenkov.web.routes.deps import get_queue, verify_api_key, _validate_scenario_id
-from cherenkov.web.routes.models import ReviewActionPayload, ClassifyPayload
+from cherenkov.web.routes.deps import _validate_scenario_id, get_queue, verify_api_key
+from cherenkov.web.routes.models import ClassifyPayload, ReviewActionPayload
 
 router = APIRouter(tags=["review"])
 
 
 @router.get("/api/v1/review/queue")
 async def list_review_queue(status: str | None = "pending", _auth=Depends(verify_api_key)):
-    import os
     import asyncio
+    import os
     queue = get_queue()
     items = queue.list(status=status)
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
@@ -45,7 +45,8 @@ async def list_review_queue(status: str | None = "pending", _auth=Depends(verify
 @router.post("/api/v1/review/approve")
 async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
     import os
-    from cherenkov.core.feedback_store import FeedbackStore, FeedbackEntry
+
+    from cherenkov.core.feedback_store import FeedbackEntry, FeedbackStore
 
     queue = get_queue()
     actor = os.environ.get("USER", "dashboard")
@@ -60,8 +61,8 @@ async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify
         FeedbackEntry(hitl_item_id=payload.scenario_id, action="approve", reason=payload.reason or "Approved by reviewer")
     )
     try:
-        from cherenkov.reflector.reflector import Reflector
         from cherenkov.core.contracts import VerdictOutcome
+        from cherenkov.reflector.reflector import Reflector
         reflector = Reflector(run_id="web")
         reflector.ingest_human_verdict(
             hypothesis_id=payload.scenario_id, outcome=VerdictOutcome.ACCEPT,
@@ -76,7 +77,8 @@ async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify
 @router.post("/api/v1/review/reject")
 async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
     import os
-    from cherenkov.core.feedback_store import FeedbackStore, FeedbackEntry
+
+    from cherenkov.core.feedback_store import FeedbackEntry, FeedbackStore
 
     queue = get_queue()
     actor = os.environ.get("USER", "dashboard")
@@ -90,8 +92,8 @@ async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_
     store = FeedbackStore()
     store.record_feedback(FeedbackEntry(hitl_item_id=payload.scenario_id, action="reject", reason=reason))
     try:
-        from cherenkov.reflector.reflector import Reflector
         from cherenkov.core.contracts import VerdictOutcome
+        from cherenkov.reflector.reflector import Reflector
         reflector = Reflector(run_id="web")
         reflector.ingest_human_verdict(
             hypothesis_id=payload.scenario_id, outcome=VerdictOutcome.REJECT, detail=reason,
@@ -104,8 +106,8 @@ async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_
 
 @router.post("/api/v1/review/edit")
 async def edit_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
-    import os
     import asyncio
+    import os
     if not payload.test_code:
         raise HTTPException(status_code=400, detail="Missing updated test code content.")
     _validate_scenario_id(payload.scenario_id)

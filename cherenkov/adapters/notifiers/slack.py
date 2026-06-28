@@ -2,10 +2,11 @@
 CHERENKOV adapters/notifiers/slack.py — Slack Block Kit Notifier.
 """
 
-import os
 import json
+import os
 import urllib.request
-from typing import Any, Dict
+from typing import Any
+
 from cherenkov.core.errors import get_logger
 from cherenkov.core.events import CHERENKOVEvent
 
@@ -20,7 +21,7 @@ class SlackNotifier:
     def __init__(self):
         self.webhook_url = os.environ.get("CHERENKOV_SLACK_WEBHOOK_URL")
 
-    def send_report(self, report: Dict[str, Any]) -> bool:
+    def send_report(self, report: dict[str, Any]) -> bool:
         if not self.webhook_url:
             _log.info("CHERENKOV_SLACK_WEBHOOK_URL not set; skipping Slack.")
             return False
@@ -110,7 +111,7 @@ class SlackNotifier:
         except Exception:
             return False
 
-    def send(self, report: Dict[str, Any]) -> bool:
+    def send(self, report: dict[str, Any]) -> bool:
         return self.send_report(report)
 
     def notify_event(self, event: CHERENKOVEvent) -> None:

@@ -166,7 +166,7 @@ class XrayClient:
     # ── Factory from env ──────────────────────────────────────────────────────
 
     @classmethod
-    def from_env(cls) -> "XrayClient | None":
+    def from_env(cls) -> XrayClient | None:
         """Build XrayClient from environment variables. Returns None if not configured."""
         client_id = os.getenv("CHERENKOV_XRAY_CLIENT_ID")
         client_secret = os.getenv("CHERENKOV_XRAY_CLIENT_SECRET")

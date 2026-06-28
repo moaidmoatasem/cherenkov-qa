@@ -3,8 +3,8 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from cherenkov.review_ocr.stage import ReviewStageOCR
 from cherenkov.core.settings import get_settings
+from cherenkov.review_ocr.stage import ReviewStageOCR
 
 router = APIRouter(prefix="/api/v1/ocr", tags=["ocr"])
 

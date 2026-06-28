@@ -16,20 +16,20 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from cherenkov.web.sdd_auth import verify_write_access
 from cherenkov.web.sdd_models import (
+    CompactResult,
+    ContextSnippet,
+    GraphData,
+    GraphEdge,
+    GraphNode,
+    GraphStatus,
+    PatternInsight,
+    SddContextData,
     SddSession,
     SddTokenData,
-    TokenSnapshot,
-    TokenHistory,
     TaskTypeStats,
-    SddContextData,
-    ContextSnippet,
-    GraphStatus,
-    GraphData,
-    GraphNode,
-    GraphEdge,
+    TokenHistory,
+    TokenSnapshot,
     WikiEntry,
-    PatternInsight,
-    CompactResult,
 )
 
 router = APIRouter(tags=["sdd"])
@@ -42,7 +42,7 @@ MEMORY_DIR = Path("agent_memory").resolve()
 def _read_json(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
-    with open(path, "r") as f:
+    with open(path) as f:
         return json.load(f)
 
 
