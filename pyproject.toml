@@ -52,6 +52,7 @@ markers = [
     "e2e: end-to-end tests that depend on external services",
     "integration: integration tests requiring running services",
     "smoke: quick smoke tests",
+    "ollama: requires Ollama running on localhost:11434",
 ]
 
 [tool.coverage.run]
