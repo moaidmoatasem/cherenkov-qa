@@ -38,6 +38,7 @@ The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHE
 - ✅ **Phase 8** (K8s + Cloud + Gate): Complete. `make k3d-test` green (2026-06-09). All 6 issues closed (#386-#391): K8s fixes validated, CRD extensions + device env vars deployed, SECURITY.md added, validation gate resolved, clean architecture docs updated.
 - ✅ **Phase 3** (Desktop/Tauri 2): Complete. Compiles (308MB binary at `desktop/src-tauri/target/debug/cherenkov-desktop`). Requires `libwebkit2gtk-4.1-dev`.
 - ✅ **Phase 5-6** (Mobile Testing): Tools installed — Maestro 2.6.1 at `~/.maestro/bin/maestro`, ADB 1.0.41 at `~/.local/bin/adb`. Needs physical device or emulator for live runs.
+- ✅ **Phase 9** (Semantic Memory): MemSearch repository integration with SDD protocol.
 
 **Available Tools (WSL Ubuntu-24.04):**
 - ✅ Go 1.22.5 installed at `~/.local/opt/go/bin/go`

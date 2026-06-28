@@ -13,6 +13,17 @@ import time
 _tl = threading.local()  # per-thread events file slot
 
 
+from enum import IntEnum
+
+# ── exit codes (CC-6) ────────────────────────────────────────────────────────
+class ExitCode(IntEnum):
+    SUCCESS = 0
+    GENERAL_ERROR = 1
+    VALIDATION_ERROR = 2
+    CONFIG_ERROR = 3
+    NETWORK_ERROR = 4
+
+
 # ── typed exceptions (never raise bare Exception in pipeline code) ──────────
 class CherenkovError(Exception):
     """Base for all pipeline errors."""
