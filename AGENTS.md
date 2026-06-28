@@ -50,15 +50,16 @@ The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHE
 3. ✅ **Desktop Host** (Phase 3) — Tauri 2 app, hardware detection, 7-step setup wizard
 4. ✅ **Chat Agents** (Phase 4) — Tool-calling agent, persona registry, SSE streaming
 5. ✅ **Phase 5-6** (Mobile Testing): Tools installed — Maestro 2.6.1, ADB 1.0.41 installed; needs physical device/emulator for live runs
-6. ✅ **Claude Code-Inspired Enhancements** (Phases CC-1 to CC-6): Auto-Memory (SQLite FTS5), HookRegistry, Multi-Agent Conductor, MCP ecosystem expansion.
+6. ✅ **Claude Code-Inspired Enhancements** (Phases CC-1 to CC-6): Auto-Memory (SQLite FTS5), HookRegistry, Multi-Agent Conductor, MCP ecosystem expansion, Scheduling/Routines, Remote Control/Teleport, CLI Composability.
+7. ✅ **Phase 9** (Semantic Memory): MemSearch repository integration with SDD protocol.
 
 **Claude Code-Inspired Enhancement Plan (Phases CC-1 → CC-6) — 2026-06-28:**
 - ✅ **Phase CC-1** (Auto-Memory + Hooks): `cherenkov/memory/` (SQLite FTS5, MemoryRepository port, collect + promote use cases) + `cherenkov/hooks/` (HookEvent×10, HookRegistry from cherenkov.toml, SubprocessHookExecutor, warn|abort fail_mode). ADR-011, ADR-012. 32 tests pass. `agent_sync memory` subcommand live. Commit: `de4a5bb`.
-- 🔄 **Phase CC-2** (Multi-Agent Conductor): `cherenkov/agents/conductor/` — fan-out/fan-in on MCP mesh. *Next.*
-- ⏳ **Phase CC-3** (MCP Ecosystem Expansion): MCP marketplace, push events, JWT auth, 5 new integrations.
-- ⏳ **Phase CC-4** (Scheduling + Routines): APScheduler + web UI + GitHub webhook trigger.
-- ⏳ **Phase CC-5** (Remote Control + Teleport): Session snapshot + QR-code join + SSH/Docker remote runner.
-- ⏳ **Phase CC-6** (CLI Composability): `--json`/`--quiet` on all commands, pipe mode, shell completions.
+- ✅ **Phase CC-2** (Multi-Agent Conductor): `cherenkov/agents/conductor/` — fan-out/fan-in on MCP mesh.
+- ✅ **Phase CC-3** (MCP Ecosystem Expansion): MCP marketplace, push events, JWT auth, 5 new integrations.
+- ✅ **Phase CC-4** (Scheduling + Routines): APScheduler + web UI + GitHub webhook trigger.
+- ✅ **Phase CC-5** (Remote Control + Teleport): Session snapshot + QR-code join + SSH/Docker remote runner.
+- ✅ **Phase CC-6** (CLI Composability): `--json`/`--quiet` on all commands, pipe mode, shell completions.
 
 **Parallel Tracks:**
 - Track A (Core): Phase -1 → 0a → 0b → 1 → 4 → 7 ✅
@@ -67,7 +68,8 @@ The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHE
 - Track D (Mobile): Phase 5-6 ⏸ (needs physical device/emulator for live runs)
 - Track E (Dashboard): Phase 7 ✅
 - Track F (K8s): Phase 8 ✅
-- Track G (CC Enhancement): CC-1 ✅ → CC-2 🔄 → CC-3..CC-6 ⏳
+- Track G (CC Enhancement): CC-1 ✅ → CC-2 ✅ → CC-3 ✅ → CC-4 ✅ → CC-5 ✅ → CC-6 ✅
+- Track H (Semantic Memory): Phase 9 ✅
 
 **Extended Roadmap (Phases 9-16 — Product & Market Expansion):**
 - See [docs/PRODUCT_STRATEGY_ROADMAP.md](docs/PRODUCT_STRATEGY_ROADMAP.md) for Phases 9-16: market launch, enterprise tier, fine-tuned model, 10-year vision, revenue model.
