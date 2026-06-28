@@ -116,3 +116,8 @@ install_error_handlers(app)
 from cherenkov.web.auth.routes import router as auth_router  # noqa: E402
 
 app.include_router(auth_router)
+
+from cherenkov.web.routes.webhooks_github import github_webhook_router
+app.include_router(github_webhook_router)
+from cherenkov.scheduling.api.routes import router as routines_router
+app.include_router(routines_router)

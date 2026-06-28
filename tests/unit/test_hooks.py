@@ -57,8 +57,9 @@ class TestSubprocessHookExecutor:
         assert exc_info.value.result.exit_code == 2
 
     def test_timeout_warn_mode_returns_timeout(self) -> None:
+        import sys
         config = self._config(
-            run='python -c "import time; time.sleep(10)"',
+            run=f'{sys.executable} -c "import time; time.sleep(10)"',
             timeout=1, fail_mode=FailMode.WARN,
         )
         result = self.executor.execute(config, HookContext())
@@ -66,8 +67,9 @@ class TestSubprocessHookExecutor:
         assert "Timed out" in result.error_message
 
     def test_timeout_abort_mode_raises(self) -> None:
+        import sys
         config = self._config(
-            run='python -c "import time; time.sleep(10)"',
+            run=f'{sys.executable} -c "import time; time.sleep(10)"',
             timeout=1, fail_mode=FailMode.ABORT,
         )
         with pytest.raises(HookAbortError):
