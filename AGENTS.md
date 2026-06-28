@@ -49,7 +49,16 @@ The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHE
 2. ✅ **VLM + LocalAI** (Phase 2) — LocalAI as default VLM backend, tier-aware routing
 3. ✅ **Desktop Host** (Phase 3) — Tauri 2 app, hardware detection, 7-step setup wizard
 4. ✅ **Chat Agents** (Phase 4) — Tool-calling agent, persona registry, SSE streaming
-5. ✅ **Mobile Testing** (Phase 5-6) — Maestro 2.6.1, ADB 1.0.41 installed; needs physical device/emulator for live runs
+5. ✅ **Phase 5-6** (Mobile Testing): Tools installed — Maestro 2.6.1, ADB 1.0.41 installed; needs physical device/emulator for live runs
+6. ✅ **Claude Code-Inspired Enhancements** (Phases CC-1 to CC-6): Auto-Memory (SQLite FTS5), HookRegistry, Multi-Agent Conductor, MCP ecosystem expansion.
+
+**Claude Code-Inspired Enhancement Plan (Phases CC-1 → CC-6) — 2026-06-28:**
+- ✅ **Phase CC-1** (Auto-Memory + Hooks): `cherenkov/memory/` (SQLite FTS5, MemoryRepository port, collect + promote use cases) + `cherenkov/hooks/` (HookEvent×10, HookRegistry from cherenkov.toml, SubprocessHookExecutor, warn|abort fail_mode). ADR-011, ADR-012. 32 tests pass. `agent_sync memory` subcommand live. Commit: `de4a5bb`.
+- 🔄 **Phase CC-2** (Multi-Agent Conductor): `cherenkov/agents/conductor/` — fan-out/fan-in on MCP mesh. *Next.*
+- ⏳ **Phase CC-3** (MCP Ecosystem Expansion): MCP marketplace, push events, JWT auth, 5 new integrations.
+- ⏳ **Phase CC-4** (Scheduling + Routines): APScheduler + web UI + GitHub webhook trigger.
+- ⏳ **Phase CC-5** (Remote Control + Teleport): Session snapshot + QR-code join + SSH/Docker remote runner.
+- ⏳ **Phase CC-6** (CLI Composability): `--json`/`--quiet` on all commands, pipe mode, shell completions.
 
 **Parallel Tracks:**
 - Track A (Core): Phase -1 → 0a → 0b → 1 → 4 → 7 ✅
@@ -58,6 +67,7 @@ The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHE
 - Track D (Mobile): Phase 5-6 ⏸ (needs physical device/emulator for live runs)
 - Track E (Dashboard): Phase 7 ✅
 - Track F (K8s): Phase 8 ✅
+- Track G (CC Enhancement): CC-1 ✅ → CC-2 🔄 → CC-3..CC-6 ⏳
 
 **Extended Roadmap (Phases 9-16 — Product & Market Expansion):**
 - See [docs/PRODUCT_STRATEGY_ROADMAP.md](docs/PRODUCT_STRATEGY_ROADMAP.md) for Phases 9-16: market launch, enterprise tier, fine-tuned model, 10-year vision, revenue model.
@@ -102,7 +112,14 @@ As of June 2026, CHERENKOV adopts the following advanced orchestration patterns 
 4. **Query past experience**: `python scripts/agent_sync.py experience query <pattern>`
    - Semantically searches across all agent memory files via MemSearch.
 
-5. **Token budget**: 50k default per session. Compact when >80% used.
+5. **Memory subcommand (CC-1)**: `python3 scripts/agent_sync.py memory <action>`
+   - `memory status` — show DB path + pattern counts
+   - `memory list [--limit N]` — list all known patterns (auto-load + candidates)
+   - `memory search <query> [--limit N]` — FTS5 full-text search over entries
+   - `memory promote [--threshold N]` — force-promote eligible patterns
+   - Findings auto-persist to `agent_memory/cherenkov_memory.db` on every `after` call.
+
+6. **Token budget**: 50k default per session. Compact when >80% used.
    - `python scripts/agent_sync.py status` — check current state
    - `python scripts/agent_sync.py compact` — after 3+ sessions
 

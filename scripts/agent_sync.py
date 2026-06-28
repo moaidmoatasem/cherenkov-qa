@@ -277,6 +277,9 @@ def cmd_after(summary: str):
         ms = memsearch.MemSearch(workspace_dir=str(ROOT))
         ms.add_memory(f"Session {sid} Summary", summary, metadata={"task_type": tt, "token_total": total})
 
+    # ── CC-1: auto-collect into SQLite memory store ───────────────────
+    _memory_collect(sid, tt, findings)
+
     print(f"Session closed: {sid}")
     print(f"   Summary: {summary}")
     print(f"   Token total: {total}")
@@ -284,6 +287,108 @@ def cmd_after(summary: str):
     print(f"   Decisions captured: {len(decisions)}")
     print(f"   Pitfalls noted: {pitfall_count}")
     print(f"   Total experience records: {exp['experience_count']}")
+
+
+
+def _memory_collect(session_id: str, task_type: str, findings: list) -> None:
+    """CC-1: Persist findings into the SQLite auto-memory store.
+
+    Gracefully degrades if cherenkov package is not importable
+    (e.g., in a fresh env without the package installed).
+    """
+    try:
+        from cherenkov.memory.adapters.sqlite_memory import get_default_repository
+        from cherenkov.memory.domain.models import PromotionRule
+        from cherenkov.memory.use_cases.collect import collect_from_findings
+        from cherenkov.memory.use_cases.promote import run_promotion
+
+        repo = get_default_repository(ROOT)
+        if findings:
+            collect_from_findings(
+                session_id=session_id,
+                task_type=task_type,
+                findings=findings,
+                repo=repo,
+            )
+        promoted = run_promotion(repo, PromotionRule(min_session_count=3))
+        if promoted:
+            print(f"   [memory] {len(promoted)} pattern(s) promoted to auto-load")
+    except ImportError:
+        pass  # cherenkov not installed — skip silently
+    except Exception as exc:
+        print(f"   [memory] collect failed (non-fatal): {exc}")
+
+
+def cmd_memory(action: str, args: list) -> None:
+    """CC-1: Memory subcommand — list, promote, search, status."""
+    try:
+        from cherenkov.memory.adapters.sqlite_memory import get_default_repository
+        from cherenkov.memory.domain.models import MemoryQuery, PromotionRule
+        from cherenkov.memory.use_cases.promote import run_promotion
+    except ImportError:
+        print("[memory] cherenkov package not installed. Run: pip install -e .")
+        sys.exit(1)
+
+    repo = get_default_repository(ROOT)
+
+    if action == "list":
+        limit = 20
+        for i, a in enumerate(args):
+            if a == "--limit" and i + 1 < len(args):
+                limit = int(args[i + 1])
+        patterns = repo.list_patterns(limit=limit)
+        if not patterns:
+            print("[memory] No patterns stored yet.")
+            return
+        print(f"[memory] {len(patterns)} pattern(s):")
+        for p in patterns:
+            status = "AUTO-LOAD" if p.is_auto_loaded else f"candidate ({p.session_count} sessions)"
+            print(f"  [{p.fingerprint}] {status}")
+            print(f"    {p.content[:120]}")
+
+    elif action == "promote":
+        # Promote all eligible patterns immediately
+        threshold = 3
+        for i, a in enumerate(args):
+            if a == "--threshold" and i + 1 < len(args):
+                threshold = int(args[i + 1])
+        promoted = run_promotion(repo, PromotionRule(min_session_count=threshold))
+        if promoted:
+            print(f"[memory] Promoted {len(promoted)} pattern(s): {promoted}")
+        else:
+            print("[memory] No patterns met the promotion threshold.")
+
+    elif action == "search":
+        if not args or args[0].startswith("--"):
+            print("Usage: agent_sync memory search <query> [--limit N]")
+            sys.exit(1)
+        query_text = args[0]
+        limit = 10
+        for i, a in enumerate(args[1:], start=1):
+            if a == "--limit" and i + 1 < len(args):
+                limit = int(args[i + 1])
+        from cherenkov.memory.domain.models import MemoryQuery
+        results = repo.search(MemoryQuery(query=query_text, limit=limit))
+        if not results:
+            print(f"[memory] No results for: {query_text!r}")
+            return
+        print(f"[memory] {len(results)} result(s) for {query_text!r}:")
+        for e in results:
+            print(f"  [{e.kind.value}] {e.session_id} | {e.task_type}")
+            print(f"    {e.content[:120]}")
+
+    elif action == "status":
+        patterns = repo.list_patterns(limit=1000)
+        auto = [p for p in patterns if p.is_auto_loaded]
+        candidates = [p for p in patterns if not p.is_auto_loaded]
+        db_path = ROOT / "agent_memory" / "cherenkov_memory.db"
+        print(f"[memory] DB: {db_path}")
+        print(f"[memory] Patterns: {len(patterns)} total, {len(auto)} auto-load, {len(candidates)} candidate")
+
+    else:
+        print(f"Unknown memory action: {action!r}")
+        print("Usage: agent_sync memory list|promote|search|status [options]")
+        sys.exit(1)
 
 
 def cmd_log(log_type: str, message: str):
@@ -620,6 +725,12 @@ def main():
             )
             sys.exit(1)
         cmd_experience_query(pattern, outcome, sort)
+
+    elif cmd == "memory":
+        if len(sys.argv) < 3:
+            print("Usage: agent_sync memory list|promote|search|status [options]")
+            sys.exit(1)
+        cmd_memory(sys.argv[2], sys.argv[3:])
 
     else:
         print(f"Unknown command: {cmd}")
