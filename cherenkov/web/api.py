@@ -96,7 +96,11 @@ app.include_router(review_router)
 from cherenkov.web.routes.ocr_routes import router as ocr_router  # noqa: E402
 
 app.include_router(ocr_router)
+from cherenkov.web.routes.teleport import router as teleport_router
+app.include_router(teleport_router)
 
+from cherenkov.web.routes.push_notify import router as push_notify_router
+app.include_router(push_notify_router)
 from cherenkov.web.routes.ops_routes import router as ops_router  # noqa: E402
 
 app.include_router(ops_router)
