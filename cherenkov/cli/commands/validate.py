@@ -120,7 +120,26 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         if not spec:
             click.echo(click.style("Error: --spec is required for --source grpc", fg="red"), err=True)
             sys.exit(1)
-        click.echo(f"Ingesting gRPC proto: {spec}")
+        
+        # If spec does not end in .proto and looks like a buf module, fetch it
+        if not spec.endswith(".proto") and "/" in spec:
+            from cherenkov.validate.buf_registry import BufRegistryClient
+            click.echo(f"Fetching gRPC proto from Buf Schema Registry: {spec}")
+            buf_client = BufRegistryClient()
+            proto_content = buf_client.fetch_proto_content(spec)
+            if proto_content is None:
+                click.echo(click.style(f"Error: failed to fetch from Buf Schema Registry: {spec}", fg="red"), err=True)
+                sys.exit(1)
+            
+            import tempfile
+            fd, temp_spec = tempfile.mkstemp(suffix=".proto")
+            with os.fdopen(fd, "w") as f:
+                f.write(proto_content)
+            spec = temp_spec
+            click.echo(f"Ingesting fetched gRPC proto.")
+        else:
+            click.echo(f"Ingesting gRPC proto: {spec}")
+            
         grpc_source = gRPCSourceAdapter(spec)
         scenarios = gRPCScenarioPlanner().plan(grpc_source)
         click.echo(f"Planned {len(scenarios)} scenarios from {len(set(s.service for s in scenarios))} services")
