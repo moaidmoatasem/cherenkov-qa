@@ -4,12 +4,12 @@ CHERENKOV execution/validate.py — validation and value assertion tightening re
 
 from __future__ import annotations
 
+import json
 import os
 import re
-import json
-from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any, Dict, List
+from pathlib import Path
+from typing import Any
 
 from cherenkov.core.errors import get_logger
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
@@ -68,16 +68,14 @@ def _is_stable_value(v: object) -> bool:
         # Skip ISO timestamps
         if re.match(r"^\d{4}-\d{2}-\d{2}T", v):
             return False
-    if isinstance(v, int) and v > 100000:
-        return False  # likely auto-increment or timestamp int
-    return True
+    return not (isinstance(v, int) and v > 100000)
 
 
 class TighteningAnalyzer:
     """Compares sent request bodies vs received response bodies to suggest stronger value assertions."""
 
     @staticmethod
-    def analyze(request_body_raw: str, response_body_raw: str) -> List[str]:
+    def analyze(request_body_raw: str, response_body_raw: str) -> list[str]:
         suggestions = []
         if not request_body_raw or not response_body_raw:
             return suggestions
@@ -119,7 +117,7 @@ class ValidationEngine:
         workers: int = 1,
         headed: bool = False,
         spec_path: str | None = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Runs all spec tests in generated_tests against target_url and parses trace files for tightening suggestions."""
         self.log.info(
             "starting suite validation", target_url=target_url, workers=workers, headed=headed
@@ -128,10 +126,10 @@ class ValidationEngine:
         preflight = _preflight_check(self.tests_dir, spec_path)
         if preflight:
             self.log.warning("pre-flight spec/test drift warnings", warnings=preflight)
-            print("\nPRE-FLIGHT WARNINGS — tests assert fields not found in spec schemas:")
+            print("\nPRE-FLIGHT WARNINGS — tests assert fields not found in spec schemas:")  # noqa: T201
             for w in preflight:
-                print(w)
-            print()
+                print(w)  # noqa: T201
+            print()  # noqa: T201
 
         if not os.path.exists(self.tests_dir):
             self.log.warning("no generated tests directory found")
@@ -151,7 +149,7 @@ class ValidationEngine:
             scenario_id = t_file.replace(".spec.ts", "")
             test_path = os.path.join(self.tests_dir, t_file)
 
-            with open(test_path, "r", encoding="utf-8") as f:
+            with open(test_path, encoding="utf-8") as f:
                 code = f.read()
 
             runner = PlaywrightRunner(run_id=self.run_id)
