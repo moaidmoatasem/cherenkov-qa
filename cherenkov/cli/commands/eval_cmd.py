@@ -54,11 +54,14 @@ def _load_yaml_or_json(path: str, label: str) -> dict:
 def eval_cmd():
     """Evaluate, grade, and optimize your test suite quality.
 
-    Implements an agents-cli-inspired generate → grade → compare → optimize
+    Implements a STORM-inspired generate → grade → compare → optimize
     lifecycle for continuous suite improvement.
 
     \b
     Examples:
+        # Generate a suite from an OpenAPI spec using 5 tester personas
+        cherenkov eval generate --spec openapi.yaml --output suite.json
+
         # Grade a suite against a spec (no live API needed)
         cherenkov eval grade --spec openapi.yaml --suite suite.json
 
@@ -365,4 +368,111 @@ def _print_optimize_suggestion(suggestion) -> None:
         click.echo(click.style("  Suggested generation profile:", bold=True))
         for k, v in suggestion.suggested_profile.items():
             click.echo(f"    {k}: {v}")
+    click.echo()
+
+
+# ── `cherenkov eval generate` ─────────────────────────────────────────────────
+
+@eval_cmd.command("generate")
+@click.option("--spec", required=True, help="Path to OpenAPI spec (YAML or JSON).")
+@click.option("--output", "-o", default=None,
+              help="Write suite JSON to this file [default: suite-<timestamp>.json].")
+@click.option("--personas", default="all",
+              help=(
+                  "Comma-separated persona names or 'all'. "
+                  "Available: HappyPath, ErrorPath, SecurityProber, SchemaPedant, BoundarySeeker"
+              ))
+@click.option("--no-enrich", "no_enrich", is_flag=True, default=False,
+              help="Skip the assertion-enrichment polish pass.")
+@click.option("--no-grade", "no_grade", is_flag=True, default=False,
+              help="Skip grading after generation.")
+@click.option("--sequential", is_flag=True, default=False,
+              help="Run personas sequentially instead of in parallel.")
+@click.option("--json", "as_json", is_flag=True, default=False, help="Output JSON summary.")
+def generate_cmd(spec, output, personas, no_enrich, no_grade, sequential, as_json):
+    """Generate a multi-persona test suite from an OpenAPI spec.
+
+    Inspired by STORM's perspective-guided questioning: five built-in tester
+    personas (HappyPath, ErrorPath, SecurityProber, SchemaPedant, BoundarySeeker)
+    each generate tests from their viewpoint in parallel, then the results are
+    merged, deduplicated, and enriched with a polish pass.
+
+    The output is a suite.json compatible with `cherenkov eval grade` and
+    `cherenkov eval run`.
+
+    \b
+    Examples:
+        cherenkov eval generate --spec openapi.yaml --output suite.json
+        cherenkov eval generate --spec openapi.yaml --personas HappyPath,SchemaPedant
+        cherenkov eval generate --spec openapi.yaml | cherenkov eval grade --spec openapi.yaml
+    """
+    from cherenkov.synthetic.suite_engine import SuiteEngine
+    from cherenkov.synthetic.personas import DEFAULT_PERSONAS, PERSONA_BY_NAME
+    from datetime import datetime, timezone
+
+    spec_dict = _load_yaml_or_json(spec, "spec")
+
+    if personas.lower() == "all":
+        selected = list(DEFAULT_PERSONAS)
+    else:
+        selected = []
+        for name in [n.strip() for n in personas.split(",")]:
+            p = PERSONA_BY_NAME.get(name)
+            if p is None:
+                click.echo(
+                    click.style(f"[ERROR] Unknown persona: {name!r}", fg="red"), err=True
+                )
+                click.echo(
+                    f"  Available: {', '.join(PERSONA_BY_NAME)}", err=True
+                )
+                sys.exit(1)
+            selected.append(p)
+
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    out_path = Path(output) if output else Path(f"suite-{ts}.json")
+
+    engine = SuiteEngine(
+        spec=spec_dict,
+        personas=selected,
+        run_grader=not no_grade,
+        parallel=not sequential,
+        enricher=not no_enrich,
+    )
+    result = engine.run()
+
+    out_path.write_text(json.dumps(result.suite, indent=2))
+
+    if as_json:
+        click.echo(json.dumps(result.to_dict(), indent=2))
+    else:
+        _print_generate_result(result, out_path, selected)
+
+
+def _print_generate_result(result, out_path: Path, personas) -> None:
+    grade_str = ""
+    if result.grade_report is not None:
+        g = result.grade_report.grade
+        color = {"A": "green", "B": "green", "C": "yellow", "D": "yellow", "F": "red"}.get(g, "white")
+        grade_str = "  grade      : " + click.style(g, fg=color, bold=True) + "\n"
+
+    click.echo()
+    click.echo(click.style("── Eval Generate ─────────────────────────────────────", bold=True))
+    click.echo(f"  personas   : {', '.join(p.name for p in personas)}")
+    click.echo(f"  ops covered: {result.operations_covered}")
+    click.echo(f"  tests      : {result.total_tests}")
+    if grade_str:
+        click.echo(grade_str, nl=False)
+    click.echo(f"  duration   : {result.duration_ms}ms")
+    click.echo(f"  output     : {out_path}")
+    click.echo()
+
+    if result.persona_runs:
+        click.echo(click.style(
+            f"  {'PERSONA':<20} {'OPS':>4} {'TESTS':>6} {'MS':>6}", bold=True
+        ))
+        click.echo("  " + "─" * 40)
+        for r in sorted(result.persona_runs, key=lambda x: x.persona_name):
+            click.echo(
+                f"  {r.persona_name:<20} {r.op_count:>4} {r.test_count:>6} {r.duration_ms:>6}"
+            )
     click.echo()
