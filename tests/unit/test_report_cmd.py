@@ -224,8 +224,8 @@ class TestSelfTestCmd:
 
         mock_proc = MagicMock()
         mock_proc.returncode = 1
-        mock_proc.stderr = "TS2304: Cannot find name 'foo'"
-
+        mock_proc.stdout = "src/self_test.spec.ts(1,1): error TS2304: Cannot find name 'foo'."
+        mock_proc.stderr = ""
         with (
             patch("cherenkov.stages.self_test_cmd.requests.get", return_value=mock_resp),
             patch("cherenkov.stages.self_test_cmd.get_client", return_value=mock_client),
