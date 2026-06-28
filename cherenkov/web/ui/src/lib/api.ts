@@ -720,3 +720,64 @@ export async function fetchOcrStatus(): Promise<{ installed: boolean; binary: st
   if (!res.ok) return { installed: false, binary: 'ocr', version: '', error: 'Could not check status' };
   return res.json();
 }
+
+// ── Run History API ────────────────────────────────────────────────────────────
+
+export interface VerdictDimension {
+  name: string;
+  score: number;
+  grade: string;
+  passed: boolean;
+  findings: string[];
+}
+
+export interface ActionableFinding {
+  rank: number;
+  severity: string;
+  endpoint: string;
+  summary: string;
+  remediation: string;
+  estimated_fix_minutes: number;
+}
+
+export interface RichVerdictData {
+  grade: 'A' | 'B' | 'C' | 'D' | 'F';
+  overall: string;
+  confidence: number;
+  coverage_pct: number | null;
+  dimensions: VerdictDimension[];
+  risk_flags: string[];
+  top_findings: ActionableFinding[];
+  time_to_fix_estimate: string;
+  divergence_count: number;
+  run_id?: string;
+  target_url?: string;
+  duration_ms?: number;
+}
+
+export interface RunRecord {
+  run_id: string;
+  command: string;
+  target_url: string;
+  spec_hash: string;
+  verdict: string;
+  divergence_count: number;
+  coverage_pct: number | null;
+  duration_ms: number;
+  timestamp: string;
+  rich_verdict?: RichVerdictData;
+}
+
+export async function fetchRuns(targetUrl?: string, limit = 20): Promise<RunRecord[]> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (targetUrl) params.set('target_url', targetUrl);
+  const res = await fetch(`${API_BASE}/runs?${params}`, { headers: authHeaders() });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function fetchRun(runId: string): Promise<RunRecord | null> {
+  const res = await fetch(`${API_BASE}/runs/${encodeURIComponent(runId)}`, { headers: authHeaders() });
+  if (!res.ok) return null;
+  return res.json();
+}

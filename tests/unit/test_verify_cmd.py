@@ -53,7 +53,7 @@ class TestVerifyCmd:
     def test_no_divergences_exits_0(self) -> None:
         runner = CliRunner()
         with patch("cherenkov.cli.commands.verify.run_proof", return_value=[]) as mock:
-            result = runner.invoke(verify_cmd, ["--url", "http://localhost:9999"])
+            result = runner.invoke(verify_cmd, ["--url", "http://localhost:9999", "--simple"])
         assert result.exit_code == 0
         assert "No divergences found" in result.output
         mock.assert_called_once_with(
@@ -97,7 +97,7 @@ class TestVerifyCmd:
         with patch("cherenkov.cli.commands.verify.run_proof", return_value=reports):
             result = runner.invoke(
                 verify_cmd,
-                ["--url", "http://localhost:9999", "--output", str(out)],
+                ["--url", "http://localhost:9999", "--output", str(out), "--simple"],
             )
         assert result.exit_code == 0
         assert out.exists()
@@ -109,7 +109,7 @@ class TestVerifyCmd:
     def test_llm_flag_passed(self) -> None:
         runner = CliRunner()
         with patch("cherenkov.cli.commands.verify.run_proof", return_value=[]) as mock:
-            runner.invoke(verify_cmd, ["--url", "http://localhost:9999", "--llm"])
+            runner.invoke(verify_cmd, ["--url", "http://localhost:9999", "--llm", "--simple"])
         mock.assert_called_once_with(
             base_url="http://localhost:9999", spec=None, use_llm=True
         )
