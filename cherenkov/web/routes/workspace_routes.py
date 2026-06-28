@@ -8,6 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from cherenkov.web.routes.deps import verify_api_key
+from cherenkov.web.auth.deps import require_role
+from cherenkov.web.auth.models import Role
 
 router = APIRouter(tags=["workspace"])
 
@@ -67,7 +69,7 @@ async def api_get_settings(_auth=Depends(verify_api_key)):
 
 
 @router.put("/api/v1/settings")
-async def update_settings(body: dict, _auth=Depends(verify_api_key)):
+async def update_settings(body: dict, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.admin))):
     for key, val in body.items():
         if key in _settings and isinstance(val, dict):
             protected = _SETTINGS_PROTECTED_FIELDS.get(key, set())
@@ -198,7 +200,7 @@ async def get_project(project_id: str):
     }
 
 @router.post("/api/v1/projects")
-async def create_project(payload: NewProjectPayload):
+async def create_project(payload: NewProjectPayload, _role=Depends(require_role(Role.reviewer))):
     project_id = str(uuid.uuid4())[:8]
 
     def _insert():
@@ -229,7 +231,7 @@ async def create_project(payload: NewProjectPayload):
 
 
 @router.patch("/api/v1/projects/{project_id}")
-async def update_project(project_id: str, payload: dict):
+async def update_project(project_id: str, payload: dict, _role=Depends(require_role(Role.reviewer))):
     allowed = {"name", "target_url", "spec_path", "repo_type", "repo_path", "status", "run_count", "pass_rate"}
     updates = {k: v for k, v in payload.items() if k in allowed}
     if not updates:
