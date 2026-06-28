@@ -9,12 +9,16 @@ from __future__ import annotations
 
 import json
 
-import numpy as np
 import requests
 
-from cherenkov.core.settings import get_settings
+try:
+    import numpy as np
+except (ImportError, MemoryError):
+    np = None  # type: ignore[assignment]
+
 from cherenkov.core.contracts import Claim
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 
 
 def _normalise(v: np.ndarray) -> np.ndarray:
