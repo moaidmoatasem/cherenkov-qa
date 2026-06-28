@@ -22,12 +22,63 @@ Examples:
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
 import click
 
 from cherenkov.divergence.report_diff import ReportDiff, diff_reports
+
+
+def _find_latest_run() -> tuple[str | None, str | None]:
+    """Scan .cherenkov/runs/ and return (path_to_events_jsonl, error_msg)."""
+    runs_dir = os.path.join(os.getcwd(), ".cherenkov", "runs")
+    if not os.path.isdir(runs_dir):
+        return None, None
+    subdirs = sorted(
+        (d for d in os.listdir(runs_dir)
+         if os.path.isdir(os.path.join(runs_dir, d))),
+        reverse=True,
+    )
+    for sub in subdirs:
+        events = os.path.join(runs_dir, sub, "events.jsonl")
+        if os.path.isfile(events):
+            return events, None
+        return None, f"events.jsonl not found in {sub}"
+    return None, None
+
+
+def _summarise_events(events: list[dict]) -> dict:
+    """Compute summary statistics from an events list."""
+    total = len(events)
+    passed = sum(
+        1 for e in events
+        if e.get("verdict") == "AUTO_APPROVE" and e.get("stage") == "REVIEW"
+    )
+    skipped = sum(1 for e in events if "skipping low richness" in e.get("msg", ""))
+    return {
+        "total_scenarios": total,
+        "passed_scenarios": passed,
+        "success_rate": passed / total if total else 0.0,
+        "skipped": [e for e in events if "skipping low richness" in e.get("msg", "")],
+    }
+
+
+def _format_run_summary(events: list[dict], fmt: str) -> str:
+    """Format an events.jsonl run summary."""
+    stats = _summarise_events(events)
+    if fmt != "text":
+        return json.dumps(stats, indent=2, default=str)
+    lines = [f"{stats['passed_scenarios']}/{stats['total_scenarios']} passed"]
+    if stats["skipped"]:
+        lines.append(f"Skipped low-richness endpoints: {len(stats['skipped'])}")
+        for e in stats["skipped"]:
+            method = e.get("method", "")
+            path = e.get("path", "")
+            if path:
+                lines.append(f"  {method} {path}")
+    return "\n".join(lines)
 
 _SEV_COLOUR = {
     "HIGH": "red", "CRITICAL": "red",
@@ -37,15 +88,15 @@ _SEV_COLOUR = {
 
 
 @click.command("report")
-@click.argument("input_file", type=click.Path(exists=True))
+@click.argument("input_file", type=click.Path(exists=True), required=False)
 @click.option(
-    "--diff", "baseline_file", default=None,
+    "-d", "--diff", "baseline_file", default=None,
     help="Baseline divergence JSON to compare against (shows new vs resolved).",
 )
 @click.option(
-    "--format", "fmt", default="text",
+    "--format", "fmt", default=None,
     type=click.Choice(["text", "json", "markdown"], case_sensitive=False),
-    help="Output format.  Default: text.",
+    help="Output format.  Default: text or auto-detected from --output extension.",
 )
 @click.option(
     "--output", "-o", default=None,
@@ -56,9 +107,9 @@ _SEV_COLOUR = {
     help="Exit with code 1 if any new divergences appear vs --diff baseline (CI gate).",
 )
 def report_cmd(
-    input_file: str,
+    input_file: str | None,
     baseline_file: str | None,
-    fmt: str,
+    fmt: str | None,
     output: str | None,
     fail_on_new: bool,
 ) -> None:
@@ -66,6 +117,7 @@ def report_cmd(
 
     \b
     INPUT_FILE is a JSON file written by `cherenkov verify --output`.
+    If omitted, CHERENKOV scans .cherenkov/runs/ for the latest run's events.jsonl.
 
     \b
     Without --diff, prints a formatted summary of all divergences.
@@ -77,16 +129,32 @@ def report_cmd(
       1 — new divergences found (only with --fail-on-new)
       2 — file read/parse error
     """
+    if fmt is None:
+        fmt = "json" if output and output.endswith(".json") else "text"
+    if input_file is None:
+        input_file, err = _find_latest_run()
+        if input_file is None:
+            click.echo(err or "No runs found", err=True)
+            sys.exit(1)
+    is_run_report = "events.jsonl" in input_file
     current = _load_report(input_file)
     if current is None:
         sys.exit(2)
 
-    if baseline_file:
+    if is_run_report and not baseline_file:
+        text = _format_run_summary(current, fmt)
+    elif baseline_file:
         baseline = _load_report(baseline_file)
         if baseline is None:
-            sys.exit(2)
-        diff = diff_reports(baseline, current)
-        text = _format_diff(diff, fmt, input_file, baseline_file)
+            sys.exit(1)
+        # Rate comparison when baseline has success_rate
+        if baseline and isinstance(baseline[0], dict) and "success_rate" in baseline[0]:
+            prev_rate = baseline[0]["success_rate"]
+            stats = _summarise_events(current)
+            text = _format_rate_diff(prev_rate, stats, baseline_file, fmt)
+        else:
+            diff = diff_reports(baseline, current)
+            text = _format_diff(diff, fmt, input_file, baseline_file)
     else:
         diff = None
         text = _format_summary(current, fmt, input_file)
@@ -105,20 +173,35 @@ def report_cmd(
 
 def _load_report(path: str) -> list[dict] | None:
     try:
-        data = json.loads(Path(path).read_text())
-        if isinstance(data, list):
-            return data
-        # Accept a single dict (cert-style wrapping) — not our format but handle gracefully
-        if isinstance(data, dict) and "divergences_json" in data:
-            return data["divergences_json"]
-        click.echo(f"[ERROR] {path}: expected a JSON array of divergences.", err=True)
-        return None
+        raw = Path(path).read_text()
     except FileNotFoundError:
         click.echo(f"[ERROR] File not found: {path}", err=True)
         return None
-    except json.JSONDecodeError as exc:
-        click.echo(f"[ERROR] Could not parse {path}: {exc}", err=True)
-        return None
+
+    # Empty file = no events
+    if not raw.strip():
+        return []
+
+    # Try plain JSON parse first for single objects/arrays
+    try:
+        data = json.loads(raw)
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict) and "divergences_json" in data:
+            return data["divergences_json"]
+    except json.JSONDecodeError:
+        pass
+
+    # Try JSON Lines format (one JSON object per line, e.g. events.jsonl)
+    try:
+        lines = [json.loads(line) for line in raw.strip().splitlines() if line.strip()]
+        if lines and all(isinstance(l, dict) for l in lines):
+            return lines
+    except json.JSONDecodeError:
+        pass
+
+    click.echo(f"[ERROR] Could not parse {path}: expected a JSON array of divergences.", err=True)
+    return None
 
 
 # ── formatters ────────────────────────────────────────────────────────────────
@@ -128,6 +211,28 @@ def _sev(div: dict) -> str:
     if isinstance(raw, dict):
         raw = raw.get("value", "MEDIUM")
     return str(raw).upper()
+
+
+def _format_rate_diff(prev_rate: float, stats: dict, baseline_file: str, fmt: str) -> str:
+    """Format a success-rate comparison between previous and current run."""
+    cur_rate = stats["success_rate"]
+    if fmt == "json":
+        return json.dumps({
+            "baseline": baseline_file,
+            "previous_success_rate": prev_rate,
+            "current_success_rate": cur_rate,
+            "total_scenarios": stats["total_scenarios"],
+            "passed_scenarios": stats["passed_scenarios"],
+        }, indent=2, default=str)
+    lines = [
+        "=" * 50,
+        "  DIFF REPORT — Success Rate Comparison",
+        f"  Baseline: {baseline_file}",
+        f"  Previous Success Rate: {prev_rate:.0%}",
+        f"  Current  Success Rate: {cur_rate:.0%}",
+        "=" * 50,
+    ]
+    return "\n".join(lines) + "\n"
 
 
 def _format_summary(divs: list[dict], fmt: str, label: str) -> str:
