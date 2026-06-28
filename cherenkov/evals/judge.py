@@ -6,7 +6,7 @@ from typing import Any
 
 from cherenkov.ai import get_client
 from cherenkov.ai.ollama_client import strip_think
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.evals.core import (
     EvalMetric,
     EvalResult,
@@ -85,7 +85,7 @@ def judge_sample(sample: EvalSample) -> EvalResult:
         raw = client.complete_code(
             system_prompt=_JUDGE_SYSTEM_PROMPT,
             user_prompt=prompt,
-            model=Config.GEN_MODEL,
+            model=get_settings().GEN_MODEL,
             temperature=0.1,
             run_id="eval-judge",
         )

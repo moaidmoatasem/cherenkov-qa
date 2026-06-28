@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from cherenkov.core.config import Config
+from cherenkov.core.settings import get_settings
 from cherenkov.evals.core import EvalMetric, EvalReport, EvalResult, EvalSample, EvalStatus
 from cherenkov.evals.judge import judge_sample
 
@@ -48,7 +48,7 @@ def run_evals(samples: list[EvalSample], max_workers: int = 2) -> EvalReport:
 
     report = EvalReport(
         results=results,
-        model=Config.GEN_MODEL,
+        model=get_settings().GEN_MODEL,
         eval_timestamp=datetime.now(timezone.utc).isoformat(),
     )
 

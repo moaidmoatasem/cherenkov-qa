@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Any
+from typing import Any, Callable
 
 from pydantic import ValidationError
 
@@ -1986,6 +1986,41 @@ def _tool_auto_heal_code(args: dict[str, Any]) -> MCPToolCallResult:
         )
     except Exception as exc:
         return _err_content(f"auto_heal_code error: {exc}")
+
+
+_TOOL_DISPATCH: dict[str, Callable[[dict[str, Any]], MCPToolCallResult]] = {
+    "verify_suite": _tool_verify_suite,
+    "verify_system": _tool_verify_system,
+    "hitl_list": _tool_hitl_list,
+    "hitl_approve": _tool_hitl_approve,
+    "hitl_reject": _tool_hitl_reject,
+    "validate_run_gate": _tool_validate_gate,
+    "visual_diff_baseline": _tool_visual_diff,
+    "visual_diff_baseline_enhanced": _tool_visual_diff_enhanced,
+    "run_k6_perf": _tool_run_perf,
+    "query_rag_index": _tool_query_rag,
+    "export_jira_ticket": _tool_export_jira,
+    "export_linear_ticket": _tool_export_linear,
+    "export_github_ticket": _tool_export_github,
+    "scan_mena_compliance": _tool_scan_mena,
+    "scan_mena_compliance_enhanced": _tool_scan_mena_enhanced,
+    "validate_governance_certification": _tool_validate_governance,
+    "report_compliance_findings": _tool_report_compliance,
+    "chat_query_verdicts": _tool_chat_query_verdicts,
+    "chat_query_idioms": _tool_chat_query_idioms,
+    "chat_explain_divergence": _tool_chat_explain_divergence,
+    "chat_run_test": _tool_chat_run_test,
+    "run_conformance_check": _tool_run_conformance_check,
+    "get_last_report": _tool_get_last_report,
+    "list_drift_findings": _tool_list_drift_findings,
+    "get_tightening_suggestions": _tool_get_tightening_suggestions,
+    "explain_finding": _tool_explain_finding,
+    "policy_list": _tool_policy_list,
+    "policy_reload": _tool_policy_reload,
+    "mcp_registry_list": _tool_registry_list,
+    "mcp_registry_publish": _tool_registry_publish,
+    "auto_heal_code": _tool_auto_heal_code,
+}
 
 
 def _get_evidence_listing() -> dict[str, Any]:

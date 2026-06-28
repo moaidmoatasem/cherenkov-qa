@@ -1,8 +1,11 @@
-from typing import Dict, Optional
+from typing import Dict
 import threading as _threading
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 import os
+import time as _time
+import requests
+from cherenkov.core.errors import get_logger
 
 class CherenkovSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')
@@ -134,12 +137,99 @@ class CherenkovSettings(BaseSettings):
     def to_dict(self):
         return self.model_dump(by_alias=False)
 
-    def detect_ollama_device(self, run_id: Optional[str] = None) -> str:
+    def detect_ollama_device(self, run_id: str | None = None) -> str:
+        """Startup health check querying Ollama to detect whether the model runs on GPU or CPU.
+
+        GPU is our supported, optimized target path.
+        CPU is portable-but-slow. If CPU is detected, log a loud warning.
+
+        Results are cached for _DEVICE_CACHE_TTL seconds to avoid blocking HTTP calls
+        on every health check invocation.
+        """
+        now = _time.monotonic()
+        if (
+            self._device_cache is not None
+            and (now - self._device_cache_ts) < self._DEVICE_CACHE_TTL
+        ):
+            return self._device_cache_ts
+
+        log = get_logger("SYSTEM", run_id)
+        base_url = self.OLLAMA_URL.rsplit("/api/generate", 1)[0]
+        ps_url = f"{base_url}/api/ps"
+
+        # 1. Trigger a lightweight, instant 1-token call to force Ollama to load the model into memory
         try:
-            from cherenkov.core.config import Config
-            return Config.detect_ollama_device(run_id)
-        except ImportError:
-            return "UNKNOWN"
+            requests.post(
+                self.OLLAMA_URL,
+                json={
+                    "model": self.GEN_MODEL,
+                    "prompt": "a",
+                    "stream": False,
+                    "options": {"num_predict": 1},
+                },
+                timeout=15,
+            )
+        except Exception:
+            pass  # Ignore loading failures here; let ps check report the status
+
+        # 2. Query /api/ps to verify active processor details
+        try:
+            resp = requests.get(ps_url, timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                models = data.get("models", [])
+                for model_info in models:
+                    if self.GEN_MODEL in model_info.get("name", ""):
+                        size_vram = model_info.get("size_vram", 0)
+                        size = model_info.get("size", 1)
+
+                        # Size VRAM > 0 indicates GPU execution (layers offloaded)
+                        if size_vram > 0:
+                            vram_pct = int(100 * size_vram / size)
+                            gpu_msg = f"GPU mode verified — {vram_pct}% of model layers offloaded to VRAM."
+                            log.info(
+                                "device status",
+                                details=gpu_msg,
+                                processor="GPU",
+                                size_vram=size_vram,
+                                size=size,
+                            )
+                            self._device_cache = "GPU"
+                            self._device_cache_ts = _time.monotonic()
+                            return self._device_cache
+                        cpu_warn = (
+                            "CPU mode — generation ~10x slower, GPU recommended."
+                        )
+                        log.warning(
+                            "device status",
+                            details=cpu_warn,
+                            processor="CPU",
+                            size_vram=0,
+                        )
+                        self._device_cache = "CPU"
+                        self._device_cache_ts = _time.monotonic()
+                        return self._device_cache
+        except Exception as e:
+            log.warning(
+                "device status",
+                details=f"Could not connect to Ollama daemon to verify device: {e}",
+                processor="UNKNOWN",
+            )
+            self._device_cache = "UNKNOWN"
+            self._device_cache_ts = _time.monotonic()
+            return self._device_cache
+
+        cpu_warn = "CPU mode — generation ~10x slower, GPU recommended."
+        log.warning("device status", details=cpu_warn, processor="CPU", size_vram=0)
+        self._device_cache = "CPU"
+        self._device_cache_ts = _time.monotonic()
+        return self._device_cache
+
+    # Device detection cache
+    _device_cache: str | None = None
+    _device_cache_ts: float = 0.0
+    _DEVICE_CACHE_TTL: float = 60.0  # seconds
+
 
 _settings_instance: "CherenkovSettings | None" = None
 _settings_lock = _threading.Lock()
