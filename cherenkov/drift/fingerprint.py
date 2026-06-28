@@ -10,7 +10,7 @@ eval baselines once the harness can replay them.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 
@@ -37,7 +37,7 @@ class Fingerprint:
     operation_set: frozenset[str]       # operationIds
     tag_set: frozenset[str]
     required_param_set: frozenset[str]  # "op:param" tuples (required only)
-    param_set: frozenset[str]           # "op:param" tuples (all params, required + optional)
+    all_param_set: frozenset[str] = field(default_factory=frozenset)  # all params incl. optional
 
 
 def _cosine(a: list[float], b: list[float]) -> float:
@@ -130,7 +130,7 @@ def _all_param_set(spec: dict[str, Any]) -> frozenset[str]:
     result: set[str] = set()
     for op_id, operation in _extract_operations(spec).items():
         for param in operation.get("parameters", []):
-            if isinstance(param, dict) and param.get("name"):
+            if isinstance(param, dict) and "name" in param:
                 result.add(f"{op_id}:{param['name']}")
     return frozenset(result)
 
@@ -231,5 +231,5 @@ def fingerprint_of(
         operation_set=spec_op_ids,
         tag_set=frozenset(all_tags),
         required_param_set=_required_param_set(spec),
-        param_set=_all_param_set(spec),
+        all_param_set=_all_param_set(spec),
     )
