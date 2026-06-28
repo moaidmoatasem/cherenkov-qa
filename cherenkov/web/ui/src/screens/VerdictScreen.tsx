@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { RunRecord } from '../lib/api';
-import { fetchRuns, fetchRun } from '../lib/api';
+import { fetchRuns } from '../lib/api';
 import VerdictCard from '../components/ui/VerdictCard';
 import RunTimeline from '../components/ui/RunTimeline';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -12,6 +12,8 @@ export default function VerdictScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
   const navigate = useNavigate();
 
   const load = useCallback(async () => {
@@ -20,24 +22,17 @@ export default function VerdictScreen() {
       setError(null);
       const data = await fetchRuns(undefined, 50);
       setRuns(data);
-
-      const runId = searchParams.get('run');
-      if (runId) {
-        try {
-          const specific = await fetchRun(runId);
-          setSelectedRun(specific ?? (data.length > 0 ? data[0] : null));
-        } catch {
-          if (data.length > 0) setSelectedRun(data[0]);
-        }
-      } else if (data.length > 0) {
-        setSelectedRun(data[0]);
+      if (data.length > 0) {
+        const runId = searchParamsRef.current.get('run');
+        const toSelect = runId ? (data.find(r => r.run_id === runId) ?? data[0]) : data[0];
+        setSelectedRun(toSelect);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load runs');
     } finally {
       setLoading(false);
     }
-  }, [searchParams]);
+  }, []); // stable — reads searchParams via ref at call time
 
   useEffect(() => {
     load();

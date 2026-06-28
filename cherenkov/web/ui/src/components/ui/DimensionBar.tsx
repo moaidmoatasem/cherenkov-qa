@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface DimensionBarProps {
   name: string;
@@ -34,14 +34,11 @@ const LABEL_MAP: Record<string, string> = {
 
 export default function DimensionBar({ name, score, grade, passed, findings }: DimensionBarProps) {
   const [width, setWidth] = useState(0);
-  const mounted = useRef(false);
 
   useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      const t = setTimeout(() => setWidth(Math.round(score * 100)), 80);
-      return () => clearTimeout(t);
-    }
+    setWidth(0);
+    const t = setTimeout(() => setWidth(Math.round(score * 100)), 80);
+    return () => clearTimeout(t);
   }, [score]);
 
   const barColor = GRADE_COLORS[grade] ?? (passed ? 'bg-cyan-400' : 'bg-red-500');
