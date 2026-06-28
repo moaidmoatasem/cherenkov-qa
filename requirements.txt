@@ -26,7 +26,7 @@ click>=8.4.1,<9.0.0
 Appium-Python-Client>=3.0.0,<4.0.0
 
 # Optional: Redis session/vector store (graceful fallback to SQLite if absent)
-redis>=5.0.0,<6.0.0
+redis>=8.0.1,<9.0.0
 
 # Response-body validation in the spec+prism oracle (graceful fallback if
 # absent, but tests/unit/test_oracle_body_validation.py requires it)
