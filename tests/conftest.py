@@ -1,5 +1,7 @@
 ﻿from __future__ import annotations
+
 import os
+
 import pytest
 
 os.environ.setdefault("CHERENKOV_RATE_LIMIT_ENABLED", "false")
@@ -7,8 +9,9 @@ os.environ.setdefault("CHERENKOV_RATE_LIMIT_ENABLED", "false")
 
 def _ollama_reachable() -> bool:
     try:
-        import urllib.request
         import json as _json
+        import urllib.request
+
         req = urllib.request.Request("http://localhost:11434/api/tags", method="GET")
         resp = urllib.request.urlopen(req, timeout=2)
         data = _json.loads(resp.read().decode())
@@ -28,9 +31,6 @@ def pytest_collection_modifyitems(config, items):
     if ollama_available:
         return
     for item in items:
-        path = str(item.fspath)
-        if ollama_available:
-            continue
         if "test_judge_sample" in item.nodeid:
             item.add_marker(pytest.mark.skip(reason="Ollama not reachable (needed by LLM-judge evals)"))
 

@@ -7,6 +7,8 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+from contextlib import suppress
+
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 
@@ -24,10 +26,8 @@ class K6Runner:
 
     def export_k6_script(self, target_url: str) -> str:
         """Generates a standard JavaScript k6 performance script targeting the user creation API."""
-        try:
+        with suppress(FileExistsError):
             os.makedirs(self.tests_dir, exist_ok=True)
-        except FileExistsError:
-            pass
 
         k6_code = f"""import http from 'k6/http';
 import {{ check, sleep }} from 'k6';

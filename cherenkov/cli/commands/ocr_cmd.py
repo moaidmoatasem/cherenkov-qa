@@ -1,10 +1,12 @@
 """OCR CLI commands — Alibaba Open Code Review integration."""
+
 from __future__ import annotations
 
-import os
-import sys
-import subprocess
 import json
+import os
+import subprocess
+import sys
+
 import click
 
 from cherenkov.review_ocr.provider import OCRProviderManager
@@ -81,7 +83,7 @@ def ocr_review(filepath: str, fmt: str) -> None:
         if not os.path.isfile(target_path):
             click.echo(f"File not found: {target_path}", err=True)
             sys.exit(1)
-        with open(target_path, "r", encoding="utf-8") as f:
+        with open(target_path, encoding="utf-8") as f:
             code = f.read()
         output = ocr_stage.run_on_file(target_path, code)
         _print_output(output, fmt)
@@ -102,7 +104,7 @@ def ocr_review(filepath: str, fmt: str) -> None:
     results = []
     for fname in sorted(files):
         fpath = os.path.join(stub_dir, fname)
-        with open(fpath, "r", encoding="utf-8") as f:
+        with open(fpath, encoding="utf-8") as f:
             code = f.read()
         output = ocr_stage.run_on_file(fpath, code)
         results.append({"file": fname, "output": output})
