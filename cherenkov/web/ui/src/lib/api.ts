@@ -12,6 +12,13 @@ import type {
 
 export const API_BASE = '/api/v1';
 
+const TOKEN_KEY = '[cherenkov] auth_token';
+
+function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  const token = localStorage.getItem(TOKEN_KEY);
+  return token ? { Authorization: `Bearer ${token}`, ...extra } : extra;
+}
+
 export interface IngestResponse {
   spec_path: string;
   endpoints: any[];
@@ -62,7 +69,7 @@ export interface ValidationResponse {
  */
 export async function checkBackendHealth(): Promise<boolean> {
   try {
-    const res = await fetch(`${API_BASE}/health`, { method: 'GET' });
+    const res = await fetch(`${API_BASE}/health`, { method: 'GET', headers: authHeaders() });
     return res.ok;
   } catch (e) {
     return false;
@@ -73,7 +80,7 @@ export async function checkBackendHealth(): Promise<boolean> {
  * Fetches the full backend health status
  */
 export async function fetchHealth(): Promise<{ status: string; device: string; gen_model: string; demo_mode: boolean }> {
-  const res = await fetch(`${API_BASE}/health`, { method: 'GET' });
+  const res = await fetch(`${API_BASE}/health`, { method: 'GET', headers: authHeaders() });
   if (!res.ok) throw new Error(`Health endpoint failed: ${res.status}`);
   return res.json();
 }
@@ -95,6 +102,7 @@ export async function ingestSpec(
 
   const res = await fetch(`${API_BASE}/ingest`, {
     method: 'POST',
+    headers: authHeaders(),
     body: formData,
   });
 
@@ -112,7 +120,7 @@ export async function ingestSpec(
 export async function runPipeline(payload: RunPipelinePayload): Promise<RunPipelineResponse> {
   const res = await fetch(`${API_BASE}/run`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
   });
 
@@ -139,7 +147,7 @@ export async function fetchGeneratedTests(): Promise<GeneratedTestFile[]> {
 export async function approveTestScenario(scenarioId: string): Promise<void> {
   const res = await fetch(`${API_BASE}/review/approve`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ scenario_id: scenarioId }),
   });
   if (!res.ok) {
@@ -153,7 +161,7 @@ export async function approveTestScenario(scenarioId: string): Promise<void> {
 export async function rejectTestScenario(scenarioId: string, reason: string): Promise<void> {
   const res = await fetch(`${API_BASE}/review/reject`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ scenario_id: scenarioId, reason }),
   });
   if (!res.ok) {
@@ -167,7 +175,7 @@ export async function rejectTestScenario(scenarioId: string, reason: string): Pr
 export async function explainTestScenario(scenarioId: string): Promise<{ explanation: string }> {
   const res = await fetch(`${API_BASE}/review/explain`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ scenario_id: scenarioId }),
   });
   if (!res.ok) {
@@ -182,7 +190,7 @@ export async function explainTestScenario(scenarioId: string): Promise<{ explana
 export async function editTestScenario(scenarioId: string, testCode: string): Promise<void> {
   const res = await fetch(`${API_BASE}/review/edit`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ scenario_id: scenarioId, test_code: testCode }),
   });
   if (!res.ok) {
@@ -196,7 +204,7 @@ export async function editTestScenario(scenarioId: string, testCode: string): Pr
 export async function validateSuite(targetUrl: string): Promise<ValidationResponse> {
   const res = await fetch(`${API_BASE}/validate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ target_url: targetUrl }),
   });
 
@@ -218,7 +226,7 @@ export interface EjectResponse {
 export async function ejectSuite(outputPath: string): Promise<EjectResponse> {
   const res = await fetch(`${API_BASE}/eject`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ output_path: outputPath }),
   });
 
@@ -311,7 +319,7 @@ export async function fetchDivergencesData(): Promise<Divergence[]> {
 export async function submitReviewApprove(scenarioId: string): Promise<void> {
   const res = await fetch(`${API_BASE}/review/approve`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ scenario_id: scenarioId }),
   });
   if (!res.ok) {
@@ -323,7 +331,7 @@ export async function submitReviewApprove(scenarioId: string): Promise<void> {
 export async function submitReviewReject(scenarioId: string, reason: string): Promise<void> {
   const res = await fetch(`${API_BASE}/review/reject`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ scenario_id: scenarioId, reason }),
   });
   if (!res.ok) {
@@ -347,7 +355,7 @@ export async function actOnDivergence(
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/divergences/act`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ divergence_id: divergenceId, action, reason }),
   });
   if (!res.ok) {
@@ -372,7 +380,7 @@ export interface SystemSettings {
 }
 
 export async function fetchSettings(): Promise<SystemSettings> {
-  const res = await fetch(`${API_BASE}/settings`);
+  const res = await fetch(`${API_BASE}/settings`, { headers: authHeaders() });
   if (!res.ok) throw new Error('Failed to load settings');
   return res.json();
 }
@@ -380,7 +388,7 @@ export async function fetchSettings(): Promise<SystemSettings> {
 export async function updateSettings(settings: SystemSettings): Promise<void> {
   const res = await fetch(`${API_BASE}/settings`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(settings),
   });
   if (!res.ok) throw new Error('Failed to save settings');
@@ -414,7 +422,7 @@ export async function createProject(payload: {
 }) {
   const res = await fetch(`${API_BASE}/projects`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error('Failed to create project');
@@ -424,7 +432,7 @@ export async function createProject(payload: {
 export async function updateProject(id: string, payload: Record<string, unknown>) {
   const res = await fetch(`${API_BASE}/projects/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error('Failed to update project');
@@ -470,7 +478,7 @@ export async function fetchOverview() {
 export async function createChatSession(persona_id = 'qa_assistant'): Promise<{ session_id: string; persona_id: string }> {
   const res = await fetch(`${API_BASE}/chat/sessions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ persona_id }),
   });
   if (!res.ok) throw new Error(`Failed to create chat session: ${res.status}`);
@@ -489,7 +497,7 @@ export async function streamChatMessage(
 ): Promise<string> {
   const res = await fetch(`${API_BASE}/chat/sessions/${sessionId}/stream`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ content }),
     signal,
   });
@@ -535,7 +543,7 @@ export async function fetchChatMessages(sessionId: string): Promise<{ messages: 
 export async function queryKnowledge(query: string): Promise<any> {
   const res = await fetch(`${API_BASE}/chat/knowledge/query`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ query }),
   });
   if (!res.ok) throw new Error(`Knowledge query failed: ${res.status}`);
@@ -565,7 +573,7 @@ export async function fetchMobilePilotStatus(): Promise<PilotStatus> {
 }
 
 export async function startMobilePilot(): Promise<{ status: string }> {
-  const res = await fetch(`${API_BASE}/mobile/pilot/start`, { method: 'POST' });
+  const res = await fetch(`${API_BASE}/mobile/pilot/start`, { method: 'POST', headers: authHeaders() });
   if (!res.ok) throw new Error(`Failed to start pilot: ${res.status}`);
   return res.json();
 }
@@ -615,7 +623,7 @@ export async function fetchSddContext(): Promise<SddContextData> {
 }
 
 export async function triggerSddCompact(force = false): Promise<void> {
-  await fetch(`${API_BASE}/sdd/compact?force=${force}`, { method: 'POST' });
+  await fetch(`${API_BASE}/sdd/compact?force=${force}`, { method: 'POST', headers: authHeaders() });
 }
 
 export async function fetchSddGraph(): Promise<GraphData> {
@@ -659,7 +667,7 @@ export async function fetchVisualScenarios(): Promise<any[]> {
 export async function runExplorer(payload: { base_url: string; ui_url?: string; use_ui_probe?: boolean; max_links?: number }): Promise<any> {
   const res = await fetch(`${API_BASE}/explore`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`Explorer run failed: ${res.status}`);
@@ -700,7 +708,7 @@ export async function fetchOcrReview(scenarioId: string): Promise<OCRReviewRespo
 export async function runOcrReview(scenarioId: string, code: string): Promise<OCRReviewResponse> {
   const res = await fetch(`${API_BASE}/ocr/review/${encodeURIComponent(scenarioId)}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ code }),
   });
   if (!res.ok) throw new Error(`OCR review run failed: ${res.status}`);

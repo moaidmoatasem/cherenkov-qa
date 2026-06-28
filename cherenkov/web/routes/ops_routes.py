@@ -9,12 +9,14 @@ from cherenkov.web.routes.deps import (
     ws_event_callback,
 )
 from cherenkov.web.routes.models import EjectPayload, RunPipelinePayload, ValidatePayload
+from cherenkov.web.auth.deps import require_role
+from cherenkov.web.auth.models import Role
 
 router = APIRouter(tags=["operations"])
 
 
 @router.post("/api/v1/ingest")
-async def ingest_spec_file(file: UploadFile | None = File(None), url: str | None = Form(None)):
+async def ingest_spec_file(file: UploadFile | None = File(None), url: str | None = Form(None), _role=Depends(require_role(Role.reviewer))):
     import asyncio
     import os
     import uuid
@@ -82,7 +84,7 @@ def _run_pipeline_thread(spec_path: str, run_id: str):
 
 
 @router.post("/api/v1/run")
-async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: BackgroundTasks, _auth=Depends(verify_api_key)):
+async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: BackgroundTasks, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
     import contextlib as _contextlib
     import io
     import os
@@ -140,7 +142,7 @@ async def list_generated_tests():
 
 
 @router.post("/api/v1/validate")
-async def validate_test_suite(payload: ValidatePayload, _auth=Depends(verify_api_key)):
+async def validate_test_suite(payload: ValidatePayload, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
     import asyncio
 
     from cherenkov.execution.validate import ValidationEngine
@@ -159,7 +161,7 @@ async def validate_test_suite(payload: ValidatePayload, _auth=Depends(verify_api
 
 
 @router.post("/api/v1/eject")
-async def eject_test_suite(payload: EjectPayload, _auth=Depends(verify_api_key)):
+async def eject_test_suite(payload: EjectPayload, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
     import os
     try:
         safe_path = _validate_output_path(payload.output_path)

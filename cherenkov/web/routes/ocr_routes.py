@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from cherenkov.core.settings import get_settings
 from cherenkov.review_ocr.stage import ReviewStageOCR
+from cherenkov.web.auth.deps import require_role
+from cherenkov.web.auth.models import Role
 
 router = APIRouter(prefix="/api/v1/ocr", tags=["ocr"])
 
@@ -37,7 +39,7 @@ async def ocr_status():
 
 
 @router.post("/review/{scenario_id}")
-async def run_ocr_review(scenario_id: str, payload: OcrReviewPayload):
+async def run_ocr_review(scenario_id: str, payload: OcrReviewPayload, _role=Depends(require_role(Role.reviewer))):
     if not get_settings().OCR_ENABLED:
         raise HTTPException(status_code=400, detail="OCR review is not enabled. Set CHERENKOV_OCR_ENABLED=true")
     stage = ReviewStageOCR(run_id=scenario_id)

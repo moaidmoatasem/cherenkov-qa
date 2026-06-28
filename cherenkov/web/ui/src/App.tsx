@@ -4,6 +4,8 @@
  */
 
 import React, { useState } from 'react';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import LoginPage from './components/LoginPage';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import ProjectsScreen from './components/ProjectsScreen';
@@ -44,6 +46,7 @@ import { listenDesktop } from './lib/tauri';
 import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
 
 function InnerApp() {
+  const { authRequired, loading: authLoading, user, logout } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -269,6 +272,18 @@ function InnerApp() {
     setSelectedProjectId(id);
   };
 
+  // Auth gate — show login page when auth is required and no valid session
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg-base text-text-secondary text-sm">
+        Loading…
+      </div>
+    );
+  }
+  if (authRequired && !user) {
+    return <LoginPage />;
+  }
+
   return (
     <>
       <GlobalShortcuts onNewRun={handleNewRun} onSearch={() => {}} />
@@ -319,16 +334,32 @@ function InnerApp() {
         {/* RIGHT DISPLAY VIEWPORT PANEL FRAME */}
         <div className="flex-1 flex flex-col overflow-hidden h-full">
           {/* TOP STATUS CONTROL BAR */}
-          <TopBar
-            currentProject={currentProject}
-            status={status}
-            activeTab={activeTab}
-            totalSpentEstimated={totalSpentEstimated}
-            autonomy={autonomy}
-            setAutonomy={setAutonomy}
-            onLiveClick={() => setIsLiveDrawerOpen(true)}
-            demoMode={demoMode}
-          />
+          <div className="relative">
+            <TopBar
+              currentProject={currentProject}
+              status={status}
+              activeTab={activeTab}
+              totalSpentEstimated={totalSpentEstimated}
+              autonomy={autonomy}
+              setAutonomy={setAutonomy}
+              onLiveClick={() => setIsLiveDrawerOpen(true)}
+              demoMode={demoMode}
+            />
+            {authRequired && user && (
+              <div className="absolute top-0 right-0 h-full flex items-center gap-2 pr-4 z-50">
+                <span className="text-xs text-text-secondary">
+                  {user.username}
+                  <span className="ml-1 text-cyan-400 font-medium">[{user.role}]</span>
+                </span>
+                <button
+                  onClick={logout}
+                  className="text-xs text-text-muted hover:text-text-primary border border-border-subtle rounded px-2 py-0.5 hover:border-border-strong transition"
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* MAIN BODY SWITCHBOARD SECTION */}
           <main className="flex-1 overflow-hidden h-full">
@@ -475,7 +506,9 @@ function InnerApp() {
 export default function App() {
   return (
     <BrowserRouter>
-      <InnerApp />
+      <AuthProvider>
+        <InnerApp />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

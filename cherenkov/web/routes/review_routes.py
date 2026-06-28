@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from cherenkov.web.routes.deps import _validate_scenario_id, get_queue, verify_api_key
 from cherenkov.web.routes.models import ClassifyPayload, ReviewActionPayload
+from cherenkov.web.auth.deps import require_role
+from cherenkov.web.auth.models import Role
 
 router = APIRouter(tags=["review"])
 
@@ -43,7 +45,7 @@ async def list_review_queue(status: str | None = "pending", _auth=Depends(verify
 
 
 @router.post("/api/v1/review/approve")
-async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
+async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
     import os
 
     from cherenkov.core.feedback_store import FeedbackEntry, FeedbackStore
@@ -75,7 +77,7 @@ async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify
 
 
 @router.post("/api/v1/review/reject")
-async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
+async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
     import os
 
     from cherenkov.core.feedback_store import FeedbackEntry, FeedbackStore
@@ -105,7 +107,7 @@ async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_
 
 
 @router.post("/api/v1/review/edit")
-async def edit_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key)):
+async def edit_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
     import asyncio
     import os
     if not payload.test_code:
@@ -125,7 +127,7 @@ async def edit_review_item(payload: ReviewActionPayload, _auth=Depends(verify_ap
 
 
 @router.post("/api/v1/review/classify")
-async def classify_review_item(payload: ClassifyPayload, _auth=Depends(verify_api_key)):
+async def classify_review_item(payload: ClassifyPayload, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
     import os
     queue = get_queue()
     actor = payload.actor or os.environ.get("USER", "dashboard")

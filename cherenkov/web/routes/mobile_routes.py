@@ -6,9 +6,11 @@ protocol types first, no Appium dependency in the domain layer.
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from cherenkov.web.auth.deps import require_role
+from cherenkov.web.auth.models import Role
 from cherenkov.mobile.contracts import (
     DeviceKind,
     DeviceState,
@@ -73,7 +75,7 @@ async def list_devices():
 
 
 @router.post("/api/v1/mobile/devices")
-async def register_device(req: RegisterDeviceRequest):
+async def register_device(req: RegisterDeviceRequest, _role=Depends(require_role(Role.reviewer))):
     """Register a new device in the registry."""
     registry = get_registry()
     device = DeviceInfo(
@@ -106,7 +108,7 @@ async def get_device(device_id: str):
 # ── Session endpoints ─────────────────────────────────────────────────────────
 
 @router.post("/api/v1/mobile/sessions")
-async def create_session(req: ClaimSessionRequest):
+async def create_session(req: ClaimSessionRequest, _role=Depends(require_role(Role.reviewer))):
     """Claim a device and open a new session. Fails if device is already claimed."""
     registry = get_registry()
     try:
@@ -141,7 +143,7 @@ async def get_session(session_id: str):
 
 
 @router.patch("/api/v1/mobile/sessions/{session_id}")
-async def update_session(session_id: str, req: UpdateSessionRequest):
+async def update_session(session_id: str, req: UpdateSessionRequest, _role=Depends(require_role(Role.reviewer))):
     """Update a session's status (e.g. running → failed)."""
     registry = get_registry()
     if not registry.get_session(session_id):
@@ -151,7 +153,7 @@ async def update_session(session_id: str, req: UpdateSessionRequest):
 
 
 @router.post("/api/v1/mobile/sessions/{session_id}/steps")
-async def append_step(session_id: str, req: SessionStepRequest):
+async def append_step(session_id: str, req: SessionStepRequest, _role=Depends(require_role(Role.reviewer))):
     """Append a step record to a session's execution log."""
     registry = get_registry()
     if not registry.get_session(session_id):
@@ -162,7 +164,7 @@ async def append_step(session_id: str, req: SessionStepRequest):
 
 
 @router.delete("/api/v1/mobile/sessions/{session_id}")
-async def close_session(session_id: str):
+async def close_session(session_id: str, _role=Depends(require_role(Role.reviewer))):
     """Release the device claim and close the session."""
     registry = get_registry()
     if not registry.get_session(session_id):
@@ -204,7 +206,7 @@ async def get_mobile_pilot_status():
 
 
 @router.post("/api/v1/mobile/pilot/start")
-async def start_mobile_pilot():
+async def start_mobile_pilot(_role=Depends(require_role(Role.reviewer))):
     """Legacy: claim the default emulator and start a session."""
     registry = get_registry()
     try:

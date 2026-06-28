@@ -1,6 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from cherenkov.web.routes.deps import manager
+from cherenkov.web.auth.deps import require_role
+from cherenkov.web.auth.models import Role
 
 router = APIRouter(tags=["health"])
 
@@ -52,7 +54,7 @@ async def health_check():
 
 
 @router.get("/api/v1/doctor")
-async def run_doctor_api():
+async def run_doctor_api(_role=Depends(require_role(Role.admin))):
     from cherenkov.core.config_loader import load_effective_config
     from cherenkov.core.settings import get_settings
     from cherenkov.stages.doctor_cmd import (
