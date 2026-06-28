@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import datetime
 import json
+import os
 import sqlite3
 
 from cherenkov.continuity.sessions.domain.models import SessionSnapshot, TeleportToken
@@ -10,8 +11,11 @@ from cherenkov.continuity.sessions.ports.store import SessionStore
 
 
 class SQLiteSessionStore(SessionStore):
-    def __init__(self, db_path: str = "agent_memory/cherenkov_sessions.db"):
-        self.db_path = db_path
+    def __init__(self, db_path: str = ""):
+        self.db_path = db_path or os.path.join(
+            os.path.expanduser("~"), ".cherenkov", "cherenkov_sessions.db"
+        )
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         self._init_db()
 
     def _init_db(self) -> None:
