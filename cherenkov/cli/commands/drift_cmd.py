@@ -213,15 +213,37 @@ def export_cmd(snapshot_id, output, ledger_path):
 @click.option("--fail-on-warn", is_flag=True, default=False,
               help="Exit 1 on WARN findings too (stricter gate).")
 @click.option("--json", "as_json", is_flag=True, default=False, help="Output JSON report.")
+@click.option(
+    "--level",
+    type=click.Choice(["L1", "L2"], case_sensitive=False),
+    default="L1",
+    show_default=True,
+    help=(
+        "Autonomy level. L1=report-only (default). "
+        "L2=propose+check+human-approve for WARN findings."
+    ),
+)
+@click.option(
+    "--auto-approve",
+    is_flag=True,
+    default=False,
+    help="L2 only: skip interactive confirmation and auto-approve all verified proposals.",
+)
+@click.option(
+    "--suite-out",
+    default=None,
+    help="L2 only: write updated suite to this path (default: overwrite --suite).",
+)
 def reconcile_cmd(spec, suite, baseline_id, baseline_file, ledger_path,
-                  fail_on_drift, fail_on_warn, as_json):
+                  fail_on_drift, fail_on_warn, as_json, level, auto_approve, suite_out):
     """Detect drift between a baseline and the current spec+suite.
 
     Compares the baseline snapshot against the current state using the three
     drift axes: spec drift (A), suite staleness (B), and optionally contract
     drift (C, wired in via --violations if available).
 
-    Detection is deterministic — no LLM is called.
+    Detection is deterministic — no LLM is called during detection.
+    At L2, the maker generates test skeletons from the spec (schema-driven).
 
     \b
     Examples:
@@ -231,9 +253,14 @@ def reconcile_cmd(spec, suite, baseline_id, baseline_file, ledger_path,
         # CI gate — block on any FAIL finding
         cherenkov drift reconcile --spec openapi.yaml --suite suite.json \\
             --baseline-file baseline.json --fail-on-drift
+
+        # L2: propose + approve new tests for untested operations
+        cherenkov drift reconcile --spec openapi.yaml --suite suite.json \\
+            --level L2 --suite-out suite-updated.json
     """
     from cherenkov.drift.reconcile import DriftVerdict, MagnitudeVerdict, SEVERITY
     from cherenkov.drift.detect import DriftKind
+    from cherenkov.drift.loop import DriftLoop, AutonomyLevel
 
     spec_dict = _load_yaml_or_json(spec, "spec")
     suite_dict = _load_json(suite, "suite")
@@ -255,6 +282,19 @@ def reconcile_cmd(spec, suite, baseline_id, baseline_file, ledger_path,
         click.echo(json.dumps(report.to_dict(), indent=2))
     else:
         _print_report(report)
+
+    # L2 autonomy gate — propose + check + (optionally) commit
+    loop_result = None
+    if level.upper() == "L2" and report.has_drift:
+        out_path = Path(suite_out) if suite_out else Path(suite)
+        loop = DriftLoop.l2_interactive(
+            spec=spec_dict,
+            suite_path=out_path,
+            auto_approve=auto_approve,
+        )
+        loop_result = loop.run(report)
+        if not as_json:
+            _print_loop_result(loop_result)
 
     # Exit codes
     if fail_on_drift and report.blocked:
@@ -329,3 +369,37 @@ def _print_report(report) -> None:
             "  ✔  Drift is non-blocking — review WARN/INFO findings at your discretion.",
             fg="yellow",
         ))
+
+
+def _print_loop_result(result) -> None:
+    from cherenkov.drift.loop import AutonomyLevel
+
+    click.echo()
+    click.echo(click.style("── L2 Reconciliation ─────────────────────────────────", bold=True))
+    click.echo(f"  proposals  : {len(result.proposals)}")
+    click.echo(f"  escalations: {len(result.escalations)}")
+    click.echo(
+        f"  committed  : "
+        + click.style(str(result.committed), fg="green" if result.committed else "yellow")
+    )
+
+    if result.proposals:
+        click.echo()
+        click.echo(click.style("  Proposals:", bold=True))
+        for p in result.proposals:
+            status = click.style("✔ committed", fg="green") if result.committed else click.style("pending", fg="yellow")
+            click.echo(f"    • [{status}] {p.operation_id}")
+            click.echo(f"      {p.action}")
+
+    if result.escalations:
+        click.echo()
+        click.echo(click.style("  Escalations (require manual review):", fg="yellow", bold=True))
+        for f in result.escalations:
+            click.echo(f"    • {f.kind.value:<30}  {f.operation_id}")
+            click.echo(f"      {f.detail}")
+
+    if result.audit_trail:
+        click.echo()
+        click.echo(click.style("  Audit trail:", bold=True))
+        for entry in result.audit_trail:
+            click.echo(f"    {entry}")
