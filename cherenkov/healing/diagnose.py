@@ -74,7 +74,7 @@ class Diagnoser:
         self,
         scenario_id: str,
         current_status: int,
-        current_body: Any,
+        current_body: dict[str, Any],
         test_name: str,
         test_content: Optional[str] = None,
     ) -> DiagnosisResult:

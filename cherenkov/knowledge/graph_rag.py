@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from cherenkov.knowledge.domain.models import KnowledgeQuery, KnowledgeQueryResult
-from cherenkov.knowledge.ports.repository import KnowledgeRepository
+from cherenkov.knowledge.ports.repository import KnowledgeMeshRepository
 
 
 class GraphRAG:
-    def __init__(self, repository: KnowledgeRepository):
+    def __init__(self, repository: KnowledgeMeshRepository):
         self.repository = repository
 
     def query(

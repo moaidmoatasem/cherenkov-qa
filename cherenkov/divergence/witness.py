@@ -143,7 +143,7 @@ def _parse_repro_steps(
     method = "GET"
     path = "/"
     payload: dict | None = None
-    expected: Any = None
+    expected: int | None = None
 
     for step in steps:
         upper = step.upper()

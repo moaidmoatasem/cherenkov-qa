@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from cherenkov.knowledge.domain.models import KnowledgeItem
-from cherenkov.knowledge.ports.repository import KnowledgeRepository
+from cherenkov.knowledge.ports.repository import KnowledgeMeshRepository
 
 
 class FeedbackRAGBridge:
-    def __init__(self, repository: KnowledgeRepository, feedback_store):
+    def __init__(self, repository: KnowledgeMeshRepository, feedback_store):
         self.repository = repository
         self.feedback_store = feedback_store
 

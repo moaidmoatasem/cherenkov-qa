@@ -4,8 +4,8 @@ import json
 
 import click
 
+from cherenkov.knowledge import get_repository
 from cherenkov.knowledge.domain.models import KnowledgeQuery
-from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
 
 
 @click.group()
@@ -25,7 +25,7 @@ def knowledge():
 )
 def query(query_text: str, source: str | None, limit: int, format: str):
     """Query knowledge repository."""
-    repo = SQLiteKnowledgeRepository()
+    repo = get_repository()
     q = KnowledgeQuery(query=query_text, source=source, limit=limit)
     result = repo.query(q)
     if format == "json":
