@@ -207,6 +207,11 @@ def get_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Exit with code 1 if any API drift is detected",
     )
+    validate_parser.add_argument(
+        "--spec",
+        default=None,
+        help="Path to OpenAPI spec (JSON/YAML); auto-discovered if omitted",
+    ).completer = argcomplete.completers.FilesCompleter()
 
     diff_parser = subparsers.add_parser(
         "diff", help="Compare two OpenAPI specs for breaking changes"
@@ -751,7 +756,10 @@ def main():
 
         engine = ValidationEngine("cli_validate")
         results = engine.validate_suite(
-            args.target, workers=getattr(args, "workers", 1), headed=getattr(args, "headed", False)
+            args.target,
+            workers=getattr(args, "workers", 1),
+            headed=getattr(args, "headed", False),
+            spec_path=getattr(args, "spec", None),
         )
 
         if getattr(args, "format", None) == "sarif":
@@ -844,49 +852,54 @@ def main():
 
         if results.get("status") == "empty":
             msg = results.get("message", "Unknown error")
-            if getattr(args, "output", None) == "json":
-                print(
-                    json.dumps(
-                        {
-                            "passed": False,
-                            "divergences": [msg],
-                            "summary": msg,
-                            "checks": [],
-                        }
-                    )
-                )
+            if getattr(args, "format", None) == "json":
+                print(json.dumps({"passed": False, "divergences": [msg], "summary": msg, "checks": []}))
             else:
                 print(f"\nError: {msg}\n")
             sys.exit(1)
-        if getattr(args, "output", None) == "json":
-            reports = results.get("reports", [])
-            divergences = []
-            checks = []
-            for r in reports:
-                passed = r.get("passed", False)
-                checks.append(
-                    {
-                        "passed": passed,
-                        "scenario_id": r.get("scenario_id", "?"),
-                        "error": r.get("error", "") if not passed else "",
-                    }
-                )
-                if not passed:
-                    divergences.append(r.get("error", "failed"))
-            passed_count = sum(1 for c in checks if c["passed"])
-            total = len(checks)
-            summary = f"{passed_count}/{total} scenarios passed"
-            print(
-                json.dumps(
-                    {
-                        "passed": passed_count == total,
-                        "divergences": divergences,
-                        "summary": summary,
-                        "checks": checks,
-                    }
-                )
-            )
+
+        reports = results.get("reports", [])
+        passed_count = sum(1 for r in reports if r.get("passed", False))
+        total = len(reports)
+        failed = [r for r in reports if not r.get("passed", False)]
+
+        if getattr(args, "format", None) == "json":
+            checks = [
+                {"passed": r.get("passed", False), "scenario_id": r.get("scenario_id", "?"),
+                 "error": r.get("error", "") if not r.get("passed", False) else ""}
+                for r in reports
+            ]
+            divergences = [r.get("error", "failed") for r in failed]
+            print(json.dumps({
+                "passed": passed_count == total,
+                "divergences": divergences,
+                "summary": f"{passed_count}/{total} scenarios passed",
+                "checks": checks,
+            }))
             sys.exit(0 if passed_count == total else 1)
+
+        # Human-readable summary
+        width = 80
+        print("\n" + "=" * width)
+        print("CHERENKOV CONFORMANCE REPORT")
+        print("=" * width)
+        print(f"Target: {args.target}")
+        print(f"Scenarios: {total}  |  Passed: {passed_count}  |  Failed: {len(failed)}")
+        print("=" * width)
+        for r in reports:
+            status = "PASS" if r.get("passed") else "FAIL"
+            sid = r.get("scenario_id", "?")
+            print(f"  [{status}]  {sid}")
+            if not r.get("passed") and r.get("error"):
+                # Show first line of error only
+                first_line = str(r["error"]).split("\n")[0][:120]
+                print(f"         {first_line}")
+        print("=" * width)
+        if failed:
+            print(f"\n  {len(failed)} conformance drift(s) detected\n")
+        else:
+            print("\n  All scenarios passed — no drift detected\n")
+
         print_tightening_report(results)
 
         if not getattr(args, "no_html", False):
@@ -902,6 +915,8 @@ def main():
         stats = EndpointCache().stats()
         print(f"Cache Stats: {stats}")
 
+        if getattr(args, "fail_on_drift", False) and failed:
+            sys.exit(1)
         sys.exit(0)
 
     elif args.command == "diff":

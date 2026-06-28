@@ -23,6 +23,7 @@ from pathlib import Path
 import click
 
 from cherenkov.core.certificate import compliance_profile, issue_certificate, load_certificate
+from cherenkov.divergence.coverage import compute_coverage, CoverageReport
 from cherenkov.divergence.proof_run import PETSTORE_BASE_URL, run_proof
 
 
@@ -62,6 +63,10 @@ _VERDICT_COLOUR = {"PASS": "green", "WARN": "yellow", "FAIL": "red"}
     "--compliance", is_flag=True, default=False,
     help="Print the compliance evidence mapping (EU AI Act / SOC 2 / ISO 25010) after issuing.",
 )
+@click.option(
+    "--coverage-report", "coverage_report", is_flag=True, default=False,
+    help="Print a spec coverage-gap report showing which endpoints were probed (requires --spec).",
+)
 def certify_cmd(
     url: str | None,
     spec: str | None,
@@ -71,6 +76,7 @@ def certify_cmd(
     fail_on_fail: bool,
     verify_file: str | None,
     compliance: bool,
+    coverage_report: bool,
 ) -> None:
     """Issue a signed verification certificate for a live API.
 
@@ -142,6 +148,17 @@ def certify_cmd(
 
     if compliance:
         _print_compliance(cert)
+
+    if coverage_report:
+        if spec_dict is None:
+            click.echo(
+                "[WARN] --coverage-report requires --spec; skipping coverage output.",
+                err=True,
+            )
+        else:
+            from cherenkov.cli.commands.verify import _print_coverage
+            cov = compute_coverage(spec_dict, reports)
+            _print_coverage(cov)
 
     if output:
         Path(output).write_text(

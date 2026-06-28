@@ -285,8 +285,12 @@ def detect_findings(
             )
 
     # B3: ADDED_OPTIONAL_PARAM — informational
-    # New optional params in ops that existed in baseline
-    baseline_optional_params = baseline_snapshot.fingerprint.optional_param_set
+    # New optional params in ops that existed in baseline.
+    # Use fingerprint.param_set (all params, required + optional) so we only
+    # flag params that genuinely weren't in the baseline, not pre-existing ones.
+    baseline_all_params: frozenset[str] = getattr(
+        baseline_snapshot.fingerprint, "param_set", baseline_required_params
+    )
     for op_id, current_op in current_spec_ops.items():
         if op_id not in baseline_op_ids:
             continue  # new op, handled above
@@ -294,18 +298,18 @@ def detect_findings(
             if not isinstance(param, dict):
                 continue
             name = param.get("name", "")
-            if not param.get("required", False):
-                # Check that this param was actually absent from baseline
-                param_key = f"{op_id}:{name}"
-                if param_key not in baseline_optional_params and param_key not in baseline_required_params:
-                    findings.append(
-                        DriftFinding(
-                            kind=DriftKind.ADDED_OPTIONAL_PARAM,
-                            operation_id=op_id,
-                            detail=f"New optional parameter '{name}' added to '{op_id}'",
-                            after=name,
-                        )
+            if not name or param.get("required", False):
+                continue  # required params handled above
+            param_key = f"{op_id}:{name}"
+            if param_key not in baseline_all_params:
+                findings.append(
+                    DriftFinding(
+                        kind=DriftKind.ADDED_OPTIONAL_PARAM,
+                        operation_id=op_id,
+                        detail=f"New optional parameter '{name}' added to '{op_id}'",
+                        after=name,
                     )
+                )
 
     # C: STATUS_CONTRACT_VIOLATION — wired in from runner
     for violation in runner_violations or []:

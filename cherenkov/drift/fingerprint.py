@@ -36,8 +36,8 @@ class Fingerprint:
     # sets (jaccard, weight 0.3)
     operation_set: frozenset[str]       # operationIds
     tag_set: frozenset[str]
-    required_param_set: frozenset[str]  # "op:param" tuples
-    optional_param_set: frozenset[str]  # "op:param" tuples
+    required_param_set: frozenset[str]  # "op:param" tuples (required only)
+    param_set: frozenset[str]           # "op:param" tuples (all params, required + optional)
 
 
 def _cosine(a: list[float], b: list[float]) -> float:
@@ -68,12 +68,11 @@ def _jaccard(a: frozenset, b: frozenset) -> float:
 
 
 def _set_sim(a: Fingerprint, b: Fingerprint) -> float:
-    """Average Jaccard across the four set dimensions."""
+    """Average Jaccard across the three set dimensions."""
     j_ops = _jaccard(a.operation_set, b.operation_set)
     j_tags = _jaccard(a.tag_set, b.tag_set)
     j_params = _jaccard(a.required_param_set, b.required_param_set)
-    j_opt = _jaccard(a.optional_param_set, b.optional_param_set)
-    return (j_ops + j_tags + j_params + j_opt) / 4.0
+    return (j_ops + j_tags + j_params) / 3.0
 
 
 def similarity(a: Fingerprint, b: Fingerprint) -> float:
@@ -126,13 +125,13 @@ def _required_param_set(spec: dict[str, Any]) -> frozenset[str]:
     return frozenset(result)
 
 
-def _optional_param_set(spec: dict[str, Any]) -> frozenset[str]:
-    """Return frozenset of "operationId:paramName" for all optional parameters."""
+def _all_param_set(spec: dict[str, Any]) -> frozenset[str]:
+    """Return frozenset of "operationId:paramName" for ALL parameters (required + optional)."""
     result: set[str] = set()
     for op_id, operation in _extract_operations(spec).items():
         for param in operation.get("parameters", []):
-            if isinstance(param, dict) and not param.get("required", False):
-                result.add(f"{op_id}:{param.get('name', '?')}")
+            if isinstance(param, dict) and param.get("name"):
+                result.add(f"{op_id}:{param['name']}")
     return frozenset(result)
 
 
@@ -232,5 +231,5 @@ def fingerprint_of(
         operation_set=spec_op_ids,
         tag_set=frozenset(all_tags),
         required_param_set=_required_param_set(spec),
-        optional_param_set=_optional_param_set(spec),
+        param_set=_all_param_set(spec),
     )
