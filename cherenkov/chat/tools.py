@@ -13,7 +13,7 @@ _guard = get_guard()
 
 @_guard.wrap_tool(name="query_verdicts")
 def query_verdicts(
-    endpoint: str | None = None, status_code: int | None = None, limit: int = 10
+    _endpoint: str | None = None, _status_code: int | None = None, limit: int = 10
 ) -> dict[str, Any]:
     try:
         from cherenkov.reflector.reflector import get_reflector
@@ -30,7 +30,7 @@ def query_verdicts(
 
 
 @_guard.wrap_tool(name="query_idioms")
-def query_idioms(pattern: str | None = None, limit: int = 10) -> dict[str, Any]:
+def query_idioms(_pattern: str | None = None, limit: int = 10) -> dict[str, Any]:
     try:
         from cherenkov.reflector.reflector import get_reflector
 

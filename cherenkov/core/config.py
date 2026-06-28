@@ -13,9 +13,6 @@ except ImportError:
     pass  # dotenv not installed, env vars only
 
 import os
-import time as _time
-import requests
-from cherenkov.core.errors import get_logger
 
 
 class Config:
@@ -209,22 +206,16 @@ class Config:
     OTEL_SERVICE_NAME: str = os.getenv("CHERENKOV_OTEL_SERVICE_NAME", "cherenkov")
     OTEL_ENVIRONMENT: str = os.getenv("CHERENKOV_OTEL_ENVIRONMENT", "production")
 
-    # ── Device detection cache ────────────────────────────────────────────
-    _device_cache: str | None = None
-    _device_cache_ts: float = 0.0
-    _DEVICE_CACHE_TTL: float = 60.0  # seconds
-
     @classmethod
     def validate(cls) -> None:
         """Validate all config values are within acceptable bounds. Raises ValueError on violation."""
         errors = []
 
         # Timeout bounds
-        if hasattr(cls, "OLLAMA_TIMEOUT"):
-            if not (1 <= cls.OLLAMA_TIMEOUT <= 3600):
-                errors.append(
-                    f"OLLAMA_TIMEOUT={cls.OLLAMA_TIMEOUT} must be between 1 and 3600 seconds"
-                )
+        if hasattr(cls, "OLLAMA_TIMEOUT") and not (1 <= cls.OLLAMA_TIMEOUT <= 3600):
+            errors.append(
+                f"OLLAMA_TIMEOUT={cls.OLLAMA_TIMEOUT} must be between 1 and 3600 seconds"
+            )
 
         # Retry bounds
         for attr in ("OLLAMA_RETRIES", "MAX_RETRIES", "GEN_RETRIES"):
@@ -233,19 +224,12 @@ class Config:
                 if not (0 <= val <= 20):
                     errors.append(f"{attr}={val} must be between 0 and 20")
 
-        # Egress policy (EGRESS attribute)
-        if hasattr(cls, "EGRESS"):
-            if cls.EGRESS not in ("none", "internal", "any"):
-                errors.append(
-                    f"EGRESS={cls.EGRESS!r} must be one of: none, internal, any"
-                )
-
-        # Egress policy alias (EGRESS_POLICY attribute if present)
-        if hasattr(cls, "EGRESS_POLICY"):
-            if cls.EGRESS_POLICY not in ("none", "internal", "any"):
-                errors.append(
-                    f"EGRESS_POLICY={cls.EGRESS_POLICY!r} must be one of: none, internal, any"
-                )
+        # Egress policy
+        for attr in ("EGRESS", "EGRESS_POLICY"):
+            if hasattr(cls, attr):
+                val = getattr(cls, attr)
+                if val not in ("none", "internal", "any"):
+                    errors.append(f"{attr}={val!r} must be one of: none, internal, any")
 
         # Port numbers
         for attr in (
@@ -324,95 +308,6 @@ class Config:
             "METRICS_PORT": cls.METRICS_PORT,
         }
 
-    @classmethod
-    def detect_ollama_device(cls, run_id: str | None = None) -> str:
-        """Startup health check querying Ollama to detect whether the model runs on GPU or CPU.
-
-        GPU is our supported, optimized target path.
-        CPU is portable-but-slow. If CPU is detected, log a loud warning warning.
-
-        Results are cached for _DEVICE_CACHE_TTL seconds to avoid blocking HTTP calls
-        on every health check invocation.
-        """
-        now = _time.monotonic()
-        if (
-            cls._device_cache is not None
-            and (now - cls._device_cache_ts) < cls._DEVICE_CACHE_TTL
-        ):
-            return cls._device_cache
-
-        log = get_logger("SYSTEM", run_id)
-        base_url = cls.OLLAMA_URL.rsplit("/api/generate", 1)[0]
-        ps_url = f"{base_url}/api/ps"
-
-        # 1. Trigger a lightweight, instant 1-token call to force Ollama to load the model into memory
-        try:
-            requests.post(
-                cls.OLLAMA_URL,
-                json={
-                    "model": cls.GEN_MODEL,
-                    "prompt": "a",
-                    "stream": False,
-                    "options": {"num_predict": 1},
-                },
-                timeout=15,
-            )
-        except Exception:
-            pass  # Ignore loading failures here; let ps check report the status
-
-        # 2. Query /api/ps to verify active processor details
-        try:
-            resp = requests.get(ps_url, timeout=5)
-            if resp.status_code == 200:
-                data = resp.json()
-                models = data.get("models", [])
-                for model_info in models:
-                    if cls.GEN_MODEL in model_info.get("name", ""):
-                        size_vram = model_info.get("size_vram", 0)
-                        size = model_info.get("size", 1)
-
-                        # Size VRAM > 0 indicates GPU execution (layers offloaded)
-                        if size_vram > 0:
-                            vram_pct = int(100 * size_vram / size)
-                            gpu_msg = f"GPU mode verified — {vram_pct}% of model layers offloaded to VRAM."
-                            log.info(
-                                "device status",
-                                details=gpu_msg,
-                                processor="GPU",
-                                size_vram=size_vram,
-                                size=size,
-                            )
-                            cls._device_cache = "GPU"
-                            cls._device_cache_ts = _time.monotonic()
-                            return cls._device_cache
-                        else:
-                            cpu_warn = (
-                                "CPU mode — generation ~10x slower, GPU recommended."
-                            )
-                            log.warning(
-                                "device status",
-                                details=cpu_warn,
-                                processor="CPU",
-                                size_vram=0,
-                            )
-                            cls._device_cache = "CPU"
-                            cls._device_cache_ts = _time.monotonic()
-                            return cls._device_cache
-        except Exception as e:
-            log.warning(
-                "device status",
-                details=f"Could not connect to Ollama daemon to verify device: {e}",
-                processor="UNKNOWN",
-            )
-            cls._device_cache = "UNKNOWN"
-            cls._device_cache_ts = _time.monotonic()
-            return cls._device_cache
-
-        cpu_warn = "CPU mode — generation ~10x slower, GPU recommended."
-        log.warning("device status", details=cpu_warn, processor="CPU", size_vram=0)
-        cls._device_cache = "CPU"
-        cls._device_cache_ts = _time.monotonic()
-        return cls._device_cache
 
 
 # Populate structured tier config after class definition
