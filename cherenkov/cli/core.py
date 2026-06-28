@@ -42,6 +42,7 @@ _CLICK_COMMANDS = [
     "eval",
     "routine",
     "teleport",
+    "enterprise",
 ]
 
 
@@ -87,6 +88,7 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.examples_cmd import examples_cmd
     from cherenkov.cli.commands.routine_cmd import routine_cmd
     from cherenkov.cli.commands.teleport_cmd import teleport_cmd
+    from cherenkov.cli.commands.enterprise import enterprise_cmd
 
     for cmd, name in [
         (verify_cmd, "verify"),
@@ -124,6 +126,7 @@ def _register_commands() -> None:
         (examples_cmd, "examples"),
         (routine_cmd, "routine"),
         (teleport_cmd, "teleport"),
+        (enterprise_cmd, "enterprise"),
     ]:
         cli.add_command(cmd, name=name)
 
