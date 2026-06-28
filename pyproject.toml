@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-redis = ["redis>=5.0.0"]
+redis = ["redis>=8.0.1"]
 mobile = ["Appium-Python-Client>=3.0.0"]
 bench = [
     # DeepEval adds LLM-as-judge metrics on top of the built-in static gates.
