@@ -71,6 +71,11 @@ class CherenkovSettings(BaseSettings):
     HITL_API_KEY: str = Field(default='', validation_alias='CHERENKOV_HITL_API_KEY')
     DB_KEY: str = Field(default='', validation_alias='CHERENKOV_DB_KEY')
 
+    AUTH_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_AUTH_ENABLED')
+    JWT_SECRET: str = Field(default='', validation_alias='CHERENKOV_JWT_SECRET')
+    JWT_EXPIRE_HOURS: int = Field(default=8, validation_alias='CHERENKOV_JWT_EXPIRE_HOURS')
+    BOOTSTRAP_KEY: str = Field(default='', validation_alias='CHERENKOV_BOOTSTRAP_KEY')
+
     NEMOCLAW_URL: str = Field(default='http://localhost:11435/v1', validation_alias='CHERENKOV_NEMOCLAW_URL')
     NEMOCLAW_API_KEY: str = Field(default='', validation_alias='CHERENKOV_NEMOCLAW_API_KEY')
     NEMOCLAW_TIMEOUT: int = Field(default=300, validation_alias='CHERENKOV_NEMOCLAW_TIMEOUT')

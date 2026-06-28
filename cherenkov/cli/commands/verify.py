@@ -15,6 +15,7 @@ from pathlib import Path
 import click
 from cherenkov.divergence.proof_run import run_proof
 from cherenkov.divergence.coverage import compute_coverage, CoverageReport
+from cherenkov.persistence.run_store import RunRecord, get_run_store, spec_hash as _spec_hash
 
 
 @click.command("verify")
@@ -90,14 +91,17 @@ def verify_cmd(
     click.echo(f"  Mode    : {mode_label}")
     click.echo("")
 
+    t_start = __import__("time").monotonic()
     try:
         reports = run_proof(base_url=url, spec=spec_dict, use_llm=llm)
     except Exception as exc:
         click.echo(f"\n[ERROR] Probe failed: {exc}", err=True)
         sys.exit(2)
+    duration_ms = int((__import__("time").monotonic() - t_start) * 1000)
 
     _print_summary(reports)
 
+    cov: CoverageReport | None = None
     if coverage_report:
         if spec_dict is None:
             click.echo(
@@ -111,6 +115,22 @@ def verify_cmd(
     if output:
         _write_json(reports, output)
         click.echo(f"\nReport written to {output}")
+
+    # Persist run record for history / diff
+    try:
+        record = RunRecord(
+            command="verify",
+            target_url=url,
+            spec_hash=_spec_hash(json.dumps(spec_dict, sort_keys=True).encode()) if spec_dict else "",
+            verdict="FAIL" if reports else "PASS",
+            divergence_count=len(reports),
+            coverage_pct=cov.coverage_pct if cov else None,
+            duration_ms=duration_ms,
+        )
+        saved = get_run_store().save(record)
+        click.echo(f"  Run ID: {saved.run_id}", err=True)
+    except Exception:
+        pass  # history persistence is best-effort
 
     if fail_on_divergence and reports:
         sys.exit(1)
