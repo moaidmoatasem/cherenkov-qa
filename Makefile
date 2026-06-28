@@ -17,13 +17,15 @@ install:
 	pip install -r requirements.txt
 	cd stub && npm install && npx playwright install && cd ..
 
-## Run the full test suite (pytest + Playwright smoke)
-test:
-	PYTHONPATH=. python -m pytest tests/ -q --timeout=60 2>/dev/null || echo "Note: some tests require Ollama or other external services"
+_EXCLUDE = --ignore=tests/unit/test_mcp_chat_tools.py --ignore=tests/unit/test_mcp_e2_2.py --ignore=tests/unit/test_mcp_tools.py --ignore=tests/unit/test_mcp_verify_system.py
 
-## Run unit tests only (excludes tests needing external services)
+## Run unit tests only (excludes MCP collection errors)
 test-unit:
-	PYTHONPATH=. python -m pytest tests/unit/ -q --timeout=30 --ignore=tests/unit/test_mcp_chat_tools.py --ignore=tests/unit/test_mcp_e2_2.py --ignore=tests/unit/test_mcp_tools.py --ignore=tests/unit/test_mcp_verify_system.py
+	PYTHONPATH=. python -m pytest tests/unit/ -q --timeout=30 $(_EXCLUDE)
+
+## Run all tests (including integration/evals — may need Ollama running)
+test-all:
+	PYTHONPATH=. python -m pytest tests/unit/ tests/evals/ -q --timeout=60 $(_EXCLUDE)
 
 ## Run linting (ruff check)
 lint:
