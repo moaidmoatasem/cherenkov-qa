@@ -1,0 +1,24 @@
+name: 'CHERENKOV Validator'
+description: 'Validates API conformance using Playwright tests and OpenAPI specs'
+inputs:
+  target:
+    description: 'The real server target base URL'
+    required: true
+  spec:
+    description: 'Path to OpenAPI spec (JSON/YAML)'
+    required: true
+  fail-on-drift:
+    description: 'Exit with code 1 if violations are found'
+    required: false
+    default: 'true'
+  format:
+    description: 'Output format (json, sarif, html, etc)'
+    required: false
+    default: 'sarif'
+runs:
+  using: "composite"
+  steps:
+    - name: Run CHERENKOV CLI
+      shell: bash
+      run: |
+        cherenkov validate --target ${{ inputs.target }} --spec ${{ inputs.spec }} --format ${{ inputs.format }} ${{ inputs.fail-on-drift == 'true' && '--fail-on-drift' || '' }} --quiet

@@ -291,7 +291,7 @@ class TestValidateCmdWithSpecValidator:
             "--source", "openapi",
             "--spec", bad,
         ])
-        assert result.exit_code == 1
+        assert result.exit_code == 2
         assert "error" in result.output.lower() or "warn" in result.output.lower()
 
     def test_good_spec_proceeds_past_validation(self, tmp_path):

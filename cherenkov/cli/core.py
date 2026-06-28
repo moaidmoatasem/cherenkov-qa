@@ -80,6 +80,7 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.check_stale import check_stale_cmd
     from cherenkov.cli.commands.drift_cmd import drift_cmd
     from cherenkov.cli.commands.demo_cmd import demo_cmd
+    from cherenkov.cli.commands.examples_cmd import examples_cmd
     from cherenkov.cli.commands.routine_cmd import routine_cmd
     from cherenkov.cli.commands.teleport_cmd import teleport_cmd
 
@@ -115,6 +116,7 @@ def _register_commands() -> None:
         (check_stale_cmd, "check-stale"),
         (drift_cmd, "drift"),
         (demo_cmd, "demo"),
+        (examples_cmd, "examples"),
         (routine_cmd, "routine"),
         (teleport_cmd, "teleport"),
     ]:
