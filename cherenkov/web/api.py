@@ -4,7 +4,6 @@ CHERENKOV web/api.py — FastAPI review backend, wired to the real HitlQueue.
 
 from __future__ import annotations
 
-
 from fastapi import (
     FastAPI,
 )
@@ -13,7 +12,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from cherenkov.web.routes.deps import (
     lifespan,
 )
-
 
 app = FastAPI(
     title="CHERENKOV QA Observability Dashboard Server",
@@ -51,6 +49,7 @@ app.add_middleware(
 )
 
 from cherenkov.web.middleware.rate_limit import RateLimitMiddleware  # noqa: E402
+
 app.add_middleware(RateLimitMiddleware)
 
 # ── Phase 0b: Monitoring & Security (conditionally added) ────────────
@@ -102,12 +101,18 @@ from cherenkov.web.routes.ops_routes import router as ops_router  # noqa: E402
 
 app.include_router(ops_router)
 
+from cherenkov.web.routes.agents import router as agents_router  # noqa: E402
+
+app.include_router(agents_router)
+
 from cherenkov.web.middleware.security import add_security_middleware  # noqa: E402
 
 add_security_middleware(app)
 
 from cherenkov.web.errors import install_error_handlers  # noqa: E402
+
 install_error_handlers(app)
 
 from cherenkov.web.auth.routes import router as auth_router  # noqa: E402
+
 app.include_router(auth_router)
