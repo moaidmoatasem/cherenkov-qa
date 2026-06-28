@@ -44,7 +44,8 @@ def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
             continue
         fpath = os.path.join(tests_dir, fname)
         try:
-            code = open(fpath, encoding="utf-8").read()
+            with open(fpath, encoding="utf-8") as fh:
+                code = fh.read()
         except Exception:
             continue
         for match in field_re.finditer(code):

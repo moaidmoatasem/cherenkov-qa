@@ -51,7 +51,7 @@ def ocr_test() -> None:
         "});\n"
     )
     import tempfile
-    tmp = tempfile.NamedTemporaryFile(suffix=".spec.ts", prefix="ocr_test_", delete=False)
+    tmp = tempfile.NamedTemporaryFile(suffix=".spec.ts", prefix="ocr_test_", delete=False)  # noqa: SIM115 — manual cleanup in finally block
     tmp_path = tmp.name
     tmp.close()
     try:
