@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import os
 from typing import Any
 
@@ -25,10 +26,8 @@ class NotifierRegistry:
 
     def notify_event_all(self, event: CHERENKOVEvent) -> None:
         for notifier in self._notifiers.values():
-            try:
+            with contextlib.suppress(Exception):
                 notifier.notify_event(event)
-            except Exception:
-                pass
 
     def get(self, name: str) -> NotifierPort | None:
         return self._notifiers.get(name)
