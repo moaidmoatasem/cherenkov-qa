@@ -151,7 +151,8 @@ class TestRateLimitMiddleware:
         async def app(scope, receive, send):
             calls.append(1)
 
-        mw = RateLimitMiddleware(app, rps=100, burst=1, enabled=True)
+        # burst=10 to accommodate the server-side cost of 5.0 for /api/v1/verify
+        mw = RateLimitMiddleware(app, rps=100, burst=10, enabled=True)
         # Two different IPs should each get their own bucket
         for ip in ("10.0.0.1", "10.0.0.2"):
             await self._call(mw, self._make_scope(client_ip=ip))
