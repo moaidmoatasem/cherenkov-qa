@@ -476,3 +476,85 @@ def _print_generate_result(result, out_path: Path, personas) -> None:
                 f"  {r.persona_name:<20} {r.op_count:>4} {r.test_count:>6} {r.duration_ms:>6}"
             )
     click.echo()
+
+
+# ── `cherenkov eval refine` ───────────────────────────────────────────────────
+
+@eval_cmd.command("refine")
+@click.option("--spec",  required=True, help="Path to OpenAPI spec (YAML or JSON).")
+@click.option("--suite", required=True, help="Path to existing suite JSON.")
+@click.option("--grade", "grade_path", required=True,
+              help="Path to grade report JSON (output of `eval grade`).")
+@click.option("--output", "-o", default=None,
+              help="Write refined suite to this file [default: overwrites --suite].")
+@click.option("--no-grade", "no_grade", is_flag=True, default=False,
+              help="Skip re-grading after refinement.")
+@click.option("--json", "as_json", is_flag=True, default=False, help="Output JSON summary.")
+def refine_cmd(spec, suite, grade_path, output, no_grade, as_json):
+    """Targeted second-pass generation that improves weak operations.
+
+    Closes the generate → grade → optimize → refine feedback loop.
+    Reads an existing suite and its grade report, identifies weak or
+    uncovered operations, runs focused persona passes on them, and
+    merges the additions back into the suite.
+
+    \b
+    Typical workflow:
+        cherenkov eval generate --spec openapi.yaml --output suite.json
+        cherenkov eval grade    --spec openapi.yaml --suite suite.json --output grade.json
+        cherenkov eval refine   --spec openapi.yaml --suite suite.json --grade grade.json
+        cherenkov eval grade    --spec openapi.yaml --suite suite.json   # measure improvement
+    """
+    from cherenkov.eval.grader import GradeReport
+    from cherenkov.synthetic.refiner import refine_suite
+
+    spec_dict  = _load_yaml_or_json(spec, "spec")
+    suite_dict = _load_json(suite, "suite")
+    grade_report = GradeReport.load(Path(grade_path))
+
+    result = refine_suite(
+        suite_dict,
+        grade_report,
+        spec_dict,
+        run_grader=not no_grade,
+    )
+
+    out_path = Path(output) if output else Path(suite)
+    out_path.write_text(json.dumps(result.refined_suite, indent=2))
+
+    if as_json:
+        click.echo(json.dumps(result.to_dict(), indent=2))
+    else:
+        _print_refine_result(result, out_path)
+
+
+def _print_refine_result(result, out_path: Path) -> None:
+    orig_color = {"A": "green", "B": "green", "C": "yellow", "D": "yellow", "F": "red"}.get(
+        result.original_grade, "white"
+    )
+    click.echo()
+    click.echo(click.style("── Eval Refine ───────────────────────────────────────", bold=True))
+    click.echo(
+        f"  original grade : "
+        + click.style(result.original_grade, fg=orig_color, bold=True)
+    )
+
+    if result.new_grade_report is not None:
+        new_g = result.new_grade_report.grade
+        new_color = {"A": "green", "B": "green", "C": "yellow", "D": "yellow", "F": "red"}.get(
+            new_g, "white"
+        )
+        click.echo(
+            f"  new grade      : "
+            + click.style(new_g, fg=new_color, bold=True)
+        )
+
+    click.echo(f"  ops targeted   : {len(result.ops_targeted)}  ({', '.join(result.ops_targeted) or 'none'})")
+    click.echo(f"  tests added    : {result.tests_added}")
+    click.echo(f"  duration       : {result.duration_ms}ms")
+    click.echo(f"  output         : {out_path}")
+
+    if not result.ops_targeted:
+        click.echo()
+        click.echo(click.style("  Suite is already strong — no targeted refinement needed.", fg="green"))
+    click.echo()
