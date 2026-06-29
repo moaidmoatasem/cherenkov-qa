@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
@@ -220,3 +221,270 @@ class TestReportCmd:
         bad.write_text("{not valid json")
         result = runner.invoke(report_cmd, [str(bad)])
         assert result.exit_code == 2
+
+
+# ── TestReportCmdStoreMode ─────────────────────────────────────────────────────
+
+def _make_record(
+    run_id: str = "aaaa-bbbb",
+    verdict: str = "CERTIFIED",
+    divergence_count: int = 2,
+    coverage_pct: float | None = 87.5,
+    duration_ms: int = 450,
+    target_url: str = "http://petstore.example.com",
+    timestamp: str = "2026-06-29T10:00:00Z",
+    grade: str | None = "B",
+    overall: str | None = "CERTIFIED",
+):
+    record = MagicMock()
+    record.run_id = run_id
+    record.command = "verify"
+    record.verdict = verdict
+    record.divergence_count = divergence_count
+    record.coverage_pct = coverage_pct
+    record.duration_ms = duration_ms
+    record.target_url = target_url
+    record.timestamp = timestamp
+
+    rv: dict = {}
+    if grade:
+        rv = {
+            "grade": grade,
+            "overall": overall,
+            "confidence": 0.82,
+            "risk_flags": ["LOW_COVERAGE"],
+            "top_findings": [
+                {
+                    "rank": 1,
+                    "severity": "high",
+                    "endpoint": "GET /pets",
+                    "summary": "enum not enforced",
+                    "remediation": "add enum validation",
+                    "estimated_fix_minutes": 30,
+                }
+            ],
+            "dimensions": [
+                {"name": "divergence_probe", "score": 0.82, "grade": "B", "passed": True},
+                {"name": "spec_coverage", "score": 0.95, "grade": "A", "passed": True},
+            ],
+            "time_to_fix_estimate": "~30min",
+        }
+    record.meta_json = json.dumps({"rich_verdict": rv} if rv else {})
+    return record
+
+
+def _mock_store(records: list, diff_result: dict | None = None):
+    store = MagicMock()
+    store.list.return_value = records
+    store.get.side_effect = lambda run_id: next((r for r in records if r.run_id == run_id), None)
+    if diff_result is not None:
+        store.diff.return_value = diff_result
+    return store
+
+
+class TestReportCmdStoreMode:
+    def _run(self, args: list[str], records=None, diff_result=None):
+        from cherenkov.cli.commands.report import report_cmd
+        recs = records if records is not None else [_make_record()]
+        store = _mock_store(recs, diff_result)
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.report.get_run_store", return_value=store), \
+             patch("cherenkov.persistence.run_store.get_run_store", return_value=store):
+            # patch inside report module's lazy imports
+            with patch("cherenkov.cli.commands.report._resolve_run") as mock_resolve:
+                if args and args[0] not in ("--list", "--run", "--format", "--output", "--fail-on-new"):
+                    pass  # file mode — don't patch resolve_run
+                mock_resolve.side_effect = lambda rid: (
+                    recs[0] if rid == "latest" else next((r for r in recs if r.run_id == rid), None)
+                )
+                return runner.invoke(report_cmd, args)
+
+    def test_default_no_args_shows_latest_run(self):
+        from cherenkov.cli.commands.report import report_cmd
+        record = _make_record()
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.report._resolve_run", return_value=record):
+            result = runner.invoke(report_cmd, ["--run", "latest"])
+        assert result.exit_code == 0
+        assert "CHERENKOV Run" in result.output
+        assert "aaaa-bbbb" in result.output
+
+    def test_run_latest_text(self):
+        from cherenkov.cli.commands.report import report_cmd
+        record = _make_record()
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.report._resolve_run", return_value=record):
+            result = runner.invoke(report_cmd, ["--run", "latest"])
+        assert result.exit_code == 0
+        assert "Grade: B" in result.output
+        assert "CERTIFIED" in result.output
+
+    def test_run_json_format(self):
+        from cherenkov.cli.commands.report import report_cmd
+        record = _make_record()
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.report._resolve_run", return_value=record):
+            result = runner.invoke(report_cmd, ["--run", "latest", "--format", "json"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["run_id"] == "aaaa-bbbb"
+        assert data["grade"] == "B"
+        assert data["verdict"] == "CERTIFIED"
+        assert len(data["dimensions"]) == 2
+
+    def test_run_markdown_format(self):
+        from cherenkov.cli.commands.report import report_cmd
+        record = _make_record()
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.report._resolve_run", return_value=record):
+            result = runner.invoke(report_cmd, ["--run", "latest", "--format", "markdown"])
+        assert result.exit_code == 0
+        assert "## Grade: B" in result.output
+        assert "## Dimensions" in result.output
+        assert "## Risk Flags" in result.output
+
+    def test_run_not_found_exits_2(self):
+        from cherenkov.cli.commands.report import report_cmd
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.report._resolve_run", return_value=None):
+            result = runner.invoke(report_cmd, ["--run", "missing-id"])
+        assert result.exit_code == 2
+
+    def test_run_no_rich_verdict_still_renders(self):
+        from cherenkov.cli.commands.report import report_cmd
+        record = _make_record(grade=None)
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.report._resolve_run", return_value=record):
+            result = runner.invoke(report_cmd, ["--run", "latest"])
+        assert result.exit_code == 0
+        assert "aaaa-bbbb" in result.output
+
+    def test_list_text(self):
+        from cherenkov.cli.commands.report import report_cmd
+        records = [_make_record(run_id=f"run-{i}", verdict="PASS") for i in range(3)]
+        store = _mock_store(records)
+        runner = CliRunner()
+        with patch("cherenkov.persistence.run_store.get_run_store", return_value=store):
+            result = runner.invoke(report_cmd, ["--list"])
+        assert result.exit_code == 0
+        assert "run-0" in result.output
+        assert "run-1" in result.output
+
+    def test_list_json(self):
+        from cherenkov.cli.commands.report import report_cmd
+        records = [_make_record(run_id="run-x", grade="A", verdict="CERTIFIED")]
+        store = _mock_store(records)
+        runner = CliRunner()
+        with patch("cherenkov.persistence.run_store.get_run_store", return_value=store):
+            result = runner.invoke(report_cmd, ["--list", "--format", "json"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data[0]["run_id"] == "run-x"
+        assert data[0]["grade"] == "A"
+
+    def test_list_markdown(self):
+        from cherenkov.cli.commands.report import report_cmd
+        records = [_make_record(run_id="run-md")]
+        store = _mock_store(records)
+        runner = CliRunner()
+        with patch("cherenkov.persistence.run_store.get_run_store", return_value=store):
+            result = runner.invoke(report_cmd, ["--list", "--format", "markdown"])
+        assert result.exit_code == 0
+        assert "# Run History" in result.output
+        assert "run-md" in result.output
+
+    def test_list_empty_store(self):
+        from cherenkov.cli.commands.report import report_cmd
+        store = _mock_store([])
+        runner = CliRunner()
+        with patch("cherenkov.persistence.run_store.get_run_store", return_value=store):
+            result = runner.invoke(report_cmd, ["--list"])
+        assert result.exit_code == 0
+        assert "No runs found" in result.output
+
+    def test_diff_run_ids_text(self):
+        from cherenkov.cli.commands.report import report_cmd
+        rec_a = _make_record(run_id="run-a", grade="B", verdict="SUSPECT")
+        rec_b = _make_record(run_id="run-b", grade="A", verdict="CERTIFIED")
+        diff_result = {
+            "run_a": "run-a", "run_b": "run-b",
+            "divergence_delta": -2,
+            "verdict_changed": True,
+            "verdict_a": "SUSPECT", "verdict_b": "CERTIFIED",
+            "coverage_delta": 5.0,
+            "timestamp_a": rec_a.timestamp,
+            "timestamp_b": rec_b.timestamp,
+        }
+        store = _mock_store([rec_a, rec_b], diff_result=diff_result)
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.report._resolve_run", return_value=rec_b), \
+             patch("cherenkov.persistence.run_store.get_run_store", return_value=store):
+            result = runner.invoke(report_cmd, ["--run", "run-b", "--diff", "run-a"])
+        assert result.exit_code == 0
+        assert "SUSPECT" in result.output
+        assert "CERTIFIED" in result.output
+        assert "↑" in result.output  # grade improved B→A
+
+    def test_diff_run_ids_json(self):
+        from cherenkov.cli.commands.report import report_cmd
+        rec_a = _make_record(run_id="run-a", grade="C")
+        rec_b = _make_record(run_id="run-b", grade="B")
+        diff_result = {
+            "run_a": "run-a", "run_b": "run-b",
+            "divergence_delta": -1,
+            "verdict_changed": False,
+            "verdict_a": "SUSPECT", "verdict_b": "SUSPECT",
+            "coverage_delta": 2.0,
+            "timestamp_a": "2026-06-28T10:00:00Z",
+            "timestamp_b": "2026-06-29T10:00:00Z",
+        }
+        store = _mock_store([rec_a, rec_b], diff_result=diff_result)
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.report._resolve_run", return_value=rec_b), \
+             patch("cherenkov.persistence.run_store.get_run_store", return_value=store):
+            result = runner.invoke(report_cmd, ["--run", "run-b", "--diff", "run-a", "--format", "json"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["grade_a"] == "C"
+        assert data["grade_b"] == "B"
+        assert data["grade_delta"] == 1  # B(4) - C(3) = 1
+
+    def test_fail_on_new_with_positive_divergence_delta(self):
+        from cherenkov.cli.commands.report import report_cmd
+        rec_a = _make_record(run_id="run-a")
+        rec_b = _make_record(run_id="run-b")
+        diff_result = {
+            "run_a": "run-a", "run_b": "run-b",
+            "divergence_delta": 3,
+            "verdict_changed": True,
+            "verdict_a": "CERTIFIED", "verdict_b": "SUSPECT",
+            "coverage_delta": None,
+            "timestamp_a": rec_a.timestamp,
+            "timestamp_b": rec_b.timestamp,
+        }
+        store = _mock_store([rec_a, rec_b], diff_result=diff_result)
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.report._resolve_run", return_value=rec_b), \
+             patch("cherenkov.persistence.run_store.get_run_store", return_value=store):
+            result = runner.invoke(report_cmd, ["--run", "run-b", "--diff", "run-a", "--fail-on-new"])
+        assert result.exit_code == 1
+
+    def test_fail_on_new_with_negative_delta_exits_0(self):
+        from cherenkov.cli.commands.report import report_cmd
+        rec_a = _make_record(run_id="run-a")
+        rec_b = _make_record(run_id="run-b")
+        diff_result = {
+            "run_a": "run-a", "run_b": "run-b",
+            "divergence_delta": -1,
+            "verdict_changed": False,
+            "verdict_a": "CERTIFIED", "verdict_b": "CERTIFIED",
+            "coverage_delta": None,
+            "timestamp_a": rec_a.timestamp,
+            "timestamp_b": rec_b.timestamp,
+        }
+        store = _mock_store([rec_a, rec_b], diff_result=diff_result)
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.report._resolve_run", return_value=rec_b), \
+             patch("cherenkov.persistence.run_store.get_run_store", return_value=store):
+            result = runner.invoke(report_cmd, ["--run", "run-b", "--diff", "run-a", "--fail-on-new"])
+        assert result.exit_code == 0
