@@ -1,0 +1,29 @@
+{
+  "log_level": "WARNING",
+  "return_code_scheme": "minimal",
+  "plugins": {
+    "front-matter": {
+      "enabled": true
+    },
+    "headings": {
+      "enabled": true,
+      "heading-style": "consistent",
+      "setext-with-present-heading": true
+    },
+    "line-length": {
+      "enabled": false
+    },
+    "links": {
+      "enabled": true
+    },
+    "whitespace": {
+      "enabled": true
+    },
+    "lists": {
+      "enabled": true
+    },
+    "code-blocks": {
+      "enabled": true
+    }
+  }
+}

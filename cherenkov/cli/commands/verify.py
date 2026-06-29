@@ -156,8 +156,11 @@ def verify_cmd(
         if reports:
             _print_summary(reports)
 
-        if coverage_report and spec_dict is not None:
-            _print_coverage(cov)
+        if coverage_report:
+            if spec_dict is not None:
+                _print_coverage(cov)
+            else:
+                click.echo("[WARN] --coverage-report requires --spec; skipping.", err=True)
 
         if output:
             _write_rich_json(rich, reports, output)

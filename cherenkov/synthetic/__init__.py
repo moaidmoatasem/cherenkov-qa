@@ -22,6 +22,7 @@ from cherenkov.synthetic.personas import (
 from cherenkov.synthetic.merge import merge_suites
 from cherenkov.synthetic.enricher import enrich_suite
 from cherenkov.synthetic.suite_engine import SuiteEngine, SuiteEngineResult, PersonaRunResult
+from cherenkov.synthetic.refiner import refine_suite, RefineResult
 
 __all__ = [
     # data generator
@@ -48,4 +49,6 @@ __all__ = [
     "SuiteEngine",
     "SuiteEngineResult",
     "PersonaRunResult",
+    "refine_suite",
+    "RefineResult",
 ]
