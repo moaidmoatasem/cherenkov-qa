@@ -34,7 +34,7 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - run: pip install pyyaml
+      - run: pip install pyyaml pytest
       - name: Gate G0 -- integrity demonstrator (EPIC 535)
         run: python -m pytest demos/catch-the-ai-cheating/test_integrity_check.py -v
       - name: Gate G0 -- end-to-end cheat detection smoke test
@@ -56,7 +56,6 @@ jobs:
       - name: Run Cherenkov conformance
         uses: ./
         with:
-          spec_path: stub/openapi_3_1.yaml
-          target_url: http://localhost:8000
-          format: sarif
-          mode: full
+          spec: stub/openapi_3_1.yaml
+          target: http://localhost:8000
+          output-format: sarif
