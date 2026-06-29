@@ -34,6 +34,8 @@ State is tracked on the GitHub Project board via `status:` labels — see [`docs
 
 - **Trunk-based:** `main` is protected and always releasable. The `develop` branch was deleted (stale, 57 behind main).
 - **Conventional Commits:** `feat(scope): … (#NN)`, `fix(scope): …`, `docs:`, `chore:`, `test:`. Imperative, issue-referenced.
+  - **CRITICAL:** We use **Release Please** for automated changelog generation and version bumping. You MUST use Conventional Commits. The bots will automatically generate the `CHANGELOG.md` entries and bump `package.json`/`pyproject.toml` based on these prefixes.
+  - **Do NOT manually edit `CHANGELOG.md` or version strings.** Let the bots handle it via the automated Release PRs.
 - **Co-author trailer** for agent work where applicable.
 - **PRs:** one concern, small, template-complete, evidence attached, squash-merged.
 - **Required checks on `main`:** Documentation Coverage · Healing Suggest-Only · CLI Help + Docs Gate · CodeQL. Branch protection details in [`GITHUB_PM.md` §5](docs/process/GITHUB_PM.md).

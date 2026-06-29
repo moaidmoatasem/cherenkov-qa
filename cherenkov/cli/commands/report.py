@@ -56,7 +56,6 @@ def _summarise_events(events: list[dict]) -> dict:
         1 for e in events
         if e.get("verdict") == "AUTO_APPROVE" and e.get("stage") == "REVIEW"
     )
-    skipped = sum(1 for e in events if "skipping low richness" in e.get("msg", ""))
     return {
         "total_scenarios": total,
         "passed_scenarios": passed,
@@ -195,7 +194,7 @@ def _load_report(path: str) -> list[dict] | None:
     # Try JSON Lines format (one JSON object per line, e.g. events.jsonl)
     try:
         lines = [json.loads(line) for line in raw.strip().splitlines() if line.strip()]
-        if lines and all(isinstance(l, dict) for l in lines):
+        if lines and all(isinstance(line, dict) for line in lines):
             return lines
     except json.JSONDecodeError:
         pass
