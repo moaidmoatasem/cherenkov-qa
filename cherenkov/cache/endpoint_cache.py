@@ -11,7 +11,6 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-
 CACHE_DB = Path(".cherenkov/cache/cache.db")
 CACHE_TEST_DIR = Path(".cherenkov/cache/tests")
 _TTL_SECONDS = 24 * 3600

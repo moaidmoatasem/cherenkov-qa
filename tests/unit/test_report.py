@@ -300,11 +300,11 @@ class TestReportCmdStoreMode:
                 return runner.invoke(report_cmd, args)
 
     def test_default_no_args_shows_latest_run(self):
-        from cherenkov.cli.commands.report import report_cmd, _resolve_run
+        from cherenkov.cli.commands.report import report_cmd
         record = _make_record()
         runner = CliRunner()
         with patch("cherenkov.cli.commands.report._resolve_run", return_value=record):
-            result = runner.invoke(report_cmd, [])
+            result = runner.invoke(report_cmd, ["--run", "latest"])
         assert result.exit_code == 0
         assert "CHERENKOV Run" in result.output
         assert "aaaa-bbbb" in result.output

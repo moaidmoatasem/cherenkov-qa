@@ -17,7 +17,7 @@ pyyaml>=6.0.1,<7.0.0
 fastapi>=0.110.0,<1.0.0
 uvicorn[standard]>=0.29.0,<1.0.0
 python-multipart>=0.0.9,<1.0.0
-httpx>=0.27.0,<1.0.0
+httpx>=0.28.1,<1.0.0
 
 # CLI
 click>=8.4.1,<9.0.0
@@ -26,7 +26,7 @@ click>=8.4.1,<9.0.0
 Appium-Python-Client>=3.0.0,<4.0.0
 
 # Optional: Redis session/vector store (graceful fallback to SQLite if absent)
-redis>=5.0.0,<6.0.0
+redis>=8.0.1,<9.0.0
 
 # Response-body validation in the spec+prism oracle (graceful fallback if
 # absent, but tests/unit/test_oracle_body_validation.py requires it)
@@ -44,11 +44,11 @@ redis>=5.0.0,<6.0.0
 memsearch>=0.1.0
 
 # Test tooling
-pytest>=9.1.0
+pytest>=9.1.1
 pytest-cov>=7.1.0
 anyio>=4.13.0
 
 # Templated prompts (GraphQL/accessibility) + CLI completion
-jinja2>=3.1.0
+jinja2>=3.1.6
 argcomplete>=3.3.0
 graphql-core>=3.2.0

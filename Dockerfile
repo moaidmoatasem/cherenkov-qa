@@ -1,5 +1,5 @@
 # Stage 1: Build the React UI
-FROM node:20-slim AS ui-build
+FROM node:26-slim AS ui-build
 WORKDIR /app/cherenkov/web/ui
 COPY cherenkov/web/ui/package*.json ./
 RUN npm install
@@ -7,7 +7,7 @@ COPY cherenkov/web/ui/ ./
 RUN npx vite build
 
 # Stage 2: Main CLI Engine
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \

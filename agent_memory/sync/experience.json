@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "last_updated": "2026-06-28T12:43:04.310758+00:00",
-  "experience_count": 5,
-  "sessions_contributing": 11,
+  "last_updated": "2026-06-28T20:42:17.775229+00:00",
+  "experience_count": 6,
+  "sessions_contributing": 14,
   "experiences": [
     {
       "id": "exp_seed_001",
@@ -75,6 +75,19 @@
         "cc1-memory-smoke"
       ],
       "session_id": "sess_20260628121416_870da2"
+    },
+    {
+      "id": "exp_sess_20260628204217_7a0d53_8961",
+      "timestamp": "2026-06-28T20:42:17.775213+00:00",
+      "task": "feature",
+      "action": "decision Consolidated CI files into ci/ dir and added Jenkins groovy script",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "feature"
+      ],
+      "session_id": "sess_20260628204217_7a0d53"
     }
   ],
   "pattern_index": {
@@ -98,6 +111,9 @@
     ],
     "cc1-memory-smoke": [
       "exp_sess_20260628121416_870da2_0228"
+    ],
+    "feature": [
+      "exp_sess_20260628204217_7a0d53_8961"
     ]
   }
 }

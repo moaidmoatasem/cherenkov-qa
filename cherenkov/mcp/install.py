@@ -37,8 +37,9 @@ def install_marketplace_tool(tool_id: str) -> bool:
     print(f"Installing {tool.name}...")
     if validator.run_in_sandbox(tool.install_command):
         try:
-            # Execute install locally (simulating the sandbox action)
-            subprocess.run(tool.install_command, shell=True, check=True)
+            import shlex
+            cmd_tokens = shlex.split(tool.install_command)
+            subprocess.run(cmd_tokens, check=True)
             print(f"Successfully installed {tool.name}")
             return True
         except subprocess.CalledProcessError as e:

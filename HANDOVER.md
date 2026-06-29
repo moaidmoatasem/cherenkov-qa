@@ -73,7 +73,15 @@ All Rung 3 items are DONE (merged 2026-06-27):
 
 ---
 
-## What landed this session (2026-06-25)
+
+## What landed this session (2026-06-27)
+
+| SHA | What |
+|---|---|
+| `9e49d48` | feat(generate): wire RepairLoop into generate CLI command (11 tests) — `cherenkov generate` now routes through RepairLoop by default (--repair/--no-repair flag, --max-attempts 1-10); PR #574 |
+| `ef616f9` | fix(test): scope LoggerConfig.suppress_stderr to autouse fixture — module-level assignment was poisoning test_errors_logging.py (5 tests) across the full suite; PR #576 |
+
+## What landed previous session (2026-06-25)
 
 | SHA | What |
 |---|---|

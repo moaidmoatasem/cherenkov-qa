@@ -1,120 +1,75 @@
-DOCKER_REGISTRY ?= localhost:5000/cherenkov
-NAMESPACE ?= cherenkov
-K3D ?= ./scripts/k3d
+# CHERENKOV-QA — Makefile
+# Local developer commands for docs, testing, and common workflows.
+#
+# Usage:
+#   make docs-serve        Start local docs preview server
+#   make docs-build        Build docs site (strict mode)
+#   make docs-lint         Lint all public docs markdown
+#   make docs-check-clean  Check docs for leaked internal tokens
+#   make docs-gen-cli      Auto-generate CLI reference from cherenkov --help
+#   make test              Run the full test suite
+#   make doctor            Run environment health check
+#
+# Prerequisites: Python 3.10+, virtualenv at .venv/
+#   python3 -m venv .venv && source .venv/bin/activate
+#   pip install -r requirements.txt
+#   pip install -r docs-site/docs-requirements.txt
 
-.PHONY: help demo full install test test-unit lint lint-fix quick typecheck format \
-        k3d-up k3d-down k3d-reset k3d-test \
-        operator-image engine-image all-images sandbox-image \
-        scripts-setup install-tools operator-build clean-k8s mobile-smoke
+.PHONY: help docs-serve docs-build docs-lint docs-check-clean docs-gen-cli \
+        test doctor docs-version-list docs-deploy-dev
 
-## Show this help
-help:
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
-	  awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+VENV := .venv
+PYTHON := $(VENV)/bin/python3
+MKDOCS := $(VENV)/bin/mkdocs
+MIKE := $(VENV)/bin/mike
+DOCS_CFG := docs-site/mkdocs.yml
 
-## Install Python + Node dependencies
-install:
-	pip install -r requirements.txt
-	cd stub && npm install && npx playwright install && cd ..
+##@ Help
+help: ## Show this help
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-_EXCLUDE = --ignore=tests/unit/test_mcp_chat_tools.py --ignore=tests/unit/test_mcp_e2_2.py --ignore=tests/unit/test_mcp_tools.py --ignore=tests/unit/test_mcp_verify_system.py
+##@ Documentation — Local Dev
+docs-serve: ## Start live-reload local docs preview (http://localhost:8000)
+	@echo "→ Starting docs preview server at http://localhost:8000"
+	@cd docs-site && $(MKDOCS) serve --dev-addr 0.0.0.0:8000 --config-file mkdocs.yml
 
-## Run unit tests only (excludes MCP collection errors)
-test-unit:
-	PYTHONPATH=. python -m pytest tests/unit/ -q --timeout=30 $(_EXCLUDE)
+docs-build: ## Build docs site in strict mode (fails on broken links)
+	@echo "→ Building docs (strict mode)..."
+	@cd docs-site && $(MKDOCS) build --strict --config-file mkdocs.yml
+	@echo "✅ Build succeeded → docs-site/site/"
 
-## Run all tests (including integration/evals — may need Ollama running)
-test-all:
-	PYTHONPATH=. python -m pytest tests/unit/ tests/evals/ -q --timeout=60 $(_EXCLUDE)
+docs-lint: ## Lint all public docs markdown with pymarkdownlnt
+	@echo "→ Linting markdown in docs-site/docs/..."
+	@$(VENV)/bin/pymarkdown --config docs-site/.pymarkdown.json scan docs-site/docs/ || true
+	@echo "Lint complete."
 
-## Run linting (ruff check)
-lint:
-	python -m ruff check cherenkov/ cherenkov.py
+docs-check-clean: ## Check public docs for leaked internal SSOT tokens
+	@echo "→ Checking public docs for internal tokens..."
+	@$(PYTHON) scripts/check_public_docs_clean.py
+	@echo "Sanitizer check complete."
 
-## Auto-fix lint issues (safe fixes only)
-lint-fix:
-	python -m ruff check --fix cherenkov/ cherenkov.py
+docs-gen-cli: ## Auto-generate CLI reference from cherenkov --help
+	@echo "→ Generating CLI reference..."
+	@$(PYTHON) scripts/gen_cli_reference.py
 
-## Quick check: lint + unit tests (common dev loop)
-quick: lint test-unit
+##@ Documentation — Versioning (mike)
+docs-version-list: ## List all deployed mike versions on gh-pages
+	@cd docs-site && $(MIKE) list
 
-## Run type checking (mypy)
-typecheck:
-	python -m mypy --config-file=mypy.ini cherenkov/ cherenkov.py
+docs-deploy-dev: ## Deploy docs as 'dev' alias (for testing mike locally)
+	@echo "→ Deploying docs as 'dev' alias..."
+	@cd docs-site && $(MIKE) deploy dev
+	@echo "✅ Deployed. Run 'make docs-version-list' to confirm."
 
-## Auto-format code (ruff format)
-format:
-	python -m ruff format cherenkov/ cherenkov.py
+##@ Development
+test: ## Run the full Python + Playwright test suite
+	@$(PYTHON) -m pytest cherenkov/ -v
 
-demo: ## Start demo environment (mock data, no GPU required)
-	docker compose --profile demo up
+doctor: ## Run environment health check
+	@$(PYTHON) -m cherenkov.cli doctor
 
-full: ## Start full environment (LocalAI + Redis + CHERENKOV, requires GPU)
-	docker compose --profile full up
-
-install-tools: ## Install dev tools (one-time setup, requires sudo)
-	sudo bash scripts/install-tools.sh
-
-# k3d targets
-K3D_KUBECONFIG := $$HOME/.config/k3d/kubeconfig-cherenkov.yaml
-
-k3d-up: all-images ## Create k3d cluster, import images, apply manifests
-	@echo "Creating k3d cluster..."
-	@$(K3D) cluster create cherenkov --config k8s/k3d-cluster.yaml 2>/dev/null || $(K3D) cluster start cherenkov
-	@echo "Importing images into k3d..."
-	@$(K3D) image import cherenkov-operator:latest cherenkov-engine:latest -c cherenkov
-	@echo "Applying K8s manifests..."
-	@KUBECONFIG=$(K3D_KUBECONFIG) kubectl apply -k k8s/
-	@echo "Waiting for services to be ready..."
-	@KUBECONFIG=$(K3D_KUBECONFIG) kubectl wait --for=condition=ready pod -l app=ollama -n $(NAMESPACE) --timeout=180s 2>/dev/null || true
-	@echo "Waiting for model preloading..."
-	@KUBECONFIG=$(K3D_KUBECONFIG) kubectl wait --for=condition=complete job/ollama-model-pull -n $(NAMESPACE) --timeout=300s 2>/dev/null || true
-	@echo "k3d cluster is ready!"
-
-k3d-down: ## Delete k3d cluster
-	@echo "Deleting k3d cluster..."
-	@$(K3D) cluster delete cherenkov 2>/dev/null || true
-
-k3d-reset: k3d-down k3d-up ## Tear down and recreate k3d cluster
-
-k3d-test: k3d-up ## Run integration tests against k3d cluster
-	@echo "=== Test 1: CLI bridge happy path ==="
-	@KUBECONFIG=$(K3D_KUBECONFIG) ./scripts/k8s-run --spec petstore-spec --target prism --port 4010 --timeout 60s
-	@echo ""
-	@echo "=== Test 2: CLI bridge failure path ==="
-	@KUBECONFIG=$(K3D_KUBECONFIG) ./scripts/k8s-run --spec petstore-spec --target nonexistent --port 9999 --timeout 120s
-	@echo ""
-	@echo "=== Tests complete ==="
-
-all-images: operator-image engine-image ## Build all Docker images
-
-operator-image: ## Build the K8s operator Docker image
-	docker build -t cherenkov-operator:latest -f operator/Dockerfile operator/
-
-engine-image: ## Build the CHERENKOV engine Docker image
-	docker build -t cherenkov-engine:latest engine/
-
-sandbox-image: ## Build the sandbox Docker image
-	docker build -t cherenkov-sandbox:latest --target=build -f operator/Dockerfile operator/
-
-scripts-setup: ## Make scripts executable (one-time)
-	chmod +x scripts/k3d-setup.sh 2>/dev/null || true
-
-operator-build: ## Build the K8s operator binary (requires Go)
-	cd operator && CGO_ENABLED=0 go build -o manager main.go
-	cd operator && CGO_ENABLED=0 go build -o k8s-run ./cmd/k8s-run/main.go
-
-clean-k8s: ## Delete k3d cluster and namespace
-	KUBECONFIG=$(K3D_KUBECONFIG) kubectl delete namespace $(NAMESPACE) 2>/dev/null || true
-	$(K3D) cluster delete cherenkov 2>/dev/null || true
-
-security-audit: ## Run security audit (bandit + pip-audit)
-	@echo "=== Bandit security scan ==="
-	@python -m bandit -r cherenkov/ -q -ll 2>/dev/null || echo "  (bandit not installed — run: pip install bandit)"
-	@echo ""
-	@echo "=== pip-audit ==="
-	@python -m pip_audit 2>/dev/null || echo "  (pip-audit not installed — run: pip install pip-audit)"
-
-mobile-smoke: ## Run mobile smoke tests (requires Maestro)
-	@echo "Running mobile smoke tests..."
-	cd tests/mobile && maestro test --format junit --output results.xml . 2>/dev/null || echo "Maestro not installed — install via: curl -Ls https://get.maestro.mobile.dev | bash"
+##@ First-Time Setup
+install: ## Install all Python + docs dependencies
+	@pip install -r requirements.txt
+	@pip install -r docs-site/docs-requirements.txt
+	@echo "✅ Dependencies installed. Activate venv: source .venv/bin/activate"

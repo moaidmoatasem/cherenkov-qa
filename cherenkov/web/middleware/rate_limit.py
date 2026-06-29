@@ -9,8 +9,8 @@ Configuration (env vars):
     CHERENKOV_RATE_LIMIT_BURST — burst capacity (default 20)
     CHERENKOV_RATE_LIMIT_ENABLED — set to "false" to disable (default enabled)
 
-Endpoints with heavier cost (e.g. /api/v1/verify) may declare a separate
-token cost via the X-Rate-Cost header on the request; missing header = 1 token.
+Endpoints with heavier cost (e.g. /api/v1/verify) are assigned a higher token
+cost server-side via _route_cost(). Client-supplied cost headers are ignored.
 
 HTTP 429 response body:
     {"error": "rate_limit_exceeded", "retry_after_seconds": <float>}
@@ -32,6 +32,20 @@ _ENABLED: bool = os.getenv("CHERENKOV_RATE_LIMIT_ENABLED", "true").lower() not i
 
 # Paths that are exempt from rate limiting (health/metrics probes)
 _EXEMPT_PREFIXES: tuple[str, ...] = ("/health", "/metrics", "/docs", "/openapi.json", "/redoc")
+
+# Server-side route cost table — clients cannot influence this.
+_ROUTE_COSTS: dict[str, float] = {
+    "/api/v1/verify": 5.0,
+    "/api/v1/generate": 5.0,
+    "/api/v1/run": 3.0,
+}
+
+
+def _route_cost(path: str) -> float:
+    for prefix, cost in _ROUTE_COSTS.items():
+        if path == prefix or path.startswith(prefix + "/"):
+            return cost
+    return 1.0
 
 
 class _Bucket:
@@ -77,11 +91,9 @@ class RateLimitMiddleware:
             return self._buckets[client_key]
 
     def _client_key(self, scope: Scope) -> str:
-        # Prefer X-Forwarded-For (set by nginx/LB), fall back to direct IP
-        headers = dict(scope.get("headers", []))
-        xff = headers.get(b"x-forwarded-for", b"").decode()
-        if xff:
-            return xff.split(",")[0].strip()
+        # Use the direct peer IP as the authoritative key.
+        # X-Forwarded-For is attacker-controlled when there is no trusted reverse
+        # proxy in front, so we do NOT use it for rate-limit keying.
         client = scope.get("client")
         return client[0] if client else "unknown"
 
@@ -95,12 +107,8 @@ class RateLimitMiddleware:
             await self._app(scope, receive, send)
             return
 
-        # Read optional cost header (e.g. verify endpoint could cost 5 tokens)
-        headers = dict(scope.get("headers", []))
-        try:
-            cost = float(headers.get(b"x-rate-cost", b"1").decode())
-        except ValueError:
-            cost = 1.0
+        # Cost is determined server-side by path, never from client-supplied headers.
+        cost = _route_cost(scope.get("path", ""))
 
         client_key = self._client_key(scope)
         bucket = self._get_bucket(client_key)

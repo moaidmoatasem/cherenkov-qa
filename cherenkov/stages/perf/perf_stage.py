@@ -24,7 +24,6 @@ import re
 import shutil
 import sqlite3
 import subprocess
-import threading
 import time
 from typing import Optional, Dict, Any
 from cherenkov.core.contracts import (
@@ -54,9 +53,11 @@ except ImportError:
 class _BaselineDB:
     def __init__(self, db_path):
         self.db_path = db_path
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
-        self._local = threading.local()
-        conn = self._connect()
+        try:
+            os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        except FileExistsError:
+            pass
+        conn = sqlite3.connect(db_path, timeout=30.0)
         conn.execute(
             "CREATE TABLE IF NOT EXISTS perf_metrics ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -70,20 +71,11 @@ class _BaselineDB:
             "timestamp INTEGER NOT NULL)"
         )
         conn.commit()
+        conn.close()
 
     def _connect(self) -> sqlite3.Connection:
-        """Return a per-thread cached connection; reconnects if the connection is dead."""
-        con = getattr(self._local, "con", None)
-        if con is not None:
-            try:
-                con.execute("SELECT 1")
-                return con
-            except Exception:
-                pass
-        con = sqlite3.connect(self.db_path, timeout=30.0)
-        con.execute("PRAGMA journal_mode=WAL")
-        self._local.con = con
-        return con
+        """Return a fresh connection (no caching) to avoid Windows WSL file-lock issues."""
+        return sqlite3.connect(self.db_path, timeout=30.0)
 
     def record(
         self,
@@ -108,28 +100,34 @@ class _BaselineDB:
             is_llm: Whether this is an LLM request
         """
         conn = self._connect()
-        conn.execute(
-            "INSERT INTO perf_metrics (endpoint, method, latency_ms, ttft_ms, itl_ms, cost_usd, is_llm, timestamp) "
-            "VALUES (?,?,?,?,?,?,?,?)",
-            (
-                endpoint,
-                method,
-                latency_ms,
-                ttft_ms,
-                itl_ms,
-                cost_usd,
-                int(is_llm),
-                int(time.time()),
-            ),
-        )
-        conn.commit()
+        try:
+            conn.execute(
+                "INSERT INTO perf_metrics (endpoint, method, latency_ms, ttft_ms, itl_ms, cost_usd, is_llm, timestamp) "
+                "VALUES (?,?,?,?,?,?,?,?)",
+                (
+                    endpoint,
+                    method,
+                    latency_ms,
+                    ttft_ms,
+                    itl_ms,
+                    cost_usd,
+                    int(is_llm),
+                    int(time.time()),
+                ),
+            )
+            conn.commit()
+        finally:
+            conn.close()
 
     def stats(self, endpoint, method):
         conn = self._connect()
-        rows = conn.execute(
-            "SELECT latency_ms FROM perf_metrics WHERE endpoint=? AND method=?",
-            (endpoint, method),
-        ).fetchall()
+        try:
+            rows = conn.execute(
+                "SELECT latency_ms FROM perf_metrics WHERE endpoint=? AND method=?",
+                (endpoint, method),
+            ).fetchall()
+        finally:
+            conn.close()
         latencies = [r[0] for r in rows]
         count = len(latencies)
         if count == 0:
@@ -150,11 +148,14 @@ class _BaselineDB:
             Dictionary with LLM performance metrics
         """
         conn = self._connect()
-        rows = conn.execute(
-            "SELECT ttft_ms, itl_ms, cost_usd FROM perf_metrics "
-            "WHERE endpoint=? AND method=? AND is_llm=1 AND ttft_ms IS NOT NULL",
-            (endpoint, method),
-        ).fetchall()
+        try:
+            rows = conn.execute(
+                "SELECT ttft_ms, itl_ms, cost_usd FROM perf_metrics "
+                "WHERE endpoint=? AND method=? AND is_llm=1 AND ttft_ms IS NOT NULL",
+                (endpoint, method),
+            ).fetchall()
+        finally:
+            conn.close()
 
         ttft_values = [r[0] for r in rows if r[0] is not None]
         itl_values = [r[1] for r in rows if r[1] is not None]
@@ -249,7 +250,10 @@ class PerfStage:
         self.db = _BaselineDB(self.db_path)
 
     def _write_script(self, sl):
-        os.makedirs(self.tests_dir, exist_ok=True)
+        try:
+            os.makedirs(self.tests_dir, exist_ok=True)
+        except FileExistsError:
+            pass
         code = _render_script(sl)
         with open(self.k6_script_path, "w", encoding="utf-8") as f:
             f.write(code)
@@ -389,8 +393,8 @@ class PerfStage:
         Returns:
             True if update was successful
         """
+        conn = self.db._connect()
         try:
-            conn = self.db._connect()
             cursor = conn.cursor()
 
             # Get the most recent record for this endpoint/method
@@ -415,6 +419,8 @@ class PerfStage:
         except Exception as e:
             self.log.error("Failed to update LLM metrics", error=str(e))
             return False
+        finally:
+            conn.close()
 
     def _ml_anomaly_detection(
         self, endpoint: str, method: str, current_latency_ms: float
@@ -435,12 +441,15 @@ class PerfStage:
 
         # Fetch historical data
         conn = self.db._connect()
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT latency_ms, timestamp FROM perf_metrics WHERE endpoint=? AND method=? ORDER BY timestamp",
-            (endpoint, method),
-        )
-        rows = cursor.fetchall()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT latency_ms, timestamp FROM perf_metrics WHERE endpoint=? AND method=? ORDER BY timestamp",
+                (endpoint, method),
+            )
+            rows = cursor.fetchall()
+        finally:
+            conn.close()
 
         if len(rows) < 10:
             return {"anomaly": False, "score": 0.0, "method": "insufficient_data"}

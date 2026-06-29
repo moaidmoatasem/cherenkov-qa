@@ -1,0 +1,15 @@
+# CHERENKOV GitLab CI Template (CC-6)
+cherenkov_validation:
+  image: python:3.12-bullseye
+  stage: test
+  variables:
+    TARGET_URL: "http://localhost:8080"
+    SPEC_PATH: "openapi.yaml"
+  before_script:
+    - pip install cherenkov-qa
+  script:
+    - cherenkov validate --target $TARGET_URL --spec $SPEC_PATH --format junit --fail-on-drift --quiet
+  artifacts:
+    reports:
+      junit: .cherenkov/report/junit.xml
+    when: always
