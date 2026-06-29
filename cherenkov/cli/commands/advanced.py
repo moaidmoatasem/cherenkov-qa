@@ -235,7 +235,8 @@ def mcp_remove(tool_id: str) -> None:
     click.echo(f"Removing {tool_id}...")
     try:
         # In a real scenario, map tool_id to package name
-        subprocess.run(f"pip uninstall -y cherenkov-mcp-{tool_id.split('-')[0]}", shell=True, check=True)
+        package_name = f"cherenkov-mcp-{tool_id.split('-')[0]}"
+        subprocess.run(["pip", "uninstall", "-y", package_name], check=True)
         click.echo("Successfully removed tool.")
     except subprocess.CalledProcessError as e:
         raise click.ClickException(f"Removal failed: {e}")
