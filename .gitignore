@@ -48,6 +48,14 @@ stub/node_modules/
 packaging/build/
 packaging/dist/
 k3d
+
+# docs-site — MkDocs build artifacts (never commit these)
+docs-site/site/
+# Auto-generated CLI reference (re-generated on every docs build)
+docs-site/docs/cli/_generated_reference.md
+# docs _archive backups (not needed in git, already in archive dir)
+docs/_archive/
+
 scripts/k8s-run
 
 # k3d binary — download via scripts/install-tools.sh

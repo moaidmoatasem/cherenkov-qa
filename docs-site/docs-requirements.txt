@@ -1,0 +1,23 @@
+# CHERENKOV-QA Public Docs — Python Dependencies
+# Install with: pip install -r docs-site/docs-requirements.txt
+#
+# Pinning policy: minor-pinned (~=) to prevent silent major version bumps
+# while still receiving patch-level security fixes.
+
+# Core MkDocs framework
+mkdocs~=1.6.1
+mkdocs-material~=9.7.6
+
+# Versioning — mike manages the gh-pages branch, version selector in nav
+# IMPORTANT: mike pushes directly to gh-pages branch via git.
+# GitHub Pages source MUST be set to "Deploy from branch: gh-pages / root"
+# Do NOT use the actions/deploy-pages action alongside mike.
+mike~=2.2.0
+
+# Plugins
+mkdocs-git-revision-date-localized-plugin~=1.5.3   # "Last updated" timestamps from git
+# NOTE: awesome-pages-plugin intentionally omitted — explicit nav: is used instead.
+# Mixing awesome-pages with explicit nav causes unpredictable nav overrides.
+
+# Linting (Python-native, no npm required)
+pymarkdownlnt~=0.9.38
