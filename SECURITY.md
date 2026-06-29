@@ -8,9 +8,12 @@
 
 ## Reporting a Vulnerability
 
-Report vulnerabilities by opening an issue at https://github.com/moaidmoatasem/cherenkov-qa/issues with the label `security`.
+**Do not file a public GitHub issue for security vulnerabilities.**
 
-Do **not** file a public issue for critical vulnerabilities. Instead, email the maintainer directly (see commit history) with:
+Use GitHub's private vulnerability reporting:
+**[Report a vulnerability](https://github.com/moaidmoatasem/cherenkov-qa/security/advisories/new)**
+
+Include:
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact
