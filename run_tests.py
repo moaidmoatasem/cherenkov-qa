@@ -12,8 +12,10 @@ import sys
 import subprocess
 import unittest
 
-# Add current directory to Python path
+# Add current directory and tests to Python path
 sys.path.insert(0, ".")
+sys.path.insert(0, "tests/standalone")
+sys.path.insert(0, "tests/smoke")
 
 PASS = "[PASS]"
 FAIL = "[FAIL]"
@@ -45,8 +47,8 @@ def run_smoke_tests():
     print("\nRunning smoke tests...")
 
     smoke_tests = [
-        "smoke_test_provider.py",
-        "smoke_test_cache.py",
+        "tests/smoke/smoke_test_provider.py",
+        "tests/smoke/smoke_test_cache.py",
     ]
 
     all_passed = True
