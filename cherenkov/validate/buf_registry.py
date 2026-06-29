@@ -60,3 +60,22 @@ class BufRegistryClient:
         except Exception as exc:
             _log.error("Failed to connect to Buf Schema Registry", error=str(exc))
             return None
+
+    def fetch_proto_content(self, module_name: str, file_path: str = "main.proto") -> str | None:
+        """
+        Fetches the contents of a .proto file from the Buf Schema Registry.
+        For demonstration, returns a stub protobuf if connected successfully.
+        """
+        metadata = self.fetch_schema(module_name)
+        if metadata:
+            _log.info(f"Mock-fetching {file_path} from {module_name} in BSR")
+            return f'''
+syntax = "proto3";
+package buf.test;
+service BufTestService {{
+  rpc Ping (PingRequest) returns (PingResponse) {{}}
+}}
+message PingRequest {{ string message = 1; }}
+message PingResponse {{ string message = 1; }}
+'''
+        return None

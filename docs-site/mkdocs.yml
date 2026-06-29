@@ -1,0 +1,161 @@
+# CHERENKOV-QA — MkDocs Public Documentation Site
+# Framework: Material for MkDocs
+# Versioning: mike
+# Deployed to: GitHub Pages (gh-pages branch)
+
+site_name: CHERENKOV-QA
+site_description: AI-native API conformance testing — OpenAPI spec to Playwright tests, locally, privately, with zero vendor lock-in.
+site_url: https://moaidmoatasem.github.io/cherenkov-qa/
+repo_url: https://github.com/moaidmoatasem/cherenkov-qa
+repo_name: cherenkov-qa
+edit_uri: edit/main/docs-site/docs/
+
+docs_dir: docs
+site_dir: site
+
+# ── Theme ────────────────────────────────────────────────────────────────────
+theme:
+  name: material
+  custom_dir: overrides
+  palette:
+    - scheme: slate
+      primary: deep purple
+      accent: pink
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+    - scheme: default
+      primary: deep purple
+      accent: pink
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+    - search.suggest
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+    - content.action.view
+    - announce.dismiss
+    - toc.follow
+  logo: assets/logo.svg
+  favicon: assets/favicon.ico
+  icon:
+    repo: fontawesome/brands/github
+    admonition:
+      note: octicons/tag-16
+      tip: octicons/squirrel-16
+      warning: octicons/alert-16
+      danger: octicons/zap-16
+
+# ── Extra ─────────────────────────────────────────────────────────────────────
+extra:
+  version:
+    provider: mike
+    default: latest
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/moaidmoatasem/cherenkov-qa
+      name: GitHub
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/cherenkov
+      name: Discord
+    - icon: fontawesome/brands/twitter
+      link: https://x.com/cherenkovqa
+      name: Twitter / X
+  generator: false  # Remove "Made with Material" footer link
+
+extra_css:
+  - stylesheets/extra.css
+
+# ── Plugins ───────────────────────────────────────────────────────────────────
+plugins:
+  - search:
+      lang: en
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+      fallback_to_build_date: true
+
+# ── Markdown Extensions ───────────────────────────────────────────────────────
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path: docs
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - def_list
+  - toc:
+      permalink: true
+      title: On this page
+
+# ── Navigation ────────────────────────────────────────────────────────────────
+nav:
+  - Home: index.md
+  - Getting Started:
+      - getting-started/index.md
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+      - Cost Tiers: getting-started/cost-tiers.md
+  - CLI Reference:
+      - Commands: cli/reference.md
+      - Shell Completions: cli/completions.md
+  - Guides:
+      - API Conformance Testing: guides/api-conformance.md
+      - OpenAPI Spec Integration: guides/openapi-spec.md
+      - Local LLM Setup: guides/local-llm.md
+      - Eject to Vanilla Playwright: guides/eject.md
+      - CI/CD Integration: guides/ci-cd.md
+      - K8s Operator: guides/k8s-operator.md
+      - Security Testing (OWASP): guides/security.md
+  - Integrations:
+      - VS Code Extension: integrations/vscode.md
+      - GitHub Actions: integrations/github-actions.md
+      - Slack & Teams: integrations/notifications.md
+      - MCP Ecosystem: integrations/mcp.md
+  - Architecture:
+      - System Design: architecture/system-design.md
+      - Clean Architecture: architecture/clean-architecture.md
+      - AI Pipeline: architecture/ai-pipeline.md
+      - Second Brain: architecture/second-brain.md
+      - Diagrams: architecture/diagrams.md
+  - Changelog:
+      - Latest: changelog.md
+      - v1.1.0: releases/v1.1.0.md
+      - v1.0.0: releases/v1.0.0.md
+  - Contributing: contributing.md
