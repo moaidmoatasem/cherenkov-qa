@@ -25,5 +25,5 @@ jobs:
       - name: Run CHERENKOV
         uses: ./
         with:
-          openapi-spec-path: './path/to/openapi.yaml'
-          target-url: 'http://localhost:8000'
+          spec: stub/openapi_3_1.yaml
+          target: 'http://localhost:8000'

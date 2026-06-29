@@ -56,7 +56,6 @@ jobs:
       - name: Run Cherenkov conformance
         uses: ./
         with:
-          spec_path: stub/openapi_3_1.yaml
-          target_url: http://localhost:8000
-          format: sarif
-          mode: full
+          spec: stub/openapi_3_1.yaml
+          target: http://localhost:8000
+          output-format: sarif
