@@ -112,7 +112,7 @@ When a test fails against the live server, CHERENKOV runs the **divergence loop*
 3. If reproduced → **Scribe** records confirmed divergence with evidence
 4. If not reproduced → rejected as tautology/noise
 
-See [Diagrams — Divergence Loop](diagrams.md#divergence-loop--the-core-capability) for the sequence diagram.
+See [Diagrams — Divergence Loop](diagrams.md#divergence-loop-the-core-capability) for the sequence diagram.
 
 ---
 
