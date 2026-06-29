@@ -62,7 +62,7 @@ class OrchestrationEngine:
             self._events_file = None
 
     def _progress(self, *args, **kwargs) -> None:
-        self._progress(*args, **kwargs)
+        print(*args, **kwargs)
 
     def _emit_event(self, event: str, data: dict) -> None:
         if self.event_callback:
@@ -322,7 +322,7 @@ class OrchestrationEngine:
             return True, [], [], set(), set()
 
         max_workers = min(len(plan.scenarios), get_settings().MAX_CONCURRENT_SCENARIOS)
-        self._progress(f"  Running {len(plan.scenario)} scenario(s) [{max_workers} concurrent]...\n")
+        self._progress(f"  Running {len(plan.scenarios)} scenario(s) [{max_workers} concurrent]...\n")
 
         scenario_results: list[bool] = []
         all_durations: list[int] = []

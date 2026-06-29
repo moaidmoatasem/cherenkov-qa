@@ -15,7 +15,7 @@ Usage:
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from cherenkov.eval.grader import GradeReport
@@ -24,7 +24,6 @@ from cherenkov.synthetic.personas import (
     HAPPY_PATH,
     SCHEMA_PEDANT,
     ERROR_PATH,
-    BOUNDARY_SEEKER,
     TesterPersona,
     build_spec_contexts,
 )
