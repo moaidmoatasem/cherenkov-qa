@@ -41,6 +41,7 @@ class CherenkovSettings(BaseSettings):
 
     GITHUB_MODELS_URL: str = Field(default='https://models.inference.ai.azure.com', validation_alias='CHERENKOV_GITHUB_MODELS_URL')
     GITHUB_TOKEN: str = Field(default='', validation_alias='CHERENKOV_GITHUB_TOKEN')
+    GITHUB_WEBHOOK_SECRET: str = Field(default='', validation_alias='CHERENKOV_GITHUB_WEBHOOK_SECRET')
     GITHUB_MODELS_SMALL_MODEL: str = Field(default='meta-llama-3.1-8b-instruct', validation_alias='CHERENKOV_GITHUB_MODELS_SMALL_MODEL')
     GITHUB_MODELS_DEEP_MODEL: str = Field(default='gpt-4o', validation_alias='CHERENKOV_GITHUB_MODELS_DEEP_MODEL')
 

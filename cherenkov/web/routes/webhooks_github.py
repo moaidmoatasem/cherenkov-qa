@@ -12,12 +12,14 @@ _log = logging.getLogger(__name__)
 
 github_webhook_router = APIRouter(prefix="/api/v1/webhooks/github", tags=["webhooks"])
 
-# Assuming standard CHERENKOV secret setup
-GITHUB_SECRET = "placeholder-secret-change-me"
+
+def _get_webhook_secret() -> str:
+    from cherenkov.core.settings import get_settings
+    return get_settings().GITHUB_WEBHOOK_SECRET
 
 
 def verify_signature(payload_body: bytes, secret: str, signature_header: str) -> bool:
-    if not signature_header:
+    if not signature_header or not secret:
         return False
     hash_object = hmac.new(secret.encode("utf-8"), msg=payload_body, digestmod=hashlib.sha256)
     expected_signature = "sha256=" + hash_object.hexdigest()
@@ -32,11 +34,14 @@ async def handle_github_event(
 ) -> dict[str, Any]:
     """Handle incoming GitHub webhook events."""
     payload_body = await request.body()
+    secret = _get_webhook_secret()
 
-    if x_hub_signature_256 and not verify_signature(payload_body, GITHUB_SECRET, x_hub_signature_256):
-        raise HTTPException(status_code=401, detail="Invalid signature")
-    elif not x_hub_signature_256:
-        _log.warning("Received webhook without signature, allowing for migration")
+    if secret:
+        # Secret is configured — enforce signature on every request.
+        if not x_hub_signature_256 or not verify_signature(payload_body, secret, x_hub_signature_256):
+            raise HTTPException(status_code=401, detail="Invalid or missing webhook signature")
+    else:
+        _log.warning("CHERENKOV_GITHUB_WEBHOOK_SECRET is not set; webhook signature verification is disabled")
 
     payload = await request.json()
     _log.info(f"Received GitHub webhook event: {x_github_event}")
