@@ -21,13 +21,6 @@ classifiers = [
     "Topic :: Software Development :: Testing",
     "Topic :: Internet :: WWW/HTTP",
 ]
-
-[project.urls]
-Homepage = "https://github.com/moaidmoatasem/cherenkov-qa"
-Documentation = "https://moaidmoatasem.github.io/cherenkov-qa/"
-Repository = "https://github.com/moaidmoatasem/cherenkov-qa"
-Issues = "https://github.com/moaidmoatasem/cherenkov-qa/issues"
-Changelog = "https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CHANGELOG.md"
 dependencies = [
     "pydantic>=2.7.0,<3.0.0",
     "pydantic-settings>=2.14.2",
@@ -41,6 +34,13 @@ dependencies = [
     "websockets",
     "PyJWT>=2.8.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/moaidmoatasem/cherenkov-qa"
+Documentation = "https://moaidmoatasem.github.io/cherenkov-qa/"
+Repository = "https://github.com/moaidmoatasem/cherenkov-qa"
+Issues = "https://github.com/moaidmoatasem/cherenkov-qa/issues"
+Changelog = "https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 redis = ["redis>=8.0.1"]
