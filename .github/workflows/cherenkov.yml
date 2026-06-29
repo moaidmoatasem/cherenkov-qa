@@ -23,7 +23,7 @@ jobs:
           python-version: '3.10'
 
       - name: Run CHERENKOV
-        uses: cherenkov-qa/action@v1
+        uses: ./
         with:
           openapi-spec-path: './path/to/openapi.yaml'
           target-url: 'http://localhost:8000'
