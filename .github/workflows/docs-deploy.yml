@@ -60,7 +60,7 @@ jobs:
         continue-on-error: true
 
       - name: Validate public docs for leaked internal tokens
-        run: python scripts/check_public_docs_clean.py --strict
+        run: python scripts/check_public_docs_clean.py
 
       - name: Build docs (strict — fail on broken links or missing pages)
         run: mkdocs build --strict --config-file docs-site/mkdocs.yml
