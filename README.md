@@ -2,8 +2,9 @@
 
 **The AI-Native API Conformance Testing Platform**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-green.svg)](https://github.com/moaidmoatasem/cherenkov-qa/releases/tag/v1.0.0)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-green.svg)](https://github.com/moaidmoatasem/cherenkov-qa/releases/tag/v1.1.1)
+[![PyPI](https://img.shields.io/pypi/v/cherenkov-qa.svg)](https://pypi.org/project/cherenkov-qa/)
 
 Every API has an OpenAPI spec, but those specs silently drift from the real server implementations every day. Writing tests to catch this manually is tedious and slow. 
 
@@ -44,9 +45,9 @@ When tests fail, CHERENKOV suggests how to tighten your backend validations or f
 ### 4. Zero Vendor Lock-in (Eject Anytime)
 We believe in open standards. You can eject the generated tests into standard, standalone Playwright code at any time:
 ```bash
-npx cherenkov eject --output ./tests
+cherenkov eject --output ./tests
 ```
-Your tests will run perfectly with `npx playwright test`, completely detached from CHERENKOV.
+Your tests will run perfectly with `playwright test`, completely detached from CHERENKOV.
 
 ### 5. 100% Private (Local LLM First)
 By default, CHERENKOV uses `qwen2.5-coder:7b` running locally via Ollama. Your proprietary API specs never leave your laptop. (Cloud models like OpenAI are supported as opt-in).
@@ -62,9 +63,9 @@ By default, CHERENKOV uses `qwen2.5-coder:7b` running locally via Ollama. Your p
 ---
 
 ## 📚 Documentation
-- [Getting Started Guide](https://docs.cherenkov.dev/getting-started)
-- [CLI Reference](https://docs.cherenkov.dev/cli)
-- [Architecture & Design Decisions](https://docs.cherenkov.dev/architecture)
+- [Getting Started Guide](https://moaidmoatasem.github.io/cherenkov-qa/getting-started/)
+- [CLI Reference](https://moaidmoatasem.github.io/cherenkov-qa/cli/reference/)
+- [Architecture & Design Decisions](https://moaidmoatasem.github.io/cherenkov-qa/architecture/)
 
 ---
 

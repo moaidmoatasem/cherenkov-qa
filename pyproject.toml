@@ -3,10 +3,31 @@ requires = ["setuptools>=82.0.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cherenkov"
-version = "1.0.0"
+name = "cherenkov-qa"
+version = "1.1.1"
+description = "AI-native API conformance testing — OpenAPI spec to Playwright tests, locally, privately, with zero vendor lock-in."
+readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.10"
+keywords = ["openapi", "api-testing", "qa", "llm", "conformance", "playwright", "fastapi"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Internet :: WWW/HTTP",
+]
+
+[project.urls]
+Homepage = "https://github.com/moaidmoatasem/cherenkov-qa"
+Documentation = "https://moaidmoatasem.github.io/cherenkov-qa/"
+Repository = "https://github.com/moaidmoatasem/cherenkov-qa"
+Issues = "https://github.com/moaidmoatasem/cherenkov-qa/issues"
+Changelog = "https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CHANGELOG.md"
 dependencies = [
     "pydantic>=2.7.0,<3.0.0",
     "pydantic-settings>=2.14.2",
