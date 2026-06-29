@@ -1,4 +1,5 @@
 import sys
+
 import click
 
 
@@ -47,48 +48,48 @@ _CLICK_COMMANDS = [
 
 
 def _register_commands() -> None:
-    from cherenkov.cli.commands.validate import validate_cmd
-    from cherenkov.cli.commands.verify import verify_cmd
-    from cherenkov.cli.commands.check_suite import check_suite_cmd
-    from cherenkov.synthetic.cmd import synthetic_cmd
-    from cherenkov.cli.commands.simple import (
-        diff_cmd,
-        report_cmd,
-        eject_cmd,
-        self_test_cmd,
-        completion_cmd,
-        init_cmd,
-        doctor_cmd,
-    )
-    from cherenkov.cli.commands.generate_cmd import generate_cmd
     from cherenkov.cli.commands.advanced import (
-        visual_cmd,
-        perf_cmd,
         hitl_cmd,
-        review_cmd,
         mcp_cmd,
+        perf_cmd,
+        review_cmd,
+        visual_cmd,
     )
-    from cherenkov.cli.commands.epoch import (
-        dashboard_cmd,
-        map_cmd,
-        daemon_cmd,
-        explore_cmd,
-        author_cmd,
-        tokens_cmd,
-        governance_cmd,
-        profile_cmd,
-    )
-    from cherenkov.cli.commands.certify import certify_cmd
     from cherenkov.cli.commands.bench import bench_cmd
-    from cherenkov.cli.commands.ocr_cmd import ocr_cmd
+    from cherenkov.cli.commands.certify import certify_cmd
     from cherenkov.cli.commands.check_stale import check_stale_cmd
-    from cherenkov.cli.commands.drift_cmd import drift_cmd
+    from cherenkov.cli.commands.check_suite import check_suite_cmd
     from cherenkov.cli.commands.demo_cmd import demo_cmd
+    from cherenkov.cli.commands.drift_cmd import drift_cmd
+    from cherenkov.cli.commands.enterprise import enterprise_cmd
+    from cherenkov.cli.commands.epoch import (
+        author_cmd,
+        daemon_cmd,
+        dashboard_cmd,
+        explore_cmd,
+        governance_cmd,
+        map_cmd,
+        profile_cmd,
+        tokens_cmd,
+    )
     from cherenkov.cli.commands.eval_cmd import eval_cmd
     from cherenkov.cli.commands.examples_cmd import examples_cmd
+    from cherenkov.cli.commands.generate_cmd import generate_cmd
+    from cherenkov.cli.commands.ocr_cmd import ocr_cmd
     from cherenkov.cli.commands.routine_cmd import routine_cmd
+    from cherenkov.cli.commands.simple import (
+        completion_cmd,
+        diff_cmd,
+        doctor_cmd,
+        eject_cmd,
+        init_cmd,
+        report_cmd,
+        self_test_cmd,
+    )
     from cherenkov.cli.commands.teleport_cmd import teleport_cmd
-    from cherenkov.cli.commands.enterprise import enterprise_cmd
+    from cherenkov.cli.commands.validate import validate_cmd
+    from cherenkov.cli.commands.verify import verify_cmd
+    from cherenkov.synthetic.cmd import synthetic_cmd
 
     for cmd, name in [
         (verify_cmd, "verify"),
