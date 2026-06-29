@@ -7,12 +7,9 @@ No live API or LLM calls.
 
 from __future__ import annotations
 
-import pytest
-
 from cherenkov.eval.grader import SuiteGrader
 from cherenkov.synthetic.suite_engine import SuiteEngine
-from cherenkov.synthetic.refiner import refine_suite, RefineResult
-from cherenkov.synthetic.personas import HAPPY_PATH, SCHEMA_PEDANT
+from cherenkov.synthetic.refiner import refine_suite
 
 
 # ── fixtures ───────────────────────────────────────────────────────────────────
