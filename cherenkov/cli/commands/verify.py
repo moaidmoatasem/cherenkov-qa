@@ -28,6 +28,7 @@ from cherenkov.persistence.run_store import RunRecord, get_run_store, spec_hash 
 @click.command("verify")
 @click.option(
     "--url",
+    "--base-url",
     "-u",
     required=True,
     help="Base URL of the live server to probe (e.g. https://petstore3.swagger.io/api/v3)",
