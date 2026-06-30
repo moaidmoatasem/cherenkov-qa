@@ -26,24 +26,35 @@ auth_header="Authorization: Bearer ${TOKEN}"
 
 if [[ "${PURGE_EXISTING:-0}" == "1" ]]; then
   echo "Purging existing rulesets..."
-  existing=$(curl -sf -H "$auth_header" -H "Accept: application/vnd.github+json" "$API" | \
-    python3 -c "import sys,json; [print(r['id']) for r in json.load(sys.stdin)]")
-  for id in $existing; do
-    curl -sf -X DELETE -H "$auth_header" -H "Accept: application/vnd.github+json" "${API}/${id}"
+  existing_json=$(curl -sSf -H "$auth_header" -H "Accept: application/vnd.github+json" "$API") || {
+    echo "ERROR: failed to list rulesets (check token scope)" >&2
+    exit 1
+  }
+  while IFS= read -r id; do
+    [[ -z "$id" ]] && continue
+    curl -sSf -X DELETE -H "$auth_header" -H "Accept: application/vnd.github+json" "${API}/${id}" >/dev/null
     echo "  Deleted ruleset $id"
-  done
+  done < <(echo "$existing_json" | python3 -c "import sys,json; [print(r['id']) for r in json.load(sys.stdin)]")
 fi
 
-for file in .github/rulesets/*.json; do
-  name=$(python3 -c "import json; print(json.load(open('${file}'))['name'])")
+shopt -s nullglob
+files=(.github/rulesets/*.json)
+shopt -u nullglob
+if [[ ${#files[@]} -eq 0 ]]; then
+  echo "No ruleset files found in .github/rulesets/ — nothing to apply."
+  exit 0
+fi
+
+for file in "${files[@]}"; do
+  name=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['name'])" "$file")
   echo "Applying: ${file} (\"${name}\")..."
-  response=$(curl -sf -X POST \
+  response=$(curl -sSf -X POST \
     -H "$auth_header" \
     -H "Accept: application/vnd.github+json" \
     -H "Content-Type: application/json" \
     "$API" \
-    --data-binary "@${file}" 2>&1) || {
-      echo "  FAILED: $response" >&2
+    --data-binary "@${file}") || {
+      echo "  FAILED — see curl error above" >&2
       exit 1
     }
   id=$(echo "$response" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")

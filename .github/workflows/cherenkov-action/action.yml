@@ -11,7 +11,7 @@ inputs:
     description: 'Exit with code 1 if violations are found'
     required: false
     default: 'true'
-  format:
+  output-format:
     description: 'Output format (json, sarif, html, etc)'
     required: false
     default: 'sarif'
@@ -21,4 +21,4 @@ runs:
     - name: Run CHERENKOV CLI
       shell: bash
       run: |
-        cherenkov validate --target ${{ inputs.target }} --spec ${{ inputs.spec }} --format ${{ inputs.format }} ${{ inputs.fail-on-drift == 'true' && '--fail-on-drift' || '' }} --quiet
+        cherenkov validate --target ${{ inputs.target }} --spec ${{ inputs.spec }} --format ${{ inputs.output-format }} ${{ inputs.fail-on-drift == 'true' && '--fail-on-drift' || '' }} --quiet
