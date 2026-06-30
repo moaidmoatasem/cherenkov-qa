@@ -555,6 +555,30 @@ so verdicts can be inspected and actioned from the browser instead of the termin
 
 ---
 
+#### `self-test`
+Run a deterministic dry-run of the pipeline (mocking all external I/O) to verify the installation is healthy.
+
+```bash
+./bin/cherenkov self-test
+```
+
+---
+
+#### `report`
+Summarise and diff cherenkov run reports.
+
+```bash
+./bin/cherenkov report
+./bin/cherenkov report --diff previous_report.json --output report.json
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--output`, `-o` | *(none)* | Path to write the JSON report |
+| `--diff`, `-d` | *(none)* | Path to previous report.json for diff comparison |
+
+---
+
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client. 
 
