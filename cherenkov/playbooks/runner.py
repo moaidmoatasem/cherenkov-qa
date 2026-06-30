@@ -23,7 +23,6 @@ class PlaybookRunner:
         request_headers: dict[str, str] | None = None,
     ) -> list[PlaybookFinding]:
         findings: list[PlaybookFinding] = []
-        response_headers = {k.lower(): v for k, v in (response_headers or {}).items()}
         request_headers = {k.lower(): v for k, v in (request_headers or {}).items()}
         method = method.upper()
 
