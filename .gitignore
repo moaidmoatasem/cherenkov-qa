@@ -28,3 +28,4 @@ stub/results.json
 stub/test-results/
 stub/node_modules/
 *.trace.zip
+*.egg-info/
