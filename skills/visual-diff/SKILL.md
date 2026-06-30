@@ -1,4 +1,6 @@
 ---
+name: visual-diff
+description: "Run Playwright visual screenshot baselines and regression checks against the local UI via MCP."
 scope: Track B Re-integration
 invariants: [D7]
 ---

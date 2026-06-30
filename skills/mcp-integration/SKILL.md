@@ -1,4 +1,6 @@
 ---
+name: mcp-integration
+description: "Expose CHERENKOV over MCP (JSON-RPC 2.0 stdio) for Claude Desktop, Cursor, and Open Interpreter."
 scope: MCP Integration
 invariants: [D7]
 related_contracts: [Track B/C]

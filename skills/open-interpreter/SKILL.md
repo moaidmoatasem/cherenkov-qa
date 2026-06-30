@@ -1,4 +1,6 @@
 ---
+name: open-interpreter
+description: "Drive CHERENKOV conformance checks via Open Interpreter using the cherenkov MCP tools."
 scope: Open Interpreter Integration
 invariants: [D7]
 related_contracts: [Track B/C, MCP]

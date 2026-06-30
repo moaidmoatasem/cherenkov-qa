@@ -1,4 +1,6 @@
 ---
+name: snyk-remediation
+description: "Fix Snyk vulnerability findings in app dependencies and code — D7-exempt for application code."
 scope: Snyk Vulnerability Remediation
 invariants: [Suggest-only, D7-exempt (app code, not test code)]
 related_contracts: [Agent Memory, Security]

@@ -1,4 +1,6 @@
 ---
+name: rag-query
+description: "Query historical test runs, failures, and API specs from the SQLite RAG index via MCP."
 scope: Track C Re-integration
 invariants: [D7]
 ---

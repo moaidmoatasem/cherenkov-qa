@@ -1,4 +1,6 @@
 ---
+name: eject-standalone
+description: "Strip CHERENKOV metadata from generated tests, producing a standalone vanilla Playwright suite with zero tool dependency."
 scope: Eject
 invariants: [Anti-lock-in]
 related_contracts: [Track A]
