@@ -17,6 +17,7 @@ dependencies = [
     "python-multipart>=0.0.9",
     "httpx>=0.28.1",
     "sse-starlette>=2.1.0,<4.0.0",
+    "apscheduler>=3.0.0,<4.0.0",
     "click>=8.4.1",
     "websockets",
     "PyJWT>=2.8.0",
