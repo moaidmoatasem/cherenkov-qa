@@ -48,7 +48,14 @@ from cherenkov.persistence.run_store import RunRecord, get_run_store, spec_hash 
     "--output",
     "-o",
     default=None,
-    help="Write the JSON divergence report to this file.",
+    help="Write the divergence report to this file.",
+)
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["json", "text"], case_sensitive=False),
+    default="json",
+    help="Report format for --output: json (default) or text.",
 )
 @click.option(
     "--fail-on-divergence",
@@ -90,6 +97,7 @@ def verify_cmd(
     spec: str | None,
     llm: bool,
     output: str | None,
+    output_format: str,
     fail_on_divergence: bool,
     coverage_report: bool,
     rich_verdict: bool,
