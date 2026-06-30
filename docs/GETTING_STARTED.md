@@ -669,6 +669,59 @@ so verdicts can be inspected and actioned from the browser instead of the termin
 
 ---
 
+#### `diff`
+Compare two OpenAPI specs for breaking changes.
+
+```bash
+cherenkov diff --before old-openapi.yaml --after new-openapi.yaml
+cherenkov diff --before old-openapi.yaml --after new-openapi.yaml --format json
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--before` | *(required)* | Path to the original spec |
+| `--after` | *(required)* | Path to the modified spec |
+| `--format` | `text` | Output format: `text` or `json` |
+
+---
+
+#### `completion`
+Generate shell completion scripts.
+
+```bash
+# Bash / Zsh
+eval "$(cherenkov completion bash)"
+eval "$(cherenkov completion zsh)"
+
+# Fish
+cherenkov completion fish | source
+```
+
+| Argument | Description |
+|----------|-------------|
+| `shell` | Shell type: `bash`, `zsh`, or `fish` |
+
+---
+
+#### `tokens`
+Token consumption monitor — inspect LLM usage, costs, and recommendations.
+
+```bash
+cherenkov tokens
+cherenkov tokens --help
+```
+
+---
+
+#### `enterprise`
+Enterprise-tier commands: org management, SSO, audit logs, and compliance.
+
+```bash
+cherenkov enterprise --help
+```
+
+---
+
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client.
 
