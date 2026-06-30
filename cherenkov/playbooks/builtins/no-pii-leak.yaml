@@ -1,0 +1,12 @@
+name: no-pii-leak
+description: >
+  Guard against PII leaking in any API response. Common field names that
+  should never appear in a response body.
+trigger: {}
+forbidden_response_fields:
+  - ssn
+  - social_security_number
+  - credit_card
+  - card_number
+  - cvv
+severity: error

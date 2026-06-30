@@ -1,0 +1,11 @@
+name: health-check
+description: >
+  Health and readiness endpoints must return 200. Any other status is an
+  immediate signal that the service is degraded.
+trigger:
+  path_contains: /health
+  methods: [GET]
+expected_status: [200]
+required_response_fields:
+  - status
+severity: error
