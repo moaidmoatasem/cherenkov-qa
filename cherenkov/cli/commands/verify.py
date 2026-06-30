@@ -172,7 +172,7 @@ def verify_cmd(
                 click.echo("[WARN] --coverage-report requires --spec; skipping.", err=True)
 
         if output:
-            _write_rich_json(rich, reports, output)
+            _write_rich_json(rich, reports, output, spec_dict=spec_dict)
             click.echo(f"\nReport written to {output}")
 
         _persist_run(url, spec_dict, rich.overall.value, len(reports), rich.coverage_pct, duration_ms, rich=rich)
@@ -376,7 +376,7 @@ def _write_json(reports: list, path: str) -> None:
     Path(path).write_text(json.dumps(data, indent=2, default=str))
 
 
-def _write_rich_json(rich: object, reports: list, path: str) -> None:
+def _write_rich_json(rich: object, reports: list, path: str, spec_dict: dict | None = None) -> None:
     data: dict = {}
     try:
         data["rich_verdict"] = rich.model_dump() if hasattr(rich, "model_dump") else vars(rich)  # type: ignore[union-attr]
@@ -388,6 +388,11 @@ def _write_rich_json(rich: object, reports: list, path: str) -> None:
             data["divergences"].append(r.model_dump() if hasattr(r, "model_dump") else vars(r))
         except Exception:
             data["divergences"].append(str(r))
+    total = len(spec_dict.get("paths", {})) if spec_dict else max(1, len(reports))
+    passed = max(0, total - len(reports))
+    data["total"] = total
+    data["passed"] = passed
+    data["pass_rate"] = passed / total if total > 0 else 1.0
     Path(path).write_text(json.dumps(data, indent=2, default=str))
 
 
