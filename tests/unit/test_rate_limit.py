@@ -4,7 +4,7 @@ import asyncio
 import time
 import pytest
 
-from cherenkov.web.middleware.rate_limit import _Bucket, RateLimitMiddleware
+from cherenkov.web.middleware.rate_limit import _Bucket, RateLimitMiddleware, _ROUTE_COSTS
 
 
 class TestBucket:
@@ -151,8 +151,7 @@ class TestRateLimitMiddleware:
         async def app(scope, receive, send):
             calls.append(1)
 
-        # burst=10 to accommodate the server-side cost of 5.0 for /api/v1/verify
-        mw = RateLimitMiddleware(app, rps=100, burst=10, enabled=True)
+        mw = RateLimitMiddleware(app, rps=100, burst=2 * _ROUTE_COSTS["/api/v1/verify"], enabled=True)
         # Two different IPs should each get their own bucket
         for ip in ("10.0.0.1", "10.0.0.2"):
             await self._call(mw, self._make_scope(client_ip=ip))
