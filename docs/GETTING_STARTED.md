@@ -713,6 +713,26 @@ cherenkov tokens --help
 
 ---
 
+#### `playbook`
+Manage and run validation playbooks — named, auto-triggering skill rules that fire against endpoints during daemon check cycles.
+
+```bash
+# List all loaded playbooks (built-in + project-local)
+cherenkov playbook list
+cherenkov playbook list --json
+
+# Inspect a specific playbook
+cherenkov playbook show auth-strict
+
+# Fire matching playbooks against a live endpoint
+cherenkov playbook run --url http://localhost:8080 --path /health
+
+# Scaffold a new playbook YAML in .cherenkov/playbooks/
+cherenkov playbook new my-playbook
+```
+
+---
+
 #### `enterprise`
 Enterprise-tier commands for org management, SSO, audit logs, and compliance.
 
