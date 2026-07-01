@@ -700,7 +700,7 @@ def get_parser() -> argparse.ArgumentParser:
 
     # ── verify (E1.1 zero-config entry point) ────────────────────────────────
     verify_parser = subparsers.add_parser(
-        "verify", help="Verify a live API against its OpenAPI spec — find spec↔implementation divergences"
+        "verify", help="Verify a live API against its OpenAPI spec -- find spec<->implementation divergences"
     )
     verify_parser.add_argument(
         "--url", "--base-url", "-u", dest="url", required=True,
