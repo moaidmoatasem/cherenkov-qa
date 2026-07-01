@@ -1,5 +1,8 @@
 """
-CHERENKOV stages/plan.py — real test scenario planner.
+CHERENKOV stages/plan.py — deterministic scenario planner.
+
+Deterministic-by-design: maps the mutation menu produced by IngestStage to
+Scenario contracts using priority rules. No LLM call is made here.
 """
 
 from __future__ import annotations

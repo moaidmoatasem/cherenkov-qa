@@ -98,8 +98,8 @@ Full tech-debt audit + fix cycle, all changes committed to `main` and pushed.
 ## 1. What CHERENKOV is (one paragraph)
 
 A localhost-first tool that reads an OpenAPI spec and uses a local 7B model
-(`qwen2.5-coder:7b` for generation, `deepseek-r1:8b` for planning, via Ollama
-on an RTX 5060 8GB) to generate **pure Playwright API tests**. The tests catch
+(`qwen2.5-coder:7b` for generation via Ollama on an RTX 5060 8GB; planning is
+deterministic Python with no LLM) to generate **pure Playwright API tests**. The tests catch
 spec-conformance bugs (spec promises HTTP 422, server returns 400) and can
 **eject** to standalone Playwright with zero dependency on the tool.
 Tagline: *"API conformance test generator — spec in, Playwright tests out, zero lock-in."*

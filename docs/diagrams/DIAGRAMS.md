@@ -31,7 +31,7 @@ flowchart TB
 sequenceDiagram
   participant U as User
   participant IN as INGEST
-  participant PL as PLAN (deepseek)
+  participant PL as PLAN (deterministic)
   participant GE as GENERATE (qwen)
   participant RV as REVIEW (6 gates)
   participant FS as tests/
