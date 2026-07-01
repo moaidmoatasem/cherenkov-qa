@@ -760,10 +760,12 @@ def main():
             if not args.target:
                 args.target = "http://localhost:8000"
             # Auto-start the bundled target API if it is not already reachable.
-            import urllib.request, urllib.error as _ue
+            # Use requests (not urllib) — requests rejects file:// URLs so a
+            # malicious --target value cannot read local files via the file:// scheme.
+            import requests as _requests
             _target_live = False
             try:
-                urllib.request.urlopen(f"{args.target}/health", timeout=2)
+                _requests.get(f"{args.target}/health", timeout=2)
                 _target_live = True
             except Exception:
                 pass
@@ -781,7 +783,7 @@ def main():
                 for _ in range(15):
                     _t.sleep(0.5)
                     try:
-                        urllib.request.urlopen(f"{args.target}/health", timeout=1)
+                        _requests.get(f"{args.target}/health", timeout=1)
                         print("  Target API ready.\n")
                         break
                     except Exception:
