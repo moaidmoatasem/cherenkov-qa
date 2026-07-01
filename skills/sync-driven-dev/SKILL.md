@@ -1,3 +1,8 @@
+---
+name: sync-driven-dev
+description: "Session sync protocol for tracking token costs, loading pre-computed context, and persisting decisions across agent sessions."
+---
+
 # Skill: Sync Driven Development (SDD)
 
 **Stack:** Python 3.10+, JSON filesystem store

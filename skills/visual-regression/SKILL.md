@@ -1,4 +1,6 @@
 ---
+name: visual-regression
+description: "Detect visual regressions with pixel-level diff reporting integrated into API conformance testing."
 scope: Visual Regression
 invariants: [D7]
 related_contracts: [Track B/C]

@@ -1,4 +1,6 @@
 ---
+name: perf-baseline
+description: "Track API endpoint latency with k6 and flag regressions against a statistical SQLite baseline."
 scope: Performance
 invariants: [Anti-lock-in]
 related_contracts: [Track B/C]

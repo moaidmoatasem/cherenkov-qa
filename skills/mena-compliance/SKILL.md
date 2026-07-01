@@ -1,4 +1,6 @@
 ---
+name: mena-compliance
+description: "Scan API endpoints for MENA-region localization and data-residency compliance requirements."
 scope: Track C Re-integration
 invariants: [D7]
 ---

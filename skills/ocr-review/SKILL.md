@@ -1,4 +1,6 @@
 ---
+name: ocr-review
+description: "Run Alibaba Open Code Review as Gate 7b in the 8-gate pipeline on generated Playwright tests."
 scope: OCR Review
 invariants: [D7]
 related_contracts: [Track A, Phase 1]
