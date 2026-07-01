@@ -18,7 +18,7 @@ import time
 import subprocess
 import requests
 
-REPO = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DB_PATH = os.path.join(REPO, ".cherenkov", "perf_metrics.db")
 K6_SCRATCHPAD = os.path.join(REPO, "stub", "generated_tests", "k6_perf.js")
 

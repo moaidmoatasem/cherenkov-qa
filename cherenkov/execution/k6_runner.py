@@ -45,7 +45,7 @@ export default function () {{
   const url = `${{__ENV.API_URL || '{target_url}'}}/users`;
   const payload = JSON.stringify({{
     email: `k6_perf_${{Math.random()}}@cherenkov.local`,
-    password: 'secure_password_123',
+    password: 'secure_password_123', // synthetic load-test credential, never sent to production
   }});
 
   const params = {{
