@@ -165,7 +165,13 @@ def get_parser() -> argparse.ArgumentParser:
         "validate", help="Validate E2E test suite against a real server"
     )
     validate_parser.add_argument(
-        "--target", "-t", required=True, help="The real server target base URL"
+        "--target", "-t", default=None,
+        help="The real server target base URL (default: http://localhost:8000 in --demo mode)",
+    )
+    validate_parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Demo mode: use bundled pre-generated fixtures and auto-start the target API; no Ollama required",
     )
     validate_parser.add_argument(
         "--headed", action="store_true", help="Run Playwright in headed (visible browser) mode"
@@ -745,6 +751,44 @@ def main():
     # If not quiet, they also go to stderr.
 
     if args.command == "validate":
+        _demo_proc = None
+        if getattr(args, "demo", False):
+            print("\n" + "=" * 80)
+            print("[DEMO MODE] Using pre-generated tests — no Ollama or GPU required.")
+            print("Run without --demo for live generation against your own API spec.")
+            print("=" * 80 + "\n")
+            if not args.target:
+                args.target = "http://localhost:8000"
+            # Auto-start the bundled target API if it is not already reachable.
+            import urllib.request, urllib.error as _ue
+            _target_live = False
+            try:
+                urllib.request.urlopen(f"{args.target}/health", timeout=2)
+                _target_live = True
+            except Exception:
+                pass
+            if not _target_live:
+                import subprocess as _sp, time as _t, atexit as _atexit
+                _target_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "target")
+                _venv_uvicorn = os.path.join(_target_dir, ".venv", "bin", "uvicorn")
+                _uvicorn_cmd = _venv_uvicorn if os.path.exists(_venv_uvicorn) else "uvicorn"
+                print(f"  Starting bundled target API at {args.target} …")
+                _demo_proc = _sp.Popen(
+                    [_uvicorn_cmd, "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
+                    cwd=_target_dir, stdout=_sp.DEVNULL, stderr=_sp.DEVNULL,
+                )
+                _atexit.register(lambda p=_demo_proc: p.poll() is None and p.terminate())
+                for _ in range(15):
+                    _t.sleep(0.5)
+                    try:
+                        urllib.request.urlopen(f"{args.target}/health", timeout=1)
+                        print("  Target API ready.\n")
+                        break
+                    except Exception:
+                        pass
+        elif not args.target:
+            parser.error("cherenkov validate: --target is required (or use --demo to run against the bundled target API)")
+
         if getattr(args, "no_cache", False):
             from cherenkov.cache.endpoint_cache import EndpointCache
 
