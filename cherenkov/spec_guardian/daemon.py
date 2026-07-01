@@ -17,6 +17,10 @@ from cherenkov.spec_guardian.core import (
 )
 from cherenkov.spec_guardian.detector import SpecDriftDetector
 from cherenkov.spec_guardian.store import DriftStore
+from cherenkov.playbooks.registry import PlaybookRegistry
+from cherenkov.playbooks.matcher import PlaybookMatcher
+from cherenkov.playbooks.runner import PlaybookRunner
+from cherenkov.playbooks.models import PlaybookFinding
 
 
 logger = logging.getLogger(__name__)
@@ -53,6 +57,12 @@ class SpecGuardianDaemon:
         self.total_checks = 0
         self.compliant_checks = 0
         self.all_events: list[DriftEvent] = []
+
+        # Playbooks: reusable validation strategies that fire automatically
+        self._playbook_registry = PlaybookRegistry()
+        self._playbook_matcher = PlaybookMatcher(self._playbook_registry.playbooks)
+        self._playbook_runner = PlaybookRunner()
+        self.playbook_findings: list[PlaybookFinding] = []
 
     def start(self) -> None:
         """Start the monitoring daemon."""
@@ -191,6 +201,31 @@ class SpecGuardianDaemon:
             response_body=response_body,
             response_headers=dict(response.headers),
         )
+
+        # Apply any matching playbooks
+        matched = self._playbook_matcher.match(path, method)
+        for pb in matched:
+            findings = self._playbook_runner.run(
+                pb,
+                endpoint=path,
+                method=method,
+                status_code=response.status_code,
+                response_headers=dict(response.headers),
+                response_body=response_body,
+                request_headers=headers,
+            )
+            if findings:
+                self.playbook_findings.extend(findings)
+                for f in findings:
+                    logger.warning(
+                        "Playbook finding",
+                        extra={
+                            "playbook": f.playbook_name,
+                            "endpoint": f.endpoint,
+                            "level": f.level,
+                            "message": f.message,
+                        },
+                    )
 
         return events
 

@@ -1,0 +1,16 @@
+name: auth-strict
+description: >
+  Enforce Authorization header and reject leaked credential fields on all
+  auth-related endpoints. Inspired by the principle that auth paths deserve
+  tighter scrutiny than the rest of the API.
+trigger:
+  path_prefix: /auth
+  methods: [GET, POST, PUT, DELETE, PATCH]
+required_headers:
+  - Authorization
+forbidden_response_fields:
+  - password
+  - secret
+  - token
+  - api_key
+severity: error

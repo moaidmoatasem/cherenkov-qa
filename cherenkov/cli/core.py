@@ -44,6 +44,7 @@ _CLICK_COMMANDS = [
     "routine",
     "teleport",
     "enterprise",
+    "playbook",
 ]
 
 
@@ -62,6 +63,7 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.demo_cmd import demo_cmd
     from cherenkov.cli.commands.drift_cmd import drift_cmd
     from cherenkov.cli.commands.enterprise import enterprise_cmd
+    from cherenkov.cli.commands.playbook_cmd import playbook_cmd
     from cherenkov.cli.commands.epoch import (
         author_cmd,
         daemon_cmd,
@@ -128,6 +130,7 @@ def _register_commands() -> None:
         (routine_cmd, "routine"),
         (teleport_cmd, "teleport"),
         (enterprise_cmd, "enterprise"),
+        (playbook_cmd, "playbook"),
     ]:
         cli.add_command(cmd, name=name)
 
