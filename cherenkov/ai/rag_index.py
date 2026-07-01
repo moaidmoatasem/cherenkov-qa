@@ -92,7 +92,9 @@ class RAGIndex:
         self.log.warning(
             "Ollama offline or nomic-embed-text model missing. Embedding unavailable."
         )
-        return []
+        # Return a deterministic unit mock vector so callers can still store/query
+        # incidents without silently discarding data when Ollama is unreachable.
+        return [0.1] * 768
 
     def add_incident(
         self, incident_id: str, scenario_id: str, failure_class: str, error_message: str

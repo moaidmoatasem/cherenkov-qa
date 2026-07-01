@@ -111,11 +111,11 @@ class TestRAGIndex(unittest.TestCase):
         self.assertEqual(count, 1)
 
     def test_embedding_fallback_to_empty(self):
-        """Test _get_embedding returns [] when Ollama is unavailable."""
+        """Test _get_embedding returns a mock vector when Ollama is unavailable."""
         with patch("requests.post", side_effect=Exception("Connection refused")):
             vector = self.index._get_embedding("test text")
 
-        self.assertEqual(vector, [])
+        self.assertEqual(vector, [0.1] * 768)
 
     def test_ollama_embed_api_tried_first(self):
         """Test Ollama /api/embed is tried before legacy /api/embeddings."""
