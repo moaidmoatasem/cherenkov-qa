@@ -18,8 +18,6 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Generator
 from urllib.parse import parse_qs, urlparse
 
-import pytest
-
 from cherenkov.core.contracts import (
     DivergenceClass,
     DivergenceHypothesis,
