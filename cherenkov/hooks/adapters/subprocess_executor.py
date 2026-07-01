@@ -5,6 +5,7 @@ template variable substitution, and environment injection.
 """
 from __future__ import annotations
 
+import shlex
 import subprocess
 import time
 
@@ -26,10 +27,13 @@ class SubprocessHookExecutor:
 
         Raises HookAbortError if fail_mode=abort and command fails.
         """
-        # Render template variables into the command string
+        # Render template variables into the command string.
+        # shlex.quote() prevents shell metacharacters in substituted values
+        # (e.g. endpoint URLs, file paths) from escaping the intended command.
         template_vars = context.as_template_vars()
+        safe_vars = {k: shlex.quote(v) if v else "''" for k, v in template_vars.items()}
         try:
-            rendered_cmd = config.run.format(**template_vars)
+            rendered_cmd = config.run.format(**safe_vars)
         except KeyError as exc:
             # Unknown template variable — treat as FAILED
             result = HookResult(
