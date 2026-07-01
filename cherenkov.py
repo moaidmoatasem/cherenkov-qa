@@ -662,6 +662,42 @@ def get_parser() -> argparse.ArgumentParser:
     ent_comp.add_argument("action", choices=["generate"], help="Action to perform")
     ent_comp.add_argument("--output", "-o", default="soc2_report.json", help="Output file path")
 
+    playbook_parser = subparsers.add_parser(
+        "playbook", help="Manage and run validation playbooks (auto-triggering skill rules)"
+    )
+    playbook_sub = playbook_parser.add_subparsers(dest="playbook_command", required=True)
+
+    pb_list = playbook_sub.add_parser("list", help="List all loaded playbooks")
+    pb_list.add_argument(
+        "--dir", dest="search_dirs", action="append", default=[],
+        help="Extra directories to scan for playbook YAML files (repeatable).",
+    )
+    pb_list.add_argument("--json", dest="as_json", action="store_true", help="Output as JSON.")
+
+    pb_show = playbook_sub.add_parser("show", help="Show full details of a named playbook")
+    pb_show.add_argument("name", help="Playbook name to display")
+    pb_show.add_argument("--dir", dest="search_dirs", action="append", default=[])
+
+    pb_run = playbook_sub.add_parser(
+        "run", help="Fire matching playbooks against a single live endpoint"
+    )
+    pb_run.add_argument("--url", required=True, help="Base URL of the API under test.")
+    pb_run.add_argument("--path", dest="endpoint_path", required=True, help="Endpoint path, e.g. /health.")
+    pb_run.add_argument("--method", default="GET", help="HTTP method (default: GET).")
+    pb_run.add_argument(
+        "--header", dest="extra_headers", action="append", default=[],
+        help="KEY:VALUE request header (repeatable).",
+    )
+    pb_run.add_argument("--dir", dest="search_dirs", action="append", default=[])
+    pb_run.add_argument("--json", dest="as_json", action="store_true", help="Output as JSON.")
+
+    pb_new = playbook_sub.add_parser("new", help="Scaffold a new playbook YAML file")
+    pb_new.add_argument("name", help="Playbook name (becomes the file slug).")
+    pb_new.add_argument(
+        "--out-dir", default=".cherenkov/playbooks",
+        help="Directory to write the new playbook (default: .cherenkov/playbooks).",
+    )
+
     return parser
 
 
@@ -1147,6 +1183,26 @@ def main():
             )
             print(json.dumps({"status": "ok", "registration_id": reg_id}))
             sys.exit(0)
+
+    elif args.command == "playbook":
+        from cherenkov.cli.commands.playbook_cmd import list_cmd, show_cmd, run_cmd, new_cmd
+
+        sub = args.playbook_command
+        if sub == "list":
+            list_cmd.callback(search_dirs=tuple(args.search_dirs), as_json=args.as_json)
+        elif sub == "show":
+            show_cmd.callback(name=args.name, search_dirs=tuple(args.search_dirs))
+        elif sub == "run":
+            run_cmd.callback(
+                url=args.url,
+                endpoint_path=args.endpoint_path,
+                method=args.method,
+                extra_headers=tuple(args.extra_headers),
+                search_dirs=tuple(args.search_dirs),
+                as_json=args.as_json,
+            )
+        elif sub == "new":
+            new_cmd.callback(name=args.name, out_dir=args.out_dir)
 
 
 if __name__ == "__main__":
