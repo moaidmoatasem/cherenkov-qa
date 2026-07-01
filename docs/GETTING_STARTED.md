@@ -714,10 +714,23 @@ cherenkov tokens --help
 ---
 
 #### `enterprise`
-Enterprise-tier commands: org management, SSO, audit logs, and compliance.
+Enterprise-tier commands for org management, SSO, audit logs, and compliance.
 
 ```bash
-cherenkov enterprise --help
+# Manage organizations and tenants
+cherenkov enterprise org
+
+# Configure SAML 2.0 / SSO
+cherenkov enterprise saml
+
+# Manage Role-Based Access Control
+cherenkov enterprise rbac
+
+# Generate compliance reports
+cherenkov enterprise compliance
+
+# Access audit logs
+cherenkov enterprise audit
 ```
 
 ---
