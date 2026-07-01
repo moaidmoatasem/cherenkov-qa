@@ -698,6 +698,82 @@ def get_parser() -> argparse.ArgumentParser:
         help="Directory to write the new playbook (default: .cherenkov/playbooks).",
     )
 
+    # ── verify (E1.1 zero-config entry point) ────────────────────────────────
+    verify_parser = subparsers.add_parser(
+        "verify", help="Verify a live API against its OpenAPI spec — find spec↔implementation divergences"
+    )
+    verify_parser.add_argument(
+        "--url", "--base-url", "-u", dest="url", required=True,
+        help="Base URL of the live server to probe (e.g. https://petstore3.swagger.io/api/v3).",
+    )
+    verify_parser.add_argument(
+        "--spec", "-s", default=None,
+        help="Path or URL to the OpenAPI spec JSON/YAML. Omit to use the built-in Petstore demo spec.",
+    )
+    verify_parser.add_argument(
+        "--llm", dest="llm", action="store_true", default=False,
+        help="Use the LLM Skeptic for hypothesis generation (requires Ollama). Default: offline mode.",
+    )
+    verify_parser.add_argument(
+        "--output", "-o", default=None,
+        help="Write the divergence report to this file.",
+    )
+    verify_parser.add_argument(
+        "--format", dest="output_format", choices=["json", "text"], default="json",
+        help="Report format for --output: json (default) or text.",
+    )
+    verify_parser.add_argument(
+        "--fail-on-divergence", action="store_true", default=False,
+        help="Exit with code 1 if any divergences are found (CI gate mode).",
+    )
+    verify_parser.add_argument(
+        "--coverage-report", action="store_true", default=False,
+        help="Print a spec coverage-gap report after the proof run (requires --spec).",
+    )
+    verify_parser.add_argument(
+        "--simple", dest="simple_mode", action="store_true", default=False,
+        help="Use the legacy single-probe summary instead of the full multi-agent verdict engine.",
+    )
+    verify_parser.add_argument(
+        "--no-mutation-oracle", action="store_true", default=False,
+        help="Skip the mutation oracle dimension (faster, but less thorough).",
+    )
+    verify_parser.add_argument(
+        "--no-traffic-capture", action="store_true", default=False,
+        help="Skip golden-fixture capture from real traffic.",
+    )
+    verify_parser.add_argument(
+        "--fixture-dir", default=".cherenkov/fixtures",
+        help="Directory for captured golden fixtures (default: .cherenkov/fixtures).",
+    )
+
+    # ── demo (offline 60-second demo, no Ollama required) ────────────────────
+    subparsers.add_parser(
+        "demo",
+        help="60-second offline demo — watch CHERENKOV catch the AI cheating (no Ollama required)",
+    )
+
+    # ── generate (spec → Playwright tests via LLM) ───────────────────────────
+    generate_parser = subparsers.add_parser(
+        "generate", help="Generate Playwright E2E tests from an OpenAPI specification"
+    )
+    generate_parser.add_argument(
+        "--spec", required=True,
+        help="Path to the OpenAPI spec (JSON/YAML) to generate tests for.",
+    )
+    generate_parser.add_argument(
+        "--output-dir", default="stub/generated_tests",
+        help="Directory to write the generated Playwright test files to (default: stub/generated_tests).",
+    )
+    generate_parser.add_argument(
+        "--no-repair", dest="no_repair", action="store_true", default=False,
+        help="Skip the generate→review→repair loop and write the first generation directly.",
+    )
+    generate_parser.add_argument(
+        "--max-attempts", type=int, default=3,
+        help="Maximum repair attempts per scenario (default: 3, max: 10).",
+    )
+
     return parser
 
 
@@ -1203,6 +1279,38 @@ def main():
             )
         elif sub == "new":
             new_cmd.callback(name=args.name, out_dir=args.out_dir)
+
+    elif args.command == "verify":
+        from cherenkov.cli.commands.verify import verify_cmd
+
+        verify_cmd.callback(
+            url=args.url,
+            spec=args.spec,
+            llm=args.llm,
+            output=args.output,
+            output_format=args.output_format,
+            fail_on_divergence=args.fail_on_divergence,
+            coverage_report=args.coverage_report,
+            rich_verdict=not args.simple_mode,
+            no_mutation_oracle=args.no_mutation_oracle,
+            no_traffic_capture=args.no_traffic_capture,
+            fixture_dir=args.fixture_dir,
+        )
+
+    elif args.command == "demo":
+        from cherenkov.cli.commands.demo_cmd import demo_cmd
+
+        demo_cmd.callback()
+
+    elif args.command == "generate":
+        from cherenkov.cli.commands.generate_cmd import generate_cmd
+
+        generate_cmd.callback(
+            spec=args.spec,
+            output_dir=args.output_dir,
+            repair=not args.no_repair,
+            max_attempts=args.max_attempts,
+        )
 
 
 if __name__ == "__main__":

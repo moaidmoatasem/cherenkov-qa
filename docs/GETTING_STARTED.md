@@ -97,6 +97,68 @@ cd target && uvicorn target_api:app --host 127.0.0.1 --port 8000
 
 ---
 
+#### `verify`
+Zero-config entry point that finds spec↔implementation divergences on a live API. Runs in offline mode by default (no LLM, no Ollama required). Use `--llm` to engage the full Skeptic agent for richer hypothesis generation.
+
+```bash
+# Zero-config demo against the public Petstore
+cherenkov verify --url https://petstore3.swagger.io/api/v3
+
+# Point at your own API with a local spec
+cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml
+
+# CI gate: fail the build if any divergences are found
+cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml --fail-on-divergence
+
+# Write a JSON report and show spec coverage gap
+cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml \
+  --output report.json --coverage-report
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--url` / `-u` | *(required)* | Base URL of the live server to probe |
+| `--spec` / `-s` | *(built-in Petstore)* | Path or URL to the OpenAPI spec |
+| `--llm` | off | Use the LLM Skeptic (requires Ollama) |
+| `--output` / `-o` | *(stdout)* | Write divergence report to file |
+| `--format` | `json` | Report format: `json` or `text` |
+| `--fail-on-divergence` | off | Exit 1 if divergences found (CI gate) |
+| `--coverage-report` | off | Print endpoint coverage gap analysis |
+| `--simple` | off | Use legacy single-probe summary |
+| `--no-mutation-oracle` | off | Skip mutation oracle (faster) |
+| `--fixture-dir` | `.cherenkov/fixtures` | Directory for golden fixtures |
+
+---
+
+#### `demo`
+60-second offline demo — no Ollama, no API key, no running server required. Demonstrates the core CHERENKOV value proposition: catching an AI-generated test suite that was silently weakened.
+
+```bash
+cherenkov demo
+```
+
+---
+
+#### `generate`
+Generate Playwright E2E test files from an OpenAPI specification using the LLM-backed generate→review→repair loop.
+
+```bash
+# Generate tests for a local spec (uses Ollama by default)
+cherenkov generate --spec ./openapi.yaml
+
+# Write to a custom output directory, skip repair loop
+cherenkov generate --spec ./openapi.yaml --output-dir ./tests --no-repair
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--spec` | *(required)* | Path to the OpenAPI spec (JSON/YAML) |
+| `--output-dir` | `stub/generated_tests` | Directory to write `.spec.ts` files |
+| `--no-repair` | off | Write first generation directly, skip repair |
+| `--max-attempts` | `3` | Maximum repair attempts per scenario |
+
+---
+
 #### `self-test`
 Run a deterministic dry-run of the pipeline (mocking Ollama and the server).
 
