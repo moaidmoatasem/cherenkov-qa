@@ -5,6 +5,7 @@ template variable substitution, and environment injection.
 """
 from __future__ import annotations
 
+import os
 import shlex
 import subprocess
 import time
@@ -100,5 +101,4 @@ class SubprocessHookExecutor:
 
 def _current_env() -> dict[str, str]:
     """Return a copy of the current process environment."""
-    import os
     return dict(os.environ)

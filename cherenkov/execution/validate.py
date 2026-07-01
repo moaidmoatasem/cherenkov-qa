@@ -11,6 +11,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
+try:
+    import yaml as _yaml
+except ImportError:
+    _yaml = None  # type: ignore[assignment]
+
 from cherenkov.core.errors import get_logger
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.trace_reader import TraceReader
@@ -23,7 +28,12 @@ def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
         return warnings
     try:
         with open(spec_path, encoding="utf-8") as f:
-            spec = json.load(f) if spec_path.endswith(".json") else __import__("yaml").safe_load(f)
+            if spec_path.endswith(".json"):
+                spec = json.load(f)
+            elif _yaml is not None:
+                spec = _yaml.safe_load(f)
+            else:
+                return warnings
     except Exception:
         return warnings
 
