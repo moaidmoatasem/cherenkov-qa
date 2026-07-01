@@ -126,9 +126,10 @@ def hitl_explain(item_id: str, json_out: bool) -> None:
 
 
 @click.command("review")
+@click.option("--host", default="0.0.0.0", help="Host to bind (default: 0.0.0.0)")
 @click.option("--port", "-p", type=int, default=8000, help="Port to bind (default: 8000)")
 @click.option("--demo", is_flag=True, help="Load demo fixture data into HITL queue on startup")
-def review_cmd(port: int, demo: bool) -> None:
+def review_cmd(host: str, port: int, demo: bool) -> None:
     """Start the review dashboard web UI (FastAPI + prebuilt frontend)."""
     import os
     import uvicorn
@@ -140,9 +141,9 @@ def review_cmd(port: int, demo: bool) -> None:
         click.echo("Loading demo findings into HITL queue...")
         generate_demo_findings()
 
-    click.echo(f"\nCHERENKOV review dashboard starting on http://0.0.0.0:{port}")
+    click.echo(f"\nCHERENKOV review dashboard starting on http://{host}:{port}")
     click.echo("Hit Ctrl+C to stop.\n")
-    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
+    uvicorn.run(app, host=host, port=port, log_level="info")
 
 
 @click.group("mcp")

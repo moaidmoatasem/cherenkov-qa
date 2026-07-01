@@ -1,4 +1,6 @@
 ---
+name: jira-exporter
+description: "Suggest-only Jira export for failed validation items via the MCP export_jira_ticket tool."
 scope: Track C Re-integration
 invariants: [D7]
 ---

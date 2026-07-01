@@ -1,4 +1,6 @@
 ---
+name: self-healing
+description: "Diagnose test failures and suggest fixes without auto-editing test code (D7 invariant enforced)."
 scope: Self Healing
 invariants: [Suggest-only healing, D7]
 related_contracts: [Track A]

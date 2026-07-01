@@ -1,4 +1,6 @@
 ---
+name: governance-certification
+description: "Surface QA KPIs and certify model capability tiers against a gold set using RAG-Triad metrics."
 scope: Governance
 invariants: [D7]
 related_contracts: [Track B/C]

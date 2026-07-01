@@ -1,4 +1,6 @@
 ---
+name: api-test-generation
+description: "Generate Playwright API tests from an OpenAPI spec through the INGEST→PLAN→GENERATE→REVIEW pipeline."
 scope: API Test Generation
 invariants: [D7, Spec-derived, Anti-lock-in]
 related_contracts: [Track A]

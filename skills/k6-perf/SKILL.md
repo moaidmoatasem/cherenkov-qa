@@ -1,4 +1,6 @@
 ---
+name: k6-perf
+description: "Run K6 load tests against API endpoints and retrieve latency metrics via MCP."
 scope: Track B Re-integration
 invariants: [D7]
 ---

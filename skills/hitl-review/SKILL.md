@@ -1,4 +1,6 @@
 ---
+name: hitl-review
+description: "Manage the Human-In-The-Loop review queue for tests with uncertain verdicts (confidence 0.7–0.9)."
 scope: HITL Review
 invariants: [D7]
 related_contracts: [Track A]
