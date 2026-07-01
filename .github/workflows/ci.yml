@@ -597,6 +597,33 @@ jobs:
         with:
           category: "/language:python"
 
+  windows-smoke:
+    name: Windows Compat Smoke
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+      - name: CLI help smoke (Windows)
+        run: python cherenkov.py --help
+        env:
+          PYTHONPATH: .
+      - name: Profile show smoke (Windows — Unicode check)
+        run: python cherenkov.py profile show
+        env:
+          PYTHONPATH: .
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Doctor smoke (npx resolution check)
+        run: python cherenkov.py doctor
+        env:
+          PYTHONPATH: .
+
   sandbox-heal-docker:
     name: Sandbox Heal Docker (opt-in)
     if: github.event_name == 'workflow_dispatch'

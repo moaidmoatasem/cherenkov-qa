@@ -98,9 +98,9 @@ Week 0 gate passes. This is The One Absolute Rule.
 ## Phase 5 — Weeks 8-9 — PLAN + GENERATE (real)
 
 **TASKS**
-- `stages/plan.py` (deepseek-r1:8b): emit scenarios `{case_type, priority,
-  mutation_id}` — SELECT from the menu, never invent mutation prose. Validate
-  every scenario against the slice; drop invented endpoints/params.
+- `stages/plan.py` (deterministic Python — no LLM): emit scenarios `{case_type,
+  priority, mutation_id}` — SELECT from the mutation menu, never invent prose.
+  Validate every scenario against the slice; drop invented endpoints/params.
 - `stages/generate.py` (qwen2.5-coder:7b): one scenario at a time, byte-identical
   static system prompt (prefix cache), input = scenario + stub + explicit mutation
   instruction. Output `{test_code, imports, scenario_id}` via `format=json`.
