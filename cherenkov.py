@@ -767,7 +767,7 @@ def main():
             try:
                 _requests.get(f"{args.target}/health", timeout=2)
                 _target_live = True
-            except Exception:
+            except Exception:  # ConnectionError / Timeout expected when target not running
                 pass
             if not _target_live:
                 import subprocess as _sp, time as _t, atexit as _atexit
@@ -786,7 +786,7 @@ def main():
                         _requests.get(f"{args.target}/health", timeout=1)
                         print("  Target API ready.\n")
                         break
-                    except Exception:
+                    except Exception:  # ConnectionError / Timeout while server is starting up
                         pass
         elif not args.target:
             parser.error("cherenkov validate: --target is required (or use --demo to run against the bundled target API)")
