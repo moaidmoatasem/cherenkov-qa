@@ -99,6 +99,8 @@ stub/generated_tests/ui_audit.spec.ts
 # Catch all future pipeline-run spec files (non-fixture)
 stub/generated_tests/*_path.spec.ts
 stub/generated_tests/*_auth*.spec.ts
+# Integration-test generated fixtures (double-suffixed .spec.spec.ts)
+stub/generated_tests/*.spec.spec.ts
 
 # temp artifacts
 nul
