@@ -49,6 +49,7 @@ Changelog = "https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CHANGELOG.m
 [project.optional-dependencies]
 redis = ["redis>=8.0.1"]
 mobile = ["Appium-Python-Client>=3.0.0"]
+rag = ["numpy>=1.24.0"]
 bench = [
     # DeepEval adds LLM-as-judge metrics on top of the built-in static gates.
     # Install with: pip install cherenkov[bench]
