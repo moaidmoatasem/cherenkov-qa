@@ -333,20 +333,19 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Playwright CLI + Chromium
-        run: |
-          npm install -g playwright
-          npx playwright install --with-deps chromium
-
-      # Install stub npm packages (openapi-fetch, @playwright/test) so the
-      # committed test fixtures can be compiled and executed by the validator.
-      - name: Install stub npm packages
+      # Install stub npm packages first so Playwright Chromium install uses the
+      # exact @playwright/test version pinned in stub/package.json rather than
+      # a mismatched global version. Running `npx playwright install` from inside
+      # stub/ uses stub/node_modules/.bin/playwright which knows the correct
+      # Chromium revision for that specific version.
+      - name: Install stub npm packages and Playwright Chromium
         env:
           NODE_OPTIONS: --dns-result-order=ipv4first
         run: |
           npm config set fetch-retries 5
           npm config set fetch-retry-mintimeout 20000
           npm install --prefix stub
+          cd stub && npx playwright install --with-deps chromium
 
       # Set up the target API venv (smoke_test_validate starts it via .venv/bin/uvicorn)
       - name: Set up target API venv
