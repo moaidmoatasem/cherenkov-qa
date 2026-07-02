@@ -817,6 +817,162 @@ cherenkov enterprise audit
 
 ---
 
+#### `check-suite`
+Detect AI cheating in a test suite — find weakened, deleted, or hallucinated assertions via fast static analysis (no execution required).
+
+```bash
+# Check a candidate suite against a baseline for weakened/deleted assertions
+cherenkov check-suite --candidate suite.py --baseline baseline.py
+
+# Check against a spec for hallucinated field references
+cherenkov check-suite --candidate suite.ts --spec openapi.yaml
+
+# CI gate: exit 1 on any finding, write JSON report
+cherenkov check-suite --candidate suite.ts --baseline baseline.ts --fail-on-finding --output findings.json
+```
+
+---
+
+#### `check-stale`
+Check whether generated tests are stale relative to the spec.
+
+```bash
+# Compare manifest hash against current spec
+cherenkov check-stale
+
+# CI gate: exit 1 if stale
+cherenkov check-stale --fail-on-stale
+
+# Override spec path and output JSON
+cherenkov check-stale --spec openapi.yaml --json
+```
+
+---
+
+#### `bench`
+Benchmark generated test quality against golden fixtures.
+
+```bash
+# Run benchmark across the default test directory
+cherenkov bench
+
+# Include a custom test directory
+cherenkov bench --dir stub/generated_tests
+
+# Set pass thresholds and write a JSON report
+cherenkov bench --threshold-compile 0.95 --threshold-quality 0.9 --output bench.json
+```
+
+---
+
+#### `examples`
+Print usage examples for common CHERENKOV workflows.
+
+```bash
+cherenkov examples
+```
+
+---
+
+#### `synthetic`
+Generate synthetic test data payloads from an OpenAPI spec.
+
+```bash
+# Generate random payloads for up to 10 endpoints
+cherenkov synthetic openapi.yaml
+
+# Use LLM strategy and write to file
+cherenkov synthetic openapi.yaml --strategy llm --output payloads.json --endpoints 20
+```
+
+---
+
+#### `drift`
+Track and reconcile spec-suite drift over time using an immutable ledger.
+
+```bash
+# Seed a new baseline snapshot
+cherenkov drift seed --spec openapi.yaml --suite suite.json
+
+# List recorded snapshots
+cherenkov drift list
+
+# Reconcile current spec/suite against baseline (CI gate)
+cherenkov drift reconcile --spec openapi.yaml --suite suite.json --fail-on-drift
+
+# Export a baseline snapshot for zero-latency CI
+cherenkov drift export -o baseline.json
+```
+
+---
+
+#### `eval`
+Evaluate and grade test suite quality (STORM-inspired lifecycle).
+
+```bash
+# Grade a suite against a spec (no live API needed)
+cherenkov eval grade --spec openapi.yaml --suite suite.json
+
+# Run suite against a live API and emit a trace
+cherenkov eval run --suite suite.json --target http://localhost:8080
+
+# Grade and fail CI below a threshold
+cherenkov eval grade --spec openapi.yaml --suite suite.json --fail-on C
+```
+
+---
+
+#### `ocr`
+OCR-powered visual review: read and validate text in screenshots.
+
+```bash
+# Check OCR provider status
+cherenkov ocr status
+
+# Test OCR on a file
+cherenkov ocr test
+
+# Review a screenshot
+cherenkov ocr review --file screenshot.png
+```
+
+---
+
+#### `routine`
+Manage recurring scheduled validation routines.
+
+```bash
+# List all configured routines
+cherenkov routine list
+
+# Create a new routine
+cherenkov routine create --name health-check --trigger cron --value "0 * * * *" --target cherenkov.scheduling.templates.health:run
+
+# Toggle a routine on/off
+cherenkov routine toggle <routine_id> true
+```
+
+---
+
+#### `teleport`
+Transfer CHERENKOV session state across environments.
+
+```bash
+# Push session state
+cherenkov teleport push <session_id>
+
+# Pull session state using a token
+cherenkov teleport pull <token>
+
+# List active sessions
+cherenkov teleport list
+
+# Check session status
+cherenkov teleport status <session_id>
+```
+
+---
+
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client.
 

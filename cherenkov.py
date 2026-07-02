@@ -774,6 +774,145 @@ def get_parser() -> argparse.ArgumentParser:
         help="Maximum repair attempts per scenario (default: 3, max: 10).",
     )
 
+    # ── check-suite (AI cheating detection) ─────────────────────────────────
+    check_suite_parser = subparsers.add_parser(
+        "check-suite", help="Detect weakened, deleted, or hallucinated assertions in a test suite"
+    )
+    check_suite_parser.add_argument(
+        "--candidate", "-c", required=True,
+        help="Path to the candidate test suite (.py or .ts).",
+    )
+    check_suite_parser.add_argument(
+        "--baseline", "-b", default=None,
+        help="Path to the known-honest baseline suite for WEAKENED/DELETED detection.",
+    )
+    check_suite_parser.add_argument(
+        "--spec", "-s", default=None,
+        help="Path to the OpenAPI spec (YAML/JSON) for HALLUCINATED detection.",
+    )
+    check_suite_parser.add_argument(
+        "--output", "-o", default=None,
+        help="Write JSON findings report to this file.",
+    )
+    check_suite_parser.add_argument(
+        "--fail-on-finding", action="store_true", default=False,
+        help="Exit 1 if any integrity violations are found (CI gate).",
+    )
+
+    # ── check-stale (staleness gate) ─────────────────────────────────────────
+    check_stale_parser = subparsers.add_parser(
+        "check-stale", help="Check whether generated tests are stale relative to the spec"
+    )
+    check_stale_parser.add_argument(
+        "--spec", default=None,
+        help="Path to OpenAPI spec. Overrides the spec path stored in the manifest.",
+    )
+    check_stale_parser.add_argument(
+        "--manifest", default=".cherenkov/test_manifest.json",
+        help="Path to the test manifest file.",
+    )
+    check_stale_parser.add_argument(
+        "--fail-on-stale", action="store_true", default=False,
+        help="Exit 1 if tests are stale (for CI use).",
+    )
+    check_stale_parser.add_argument(
+        "--json", dest="as_json", action="store_true", default=False,
+        help="Output JSON.",
+    )
+
+    # ── bench (test-quality benchmark) ───────────────────────────────────────
+    bench_parser = subparsers.add_parser(
+        "bench", help="Benchmark generated test quality against golden fixtures"
+    )
+    bench_parser.add_argument(
+        "--dir", dest="test_dirs", action="append", default=[],
+        help="Directory of .spec.ts files to review. Repeatable.",
+    )
+    bench_parser.add_argument(
+        "--spec", dest="spec_path", default=None,
+        help="OpenAPI spec for Prism gate (default: stub/openapi_3_1.yaml).",
+    )
+    bench_parser.add_argument(
+        "--golden", dest="golden", action="store_true", default=True,
+        help="Include bundled golden fixtures (default: on).",
+    )
+    bench_parser.add_argument(
+        "--no-golden", dest="golden", action="store_false",
+        help="Exclude bundled golden fixtures.",
+    )
+    bench_parser.add_argument(
+        "--threshold-compile", type=float, default=0.9,
+        help="Min tsc gate pass rate (0-1). Bench fails below this (default: 0.9).",
+    )
+    bench_parser.add_argument(
+        "--threshold-quality", type=float, default=0.85,
+        help="Min average quality score (0-1). Bench fails below this (default: 0.85).",
+    )
+    bench_parser.add_argument(
+        "--output", "-o", default=None,
+        help="Write full JSON report to file.",
+    )
+    bench_parser.add_argument(
+        "--verbose", "-v", action="store_true", default=False,
+        help="Show per-file errors and extra detail.",
+    )
+
+    # ── examples (print usage examples) ─────────────────────────────────────
+    subparsers.add_parser(
+        "examples", help="Print usage examples for common CHERENKOV workflows"
+    )
+
+    # ── synthetic (generate synthetic test data from a spec) ─────────────────
+    synthetic_parser = subparsers.add_parser(
+        "synthetic", help="Generate synthetic test data payloads from an OpenAPI spec"
+    )
+    synthetic_parser.add_argument(
+        "spec_path",
+        help="Path to the OpenAPI spec (JSON/YAML).",
+    )
+    synthetic_parser.add_argument(
+        "--endpoints", "-e", type=int, default=10,
+        help="Max endpoints to process (default: 10).",
+    )
+    synthetic_parser.add_argument(
+        "--output", "-o", default=None,
+        help="Output JSON file path.",
+    )
+    synthetic_parser.add_argument(
+        "--strategy", "-s", choices=["random", "llm"], default="random",
+        help="Generation strategy: random or llm (default: random).",
+    )
+
+    # ── drift (spec-suite drift tracking) ────────────────────────────────────
+    drift_parser = subparsers.add_parser(
+        "drift", help="Track and reconcile spec-suite drift over time"
+    )
+    drift_parser.add_argument("drift_args", nargs=argparse.REMAINDER)
+
+    # ── eval (suite grading and evaluation) ──────────────────────────────────
+    eval_parser = subparsers.add_parser(
+        "eval", help="Evaluate and grade test suite quality (STORM lifecycle)"
+    )
+    eval_parser.add_argument("eval_args", nargs=argparse.REMAINDER)
+
+    # ── ocr (visual OCR review) ───────────────────────────────────────────────
+    ocr_parser = subparsers.add_parser(
+        "ocr", help="OCR-powered visual review: read and validate text in screenshots"
+    )
+    ocr_parser.add_argument("ocr_args", nargs=argparse.REMAINDER)
+
+    # ── routine (recurring validation routines) ───────────────────────────────
+    routine_parser = subparsers.add_parser(
+        "routine", help="Manage recurring scheduled validation routines"
+    )
+    routine_parser.add_argument("routine_args", nargs=argparse.REMAINDER)
+
+    # ── teleport (cross-session state transfer) ───────────────────────────────
+    teleport_parser = subparsers.add_parser(
+        "teleport", help="Transfer CHERENKOV session state across environments"
+    )
+    teleport_parser.add_argument("teleport_args", nargs=argparse.REMAINDER)
+
     return parser
 
 
@@ -1311,6 +1450,80 @@ def main():
             repair=not args.no_repair,
             max_attempts=args.max_attempts,
         )
+
+    elif args.command == "check-suite":
+        from cherenkov.cli.commands.check_suite import check_suite_cmd
+
+        check_suite_cmd.callback(
+            candidate=args.candidate,
+            baseline=args.baseline,
+            spec=args.spec,
+            output=args.output,
+            fail_on_finding=args.fail_on_finding,
+        )
+
+    elif args.command == "check-stale":
+        from cherenkov.cli.commands.check_stale import check_stale_cmd
+
+        check_stale_cmd.callback(
+            spec=args.spec,
+            manifest=args.manifest,
+            fail_on_stale=args.fail_on_stale,
+            as_json=args.as_json,
+        )
+
+    elif args.command == "bench":
+        from cherenkov.cli.commands.bench import bench_cmd
+
+        bench_cmd.callback(
+            test_dirs=tuple(args.test_dirs),
+            spec_path=args.spec_path,
+            golden=args.golden,
+            threshold_compile=args.threshold_compile,
+            threshold_quality=args.threshold_quality,
+            output=args.output,
+            verbose=args.verbose,
+        )
+
+    elif args.command == "examples":
+        from cherenkov.cli.commands.examples_cmd import examples_cmd
+
+        examples_cmd.callback()
+
+    elif args.command == "synthetic":
+        from cherenkov.synthetic.cmd import synthetic_cmd
+
+        synthetic_cmd.callback(
+            spec_path=args.spec_path,
+            endpoints=args.endpoints,
+            output=args.output,
+            strategy=args.strategy,
+        )
+
+    elif args.command == "drift":
+        from cherenkov.cli.commands.drift_cmd import drift_cmd
+
+        drift_cmd.main(args=args.drift_args, standalone_mode=False)
+
+    elif args.command == "eval":
+        from cherenkov.cli.commands.eval_cmd import eval_cmd
+
+        eval_cmd.main(args=args.eval_args, standalone_mode=False)
+
+    elif args.command == "ocr":
+        from cherenkov.cli.commands.ocr_cmd import ocr_cmd
+
+        ocr_cmd.main(args=args.ocr_args, standalone_mode=False)
+
+    elif args.command == "routine":
+        from cherenkov.cli.commands.routine_cmd import routine_cmd
+
+        routine_cmd.main(args=args.routine_args, standalone_mode=False)
+
+    elif args.command == "teleport":
+        from cherenkov.cli.commands.teleport_cmd import teleport_cmd
+
+        teleport_cmd.main(args=args.teleport_args, standalone_mode=False)
 
 
 if __name__ == "__main__":
