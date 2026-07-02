@@ -38,7 +38,7 @@ def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
             else:
                 return warnings
     except Exception as exc:
-        _log.debug("Could not parse spec for preflight check", spec=spec_path, error=str(exc))
+        _log.debug("Could not parse spec %s for preflight check: %s", spec_path, exc)
         return warnings
 
     # Collect all property names defined in response schemas
@@ -61,7 +61,7 @@ def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
             with open(fpath, encoding="utf-8") as fh:
                 code = fh.read()
         except Exception as exc:
-            _log.debug("Could not read test file during preflight", file=fpath, error=str(exc))
+            _log.debug("Could not read test file during preflight %s: %s", fpath, exc)
             continue
         for match in field_re.finditer(code):
             field = match.group(1)
