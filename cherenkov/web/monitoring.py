@@ -13,6 +13,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+@router.get("/health")
+async def health():
+    """Minimal liveness probe — always 200 while the process is up."""
+    return Response(content='{"status":"ok"}', status_code=200, media_type="application/json")
+
+
 @router.get("/healthz")
 async def healthz():
     degradation = get_degradation()

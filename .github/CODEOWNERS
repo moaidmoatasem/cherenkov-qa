@@ -8,3 +8,11 @@
 /cherenkov/core/        @moaidmoatasem
 /cherenkov/substrate/   @moaidmoatasem
 /.github/               @moaidmoatasem
+
+# Security-sensitive paths — mandatory review
+/SECURITY.md                                    @moaidmoatasem
+/cherenkov/web/middleware/auth_middleware.py    @moaidmoatasem
+/cherenkov/web/middleware/rate_limit.py         @moaidmoatasem
+/cherenkov/web/auth/                            @moaidmoatasem
+/cherenkov/mcp/marketplace/sandbox.py           @moaidmoatasem
+/cherenkov/web/routes/webhooks_github.py        @moaidmoatasem

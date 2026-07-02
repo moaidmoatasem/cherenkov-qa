@@ -60,7 +60,7 @@ runs:
 
     - name: Install CHERENKOV
       shell: bash
-      run: pip install cherenkov-qa --quiet
+      run: pip install . --quiet
 
     - name: Run conformance check
       id: run

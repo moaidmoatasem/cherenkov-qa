@@ -11,41 +11,6 @@ def cli(ctx):
         click.echo(ctx.get_help())
 
 
-_CLICK_COMMANDS = [
-    "verify",
-    "check-suite",
-    "validate",
-    "synthetic",
-    "diff",
-    "report",
-    "eject",
-    "self-test",
-    "completion",
-    "init",
-    "doctor",
-    "visual",
-    "perf",
-    "hitl",
-    "review",
-    "mcp",
-    "dashboard",
-    "map",
-    "daemon",
-    "explore",
-    "author",
-    "tokens",
-    "governance",
-    "certify",
-    "profile",
-    "bench",
-    "ocr",
-    "drift",
-    "eval",
-    "routine",
-    "teleport",
-    "enterprise",
-]
-
 
 def _register_commands() -> None:
     from cherenkov.cli.commands.advanced import (
@@ -62,6 +27,7 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.demo_cmd import demo_cmd
     from cherenkov.cli.commands.drift_cmd import drift_cmd
     from cherenkov.cli.commands.enterprise import enterprise_cmd
+    from cherenkov.cli.commands.playbook_cmd import playbook_cmd
     from cherenkov.cli.commands.epoch import (
         author_cmd,
         daemon_cmd,
@@ -128,6 +94,7 @@ def _register_commands() -> None:
         (routine_cmd, "routine"),
         (teleport_cmd, "teleport"),
         (enterprise_cmd, "enterprise"),
+        (playbook_cmd, "playbook"),
     ]:
         cli.add_command(cmd, name=name)
 

@@ -94,8 +94,7 @@ class TestRAGIndex(unittest.TestCase):
         with patch.object(self.index, "_get_embedding", return_value=[0.1] * 768):
             for i in range(5):
                 self.index.add_incident(f"inc-{i}", f"SCN-{i}", "ERROR", f"Error {i}")
-
-        results = self.index.query_similar_incidents("Error", limit=2)
+            results = self.index.query_similar_incidents("Error", limit=2)
         self.assertEqual(len(results), 2)
 
     def test_add_incident_replaces_duplicate_id(self):
@@ -111,12 +110,11 @@ class TestRAGIndex(unittest.TestCase):
         conn.close()
         self.assertEqual(count, 1)
 
-    def test_embedding_fallback_to_mock(self):
-        """Test embedding falls back to mock vector when Ollama unavailable."""
+    def test_embedding_fallback_to_empty(self):
+        """Test _get_embedding returns a mock vector when Ollama is unavailable."""
         with patch("requests.post", side_effect=Exception("Connection refused")):
             vector = self.index._get_embedding("test text")
 
-        self.assertEqual(len(vector), 768)
         self.assertEqual(vector, [0.1] * 768)
 
     def test_ollama_embed_api_tried_first(self):

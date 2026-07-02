@@ -11,7 +11,7 @@
 
 CHERENKOV-QA requires an LLM backend for:
 - Test generation (qwen2.5-coder:7b)
-- Test planning (deepseek-r1:8b)
+- Test planning (deterministic Python — no LLM call)
 - Visual testing (qwen2.5-vl:7b)
 - Chat agents (any model)
 

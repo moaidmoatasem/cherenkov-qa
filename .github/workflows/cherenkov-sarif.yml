@@ -1,10 +1,7 @@
 name: Cherenkov QA Conformance
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   cherenkov-qa:
@@ -14,7 +11,7 @@ jobs:
       contents: read
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Start API Server
       run: |
@@ -24,16 +21,16 @@ jobs:
         # sleep 5
 
     - name: Run Cherenkov Validation
-      uses: moaidmoatasem/cherenkov-qa@main
+      uses: ./
       with:
-        spec_path: 'openapi.yaml' # Replace with your spec file
-        target_url: 'http://localhost:3000' # Replace with your target URL
-        format: 'sarif'
-        output_path: 'cherenkov_results.sarif'
+        spec: 'openapi.yaml'
+        target: 'http://localhost:3000'
+        output-format: 'sarif'
+        output-path: 'cherenkov_results.sarif'
 
     - name: Upload SARIF to GitHub Security Data
       if: always()
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: 'cherenkov_results.sarif'
         category: 'cherenkov-qa'

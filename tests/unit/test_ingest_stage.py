@@ -64,3 +64,46 @@ class TestIngestStageMissingSpec(unittest.TestCase):
         self.assertEqual(result.status, Status.FAILED)
         self.assertEqual(len(result.endpoints), 0)
         self.assertTrue(any("SPEC_NOT_FOUND" in e.code for e in result.errors))
+
+
+class TestIngestStageYAML(unittest.TestCase):
+    def test_yaml_spec_parses_successfully(self):
+        import os
+        import tempfile
+
+        from cherenkov.stages.ingest import IngestStage
+        from cherenkov.core.contracts import Status
+
+        yaml_content = """
+openapi: "3.0.0"
+info:
+  title: Test
+  version: "1.0"
+paths:
+  /health:
+    get:
+      parameters:
+        - name: verbose
+          in: query
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+"""
+        with tempfile.NamedTemporaryFile(suffix=".yaml", mode="w", delete=False) as f:
+            f.write(yaml_content)
+            path = f.name
+        try:
+            stage = IngestStage(run_id="test")
+            result = stage.run(path)
+            self.assertNotEqual(result.status, Status.FAILED)
+            self.assertGreater(len(result.endpoints), 0)
+            self.assertEqual(result.endpoints[0].path, "/health")
+            self.assertEqual(result.endpoints[0].method, "GET")
+        finally:
+            os.unlink(path)

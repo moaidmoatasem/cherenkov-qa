@@ -97,6 +97,68 @@ cd target && uvicorn target_api:app --host 127.0.0.1 --port 8000
 
 ---
 
+#### `verify`
+Zero-config entry point that finds spec↔implementation divergences on a live API. Runs in offline mode by default (no LLM, no Ollama required). Use `--llm` to engage the full Skeptic agent for richer hypothesis generation.
+
+```bash
+# Zero-config demo against the public Petstore
+cherenkov verify --url https://petstore3.swagger.io/api/v3
+
+# Point at your own API with a local spec
+cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml
+
+# CI gate: fail the build if any divergences are found
+cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml --fail-on-divergence
+
+# Write a JSON report and show spec coverage gap
+cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml \
+  --output report.json --coverage-report
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--url` / `-u` | *(required)* | Base URL of the live server to probe |
+| `--spec` / `-s` | *(built-in Petstore)* | Path or URL to the OpenAPI spec |
+| `--llm` | off | Use the LLM Skeptic (requires Ollama) |
+| `--output` / `-o` | *(stdout)* | Write divergence report to file |
+| `--format` | `json` | Report format: `json` or `text` |
+| `--fail-on-divergence` | off | Exit 1 if divergences found (CI gate) |
+| `--coverage-report` | off | Print endpoint coverage gap analysis |
+| `--simple` | off | Use legacy single-probe summary |
+| `--no-mutation-oracle` | off | Skip mutation oracle (faster) |
+| `--fixture-dir` | `.cherenkov/fixtures` | Directory for golden fixtures |
+
+---
+
+#### `demo`
+60-second offline demo — no Ollama, no API key, no running server required. Demonstrates the core CHERENKOV value proposition: catching an AI-generated test suite that was silently weakened.
+
+```bash
+cherenkov demo
+```
+
+---
+
+#### `generate`
+Generate Playwright E2E test files from an OpenAPI specification using the LLM-backed generate→review→repair loop.
+
+```bash
+# Generate tests for a local spec (uses Ollama by default)
+cherenkov generate --spec ./openapi.yaml
+
+# Write to a custom output directory, skip repair loop
+cherenkov generate --spec ./openapi.yaml --output-dir ./tests --no-repair
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--spec` | *(required)* | Path to the OpenAPI spec (JSON/YAML) |
+| `--output-dir` | `stub/generated_tests` | Directory to write `.spec.ts` files |
+| `--no-repair` | off | Write first generation directly, skip repair |
+| `--max-attempts` | `3` | Maximum repair attempts per scenario |
+
+---
+
 #### `self-test`
 Run a deterministic dry-run of the pipeline (mocking Ollama and the server).
 
@@ -666,6 +728,248 @@ so verdicts can be inspected and actioned from the browser instead of the termin
 | `--web`, `-w` | `True` | Serve the prebuilt web UI |
 | `--port`, `-p` | `8000` | Port to bind |
 | `--demo` | `false` | Load demo fixture data into HITL queue on startup |
+
+---
+
+#### `diff`
+Compare two OpenAPI specs for breaking changes.
+
+```bash
+cherenkov diff --before old-openapi.yaml --after new-openapi.yaml
+cherenkov diff --before old-openapi.yaml --after new-openapi.yaml --format json
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--before` | *(required)* | Path to the original spec |
+| `--after` | *(required)* | Path to the modified spec |
+| `--format` | `text` | Output format: `text` or `json` |
+
+---
+
+#### `completion`
+Generate shell completion scripts.
+
+```bash
+# Bash / Zsh
+eval "$(cherenkov completion bash)"
+eval "$(cherenkov completion zsh)"
+
+# Fish
+cherenkov completion fish | source
+```
+
+| Argument | Description |
+|----------|-------------|
+| `shell` | Shell type: `bash`, `zsh`, or `fish` |
+
+---
+
+#### `tokens`
+Token consumption monitor — inspect LLM usage, costs, and recommendations.
+
+```bash
+cherenkov tokens
+cherenkov tokens --help
+```
+
+---
+
+#### `playbook`
+Manage and run validation playbooks — named, auto-triggering skill rules that fire against endpoints during daemon check cycles.
+
+```bash
+# List all loaded playbooks (built-in + project-local)
+cherenkov playbook list
+cherenkov playbook list --json
+
+# Inspect a specific playbook
+cherenkov playbook show auth-strict
+
+# Fire matching playbooks against a live endpoint
+cherenkov playbook run --url http://localhost:8080 --path /health
+
+# Scaffold a new playbook YAML in .cherenkov/playbooks/
+cherenkov playbook new my-playbook
+```
+
+---
+
+#### `enterprise`
+Enterprise-tier commands for org management, SSO, audit logs, and compliance.
+
+```bash
+# Manage organizations and tenants
+cherenkov enterprise org
+
+# Configure SAML 2.0 / SSO
+cherenkov enterprise saml
+
+# Manage Role-Based Access Control
+cherenkov enterprise rbac
+
+# Generate compliance reports
+cherenkov enterprise compliance
+
+# Access audit logs
+cherenkov enterprise audit
+```
+
+---
+
+#### `check-suite`
+Detect AI cheating in a test suite — find weakened, deleted, or hallucinated assertions via fast static analysis (no execution required).
+
+```bash
+# Check a candidate suite against a baseline for weakened/deleted assertions
+cherenkov check-suite --candidate suite.py --baseline baseline.py
+
+# Check against a spec for hallucinated field references
+cherenkov check-suite --candidate suite.ts --spec openapi.yaml
+
+# CI gate: exit 1 on any finding, write JSON report
+cherenkov check-suite --candidate suite.ts --baseline baseline.ts --fail-on-finding --output findings.json
+```
+
+---
+
+#### `check-stale`
+Check whether generated tests are stale relative to the spec.
+
+```bash
+# Compare manifest hash against current spec
+cherenkov check-stale
+
+# CI gate: exit 1 if stale
+cherenkov check-stale --fail-on-stale
+
+# Override spec path and output JSON
+cherenkov check-stale --spec openapi.yaml --json
+```
+
+---
+
+#### `bench`
+Benchmark generated test quality against golden fixtures.
+
+```bash
+# Run benchmark across the default test directory
+cherenkov bench
+
+# Include a custom test directory
+cherenkov bench --dir stub/generated_tests
+
+# Set pass thresholds and write a JSON report
+cherenkov bench --threshold-compile 0.95 --threshold-quality 0.9 --output bench.json
+```
+
+---
+
+#### `examples`
+Print usage examples for common CHERENKOV workflows.
+
+```bash
+cherenkov examples
+```
+
+---
+
+#### `synthetic`
+Generate synthetic test data payloads from an OpenAPI spec.
+
+```bash
+# Generate random payloads for up to 10 endpoints
+cherenkov synthetic openapi.yaml
+
+# Use LLM strategy and write to file
+cherenkov synthetic openapi.yaml --strategy llm --output payloads.json --endpoints 20
+```
+
+---
+
+#### `drift`
+Track and reconcile spec-suite drift over time using an immutable ledger.
+
+```bash
+# Seed a new baseline snapshot
+cherenkov drift seed --spec openapi.yaml --suite suite.json
+
+# List recorded snapshots
+cherenkov drift list
+
+# Reconcile current spec/suite against baseline (CI gate)
+cherenkov drift reconcile --spec openapi.yaml --suite suite.json --fail-on-drift
+
+# Export a baseline snapshot for zero-latency CI
+cherenkov drift export -o baseline.json
+```
+
+---
+
+#### `eval`
+Evaluate and grade test suite quality (STORM-inspired lifecycle).
+
+```bash
+# Grade a suite against a spec (no live API needed)
+cherenkov eval grade --spec openapi.yaml --suite suite.json
+
+# Run suite against a live API and emit a trace
+cherenkov eval run --suite suite.json --target http://localhost:8080
+
+# Grade and fail CI below a threshold
+cherenkov eval grade --spec openapi.yaml --suite suite.json --fail-on C
+```
+
+---
+
+#### `ocr`
+OCR-powered visual review: read and validate text in screenshots.
+
+```bash
+# Check OCR provider status
+cherenkov ocr status
+
+# Test OCR on a file
+cherenkov ocr test
+
+# Review a screenshot
+cherenkov ocr review --file screenshot.png
+```
+
+---
+
+#### `routine`
+Manage recurring scheduled validation routines.
+
+```bash
+# List all configured routines
+cherenkov routine list
+
+# Create a new routine
+cherenkov routine create --name health-check --trigger cron --value "0 * * * *" --target cherenkov.scheduling.templates.health:run
+
+# Toggle a routine on/off
+cherenkov routine toggle <routine_id> true
+```
+
+---
+
+#### `teleport`
+Transfer CHERENKOV session state across environments.
+
+```bash
+# Push session state
+cherenkov teleport push <session_id>
+
+# Pull session state using a token
+cherenkov teleport pull <token>
+
+# List active sessions
+cherenkov teleport list
+
+# Check session status
+cherenkov teleport status <session_id>
+```
 
 ---
 

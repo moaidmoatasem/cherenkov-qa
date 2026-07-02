@@ -5,15 +5,23 @@ CHERENKOV execution/validate.py — validation and value assertion tightening re
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
+try:
+    import yaml as _yaml
+except ImportError:
+    _yaml = None  # type: ignore[assignment]
+
 from cherenkov.core.errors import get_logger
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.trace_reader import TraceReader
+
+_log = logging.getLogger(__name__)
 
 
 def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
@@ -23,8 +31,14 @@ def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
         return warnings
     try:
         with open(spec_path, encoding="utf-8") as f:
-            spec = json.load(f) if spec_path.endswith(".json") else __import__("yaml").safe_load(f)
-    except Exception:
+            if spec_path.endswith(".json"):
+                spec = json.load(f)
+            elif _yaml is not None:
+                spec = _yaml.safe_load(f)
+            else:
+                return warnings
+    except Exception as exc:
+        _log.debug("Could not parse spec %s for preflight check: %s", spec_path, exc)
         return warnings
 
     # Collect all property names defined in response schemas
@@ -46,7 +60,8 @@ def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
         try:
             with open(fpath, encoding="utf-8") as fh:
                 code = fh.read()
-        except Exception:
+        except Exception as exc:
+            _log.debug("Could not read test file during preflight %s: %s", fpath, exc)
             continue
         for match in field_re.finditer(code):
             field = match.group(1)

@@ -21,8 +21,12 @@ Suggest-only: validate_run_gate returns a report, never auto-applies anything.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import time
+import urllib.request
+import uuid
 from collections.abc import Callable
 from typing import Any
 
@@ -125,10 +129,7 @@ RESOURCES: list[MCPResource] = [
 TOOLS: list[MCPTool] = [
     MCPTool(
         name="hitl_list",
-        description=(
-            "List HITL queue items. Returns a hitl/v1 envelope with all items "
-            "matching the given status."
-        ),
+        description="List HITL queue items matching the given status. Returns a hitl/v1 envelope.",
         inputSchema=MCPToolInputSchema(
             properties={
                 "status": MCPToolParam(
@@ -142,10 +143,7 @@ TOOLS: list[MCPTool] = [
     ),
     MCPTool(
         name="hitl_approve",
-        description=(
-            "Approve a pending HITL item. Delegates to HitlQueue's atomic SQL "
-            "gatekeeper. Returns a hitl/v1 envelope."
-        ),
+        description="Approve a pending HITL item. Returns a hitl/v1 envelope.",
         inputSchema=MCPToolInputSchema(
             properties={
                 "item_id": MCPToolParam(
@@ -158,10 +156,7 @@ TOOLS: list[MCPTool] = [
     ),
     MCPTool(
         name="hitl_reject",
-        description=(
-            "Reject a pending HITL item. Delegates to HitlQueue's atomic SQL "
-            "gatekeeper. Returns a hitl/v1 envelope."
-        ),
+        description="Reject a pending HITL item. Returns a hitl/v1 envelope.",
         inputSchema=MCPToolInputSchema(
             properties={
                 "item_id": MCPToolParam(
@@ -176,13 +171,8 @@ TOOLS: list[MCPTool] = [
     MCPTool(
         name="verify_suite",
         description=(
-            "Verify the integrity of an AI-generated (or any) test suite. "
-            "Runs the full 6-gate REVIEW stage — syntax, structure, AST, assertion "
-            "meaningfulness, TypeScript compilation, and Prism dynamic dry-run — "
-            "and returns a VerificationReport (verify/v1). "
-            "Catches: weakened assertions, deleted checks, hallucinated oracles. "
-            "Suggest-only: never auto-applies fixes. "
-            "Call this before reporting a generated suite as 'done'."
+            "Run the 6-gate integrity check on an AI-generated test suite and return a "
+            "VerificationReport (verify/v1). Suggest-only — never auto-applies fixes."
         ),
         inputSchema=MCPToolInputSchema(
             properties={
@@ -217,13 +207,8 @@ TOOLS: list[MCPTool] = [
     MCPTool(
         name="verify_system",
         description=(
-            "Verify a live server against its OpenAPI spec — find spec↔implementation "
-            "divergences (status-code mismatches, missing required response headers, "
-            "schema violations). Runs the Skeptic→Witness divergence engine. "
-            "Offline mode by default (no LLM, no Ollama required). "
-            "Returns a VerificationReport (verify/v1) with each divergence, its "
-            "severity, and a curl repro. "
-            "This is the system-facing twin of `cherenkov verify` (E2.1)."
+            "Probe a live server against its OpenAPI spec; return spec-drift divergences "
+            "as a VerificationReport (verify/v1). Offline by default — no LLM required."
         ),
         inputSchema=MCPToolInputSchema(
             properties={
@@ -249,11 +234,7 @@ TOOLS: list[MCPTool] = [
     ),
     MCPTool(
         name="validate_run_gate",
-        description=(
-            "Run the Validation Gate in report-only mode. Returns a validate/v1 "
-            "ValidationReport. Suggest-only: never auto-commits or auto-applies anything. "
-            "Optional provider param selects sandbox backend."
-        ),
+        description="Run the Validation Gate and return a validate/v1 ValidationReport. Suggest-only.",
         inputSchema=MCPToolInputSchema(
             properties={
                 "provider": MCPToolParam(
@@ -270,18 +251,12 @@ TOOLS: list[MCPTool] = [
     ),
     MCPTool(
         name="policy_list",
-        description=(
-            "List current policy allow/block rules for all servers and profiles. "
-            "Reads from cherenkov-policy.json."
-        ),
+        description="List policy allow/block rules from cherenkov-policy.json.",
         inputSchema=MCPToolInputSchema(properties={}, required=[]),
     ),
     MCPTool(
         name="policy_reload",
-        description=(
-            "Reload cherenkov-policy.json from disk. "
-            "Updates policy rules without restarting the server."
-        ),
+        description="Reload cherenkov-policy.json from disk without restarting the server.",
         inputSchema=MCPToolInputSchema(properties={}, required=[]),
     ),
     MCPTool(
@@ -390,7 +365,7 @@ TOOLS: list[MCPTool] = [
     ),
     MCPTool(
         name="auto_heal_code",
-        description="Automatically diagnose and generate a self-healing code patch for a failed validation item using the AI router.",
+        description="Generate a suggested code patch for a failed validation item. Suggest-only.",
         inputSchema=MCPToolInputSchema(
             properties={
                 "item_id": MCPToolParam(
@@ -408,8 +383,7 @@ TOOLS: list[MCPTool] = [
     # ── Issue #458: Compliance and Governance MCP Tools ────────────────────
     MCPTool(
         name="scan_mena_compliance_enhanced",
-        description="Run enhanced MENAC compliance checking for SAMA CCSF and Egypt CBE FinCSF frameworks. "
-        "Takes target_url, spec_path, and framework parameters for targeted scanning.",
+        description="Run targeted MENA compliance checks (SAMA CCSF / Egypt CBE FinCSF) against a live API.",
         inputSchema=MCPToolInputSchema(
             properties={
                 "target_url": MCPToolParam(
@@ -430,7 +404,7 @@ TOOLS: list[MCPTool] = [
     ),
     MCPTool(
         name="validate_governance_certification",
-        description="Validate governance certifications against established quality standards and requirements.",
+        description="Validate a governance certification ID against quality standards.",
         inputSchema=MCPToolInputSchema(
             properties={
                 "cert_id": MCPToolParam(
@@ -447,7 +421,7 @@ TOOLS: list[MCPTool] = [
     ),
     MCPTool(
         name="report_compliance_findings",
-        description="Generate structured compliance reports with filtering options for severity, endpoint, and result limits.",
+        description="Return structured compliance findings, filterable by severity and endpoint.",
         inputSchema=MCPToolInputSchema(
             properties={
                 "severity": MCPToolParam(
@@ -535,10 +509,7 @@ TOOLS: list[MCPTool] = [
     # ── Issue #441: Conformance tools ──────────────────────────────────────
     MCPTool(
         name="run_conformance_check",
-        description=(
-            "Trigger a cherenkov validate run against a target URL and return the "
-            "report summary. Requires execute permission."
-        ),
+        description="Run cherenkov validate against a target URL and return the report summary.",
         inputSchema=MCPToolInputSchema(
             properties={
                 "target_url": MCPToolParam(
@@ -938,10 +909,6 @@ def _tool_verify_suite(args: dict[str, Any]) -> MCPToolCallResult:
     This is the headline integrity tool from MCP_VERIFICATION_SERVER.md §4.1.
     It is the machine-facing twin of the catch-the-AI-cheating demo.
     """
-    import hashlib
-    import time
-    import uuid
-
     inp = VerifySuiteInput.model_validate(args)
 
     # ── Load test code ────────────────────────────────────────────────────────
@@ -1118,24 +1085,18 @@ def _tool_verify_system(args: dict[str, Any]) -> MCPToolCallResult:
     severity, and a curl-repro command.  This is the system-facing MCP twin
     of `cherenkov verify` (E2.1 / MCP_VERIFICATION_SERVER.md §4.2).
     """
-    import time
-    import uuid
-
     inp = VerifySystemInput.model_validate(args)
 
     # ── Load spec (optional) ──────────────────────────────────────────────────
     spec_dict: dict | None = None
     if inp.spec_source:
         if inp.spec_source.startswith("http://") or inp.spec_source.startswith("https://"):
-            import urllib.request
             try:
                 with urllib.request.urlopen(inp.spec_source, timeout=15) as resp:
-                    import json as _json
-                    spec_dict = _json.loads(resp.read())
+                    spec_dict = json.loads(resp.read())
             except Exception as exc:
                 return _err_content(f"Could not fetch spec from {inp.spec_source}: {exc}")
         else:
-            import json as _json
             resolved = os.path.realpath(os.path.abspath(inp.spec_source))
             cwd = os.path.realpath(os.path.abspath("."))
             if not resolved.startswith(cwd):
@@ -1144,7 +1105,7 @@ def _tool_verify_system(args: dict[str, Any]) -> MCPToolCallResult:
                 return _err_content(f"spec_source not found: {inp.spec_source}")
             try:
                 with open(resolved, encoding="utf-8") as fh:
-                    spec_dict = _json.load(fh)
+                    spec_dict = json.load(fh)
             except Exception as exc:
                 return _err_content(f"Could not parse spec: {exc}")
 

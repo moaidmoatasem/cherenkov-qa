@@ -1,5 +1,9 @@
 from __future__ import annotations
+
+import logging
 import subprocess
+
+_log = logging.getLogger(__name__)
 
 from cherenkov.execution.mobile_runner_base import MobileRunnerBase
 
@@ -49,5 +53,8 @@ class MaestroRunner(MobileRunnerBase):
                 timeout=10,
             )
             return result.returncode == 0
+        except (OSError, subprocess.SubprocessError):
+            return False
         except Exception:
+            _log.warning("Unexpected error in maestro health_check", exc_info=True)
             return False
