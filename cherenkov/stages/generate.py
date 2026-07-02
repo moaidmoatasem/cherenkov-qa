@@ -211,10 +211,9 @@ class GenerateStage:
                 status=Status.OK,
                 metadata=StageMeta(stage="GENERATE", duration_ms=dt),
             )
-        else:
-            # RESTGPT-style spec enrichment: extract rules + example values from
-            # OpenAPI descriptions before building the prompt so the LLM has
-            # concrete values to use rather than inventing them.
+        # RESTGPT-style spec enrichment: extract rules + example values from
+        # OpenAPI descriptions before building the prompt so the LLM has
+        # concrete values to use rather than inventing them.
             spec_rules_block = ""
             try:
                 from cherenkov.stages.enrich import SpecEnrichStage

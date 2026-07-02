@@ -19,7 +19,7 @@ class TrainingDataset:
     @classmethod
     def from_jsonl(cls, path):
         records = []
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line:
@@ -57,6 +57,6 @@ class TrainingDataset:
         return TrainingDataset(train_records), TrainingDataset(test_records)
 
     def save_jsonl(self, path):
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             for record in self.records:
                 f.write(json.dumps(record) + "\n")

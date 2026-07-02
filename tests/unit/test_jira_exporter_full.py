@@ -37,7 +37,7 @@ class TestJiraExporterFull(unittest.TestCase):
     def test_create_jira_issue_full_with_labels(self):
         captured_payload = {}
 
-        def capture_request(url, data=None, headers={}, method="GET"):
+        def capture_request(url, data=None, headers=None, method="GET"):
             nonlocal captured_payload
             captured_payload = json.loads(data.decode("utf-8"))
             return _mock_response({"key": "QA-101"})
@@ -58,7 +58,7 @@ class TestJiraExporterFull(unittest.TestCase):
     def test_create_jira_issue_full_with_priority(self):
         captured_payload = {}
 
-        def capture_request(url, data=None, headers={}, method="GET"):
+        def capture_request(url, data=None, headers=None, method="GET"):
             nonlocal captured_payload
             captured_payload = json.loads(data.decode("utf-8"))
             return _mock_response({"key": "QA-102"})
@@ -78,7 +78,7 @@ class TestJiraExporterFull(unittest.TestCase):
     def test_create_jira_issue_full_with_components(self):
         captured_payload = {}
 
-        def capture_request(url, data=None, headers={}, method="GET"):
+        def capture_request(url, data=None, headers=None, method="GET"):
             nonlocal captured_payload
             captured_payload = json.loads(data.decode("utf-8"))
             return _mock_response({"key": "QA-103"})
@@ -154,7 +154,7 @@ class TestJiraExporterFull(unittest.TestCase):
     def test_add_comment(self):
         captured_data = {}
 
-        def capture_request(url, data=None, headers={}, method="GET"):
+        def capture_request(url, data=None, headers=None, method="GET"):
             nonlocal captured_data
             captured_data = json.loads(data.decode("utf-8"))
             return _mock_response({})
