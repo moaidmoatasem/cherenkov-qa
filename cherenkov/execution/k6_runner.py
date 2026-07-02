@@ -8,6 +8,7 @@ import os
 import shutil
 import subprocess
 from contextlib import suppress
+from pathlib import Path
 
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
@@ -19,9 +20,8 @@ class K6Runner:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("K6_RUNNER", run_id)
-        from pathlib import Path as _Path
-        self.stub_dir = str(_Path(__file__).parent.parent.parent / "stub")
-        self.tests_dir = str(_Path(self.stub_dir) / "generated_tests")
+        self.stub_dir = str(Path(__file__).parent.parent.parent / "stub")
+        self.tests_dir = str(Path(self.stub_dir) / "generated_tests")
         self.k6_script_path = os.path.join(self.tests_dir, "k6_perf.js")
 
     def export_k6_script(self, target_url: str) -> str:
