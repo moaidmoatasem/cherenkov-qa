@@ -20,6 +20,8 @@ from cherenkov.core.errors import get_logger
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.trace_reader import TraceReader
 
+_log = get_logger("VALIDATE")
+
 
 def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
     """Return warnings for tests that assert fields not present in the spec's response schemas."""
@@ -34,7 +36,8 @@ def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
                 spec = _yaml.safe_load(f)
             else:
                 return warnings
-    except Exception:
+    except Exception as exc:
+        _log.debug("Could not parse spec for preflight check", spec=spec_path, error=str(exc))
         return warnings
 
     # Collect all property names defined in response schemas
@@ -56,7 +59,8 @@ def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
         try:
             with open(fpath, encoding="utf-8") as fh:
                 code = fh.read()
-        except Exception:
+        except Exception as exc:
+            _log.debug("Could not read test file during preflight", file=fpath, error=str(exc))
             continue
         for match in field_re.finditer(code):
             field = match.group(1)
