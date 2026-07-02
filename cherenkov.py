@@ -256,6 +256,9 @@ def get_parser() -> argparse.ArgumentParser:
     report_parser.add_argument(
         "--format", choices=["json", "junit", "sarif"], default="json", help="Output format for the report"
     )
+    report_parser.add_argument(
+        "--run", help="Run ID to read (e.g. 20260702-143022); defaults to the latest run"
+    )
 
     eject_parser = subparsers.add_parser(
         "eject", help="Eject generated tests to a standalone Playwright suite"
@@ -836,6 +839,16 @@ def main():
                     scenario=sc, source_type="accessibility"
                 )
 
+        # Open per-run events.jsonl so all stage loggers write to it.
+        import datetime as _dt
+        from cherenkov.core.errors import set_events_file as _set_ef
+        _validate_run_id = _dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+        _validate_run_dir = os.path.abspath(f".cherenkov/runs/{_validate_run_id}")
+        os.makedirs(_validate_run_dir, exist_ok=True)
+        _events_path = os.path.join(_validate_run_dir, "events.jsonl")
+        _ef = open(_events_path, "a", encoding="utf-8")  # noqa: SIM115
+        _set_ef(_ef)
+
         engine = ValidationEngine("cli_validate")
         results = engine.validate_suite(
             args.target,
@@ -843,6 +856,9 @@ def main():
             headed=getattr(args, "headed", False),
             spec_path=getattr(args, "spec", None),
         )
+
+        _set_ef(None)
+        _ef.close()
 
         if getattr(args, "format", None) == "sarif":
             from cherenkov.execution.emitters.sarif import SARIFEmitter
@@ -960,6 +976,17 @@ def main():
             }))
             sys.exit(0 if passed_count == total else 1)
 
+        _is_quiet = getattr(args, "quiet", False)
+        _is_verbose = getattr(args, "verbose", False)
+
+        if _is_quiet:
+            # One-line summary for CI integration
+            _verdict = "PASS" if passed_count == total else "FAIL"
+            print(f"[{_verdict}] {passed_count}/{total} scenarios  (events: {_events_path})")
+            if getattr(args, "fail_on_drift", False) and failed:
+                sys.exit(1)
+            sys.exit(0 if passed_count == total else 1)
+
         # Human-readable summary
         width = 80
         print("\n" + "=" * width)
@@ -976,6 +1003,9 @@ def main():
                 # Show first line of error only
                 first_line = str(r["error"]).split("\n")[0][:120]
                 print(f"         {first_line}")
+            if _is_verbose and r.get("suggestions"):
+                for sug in r["suggestions"]:
+                    print(f"           hint: {sug}")
         print("=" * width)
         if failed:
             print(f"\n  {len(failed)} conformance drift(s) detected\n")
@@ -996,6 +1026,7 @@ def main():
 
         stats = EndpointCache().stats()
         print(f"Cache Stats: {stats}")
+        print(f"Events written to {_events_path}")
 
         if getattr(args, "fail_on_drift", False) and failed:
             sys.exit(1)
@@ -1027,7 +1058,7 @@ def main():
     elif args.command == "report":
         from cherenkov.stages.report_cmd import run_report
 
-        sys.exit(run_report(output=args.output, diff=args.diff))
+        sys.exit(run_report(output=args.output, diff=args.diff, run_id=getattr(args, "run", None)))
 
     elif args.command == "eject":
         ejector = EjectorEngine("cli_eject")
