@@ -5,6 +5,7 @@ CHERENKOV execution/validate.py — validation and value assertion tightening re
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -20,7 +21,7 @@ from cherenkov.core.errors import get_logger
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.trace_reader import TraceReader
 
-_log = get_logger("VALIDATE")
+_log = logging.getLogger(__name__)
 
 
 def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
