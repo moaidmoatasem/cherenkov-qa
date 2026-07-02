@@ -240,7 +240,7 @@ class TestPlaybookRunner:
         assert findings == []
 
     def test_forbidden_field_present(self):
-        pb = self._make_pb(forbidden_response_fields=["password"])
+        pb = self._make_pb(forbidden_response_fields=["password"], severity="error")
         findings = self.runner.run(
             pb,
             endpoint="/users/1",
@@ -249,6 +249,17 @@ class TestPlaybookRunner:
         )
         assert len(findings) == 1
         assert findings[0].level == "error"
+
+    def test_forbidden_field_respects_severity_warn(self):
+        pb = self._make_pb(forbidden_response_fields=["password"], severity="warn")
+        findings = self.runner.run(
+            pb,
+            endpoint="/users/1",
+            method="GET",
+            response_body={"id": 1, "password": "s3cr3t"},
+        )
+        assert len(findings) == 1
+        assert findings[0].level == "warn"
 
     def test_forbidden_nested_field(self):
         pb = self._make_pb(forbidden_response_fields=["user.password"])

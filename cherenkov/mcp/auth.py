@@ -1,13 +1,14 @@
 """MCP Authentication and Authorization (CC-3)."""
 from __future__ import annotations
 
+import os
 import time
 from typing import Any
 
 import jwt
 
-# Secret key for signing JWTs. In production this should be in an env var.
-JWT_SECRET = "cherenkov-mcp-jwt-secret-key-change-me"
+_DEFAULT_JWT_SECRET = "cherenkov-mcp-jwt-secret-change-me"
+JWT_SECRET = os.environ.get("CHERENKOV_JWT_SECRET", _DEFAULT_JWT_SECRET)
 JWT_ALGORITHM = "HS256"
 
 
@@ -37,6 +38,13 @@ class MCPAuthMiddleware:
     def __init__(self, require_auth: bool = False, valid_api_keys: set[str] | None = None):
         self.require_auth = require_auth
         self.valid_api_keys = valid_api_keys or set()
+        if require_auth and JWT_SECRET == _DEFAULT_JWT_SECRET:
+            import warnings
+            warnings.warn(
+                "CHERENKOV_JWT_SECRET is not set; MCP auth is enabled with an insecure default secret. "
+                "Set CHERENKOV_JWT_SECRET before exposing this service.",
+                stacklevel=2,
+            )
 
     def authenticate(self, token: str | None, api_key: str | None = None) -> bool:
         """Authenticate a request using either an API key or a JWT."""

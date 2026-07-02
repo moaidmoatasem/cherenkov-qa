@@ -103,7 +103,7 @@ class PlaybookRunner:
                         playbook_name=pb.name,
                         endpoint=endpoint,
                         method=method,
-                        level="error",
+                        level=pb.severity,
                         message=f"Forbidden field '{field}' found in response body",
                     )
                 )
