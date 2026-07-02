@@ -32,7 +32,7 @@ jobs:
           pip-audit -r requirements.txt || echo "vuln_found=true" >> $GITHUB_ENV
           
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
 
