@@ -49,10 +49,10 @@ class FeedbackStore:
                 json.dump(data, f, indent=2)
 
             logger.info(
-                f"Recorded feedback for {entry.hitl_item_id} (action: {entry.action})"
+                "Recorded feedback for %s (action: %s)", entry.hitl_item_id, entry.action
             )
         except Exception as e:
-            logger.error(f"Failed to record feedback: {e}")
+            logger.error("Failed to record feedback: %s", e)
 
     def get_all(self) -> list[FeedbackEntry]:
         try:
@@ -62,5 +62,5 @@ class FeedbackStore:
                 data = json.load(f)
             return [FeedbackEntry(**item) for item in data]
         except Exception as e:
-            logger.error(f"Failed to read feedback store: {e}")
+            logger.error("Failed to read feedback store: %s", e)
             return []

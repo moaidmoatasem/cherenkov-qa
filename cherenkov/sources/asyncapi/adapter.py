@@ -15,7 +15,7 @@ class AsyncAPISourceAdapter:
         self.raw = self._load_spec()
 
     def _load_spec(self) -> dict[str, Any]:
-        with open(self.spec_path) as f:
+        with open(self.spec_path, encoding="utf-8") as f:
             return yaml.safe_load(f)
 
     def _resolve_ref(self, ref: str, root: dict[str, Any] | None = None) -> dict:
