@@ -1,8 +1,8 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-06-27
+**Date:** 2026-07-01
 **HEAD:** see `git log`
-**Tests:** 788+ unit/integration tests (0 failures); **UI E2E: 294 headed, 0 failed** (smoke 39 + journeys 24 + functional 97 + dashboard 34 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
+**Tests:** 788+ unit/integration tests (0 failures); **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
 **Branch:** `main`
 
 ---
@@ -74,7 +74,14 @@ All Rung 3 items are DONE (merged 2026-06-27):
 ---
 
 
-## What landed this session (2026-06-27)
+## What landed this session (2026-07-01)
+
+| SHA | What |
+|---|---|
+| `8d1b9ad` | fix(e2e): harden headed test suite for Xvfb environment — raised global timeout 30→90s; moved sidebar perf `start` to after bootstrap; added `fonts.googleapis.com` to network-failure exclusion; 260/260 headed pass; PR #634 |
+| `ed85e2d` | fix(ci): correct Rust toolchain action name in tauri-build.yml — `dtolnay/rust-action` → `dtolnay/rust-toolchain`; PR #634 |
+
+## What landed previous session (2026-06-27)
 
 | SHA | What |
 |---|---|
