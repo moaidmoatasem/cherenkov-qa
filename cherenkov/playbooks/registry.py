@@ -75,8 +75,9 @@ class PlaybookRegistry:
     def _load_dir(self, directory: Path) -> None:
         if not directory.exists():
             return
+        count_before = len(self._playbooks)
         for yaml_file in sorted(directory.glob("*.yaml")) + sorted(directory.glob("*.yml")):
             self.load_file(yaml_file)
         logger.debug(
-            "Loaded %d playbook(s) from %s", len(self._playbooks), directory
+            "Loaded %d playbook(s) from %s", len(self._playbooks) - count_before, directory
         )

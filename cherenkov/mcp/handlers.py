@@ -21,8 +21,12 @@ Suggest-only: validate_run_gate returns a report, never auto-applies anything.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import time
+import urllib.request
+import uuid
 from collections.abc import Callable
 from typing import Any
 
@@ -905,10 +909,6 @@ def _tool_verify_suite(args: dict[str, Any]) -> MCPToolCallResult:
     This is the headline integrity tool from MCP_VERIFICATION_SERVER.md §4.1.
     It is the machine-facing twin of the catch-the-AI-cheating demo.
     """
-    import hashlib
-    import time
-    import uuid
-
     inp = VerifySuiteInput.model_validate(args)
 
     # ── Load test code ────────────────────────────────────────────────────────
@@ -1085,24 +1085,18 @@ def _tool_verify_system(args: dict[str, Any]) -> MCPToolCallResult:
     severity, and a curl-repro command.  This is the system-facing MCP twin
     of `cherenkov verify` (E2.1 / MCP_VERIFICATION_SERVER.md §4.2).
     """
-    import time
-    import uuid
-
     inp = VerifySystemInput.model_validate(args)
 
     # ── Load spec (optional) ──────────────────────────────────────────────────
     spec_dict: dict | None = None
     if inp.spec_source:
         if inp.spec_source.startswith("http://") or inp.spec_source.startswith("https://"):
-            import urllib.request
             try:
                 with urllib.request.urlopen(inp.spec_source, timeout=15) as resp:
-                    import json as _json
-                    spec_dict = _json.loads(resp.read())
+                    spec_dict = json.loads(resp.read())
             except Exception as exc:
                 return _err_content(f"Could not fetch spec from {inp.spec_source}: {exc}")
         else:
-            import json as _json
             resolved = os.path.realpath(os.path.abspath(inp.spec_source))
             cwd = os.path.realpath(os.path.abspath("."))
             if not resolved.startswith(cwd):
@@ -1111,7 +1105,7 @@ def _tool_verify_system(args: dict[str, Any]) -> MCPToolCallResult:
                 return _err_content(f"spec_source not found: {inp.spec_source}")
             try:
                 with open(resolved, encoding="utf-8") as fh:
-                    spec_dict = _json.load(fh)
+                    spec_dict = json.load(fh)
             except Exception as exc:
                 return _err_content(f"Could not parse spec: {exc}")
 

@@ -11,42 +11,6 @@ def cli(ctx):
         click.echo(ctx.get_help())
 
 
-_CLICK_COMMANDS = [
-    "verify",
-    "check-suite",
-    "validate",
-    "synthetic",
-    "diff",
-    "report",
-    "eject",
-    "self-test",
-    "completion",
-    "init",
-    "doctor",
-    "visual",
-    "perf",
-    "hitl",
-    "review",
-    "mcp",
-    "dashboard",
-    "map",
-    "daemon",
-    "explore",
-    "author",
-    "tokens",
-    "governance",
-    "certify",
-    "profile",
-    "bench",
-    "ocr",
-    "drift",
-    "eval",
-    "routine",
-    "teleport",
-    "enterprise",
-    "playbook",
-]
-
 
 def _register_commands() -> None:
     from cherenkov.cli.commands.advanced import (
