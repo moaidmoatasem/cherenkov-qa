@@ -17,7 +17,8 @@ def _balanced_brace_match(text: str, start: int) -> int:
     Find the closing brace matching the opening brace at text[start].
     Handles nested braces. Returns the index of the closing brace.
     """
-    assert text[start] == "{"
+    if text[start] != "{":
+        raise ValueError(f"Expected '{{' at position {start}, got {text[start]!r}")
     depth = 0
     for i in range(start, len(text)):
         if text[i] == "{":

@@ -108,14 +108,14 @@ class MCPConfigGenerator:
         config_path.parent.mkdir(parents=True, exist_ok=True)
         existing = {}
         if config_path.exists():
-            with open(config_path) as f:
+            with open(config_path, encoding="utf-8") as f:
                 existing = json.load(f)
             if backup:
                 shutil.copy2(config_path, config_path.with_suffix(".json.bak"))
         existing.setdefault("mcpServers", {}).update(
             self.claude_desktop_config()["mcpServers"]
         )
-        with open(config_path, "w") as f:
+        with open(config_path, "w", encoding="utf-8") as f:
             json.dump(existing, f, indent=2)
         return config_path
 
@@ -124,12 +124,12 @@ class MCPConfigGenerator:
         config_path.parent.mkdir(parents=True, exist_ok=True)
         existing = {}
         if config_path.exists():
-            with open(config_path) as f:
+            with open(config_path, encoding="utf-8") as f:
                 existing = json.load(f)
         existing.setdefault("mcpServers", {}).update(
             self.cursor_mcp_config()["mcpServers"]
         )
-        with open(config_path, "w") as f:
+        with open(config_path, "w", encoding="utf-8") as f:
             json.dump(existing, f, indent=2)
         return config_path
 

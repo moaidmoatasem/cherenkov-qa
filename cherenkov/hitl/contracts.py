@@ -88,7 +88,8 @@ def ok_envelope(command: str, payload: Any) -> HitlEnvelope:
 def err_envelope(
     command: str, code: str, message: str, detail: dict | None = None
 ) -> HitlEnvelope:
-    assert code in ERROR_CODES, f"unknown hitl error code: {code}"
+    if code not in ERROR_CODES:
+        raise ValueError(f"unknown hitl error code: {code}")
     return HitlEnvelope(
         ok=False,
         command=command,

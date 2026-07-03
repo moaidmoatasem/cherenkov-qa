@@ -261,7 +261,8 @@ def _make_report(
     result: ReproductionResult,
     start_ms: int,
 ) -> DivergenceReport:
-    assert result.evidence is not None, "Cannot build report without evidence"
+    if result.evidence is None:
+        raise ValueError("Cannot build report without evidence")
     return DivergenceReport(
         id=str(uuid.uuid4()),
         divergence_class=hypothesis.divergence_class,
