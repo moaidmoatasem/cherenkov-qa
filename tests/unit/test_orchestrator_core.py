@@ -142,7 +142,7 @@ class TestRunIngestSimulationGuard:
     def test_simulate_malformed_blocked_in_production(self):
         orch = self._make()
         with patch.dict(os.environ, {"CHERENKOV_ENV": "production"}):
-            with pytest.raises(AssertionError):
+            with pytest.raises(RuntimeError):
                 orch.run_ingest("dummy.yaml", simulate_malformed=True)
 
     def test_simulate_malformed_allowed_in_development(self):
@@ -159,5 +159,5 @@ class TestRunIngestSimulationGuard:
         dummy_ingest = MagicMock(spec=IngestOutput)
         dummy_ingest.endpoints = []
         with patch.dict(os.environ, {"CHERENKOV_ENV": "production"}):
-            with pytest.raises(AssertionError):
+            with pytest.raises(RuntimeError):
                 orch.run_plan(dummy_ingest, simulate_malformed=True)
