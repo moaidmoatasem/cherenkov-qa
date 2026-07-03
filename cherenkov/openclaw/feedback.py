@@ -80,11 +80,8 @@ class HealingFeedbackStore:
         actor: str = "unknown",
         detail: str = "",
     ) -> None:
-        assert classification in (
-            "regression",
-            "intended",
-            "ignore",
-        ), f"Invalid classification: {classification}"
+        if classification not in ("regression", "intended", "ignore"):
+            raise ValueError(f"Invalid classification: {classification}")
         con = self._connect()
         try:
             con.execute(
