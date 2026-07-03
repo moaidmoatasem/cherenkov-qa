@@ -60,7 +60,7 @@ class APSchedulerAdapter(SchedulerPort):
                 name=routine.name,
                 replace_existing=True
             )
-            _log.info(f"Scheduled routine {routine.id}")
+            _log.info("Scheduled routine %s", routine.id)
 
     def remove_routine(self, routine_id: str) -> None:
         if routine_id in self._routines:
@@ -82,4 +82,4 @@ class APSchedulerAdapter(SchedulerPort):
             # Actually, APScheduler has no direct "trigger now" without messing up the existing trigger,
             # but we can submit it directly to the executor or add a one-off date trigger.
             self.scheduler.add_job(job.func, kwargs=job.kwargs, id=f"{routine_id}_manual", replace_existing=True)
-            _log.info(f"Triggered routine {routine_id} manually")
+            _log.info("Triggered routine %s manually", routine_id)

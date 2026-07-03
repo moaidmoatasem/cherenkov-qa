@@ -61,6 +61,6 @@ def generate_demo_findings() -> None:
                 confidence_reason=f"{mf['diff']}\n\n{mf['rationale']}",
             )
             queue.enqueue(item)
-            logger.info(f"Enqueued demo item {mf['id']}")
+            logger.info("Enqueued demo item %s", mf['id'])
         except Exception as e:
-            logger.error(f"Failed to enqueue demo item {mf['id']}: {e}")
+            logger.error("Failed to enqueue demo item %s: %s", mf['id'], e)

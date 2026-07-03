@@ -29,7 +29,7 @@ class GraphQLSourceAdapter:
         self.schema = self._load_schema()
 
     def _load_schema(self):
-        with open(self.spec_path) as _f:
+        with open(self.spec_path, encoding="utf-8") as _f:
             content = _f.read()
         if self.spec_path.endswith(".json"):
             import json

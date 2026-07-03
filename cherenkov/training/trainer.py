@@ -20,7 +20,8 @@ class Trainer:
         self.dataset = dataset
 
     def prepare(self):
-        assert len(self.dataset) > 0, "Dataset is empty — cannot prepare training"
+        if not self.dataset:
+            raise ValueError("Dataset is empty — cannot prepare training")
         config = self.config
         sample = self.dataset[0]
         msg = [

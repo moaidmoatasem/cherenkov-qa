@@ -42,7 +42,7 @@ MEMORY_DIR = Path("agent_memory").resolve()
 def _read_json(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -57,7 +57,7 @@ def _validate_session_id(session_id: str) -> str:
 
 def _write_json(path: Path, data: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
         f.write("\n")
 

@@ -31,7 +31,7 @@ class JsonlCorpusBackend:
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def submit(self, entry: CorpusEntry) -> None:
-        with open(self.path, "a") as f:
+        with open(self.path, "a", encoding="utf-8") as f:
             f.write(
                 json.dumps(
                     {
@@ -47,7 +47,7 @@ class JsonlCorpusBackend:
         if not self.path.exists():
             return []
         entries = []
-        with open(self.path) as f:
+        with open(self.path, encoding="utf-8") as f:
             for line in f:
                 if line.strip():
                     d = json.loads(line)
