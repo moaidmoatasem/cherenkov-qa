@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cherenkov-qa"
-version = "1.1.1"
+version = "1.1.0"
 description = "AI-native API conformance testing — OpenAPI spec to Playwright tests, locally, privately, with zero vendor lock-in."
 readme = "README.md"
 license = {text = "Apache-2.0"}

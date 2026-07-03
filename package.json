@@ -1,6 +1,6 @@
 {
   "name": "cherenkov-qa",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Catch where your software lies — before your users do. Local-first AI-native API conformance engine.",
   "keywords": [
     "api-testing",
