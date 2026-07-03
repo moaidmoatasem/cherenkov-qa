@@ -41,7 +41,7 @@ def run_report(output: str, diff: str = None, run_id: str | None = None) -> int:
         "passed_scenarios": 0,
     }
 
-    with open(events_file, "r") as f:
+    with open(events_file, "r", encoding="utf-8") as f:
         for line in f:
             if not line.strip():
                 continue
@@ -80,7 +80,7 @@ def run_report(output: str, diff: str = None, run_id: str | None = None) -> int:
         )
 
     if output:
-        with open(output, "w") as f:
+        with open(output, "w", encoding="utf-8") as f:
             json.dump(report_data, f, indent=2)
         print(f"Report saved to {output}")
 
@@ -88,7 +88,7 @@ def run_report(output: str, diff: str = None, run_id: str | None = None) -> int:
         if not os.path.exists(diff):
             print(f"Error: Diff file {diff} not found.")
             return 1
-        with open(diff, "r") as f:
+        with open(diff, "r", encoding="utf-8") as f:
             diff_data = json.load(f)
 
         print(f"\n--- DIFF REPORT vs {diff} ---")

@@ -44,13 +44,13 @@ async def handle_github_event(
         _log.warning("CHERENKOV_GITHUB_WEBHOOK_SECRET is not set; webhook signature verification is disabled")
 
     payload = await request.json()
-    _log.info(f"Received GitHub webhook event: {x_github_event}")
+    _log.info("Received GitHub webhook event: %s", x_github_event)
 
     # Forward relevant events to the CHERENKOV event bus
     if x_github_event == "pull_request":
         action = payload.get("action")
         pr_number = payload.get("pull_request", {}).get("number")
-        _log.info(f"PR {pr_number} action: {action}")
+        _log.info("PR %s action: %s", pr_number, action)
         # Here we would normally publish to `AsyncQueueEventBus`
         # bus.publish(CHERENKOVEvent(category="webhook", name="github.pr", data=payload))
 

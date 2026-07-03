@@ -54,7 +54,7 @@ class BufRegistryClient:
             with urllib.request.urlopen(req, timeout=10) as response:
                 if response.status == 200:
                     data = json.loads(response.read().decode("utf-8"))
-                    _log.info(f"Successfully connected to BSR for {module_name}")
+                    _log.info("Successfully connected to BSR for %s", module_name)
                     return json.dumps(data)
                 return None
         except Exception as exc:
@@ -68,7 +68,7 @@ class BufRegistryClient:
         """
         metadata = self.fetch_schema(module_name)
         if metadata:
-            _log.info(f"Mock-fetching {file_path} from {module_name} in BSR")
+            _log.info("Mock-fetching %s from %s in BSR", file_path, module_name)
             return f'''
 syntax = "proto3";
 package buf.test;

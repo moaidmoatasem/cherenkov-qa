@@ -130,7 +130,7 @@ class UnitTestEmitter:
                 file_ext = ".py" if framework == "pytest" else ".ts"
                 filename = f"{scenario_id}{file_ext}"
                 filepath = os.path.join(output_dir, filename)
-                with open(filepath, "w") as f:
+                with open(filepath, "w", encoding="utf-8") as f:
                     f.write(code)
 
                 results.append(

@@ -36,7 +36,7 @@ def handle_event_for_mcp(event: CHERENKOVEvent) -> None:
                 "data": payload
             })
     except Exception as e:
-        _log.error(f"Failed to bridge event to MCP: {e}")
+        _log.error("Failed to bridge event to MCP: %s", e)
 
 
 def subscribe_mcp_bridge() -> None:
