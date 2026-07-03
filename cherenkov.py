@@ -165,7 +165,13 @@ def get_parser() -> argparse.ArgumentParser:
         "validate", help="Validate E2E test suite against a real server"
     )
     validate_parser.add_argument(
-        "--target", "-t", required=True, help="The real server target base URL"
+        "--target", "-t", default=None,
+        help="The real server target base URL (default: http://localhost:8000 in --demo mode)",
+    )
+    validate_parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Demo mode: use bundled pre-generated fixtures and auto-start the target API; no Ollama required",
     )
     validate_parser.add_argument(
         "--headed", action="store_true", help="Run Playwright in headed (visible browser) mode"
@@ -249,6 +255,9 @@ def get_parser() -> argparse.ArgumentParser:
     )
     report_parser.add_argument(
         "--format", choices=["json", "junit", "sarif"], default="json", help="Output format for the report"
+    )
+    report_parser.add_argument(
+        "--run", help="Run ID to read (e.g. 20260702-143022); defaults to the latest run"
     )
 
     eject_parser = subparsers.add_parser(
@@ -960,6 +969,46 @@ def main():
     # If not quiet, they also go to stderr.
 
     if args.command == "validate":
+        _demo_proc = None
+        if getattr(args, "demo", False):
+            print("\n" + "=" * 80)
+            print("[DEMO MODE] Using pre-generated tests — no Ollama or GPU required.")
+            print("Run without --demo for live generation against your own API spec.")
+            print("=" * 80 + "\n")
+            if not args.target:
+                args.target = "http://localhost:8000"
+            # Auto-start the bundled target API if it is not already reachable.
+            # Use requests (not urllib) — requests rejects file:// URLs so a
+            # malicious --target value cannot read local files via the file:// scheme.
+            import requests as _requests
+            _target_live = False
+            try:
+                _requests.get(f"{args.target}/health", timeout=2)
+                _target_live = True
+            except Exception:  # ConnectionError / Timeout expected when target not running
+                pass
+            if not _target_live:
+                import subprocess as _sp, time as _t, atexit as _atexit
+                _target_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "target")
+                _venv_uvicorn = os.path.join(_target_dir, ".venv", "bin", "uvicorn")
+                _uvicorn_cmd = _venv_uvicorn if os.path.exists(_venv_uvicorn) else "uvicorn"
+                print(f"  Starting bundled target API at {args.target} …")
+                _demo_proc = _sp.Popen(
+                    [_uvicorn_cmd, "target_api:app", "--host", "127.0.0.1", "--port", "8000"],
+                    cwd=_target_dir, stdout=_sp.DEVNULL, stderr=_sp.DEVNULL,
+                )
+                _atexit.register(lambda p=_demo_proc: p.poll() is None and p.terminate())
+                for _ in range(15):
+                    _t.sleep(0.5)
+                    try:
+                        _requests.get(f"{args.target}/health", timeout=1)
+                        print("  Target API ready.\n")
+                        break
+                    except Exception:  # ConnectionError / Timeout while server is starting up
+                        pass
+        elif not args.target:
+            parser.error("cherenkov validate: --target is required (or use --demo to run against the bundled target API)")
+
         if getattr(args, "no_cache", False):
             from cherenkov.cache.endpoint_cache import EndpointCache
 
@@ -1005,6 +1054,16 @@ def main():
                     scenario=sc, source_type="accessibility"
                 )
 
+        # Open per-run events.jsonl so all stage loggers write to it.
+        import datetime as _dt
+        from cherenkov.core.errors import set_events_file as _set_ef
+        _validate_run_id = _dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+        _validate_run_dir = os.path.abspath(f".cherenkov/runs/{_validate_run_id}")
+        os.makedirs(_validate_run_dir, exist_ok=True)
+        _events_path = os.path.join(_validate_run_dir, "events.jsonl")
+        _ef = open(_events_path, "a", encoding="utf-8")  # noqa: SIM115
+        _set_ef(_ef)
+
         engine = ValidationEngine("cli_validate")
         results = engine.validate_suite(
             args.target,
@@ -1012,6 +1071,9 @@ def main():
             headed=getattr(args, "headed", False),
             spec_path=getattr(args, "spec", None),
         )
+
+        _set_ef(None)
+        _ef.close()
 
         if getattr(args, "format", None) == "sarif":
             from cherenkov.execution.emitters.sarif import SARIFEmitter
@@ -1129,6 +1191,17 @@ def main():
             }))
             sys.exit(0 if passed_count == total else 1)
 
+        _is_quiet = getattr(args, "quiet", False)
+        _is_verbose = getattr(args, "verbose", False)
+
+        if _is_quiet:
+            # One-line summary for CI integration
+            _verdict = "PASS" if passed_count == total else "FAIL"
+            print(f"[{_verdict}] {passed_count}/{total} scenarios  (events: {_events_path})")
+            if getattr(args, "fail_on_drift", False) and failed:
+                sys.exit(1)
+            sys.exit(0 if passed_count == total else 1)
+
         # Human-readable summary
         width = 80
         print("\n" + "=" * width)
@@ -1145,6 +1218,9 @@ def main():
                 # Show first line of error only
                 first_line = str(r["error"]).split("\n")[0][:120]
                 print(f"         {first_line}")
+            if _is_verbose and r.get("suggestions"):
+                for sug in r["suggestions"]:
+                    print(f"           hint: {sug}")
         print("=" * width)
         if failed:
             print(f"\n  {len(failed)} conformance drift(s) detected\n")
@@ -1165,6 +1241,7 @@ def main():
 
         stats = EndpointCache().stats()
         print(f"Cache Stats: {stats}")
+        print(f"Events written to {_events_path}")
 
         if getattr(args, "fail_on_drift", False) and failed:
             sys.exit(1)
@@ -1196,7 +1273,7 @@ def main():
     elif args.command == "report":
         from cherenkov.stages.report_cmd import run_report
 
-        sys.exit(run_report(output=args.output, diff=args.diff))
+        sys.exit(run_report(output=args.output, diff=args.diff, run_id=getattr(args, "run", None)))
 
     elif args.command == "eject":
         ejector = EjectorEngine("cli_eject")

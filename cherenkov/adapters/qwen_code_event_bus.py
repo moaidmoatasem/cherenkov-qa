@@ -1,6 +1,9 @@
 import contextlib
+import logging
 import subprocess
 from collections.abc import Callable
+
+_log = logging.getLogger(__name__)
 
 from cherenkov.core.events import CHERENKOVEvent
 
@@ -46,4 +49,4 @@ class QwenCodeChannelAdapter:
                 check=False
             )
         except Exception:
-            pass
+            _log.debug("qwen channel notify failed (binary absent or non-zero exit)", exc_info=True)

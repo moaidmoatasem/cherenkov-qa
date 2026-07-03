@@ -26,7 +26,7 @@ class SpecGuardianTriggerLoop:
         """
         run_id = event_context.get("id", f"drift_{int(time.time())}")
         spec_path = event_context.get("file_path", "openapi.yaml")
-        logger.info(f"[{run_id}] Triggering validation loop for event: {event_context}")
+        logger.info("[%s] Triggering validation loop for event: %s", run_id, event_context)
 
         try:
             # 1. Fetch the delta/spec changes and invoke the generative pipeline
@@ -61,10 +61,10 @@ class SpecGuardianTriggerLoop:
                 planner = AccessibilityScenarioPlanner()
                 scenarios = planner.plan(source)
             else:
-                logger.error(f"[{run_id}] Unsupported source type {self.source_type}")
+                logger.error("[%s] Unsupported source type %s", run_id, self.source_type)
                 return
 
-            logger.info(f"[{run_id}] Planned {len(scenarios)} scenarios.")
+            logger.info("[%s] Planned %d scenarios.", run_id, len(scenarios))
             for sc in scenarios:
                 GenerateStage("daemon_validate").run(
                     scenario=sc, source_type=self.source_type
@@ -74,7 +74,7 @@ class SpecGuardianTriggerLoop:
             from cherenkov.execution.validate import ValidationEngine
 
             engine = ValidationEngine("daemon_validate")
-            logger.info(f"[{run_id}] Running validation against {self.target_url}")
+            logger.info("[%s] Running validation against %s", run_id, self.target_url)
             results = engine.validate_suite(self.target_url, workers=1)
 
             # 3. Handle failures and Enforce D7 Invariant (Suggest-Only Healing)
@@ -82,16 +82,18 @@ class SpecGuardianTriggerLoop:
                 r for r in results.get("reports", []) if not r.get("passed", False)
             ]
             if failed_reports:
-                logger.warning(
-                    f"[{run_id}] {len(failed_reports)} divergences detected!"
-                )
+                logger.warning("[%s] %d divergences detected!", run_id, len(failed_reports))
                 for report in failed_reports:
                     logger.warning(
-                        f"[{run_id}] Divergence in {report.get('scenario_id')}: {report.get('error')}"
+                        "[%s] Divergence in %s: %s",
+                        run_id,
+                        report.get("scenario_id"),
+                        report.get("error"),
                     )
                 # We do NOT auto-commit fixes.
                 logger.info(
-                    f"[{run_id}] Enforcing D7 Invariant: Pushing to HITL Queue instead of auto-merging."
+                    "[%s] Enforcing D7 Invariant: Pushing to HITL Queue instead of auto-merging.",
+                    run_id,
                 )
 
                 # Push to HITL queue
@@ -114,8 +116,8 @@ class SpecGuardianTriggerLoop:
                     queue.push_finding(finding, run_id=run_id)
             else:
                 logger.info(
-                    f"[{run_id}] Validation loop completed successfully. No divergences."
+                    "[%s] Validation loop completed successfully. No divergences.", run_id
                 )
 
         except Exception as e:
-            logger.error(f"[{run_id}] Guardian Validation failed: {e}")
+            logger.error("[%s] Guardian Validation failed: %s", run_id, e)

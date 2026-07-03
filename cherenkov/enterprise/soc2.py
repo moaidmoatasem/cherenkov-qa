@@ -247,7 +247,7 @@ class SOC2ReportGenerator:
         if report is None:
             raise ValueError(f"Report not found: {report_id}")
         output_path = os.path.join(path, f"{report_id}.json")
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(report.__dict__, f, indent=2, default=str)
         return output_path
 

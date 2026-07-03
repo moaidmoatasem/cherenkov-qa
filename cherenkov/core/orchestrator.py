@@ -31,6 +31,14 @@ from cherenkov.stages.plan import PlanStage
 from cherenkov.stages.review import ReviewStage
 
 
+def _assert_not_production() -> None:
+    if os.getenv("CHERENKOV_ENV", "production") == "production":
+        raise RuntimeError(
+            "Simulation flags are not allowed in production. "
+            "Set CHERENKOV_ENV=development to enable."
+        )
+
+
 class OrchestrationEngine:
     """Central execution engine orchestrating stages E2E."""
 
@@ -77,9 +85,7 @@ class OrchestrationEngine:
     ) -> IngestOutput:
         self.log.info("stage run", stage="INGEST", spec_path=spec_path)
         if simulate_malformed:
-            assert (
-                os.getenv("CHERENKOV_ENV", "production") != "production"
-            ), "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
+            _assert_not_production()
             return {"endpoints": [], "client_stub_path": "stub/client.ts"}  # type: ignore
         ingest_output = IngestStage(self.run_id).run(spec_path)
         self.last_ingest = ingest_output
@@ -91,9 +97,7 @@ class OrchestrationEngine:
     ) -> PlanOutput:
         self.log.info("stage run", stage="PLAN", endpoints_count=len(ingest.endpoints))
         if simulate_malformed:
-            assert (
-                os.getenv("CHERENKOV_ENV", "production") != "production"
-            ), "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
+            _assert_not_production()
             return {"scenarios": []}  # type: ignore
         return PlanStage(self.run_id).run(ingest)
 
@@ -103,9 +107,7 @@ class OrchestrationEngine:
     ) -> GenerateOutput:
         self.log.info("stage run", stage="GENERATE", scenario_id=scenario.mutation_id)
         if simulate_malformed:
-            assert (
-                os.getenv("CHERENKOV_ENV", "production") != "production"
-            ), "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
+            _assert_not_production()
             return {"scenario_id": scenario.mutation_id or "unknown", "test_code": ""}  # type: ignore
 
         endpoint_slice = None
@@ -142,9 +144,7 @@ class OrchestrationEngine:
     ) -> ReviewOutput:
         self.log.info("stage run", stage="REVIEW", scenario_id=generate.scenario_id)
         if simulate_malformed:
-            assert (
-                os.getenv("CHERENKOV_ENV", "production") != "production"
-            ), "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
+            _assert_not_production()
             return {
                 "scenario_id": generate.scenario_id,
                 "gates": [], "quality_score": 0.0,
@@ -546,9 +546,7 @@ class OrchestrationEngine:
         simulate_fail_stage: str | None = None,
     ) -> bool:
         if simulate_fail_stage:
-            assert (
-                os.getenv("CHERENKOV_ENV", "production") != "production"
-            ), "Simulation flags are not allowed in production. Set CHERENKOV_ENV=development to enable."
+            _assert_not_production()
 
         self.breaker.reset()
         get_settings().detect_ollama_device(self.run_id)

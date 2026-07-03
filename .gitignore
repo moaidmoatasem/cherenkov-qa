@@ -28,8 +28,11 @@ target/.venv/
 # generated project config (from `cherenkov init`)
 cherenkov.toml
 
-# local harness / editor config
-.claude/
+# local harness / editor config — but track the shared SessionStart hook
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
+.claude/settings.local.json
 
 
 # (track-b-c-deferred/ was re-integrated and deleted)

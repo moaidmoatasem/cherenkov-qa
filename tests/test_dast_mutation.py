@@ -11,7 +11,9 @@ Validates:
 - The value field is set to the hostile payload string
 """
 
+import json
 import os
+import tempfile
 import unittest
 from unittest.mock import patch
 import cherenkov.core.config
@@ -165,19 +167,14 @@ class TestDASTMutationIngest(unittest.TestCase):
     # ── helpers ──────────────────────────────────────────────────────────
 
     def _write_temp_spec(self):
-        import tempfile
-        import json
-
         tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
         json.dump(self.spec, tmp)
         tmp.close()
         return tmp.name
 
     def _cleanup_temp(self, path):
-        import os as _os
-
-        if _os.path.exists(path):
-            _os.unlink(path)
+        if os.path.exists(path):
+            os.unlink(path)
 
 
 if __name__ == "__main__":

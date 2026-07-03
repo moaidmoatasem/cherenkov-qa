@@ -14,7 +14,7 @@ for _ in range(30):
         if urllib.request.urlopen('http://127.0.0.1:8000/health').getcode() == 200:
             print('API is up!')
             break
-    except:
+    except Exception:
         time.sleep(0.5)
 else:
     print('API failed to start.')

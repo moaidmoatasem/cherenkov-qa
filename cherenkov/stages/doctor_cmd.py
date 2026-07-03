@@ -282,6 +282,16 @@ def run_doctor(desktop: bool = False) -> int:
             f"\n  {'spec files':<30} [WARN]  none found (run `cherenkov init` or edit cherenkov.toml)"
         )
 
+    # ── Demo mode availability ───────────────────────────────────────────
+    import os as _os, pathlib as _pl
+    _demo_fixtures = _pl.Path(__file__).parent.parent.parent / "stub" / "generated_tests"
+    _demo_target = _pl.Path(__file__).parent.parent.parent / "target" / "target_api.py"
+    _demo_ok = _demo_fixtures.exists() and any(_demo_fixtures.glob("*.spec.ts")) and _demo_target.exists()
+    print(
+        f"\n  {'demo mode':<30} {'[OK]' if _demo_ok else '[NO]'}  "
+        f"{'run with --demo for a no-GPU first look' if _demo_ok else 'stub/generated_tests/ or target/target_api.py missing'}"
+    )
+
     # ── Summary ──────────────────────────────────────────────────────────
     issues = 0
     if not ollama_bin:

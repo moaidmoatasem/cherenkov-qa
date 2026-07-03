@@ -119,7 +119,8 @@ def compare_grades(before: GradeReport, after: GradeReport) -> CompareReport:
                 direction="removed",
             ))
         else:
-            assert b is not None and a is not None
+            if b is None or a is None:
+                raise ValueError("Cannot compare: both before and after scores must be present")
             delta = a.overall_score - b.overall_score
             before_rank = _GRADE_ORDER.get(b.grade, 0)
             after_rank  = _GRADE_ORDER.get(a.grade, 0)

@@ -98,7 +98,7 @@ class SpecGuardianDaemon:
 
     def _signal_handler(self, signum: int, frame: Any) -> None:
         """Handle shutdown signals."""
-        logger.info(f"Received signal {signum}, shutting down")
+        logger.info("Received signal %s, shutting down", signum)
         self.stop()
 
     def _run_check_cycle(self) -> None:
@@ -176,7 +176,7 @@ class SpecGuardianDaemon:
 
         url = f"{self.base_url}{path}"
 
-        logger.debug(f"Checking {method} {url}")
+        logger.debug("Checking %s %s", method, url)
 
         # Make the actual API call
         response = requests.request(

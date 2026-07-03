@@ -1310,7 +1310,7 @@ def _tool_visual_diff_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
 
         # Write report to disk
         os.makedirs(os.path.dirname(report_path), exist_ok=True)
-        with open(report_path, "w") as f:
+        with open(report_path, "w", encoding="utf-8") as f:
             json.dump(enriched, f, indent=2)
 
         return _ok_content(enriched)
@@ -1745,7 +1745,7 @@ def _get_latest_validation_report() -> dict[str, Any]:
     pattern = os.path.join(evidence_dir, "*.json")
     files = sorted(glob.glob(pattern), reverse=True)
     if files:
-        with open(files[0]) as f:
+        with open(files[0], encoding="utf-8") as f:
             return json.load(f)
     return {
         "schema_version": "validate/v1",
@@ -1796,7 +1796,7 @@ def _tool_get_last_report(args: dict[str, Any]) -> MCPToolCallResult:
             }
         )
     try:
-        with open(report_path) as f:
+        with open(report_path, encoding="utf-8") as f:
             return _ok_content(json.load(f))
     except Exception as exc:
         return _err_content(f"Error reading report: {exc}")
@@ -1834,7 +1834,7 @@ def _tool_get_tightening_suggestions(args: dict[str, Any]) -> MCPToolCallResult:
             for ev_file in sorted(_glob.glob(os.path.join(evidence_dir, "*.json")))[
                 -10:
             ]:
-                with open(ev_file) as f:
+                with open(ev_file, encoding="utf-8") as f:
                     ev = json.load(f)
                 if (
                     inp.endpoint in ev.get("endpoint", "")

@@ -10,7 +10,10 @@ Phase 14+.
 
 from __future__ import annotations
 
+import logging
 from typing import Any
+
+_log = logging.getLogger(__name__)
 
 from cherenkov.drift.loop import ReconciliationProposal
 
@@ -61,7 +64,7 @@ def is_meaningful_assertion(assertion: dict[str, Any]) -> tuple[bool, str]:
             if predicate(assertion):
                 return False, label
         except Exception:
-            pass
+            _log.debug("predicate %r raised unexpectedly", label, exc_info=True)
     return True, "ok"
 
 

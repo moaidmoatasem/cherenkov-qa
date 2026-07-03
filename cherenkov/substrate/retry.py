@@ -155,7 +155,8 @@ def with_retry(
             )
             time.sleep(wait)
 
-    assert last_exc is not None
+    if last_exc is None:
+        raise RuntimeError("retry loop exited without recording an exception")
     raise last_exc
 
 

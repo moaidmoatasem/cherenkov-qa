@@ -35,32 +35,32 @@ class FeedbackStore:
         self.store_path = Path(store_path)
         self.store_path.parent.mkdir(parents=True, exist_ok=True)
         if not self.store_path.exists():
-            with open(self.store_path, "w") as f:
+            with open(self.store_path, "w", encoding="utf-8") as f:
                 json.dump([], f)
 
     def record_feedback(self, entry: FeedbackEntry) -> None:
         try:
-            with open(self.store_path) as f:
+            with open(self.store_path, encoding="utf-8") as f:
                 data = json.load(f)
 
             data.append(asdict(entry))
 
-            with open(self.store_path, "w") as f:
+            with open(self.store_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)
 
             logger.info(
-                f"Recorded feedback for {entry.hitl_item_id} (action: {entry.action})"
+                "Recorded feedback for %s (action: %s)", entry.hitl_item_id, entry.action
             )
         except Exception as e:
-            logger.error(f"Failed to record feedback: {e}")
+            logger.error("Failed to record feedback: %s", e)
 
     def get_all(self) -> list[FeedbackEntry]:
         try:
             if not self.store_path.exists():
                 return []
-            with open(self.store_path) as f:
+            with open(self.store_path, encoding="utf-8") as f:
                 data = json.load(f)
             return [FeedbackEntry(**item) for item in data]
         except Exception as e:
-            logger.error(f"Failed to read feedback store: {e}")
+            logger.error("Failed to read feedback store: %s", e)
             return []

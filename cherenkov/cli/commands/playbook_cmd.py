@@ -101,7 +101,7 @@ def run_cmd(
         resp = requests.request(method.upper(), full_url, headers=req_headers, timeout=15)
         try:
             body = resp.json() if resp.content else None
-        except Exception:
+        except ValueError:
             body = None
         status = resp.status_code
         resp_headers = dict(resp.headers)

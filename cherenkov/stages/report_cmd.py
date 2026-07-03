@@ -14,20 +14,26 @@ def get_latest_run_dir() -> str:
     return max(all_runs, key=os.path.getctime)
 
 
-def run_report(output: str, diff: str = None) -> int:
+def run_report(output: str, diff: str = None, run_id: str | None = None) -> int:
     get_logger("REPORT")
-    latest_run = get_latest_run_dir()
-    if not latest_run:
-        print("Error: No runs found in .cherenkov/runs/")
-        return 1
+    if run_id:
+        run_dir = os.path.abspath(os.path.join(".cherenkov/runs", run_id))
+        if not os.path.isdir(run_dir):
+            print(f"Error: Run directory not found: {run_dir}")
+            return 1
+    else:
+        run_dir = get_latest_run_dir()
+        if not run_dir:
+            print("Error: No runs found in .cherenkov/runs/")
+            return 1
 
-    events_file = os.path.join(latest_run, "events.jsonl")
+    events_file = os.path.join(run_dir, "events.jsonl")
     if not os.path.exists(events_file):
         print(f"Error: {events_file} not found")
         return 1
 
     report_data = {
-        "run_id": os.path.basename(latest_run),
+        "run_id": os.path.basename(run_dir),
         "skipped_endpoints": [],
         "scenarios": [],
         "success_rate": 0.0,
@@ -35,7 +41,7 @@ def run_report(output: str, diff: str = None) -> int:
         "passed_scenarios": 0,
     }
 
-    with open(events_file, "r") as f:
+    with open(events_file, "r", encoding="utf-8") as f:
         for line in f:
             if not line.strip():
                 continue
@@ -74,7 +80,7 @@ def run_report(output: str, diff: str = None) -> int:
         )
 
     if output:
-        with open(output, "w") as f:
+        with open(output, "w", encoding="utf-8") as f:
             json.dump(report_data, f, indent=2)
         print(f"Report saved to {output}")
 
@@ -82,7 +88,7 @@ def run_report(output: str, diff: str = None) -> int:
         if not os.path.exists(diff):
             print(f"Error: Diff file {diff} not found.")
             return 1
-        with open(diff, "r") as f:
+        with open(diff, "r", encoding="utf-8") as f:
             diff_data = json.load(f)
 
         print(f"\n--- DIFF REPORT vs {diff} ---")

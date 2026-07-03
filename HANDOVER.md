@@ -1,8 +1,8 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-06-27
+**Date:** 2026-07-01
 **HEAD:** see `git log`
-**Tests:** 788+ unit/integration tests (0 failures); **UI E2E: 294 headed, 0 failed** (smoke 39 + journeys 24 + functional 97 + dashboard 34 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
+**Tests:** 788+ unit/integration tests (0 failures); **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
 **Branch:** `main`
 
 ---
@@ -74,7 +74,14 @@ All Rung 3 items are DONE (merged 2026-06-27):
 ---
 
 
-## What landed this session (2026-06-27)
+## What landed this session (2026-07-01)
+
+| SHA | What |
+|---|---|
+| `8d1b9ad` | fix(e2e): harden headed test suite for Xvfb environment — raised global timeout 30→90s; moved sidebar perf `start` to after bootstrap; added `fonts.googleapis.com` to network-failure exclusion; 260/260 headed pass; PR #634 |
+| `ed85e2d` | fix(ci): correct Rust toolchain action name in tauri-build.yml — `dtolnay/rust-action` → `dtolnay/rust-toolchain`; PR #634 |
+
+## What landed previous session (2026-06-27)
 
 | SHA | What |
 |---|---|
@@ -127,8 +134,8 @@ All Rung 3 items are DONE (merged 2026-06-27):
 1. **E0.3 -- Human validation gate** -- recruit ≥3 QA practitioners to complete quickstart unaided. Cannot be automated.
 2. ~~Full pipeline integration test~~ **DONE** -- `tests/integration/test_pipeline_e2e.py` 15/15 green.
 3. ~~Spec coverage-gap report~~ **DONE** -- `cherenkov/divergence/coverage.py`; `--coverage-report` flag on `verify` + `certify`; 18 tests.
-4. **`cherenkov report --output report.json`** (+ `--diff`) -- structured CI-friendly JSON summary of divergence results; diffable across runs.
-5. **Mutation test for the validation engine** -- break a test → `cherenkov validate` must catch it. Proves the detector works E2E.
+4. ~~`cherenkov report --output report.json` (+ `--diff`)~~ **DONE** -- `cherenkov/cli/commands/report.py`; supports `-o` JSON output, `-d` diff against baseline, `--run`/`--list` RunStore mode; 53 unit tests green; PR #641.
+5. ~~Mutation test for the validation engine~~ **DONE** -- `tests/unit/test_mutation_validation.py`; 9 tests prove `WitnessAgent` + `run_proof` detect divergences on mutant server and find zero on conformant server; PR #641.
 6. **PyPI publish** -- `twine upload dist/*` once PyPI credentials are available; `dist/cherenkov-1.0.0.whl` is already built.
 7. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` (`cargo install tauri-cli` first).
 

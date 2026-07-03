@@ -383,8 +383,8 @@ class Explorer:
                             "label": "",
                         }
                     )
-            except Exception:
-                pass
+            except Exception as exc:
+                self.log.warning("link extraction failed during browser eval", error=str(exc))
 
             # --- extract forms ---
             try:
@@ -405,8 +405,8 @@ class Explorer:
                             "label": form.get("id", ""),
                         }
                     )
-            except Exception:
-                pass
+            except Exception as exc:
+                self.log.warning("form extraction failed during browser eval", error=str(exc))
 
             # --- extract nav / interactive elements ---
             try:
@@ -437,8 +437,8 @@ class Explorer:
                             "label": nav.get("text", ""),
                         }
                     )
-            except Exception:
-                pass
+            except Exception as exc:
+                self.log.warning("nav extraction failed during browser eval", error=str(exc))
 
             browser.close()
 
