@@ -61,7 +61,7 @@ class DataCollector:
             "SELECT spec_slice, test_code, verdict, endpoint, duration_ms, created_at "
             "FROM telemetry ORDER BY id"
         ).fetchall()
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             for r in rows:
                 record = {
                     "spec_slice": r[0],

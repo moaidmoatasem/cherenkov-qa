@@ -146,7 +146,7 @@ class LinearExporter:
             with urllib.request.urlopen(req, timeout=10) as response:
                 res_data = json.loads(response.read().decode("utf-8"))
                 if "errors" in res_data:
-                    self.log.error(f"Linear GraphQL error: {res_data['errors']}")
+                    self.log.error("Linear GraphQL error", errors=str(res_data['errors']))
                     return None
 
                 issue_data = res_data.get("data", {}).get("issueCreate", {}).get("issue", {})

@@ -107,7 +107,7 @@ def generate_cmd(spec, output_dir, repair, max_attempts):
                 )
 
             test_file = os.path.join(output_dir, f"{sc.mutation_id}.spec.ts")
-            with open(test_file, "w") as f:
+            with open(test_file, "w", encoding="utf-8") as f:
                 f.write(gen_out.test_code)
             success_count += 1
         except Exception as e:

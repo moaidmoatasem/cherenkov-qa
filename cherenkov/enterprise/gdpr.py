@@ -202,7 +202,7 @@ class GDPRManager:
 
     def _persist(self, filename: str, data: Any) -> None:
         path = os.path.join(self.config.data_directory, filename)
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(
                 {k: v.__dict__ if hasattr(v, "__dict__") else v for k, v in data.items()},
                 f,
@@ -212,7 +212,7 @@ class GDPRManager:
     def _load(self, filename: str) -> dict:
         path = os.path.join(self.config.data_directory, filename)
         if os.path.exists(path):
-            with open(path) as f:
+            with open(path, encoding="utf-8") as f:
                 return json.load(f)
         return {}
 

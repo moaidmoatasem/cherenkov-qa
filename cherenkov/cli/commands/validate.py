@@ -62,7 +62,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         stdin_content = sys.stdin.read()
         os.makedirs(".cherenkov", exist_ok=True)
         spec = ".cherenkov/stdin_spec.yaml"
-        with open(spec, "w") as f:
+        with open(spec, "w", encoding="utf-8") as f:
             f.write(stdin_content)
             
     if no_cache:
@@ -218,7 +218,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
                 )
         sarif_data = emitter.emit(report_obj, spec or "openapi.yaml")
         out_path = output if output.endswith(".sarif") else output + ".sarif"
-        with open(out_path, "w") as f:
+        with open(out_path, "w", encoding="utf-8") as f:
             json.dump(sarif_data, f, indent=2)
         print(f"SARIF report written to {out_path}")
 
@@ -229,7 +229,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         emitter = JUnitEmitter()
         reports = results.get("reports", [])
         out_path = output if output.endswith(".xml") else output + ".xml"
-        with open(out_path, "w") as f:
+        with open(out_path, "w", encoding="utf-8") as f:
             f.write(emitter.emit(reports))
         print(f"JUnit XML report written to {out_path}")
 
@@ -245,7 +245,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
             "drift_detected": len(violations) > 0,
             "status": results.get("status", "unknown"),
         }
-        with open(json_summary, "w") as f:
+        with open(json_summary, "w", encoding="utf-8") as f:
             json.dump(summary, f, indent=2)
 
     # Determine exit code
