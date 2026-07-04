@@ -18,9 +18,12 @@ Opt out by deleting or symlinking .cherenkov/finetune.jsonl to /dev/null.
 from __future__ import annotations
 
 import json
+import logging
 import time
 from pathlib import Path
 from typing import Any
+
+_log = logging.getLogger(__name__)
 
 
 class FinetuneLogger:
@@ -78,7 +81,7 @@ class FinetuneLogger:
             with open(self.log_path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(record, ensure_ascii=False) + "\n")
         except Exception:
-            pass  # never block the pipeline on logging failures
+            _log.debug("finetune log write failed (non-blocking)", exc_info=True)
 
     def tail(self, n: int = 5) -> list[dict[str, Any]]:
         """Return the last N records from the log (for inspection/testing)."""
@@ -112,7 +115,7 @@ class FinetuneLogger:
                         else:
                             rejected += 1
                     except Exception:
-                        pass
+                        _log.debug("finetune log line parse failed", exc_info=True)
         except FileNotFoundError:
             pass
         total = accepted + rejected

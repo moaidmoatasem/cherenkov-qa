@@ -82,4 +82,5 @@ class APSchedulerAdapter(SchedulerPort):
             # Actually, APScheduler has no direct "trigger now" without messing up the existing trigger,
             # but we can submit it directly to the executor or add a one-off date trigger.
             self.scheduler.add_job(job.func, kwargs=job.kwargs, id=f"{routine_id}_manual", replace_existing=True)
-            _log.info("Triggered routine %s manually", routine_id)
+            safe_id = routine_id.replace("\n", "").replace("\r", "")
+            _log.info("Triggered routine %s manually", safe_id)

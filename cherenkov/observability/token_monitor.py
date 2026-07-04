@@ -10,10 +10,13 @@ Pricing table follows provider public pricing pages (per-1K tokens, USD).
 
 from __future__ import annotations
 
+import logging
 import os
 import sqlite3
 import threading
 import time
+
+_log = logging.getLogger(__name__)
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -148,7 +151,7 @@ class TokenMonitor:
                 con.execute("SELECT 1")
                 return con
             except Exception:
-                pass
+                _log.debug("stale db connection; reconnecting", exc_info=True)
         con = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         con.row_factory = sqlite3.Row
         con.execute("PRAGMA journal_mode=WAL")
@@ -212,7 +215,7 @@ class TokenMonitor:
             )
             conn.commit()
         except Exception:
-            pass
+            _log.debug("token usage record write failed", exc_info=True)
 
     def get_report(self, days: int = 30) -> TokenUsageReport:
         since = int(time.time()) - days * 86_400
