@@ -171,7 +171,7 @@ class GenerateStage:
         source_type: str = "openapi",
         strategies_block: str = "",
     ) -> GenerateOutput:
-        t0 = time.time()
+        t0 = time.monotonic()
         mutation_id = getattr(
             scenario, "mutation_id", getattr(scenario, "operation_name", "unknown")
         )
@@ -223,7 +223,7 @@ class GenerateStage:
             )
             # Short-circuit LLM since we just use the template for accessibility tests
             code = user_prompt
-            dt = int((time.time() - t0) * 1000)
+            dt = int((time.monotonic() - t0) * 1000)
             self.log.info("stage success (template)", duration_ms=dt)
             return GenerateOutput(
                 scenario_id=mutation_id,
@@ -280,7 +280,7 @@ class GenerateStage:
             entry = cache.get(cache_hash)
             if entry:
                 self.log.info("cache hit", hash=cache_hash)
-                dt = int((time.time() - t0) * 1000)
+                dt = int((time.monotonic() - t0) * 1000)
                 return GenerateOutput(
                     scenario_id=mutation_id,
                     test_code=entry.test_code,
@@ -362,7 +362,7 @@ class GenerateStage:
                 metadata=StageMeta(stage="GENERATE", duration_ms=0),
             )
 
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         self.log.info("stage success", duration_ms=dt)
 
         if cache_hash:

@@ -61,7 +61,7 @@ class UIGenerateStage:
         )
 
     def run(self, ui_spec: UISpec, scenario: UIScenario) -> GenerateOutput:
-        t0 = time.time()
+        t0 = time.monotonic()
         self.log.info("stage start", scenario_id=scenario.id)
 
         user_prompt = self._build_user_prompt(ui_spec, scenario)
@@ -106,7 +106,7 @@ class UIGenerateStage:
                 metadata=StageMeta(stage="UI_GENERATE", duration_ms=0),
             )
 
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         self.log.info("stage success", duration_ms=dt)
 
         return GenerateOutput(

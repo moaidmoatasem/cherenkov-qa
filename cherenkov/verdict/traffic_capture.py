@@ -163,7 +163,7 @@ class TrafficCapture:
         fixture_dir: str | Path = ".cherenkov/fixtures",
     ) -> TrafficCaptureReport:
         """Reproduce all hypotheses and capture every interaction."""
-        t0 = time.time()
+        t0 = time.monotonic()
 
         for h in hypotheses:
             self.agent.reproduce(h)
@@ -175,7 +175,7 @@ class TrafficCapture:
             golden_count = self.agent.dump_fixtures(path)
             fixture_path = str(path)
 
-        duration_ms = int((time.time() - t0) * 1000)
+        duration_ms = int((time.monotonic() - t0) * 1000)
         return TrafficCaptureReport(
             interactions=list(self.agent.interactions),
             golden_count=golden_count,

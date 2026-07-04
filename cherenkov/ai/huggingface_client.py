@@ -50,7 +50,7 @@ class HuggingFaceInferenceClient(InferenceClient):
         *,
         temperature: float = 0.1,
     ) -> str:
-        t0 = time.time()
+        t0 = time.monotonic()
         client = self._get_client()
 
         messages = []
@@ -71,7 +71,7 @@ class HuggingFaceInferenceClient(InferenceClient):
         input_tokens = getattr(response.usage, "prompt_tokens", len(user_prompt) // 4)
         output_tokens = getattr(response.usage, "completion_tokens", len(text) // 4)
 
-        elapsed = int((time.time() - t0) * 1000)
+        elapsed = int((time.monotonic() - t0) * 1000)
         self._token_usage["prompt_tokens"] += input_tokens
         self._token_usage["completion_tokens"] += output_tokens
         _log.info(

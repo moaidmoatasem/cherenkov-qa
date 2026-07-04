@@ -26,7 +26,7 @@ class MobileReviewStage:
         self.run_id = run_id
 
     def run(self, generate_output: MobileGenerateOutput) -> MobileReviewOutput:
-        t0 = time.time()
+        t0 = time.monotonic()
         errors: list[str] = []
         yaml_text = generate_output.yaml_content
 
@@ -51,7 +51,7 @@ class MobileReviewStage:
 
         passed = len(errors) == 0
 
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         if self.run_id:
             print(
                 f"[MOBILE_REVIEW] stage {'passed' if passed else 'failed'} — {len(errors)} errors — {dt}ms"

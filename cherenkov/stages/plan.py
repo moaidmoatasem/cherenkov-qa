@@ -26,12 +26,12 @@ class PlanStage:
         self.log = get_logger("PLAN", run_id)
 
     def run(self, ingest: IngestOutput) -> PlanOutput:
-        t0 = time.time()
+        t0 = time.monotonic()
         self.log.info("stage start", endpoints_count=len(ingest.endpoints))
 
         if ingest.status == Status.FAILED:
             self.log.error("upstream ingest failed; propagating failure")
-            dt = int((time.time() - t0) * 1000)
+            dt = int((time.monotonic() - t0) * 1000)
             return PlanOutput(
                 scenarios=[],
                 status=Status.FAILED,
@@ -57,7 +57,7 @@ class PlanStage:
                     )
                 )
 
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         self.log.info("stage success", scenarios_count=len(scenarios), duration_ms=dt)
 
         return PlanOutput(
