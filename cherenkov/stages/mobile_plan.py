@@ -29,7 +29,7 @@ class MobilePlanStage:
         self.run_id = run_id
 
     def run(self, ingest_output: dict | None = None) -> MobilePlanOutput:
-        t0 = time.time()
+        t0 = time.monotonic()
         scenarios = [
             MobileScenario(
                 id="m001",
@@ -50,7 +50,7 @@ class MobilePlanStage:
                 ],
             ),
         ]
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         if self.run_id:
             print(f"[MOBILE_PLAN] stage success — {len(scenarios)} scenarios — {dt}ms")
         return MobilePlanOutput(scenarios=scenarios)

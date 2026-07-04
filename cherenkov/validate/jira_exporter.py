@@ -199,7 +199,7 @@ class JiraExporter:
                 return issue_key
         except Exception as e:
             self.log.error("Failed to create Jira issue", error=str(e))
-            raise e
+            raise
 
     def _build_auth_headers(self, content_type="application/json"):
         import base64
@@ -288,7 +288,7 @@ class JiraExporter:
                 return issue_key
         except Exception as e:
             self.log.error("Failed to create Jira issue", error=str(e))
-            raise e
+            raise
 
     def bulk_create(self, items: List[dict]) -> List[str]:
         created_keys: List[str] = []

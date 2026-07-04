@@ -80,14 +80,14 @@ class MutationOracle:
 
     def run(self) -> MutationOracleReport:
         mutations = self._build_mutations()
-        t0 = time.time()
+        t0 = time.monotonic()
         results: list[MutationResult] = []
 
         for mutation in mutations:
             result = self._evaluate(mutation)
             results.append(result)
 
-        duration_ms = int((time.time() - t0) * 1000)
+        duration_ms = int((time.monotonic() - t0) * 1000)
         detected = sum(1 for r in results if r.correct)
         return MutationOracleReport(
             mutations_run=len(results),

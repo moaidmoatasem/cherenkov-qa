@@ -50,7 +50,7 @@ class VisionConfirmPilot:
               - hallucination_risk (bool): True if element likely absent
               - suggestion (str): What to do next
         """
-        t0 = time.time()
+        t0 = time.monotonic()
 
         prompt = (
             "You are a precise UI element detector. Examine this screenshot.\n"
@@ -99,7 +99,7 @@ class VisionConfirmPilot:
             except (json.JSONDecodeError, TypeError):
                 pass
 
-        dt_ms = int((time.time() - t0) * 1000)
+        dt_ms = int((time.monotonic() - t0) * 1000)
 
         if parsed is None:
             self.log.warning("VLM returned unparseable result", duration_ms=dt_ms)

@@ -24,7 +24,7 @@ class MobileGenerateStage:
         self.run_id = run_id
 
     def run(self, scenario: MobileScenario) -> MobileGenerateOutput:
-        t0 = time.time()
+        t0 = time.monotonic()
         yaml_lines = ["appId: com.example.app"]
         yaml_lines.append("---")
         yaml_lines.append(f"name: {scenario.name}")
@@ -56,7 +56,7 @@ class MobileGenerateStage:
                 yaml_lines.append(f'      visible: "{step}"')
         yaml_content = "\n".join(yaml_lines)
 
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         if self.run_id:
             print(f"[MOBILE_GENERATE] stage success — {scenario.id} — {dt}ms")
         return MobileGenerateOutput(scenario_id=scenario.id, yaml_content=yaml_content)

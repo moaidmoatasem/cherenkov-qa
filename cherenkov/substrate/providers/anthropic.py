@@ -84,14 +84,14 @@ class AnthropicProvider(ModelProvider):
             )
 
         client = self._get_client()
-        t0 = time.time()
+        t0 = time.monotonic()
         message = client.messages.create(
             model=model,
             max_tokens=4096,
             system=system,
             messages=[{"role": "user", "content": user_prompt}],
         )
-        latency_ms = int((time.time() - t0) * 1000)
+        latency_ms = int((time.monotonic() - t0) * 1000)
 
         raw = message.content[0].text if message.content else ""
 

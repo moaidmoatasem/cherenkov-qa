@@ -98,7 +98,7 @@ class NemoClawInferenceClient(InferenceClient):
         self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
 
         while attempt <= max_reprompts:
-            t0 = time.time()
+            t0 = time.monotonic()
             try:
                 last_raw = self._chat(
                     system_prompt=system_prompt,
@@ -115,7 +115,7 @@ class NemoClawInferenceClient(InferenceClient):
                     ) from exc
                 continue
 
-            dt_ms = int((time.time() - t0) * 1000)
+            dt_ms = int((time.monotonic() - t0) * 1000)
             cleaned = strip_think(last_raw)
             parsed = _try_json(cleaned) or _json_repair(cleaned)
             if parsed is not None:
@@ -146,7 +146,7 @@ class NemoClawInferenceClient(InferenceClient):
         run_id: str | None = None,
     ) -> str:
         log = get_logger("nemoclaw", run_id)
-        t0 = time.time()
+        t0 = time.monotonic()
         self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
 
         text = self._chat(
@@ -162,7 +162,7 @@ class NemoClawInferenceClient(InferenceClient):
         log.info(
             "code ok",
             model=model,
-            duration_ms=int((time.time() - t0) * 1000),
+            duration_ms=int((time.monotonic() - t0) * 1000),
         )
         return text
 
@@ -177,7 +177,7 @@ class NemoClawInferenceClient(InferenceClient):
         run_id: str | None = None,
     ) -> str:
         log = get_logger("nemoclaw-vision", run_id)
-        t0 = time.time()
+        t0 = time.monotonic()
         self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
 
         body = {
@@ -209,7 +209,7 @@ class NemoClawInferenceClient(InferenceClient):
         self._token_usage["prompt_tokens"] = usage.get("prompt_tokens", 0)
         self._token_usage["completion_tokens"] = usage.get("completion_tokens", 0)
         text = data["choices"][0]["message"]["content"].strip()
-        log.info("vision ok", model=model, duration_ms=int((time.time() - t0) * 1000))
+        log.info("vision ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
         return text
 
     def chat(
@@ -221,7 +221,7 @@ class NemoClawInferenceClient(InferenceClient):
         run_id: str | None = None,
     ) -> str:
         log = get_logger("nemoclaw-chat", run_id)
-        t0 = time.time()
+        t0 = time.monotonic()
         self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
 
         body = {
@@ -241,7 +241,7 @@ class NemoClawInferenceClient(InferenceClient):
         self._token_usage["prompt_tokens"] = usage.get("prompt_tokens", 0)
         self._token_usage["completion_tokens"] = usage.get("completion_tokens", 0)
         text = data["choices"][0]["message"]["content"].strip()
-        log.info("chat ok", model=model, duration_ms=int((time.time() - t0) * 1000))
+        log.info("chat ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
         return text
 
     def health(self) -> bool:

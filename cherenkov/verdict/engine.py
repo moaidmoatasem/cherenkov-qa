@@ -74,7 +74,7 @@ class VerdictEngine:
 
     def run(self) -> RichVerdict:
         """Execute all agents in parallel and assemble the RichVerdict."""
-        t0 = time.time()
+        t0 = time.monotonic()
         run_id = str(uuid.uuid4())[:8]
 
         # ── Stage 1: Divergence Probe (always runs first — others depend on it) ─
@@ -140,7 +140,7 @@ class VerdictEngine:
                 dimensions.append(dim)
                 captured_fixtures = count
 
-        duration_ms = int((time.time() - t0) * 1000)
+        duration_ms = int((time.monotonic() - t0) * 1000)
 
         return assemble_verdict(
             target_url=self.base_url,
@@ -161,7 +161,7 @@ class VerdictEngine:
     ) -> tuple[VerdictDimension, list[DivergenceReport]]:
         from cherenkov.divergence.proof_run import run_proof
 
-        t0 = time.time()
+        t0 = time.monotonic()
         try:
             reports = run_proof(
                 base_url=self.base_url,
@@ -177,12 +177,12 @@ class VerdictEngine:
                     passed=False,
                     findings=[f"Probe failed: {exc}"],
                     detail=str(exc),
-                    duration_ms=int((time.time() - t0) * 1000),
+                    duration_ms=int((time.monotonic() - t0) * 1000),
                 ),
                 [],
             )
 
-        duration_ms = int((time.time() - t0) * 1000)
+        duration_ms = int((time.monotonic() - t0) * 1000)
         n = len(reports)
         # Score: 1.0 if no divergences, degrades by severity
         from cherenkov.core.contracts import Severity
@@ -220,7 +220,7 @@ class VerdictEngine:
     ) -> tuple[VerdictDimension, float]:
         from cherenkov.divergence.coverage import compute_coverage
 
-        t0 = time.time()
+        t0 = time.monotonic()
         spec = self.spec
         if spec is None:
             from cherenkov.divergence.proof_run import PETSTORE_SPEC_SUBSET
@@ -232,7 +232,7 @@ class VerdictEngine:
         except Exception:
             pct = 0.0
 
-        duration_ms = int((time.time() - t0) * 1000)
+        duration_ms = int((time.monotonic() - t0) * 1000)
         score = pct / 100.0
         passed = pct >= 60.0
         findings = []
@@ -255,7 +255,7 @@ class VerdictEngine:
     def _run_mutation_oracle(self) -> tuple[VerdictDimension, float]:
         from cherenkov.verdict.mutation_oracle import MutationOracle
 
-        t0 = time.time()
+        t0 = time.monotonic()
         try:
             oracle = MutationOracle(base_url=self.base_url, timeout=self.timeout)
             report = oracle.run()
@@ -269,12 +269,12 @@ class VerdictEngine:
                     passed=False,
                     findings=[f"Oracle error: {exc}"],
                     detail=str(exc),
-                    duration_ms=int((time.time() - t0) * 1000),
+                    duration_ms=int((time.monotonic() - t0) * 1000),
                 ),
                 0.5,
             )
 
-        duration_ms = int((time.time() - t0) * 1000)
+        duration_ms = int((time.monotonic() - t0) * 1000)
         passed = score >= 0.75
         missed = [r for r in report.results if not r.correct]
         findings = [
@@ -299,7 +299,7 @@ class VerdictEngine:
     ) -> tuple[VerdictDimension, float]:
         from cherenkov.verdict.semantic_judge import SemanticJudge
 
-        t0 = time.time()
+        t0 = time.monotonic()
         try:
             judge = SemanticJudge(run_id=None)
             report = judge.evaluate(reports, use_llm=self.use_llm)
@@ -313,12 +313,12 @@ class VerdictEngine:
                     passed=False,
                     findings=[f"Judge error: {exc}"],
                     detail=str(exc),
-                    duration_ms=int((time.time() - t0) * 1000),
+                    duration_ms=int((time.monotonic() - t0) * 1000),
                 ),
                 0.5,
             )
 
-        duration_ms = int((time.time() - t0) * 1000)
+        duration_ms = int((time.monotonic() - t0) * 1000)
         passed = score >= 0.65
         weak = [e for e in report.evaluations if e.label in ("weak", "false_positive")]
         findings = [
@@ -345,7 +345,7 @@ class VerdictEngine:
         from cherenkov.divergence.proof_run import PROOF_RUN_PROBES, PETSTORE_SPEC_SUBSET
         from cherenkov.divergence.proof_run import _offline_hypotheses
 
-        t0 = time.time()
+        t0 = time.monotonic()
         try:
             capture = TrafficCapture(base_url=self.base_url, timeout=self.timeout)
             hypotheses = []
@@ -363,12 +363,12 @@ class VerdictEngine:
                     passed=True,
                     findings=[f"Capture error (non-fatal): {exc}"],
                     detail=str(exc),
-                    duration_ms=int((time.time() - t0) * 1000),
+                    duration_ms=int((time.monotonic() - t0) * 1000),
                 ),
                 0,
             )
 
-        duration_ms = int((time.time() - t0) * 1000)
+        duration_ms = int((time.monotonic() - t0) * 1000)
         score = min(1.0, golden / max(1, len(hypotheses)))
         return (
             VerdictDimension(

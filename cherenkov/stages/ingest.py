@@ -82,7 +82,7 @@ class IngestStage:
         self.mobile_adapter = MobileSourceAdapter()
 
     def run(self, spec_path: str) -> IngestOutput:
-        t0 = time.time()
+        t0 = time.monotonic()
         self.log.info("stage start", spec_path=spec_path)
 
         path = Path(spec_path)
@@ -112,7 +112,7 @@ class IngestStage:
                     detail=f"Mobile source ({path.suffix}) ingested but produces no REST endpoint slices. Use Track B mobile pipeline.",
                 )],
                 metadata=StageMeta(
-                    stage="INGEST-mobile", duration_ms=int((time.time() - t0) * 1000)
+                    stage="INGEST-mobile", duration_ms=int((time.monotonic() - t0) * 1000)
                 ),
             )
 
@@ -374,7 +374,7 @@ class IngestStage:
                     )
                 )
 
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         self.log.info("stage success", endpoints_count=len(endpoints), duration_ms=dt)
 
         return IngestOutput(

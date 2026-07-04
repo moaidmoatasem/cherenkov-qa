@@ -31,7 +31,7 @@ class SubstrateRouter:
         self._cert_manager = ModelCertificationManager(run_id=run_id)
 
     def route(self, request: ReasoningRequest) -> ReasoningResult:
-        t0 = time.time()
+        t0 = time.monotonic()
 
         primary = provider_for_tier(request.capability_tier)
         primary_name = primary.capabilities().provider_name
@@ -111,7 +111,7 @@ class SubstrateRouter:
                     "fallback also failed", fallback=fallback_name, error=str(e2)
                 )
 
-        dt_ms = int((time.time() - t0) * 1000)
+        dt_ms = int((time.monotonic() - t0) * 1000)
         raise AllProvidersFailedError(
             f"All providers failed for tier={request.capability_tier} "
             f"after {dt_ms}ms. Last error: {last_error}"

@@ -107,7 +107,7 @@ class SemanticJudge:
                 fallback=True,
             )
 
-        t0 = time.time()
+        t0 = time.monotonic()
 
         if use_llm:
             result = self._llm_evaluate(reports)
@@ -132,9 +132,9 @@ class SemanticJudge:
                 output_schema=_JUDGE_SCHEMA,
                 capability_tier="fast",
             )
-            t0 = time.time()
+            t0 = time.monotonic()
             result = router.route(request)
-            duration_ms = int((time.time() - t0) * 1000)
+            duration_ms = int((time.monotonic() - t0) * 1000)
 
             content = result.content
             if isinstance(content, str):
@@ -208,7 +208,7 @@ class SemanticJudge:
                 )
             )
         agg = sum(e.quality_score for e in evals) / len(evals) if evals else 1.0
-        duration_ms = int((time.time() - t0) * 1000)
+        duration_ms = int((time.monotonic() - t0) * 1000)
         return SemanticJudgeReport(
             aggregate_score=agg,
             evaluations=evals,

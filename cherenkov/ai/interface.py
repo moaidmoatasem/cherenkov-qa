@@ -117,7 +117,7 @@ class CachedInferenceClient(InferenceClient):
             )
             return cached
 
-        t0 = time.time()
+        t0 = time.monotonic()
         result = self._client.complete_json(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
@@ -126,7 +126,7 @@ class CachedInferenceClient(InferenceClient):
             temperature=temperature,
             run_id=run_id,
         )
-        dt_ms = int((time.time() - t0) * 1000)
+        dt_ms = int((time.monotonic() - t0) * 1000)
         usage = self._real_token_usage()
 
         self._cache.set(model, system_prompt, user_prompt, result)
@@ -168,7 +168,7 @@ class CachedInferenceClient(InferenceClient):
             )
             return str(cached)
 
-        t0 = time.time()
+        t0 = time.monotonic()
         result = self._client.complete_code(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
@@ -176,7 +176,7 @@ class CachedInferenceClient(InferenceClient):
             temperature=temperature,
             run_id=run_id,
         )
-        dt_ms = int((time.time() - t0) * 1000)
+        dt_ms = int((time.monotonic() - t0) * 1000)
         usage = self._real_token_usage()
 
         self._cache.set(model, system_prompt, user_prompt, result)
@@ -233,7 +233,7 @@ class CachedInferenceClient(InferenceClient):
             )
             return str(cached)
 
-        t0 = time.time()
+        t0 = time.monotonic()
         result = self._client.complete_vision(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
@@ -242,7 +242,7 @@ class CachedInferenceClient(InferenceClient):
             temperature=temperature,
             run_id=run_id,
         )
-        dt_ms = int((time.time() - t0) * 1000)
+        dt_ms = int((time.monotonic() - t0) * 1000)
         usage = self._real_token_usage()
 
         self._cache.set(model, system_prompt, user_prompt + image_data[:80], result)

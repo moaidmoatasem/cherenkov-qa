@@ -155,4 +155,4 @@ class LinearExporter:
                 return issue_identifier
         except Exception as e:
             self.log.error("Failed to create Linear issue", error=str(e))
-            raise e
+            raise

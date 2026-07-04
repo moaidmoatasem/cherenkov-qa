@@ -959,10 +959,10 @@ def _tool_verify_suite(args: dict[str, Any]) -> MCPToolCallResult:
             metadata=StageMeta(stage="GENERATE"),
         )
 
-        t0 = time.time()
+        t0 = time.monotonic()
         stage = ReviewStage(run_id=f"mcp-{scenario_id}")
         review = stage.run(generate_out, spec_path=spec_resolved)
-        duration_ms = int((time.time() - t0) * 1000)
+        duration_ms = int((time.monotonic() - t0) * 1000)
 
     except Exception as exc:
         return _err_content(f"verify_suite error running ReviewStage: {exc}")
@@ -1111,13 +1111,13 @@ def _tool_verify_system(args: dict[str, Any]) -> MCPToolCallResult:
 
     # ── Run divergence engine ──────────────────────────────────────────────────
     try:
-        t0 = time.time()
+        t0 = time.monotonic()
         reports = run_proof(
             base_url=inp.base_url,
             spec=spec_dict,
             use_llm=inp.use_llm,
         )
-        duration_ms = int((time.time() - t0) * 1000)
+        duration_ms = int((time.monotonic() - t0) * 1000)
     except Exception as exc:
         return _err_content(f"verify_system error running divergence engine: {exc}")
 

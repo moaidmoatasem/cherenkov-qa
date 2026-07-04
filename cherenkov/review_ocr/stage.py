@@ -131,7 +131,7 @@ class ReviewStageOCR:
         return output
 
     def run_on_file(self, filepath: str, test_code: str) -> OCRReviewOutput:
-        t0 = time.time()
+        t0 = time.monotonic()
         binary = self._get_ocr_binary()
 
         ext = os.path.splitext(filepath)[1].lower()
@@ -165,7 +165,7 @@ class ReviewStageOCR:
             result = subprocess.run(
                 cmd, capture_output=True, text=True, timeout=get_settings().OCR_TIMEOUT_SECONDS
             )
-            dt = int((time.time() - t0) * 1000)
+            dt = int((time.monotonic() - t0) * 1000)
             self.log.info("ocr_review_done", returncode=result.returncode, duration_ms=dt)
 
             combined_output = (result.stdout or "") + (result.stderr or "")
@@ -182,15 +182,15 @@ class ReviewStageOCR:
             return output
 
         except subprocess.TimeoutExpired:
-            dt = int((time.time() - t0) * 1000)
+            dt = int((time.monotonic() - t0) * 1000)
             self.log.warning("ocr_review_timeout", duration_ms=dt)
             return OCRReviewOutput(passed=True, score_deduction=0.0, error="OCR review timed out", duration_ms=dt)
         except FileNotFoundError:
-            dt = int((time.time() - t0) * 1000)
+            dt = int((time.monotonic() - t0) * 1000)
             self.log.warning("ocr_binary_not_found")
             return OCRReviewOutput(passed=True, score_deduction=0.0, error="OCR binary not found", duration_ms=dt)
         except Exception as e:
-            dt = int((time.time() - t0) * 1000)
+            dt = int((time.monotonic() - t0) * 1000)
             err_str = str(e)
             if "does not support image" in err_str or "image.png" in err_str:
                 self.log.warning("ocr_llm_image_rejected", error=err_str)

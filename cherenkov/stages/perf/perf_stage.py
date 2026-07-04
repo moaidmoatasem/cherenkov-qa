@@ -633,7 +633,7 @@ class PerfStage:
         Returns:
             PerfReport with performance analysis results
         """
-        t0 = time.time()
+        t0 = time.monotonic()
         scenario_id = "perf_" + sl.name
 
         # Generate traffic-based load profile if provided
@@ -738,7 +738,7 @@ class PerfStage:
         # Add ML-specific metadata if used
         metadata = StageMeta(
             stage="perf",
-            duration_ms=int((time.time() - t0) * 1000),
+            duration_ms=int((time.monotonic() - t0) * 1000),
             model="ml_anomaly_detection"
             if use_ml and analysis.get("method", "").startswith("ml_")
             else "statistical",

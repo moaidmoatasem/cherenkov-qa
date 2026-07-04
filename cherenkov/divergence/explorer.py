@@ -49,10 +49,10 @@ def _default_http_probe(url: str, method: str) -> tuple[int | None, int, str]:
     except Exception:  # pragma: no cover - requests is a project dep
         return None, 0, "requests unavailable"
 
-    t0 = time.time()
+    t0 = time.monotonic()
     try:
         resp = requests.request(method, url, timeout=10, allow_redirects=True)
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         body = ""
         try:
             body = resp.text[:500]
@@ -60,7 +60,7 @@ def _default_http_probe(url: str, method: str) -> tuple[int | None, int, str]:
             body = ""
         return resp.status_code, dt, body
     except requests.exceptions.RequestException as e:
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         return None, dt, str(e)[:500]
 
 
