@@ -39,7 +39,6 @@ UiProbe = Callable[[str], list[tuple[ExplorerFindingKind, str, str]]]
 # Defaults to a `requests`-backed probe; overridable for tests.
 HttpProbe = Callable[[str, str], tuple[int | None, int, str]]
 
-
 def _default_http_probe(url: str, method: str) -> tuple[int | None, int, str]:
     """Issue a single request with a short budget. Never raises."""
     import time
@@ -62,7 +61,6 @@ def _default_http_probe(url: str, method: str) -> tuple[int | None, int, str]:
     except requests.exceptions.RequestException as e:
         dt = int((time.monotonic() - t0) * 1000)
         return None, dt, str(e)[:500]
-
 
 class Explorer:
     """Crawls live surfaces and emits anomalies the Skeptic can chase.

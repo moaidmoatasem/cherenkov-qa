@@ -29,14 +29,13 @@ import threading
 from dataclasses import dataclass, field
 from typing import Callable
 
-_log = logging.getLogger(__name__)
+_log= logging.getLogger(__name__)
 
 _ENV_CAP = "CHERENKOV_BUDGET_USD"
 _ENV_WARN = "CHERENKOV_BUDGET_WARN_USD"
 
 # Sentinel: no cap enforced
 _NO_CAP = float("inf")
-
 
 class BudgetExceededError(Exception):
     """Raised when an inference request would exceed the run budget."""
@@ -50,7 +49,6 @@ class BudgetExceededError(Exception):
             f"> ${cap:.4f} cap. Set CHERENKOV_BUDGET_USD to increase or disable."
         )
 
-
 @dataclass
 class _ChargeRecord:
     model: str
@@ -60,7 +58,6 @@ class _ChargeRecord:
     cache_hit: bool = False
     org_id: str = "default"
     run_id: str = ""
-
 
 @dataclass
 class RunBudget:
@@ -227,11 +224,9 @@ class RunBudget:
             self._records.clear()
             self._warned = False
 
-
 # ── Module-level default budget (shared across a process, e.g. CLI run) ─────
 _default_budget: RunBudget | None = None
 _budget_lock = threading.Lock()
-
 
 def get_run_budget() -> RunBudget:
     """Return the process-wide RunBudget, creating it from env vars if needed."""
@@ -240,7 +235,6 @@ def get_run_budget() -> RunBudget:
         if _default_budget is None:
             _default_budget = RunBudget()
         return _default_budget
-
 
 def reset_run_budget() -> None:
     """Reset the process-wide RunBudget (call at the start of each CLI run)."""

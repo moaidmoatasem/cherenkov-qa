@@ -16,10 +16,7 @@ Usage:
 from __future__ import annotations
 
 import re
-from typing import Any
-
-
-# ── Pattern registry ────────────────────────────────────────────────────────
+from typing import Any# ── Pattern registry ────────────────────────────────────────────────────────
 # Each entry: (label, compiled pattern, replacement)
 # Patterns ordered from most-specific to least-specific so overlap is handled.
 
@@ -121,7 +118,6 @@ _SENSITIVE_KEYS: frozenset[str] = frozenset(
     }
 )
 
-
 def redact(text: str, *, label_pii: bool = True) -> str:
     """Scan *text* for PII/secret patterns and return a redacted copy.
 
@@ -143,7 +139,6 @@ def redact(text: str, *, label_pii: bool = True) -> str:
         except re.error:
             pass
     return result
-
 
 def redact_dict(data: Any, *, label_pii: bool = True) -> Any:
     """Recursively redact PII from a nested dict / list / string.
@@ -167,14 +162,12 @@ def redact_dict(data: Any, *, label_pii: bool = True) -> Any:
         return redact(data, label_pii=label_pii)
     return data
 
-
 def is_clean(text: str) -> bool:
     """Return True if *text* contains no detectable PII.
 
     Useful for assertion gates: ``assert is_clean(trace_body)``.
     """
     return redact(text) == text
-
 
 class PIIRedactingFormatter:
     """Wraps a log formatter and redacts PII from every log message.

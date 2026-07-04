@@ -2,7 +2,7 @@ import os
 import time
 import json
 import urllib.request
-from typing import List, Optional
+from typing import Optional
 
 from cherenkov.core.errors import get_logger
 
@@ -24,7 +24,7 @@ class LinearExporter:
         expected_status: Optional[str | int] = None,
         received_status: Optional[str | int] = None,
         hypothesis: Optional[str] = None,
-        resolution_steps: Optional[List[str]] = None,
+        resolution_steps: Optional[list[str]] = None,
         similar_cases_count: int = 0,
     ) -> str:
         """Formats failed scenario information into a descriptive Markdown ticket payload for Linear."""
@@ -71,7 +71,7 @@ class LinearExporter:
         expected_status: Optional[str | int] = None,
         received_status: Optional[str | int] = None,
         hypothesis: Optional[str] = None,
-        resolution_steps: Optional[List[str]] = None,
+        resolution_steps: Optional[list[str]] = None,
         similar_cases_count: int = 0,
     ) -> str:
         """Writes the formatted copy-ready Markdown ticket to the standard local ticket directory."""
