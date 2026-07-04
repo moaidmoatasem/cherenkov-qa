@@ -10,8 +10,6 @@ To regenerate the snapshot after an intentional prompt/output change:
 from __future__ import annotations
 
 import hashlib
-import os
-import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 

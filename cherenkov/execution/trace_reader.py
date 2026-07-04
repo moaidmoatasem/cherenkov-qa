@@ -94,8 +94,8 @@ class TraceReader:
                                                         req_body_raw = (
                                                             res_f.read().decode("utf-8")
                                                         )
-                                                except Exception:
-                                                    pass
+                                                except Exception as _exc:
+                                                    self.log.warning("HAR zip resource not found for request body", error=str(_exc))
                                             if not req_body_raw:
                                                 req_body_raw = post_data.get("text", "")
 
@@ -121,8 +121,8 @@ class TraceReader:
                                                         body_content = (
                                                             res_f.read().decode("utf-8")
                                                         )
-                                                except Exception:
-                                                    pass
+                                                except Exception as _exc:
+                                                    self.log.warning("HAR zip resource not found for response body", error=str(_exc))
 
                                         if not body_content:
                                             body_data = response.get(

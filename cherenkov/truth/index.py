@@ -16,8 +16,12 @@ try:
 except (ImportError, MemoryError):
     np = None  # type: ignore[assignment]
 
+import logging
+
 from cherenkov.core.contracts import Claim
 from cherenkov.core.errors import get_logger
+
+_log = logging.getLogger(__name__)
 from cherenkov.core.settings import get_settings
 
 
@@ -43,7 +47,7 @@ def embed_text(text: str, model: str = "nomic-embed-text") -> list[float]:
             if embeddings:
                 return embeddings[0]
     except Exception:
-        pass
+        _log.debug("ollama /api/embed endpoint unavailable; falling back to /api/embeddings")
 
     resp = requests.post(
         f"{base_url}/api/embeddings",
