@@ -110,8 +110,8 @@ class PlaywrightUiProbe:
                     findings.append(
                         (ExplorerFindingKind.VISUAL_BREAK, f"Broken image: {src}", url)
                     )
-            except Exception:
-                pass
+            except Exception as _exc:
+                self._log.warning("browser broken-image check failed", error=str(_exc))
 
             # Capture screenshot for downstream VLM analysis if a directory is configured
             if self._screenshot_dir:
@@ -125,8 +125,8 @@ class PlaywrightUiProbe:
                 )
                 try:
                     page.screenshot(path=shot_path, full_page=False)
-                except Exception:
-                    pass
+                except Exception as _exc:
+                    self._log.warning("browser screenshot failed", error=str(_exc))
 
             browser.close()
 

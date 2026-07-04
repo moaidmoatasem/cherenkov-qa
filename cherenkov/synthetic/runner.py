@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import json
+import logging
 import time
+
+_log = logging.getLogger(__name__)
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -97,6 +100,6 @@ def generate_for_endpoints(
             duration_ms=report.duration_ms,
         )
     except Exception:
-        pass
+        _log.debug("optional synthetic metrics emit failed", exc_info=True)
 
     return report

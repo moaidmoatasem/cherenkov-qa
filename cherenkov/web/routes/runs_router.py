@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 import json
+import logging
 
 from fastapi import APIRouter, HTTPException, Query
+
+_log = logging.getLogger(__name__)
 
 from cherenkov.persistence.run_store import get_run_store
 from cherenkov.web.auth.deps import require_role
@@ -29,7 +32,7 @@ def _record_to_dict(record) -> dict:
         if "rich_verdict" in meta:
             d["rich_verdict"] = meta["rich_verdict"]
     except Exception:
-        pass
+        _log.debug("could not parse run record meta_json", exc_info=True)
     return d
 
 

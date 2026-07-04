@@ -170,8 +170,8 @@ class CherenkovSettings(BaseSettings):
                 },
                 timeout=15,
             )
-        except Exception:
-            pass  # Ignore loading failures here; let ps check report the status
+        except Exception as _exc:
+            log.warning("Ollama model warm-up failed (non-fatal)", error=str(_exc))
 
         # 2. Query /api/ps to verify active processor details
         try:

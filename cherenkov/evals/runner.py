@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timezone
 from typing import Any
+
+_log = logging.getLogger(__name__)
 
 from cherenkov.core.settings import get_settings
 from cherenkov.evals.core import EvalMetric, EvalReport, EvalResult, EvalSample, EvalStatus
@@ -62,7 +65,7 @@ def run_evals(samples: list[EvalSample], max_workers: int = 2) -> EvalReport:
             model=report.model,
         )
     except Exception:
-        pass
+        _log.debug("optional evals metrics emit failed", exc_info=True)
 
     return report
 

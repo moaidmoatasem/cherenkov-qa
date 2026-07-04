@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import sqlite3
 import threading
 from typing import Any
+
+_log = logging.getLogger(__name__)
 
 from cherenkov.knowledge.domain.models import (
     KnowledgeQuery,
@@ -29,7 +32,7 @@ class SQLiteKnowledgeRepository:
                 con.execute("SELECT 1")
                 return con
             except Exception:
-                pass
+                _log.debug("stale db connection; reconnecting", exc_info=True)
         db_dir = os.path.dirname(self.db_path)
         if db_dir:
             os.makedirs(db_dir, exist_ok=True)

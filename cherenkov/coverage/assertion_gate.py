@@ -282,6 +282,6 @@ class AssertionGate:
                     with open(fpath, encoding="utf-8") as f:
                         content = f.read()
                     files.append({"name": fname, "path": fpath, "content": content})
-                except Exception:
-                    pass
+                except Exception as _exc:
+                    self.log.warning("failed to read test file", path=fpath, error=str(_exc))
         return files

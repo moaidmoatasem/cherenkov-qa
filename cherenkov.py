@@ -218,6 +218,11 @@ def get_parser() -> argparse.ArgumentParser:
         default=None,
         help="Path to OpenAPI spec (JSON/YAML); auto-discovered if omitted",
     ).completer = argcomplete.completers.FilesCompleter()
+    validate_parser.add_argument(
+        "--coverage-report",
+        action="store_true",
+        help="Print a coverage summary comparing spec endpoints to executed tests and write .cherenkov/coverage_report.json",
+    )
 
     diff_parser = subparsers.add_parser(
         "diff", help="Compare two OpenAPI specs for breaking changes"
@@ -1242,6 +1247,16 @@ def main():
         stats = EndpointCache().stats()
         print(f"Cache Stats: {stats}")
         print(f"Events written to {_events_path}")
+
+        if getattr(args, "coverage_report", False):
+            from cherenkov.execution.coverage_report import generate_coverage_report
+
+            _executed_ids = [r.get("scenario_id") for r in reports if r.get("scenario_id")]
+            generate_coverage_report(
+                spec_path=getattr(args, "spec", None),
+                tests_dir=os.path.join(os.path.dirname(os.path.abspath(__file__)), "stub", "generated_tests"),
+                executed_scenario_ids=_executed_ids if _executed_ids else None,
+            )
 
         if getattr(args, "fail_on_drift", False) and failed:
             sys.exit(1)

@@ -63,7 +63,7 @@ class MetricsCollector:
                 con.execute("SELECT 1")
                 return con
             except Exception:
-                pass
+                log.debug("stale db connection; reconnecting")
         con = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         con.row_factory = sqlite3.Row
         con.execute("PRAGMA journal_mode=WAL")

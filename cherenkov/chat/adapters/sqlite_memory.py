@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 import threading
 from datetime import datetime
 
 from cherenkov.chat.domain.models import Session, Message
+
+_log = logging.getLogger(__name__)
 
 
 class SQLiteConversationMemory:
@@ -29,7 +32,7 @@ class SQLiteConversationMemory:
                 con.execute("SELECT 1")
                 return con
             except Exception:
-                pass
+                _log.debug("stale db connection; reconnecting", exc_info=True)
         con = sqlite3.connect(self.db_path, timeout=30.0)
         con.row_factory = sqlite3.Row
         con.execute("PRAGMA journal_mode=WAL")

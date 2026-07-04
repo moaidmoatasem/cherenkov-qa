@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import json
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+_log = logging.getLogger(__name__)
 
 from cherenkov.adversarial.core import (
     AdversarialReport,
@@ -64,7 +67,7 @@ def run_adversarial_tests(
             garak_available=garak_available,
         )
     except Exception:
-        pass
+        _log.debug("optional adversarial metrics emit failed", exc_info=True)
 
     return report
 
