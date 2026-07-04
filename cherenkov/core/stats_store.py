@@ -35,7 +35,7 @@ class StatsStore:
                 con.execute("SELECT 1")
                 return con
             except Exception:
-                pass
+                logger.debug("stale db connection; reconnecting", exc_info=True)
         con = sqlite3.connect(self.db_path, timeout=_BUSY_TIMEOUT_S)
         con.row_factory = sqlite3.Row
         con.execute("PRAGMA journal_mode=WAL")

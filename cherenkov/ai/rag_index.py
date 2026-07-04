@@ -34,8 +34,8 @@ class RAGIndex:
             try:
                 con.execute("SELECT 1")
                 return con
-            except Exception:
-                pass
+            except Exception as _exc:
+                self.log.warning("stale db connection; reconnecting", error=str(_exc))
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         con = sqlite3.connect(self.db_path, timeout=30.0)
         con.execute("PRAGMA journal_mode=WAL")

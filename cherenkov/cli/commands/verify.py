@@ -16,11 +16,14 @@ without an Ollama setup.
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from pathlib import Path
 
 import click
 from cherenkov.divergence.proof_run import run_proof
+
+_log = logging.getLogger(__name__)
 from cherenkov.divergence.coverage import compute_coverage, CoverageReport
 from cherenkov.persistence.run_store import RunRecord, get_run_store, spec_hash as _spec_hash
 
@@ -250,7 +253,7 @@ def _run_rich_verdict(
         try:
             cov = compute_coverage(spec_dict, reports)
         except Exception:
-            pass
+            _log.debug("coverage computation failed (non-critical)", exc_info=True)
 
     return rich, reports, cov
 
@@ -272,7 +275,7 @@ def _persist_run(
             try:
                 meta["rich_verdict"] = rich.model_dump() if hasattr(rich, "model_dump") else {}  # type: ignore[union-attr]
             except Exception:
-                pass
+                _log.debug("rich verdict serialization failed", exc_info=True)
         record = RunRecord(
             command="verify",
             target_url=url,
@@ -286,7 +289,7 @@ def _persist_run(
         saved = get_run_store().save(record)
         click.echo(f"  Run ID: {saved.run_id}", err=True)
     except Exception:
-        pass
+        _log.debug("run record persist failed (non-critical)", exc_info=True)
 
 
 def _load_spec(spec_path: str) -> dict | None:

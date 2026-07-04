@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import json
+import logging
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 from typing import Any
+
+_log = logging.getLogger(__name__)
 
 
 def is_garak_available() -> bool:
@@ -71,5 +74,5 @@ def _parse_garak_output(report_path: Path) -> list[dict[str, Any]]:
                     "passed": entry.get("passed", False),
                 })
     except Exception:
-        pass
+        _log.debug("failed to parse garak report entries", exc_info=True)
     return findings
