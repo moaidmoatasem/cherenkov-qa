@@ -1,11 +1,11 @@
 import time
 import uuid
-from typing import Any, Dict, List
+from typing import Any
 
 class AllureEmitter:
     """Emits DivergenceReports into Allure-compatible JSON result files."""
 
-    def emit(self, report, spec_path: str) -> List[Dict[str, Any]]:
+    def emit(self, report, spec_path: str) -> list[dict[str, Any]]:
         """Convert findings into Allure JSON format test cases."""
         results = []
         findings = getattr(report, "findings", [])

@@ -14,7 +14,6 @@ from cherenkov.spec_guardian.core import (
     DriftType,
 )
 
-
 class SpecDriftDetector:
     """Detects drift between actual API responses and OpenAPI spec."""
 

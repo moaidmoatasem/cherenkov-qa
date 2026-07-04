@@ -14,7 +14,6 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
-
 class DriftKind(str, Enum):
     REMOVED_OP_STILL_TESTED = "removed_op_still_tested"
     NEW_OP_UNTESTED = "new_op_untested"
@@ -23,7 +22,6 @@ class DriftKind(str, Enum):
     DEPRECATED_OP_TESTED = "deprecated_op_tested"
     ADDED_OPTIONAL_PARAM = "added_optional_param"
 
-
 @dataclass
 class DriftFinding:
     kind: DriftKind
@@ -31,7 +29,6 @@ class DriftFinding:
     detail: str
     before: Any = None
     after: Any = None
-
 
 def _extract_operations(spec: dict[str, Any]) -> dict[str, dict]:
     ops: dict[str, dict] = {}
@@ -48,13 +45,11 @@ def _extract_operations(spec: dict[str, Any]) -> dict[str, dict]:
             ops[op_id] = operation
     return ops
 
-
 def _required_fields(schema: dict[str, Any]) -> frozenset[str]:
     """Return frozenset of required field names from a JSON Schema object."""
     if not isinstance(schema, dict):
         return frozenset()
     return frozenset(schema.get("required", []))
-
 
 def _resolve_schema(spec: dict[str, Any], ref: str) -> dict[str, Any]:
     """Very shallow $ref resolver for local #/components/schemas/Foo refs."""
@@ -67,7 +62,6 @@ def _resolve_schema(spec: dict[str, Any], ref: str) -> dict[str, Any]:
             return {}
         node = node.get(part, {})
     return node if isinstance(node, dict) else {}
-
 
 def _response_schemas(spec: dict[str, Any], operation: dict[str, Any]) -> dict[str, dict]:
     """Return {status_code: schema_dict} for a single operation."""
@@ -90,7 +84,6 @@ def _response_schemas(spec: dict[str, Any], operation: dict[str, Any]) -> dict[s
                 schema = _resolve_schema(spec, schema["$ref"])
             result[str(status_code)] = schema
     return result
-
 
 def _check_breaking_schema(
     op_id: str,
@@ -154,7 +147,6 @@ def _check_breaking_schema(
 
     return findings
 
-
 def _check_added_optional_params(
     op_id: str,
     baseline_op: dict[str, Any],
@@ -182,7 +174,6 @@ def _check_added_optional_params(
                 )
             )
     return findings
-
 
 def detect_findings(
     baseline_snapshot: "SpecSuiteSnapshot",  # noqa: F821

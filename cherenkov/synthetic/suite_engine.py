@@ -28,7 +28,6 @@ from cherenkov.synthetic.persona_generator import generate_for_persona
 from cherenkov.synthetic.merge import merge_suites
 from cherenkov.synthetic.enricher import enrich_suite
 
-
 # ── result dataclasses ─────────────────────────────────────────────────────────
 
 @dataclass
@@ -45,7 +44,6 @@ class PersonaRunResult:
             "test_count": self.test_count,
             "duration_ms": self.duration_ms,
         }
-
 
 @dataclass
 class SuiteEngineResult:
@@ -68,7 +66,6 @@ class SuiteEngineResult:
             d["coverage"] = round(self.grade_report.coverage, 4)
             d["overall_score"] = round(self.grade_report.overall_score, 4)
         return d
-
 
 # ── engine ─────────────────────────────────────────────────────────────────────
 

@@ -68,7 +68,6 @@ Five-way divergence space:
   D5_spec_prod  — endpoint or shape in the spec no longer exists in production
 """
 
-
 class SkepticAgent:
     """
     Generates divergence hypotheses from spec claims.

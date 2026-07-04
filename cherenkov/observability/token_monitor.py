@@ -20,7 +20,7 @@ _log = logging.getLogger(__name__)
 from dataclasses import dataclass, field
 from typing import Optional
 
-_DEFAULT_DB = os.path.join(".cherenkov", "token_usage.db")
+_DEFAULT_DB= os.path.join(".cherenkov", "token_usage.db")
 _BUSY_TIMEOUT_S = 10
 
 # ── Pricing (per 1K tokens, USD) ──────────────────────────────────────────────
@@ -53,7 +53,6 @@ _REPROMPT_THRESHOLD = 0.15  # >15% calls needed a reprompt → schema issue
 _GROWTH_THRESHOLD = 0.20  # week-over-week token growth > 20%
 _PAID_SPEND_THRESHOLD = 0.05  # >$0.05 daily avg on paid provider → expensive
 
-
 def _price_for(provider: str, model: str) -> dict[str, float]:
     """Return {input, output} per-1K-token pricing for a provider/model pair."""
     table = _PRICE_TABLE.get(provider.lower(), _PRICE_TABLE["openai"])
@@ -64,7 +63,6 @@ def _price_for(provider: str, model: str) -> dict[str, float]:
         if model.lower().startswith(prefix):
             return table[prefix]
     return table.get("default", {"input": 0.0, "output": 0.0})
-
 
 def compute_cost(
     provider: str, model: str, prompt_tokens: int, completion_tokens: int
@@ -77,9 +75,7 @@ def compute_cost(
         8,
     )
 
-
 # ── Data model ────────────────────────────────────────────────────────────────
-
 
 @dataclass
 class TokenRecord:
@@ -94,7 +90,6 @@ class TokenRecord:
     cache_hit: bool
     reprompts: int = 0
     timestamp: int = field(default_factory=lambda: int(time.time()))
-
 
 @dataclass
 class TokenUsageReport:
@@ -113,9 +108,7 @@ class TokenUsageReport:
     recommendations: list[dict]  # [{severity, code, title, detail, action}]
     reprompt_rate: float = 0.0
 
-
 # ── Monitor ───────────────────────────────────────────────────────────────────
-
 
 class TokenMonitor:
     """Persistent, cross-run token consumption tracker and analyser.
@@ -514,11 +507,9 @@ class TokenMonitor:
             "recommendations": report.recommendations,
         }
 
-
 # ── Module-level singleton ────────────────────────────────────────────────────
 
 _MONITOR: TokenMonitor | None = None
-
 
 def get_monitor(db_path: str | None = None) -> TokenMonitor:
     global _MONITOR

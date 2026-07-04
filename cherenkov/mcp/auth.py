@@ -7,10 +7,9 @@ from typing import Any
 
 import jwt
 
-_DEFAULT_JWT_SECRET = "cherenkov-mcp-jwt-secret-change-me"
+_DEFAULT_JWT_SECRET= "cherenkov-mcp-jwt-secret-change-me"
 JWT_SECRET = os.environ.get("CHERENKOV_JWT_SECRET", _DEFAULT_JWT_SECRET)
 JWT_ALGORITHM = "HS256"
-
 
 def generate_mcp_token(client_id: str, expiration_seconds: int = 3600) -> str:
     """Generate a JWT token for an MCP client."""
@@ -23,14 +22,12 @@ def generate_mcp_token(client_id: str, expiration_seconds: int = 3600) -> str:
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-
 def verify_mcp_token(token: str) -> dict[str, Any] | None:
     """Verify a JWT token. Returns the payload if valid, None otherwise."""
     try:
         return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
     except jwt.PyJWTError:
         return None
-
 
 class MCPAuthMiddleware:
     """Middleware to validate API keys or JWT tokens on MCP requests."""

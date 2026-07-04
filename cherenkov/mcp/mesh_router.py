@@ -15,7 +15,6 @@ from cherenkov.mcp.client import MCPClient
 
 log = get_logger(__name__)
 
-
 @dataclass
 class MCPServerRegistration:
     """A registered external MCP server with its capabilities."""
@@ -29,7 +28,6 @@ class MCPServerRegistration:
     registered_at: float = 0.0
     last_seen: float = 0.0
     healthy: bool = True
-
 
 class MCPRegistry:
     """Registry for dynamic MCP server discovery and tool routing.
@@ -175,10 +173,8 @@ class MCPRegistry:
         )
         return result
 
-
 # Global singleton
 _registry = MCPRegistry()
-
 
 def get_registry() -> MCPRegistry:
     return _registry

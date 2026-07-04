@@ -33,16 +33,13 @@ DAST_PAYLOADS: list[tuple[str, str]] = [
     ("template_injection", "${{7*7}}"),
 ]
 
-
 # Toggle env var — security mutations are opt-in to keep default runs focused
 def _dast_enabled() -> bool:
     return get_settings().DAST_ENABLED
 
-
 # [Issue #195] RAG toggle — schema-level semantic retrieval for large specs
 def _rag_enabled() -> bool:
     return get_settings().RAG_ENABLED
-
 
 def resolve_refs_depth(
     node: Any,
@@ -72,7 +69,6 @@ def resolve_refs_depth(
     elif isinstance(node, list):
         for item in node:
             resolve_refs_depth(item, schemas, resolved, depth, max_depth)
-
 
 class IngestStage:
     """Parses OpenAPI specifications, slices them with depth-1 reference resolution, and extracts deterministic mutations."""

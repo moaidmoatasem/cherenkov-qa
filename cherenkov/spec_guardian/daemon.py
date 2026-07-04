@@ -22,9 +22,7 @@ from cherenkov.playbooks.matcher import PlaybookMatcher
 from cherenkov.playbooks.runner import PlaybookRunner
 from cherenkov.playbooks.models import PlaybookFinding
 
-
 logger = logging.getLogger(__name__)
-
 
 class SpecGuardianDaemon:
     """Daemon that continuously monitors API endpoints for spec drift."""
