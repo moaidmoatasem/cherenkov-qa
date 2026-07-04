@@ -57,7 +57,8 @@ class XrayClient:
         if self._cloud_token:
             return self._cloud_token
         cfg = self.config
-        assert isinstance(cfg, XrayCloudConfig)
+        if not isinstance(cfg, XrayCloudConfig):
+            raise TypeError(f"Expected XrayCloudConfig, got {type(cfg).__name__}")
         resp = httpx.post(
             f"{cfg.base_url}/authenticate",
             json={"client_id": cfg.client_id, "client_secret": cfg.client_secret},

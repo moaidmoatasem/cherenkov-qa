@@ -279,7 +279,7 @@ class AssertionGate:
             if fname.endswith((".py", ".ts")):
                 fpath = os.path.join(test_dir, fname)
                 try:
-                    with open(fpath) as f:
+                    with open(fpath, encoding="utf-8") as f:
                         content = f.read()
                     files.append({"name": fname, "path": fpath, "content": content})
                 except Exception:

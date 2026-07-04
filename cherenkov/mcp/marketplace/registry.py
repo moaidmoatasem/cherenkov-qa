@@ -30,10 +30,10 @@ class MarketplaceRegistry:
         try:
             # For demonstration, we simulate a network response or use a stub
             # In production, this would make an actual HTTP call.
-            _log.info(f"Fetching MCP tools from {self.base_url}")
+            _log.info("Fetching MCP tools from %s", self.base_url)
             return self._stub_tools()
         except Exception as e:
-            _log.error(f"Failed to discover tools: {e}")
+            _log.error("Failed to discover tools: %s", e)
             return []
 
     def get_tool_info(self, tool_id: str) -> MarketplaceTool | None:

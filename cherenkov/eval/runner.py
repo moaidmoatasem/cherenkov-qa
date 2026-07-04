@@ -90,7 +90,7 @@ class RunTrace:
         return self.passed / self.total if self.total else 1.0
 
     def to_jsonl(self, path: Path) -> None:
-        with path.open("w") as f:
+        with path.open("w", encoding="utf-8") as f:
             meta = {
                 "_meta": True,
                 "target_url": self.target_url,

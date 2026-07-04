@@ -40,7 +40,7 @@ class SpecGuardianWatcher:
 
     def start_watching(self, poll_interval: int = 10):
         """Begin the continuous background observation loop."""
-        logger.info(f"Spec Guardian started watching {self.target_repo}")
+        logger.info("Spec Guardian started watching %s", self.target_repo)
 
         # Initialize baselines
         for filename in self.watch_files:
@@ -54,7 +54,7 @@ class SpecGuardianWatcher:
                     current_mtime = self._get_mtime(file_path)
 
                     if current_mtime > self._last_modified[filename]:
-                        logger.info(f"Detected change in {filename}")
+                        logger.info("Detected change in %s", filename)
                         self._last_modified[filename] = current_mtime
 
                         # Trigger the D7-compliant validation loop
