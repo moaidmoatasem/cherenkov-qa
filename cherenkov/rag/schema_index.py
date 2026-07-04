@@ -19,8 +19,12 @@ from typing import Any
 import numpy as np
 import requests
 
+import logging
+
 from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
+
+_log = logging.getLogger(__name__)
 
 
 # ── Chunk data model ────────────────────────────────────────────────────────
@@ -57,7 +61,7 @@ def embed_text(text: str, model: str = "nomic-embed-text") -> list[float]:
             if embeddings:
                 return embeddings[0]
     except Exception:
-        pass
+        _log.debug("ollama /api/embed endpoint unavailable; falling back to /api/embeddings")
 
     resp = requests.post(
         f"{base_url}/api/embeddings",

@@ -10,8 +10,11 @@ Usage:
 
 from __future__ import annotations
 
+import logging
 import os
 from typing import Any
+
+_log = logging.getLogger(__name__)
 
 
 def _detect_backend() -> str:
@@ -72,7 +75,7 @@ def _trace_langsmith(event_name: str, attributes: dict[str, Any]) -> None:
             extra={"cherenkov_version": os.getenv("CHERENKOV_VERSION", "unknown")},
         )
     except Exception:
-        pass
+        _log.debug("optional LangSmith trace failed", exc_info=True)
 
 
 def _trace_langfuse(event_name: str, attributes: dict[str, Any]) -> None:
@@ -88,4 +91,4 @@ def _trace_langfuse(event_name: str, attributes: dict[str, Any]) -> None:
         )
         client.trace(name=event_name, metadata=attributes)
     except Exception:
-        pass
+        _log.debug("optional LangFuse trace failed", exc_info=True)

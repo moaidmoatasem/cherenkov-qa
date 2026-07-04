@@ -51,7 +51,8 @@ async def handle_github_event(
     if x_github_event == "pull_request":
         action = str(payload.get("action") or "").replace("\n", "").replace("\r", "")
         pr_number = payload.get("pull_request", {}).get("number")
-        _log.info("PR %s action: %s", pr_number, action)
+        safe_pr = str(int(pr_number)) if isinstance(pr_number, int) else "unknown"
+        _log.info("PR %s action: %s", safe_pr, action)
         # Here we would normally publish to `AsyncQueueEventBus`
         # bus.publish(CHERENKOVEvent(category="webhook", name="github.pr", data=payload))
 

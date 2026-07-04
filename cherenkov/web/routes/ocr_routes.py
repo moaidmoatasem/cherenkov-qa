@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+
+_log = logging.getLogger(__name__)
 
 from cherenkov.core.settings import get_settings
 from cherenkov.review_ocr.stage import ReviewStageOCR
@@ -29,7 +33,7 @@ async def ocr_status():
         result = subprocess.run([binary, "--version"], capture_output=True, text=True, timeout=5)
         version = (result.stdout or result.stderr).strip()
     except Exception:
-        pass
+        _log.debug("could not detect tool version", exc_info=True)
     return {
         "installed": installed,
         "binary": binary,
