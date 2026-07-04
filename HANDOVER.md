@@ -1,6 +1,6 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-07-01
+**Date:** 2026-07-04
 **HEAD:** see `git log`
 **Tests:** 788+ unit/integration tests (0 failures); **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
 **Branch:** `main`
@@ -74,7 +74,25 @@ All Rung 3 items are DONE (merged 2026-06-27):
 ---
 
 
-## What landed this session (2026-07-01)
+## What landed this session (2026-07-04)
+
+| SHA | What |
+|---|---|
+| `cd521a3` | fix(generate): correct indentation so spec enrichment runs for openapi source type; PR #650 |
+| `fde73f6` | fix: replace silent except-pass blocks with diagnostic logging (scan #4); PR #652 |
+| `e926be6` | feat(#628): spec coverage-gap report via `cherenkov validate --coverage-report`; PR #651 |
+| `ee9fd91` | fix(events): MCP bridge event schema; fix(generate): restore dead LLM path; PR #654 |
+| `004030e` | fix(test): expect RuntimeError from production simulation guard; PR #653 |
+| `f1e4f09` | test(generate): add golden snapshot test with prompt-drift guard; PR #648 |
+| `4de9ce1` | feat: add SessionStart hook for Claude Code on the web; PR #649 |
+| `c262402` | refactor: assert→if/raise, encoding= on open(), lazy logger %s (scan #3); PR #647 |
+| `8d1d2d3` | refactor: replace assert guards with if/raise and add encoding= to open() calls; PR #646 |
+| `0df49a8` | refactor: logging hygiene, encoding, silent-except, mutable default arg; PR #645 |
+| `d42d94c` | feat(validate): --demo mode for no-Ollama first run; PR #639 |
+| `49665fd` | refactor: move deferred imports to module level, narrow bare exception; PR #644 |
+| `a616a90` | test: mutation test proving divergence detector has real teeth; PR #641 |
+
+## What landed previous session (2026-07-01)
 
 | SHA | What |
 |---|---|
