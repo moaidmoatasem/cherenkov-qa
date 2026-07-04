@@ -41,7 +41,12 @@ def eject_cmd(output: str) -> None:
 
 @click.command("self-test")
 def self_test_cmd() -> None:
-    """Run a deterministic dry-run of the pipeline (mocking Ollama and the server)."""
+    """Live smoke test of the core pipeline: real Ollama generation + tsc compile.
+
+    Requires a reachable Ollama daemon and npx/tsc; exits 1 on the first
+    failing step. For environment diagnostics without Ollama, use `doctor`;
+    for an offline demonstration, use `demo`.
+    """
     from cherenkov.stages.self_test_cmd import run_self_test
 
     sys.exit(run_self_test())

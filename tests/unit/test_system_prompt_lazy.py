@@ -1,0 +1,49 @@
+"""tests/unit/test_system_prompt_lazy.py — lazy SYSTEM_PROMPT loading in stages.generate.
+
+The generator system prompt used to be read at module import time with a bare
+open(), so a missing prompts/generator_system.txt crashed the import of
+cherenkov.stages.generate. It is now loaded lazily (PEP 562 module __getattr__)
+and a missing file surfaces as a clear RuntimeError at first use instead.
+"""
+from __future__ import annotations
+
+import importlib
+import sys
+
+import pytest
+
+
+def _fresh_generate_module():
+    """Re-import cherenkov.stages.generate with an empty prompt cache."""
+    sys.modules.pop("cherenkov.stages.generate", None)
+    return importlib.import_module("cherenkov.stages.generate")
+
+
+def test_import_succeeds_when_prompt_file_missing(monkeypatch):
+    monkeypatch.setenv("CHERENKOV_GENERATOR_PROMPT", "/nonexistent/prompt.txt")
+    mod = _fresh_generate_module()  # must not raise
+    with pytest.raises(RuntimeError, match="Generator system prompt not found"):
+        _ = mod.SYSTEM_PROMPT
+
+
+def test_system_prompt_attribute_still_works(monkeypatch):
+    monkeypatch.delenv("CHERENKOV_GENERATOR_PROMPT", raising=False)
+    mod = _fresh_generate_module()
+    prompt = mod.SYSTEM_PROMPT
+    assert isinstance(prompt, str) and prompt  # real committed prompt loads
+
+
+def test_prompt_is_cached_after_first_access(monkeypatch, tmp_path):
+    prompt_file = tmp_path / "prompt.txt"
+    prompt_file.write_text("be excellent", encoding="utf-8")
+    monkeypatch.setenv("CHERENKOV_GENERATOR_PROMPT", str(prompt_file))
+    mod = _fresh_generate_module()
+    assert mod.SYSTEM_PROMPT == "be excellent"
+    prompt_file.unlink()  # cache must survive the file disappearing
+    assert mod.SYSTEM_PROMPT == "be excellent"
+
+
+def test_unknown_attribute_raises_attribute_error():
+    mod = _fresh_generate_module()
+    with pytest.raises(AttributeError):
+        _ = mod.NO_SUCH_ATTRIBUTE
