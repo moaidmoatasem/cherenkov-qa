@@ -11,9 +11,7 @@ class ManageSessionUseCase:
         self._memory = memory
 
     def create_session(self, session_id: str) -> Session:
-        session = Session(session_id=session_id)
-        self._memory.create_session(session)
-        return session
+        return self._memory.create_session(session_id)
 
     def get_session(self, session_id: str) -> Session | None:
         return self._memory.get_session(session_id)
