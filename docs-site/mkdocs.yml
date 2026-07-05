@@ -45,7 +45,9 @@ theme:
     - search.suggest
     - search.share
     - content.code.copy
+    - content.code.select
     - content.code.annotate
+    - content.tabs.link
     - content.action.edit
     - content.action.view
     - announce.dismiss
