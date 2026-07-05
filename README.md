@@ -6,11 +6,11 @@
 [![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-green.svg)](https://github.com/moaidmoatasem/cherenkov-qa/releases/tag/v1.1.1)
 [![PyPI](https://img.shields.io/pypi/v/cherenkov-qa.svg)](https://pypi.org/project/cherenkov-qa/)
 
-Every API has an OpenAPI spec, but those specs silently drift from the real server implementations every day. Writing tests to catch this manually is tedious and slow. 
+Every API has an OpenAPI spec, but those specs silently drift from the real server implementations every day. Moreover, AI-generated tests often hallucinate expected outcomes or silently weaken assertions to force a "green" build.
 
-**CHERENKOV-QA** solves this. It ingests your OpenAPI spec, uses a local LLM to generate a fully typed Playwright test suite, executes it against your real server, and delivers a conformance report. 
+**CHERENKOV-QA** is an **API Integrity Auditor**. It mathematically proves that your test suites actually enforce your OpenAPI contract using pure AST (Abstract Syntax Tree) analysis. It detects Weakened, Deleted, and Hallucinated assertions without relying on an LLM, and then provides a spec-derived local LLM engine to generate conformant Playwright tests.
 
-*Zero vendor lock-in. 100% private. Spec-derived truth.*
+*Zero vendor lock-in. 100% private. Pure Python AST Integrity Moat.*
 
 ---
 
@@ -18,12 +18,12 @@ Every API has an OpenAPI spec, but those specs silently drift from the real serv
 
 ```bash
 pip install cherenkov-qa
-cherenkov demo
+cherenkov check-suite --demo
 ```
 
-No Ollama. No API key. No running server. It shows you exactly what CHERENKOV catches that every other tool misses.
+Watch it catch the AI attempting to cheat by loosening assertions or deleting tests. Zero network calls, zero LLM, pure static AST analysis.
 
-**Then point it at your own API:**
+**Then run the generative pipeline against your own API:**
 
 ```bash
 cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml
@@ -33,11 +33,11 @@ cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml
 
 ## 💡 Why CHERENKOV?
 
-### 1. Stop Spec Drift Automatically
-Your OpenAPI spec is the contract. CHERENKOV generates the tests to ensure your backend actually honors it. If the spec says `422` and the server returns `400`, CHERENKOV catches it before you commit.
+### 1. The Integrity Moat (`check-suite`)
+AI coding tools are notorious for weakening assertions (e.g., changing `==` to `in`) just to make tests pass. CHERENKOV-QA uses pure Python AST analysis to catch **Weakened**, **Deleted**, or **Hallucinated** assertions in your test suites. It mathematically binds your tests to your OpenAPI spec.
 
-### 2. Hallucination-Resistant by Design
-Other AI tools hallucinate assertions. CHERENKOV only uses the LLM to write the *structure* of the test. The *expected values* (status codes, response schemas) are derived strictly from your OpenAPI spec.
+### 2. Hallucination-Resistant Generation
+When CHERENKOV does generate tests, it only uses the LLM to write the *structure*. The *expected values* (status codes, response schemas) are derived strictly from your OpenAPI spec. If the spec says `422`, CHERENKOV ensures the test demands a `422`.
 
 ### 3. Suggest-Only Healing
 When tests fail, CHERENKOV suggests how to tighten your backend validations or fix the spec. But it **never auto-edits** your code. You stay in control.
