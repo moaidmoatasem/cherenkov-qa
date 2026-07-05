@@ -9,15 +9,13 @@ import json
 import hashlib
 import time
 from enum import Enum
-from typing import Any, Optional, Callable
+from typing import Any, Callable
 
 from cherenkov.core.errors import get_logger
-
 
 def hash_test_content(test_content: str) -> str:
     """Returns a stable SHA-256 hash of test source, ignoring surrounding whitespace."""
     return hashlib.sha256(test_content.strip().encode("utf-8")).hexdigest()
-
 
 def _compute_snapshot_hash(test_code: str, spec_path: str | None = None) -> str:
     """Hash both the test code and the spec it was generated from."""
@@ -28,7 +26,6 @@ def _compute_snapshot_hash(test_code: str, spec_path: str | None = None) -> str:
             hasher.update(f.read())
     return hasher.hexdigest()
 
-
 class FailureClass(str, Enum):
     AUTH_EXPIRY = "AUTH_EXPIRY"
     CONTRACT_DRIFT = "CONTRACT_DRIFT"
@@ -37,7 +34,6 @@ class FailureClass(str, Enum):
     DETERMINISTIC_FAILURE = "DETERMINISTIC_FAILURE"
     GENERIC_FAILURE = "GENERIC_FAILURE"
 
-
 class DiagnosisResult:
     """Represents the classified diagnostic output of a failed test run."""
 
@@ -45,8 +41,8 @@ class DiagnosisResult:
         self,
         failure_class: FailureClass,
         detail: str,
-        missing_fields: Optional[list[str]] = None,
-        added_fields: Optional[list[str]] = None,
+        missing_fields: list[str] | None = None,
+        added_fields: list[str] | None = None,
         snapshot_existed: bool = False,
         stale_snapshot: bool = False,
     ):
@@ -58,7 +54,6 @@ class DiagnosisResult:
         # True when the test source changed since the snapshot was captured, so a
         # contract diff would be misleading: the snapshot is flagged stale, not auto-diffed.
         self.stale_snapshot = stale_snapshot
-
 
 class Diagnoser:
     """Diagnoses test failures before any repair is suggested, ensuring high-quality classifications."""
@@ -76,7 +71,7 @@ class Diagnoser:
         current_status: int,
         current_body: dict[str, Any],
         test_name: str,
-        test_content: Optional[str] = None,
+        test_content: str | None = None,
     ) -> DiagnosisResult:
         """Determines the exact failure cause by comparing against historical snapshots."""
         self.log.info(
@@ -206,7 +201,7 @@ class Diagnoser:
         scenario_id: str,
         status: int,
         body: Any,
-        test_content: Optional[str] = None,
+        test_content: str | None = None,
     ) -> None:
         """Stores the response status and shape keys of a successful test execution for subsequent diffing.
 

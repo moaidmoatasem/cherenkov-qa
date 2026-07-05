@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Type
+from typing import Any, Type
 from pydantic import BaseModel, Field
 
 try:
@@ -32,12 +32,12 @@ class CherenkovTool(BaseTool):
         router = SubstrateRouter()
         self._agent = QAChatAgent(memory=memory, substrate_router=router)
 
-    def _run(self, query: str, run_manager: Optional[Any] = None) -> str:
+    def _run(self, query: str, run_manager: Any | None = None) -> str:
         """Run the CHERENKOV query synchronously."""
         msg = self._agent.chat(self._session_id, query)
         return msg.content
 
-    async def _arun(self, query: str, run_manager: Optional[Any] = None) -> str:
+    async def _arun(self, query: str, run_manager: Any | None = None) -> str:
         """Run the CHERENKOV query asynchronously."""
         # Simple async wrapper around sync chat for the tool
         return self._run(query, run_manager)

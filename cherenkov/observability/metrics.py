@@ -6,7 +6,6 @@ import threading
 import time
 import os
 from dataclasses import dataclass, field
-from typing import Optional
 
 try:
     import structlog
@@ -20,19 +19,17 @@ except ImportError:
 _DEFAULT_DB = os.path.join(".cherenkov", "metrics.db")
 _BUSY_TIMEOUT_S = 10
 
-
 @dataclass
 class StageMetric:
     run_id: str
     stage: str
     latency_ms: float
     success: bool
-    error_type: Optional[str] = None
+    error_type: str | None = None
     model_name: str = ""
     provider_name: str = ""
     cache_hit: bool = False
     timestamp: int = field(default_factory=lambda: int(time.time()))
-
 
 class MetricsCollector:
     """Collects and persists pipeline metrics to SQLite."""

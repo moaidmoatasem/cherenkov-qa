@@ -6,7 +6,7 @@ Connects to an external Playwright MCP Server to execute web automation via Sema
 import asyncio
 import json
 import logging
-from typing import Any, Optional
+from typing import Any
 
 logger= logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class PlaywrightMCPClient:
     def __init__(self, command: str, args: list[str]):
         self.command = command
         self.args = args
-        self.process: Optional[asyncio.subprocess.Process] = None
+        self.process: asyncio.subprocess.Process | None = None
         self._message_id = 1
         self._pending_requests: dict[int, asyncio.Future] = {}
 

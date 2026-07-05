@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Optional
 
 from cherenkov.core.errors import get_logger
 
@@ -34,12 +33,12 @@ class JiraExporter:
         scenario_id: str,
         failure_class: str,
         error_message: str,
-        expected_status: Optional[str | int] = None,
-        received_status: Optional[str | int] = None,
-        hypothesis: Optional[str] = None,
-        resolution_steps: Optional[list[str]] = None,
+        expected_status: str | int | None = None,
+        received_status: str | int | None = None,
+        hypothesis: str | None = None,
+        resolution_steps: list[str] | None = None,
         similar_cases_count: int = 0,
-        compliance_score: Optional[int] = None,
+        compliance_score: int | None = None,
     ) -> str:
         """Formats failed scenario information into a highly descriptive Markdown ticket payload."""
         lines = []
@@ -100,12 +99,12 @@ class JiraExporter:
         scenario_id: str,
         failure_class: str,
         error_message: str,
-        expected_status: Optional[str | int] = None,
-        received_status: Optional[str | int] = None,
-        hypothesis: Optional[str] = None,
-        resolution_steps: Optional[list[str]] = None,
+        expected_status: str | int | None = None,
+        received_status: str | int | None = None,
+        hypothesis: str | None = None,
+        resolution_steps: list[str] | None = None,
         similar_cases_count: int = 0,
-        compliance_score: Optional[int] = None,
+        compliance_score: int | None = None,
     ) -> str:
         """Writes the formatted copy-ready Markdown ticket to the standard local ticket directory."""
         os.makedirs(self.ticket_dir, exist_ok=True)
@@ -134,7 +133,7 @@ class JiraExporter:
         )
         return file_path
 
-    def create_jira_issue(self, summary: str, description: str) -> Optional[str]:
+    def create_jira_issue(self, summary: str, description: str) -> str | None:
         import base64
         import urllib.request
         import json
@@ -229,7 +228,7 @@ class JiraExporter:
         priority: dict | str | None = None,
         components: list[str] | None = None,
         issuetype: str = "Bug",
-    ) -> Optional[str]:
+    ) -> str | None:
         import urllib.request
         import json
 

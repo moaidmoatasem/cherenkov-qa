@@ -9,7 +9,7 @@ Provides structured tools for agent builders:
 
 from __future__ import annotations
 
-from typing import Any, Optional, Type
+from typing import Any, Type
 
 from pydantic import BaseModel, Field
 
@@ -20,10 +20,8 @@ except ImportError:  # pragma: no cover - fallback when langchain is not install
     class BaseTool:  # type: ignore
         """Placeholder for environments without langchain_core."""
 
-
 from cherenkov.execution.validate import ValidationEngine
 from cherenkov.web.divergences import _DIVERGENCE_CORPUS
-
 
 class GenerateTestsInput(BaseModel):
     spec_path: str = Field(description="Path to the OpenAPI spec (yaml or json).")
@@ -31,7 +29,6 @@ class GenerateTestsInput(BaseModel):
         default="http://localhost:8000",
         description="Optional base URL of the API under test.",
     )
-
 
 class ValidateTargetInput(BaseModel):
     target_url: str = Field(description="Base URL of the API to validate.")
@@ -44,10 +41,8 @@ class ValidateTargetInput(BaseModel):
         description="Parallel workers for validation.",
     )
 
-
 class ExplainViolationInput(BaseModel):
     violation_id: str = Field(description="ID of the divergence to explain.")
-
 
 class _CherenkovValidateInput(BaseModel):
     query: str = Field(
@@ -56,7 +51,6 @@ class _CherenkovValidateInput(BaseModel):
             "Operations: generate_tests, validate_target, explain_violation."
         )
     )
-
 
 class CherenkovValidateTool(BaseTool):
     """LangChain tool exposing CHERENKOV API conformance capabilities."""
@@ -71,13 +65,13 @@ class CherenkovValidateTool(BaseTool):
     )
     args_schema: Type[BaseModel] = _CherenkovValidateInput
 
-    _engine: Optional[ValidationEngine] = None
+    _engine: ValidationEngine | None = None
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self._engine = ValidationEngine()
 
-    def _run(self, query: str, run_manager: Optional[Any] = None) -> str:
+    def _run(self, query: str, run_manager: Any | None = None) -> str:
         """Dispatch to the requested operation."""
         import json
 
@@ -99,7 +93,7 @@ class CherenkovValidateTool(BaseTool):
             "explain_violation."
         )
 
-    async def _arun(self, query: str, run_manager: Optional[Any] = None) -> str:
+    async def _arun(self, query: str, run_manager: Any | None = None) -> str:
         """Async wrapper around sync dispatch."""
         return self._run(query, run_manager)
 

@@ -2,7 +2,6 @@ import os
 import time
 import json
 import urllib.request
-from typing import Optional
 
 from cherenkov.core.errors import get_logger
 
@@ -21,10 +20,10 @@ class LinearExporter:
         scenario_id: str,
         failure_class: str,
         error_message: str,
-        expected_status: Optional[str | int] = None,
-        received_status: Optional[str | int] = None,
-        hypothesis: Optional[str] = None,
-        resolution_steps: Optional[list[str]] = None,
+        expected_status: str | int | None = None,
+        received_status: str | int | None = None,
+        hypothesis: str | None = None,
+        resolution_steps: list[str] | None = None,
         similar_cases_count: int = 0,
     ) -> str:
         """Formats failed scenario information into a descriptive Markdown ticket payload for Linear."""
@@ -68,10 +67,10 @@ class LinearExporter:
         scenario_id: str,
         failure_class: str,
         error_message: str,
-        expected_status: Optional[str | int] = None,
-        received_status: Optional[str | int] = None,
-        hypothesis: Optional[str] = None,
-        resolution_steps: Optional[list[str]] = None,
+        expected_status: str | int | None = None,
+        received_status: str | int | None = None,
+        hypothesis: str | None = None,
+        resolution_steps: list[str] | None = None,
         similar_cases_count: int = 0,
     ) -> str:
         """Writes the formatted copy-ready Markdown ticket to the standard local ticket directory."""
@@ -94,7 +93,7 @@ class LinearExporter:
         )
         return file_path
 
-    def create_linear_issue(self, title: str, description: str) -> Optional[str]:
+    def create_linear_issue(self, title: str, description: str) -> str | None:
         """Creates a real Linear issue using the Linear GraphQL API if API key is present."""
         linear_key = os.environ.get("CHERENKOV_LINEAR_API_KEY")
         team_id = os.environ.get("CHERENKOV_LINEAR_TEAM_ID")
