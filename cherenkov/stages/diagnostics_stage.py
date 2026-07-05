@@ -66,7 +66,7 @@ class DiagnosticsStage:
     def run(
         self, scenario_id: str, failure_class: str, error_message: str
     ) -> DiagnosticsOutput:
-        t0 = time.time()
+        t0 = time.monotonic()
         self.log.info(
             "stage start", scenario_id=scenario_id, failure_class=failure_class
         )
@@ -114,7 +114,7 @@ class DiagnosticsStage:
                 StageError(code="DIAGNOSTICS_SYNTHESIS_FAILED", detail=str(e))
             )
 
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         self.log.info("stage success", duration_ms=dt)
 
         return DiagnosticsOutput(

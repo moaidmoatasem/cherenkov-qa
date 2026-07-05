@@ -73,9 +73,7 @@ from cherenkov.validate.gate import ValidationGate
 # ── Policy engine instance ─────────────────────────────────────────────────────
 _policy = PolicyEngine()
 
-
 # ── Input validation helpers ───────────────────────────────────────────────────
-
 
 def _validate_spec_path(path: str) -> str:
     resolved = os.path.realpath(os.path.abspath(path))
@@ -85,7 +83,6 @@ def _validate_spec_path(path: str) -> str:
     if not resolved.endswith((".yaml", ".yml", ".json")):
         raise ValueError("spec_path must be a .yaml, .yml, or .json file")
     return resolved
-
 
 # ── Resource catalogue ────────────────────────────────────────────────────────
 
@@ -606,13 +603,10 @@ TOOLS: list[MCPTool] = [
     ),
 ]
 
-
 # ── Internal helpers ──────────────────────────────────────────────────────────
-
 
 def _queue() -> HitlQueue:
     return HitlQueue()
-
 
 def _ok_content(payload: Any) -> MCPToolCallResult:
     return MCPToolCallResult(
@@ -620,13 +614,11 @@ def _ok_content(payload: Any) -> MCPToolCallResult:
         isError=False,
     )
 
-
 def _err_content(message: str) -> MCPToolCallResult:
     return MCPToolCallResult(
         content=[MCPContent(text=json.dumps({"error": message}))],
         isError=True,
     )
-
 
 def _resource_content(uri: str, payload: Any) -> MCPResourceReadResult:
     return MCPResourceReadResult(
@@ -639,13 +631,10 @@ def _resource_content(uri: str, payload: Any) -> MCPResourceReadResult:
         ]
     )
 
-
 # ── Resource handlers ─────────────────────────────────────────────────────────
-
 
 def handle_resources_list(params: dict[str, Any]) -> dict[str, Any]:
     return MCPResourceListResult(resources=RESOURCES).model_dump()
-
 
 def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
     uri: str = params.get("uri", "")
@@ -759,13 +748,10 @@ def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
 
     raise ValueError(f"Unknown resource URI: {uri!r}")
 
-
 # ── Tool call handlers ────────────────────────────────────────────────────────
-
 
 def handle_tools_list(params: dict[str, Any]) -> dict[str, Any]:
     return MCPToolListResult(tools=TOOLS).model_dump()
-
 
 def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
     """Route a tools/call request to the correct handler with policy enforcement."""
@@ -866,9 +852,7 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
 
     return _err_content(f"Unknown tool: {name!r}").model_dump()
 
-
 # ── Individual tools ──────────────────────────────────────────────────────────
-
 
 def _tool_hitl_list(args: dict[str, Any]) -> MCPToolCallResult:
     inp = HitlListInput.model_validate(args)
@@ -883,13 +867,11 @@ def _tool_hitl_list(args: dict[str, Any]) -> MCPToolCallResult:
     }
     return _ok_content(payload)
 
-
 def _tool_hitl_approve(args: dict[str, Any]) -> MCPToolCallResult:
     inp = HitlApproveInput.model_validate(args)
     q = _queue()
     env = q.approve(item_id=inp.item_id, actor=inp.actor, source="mcp")
     return _ok_content(env.model_dump())
-
 
 def _tool_hitl_reject(args: dict[str, Any]) -> MCPToolCallResult:
     inp = HitlRejectInput.model_validate(args)
@@ -898,7 +880,6 @@ def _tool_hitl_reject(args: dict[str, Any]) -> MCPToolCallResult:
         item_id=inp.item_id, actor=inp.actor, reason=inp.reason, source="mcp"
     )
     return _ok_content(env.model_dump())
-
 
 def _tool_verify_suite(args: dict[str, Any]) -> MCPToolCallResult:
     """Verify the integrity of a test suite via the 6-gate REVIEW stage.
@@ -959,10 +940,10 @@ def _tool_verify_suite(args: dict[str, Any]) -> MCPToolCallResult:
             metadata=StageMeta(stage="GENERATE"),
         )
 
-        t0 = time.time()
+        t0 = time.monotonic()
         stage = ReviewStage(run_id=f"mcp-{scenario_id}")
         review = stage.run(generate_out, spec_path=spec_resolved)
-        duration_ms = int((time.time() - t0) * 1000)
+        duration_ms = int((time.monotonic() - t0) * 1000)
 
     except Exception as exc:
         return _err_content(f"verify_suite error running ReviewStage: {exc}")
@@ -1075,7 +1056,6 @@ def _tool_verify_suite(args: dict[str, Any]) -> MCPToolCallResult:
 
     return _ok_content(report)
 
-
 def _tool_verify_system(args: dict[str, Any]) -> MCPToolCallResult:
     """Verify a live server against its OpenAPI spec — find spec↔impl divergences.
 
@@ -1111,13 +1091,13 @@ def _tool_verify_system(args: dict[str, Any]) -> MCPToolCallResult:
 
     # ── Run divergence engine ──────────────────────────────────────────────────
     try:
-        t0 = time.time()
+        t0 = time.monotonic()
         reports = run_proof(
             base_url=inp.base_url,
             spec=spec_dict,
             use_llm=inp.use_llm,
         )
-        duration_ms = int((time.time() - t0) * 1000)
+        duration_ms = int((time.monotonic() - t0) * 1000)
     except Exception as exc:
         return _err_content(f"verify_system error running divergence engine: {exc}")
 
@@ -1172,7 +1152,6 @@ def _tool_verify_system(args: dict[str, Any]) -> MCPToolCallResult:
 
     return _ok_content(report)
 
-
 def _tool_validate_gate(args: dict[str, Any]) -> MCPToolCallResult:
     """
     Runs ValidationGate in report-only mode.
@@ -1191,20 +1170,16 @@ def _tool_validate_gate(args: dict[str, Any]) -> MCPToolCallResult:
     except Exception as exc:
         return _err_content(f"ValidationGate error: {exc}")
 
-
 # ── Policy tools ──────────────────────────────────────────────────────────────
-
 
 def _tool_policy_list(args: dict[str, Any]) -> MCPToolCallResult:
     """Return current policy rules for all profiles."""
     return _ok_content(_policy.list_policy())
 
-
 def _tool_policy_reload(args: dict[str, Any]) -> MCPToolCallResult:
     """Reload policy from cherenkov-policy.json."""
     _policy.reload()
     return _ok_content({"status": "reloaded", "policy": _policy.list_policy()})
-
 
 def _tool_registry_list(args: dict[str, Any]) -> MCPToolCallResult:
     """List registered MCP servers in the mesh registry."""
@@ -1212,7 +1187,6 @@ def _tool_registry_list(args: dict[str, Any]) -> MCPToolCallResult:
 
     servers = get_registry().list_servers()
     return _ok_content({"servers": servers})
-
 
 def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     """Register an external MCP server with the mesh registry."""
@@ -1258,9 +1232,7 @@ def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     )
     return _ok_content({"status": "ok", "registration_id": reg_id})
 
-
 # ── Track B/C tools ───────────────────────────────────────────────────────────
-
 
 def _tool_visual_diff(args: dict[str, Any]) -> MCPToolCallResult:
     target_url = args.get("target_url")
@@ -1272,7 +1244,6 @@ def _tool_visual_diff(args: dict[str, Any]) -> MCPToolCallResult:
         return _ok_content(report)
     except Exception as exc:
         return _err_content(f"VisualDiff error: {exc}")
-
 
 def _tool_visual_diff_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
     """Enhanced visual diff tool with baseline management, configurable thresholds, and report output."""
@@ -1316,7 +1287,6 @@ def _tool_visual_diff_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
         return _ok_content(enriched)
     except Exception as exc:
         return _err_content(f"VisualDiff enhanced error: {exc}")
-
 
 def _tool_run_perf(args: dict[str, Any]) -> MCPToolCallResult:
     target_url = (
@@ -1368,7 +1338,6 @@ def _tool_run_perf(args: dict[str, Any]) -> MCPToolCallResult:
     except Exception as exc:
         return _err_content(f"Perf error: {exc}")
 
-
 def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
     query = args.get("query", "")
     try:
@@ -1379,7 +1348,6 @@ def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
         return _ok_content({"query": query, "results": res})
     except Exception as exc:
         return _err_content(f"RAG error: {exc}")
-
 
 def _tool_export_jira(args: dict[str, Any]) -> MCPToolCallResult:
     item_id = args.get("item_id", "")
@@ -1427,7 +1395,6 @@ def _tool_export_jira(args: dict[str, Any]) -> MCPToolCallResult:
     except Exception as exc:
         return _err_content(f"Jira error: {exc}")
 
-
 def _tool_export_linear(args: dict[str, Any]) -> MCPToolCallResult:
     item_id = args.get("item_id", "")
     try:
@@ -1471,7 +1438,6 @@ def _tool_export_linear(args: dict[str, Any]) -> MCPToolCallResult:
     except Exception as exc:
         return _err_content(f"Linear error: {exc}")
 
-
 def _tool_export_github(args: dict[str, Any]) -> MCPToolCallResult:
     item_id = args.get("item_id", "")
     try:
@@ -1508,7 +1474,6 @@ def _tool_export_github(args: dict[str, Any]) -> MCPToolCallResult:
     except Exception as exc:
         return _err_content(f"GitHub error: {exc}")
 
-
 def _tool_scan_mena(args: dict[str, Any]) -> MCPToolCallResult:
     target_url = (
         args.get("target_url") or os.environ.get("API_URL") or "http://localhost:8000"
@@ -1538,7 +1503,6 @@ def _tool_scan_mena(args: dict[str, Any]) -> MCPToolCallResult:
         )
     except Exception as exc:
         return _err_content(f"MENA error: {exc}")
-
 
 def _tool_scan_mena_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
     """Enhanced MENA compliance tool with framework-specific scanning."""
@@ -1591,7 +1555,6 @@ def _tool_scan_mena_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
     except Exception as exc:
         return _err_content(f"MENA enhanced error: {exc}")
 
-
 def _tool_validate_governance(args: dict[str, Any]) -> MCPToolCallResult:
     """Validate governance certifications against established standards."""
     try:
@@ -1630,7 +1593,6 @@ def _tool_validate_governance(args: dict[str, Any]) -> MCPToolCallResult:
         )
     except Exception as exc:
         return _err_content(f"Governance validation error: {exc}")
-
 
 def _tool_report_compliance(args: dict[str, Any]) -> MCPToolCallResult:
     """Generate structured compliance reports with filtering."""
@@ -1689,9 +1651,7 @@ def _tool_report_compliance(args: dict[str, Any]) -> MCPToolCallResult:
     except Exception as exc:
         return _err_content(f"Compliance report error: {exc}")
 
-
 # ── Chat knowledge tools ──────────────────────────────────────────────────────
-
 
 def _tool_chat_query_verdicts(args: dict[str, Any]) -> MCPToolCallResult:
     inp = ChatQueryVerdictsInput.model_validate(args)
@@ -1702,7 +1662,6 @@ def _tool_chat_query_verdicts(args: dict[str, Any]) -> MCPToolCallResult:
     )
     return _ok_content(result)
 
-
 def _tool_chat_query_idioms(args: dict[str, Any]) -> MCPToolCallResult:
     inp = ChatQueryIdiomsInput.model_validate(args)
     from cherenkov.chat.tools import query_idioms
@@ -1710,14 +1669,12 @@ def _tool_chat_query_idioms(args: dict[str, Any]) -> MCPToolCallResult:
     result = query_idioms(pattern=inp.pattern, limit=inp.limit)
     return _ok_content(result)
 
-
 def _tool_chat_explain_divergence(args: dict[str, Any]) -> MCPToolCallResult:
     inp = ChatExplainDivergenceInput.model_validate(args)
     from cherenkov.chat.tools import explain_divergence
 
     result = explain_divergence(endpoint=inp.endpoint, method=inp.method)
     return _ok_content(result)
-
 
 def _tool_chat_run_test(args: dict[str, Any]) -> MCPToolCallResult:
     inp = ChatRunTestInput.model_validate(args)
@@ -1732,9 +1689,7 @@ def _tool_chat_run_test(args: dict[str, Any]) -> MCPToolCallResult:
     result = run_test(endpoint=inp.endpoint, method=inp.method, spec_path=spec_path)
     return _ok_content(result)
 
-
 # ── Evidence helpers ──────────────────────────────────────────────────────────
-
 
 def _get_latest_validation_report() -> dict[str, Any]:
     """Return the most recent ValidationReport from evidence/, or a stub."""
@@ -1753,9 +1708,7 @@ def _get_latest_validation_report() -> dict[str, Any]:
         "summary": "No validation evidence found. Run: cherenkov validate --target <url>",
     }
 
-
 # ── Issue #441: Conformance tools ─────────────────────────────────────────────
-
 
 def _tool_run_conformance_check(args: dict[str, Any]) -> MCPToolCallResult:
     """Trigger a validate run against target_url; return summary. D7: suggest-only."""
@@ -1784,7 +1737,6 @@ def _tool_run_conformance_check(args: dict[str, Any]) -> MCPToolCallResult:
     except Exception as exc:
         return _err_content(f"Conformance check error: {exc}")
 
-
 def _tool_get_last_report(args: dict[str, Any]) -> MCPToolCallResult:
     """Return the most recent .cherenkov/report.json without triggering a new run."""
     report_path = os.path.join(os.getcwd(), ".cherenkov", "report.json")
@@ -1801,7 +1753,6 @@ def _tool_get_last_report(args: dict[str, Any]) -> MCPToolCallResult:
     except Exception as exc:
         return _err_content(f"Error reading report: {exc}")
 
-
 def _tool_list_drift_findings(args: dict[str, Any]) -> MCPToolCallResult:
     """Return structured drift findings from the divergence corpus."""
     inp = ListDriftFindingsInput.model_validate(args)
@@ -1817,7 +1768,6 @@ def _tool_list_drift_findings(args: dict[str, Any]) -> MCPToolCallResult:
         return _ok_content({"findings": findings, "total": len(findings)})
     except Exception as exc:
         return _err_content(f"list_drift_findings error: {exc}")
-
 
 def _tool_get_tightening_suggestions(args: dict[str, Any]) -> MCPToolCallResult:
     """Return value-assertion tightening suggestions for an endpoint."""
@@ -1853,7 +1803,6 @@ def _tool_get_tightening_suggestions(args: dict[str, Any]) -> MCPToolCallResult:
         )
     except Exception as exc:
         return _err_content(f"get_tightening_suggestions error: {exc}")
-
 
 def _tool_explain_finding(args: dict[str, Any]) -> MCPToolCallResult:
     """LLM natural-language explanation of a specific drift finding."""
@@ -1896,7 +1845,6 @@ def _tool_explain_finding(args: dict[str, Any]) -> MCPToolCallResult:
         return _ok_content({"finding_id": inp.finding_id, "explanation": explanation})
     except Exception as exc:
         return _err_content(f"explain_finding error: {exc}")
-
 
 def _tool_auto_heal_code(args: dict[str, Any]) -> MCPToolCallResult:
     """Diagnose a failed validation item and generate a suggested code patch.
@@ -1949,7 +1897,6 @@ def _tool_auto_heal_code(args: dict[str, Any]) -> MCPToolCallResult:
     except Exception as exc:
         return _err_content(f"auto_heal_code error: {exc}")
 
-
 _TOOL_DISPATCH: dict[str, Callable[[dict[str, Any]], MCPToolCallResult]] = {
     "verify_suite": _tool_verify_suite,
     "verify_system": _tool_verify_system,
@@ -1983,7 +1930,6 @@ _TOOL_DISPATCH: dict[str, Callable[[dict[str, Any]], MCPToolCallResult]] = {
     "mcp_registry_publish": _tool_registry_publish,
     "auto_heal_code": _tool_auto_heal_code,
 }
-
 
 def _get_evidence_listing() -> dict[str, Any]:
     """Return a directory listing of .cherenkov/evidence/."""

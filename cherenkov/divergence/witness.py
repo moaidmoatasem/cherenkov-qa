@@ -81,7 +81,7 @@ class WitnessAgent:
         method, path, payload, expected = _parse_repro_steps(hypothesis.repro_steps)
         url = f"{self.base_url}{path}"
 
-        t0 = time.time()
+        t0 = time.monotonic()
         with httpx.Client(timeout=self.timeout, follow_redirects=True) as client:
             if method in ("POST", "PUT", "PATCH") and payload is not None:
                 resp = getattr(client, method.lower())(
@@ -91,7 +91,7 @@ class WitnessAgent:
                 )
             else:
                 resp = getattr(client, method.lower())(url)
-        latency_ms = int((time.time() - t0) * 1000)
+        latency_ms = int((time.monotonic() - t0) * 1000)
 
         try:
             actual: str | dict = resp.json()

@@ -30,14 +30,12 @@ from cherenkov.stages.ingest import IngestStage
 from cherenkov.stages.plan import PlanStage
 from cherenkov.stages.review import ReviewStage
 
-
 def _assert_not_production() -> None:
     if os.getenv("CHERENKOV_ENV", "production") == "production":
         raise RuntimeError(
             "Simulation flags are not allowed in production. "
             "Set CHERENKOV_ENV=development to enable."
         )
-
 
 class OrchestrationEngine:
     """Central execution engine orchestrating stages E2E."""
@@ -634,6 +632,5 @@ class OrchestrationEngine:
             report_type=PerfReport,
             contract_error_msg="PerfStage returned unvalidated type for slice {slice_name}",
         )
-
 
 # Backward-compatible re-exports

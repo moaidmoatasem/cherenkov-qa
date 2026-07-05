@@ -55,7 +55,7 @@ class NemoClawProvider:
         user_prompt = request.task
         model = self._model_for_tier(request.capability_tier)
 
-        t0 = time.time()
+        t0 = time.monotonic()
 
         if (
             request.capability_tier == "vision"
@@ -92,7 +92,7 @@ class NemoClawProvider:
                 run_id=request.task[:32] if request.task else None,
             )
 
-        latency_ms = int((time.time() - t0) * 1000)
+        latency_ms = int((time.monotonic() - t0) * 1000)
 
         return ReasoningResult(
             content=content,

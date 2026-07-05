@@ -113,7 +113,7 @@ def refine_suite(
     Returns:
         RefineResult with the enriched suite and change summary.
     """
-    t0 = time.time()
+    t0 = time.monotonic()
 
     contexts = build_spec_contexts(spec)
 
@@ -186,6 +186,6 @@ def refine_suite(
         tests_added=tests_added,
         ops_targeted=list(dict.fromkeys(targeted_ops)),  # deduplicate, preserve order
         original_grade=grade_report.grade,
-        duration_ms=int((time.time() - t0) * 1000),
+        duration_ms=int((time.monotonic() - t0) * 1000),
         new_grade_report=new_grade_report,
     )

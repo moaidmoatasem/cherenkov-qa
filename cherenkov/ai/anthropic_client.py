@@ -61,7 +61,7 @@ class AnthropicInferenceClient(InferenceClient):
         *,
         temperature: float = 0.1,
     ) -> str:
-        t0 = time.time()
+        t0 = time.monotonic()
         if self.bearer_token:
             # Use httpx directly so we can use Bearer auth without x-api-key interference
             import httpx
@@ -101,7 +101,7 @@ class AnthropicInferenceClient(InferenceClient):
             input_tokens = message.usage.input_tokens
             output_tokens = message.usage.output_tokens
 
-        elapsed = int((time.time() - t0) * 1000)
+        elapsed = int((time.monotonic() - t0) * 1000)
         self._token_usage["prompt_tokens"] += input_tokens
         self._token_usage["completion_tokens"] += output_tokens
         _log.info(

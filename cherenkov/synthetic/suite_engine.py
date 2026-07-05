@@ -28,7 +28,6 @@ from cherenkov.synthetic.persona_generator import generate_for_persona
 from cherenkov.synthetic.merge import merge_suites
 from cherenkov.synthetic.enricher import enrich_suite
 
-
 # ── result dataclasses ─────────────────────────────────────────────────────────
 
 @dataclass
@@ -45,7 +44,6 @@ class PersonaRunResult:
             "test_count": self.test_count,
             "duration_ms": self.duration_ms,
         }
-
 
 @dataclass
 class SuiteEngineResult:
@@ -68,7 +66,6 @@ class SuiteEngineResult:
             d["coverage"] = round(self.grade_report.coverage, 4)
             d["overall_score"] = round(self.grade_report.overall_score, 4)
         return d
-
 
 # ── engine ─────────────────────────────────────────────────────────────────────
 
@@ -99,7 +96,7 @@ class SuiteEngine:
         self.enricher = enricher
 
     def run(self) -> SuiteEngineResult:
-        t0 = time.time()
+        t0 = time.monotonic()
 
         contexts: dict[str, OperationContext] = build_spec_contexts(self.spec)
 
@@ -145,7 +142,7 @@ class SuiteEngine:
             persona_runs=persona_runs,
             total_tests=total_tests,
             operations_covered=len(merged),
-            duration_ms=int((time.time() - t0) * 1000),
+            duration_ms=int((time.monotonic() - t0) * 1000),
             grade_report=grade_report,
         )
 
@@ -154,12 +151,12 @@ class SuiteEngine:
         persona: TesterPersona,
         contexts: dict[str, OperationContext],
     ) -> tuple[dict[str, Any], PersonaRunResult]:
-        t0 = time.time()
+        t0 = time.monotonic()
         suite = generate_for_persona(persona, contexts, self.spec)
         test_count = sum(len(v) for v in suite.values() if isinstance(v, list))
         return suite, PersonaRunResult(
             persona_name=persona.name,
             op_count=len(suite),
             test_count=test_count,
-            duration_ms=int((time.time() - t0) * 1000),
+            duration_ms=int((time.monotonic() - t0) * 1000),
         )

@@ -51,7 +51,7 @@ class BedrockInferenceClient(InferenceClient):
         *,
         temperature: float = 0.1,
     ) -> str:
-        t0 = time.time()
+        t0 = time.monotonic()
         client = self._get_client()
 
         # Build payload assuming anthropic models are heavily used on Bedrock
@@ -83,7 +83,7 @@ class BedrockInferenceClient(InferenceClient):
         input_tokens = response_body.get('usage', {}).get('input_tokens', 0)
         output_tokens = response_body.get('usage', {}).get('output_tokens', 0)
 
-        elapsed = int((time.time() - t0) * 1000)
+        elapsed = int((time.monotonic() - t0) * 1000)
         self._token_usage["prompt_tokens"] += input_tokens
         self._token_usage["completion_tokens"] += output_tokens
         _log.info(

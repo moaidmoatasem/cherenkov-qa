@@ -8,7 +8,6 @@ from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import GoldSet, GoldSetItem, CertResult, ReasoningRequest
 from cherenkov.core.errors import get_logger
 
-
 class RAGTriadEvaluator:
     """RAG-Triad metrics: Context Relevance, Answer Faithfulness, Answer Relevance.
 
@@ -108,7 +107,6 @@ class RAGTriadEvaluator:
             "answer_relevance": round(self.answer_relevance(prompt, response), 4),
         }
 
-
 # Default comprehensive gold set covering multiple capability domains
 _DEFAULT_GOLD_SET_ITEMS: list[dict[str, Any]] = [
     {
@@ -146,7 +144,6 @@ _DEFAULT_GOLD_SET_ITEMS: list[dict[str, Any]] = [
         "expected_contains": ["same", "result", "request"],
     },
 ]
-
 
 class ModelCertificationManager:
     def __init__(self, run_id: str | None = None):

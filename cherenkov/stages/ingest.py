@@ -33,16 +33,13 @@ DAST_PAYLOADS: list[tuple[str, str]] = [
     ("template_injection", "${{7*7}}"),
 ]
 
-
 # Toggle env var — security mutations are opt-in to keep default runs focused
 def _dast_enabled() -> bool:
     return get_settings().DAST_ENABLED
 
-
 # [Issue #195] RAG toggle — schema-level semantic retrieval for large specs
 def _rag_enabled() -> bool:
     return get_settings().RAG_ENABLED
-
 
 def resolve_refs_depth(
     node: Any,
@@ -73,7 +70,6 @@ def resolve_refs_depth(
         for item in node:
             resolve_refs_depth(item, schemas, resolved, depth, max_depth)
 
-
 class IngestStage:
     """Parses OpenAPI specifications, slices them with depth-1 reference resolution, and extracts deterministic mutations."""
 
@@ -82,7 +78,7 @@ class IngestStage:
         self.mobile_adapter = MobileSourceAdapter()
 
     def run(self, spec_path: str) -> IngestOutput:
-        t0 = time.time()
+        t0 = time.monotonic()
         self.log.info("stage start", spec_path=spec_path)
 
         path = Path(spec_path)
@@ -112,7 +108,7 @@ class IngestStage:
                     detail=f"Mobile source ({path.suffix}) ingested but produces no REST endpoint slices. Use Track B mobile pipeline.",
                 )],
                 metadata=StageMeta(
-                    stage="INGEST-mobile", duration_ms=int((time.time() - t0) * 1000)
+                    stage="INGEST-mobile", duration_ms=int((time.monotonic() - t0) * 1000)
                 ),
             )
 
@@ -374,7 +370,7 @@ class IngestStage:
                     )
                 )
 
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         self.log.info("stage success", endpoints_count=len(endpoints), duration_ms=dt)
 
         return IngestOutput(

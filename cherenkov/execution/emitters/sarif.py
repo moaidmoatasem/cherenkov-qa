@@ -1,11 +1,10 @@
-from typing import Any, Dict
+from typing import Any
 from datetime import datetime, timezone
-
 
 class SARIFEmitter:
     """Emits DivergenceReports into the SARIF format for GitHub Advanced Security."""
 
-    def emit(self, report, spec_path: str) -> Dict[str, Any]:
+    def emit(self, report, spec_path: str) -> dict[str, Any]:
         """Convert a DivergenceReport into a valid SARIF v2.1.0 JSON dictionary."""
         results = []
         for finding in getattr(report, "findings", []):
