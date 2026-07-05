@@ -27,12 +27,11 @@ def _adapter(endpoint: str) -> OpenClawAdapter:
 def test_slack_notifier_accepts_url_and_posts_envelope():
     notifier = SlackNotifier("https://hooks.slack.com/services/T/B/x")
     assert notifier.webhook_url == "https://hooks.slack.com/services/T/B/x"
-    with patch("cherenkov.adapters.notifiers.slack.urllib.request.urlopen") as urlopen:
-        urlopen.return_value.__enter__.return_value.status = 200
+    with patch("cherenkov.adapters.notifiers.slack.requests.post") as post:
+        post.return_value.status_code = 200
         notifier.notify(ok_envelope(command="hitl.approve", payload={"id": "42"}))
-    urlopen.assert_called_once()
-    sent = urlopen.call_args.args[0]
-    assert b"hitl.approve" in sent.data
+    post.assert_called_once()
+    assert "hitl.approve" in post.call_args.kwargs["json"]["text"]
 
 
 def test_slack_notify_includes_error_message():
@@ -42,18 +41,18 @@ def test_slack_notify_includes_error_message():
         command="hitl.reject",
         error=HitlError(code="E1", message="quorum not reached"),
     )
-    with patch("cherenkov.adapters.notifiers.slack.urllib.request.urlopen") as urlopen:
-        urlopen.return_value.__enter__.return_value.status = 200
+    with patch("cherenkov.adapters.notifiers.slack.requests.post") as post:
+        post.return_value.status_code = 200
         notifier.notify(envelope)
-    assert b"quorum not reached" in urlopen.call_args.args[0].data
+    assert "quorum not reached" in post.call_args.kwargs["json"]["text"]
 
 
 def test_slack_notify_noops_without_url(monkeypatch):
     monkeypatch.delenv("CHERENKOV_SLACK_WEBHOOK_URL", raising=False)
     notifier = SlackNotifier()
-    with patch("cherenkov.adapters.notifiers.slack.urllib.request.urlopen") as urlopen:
+    with patch("cherenkov.adapters.notifiers.slack.requests.post") as post:
         notifier.notify(ok_envelope(command="noop", payload=None))
-    urlopen.assert_not_called()
+    post.assert_not_called()
 
 
 def test_adapter_wires_slack_branch_without_crashing():

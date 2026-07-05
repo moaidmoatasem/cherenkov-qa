@@ -7,6 +7,8 @@ import os
 import urllib.request
 from typing import Any
 
+import requests
+
 from cherenkov.core.errors import get_logger
 from cherenkov.core.events import CHERENKOVEvent
 from cherenkov.hitl.contracts import HitlEnvelope
@@ -31,15 +33,9 @@ class SlackNotifier:
         self._post({"text": f"{status} CHERENKOV {envelope.command}: {detail}"})
 
     def _post(self, payload: dict[str, Any]) -> bool:
-        req = urllib.request.Request(
-            self.webhook_url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
         try:
-            with urllib.request.urlopen(req, timeout=10) as response:
-                return response.status == 200
+            response = requests.post(self.webhook_url, json=payload, timeout=10)
+            return response.status_code == 200
         except Exception as exc:
             _log.error("Failed to send Slack message", error=str(exc))
             return False
