@@ -1,6 +1,6 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-07-04
+**Date:** 2026-07-05
 **HEAD:** see `git log`
 **Tests:** 788+ unit/integration tests (0 failures); **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
 **Branch:** `main`
@@ -74,10 +74,20 @@ All Rung 3 items are DONE (merged 2026-06-27):
 ---
 
 
-## What landed this session (2026-07-04)
+## What landed this session (2026-07-05)
 
 | SHA | What |
 |---|---|
+| (pending) | fix(substrate): real latency tracking — OllamaProvider/OpenAIProvider/GitHubModelsProvider always reported `latency_ms=0`; wrapped client call with `time.monotonic()` bookends |
+| (pending) | fix(docker): Dockerfile base image `python:3.14-slim` → `python:3.12-slim` to match CI |
+
+## What landed previous session (2026-07-04)
+
+| SHA | What |
+|---|---|
+| `e94dab6` | fix(emitters): spec-patch and PR-comment emitters used stale DivergenceReport schema; PR #658 |
+| `8eaedb8` | refactor: replace legacy typing generics with built-in equivalents (Python 3.9+); PR #659 |
+| `0d2aeaa` | refactor: use `time.monotonic()` for all duration measurements; fix `raise e` → bare `raise`; PR #657 |
 | `cd521a3` | fix(generate): correct indentation so spec enrichment runs for openapi source type; PR #650 |
 | `fde73f6` | fix: replace silent except-pass blocks with diagnostic logging (scan #4); PR #652 |
 | `e926be6` | feat(#628): spec coverage-gap report via `cherenkov validate --coverage-report`; PR #651 |
