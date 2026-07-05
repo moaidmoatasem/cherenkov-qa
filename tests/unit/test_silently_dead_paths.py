@@ -1,0 +1,124 @@
+"""tests/unit/test_silently_dead_paths.py — three formerly-dead code paths.
+
+Each of these was silently disabled by a swallowed exception or schema drift
+(the same family as the MCP-bridge bug fixed in #654):
+- substrate/retry.py imported CertificationError from the wrong module, so the
+  "never retry certification errors" safeguard was inert.
+- evals/judge.py imported a nonexistent get_tracer(), so judge tracing was dead.
+- memory/adapters/memsearch_memory.py read fields MemoryQuery never had and
+  built MemoryEntry without its required id/kind.
+"""
+from __future__ import annotations
+
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from cherenkov.core.errors import CertificationError
+from cherenkov.memory.adapters.memsearch_memory import MemSearchMemoryRepository
+from cherenkov.memory.domain.models import EntryKind, MemoryQuery
+from cherenkov.substrate.retry import with_retry
+
+
+# ── retry: certification errors must not be retried ──────────────────────────
+
+def test_certification_error_is_not_retried(monkeypatch):
+    monkeypatch.setenv("CHERENKOV_RETRY_MAX_ATTEMPTS", "3")
+    calls = {"n": 0}
+
+    def always_uncertified():
+        calls["n"] += 1
+        raise CertificationError("model not certified")
+
+    with pytest.raises(CertificationError):
+        with_retry(always_uncertified)
+    assert calls["n"] == 1  # raised immediately, no retry attempts
+
+
+# ── judge: tracing uses the real trace_event API ─────────────────────────────
+
+def test_judge_emits_trace_event():
+    from cherenkov.evals.core import EvalSample
+    from cherenkov.evals import judge as judge_mod
+
+    sample = EvalSample(
+        scenario_id="s-1",
+        endpoint="/pets",
+        method="GET",
+        expected_status=200,
+        test_code="test code",
+        spec_summary="spec",
+    )
+    fake_client = MagicMock()
+    fake_client.complete_code.return_value = '{"scores": []}'
+    with patch.object(judge_mod, "get_client", return_value=fake_client), \
+         patch("cherenkov.observability.llm_tracer.trace_event") as trace:
+        result = judge_mod.judge_sample(sample)
+    assert result.error is None
+    trace.assert_called_once()
+    assert trace.call_args.args[0] == "eval.judge_sample"
+    assert trace.call_args.kwargs["scenario_id"] == "s-1"
+
+
+def test_judge_traces_errors_too():
+    from cherenkov.evals.core import EvalSample
+    from cherenkov.evals import judge as judge_mod
+
+    sample = EvalSample(
+        scenario_id="s-2",
+        endpoint="/pets",
+        method="GET",
+        expected_status=200,
+        test_code="test code",
+        spec_summary="spec",
+    )
+    with patch.object(judge_mod, "get_client", side_effect=RuntimeError("no llm")), \
+         patch("cherenkov.observability.llm_tracer.trace_event") as trace:
+        result = judge_mod.judge_sample(sample)
+    assert result.error is not None
+    assert "error" in trace.call_args.kwargs
+
+
+# ── memsearch adapter: real MemoryQuery/MemoryEntry schema ────────────────────
+
+class _AttrChunk:
+    def __init__(self, id_, content):
+        self.id = id_
+        self.content = content
+
+
+@pytest.fixture
+def repo(tmp_path):
+    with patch("cherenkov.memory.adapters.memsearch_memory.memsearch", None):
+        return MemSearchMemoryRepository(
+            db_path=tmp_path / "mem.db", workspace_dir=tmp_path
+        )
+
+
+def test_init_falls_back_when_memsearch_unconfigured(tmp_path):
+    fake_lib = MagicMock()
+    fake_lib.MemSearch.side_effect = RuntimeError("Missing credentials")
+    with patch("cherenkov.memory.adapters.memsearch_memory.memsearch", fake_lib):
+        repo = MemSearchMemoryRepository(
+            db_path=tmp_path / "mem.db", workspace_dir=tmp_path
+        )
+    assert repo._ms is None  # documented SQLite fallback, not an init crash
+
+
+def test_search_wraps_memsearch_chunks(repo):
+    repo._ms = MagicMock()
+    repo._ms.search.return_value = [
+        _AttrChunk("c-1", "first chunk"),
+        {"id": "", "content": "dict chunk"},
+    ]
+    entries = repo.search(MemoryQuery(query="playwright timeout", limit=5))
+    repo._ms.search.assert_called_once_with("playwright timeout", top_k=5)
+    assert [e.content for e in entries] == ["first chunk", "dict chunk"]
+    assert entries[0].id == "c-1"
+    assert entries[1].id == "memsearch-1"  # positional fallback id
+    assert all(e.kind == EntryKind.CONTEXT for e in entries)
+
+
+def test_search_falls_back_to_sqlite_when_no_memsearch(repo):
+    repo._ms = None
+    assert repo.search(MemoryQuery(query="anything")) == []  # fresh sqlite, no crash
