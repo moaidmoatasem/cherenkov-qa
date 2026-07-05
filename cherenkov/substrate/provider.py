@@ -1,4 +1,5 @@
 from __future__ import annotations
+import time
 from typing import Protocol
 from pydantic import BaseModel
 import json
@@ -42,6 +43,9 @@ class OllamaProvider:
                 f"\n\nPlease output JSON matching this schema: "
                 f"{json.dumps(request.output_schema)}"
             )
+
+        t0 = time.monotonic()
+        if request.output_schema:
             content = self.client.complete_json(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
@@ -53,13 +57,14 @@ class OllamaProvider:
                 user_prompt=user_prompt,
                 model=model,
             )
+        latency_ms = int((time.monotonic() - t0) * 1000)
 
         return ReasoningResult(
             content=content,
             provider="ollama",
             model=model,
             cost_usd=0.0,
-            latency_ms=0,
+            latency_ms=latency_ms,
             cached=False,
         )
 
@@ -86,6 +91,9 @@ class OpenAIProvider:
                 f"\n\nPlease output JSON matching this schema: "
                 f"{json.dumps(request.output_schema)}"
             )
+
+        t0 = time.monotonic()
+        if request.output_schema:
             content = self.client.complete_json(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
@@ -97,13 +105,14 @@ class OpenAIProvider:
                 user_prompt=user_prompt,
                 model=model,
             )
+        latency_ms = int((time.monotonic() - t0) * 1000)
 
         return ReasoningResult(
             content=content,
             provider="openai",
             model=model,
             cost_usd=0.02,
-            latency_ms=0,
+            latency_ms=latency_ms,
             cached=False,
         )
 
@@ -142,6 +151,9 @@ class GitHubModelsProvider:
             user_prompt += (
                 f"\n\nOutput JSON matching: {json.dumps(request.output_schema)}"
             )
+
+        t0 = time.monotonic()
+        if request.output_schema:
             content = self.client.complete_json(
                 system_prompt=system_prompt, user_prompt=user_prompt, model=model
             )
@@ -149,13 +161,14 @@ class GitHubModelsProvider:
             content = self.client.complete_code(
                 system_prompt=system_prompt, user_prompt=user_prompt, model=model
             )
+        latency_ms = int((time.monotonic() - t0) * 1000)
 
         return ReasoningResult(
             content=content,
             provider="github",
             model=model,
             cost_usd=0.0,
-            latency_ms=0,
+            latency_ms=latency_ms,
             cached=False,
         )
 
