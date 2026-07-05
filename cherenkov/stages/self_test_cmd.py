@@ -21,11 +21,11 @@ def run_self_test() -> int:
     # 1. Check Ollama Reachable
     print("[1/3] Checking Ollama connectivity...", end=" ")
     try:
-        t0 = time.time()
+        t0 = time.monotonic()
         base_url = get_settings().OLLAMA_URL.rsplit("/api/generate", 1)[0]
         resp = requests.get(f"{base_url}/api/tags", timeout=5)
         resp.raise_for_status()
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         print(f"OK ({dt}ms)")
     except Exception as e:
         print(f"FAILED\nError: {e}")
@@ -34,7 +34,7 @@ def run_self_test() -> int:
     # 2. Generate a Test
     print("[2/3] Generating test via Ollama...", end=" ")
     try:
-        t0 = time.time()
+        t0 = time.monotonic()
         client = get_client()
         from cherenkov.stages.generate import SYSTEM_PROMPT
 
@@ -49,7 +49,7 @@ def run_self_test() -> int:
         if "from '../client'" not in code and "from '@playwright/test'" not in code:
             print("FAILED\nError: Generated code missing required imports.")
             return 1
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         print(f"OK ({dt}ms)")
     except Exception as e:
         print(f"FAILED\nError: {e}")
@@ -67,7 +67,7 @@ def run_self_test() -> int:
         with open(temp_file, "w", encoding="utf-8") as f:
             f.write(code)
 
-        t0 = time.time()
+        t0 = time.monotonic()
         process = subprocess.run(
             [_npx(), "tsc", "--noEmit"],
             cwd=stub_dir,
@@ -76,7 +76,7 @@ def run_self_test() -> int:
             timeout=30,
             env=_subprocess_env(),
         )
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         if os.path.exists(temp_file):
             os.remove(temp_file)
 

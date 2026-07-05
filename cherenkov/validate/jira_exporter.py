@@ -6,10 +6,9 @@ from __future__ import annotations
 
 import os
 import time
-from typing import List, Optional
+from typing import Optional
 
 from cherenkov.core.errors import get_logger
-
 
 class JiraExporter:
     """Generates sandboxed, copy-ready Jira issue payloads inside .cherenkov/jira_tickets/ on test execution failure."""
@@ -38,7 +37,7 @@ class JiraExporter:
         expected_status: Optional[str | int] = None,
         received_status: Optional[str | int] = None,
         hypothesis: Optional[str] = None,
-        resolution_steps: Optional[List[str]] = None,
+        resolution_steps: Optional[list[str]] = None,
         similar_cases_count: int = 0,
         compliance_score: Optional[int] = None,
     ) -> str:
@@ -104,7 +103,7 @@ class JiraExporter:
         expected_status: Optional[str | int] = None,
         received_status: Optional[str | int] = None,
         hypothesis: Optional[str] = None,
-        resolution_steps: Optional[List[str]] = None,
+        resolution_steps: Optional[list[str]] = None,
         similar_cases_count: int = 0,
         compliance_score: Optional[int] = None,
     ) -> str:
@@ -199,7 +198,7 @@ class JiraExporter:
                 return issue_key
         except Exception as e:
             self.log.error("Failed to create Jira issue", error=str(e))
-            raise e
+            raise
 
     def _build_auth_headers(self, content_type="application/json"):
         import base64
@@ -226,9 +225,9 @@ class JiraExporter:
         self,
         summary: str,
         description: str,
-        labels: List[str] | None = None,
+        labels: list[str] | None = None,
         priority: dict | str | None = None,
-        components: List[str] | None = None,
+        components: list[str] | None = None,
         issuetype: str = "Bug",
     ) -> Optional[str]:
         import urllib.request
@@ -288,10 +287,10 @@ class JiraExporter:
                 return issue_key
         except Exception as e:
             self.log.error("Failed to create Jira issue", error=str(e))
-            raise e
+            raise
 
-    def bulk_create(self, items: List[dict]) -> List[str]:
-        created_keys: List[str] = []
+    def bulk_create(self, items: list[dict]) -> list[str]:
+        created_keys: list[str] = []
         for item in items:
             try:
                 key = self.create_jira_issue_full(

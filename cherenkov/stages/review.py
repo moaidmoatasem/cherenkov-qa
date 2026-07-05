@@ -46,7 +46,7 @@ class ReviewStage:
         self.stub_dir = str(_Path(__file__).parent.parent.parent / "stub")
 
     def run(self, generate: GenerateOutput, spec_path: str) -> ReviewOutput:
-        t0 = time.time()
+        t0 = time.monotonic()
         code = generate.test_code
         scenario_id = generate.scenario_id
         self.log.info("stage start", scenario_id=scenario_id)
@@ -78,7 +78,7 @@ class ReviewStage:
         self._log_finetune(verdict, generate, quality_score, gates, code)
         self._bridge_hitl(verdict, generate, quality_score, gates, scenario_id)
 
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         self.log.info(
             "stage success",
             quality_score=quality_score,

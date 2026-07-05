@@ -150,7 +150,7 @@ class OllamaInferenceClient(InferenceClient):
         self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
 
         while attempt <= max_reprompts:
-            t0 = time.time()
+            t0 = time.monotonic()
             resp = _post_with_retry(
                 get_settings().OLLAMA_URL,
                 {
@@ -166,7 +166,7 @@ class OllamaInferenceClient(InferenceClient):
             resp.raise_for_status()
             body = resp.json()
             last_raw = body.get("response", "")
-            dt_ms = int((time.time() - t0) * 1000)
+            dt_ms = int((time.monotonic() - t0) * 1000)
 
             # Capture real token counts from Ollama response fields
             self._token_usage["prompt_tokens"] = body.get("prompt_eval_count", 0)
@@ -208,7 +208,7 @@ class OllamaInferenceClient(InferenceClient):
         text = ""
         self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
         while attempt <= max_reprompts:
-            t0 = time.time()
+            t0 = time.monotonic()
             resp = _post_with_retry(
                 get_settings().OLLAMA_URL,
                 {
@@ -232,7 +232,7 @@ class OllamaInferenceClient(InferenceClient):
                 "code ok",
                 model=model,
                 attempt=attempt,
-                duration_ms=int((time.time() - t0) * 1000),
+                duration_ms=int((time.monotonic() - t0) * 1000),
             )
             if text:
                 return text
@@ -255,7 +255,7 @@ class OllamaInferenceClient(InferenceClient):
     ) -> str:
         """Vision request: send image as base64 to Ollama's /api/generate."""
         log = get_logger("ollama-vision", run_id)
-        t0 = time.time()
+        t0 = time.monotonic()
         resp = _post_with_retry(
             get_settings().OLLAMA_URL,
             {
@@ -270,7 +270,7 @@ class OllamaInferenceClient(InferenceClient):
         )
         resp.raise_for_status()
         text = resp.json().get("response", "").strip()
-        log.info("vision ok", model=model, duration_ms=int((time.time() - t0) * 1000))
+        log.info("vision ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
         return text
 
     def chat(
@@ -283,7 +283,7 @@ class OllamaInferenceClient(InferenceClient):
     ) -> str:
         """Send a chat completion (message list) and return the raw text response."""
         log = get_logger("ollama-chat", run_id)
-        t0 = time.time()
+        t0 = time.monotonic()
         base_url = get_settings().OLLAMA_URL.rsplit("/api/generate", 1)[0]
         chat_url = f"{base_url}/api/chat"
         resp = _post_with_retry(
@@ -298,7 +298,7 @@ class OllamaInferenceClient(InferenceClient):
         )
         resp.raise_for_status()
         text = resp.json().get("message", {}).get("content", "").strip()
-        log.info("chat ok", model=model, duration_ms=int((time.time() - t0) * 1000))
+        log.info("chat ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
         return text
 
 

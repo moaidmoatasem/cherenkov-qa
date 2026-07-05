@@ -52,7 +52,7 @@ class VLMProvider:
         if request.output_schema and "image_path" in request.output_schema:
             image_path = request.output_schema["image_path"]
 
-        t0 = time.time()
+        t0 = time.monotonic()
 
         if image_path:
             image_data = _encode_image(image_path)
@@ -80,7 +80,7 @@ class VLMProvider:
                     model=model,
                 )
 
-        dt_ms = int((time.time() - t0) * 1000)
+        dt_ms = int((time.monotonic() - t0) * 1000)
         provider_name = (
             "ollama" if get_settings().TIER_VISION_PROVIDER == "ollama" else "openai"
         )

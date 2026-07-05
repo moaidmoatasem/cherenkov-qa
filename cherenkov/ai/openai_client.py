@@ -81,7 +81,7 @@ class OpenAIInferenceClient(InferenceClient):
         last_raw = ""
 
         while attempt <= max_reprompts:
-            t0 = time.time()
+            t0 = time.monotonic()
             try:
                 last_raw = self._chat_completion(
                     system_prompt=system_prompt,
@@ -98,7 +98,7 @@ class OpenAIInferenceClient(InferenceClient):
                     ) from e
                 continue
 
-            dt_ms = int((time.time() - t0) * 1000)
+            dt_ms = int((time.monotonic() - t0) * 1000)
             parsed = _try_json(last_raw) or _json_repair(last_raw)
             if parsed is not None:
                 log.info("json ok", model=model, attempt=attempt, duration_ms=dt_ms)
@@ -127,7 +127,7 @@ class OpenAIInferenceClient(InferenceClient):
         run_id: str | None = None,
     ) -> str:
         log = get_logger("openai", run_id)
-        t0 = time.time()
+        t0 = time.monotonic()
         text = self._chat_completion(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
@@ -136,7 +136,7 @@ class OpenAIInferenceClient(InferenceClient):
         ).strip()
         text = re.sub(r"^```[a-z]*\n?", "", text)
         text = re.sub(r"\n?```$", "", text)
-        log.info("code ok", model=model, duration_ms=int((time.time() - t0) * 1000))
+        log.info("code ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
         return text.strip()
 
     def complete_vision(
@@ -151,7 +151,7 @@ class OpenAIInferenceClient(InferenceClient):
     ) -> str:
         """Vision request: send image as base64 data URI to OpenAI."""
         log = get_logger("openai-vision", run_id)
-        t0 = time.time()
+        t0 = time.monotonic()
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
@@ -181,7 +181,7 @@ class OpenAIInferenceClient(InferenceClient):
         )
         resp.raise_for_status()
         text = resp.json()["choices"][0]["message"]["content"].strip()
-        log.info("vision ok", model=model, duration_ms=int((time.time() - t0) * 1000))
+        log.info("vision ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
         return text
 
     def chat(
@@ -193,7 +193,7 @@ class OpenAIInferenceClient(InferenceClient):
         run_id: str | None = None,
     ) -> str:
         log = get_logger("openai-chat", run_id)
-        t0 = time.time()
+        t0 = time.monotonic()
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
@@ -211,5 +211,5 @@ class OpenAIInferenceClient(InferenceClient):
         )
         resp.raise_for_status()
         text = resp.json()["choices"][0]["message"]["content"].strip()
-        log.info("chat ok", model=model, duration_ms=int((time.time() - t0) * 1000))
+        log.info("chat ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
         return text

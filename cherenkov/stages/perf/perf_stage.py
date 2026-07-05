@@ -25,7 +25,7 @@ import shutil
 import sqlite3
 import subprocess
 import time
-from typing import Optional, Dict, Any
+from typing import Optional, Any
 from cherenkov.core.contracts import (
     StageMeta,
     StageError,
@@ -48,7 +48,6 @@ try:
     ML_AVAILABLE = True
 except ImportError:
     pass
-
 
 class _BaselineDB:
     def __init__(self, db_path):
@@ -140,7 +139,7 @@ class _BaselineDB:
             "stddev": round(math.sqrt(variance), 2),
         }
 
-    def llm_stats(self, endpoint, method) -> Dict[str, Any]:
+    def llm_stats(self, endpoint, method) -> dict[str, Any]:
         """
         Get LLM-specific performance statistics.
 
@@ -212,7 +211,6 @@ class _BaselineDB:
 
         return stats
 
-
 K6_SCRIPT_TEMPLATE = (
     "import http from 'k6/http';\n"
     "import { check, sleep } from 'k6';\n\n"
@@ -225,7 +223,6 @@ K6_SCRIPT_TEMPLATE = (
     "}\n"
 )
 
-
 def _render_script(sl):
     return (
         K6_SCRIPT_TEMPLATE.replace("__VUS__", str(sl.vus))
@@ -234,7 +231,6 @@ def _render_script(sl):
         .replace("__METHOD__", sl.method.upper())
         .replace("__ENDPOINT__", sl.endpoint)
     )
-
 
 class PerfStage:
     def __init__(self, run_id=None, db_path=None):
@@ -360,7 +356,7 @@ class PerfStage:
 
     def _extract_llm_metrics_from_response(
         self, k6_output: str
-    ) -> Optional[Dict[str, float]]:
+    ) -> Optional[dict[str, float]]:
         """
         Extract LLM-specific metrics from k6 output or response data.
 
@@ -424,7 +420,7 @@ class PerfStage:
 
     def _ml_anomaly_detection(
         self, endpoint: str, method: str, current_latency_ms: float
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         ML-based anomaly detection using Isolation Forest and seasonal analysis.
 
@@ -633,7 +629,7 @@ class PerfStage:
         Returns:
             PerfReport with performance analysis results
         """
-        t0 = time.time()
+        t0 = time.monotonic()
         scenario_id = "perf_" + sl.name
 
         # Generate traffic-based load profile if provided
@@ -738,7 +734,7 @@ class PerfStage:
         # Add ML-specific metadata if used
         metadata = StageMeta(
             stage="perf",
-            duration_ms=int((time.time() - t0) * 1000),
+            duration_ms=int((time.monotonic() - t0) * 1000),
             model="ml_anomaly_detection"
             if use_ml and analysis.get("method", "").startswith("ml_")
             else "statistical",

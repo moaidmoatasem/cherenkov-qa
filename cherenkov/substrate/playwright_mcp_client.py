@@ -6,10 +6,9 @@ Connects to an external Playwright MCP Server to execute web automation via Sema
 import asyncio
 import json
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Optional
 
-logger = logging.getLogger(__name__)
-
+logger= logging.getLogger(__name__)
 
 class PlaywrightMCPClient:
     """
@@ -23,7 +22,7 @@ class PlaywrightMCPClient:
         self.args = args
         self.process: Optional[asyncio.subprocess.Process] = None
         self._message_id = 1
-        self._pending_requests: Dict[int, asyncio.Future] = {}
+        self._pending_requests: dict[int, asyncio.Future] = {}
 
     async def connect(self):
         """Establish stdio connection to Playwright MCP server"""
@@ -99,7 +98,7 @@ class PlaywrightMCPClient:
         self.process.stdin.write((json.dumps(notification) + "\\n").encode())
         await self.process.stdin.drain()
 
-    async def get_accessibility_snapshot(self) -> Dict[str, Any]:
+    async def get_accessibility_snapshot(self) -> dict[str, Any]:
         """Fetch the semantic DOM layout from the active browser"""
         return await self._send_request(
             "tools/call", {"name": "browser_snapshot", "arguments": {}}

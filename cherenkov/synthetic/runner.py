@@ -60,7 +60,7 @@ def generate_for_endpoints(
     """
     from cherenkov.synthetic.generator import generate_from_spec
 
-    t0 = time.time()
+    t0 = time.monotonic()
     data = generate_from_spec(spec_path, strategy, max_endpoints)
 
     # Count fields
@@ -80,7 +80,7 @@ def generate_for_endpoints(
         field_count=field_count,
         generated_samples=generated_samples,
         strategy=strategy.value,
-        duration_ms=int((time.time() - t0) * 1000),
+        duration_ms=int((time.monotonic() - t0) * 1000),
     )
 
     if output_path:

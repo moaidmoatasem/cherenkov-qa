@@ -3,17 +3,15 @@ CHERENKOV validate/asyncapi.py — AsyncAPI Specification Parser.
 """
 
 import yaml
-from typing import List
 from cherenkov.core.contracts import Scenario
 from cherenkov.core.errors import get_logger
 
 _log = get_logger("ASYNCAPI_PARSER")
 
-
 class AsyncAPIParser:
     """Parses AsyncAPI specifications to generate test scenarios."""
 
-    def parse_spec(self, file_path: str) -> List[Scenario]:
+    def parse_spec(self, file_path: str) -> list[Scenario]:
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = yaml.safe_load(f)

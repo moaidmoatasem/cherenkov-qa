@@ -45,20 +45,41 @@ def _sanitize_prompt_input(text: str, max_len: int = 500) -> str:
 def _load_system_prompt() -> str:
     """Loads the tuned generator system prompt committed to prompts/generator_system.txt.
 
-    Read once at import so it remains a static constant (prefix-cache optimization on
-    Ollama, per Delta D10 / V1). Resolved relative to the repo root, with the
-    CHERENKOV_GENERATOR_PROMPT env var as an override.
+    Read once, then cached, so it behaves as a static constant (prefix-cache
+    optimization on Ollama, per Delta D10 / V1). Resolved relative to the repo
+    root, with the CHERENKOV_GENERATOR_PROMPT env var as an override.
     """
     override = os.getenv("CHERENKOV_GENERATOR_PROMPT")
     prompt_path = override or os.path.abspath(
         os.path.join(os.path.dirname(__file__), "../../prompts/generator_system.txt")
     )
-    with open(prompt_path, "r", encoding="utf-8") as f:
-        return f.read().strip()
+    try:
+        with open(prompt_path, "r", encoding="utf-8") as f:
+            return f.read().strip()
+    except OSError as e:
+        raise RuntimeError(
+            f"Generator system prompt not found at {prompt_path}. "
+            "Reinstall cherenkov-qa or set CHERENKOV_GENERATOR_PROMPT to a valid file."
+        ) from e
 
 
-# Tuned generator prompt committed to prompts/generator_system.txt (loaded once at import).
-SYSTEM_PROMPT = _load_system_prompt()
+_system_prompt_cache: str | None = None
+
+
+def _get_system_prompt() -> str:
+    global _system_prompt_cache
+    if _system_prompt_cache is None:
+        _system_prompt_cache = _load_system_prompt()
+    return _system_prompt_cache
+
+
+def __getattr__(name: str) -> str:
+    # Lazy module attribute (PEP 562): keeps `from ... import SYSTEM_PROMPT`
+    # working without reading the prompt file at import time, so a missing
+    # file surfaces as a clear RuntimeError at first use, not an import crash.
+    if name == "SYSTEM_PROMPT":
+        return _get_system_prompt()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 class GenerateStage:
@@ -150,7 +171,7 @@ class GenerateStage:
         source_type: str = "openapi",
         strategies_block: str = "",
     ) -> GenerateOutput:
-        t0 = time.time()
+        t0 = time.monotonic()
         mutation_id = getattr(
             scenario, "mutation_id", getattr(scenario, "operation_name", "unknown")
         )
@@ -202,7 +223,7 @@ class GenerateStage:
             )
             # Short-circuit LLM since we just use the template for accessibility tests
             code = user_prompt
-            dt = int((time.time() - t0) * 1000)
+            dt = int((time.monotonic() - t0) * 1000)
             self.log.info("stage success (template)", duration_ms=dt)
             return GenerateOutput(
                 scenario_id=mutation_id,
@@ -259,7 +280,7 @@ class GenerateStage:
             entry = cache.get(cache_hash)
             if entry:
                 self.log.info("cache hit", hash=cache_hash)
-                dt = int((time.time() - t0) * 1000)
+                dt = int((time.monotonic() - t0) * 1000)
                 return GenerateOutput(
                     scenario_id=mutation_id,
                     test_code=entry.test_code,
@@ -279,7 +300,7 @@ class GenerateStage:
             try:
                 client = get_client()
                 raw_code = client.complete_code(
-                    system_prompt=SYSTEM_PROMPT,
+                    system_prompt=_get_system_prompt(),
                     user_prompt=user_prompt,
                     model=get_settings().GEN_MODEL,
                     temperature=temp,
@@ -341,7 +362,7 @@ class GenerateStage:
                 metadata=StageMeta(stage="GENERATE", duration_ms=0),
             )
 
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         self.log.info("stage success", duration_ms=dt)
 
         if cache_hash:

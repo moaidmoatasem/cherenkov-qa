@@ -23,7 +23,6 @@ from cherenkov.openclaw.feedback import HealingFeedbackStore
 NotifyCallback = Callable[[HitlEnvelope], None]
 TriggerCallback = Callable[[TriggerRequest], HitlEnvelope]
 
-
 class OpenClawAdapter:
     """Tier-2 voice layer over the frozen hitl/v1 envelope.
 

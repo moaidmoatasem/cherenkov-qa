@@ -152,7 +152,7 @@ class SchemaIndex:
                 self._log.warning("cache load failed, re-indexing", error=str(e))
 
         schemas = spec.get("components", {}).get("schemas", {})
-        t0 = time.time()
+        t0 = time.monotonic()
         for name, schema in schemas.items():
             if not isinstance(schema, dict):
                 continue
@@ -172,7 +172,7 @@ class SchemaIndex:
         except Exception as e:
             self._log.warning("cache write failed", error=str(e))
 
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         self._log.info("indexed spec", chunks=len(self._chunks), duration_ms=dt)
 
     def _embed_all(self) -> None:

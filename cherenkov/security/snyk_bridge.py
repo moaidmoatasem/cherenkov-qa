@@ -11,10 +11,9 @@ import sys
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 from pydantic import BaseModel, Field
-
 
 class SnykVulnerability(BaseModel):
     vuln_id: str = Field(alias="id")
@@ -23,11 +22,10 @@ class SnykVulnerability(BaseModel):
     package_name: str = Field(alias="packageName")
     package_manager: str = Field(alias="packageManager")
     version: str
-    fixed_in: List[str] = Field(alias="fixedIn", default_factory=list)
+    fixed_in: list[str] = Field(alias="fixedIn", default_factory=list)
     description: str = ""
-    from_path: List[str] = Field(alias="from", default_factory=list)
+    from_path: list[str] = Field(alias="from", default_factory=list)
     exploit_maturity: str = Field(alias="exploitMaturity", default="")
-
 
 class SnykIaCIssue(BaseModel):
     issue_id: str = Field(alias="id")
@@ -37,7 +35,6 @@ class SnykIaCIssue(BaseModel):
     path: str
     description: str = ""
     remediation: str = ""
-
 
 class SnykCodeIssue(BaseModel):
     vuln_id: str = Field(alias="id")
@@ -49,18 +46,15 @@ class SnykCodeIssue(BaseModel):
     description: str = ""
     remediation: str = ""
 
-
 class SnykReport(BaseModel):
-    vulnerabilities: List[SnykVulnerability] = []
-    infrastructure_as_code: List[SnykIaCIssue] = Field(
+    vulnerabilities: list[SnykVulnerability] = []
+    infrastructure_as_code: list[SnykIaCIssue] = Field(
         default_factory=list, alias="infrastructureAsCode"
     )
-    code_issues: List[SnykCodeIssue] = Field(default_factory=list, alias="code")
-
+    code_issues: list[SnykCodeIssue] = Field(default_factory=list, alias="code")
 
 AGENT_MEMORY_PATH = Path(__file__).resolve().parent.parent.parent / "agent_memory"
 FINDINGS_FILE = AGENT_MEMORY_PATH / "snyk-findings.md"
-
 
 def run_snyk_scan(target_dir: str | None = None) -> dict[str, Any]:
     """Execute `snyk test --json` and return parsed output."""
@@ -86,11 +80,9 @@ def run_snyk_scan(target_dir: str | None = None) -> dict[str, Any]:
         sys.exit(1)
     return json.loads(result.stdout)
 
-
 def parse_report(raw: dict[str, Any]) -> SnykReport:
     """Parse raw Snyk JSON into structured models."""
     return SnykReport(**raw)
-
 
 def reset_findings() -> None:
     """Reset snyk-findings.md to a clean no-vulnerabilities state."""
@@ -118,7 +110,6 @@ def reset_findings() -> None:
         "",
     ]
     FINDINGS_FILE.write_text("\n".join(lines) + "\n", encoding="utf-8")
-
 
 def write_findings(report: SnykReport) -> None:
     """Write structured findings to agent_memory/snyk-findings.md."""
@@ -201,7 +192,6 @@ def write_findings(report: SnykReport) -> None:
     FINDINGS_FILE.write_text(content, encoding="utf-8")
     print(f"wrote findings to {FINDINGS_FILE}")
 
-
 def print_summary(report: SnykReport) -> None:
     """Print a human-readable summary to stdout."""
     total = (
@@ -216,7 +206,6 @@ def print_summary(report: SnykReport) -> None:
     for v in report.vulnerabilities:
         fix = v.fixed_in[0] if v.fixed_in else "?"
         print(f"  [{v.severity:>7}] {v.package_name}@{v.version} -> {fix}")
-
 
 def main() -> None:
     """CLI entry point: parse Snyk JSON and write agent memory."""
@@ -270,7 +259,6 @@ def main() -> None:
     report = parse_report(raw)
     print_summary(report)
     write_findings(report)
-
 
 if __name__ == "__main__":
     main()

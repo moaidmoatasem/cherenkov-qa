@@ -114,7 +114,7 @@ class VisualStage:
 
     def run(self, sl: VisualSlice, baseline_dir: str | None = None) -> VisualReport:
         """Execute visual regression for ONE slice. Auto-initializes baseline if missing."""
-        t0 = time.time()
+        t0 = time.monotonic()
         scenario_id = f"visual_{sl.name}"
         spec = self._spec_for_slice(sl)
 
@@ -198,6 +198,6 @@ class VisualStage:
             status=final_status,
             errors=errors,
             metadata=StageMeta(
-                stage="visual", duration_ms=int((time.time() - t0) * 1000)
+                stage="visual", duration_ms=int((time.monotonic() - t0) * 1000)
             ),
         )

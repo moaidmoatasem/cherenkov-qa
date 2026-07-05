@@ -70,7 +70,7 @@ def _parse_score(name: str, entry: dict[str, Any]) -> EvalScore:
 
 
 def judge_sample(sample: EvalSample) -> EvalResult:
-    t0 = time.time()
+    t0 = time.monotonic()
 
     # Optional LLM observability tracing
     try:
@@ -93,10 +93,10 @@ def judge_sample(sample: EvalSample) -> EvalResult:
         parsed = json.loads(cleaned)
         scores_raw = parsed.get("scores", [])
         scores = [_parse_score(s.get("metric", ""), s) for s in scores_raw]
-        duration = int((time.time() - t0) * 1000)
+        duration = int((time.monotonic() - t0) * 1000)
         return EvalResult(sample=sample, scores=scores, duration_ms=duration)
     except Exception as e:
-        duration = int((time.time() - t0) * 1000)
+        duration = int((time.monotonic() - t0) * 1000)
         return EvalResult(
             sample=sample,
             scores=[],

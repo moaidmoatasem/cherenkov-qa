@@ -111,7 +111,7 @@ class UnitTestEmitter:
         results: list[GenerateOutput] = []
 
         for slice_data in endpoint_slices:
-            t0 = time.time()
+            t0 = time.monotonic()
             path = slice_data.get("path", "/")
             method = slice_data.get("method", "GET").lower()
             slice_data.get("operation", {})
@@ -140,7 +140,7 @@ class UnitTestEmitter:
                         status=Status.OK,
                         metadata=StageMeta(
                             stage="UNIT_EMITTER",
-                            duration_ms=int((time.time() - t0) * 1000),
+                            duration_ms=int((time.monotonic() - t0) * 1000),
                         ),
                     )
                 )
@@ -154,7 +154,7 @@ class UnitTestEmitter:
                         errors=[StageError(code="EMIT_FAILED", detail=str(e))],
                         metadata=StageMeta(
                             stage="UNIT_EMITTER",
-                            duration_ms=int((time.time() - t0) * 1000),
+                            duration_ms=int((time.monotonic() - t0) * 1000),
                         ),
                     )
                 )

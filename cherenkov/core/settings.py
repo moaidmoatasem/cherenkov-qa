@@ -1,4 +1,3 @@
-from typing import Dict
 import threading as _threading
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
@@ -117,7 +116,7 @@ class CherenkovSettings(BaseSettings):
     OUTPUT_DIR: str = Field(default='output', validation_alias='CHERENKOV_OUTPUT_DIR')
 
     @property
-    def TIERS(self) -> Dict[str, Dict[str, str]]:
+    def TIERS(self) -> dict[str, dict[str, str]]:
         return {
             "small": {
                 "provider": self.TIER_SMALL_PROVIDER,
@@ -128,7 +127,6 @@ class CherenkovSettings(BaseSettings):
                 "model": self.TIER_DEEP_MODEL,
             },
         }
-
 
     def validate(self):
         # Pydantic validates on instantiation, so this is mostly a no-op,
@@ -230,7 +228,6 @@ class CherenkovSettings(BaseSettings):
     _device_cache: str | None = None
     _device_cache_ts: float = 0.0
     _DEVICE_CACHE_TTL: float = 60.0  # seconds
-
 
 _settings_instance: "CherenkovSettings | None" = None
 _settings_lock = _threading.Lock()

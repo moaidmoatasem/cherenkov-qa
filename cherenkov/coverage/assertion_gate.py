@@ -147,7 +147,7 @@ class AssertionGate:
         Returns:
             AssertionGateResult with pass/fail and weak assertion list
         """
-        t0 = time.time()
+        t0 = time.monotonic()
 
         bugs = self._generate_bugs(endpoint_slices)
         total_bugs = len(bugs)
@@ -179,7 +179,7 @@ class AssertionGate:
             ),
         )
 
-        dt = int((time.time() - t0) * 1000)
+        dt = int((time.monotonic() - t0) * 1000)
         self.log.info(
             "assertion gate end",
             passed=result.passed,

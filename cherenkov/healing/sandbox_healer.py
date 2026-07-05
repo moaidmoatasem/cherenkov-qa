@@ -107,7 +107,7 @@ class SandboxHealer:
         max_attempts: int = 3,
     ) -> dict:
         """Runs iterative repair loops in the sandbox and returns a unified diff if repaired."""
-        t0 = time.time()
+        t0 = time.monotonic()
         self.log.info(
             "initiating deep self-healing cycle",
             scenario=scenario_id,
@@ -180,7 +180,7 @@ class SandboxHealer:
 
                     self.provider.destroy_workspace(sandbox_dir)
 
-                    dt = int((time.time() - t0) * 1000)
+                    dt = int((time.monotonic() - t0) * 1000)
                     return {
                         "healed": True,
                         "attempts": attempt,
