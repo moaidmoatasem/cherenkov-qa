@@ -129,12 +129,9 @@ def with_retry(
             except ImportError:
                 pass
 
-            try:
-                from cherenkov.substrate.certification import CertificationError
-                if isinstance(exc, CertificationError):
-                    raise
-            except ImportError:
-                pass
+            from cherenkov.core.errors import CertificationError
+            if isinstance(exc, CertificationError):
+                raise
 
             if not _is_retryable(exc):
                 _log.info("non-retryable error — not retrying", error=str(exc)[:120])

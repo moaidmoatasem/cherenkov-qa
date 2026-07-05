@@ -10,6 +10,7 @@ from pathlib import Path
 
 from cherenkov.memory.adapters.sqlite_memory import SQLiteMemoryRepository
 from cherenkov.memory.domain.models import (
+    EntryKind,
     MemoryEntry,
     MemoryPattern,
     MemoryQuery,
@@ -29,7 +30,13 @@ class MemSearchMemoryRepository(MemoryRepository):
         self._sqlite = SQLiteMemoryRepository(db_path)
         self._workspace_dir = workspace_dir
         if memsearch:
-            self._ms = memsearch.MemSearch(workspace_dir=str(workspace_dir))
+            try:
+                self._ms = memsearch.MemSearch(paths=[str(workspace_dir)])
+            except Exception:
+                # MemSearch eagerly builds its embedding client and raises if
+                # credentials/config are missing — honor this adapter's
+                # documented SQLite fallback instead of crashing at init.
+                self._ms = None
         else:
             self._ms = None
 
@@ -46,25 +53,26 @@ class MemSearchMemoryRepository(MemoryRepository):
             return self._sqlite.search(query)
 
         # Use MemSearch for semantic retrieval
-        q_str = query.term or " ".join(query.tags)
+        q_str = query.query
         try:
-            results = self._ms.search(q_str, limit=query.limit)
+            results = self._ms.search(q_str, top_k=query.limit)
 
             # MemSearch returns raw chunks, we wrap them in MemoryEntry format
             # In a real hybrid setup, we'd cross-reference with SQLite IDs,
             # but for Phase 9 we wrap the semantic chunks.
             entries = []
-            for r in results:
+            for i, r in enumerate(results):
                 # Some MemSearch objects have 'id' and 'content', others use dicts
                 content = getattr(r, "content", "") if hasattr(r, "content") else r.get("content", "")
                 r_id = getattr(r, "id", "") if hasattr(r, "id") else r.get("id", "")
 
                 entries.append(
                     MemoryEntry(
-                        session_id=r_id or "memsearch",
-                        task_type=query.term or "search",
+                        id=r_id or f"memsearch-{i}",
+                        session_id="memsearch",
+                        task_type=query.task_type or "search",
+                        kind=query.kind or EntryKind.CONTEXT,
                         content=content,
-                        tags=query.tags,
                     )
                 )
 
