@@ -7,8 +7,11 @@ import os
 import urllib.request
 from typing import Any
 
+import requests
+
 from cherenkov.core.errors import get_logger
 from cherenkov.core.events import CHERENKOVEvent
+from cherenkov.hitl.contracts import HitlEnvelope
 
 _log = get_logger("SLACK_NOTIFIER")
 
@@ -18,8 +21,24 @@ class SlackNotifier:
 
     name: str = "slack"
 
-    def __init__(self):
-        self.webhook_url = os.environ.get("CHERENKOV_SLACK_WEBHOOK_URL")
+    def __init__(self, webhook_url: str | None = None):
+        self.webhook_url = webhook_url or os.environ.get("CHERENKOV_SLACK_WEBHOOK_URL")
+
+    def notify(self, envelope: HitlEnvelope) -> None:
+        """Send a HitlEnvelope summary to Slack (NotifyCallback contract)."""
+        if not self.webhook_url:
+            return
+        status = "✅" if envelope.ok else "🛑"
+        detail = envelope.error.message if envelope.error else "ok"
+        self._post({"text": f"{status} CHERENKOV {envelope.command}: {detail}"})
+
+    def _post(self, payload: dict[str, Any]) -> bool:
+        try:
+            response = requests.post(self.webhook_url, json=payload, timeout=10)
+            return response.status_code == 200
+        except Exception as exc:
+            _log.error("Failed to send Slack message", error=str(exc))
+            return False
 
     def send_report(self, report: dict[str, Any]) -> bool:
         if not self.webhook_url:

@@ -57,7 +57,9 @@ class OpenClawAdapter:
                 notifier = SlackNotifier(self._config.notification_endpoint)
                 self.on_notify(notifier.notify)
             else:
-                self.on_notify(self._generic_webhook_notify)
+                from cherenkov.adapters.notifiers.webhook import WebhookNotifier
+                webhook = WebhookNotifier(self._config.notification_endpoint)
+                self.on_notify(webhook.notify)
 
     # ── Tier-2: identity mapping (#149) ───────────────────────────────────
 
