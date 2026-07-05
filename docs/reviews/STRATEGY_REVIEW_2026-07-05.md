@@ -121,7 +121,49 @@ Regulatory tailwind (EU AI Act, FCA/PRA, ISO 26262/21434) continues to favor aud
 
 ---
 
-## 8. Sources (external market check, 2026-07-05)
+## 8. Part 2 — Market-research synthesis (addendum, 2026-07-05)
+
+> Source: three market-research reports supplied 2026-07-05 (2026 AI macro trends & investment; agentic AI frameworks & the QA transformation; LLM-evaluation stack; Egypt/MENA sovereign-AI ecosystem). Figures below are from that research; primary organizations it draws on include Gartner, McKinsey, Stanford AI Index, OWASP, NIST, ISO, and Egypt's ITIDA/SECC.
+
+### 8.1 The thesis, now with harder numbers
+
+The research independently confirms Part 1's central call — and quantifies the demand:
+
+- ~**40% of newly written enterprise code is AI-generated**; **88% of developers lack confidence** deploying it; **29% have rolled back releases** due to AI errors.
+- **95% of AI pilots fail without guardrails**, with 60% of those failures linked to compliance/security. Gartner: **40%+ of agentic-AI projects will be canceled by 2027**; Forrester: 75% of DIY agentic architectures will fail. Verification is the failure-prevention layer.
+- QA's role is formally shifting from "executor" to **"orchestrator / risk intelligence"**, spawning the exact roles CHERENKOV serves: *AI Output Reviewer, LLM Response Auditor, Model Safety Tester*.
+- Market: software testing $55.8B (2024) → $112.5B (2034); generative testing $48.9M → $351.4M; 77.7% of orgs already use AI in QA; MCP is described as the "USB-C for QA agents" — validating the MCP-first user model in §3.
+
+### 8.2 Sharper category map — where CHERENKOV sits
+
+The research clarifies two adjacent stacks that could be confused with CHERENKOV, and neither overlaps its lane:
+
+| Stack | Examples | What it judges | What it does *not* do |
+|---|---|---|---|
+| LLM-evaluation | DeepEval, Promptfoo, Ragas, TruLens, LangSmith, Arize Phoenix, Confident AI, Giskard | The *model's outputs* (relevancy, hallucination, RAG faithfulness) | Audit generated *test code* for integrity |
+| Agentic QA platforms | Tricentis, Virtuoso GENerator, mabl, QA Wolf, Functionize | Nothing — they *generate/maintain* tests (the commoditizing melee) | Independently verify their own output |
+
+Positioning line vs the eval stack, to use alongside the Schemathesis line: **"Eval frameworks judge the LLM's answers; CHERENKOV audits the tests the LLM wrote — and proves the API honors its contract."**
+
+### 8.3 Standards hook (R2-adjacent backlog)
+
+The **OWASP AI Testing Guide v1** (Nov 2025) is the first community standard for AI trustworthiness testing, alongside NIST AI RMF and **ISO/IEC 42001** (certifiable AI-management standard). CHERENKOV's `compliance_profile()` (`cherenkov/core/certificate.py:161`) already maps to EU AI Act / SOC 2 / ISO 25010; extending the mapping to OWASP-ATG and ISO/IEC 42001 would let the certificate ride the standards wave. Backlog item, not new scope.
+
+### 8.4 New GTM channel: Egypt / MENA sovereign AI — and a concrete E0.3 path
+
+Egypt's national AI strategy (2025–2030) targets 7.7% of GDP from AI and formalizes QA as an export discipline: the **ESTB/SECC has certified 9,000+ professionals (13,600+ ISTQB certificates)** and now offers the **ISTQB CT-GenAI** certification; SECC runs **Software Testing Day**, and **Ai Everything MEA Egypt 2026** convenes the ecosystem. Three implications:
+
+1. **E0.3 execution path (the last G0 gate):** recruit the 3 quickstart practitioners from the ESTB/ISTQB CT-GenAI community — a warm, credentialed pool aligned with exactly this problem space — instead of cold outreach.
+2. **Sovereignty fit:** local-first/air-gapped operation is not just a privacy feature here; it is the *procurement requirement* of sovereign-AI programs. The repo already ships `scan_mena_compliance` MCP tools.
+3. **Distribution:** SECC events and the AUC Venture Lab network are low-cost, high-credibility venues for the "Catch the AI cheating" demo (R2).
+
+### 8.5 What does NOT change
+
+The R0→R3 route, priorities, and park list from Part 1 stand unchanged. Pricing-model trends (hybrid subscription+usage, outcome-based) are noted for the post-traction monetization phase only. The research's enthusiasm for building more agentic surface area is explicitly *not* adopted — it is the same scope-sprawl temptation §5.3 warns about; CHERENKOV's job is to be the layer that makes everyone else's agents trustworthy.
+
+---
+
+## 9. Sources (external market check, 2026-07-05)
 
 - PactFlow — "Schemas Can Be Contracts | Introducing Drift": https://pactflow.io/blog/schemas-can-be-contracts/
 - "API Schema Drift Detection Tools Compared (2026)": https://dev.to/flarecanary/api-schema-drift-detection-tools-compared-2026-1ib4
