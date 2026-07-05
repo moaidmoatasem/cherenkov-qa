@@ -34,9 +34,9 @@ def check_stale_cmd(spec, manifest, fail_on_stale, as_json):
         cherenkov check-stale --spec openapi.yaml --json
     """
     from pathlib import Path
-    from cherenkov.core.staleness import TestManifest
+    from cherenkov.core.staleness import StalenessManifest
 
-    m = TestManifest(manifest_path=Path(manifest))
+    m = StalenessManifest(manifest_path=Path(manifest))
 
     if spec:
         # Inject the spec override into the manifest for this check only

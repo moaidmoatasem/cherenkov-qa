@@ -13,9 +13,9 @@ Manifest lives at .cherenkov/test_manifest.json:
     }
 
 Usage:
-    from cherenkov.core.staleness import TestManifest
+    from cherenkov.core.staleness import StalenessManifest
 
-    m = TestManifest()
+    m = StalenessManifest()
     m.record(spec_path="stub/target_spec.json", test_files=[...])
 
     report = m.check()
@@ -57,7 +57,7 @@ def _file_sha256(path: str | Path) -> str:
         return ""
 
 
-class TestManifest:
+class StalenessManifest:
     """Records and checks spec→tests provenance."""
 
     def __init__(self, manifest_path: Path = _MANIFEST_PATH):
