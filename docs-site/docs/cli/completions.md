@@ -43,9 +43,14 @@ After installation, pressing `TAB` completes:
 
 ```
 cherenkov <TAB>
-validate   generate   eject   dashboard   hitl   knowledge
-teleport   routine    doctor  examples    memory  --help
+validate   generate   eject     dashboard   hitl     review
+mcp        verify     diff      report      drift    check-suite
+synthetic  self-test  init      doctor      visual   perf
+bench      ocr        map       daemon      explore  author
+tokens     governance certify   profile     demo     eval
+examples   routine    teleport  enterprise  playbook completion
 
 cherenkov validate --<TAB>
 --spec   --target   --fail-on-drift   --output   --json   --quiet
+--source   --format   --workers   --no-html   --no-cache   --json-summary
 ```

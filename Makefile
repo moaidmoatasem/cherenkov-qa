@@ -61,6 +61,13 @@ docs-deploy-dev: ## Deploy docs as 'dev' alias (for testing mike locally)
 	@cd docs-site && $(MIKE) deploy dev
 	@echo "✅ Deployed. Run 'make docs-version-list' to confirm."
 
+docs-deploy-release: ## Deploy docs as a new version (usage: make docs-deploy-release VERSION=1.1.1)
+	@if [ -z "$(VERSION)" ]; then echo "Usage: make docs-deploy-release VERSION=x.y.z"; exit 1; fi
+	@echo "→ Deploying docs as v$(VERSION) and updating 'latest' alias..."
+	@cd docs-site && $(MIKE) deploy --update-aliases $(VERSION) latest
+	@cd docs-site && $(MIKE) set-default $(VERSION)
+	@echo "✅ Deployed v$(VERSION) as latest. Run 'make docs-version-list' to confirm."
+
 ##@ Development
 test: ## Run the full Python + Playwright test suite
 	@$(PYTHON) -m pytest cherenkov/ -v
