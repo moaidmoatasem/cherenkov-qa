@@ -1,6 +1,6 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-07-04
+**Date:** 2026-07-05
 **HEAD:** see `git log`
 **Tests:** 788+ unit/integration tests (0 failures); **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
 **Branch:** `main`
@@ -74,10 +74,20 @@ All Rung 3 items are DONE (merged 2026-06-27):
 ---
 
 
-## What landed this session (2026-07-04)
+## What landed this session (2026-07-05)
 
 | SHA | What |
 |---|---|
+| (pending) | fix(substrate): real latency tracking — OllamaProvider/OpenAIProvider/GitHubModelsProvider always reported `latency_ms=0`; wrapped client call with `time.monotonic()` bookends |
+| (pending) | fix(docker): Dockerfile base image `python:3.14-slim` → `python:3.12-slim` to match CI |
+
+## What landed previous session (2026-07-04)
+
+| SHA | What |
+|---|---|
+| `e94dab6` | fix(emitters): spec-patch and PR-comment emitters used stale DivergenceReport schema; PR #658 |
+| `8eaedb8` | refactor: replace legacy typing generics with built-in equivalents (Python 3.9+); PR #659 |
+| `0d2aeaa` | refactor: use `time.monotonic()` for all duration measurements; fix `raise e` → bare `raise`; PR #657 |
 | `cd521a3` | fix(generate): correct indentation so spec enrichment runs for openapi source type; PR #650 |
 | `fde73f6` | fix: replace silent except-pass blocks with diagnostic logging (scan #4); PR #652 |
 | `e926be6` | feat(#628): spec coverage-gap report via `cherenkov validate --coverage-report`; PR #651 |
@@ -149,12 +159,16 @@ All Rung 3 items are DONE (merged 2026-06-27):
 
 ## Next code actions (ordered by impact)
 
-1. **E0.3 -- Human validation gate** -- recruit ≥3 QA practitioners to complete quickstart unaided. Cannot be automated.
+> Reprioritized 2026-07-05 per `docs/reviews/STRATEGY_REVIEW_2026-07-05.md` (full strategic + technical review).
+
+0. **R1 — Spec-derived probe planner (P0).** `run_proof()` iterates hardcoded Petstore `PROOF_RUN_PROBES` regardless of the `--spec` passed (`cherenkov/divergence/proof_run.py:318`); both `verify` paths route through it (`cli/commands/verify.py:189`, `verdict/engine.py:162`). Offline `verify` against an arbitrary API currently probes Petstore paths. Fix: synthesize offline hypotheses from the loaded spec (enum violation, required-field omission, documented error codes, response schema/headers). Blocks E0.3 — practitioners pointing verify at their own APIs will hit this.
+1. **R0 — Truth alignment.** Reposition README to lead with the integrity wedge (`check-suite`) instead of LLM test generation; remove root artifact clutter (`soc2_report.json`, `pr.json`, `qwen.json`, `test-junit.xml`, `issues.txt`, `mut_spec.json`); remove legacy `cherenkov.py` duplicate entry point; surface freeze on desktop/vscode/backstage/operator/landing-page until R3.
+2. **E0.3 -- Human validation gate** -- recruit ≥3 QA practitioners to complete quickstart unaided. Cannot be automated. Land R1 first. Recommended pool: Egypt's ESTB/ISTQB CT-GenAI community (see `docs/reviews/STRATEGY_REVIEW_2026-07-05.md` §8.4).
 2. ~~Full pipeline integration test~~ **DONE** -- `tests/integration/test_pipeline_e2e.py` 15/15 green.
 3. ~~Spec coverage-gap report~~ **DONE** -- `cherenkov/divergence/coverage.py`; `--coverage-report` flag on `verify` + `certify`; 18 tests.
 4. ~~`cherenkov report --output report.json` (+ `--diff`)~~ **DONE** -- `cherenkov/cli/commands/report.py`; supports `-o` JSON output, `-d` diff against baseline, `--run`/`--list` RunStore mode; 53 unit tests green; PR #641.
 5. ~~Mutation test for the validation engine~~ **DONE** -- `tests/unit/test_mutation_validation.py`; 9 tests prove `WitnessAgent` + `run_proof` detect divergences on mutant server and find zero on conformant server; PR #641.
-6. **PyPI publish** -- `twine upload dist/*` once PyPI credentials are available; `dist/cherenkov-1.0.0.whl` is already built.
+6. **R2 — Distribution: PyPI publish** -- `twine upload dist/*` once PyPI credentials are available; `dist/cherenkov-1.0.0.whl` is already built. Also: publish MCP server to registries; publish the "Catch the AI cheating" demo write-up.
 7. **Tauri updater signing key** -- `desktop/src-tauri/tauri.conf.json` `pubkey` is empty; needs `cargo tauri signer generate` (`cargo install tauri-cli` first).
 
 ### Also shipped last session (2026-06-21 continued)
