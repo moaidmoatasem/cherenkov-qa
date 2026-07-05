@@ -72,12 +72,9 @@ def _parse_score(name: str, entry: dict[str, Any]) -> EvalScore:
 def judge_sample(sample: EvalSample) -> EvalResult:
     t0 = time.monotonic()
 
-    # Optional LLM observability tracing
-    try:
-        from cherenkov.observability.llm_tracer import get_tracer as _get_tracer
-        _tracer = _get_tracer()
-    except Exception:
-        _tracer = None
+    # Optional LLM observability tracing — trace_event silently no-ops when no
+    # backend (LangSmith/LangFuse) is configured.
+    from cherenkov.observability.llm_tracer import trace_event
 
     try:
         client = get_client()
@@ -94,9 +91,23 @@ def judge_sample(sample: EvalSample) -> EvalResult:
         scores_raw = parsed.get("scores", [])
         scores = [_parse_score(s.get("metric", ""), s) for s in scores_raw]
         duration = int((time.monotonic() - t0) * 1000)
+        trace_event(
+            "eval.judge_sample",
+            scenario_id=sample.scenario_id,
+            endpoint=sample.endpoint,
+            score_count=len(scores),
+            duration_ms=duration,
+        )
         return EvalResult(sample=sample, scores=scores, duration_ms=duration)
     except Exception as e:
         duration = int((time.monotonic() - t0) * 1000)
+        trace_event(
+            "eval.judge_sample",
+            scenario_id=sample.scenario_id,
+            endpoint=sample.endpoint,
+            error=str(e)[:200],
+            duration_ms=duration,
+        )
         return EvalResult(
             sample=sample,
             scores=[],
