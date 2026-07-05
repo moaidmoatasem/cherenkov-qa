@@ -9,17 +9,36 @@ Run CHERENKOV against the Petstore API — the canonical OpenAPI example — in 
 
 ---
 
+## The Testing Lifecycle
+
+Before diving in, here is a visual overview of what CHERENKOV does autonomously:
+
+```mermaid
+flowchart LR
+    A[OpenAPI Spec] -->|Ingest| B(Local LLM)
+    B -->|Generate| C{Review Gate}
+    C -->|Pass| D[Playwright Tests]
+    D -->|Execute| E[(Live Target Server)]
+    E -->|Analyze| F[Conformance Report]
+    
+    style A fill:#7c3aed,stroke:#fff,stroke-width:2px,color:#fff
+    style E fill:#db2777,stroke:#fff,stroke-width:2px,color:#fff
+    style B fill:#333,stroke:#7c3aed,stroke-width:2px,color:#fff
+```
+
+---
+
 ## Step 1 — Get a Spec
 
+Download the Petstore OpenAPI spec:
+
 ```bash
-# Download the Petstore OpenAPI spec
 curl -o petstore.yaml https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/examples/v3.0/petstore.yaml
 ```
 
-Or use your own spec:
+Or point to your own local specification:
 
 ```bash
-# Point to any OpenAPI 3.x spec
 export SPEC=./my-api.yaml
 ```
 
@@ -27,14 +46,13 @@ export SPEC=./my-api.yaml
 
 ## Step 2 — Start a Target Server
 
-You need a running server that implements the spec. For the Petstore example:
+You need a running server that implements the spec. For the Petstore example, we can use Prism to spin up a mock server instantly:
 
 ```bash
-# Start the Petstore mock server via Prism
 npx @stoplight/prism-cli mock petstore.yaml --port 4010
 ```
 
-Or use your real server:
+Or simply point to your own real development server:
 
 ```bash
 export TARGET=http://localhost:8000
@@ -44,26 +62,24 @@ export TARGET=http://localhost:8000
 
 ## Step 3 — Run CHERENKOV
 
+Now, run the core conformance check. CHERENKOV will ingest the spec, plan the scenarios, and execute tests against the target.
+
 ```bash
 cherenkov validate \
-  --spec petstore.yaml \
-  --target http://localhost:4010
+  --spec petstore.yaml \ # (1)!
+  --target http://localhost:4010 # (2)!
 ```
 
-CHERENKOV will:
-
-1. **Ingest** the spec → parse all endpoints and schemas
-2. **Plan** → select test scenarios per endpoint
-3. **Generate** → write typed Playwright tests using the local LLM
-4. **Review** → 6-gate validation (syntax, AST, TypeScript, Prism dry-run)
-5. **Execute** → run tests against your live server
-6. **Report** → conformance violations with evidence
+1.  Path to the OpenAPI specification you want to test against.
+2.  The live target server URL where your API is currently running.
 
 ---
 
 ## Step 4 — Read the Report
 
-```
+The terminal will stream real-time results and summarize drift:
+
+```text
 CHERENKOV Conformance Report
 ════════════════════════════
 Spec:   petstore.yaml
@@ -79,36 +95,33 @@ Summary: 3/4 passed · 1 divergence · Exit code: 1
 ```
 
 !!! tip "Exit code semantics"
-    - `0` — all tests pass, no drift
-    - `1` — drift detected (spec violation found)
-    - `2` — validation errors (config, spec parse failures)
+    - `0` — all tests pass, no drift.
+    - `1` — drift detected (spec violation found).
+    - `2` — validation errors (config, spec parse failures).
 
 ---
 
 ## Step 5 — Explore in the Dashboard
 
+Launch the interactive 9-screen React dashboard to explore findings, use the chat agent, or navigate the knowledge graph:
+
 ```bash
 cherenkov dashboard
 ```
 
-Opens the React dashboard at `http://localhost:8000`:
-
-- **Overview** — release readiness summary
-- **Divergences** — severity-sorted findings with evidence
-- **Explore** — second pair of eyes on your API
-- **Chat** — ask questions about past verdicts
+Open your browser to `http://localhost:8000`.
 
 ---
 
 ## Step 6 — Eject to Vanilla Playwright (Optional)
 
-When you're ready to own your tests outright:
+We guarantee zero vendor lock-in. When you're ready to own your tests outright:
 
 ```bash
 cherenkov eject --output ./ejected-tests
 ```
 
-This removes all CHERENKOV imports and produces pure Playwright tests that run with no dependencies on CHERENKOV:
+This removes all CHERENKOV imports and produces pure Playwright tests:
 
 ```bash
 cd ejected-tests
@@ -118,22 +131,8 @@ npx playwright test
 
 ---
 
-## Common Flags
-
-```bash
-cherenkov validate \
-  --spec petstore.yaml \
-  --target http://localhost:4010 \
-  --fail-on-drift \        # exit 1 on any drift (for CI)
-  --output ./reports \     # write JUnit XML + SARIF to dir
-  --json                   # machine-readable JSON output
-```
-
----
-
 ## Next Steps
 
 - [Full CLI reference →](../cli/reference.md)
 - [Set up CI/CD integration →](../guides/ci-cd.md)
 - [Configure local LLM →](../guides/local-llm.md)
-- [Deploy K8s operator →](../guides/k8s-operator.md)

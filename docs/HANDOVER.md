@@ -7,6 +7,29 @@
 
 ---
 
+## SESSION HANDOVER — 2026-07-05 (Strategic Review Execution, UI Fixes, Test Verification)
+
+> **This section is a summary.** For the full 2026-07-05 review notes, see `project_review_2026_07_05.md` in the artifacts directory.
+
+**Branch:** `main` at `5aff690`. All R0-R2 commits were successfully synced, tested, and merged. Feature branch `fix/post-review-actions` was pushed to origin and fully merged.
+**Tests:** Full suite green. **Integration tests (85 passing) and E2E tests (13 passing, 3 skipped)** verified 100% success locally with NO HTTP 429 rate limit failures.
+**Ruff:** ✅ 0 errors.
+
+**What landed this session:**
+1. **R0 Documentation:** Rewrote `README.md` to lead with the AST check-suite integrity moat. Cleaned up 7 root artifact files.
+2. **R1 Dynamic Probe Planner:** Replaced hardcoded Petstore list in `proof_run.py` with `_derive_probes_from_spec()` for dynamic OpenAPI-based planning.
+3. **R2 Distribution:** Created `distribution_guide.md` with explicit commands for PyPI, MCP Registry, and GitHub Marketplace.
+4. **Test Fixes:** Renamed `TestManifest` to `StalenessManifest` globally to clear the `PytestCollectionWarning`.
+5. **Security/UI Fixes:** Wired `SecurityHeadersMiddleware` to the dashboard FastAPI app. Added a 5-second graceful timeout to `OfflineOverlay.tsx`.
+6. **Documentation Sync:** Overwrote the 15-day-old `STATUS.md` to reflect Phase 10 completion and all AQE rungs.
+
+**Remaining Medium-Term Tasks:**
+- Recruit ≥3 QA practitioners (Gate E0.3).
+- Execute the commands in `distribution_guide.md` once credentials are provided.
+- Add `data-testid` coverage to React components.
+
+---
+
 ## SESSION HANDOVER — 2026-06-18 (session 2 — route split, legacy_cli deletion, Phase 3 unblocked)
 
 > **This section is a summary.** For the full consolidated handover with all Claude session work, parallel agent plan, and alignment with open issues, read **`docs/HANDOVER_SESSION_2026-06-18.md`** and **`docs/PARALLEL_AGENT_PLAN_2026-06-18.md`**.
