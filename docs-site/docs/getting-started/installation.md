@@ -62,11 +62,8 @@ ollama pull deepseek-r1:8b       # Reasoning/planning (8B params, ~5GB)
 Run the complete environment — Python engine, React dashboard, target API, and Ollama — with a single command.
 
 ```bash
-# Full environment (recommended)
-make full
-
-# Demo mode (no GPU, no model download — uses mock data)
-make demo
+# Full environment — starts all services
+docker compose up -d
 ```
 
 Dashboard available at `http://localhost:8000` after startup.
@@ -78,7 +75,7 @@ Dashboard available at `http://localhost:8000` after startup.
 ```bash
 # Check Python engine
 cherenkov --version
-# Expected: cherenkov 1.1.0
+# Expected: cherenkov 1.1.1
 
 # Check test framework
 cd stub && npx playwright --version
