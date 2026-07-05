@@ -53,7 +53,7 @@ theme:
     - announce.dismiss
     - toc.follow
   logo: assets/logo.svg
-  favicon: assets/favicon.ico
+  favicon: assets/favicon.png
   icon:
     repo: fontawesome/brands/github
     admonition:
