@@ -23,13 +23,13 @@ hide:
   </a>
 </div>
 
-<div class="hero-terminal" markdown>
+<div class="hero-terminal">
 <div class="hero-terminal-header">
   <div class="hero-terminal-dot r"></div>
   <div class="hero-terminal-dot y"></div>
   <div class="hero-terminal-dot g"></div>
 </div>
-<div class="hero-terminal-body" markdown>
+<div class="hero-terminal-body">
 <span class="cmd">cherenkov</span> <span class="arg">validate</span> --spec petstore.yaml --target http://localhost:8000
 <span class="comment"># 🚀 Generating Playwright tests via qwen2.5-coder...</span>
 <span class="comment"># ⚡ Executing 24 conformance scenarios...</span>
@@ -46,8 +46,6 @@ hide:
 ---
 
 ## Why CHERENKOV?
-
-<div class="grid cards" markdown>
 
 -   <div class="icon">🤖</div>
     **Offline-First AI**
@@ -79,7 +77,7 @@ hide:
     
     Deploy the `ConformanceCheck` CRD alongside our Go operator for scheduled, autonomous in-cluster scanning.
 
-</div>
+{ .grid .cards }
 
 ---
 
