@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /dev/
+Disallow: /1.0/
+Sitemap: https://moaidmoatasem.github.io/cherenkov-qa/sitemap.xml
