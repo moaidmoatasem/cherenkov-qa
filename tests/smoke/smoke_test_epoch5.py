@@ -224,35 +224,23 @@ class TestCLIIntegration(unittest.TestCase):
     """Test CLI integration of new commands."""
 
     def test_init_subcommand_in_help(self):
-        import importlib.util
+        import subprocess
 
-        spec = importlib.util.spec_from_file_location("cherenkov_cli", "cherenkov.py")
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        parser = mod.get_parser()
-        help_text = parser.format_help()
+        result = subprocess.run(
+            ["cherenkov", "--help"], capture_output=True, text=True
+        )
+        help_text = result.stdout + result.stderr
         self.assertIn("init", help_text)
         self.assertIn("doctor", help_text)
         self.assertIn("dashboard", help_text)
 
     def test_init_help_contains_profile(self):
-        import importlib.util
+        import subprocess
 
-        spec = importlib.util.spec_from_file_location("cherenkov_cli", "cherenkov.py")
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        parser = mod.get_parser()
-        init_parser = None
-        for action in parser._actions:
-            if (
-                hasattr(action, "choices")
-                and action.choices
-                and "init" in action.choices
-            ):
-                init_parser = action.choices["init"]
-                break
-        self.assertIsNotNone(init_parser)
-        help_text = init_parser.format_help()
+        result = subprocess.run(
+            ["cherenkov", "init", "--help"], capture_output=True, text=True
+        )
+        help_text = result.stdout + result.stderr
         self.assertIn("--profile", help_text)
         self.assertIn("--force", help_text)
 
