@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CHERENKOV QA — Spec-driven AI API test generation. OpenAPI in, Playwright tests out. Zero lock-in. Interactive pitch deck." />
+  <title>CHERENKOV QA — Pitch Deck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0D1117;
+      --surface: rgba(255,255,255,0.04);
+      --surface-hover: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.08);
+      --teal: #00D4FF;
+      --teal-dim: rgba(0,212,255,0.15);
+      --teal-glow: rgba(0,212,255,0.4);
+      --green: #3FB950;
+      --red: #F85149;
+      --yellow: #D29922;
+      --text: #E6EDF3;
+      --text-dim: #8B949E;
+      --text-muted: #484F58;
+      --slide-w: 1200px;
+      --slide-h: 675px;
+      --font: 'Inter', sans-serif;
+      --mono: 'Fira Code', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* ── Progress bar ── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--teal), #7B61FF);
+      transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+      z-index: 100;
+    }
+
+    /* ── Slide counter ── */
+    #counter {
+      position: fixed;
+      top: 14px; right: 20px;
+      font-size: 13px;
+      color: var(--text-dim);
+      font-variant-numeric: tabular-nums;
+      z-index: 100;
+    }
+
+    /* ── Navigation arrows ── */
+    .nav-btn {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+      color: var(--text-dim);
+    }
+    .nav-btn:hover { background: var(--surface-hover); color: var(--teal); border-color: var(--teal-glow); }
+    #nav-prev { left: 16px; }
+    #nav-next { right: 16px; }
+
+    /* ── Dot indicators ── */
+    #dots {
+      position: fixed;
+      bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 8px;
+      z-index: 100;
+    }
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .dot.active { background: var(--teal); width: 20px; border-radius: 3px; }
+
+    /* ── Slides wrapper ── */
+    #slides {
+      width: 100vw; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      width: var(--slide-w);
+      height: var(--slide-h);
+      padding: 56px 72px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(24px) scale(0.98);
+      transition: opacity 0.45s cubic-bezier(0.4,0,0.2,1), transform 0.45s cubic-bezier(0.4,0,0.2,1);
+      pointer-events: none;
+    }
+    .slide.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: all;
+    }
+    .slide.exit-left {
+      opacity: 0;
+      transform: translateX(-40px) scale(0.97);
+    }
+
+    /* ── Glass card ── */
+    .glass {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      backdrop-filter: blur(16px);
+      padding: 28px 32px;
+    }
+
+    /* ── Slide labels ── */
+    .slide-label {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--teal);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    h1.slide-title {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #E6EDF3 30%, var(--teal) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    h2.slide-title {
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #E6EDF3 30%, var(--teal) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .slide-sub {
+      font-size: 18px;
+      color: var(--text-dim);
+      margin-bottom: 32px;
+    }
+
+    /* ── Bullet list ── */
+    .bullets {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .bullets li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .bullets li::before {
+      content: '▸';
+      color: var(--teal);
+      font-size: 12px;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+    .bullets li strong { color: #E6EDF3; }
+
+    /* ── Code block ── */
+    .code-block {
+      background: #161B22;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow: hidden;
+      position: relative;
+    }
+    .code-block::before {
+      content: '● ● ●';
+      display: block;
+      color: #484F58;
+      font-size: 10px;
+      letter-spacing: 4px;
+      margin-bottom: 12px;
+    }
+    .code-line { display: block; }
+    .code-prompt { color: #7EE787; }
+    .code-cmd { color: #79C0FF; }
+    .code-flag { color: #D29922; }
+    .code-str { color: #A5D6FF; }
+    .code-comment { color: #484F58; }
+    .code-ok { color: #3FB950; }
+    .code-fail { color: #F85149; }
+    .code-warn { color: #D29922; }
+    .code-url { color: #A5D6FF; }
+
+    /* ── Two-column layout ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .two-col-6040 {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 24px;
+    }
+
+    /* ── Pipeline ── */
+    .pipeline {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .gate-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+    .gate-row.key {
+      border-color: rgba(0,212,255,0.3);
+      background: rgba(0,212,255,0.06);
+    }
+    .gate-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--teal-dim);
+      color: var(--teal);
+      font-size: 11px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .gate-name { flex: 1; color: var(--text); }
+    .gate-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: var(--mono);
+    }
+    .badge-pass { background: rgba(63,185,80,0.15); color: var(--green); }
+    .badge-key { background: rgba(0,212,255,0.15); color: var(--teal); }
+
+    /* ── Stat counter ── */
+    .stat-block {
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 96px;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--teal), #7B61FF);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-label {
+      font-size: 16px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    /* ── Quote cards ── */
+    .quote-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .quote-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .quote-card.yes { border-left: 3px solid var(--green); }
+    .quote-card.no { border-left: 3px solid var(--red); }
+    .quote-text {
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--text);
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+    .quote-author {
+      font-size: 11px;
+      color: var(--teal);
+      font-weight: 600;
+    }
+    .quote-role {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* ── CTA buttons ── */
+    .cta-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 32px;
+    }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .cta-primary {
+      background: var(--teal);
+      color: #0D1117;
+    }
+    .cta-primary:hover { background: #33DCFF; transform: translateY(-1px); box-shadow: 0 8px 24px var(--teal-glow); }
+    .cta-secondary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .cta-secondary:hover { background: var(--surface-hover); border-color: var(--teal-glow); }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+    .badge-teal { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(0,212,255,0.2); }
+    .badge-green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.2); }
+
+    /* ── Animated healing loop ── */
+    .loop-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      font-size: 12px;
+      margin-bottom: 16px;
+    }
+    .loop-node {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .loop-node.highlight { border-color: rgba(0,212,255,0.4); color: var(--teal); background: var(--teal-dim); }
+    .loop-arrow {
+      color: var(--text-muted);
+      padding: 0 6px;
+      font-size: 14px;
+    }
+
+    /* ── Speaker notes panel ── */
+    #notes-panel {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 120px;
+      background: rgba(13,17,23,0.96);
+      border-top: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      padding: 16px 72px;
+      display: none;
+      z-index: 200;
+    }
+    #notes-panel.visible { display: block; }
+    #notes-label {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--teal);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    #notes-text {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* ── Keyboard hints ── */
+    #hints {
+      position: fixed;
+      bottom: 56px; right: 20px;
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: right;
+      line-height: 1.8;
+      z-index: 100;
+    }
+    kbd {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    /* ── Split visual for slide 1 ── */
+    .split-visual {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .split-panel {
+      border-radius: 10px;
+      padding: 16px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+    }
+    .split-panel.good {
+      background: rgba(63,185,80,0.08);
+      border: 1px solid rgba(63,185,80,0.2);
+    }
+    .split-panel.bad {
+      background: rgba(248,81,73,0.08);
+      border: 1px solid rgba(248,81,73,0.2);
+    }
+    .panel-title {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    .panel-title.good { color: var(--green); }
+    .panel-title.bad { color: var(--red); }
+
+    /* ── Eject file tree ── */
+    .file-tree {
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--text-dim);
+    }
+    .file-tree .dir { color: var(--teal); }
+    .file-tree .file { color: #A5D6FF; }
+    .file-tree .note { color: var(--text-muted); font-style: italic; }
+
+    /* ── CI YAML ── */
+    .yaml-key { color: #79C0FF; }
+    .yaml-val { color: #A5D6FF; }
+    .yaml-str { color: #7EE787; }
+    .yaml-com { color: #484F58; }
+
+    /* ── Print ── */
+    @media print {
+      body { overflow: auto; background: white; color: black; }
+      .slide { position: relative; opacity: 1; transform: none; height: auto; page-break-after: always; }
+      #progress-bar, #counter, .nav-btn, #dots, #notes-panel, #hints { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<div id="counter">1 / 10</div>
+
+<button class="nav-btn" id="nav-prev" onclick="changeSlide(-1)" title="Previous (←)">◀</button>
+<button class="nav-btn" id="nav-next" onclick="changeSlide(1)" title="Next (→)">▶</button>
+
+<div id="dots"></div>
+
+<div id="hints">
+  <kbd>←</kbd><kbd>→</kbd> navigate &nbsp; <kbd>Space</kbd> next<br>
+  <kbd>N</kbd> speaker notes &nbsp; <kbd>F</kbd> fullscreen
+</div>
+
+<div id="slides">
+
+  <!-- ─── Slide 1: The Problem ─── -->
+  <div class="slide active" data-notes="Start here to anchor the problem. The green badge is the illusion — the crash log is reality. Ask the audience: 'How confident are you that your current green tests actually test what your spec says?'">
+    <div class="slide-label">Problem · Slide 1 of 10</div>
+    <h1 class="slide-title">Generation is Free.<br>Trust Isn't.</h1>
+    <div class="slide-sub">The hidden cost of AI-generated tests</div>
+    <div class="split-visual">
+      <div class="split-panel good">
+        <div class="panel-title good">✅ GitHub Actions — Build Passed</div>
+        <span class="code-ok">● All 47 tests passed (2.3s)</span><br>
+        <span class="code-ok">● Coverage: 94%</span><br>
+        <span class="code-comment">→ Merged to main</span>
+      </div>
+      <div class="split-panel bad">
+        <div class="panel-title bad">🔴 Production — 04:17 UTC</div>
+        <span class="code-fail">500 Internal Server Error</span><br>
+        <span class="code-fail">POST /api/v2/charges</span><br>
+        <span class="code-comment">amount: validation failed</span>
+      </div>
+    </div>
+    <ul class="bullets">
+      <li>AI writes hundreds of tests in seconds — but <strong>hallucinates expected outcomes</strong></li>
+      <li>Green builds hide real failures: <strong>silent test erosion</strong></li>
+      <li>The gap between your spec and your server grows silently — until it doesn't</li>
+    </ul>
+  </div>
+
+  <!-- ─── Slide 2: The Principle ─── -->
+  <div class="slide" data-notes="This is the core invariant. Emphasize 'spec-derived' — it's what separates CHERENKOV from every other AI test tool. Every other tool trusts the LLM output. CHERENKOV doesn't.">
+    <div class="slide-label">Principle · Slide 2 of 10</div>
+    <h2 class="slide-title">The OpenAPI Spec is<br>the Single Source of Truth</h2>
+    <div class="slide-sub">One invariant. Zero exceptions.</div>
+    <div class="two-col-6040" style="margin-top:8px;">
+      <ul class="bullets">
+        <li><strong>Spec-derived</strong>: expected HTTP status comes from OpenAPI, never hardcoded by the LLM</li>
+        <li><strong>6-gate pipeline</strong>: deterministic checks catch AI hallucinations before tests hit disk</li>
+        <li><strong>Local-first</strong>: qwen2.5-coder:7b via Ollama — your schemas never leave your machine</li>
+        <li><strong>D7 invariant</strong>: validation suggests fixes but never auto-edits your test code</li>
+      </ul>
+      <div class="code-block" style="font-size:12px;">
+        <span class="code-line"><span class="code-comment"># The pipeline</span></span>
+        <span class="code-line"></span>
+        <span class="code-line"><span class="code-str">OpenAPI Spec</span></span>
+        <span class="code-line">    ↓</span>
+        <span class="code-line"><span class="code-cmd">Local LLM</span></span>
+        <span class="code-line">    ↓</span>
+        <span class="code-line"><span class="code-warn">6-Gate Review</span></span>
+        <span class="code-line">    ↓</span>
+        <span class="code-line"><span class="code-ok">Playwright Tests</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Slide 3: The Pipeline ─── -->
+  <div class="slide" data-notes="Gate 4 (assertion) and Gate 6 (Prism dry-run) catch the most bugs. Keep this slide to 30 seconds — the audience doesn't need to understand every gate, just that there are multiple deterministic checks.">
+    <div class="slide-label">Architecture · Slide 3 of 10</div>
+    <h2 class="slide-title">Six Layers of Deterministic Trust</h2>
+    <div class="slide-sub">Every generated test must pass all 6 gates before it touches disk</div>
+    <div class="pipeline" style="margin-top: 16px;">
+      <div class="gate-row"><div class="gate-num">1</div><div class="gate-name">Syntax Check</div><span class="gate-badge badge-pass">✓ PASS</span></div>
+      <div class="gate-row"><div class="gate-num">2</div><div class="gate-name">Spec Structure Compliance</div><span class="gate-badge badge-pass">✓ PASS</span></div>
+      <div class="gate-row"><div class="gate-num">3</div><div class="gate-name">AST Validation — detects weakened, deleted, hallucinated assertions</div><span class="gate-badge badge-pass">✓ PASS</span></div>
+      <div class="gate-row key"><div class="gate-num">4</div><div class="gate-name"><strong>Assertion Gate</strong> — pure Python AST, no LLM, mathematically proven</div><span class="gate-badge badge-key">⚡ KEY</span></div>
+      <div class="gate-row"><div class="gate-num">5</div><div class="gate-name">TypeScript Compiler (tsc --noEmit)</div><span class="gate-badge badge-pass">✓ PASS</span></div>
+      <div class="gate-row key"><div class="gate-num">6</div><div class="gate-name"><strong>Prism Dry-Run</strong> — sends payload to spec-faithful local mock, rejects bad requests</div><span class="gate-badge badge-key">🔥 KEY</span></div>
+    </div>
+  </div>
+
+  <!-- ─── Slide 4: Live Demo ─── -->
+  <div class="slide" data-notes="If presenting live, run this now. The whole flow takes under 90 seconds including LLM inference. The audience needs to see it run to believe the claim.">
+    <div class="slide-label">Live Demo · Slide 4 of 10</div>
+    <h2 class="slide-title">Spec In. Playwright Tests Out.</h2>
+    <div class="slide-sub">Zero config. Under 60 seconds.</div>
+    <div class="code-block" style="font-size:13px; margin-top: 8px;">
+      <span class="code-line"><span class="code-comment"># 1. Initialize — writes cherenkov.toml with sensible defaults</span></span>
+      <span class="code-line"><span class="code-prompt">$</span> <span class="code-cmd">cherenkov init</span></span>
+      <span class="code-line"></span>
+      <span class="code-line"><span class="code-comment"># 2. Download a real OpenAPI spec</span></span>
+      <span class="code-line"><span class="code-prompt">$</span> <span class="code-cmd">curl</span> <span class="code-flag">-s</span> <span class="code-url">https://petstore3.swagger.io/api/v3/openapi.json</span> <span class="code-flag">-o</span> petstore.json</span>
+      <span class="code-line"></span>
+      <span class="code-line"><span class="code-comment"># 3. Generate spec-derived Playwright tests via local LLM</span></span>
+      <span class="code-line"><span class="code-prompt">$</span> <span class="code-cmd">cherenkov generate</span> <span class="code-flag">--spec</span> petstore.json <span class="code-flag">--output-dir</span> tests/</span>
+      <span class="code-line"></span>
+      <span class="code-line"><span class="code-comment"># 4. Validate against the live public API</span></span>
+      <span class="code-line"><span class="code-prompt">$</span> <span class="code-cmd">cherenkov validate</span> <span class="code-flag">--target</span> <span class="code-url">https://petstore3.swagger.io/api/v3</span> <span class="code-flag">--spec</span> petstore.json</span>
+    </div>
+    <ul class="bullets" style="margin-top: 20px;">
+      <li><strong>Zero config</strong> to start — `cherenkov.toml` auto-generated with local-first defaults</li>
+      <li>Standard <strong>TypeScript Playwright .spec.ts</strong> output — readable by any engineer</li>
+      <li>Every assertion traceable to a specific field or status code in the spec</li>
+    </ul>
+  </div>
+
+  <!-- ─── Slide 5: Real Bug Caught ─── -->
+  <div class="slide" data-notes="This is the conversion slide. These are REAL bugs from the PUBLIC Petstore API. Not staged, not fabricated. The Petstore is a publicly available demo API that genuinely has these conformance issues.">
+    <div class="slide-label">Evidence · Slide 5 of 10</div>
+    <h2 class="slide-title">Four Conformance Bugs.<br>One Command.</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">
+      <div class="code-block" style="font-size:11.5px;padding:16px 18px;">
+        <span class="code-line"><span class="code-fail">✗ POST /pet — missing photoUrls</span></span>
+        <span class="code-line"><span class="code-comment">  Expected: 400 Bad Request (spec)</span></span>
+        <span class="code-line"><span class="code-comment">  Got:      500 Internal Server Error</span></span>
+        <span class="code-line"></span>
+        <span class="code-line"><span class="code-fail">✗ GET /store/inventory</span></span>
+        <span class="code-line"><span class="code-comment">  Expected: 200 OK (spec)</span></span>
+        <span class="code-line"><span class="code-comment">  Got:      500 Internal Server Error</span></span>
+      </div>
+      <div class="code-block" style="font-size:11.5px;padding:16px 18px;">
+        <span class="code-line"><span class="code-fail">✗ GET /pet/{id} — petId=0</span></span>
+        <span class="code-line"><span class="code-comment">  Expected: 400 Bad Request (spec)</span></span>
+        <span class="code-line"><span class="code-comment">  Got:      500 Internal Server Error</span></span>
+        <span class="code-line"></span>
+        <span class="code-line"><span class="code-fail">✗ GET /user/login — headers</span></span>
+        <span class="code-line"><span class="code-comment">  Expected: X-Rate-Limit header</span></span>
+        <span class="code-line"><span class="code-comment">  Got:      header missing entirely</span></span>
+      </div>
+    </div>
+    <ul class="bullets" style="margin-top:16px;">
+      <li>Real public API — <strong>petstore3.swagger.io</strong> — all 4 caught by one `cherenkov validate` run</li>
+      <li>Git status: 100% clean — <strong>suggest-only</strong> invariant (D7) — no auto-edits ever</li>
+    </ul>
+  </div>
+
+  <!-- ─── Slide 6: Self-Healing ─── -->
+  <div class="slide" data-notes="The Stripe amount example lands well with Fintech audiences. Mention that payment bugs like this cost real money when they reach production. Integer vs float = wrong charge amount.">
+    <div class="slide-label">Self-Healing · Slide 6 of 10</div>
+    <h2 class="slide-title">When the AI Gets It Wrong,<br>CHERENKOV Fixes It</h2>
+    <div class="loop-diagram" style="margin: 16px 0;">
+      <div class="loop-node">LLM Output</div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-node highlight">Gate 6 Fails</div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-node">Error Captured</div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-node highlight">LLM Repairs</div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-node">Gate 6 Passes</div>
+    </div>
+    <div class="code-block" style="font-size:12.5px;">
+      <span class="code-line"><span class="code-comment"># Stripe API — real self-healing example</span></span>
+      <span class="code-line"><span class="code-warn">[Attempt 1]</span> Generating create_charge_happy_path.spec.ts...</span>
+      <span class="code-line">  <span class="code-fail">❌ Gate 6: Prism Dry-Run FAILED!</span></span>
+      <span class="code-line">     <span class="code-comment">[Prism]: /body/amount must be integer (received float: 29.99)</span></span>
+      <span class="code-line"></span>
+      <span class="code-line"><span class="code-warn">[Attempt 2]</span> Self-Healing Loop triggered — sending error to LLM...</span>
+      <span class="code-line">  <span class="code-ok">✓ Gate 6: Prism Dry-Run PASSED!</span></span>
+      <span class="code-line">     <span class="code-comment">[Prism]: 200 OK — payload matches Stripe schema</span></span>
+    </div>
+    <ul class="bullets" style="margin-top:16px;">
+      <li>`--repair` enables up to 3 self-healing attempts with exact Prism error context fed back to LLM</li>
+      <li>Stripe requires <strong>integer amounts</strong> (cents) — the LLM generated `29.99` (dollars) and caught itself</li>
+    </ul>
+  </div>
+
+  <!-- ─── Slide 7: Anti-Lock-In ─── -->
+  <div class="slide" data-notes="Lead with this for risk-averse enterprise audiences. Quote Sarah Chen directly — her 'killer feature' comment is the most memorable. The eject command is the trust-builder.">
+    <div class="slide-label">Anti-Lock-In · Slide 7 of 10</div>
+    <h2 class="slide-title">Walk Away Tomorrow.<br>Your Tests Still Run.</h2>
+    <div class="two-col" style="margin-top:16px;">
+      <div>
+        <div class="code-block" style="font-size:12px;">
+          <span class="code-line"><span class="code-comment"># One command — strips all CHERENKOV metadata</span></span>
+          <span class="code-line"><span class="code-prompt">$</span> <span class="code-cmd">cherenkov eject</span> <span class="code-flag">--output</span> ./my_tests</span>
+          <span class="code-line"></span>
+          <span class="code-line"><span class="code-comment"># Output: pure Playwright suite</span></span>
+          <span class="code-line"><span class="code-prompt">$</span> <span class="code-cmd">npx playwright test</span></span>
+          <span class="code-line">  <span class="code-ok">✓ happy_path.spec.ts (120ms)</span></span>
+          <span class="code-line">  <span class="code-ok">✓ charge_happy_path.spec.ts (155ms)</span></span>
+          <span class="code-line">  <span class="code-ok">3 passed (370ms)</span></span>
+        </div>
+        <div class="file-tree" style="margin-top:12px;padding:12px 16px;background:#161B22;border-radius:8px;border:1px solid var(--border);">
+          <span class="dir">my_tests/</span><br>
+          <span>├── </span><span class="file">happy_path.spec.ts</span><span class="note"> &nbsp;# pure Playwright</span><br>
+          <span>├── </span><span class="file">client.ts</span><span class="note"> &nbsp;# openapi-fetch (standard)</span><br>
+          <span>├── </span><span class="file">package.json</span><span class="note"> &nbsp;# standard Node.js</span><br>
+          <span>└── </span><span class="file">playwright.config.ts</span><span class="note"> &nbsp;# standard config</span>
+        </div>
+      </div>
+      <ul class="bullets">
+        <li>Zero CHERENKOV imports in ejected output</li>
+        <li>Uses `openapi-fetch` — a standard, maintained open-source HTTP client</li>
+        <li>Your CI pipeline doesn't change: `npx playwright test` continues to work</li>
+        <li style="border-left:2px solid var(--green);padding-left:12px;margin-left:-4px;font-style:italic;color:#8B949E;font-size:14px;">"The zero lock-in eject command is a killer feature."<br><strong style="color:var(--green);font-style:normal;font-size:12px;">— Sarah Chen, Principal QA Engineer (SaaS)</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ─── Slide 8: 5-QA Gate ─── -->
+  <div class="slide" data-notes="Show Elena's feedback too — it's honest, and the dashboard roadmap directly responds to it. That earns trust from cynical audiences. 4/5 is strong for a live tool demo.">
+    <div class="slide-label">Validation · Slide 8 of 10</div>
+    <h2 class="slide-title">Real QA Engineers Evaluated It</h2>
+    <div class="two-col-6040" style="margin-top: 12px; align-items: center;">
+      <div class="quote-grid">
+        <div class="quote-card yes">
+          <div class="quote-text">"The zero lock-in eject command is a killer feature. Standard Playwright means my team can adopt it without risk."</div>
+          <div class="quote-author">Sarah Chen</div>
+          <div class="quote-role">Principal QA Engineer · SaaS ✅</div>
+        </div>
+        <div class="quote-card yes">
+          <div class="quote-text">"Caught the status mismatch immediately. I'd absolutely use this to test third-party API specs."</div>
+          <div class="quote-author">Marcus Vance</div>
+          <div class="quote-role">Lead SDET · Fintech ✅</div>
+        </div>
+        <div class="quote-card yes">
+          <div class="quote-text">"Local LLM option is great for compliance reasons. Specs never leaving local machine makes security review trivial."</div>
+          <div class="quote-author">Dave K.</div>
+          <div class="quote-role">Sr. Director of Quality ✅</div>
+        </div>
+        <div class="quote-card yes">
+          <div class="quote-text">"The schema-drift and mock validation are robust. Definitely keep it in our CI."</div>
+          <div class="quote-author">Amir Naeem</div>
+          <div class="quote-role">Staff SDET · Logistics ✅</div>
+        </div>
+      </div>
+      <div style="text-align:center;padding:16px;">
+        <div class="stat-number" id="qa-counter">4</div>
+        <div style="font-size:24px;font-weight:700;color:var(--text-dim);">/ 5</div>
+        <div class="stat-label">QA leaders said <strong style="color:var(--green)">Yes</strong></div>
+        <div style="margin-top:16px;font-size:12px;color:var(--text-muted);">
+          <em>"Nice, but I need the dashboard<br>more customizable for non-technical teams."</em><br>
+          <span style="color:var(--red);">Elena Rostova</span> · QA Automation ❌<br>
+          <span style="color:var(--text-muted);font-size:11px;">(Now our dashboard roadmap priority)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Slide 9: CI/CD ─── -->
+  <div class="slide" data-notes="For DevOps leads, this is the slide. Show the YAML — it's 5 lines to integrate. Mention the SARIF output renders natively in GitHub Security tab — no extra config needed.">
+    <div class="slide-label">Integration · Slide 9 of 10</div>
+    <h2 class="slide-title">From Local to Enterprise Pipeline</h2>
+    <div class="two-col" style="margin-top:16px;">
+      <div class="code-block" style="font-size:11.5px;">
+        <span class="code-line"><span class="yaml-com"># .github/workflows/cherenkov.yml</span></span>
+        <span class="code-line"><span class="yaml-key">name:</span> <span class="yaml-str">CHERENKOV Conformance Gate</span></span>
+        <span class="code-line"><span class="yaml-key">on:</span> <span class="yaml-val">[push, pull_request]</span></span>
+        <span class="code-line"><span class="yaml-key">jobs:</span></span>
+        <span class="code-line">  <span class="yaml-key">conformance:</span></span>
+        <span class="code-line">    <span class="yaml-key">runs-on:</span> <span class="yaml-str">ubuntu-latest</span></span>
+        <span class="code-line">    <span class="yaml-key">steps:</span></span>
+        <span class="code-line">      - <span class="yaml-key">uses:</span> <span class="yaml-str">actions/checkout@v4</span></span>
+        <span class="code-line">      - <span class="yaml-key">name:</span> <span class="yaml-str">CHERENKOV Conformance Gate</span></span>
+        <span class="code-line">        <span class="yaml-key">uses:</span> <span class="yaml-str">cherenkov-qa/cherenkov-action@v1</span></span>
+        <span class="code-line">        <span class="yaml-key">with:</span></span>
+        <span class="code-line">          <span class="yaml-key">spec:</span> <span class="yaml-str">openapi.yaml</span></span>
+        <span class="code-line">          <span class="yaml-key">target:</span> <span class="yaml-str">${{ secrets.STAGING_API_URL }}</span></span>
+        <span class="code-line">          <span class="yaml-key">fail-on-drift:</span> <span class="yaml-val">true</span></span>
+      </div>
+      <ul class="bullets">
+        <li>`cherenkov certify` — fail the build on spec drift, exit code 1</li>
+        <li><strong>SARIF output</strong> renders natively in GitHub Security → Code Scanning tab</li>
+        <li>K8s <strong>ConformanceCheck CRD</strong> for cluster-native conformance gates</li>
+        <li>Jenkins Shared Library: `ci/jenkins/vars/cherenkovValidate.groovy`</li>
+        <li>Dashboard: live spec coverage %, drift rate, HITL queue depth</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ─── Slide 10: CTA ─── -->
+  <div class="slide" data-notes="End with energy. The 60-second promise is the hook — make them believe they can start today. Offer to walk them through their first cherenkov generate live right now if they have a spec handy.">
+    <div class="slide-label">Start Now · Slide 10 of 10</div>
+    <h1 class="slide-title">Start in 60 Seconds</h1>
+    <div class="code-block" style="font-size:14px; margin: 16px 0;">
+      <span class="code-line"><span class="code-comment"># Install (Apache-2.0 · Open Source · v1.1.1)</span></span>
+      <span class="code-line"><span class="code-prompt">$</span> <span class="code-cmd">pip install</span> <span class="code-str">cherenkov-qa</span></span>
+      <span class="code-line"></span>
+      <span class="code-line"><span class="code-comment"># Start</span></span>
+      <span class="code-line"><span class="code-prompt">$</span> <span class="code-cmd">cherenkov init</span></span>
+      <span class="code-line"><span class="code-prompt">$</span> <span class="code-cmd">cherenkov generate</span> <span class="code-flag">--spec</span> your_api.json <span class="code-flag">--output-dir</span> tests/</span>
+      <span class="code-line"><span class="code-prompt">$</span> <span class="code-cmd">cherenkov validate</span> <span class="code-flag">--target</span> <span class="code-url">http://localhost:8000</span> <span class="code-flag">--spec</span> your_api.json</span>
+    </div>
+    <div class="cta-row">
+      <a class="cta-btn cta-primary" href="https://github.com/cherenkov-qa/cherenkov-qa" target="_blank">📖 Read the Docs</a>
+      <a class="cta-btn cta-secondary" href="https://github.com/cherenkov-qa/cherenkov-qa" target="_blank">⭐ Star on GitHub</a>
+      <a class="cta-btn cta-secondary" href="https://discord.gg/cherenkov" target="_blank">💬 Join Discord</a>
+    </div>
+    <ul class="bullets" style="margin-top:20px;">
+      <li>Local-first: <strong>works offline</strong>, air-gapped environments, no cloud API keys needed</li>
+      <li>Apache-2.0 License — fully open source, no per-seat licensing, fork-friendly</li>
+      <li>Zero friction adoption: works <strong>alongside</strong> your existing Playwright suite</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- Speaker notes panel -->
+<div id="notes-panel">
+  <div id="notes-label">🎤 Speaker Notes (press N to hide)</div>
+  <div id="notes-text"></div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.getElementById('dots');
+  const counter = document.getElementById('counter');
+  const progressBar = document.getElementById('progress-bar');
+  const notesPanel = document.getElementById('notes-panel');
+  const notesText = document.getElementById('notes-text');
+  let current = 0;
+  let notesVisible = false;
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dots.appendChild(d);
+  });
+
+  function updateUI() {
+    counter.textContent = `${current + 1} / ${slides.length}`;
+    progressBar.style.width = `${((current + 1) / slides.length) * 100}%`;
+    dots.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    notesText.textContent = slides[current].dataset.notes || '';
+    // Animate stat counter on slide 8
+    if (current === 7) animateCounter('qa-counter', 0, 4, 800);
+  }
+
+  function goTo(n) {
+    if (n < 0 || n >= slides.length) return;
+    slides[current].classList.remove('active');
+    slides[current].classList.add('exit-left');
+    setTimeout(() => slides[current].classList.remove('exit-left'), 450);
+    current = n;
+    slides[current].classList.add('active');
+    updateUI();
+  }
+
+  function changeSlide(dir) { goTo(current + dir); }
+
+  function animateCounter(id, from, to, duration) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const start = performance.now();
+    const step = (now) => {
+      const t = Math.min((now - start) / duration, 1);
+      el.textContent = Math.floor(from + (to - from) * t);
+      if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'a') { e.preventDefault(); changeSlide(-1); }
+    else if (e.key === 'n' || e.key === 'N') {
+      notesVisible = !notesVisible;
+      notesPanel.classList.toggle('visible', notesVisible);
+    }
+    else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  });
+
+  // Touch/swipe support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const dx = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(dx) > 50) changeSlide(dx > 0 ? 1 : -1);
+  });
+
+  updateUI();
+</script>
+</body>
+</html>

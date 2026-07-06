@@ -959,6 +959,8 @@ def main():
             "tokens",
             "diff",
             "completion",
+            "generate",
+            "demo",
         ]
     ):
         sys.argv.insert(1, "validate")

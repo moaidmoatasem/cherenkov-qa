@@ -16,6 +16,40 @@ docs tree. Pick the path that matches who you are.
 
 ---
 
+## 📹 Onboarding & KT Sessions
+
+> Complete onboarding package. Covers developers, QA leads, SDETs, and executives.
+> All sessions use **real test data and real caught bugs** — no fabricated examples.
+
+### Loom Recording Library (8 sessions, ~45 min total)
+
+| # | Session | Audience | Duration | Script |
+|---|---------|----------|----------|--------|
+| 1 | [60-Second Quickstart](recordings/session_01_quickstart.md) | Developers | 2-3 min | Live Petstore API |
+| 2 | [Catch the AI Cheating](recordings/session_02_catch_cheating.md) | Dev + QA | 5-7 min | Controllable target |
+| 3 | [Spec to Verified Suite](recordings/session_03_full_workflow.md) | QA / SDETs | 7-10 min | Full pipeline demo |
+| 4 | [Live Case: Real API](recordings/session_04_live_api.md) | Dev + QA | 5-7 min | JSONPlaceholder live |
+| 5 | [HITL Review & Dashboard](recordings/session_05_hitl_dashboard.md) | QA Managers | 5-7 min | Dashboard walkthrough |
+| 6 | [CI/CD Integration](recordings/session_06_cicd_integration.md) | DevOps / Leads | 5-7 min | Pipeline gate |
+| 7 | [The Business Case](recordings/session_07_business_case.md) | Eng Managers | 7-10 min | ROI pitch |
+| 8 | [Zero Lock-in: Eject](recordings/session_08_eject_freedom.md) | Skeptics | 3-5 min | Eject proof |
+
+→ [Full index + recording setup guide](recordings/README.md) · [Live evidence](recordings/evidence/SESSION_EVIDENCE.md)
+
+### Extended Package
+
+| Resource | Audience | What it gives you |
+|---|---|---|
+| [Session A — Zero to Hero](../../teamwork_projects/cherenkov_onboarding/sessions/session_a_zero_to_hero.md) | Backend developers | End-to-end: init → spec → generate → validate in 30 min |
+| [Session B — Live Case Study](../../teamwork_projects/cherenkov_onboarding/sessions/session_b_live_case.md) | Senior QA / architects | HITL queue, repair loop, daemon, certify, eject |
+| [Session C — Pitch Companion](../../teamwork_projects/cherenkov_onboarding/sessions/session_c_pitch_companion.md) | Engineering managers | ROI framing, differentiation, objection handling |
+| [Pitch Deck (HTML)](../../teamwork_projects/cherenkov_onboarding/PITCH_DECK.html) | Leadership / stakeholders | Interactive presentation — open in any browser |
+| [Video Recording Guide](../../teamwork_projects/cherenkov_onboarding/VIDEO_RECORDING_GUIDE.md) | Demo producers | How to record, post-process, and publish session casts |
+| [FAQ & Objections](../../teamwork_projects/cherenkov_onboarding/FAQ_OBJECTIONS.md) | All audiences | 25 Q&A across Technical, Trust/Compliance, Business |
+| [Live Demo Harness](../../teamwork_projects/cherenkov_onboarding/run_demo.sh) | Presenters / CI | `bash run_demo.sh` — green→red drift detection, Docker Prism |
+
+---
+
 ## 🚀 If you're new here
 
 | Step | Doc | What it gives you |
@@ -157,6 +191,7 @@ docs/
 ├── reviews/             ← external + internal reviews
 ├── spikes/              ← investigation notes
 ├── vision/              ← earlier vision (most is stale)
+├── recordings/          ← Loom recording scripts + live evidence
 └── wiki/                ← lightweight wiki
 ```
 

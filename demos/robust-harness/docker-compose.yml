@@ -1,0 +1,25 @@
+services:
+  api:
+    image: swaggerapi/petstore
+    ports:
+      - "8085:8080"
+    environment:
+      - SWAGGER_HOST=http://localhost:8085
+      - SWAGGER_BASE_PATH=/api/v3
+    healthcheck:
+      # Wait for the API to start accepting HTTP requests and returning 200
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/v3/pet/findByStatus?status=available"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # This service acts as a wait block. It uses wait-for-it pattern to ensure
+  # the API is healthy before tests run. This represents a robust CI/CD pattern.
+  cherenkov-validator:
+    image: ubuntu:24.04
+    depends_on:
+      api:
+        condition: service_healthy
+    command: >
+      bash -c "echo 'API is healthy. Ready to run CHERENKOV validations: cherenkov validate --target http://localhost:8085 --spec petstore.json'"

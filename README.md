@@ -75,6 +75,7 @@ By default, CHERENKOV uses `qwen2.5-coder:7b` running locally via Ollama. Your p
 - [Getting Started Guide](https://moaidmoatasem.github.io/cherenkov-qa/getting-started/)
 - [CLI Reference](https://moaidmoatasem.github.io/cherenkov-qa/cli/reference/)
 - [Architecture & Design Decisions](https://moaidmoatasem.github.io/cherenkov-qa/architecture/)
+- [Onboarding & Demo Recordings](./docs/recordings/) — 8 Loom scripts with live evidence for developers, QA, managers, and DevOps
 
 ---
 
