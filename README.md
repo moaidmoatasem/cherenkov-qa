@@ -4,7 +4,6 @@
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-green.svg)](https://github.com/moaidmoatasem/cherenkov-qa/releases/tag/v1.1.1)
-[![PyPI](https://img.shields.io/pypi/v/cherenkov-qa.svg)](https://pypi.org/project/cherenkov-qa/)
 
 Every API has an OpenAPI spec, but those specs silently drift from the real server implementations every day. Moreover, AI-generated tests often hallucinate expected outcomes or silently weaken assertions to force a "green" build.
 
@@ -17,15 +16,17 @@ Every API has an OpenAPI spec, but those specs silently drift from the real serv
 ## 🚀 See it in 60 seconds (no setup required)
 
 ```bash
-pip install cherenkov-qa
-cherenkov check-suite --demo
+git clone https://github.com/moaidmoatasem/cherenkov-qa && cd cherenkov-qa
+pip install .
+cherenkov demo
 ```
 
-Watch it catch the AI attempting to cheat by loosening assertions or deleting tests. Zero network calls, zero LLM, pure static AST analysis.
+Watch it catch the AI attempting to cheat by loosening assertions or deleting tests. Zero network calls, zero LLM, pure static AST analysis. (PyPI publish is on the roadmap — until then, install from source as above, or use the one-liner: `curl -fsSL https://raw.githubusercontent.com/moaidmoatasem/cherenkov-qa/main/install.sh | bash`.)
 
-**Then run the generative pipeline against your own API:**
+**Then audit a real test suite, and verify your own API:**
 
 ```bash
+cherenkov check-suite --candidate ./tests --spec ./openapi.yaml --fail-on-finding
 cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml
 ```
 
@@ -51,6 +52,14 @@ Your tests will run perfectly with `playwright test`, completely detached from C
 
 ### 5. 100% Private (Local LLM First)
 By default, CHERENKOV uses `qwen2.5-coder:7b` running locally via Ollama. Your proprietary API specs never leave your laptop. (Cloud models like OpenAI are supported as opt-in).
+
+---
+
+## How it's different, honestly
+
+> **Schemathesis** and property-based fuzzers generate inputs to find crashes; CHERENKOV generates *and audits* the tests themselves — it catches the case where the AI wrote a test that can never fail, not just the case where the API crashes.
+
+> **LLM-eval frameworks** (DeepEval, Ragas, TruLens…) judge the LLM's *answers*; CHERENKOV audits the *tests* the LLM wrote — and proves the API honors its contract.
 
 ---
 
