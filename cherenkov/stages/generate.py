@@ -17,6 +17,9 @@ from cherenkov.core.contracts import (
     StageError,
 )
 from cherenkov.core.settings import get_settings
+from cherenkov.sources.accessibility.contracts import AccessibilityScenario
+from cherenkov.sources.graphql.contracts import GraphQLScenario
+from cherenkov.sources.grpc.contracts import gRPCScenario
 from cherenkov.ai import get_client
 from cherenkov.ai.ollama_client import strip_think
 from cherenkov.core.errors import get_logger
@@ -180,7 +183,7 @@ class GenerateStage:
 
     def run(
         self,
-        scenario: Scenario,
+        scenario: Scenario | GraphQLScenario | gRPCScenario | AccessibilityScenario,
         path: str = "",
         method: str = "",
         operation: Optional[dict[str, Any]] = None,
@@ -196,6 +199,8 @@ class GenerateStage:
         self.log.info("stage start", scenario_id=mutation_id)
 
         if source_type == "graphql":
+            if not isinstance(scenario, GraphQLScenario):
+                raise TypeError("source_type 'graphql' requires a GraphQLScenario")
             import jinja2
 
             env = jinja2.Environment(
@@ -214,6 +219,8 @@ class GenerateStage:
                 expected_response_structure=scenario.expected_response_structure,
             )
         elif source_type == "grpc":
+            if not isinstance(scenario, gRPCScenario):
+                raise TypeError("source_type 'grpc' requires a gRPCScenario")
             import jinja2
             env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))))
             template = env.get_template("grpc_test.j2")
@@ -224,6 +231,8 @@ class GenerateStage:
                 proto_content=scenario.proto_content
             )
         elif source_type == "accessibility":
+            if not isinstance(scenario, AccessibilityScenario):
+                raise TypeError("source_type 'accessibility' requires an AccessibilityScenario")
             import jinja2
 
             env = jinja2.Environment(
@@ -253,6 +262,8 @@ class GenerateStage:
         else:
             # openapi (default): RESTGPT-style spec enrichment — extract rules +
             # example values from OpenAPI descriptions before building the prompt.
+            if not isinstance(scenario, Scenario):
+                raise TypeError(f"source_type {source_type!r} requires a Scenario")
             spec_rules_block = ""
             try:
                 from cherenkov.stages.enrich import SpecEnrichStage

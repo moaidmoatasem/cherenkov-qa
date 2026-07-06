@@ -19,6 +19,7 @@ from __future__ import annotations
 import os as _os
 import os
 import sqlite3
+from typing import Any, List
 import threading
 import time
 import logging
@@ -185,7 +186,7 @@ class HitlQueue:
         finally:
             con.close()
 
-    def audit_rows(self) -> list[dict]:
+    def audit_rows(self) -> List[dict]:
         con = self._connect()
         try:
             rows = con.execute("SELECT * FROM audit_log ORDER BY id").fetchall()
@@ -207,7 +208,7 @@ class HitlQueue:
         con = self._connect()
         try:
             sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=? WHERE id=? AND status='pending'"
-            vals = (new_status.value, actor, _now(), item_id)
+            vals: tuple = (new_status.value, actor, _now(), item_id)
             if extra_sql:
                 sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=?, reject_reason=? WHERE id=? AND status='pending'"
                 vals = (new_status.value, actor, _now(), extra_vals[0], item_id)

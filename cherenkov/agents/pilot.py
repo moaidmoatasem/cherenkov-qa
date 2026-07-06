@@ -39,7 +39,7 @@ class PilotAgent:
         self.max_observations = max_observations
         self.timeout_seconds = timeout_seconds
         self.observations = 0
-        self.start_time = None
+        self.start_time: float | None = None
 
     def run(self, intent: str) -> list[PilotStep]:
         self.start_time = time.time()

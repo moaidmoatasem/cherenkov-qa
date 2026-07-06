@@ -12,7 +12,7 @@ from cherenkov.core.contracts import GateResult
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 from cherenkov.review_ocr.models import OCRFinding, OCRReviewOutput, OCRSeverity
-from cherenkov.review_ocr.rules import OCRRuleEngine
+from cherenkov.review_ocr.rules import OCRRuleEngine, SUPPORTED_EXTENSIONS
 
 
 class ReviewStageOCR:
@@ -121,7 +121,7 @@ class ReviewStageOCR:
                     message=msg,
                 )
             else:
-                finding = OCRFinding(message=line, severity=sev)
+                finding = OCRFinding(file="", message=line, severity=sev)
             output.findings.append(finding)
 
         critical_count = sum(1 for f in output.findings if f.severity == OCRSeverity.CRITICAL)
@@ -135,8 +135,8 @@ class ReviewStageOCR:
         binary = self._get_ocr_binary()
 
         ext = os.path.splitext(filepath)[1].lower()
-        if ext and ext not in self.rule_engine.SUPPORTED_EXTENSIONS:
-            err_msg = f"Unsupported file type '{ext}' — OCR review only supports: {', '.join(sorted(self.rule_engine.SUPPORTED_EXTENSIONS))}"
+        if ext and ext not in SUPPORTED_EXTENSIONS:
+            err_msg = f"Unsupported file type '{ext}' — OCR review only supports: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"
             self.log.warning("ocr_unsupported_type", file=filepath, ext=ext)
             return OCRReviewOutput(passed=True, score_deduction=0.0, error=err_msg, duration_ms=0)
 

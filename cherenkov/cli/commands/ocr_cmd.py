@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 import os
 import subprocess
 import sys
@@ -101,7 +102,7 @@ def ocr_review(filepath: str, fmt: str) -> None:
         sys.exit(0)
 
     all_passed = True
-    results = []
+    results: list[dict[str, Any]] = []
     for fname in sorted(files):
         fpath = os.path.join(stub_dir, fname)
         with open(fpath, encoding="utf-8") as f:

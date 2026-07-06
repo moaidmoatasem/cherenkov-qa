@@ -9,7 +9,7 @@ import subprocess
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from cherenkov.validate.contracts import (
     GateCriteria,
@@ -184,7 +184,7 @@ class ValidationGate:
         )
 
     @staticmethod
-    def _compute_result(gates: list[GateEvidence]) -> str:
+    def _compute_result(gates: list[GateEvidence]) -> Literal["pass", "fail", "degraded"]:
         """Determine overall result based on gate outcomes and criteria."""
         # Build name→required mapping from GATE_CRITERIA
         required_map: dict[str, bool] = {

@@ -16,7 +16,7 @@ from cherenkov.spec_guardian.core import (
     DriftReport,
 )
 from cherenkov.spec_guardian.detector import SpecDriftDetector
-from cherenkov.spec_guardian.store import DriftStore
+from cherenkov.spec_guardian.store import DRIFT_DB, DriftStore
 from cherenkov.playbooks.registry import PlaybookRegistry
 from cherenkov.playbooks.matcher import PlaybookMatcher
 from cherenkov.playbooks.runner import PlaybookRunner
@@ -49,7 +49,7 @@ class SpecGuardianDaemon:
         self.check_interval = check_interval
         self.endpoints = endpoints or []
         self.detector = SpecDriftDetector(spec_path)
-        self.store = DriftStore(db_path or DriftStore.DRIFT_DB)
+        self.store = DriftStore(db_path or DRIFT_DB)
         self.running = False
         self.session_start: datetime | None = None
         self.total_checks = 0

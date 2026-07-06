@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Optional
+from typing import Any, Optional
 
 from cherenkov.core.errors import get_logger
 
@@ -242,7 +242,7 @@ class JiraExporter:
 
         url = f"{self.jira_url.rstrip('/')}/rest/api/3/issue"
 
-        fields = {
+        fields: dict[str, Any] = {
             "project": {"key": self.jira_project},
             "summary": summary,
             "description": {

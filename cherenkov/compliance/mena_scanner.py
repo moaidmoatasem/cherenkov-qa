@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import os
 import json
+from typing import Any
 import time
 import requests
 
@@ -30,7 +31,7 @@ class MENAComplianceScanner:
             target_url=target_url,
         )
 
-        audit_results = {
+        audit_results: dict[str, Any] = {
             "tls_enforced": False,
             "hsts_present": False,
             "clickjacking_protection": False,
