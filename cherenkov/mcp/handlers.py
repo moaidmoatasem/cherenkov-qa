@@ -1344,7 +1344,7 @@ def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
         from cherenkov.ai.rag_index import RAGIndex
 
         rag = RAGIndex()
-        res = rag.query(query)
+        res = rag.query_similar_incidents(query)
         return _ok_content({"query": query, "results": res})
     except Exception as exc:
         return _err_content(f"RAG error: {exc}")
