@@ -16,40 +16,6 @@ docs tree. Pick the path that matches who you are.
 
 ---
 
-## 📹 Onboarding & KT Sessions
-
-> Complete onboarding package. Covers developers, QA leads, SDETs, and executives.
-> All sessions use **real test data and real caught bugs** — no fabricated examples.
-
-### Loom Recording Library (8 sessions, ~45 min total)
-
-| # | Session | Audience | Duration | Script |
-|---|---------|----------|----------|--------|
-| 1 | [60-Second Quickstart](recordings/session_01_quickstart.md) | Developers | 2-3 min | Live Petstore API |
-| 2 | [Catch the AI Cheating](recordings/session_02_catch_cheating.md) | Dev + QA | 5-7 min | Controllable target |
-| 3 | [Spec to Verified Suite](recordings/session_03_full_workflow.md) | QA / SDETs | 7-10 min | Full pipeline demo |
-| 4 | [Live Case: Real API](recordings/session_04_live_api.md) | Dev + QA | 5-7 min | JSONPlaceholder live |
-| 5 | [HITL Review & Dashboard](recordings/session_05_hitl_dashboard.md) | QA Managers | 5-7 min | Dashboard walkthrough |
-| 6 | [CI/CD Integration](recordings/session_06_cicd_integration.md) | DevOps / Leads | 5-7 min | Pipeline gate |
-| 7 | [The Business Case](recordings/session_07_business_case.md) | Eng Managers | 7-10 min | ROI pitch |
-| 8 | [Zero Lock-in: Eject](recordings/session_08_eject_freedom.md) | Skeptics | 3-5 min | Eject proof |
-
-→ [Full index + recording setup guide](recordings/README.md) · [Live evidence](recordings/evidence/SESSION_EVIDENCE.md)
-
-### Extended Package
-
-| Resource | Audience | What it gives you |
-|---|---|---|
-| [Session A — Zero to Hero](../../teamwork_projects/cherenkov_onboarding/sessions/session_a_zero_to_hero.md) | Backend developers | End-to-end: init → spec → generate → validate in 30 min |
-| [Session B — Live Case Study](../../teamwork_projects/cherenkov_onboarding/sessions/session_b_live_case.md) | Senior QA / architects | HITL queue, repair loop, daemon, certify, eject |
-| [Session C — Pitch Companion](../../teamwork_projects/cherenkov_onboarding/sessions/session_c_pitch_companion.md) | Engineering managers | ROI framing, differentiation, objection handling |
-| [Pitch Deck (HTML)](../../teamwork_projects/cherenkov_onboarding/PITCH_DECK.html) | Leadership / stakeholders | Interactive presentation — open in any browser |
-| [Video Recording Guide](../../teamwork_projects/cherenkov_onboarding/VIDEO_RECORDING_GUIDE.md) | Demo producers | How to record, post-process, and publish session casts |
-| [FAQ & Objections](../../teamwork_projects/cherenkov_onboarding/FAQ_OBJECTIONS.md) | All audiences | 25 Q&A across Technical, Trust/Compliance, Business |
-| [Live Demo Harness](../../teamwork_projects/cherenkov_onboarding/run_demo.sh) | Presenters / CI | `bash run_demo.sh` — green→red drift detection, Docker Prism |
-
----
-
 ## 🚀 If you're new here
 
 | Step | Doc | What it gives you |
@@ -61,6 +27,24 @@ docs tree. Pick the path that matches who you are.
 If you only have 2 minutes, read **§ "What it does (30 seconds)"** in
 [../README.md](../README.md) and run the Quick Start in
 [GETTING_STARTED.md](GETTING_STARTED.md#-prerequisites--installation).
+
+---
+
+## 📹 Onboarding & KT Sessions
+
+A comprehensive onboarding and knowledge transfer package is available at `/home/moaid/teamwork_projects/cherenkov_onboarding/` including slide presentations, script scripts, and a runnable demo harness:
+
+* **Sessions (Loom & Pitch Scripts)**:
+  * **Session A: "Zero to Hero" (10 min)**: [sessions/session_a_zero_to_hero.md](../../teamwork_projects/cherenkov_onboarding/sessions/session_a_zero_to_hero.md) — Walkthrough of installation, `cherenkov init`, `generate`, and `validate` against the Petstore API, detailing the 4 caught conformance bugs.
+  * **Session B: "Live Case: Real API" (15 min)**: [sessions/session_b_live_case.md](../../teamwork_projects/cherenkov_onboarding/sessions/session_b_live_case.md) — Advanced SDET/QA Lead walkthrough using Stripe API spec subset against Prism local mock, demonstrating the self-healing repair loop, HITL triage, and the zero lock-in `eject` command.
+  * **Session C: "Pitch Deck Companion" (5 min)**: [sessions/session_c_pitch_companion.md](../../teamwork_projects/cherenkov_onboarding/sessions/session_c_pitch_companion.md) — Narrated executive slide outline summarizing the 5-QA validation scorecard (Sarah, Marcus, Dave, Amir, and Elena).
+* **Runnable Demo & Simulations**:
+  * **Interactive Demo Harness**: [run_demo.sh](../../teamwork_projects/cherenkov_onboarding/run_demo.sh) — Starts FastAPI, runs green test validation, injects validation bug, runs red validation, outputs formatted results, and cleans up.
+  * **Asciinema Cast Session A**: [casts/cast_session_a.sh](../../teamwork_projects/cherenkov_onboarding/casts/cast_session_a.sh) — Shell walkthrough simulation for Zero-to-Hero Petstore demo.
+  * **Asciinema Cast Session B**: [casts/cast_session_b.sh](../../teamwork_projects/cherenkov_onboarding/casts/cast_session_b.sh) — Shell walkthrough simulation for HITL and self-healing repair loop.
+* **Pitch Deck & FAQ**:
+  * **10-Slide Pitch Outline**: [PITCH_DECK.md](../../teamwork_projects/cherenkov_onboarding/PITCH_DECK.md) — Title, design descriptions, key talking points, and demo video cues for executive briefings.
+  * **Objection-Handling Q&A**: [FAQ_OBJECTIONS.md](../../teamwork_projects/cherenkov_onboarding/FAQ_OBJECTIONS.md) — 21 detailed questions and answers addressing technical, trust/compliance, and business concerns.
 
 ---
 

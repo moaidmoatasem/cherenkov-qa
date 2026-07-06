@@ -66,7 +66,7 @@ Generate a complete, production-quality Onboarding & Knowledge Transfer (KT) ses
 - Successor: not yet spawned
 
 ## Active Timers
-- Heartbeat cron: e116e557-e912-4f0a-b2d7-3aaf9386dfe1/task-39
+- Heartbeat cron: 57d8162a-4e41-4969-908b-9a60ced4e6e9/task-33
 - Safety timer: none
 
 ## Artifact Index
