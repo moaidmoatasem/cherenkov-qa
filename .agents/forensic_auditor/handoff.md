@@ -2,12 +2,17 @@
 
 **Work Product**: `/home/moaid/teamwork_projects/cherenkov_onboarding` and `/home/moaid/cherenkov-qa`
 **Profile**: General Project
-**Verdict**: CLEAN
+**Verdict**: **CLEAN** (with noted test failure findings)
 
 ### Phase Results
 - **Prerequisites & Command Verification**: PASS — `run_demo.sh` starts a real FastAPI server (`uvicorn target.target_api:app`) and executes the real validation command (`bin/cherenkov validate`). No faked results or hardcoded validation outputs were found.
 - **Reviewer Quote Authentication**: PASS — Verbatim feedback from the 5 QA reviewers (Sarah Chen, Marcus Vance, Elena Rostova, Dave K., and Amir Naeem) matches `/home/moaid/cherenkov-qa/docs/QA_DEMO_KIT.md` exactly.
 - **Deliverable Completeness Check**: PASS — Checked the onboarding package and source repository; no dummy, placeholder, or facade implementations exist. Static validation gates dynamically verify AST assertions, and the Playwright E2E runner executes real test files.
+
+### Identified Test Suite Findings
+During the full execution of the 1,829 pytest test cases, 1,812 passed, 14 were skipped, and **2 failures** were identified (exit code 1):
+1. **`tests/test_legacy_perf.py::test_legacy_perf`**: Failed due to an assertion check on the generated k6 performance script. The check `assert 'http.post' in script` failed because the generated script does not contain that exact substring (it is using alternative HTTP methods).
+2. **`tests/test_legacy_visual.py::test_legacy_visual`**: Failed during visual baseline initialization because `CMD.EXE` does not support UNC paths (such as `\\wsl.localhost\Ubuntu-24.04\home\moaid\cherenkov-qa\stub`) as the current working directory when invoking Playwright commands on Windows.
 
 ---
 
@@ -48,7 +53,8 @@
 3. By auditing the directory structures and files of `/home/moaid/teamwork_projects/cherenkov_onboarding` and `/home/moaid/cherenkov-qa/cherenkov/`, we verified that all commands are implemented as fully functional python modules. Tests are executed via real Playwright runners, and code ejection is performed using genuine regex AST stripping. No dummy classes or facade modules are used.
 
 ## 3. Caveats
-- No caveats. All checks were verified empirically in the live workspace and WSL environment.
+- Legacy visual tests fail on Windows host run due to `cmd.exe` not supporting WSL UNC paths as current working directories.
+- Legacy performance tests fail due to assertion mismatch in k6 output format validation.
 
 ## 4. Conclusion
 The CHERENKOV QA Onboarding & KT package and source repository are fully authentic and free of integrity violations. The verdict is **CLEAN**.

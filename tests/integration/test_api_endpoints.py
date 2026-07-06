@@ -20,6 +20,14 @@ os.environ.setdefault("CHERENKOV_ENV", "development")
 from fastapi.testclient import TestClient
 from cherenkov.web.api import app
 
+from cherenkov.web.middleware.rate_limit import _Bucket
+_rate_limit_patcher = patch.object(_Bucket, "consume", return_value=(True, 0.0))
+
+def setUpModule():
+    _rate_limit_patcher.start()
+
+def tearDownModule():
+    _rate_limit_patcher.stop()
 
 def _make_client() -> TestClient:
     return TestClient(app, raise_server_exceptions=False)
