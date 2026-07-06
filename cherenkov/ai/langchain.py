@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Type
+from typing import Any
 from pydantic import BaseModel, Field
 
 try:
@@ -20,7 +20,7 @@ class CherenkovTool(BaseTool):
     """LangChain tool exposing CHERENKOV QA capabilities."""
     name: str = "cherenkov_qa"
     description: str = "Use CHERENKOV to run API conformance tests, visual QA, performance scans, or accessibility checks against a target."
-    args_schema: Type[BaseModel] = CherenkovToolInput
+    args_schema: type[BaseModel] = CherenkovToolInput
 
     _agent: Any = None
     _session_id: str = "langchain_session"

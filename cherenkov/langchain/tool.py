@@ -9,7 +9,7 @@ Provides structured tools for agent builders:
 
 from __future__ import annotations
 
-from typing import Any, Type
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -63,7 +63,7 @@ class CherenkovValidateTool(BaseTool):
         "arguments for that operation. Supported operations: generate_tests, "
         "validate_target, explain_violation."
     )
-    args_schema: Type[BaseModel] = _CherenkovValidateInput
+    args_schema: type[BaseModel] = _CherenkovValidateInput
 
     _engine: ValidationEngine | None = None
 

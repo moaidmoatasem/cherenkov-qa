@@ -8,7 +8,7 @@ Non-Docker fallback: Ollama provider is always available.
 from __future__ import annotations
 
 import os
-from typing import Callable
+from collections.abc import Callable
 
 from cherenkov.ai.ollama_client import OllamaClient
 from cherenkov.ai.model_runner_client import ModelRunnerClient

@@ -31,7 +31,7 @@ import json
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Sequence
+from collections.abc import Sequence
 
 
 _MANIFEST_PATH = Path(".cherenkov/test_manifest.json")
