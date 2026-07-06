@@ -18,7 +18,11 @@
 | Doctor | PASS | All systems healthy (Ollama, Node, Playwright, Docker/Prism) |
 | Demo mode | PASS | 4-beat narrative: generate → cheat → catch → certificate |
 | HITL queue | 16 items | Pending review items with confidence scores |
+| HITL approve | PASS | Item approved by @demo-user, queue 16 → 15 |
 | Check-suite | CAUGHT | DELETED cheat detected via static analysis |
+| Spec diff | PASS | 19 breaking + 2 additive changes detected between Petstore and Target |
+| Governance | PASS | KPI panel rendered (health 0.70, escape rate 0.0%) |
+| Examples | PASS | 7 one-liners for common workflows |
 
 ---
 
@@ -224,4 +228,67 @@ HITL queue — pending (16 item(s))
 check-suite: demo_weakened.spec.ts
   FAIL — 1 integrity violation(s):
     [CAUGHT] DELETED test case removed: 'post /users happy_path'
+```
+
+---
+
+## HITL Approve Workflow
+
+```
+[OK] hitl.approve
+  id: demo-hitl-2
+  action: approve
+  previous_status: pending
+  current_status: approved
+  actor: @demo-user
+  actor_at: 2026-07-06T21:59:18Z
+  rows_affected: 1
+```
+
+Queue went from 16 → 15 pending items after approval.
+
+---
+
+## Spec Diff: Petstore vs Target API
+
+```
+BREAKING CHANGES (19):
+  [PUT] /pet — Endpoint PUT /pet was removed
+  [POST] /pet — Endpoint POST /pet was removed
+  [GET] /pet/findByStatus — Endpoint GET /pet/findByStatus was removed
+  ... (16 more endpoints removed)
+
+ADDITIVE CHANGES (2):
+  [GET] /health — New endpoint GET /health added
+  [POST] /users — New endpoint POST /users added
+
+Run cherenkov validate to re-generate tests for affected endpoints.
+```
+
+---
+
+## Governance Panel
+
+```
+E12 Governance KPI Panel
+  Health Score:      0.70
+  Escape Rate:       0.0%
+  False Positive:    0.0%
+  Coverage:          0.0%
+  Maintenance Score: 1.00
+  Pass Rate:         0/0 passed
+  Active Idioms:     0
+```
+
+---
+
+## One-Liners (cherenkov examples)
+
+```
+Validate against staging:   cherenkov validate --target https://api.staging.example.com --spec openapi.yaml
+Strict CI mode:             cherenkov validate --target http://localhost:8080 --spec openapi.yaml --fail-on-drift --quiet
+JSON output for JQ:         cherenkov validate --target http://localhost:8080 --spec openapi.yaml --json
+Generate tests:             cherenkov generate --spec openapi.yaml --output tests/
+Launch dashboard:           cherenkov dashboard --port 3000
+Push session state:         cherenkov teleport push my_session_123
 ```

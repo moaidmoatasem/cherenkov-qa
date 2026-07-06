@@ -16,7 +16,7 @@ The package includes:
 | 1 | Directory & Session Scripts | Set up folders, create Session A, B, C scripts under `sessions/` | none | DONE |
 | 2 | Demo Harness & Cast Scripts | Create `run_demo.sh` and `casts/cast_session_a.sh` & `cast_session_b.sh` | M1 | DONE |
 | 3 | Pitch Deck & FAQ | Create `PITCH_DECK.md` and `FAQ_OBJECTIONS.md` | M1 | DONE |
-| 4 | Docs Integration & Verification | Update `/home/moaid/cherenkov-qa/docs/INDEX.md`, run verification on demo harness | M2, M3 | IN_PROGRESS |
+| 4 | Docs Integration & Verification | Update `/home/moaid/cherenkov-qa/docs/INDEX.md`, run verification on demo harness | M2, M3 | DONE |
 
 ## Interface Contracts
 - `run_demo.sh` must execute `cherenkov validate` using `bin/cherenkov` relative to `/home/moaid/cherenkov-qa` or system path.

@@ -90,7 +90,10 @@ All demos were executed against real targets. Raw output saved in [`evidence/SES
 | Hallucination detection | CAUGHT | `auth_token` field not in spec |
 | Eject | PASS | Clean client.ts, zero CHERENKOV deps |
 | HITL queue | 16 pending | Confidence-scored review items |
+| HITL approve | PASS | Item approved, queue 16 → 15 |
 | Check-suite | CAUGHT | DELETED test detected via AST |
+| Spec diff | PASS | 19 breaking + 2 additive changes detected |
+| Governance | PASS | KPI panel (health 0.70, escape rate 0.0%) |
 | Doctor | All OK | Ollama, Node, Playwright, Docker healthy |
 
 ---

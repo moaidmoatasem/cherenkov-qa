@@ -32,21 +32,35 @@ If you only have 2 minutes, read **§ "What it does (30 seconds)"** in
 
 ## 📹 Onboarding & KT Sessions
 
-A comprehensive onboarding and knowledge transfer package is available at `/home/moaid/teamwork_projects/cherenkov_onboarding/` including slide presentations, script scripts, and a runnable demo harness:
+> All sessions use **real caught bugs** — no fabricated examples. Full package lives at [`docs/onboarding/`](onboarding/).
 
-* **Sessions (Loom & Pitch Scripts)**:
-  * **Session A: "Zero to Hero" (10 min)**: [sessions/session_a_zero_to_hero.md](../../teamwork_projects/cherenkov_onboarding/sessions/session_a_zero_to_hero.md) — Walkthrough of installation, `cherenkov init`, `generate`, and `validate` against the Petstore API, detailing the 4 caught conformance bugs.
-  * **Session B: "Live Case: Real API" (15 min)**: [sessions/session_b_live_case.md](../../teamwork_projects/cherenkov_onboarding/sessions/session_b_live_case.md) — Advanced SDET/QA Lead walkthrough using Stripe API spec subset against Prism local mock, demonstrating the self-healing repair loop, HITL triage, and the zero lock-in `eject` command.
-  * **Session C: "Pitch Deck Companion" (5 min)**: [sessions/session_c_pitch_companion.md](../../teamwork_projects/cherenkov_onboarding/sessions/session_c_pitch_companion.md) — Narrated executive slide outline summarizing the 5-QA validation scorecard (Sarah, Marcus, Dave, Amir, and Elena).
-* **Runnable Demo & Simulations**:
-  * **Interactive Demo Harness**: [run_demo.sh](../../teamwork_projects/cherenkov_onboarding/run_demo.sh) — Starts FastAPI, runs green test validation, injects validation bug, runs red validation, outputs formatted results, and cleans up.
-  * **Asciinema Cast Session A**: [casts/cast_session_a.sh](../../teamwork_projects/cherenkov_onboarding/casts/cast_session_a.sh) — Shell walkthrough simulation for Zero-to-Hero Petstore demo.
-  * **Asciinema Cast Session B**: [casts/cast_session_b.sh](../../teamwork_projects/cherenkov_onboarding/casts/cast_session_b.sh) — Shell walkthrough simulation for HITL and self-healing repair loop.
-* **Pitch Deck & FAQ**:
-  * **10-Slide Pitch Outline**: [PITCH_DECK.md](../../teamwork_projects/cherenkov_onboarding/PITCH_DECK.md) — Title, design descriptions, key talking points, and demo video cues for executive briefings.
-  * **Objection-Handling Q&A**: [FAQ_OBJECTIONS.md](../../teamwork_projects/cherenkov_onboarding/FAQ_OBJECTIONS.md) — 21 detailed questions and answers addressing technical, trust/compliance, and business concerns.
+### Session Scripts
 
----
+| Session | Audience | Duration | Script |
+|---------|----------|----------|--------|
+| **A — Zero to Hero** | Developers / Engineers | 10 min | [session_a_zero_to_hero.md](onboarding/sessions/session_a_zero_to_hero.md) |
+| **B — Live Case: Real API** | QA Leads / SDETs | 15 min | [session_b_live_case.md](onboarding/sessions/session_b_live_case.md) |
+| **C — Pitch Companion** | Executives / Stakeholders | 5 min | [session_c_pitch_companion.md](onboarding/sessions/session_c_pitch_companion.md) |
+
+### Demo Harness & Cast Scripts
+
+- [run_demo.sh](onboarding/run_demo.sh) — 3-phase green→red conformance harness, Docker health checks, ANSI output, zero zombie processes
+- [casts/cast_session_a.sh](onboarding/casts/cast_session_a.sh) — asciinema-ready: Zero to Hero (8 steps, sleep delays, echo banners)
+- [casts/cast_session_b.sh](onboarding/casts/cast_session_b.sh) — asciinema-ready: HITL queue + repair loop + eject
+
+### Pitch Deck & FAQ
+
+- [PITCH_DECK.html](onboarding/PITCH_DECK.html) — interactive 10-slide HTML (dark theme, glassmorphism, keyboard nav `←→`, speaker notes `N`, fullscreen `F`)
+- [PITCH_DECK.md](onboarding/PITCH_DECK.md) — markdown outline with per-slide talking points, visual descriptions, demo timestamps
+- [FAQ_OBJECTIONS.md](onboarding/FAQ_OBJECTIONS.md) — 25+ Q&A across Technical, Trust/Compliance, and Business categories
+
+### Recording Guide
+
+- [VIDEO_RECORDING_GUIDE.md](onboarding/VIDEO_RECORDING_GUIDE.md) — 9-chapter guide: Loom/OBS/asciinema setup, pre-flight checklist, per-session walkthrough, audio quality, publishing
+- [RECORDING_ASSETS/README.md](onboarding/RECORDING_ASSETS/README.md) — naming conventions, recording commands, asset manifest template
+
+> **Also see:** [`docs/recordings/`](recordings/) — 8 extended session scripts (Loom-format), evidence log, and recorded output.
+
 
 ## 🛠️ If you're building on CHERENKOV
 
