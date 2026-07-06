@@ -8,6 +8,8 @@ hide:
 
 <div class="cherenkov-hero" markdown>
 
+<img src="assets/logo.svg" class="cherenkov-logo" alt="CHERENKOV Logo" draggable="false" />
+
 # CHERENKOV-QA
 
 <p class="tagline"><b>AI-native API conformance testing.</b><br/>Spec in &rarr; Tests out &rarr; Drift caught. Locally. Privately. Zero lock-in.</p>
