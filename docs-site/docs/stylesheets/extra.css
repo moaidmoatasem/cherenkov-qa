@@ -83,6 +83,14 @@ html {
   overflow: hidden;
 }
 
+.cherenkov-hero .cherenkov-logo {
+  height: 90px;
+  margin-bottom: 0.5rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .cherenkov-hero h1 {
   font-size: 3.5rem;
   font-weight: 900;

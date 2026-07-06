@@ -21,6 +21,25 @@ from cherenkov.ai import get_client
 from cherenkov.ai.ollama_client import strip_think
 from cherenkov.core.errors import get_logger
 
+
+def _is_plausibly_valid_ts(code: str) -> bool:
+    """Fast pre-tsc structural gate — rejects obviously malformed output before accepting a generation attempt.
+
+    Catches two common failure modes: truncated output (unbalanced braces) and
+    empty/prose responses (no test() call).  Full tsc --noEmit validation still
+    runs in ReviewStage Gate 5; this check only decides whether to retry here.
+    """
+    stripped = code.strip()
+    if not stripped:
+        return False
+    if "test(" not in stripped:
+        return False
+    # Unbalanced braces almost always mean the model was cut off mid-output
+    if stripped.count("{") != stripped.count("}"):
+        return False
+    return True
+
+
 def _sanitize_prompt_input(text: str, max_len: int = 500) -> str:
     """Strip prompt injection markers and limit length."""
     injection_markers = [
@@ -226,9 +245,9 @@ class GenerateStage:
                 status=Status.OK,
                 metadata=StageMeta(stage="GENERATE", duration_ms=dt),
             )
-        # RESTGPT-style spec enrichment: extract rules + example values from
-        # OpenAPI descriptions before building the prompt so the LLM has
-        # concrete values to use rather than inventing them.
+        else:
+            # openapi (default): RESTGPT-style spec enrichment — extract rules +
+            # example values from OpenAPI descriptions before building the prompt.
             spec_rules_block = ""
             try:
                 from cherenkov.stages.enrich import SpecEnrichStage
@@ -289,8 +308,13 @@ class GenerateStage:
         temperatures = [0.2, 0.1, 0.05]
         code = ""
         last_error = ""
+        _gen_deadline = time.monotonic() + get_settings().GEN_TIMEOUT_S
 
         for temp in temperatures:
+            if time.monotonic() >= _gen_deadline:
+                last_error = f"generation timed out after {get_settings().GEN_TIMEOUT_S}s"
+                self.log.warning("gen timeout reached", scenario_id=mutation_id)
+                break
             try:
                 client = get_client()
                 raw_code = client.complete_code(
@@ -300,9 +324,17 @@ class GenerateStage:
                     temperature=temp,
                     run_id=self.run_id,
                 )
-                code = strip_think(raw_code)
-                if code.strip():
-                    break  # TypeScript compilation is validated by Gate 5 in ReviewStage
+                candidate = strip_think(raw_code)
+                if not _is_plausibly_valid_ts(candidate):
+                    self.log.warning(
+                        "generated code failed structural check, retrying",
+                        temperature=temp,
+                        brace_balance=candidate.count("{") - candidate.count("}"),
+                        has_test=("test(" in candidate),
+                    )
+                    continue
+                code = candidate
+                break
             except Exception as e:
                 last_error = f"Ollama generation failed: {e}"
                 self.log.warning(
