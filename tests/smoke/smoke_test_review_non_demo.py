@@ -12,7 +12,7 @@ import requests
 def main():
     print("Starting review dashboard in non-demo mode...")
     proc = subprocess.Popen(
-        ["cherenkov", "review", "--port", "8005"],
+        ["python3", "cherenkov.py", "review", "--port", "8005"],
         env={**os.environ, "PYTHONPATH": "."},
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

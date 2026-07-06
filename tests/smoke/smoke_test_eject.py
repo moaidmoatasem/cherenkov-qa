@@ -125,7 +125,7 @@ def main():
         # 2. Execute eject subcommand CLI
         print(f"Executing eject command to target output: {output_dir}...")
         subprocess.run(
-            ["cherenkov", "eject", "--output", output_dir],
+            ["python3", "cherenkov.py", "eject", "--output", output_dir],
             env={**os.environ, "PYTHONPATH": "."},
             check=True,
         )

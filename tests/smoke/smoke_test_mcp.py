@@ -157,7 +157,7 @@ def run() -> None:
 
     # ── Kill criterion 7: docs gate — `mcp` listed in CLI help ───────────────
     result = subprocess.run(
-        ["cherenkov", "--help"],
+        [sys.executable, "cherenkov.py", "--help"],
         capture_output=True,
         text=True,
         timeout=15,

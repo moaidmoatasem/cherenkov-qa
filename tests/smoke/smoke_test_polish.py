@@ -14,6 +14,16 @@ def main():
     print("     CHERENKOV WEEK 1 PHASE 10 POLISH SMOKE TESTS")
     print("=======================================================\n")
 
+    # Defensive auto-restore: if a previous run was aborted/crashed
+    src_py = "cherenkov.py"
+    backup_py = "cherenkov.py.bak"
+    if os.path.exists(backup_py):
+        print(
+            "[WARN] Warning: cherenkov.py.bak found from a previous aborted run. Auto-restoring..."
+        )
+        shutil.copy2(backup_py, src_py)
+        os.remove(backup_py)
+
     # 1. Verify bin/cherenkov wrapper executable
     print("Testing bin/cherenkov wrapper...")
     wrapper_path = "./bin/cherenkov"
@@ -54,46 +64,67 @@ def main():
     assert docs_proc.returncode == 0, "Docs checker failed unexpectedly!"
     print("[PASS] Docs checker passed successfully on standard documented files.")
 
-    # 4. Verify documentation coverage check FAILS when docs are incomplete
+    # 4. Verify documentation coverage check FAILS on undocumented commands
     print("Testing CI Docs Drift Checker (Fail Case)...")
 
-    # Write a stripped docs file that omits the `verify` subcommand
-    import tempfile
-    docs_path = os.path.join("docs", "GETTING_STARTED.md")
-    with open(docs_path, "r", encoding="utf-8") as f:
-        full_docs = f.read()
+    # Backup cherenkov.py
+    src_py = "cherenkov.py"
+    backup_py = "cherenkov.py.bak"
+    shutil.copy2(src_py, backup_py)
 
-    # Strip all occurrences of `verify` to simulate undocumented command
-    stripped_docs = full_docs.replace("`verify`", "REMOVED_FOR_TEST")
-
-    tmp_docs = tempfile.NamedTemporaryFile(
-        mode="w", suffix=".md", delete=False, encoding="utf-8"
-    )
     try:
-        tmp_docs.write(stripped_docs)
-        tmp_docs.close()
+        # Inject an undocumented mock subcommand into get_parser()
+        with open(src_py, "r", encoding="utf-8") as f:
+            lines = f.readlines()
 
-        # Re-run docs checker against the stripped docs and expect it to fail (exit 1)
+        # Find where eject subparser is defined and inject mockcmd there
+        injection_index = -1
+        for idx, line in enumerate(lines):
+            if "eject_parser = subparsers.add_parser(" in line:
+                injection_index = idx
+                break
+
+        assert (
+            injection_index != -1
+        ), "Failed to find injection target inside cherenkov.py"
+
+        # Inject undocumented choice parser
+        lines.insert(
+            injection_index,
+            '    mock_parser = subparsers.add_parser("mockcmd", help="Mock Undocumented Command")\n',
+        )
+
+        with open(src_py, "w", encoding="utf-8") as f:
+            f.writelines(lines)
+
+        print("Injected undocumented choice 'mockcmd' into cherenkov.py.")
+
+        # Re-run docs checker and expect it to fail (code 1)
         fail_proc = subprocess.run(
-            ["python3", "scripts/ci_docs_check.py", "--docs-file", tmp_docs.name],
+            ["python3", "scripts/ci_docs_check.py"],
             env={**os.environ, "PYTHONPATH": "."},
             capture_output=True,
             text=True,
         )
-        print("Stripped docs checker stdout:")
+        print("Injected docs checker stdout:")
         print(fail_proc.stdout)
 
         assert (
             fail_proc.returncode == 1
-        ), "Docs checker failed to catch undocumented command!"
+        ), "Docs checker failed to catch undocumented command choice!"
         assert (
             "undocumented subcommands found" in fail_proc.stdout.lower()
         ), "Docs checker output did not specify missing subcommands!"
         print(
             "[PASS] Docs checker correctly caught the undocumented subcommand and failed CI successfully!"
         )
+
     finally:
-        os.unlink(tmp_docs.name)
+        # Restore backup cherenkov.py
+        if os.path.exists(backup_py):
+            shutil.copy2(backup_py, src_py)
+            os.remove(backup_py)
+            print("Restored cherenkov.py cleanly.")
 
     print("\n=======================================================")
     print("  ALL PHASE 10 POLISH & DOCS TESTS PASSED SUCCESSFULLY!")

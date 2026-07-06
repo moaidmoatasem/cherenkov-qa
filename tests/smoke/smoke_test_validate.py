@@ -147,7 +147,7 @@ def main():
     print("Executing validation subcommand CLI against target API...")
     try:
         val_proc = subprocess.run(
-            ["cherenkov", "validate", "--target", base_url],
+            ["python3", "cherenkov.py", "validate", "--target", base_url],
             env={**os.environ, "PYTHONPATH": "."},
             capture_output=True,
             text=True,

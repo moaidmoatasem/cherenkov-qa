@@ -2,13 +2,13 @@ name: Docs Parity
 on:
   pull_request:
     paths:
-      - 'cherenkov/cli/core.py'
+      - 'cherenkov.py'
       - 'docs/GETTING_STARTED.md'
       - 'scripts/check_cli_docs.py'
   push:
     branches: [main]
     paths:
-      - 'cherenkov/cli/core.py'
+      - 'cherenkov.py'
       - 'docs/GETTING_STARTED.md'
       - 'scripts/check_cli_docs.py'
 

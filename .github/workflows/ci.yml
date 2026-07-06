@@ -609,11 +609,11 @@ jobs:
       - name: Install Python deps
         run: pip install -r requirements.txt
       - name: CLI help smoke (Windows)
-        run: cherenkov --help
+        run: python cherenkov.py --help
         env:
           PYTHONPATH: .
       - name: Profile show smoke (Windows — Unicode check)
-        run: cherenkov profile show
+        run: python cherenkov.py profile show
         env:
           PYTHONPATH: .
       - uses: actions/setup-node@v4
@@ -623,7 +623,7 @@ jobs:
         # doctor exits 1 when Ollama/Docker are absent — expected in CI; we only
         # verify the command runs without crashing (ImportError, SyntaxError, etc.)
         continue-on-error: true
-        run: cherenkov doctor
+        run: python cherenkov.py doctor
         env:
           PYTHONPATH: .
 

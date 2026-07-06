@@ -16,26 +16,35 @@ Exit 0 = full parity, 1 = mismatch found.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import os
 import re
 import sys
 
 _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+_CLI_PATH = os.path.join(_REPO_ROOT, "cherenkov.py")
 _DOCS_PATH = os.path.join(_REPO_ROOT, "docs", "GETTING_STARTED.md")
 _HORIZON_2 = "Horizon 2 / Experimental"
 
 
 def _load_cli_commands():
+    # Ensure repo root is on sys.path so cherenkov package is resolvable
     if _REPO_ROOT not in sys.path:
         sys.path.insert(0, _REPO_ROOT)
-    from cherenkov.cli.core import _register_commands, cli
-    _register_commands()
+    spec = importlib.util.spec_from_file_location("cherenkov_cli", _CLI_PATH)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["cherenkov_cli"] = mod
+    spec.loader.exec_module(mod)
+    parser = mod.get_parser()
     commands = {}
-    for name, cmd in cli.commands.items():
-        if hasattr(cmd, "commands"):
-            commands[name] = list(cmd.commands.keys())
-        else:
-            commands[name] = []
+    for action in parser._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            for name, subparser in action.choices.items():
+                subs = []
+                for sa in subparser._actions:
+                    if isinstance(sa, argparse._SubParsersAction):
+                        subs.extend(sa.choices.keys())
+                commands[name] = subs
     return commands
 
 
