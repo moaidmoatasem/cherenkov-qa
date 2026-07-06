@@ -11,7 +11,7 @@
 
 A complete onboarding and Knowledge Transfer package was produced for documentation and stakeholder pitching. All content uses **real test data and real caught bugs**.
 
-**Package root:** `~/teamwork_projects/cherenkov_onboarding/`
+**Package root:** `docs/onboarding/ (in-repo)`
 
 | Artifact | Description |
 |----------|-------------|
@@ -221,7 +221,7 @@ All Rung 3 items are DONE (merged 2026-06-27):
 
 ## Onboarding & KT Package
 
-**Built:** 2026-07-06 | **Location:** `~/teamwork_projects/cherenkov_onboarding/`
+**Built:** 2026-07-06 | **Location:** `docs/onboarding/ (in-repo)`
 
 A complete knowledge-transfer and onboarding package was produced for practitioners, engineering leaders, and demo presenters. All assets are self-contained and link back to the canonical `docs/` SSOT.
 

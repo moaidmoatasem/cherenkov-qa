@@ -28,9 +28,9 @@ Generate a complete, production-quality Onboarding & Knowledge Transfer (KT) ses
   - M1: Directory & Session Scripts [done]
   - M2: Demo Harness & Cast Scripts [done]
   - M3: Pitch Deck & FAQ [done]
-  - M4: Docs Integration & Verification [in-progress]
-- **Current phase**: M4: Docs Integration & Verification
-- **Current focus**: M4: Docs Integration & Verification
+  - M4: Docs Integration & Verification [done]
+- **Current phase**: Completed
+- **Current focus**: none
 
 ## 🔒 Key Constraints
 - Follow Clean Architecture (Ports/Adapters) per ADR-004
@@ -56,17 +56,19 @@ Generate a complete, production-quality Onboarding & Knowledge Transfer (KT) ses
 | worker_m2 | teamwork_preview_worker | Demo & Cast Scripts (M2) | completed | fcffc786-e9b2-457e-9715-8b6ce0ab2c21 |
 | worker_m3 | teamwork_preview_worker | Pitch Deck & FAQ (M3) | completed | 30447597-04d0-43bc-bdc1-6622a4676ea8 |
 | worker_m4 | teamwork_preview_worker | Docs & Verification (M4) | failed | 674ab7d4-21f7-4d87-afe6-071c0239b5fb |
-| worker_m4_gen2 | teamwork_preview_worker | Docs & Verification (M4) | in-progress | 0daee859-cf5d-4da9-ae95-03c388fc4608 |
+| worker_m4_gen2 | teamwork_preview_worker | Docs & Verification (M4) | completed | 0daee859-cf5d-4da9-ae95-03c388fc4608 |
+| reviewer_m4 | teamwork_preview_reviewer | Review of M4 deliverables | completed | b21c5ab9-884e-4092-acc9-06cc672f5de3 |
+| auditor_m4 | teamwork_preview_auditor | Forensic audit of M4 deliverables | completed | 56f7b5b4-4a43-470f-92db-6b64ce5076b1 |
 
 ## Succession Status
 - Succession required: no
-- Spawn count: 5 / 16
-- Pending subagents: 0daee859-cf5d-4da9-ae95-03c388fc4608
+- Spawn count: 7 / 16
+- Pending subagents: none
 - Predecessor: none
 - Successor: not yet spawned
 
 ## Active Timers
-- Heartbeat cron: 57d8162a-4e41-4969-908b-9a60ced4e6e9/task-33
+- Heartbeat cron: none
 - Safety timer: none
 
 ## Artifact Index

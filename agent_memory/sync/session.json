@@ -1,14 +1,14 @@
 {
   "session": {
     "id": "sess_20260706215654_8ea271",
-    "status": "open",
+    "status": "closed",
     "task": "onboarding_verification",
     "started_at": "2026-07-06T21:56:54.317200+00:00",
-    "ended_at": null,
+    "ended_at": "2026-07-06T22:01:19.059858+00:00",
     "findings_count": 1,
     "token_total": 0,
-    "summary": null,
-    "compacted": false,
+    "summary": "Updated docs/INDEX.md to insert onboarding sessions, verified run_demo.sh execution (exits with 0 and cleans up port 8000), and verified cast_session_a.sh/cast_session_b.sh simulations.",
+    "compacted": true,
     "task_type": "onboarding_verification",
     "source": "cherenkov"
   },
