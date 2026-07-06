@@ -283,6 +283,23 @@ def _make_report(
 
 # ── main orchestration loop ───────────────────────────────────────────────
 
+def _derive_probes_from_spec(spec: dict) -> list[tuple[str, str, dict, str]]:
+    """Derive up to 5 endpoints to probe from an arbitrary OpenAPI spec."""
+    probes = []
+    paths = spec.get("paths", {})
+    context = "Analyze the provided OpenAPI fragment for potential divergences (e.g. enum bypass, missing required fields, undocumented errors)."
+    
+    for path, methods in paths.items():
+        for method, operation in methods.items():
+            if method.upper() not in {"GET", "POST", "PUT", "DELETE", "PATCH"}:
+                continue
+            probes.append((path, method.upper(), operation, context))
+            if len(probes) >= 5:
+                break
+        if len(probes) >= 5:
+            break
+    return probes
+
 
 def run_proof(
     base_url: str,
@@ -315,7 +332,10 @@ def run_proof(
     reports: list[DivergenceReport] = []
     t0_ms = int(time.time() * 1000)
 
-    for endpoint, method, spec_fragment, context in PROOF_RUN_PROBES:
+    # Use Petstore probes if spec is precisely the Petstore default, else derive dynamically
+    probes = PROOF_RUN_PROBES if spec is PETSTORE_SPEC_SUBSET else _derive_probes_from_spec(spec)
+
+    for endpoint, method, spec_fragment, context in probes:
         print(f"\n── Probing {method} {endpoint} ──────────────────")
 
         if use_llm and skeptic is not None:

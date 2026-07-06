@@ -167,11 +167,11 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
     # Record manifest so `cherenkov check-stale` can detect spec drift later
     if source == "openapi" and spec:
         import glob as _glob
-        from cherenkov.core.staleness import TestManifest
+        from cherenkov.core.staleness import StalenessManifest
 
         tests_dir = str(_Path(__file__).parent.parent.parent.parent / "stub" / "generated_tests")
         test_files = _glob.glob(os.path.join(tests_dir, "*.spec.ts"))
-        TestManifest().record(spec_path=spec, test_files=test_files)
+        StalenessManifest().record(spec_path=spec, test_files=test_files)
 
     # The engine handles the heavy lifting
     click.echo(f"\nRunning tests against {target} ...")

@@ -55,6 +55,9 @@ app.add_middleware(RateLimitMiddleware)
 from cherenkov.web.middleware.auth_middleware import JWTAuthMiddleware  # noqa: E402
 app.add_middleware(JWTAuthMiddleware)
 
+from cherenkov.web.middleware.security import SecurityHeadersMiddleware  # noqa: E402
+app.add_middleware(SecurityHeadersMiddleware)
+
 # ── Phase 0b: Monitoring & Security (conditionally added) ────────────
 from cherenkov.web.monitoring import router as monitor_router  # noqa: E402
 

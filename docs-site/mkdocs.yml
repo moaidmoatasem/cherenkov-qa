@@ -45,13 +45,15 @@ theme:
     - search.suggest
     - search.share
     - content.code.copy
+    - content.code.select
     - content.code.annotate
+    - content.tabs.link
     - content.action.edit
     - content.action.view
     - announce.dismiss
     - toc.follow
   logo: assets/logo.svg
-  favicon: assets/favicon.ico
+  favicon: assets/favicon.png
   icon:
     repo: fontawesome/brands/github
     admonition:
@@ -84,7 +86,6 @@ extra_css:
 plugins:
   - search:
       lang: en
-  - sitemap
   - git-revision-date-localized:
       enable_creation_date: true
       type: timeago

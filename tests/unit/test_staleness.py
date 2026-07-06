@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from cherenkov.core.staleness import TestManifest, _file_sha256
+from cherenkov.core.staleness import StalenessManifest, _file_sha256
 
 
 # ── _file_sha256 ──────────────────────────────────────────────────────────────
@@ -29,16 +29,16 @@ class TestFileHash:
         assert _file_sha256(str(tmp_path / "missing.txt")) == ""
 
 
-# ── TestManifest.record / check ───────────────────────────────────────────────
+# ── StalenessManifest.record / check ───────────────────────────────────────────────
 
-class TestManifestRecord:
+class StalenessManifestRecord:
     def test_record_creates_manifest(self, tmp_path):
         spec = tmp_path / "api.yaml"
         spec.write_text("openapi: 3.0.3")
         t1 = tmp_path / "test1.spec.ts"
         t1.write_text("test")
 
-        m = TestManifest(manifest_path=tmp_path / ".cherenkov/manifest.json")
+        m = StalenessManifest(manifest_path=tmp_path / ".cherenkov/manifest.json")
         m.record(str(spec), [str(t1)])
 
         assert (tmp_path / ".cherenkov/manifest.json").exists()
@@ -46,7 +46,7 @@ class TestManifestRecord:
     def test_record_stores_correct_hash(self, tmp_path):
         spec = tmp_path / "api.yaml"
         spec.write_text("openapi: 3.0.3")
-        m = TestManifest(manifest_path=tmp_path / "manifest.json")
+        m = StalenessManifest(manifest_path=tmp_path / "manifest.json")
         m.record(str(spec), [])
 
         data = json.loads((tmp_path / "manifest.json").read_text())
@@ -56,21 +56,21 @@ class TestManifestRecord:
         spec = tmp_path / "api.yaml"
         spec.write_text("x")
         tests = [str(tmp_path / f"t{i}.spec.ts") for i in range(3)]
-        m = TestManifest(manifest_path=tmp_path / "manifest.json")
+        m = StalenessManifest(manifest_path=tmp_path / "manifest.json")
         m.record(str(spec), tests)
 
         data = json.loads((tmp_path / "manifest.json").read_text())
         assert set(data["tests"]) == set(tests)
 
 
-class TestManifestCheck:
+class StalenessManifestCheck:
     def _setup(self, tmp_path, spec_content="openapi: 3.0.3"):
         spec = tmp_path / "api.yaml"
         spec.write_text(spec_content)
         t1 = tmp_path / "test1.spec.ts"
         t1.write_text("test")
         manifest = tmp_path / "manifest.json"
-        m = TestManifest(manifest_path=manifest)
+        m = StalenessManifest(manifest_path=manifest)
         m.record(str(spec), [str(t1)])
         return m, spec, t1
 
@@ -95,7 +95,7 @@ class TestManifestCheck:
         assert str(t1) in report.missing_files
 
     def test_no_manifest_is_stale(self, tmp_path):
-        m = TestManifest(manifest_path=tmp_path / "nonexistent.json")
+        m = StalenessManifest(manifest_path=tmp_path / "nonexistent.json")
         report = m.check()
         assert report.stale
 
@@ -123,7 +123,7 @@ class TestCheckStaleCmd:
         t1 = tmp_path / "test1.spec.ts"
         t1.write_text("code")
         manifest = tmp_path / "manifest.json"
-        TestManifest(manifest_path=manifest).record(str(spec), [str(t1)])
+        StalenessManifest(manifest_path=manifest).record(str(spec), [str(t1)])
         return spec, manifest
 
     def test_up_to_date_exit_zero(self, tmp_path):
