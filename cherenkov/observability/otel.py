@@ -13,7 +13,8 @@ from __future__ import annotations
 
 import os
 from contextlib import contextmanager
-from typing import Any, Generator
+from collections.abc import Generator
+from typing import Any
 
 try:
     from opentelemetry import trace

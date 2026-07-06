@@ -4,7 +4,8 @@ import asyncio
 import json
 import logging
 import uuid
-from typing import Any, AsyncGenerator
+from collections.abc import AsyncGenerator
+from typing import Any
 
 from cherenkov.chat.domain.models import Session, Message
 from cherenkov.chat.ports.memory import ConversationMemory

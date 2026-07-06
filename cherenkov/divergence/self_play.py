@@ -24,7 +24,7 @@ import json
 import threading
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Callable
+from collections.abc import Callable
 
 
 @dataclass

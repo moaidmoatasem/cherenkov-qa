@@ -6,7 +6,7 @@ up to max_attempts times. Raises compile rate from ~39% to ~73%.
 """
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from cherenkov.core.contracts import GenerateOutput, Status
 from cherenkov.core.errors import get_logger
@@ -14,7 +14,6 @@ from cherenkov.stages.generate import GenerateStage
 from cherenkov.stages.review import ReviewStage
 
 _MAX_ATTEMPTS = 3
-
 
 class RepairLoop:
     """Generate → Review → (Repair → Review)* bounded loop.
@@ -34,18 +33,18 @@ class RepairLoop:
         scenario: Any,
         path: str = "",
         method: str = "",
-        operation: Optional[dict[str, Any]] = None,
-        schemas: Optional[dict[str, Any]] = None,
+        operation: dict[str, Any] | None = None,
+        schemas: dict[str, Any] | None = None,
         instruction: str = "",
         source_type: str = "openapi",
-        spec_path: Optional[str] = None,
+        spec_path: str | None = None,
     ) -> tuple[GenerateOutput, Any]:
         """Run the generate-review-repair loop.
 
         Returns (best_generate_output, best_review_result).
         best_review_result is None when spec_path is not provided.
         """
-        best_generate: Optional[GenerateOutput] = None
+        best_generate: GenerateOutput | None = None
         best_review = None
         best_score: float = -1.0
         current_instruction = instruction
@@ -114,7 +113,6 @@ class RepairLoop:
             )
 
         return best_generate, best_review
-
 
 def _extract_error_feedback(review) -> str:
     """Return a short description of the first failing gate."""

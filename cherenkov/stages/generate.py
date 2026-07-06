@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 import os
 import time
-from typing import Any, Optional
+from typing import Any
 
 from cherenkov.core.contracts import (
     GenerateOutput,
@@ -59,7 +59,6 @@ def _sanitize_prompt_input(text: str, max_len: int = 500) -> str:
     sanitized = sanitized.encode("ascii", errors="ignore").decode()[:max_len]
     return sanitized.strip()
 
-
 def _load_system_prompt() -> str:
     """Loads the tuned generator system prompt committed to prompts/generator_system.txt.
 
@@ -80,16 +79,13 @@ def _load_system_prompt() -> str:
             "Reinstall cherenkov-qa or set CHERENKOV_GENERATOR_PROMPT to a valid file."
         ) from e
 
-
 _system_prompt_cache: str | None = None
-
 
 def _get_system_prompt() -> str:
     global _system_prompt_cache
     if _system_prompt_cache is None:
         _system_prompt_cache = _load_system_prompt()
     return _system_prompt_cache
-
 
 def __getattr__(name: str) -> str:
     # Lazy module attribute (PEP 562): keeps `from ... import SYSTEM_PROMPT`
@@ -98,7 +94,6 @@ def __getattr__(name: str) -> str:
     if name == "SYSTEM_PROMPT":
         return _get_system_prompt()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-
 
 class GenerateStage:
     """Invokes local LLM qwen2.5-coder to write compile-ready Playwright TypeScript tests."""
@@ -183,8 +178,8 @@ class GenerateStage:
         scenario: Scenario,
         path: str = "",
         method: str = "",
-        operation: Optional[dict[str, Any]] = None,
-        schemas: Optional[dict[str, Any]] = None,
+        operation: dict[str, Any] | None = None,
+        schemas: dict[str, Any] | None = None,
         instruction: str = "",
         source_type: str = "openapi",
         strategies_block: str = "",

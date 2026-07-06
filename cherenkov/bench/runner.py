@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Sequence
+from collections.abc import Sequence
 
 from cherenkov.core.contracts import GenerateOutput, StageMeta, Status
 from cherenkov.core.errors import LoggerConfig

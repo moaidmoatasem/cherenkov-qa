@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Optional
-
 
 BUILT_IN_RULES: list[dict] = [
     {"path": "**/*.spec.ts", "rule": "Check Playwright assertions reference valid HTTP status codes and response body properties"},
@@ -24,7 +22,6 @@ DEFAULT_EXCLUDE = [
 
 SUPPORTED_EXTENSIONS = {".ts", ".tsx", ".js", ".jsx", ".py", ".yaml", ".yml", ".json", ".md"}
 
-
 def _brace_expand(pattern: str) -> list[str]:
     if "{" not in pattern or "}" not in pattern:
         return [pattern]
@@ -34,7 +31,6 @@ def _brace_expand(pattern: str) -> list[str]:
     suffix = pattern[end + 1:]
     alternatives = pattern[start + 1:end].split(",")
     return [f"{prefix}{alt}{suffix}" for alt in alternatives]
-
 
 def _glob_match(pattern: str, filepath: str) -> bool:
     import fnmatch
@@ -71,14 +67,13 @@ def _glob_match(pattern: str, filepath: str) -> bool:
                     return True
     return False
 
-
 class OCRRuleEngine:
-    def __init__(self, cli_rule_path: Optional[str] = None, repo_root: Optional[str] = None):
+    def __init__(self, cli_rule_path: str | None = None, repo_root: str | None = None):
         self.repo_root = repo_root or os.getcwd()
         self._layers: list[dict] = []
         self._load_layers(cli_rule_path)
 
-    def _load_layers(self, cli_rule_path: Optional[str] = None):
+    def _load_layers(self, cli_rule_path: str | None = None):
         layers = []
 
         cli_rules = self._load_rule_file(cli_rule_path)
@@ -99,7 +94,7 @@ class OCRRuleEngine:
 
         self._layers = layers
 
-    def _load_rule_file(self, path: Optional[str]) -> Optional[dict]:
+    def _load_rule_file(self, path: str | None) -> dict | None:
         if not path:
             return None
         if not os.path.isfile(path):
@@ -110,7 +105,7 @@ class OCRRuleEngine:
         except (json.JSONDecodeError, OSError):
             return None
 
-    def resolve_rule(self, filepath: str) -> Optional[str]:
+    def resolve_rule(self, filepath: str) -> str | None:
         candidates = []
         try:
             candidates.append(os.path.relpath(filepath, self.repo_root))
@@ -125,7 +120,7 @@ class OCRRuleEngine:
                         return entry.get("rule")
         return None
 
-    def is_excluded(self, filepath: str, custom_exclude: Optional[list[str]] = None) -> bool:
+    def is_excluded(self, filepath: str, custom_exclude: list[str] | None = None) -> bool:
         try:
             relative = os.path.relpath(filepath, self.repo_root)
         except ValueError:

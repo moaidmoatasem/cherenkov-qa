@@ -25,7 +25,7 @@ import shutil
 import sqlite3
 import subprocess
 import time
-from typing import Optional, Any
+from typing import Any
 from cherenkov.core.contracts import (
     StageMeta,
     StageError,
@@ -81,9 +81,9 @@ class _BaselineDB:
         endpoint,
         method,
         latency_ms,
-        ttft_ms: Optional[float] = None,
-        itl_ms: Optional[float] = None,
-        cost_usd: Optional[float] = None,
+        ttft_ms: float | None = None,
+        itl_ms: float | None = None,
+        cost_usd: float | None = None,
         is_llm: bool = False,
     ):
         """
@@ -356,7 +356,7 @@ class PerfStage:
 
     def _extract_llm_metrics_from_response(
         self, k6_output: str
-    ) -> Optional[dict[str, float]]:
+    ) -> dict[str, float] | None:
         """
         Extract LLM-specific metrics from k6 output or response data.
 
@@ -491,7 +491,7 @@ class PerfStage:
 
     def generate_load_profile_from_traffic(
         self, traffic_file_path: str, base_target_url: str = "http://localhost:3000"
-    ) -> Optional[PerfSlice]:
+    ) -> PerfSlice | None:
         """
         Generate a realistic load profile from HAR traffic data.
 
