@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "last_updated": "2026-06-28T20:42:17.775229+00:00",
-  "experience_count": 6,
-  "sessions_contributing": 14,
+  "last_updated": "2026-07-06T22:01:19.060357+00:00",
+  "experience_count": 7,
+  "sessions_contributing": 15,
   "experiences": [
     {
       "id": "exp_seed_001",
@@ -88,6 +88,19 @@
         "feature"
       ],
       "session_id": "sess_20260628204217_7a0d53"
+    },
+    {
+      "id": "exp_sess_20260706215654_8ea271_1dee",
+      "timestamp": "2026-07-06T22:01:19.060351+00:00",
+      "task": "onboarding_verification",
+      "action": "decision Execute run_demo.sh in WSL",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "onboarding_verification"
+      ],
+      "session_id": "sess_20260706215654_8ea271"
     }
   ],
   "pattern_index": {
@@ -114,6 +127,9 @@
     ],
     "feature": [
       "exp_sess_20260628204217_7a0d53_8961"
+    ],
+    "onboarding_verification": [
+      "exp_sess_20260706215654_8ea271_1dee"
     ]
   }
 }

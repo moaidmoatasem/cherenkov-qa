@@ -259,6 +259,9 @@ Count yeses. [QA_OUTREACH_TEMPLATES.md](QA_OUTREACH_TEMPLATES.md) exists to
 help with recruiting. **Note:** The validation gate has passed per owner decision
 (2026-06-08), but evidence collection continues for attributable QA reviews.
 
+For recorded onboarding sessions (Loom scripts, live evidence, recording setup):
+→ [docs/recordings/](recordings/) — 8 sessions covering developers, QA, managers, DevOps.
+
 ### 6.4 — AFTER PHASE 8 — open-source release
 Once Phase 8 is complete (K8s + Cloud + Validation Gate), prepare for open-source release:
 - Update LICENSE, CONTRIBUTING.md, SECURITY.md

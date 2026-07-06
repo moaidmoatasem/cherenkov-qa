@@ -982,6 +982,7 @@ Running `eject` strips all CHERENKOV-specific trace monkey-patching and hooks cl
 
 ## Next steps
 
+- **Want to see it live?** → [recordings/](recordings/) — 8 step-by-step Loom recording scripts with real test data and live evidence.
 - **Want the project state and roadmap?** → [STATUS.md](STATUS.md) and [PHASE_PLAN.md](PHASE_PLAN.md).
 - **Want the bigger picture?** → [INDEX.md](INDEX.md) maps the whole docs tree.
 - **Lost or hitting an issue?** Search [wiki/FAQ.md](wiki/FAQ.md) or open an issue.

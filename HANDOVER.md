@@ -7,6 +7,31 @@
 
 ---
 
+## 📹 Onboarding & KT Package (NEW — 2026-07-06)
+
+A complete onboarding and Knowledge Transfer package was produced for documentation and stakeholder pitching. All content uses **real test data and real caught bugs**.
+
+**Package root:** `docs/onboarding/ (in-repo)`
+
+| Artifact | Description |
+|----------|-------------|
+| `sessions/session_a_zero_to_hero.md` | 10-min developer demo: install → generate → validate (4 real Petstore bugs) |
+| `sessions/session_b_live_case.md` | 15-min QA Lead demo: Stripe/Prism mock, `--repair` loop, HITL queue, `eject` |
+| `sessions/session_c_pitch_companion.md` | 5-min exec pitch: 5-QA gate (4/5 yes), verbatim quotes, business case |
+| `run_demo.sh` | One-command green→red conformance detection harness with Docker health checks |
+| `casts/cast_session_a.sh` | asciinema-ready terminal cast for Session A |
+| `casts/cast_session_b.sh` | asciinema-ready terminal cast for Session B |
+| `PITCH_DECK.md` | 10-slide markdown pitch deck with talking points, visual cues, timestamps |
+| `PITCH_DECK.html` | Interactive HTML presentation (dark theme, glassmorphism, keyboard nav) |
+| `FAQ_OBJECTIONS.md` | 25+ Q&A across Technical, Trust/Compliance, and Business categories |
+| `VIDEO_RECORDING_GUIDE.md` | 9-chapter guide: Loom/OBS/asciinema setup, audio, publishing |
+| `RECORDING_ASSETS/README.md` | Asset directory: naming conventions, recording instructions, manifest template |
+
+**Docs integration:** `docs/INDEX.md` updated with `📹 Onboarding & KT Sessions` section.
+
+**Next human action:** Record the actual Loom/asciinema sessions using the guide and scripts above, then fill in `RECORDING_ASSETS/MANIFEST.md` with published URLs.
+
+
 ## Gate G0 status (EPIC #535)
 
 G0 requires E0.1 AND E0.2 AND E0.3 AND E0.4.
@@ -189,3 +214,44 @@ All Rung 3 items are DONE (merged 2026-06-27):
 - **CRLF noise**: `stub/generated_tests/*.spec.ts` and `npm-package/` show as modified constantly -- cosmetic, do not commit.
 - **GitHub CLI**: not authenticated in this agent environment -- PRs must be created manually.
 - **Note on E1.2 warning in ROADMAP_AQE.md**: the "do NOT merge the stale branch" caveat is outdated -- `cherenkov/sdet/` is already on `main` via #92. E1.2 is done.
+
+---
+
+## Onboarding & KT Package
+
+**Built:** 2026-07-06 | **Location:** `docs/onboarding/ (in-repo)`
+
+A complete knowledge-transfer and onboarding package was produced for practitioners, engineering leaders, and demo presenters. All assets are self-contained and link back to the canonical `docs/` SSOT.
+
+### Files Produced
+
+| File | Purpose |
+|------|---------|
+| `run_demo.sh` | Live conformance demo harness — 3-phase: green run, regression injection (REGRESSION_MODE=true), Prism/Stripe validation. Docker health checks, ANSI colour output, cleanup trap. |
+| `casts/cast_session_a.sh` | Recordable bash script for Session A (Zero to Hero): init → spec download → generate → validate → regression → report. Drives `asciinema rec`. |
+| `casts/cast_session_b.sh` | Recordable bash script for Session B (HITL + Eject): --repair, HITL queue approve/reject, daemon, certify, eject, standalone pytest run. |
+| `FAQ_OBJECTIONS.md` | 25-question FAQ across Technical (9), Trust/Compliance (8), and Business (8) categories. Honest answers including current limitations. |
+| `RECORDING_ASSETS/README.md` | Directory guide for `.cast`, `.mp4`, `.gif`, and thumbnail assets — naming conventions, recording instructions, asset status tracker. |
+
+### docs/ Updates
+
+| File | Change |
+|------|--------|
+| `docs/INDEX.md` | Added `📹 Onboarding & KT Sessions` section after top callouts, linking to all 7 onboarding assets. |
+| `HANDOVER.md` | Added this section (Onboarding & KT Package). |
+
+### Integration with existing docs
+
+The onboarding package deliberately does **not** duplicate spec content from `docs/`. Instead it links back:
+- Session scripts reference `docs/GETTING_STARTED.md` and `docs/CLI_DEMO.md`
+- FAQ answers cite specific files (e.g., `cherenkov/truth/sources/graphql.py`, `hitl_audit.jsonl`, `docs/specs/CHERENKOV_CERTIFICATE.md`)
+- The demo harness uses the real `./bin/cherenkov` binary from the live tree
+
+### Next steps for this package
+
+1. Record `.cast` files using `asciinema rec` with the cast scripts
+2. Screen-record `.mp4` files and produce `.gif` highlights
+3. Create thumbnail PNG assets per specs in `RECORDING_ASSETS/README.md`
+4. Link recorded assets from `sessions/session_a_zero_to_hero.md` etc.
+5. Run the E0.3 gate: 3 practitioners complete Session A unaided
+
