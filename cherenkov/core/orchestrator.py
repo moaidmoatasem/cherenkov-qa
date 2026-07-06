@@ -570,12 +570,27 @@ class OrchestrationEngine:
             self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
             return False
 
+        # A FAILED ingest (e.g. missing/unreadable spec) yields zero endpoints,
+        # which would otherwise flow into _run_scenarios_phase and vacuously pass
+        # (0 scenarios -> success). Honor the stage's own FAILED status instead.
+        if getattr(ingest, "status", None) == Status.FAILED:
+            self.log.error("pipeline aborted", reason="ingest stage failed")
+            self._progress("\n  ABORTED: INGEST failed — no valid spec to test.\n")
+            self._emit_event("pipeline_complete", {"success": False, "reason": "INGEST failed"})
+            return False
+
         plan = self._run_plan_stage(ingest, simulate_fail_stage)
 
         if self.breaker.tripped:
             self.log.error("pipeline aborted", reason="circuit breaker tripped")
             self._progress(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
             self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
+            return False
+
+        if getattr(plan, "status", None) == Status.FAILED:
+            self.log.error("pipeline aborted", reason="plan stage failed")
+            self._progress("\n  ABORTED: PLAN failed — no scenarios to run.\n")
+            self._emit_event("pipeline_complete", {"success": False, "reason": "PLAN failed"})
             return False
 
         pipeline_success, scenario_results, all_durations, all_endpoints, passed_endpoints = \
