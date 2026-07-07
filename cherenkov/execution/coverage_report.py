@@ -35,7 +35,7 @@ def _load_spec_endpoints(spec_path: str | None) -> list[dict[str, Any]]:
 
     for ep in result.endpoints:
         response_codes = sorted(
-            str(k) for k in ep.operation.get("responses", {}).keys()
+            str(k) for k in ep.operation.get("responses", {})
             if str(k).isdigit()
         )
         endpoints.append({
