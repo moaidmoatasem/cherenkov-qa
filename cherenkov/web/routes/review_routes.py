@@ -1,3 +1,4 @@
+from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 
 from cherenkov.web.routes.deps import _validate_scenario_id, get_queue, verify_api_key

@@ -122,6 +122,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 def add_security_middleware(app: FastAPI) -> None:
-    app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(RateLimitMiddleware)  # type: ignore[arg-type]  # TODO(#type-debt): FastAPI-kwargs middleware vs Starlette _MiddlewareFactory
     app.add_middleware(InputValidationMiddleware)
     app.add_middleware(SecurityHeadersMiddleware)

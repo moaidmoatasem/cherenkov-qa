@@ -14,9 +14,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from cherenkov.drift.detect import DriftKind, DriftFinding
+
+if TYPE_CHECKING:
+    from cherenkov.drift.snapshot import SpecSuiteSnapshot
 
 
 # ── Gate verdict (PASS / WARN / FAIL) ────────────────────────────────────────

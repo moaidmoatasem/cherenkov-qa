@@ -7,6 +7,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+from typing import Any
 from contextlib import suppress
 from pathlib import Path
 
@@ -105,7 +106,7 @@ export default function () {{
         )
 
         passed = process.returncode == 0
-        report = {
+        report: dict[str, Any] = {
             "status": "success" if passed else "failed",
             "exit_code": process.returncode,
             "api_url": url,

@@ -2,9 +2,11 @@
 Spec Guardian Trigger Loop (Horizon 3)
 Orchestrates test generation and validation upon drift detection.
 """
+from __future__ import annotations
 
 import logging
 import time
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +17,7 @@ class SpecGuardianTriggerLoop:
     """
 
     def __init__(self, target_url: str, source_type: str = "openapi"):
-        self.active_runs = {}
+        self.active_runs: dict[str, Any] = {}
         self.target_url = target_url
         self.source_type = source_type
 
@@ -31,6 +33,10 @@ class SpecGuardianTriggerLoop:
         try:
             # 1. Fetch the delta/spec changes and invoke the generative pipeline
             from cherenkov.stages.generate import GenerateStage
+
+            source: Any
+            planner: Any
+            scenarios: list[Any]
 
             if self.source_type == "openapi":
                 from cherenkov.stages.ingest import IngestStage

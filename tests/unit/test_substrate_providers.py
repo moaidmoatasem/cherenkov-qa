@@ -8,14 +8,14 @@ from cherenkov.substrate.providers.vlm import VLMProvider as VLMImpl
 
 def _ollama_provider():
     mock_client = MagicMock()
-    mock_client.complete.return_value = "ollama response"
+    mock_client.complete_code.return_value = "ollama response"
     mock_client.complete_json.return_value = '{"key": "value"}'
     return OllamaProvider(client=mock_client)
 
 
 def _openai_provider():
     mock_client = MagicMock()
-    mock_client.complete.return_value = "openai response"
+    mock_client.complete_code.return_value = "openai response"
     return OpenAIProvider(client=mock_client)
 
 

@@ -1,4 +1,5 @@
 """E6-2 Cross-service contract check."""
+from __future__ import annotations
 
 from cherenkov.core.contracts import (
     DivergenceReport,

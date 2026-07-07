@@ -9,6 +9,7 @@ import re
 import subprocess
 import time
 import json
+from typing import Any
 
 from cherenkov.core.contracts import (
     ReviewOutput,
@@ -310,7 +311,7 @@ class ReviewStage:
                 "healing snapshot is stale; skipping auto-diff",
                 scenario_id=scenario_id,
             )
-        suggestion = ""
+        suggestion: dict[str, Any] = {}
         if diag.failure_class == FailureClass.AUTH_EXPIRY:
             suggestion = AuthExpiryHealer(self.run_id).suggest_heal(scenario_id, target_url_path)
         elif diag.failure_class == FailureClass.CONTRACT_DRIFT:
@@ -373,7 +374,7 @@ class ReviewStage:
                 subject=f"{getattr(generate, 'method', '?')} {getattr(generate, 'endpoint', '?')}",
                 provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri=spec_path),
             )
-            endpoint_slice = {
+            endpoint_slice: dict[str, Any] = {
                 "path": getattr(generate, "endpoint", ""),
                 "method": getattr(generate, "method", ""),
                 "operation": {}, "schemas": {},

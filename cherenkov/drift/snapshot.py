@@ -11,7 +11,10 @@ import hashlib
 import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from cherenkov.drift.fingerprint import Fingerprint
 
 
 def canonicalize_spec(spec: dict[str, Any]) -> str:

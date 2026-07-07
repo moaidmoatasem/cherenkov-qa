@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any
+from typing import Any, cast
 
 from cherenkov.scheduling.domain.models import Routine, RoutineTrigger
 from cherenkov.scheduling.ports.scheduler import SchedulerPort
@@ -22,7 +22,7 @@ def create_routine(
         id=f"rt_{uuid.uuid4().hex[:8]}",
         name=name,
         description=description,
-        trigger=RoutineTrigger(type=trigger_type, value=trigger_value),
+        trigger=RoutineTrigger(type=cast(Any, trigger_type), value=trigger_value),
         target_module=target_module,
         target_kwargs=target_kwargs
     )

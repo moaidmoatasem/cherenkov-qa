@@ -1,6 +1,8 @@
+from __future__ import annotations
 import json
 import os
 import glob
+from typing import Any
 from cherenkov.core.errors import get_logger
 
 
@@ -32,7 +34,7 @@ def run_report(output: str, diff: str = None, run_id: str | None = None) -> int:
         print(f"Error: {events_file} not found")
         return 1
 
-    report_data = {
+    report_data: dict[str, Any] = {
         "run_id": os.path.basename(run_dir),
         "skipped_endpoints": [],
         "scenarios": [],

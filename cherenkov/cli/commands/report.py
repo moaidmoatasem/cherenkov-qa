@@ -244,24 +244,24 @@ def _handle_list(fmt: str) -> str:
     if fmt == "markdown":
         lines = ["# Run History\n", "| Run ID | Time | Verdict | Grade | Div | Cov% | URL |",
                  "|--------|------|---------|-------|-----|------|-----|"]
-        for r in rows:
-            cov = f"{r['coverage_pct']:.0f}" if r['coverage_pct'] is not None else "—"
-            grade = r["grade"] or "—"
+        for row in rows:
+            cov = f"{row['coverage_pct']:.0f}" if row['coverage_pct'] is not None else "—"
+            grade = row["grade"] or "—"
             lines.append(
-                f"| `{r['run_id'][:8]}` | {r['timestamp']} | {r['verdict']} | "
-                f"{grade} | {r['divergence_count']} | {cov} | {r['target_url']} |"
+                f"| `{row['run_id'][:8]}` | {row['timestamp']} | {row['verdict']} | "
+                f"{grade} | {row['divergence_count']} | {cov} | {row['target_url']} |"
             )
         return "\n".join(lines) + "\n"
 
     # text
     lines = [f"  {'RUN ID':36}  {'TIME':20}  {'VRD':12}  GR  DIV  COV%"]
     lines.append("  " + "-" * 80)
-    for r in rows:
-        cov = f"{r['coverage_pct']:.0f}%" if r['coverage_pct'] is not None else "  —"
-        grade = r["grade"] or "—"
+    for row in rows:
+        cov = f"{row['coverage_pct']:.0f}%" if row['coverage_pct'] is not None else "  —"
+        grade = row["grade"] or "—"
         lines.append(
-            f"  {r['run_id']:36}  {r['timestamp']:20}  {r['verdict']:12}  {grade:2}  "
-            f"{r['divergence_count']:3}  {cov}"
+            f"  {row['run_id']:36}  {row['timestamp']:20}  {row['verdict']:12}  {grade:2}  "
+            f"{row['divergence_count']:3}  {cov}"
         )
     return "\n".join(lines) + "\n"
 

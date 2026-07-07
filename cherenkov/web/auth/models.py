@@ -14,7 +14,7 @@ class Role(str, Enum):
     def hierarchy(cls) -> list[Role]:
         return [cls.viewer, cls.reviewer, cls.admin]
 
-    def __ge__(self, other: Role) -> bool:
+    def __ge__(self, other: Role) -> bool:  # type: ignore[override]  # TODO(#type-debt): str supertype expects str arg
         h = Role.hierarchy()
         return h.index(self) >= h.index(other)
 

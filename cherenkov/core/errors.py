@@ -123,6 +123,9 @@ class StructuredLogger:
             self._file.write(line + "\n")
             self._file.flush()
 
+    def debug(self, msg: str, **f):
+        self._emit("DEBUG", msg, **f)
+
     def info(self, msg: str, **f):
         self._emit("INFO", msg, **f)
 

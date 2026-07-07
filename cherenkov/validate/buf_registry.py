@@ -1,6 +1,7 @@
 """
 CHERENKOV validate/buf_registry.py — Buf Schema Registry Client.
 """
+from __future__ import annotations
 
 import os
 import urllib.request

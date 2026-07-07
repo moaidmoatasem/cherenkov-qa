@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import json
 import time
+from typing import Any
 from pydantic import BaseModel, Field
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
@@ -54,6 +55,7 @@ class VLMProvider:
 
         t0 = time.monotonic()
 
+        content: dict[str, Any] | str
         if image_path:
             image_data = _encode_image(image_path)
             content = self.client.complete_vision(

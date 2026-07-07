@@ -19,6 +19,7 @@ from __future__ import annotations
 import os as _os
 import os
 import sqlite3
+from typing import List
 import threading
 import time
 import logging
@@ -166,7 +167,7 @@ class HitlQueue:
         con = self._connect()
         try:
             row = con.execute("SELECT * FROM hitl_queue WHERE id=?", (item_id,)).fetchone()
-            return HitlItem(**{k: row[k] for k in row.keys()}) if row else None
+            return HitlItem(**dict(row)) if row else None
         finally:
             con.close()
 
@@ -181,11 +182,11 @@ class HitlQueue:
                 rows = con.execute(
                     "SELECT * FROM hitl_queue ORDER BY created_at"
                 ).fetchall()
-            return [HitlItem(**{k: r[k] for k in r.keys()}) for r in rows]
+            return [HitlItem(**dict(r)) for r in rows]
         finally:
             con.close()
 
-    def audit_rows(self) -> list[dict]:
+    def audit_rows(self) -> List[dict]:
         con = self._connect()
         try:
             rows = con.execute("SELECT * FROM audit_log ORDER BY id").fetchall()
@@ -207,7 +208,7 @@ class HitlQueue:
         con = self._connect()
         try:
             sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=? WHERE id=? AND status='pending'"
-            vals = (new_status.value, actor, _now(), item_id)
+            vals: tuple = (new_status.value, actor, _now(), item_id)
             if extra_sql:
                 sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=?, reject_reason=? WHERE id=? AND status='pending'"
                 vals = (new_status.value, actor, _now(), extra_vals[0], item_id)

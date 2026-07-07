@@ -41,7 +41,7 @@ def _to_tm_claim(contract_claim) -> TMClaim:
 
 
 def _adapter_for_source_type(source_type: str) -> SourceAdapter:
-    mapping = {
+    mapping: dict[str, type[SourceAdapter]] = {
         "openapi": OpenAPISourceAdapter,
         "traffic": TrafficSourceAdapter,
         "db_schema": DBSchemaSourceAdapter,

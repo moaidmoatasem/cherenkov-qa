@@ -1,6 +1,7 @@
 """
 CHERENKOV adapters/notifiers/slack.py — Slack Block Kit Notifier.
 """
+from __future__ import annotations
 
 import json
 import os
