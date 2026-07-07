@@ -16,10 +16,8 @@ encryption. Falls back to plain SQLite if pysqlcipher3 is not available.
 
 from __future__ import annotations
 
-import os as _os
 import os
 import sqlite3
-from typing import List
 import threading
 import time
 import logging
@@ -76,12 +74,12 @@ def _default_db_path() -> str:
 def _validate_db_path(path: str) -> str:
     if path == ":memory:":
         return path
-    resolved = _os.path.realpath(_os.path.abspath(path))
+    resolved = os.path.realpath(os.path.abspath(path))
     if not resolved.endswith(".db"):
         raise ValueError(f"db_path must end with .db, got: {path!r}")
-    parent = _os.path.dirname(resolved)
-    if not _os.path.exists(parent):
-        _os.makedirs(parent, exist_ok=True)
+    parent = os.path.dirname(resolved)
+    if not os.path.exists(parent):
+        os.makedirs(parent, exist_ok=True)
     return resolved
 
 
@@ -186,7 +184,7 @@ class HitlQueue:
         finally:
             con.close()
 
-    def audit_rows(self) -> List[dict]:
+    def audit_rows(self) -> list[dict]:
         con = self._connect()
         try:
             rows = con.execute("SELECT * FROM audit_log ORDER BY id").fetchall()
