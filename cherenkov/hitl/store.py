@@ -19,7 +19,6 @@ from __future__ import annotations
 import os as _os
 import os
 import sqlite3
-from typing import List
 import threading
 import time
 import logging
@@ -186,7 +185,7 @@ class HitlQueue:
         finally:
             con.close()
 
-    def audit_rows(self) -> List[dict]:
+    def audit_rows(self) -> list[dict]:
         con = self._connect()
         try:
             rows = con.execute("SELECT * FROM audit_log ORDER BY id").fetchall()
