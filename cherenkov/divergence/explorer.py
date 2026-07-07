@@ -18,7 +18,7 @@ Design constraints:
 from __future__ import annotations
 
 import uuid
-from typing import Callable, Iterable
+from collections.abc import Callable, Iterable
 from urllib.parse import urljoin
 
 from cherenkov.core.contracts import (

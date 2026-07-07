@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 import xml.etree.ElementTree as ET
-from typing import Iterator
+from collections.abc import Iterator
 
 from cherenkov.sources.accessibility.contracts import AccessibilityScenario, PageTarget
 

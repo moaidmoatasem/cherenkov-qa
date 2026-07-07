@@ -6,7 +6,6 @@ import subprocess
 import time
 import tempfile
 import re
-from typing import Optional
 
 from cherenkov.core.contracts import GateResult
 from cherenkov.core.errors import get_logger
@@ -14,9 +13,8 @@ from cherenkov.core.settings import get_settings
 from cherenkov.review_ocr.models import OCRFinding, OCRReviewOutput, OCRSeverity
 from cherenkov.review_ocr.rules import OCRRuleEngine, SUPPORTED_EXTENSIONS
 
-
 class ReviewStageOCR:
-    def __init__(self, run_id: Optional[str] = None):
+    def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("OCR_REVIEW", run_id)
         self.rule_engine = OCRRuleEngine(repo_root=os.getcwd())
@@ -201,7 +199,7 @@ class ReviewStageOCR:
             import shutil
             shutil.rmtree(tmpdir, ignore_errors=True)
 
-    def run(self, test_code: str, filepath: Optional[str] = None, scenario_id: str = "") -> GateResult:
+    def run(self, test_code: str, filepath: str | None = None, scenario_id: str = "") -> GateResult:
         if not self._check_ocr_installed():
             return GateResult(
                 gate="ocr",

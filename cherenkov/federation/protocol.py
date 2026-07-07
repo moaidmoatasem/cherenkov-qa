@@ -3,7 +3,7 @@
 from __future__ import annotations
 import json
 from enum import Enum
-from typing import Any, Union
+from typing import Any
 from pydantic import BaseModel
 from cherenkov.core.contracts import DivergenceReport
 from cherenkov.core.truth_model import GraphEdge, GraphNode
@@ -39,7 +39,7 @@ class DivergenceEnvelope(BaseModel):
 class ProtocolMessage(BaseModel):
     type: ProtocolMessageType
     protocol_version: str = PROTOCOL_VERSION
-    payload: Union[TruthFragment, DivergenceEnvelope, dict] = {}
+    payload: TruthFragment | DivergenceEnvelope | dict = {}
 
 
 def dumps(msg: ProtocolMessage) -> str:

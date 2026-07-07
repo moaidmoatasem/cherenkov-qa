@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Protocol, Callable
+from collections.abc import Callable
+from typing import Protocol
 
 from cherenkov.core.events import CHERENKOVEvent
 

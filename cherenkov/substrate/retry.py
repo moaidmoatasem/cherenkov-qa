@@ -27,7 +27,8 @@ import functools
 import os
 import time
 import random
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from cherenkov.core.errors import get_logger
 

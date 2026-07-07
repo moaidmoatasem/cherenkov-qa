@@ -21,8 +21,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from cherenkov.drift.detect import DriftKind, DriftFinding
 from cherenkov.drift.reconcile import DriftReport, DriftVerdict, SEVERITY

@@ -17,16 +17,12 @@ import ast
 import re
 import sys
 from pathlib import Path
-from typing import Optional
 
-import click
-
-# ── AST analysis (no external deps, stdlib only) ──────────────────────────────
+import click# ── AST analysis (no external deps, stdlib only) ──────────────────────────────
 
 _STRONG = {"Eq"}
 _WEAK = {"NotEq", "Lt", "LtE", "Gt", "GtE", "In", "NotIn", "Is", "IsNot"}
 _BODY_NAMES = {"body", "data", "payload", "json", "resp_json", "response"}
-
 
 def _spec_fields(spec_path: Path) -> set[str]:
     text = spec_path.read_text(encoding="utf-8")
@@ -61,7 +57,6 @@ def _spec_fields(spec_path: Path) -> set[str]:
                     in_props = False
     return fields
 
-
 def _subject_and_field(left: ast.expr) -> tuple[str, str | None]:
     subject = ast.unparse(left)
     field: str | None = None
@@ -73,7 +68,6 @@ def _subject_and_field(left: ast.expr) -> tuple[str, str | None]:
         if left.value.id in _BODY_NAMES:
             field = left.attr
     return subject, field
-
 
 def _parse_suite(code: str) -> dict[str, dict[str, set[str]]]:
     tree = ast.parse(code)
@@ -89,7 +83,6 @@ def _parse_suite(code: str) -> dict[str, dict[str, set[str]]]:
             out[fn.name] = subjects
     return out
 
-
 def _candidate_fields(code: str) -> set[str]:
     tree = ast.parse(code)
     fields: set[str] = set()
@@ -99,7 +92,6 @@ def _candidate_fields(code: str) -> set[str]:
             if f:
                 fields.add(f)
     return fields
-
 
 def check_integrity(
     spec_path: Path | None,
@@ -135,7 +127,6 @@ def check_integrity(
                     f"HALLUCINATED candidate asserts on `{f}` — not defined in the spec"
                 )
     return findings
-
 
 # ── CLI command ────────────────────────────────────────────────────────────────
 
@@ -176,9 +167,9 @@ def check_integrity(
 )
 def check_suite_cmd(
     candidate: str,
-    baseline: Optional[str],
-    spec: Optional[str],
-    output: Optional[str],
+    baseline: str | None,
+    spec: str | None,
+    output: str | None,
     fail_on_finding: bool,
 ) -> None:
     """Catch AI cheating in a test suite — detect WEAKENED, DELETED, or HALLUCINATED assertions.
@@ -240,11 +231,10 @@ def check_suite_cmd(
     if fail_on_finding and findings:
         sys.exit(1)
 
-
 def _check_typescript(
     candidate_code: str,
-    baseline_code: Optional[str],
-    spec_path: Optional[Path],
+    baseline_code: str | None,
+    spec_path: Path | None,
 ) -> list[str]:
     """Regex-based integrity check for TypeScript test suites."""
     findings: list[str] = []
@@ -274,7 +264,6 @@ def _check_typescript(
                 pass  # too noisy for regex — skip hallucination check for TS
 
     return findings
-
 
 def _print_findings(label: str, findings: list[str]) -> None:
     width = 64
