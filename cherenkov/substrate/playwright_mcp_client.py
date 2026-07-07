@@ -82,7 +82,7 @@ class PlaywrightMCPClient:
 
         request = {"jsonrpc": "2.0", "id": req_id, "method": method, "params": params}
 
-        future = asyncio.get_event_loop().create_future()
+        future = asyncio.get_running_loop().create_future()
         self._pending_requests[req_id] = future
 
         self.process.stdin.write((json.dumps(request) + "\\n").encode())
