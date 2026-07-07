@@ -2,6 +2,7 @@
 CHERENKOV adapters/postman_importer.py — Postman Collection Importer.
 Converts Postman v2.1 collection format into CHERENKOV Scenario definitions.
 """
+from __future__ import annotations
 
 import json
 from typing import Any

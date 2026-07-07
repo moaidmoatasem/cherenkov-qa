@@ -1,3 +1,4 @@
+from __future__ import annotations
 import threading as _threading
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from cherenkov.web.routes.deps import manager

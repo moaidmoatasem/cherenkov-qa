@@ -1,4 +1,5 @@
 """cherenkov/cli/commands/check_stale.py — `cherenkov check-stale` command."""
+from __future__ import annotations
 
 import sys
 import click

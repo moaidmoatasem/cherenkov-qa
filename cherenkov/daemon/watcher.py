@@ -2,6 +2,7 @@
 Spec Guardian Daemon Watcher (Horizon 3)
 Background process that monitors Git repos and APM telemetry.
 """
+from __future__ import annotations
 
 import time
 import logging

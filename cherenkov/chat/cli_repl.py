@@ -1,3 +1,4 @@
+from __future__ import annotations
 import sys
 import asyncio
 from cherenkov.chat.agent import QAChatAgent

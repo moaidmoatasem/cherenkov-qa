@@ -2,6 +2,7 @@
 Playwright MCP Client Interface (Horizon 3)
 Connects to an external Playwright MCP Server to execute web automation via Semantic Accessibility Trees.
 """
+from __future__ import annotations
 
 import asyncio
 import json

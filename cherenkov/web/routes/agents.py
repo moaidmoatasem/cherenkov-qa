@@ -1,4 +1,5 @@
 """API routes for Multi-Agent Conductor SSE streams (CC-2)."""
+from __future__ import annotations
 import asyncio
 import json
 import logging

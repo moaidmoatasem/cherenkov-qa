@@ -1,6 +1,7 @@
 """
 CHERENKOV adapters/notifiers/opsgenie.py — OpsGenie Alert API Notifier.
 """
+from __future__ import annotations
 
 import json
 import os
