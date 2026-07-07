@@ -41,7 +41,7 @@ async def list_runs(
     target_url: str | None = Query(default=None),
     command: str | None = Query(default=None),
     limit: int = Query(default=20, ge=1, le=200),
-    _: Role = require_role("viewer"),
+    _: Role = require_role(Role.viewer),
 ):
     store = get_run_store()
     records = store.list(target_url=target_url, command=command, limit=limit)
@@ -51,7 +51,7 @@ async def list_runs(
 @router.get("/{run_id}", operation_id="get_run")
 async def get_run(
     run_id: str,
-    _: Role = require_role("viewer"),
+    _: Role = require_role(Role.viewer),
 ):
     store = get_run_store()
     record = store.get(run_id)

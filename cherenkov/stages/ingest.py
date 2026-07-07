@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 from cherenkov.core.contracts import (
     IngestOutput,
@@ -72,6 +72,8 @@ def resolve_refs_depth(
 
 class IngestStage:
     """Parses OpenAPI specifications, slices them with depth-1 reference resolution, and extracts deterministic mutations."""
+
+    _rag: ClassVar[Any] = None  # lazily-built SchemaIndex shared across instances
 
     def __init__(self, run_id: str | None = None):
         self.log = get_logger("INGEST", run_id)

@@ -10,6 +10,7 @@ import json
 import os
 import re
 import time
+from typing import Any
 
 from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import GenerateOutput, Status, StageMeta, StageError
@@ -239,7 +240,7 @@ class UnitTestEmitter:
 
     def _generate_sample_body(self, operation: dict) -> dict:
         """Generate a minimal sample request body from the spec."""
-        body = {}
+        body: dict[str, Any] = {}
         req_body = operation.get("requestBody", {})
         content = req_body.get("content", {})
         for media_type in ("application/json",):

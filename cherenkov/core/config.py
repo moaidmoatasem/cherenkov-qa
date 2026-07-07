@@ -251,7 +251,7 @@ class Config:
             )
 
     @classmethod
-    def to_dict(cls) -> dict[str, str | int | bool]:
+    def to_dict(cls) -> dict[str, str | int | float | bool]:
         return {
             "PROVIDER": cls.PROVIDER,
             "OLLAMA_URL": cls.OLLAMA_URL,

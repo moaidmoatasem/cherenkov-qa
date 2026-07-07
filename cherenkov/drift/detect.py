@@ -12,7 +12,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from cherenkov.drift.snapshot import SpecSuiteSnapshot
 
 class DriftKind(str, Enum):
     REMOVED_OP_STILL_TESTED = "removed_op_still_tested"

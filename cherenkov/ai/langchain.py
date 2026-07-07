@@ -10,7 +10,7 @@ except ImportError:
         pass
 
 from cherenkov.chat.agent import QAChatAgent
-from cherenkov.chat.ports.memory import ConversationMemory
+from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
 from cherenkov.substrate.router import SubstrateRouter
 
 class CherenkovToolInput(BaseModel):
@@ -28,7 +28,7 @@ class CherenkovTool(BaseTool):
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         # Initialize internal agent if we have the package installed
-        memory = ConversationMemory()
+        memory = SQLiteConversationMemory()
         router = SubstrateRouter()
         self._agent = QAChatAgent(memory=memory, substrate_router=router)
 

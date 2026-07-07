@@ -1,6 +1,6 @@
 from __future__ import annotations
 import time
-from typing import Protocol
+from typing import Any, Protocol
 from pydantic import BaseModel
 import json
 
@@ -45,6 +45,7 @@ class OllamaProvider:
             )
 
         t0 = time.monotonic()
+        content: dict[str, Any] | str
         if request.output_schema:
             content = self.client.complete_json(
                 system_prompt=system_prompt,
@@ -93,6 +94,7 @@ class OpenAIProvider:
             )
 
         t0 = time.monotonic()
+        content: dict[str, Any] | str
         if request.output_schema:
             content = self.client.complete_json(
                 system_prompt=system_prompt,
@@ -153,6 +155,7 @@ class GitHubModelsProvider:
             )
 
         t0 = time.monotonic()
+        content: dict[str, Any] | str
         if request.output_schema:
             content = self.client.complete_json(
                 system_prompt=system_prompt, user_prompt=user_prompt, model=model
@@ -217,7 +220,8 @@ def get_vlm_provider(name: str | None = None) -> VLMProvider:
     if provider_name == "localai":
         from cherenkov.substrate.providers.localai import LocalAIVLMProvider
 
-        p: VLMProvider = LocalAIVLMProvider()
+        # TODO(#type-debt): LocalAIVLMProvider duck-types VLMProvider without subclassing
+        p: VLMProvider = LocalAIVLMProvider()  # type: ignore[assignment]
     elif provider_name == "ollama":
         p = VLMProvider(OllamaInferenceClient())
     elif provider_name == "openai":

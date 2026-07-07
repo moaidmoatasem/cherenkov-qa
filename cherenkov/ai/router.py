@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Callable
+from typing import Any
 
 from cherenkov.ai.ollama_client import OllamaClient
 from cherenkov.ai.model_runner_client import ModelRunnerClient
@@ -31,7 +32,8 @@ def _make_huggingface() -> InferenceClient:
 
 
 # Add new providers here without touching InferenceRouter.
-_REGISTRY: dict[str, Callable[[], InferenceClient]] = {
+# TODO(#type-debt): ModelRunnerClient duck-types a narrower interface than InferenceClient
+_REGISTRY: dict[str, Callable[[], Any]] = {
     "ollama": OllamaClient,
     "model-runner": ModelRunnerClient,
     "anthropic": _make_anthropic,

@@ -70,14 +70,14 @@ class AuditLog:
             return
 
         with open(output_path, "w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(
+            dict_writer = csv.DictWriter(
                 f, fieldnames=["id", "timestamp", "actor", "action", "resource", "details"]
             )
-            writer.writeheader()
+            dict_writer.writeheader()
             for evt in events:
                 row = evt.copy()
                 row["details"] = json.dumps(row["details"])
-                writer.writerow(row)
+                dict_writer.writerow(row)
 
 
 # Global singleton

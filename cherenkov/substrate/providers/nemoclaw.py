@@ -15,6 +15,7 @@ Default model mapping:
 from __future__ import annotations
 
 import json
+from typing import Any
 import time
 
 from cherenkov.core.settings import get_settings
@@ -67,7 +68,7 @@ class NemoClawProvider:
 
             image_bytes = pathlib.Path(request.output_schema["image_path"]).read_bytes()
             image_data = base64.b64encode(image_bytes).decode()
-            content = self.client.complete_vision(
+            content: dict[str, Any] | str = self.client.complete_vision(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 image_data=image_data,

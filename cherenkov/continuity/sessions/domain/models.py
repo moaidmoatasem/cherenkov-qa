@@ -16,5 +16,5 @@ class SessionSnapshot(BaseModel):
     id: str = Field(..., description="Unique session ID")
     token: TeleportToken | None = None
     state_data: dict[str, Any] = Field(default_factory=dict)
-    created_at: datetime.datetime = Field(default_factory=lambda: datetime.datetime.now(datetime.UTC))
-    updated_at: datetime.datetime = Field(default_factory=lambda: datetime.datetime.now(datetime.UTC))
+    created_at: datetime.datetime = Field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc))
+    updated_at: datetime.datetime = Field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc))

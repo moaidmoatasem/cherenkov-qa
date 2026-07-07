@@ -13,6 +13,10 @@ Design:
 
 from __future__ import annotations
 
+from typing import Any, cast
+
+import click
+
 import json
 import os
 import sys
@@ -209,9 +213,11 @@ def run_classify(
 
     resolved_actor = actor or _default_actor()
     adapter = OpenClawAdapter()
+    if classification not in ("regression", "intended", "ignore"):
+        raise click.BadParameter(f"classification must be regression|intended|ignore, got {classification!r}")
     req = ClassificationRequest(
         item_id=item_id,
-        classification=classification,
+        classification=cast(Any, classification),
         actor=resolved_actor,
         detail=detail,
     )

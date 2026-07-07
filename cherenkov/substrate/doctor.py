@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 
 import click
+from typing import Any
 
 from cherenkov.core.settings import get_settings
 from cherenkov.core.devices import DeviceInfo, VLMTier
@@ -71,7 +72,7 @@ def _detect_device() -> dict:
 @click.option("--evals", is_flag=True, help="Show latest eval report")
 @click.option("--adversarial", is_flag=True, help="Show latest adversarial report")
 def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool, adversarial: bool) -> None:
-    report = {"device": {}, "vlm": {}, "localai": {}, "recommendations": []}
+    report: dict[str, Any] = {"device": {}, "vlm": {}, "localai": {}, "recommendations": []}
     show_all = not vlm and not localai and not device
 
     if show_all or device:

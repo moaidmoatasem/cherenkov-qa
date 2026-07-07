@@ -97,9 +97,9 @@ async def list_sessions(
     session = await asyncio.to_thread(_read_json, SYNC_DIR / "session.json")
     prev = session.get("previous_sessions", [])
     current = session.get("session", {})
-    result = []
+    result: list[dict[str, Any]] = []
     if current and current.get("id") and current["id"] != "sess_init":
-        result.append(_coerce_session(current))
+        result.append(_coerce_session(current).model_dump())
     for p in reversed(prev[-limit:]):
         result.append(
             SddSession(

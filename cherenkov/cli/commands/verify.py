@@ -16,6 +16,7 @@ without an Ollama setup.
 from __future__ import annotations
 
 import json
+from typing import Any, cast
 import logging
 import sys
 from pathlib import Path
@@ -280,7 +281,7 @@ def _persist_run(
             command="verify",
             target_url=url,
             spec_hash=_spec_hash(json.dumps(spec_dict, sort_keys=True).encode()) if spec_dict else "",
-            verdict=verdict_str,
+            verdict=cast(Any, verdict_str),
             divergence_count=divergence_count,
             coverage_pct=coverage_pct,
             duration_ms=duration_ms,

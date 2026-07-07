@@ -13,6 +13,7 @@ dashboard, so an in-memory store is sufficient.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from typing import Any
 
 _DIVERGENCE_CORPUS: list[dict] = [
     {
@@ -137,6 +138,12 @@ def apply_action(divergence_id: str, action: str) -> str:
 class DivergenceFindingNamespace:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
+
+    def __getattr__(self, name: str) -> Any:
+        try:
+            return self.__dict__[name]
+        except KeyError as exc:
+            raise AttributeError(name) from exc
 
     def dict(self):
         return {k: v for k, v in self.__dict__.items() if k != "dict"}

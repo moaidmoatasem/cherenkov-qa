@@ -13,7 +13,7 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 _DEFAULT_DB = Path.home() / ".cherenkov" / "runs.db"
 _BUSY_TIMEOUT_S = 10.0
@@ -105,7 +105,8 @@ class RunStore:
         command: str | None = None,
         limit: int = 50,
     ) -> list[RunRecord]:
-        clauses, params = [], []
+        clauses: list[str] = []
+        params: list[Any] = []
         if target_url:
             clauses.append("target_url=?")
             params.append(target_url)
