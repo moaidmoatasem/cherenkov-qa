@@ -167,7 +167,7 @@ class HitlQueue:
         con = self._connect()
         try:
             row = con.execute("SELECT * FROM hitl_queue WHERE id=?", (item_id,)).fetchone()
-            return HitlItem(**{k: row[k] for k in row.keys()}) if row else None
+            return HitlItem(**dict(row)) if row else None
         finally:
             con.close()
 
@@ -182,7 +182,7 @@ class HitlQueue:
                 rows = con.execute(
                     "SELECT * FROM hitl_queue ORDER BY created_at"
                 ).fetchall()
-            return [HitlItem(**{k: r[k] for k in r.keys()}) for r in rows]
+            return [HitlItem(**dict(r)) for r in rows]
         finally:
             con.close()
 

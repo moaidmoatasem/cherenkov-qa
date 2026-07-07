@@ -1,4 +1,5 @@
 """CLI entrypoints for Enterprise features."""
+from __future__ import annotations
 
 import click
 import json

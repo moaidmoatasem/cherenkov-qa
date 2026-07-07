@@ -1,6 +1,7 @@
 """
 CHERENKOV validate/asyncapi.py — AsyncAPI Specification Parser.
 """
+from __future__ import annotations
 
 import yaml
 from cherenkov.core.contracts import Scenario

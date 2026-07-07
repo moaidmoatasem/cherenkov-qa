@@ -2,6 +2,7 @@
 Spec Guardian Trigger Loop (Horizon 3)
 Orchestrates test generation and validation upon drift detection.
 """
+from __future__ import annotations
 
 import logging
 import time

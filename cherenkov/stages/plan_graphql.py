@@ -1,3 +1,4 @@
+from __future__ import annotations
 from cherenkov.sources.graphql.adapter import GraphQLSourceAdapter, GraphQLOperation
 from cherenkov.sources.graphql.contracts import GraphQLScenario
 

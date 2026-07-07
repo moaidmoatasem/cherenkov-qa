@@ -1,3 +1,4 @@
+from __future__ import annotations
 from fastapi import APIRouter, Query
 
 router = APIRouter(tags=["conformance"])

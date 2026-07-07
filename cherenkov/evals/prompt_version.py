@@ -69,7 +69,7 @@ def prompt_changed(baseline_fingerprint: dict, current_fingerprint: dict) -> lis
     changed = []
     baseline_files = baseline_fingerprint.get("files", {})
     current_files = current_fingerprint.get("files", {})
-    for name in set(list(baseline_files.keys()) + list(current_files.keys())):
+    for name in baseline_files.keys() | current_files.keys():
         if baseline_files.get(name) != current_files.get(name):
             changed.append(name)
     return sorted(changed)
