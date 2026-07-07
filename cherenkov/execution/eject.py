@@ -14,8 +14,8 @@ from cherenkov.core.errors import get_logger
 def _safe_dest(base_dir: str, filename: str) -> str:
     """Join *filename* onto *base_dir* and refuse any path that escapes it."""
     base = os.path.realpath(base_dir)
-    dest = os.path.realpath(os.path.join(base, filename))
-    if os.path.commonpath([base, dest]) != base:
+    dest = os.path.normpath(os.path.join(base, filename))
+    if not dest.startswith(base + os.sep):
         raise ValueError(f"unsafe output path outside {base}: {dest}")
     return dest
 
