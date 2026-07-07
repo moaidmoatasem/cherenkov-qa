@@ -11,6 +11,15 @@ from pathlib import Path
 from cherenkov.core.errors import get_logger
 
 
+def _safe_dest(base_dir: str, filename: str) -> str:
+    """Join *filename* onto *base_dir* and refuse any path that escapes it."""
+    base = os.path.realpath(base_dir)
+    dest = os.path.realpath(os.path.join(base, filename))
+    if os.path.commonpath([base, dest]) != base:
+        raise ValueError(f"unsafe output path outside {base}: {dest}")
+    return dest
+
+
 class EjectorEngine:
     """Manages the lifecycle of standalone Playwright test suite ejection, stripping all CHERENKOV metadata."""
 
@@ -83,7 +92,7 @@ class EjectorEngine:
             types_src = os.path.join(self.stub_dir, "generated-types.ts")
             if not os.path.exists(types_src):
                 types_src = os.path.join(self.fixtures_dir, "generated-types.ts")
-            types_dest = os.path.join(output_path, "generated-types.ts")
+            types_dest = _safe_dest(output_path, "generated-types.ts")
             if os.path.exists(types_src):
                 shutil.copy2(types_src, types_dest)
                 self.log.info("copied generated types", source=types_src)
@@ -103,7 +112,7 @@ export const client = createClient<paths>({
   baseUrl: process.env.API_URL ?? "http://localhost:8000",
 });
 """
-            client_dest = os.path.join(output_path, "client.ts")
+            client_dest = _safe_dest(output_path, "client.ts")
             with open(client_dest, "w", encoding="utf-8") as fh:
                 fh.write(clean_client_content)
             self.log.info("emitted clean standalone client.ts")
@@ -127,7 +136,7 @@ export default defineConfig({
   },
 });
 """
-            config_dest = os.path.join(output_path, "playwright.config.ts")
+            config_dest = _safe_dest(output_path, "playwright.config.ts")
             with open(config_dest, "w", encoding="utf-8") as fh:
                 fh.write(clean_playwright_config)
             self.log.info("emitted standard playwright.config.ts")
@@ -145,7 +154,7 @@ export default defineConfig({
                 },
                 "dependencies": {"openapi-fetch": "^0.17.0"},
             }
-            package_json_dest = os.path.join(output_path, "package.json")
+            package_json_dest = _safe_dest(output_path, "package.json")
             with open(package_json_dest, "w", encoding="utf-8") as fh:
                 json.dump(clean_package_json, fh, indent=2)
             self.log.info("emitted standalone package.json")
@@ -161,7 +170,7 @@ export default defineConfig({
                     "skipLibCheck": True,
                 }
             }
-            tsconfig_dest = os.path.join(output_path, "tsconfig.json")
+            tsconfig_dest = _safe_dest(output_path, "tsconfig.json")
             with open(tsconfig_dest, "w", encoding="utf-8") as fh:
                 json.dump(clean_tsconfig, fh, indent=2)
             self.log.info("emitted standard tsconfig.json")

@@ -19,7 +19,7 @@ from __future__ import annotations
 import os as _os
 import os
 import sqlite3
-from typing import Any, List
+from typing import List
 import threading
 import time
 import logging
