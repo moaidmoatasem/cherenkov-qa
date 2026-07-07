@@ -54,11 +54,23 @@ def test_snapshot_and_resume_lifecycle(store):
 def test_expired_token(store):
     # Manually create snapshot with expired token
     session_id = "sess_expired"
-    token = TeleportToken(token="expired_token", expires_at=datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=1))
+    token = TeleportToken(token="expired_token", expires_at=datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=1))
     snapshot = SessionSnapshot(id=session_id, token=token, state_data={})
     store.save(snapshot)
 
     resume_uc = ResumeSessionUseCase(store)
     resumed = resume_uc.execute_by_token("expired_token")
     assert resumed is None
+
+
+def test_snapshot_timestamps_are_tz_aware_utc(store):
+    # SessionSnapshot/token timestamps use datetime.timezone.utc (works on
+    # Python 3.10+, unlike datetime.UTC which is 3.11-only). Guards against
+    # reintroducing the 3.10-incompatible AttributeError.
+    snapshot = SnapshotSessionUseCase(store).execute("sess_tz", {"k": "v"})
+    assert snapshot.created_at.tzinfo is not None
+    assert snapshot.created_at.utcoffset() == datetime.timedelta(0)
+    assert snapshot.token is not None
+    assert snapshot.token.expires_at.tzinfo is not None
+    assert snapshot.token.expires_at > snapshot.created_at
 
