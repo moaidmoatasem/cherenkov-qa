@@ -31,7 +31,7 @@ class SpecGuardianWatcher:
         self.trigger_loop = SpecGuardianTriggerLoop(
             target_url=target_url, source_type=source_type
         )
-        self._last_modified = {}
+        self._last_modified: dict[str, float] = {}
 
     def _get_mtime(self, file_path: Path) -> float:
         try:

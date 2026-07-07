@@ -59,6 +59,7 @@ def _infer_body(
         t = info.get("type", "string")
         if isinstance(t, list):
             t = next((x for x in t if x != "null"), "string")
+        val: Any
         if t == "integer":
             val = (
                 999

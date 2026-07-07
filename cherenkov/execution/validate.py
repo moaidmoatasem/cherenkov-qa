@@ -91,7 +91,7 @@ class TighteningAnalyzer:
 
     @staticmethod
     def analyze(request_body_raw: str, response_body_raw: str) -> list[str]:
-        suggestions = []
+        suggestions: list[str] = []
         if not request_body_raw or not response_body_raw:
             return suggestions
 

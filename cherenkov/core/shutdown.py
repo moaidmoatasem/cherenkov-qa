@@ -48,7 +48,7 @@ class ShutdownManager:
                 if isinstance(result, Awaitable):
                     try:
                         loop = asyncio.get_running_loop()
-                        _ = loop.create_task(result)  # noqa: RUF006 — intentionally fire-and-forget
+                        _ = asyncio.ensure_future(result, loop=loop)  # noqa: RUF006 — intentionally fire-and-forget
                     except RuntimeError:
                         loop = asyncio.new_event_loop()
                         loop.run_until_complete(result)

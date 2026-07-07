@@ -16,9 +16,12 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from cherenkov.drift.snapshot import SpecSuiteSnapshot
+
+if TYPE_CHECKING:
+    from cherenkov.drift.reconcile import DriftReport
 
 
 _DEFAULT_LEDGER_PATH = Path(os.environ.get(

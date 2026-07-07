@@ -154,7 +154,8 @@ class RegressionGuard:
         findings = self.check(report)
         baseline = self.load_baseline() or {}
         current = {"pass_rate": report.pass_rate(), **report.metric_averages()}
-        baseline_pf = (self.load_baseline() or {}).get("prompt_fingerprint", {}) if self.baseline_path.exists() else {}
+        baseline_pf_raw: Any = (self.load_baseline() or {}).get("prompt_fingerprint", {}) if self.baseline_path.exists() else {}
+        baseline_pf: dict[str, Any] = baseline_pf_raw if isinstance(baseline_pf_raw, dict) else {}
         current_pf = report.prompt_fingerprint or get_prompt_fingerprint()
         changed_prompts = prompt_changed(baseline_pf, current_pf) if baseline_pf else []
         return {

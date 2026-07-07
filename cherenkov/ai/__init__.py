@@ -28,6 +28,7 @@ def get_client() -> InferenceClient:
     if _current_client is not None and _current_provider == provider:
         return _current_client
 
+    raw_client: InferenceClient
     if provider == "ollama":
         raw_client = OllamaInferenceClient()
     elif provider == "openai":

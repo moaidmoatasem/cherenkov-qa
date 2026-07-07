@@ -1,6 +1,7 @@
 from __future__ import annotations
 import threading
 
+from typing import Any
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 
 from cherenkov.web.routes.deps import (
@@ -50,7 +51,7 @@ async def ingest_spec_file(file: UploadFile | None = File(None), url: str | None
                 f.write(resp.text)
         ingest_stage = IngestStage(run_id)
         ingest_output = await asyncio.to_thread(ingest_stage.run, spec_path)
-        endpoints = []
+        endpoints: list[dict[str, Any]] = []
         for ep in ingest_output.endpoints:
             missing = []
             for m in ep.mutations or []:
