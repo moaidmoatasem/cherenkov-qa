@@ -16,6 +16,7 @@ encryption. Falls back to plain SQLite if pysqlcipher3 is not available.
 
 from __future__ import annotations
 
+import builtins
 import os
 import sqlite3
 import threading
@@ -184,7 +185,7 @@ class HitlQueue:
         finally:
             con.close()
 
-    def audit_rows(self) -> list[dict]:
+    def audit_rows(self) -> builtins.list[dict]:
         con = self._connect()
         try:
             rows = con.execute("SELECT * FROM audit_log ORDER BY id").fetchall()
