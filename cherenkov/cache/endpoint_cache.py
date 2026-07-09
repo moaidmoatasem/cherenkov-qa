@@ -54,7 +54,7 @@ class EndpointCache:
                 finally:
                     con.close()
             except sqlite3.OperationalError:
-                self.db_path = Path(os.path.join(tempfile.gettempdir(), "cherenkov", "cache.db"))
+                self.db_path = Path(tempfile.gettempdir()) / "cherenkov" / "cache.db"
                 self.db_path.parent.mkdir(parents=True, exist_ok=True)
                 try:
                     con = sqlite3.connect(str(self.db_path), timeout=1.0)
