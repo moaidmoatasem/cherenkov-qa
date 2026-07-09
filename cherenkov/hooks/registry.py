@@ -106,7 +106,7 @@ class HookRegistry:
 
     def all_events(self) -> list[HookEvent]:
         """Return all events that have at least one hook registered."""
-        return list(self._configs.keys())
+        return list(self._configs)
 
     def __repr__(self) -> str:
         summary = {e.value: len(cfgs) for e, cfgs in self._configs.items()}

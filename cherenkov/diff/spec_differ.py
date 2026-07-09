@@ -78,8 +78,8 @@ class SpecDiffer:
         after = self._load(after_path)
         report = SpecDiffReport()
 
-        before_paths = set(before.get("paths", {}).keys())
-        after_paths = set(after.get("paths", {}).keys())
+        before_paths = set(before.get("paths", {}))
+        after_paths = set(after.get("paths", {}))
 
         # Removed endpoints — BREAKING
         for p in sorted(before_paths - after_paths):
@@ -227,8 +227,8 @@ class SpecDiffer:
         method: str,
         report: SpecDiffReport,
     ) -> None:
-        before_resp = set(before_op.get("responses", {}).keys())
-        after_resp = set(after_op.get("responses", {}).keys())
+        before_resp = set(before_op.get("responses", {}))
+        after_resp = set(after_op.get("responses", {}))
 
         for code in before_resp - after_resp:
             report.breaking.append(

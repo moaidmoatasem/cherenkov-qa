@@ -46,7 +46,7 @@ def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
     components = spec.get("components", {}).get("schemas", {})
     for schema in components.values():
         props = schema.get("properties", {})
-        spec_fields.update(props.keys())
+        spec_fields.update(props)
 
     if not spec_fields or not os.path.isdir(tests_dir):
         return warnings

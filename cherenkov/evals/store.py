@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import sqlite3
 import tempfile
 import threading
@@ -44,7 +43,7 @@ class EvalStore:
                 finally:
                     con.close()
             except sqlite3.OperationalError:
-                self.db_path = Path(os.path.join(tempfile.gettempdir(), "cherenkov", "evals.db"))
+                self.db_path = Path(tempfile.gettempdir()) / "cherenkov" / "evals.db"
                 self.db_path.parent.mkdir(parents=True, exist_ok=True)
                 try:
                     con = sqlite3.connect(str(self.db_path), timeout=0.5)

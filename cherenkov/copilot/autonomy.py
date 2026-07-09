@@ -64,7 +64,7 @@ def get_profile() -> AutonomyProfile:
 def set_profile(level: str) -> AutonomyProfile:
     if level not in PROFILE_LEVELS:
         raise ValueError(
-            f"Unknown autonomy level '{level}'. Valid: {', '.join(PROFILE_LEVELS.keys())}"
+            f"Unknown autonomy level '{level}'. Valid: {', '.join(PROFILE_LEVELS)}"
         )
     get_settings().COPILOT_AUTONOMY = level
     return PROFILE_LEVELS[level]

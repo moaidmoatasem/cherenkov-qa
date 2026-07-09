@@ -35,7 +35,7 @@ def _spec_fields(spec_path: Path) -> set[str]:
             if isinstance(node, dict):
                 props = node.get("properties")
                 if isinstance(props, dict):
-                    fields.update(props.keys())
+                    fields.update(props)
                 for v in node.values():
                     _walk(v)
             elif isinstance(node, list):

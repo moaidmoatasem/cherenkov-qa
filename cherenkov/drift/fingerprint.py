@@ -168,8 +168,8 @@ def fingerprint_of(
     Each test_dict may have an "assertions" key with a list of assertion dicts.
     """
     spec_ops = _extract_operations(spec)
-    suite_ops = set(suite.keys())
-    spec_op_ids = frozenset(spec_ops.keys())
+    suite_ops = set(suite)
+    spec_op_ids = frozenset(spec_ops)
 
     # endpoint_coverage
     endpoint_coverage = (

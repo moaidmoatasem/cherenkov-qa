@@ -143,7 +143,7 @@ class TraceReader:
                                             try:
                                                 body_json = json.loads(body_content)
                                                 if isinstance(body_json, dict):
-                                                    body_keys = list(body_json.keys())
+                                                    body_keys = list(body_json)
                                             except json.JSONDecodeError:
                                                 pass
 

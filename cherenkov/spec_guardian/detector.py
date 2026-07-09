@@ -146,7 +146,7 @@ class SpecDriftDetector:
                         endpoint=endpoint,
                         method=method,
                         field_path=None,
-                        expected=list(responses.keys()),
+                        expected=list(responses),
                         actual=status_code,
                         message=f"Status code {status_code} not defined in spec",
                     ))
