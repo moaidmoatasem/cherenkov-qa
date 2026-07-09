@@ -171,7 +171,7 @@ class HitlQueue:
         finally:
             con.close()
 
-    def list(self, status: str | None = "pending") -> list[HitlItem]:
+    def list(self, status: str | None = "pending") -> List[HitlItem]:
         con = self._connect()
         try:
             if status:
