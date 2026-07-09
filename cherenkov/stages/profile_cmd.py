@@ -8,7 +8,7 @@ def run_profile(action: str = "show", level: str | None = None) -> int:
     if action == "set":
         if level is None:
             print("Error: --level is required for 'set' action")
-            print(f"Valid levels: {', '.join(PROFILE_LEVELS.keys())}")
+            print(f"Valid levels: {', '.join(PROFILE_LEVELS)}")
             return 1
         profile = set_profile(level)
         print(f"Autonomy profile set to: {profile.level} ({profile.label})")

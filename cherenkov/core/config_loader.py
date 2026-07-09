@@ -315,7 +315,7 @@ class LayeredConfig:
         return self._store.get(key, [])
 
     def all_keys(self) -> set[str]:
-        return set(self._store.keys())
+        return set(self._store)
 
     def errors(self) -> list[str]:
         return self._errors

@@ -206,8 +206,8 @@ def detect_findings(
     # the operation_set from the fingerprint as the ground truth for "what existed."
     baseline_op_ids: frozenset[str] = baseline_snapshot.fingerprint.operation_set
     current_spec_ops = _extract_operations(current_spec)
-    current_op_ids = frozenset(current_spec_ops.keys())
-    suite_op_ids = frozenset(current_suite.keys()) - {"_generation_profile"}
+    current_op_ids = frozenset(current_spec_ops)
+    suite_op_ids = frozenset(current_suite) - {"_generation_profile"}
 
     # A1: REMOVED_OP_STILL_TESTED — op was in baseline spec, gone from current, still in suite
     removed_ops = baseline_op_ids - current_op_ids

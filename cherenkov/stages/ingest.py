@@ -175,7 +175,7 @@ class IngestStage:
                         for param in op.get("parameters", []):
                             if isinstance(param, dict):
                                 query_parts.append(param.get("name", ""))
-                        explicit_refs = set(resolved_schemas.keys())
+                        explicit_refs = set(resolved_schemas)
                         rag_schemas = _rag_index.retrieve(
                             query_text=" | ".join(query_parts),
                             explicit_refs=explicit_refs,

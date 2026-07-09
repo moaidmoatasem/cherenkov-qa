@@ -69,7 +69,7 @@ class AppiumEjector:
                         f"    # waited for visibility of '{target}' (timeout={timeout}ms)"
                     )
                 else:
-                    lines.append(f"    # unhandled step: {list(step.keys())[0]}")
+                    lines.append(f"    # unhandled step: {list(step)[0]}")
             else:
                 lines.append(f"    # unhandled step: {step}")
 
