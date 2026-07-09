@@ -3,6 +3,7 @@
 > **Format:** Executive slide outline with talking points, visual descriptions, and demo timestamps.
 > **Total Duration:** 5 minutes (exec narrative) | 30 minutes (full live demo version)
 > **Companion:** See `PITCH_DECK.html` for the interactive presentation.
+> **Companion:** See `ARCHITECTURE_DIAGRAM.html` for a one-page, two-track view of the full system (execution scaffold vs. AI orchestration layer, converging on the oracle gate) — useful as a leave-behind after Slide 2.
 
 ---
 
