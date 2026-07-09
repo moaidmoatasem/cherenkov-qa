@@ -22,6 +22,11 @@ import threading
 import time
 import logging
 
+# HitlQueue defines a method named `list`, which shadows the builtin inside
+# the class body — mypy ≥2.2 rejects `list[...]` annotations there. Do NOT
+# "modernise" this alias away; annotate with _ListType inside the class.
+from builtins import list as _ListType
+
 from cherenkov.hitl.contracts import (
     HitlEnvelope,
     HitlItem,
@@ -169,7 +174,7 @@ class HitlQueue:
         finally:
             con.close()
 
-    def list(self, status: str | None = "pending") -> List[HitlItem]:
+    def list(self, status: str | None = "pending") -> _ListType[HitlItem]:
         con = self._connect()
         try:
             if status:
@@ -184,7 +189,7 @@ class HitlQueue:
         finally:
             con.close()
 
-    def audit_rows(self) -> list[dict]:
+    def audit_rows(self) -> _ListType[dict]:
         con = self._connect()
         try:
             rows = con.execute("SELECT * FROM audit_log ORDER BY id").fetchall()
