@@ -47,7 +47,7 @@ def _placeholder(schema: dict[str, Any], name: str = "") -> Any:
         if "id" in name.lower():
             return "1"
         return "example"
-    return _TYPE_DEFAULTS.get(typ, None)
+    return _TYPE_DEFAULTS.get(typ)
 
 
 def _build_body(schema: dict[str, Any], spec: dict[str, Any]) -> dict[str, Any]:
