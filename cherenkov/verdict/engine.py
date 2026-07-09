@@ -60,6 +60,7 @@ class VerdictEngine:
         fixture_dir: str | Path = ".cherenkov/fixtures",
         max_workers: int = 4,
         timeout: float = 15.0,
+        max_probes: int = 40,
     ) -> None:
         self.base_url = base_url
         self.spec = spec
@@ -71,6 +72,7 @@ class VerdictEngine:
         self.fixture_dir = Path(fixture_dir)
         self.max_workers = max_workers
         self.timeout = timeout
+        self.max_probes = max_probes
 
     def run(self) -> RichVerdict:
         """Execute all agents in parallel and assemble the RichVerdict."""
@@ -167,6 +169,7 @@ class VerdictEngine:
                 base_url=self.base_url,
                 spec=self.spec,
                 use_llm=self.use_llm,
+                max_probes=self.max_probes,
             )
         except Exception as exc:
             return (
@@ -349,8 +352,16 @@ class VerdictEngine:
         try:
             capture = TrafficCapture(base_url=self.base_url, timeout=self.timeout)
             hypotheses = []
-            for endpoint, method, _, _ in PROOF_RUN_PROBES:
-                hypotheses.extend(_offline_hypotheses(endpoint, method))
+            if self.spec is not None and self.spec is not PETSTORE_SPEC_SUBSET:
+                from cherenkov.divergence.probe_planner import plan_probes, spec_hypotheses
+
+                for endpoint, method, operation, _ in plan_probes(self.spec):
+                    hypotheses.extend(
+                        spec_hypotheses(endpoint, method, operation, self.spec)
+                    )
+            else:
+                for endpoint, method, _, _ in PROOF_RUN_PROBES:
+                    hypotheses.extend(_offline_hypotheses(endpoint, method))
 
             cap_report = capture.run(hypotheses, fixture_dir=self.fixture_dir)
             golden = cap_report.golden_count

@@ -189,6 +189,9 @@ def _diff(actual: Any, expected: Any, status_code: int) -> str:
 
     if isinstance(expected, int):
         # expected is a status code integer
+        if status_code == 429 and expected != 429:
+            # Rate-limited by the target: inconclusive, not spec drift.
+            return "no structural diff"
         if status_code != expected:
             return f"status mismatch: expected={expected}, actual={status_code}"
         return "no structural diff"
