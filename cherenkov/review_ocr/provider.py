@@ -61,7 +61,7 @@ class OCRProviderManager:
         )
 
     def list_providers(self) -> list[str]:
-        return list(self._config.get("providers", {}).keys()) + ["anthropic", "openai", "dashscope", "deepseek"]
+        return list(self._config.get("providers", {})) + ["anthropic", "openai", "dashscope", "deepseek"]
 
     def set_provider(self, name: str, config: dict):
         providers = self._config.setdefault("providers", {})

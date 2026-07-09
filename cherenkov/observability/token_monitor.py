@@ -56,7 +56,7 @@ def _price_for(provider: str, model: str) -> dict[str, float]:
     """Return {input, output} per-1K-token pricing for a provider/model pair."""
     table = _PRICE_TABLE.get(provider.lower(), _PRICE_TABLE["openai"])
     # Longest prefix match first
-    for prefix in sorted(table.keys(), key=len, reverse=True):
+    for prefix in sorted(table, key=len, reverse=True):
         if prefix == "default":
             continue
         if model.lower().startswith(prefix):
