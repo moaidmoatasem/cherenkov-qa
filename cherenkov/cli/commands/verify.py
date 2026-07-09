@@ -96,6 +96,13 @@ from cherenkov.persistence.run_store import RunRecord, get_run_store, spec_hash 
     show_default=True,
     help="Directory for captured golden fixtures.",
 )
+@click.option(
+    "--max-probes",
+    default=40,
+    show_default=True,
+    type=click.IntRange(1, 500),
+    help="Maximum spec-derived endpoint probes per run (requires --spec).",
+)
 def verify_cmd(
     url: str,
     spec: str | None,
@@ -108,6 +115,7 @@ def verify_cmd(
     no_mutation_oracle: bool,
     no_traffic_capture: bool,
     fixture_dir: str,
+    max_probes: int,
 ) -> None:
     """Verify a live API against its OpenAPI spec -- find spec<->implementation divergences.
 
@@ -158,6 +166,7 @@ def verify_cmd(
             run_mutation=not no_mutation_oracle,
             run_traffic=not no_traffic_capture,
             fixture_dir=fixture_dir,
+            max_probes=max_probes,
         )
         duration_ms = int((time.monotonic() - t_start) * 1000)
 
@@ -187,7 +196,7 @@ def verify_cmd(
     else:
         # Legacy simple path
         try:
-            reports = run_proof(base_url=url, spec=spec_dict, use_llm=llm)
+            reports = run_proof(base_url=url, spec=spec_dict, use_llm=llm, max_probes=max_probes)
         except Exception as exc:
             click.echo(f"\n[ERROR] Probe failed: {exc}", err=True)
             sys.exit(2)
@@ -223,6 +232,7 @@ def _run_rich_verdict(
     run_mutation: bool,
     run_traffic: bool,
     fixture_dir: str,
+    max_probes: int = 40,
 ) -> tuple:
     from cherenkov.verdict.engine import VerdictEngine
     from cherenkov.divergence.coverage import compute_coverage
@@ -236,6 +246,7 @@ def _run_rich_verdict(
         run_semantic_judge=True,
         run_traffic_capture=run_traffic,
         fixture_dir=fixture_dir,
+        max_probes=max_probes,
     )
     try:
         rich = engine.run()
@@ -245,7 +256,7 @@ def _run_rich_verdict(
 
     # Extract raw divergence reports for detail printing
     try:
-        reports = run_proof(base_url=url, spec=spec_dict, use_llm=False)
+        reports = run_proof(base_url=url, spec=spec_dict, use_llm=False, max_probes=max_probes)
     except Exception:
         reports = []
 
