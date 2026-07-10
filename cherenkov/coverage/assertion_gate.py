@@ -6,6 +6,7 @@ to verify that assertions actually catch real bugs.
 
 from __future__ import annotations
 
+import os
 import time
 
 from cherenkov.core.errors import get_logger
@@ -270,8 +271,6 @@ class AssertionGate:
 
     def _find_test_files(self, test_dir: str) -> list[dict]:
         """Find test files in the directory and read their contents."""
-        import os
-
         files: list[dict] = []
         if not os.path.exists(test_dir):
             return files

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import os
+import subprocess
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -27,7 +29,6 @@ async def ocr_status():
         binary = stage._get_ocr_binary()
     except Exception as e:
         return {"installed": False, "binary": "ocr", "version": "", "error": str(e)}
-    import subprocess
     version = ""
     try:
         result = subprocess.run([binary, "--version"], capture_output=True, text=True, timeout=5)
@@ -47,7 +48,6 @@ async def run_ocr_review(scenario_id: str, payload: OcrReviewPayload, _role=Depe
     if not get_settings().OCR_ENABLED:
         raise HTTPException(status_code=400, detail="OCR review is not enabled. Set CHERENKOV_OCR_ENABLED=true")
     stage = ReviewStageOCR(run_id=scenario_id)
-    import os
     filepath = os.path.join(os.getcwd(), "stub", "generated_tests", f"{scenario_id}.spec.ts")
     output = stage.run_on_file(filepath, payload.code)
     return {

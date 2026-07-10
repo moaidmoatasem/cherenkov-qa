@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import time
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
@@ -178,8 +179,6 @@ class SOC2ReportGenerator:
         return True
 
     def generate_report(self, organization: str) -> SOC2Report:
-        import uuid
-
         report_id = f"soc2-{uuid.uuid4().hex[:8]}"
         report_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         period_end = datetime.now(timezone.utc)

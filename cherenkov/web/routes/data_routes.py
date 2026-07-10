@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+import asyncio
+
 from fastapi import APIRouter
 
 router = APIRouter(tags=["data"])
@@ -90,7 +93,6 @@ async def get_failures():
         finally:
             conn.close()
 
-    import asyncio
     raw = await asyncio.to_thread(_query_failures)
 
     return [
@@ -166,7 +168,6 @@ async def get_signals():
         finally:
             conn.close()
 
-    import asyncio
     performance = []
     for r in await asyncio.to_thread(_query_signals):
         dur = r["duration_ms"] if r["duration_ms"] else 0

@@ -16,6 +16,7 @@ without an Ollama setup.
 from __future__ import annotations
 
 import json
+import time
 from typing import Any, cast
 import logging
 import sys
@@ -154,7 +155,6 @@ def verify_cmd(
         click.echo(f"  Engine  : multi-agent (rich verdict)")
     click.echo("")
 
-    import time
     t_start = time.monotonic()
 
     if rich_verdict:

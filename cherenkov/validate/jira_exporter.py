@@ -4,8 +4,10 @@ CHERENKOV validate/jira_exporter.py - Suggest-Only Jira Ticket Exporter.
 
 from __future__ import annotations
 
+import json
 import os
 import time
+import uuid
 from typing import Any
 
 from cherenkov.core.errors import get_logger
@@ -137,7 +139,6 @@ class JiraExporter:
     def create_jira_issue(self, summary: str, description: str) -> str | None:
         import base64
         import urllib.request
-        import json
 
         jira_url = os.environ.get("CHERENKOV_JIRA_URL")
         jira_token = os.environ.get("CHERENKOV_JIRA_TOKEN")
@@ -231,7 +232,6 @@ class JiraExporter:
         issuetype: str = "Bug",
     ) -> str | None:
         import urllib.request
-        import json
 
         headers = self._build_auth_headers()
         if headers is None:
@@ -309,7 +309,6 @@ class JiraExporter:
 
     def add_comment(self, issue_key: str, comment: str) -> bool:
         import urllib.request
-        import json
 
         headers = self._build_auth_headers()
         if headers is None:
@@ -349,7 +348,6 @@ class JiraExporter:
     def add_attachment(self, issue_key: str, file_path: str) -> bool:
         import urllib.request
         import mimetypes
-        import uuid
 
         if not os.path.isfile(file_path):
             self.log.error("Attachment file not found", file_path=file_path)

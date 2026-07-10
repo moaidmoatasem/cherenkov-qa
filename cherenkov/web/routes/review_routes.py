@@ -1,4 +1,9 @@
 from __future__ import annotations
+
+import asyncio
+import logging
+import os
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from cherenkov.web.routes.deps import _validate_scenario_id, get_queue, verify_api_key
@@ -11,8 +16,6 @@ router = APIRouter(tags=["review"])
 
 @router.get("/api/v1/review/queue")
 async def list_review_queue(status: str | None = "pending", _auth=Depends(verify_api_key)):
-    import asyncio
-    import os
     queue = get_queue()
     items = queue.list(status=status)
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
@@ -47,8 +50,6 @@ async def list_review_queue(status: str | None = "pending", _auth=Depends(verify
 
 @router.post("/api/v1/review/approve")
 async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
-    import os
-
     from cherenkov.core.feedback_store import FeedbackEntry, FeedbackStore
 
     queue = get_queue()
@@ -72,15 +73,12 @@ async def approve_review_item(payload: ReviewActionPayload, _auth=Depends(verify
             detail=payload.reason or "Approved via review dashboard",
         )
     except Exception as e:
-        import logging
         logging.getLogger("HITL").warning("failed to feed approve verdict to Reflector", exc_info=e)
     return {"status": "approved", "scenario_id": payload.scenario_id}
 
 
 @router.post("/api/v1/review/reject")
 async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
-    import os
-
     from cherenkov.core.feedback_store import FeedbackEntry, FeedbackStore
 
     queue = get_queue()
@@ -102,15 +100,12 @@ async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_
             hypothesis_id=payload.scenario_id, outcome=VerdictOutcome.REJECT, detail=reason,
         )
     except Exception as e:
-        import logging
         logging.getLogger("HITL").warning("failed to feed reject verdict to Reflector", exc_info=e)
     return {"status": "rejected", "scenario_id": payload.scenario_id}
 
 
 @router.post("/api/v1/review/edit")
 async def edit_review_item(payload: ReviewActionPayload, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
-    import asyncio
-    import os
     if not payload.test_code:
         raise HTTPException(status_code=400, detail="Missing updated test code content.")
     _validate_scenario_id(payload.scenario_id)
@@ -129,7 +124,6 @@ async def edit_review_item(payload: ReviewActionPayload, _auth=Depends(verify_ap
 
 @router.post("/api/v1/review/classify")
 async def classify_review_item(payload: ClassifyPayload, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
-    import os
     queue = get_queue()
     actor = payload.actor or os.environ.get("USER", "dashboard")
     if payload.classification == "regression":

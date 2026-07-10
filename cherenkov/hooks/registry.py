@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from typing import Any
 
@@ -124,8 +125,6 @@ def load_registry_from_project(project_root: Path | None = None) -> HookRegistry
     Falls back to an empty registry if no hooks are configured or the config
     cannot be loaded (graceful degradation for environments without cherenkov.toml).
     """
-    import os
-
     try:
         from cherenkov.core.config_loader import LayeredConfig
 
