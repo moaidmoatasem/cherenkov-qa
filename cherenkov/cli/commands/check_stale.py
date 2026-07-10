@@ -35,7 +35,6 @@ def check_stale_cmd(spec, manifest, fail_on_stale, as_json):
         cherenkov check-stale --fail-on-stale
         cherenkov check-stale --spec openapi.yaml --json
     """
-    from pathlib import Path
     from cherenkov.core.staleness import StalenessManifest
 
     m = StalenessManifest(manifest_path=Path(manifest))

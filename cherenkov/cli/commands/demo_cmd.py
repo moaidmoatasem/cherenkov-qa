@@ -32,7 +32,7 @@ def _post(base_url: str, path: str, body: dict) -> tuple[int, dict]:
         conn.request("POST", path, json.dumps(body), {"Content-Type": "application/json"})
         resp = conn.getresponse()
         try:
-            data = _json.loads(resp.read().decode())
+            data = json.loads(resp.read().decode())
         except Exception:
             data = {}
         return resp.status, data
