@@ -276,7 +276,7 @@ def _make_report(
         errors=[],
         metadata=StageMeta(
             stage="divergence_engine",
-            duration_ms=int(time.time() * 1000) - start_ms,
+            duration_ms=int(time.monotonic() * 1000) - start_ms,
         ),
     )
 
@@ -313,7 +313,7 @@ def run_proof(
     witness = WitnessAgent(base_url=base_url)
 
     reports: list[DivergenceReport] = []
-    t0_ms = int(time.time() * 1000)
+    t0_ms = int(time.monotonic() * 1000)
 
     # Petstore demo when spec is the bundled default; otherwise plan probes
     # (and offline hypotheses) mechanically from the user's spec.
