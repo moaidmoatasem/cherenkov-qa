@@ -264,7 +264,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
             "violation_count": len(violations),
             "total_tests": len(reports),
             "passed": len(reports) - len(violations),
-            "drift_detected": len(violations) > 0,
+            "drift_detected": bool(violations),
             "status": results.get("status", "unknown"),
         }
         with open(json_summary, "w", encoding="utf-8") as f:

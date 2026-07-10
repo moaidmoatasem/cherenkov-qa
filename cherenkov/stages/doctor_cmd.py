@@ -185,7 +185,7 @@ def check_egress_blocked(cfg: LayeredConfig) -> tuple[bool, str]:
             "If this provider is external, set egress=any."
         )
 
-    healthy = len(warnings) == 0
+    healthy = not warnings
     return healthy, "; ".join(warnings) if warnings else "egress policy consistent"
 
 
