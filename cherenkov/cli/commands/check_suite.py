@@ -25,6 +25,10 @@ _RE_WEAK_MATCHER = re.compile(
     r"expect\([^)]+\)\.(not\.toBe|toContain|toBeTruthy|toBeFalsy|toBeDefined)\("
 )
 _RE_STRICT_MATCHER = re.compile(r"expect\([^)]+\)\.toBe\(")
+_RE_YAML_PROPS_HDR = re.compile(r"\s*properties:\s*$")
+_RE_YAML_FIELD = re.compile(r"\s{2,}([A-Za-z_][\w]*):")
+_RE_TEST_NAME = re.compile(r"(?:it|test)\(['\"]([^'\"]+)['\"]")
+_RE_PROP_ACCESS = re.compile(r"\.([a-zA-Z_]\w+)\b")
 
 # ── AST analysis (no external deps, stdlib only) ──────────────────────────────
 
@@ -54,11 +58,11 @@ def _spec_fields(spec_path: Path) -> set[str]:
     except Exception:
         in_props = False
         for line in text.splitlines():
-            if re.match(r"\s*properties:\s*$", line):
+            if _RE_YAML_PROPS_HDR.match(line):
                 in_props = True
                 continue
             if in_props:
-                m = re.match(r"\s{2,}([A-Za-z_][\w]*):", line)
+                m = _RE_YAML_FIELD.match(line)
                 if m:
                     fields.add(m.group(1))
                 elif line.strip() and not line.startswith(" "):
@@ -252,14 +256,14 @@ def _check_typescript(
         findings.append("WEAKENED  candidate uses only weak matchers (no .toBe() found)")
 
     if baseline_code:
-        base_tests = set(re.findall(r"(?:it|test)\(['\"]([^'\"]+)['\"]", baseline_code))
-        cand_tests = set(re.findall(r"(?:it|test)\(['\"]([^'\"]+)['\"]", candidate_code))
+        base_tests = set(_RE_TEST_NAME.findall(baseline_code))
+        cand_tests = set(_RE_TEST_NAME.findall(candidate_code))
         for t in sorted(base_tests - cand_tests):
             findings.append(f"DELETED   test case removed: '{t}'")
 
     if spec_path:
         allowed = _spec_fields(spec_path)
-        accessed = set(re.findall(r'\.([a-zA-Z_]\w+)\b', candidate_code))
+        accessed = set(_RE_PROP_ACCESS.findall(candidate_code))
         for f in sorted(accessed):
             if f not in allowed and f not in {
                 "status", "data", "body", "json", "headers", "text",
