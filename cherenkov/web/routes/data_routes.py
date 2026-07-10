@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import sqlite3
 import time
 
 from fastapi import APIRouter
@@ -77,8 +78,6 @@ async def get_failures():
     escaped_val = VerdictOutcome.ESCAPED_DEFECT.value
 
     def _query_failures():
-        import sqlite3
-
         conn = sqlite3.connect(store.db_path, timeout=10.0)
         conn.row_factory = sqlite3.Row
         try:
@@ -155,8 +154,6 @@ async def get_signals():
     store = VerdictStore()
 
     def _query_signals():
-        import sqlite3
-
         conn = sqlite3.connect(store.db_path, timeout=5.0)
         conn.row_factory = sqlite3.Row
         try:

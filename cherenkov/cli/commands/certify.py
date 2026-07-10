@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import sys
+import urllib.request
 from pathlib import Path
 
 import click
@@ -243,8 +244,6 @@ def _verify_cert_file(path: str, signing_key: str | None) -> None:
 
 
 def _load_spec(spec_path: str) -> dict | None:
-    import urllib.request
-
     if spec_path.startswith("http://") or spec_path.startswith("https://"):
         try:
             with urllib.request.urlopen(spec_path, timeout=15) as resp:  # noqa: S310

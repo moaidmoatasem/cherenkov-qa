@@ -23,10 +23,13 @@ from __future__ import annotations
 
 import glob
 import hashlib
+import ipaddress
 import json
 import os
+import socket
 import time
 import urllib.request
+from urllib.parse import urlparse
 import uuid
 from collections.abc import Callable
 from typing import Any
@@ -1191,10 +1194,6 @@ def _tool_registry_list(args: dict[str, Any]) -> MCPToolCallResult:
 
 def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     """Register an external MCP server with the mesh registry."""
-    import ipaddress
-    import socket
-    from urllib.parse import urlparse
-
     from cherenkov.mcp.mesh_router import get_registry
 
     inp = args

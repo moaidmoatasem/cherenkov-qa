@@ -4,6 +4,7 @@ import glob
 import os
 import json
 import sys
+import tempfile
 from pathlib import Path
 
 from cherenkov.execution.validate import ValidationEngine
@@ -138,7 +139,6 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
                 click.echo(click.style(f"Error: failed to fetch from Buf Schema Registry: {spec}", fg="red"), err=True)
                 sys.exit(1)
 
-            import tempfile
             fd, temp_spec = tempfile.mkstemp(suffix=".proto")
             with os.fdopen(fd, "w") as f:
                 f.write(proto_content)

@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import json
 import time
+import urllib.parse
+import urllib.request
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -260,8 +262,6 @@ class EvalRunner:
         response = None
         error = None
         try:
-            import urllib.request, urllib.parse
-
             req_data = json.dumps(body).encode() if body is not None else None
             if params:
                 url += "?" + urllib.parse.urlencode(params)

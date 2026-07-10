@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fnmatch
 import json
 import os
 from pathlib import Path
@@ -33,7 +34,6 @@ def _brace_expand(pattern: str) -> list[str]:
     return [f"{prefix}{alt}{suffix}" for alt in alternatives]
 
 def _glob_match(pattern: str, filepath: str) -> bool:
-    import fnmatch
     patterns = _brace_expand(pattern)
     for pat in patterns:
         if "**" not in pat:

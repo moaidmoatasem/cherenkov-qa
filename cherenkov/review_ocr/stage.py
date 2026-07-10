@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import time
 import tempfile
@@ -196,7 +197,6 @@ class ReviewStageOCR:
             self.log.error("ocr_review_error", error=err_str)
             return OCRReviewOutput(passed=True, score_deduction=0.0, error=err_str, duration_ms=dt)
         finally:
-            import shutil
             shutil.rmtree(tmpdir, ignore_errors=True)
 
     def run(self, test_code: str, filepath: str | None = None, scenario_id: str = "") -> GateResult:

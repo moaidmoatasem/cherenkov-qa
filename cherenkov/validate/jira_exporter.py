@@ -4,9 +4,12 @@ CHERENKOV validate/jira_exporter.py - Suggest-Only Jira Ticket Exporter.
 
 from __future__ import annotations
 
+import base64
 import json
+import mimetypes
 import os
 import time
+import urllib.request
 import uuid
 from typing import Any
 
@@ -137,9 +140,6 @@ class JiraExporter:
         return file_path
 
     def create_jira_issue(self, summary: str, description: str) -> str | None:
-        import base64
-        import urllib.request
-
         jira_url = os.environ.get("CHERENKOV_JIRA_URL")
         jira_token = os.environ.get("CHERENKOV_JIRA_TOKEN")
         jira_project = os.environ.get("CHERENKOV_JIRA_PROJECT", "QA")
@@ -202,8 +202,6 @@ class JiraExporter:
             raise
 
     def _build_auth_headers(self, content_type="application/json"):
-        import base64
-
         if not self.jira_url or not self.jira_token:
             return None
 
@@ -231,8 +229,6 @@ class JiraExporter:
         components: list[str] | None = None,
         issuetype: str = "Bug",
     ) -> str | None:
-        import urllib.request
-
         headers = self._build_auth_headers()
         if headers is None:
             self.log.warning(
@@ -308,8 +304,6 @@ class JiraExporter:
         return created_keys
 
     def add_comment(self, issue_key: str, comment: str) -> bool:
-        import urllib.request
-
         headers = self._build_auth_headers()
         if headers is None:
             self.log.warning("Jira URL or Token not set. Skipping add_comment.")
@@ -346,9 +340,6 @@ class JiraExporter:
             return False
 
     def add_attachment(self, issue_key: str, file_path: str) -> bool:
-        import urllib.request
-        import mimetypes
-
         if not os.path.isfile(file_path):
             self.log.error("Attachment file not found", file_path=file_path)
             return False

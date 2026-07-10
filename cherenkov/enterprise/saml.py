@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import base64
+import urllib.parse
 import uuid
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -51,8 +54,6 @@ class SAMLServiceProvider:
         """Generate SP-initiated login URL (redirect to IdP)."""
         if not self.is_enabled():
             return ""
-        import urllib.parse
-
         params = {
             "SAMLRequest": self._build_authn_request(),
             "RelayState": relay_state,
@@ -79,9 +80,6 @@ class SAMLServiceProvider:
 
     def _build_authn_request(self) -> str:
         """Build base64-encoded SAML AuthnRequest."""
-        import base64
-        import xml.etree.ElementTree as ET
-
         root = ET.Element(
             "{urn:oasis:names:tc:SAML:2.0:protocol}AuthnRequest"
         )
@@ -99,9 +97,6 @@ class SAMLServiceProvider:
 
     def _parse_assertion(self, saml_response: str) -> SAMLAssertion:
         """Parse SAML response XML and extract assertion data."""
-        import base64
-        import xml.etree.ElementTree as ET
-
         try:
             xml_bytes = base64.b64decode(saml_response)
             parser = ET.XMLParser(target=ET.TreeBuilder())

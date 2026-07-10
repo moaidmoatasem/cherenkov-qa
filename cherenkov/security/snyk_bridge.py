@@ -6,6 +6,7 @@ and surfaces issues for agent-driven remediation.
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import subprocess
@@ -209,8 +210,6 @@ def print_summary(report: SnykReport) -> None:
 
 def main() -> None:
     """CLI entry point: parse Snyk JSON and write agent memory."""
-    import argparse
-
     parser = argparse.ArgumentParser(
         description="Import Snyk scan results for agent remediation"
     )

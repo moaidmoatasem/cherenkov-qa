@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import time
+import urllib.request
 from typing import Any, cast
 import logging
 import sys
@@ -306,8 +307,6 @@ def _persist_run(
 
 def _load_spec(spec_path: str) -> dict | None:
     """Load an OpenAPI spec from a local file path or HTTP URL."""
-    import urllib.request
-
     if spec_path.startswith("http://") or spec_path.startswith("https://"):
         try:
             with urllib.request.urlopen(spec_path, timeout=15) as resp:  # noqa: S310
