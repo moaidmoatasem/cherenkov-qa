@@ -10,6 +10,7 @@ import glob
 import os
 import shutil
 import subprocess
+from pathlib import Path
 
 from cherenkov.core.settings import get_settings
 from cherenkov.core.compat import npx as _npx, subprocess_env as _subprocess_env
@@ -283,9 +284,8 @@ def run_doctor(desktop: bool = False) -> int:
         )
 
     # ── Demo mode availability ───────────────────────────────────────────
-    import os as _os, pathlib as _pl
-    _demo_fixtures = _pl.Path(__file__).parent.parent.parent / "stub" / "generated_tests"
-    _demo_target = _pl.Path(__file__).parent.parent.parent / "target" / "target_api.py"
+    _demo_fixtures = Path(__file__).parent.parent.parent / "stub" / "generated_tests"
+    _demo_target = Path(__file__).parent.parent.parent / "target" / "target_api.py"
     _demo_ok = _demo_fixtures.exists() and any(_demo_fixtures.glob("*.spec.ts")) and _demo_target.exists()
     print(
         f"\n  {'demo mode':<30} {'[OK]' if _demo_ok else '[NO]'}  "
