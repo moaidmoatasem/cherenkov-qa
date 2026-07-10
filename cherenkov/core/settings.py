@@ -60,6 +60,7 @@ class CherenkovSettings(BaseSettings):
     CERTIFICATION_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_CERTIFICATION_ENABLED')
     CERTIFICATION_GOLD_SET_PATH: str = Field(default='.cherenkov/gold_set.json', validation_alias='CHERENKOV_CERTIFICATION_GOLD_SET_PATH')
     CERTIFICATION_MIN_FAITHFULNESS: float = Field(default=0.8, validation_alias='CHERENKOV_CERTIFICATION_MIN_FAITHFULNESS')
+    CERTIFICATION_MAX_CONCURRENCY: int = Field(default=4, validation_alias='CHERENKOV_CERTIFICATION_MAX_CONCURRENCY')
 
     MAX_CONCURRENT_SCENARIOS: int = Field(default=4, validation_alias='CHERENKOV_PARALLEL_SCENARIOS')
     DAST_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_DAST_ENABLED')

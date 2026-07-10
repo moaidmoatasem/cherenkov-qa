@@ -6,7 +6,8 @@ import json
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.settings import get_settings
-from cherenkov.ai.interface import InferenceClient
+from cherenkov.ai.interface import InferenceClient, CachedInferenceClient
+from cherenkov.ai.cache import ResponseCache
 from cherenkov.ai.ollama_client import OllamaInferenceClient
 from cherenkov.ai.openai_client import OpenAIInferenceClient
 from cherenkov.substrate.vlm_provider import VLMProvider
@@ -24,9 +25,43 @@ class ModelProvider(Protocol):
     def capabilities(self) -> ProviderCapabilities: ...
 
 
+_SHARED_RESPONSE_CACHE: ResponseCache | None = None
+
+
+def shared_response_cache() -> ResponseCache | None:
+    """Prefix cache shared across substrate providers, gated by CACHE_ENABLED.
+
+    Identical (model, system_prompt, user_prompt) requests are common across
+    certification gold-set runs and repeated healing/repair attempts; a single
+    cache instance lets those calls skip the network round-trip entirely
+    instead of re-running inference for output we already have.
+    """
+    global _SHARED_RESPONSE_CACHE
+    settings = get_settings()
+    if not settings.CACHE_ENABLED:
+        return None
+    if _SHARED_RESPONSE_CACHE is None:
+        _SHARED_RESPONSE_CACHE = ResponseCache(
+            max_size=settings.CACHE_MAX_SIZE,
+            ttl_seconds=settings.CACHE_TTL_SECONDS,
+        )
+    return _SHARED_RESPONSE_CACHE
+
+
+def _wrap_with_cache(client: InferenceClient, provider_name: str) -> InferenceClient:
+    cache = shared_response_cache()
+    if cache is None:
+        return client
+    return CachedInferenceClient(client, cache=cache, provider=provider_name)
+
+
 class OllamaProvider:
     def __init__(self, client: InferenceClient | None = None):
-        self.client = client or OllamaInferenceClient()
+        self.client = (
+            _wrap_with_cache(OllamaInferenceClient(), "ollama")
+            if client is None
+            else client
+        )
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
         system_prompt = "You are a logical AI."
@@ -44,6 +79,11 @@ class OllamaProvider:
                 f"{json.dumps(request.output_schema)}"
             )
 
+        hits_before = (
+            self.client.cache_stats.hits
+            if isinstance(self.client, CachedInferenceClient)
+            else 0
+        )
         t0 = time.monotonic()
         content: dict[str, Any] | str
         if request.output_schema:
@@ -59,6 +99,10 @@ class OllamaProvider:
                 model=model,
             )
         latency_ms = int((time.monotonic() - t0) * 1000)
+        cache_hit = (
+            isinstance(self.client, CachedInferenceClient)
+            and self.client.cache_stats.hits > hits_before
+        )
 
         return ReasoningResult(
             content=content,
@@ -66,7 +110,7 @@ class OllamaProvider:
             model=model,
             cost_usd=0.0,
             latency_ms=latency_ms,
-            cached=False,
+            cached=cache_hit,
         )
 
     def capabilities(self) -> ProviderCapabilities:
@@ -79,7 +123,11 @@ class OllamaProvider:
 
 class OpenAIProvider:
     def __init__(self, client: InferenceClient | None = None):
-        self.client = client or OpenAIInferenceClient()
+        self.client = (
+            _wrap_with_cache(OpenAIInferenceClient(), "openai")
+            if client is None
+            else client
+        )
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
         system_prompt = "You are a logical AI."
@@ -93,6 +141,11 @@ class OpenAIProvider:
                 f"{json.dumps(request.output_schema)}"
             )
 
+        hits_before = (
+            self.client.cache_stats.hits
+            if isinstance(self.client, CachedInferenceClient)
+            else 0
+        )
         t0 = time.monotonic()
         content: dict[str, Any] | str
         if request.output_schema:
@@ -108,14 +161,18 @@ class OpenAIProvider:
                 model=model,
             )
         latency_ms = int((time.monotonic() - t0) * 1000)
+        cache_hit = (
+            isinstance(self.client, CachedInferenceClient)
+            and self.client.cache_stats.hits > hits_before
+        )
 
         return ReasoningResult(
             content=content,
             provider="openai",
             model=model,
-            cost_usd=0.02,
+            cost_usd=0.0 if cache_hit else 0.02,
             latency_ms=latency_ms,
-            cached=False,
+            cached=cache_hit,
         )
 
     def capabilities(self) -> ProviderCapabilities:
@@ -133,7 +190,7 @@ class GitHubModelsProvider:
         if client is None:
             from cherenkov.ai.github_models_client import GitHubModelsInferenceClient
 
-            client = GitHubModelsInferenceClient()
+            client = _wrap_with_cache(GitHubModelsInferenceClient(), "github")
         self.client = client
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
@@ -154,6 +211,11 @@ class GitHubModelsProvider:
                 f"\n\nOutput JSON matching: {json.dumps(request.output_schema)}"
             )
 
+        hits_before = (
+            self.client.cache_stats.hits
+            if isinstance(self.client, CachedInferenceClient)
+            else 0
+        )
         t0 = time.monotonic()
         content: dict[str, Any] | str
         if request.output_schema:
@@ -165,6 +227,10 @@ class GitHubModelsProvider:
                 system_prompt=system_prompt, user_prompt=user_prompt, model=model
             )
         latency_ms = int((time.monotonic() - t0) * 1000)
+        cache_hit = (
+            isinstance(self.client, CachedInferenceClient)
+            and self.client.cache_stats.hits > hits_before
+        )
 
         return ReasoningResult(
             content=content,
@@ -172,7 +238,7 @@ class GitHubModelsProvider:
             model=model,
             cost_usd=0.0,
             latency_ms=latency_ms,
-            cached=False,
+            cached=cache_hit,
         )
 
     def capabilities(self) -> ProviderCapabilities:

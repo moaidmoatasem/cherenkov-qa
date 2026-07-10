@@ -20,8 +20,8 @@ import time
 
 from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.ai.interface import InferenceClient
-from cherenkov.substrate.provider import ProviderCapabilities
+from cherenkov.ai.interface import InferenceClient, CachedInferenceClient
+from cherenkov.substrate.provider import ProviderCapabilities, _wrap_with_cache
 
 
 class NemoClawProvider:
@@ -39,7 +39,7 @@ class NemoClawProvider:
         if client is None:
             from cherenkov.ai.nemoclaw_client import NemoClawInferenceClient
 
-            client = NemoClawInferenceClient()
+            client = _wrap_with_cache(NemoClawInferenceClient(), "nemoclaw")
         self.client = client
 
     def _model_for_tier(self, tier: str) -> str:
@@ -56,6 +56,11 @@ class NemoClawProvider:
         user_prompt = request.task
         model = self._model_for_tier(request.capability_tier)
 
+        hits_before = (
+            self.client.cache_stats.hits
+            if isinstance(self.client, CachedInferenceClient)
+            else 0
+        )
         t0 = time.monotonic()
 
         if (
@@ -94,6 +99,10 @@ class NemoClawProvider:
             )
 
         latency_ms = int((time.monotonic() - t0) * 1000)
+        cache_hit = (
+            isinstance(self.client, CachedInferenceClient)
+            and self.client.cache_stats.hits > hits_before
+        )
 
         return ReasoningResult(
             content=content,
@@ -101,7 +110,7 @@ class NemoClawProvider:
             model=model,
             cost_usd=0.0,
             latency_ms=latency_ms,
-            cached=False,
+            cached=cache_hit,
         )
 
     def capabilities(self) -> ProviderCapabilities:
