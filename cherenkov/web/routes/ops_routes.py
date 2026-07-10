@@ -1,5 +1,11 @@
 from __future__ import annotations
+import asyncio
+import contextlib
+import io
+import os
+import re
 import threading
+import uuid
 
 from typing import Any
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
@@ -19,10 +25,6 @@ router = APIRouter(tags=["operations"])
 
 @router.post("/api/v1/ingest")
 async def ingest_spec_file(file: UploadFile | None = File(None), url: str | None = Form(None), _role=Depends(require_role(Role.reviewer))):
-    import asyncio
-    import os
-    import uuid
-
     from cherenkov.stages.ingest import IngestStage
 
     run_id = str(uuid.uuid4())[:8]
@@ -87,14 +89,9 @@ def _run_pipeline_thread(spec_path: str, run_id: str):
 
 @router.post("/api/v1/run")
 async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: BackgroundTasks, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
-    import contextlib as _contextlib
-    import io
-    import os
-    import uuid
-
     from cherenkov.stages.doctor_cmd import run_doctor
 
-    with _contextlib.redirect_stdout(io.StringIO()):
+    with contextlib.redirect_stdout(io.StringIO()):
         doctor_status = run_doctor()
     if payload.demo_mode:
         from cherenkov.execution.demo_mode import generate_demo_findings
@@ -113,9 +110,6 @@ async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: Ba
 
 @router.get("/api/v1/tests")
 async def list_generated_tests():
-    import asyncio
-    import os
-    import re as _re
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
     if not os.path.exists(tests_dir):
         return []
@@ -134,8 +128,8 @@ async def list_generated_tests():
             if not code or not code.strip():
                 continue
             scenario_id = f.replace(".spec.ts", "")
-            method_match = _re.search(r'method:\s*["\']([A-Z]+)["\']', code) or _re.search(
-                r"\.(get|post|put|patch|delete)\s*\(", code, _re.IGNORECASE)
+            method_match = re.search(r'method:\s*["\']([A-Z]+)["\']', code) or re.search(
+                r"\.(get|post|put|patch|delete)\s*\(", code, re.IGNORECASE)
             method = method_match.group(1).upper() if method_match else "GET"
             tests.append({"name": f, "scenario_id": scenario_id, "endpoint": scenario_id, "method": method, "code": code})
         return tests
@@ -145,8 +139,6 @@ async def list_generated_tests():
 
 @router.post("/api/v1/validate")
 async def validate_test_suite(payload: ValidatePayload, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
-    import asyncio
-
     from cherenkov.execution.validate import ValidationEngine
 
     await _validate_spec_url(payload.target_url)
@@ -164,7 +156,6 @@ async def validate_test_suite(payload: ValidatePayload, _auth=Depends(verify_api
 
 @router.post("/api/v1/eject")
 async def eject_test_suite(payload: EjectPayload, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
-    import os
     try:
         safe_path = _validate_output_path(payload.output_path)
         from cherenkov.execution.eject import EjectorEngine

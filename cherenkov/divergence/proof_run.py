@@ -283,29 +283,12 @@ def _make_report(
 
 # ── main orchestration loop ───────────────────────────────────────────────
 
-def _derive_probes_from_spec(spec: dict) -> list[tuple[str, str, dict, str]]:
-    """Derive up to 5 endpoints to probe from an arbitrary OpenAPI spec."""
-    probes = []
-    paths = spec.get("paths", {})
-    context = "Analyze the provided OpenAPI fragment for potential divergences (e.g. enum bypass, missing required fields, undocumented errors)."
-    
-    for path, methods in paths.items():
-        for method, operation in methods.items():
-            if method.upper() not in {"GET", "POST", "PUT", "DELETE", "PATCH"}:
-                continue
-            probes.append((path, method.upper(), operation, context))
-            if len(probes) >= 5:
-                break
-        if len(probes) >= 5:
-            break
-    return probes
-
-
 def run_proof(
     base_url: str,
     spec: dict | None = None,
     use_llm: bool = True,
     reflector: Reflector | None = None,
+    max_probes: int = 40,
 ) -> list[DivergenceReport]:
     """
     Run the Skeptic → Witness loop against *base_url*.
@@ -332,8 +315,15 @@ def run_proof(
     reports: list[DivergenceReport] = []
     t0_ms = int(time.time() * 1000)
 
-    # Use Petstore probes if spec is precisely the Petstore default, else derive dynamically
-    probes = PROOF_RUN_PROBES if spec is PETSTORE_SPEC_SUBSET else _derive_probes_from_spec(spec)
+    # Petstore demo when spec is the bundled default; otherwise plan probes
+    # (and offline hypotheses) mechanically from the user's spec.
+    is_demo_spec = spec is PETSTORE_SPEC_SUBSET
+    if is_demo_spec:
+        probes = PROOF_RUN_PROBES
+    else:
+        from cherenkov.divergence.probe_planner import plan_probes
+
+        probes = plan_probes(spec, max_probes=max_probes, include_bare=use_llm)
 
     for endpoint, method, spec_fragment, context in probes:
         print(f"\n── Probing {method} {endpoint} ──────────────────")
@@ -341,10 +331,15 @@ def run_proof(
         if use_llm and skeptic is not None:
             hypotheses = skeptic.hypothesise(endpoint, method, spec_fragment, context)
             print(f"  Skeptic: {len(hypotheses)} hypothesis(es)")
-        else:
-            # Offline mode: use the hand-crafted hypotheses below
+        elif is_demo_spec:
+            # Offline demo mode: hand-crafted Petstore hypotheses below
             hypotheses = _offline_hypotheses(endpoint, method)
             print(f"  Offline: {len(hypotheses)} hypothesis(es)")
+        else:
+            from cherenkov.divergence.probe_planner import spec_hypotheses
+
+            hypotheses = spec_hypotheses(endpoint, method, spec_fragment, spec)
+            print(f"  Offline (spec-derived): {len(hypotheses)} hypothesis(es)")
 
         # A7 #114 — live rerank: suppress rejected fingerprints before witness loop
         if reflector is not None and hypotheses:

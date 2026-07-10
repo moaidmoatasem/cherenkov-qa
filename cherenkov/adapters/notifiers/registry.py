@@ -33,7 +33,7 @@ class NotifierRegistry:
         return self._notifiers.get(name)
 
     def list_notifiers(self) -> list[str]:
-        return list(self._notifiers.keys())
+        return list(self._notifiers)
 
     @classmethod
     def from_env(cls) -> NotifierRegistry:

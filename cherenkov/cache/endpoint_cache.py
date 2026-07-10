@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import sqlite3
 import tempfile
 import threading
@@ -39,7 +38,7 @@ class EndpointCache:
         with self._lock:
             try:
                 self.db_path.parent.mkdir(parents=True, exist_ok=True)
-                con = sqlite3.connect(str(self.db_path), timeout=1.0)
+                con = sqlite3.connect(self.db_path, timeout=1.0)
                 try:
                     with con:
                         con.execute("""
@@ -54,10 +53,10 @@ class EndpointCache:
                 finally:
                     con.close()
             except sqlite3.OperationalError:
-                self.db_path = Path(os.path.join(tempfile.gettempdir(), "cherenkov", "cache.db"))
+                self.db_path = Path(tempfile.gettempdir()) / "cherenkov" / "cache.db"
                 self.db_path.parent.mkdir(parents=True, exist_ok=True)
                 try:
-                    con = sqlite3.connect(str(self.db_path), timeout=1.0)
+                    con = sqlite3.connect(self.db_path, timeout=1.0)
                     try:
                         with con:
                             con.execute("""
@@ -78,7 +77,7 @@ class EndpointCache:
         if self._fallback:
             return None
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=1.0)
+            con = sqlite3.connect(self.db_path, timeout=1.0)
             try:
                 return con.execute(sql, params).fetchone()
             finally:
@@ -88,7 +87,7 @@ class EndpointCache:
         if self._fallback:
             return
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=1.0)
+            con = sqlite3.connect(self.db_path, timeout=1.0)
             try:
                 con.execute(sql, params)
                 con.commit()

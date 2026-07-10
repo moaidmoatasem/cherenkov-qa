@@ -1,0 +1,396 @@
+<title>The Cherenkov testing system</title>
+<style>
+  :root {
+    --bg: #f4f6fb;
+    --surface: #ffffff;
+    --surface-scaffold: #eef3fb;
+    --surface-ai: #f3f0fc;
+    --surface-gate: #fdf6e8;
+    --border: #d9e0ee;
+    --text: #161b26;
+    --muted: #5a6178;
+    --scaffold: #1670b8;
+    --ai: #6450d6;
+    --warn: #a8690a;
+    --glow: 0 0 0 rgba(0,0,0,0);
+  }
+  :root[data-theme="dark"] {
+    --bg: #080c16;
+    --surface: #0e1524;
+    --surface-scaffold: #0f1a2e;
+    --surface-ai: #16122b;
+    --surface-gate: #1c1710;
+    --border: #22304d;
+    --text: #e6ecf7;
+    --muted: #8792ad;
+    --scaffold: #4fb3ff;
+    --ai: #a897ff;
+    --warn: #f0a63e;
+    --glow: 0 0 24px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #080c16;
+      --surface: #0e1524;
+      --surface-scaffold: #0f1a2e;
+      --surface-ai: #16122b;
+      --surface-gate: #1c1710;
+      --border: #22304d;
+      --text: #e6ecf7;
+      --muted: #8792ad;
+      --scaffold: #4fb3ff;
+      --ai: #a897ff;
+      --warn: #f0a63e;
+      --glow: 0 0 24px;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 48px 20px 72px;
+  }
+  .mono {
+    font-family: ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Mono", Consolas, monospace;
+  }
+  .page {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  /* ---- header ---- */
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-size: clamp(26px, 4vw, 36px);
+    margin: 0 0 12px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  h1 .accent { color: var(--scaffold); }
+  header p {
+    max-width: 62ch;
+    margin: 0 auto;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  /* ---- column headers ---- */
+  .tracks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 10px;
+  }
+  .track-head {
+    text-align: center;
+    padding: 6px 0 14px;
+    border-bottom: 2px solid var(--border);
+  }
+  .track-head .mono {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .track-head h2 {
+    margin: 4px 0 0;
+    font-size: 17px;
+  }
+  .track-head.scaffold h2 { color: var(--scaffold); }
+  .track-head.ai h2 { color: var(--ai); }
+
+  /* ---- node columns ---- */
+  .columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    position: relative;
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .node {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 16px;
+    background: var(--surface);
+  }
+  .col.scaffold .node { background: var(--surface-scaffold); border-color: color-mix(in srgb, var(--scaffold) 30%, var(--border)); }
+  .col.ai .node { background: var(--surface-ai); border-color: color-mix(in srgb, var(--ai) 30%, var(--border)); }
+  .node .name {
+    font-weight: 600;
+    font-size: 14.5px;
+  }
+  .node .detail {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .node .detail .mono { font-size: 11.5px; }
+  .connector {
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .connector svg { display: block; }
+  .col.scaffold .connector svg path,
+  .col.scaffold .connector svg polygon { stroke: var(--scaffold); fill: var(--scaffold); }
+  .col.ai .connector svg path,
+  .col.ai .connector svg polygon { stroke: var(--ai); fill: var(--ai); }
+
+  /* ---- merge connector into gate ---- */
+  .merge {
+    height: 46px;
+    position: relative;
+  }
+  .merge svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .merge path { fill: none; stroke-width: 2; }
+  .merge .l { stroke: var(--scaffold); }
+  .merge .r { stroke: var(--ai); }
+
+  /* ---- gate ---- */
+  .gate {
+    background: var(--surface-gate);
+    border: 1px solid color-mix(in srgb, var(--warn) 45%, var(--border));
+    border-radius: 12px;
+    padding: 18px 22px;
+    text-align: center;
+    box-shadow: var(--glow) color-mix(in srgb, var(--warn) 25%, transparent);
+  }
+  .gate .name {
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .gate .detail {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ---- outcome row ---- */
+  .down-arrow {
+    display: flex;
+    justify-content: center;
+    margin: 6px 0;
+  }
+  .outcomes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 4px;
+  }
+  .outcome {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    background: var(--surface);
+  }
+  .outcome .name { font-weight: 600; font-size: 14.5px; }
+  .outcome .detail { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+
+  /* ---- repair loop ---- */
+  .loop-wrap {
+    margin-top: 26px;
+    border: 1px dashed color-mix(in srgb, var(--warn) 55%, var(--border));
+    border-radius: 12px;
+    padding: 16px 18px 18px;
+  }
+  .loop-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--warn);
+    margin: 0 0 12px;
+  }
+  .loop-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    align-items: stretch;
+  }
+  .loop-step {
+    position: relative;
+    background: color-mix(in srgb, var(--warn) 8%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border));
+    border-radius: 9px;
+    padding: 11px 12px;
+  }
+  .loop-step .name { font-weight: 600; font-size: 13.5px; color: var(--warn); }
+  .loop-step .detail { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .loop-step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: -11px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 7px solid color-mix(in srgb, var(--warn) 55%, var(--border));
+  }
+  .loop-return {
+    margin-top: 10px;
+    font-size: 11.5px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  footer {
+    margin-top: 34px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 640px) {
+    .tracks, .columns { grid-template-columns: 1fr; }
+    .outcomes { grid-template-columns: 1fr; }
+    .loop-steps { grid-template-columns: 1fr; }
+    .loop-step:not(:last-child)::after { display: none; }
+    .merge { display: none; }
+  }
+</style>
+
+<div class="page">
+  <header>
+    <p class="eyebrow mono">architecture · one page</p>
+    <h1>The <span class="accent">Cherenkov</span> testing system</h1>
+    <p>Two tracks, one gate, one loop. Left is the execution scaffold — it runs whatever test lands on disk and does not care who wrote it. Right is the orchestration layer that gets an LLM to write it. Neither side is trusted alone: everything converges on the oracle, which checks behaviour against the spec, not against the model's own claims.</p>
+  </header>
+
+  <div class="tracks">
+    <div class="track-head scaffold">
+      <p class="mono">deterministic</p>
+      <h2>Execution scaffold</h2>
+    </div>
+    <div class="track-head ai">
+      <p class="mono">generative</p>
+      <h2>Orchestration layer</h2>
+    </div>
+  </div>
+
+  <div class="columns">
+    <div class="col scaffold">
+      <div class="node">
+        <div class="name">Single source of truth</div>
+        <div class="detail mono">OpenAPI spec · schemas · config</div>
+      </div>
+      <div class="connector"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 0 V10 M3 6 L8 12 L13 6" stroke-width="2" fill="none"/></svg></div>
+      <div class="node">
+        <div class="name">Adapters &amp; sources</div>
+        <div class="detail mono">cherenkov/adapters · sources</div>
+      </div>
+      <div class="connector"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 0 V10 M3 6 L8 12 L13 6" stroke-width="2" fill="none"/></svg></div>
+      <div class="node">
+        <div class="name">Synthetic test data</div>
+        <div class="detail mono">cherenkov/synthetic</div>
+      </div>
+      <div class="connector"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 0 V10 M3 6 L8 12 L13 6" stroke-width="2" fill="none"/></svg></div>
+      <div class="node">
+        <div class="name">Execution layer</div>
+        <div class="detail mono">cherenkov/execution · stub/generated_tests</div>
+      </div>
+      <div class="connector"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 0 V10 M3 6 L8 12 L13 6" stroke-width="2" fill="none"/></svg></div>
+      <div class="node">
+        <div class="name">6-gate static review</div>
+        <div class="detail mono">deterministic checks, before disk</div>
+      </div>
+    </div>
+
+    <div class="col ai">
+      <div class="node">
+        <div class="name">Context engineering</div>
+        <div class="detail mono">prompts/*.j2 · cherenkov/rag</div>
+      </div>
+      <div class="connector"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 0 V10 M3 6 L8 12 L13 6" stroke-width="2" fill="none"/></svg></div>
+      <div class="node">
+        <div class="name">Orchestrator</div>
+        <div class="detail mono">CLAUDE.md · agents/conductor</div>
+      </div>
+      <div class="connector"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 0 V10 M3 6 L8 12 L13 6" stroke-width="2" fill="none"/></svg></div>
+      <div class="node">
+        <div class="name">Skills = chapters</div>
+        <div class="detail mono">skills/api-test-generation, self-healing…</div>
+      </div>
+      <div class="connector"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 0 V10 M3 6 L8 12 L13 6" stroke-width="2" fill="none"/></svg></div>
+      <div class="node">
+        <div class="name">Human checkpoint</div>
+        <div class="detail mono">cherenkov/hitl</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="merge">
+    <svg viewBox="0 0 100 20" preserveAspectRatio="none">
+      <path class="l" d="M25,0 C25,12 50,8 50,20" />
+      <path class="r" d="M75,0 C75,12 50,8 50,20" />
+    </svg>
+  </div>
+
+  <div class="gate">
+    <div class="name">The oracle decides</div>
+    <div class="detail mono">cherenkov/oracle · divergence · verdict · truth · spec_guardian — the spec outranks the model</div>
+  </div>
+
+  <div class="down-arrow">
+    <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 0 V8 M3 4 L8 10 L13 4" stroke="var(--warn)" stroke-width="2" fill="none"/></svg>
+  </div>
+
+  <div class="outcomes">
+    <div class="outcome">
+      <div class="name">Execute</div>
+      <div class="detail mono">cherenkov/execution</div>
+    </div>
+    <div class="outcome">
+      <div class="name">Validate</div>
+      <div class="detail mono">cherenkov/validate · drift</div>
+    </div>
+    <div class="outcome">
+      <div class="name">Proceed</div>
+      <div class="detail mono">cherenkov/reporting · verdict</div>
+    </div>
+  </div>
+
+  <div class="loop-wrap">
+    <p class="loop-label mono">on divergence — feedback loop gates progress</p>
+    <div class="loop-steps">
+      <div class="loop-step">
+        <div class="name">Step back</div>
+        <div class="detail mono">healing/diagnose.py</div>
+      </div>
+      <div class="loop-step">
+        <div class="name">Evaluate</div>
+        <div class="detail mono">contract_drift · auth_expiry</div>
+      </div>
+      <div class="loop-step">
+        <div class="name">Root cause</div>
+        <div class="detail mono">sandbox_healer.py</div>
+      </div>
+      <div class="loop-step">
+        <div class="name">Resolve</div>
+        <div class="detail mono">visual_heal.py → re-verify</div>
+      </div>
+    </div>
+    <p class="loop-return">resolved cases return to the oracle gate — nothing re-enters "Proceed" unverified</p>
+  </div>
+
+  <footer class="mono">17 boxes, same as the one that inspired it — spec-native instead of scaffold-native</footer>
+</div>

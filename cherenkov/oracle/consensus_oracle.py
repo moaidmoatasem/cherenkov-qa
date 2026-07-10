@@ -155,7 +155,7 @@ class ConsensusOracle(Oracle):
         path = endpoint_slice.get("path", "?")
         method = endpoint_slice.get("method", "?").upper()
         operation = endpoint_slice.get("operation", {})
-        expected_codes = list(operation.get("responses", {}).keys())
+        expected_codes = list(operation.get("responses", {}))
 
         user_prompt = (
             f"ENDPOINT: {method} {path}\n"

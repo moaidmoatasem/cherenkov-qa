@@ -9,12 +9,12 @@ between api.py and individual route modules.
 from __future__ import annotations
 
 import asyncio
-import ipaddress as _ipaddress
+import ipaddress
 import os
-import re as _re
-import socket as _socket
+import re
+import socket
 from contextlib import asynccontextmanager
-from urllib.parse import urlparse as _urlparse
+from urllib.parse import urlparse
 
 from fastapi import FastAPI, HTTPException, WebSocket
 
@@ -76,14 +76,14 @@ def get_queue() -> HitlQueue:
 
 # ── Security helpers ──────────────────────────────────────────────────
 
-def _is_safe_ip(addr: _ipaddress.IPv4Address | _ipaddress.IPv6Address) -> bool:
+def _is_safe_ip(addr: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
     return not (
         addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved
     )
 
 
 async def _validate_spec_url(url: str) -> str:
-    parsed = _urlparse(url)
+    parsed = urlparse(url)
     if parsed.scheme not in ("http", "https"):
         raise HTTPException(status_code=400, detail="Only http/https URLs allowed")
     host = parsed.hostname or ""
@@ -92,7 +92,7 @@ async def _validate_spec_url(url: str) -> str:
     ):
         raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
     try:
-        addr = _ipaddress.ip_address(host)
+        addr = ipaddress.ip_address(host)
         if not _is_safe_ip(addr):
             raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
         return url
@@ -100,13 +100,13 @@ async def _validate_spec_url(url: str) -> str:
         pass
     try:
         ips = await asyncio.to_thread(
-            lambda: [info[4][0] for info in _socket.getaddrinfo(host, 80, family=_socket.AF_INET)]
+            lambda: [info[4][0] for info in socket.getaddrinfo(host, 80, family=socket.AF_INET)]
         )
     except Exception:
         raise HTTPException(status_code=400, detail="Could not resolve host")
     for ip_str in ips:
         try:
-            addr = _ipaddress.ip_address(ip_str)
+            addr = ipaddress.ip_address(ip_str)
         except ValueError:
             continue
         if not _is_safe_ip(addr):
@@ -117,7 +117,7 @@ async def _validate_spec_url(url: str) -> str:
 
 
 def _validate_scenario_id(scenario_id: str) -> str:
-    if not _re.match(r"^[a-zA-Z0-9_\-]{1,128}$", scenario_id):
+    if not re.match(r"^[a-zA-Z0-9_\-]{1,128}$", scenario_id):
         raise HTTPException(
             status_code=400,
             detail="Invalid scenario_id: must be alphanumeric/underscore/hyphen, max 128 chars",

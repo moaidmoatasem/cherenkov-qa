@@ -1,9 +1,10 @@
 from __future__ import annotations
 import click
+import glob
 import os
 import json
 import sys
-from pathlib import Path as _Path
+from pathlib import Path
 
 from cherenkov.execution.validate import ValidationEngine
 
@@ -177,11 +178,10 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
 
     # Record manifest so `cherenkov check-stale` can detect spec drift later
     if source == "openapi" and spec:
-        import glob as _glob
         from cherenkov.core.staleness import StalenessManifest
 
-        tests_dir = str(_Path(__file__).parent.parent.parent.parent / "stub" / "generated_tests")
-        test_files = _glob.glob(os.path.join(tests_dir, "*.spec.ts"))
+        tests_dir = str(Path(__file__).parent.parent.parent.parent / "stub" / "generated_tests")
+        test_files = glob.glob(os.path.join(tests_dir, "*.spec.ts"))
         StalenessManifest().record(spec_path=spec, test_files=test_files)
 
     # The engine handles the heavy lifting

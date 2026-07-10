@@ -1,9 +1,9 @@
 from __future__ import annotations
-import threading as _threading
+import threading
+import time
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 import os
-import time as _time
 import requests
 from cherenkov.core.errors import get_logger
 
@@ -60,6 +60,7 @@ class CherenkovSettings(BaseSettings):
     CERTIFICATION_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_CERTIFICATION_ENABLED')
     CERTIFICATION_GOLD_SET_PATH: str = Field(default='.cherenkov/gold_set.json', validation_alias='CHERENKOV_CERTIFICATION_GOLD_SET_PATH')
     CERTIFICATION_MIN_FAITHFULNESS: float = Field(default=0.8, validation_alias='CHERENKOV_CERTIFICATION_MIN_FAITHFULNESS')
+    CERTIFICATION_MAX_CONCURRENCY: int = Field(default=4, validation_alias='CHERENKOV_CERTIFICATION_MAX_CONCURRENCY')
 
     MAX_CONCURRENT_SCENARIOS: int = Field(default=4, validation_alias='CHERENKOV_PARALLEL_SCENARIOS')
     DAST_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_DAST_ENABLED')
@@ -147,7 +148,7 @@ class CherenkovSettings(BaseSettings):
         Results are cached for _DEVICE_CACHE_TTL seconds to avoid blocking HTTP calls
         on every health check invocation.
         """
-        now = _time.monotonic()
+        now = time.monotonic()
         if (
             self._device_cache is not None
             and (now - self._device_cache_ts) < self._DEVICE_CACHE_TTL
@@ -196,7 +197,7 @@ class CherenkovSettings(BaseSettings):
                                 size=size,
                             )
                             self._device_cache = "GPU"
-                            self._device_cache_ts = _time.monotonic()
+                            self._device_cache_ts = time.monotonic()
                             return self._device_cache
                         cpu_warn = (
                             "CPU mode — generation ~10x slower, GPU recommended."
@@ -208,7 +209,7 @@ class CherenkovSettings(BaseSettings):
                             size_vram=0,
                         )
                         self._device_cache = "CPU"
-                        self._device_cache_ts = _time.monotonic()
+                        self._device_cache_ts = time.monotonic()
                         return self._device_cache
         except Exception as e:
             log.warning(
@@ -217,13 +218,13 @@ class CherenkovSettings(BaseSettings):
                 processor="UNKNOWN",
             )
             self._device_cache = "UNKNOWN"
-            self._device_cache_ts = _time.monotonic()
+            self._device_cache_ts = time.monotonic()
             return self._device_cache
 
         cpu_warn = "CPU mode — generation ~10x slower, GPU recommended."
         log.warning("device status", details=cpu_warn, processor="CPU", size_vram=0)
         self._device_cache = "CPU"
-        self._device_cache_ts = _time.monotonic()
+        self._device_cache_ts = time.monotonic()
         return self._device_cache
 
     # Device detection cache
@@ -232,7 +233,7 @@ class CherenkovSettings(BaseSettings):
     _DEVICE_CACHE_TTL: float = 60.0  # seconds
 
 _settings_instance: "CherenkovSettings | None" = None
-_settings_lock = _threading.Lock()
+_settings_lock = threading.Lock()
 
 def get_settings() -> "CherenkovSettings":
     global _settings_instance

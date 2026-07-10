@@ -18,7 +18,11 @@ import re
 import time
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.substrate.provider import ModelProvider, ProviderCapabilities
+from cherenkov.substrate.provider_base import (
+    ModelProvider,
+    ProviderCapabilities,
+    shared_response_cache,
+)
 
 # Pricing (USD per 1M tokens, approximate as of 2025)
 _PRICING: dict[str, dict[str, float]] = {
@@ -83,6 +87,18 @@ class AnthropicProvider(ModelProvider):
                 f"{json.dumps(request.output_schema, indent=2)}"
             )
 
+        cache = shared_response_cache()
+        cached_raw = cache.get(model, system, user_prompt) if cache else None
+        if cached_raw is not None:
+            return ReasoningResult(
+                content=str(cached_raw),
+                provider="anthropic",
+                model=model,
+                cost_usd=0.0,
+                latency_ms=0,
+                cached=True,
+            )
+
         client = self._get_client()
         t0 = time.monotonic()
         message = client.messages.create(
@@ -102,6 +118,9 @@ class AnthropicProvider(ModelProvider):
         input_tokens = message.usage.input_tokens
         output_tokens = message.usage.output_tokens
         cost = _cost_usd(model, input_tokens, output_tokens)
+
+        if cache is not None:
+            cache.set(model, system, user_prompt, raw)
 
         return ReasoningResult(
             content=raw,

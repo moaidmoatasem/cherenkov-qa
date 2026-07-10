@@ -22,7 +22,7 @@ def _compute_snapshot_hash(test_code: str, spec_path: str | None = None) -> str:
     """Hash both the test code and the spec it was generated from."""
     hasher = hashlib.sha256()
     hasher.update(test_code.encode())
-    if spec_path and __import__("os").path.exists(spec_path):
+    if spec_path and os.path.exists(spec_path):
         with open(spec_path, "rb") as f:
             hasher.update(f.read())
     return hasher.hexdigest()
@@ -126,13 +126,13 @@ class Diagnoser:
         # Parse current body shape keys
         current_keys = []
         if isinstance(current_body, dict):
-            current_keys = list(current_body.keys())
+            current_keys = list(current_body)
         elif (
             isinstance(current_body, list)
             and len(current_body) > 0
             and isinstance(current_body[0], dict)
         ):
-            current_keys = list(current_body[0].keys())
+            current_keys = list(current_body[0])
 
         # 2. CONTRACT_DRIFT: Snapshot exists, and keys differ.
         # Skipped when the snapshot is stale: the test itself changed, so a key diff
@@ -214,9 +214,9 @@ class Diagnoser:
 
         body_keys = []
         if isinstance(body, dict):
-            body_keys = list(body.keys())
+            body_keys = list(body)
         elif isinstance(body, list) and len(body) > 0 and isinstance(body[0], dict):
-            body_keys = list(body[0].keys())
+            body_keys = list(body[0])
 
         snapshot_data = {
             "scenario_id": scenario_id,

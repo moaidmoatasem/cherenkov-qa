@@ -257,7 +257,7 @@ echo "${RED_OUTPUT}"
 
 # Detect that the tool caught the regression
 DRIFT_CAUGHT=false
-if echo "${RED_OUTPUT}" | grep -qiE "FAILED|422|400|divergence|conformance"; then
+if echo "${RED_OUTPUT}" | grep -qiE "FAIL|FAILED|422|400|divergence|conformance"; then
   DRIFT_CAUGHT=true
 fi
 

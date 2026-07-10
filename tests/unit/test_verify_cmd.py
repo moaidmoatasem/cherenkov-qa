@@ -57,7 +57,7 @@ class TestVerifyCmd:
         assert result.exit_code == 0
         assert "No divergences found" in result.output
         mock.assert_called_once_with(
-            base_url="http://localhost:9999", spec=None, use_llm=False
+            base_url="http://localhost:9999", spec=None, use_llm=False, max_probes=40
         )
 
     def test_divergences_printed(self) -> None:
@@ -111,7 +111,7 @@ class TestVerifyCmd:
         with patch("cherenkov.cli.commands.verify.run_proof", return_value=[]) as mock:
             runner.invoke(verify_cmd, ["--url", "http://localhost:9999", "--llm", "--simple"])
         mock.assert_called_once_with(
-            base_url="http://localhost:9999", spec=None, use_llm=True
+            base_url="http://localhost:9999", spec=None, use_llm=True, max_probes=40
         )
 
     def test_multiple_severities_displayed(self) -> None:

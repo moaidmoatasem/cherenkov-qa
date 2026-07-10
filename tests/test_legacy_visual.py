@@ -156,6 +156,10 @@ def _stub_browser_available() -> bool:
     reason="Windows CMD does not support UNC paths as current directory",
 )
 @pytest.mark.skipif(
+    hasattr(os, "uname") and "microsoft-standard" in os.uname().release.lower(),
+    reason="WSL interop invokes Windows npx.cmd which fails with UNC paths",
+)
+@pytest.mark.skipif(
     not _stub_browser_available(),
     reason="Playwright Chromium not installed — run npx playwright install chromium",
 )
