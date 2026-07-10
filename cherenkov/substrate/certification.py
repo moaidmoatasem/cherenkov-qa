@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 from cherenkov.core.settings import get_settings
@@ -166,6 +167,64 @@ class ModelCertificationManager:
                 gold_set.items = [GoldSetItem(**it) for it in _DEFAULT_GOLD_SET_ITEMS]
             return gold_set
 
+    def _certify_item(
+        self, item: GoldSetItem, tier: str, provider
+    ) -> tuple[bool, float | None]:
+        """Run one gold-set prompt through the provider and score it.
+
+        Independent gold-set prompts have no data dependency on each other, so
+        certify_tier/certify_tier_with_rag_report fan these out across a bounded
+        thread pool instead of awaiting each network round-trip in turn.
+        """
+        req = ReasoningRequest(task=item.prompt, capability_tier=tier)
+        try:
+            res = provider.generate(req)
+            content = str(res.content)
+            item_passed = all(
+                exp.lower() in content.lower() for exp in item.expected_contains
+            )
+            triad = self._rag_triad.evaluate(item.prompt, content)
+            rag_avg = (
+                triad["context_relevance"]
+                + triad["answer_faithfulness"]
+                + triad["answer_relevance"]
+            ) / 3.0
+            return item_passed, rag_avg
+        except Exception as e:
+            self.log.warning(
+                "failed to generate response during certification", error=str(e)
+            )
+            return False, None
+
+    def _certify_item_report(
+        self, item: GoldSetItem, tier: str, provider
+    ) -> dict[str, Any]:
+        req = ReasoningRequest(task=item.prompt, capability_tier=tier)
+        try:
+            res = provider.generate(req)
+            content = str(res.content)
+            item_passed = all(
+                exp.lower() in content.lower() for exp in item.expected_contains
+            )
+            triad = self._rag_triad.evaluate(item.prompt, content)
+            return {
+                "prompt": item.prompt,
+                "response": content[:200],
+                "passed": item_passed,
+                "rag_triad": triad,
+            }
+        except Exception as e:
+            return {
+                "prompt": item.prompt,
+                "response": f"<error: {e}>",
+                "passed": False,
+                "rag_triad": {
+                    "context_relevance": 0.0,
+                    "answer_faithfulness": 0.0,
+                    "answer_relevance": 0.0,
+                },
+            }
+
     def certify_tier(self, tier: str, provider) -> CertResult:
         self.log.info("running model tier certification", tier=tier)
         gold_set = self.load_gold_set()
@@ -178,27 +237,15 @@ class ModelCertificationManager:
         total = len(gold_set.items)
         rag_scores: list[float] = []
 
-        for item in gold_set.items:
-            req = ReasoningRequest(task=item.prompt, capability_tier=tier)
-            try:
-                res = provider.generate(req)
-                content = str(res.content)
-                item_passed = all(
-                    exp.lower() in content.lower() for exp in item.expected_contains
-                )
+        max_workers = min(total, get_settings().CERTIFICATION_MAX_CONCURRENCY) or 1
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            for item_passed, rag_avg in pool.map(
+                lambda item: self._certify_item(item, tier, provider), gold_set.items
+            ):
                 if item_passed:
                     passed += 1
-                triad = self._rag_triad.evaluate(item.prompt, content)
-                rag_avg = (
-                    triad["context_relevance"]
-                    + triad["answer_faithfulness"]
-                    + triad["answer_relevance"]
-                ) / 3.0
-                rag_scores.append(rag_avg)
-            except Exception as e:
-                self.log.warning(
-                    "failed to generate response during certification", error=str(e)
-                )
+                if rag_avg is not None:
+                    rag_scores.append(rag_avg)
 
         faithfulness = passed / total if total else 1.0
         rag_overall = sum(rag_scores) / len(rag_scores) if rag_scores else 0.0
@@ -226,43 +273,17 @@ class ModelCertificationManager:
         """Run certification and return both result and per-item RAG-Triad report."""
         self.log.info("running model tier certification with RAG report", tier=tier)
         gold_set = self.load_gold_set()
-        reports: list[dict[str, Any]] = []
-
-        passed = 0
         total = len(gold_set.items) if gold_set.items else 0
 
-        for item in gold_set.items or []:
-            req = ReasoningRequest(task=item.prompt, capability_tier=tier)
-            try:
-                res = provider.generate(req)
-                content = str(res.content)
-                item_passed = all(
-                    exp.lower() in content.lower() for exp in item.expected_contains
+        max_workers = min(total, get_settings().CERTIFICATION_MAX_CONCURRENCY) or 1
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            reports: list[dict[str, Any]] = list(
+                pool.map(
+                    lambda item: self._certify_item_report(item, tier, provider),
+                    gold_set.items or [],
                 )
-                if item_passed:
-                    passed += 1
-                triad = self._rag_triad.evaluate(item.prompt, content)
-                reports.append(
-                    {
-                        "prompt": item.prompt,
-                        "response": content[:200],
-                        "passed": item_passed,
-                        "rag_triad": triad,
-                    }
-                )
-            except Exception as e:
-                reports.append(
-                    {
-                        "prompt": item.prompt,
-                        "response": f"<error: {e}>",
-                        "passed": False,
-                        "rag_triad": {
-                            "context_relevance": 0.0,
-                            "answer_faithfulness": 0.0,
-                            "answer_relevance": 0.0,
-                        },
-                    }
-                )
+            )
+        passed = sum(1 for r in reports if r["passed"])
 
         faithfulness = passed / total if total else 1.0
         rag_scores = [r["rag_triad"] for r in reports]

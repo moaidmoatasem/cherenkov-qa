@@ -1,32 +1,41 @@
 from __future__ import annotations
 import time
-from typing import Any, Protocol
-from pydantic import BaseModel
+from typing import Any
 import json
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.settings import get_settings
-from cherenkov.ai.interface import InferenceClient
+from cherenkov.ai.interface import InferenceClient, CachedInferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient
 from cherenkov.ai.openai_client import OpenAIInferenceClient
+from cherenkov.substrate.provider_base import (
+    ModelProvider,
+    ProviderCapabilities,
+    shared_response_cache,
+    wrap_with_cache as _wrap_with_cache,
+)
 from cherenkov.substrate.vlm_provider import VLMProvider
 
-
-class ProviderCapabilities(BaseModel):
-    capability_tiers: list[str]
-    requires_egress: bool
-    provider_name: str = ""
-
-
-class ModelProvider(Protocol):
-    def generate(self, request: ReasoningRequest) -> ReasoningResult: ...
-
-    def capabilities(self) -> ProviderCapabilities: ...
+__all__ = [
+    "ModelProvider",
+    "ProviderCapabilities",
+    "shared_response_cache",
+    "OllamaProvider",
+    "OpenAIProvider",
+    "GitHubModelsProvider",
+    "get_provider",
+    "get_vlm_provider",
+    "provider_for_tier",
+]
 
 
 class OllamaProvider:
     def __init__(self, client: InferenceClient | None = None):
-        self.client = client or OllamaInferenceClient()
+        self.client = (
+            _wrap_with_cache(OllamaInferenceClient(), "ollama")
+            if client is None
+            else client
+        )
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
         system_prompt = "You are a logical AI."
@@ -44,6 +53,11 @@ class OllamaProvider:
                 f"{json.dumps(request.output_schema)}"
             )
 
+        hits_before = (
+            self.client.cache_stats.hits
+            if isinstance(self.client, CachedInferenceClient)
+            else 0
+        )
         t0 = time.monotonic()
         content: dict[str, Any] | str
         if request.output_schema:
@@ -59,6 +73,10 @@ class OllamaProvider:
                 model=model,
             )
         latency_ms = int((time.monotonic() - t0) * 1000)
+        cache_hit = (
+            isinstance(self.client, CachedInferenceClient)
+            and self.client.cache_stats.hits > hits_before
+        )
 
         return ReasoningResult(
             content=content,
@@ -66,7 +84,7 @@ class OllamaProvider:
             model=model,
             cost_usd=0.0,
             latency_ms=latency_ms,
-            cached=False,
+            cached=cache_hit,
         )
 
     def capabilities(self) -> ProviderCapabilities:
@@ -79,7 +97,11 @@ class OllamaProvider:
 
 class OpenAIProvider:
     def __init__(self, client: InferenceClient | None = None):
-        self.client = client or OpenAIInferenceClient()
+        self.client = (
+            _wrap_with_cache(OpenAIInferenceClient(), "openai")
+            if client is None
+            else client
+        )
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
         system_prompt = "You are a logical AI."
@@ -93,6 +115,11 @@ class OpenAIProvider:
                 f"{json.dumps(request.output_schema)}"
             )
 
+        hits_before = (
+            self.client.cache_stats.hits
+            if isinstance(self.client, CachedInferenceClient)
+            else 0
+        )
         t0 = time.monotonic()
         content: dict[str, Any] | str
         if request.output_schema:
@@ -108,14 +135,18 @@ class OpenAIProvider:
                 model=model,
             )
         latency_ms = int((time.monotonic() - t0) * 1000)
+        cache_hit = (
+            isinstance(self.client, CachedInferenceClient)
+            and self.client.cache_stats.hits > hits_before
+        )
 
         return ReasoningResult(
             content=content,
             provider="openai",
             model=model,
-            cost_usd=0.02,
+            cost_usd=0.0 if cache_hit else 0.02,
             latency_ms=latency_ms,
-            cached=False,
+            cached=cache_hit,
         )
 
     def capabilities(self) -> ProviderCapabilities:
@@ -133,7 +164,7 @@ class GitHubModelsProvider:
         if client is None:
             from cherenkov.ai.github_models_client import GitHubModelsInferenceClient
 
-            client = GitHubModelsInferenceClient()
+            client = _wrap_with_cache(GitHubModelsInferenceClient(), "github")
         self.client = client
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
@@ -154,6 +185,11 @@ class GitHubModelsProvider:
                 f"\n\nOutput JSON matching: {json.dumps(request.output_schema)}"
             )
 
+        hits_before = (
+            self.client.cache_stats.hits
+            if isinstance(self.client, CachedInferenceClient)
+            else 0
+        )
         t0 = time.monotonic()
         content: dict[str, Any] | str
         if request.output_schema:
@@ -165,6 +201,10 @@ class GitHubModelsProvider:
                 system_prompt=system_prompt, user_prompt=user_prompt, model=model
             )
         latency_ms = int((time.monotonic() - t0) * 1000)
+        cache_hit = (
+            isinstance(self.client, CachedInferenceClient)
+            and self.client.cache_stats.hits > hits_before
+        )
 
         return ReasoningResult(
             content=content,
@@ -172,7 +212,7 @@ class GitHubModelsProvider:
             model=model,
             cost_usd=0.0,
             latency_ms=latency_ms,
-            cached=False,
+            cached=cache_hit,
         )
 
     def capabilities(self) -> ProviderCapabilities:
