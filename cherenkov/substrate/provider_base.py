@@ -26,9 +26,11 @@ class ProviderCapabilities(BaseModel):
 
 
 class ModelProvider(Protocol):
-    def generate(self, request: ReasoningRequest) -> ReasoningResult: ...
+    def generate(self, request: ReasoningRequest) -> ReasoningResult:
+        pass
 
-    def capabilities(self) -> ProviderCapabilities: ...
+    def capabilities(self) -> ProviderCapabilities:
+        pass
 
 
 _SHARED_RESPONSE_CACHE: ResponseCache | None = None
