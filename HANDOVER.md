@@ -40,7 +40,7 @@ G0 requires E0.1 AND E0.2 AND E0.3 AND E0.4.
 |---|---|---|
 | E0.1 -- real divergences on 3rd-party APIs | **DONE** | `docs/evidence/e0.1_divergences.md` -- 6 divergences across 3 APIs |
 | E0.2 -- integrity catch (catch the AI cheating) | DONE | `demos/catch-the-ai-cheating/`; CI-gated; 10/10 pass |
-| E0.3 -- 3 practitioners complete quickstart unaided | NOT YET | User-research activity (can't code our way out) |
+| E0.3 -- 3 practitioners complete quickstart unaided | NOT YET (unblocked by R1; kit ready) | `docs/e0.3/PRACTITIONER_KIT.md` — recruitment message, cold-run protocol, survey, pass criteria. R2 write-up ready too: `docs/marketing/CATCH_THE_AI_CHEATING_WRITEUP.md` |
 | E0.4 -- honest differentiation sentence vs Schemathesis | DONE | `docs/NORTH_STAR.md` section 8 |
 
 **Gate G0: 3/4. Only E0.3 (human recruitment) remains.**
