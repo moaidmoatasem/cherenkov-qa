@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 
 from fastapi import APIRouter
 
@@ -202,7 +203,6 @@ async def get_signals():
 
 @router.get("/api/v1/visual/scenarios")
 async def get_visual_scenarios():
-    import time
     now = int(time.time())
     return [
         {

@@ -4,6 +4,9 @@ CHERENKOV adapters/notifiers/webhook.py — Generic HTTP POST Webhook Notifier.
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import json
 import os
 import threading
 from typing import Any
@@ -35,9 +38,6 @@ class WebhookNotifier:
         payload = envelope.model_dump()
 
         def _send() -> None:
-            import hashlib
-            import hmac
-            import json
             try:
                 # Optional HMAC signing for secure webhook dispatch
                 headers = {"Content-Type": "application/json"}

@@ -31,7 +31,7 @@ class TestNpx:
         with patch("cherenkov.core.compat.shutil.which", return_value=None), \
              patch("sys.platform", "linux"), \
              patch("cherenkov.core.compat._NODE_FALLBACK_DIRS", []), \
-             patch("cherenkov.core.compat._glob.glob", return_value=[]):
+             patch("cherenkov.core.compat.glob.glob", return_value=[]):
             import cherenkov.core.compat as compat
             result = compat.npx()
         assert result == "npx"

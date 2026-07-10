@@ -18,6 +18,8 @@ Design constraints:
 
 from __future__ import annotations
 
+import os
+import time
 from collections.abc import Callable
 
 from cherenkov.core.contracts import ExplorerFindingKind
@@ -115,9 +117,6 @@ class PlaywrightUiProbe:
 
             # Capture screenshot for downstream VLM analysis if a directory is configured
             if self._screenshot_dir:
-                import os
-                import time
-
                 os.makedirs(self._screenshot_dir, exist_ok=True)
                 slug = url.replace("://", "_").replace("/", "_").replace(":", "_")[:80]
                 shot_path = os.path.join(

@@ -5,6 +5,7 @@ CHERENKOV execution/k6_runner.py — local k6 performance script exporter and va
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 from typing import Any
@@ -129,8 +130,6 @@ export default function () {{
         report["metrics"] = metrics
 
         # Parse average latency value from metrics
-        import re
-
         duration_line = metrics.get("http_req_duration", "")
         avg_val = 0.0
         match = re.search(r"avg=([\d\.]+)(ms|s)", duration_line)

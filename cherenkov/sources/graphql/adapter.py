@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import json
 from dataclasses import dataclass
 from collections.abc import Iterator
 from graphql import (
@@ -33,7 +35,6 @@ class GraphQLSourceAdapter:
         with open(self.spec_path, encoding="utf-8") as _f:
             content = _f.read()
         if self.spec_path.endswith(".json"):
-            import json
             data = json.loads(content)
             if "data" in data:
                 data = data["data"]

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -409,7 +410,6 @@ class SpecDriftDetector:
 
     def _matches_pattern(self, value: str, pattern: str) -> bool:
         """Check if value matches regex pattern."""
-        import re
         try:
             return bool(re.match(pattern, value))
         except re.error:

@@ -9,6 +9,7 @@ Provides structured tools for agent builders:
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -73,8 +74,6 @@ class CherenkovValidateTool(BaseTool):
 
     def _run(self, query: str, run_manager: Any | None = None) -> str:
         """Dispatch to the requested operation."""
-        import json
-
         try:
             args = json.loads(query)
         except json.JSONDecodeError as exc:

@@ -30,6 +30,7 @@ Usage in tests/CI:
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass, field
 from typing import Any
@@ -230,7 +231,6 @@ class SchemaCheckStage:
         text = Path(spec_path).read_text(encoding="utf-8")
         suffix = Path(spec_path).suffix.lower()
         if suffix == ".json":
-            import json
             spec = json.loads(text)
         else:
             import yaml

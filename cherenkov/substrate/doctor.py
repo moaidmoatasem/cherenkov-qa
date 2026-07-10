@@ -156,10 +156,9 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool, 
     if show_all or adversarial:
         try:
             from pathlib import Path
-            import json as json_module
             adv_path = Path(".cherenkov/adversarial_report.json")
             if adv_path.exists():
-                latest = json_module.loads(adv_path.read_text())
+                latest = json.loads(adv_path.read_text())
                 report["latest_adversarial"] = latest
                 if not json_out:
                     click.echo("\nLatest Adversarial Report")

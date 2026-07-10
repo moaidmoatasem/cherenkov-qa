@@ -168,8 +168,6 @@ class GitHubModelsProvider:
         self.client = client
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
-        import json
-
         model = (
             get_settings().GITHUB_MODELS_SMALL_MODEL
             if request.capability_tier == "small"
