@@ -26,6 +26,7 @@ from cherenkov.divergence.proof_run import run_proof
 
 _log = logging.getLogger(__name__)
 from cherenkov.divergence.coverage import compute_coverage, CoverageReport
+from cherenkov.divergence.health import compute_health_score, HealthScore
 from cherenkov.persistence.run_store import RunRecord, get_run_store, spec_hash as _spec_hash
 
 
@@ -74,6 +75,12 @@ from cherenkov.persistence.run_store import RunRecord, get_run_store, spec_hash 
     help="Print a spec coverage-gap report after the proof run (requires --spec).",
 )
 @click.option(
+    "--health-score",
+    is_flag=True,
+    default=False,
+    help="Print an A-F health grade for the proof run (coverage + divergence density; requires --spec).",
+)
+@click.option(
     "--rich-verdict/--simple",
     default=True,
     help="Run the full multi-agent verdict engine (default: on).  Pass --simple for the legacy summary.",
@@ -104,6 +111,7 @@ def verify_cmd(
     output_format: str,
     fail_on_divergence: bool,
     coverage_report: bool,
+    health_score: bool,
     rich_verdict: bool,
     no_mutation_oracle: bool,
     no_traffic_capture: bool,
@@ -175,6 +183,12 @@ def verify_cmd(
             else:
                 click.echo("[WARN] --coverage-report requires --spec; skipping.", err=True)
 
+        if health_score:
+            if cov is not None:
+                _print_health(compute_health_score(cov))
+            else:
+                click.echo("[WARN] --health-score requires --spec; skipping.", err=True)
+
         if output:
             _write_rich_json(rich, reports, output, spec_dict=spec_dict)
             click.echo(f"\nReport written to {output}")
@@ -202,6 +216,13 @@ def verify_cmd(
             else:
                 cov_report = compute_coverage(spec_dict, reports)
                 _print_coverage(cov_report)
+
+        if health_score:
+            if spec_dict is None:
+                click.echo("[WARN] --health-score requires --spec; skipping.", err=True)
+            else:
+                cov_report = cov_report or compute_coverage(spec_dict, reports)
+                _print_health(compute_health_score(cov_report))
 
         if output:
             _write_json(reports, output)
@@ -422,5 +443,26 @@ def _print_coverage(cov: CoverageReport) -> None:
         for ep in cov.tested_endpoints:
             div_tag = f"  ({ep.divergence_count} divergence(s))" if ep.divergence_count else ""
             click.echo(f"    {ep.method:<7} {ep.path}{div_tag}")
+    click.echo("─" * width + "\n")
+
+
+def _print_health(health: HealthScore) -> None:
+    width = 68
+    colour = {"A": "green", "B": "green", "C": "yellow", "D": "red", "F": "red"}.get(
+        health.grade, "white"
+    )
+    click.echo("\n" + "─" * width)
+    click.echo(
+        "  Health grade: "
+        + click.style(f"{health.grade}", fg=colour, bold=True)
+        + f"  ({health.score:.1f}/100)"
+    )
+    click.echo(
+        f"    coverage {health.coverage_component:.1f}  ·  "
+        f"integrity {health.integrity_component:.1f}  ·  "
+        f"divergence {health.divergence_component:.1f}"
+    )
+    for d in health.deductions:
+        click.echo(f"    {d}")
     click.echo("─" * width + "\n")
 
