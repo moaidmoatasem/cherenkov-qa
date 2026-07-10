@@ -22,6 +22,7 @@ from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.trace_reader import TraceReader
 
 _log = logging.getLogger(__name__)
+_RE_TO_HAVE_PROPERTY = re.compile(r"toHaveProperty\(['\"](\w+)['\"]")
 
 
 def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
@@ -52,7 +53,6 @@ def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
         return warnings
 
     # Scan test files for toHaveProperty('field') assertions
-    field_re = re.compile(r"toHaveProperty\(['\"](\w+)['\"]")
     for fname in os.listdir(tests_dir):
         if not fname.endswith(".spec.ts"):
             continue
@@ -63,7 +63,7 @@ def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
         except Exception as exc:
             _log.debug("Could not read test file during preflight %s: %s", fpath, exc)
             continue
-        for match in field_re.finditer(code):
+        for match in _RE_TO_HAVE_PROPERTY.finditer(code):
             field = match.group(1)
             if field not in spec_fields:
                 warnings.append(
