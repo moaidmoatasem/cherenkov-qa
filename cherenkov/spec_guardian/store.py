@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -177,7 +177,7 @@ class DriftStore:
             con = sqlite3.connect(self.db_path, timeout=10.0)
             try:
                 con.execute("PRAGMA journal_mode=WAL")
-                cutoff = (datetime.now(timezone.utc) - __import__('datetime').timedelta(hours=hours)).isoformat()
+                cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
 
                 total = con.execute(
                     "SELECT COUNT(*) FROM drift_events WHERE timestamp >= ?",

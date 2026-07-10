@@ -22,7 +22,7 @@ def _compute_snapshot_hash(test_code: str, spec_path: str | None = None) -> str:
     """Hash both the test code and the spec it was generated from."""
     hasher = hashlib.sha256()
     hasher.update(test_code.encode())
-    if spec_path and __import__("os").path.exists(spec_path):
+    if spec_path and os.path.exists(spec_path):
         with open(spec_path, "rb") as f:
             hasher.update(f.read())
     return hasher.hexdigest()
