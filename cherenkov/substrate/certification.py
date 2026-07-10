@@ -5,9 +5,13 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
-from cherenkov.core.settings import get_settings
+
 from cherenkov.core.contracts import GoldSet, GoldSetItem, CertResult, ReasoningRequest
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
+
+_RE_URL = re.compile(r"https?://\S+")
+_RE_NUM = re.compile(r"\b\d{2,}\b")
 
 class RAGTriadEvaluator:
     """RAG-Triad metrics: Context Relevance, Answer Faithfulness, Answer Relevance.
@@ -43,15 +47,13 @@ class RAGTriadEvaluator:
 
         penalty = 0.0
 
-        url_pattern = re.compile(r"https?://\S+")
-        response_urls = set(url_pattern.findall(response_lower))
-        prompt_urls = set(url_pattern.findall(prompt_lower))
+        response_urls = set(_RE_URL.findall(response_lower))
+        prompt_urls = set(_RE_URL.findall(prompt_lower))
         unknown_urls = response_urls - prompt_urls
         penalty += 0.15 * len(unknown_urls)
 
-        num_pattern = re.compile(r"\b\d{2,}\b")
-        response_nums = set(num_pattern.findall(response_lower))
-        prompt_nums = set(num_pattern.findall(prompt_lower))
+        response_nums = set(_RE_NUM.findall(response_lower))
+        prompt_nums = set(_RE_NUM.findall(prompt_lower))
         unknown_nums = response_nums - prompt_nums
         penalty += 0.05 * len(unknown_nums)
 

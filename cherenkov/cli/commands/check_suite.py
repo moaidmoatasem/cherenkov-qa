@@ -19,7 +19,14 @@ import re
 import sys
 from pathlib import Path
 
-import click# ── AST analysis (no external deps, stdlib only) ──────────────────────────────
+import click
+
+_RE_WEAK_MATCHER = re.compile(
+    r"expect\([^)]+\)\.(not\.toBe|toContain|toBeTruthy|toBeFalsy|toBeDefined)\("
+)
+_RE_STRICT_MATCHER = re.compile(r"expect\([^)]+\)\.toBe\(")
+
+# ── AST analysis (no external deps, stdlib only) ──────────────────────────────
 
 _STRONG = {"Eq"}
 _WEAK = {"NotEq", "Lt", "LtE", "Gt", "GtE", "In", "NotIn", "Is", "IsNot"}
@@ -239,11 +246,8 @@ def _check_typescript(
     """Regex-based integrity check for TypeScript test suites."""
     findings: list[str] = []
 
-    weak_re = re.compile(r"expect\([^)]+\)\.(not\.toBe|toContain|toBeTruthy|toBeFalsy|toBeDefined)\(")
-    strict_re = re.compile(r"expect\([^)]+\)\.toBe\(")
-
-    cand_has_strict = bool(strict_re.search(candidate_code))
-    cand_has_weak_only = bool(weak_re.search(candidate_code)) and not cand_has_strict
+    cand_has_strict = bool(_RE_STRICT_MATCHER.search(candidate_code))
+    cand_has_weak_only = bool(_RE_WEAK_MATCHER.search(candidate_code)) and not cand_has_strict
     if cand_has_weak_only:
         findings.append("WEAKENED  candidate uses only weak matchers (no .toBe() found)")
 
