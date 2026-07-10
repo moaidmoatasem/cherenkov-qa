@@ -18,6 +18,7 @@ Anti-lock-in invariant: generated k6 script is plain JS, runs standalone.
 
 from __future__ import annotations
 
+import json
 import math
 import os
 import re
@@ -503,7 +504,6 @@ class PerfStage:
             PerfSlice with traffic-based load profile or None if generation fails
         """
         try:
-            import json
             from pathlib import Path
 
             har_path = Path(traffic_file_path)

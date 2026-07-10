@@ -14,7 +14,9 @@ Default model mapping:
 
 from __future__ import annotations
 
+import base64
 import json
+from pathlib import Path
 from typing import Any
 import time
 
@@ -68,10 +70,7 @@ class NemoClawProvider:
             and request.output_schema
             and "image_path" in request.output_schema
         ):
-            import base64
-            import pathlib
-
-            image_bytes = pathlib.Path(request.output_schema["image_path"]).read_bytes()
+            image_bytes = Path(request.output_schema["image_path"]).read_bytes()
             image_data = base64.b64encode(image_bytes).decode()
             content: dict[str, Any] | str = self.client.complete_vision(
                 system_prompt=system_prompt,

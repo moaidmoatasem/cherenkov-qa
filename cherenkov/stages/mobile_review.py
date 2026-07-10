@@ -49,7 +49,7 @@ class MobileReviewStage:
         if not has_indented_value:
             errors.append("Commands missing required indented values (text/path/when)")
 
-        passed = len(errors) == 0
+        passed = not errors
 
         dt = int((time.monotonic() - t0) * 1000)
         if self.run_id:

@@ -45,7 +45,7 @@ class SpecDiffReport:
 
     @property
     def has_breaking_changes(self) -> bool:
-        return len(self.breaking) > 0
+        return bool(self.breaking)
 
     def to_dict(self) -> dict:
         def _change_to_dict(c: SpecChange) -> dict:

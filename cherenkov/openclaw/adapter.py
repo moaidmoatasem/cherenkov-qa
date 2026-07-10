@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import urllib.request
 from collections.abc import Callable
 from typing import Any
 
@@ -86,9 +88,6 @@ class OpenClawAdapter:
         self._trigger_handlers.append(handler)
 
     def _notify(self, envelope: HitlEnvelope) -> None:
-        import urllib.request
-        import json
-
         for cb in self._notify_callbacks:
             try:
                 cb(envelope)

@@ -188,7 +188,7 @@ def validate_spec(source: str, *, fatal_on_warnings: bool = False) -> Validation
         ))
         return ValidationResult(ok=False, issues=issues, spec=spec)
 
-    if not isinstance(paths, dict) or len(paths) == 0:
+    if not isinstance(paths, dict) or not paths:
         issues.append(SpecIssue(
             severity=Severity.ERROR,
             code="SPEC_PARSE_ERROR",

@@ -1,6 +1,7 @@
 """cherenkov/cli/commands/check_stale.py — `cherenkov check-stale` command."""
 from __future__ import annotations
 
+import json
 import sys
 import click
 from pathlib import Path
@@ -73,7 +74,6 @@ def check_stale_cmd(spec, manifest, fail_on_stale, as_json):
         report = m.check()
 
     if as_json:
-        import json
         click.echo(json.dumps({
             "stale": report.stale,
             "spec_path": report.spec_path,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from collections.abc import Callable
 from typing import Any
 
@@ -70,8 +71,6 @@ def run_test(
     endpoint: str, method: str = "GET", spec_path: str | None = None
 ) -> dict[str, Any]:
     try:
-        import os
-
         from cherenkov.stages.ingest import IngestStage
         from cherenkov.stages.plan import PlanStage
 

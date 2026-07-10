@@ -287,7 +287,7 @@ class IngestStage:
                                 continue
 
                             prop_type = prop_schema.get("type")
-                            if isinstance(prop_type, list) and len(prop_type) > 0:
+                            if isinstance(prop_type, list) and prop_type:
                                 prop_type = prop_type[0]
 
                             # String length violation

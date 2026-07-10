@@ -14,6 +14,7 @@ first-class CLI command (E2.5 / MCP_VERIFICATION_SERVER.md §4.1 wedge).
 from __future__ import annotations
 
 import ast
+import json
 import re
 import sys
 from pathlib import Path
@@ -224,7 +225,6 @@ def check_suite_cmd(
     _print_findings(cand_path.name, findings)
 
     if output:
-        import json
         Path(output).write_text(json.dumps({"candidate": candidate, "findings": findings}, indent=2))
         click.echo(f"\nFindings written to {output}")
 

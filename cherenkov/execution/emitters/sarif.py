@@ -61,7 +61,7 @@ class SARIFEmitter:
                     },
                     "invocations": [
                         {
-                            "executionSuccessful": len(results) == 0,
+                            "executionSuccessful": not results,
                             "endTimeUtc": datetime.now(timezone.utc).isoformat() + "Z",
                         }
                     ],

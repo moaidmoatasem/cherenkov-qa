@@ -129,7 +129,7 @@ class Diagnoser:
             current_keys = list(current_body)
         elif (
             isinstance(current_body, list)
-            and len(current_body) > 0
+            and current_body
             and isinstance(current_body[0], dict)
         ):
             current_keys = list(current_body[0])
@@ -215,7 +215,7 @@ class Diagnoser:
         body_keys = []
         if isinstance(body, dict):
             body_keys = list(body)
-        elif isinstance(body, list) and len(body) > 0 and isinstance(body[0], dict):
+        elif isinstance(body, list) and body and isinstance(body[0], dict):
             body_keys = list(body[0])
 
         snapshot_data = {

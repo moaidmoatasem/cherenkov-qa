@@ -23,10 +23,13 @@ from __future__ import annotations
 
 import glob
 import hashlib
+import ipaddress
 import json
 import os
+import socket
 import time
 import urllib.request
+from urllib.parse import urlparse
 import uuid
 from collections.abc import Callable
 from typing import Any
@@ -1191,11 +1194,6 @@ def _tool_registry_list(args: dict[str, Any]) -> MCPToolCallResult:
 
 def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     """Register an external MCP server with the mesh registry."""
-    import ipaddress
-    import json
-    import socket
-    from urllib.parse import urlparse
-
     from cherenkov.mcp.mesh_router import get_registry
 
     inp = args
@@ -1694,9 +1692,6 @@ def _tool_chat_run_test(args: dict[str, Any]) -> MCPToolCallResult:
 
 def _get_latest_validation_report() -> dict[str, Any]:
     """Return the most recent ValidationReport from evidence/, or a stub."""
-    import glob
-    import os
-
     evidence_dir = os.path.join(os.getcwd(), ".cherenkov", "evidence")
     pattern = os.path.join(evidence_dir, "*.json")
     files = sorted(glob.glob(pattern), reverse=True)
@@ -1932,7 +1927,6 @@ _TOOL_DISPATCH: dict[str, Callable[[dict[str, Any]], MCPToolCallResult]] = {
 
 def _get_evidence_listing() -> dict[str, Any]:
     """Return a directory listing of .cherenkov/evidence/."""
-    import os
 
     evidence_dir = os.path.join(os.getcwd(), ".cherenkov", "evidence")
     if not os.path.isdir(evidence_dir):

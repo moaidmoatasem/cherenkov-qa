@@ -177,7 +177,7 @@ def run_map(sources: dict[str, list[str]] | None = None, detailed: bool = False)
         if db:
             sources["db_schema"] = db if isinstance(db, list) else [db]
 
-    if not sources or all(len(v) == 0 for v in sources.values()):
+    if not sources or not any(sources.values()):
         print("No sources configured. Run `cherenkov init` first.")
         return 1
 

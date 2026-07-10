@@ -1,7 +1,9 @@
 from __future__ import annotations
+import http.client
 import json
 import sys
 import textwrap
+from urllib.parse import urlparse
 
 import click
 
@@ -23,9 +25,6 @@ BROKEN_RESPONSES: dict[str, tuple[int, dict]] = {
 
 
 def _post(base_url: str, path: str, body: dict) -> tuple[int, dict]:
-    import http.client
-    from urllib.parse import urlparse
-
     parsed = urlparse(base_url)
     conn = http.client.HTTPConnection(parsed.hostname, parsed.port, timeout=3)
     try:

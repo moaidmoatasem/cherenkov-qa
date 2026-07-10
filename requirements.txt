@@ -6,6 +6,7 @@
 pydantic>=2.7.0,<3.0.0
 pydantic-settings>=2.14.2,<3.0.0
 jsonschema>=4.0.0
+defusedxml>=0.7.1
 
 # HTTP / networking
 requests>=2.32.0,<3.0.0

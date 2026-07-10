@@ -1,4 +1,9 @@
 from __future__ import annotations
+
+import asyncio
+import sqlite3
+import time
+
 from fastapi import APIRouter
 
 router = APIRouter(tags=["data"])
@@ -73,8 +78,6 @@ async def get_failures():
     escaped_val = VerdictOutcome.ESCAPED_DEFECT.value
 
     def _query_failures():
-        import sqlite3
-
         conn = sqlite3.connect(store.db_path, timeout=10.0)
         conn.row_factory = sqlite3.Row
         try:
@@ -90,7 +93,6 @@ async def get_failures():
         finally:
             conn.close()
 
-    import asyncio
     raw = await asyncio.to_thread(_query_failures)
 
     return [
@@ -152,8 +154,6 @@ async def get_signals():
     store = VerdictStore()
 
     def _query_signals():
-        import sqlite3
-
         conn = sqlite3.connect(store.db_path, timeout=5.0)
         conn.row_factory = sqlite3.Row
         try:
@@ -166,7 +166,6 @@ async def get_signals():
         finally:
             conn.close()
 
-    import asyncio
     performance = []
     for r in await asyncio.to_thread(_query_signals):
         dur = r["duration_ms"] if r["duration_ms"] else 0
@@ -201,7 +200,6 @@ async def get_signals():
 
 @router.get("/api/v1/visual/scenarios")
 async def get_visual_scenarios():
-    import time
     now = int(time.time())
     return [
         {

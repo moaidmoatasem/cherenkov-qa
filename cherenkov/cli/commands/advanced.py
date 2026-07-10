@@ -1,6 +1,9 @@
 """Advanced CLI commands — visual, perf, hitl, review, mcp."""
 from __future__ import annotations
 
+import json
+import os
+import subprocess
 import sys
 import click
 
@@ -131,7 +134,6 @@ def hitl_explain(item_id: str, json_out: bool) -> None:
 @click.option("--demo", is_flag=True, help="Load demo fixture data into HITL queue on startup")
 def review_cmd(host: str, port: int, demo: bool) -> None:
     """Start the review dashboard web UI (FastAPI + prebuilt frontend)."""
-    import os
     import uvicorn
     from cherenkov.web.api import app
 
@@ -169,7 +171,6 @@ def mcp_serve() -> None:
 def mcp_publish(name: str, url: str, tools: str, resources: str,
                 version: str, attestation: str) -> None:
     """Register an external MCP server with the mesh registry."""
-    import json
     from cherenkov.mcp.mesh_router import get_registry
 
     registry = get_registry()
@@ -232,7 +233,6 @@ def mcp_install_tool(tool_id: str) -> None:
 @click.argument("tool_id")
 def mcp_remove(tool_id: str) -> None:
     """Remove a marketplace tool."""
-    import subprocess
     click.echo(f"Removing {tool_id}...")
     try:
         # In a real scenario, map tool_id to package name

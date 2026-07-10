@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+import base64
+import html
+import urllib.parse
+import uuid
+import defusedxml.ElementTree as defused_ET
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -50,8 +55,6 @@ class SAMLServiceProvider:
         """Generate SP-initiated login URL (redirect to IdP)."""
         if not self.is_enabled():
             return ""
-        import urllib.parse
-
         params = {
             "SAMLRequest": self._build_authn_request(),
             "RelayState": relay_state,
@@ -78,33 +81,25 @@ class SAMLServiceProvider:
 
     def _build_authn_request(self) -> str:
         """Build base64-encoded SAML AuthnRequest."""
-        import base64
-        import xml.etree.ElementTree as ET
-
-        root = ET.Element(
-            "{urn:oasis:names:tc:SAML:2.0:protocol}AuthnRequest"
+        xml_str = (
+            '<saml2p:AuthnRequest'
+            ' xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol"'
+            ' xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion"'
+            f' AssertionConsumerServiceURL="{html.escape(self.config.acs_url)}"'
+            f' Destination="{html.escape(self.config.idp_metadata_url)}"'
+            ' ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"'
+            f' ID="{self._generate_id()}"'
+            ' Version="2.0">'
+            f'<saml2:Issuer>{html.escape(self.config.entity_id)}</saml2:Issuer>'
+            '</saml2p:AuthnRequest>'
         )
-        root.set("AssertionConsumerServiceURL", self.config.acs_url)
-        root.set("Destination", self.config.idp_metadata_url)
-        root.set("ProtocolBinding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST")
-        root.set("ID", self._generate_id())
-        root.set("Version", "2.0")
-        issuer = ET.SubElement(
-            root, "{urn:oasis:names:tc:SAML:2.0:assertion}Issuer"
-        )
-        issuer.text = self.config.entity_id
-        xml_bytes = ET.tostring(root, encoding="unicode").encode("utf-8")
-        return base64.b64encode(xml_bytes).decode("utf-8")
+        return base64.b64encode(xml_str.encode("utf-8")).decode("utf-8")
 
     def _parse_assertion(self, saml_response: str) -> SAMLAssertion:
         """Parse SAML response XML and extract assertion data."""
-        import base64
-        import xml.etree.ElementTree as ET
-
         try:
             xml_bytes = base64.b64decode(saml_response)
-            parser = ET.XMLParser(target=ET.TreeBuilder())
-            root = ET.fromstring(xml_bytes, parser=parser)
+            root = defused_ET.fromstring(xml_bytes)
             ns = {
                 "saml2": "urn:oasis:names:tc:SAML:2.0:assertion",
                 "saml2p": "urn:oasis:names:tc:SAML:2.0:protocol",
@@ -140,6 +135,4 @@ class SAMLServiceProvider:
             return SAMLAssertion(name_id="", email="")
 
     def _generate_id(self) -> str:
-        import uuid
-
         return f"_{uuid.uuid4().hex}"

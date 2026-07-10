@@ -17,6 +17,7 @@ Usage from CLI (cherenkov bench --check-regression):
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from dataclasses import dataclass, asdict
@@ -175,8 +176,6 @@ class RegressionGuard:
 
 # ── CLI entry point ──────────────────────────────────────────────────────────
 def _main() -> None:
-    import argparse
-
     parser = argparse.ArgumentParser(
         description="Check an eval report JSON for metric regression."
     )

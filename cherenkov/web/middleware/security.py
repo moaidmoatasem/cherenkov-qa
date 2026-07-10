@@ -26,7 +26,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         client_ip = request.client.host if request.client else "unknown"
-        now = time.time()
+        now = time.monotonic()
         window_start = now - self.window_seconds
         filtered = [t for t in self._requests[client_ip] if t > window_start]
         # Evict IPs with no recent requests to prevent unbounded dict growth
