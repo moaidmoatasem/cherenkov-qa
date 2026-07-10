@@ -6,6 +6,7 @@ import base64
 import urllib.parse
 import uuid
 import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as defused_ET
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -99,8 +100,7 @@ class SAMLServiceProvider:
         """Parse SAML response XML and extract assertion data."""
         try:
             xml_bytes = base64.b64decode(saml_response)
-            parser = ET.XMLParser(target=ET.TreeBuilder())
-            root = ET.fromstring(xml_bytes, parser=parser)
+            root = defused_ET.fromstring(xml_bytes)
             ns = {
                 "saml2": "urn:oasis:names:tc:SAML:2.0:assertion",
                 "saml2p": "urn:oasis:names:tc:SAML:2.0:protocol",
