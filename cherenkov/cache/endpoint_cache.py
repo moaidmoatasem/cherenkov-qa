@@ -38,7 +38,7 @@ class EndpointCache:
         with self._lock:
             try:
                 self.db_path.parent.mkdir(parents=True, exist_ok=True)
-                con = sqlite3.connect(str(self.db_path), timeout=1.0)
+                con = sqlite3.connect(self.db_path, timeout=1.0)
                 try:
                     with con:
                         con.execute("""
@@ -56,7 +56,7 @@ class EndpointCache:
                 self.db_path = Path(tempfile.gettempdir()) / "cherenkov" / "cache.db"
                 self.db_path.parent.mkdir(parents=True, exist_ok=True)
                 try:
-                    con = sqlite3.connect(str(self.db_path), timeout=1.0)
+                    con = sqlite3.connect(self.db_path, timeout=1.0)
                     try:
                         with con:
                             con.execute("""
@@ -77,7 +77,7 @@ class EndpointCache:
         if self._fallback:
             return None
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=1.0)
+            con = sqlite3.connect(self.db_path, timeout=1.0)
             try:
                 return con.execute(sql, params).fetchone()
             finally:
@@ -87,7 +87,7 @@ class EndpointCache:
         if self._fallback:
             return
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=1.0)
+            con = sqlite3.connect(self.db_path, timeout=1.0)
             try:
                 con.execute(sql, params)
                 con.commit()

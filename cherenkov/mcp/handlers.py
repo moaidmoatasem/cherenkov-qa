@@ -21,6 +21,7 @@ Suggest-only: validate_run_gate returns a report, never auto-applies anything.
 
 from __future__ import annotations
 
+import glob
 import hashlib
 import json
 import os
@@ -1777,11 +1778,9 @@ def _tool_get_tightening_suggestions(args: dict[str, Any]) -> MCPToolCallResult:
 
         # Suggest based on trace evidence in .cherenkov/evidence/
         evidence_dir = os.path.join(os.getcwd(), ".cherenkov", "evidence")
-        import glob as _glob
-
         patterns: list[str] = []
         if os.path.isdir(evidence_dir):
-            for ev_file in sorted(_glob.glob(os.path.join(evidence_dir, "*.json")))[
+            for ev_file in sorted(glob.glob(os.path.join(evidence_dir, "*.json")))[
                 -10:
             ]:
                 with open(ev_file, encoding="utf-8") as f:

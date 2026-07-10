@@ -38,7 +38,7 @@ class MCPConductor:
             task.merge_strategy.value,
         )
 
-        start_time = time.time()
+        start_time = time.monotonic()
         results: list[SubAgentResult] = []
 
         # Fan-out: execute sub-tasks in parallel using a thread pool.
@@ -66,7 +66,7 @@ class MCPConductor:
                         )
                     )
 
-        duration = time.time() - start_time
+        duration = time.monotonic() - start_time
         _log.info("Conductor completed in %.2fs", duration)
 
         total_tokens = sum(r.tokens_used for r in results)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import functools
 import logging
 import os
+import uuid
 from pathlib import Path
 from collections.abc import Callable
 from typing import Any
@@ -126,8 +127,6 @@ class SafetyGuard:
     # ── AgentRR: record/replay debugging ──────────────────────────────────
 
     def _init_agentrr(self) -> None:
-        import uuid as _uuid
-
         try:
             from agentrr_core.log.writer import LogWriter, LogWriterConfig
             from agentrr_core.schema.events import RunHeader
@@ -144,7 +143,7 @@ class SafetyGuard:
             config = LogWriterConfig(path=log_path)
             writer = LogWriter(config=config)
             header = RunHeader(
-                run_id=f"cherenkov-{_uuid.uuid4().hex[:8]}",
+                run_id=f"cherenkov-{uuid.uuid4().hex[:8]}",
                 entrypoint="cherenkov.chat.guard",
             )
             recorder = Recorder.create(writer, header)
@@ -158,13 +157,12 @@ class SafetyGuard:
         if self._agentrr_recorder is None:
             return
         try:
-            import uuid as _uuid
             from agentrr_core.schema.events import EventType
             from agentrr_recorder.pending_event import PendingBoundary
 
             et = getattr(EventType, event_type.upper(), EventType.RECORD)
             pending = PendingBoundary(
-                event_id=f"e-{_uuid.uuid4().hex[:12]}",
+                event_id=f"e-{uuid.uuid4().hex[:12]}",
                 event_type=et,
                 request=payload,
                 parent_id=None,

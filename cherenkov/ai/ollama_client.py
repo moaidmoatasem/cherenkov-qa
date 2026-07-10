@@ -16,7 +16,7 @@ import re
 import time
 
 import requests
-import random as _random
+import random
 
 from cherenkov.core.errors import OllamaJSONError, get_logger
 from cherenkov.core.settings import get_settings
@@ -34,7 +34,7 @@ def _post_with_retry(
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
             last_err = e
             if attempt < max_retries - 1:
-                wait = (2**attempt) * 0.5 + _random.uniform(0, 0.5)
+                wait = (2**attempt) * 0.5 + random.uniform(0, 0.5)
                 time.sleep(wait)
     if last_err is None:
         raise RuntimeError("_post_with_retry called with max_retries=0")

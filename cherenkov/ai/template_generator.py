@@ -145,7 +145,7 @@ def _path_with_example_param(
                 if (mutation_id and "invalid" in mutation_id)
                 else "test-id"
             )
-        result = result.replace("{" + name + "}", val)
+        result = result.replace(f"{{{name}}}", val)
     return result
 
 

@@ -42,7 +42,7 @@ class PilotAgent:
         self.start_time: float | None = None
 
     def run(self, intent: str) -> list[PilotStep]:
-        self.start_time = time.time()
+        self.start_time = time.monotonic()
         self.observations = 0
         steps = self._parse_intent(intent)
         for step in steps:
@@ -50,7 +50,7 @@ class PilotAgent:
                 step.status = "failed"
                 step.actual = "Circuit breaker: max observations reached"
                 break
-            if time.time() - self.start_time > self.timeout_seconds:
+            if time.monotonic() - self.start_time > self.timeout_seconds:
                 step.status = "failed"
                 step.actual = "Circuit breaker: timeout reached"
                 break

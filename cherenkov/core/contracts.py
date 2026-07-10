@@ -8,6 +8,7 @@ can't quietly break a downstream consumer.
 
 from __future__ import annotations
 
+import uuid
 from enum import Enum
 from typing import Literal
 from pydantic import BaseModel, Field
@@ -56,7 +57,7 @@ class StageMeta(BaseModel):
     tokens: int = 0
     duration_ms: int = 0
     schema_version: int = SCHEMA_VERSION
-    run_id: str = Field(default_factory=lambda: str(__import__("uuid").uuid4())[:8])
+    run_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
 
 
 class StageError(BaseModel):

@@ -37,7 +37,7 @@ class ResponseCache:
         key = self._make_key(model, system_prompt, user_prompt)
         if key in self._cache:
             ts, value = self._cache[key]
-            if time.time() - ts < self.ttl_seconds:
+            if time.monotonic() - ts < self.ttl_seconds:
                 self._hits += 1
                 self._cache.move_to_end(key)
                 return value
@@ -51,7 +51,7 @@ class ResponseCache:
         key = self._make_key(model, system_prompt, user_prompt)
         if key in self._cache:
             self._cache.move_to_end(key)
-        self._cache[key] = (time.time(), value)
+        self._cache[key] = (time.monotonic(), value)
         while len(self._cache) > self.max_size:
             self._cache.popitem(last=False)
 

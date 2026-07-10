@@ -22,7 +22,7 @@ class DataCollector:
     def __init__(self, db_path=None):
         self.db_path = Path(db_path or TELEMETRY_DB_PATH)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        self._conn = sqlite3.connect(str(self.db_path))
+        self._conn = sqlite3.connect(self.db_path)
         self._conn.execute(CREATE_TABLE_SQL)
         self._conn.commit()
 

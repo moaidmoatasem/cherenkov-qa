@@ -139,7 +139,7 @@ def _path_with_samples(path: str, operation: dict[str, Any], spec: dict[str, Any
             continue
         schema = _resolve_ref(param.get("schema", {}), spec)
         value = _sample_value(schema, param.get("name", ""))
-        filled = filled.replace("{" + str(param.get("name", "")) + "}", str(value))
+        filled = filled.replace(f'{{{str(param.get("name", ""))}}}', str(value))
     return None if "{" in filled else filled
 
 
@@ -234,7 +234,7 @@ def spec_hypotheses(
                 continue
             expect = min(documented)
             name = param.get("name", "")
-            probe_path = endpoint.replace("{" + str(name) + "}", "0")
+            probe_path = endpoint.replace(f"{{{name}}}", "0")
             if "{" in probe_path:
                 continue
             hypotheses.append(
