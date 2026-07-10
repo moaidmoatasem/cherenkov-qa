@@ -9,6 +9,7 @@ import re
 import subprocess
 import time
 import json
+from pathlib import Path
 from typing import Any
 
 from cherenkov.core.contracts import (
@@ -43,8 +44,7 @@ class ReviewStage:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("REVIEW", run_id)
-        from pathlib import Path as _Path
-        self.stub_dir = str(_Path(__file__).parent.parent.parent / "stub")
+        self.stub_dir = str(Path(__file__).parent.parent.parent / "stub")
 
     def run(self, generate: GenerateOutput, spec_path: str) -> ReviewOutput:
         t0 = time.monotonic()

@@ -6,6 +6,8 @@ Report effective config, device/model/egress health, and where each value came f
 
 from __future__ import annotations
 
+import glob
+import os
 import shutil
 import subprocess
 
@@ -73,8 +75,6 @@ _NODE_FALLBACK_PATHS = [
 
 
 def check_node() -> tuple[bool, str]:
-    import os
-    import glob as _glob
     path = shutil.which("node")
     if not path:
         # nvm-managed node won't be on the detached server's PATH — probe known locations
@@ -84,7 +84,7 @@ def check_node() -> tuple[bool, str]:
                 break
     if not path:
         # last resort: glob nvm versions directory
-        matches = _glob.glob("/home/*/.nvm/versions/node/*/bin/node")
+        matches = glob.glob("/home/*/.nvm/versions/node/*/bin/node")
         if matches:
             path = sorted(matches)[-1]
     if path:
