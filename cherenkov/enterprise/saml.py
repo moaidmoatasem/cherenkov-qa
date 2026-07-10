@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -140,6 +141,4 @@ class SAMLServiceProvider:
             return SAMLAssertion(name_id="", email="")
 
     def _generate_id(self) -> str:
-        import uuid
-
         return f"_{uuid.uuid4().hex}"
