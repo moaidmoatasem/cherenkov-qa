@@ -56,7 +56,7 @@ class WebhookNotifier:
             except Exception as e:
                 _log.warning("failed to send generic webhook notification", error=str(e))
 
-        t = threading.Thread(target=_send, name="webhook-send")
+        t = threading.Thread(target=_send, name="webhook-send", daemon=True)
         t.start()
     def send(self, report: dict[str, Any]) -> bool:
         envelope = ok_envelope(
