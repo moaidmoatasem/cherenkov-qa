@@ -33,7 +33,7 @@ class DriftStore:
     def _init_db(self) -> None:
         """Initialize database schema."""
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=10.0)
+            con = sqlite3.connect(self.db_path, timeout=10.0)
             try:
                 con.execute("PRAGMA journal_mode=WAL")
                 with con:
@@ -72,7 +72,7 @@ class DriftStore:
     def save_event(self, event: DriftEvent) -> int:
         """Save a single drift event. Returns event ID."""
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=10.0)
+            con = sqlite3.connect(self.db_path, timeout=10.0)
             try:
                 con.execute("PRAGMA journal_mode=WAL")
                 cur = con.execute(
@@ -99,7 +99,7 @@ class DriftStore:
     def save_report(self, report: DriftReport) -> int:
         """Save a drift report. Returns report ID."""
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=10.0)
+            con = sqlite3.connect(self.db_path, timeout=10.0)
             try:
                 con.execute("PRAGMA journal_mode=WAL")
                 cur = con.execute(
@@ -128,7 +128,7 @@ class DriftStore:
     def latest_report(self) -> DriftReport | None:
         """Get the most recent drift report."""
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=10.0)
+            con = sqlite3.connect(self.db_path, timeout=10.0)
             try:
                 con.execute("PRAGMA journal_mode=WAL")
                 row = con.execute(
@@ -145,7 +145,7 @@ class DriftStore:
     def recent_events(self, limit: int = 100) -> list[DriftEvent]:
         """Get recent drift events."""
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=10.0)
+            con = sqlite3.connect(self.db_path, timeout=10.0)
             try:
                 con.execute("PRAGMA journal_mode=WAL")
                 rows = con.execute(
@@ -174,7 +174,7 @@ class DriftStore:
     def drift_trend(self, hours: int = 24) -> dict[str, Any]:
         """Get drift trend statistics for the last N hours."""
         with self._lock:
-            con = sqlite3.connect(str(self.db_path), timeout=10.0)
+            con = sqlite3.connect(self.db_path, timeout=10.0)
             try:
                 con.execute("PRAGMA journal_mode=WAL")
                 cutoff = (datetime.now(timezone.utc) - __import__('datetime').timedelta(hours=hours)).isoformat()
