@@ -9,7 +9,7 @@ import threading
 import time
 from unittest.mock import MagicMock
 
-import cherenkov.substrate.provider as provider_mod
+from cherenkov.substrate import provider_base
 from cherenkov.core.contracts import ReasoningRequest
 from cherenkov.core.settings import get_settings
 from cherenkov.substrate.certification import ModelCertificationManager
@@ -17,7 +17,7 @@ from cherenkov.substrate.provider import OllamaProvider
 
 
 def _reset_shared_cache() -> None:
-    provider_mod._SHARED_RESPONSE_CACHE = None
+    provider_base._SHARED_RESPONSE_CACHE = None
 
 
 def test_provider_reuses_cached_response_for_identical_request():
@@ -26,7 +26,7 @@ def test_provider_reuses_cached_response_for_identical_request():
     mock_client.complete_code.return_value = "hello world"
 
     prov = OllamaProvider()
-    prov.client = provider_mod._wrap_with_cache(mock_client, "ollama")
+    prov.client = provider_base.wrap_with_cache(mock_client, "ollama")
 
     req = ReasoningRequest(task="same prompt", capability_tier="small")
     first = prov.generate(req)
@@ -46,7 +46,7 @@ def test_provider_cache_disabled_falls_back_to_raw_client():
     try:
         mock_client = MagicMock()
         mock_client.complete_code.return_value = "hello world"
-        wrapped = provider_mod._wrap_with_cache(mock_client, "ollama")
+        wrapped = provider_base.wrap_with_cache(mock_client, "ollama")
         assert wrapped is mock_client
 
         prov = OllamaProvider()

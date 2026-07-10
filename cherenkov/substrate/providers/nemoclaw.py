@@ -21,7 +21,7 @@ import time
 from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.ai.interface import InferenceClient, CachedInferenceClient
-from cherenkov.substrate.provider import ProviderCapabilities, _wrap_with_cache
+from cherenkov.substrate.provider_base import ProviderCapabilities, wrap_with_cache
 
 
 class NemoClawProvider:
@@ -39,7 +39,7 @@ class NemoClawProvider:
         if client is None:
             from cherenkov.ai.nemoclaw_client import NemoClawInferenceClient
 
-            client = _wrap_with_cache(NemoClawInferenceClient(), "nemoclaw")
+            client = wrap_with_cache(NemoClawInferenceClient(), "nemoclaw")
         self.client = client
 
     def _model_for_tier(self, tier: str) -> str:

@@ -1,58 +1,32 @@
 from __future__ import annotations
 import time
-from typing import Any, Protocol
-from pydantic import BaseModel
+from typing import Any
 import json
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.settings import get_settings
 from cherenkov.ai.interface import InferenceClient, CachedInferenceClient
-from cherenkov.ai.cache import ResponseCache
 from cherenkov.ai.ollama_client import OllamaInferenceClient
 from cherenkov.ai.openai_client import OpenAIInferenceClient
+from cherenkov.substrate.provider_base import (
+    ModelProvider,
+    ProviderCapabilities,
+    shared_response_cache,
+    wrap_with_cache as _wrap_with_cache,
+)
 from cherenkov.substrate.vlm_provider import VLMProvider
 
-
-class ProviderCapabilities(BaseModel):
-    capability_tiers: list[str]
-    requires_egress: bool
-    provider_name: str = ""
-
-
-class ModelProvider(Protocol):
-    def generate(self, request: ReasoningRequest) -> ReasoningResult: ...
-
-    def capabilities(self) -> ProviderCapabilities: ...
-
-
-_SHARED_RESPONSE_CACHE: ResponseCache | None = None
-
-
-def shared_response_cache() -> ResponseCache | None:
-    """Prefix cache shared across substrate providers, gated by CACHE_ENABLED.
-
-    Identical (model, system_prompt, user_prompt) requests are common across
-    certification gold-set runs and repeated healing/repair attempts; a single
-    cache instance lets those calls skip the network round-trip entirely
-    instead of re-running inference for output we already have.
-    """
-    global _SHARED_RESPONSE_CACHE
-    settings = get_settings()
-    if not settings.CACHE_ENABLED:
-        return None
-    if _SHARED_RESPONSE_CACHE is None:
-        _SHARED_RESPONSE_CACHE = ResponseCache(
-            max_size=settings.CACHE_MAX_SIZE,
-            ttl_seconds=settings.CACHE_TTL_SECONDS,
-        )
-    return _SHARED_RESPONSE_CACHE
-
-
-def _wrap_with_cache(client: InferenceClient, provider_name: str) -> InferenceClient:
-    cache = shared_response_cache()
-    if cache is None:
-        return client
-    return CachedInferenceClient(client, cache=cache, provider=provider_name)
+__all__ = [
+    "ModelProvider",
+    "ProviderCapabilities",
+    "shared_response_cache",
+    "OllamaProvider",
+    "OpenAIProvider",
+    "GitHubModelsProvider",
+    "get_provider",
+    "get_vlm_provider",
+    "provider_for_tier",
+]
 
 
 class OllamaProvider:

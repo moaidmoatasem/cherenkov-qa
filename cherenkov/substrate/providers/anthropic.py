@@ -18,7 +18,7 @@ import re
 import time
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.substrate.provider import (
+from cherenkov.substrate.provider_base import (
     ModelProvider,
     ProviderCapabilities,
     shared_response_cache,
