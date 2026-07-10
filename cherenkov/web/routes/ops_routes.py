@@ -129,7 +129,7 @@ async def list_generated_tests():
                 continue
             scenario_id = f.replace(".spec.ts", "")
             method_match = re.search(r'method:\s*["\']([A-Z]+)["\']', code) or re.search(
-                r"\.(get|post|put|patch|delete)\s*\(", code, _re.IGNORECASE)
+                r"\.(get|post|put|patch|delete)\s*\(", code, re.IGNORECASE)
             method = method_match.group(1).upper() if method_match else "GET"
             tests.append({"name": f, "scenario_id": scenario_id, "endpoint": scenario_id, "method": method, "code": code})
         return tests
