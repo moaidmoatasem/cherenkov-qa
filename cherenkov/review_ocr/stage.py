@@ -14,6 +14,10 @@ from cherenkov.core.settings import get_settings
 from cherenkov.review_ocr.models import OCRFinding, OCRReviewOutput, OCRSeverity
 from cherenkov.review_ocr.rules import OCRRuleEngine, SUPPORTED_EXTENSIONS
 
+_RE_OCR_SEVERITY = re.compile(r"\[(critical|error|warn|info)\]\s+(.*)", re.IGNORECASE)
+_RE_OCR_FILE_LOC = re.compile(r"(\S+):(\d+):?\s*(.*)")
+
+
 class ReviewStageOCR:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
@@ -99,13 +103,13 @@ class ReviewStageOCR:
             line = line.strip()
             if not line:
                 continue
-            match = re.match(r"\[(critical|error|warn|info)\]\s+(.*)", line, re.IGNORECASE)
+            match = _RE_OCR_SEVERITY.match(line)
             if match:
                 sev = severity_map.get(match.group(1).lower(), OCRSeverity.INFO)
                 msg = match.group(2)
-                file_match = re.match(r"(\S+):(\d+):?\s*(.*)", msg)
+                file_match = _RE_OCR_FILE_LOC.match(msg)
             else:
-                file_match = re.match(r"(\S+):(\d+):?\s*(.*)", line)
+                file_match = _RE_OCR_FILE_LOC.match(line)
                 if file_match:
                     sev = OCRSeverity.INFO
                     msg = file_match.group(3)

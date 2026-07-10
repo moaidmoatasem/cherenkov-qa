@@ -34,6 +34,14 @@ from cherenkov.healing import (
 )
 
 
+_RE_FETCH_CLIENT = re.compile(r"\bclient\.(GET|POST|PUT|DELETE|PATCH)\b")
+_RE_CLIENT_CALL = re.compile(r"client\.(GET|POST|PUT|DELETE|PATCH)\('([^']+)'")
+_RE_FORBIDDEN_HTTP = re.compile(r"\b(fetch|axios)\b|\.request\b|throw new Error")
+_RE_STATUS_TOBE = re.compile(r"\.status\)?\s*\)?\s*\.toBe\(\s*\d{3}\s*\)")
+_RE_STATUS_LITERAL = re.compile(r"toBe\(\s*(200|201|204|400|401|404|422|500)\s*\)")
+_RE_BODY_SHAPE = re.compile(r"toHaveProperty\(|typeof\s")
+
+
 class ReviewStage:
     """Enforces 6 static and dynamic quality gates on generated tests."""
 
@@ -128,12 +136,8 @@ class ReviewStage:
         detail = (
             "Verified usage of openapi-fetch client with zero raw fetch/axios bleed."
         )
-        uses_fetch_client = bool(
-            re.search(r"\bclient\.(GET|POST|PUT|DELETE|PATCH)\b", code)
-        )
-        has_forbidden = bool(
-            re.search(r"\b(fetch|axios)\b|\.request\b|throw new Error", code)
-        )
+        uses_fetch_client = bool(_RE_FETCH_CLIENT.search(code))
+        has_forbidden = bool(_RE_FORBIDDEN_HTTP.search(code))
         if not uses_fetch_client:
             passed = False
             detail = "Test fails to invoke the openapi-fetch client correctly."
@@ -145,10 +149,10 @@ class ReviewStage:
     def _gate_assertion(self, code: str) -> GateResult:
         passed = True
         detail = "Asserts specific status code and response body shape."
-        specific_status = bool(
-            re.search(r"\.status\)?\s*\)?\s*\.toBe\(\s*\d{3}\s*\)", code)
-        ) or bool(re.search(r"toBe\(\s*(200|201|204|400|401|404|422|500)\s*\)", code))
-        body_shape = bool(re.search(r"toHaveProperty\(|typeof\s", code))
+        specific_status = bool(_RE_STATUS_TOBE.search(code)) or bool(
+            _RE_STATUS_LITERAL.search(code)
+        )
+        body_shape = bool(_RE_BODY_SHAPE.search(code))
         if not specific_status:
             passed = False
             detail = (
@@ -249,9 +253,7 @@ class ReviewStage:
         trace_path = run_result.get("trace_path", "")
         if not trace_path:
             return
-        method_match = re.search(
-            r"client\.(GET|POST|PUT|DELETE|PATCH)\('([^']+)'", code
-        )
+        method_match = _RE_CLIENT_CALL.search(code)
         if not method_match:
             return
         target_method = method_match.group(1)
@@ -279,9 +281,7 @@ class ReviewStage:
         trace_path = run_result.get("trace_path", "")
         if not trace_path:
             return
-        method_match = re.search(
-            r"client\.(GET|POST|PUT|DELETE|PATCH)\('([^']+)'", code
-        )
+        method_match = _RE_CLIENT_CALL.search(code)
         if not method_match:
             return
         target_method = method_match.group(1)
