@@ -86,7 +86,7 @@ class SpecGuardianDaemon:
                 self._run_check_cycle()
                 time.sleep(self.check_interval)
             except Exception:
-                logger.error("Error in check cycle", exc_info=True)
+                logger.exception("Error in check cycle")
                 time.sleep(self.check_interval)
 
     def stop(self) -> None:
