@@ -19,6 +19,9 @@ from cherenkov.core.errors import ProviderJSONError, get_logger
 
 _log = get_logger("ANTHROPIC_CLIENT")
 
+_RE_CODE_FENCE = re.compile(r"```(?:typescript|ts)?\s*([\s\S]+?)```")
+_RE_JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]+?)```")
+
 _DEFAULT_MODEL = os.getenv("CHERENKOV_ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 
 
@@ -125,7 +128,7 @@ class AnthropicInferenceClient(InferenceClient):
         raw = self._complete(system_prompt, user_prompt, model, temperature=temperature)
         code = strip_think(raw)
         # Strip markdown fences if present
-        fenced = re.search(r"```(?:typescript|ts)?\s*([\s\S]+?)```", code)
+        fenced = _RE_CODE_FENCE.search(code)
         if fenced:
             code = fenced.group(1).strip()
         return code
@@ -146,7 +149,7 @@ class AnthropicInferenceClient(InferenceClient):
             )
             text = strip_think(raw)
             # Extract JSON
-            fenced = re.search(r"```(?:json)?\s*([\s\S]+?)```", text)
+            fenced = _RE_JSON_FENCE.search(text)
             if fenced:
                 text = fenced.group(1).strip()
             else:

@@ -17,6 +17,10 @@ from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.ollama_client import _try_json, _json_repair
 
 
+_RE_FENCE_START = re.compile(r"^```[a-z]*\n?")
+_RE_FENCE_END = re.compile(r"\n?```$")
+
+
 class OpenAIInferenceClient(InferenceClient):
     """OpenAI-specific implementation of the InferenceClient interface."""
 
@@ -134,8 +138,8 @@ class OpenAIInferenceClient(InferenceClient):
             model=model,
             temperature=temperature,
         ).strip()
-        text = re.sub(r"^```[a-z]*\n?", "", text)
-        text = re.sub(r"\n?```$", "", text)
+        text = _RE_FENCE_START.sub("", text)
+        text = _RE_FENCE_END.sub("", text)
         log.info("code ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
         return text.strip()
 

@@ -15,6 +15,9 @@ from cherenkov.core.errors import ProviderJSONError, get_logger
 
 _log = get_logger("BEDROCK_CLIENT")
 
+_RE_CODE_FENCE = re.compile(r"```(?:typescript|ts|python)?\s*([\s\S]+?)```")
+_RE_JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]+?)```")
+
 _DEFAULT_MODEL = os.getenv("CHERENKOV_BEDROCK_MODEL", "anthropic.claude-3-haiku-20240307-v1:0")
 
 
@@ -107,7 +110,7 @@ class BedrockInferenceClient(InferenceClient):
         model = model or _DEFAULT_MODEL
         raw = self._complete(system_prompt, user_prompt, model, temperature=temperature)
         code = strip_think(raw)
-        fenced = re.search(r"```(?:typescript|ts|python)?\s*([\s\S]+?)```", code)
+        fenced = _RE_CODE_FENCE.search(code)
         if fenced:
             code = fenced.group(1).strip()
         return code
@@ -128,7 +131,7 @@ class BedrockInferenceClient(InferenceClient):
                 system_prompt, user_prompt, model, temperature=temperature
             )
             text = strip_think(raw)
-            fenced = re.search(r"```(?:json)?\s*([\s\S]+?)```", text)
+            fenced = _RE_JSON_FENCE.search(text)
             if fenced:
                 text = fenced.group(1).strip()
             else:

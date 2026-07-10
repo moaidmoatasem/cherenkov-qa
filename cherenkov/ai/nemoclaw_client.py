@@ -20,6 +20,10 @@ from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.ollama_client import _try_json, _json_repair, strip_think
 
 
+_RE_FENCE_START = re.compile(r"^```[a-z]*\n?")
+_RE_FENCE_END = re.compile(r"\n?```$")
+
+
 class NemoClawInferenceClient(InferenceClient):
     """OpenShell-backed inference client for NVIDIA NemoClaw.
 
@@ -156,8 +160,8 @@ class NemoClawInferenceClient(InferenceClient):
             temperature=temperature,
         ).strip()
         text = strip_think(text)
-        text = re.sub(r"^```[a-z]*\n?", "", text)
-        text = re.sub(r"\n?```$", "", text)
+        text = _RE_FENCE_START.sub("", text)
+        text = _RE_FENCE_END.sub("", text)
         text = text.strip()
         log.info(
             "code ok",
