@@ -81,7 +81,7 @@ class DriftLedger:
             since: ISO-8601 snapshot_id; return only snapshots created after this.
             limit: Maximum number of results.
         """
-        all_snapshots = list(reversed(list(self._iter_all())))
+        all_snapshots = list(self._iter_all())[::-1]
         if since:
             all_snapshots = [s for s in all_snapshots if s.snapshot_id > since]
         if limit is not None:

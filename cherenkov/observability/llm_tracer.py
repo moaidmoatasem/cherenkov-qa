@@ -10,6 +10,7 @@ Usage:
 
 from __future__ import annotations
 
+import importlib
 import logging
 import os
 from typing import Any
@@ -23,7 +24,7 @@ def _detect_backend() -> str:
 
 def _is_lib_available(name: str) -> bool:
     try:
-        __import__(name)
+        importlib.import_module(name)
         return True
     except ImportError:
         return False

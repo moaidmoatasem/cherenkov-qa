@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+from pathlib import Path
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 
@@ -43,8 +44,7 @@ class VisualDiffEngine:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("VISUAL_DIFF", run_id)
-        from pathlib import Path as _Path
-        self.stub_dir = str(_Path(__file__).parent.parent.parent / "stub")
+        self.stub_dir = str(Path(__file__).parent.parent.parent / "stub")
         self.spec_path = os.path.join(self.stub_dir, VISUAL_SPEC_RELPATH)
         # Playwright writes snapshots beside the spec by default.
         self.snapshots_dir = self.spec_path + "-snapshots"

@@ -4,6 +4,8 @@ CHERENKOV ai/accounting.py — per-request cost & latency accounting. E1-5.
 
 from __future__ import annotations
 
+import json
+
 from cherenkov.core.contracts import CostEntry, AccountingReport
 
 
@@ -110,9 +112,7 @@ class CostAccountant:
         run_id: str = "",
         reprompts: int = 0,
     ) -> None:
-        import json as _json
-
-        estimated = _estimate_tokens(_json.dumps(output, default=str))
+        estimated = _estimate_tokens(json.dumps(output, default=str))
         self.record(
             model,
             duration_ms,

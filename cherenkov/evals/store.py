@@ -24,7 +24,7 @@ class EvalStore:
         with self._lock:
             try:
                 self.db_path.parent.mkdir(parents=True, exist_ok=True)
-                con = sqlite3.connect(str(self.db_path), timeout=0.5)
+                con = sqlite3.connect(self.db_path, timeout=0.5)
                 try:
                     with con:
                         con.execute("""
@@ -46,7 +46,7 @@ class EvalStore:
                 self.db_path = Path(tempfile.gettempdir()) / "cherenkov" / "evals.db"
                 self.db_path.parent.mkdir(parents=True, exist_ok=True)
                 try:
-                    con = sqlite3.connect(str(self.db_path), timeout=0.5)
+                    con = sqlite3.connect(self.db_path, timeout=0.5)
                     try:
                         with con:
                             con.execute("""
@@ -70,7 +70,7 @@ class EvalStore:
     def _connect(self) -> sqlite3.Connection | None:
         if self._fallback:
             return None
-        return sqlite3.connect(str(self.db_path), timeout=0.5)
+        return sqlite3.connect(self.db_path, timeout=0.5)
 
     def save(self, report: EvalReport) -> int:
         if self._fallback:

@@ -9,6 +9,7 @@ import os
 import shlex
 import sys
 import subprocess
+from pathlib import Path
 from cherenkov.core.errors import get_logger
 from cherenkov.core.compat import npx as _npx, subprocess_env as _subprocess_env
 from cherenkov.core.settings import get_settings
@@ -49,9 +50,8 @@ class PlaywrightRunner:
     def __init__(self, run_id: str | None = None):
         self.log = get_logger("PLAYWRIGHT", run_id)
         # Root is cherenkov-qa, stub is inside it
-        from pathlib import Path as _Path
-        self.stub_dir = str(_Path(__file__).parent.parent.parent / "stub")
-        self.tests_dir = str(_Path(self.stub_dir) / "generated_tests")
+        self.stub_dir = str(Path(__file__).parent.parent.parent / "stub")
+        self.tests_dir = str(Path(self.stub_dir) / "generated_tests")
         # Detect Windows UNC path — cmd.exe cannot use UNC as cwd
         self._use_wsl = sys.platform == "win32" and _is_unc_path(self.stub_dir)
         self._wsl_distro = _wsl_distro_from_unc(self.stub_dir) if self._use_wsl else None

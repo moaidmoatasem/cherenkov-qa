@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-import re as _re
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -47,7 +47,7 @@ def _read_json(path: Path) -> dict[str, Any]:
 
 
 def _validate_session_id(session_id: str) -> str:
-    if not _re.match(r"^[a-zA-Z0-9_\-]{1,128}$", session_id):
+    if not re.match(r"^[a-zA-Z0-9_\-]{1,128}$", session_id):
         raise HTTPException(
             status_code=400,
             detail="Invalid session_id: must be alphanumeric/underscore/hyphen, max 128 chars",
