@@ -12,6 +12,7 @@ from cherenkov.core.settings import get_settings
 
 _RE_URL = re.compile(r"https?://\S+")
 _RE_NUM = re.compile(r"\b\d{2,}\b")
+_RE_WORD = re.compile(r"\w+")
 
 class RAGTriadEvaluator:
     """RAG-Triad metrics: Context Relevance, Answer Faithfulness, Answer Relevance.
@@ -27,8 +28,8 @@ class RAGTriadEvaluator:
         """Score how well the response stays on-topic with the prompt (0.0-1.0)."""
         if not response.strip():
             return 0.0
-        prompt_tokens = set(re.findall(r"\w+", prompt.lower()))
-        response_tokens = set(re.findall(r"\w+", response.lower()))
+        prompt_tokens = set(_RE_WORD.findall(prompt.lower()))
+        response_tokens = set(_RE_WORD.findall(response.lower()))
         if not prompt_tokens:
             return 1.0
         overlap = len(prompt_tokens & response_tokens)
@@ -89,14 +90,14 @@ class RAGTriadEvaluator:
             "summarize",
         }
         prompt_lower = prompt.lower()
-        prompt_words = set(re.findall(r"\w+", prompt_lower))
+        prompt_words = set(_RE_WORD.findall(prompt_lower))
 
         query_terms = {w for w in prompt_words if w not in q_words and len(w) > 2}
         if not query_terms:
             return 1.0
 
         response_lower = response.lower()
-        response_words = set(re.findall(r"\w+", response_lower))
+        response_words = set(_RE_WORD.findall(response_lower))
 
         overlap = len(query_terms & response_words)
         coverage = overlap / len(query_terms)

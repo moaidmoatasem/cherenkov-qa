@@ -22,6 +22,9 @@ from cherenkov.core.errors import OllamaJSONError, get_logger
 from cherenkov.core.settings import get_settings
 from cherenkov.ai.interface import InferenceClient
 
+_RE_FENCE_START = re.compile(r"^```[a-z]*\n?")
+_RE_FENCE_END = re.compile(r"\n?```$")
+
 
 def _post_with_retry(
     url: str, payload: dict, timeout: int, max_retries: int = 4
@@ -225,8 +228,8 @@ class OllamaInferenceClient(InferenceClient):
             text = body.get("response", "").strip()
             self._token_usage["prompt_tokens"] = body.get("prompt_eval_count", 0)
             self._token_usage["completion_tokens"] = body.get("eval_count", 0)
-            text = re.sub(r"^```[a-z]*\n?", "", text)
-            text = re.sub(r"\n?```$", "", text)
+            text = _RE_FENCE_START.sub("", text)
+            text = _RE_FENCE_END.sub("", text)
             text = text.strip()
             log.info(
                 "code ok",

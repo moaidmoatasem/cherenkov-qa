@@ -32,6 +32,7 @@ _VAGUE_WORDS = re.compile(
     re.IGNORECASE,
 )
 _MUTATING = {"post", "put", "patch", "delete"}
+_RE_BIND_REQ = re.compile(r"(\w+) (\S+) responds (\d{3}) per spec")
 _HIGH_IMPACT_TOPICS = re.compile(
     r"\b(auth|login|password|payment|billing|delete|data loss|pii|security)\b",
     re.IGNORECASE,
@@ -244,7 +245,7 @@ class HeuristicReasoner:
         The requirement text is 'METHOD /path responds NNN per spec' — both
         halves came from the spec, never from the reasoner's imagination.
         """
-        match = re.match(r"(\w+) (\S+) responds (\d{3}) per spec", req.text)
+        match = _RE_BIND_REQ.match(req.text)
         if not match:
             return
         case.method, case.endpoint = match.group(1), match.group(2)

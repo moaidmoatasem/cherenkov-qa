@@ -37,12 +37,14 @@ _RE_HTTP_OPTION = re.compile(
     r'option\s+\(google\.api\.http\)\s*=\s*\{[^}]*(?:get|post|put|delete|patch)\s*:\s*"([^"]+)"',
     re.DOTALL,
 )
+_RE_BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
+_RE_LINE_COMMENT = re.compile(r"//[^\n]*")
 
 
 def _strip_comments(text: str) -> str:
     """Remove line (//) and block (/* */) comments from proto text."""
-    text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
-    text = re.sub(r"//[^\n]*", "", text)
+    text = _RE_BLOCK_COMMENT.sub("", text)
+    text = _RE_LINE_COMMENT.sub("", text)
     return text
 
 

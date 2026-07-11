@@ -17,6 +17,7 @@ _RE_CREATE_TABLE = re.compile(
     r"CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:\w+\.)?(\w+)\s*\((.*?)\)\s*;",
     re.IGNORECASE | re.DOTALL,
 )
+_RE_DEFAULT_VALUE = re.compile(r"DEFAULT\s+(\S+)", re.IGNORECASE)
 
 
 def _parse_create_table(sql: str) -> list[dict[str, Any]]:
@@ -59,7 +60,7 @@ def _parse_create_table(sql: str) -> list[dict[str, Any]]:
                 col["primary_key"] = "PRIMARY KEY" in rest_upper
                 col["unique"] = "UNIQUE" in rest_upper
                 col["default"] = None
-                default_match = re.search(r"DEFAULT\s+(\S+)", rest_raw, re.IGNORECASE)
+                default_match = _RE_DEFAULT_VALUE.search(rest_raw)
                 if default_match:
                     col["default"] = default_match.group(1)
                 columns.append(col)

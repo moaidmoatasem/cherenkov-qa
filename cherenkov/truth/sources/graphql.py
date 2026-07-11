@@ -46,12 +46,14 @@ _RE_SCHEMA_DEF = re.compile(
 )
 # Matches: directive @deprecated(reason: String) on FIELD_DEFINITION
 _RE_DIRECTIVE = re.compile(r'@(\w+)(?:\([^)]*\))?')
+_RE_DOCSTRING = re.compile(r'""".*?"""', re.DOTALL)
+_RE_GQL_COMMENT = re.compile(r'#[^\n]*')
 
 
 def _strip_comments(text: str) -> str:
     """Remove # comments and block string (\"\"\"...\"\"\") descriptions."""
-    text = re.sub(r'""".*?"""', "", text, flags=re.DOTALL)
-    text = re.sub(r'#[^\n]*', "", text)
+    text = _RE_DOCSTRING.sub("", text)
+    text = _RE_GQL_COMMENT.sub("", text)
     return text
 
 

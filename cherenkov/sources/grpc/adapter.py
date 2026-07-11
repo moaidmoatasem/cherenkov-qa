@@ -9,6 +9,8 @@ _RE_RPC_DEF = re.compile(
     r"rpc\s+(\w+)\s*\(\s*(stream\s+)?(\w+)\s*\)\s*"
     r"returns\s*\(\s*(stream\s+)?(\w+)\s*\)"
 )
+_RE_LINE_COMMENT = re.compile(r"//.*")
+_RE_BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
 
 
 @dataclass
@@ -61,8 +63,8 @@ class gRPCSourceAdapter:
 
     def iter_operations(self) -> Iterator[gRPCOperation]:
         # Remove single-line and multi-line comments before parsing
-        content = re.sub(r"//.*", "", self.proto_content)
-        content = re.sub(r"/\*.*?\*/", "", content, flags=re.DOTALL)
+        content = _RE_LINE_COMMENT.sub("", self.proto_content)
+        content = _RE_BLOCK_COMMENT.sub("", content)
 
         # Extract service blocks with proper brace matching
         service_blocks = _extract_service_blocks(content)

@@ -16,6 +16,7 @@ _DRAFT_MARKERS = re.compile(
     r"\b(draft|wip|tbd|tba|to be defined|proposal)\b", re.IGNORECASE
 )
 _TODO_MARKERS = re.compile(r"\b(todo|fixme|xxx|\?\?\?)\b", re.IGNORECASE)
+_RE_OPENAPI_MARKER = re.compile(r'["\']?(openapi|swagger)["\']?\s*:')
 
 
 def classify_kind(
@@ -30,9 +31,7 @@ def classify_kind(
         return ArtifactKind.FIGMA_DESIGN
     if lowered_uri.startswith(("http://", "https://")):
         return ArtifactKind.LIVE_APP
-    if lowered_uri.endswith((".yaml", ".yml", ".json")) and re.search(
-        r'["\']?(openapi|swagger)["\']?\s*:', content
-    ):
+    if lowered_uri.endswith((".yaml", ".yml", ".json")) and _RE_OPENAPI_MARKER.search(content):
         return ArtifactKind.OPENAPI_SPEC
     if (
         lowered_uri.endswith((".py", ".ts", ".tsx", ".js", ".go", ".rs"))

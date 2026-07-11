@@ -20,6 +20,9 @@ from cherenkov.web.routes.models import EjectPayload, RunPipelinePayload, Valida
 from cherenkov.web.auth.deps import require_role
 from cherenkov.web.auth.models import Role
 
+_RE_METHOD_ATTR = re.compile(r'method:\s*["\']([A-Z]+)["\']')
+_RE_METHOD_CALL = re.compile(r"\.(get|post|put|patch|delete)\s*\(", re.IGNORECASE)
+
 router = APIRouter(tags=["operations"])
 
 
@@ -128,8 +131,7 @@ async def list_generated_tests():
             if not code or not code.strip():
                 continue
             scenario_id = f.replace(".spec.ts", "")
-            method_match = re.search(r'method:\s*["\']([A-Z]+)["\']', code) or re.search(
-                r"\.(get|post|put|patch|delete)\s*\(", code, re.IGNORECASE)
+            method_match = _RE_METHOD_ATTR.search(code) or _RE_METHOD_CALL.search(code)
             method = method_match.group(1).upper() if method_match else "GET"
             tests.append({"name": f, "scenario_id": scenario_id, "endpoint": scenario_id, "method": method, "code": code})
         return tests
