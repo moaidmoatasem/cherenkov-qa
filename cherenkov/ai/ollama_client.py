@@ -28,7 +28,7 @@ _RE_FENCE_END = re.compile(r"\n?```$")
 
 def _post_with_retry(
     url: str, payload: dict, timeout: int, max_retries: int = 4
-) -> "requests.Response":
+) -> requests.Response:
     """POST with exponential backoff retry on Timeout or ConnectionError."""
     last_err: Exception | None = None
     for attempt in range(max_retries):

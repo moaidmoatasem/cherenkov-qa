@@ -145,7 +145,7 @@ class DriftReport:
 # ── reconcile() ───────────────────────────────────────────────────────────────
 
 def reconcile(
-    baseline: "SpecSuiteSnapshot",  # noqa: F821
+    baseline: SpecSuiteSnapshot,  # noqa: F821
     current_spec: dict[str, Any],
     current_suite: dict[str, Any],
     runner_violations: list[dict] | None = None,

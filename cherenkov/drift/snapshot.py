@@ -57,7 +57,7 @@ class SpecSuiteSnapshot:
     snapshot_id: str
     spec_hash: str
     suite_hash: str
-    fingerprint: "Fingerprint"  # noqa: F821  (imported at runtime)
+    fingerprint: Fingerprint  # noqa: F821  (imported at runtime)
     generation_profile: str
     created_at: str
 
@@ -67,7 +67,7 @@ class SpecSuiteSnapshot:
         spec: dict[str, Any],
         suite: dict[str, Any],
         generation_profile: str = "default",
-    ) -> "SpecSuiteSnapshot":
+    ) -> SpecSuiteSnapshot:
         from cherenkov.drift.fingerprint import fingerprint_of
 
         now = datetime.now(timezone.utc)
@@ -107,7 +107,7 @@ class SpecSuiteSnapshot:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "SpecSuiteSnapshot":
+    def from_dict(cls, data: dict[str, Any]) -> SpecSuiteSnapshot:
         from cherenkov.drift.fingerprint import Fingerprint
 
         fp_data = data["fingerprint"]

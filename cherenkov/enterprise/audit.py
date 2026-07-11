@@ -46,7 +46,7 @@ class AuditLog:
         """Exports the audit log to a JSON array."""
         events = []
         if self.current_log_file.exists():
-            with open(self.current_log_file, "r", encoding="utf-8") as f:
+            with open(self.current_log_file, encoding="utf-8") as f:
                 for line in f:
                     if line.strip():
                         events.append(json.loads(line))
@@ -58,7 +58,7 @@ class AuditLog:
         """Exports the audit log to a CSV file."""
         events = []
         if self.current_log_file.exists():
-            with open(self.current_log_file, "r", encoding="utf-8") as f:
+            with open(self.current_log_file, encoding="utf-8") as f:
                 for line in f:
                     if line.strip():
                         events.append(json.loads(line))

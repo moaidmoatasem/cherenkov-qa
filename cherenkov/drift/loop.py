@@ -243,14 +243,14 @@ class DriftLoop:
         cls,
         spec: dict[str, Any],
         **kwargs: Any,
-    ) -> "DriftLoop":
+    ) -> DriftLoop:
         """Return a DriftLoop wired with the schema-driven maker."""
         from cherenkov.drift.maker import make_proposal as _make
 
         return cls(maker_fn=lambda f: _make(f, spec), **kwargs)
 
     @classmethod
-    def with_real_checker(cls, **kwargs: Any) -> "DriftLoop":
+    def with_real_checker(cls, **kwargs: Any) -> DriftLoop:
         """Return a DriftLoop wired with the banned-pattern checker."""
         from cherenkov.drift.checker import check_proposal
 
@@ -260,9 +260,9 @@ class DriftLoop:
     def l2_interactive(
         cls,
         spec: dict[str, Any],
-        suite_path: "Path | None" = None,  # noqa: F821
+        suite_path: Path | None = None,  # noqa: F821
         auto_approve: bool = False,
-    ) -> "DriftLoop":
+    ) -> DriftLoop:
         """Full L2 loop: real maker + real checker + interactive (or auto) approval.
 
         Args:

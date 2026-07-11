@@ -24,7 +24,7 @@ class PlaybookTrigger:
         ])
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "PlaybookTrigger":
+    def from_dict(cls, data: dict[str, Any]) -> PlaybookTrigger:
         return cls(
             path_prefix=data.get("path_prefix"),
             path_contains=data.get("path_contains"),
@@ -72,7 +72,7 @@ class Playbook:
     source_path: str = ""
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any], source_path: str = "") -> "Playbook":
+    def from_dict(cls, data: dict[str, Any], source_path: str = "") -> Playbook:
         trigger_data = data.get("trigger", {})
         return cls(
             name=data["name"],

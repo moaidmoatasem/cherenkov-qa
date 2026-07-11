@@ -59,7 +59,7 @@ class VerificationCertificate(BaseModel):
         """Return the SHA-256 hex of the canonical cert body."""
         return hashlib.sha256(self._body_for_fingerprint().encode()).hexdigest()
 
-    def seal(self, signing_key: bytes | None = None) -> "VerificationCertificate":
+    def seal(self, signing_key: bytes | None = None) -> VerificationCertificate:
         """Finalise: compute fingerprint, optionally add HMAC signature."""
         self.fingerprint = self.compute_fingerprint()
         if signing_key:

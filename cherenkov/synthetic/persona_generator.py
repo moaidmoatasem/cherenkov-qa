@@ -109,7 +109,7 @@ def _error_path_tests(
         not_found = [c for c in ctx.error_codes if c == 404] or [404]
         tests.append({
             "name": f"error_path_{ctx.operation_id}_not_found",
-            "description": f"[ErrorPath] Non-existent resource should yield 404",
+            "description": "[ErrorPath] Non-existent resource should yield 404",
             "request": {
                 "method": ctx.method,
                 "path": ctx.path,

@@ -111,7 +111,7 @@ class DriftLedger:
         current_spec: dict[str, Any] | None = None,
         current_suite: dict[str, Any] | None = None,
         runner_violations: list[dict] | None = None,
-    ) -> "DriftReport":  # noqa: F821
+    ) -> DriftReport:  # noqa: F821
         """Run reconcile() using a ledger-looked-up or file-loaded baseline.
 
         Tier mapping:

@@ -88,7 +88,7 @@ class Diagnoser:
 
         if snapshot_existed:
             try:
-                with open(snapshot_path, "r", encoding="utf-8") as f:
+                with open(snapshot_path, encoding="utf-8") as f:
                     snapshot = json.load(f)
                     previous_status = snapshot.get("status")
                     previous_keys = snapshot.get("body_keys", [])

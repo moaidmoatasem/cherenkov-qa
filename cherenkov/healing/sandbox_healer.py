@@ -121,7 +121,7 @@ class SandboxHealer:
             self.log.error(error_msg)
             return {"healed": False, "message": error_msg}
 
-        with open(original_file_path, "r", encoding="utf-8") as f:
+        with open(original_file_path, encoding="utf-8") as f:
             original_code = f.read()
 
         sandbox_dir = self.replicate_workspace(scenario_id)

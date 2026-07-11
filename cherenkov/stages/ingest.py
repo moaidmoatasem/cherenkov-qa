@@ -115,7 +115,7 @@ class IngestStage:
             )
 
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 if path.suffix in [".yaml", ".yml"]:
                     import yaml
 

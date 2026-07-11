@@ -65,7 +65,7 @@ class BrokenImplServer:
         self._server: HTTPServer | None = None
         self._thread: threading.Thread | None = None
 
-    def __enter__(self) -> "BrokenImplServer":
+    def __enter__(self) -> BrokenImplServer:
         self.start()
         return self
 

@@ -126,7 +126,7 @@ def _print_grade_report(report) -> None:
     click.echo()
     click.echo(click.style("── Suite Grade Report ────────────────────────────────", bold=True))
     click.echo(
-        f"  grade      : "
+        "  grade      : "
         + click.style(report.grade, fg=grade_color, bold=True)
         + f"  (score {report.overall_score:.3f})"
     )
@@ -215,7 +215,7 @@ def _print_run_summary(trace, out_path: Path, target: str | None) -> None:
     click.echo(f"  target     : {mode}")
     click.echo(f"  tests      : {trace.total}")
     click.echo(
-        f"  pass rate  : "
+        "  pass rate  : "
         + click.style(f"{trace.pass_rate:.1%}  ({trace.passed}/{trace.total})", fg=pass_color, bold=True)
     )
     click.echo(f"  trace      : {out_path}")
@@ -349,7 +349,7 @@ def _print_optimize_suggestion(suggestion) -> None:
     click.echo()
     click.echo(click.style("── Eval Optimize ─────────────────────────────────────", bold=True))
     click.echo(
-        f"  current grade : "
+        "  current grade : "
         + click.style(suggestion.current_grade, fg=grade_color, bold=True)
     )
     click.echo()
@@ -535,7 +535,7 @@ def _print_refine_result(result, out_path: Path) -> None:
     click.echo()
     click.echo(click.style("── Eval Refine ───────────────────────────────────────", bold=True))
     click.echo(
-        f"  original grade : "
+        "  original grade : "
         + click.style(result.original_grade, fg=orig_color, bold=True)
     )
 
@@ -545,7 +545,7 @@ def _print_refine_result(result, out_path: Path) -> None:
             new_g, "white"
         )
         click.echo(
-            f"  new grade      : "
+            "  new grade      : "
             + click.style(new_g, fg=new_color, bold=True)
         )
 

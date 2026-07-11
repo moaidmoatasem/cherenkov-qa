@@ -46,7 +46,7 @@ class OptimizeSuggestion:
             for s in self.suggestions:
                 lines.append(f"  • {s}")
         if self.weakest_operations:
-            lines.append(f"\nWeakest operations (address first):")
+            lines.append("\nWeakest operations (address first):")
             for op in self.weakest_operations:
                 lines.append(f"  • {op}")
         return "\n".join(lines)

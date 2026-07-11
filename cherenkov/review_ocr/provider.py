@@ -18,7 +18,7 @@ class OCRProviderManager:
     def _load(self):
         if os.path.isfile(self.config_path):
             try:
-                with open(self.config_path, "r", encoding="utf-8") as f:
+                with open(self.config_path, encoding="utf-8") as f:
                     self._config = json.load(f)
             except (json.JSONDecodeError, OSError):
                 self._config = {}

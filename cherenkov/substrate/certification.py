@@ -163,7 +163,7 @@ class ModelCertificationManager:
                 encoding="utf-8",
             )
 
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
             gold_set = GoldSet(**data)
             if not gold_set.items:

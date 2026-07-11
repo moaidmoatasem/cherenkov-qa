@@ -245,7 +245,7 @@ class SpecDiffer:
     def _load(path: str) -> dict:
         import yaml  # pyyaml in requirements.txt
 
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             if path.endswith((".yaml", ".yml")):
                 return yaml.safe_load(f) or {}
             return json.load(f)

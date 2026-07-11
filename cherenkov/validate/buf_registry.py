@@ -70,13 +70,13 @@ class BufRegistryClient:
         metadata = self.fetch_schema(module_name)
         if metadata:
             _log.info("Mock-fetching from BSR", file=file_path, module=module_name)
-            return f'''
+            return '''
 syntax = "proto3";
 package buf.test;
-service BufTestService {{
-  rpc Ping (PingRequest) returns (PingResponse) {{}}
-}}
-message PingRequest {{ string message = 1; }}
-message PingResponse {{ string message = 1; }}
+service BufTestService {
+  rpc Ping (PingRequest) returns (PingResponse) {}
+}
+message PingRequest { string message = 1; }
+message PingResponse { string message = 1; }
 '''
         return None

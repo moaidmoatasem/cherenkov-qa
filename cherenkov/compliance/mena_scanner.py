@@ -70,7 +70,7 @@ class MENAComplianceScanner:
 
         # 2. Static OpenAPI Contract Audit (Authentication structures)
         try:
-            with open(spec_path, "r", encoding="utf-8") as f:
+            with open(spec_path, encoding="utf-8") as f:
                 spec = json.load(f)
 
             components = spec.get("components", {})

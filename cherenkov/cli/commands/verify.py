@@ -161,7 +161,7 @@ def verify_cmd(
     click.echo(f"  Spec    : {spec or 'built-in Petstore demo'}")
     click.echo(f"  Mode    : {mode_label}")
     if rich_verdict:
-        click.echo(f"  Engine  : multi-agent (rich verdict)")
+        click.echo("  Engine  : multi-agent (rich verdict)")
     click.echo("")
 
     t_start = time.monotonic()

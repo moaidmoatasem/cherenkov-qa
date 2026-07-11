@@ -93,7 +93,7 @@ class FilesystemSandboxProvider(SandboxProvider):
 
     def read_file(self, workspace: str, path: str) -> str:
         full_path = os.path.join(workspace, path)
-        with open(full_path, "r", encoding="utf-8") as f:
+        with open(full_path, encoding="utf-8") as f:
             return f.read()
 
     def write_file(self, workspace: str, path: str, content: str) -> None:

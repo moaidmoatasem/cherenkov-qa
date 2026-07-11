@@ -74,7 +74,7 @@ def _load_system_prompt() -> str:
         os.path.join(os.path.dirname(__file__), "../../prompts/generator_system.txt")
     )
     try:
-        with open(prompt_path, "r", encoding="utf-8") as f:
+        with open(prompt_path, encoding="utf-8") as f:
             return f.read().strip()
     except OSError as e:
         raise RuntimeError(

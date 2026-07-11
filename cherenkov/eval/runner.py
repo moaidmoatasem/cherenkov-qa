@@ -109,7 +109,7 @@ class RunTrace:
                 f.write(json.dumps(result.to_dict()) + "\n")
 
     @classmethod
-    def from_jsonl(cls, path: Path) -> "RunTrace":
+    def from_jsonl(cls, path: Path) -> RunTrace:
         lines = path.read_text().splitlines()
         meta: dict[str, Any] = {}
         results: list[TestResult] = []

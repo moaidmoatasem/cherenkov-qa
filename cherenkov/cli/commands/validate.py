@@ -61,14 +61,14 @@ from cherenkov.execution.validate import ValidationEngine
 def validate_cmd(target, source, format, workers, no_html, no_cache, spec, output, fail_on_drift, json_summary, json_out, quiet, verbose):
     """Validate E2E test suite against a real server"""
     from cherenkov.core.errors import ExitCode
-    
+
     if spec == "-":
         stdin_content = sys.stdin.read()
         os.makedirs(".cherenkov", exist_ok=True)
         spec = ".cherenkov/stdin_spec.yaml"
         with open(spec, "w", encoding="utf-8") as f:
             f.write(stdin_content)
-            
+
     if no_cache:
         from cherenkov.cache.endpoint_cache import EndpointCache
 
@@ -127,7 +127,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         if not spec:
             click.echo(click.style("Error: --spec is required for --source grpc", fg="red"), err=True)
             sys.exit(1)
-        
+
         # If spec does not end in .proto and looks like a buf module, fetch it
         if not spec.endswith(".proto") and "/" in spec:
             from cherenkov.validate.buf_registry import BufRegistryClient
@@ -144,7 +144,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
                 f.write(proto_content)
             spec = temp_spec
             if not quiet:
-                click.echo(f"Ingesting fetched gRPC proto.")
+                click.echo("Ingesting fetched gRPC proto.")
         else:
             if not quiet:
                 click.echo(f"Ingesting gRPC proto: {spec}")

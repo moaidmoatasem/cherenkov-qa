@@ -232,10 +232,10 @@ class CherenkovSettings(BaseSettings):
     _device_cache_ts: float = 0.0
     _DEVICE_CACHE_TTL: float = 60.0  # seconds
 
-_settings_instance: "CherenkovSettings | None" = None
+_settings_instance: CherenkovSettings | None = None
 _settings_lock = threading.Lock()
 
-def get_settings() -> "CherenkovSettings":
+def get_settings() -> CherenkovSettings:
     global _settings_instance
     if _settings_instance is None:
         with _settings_lock:

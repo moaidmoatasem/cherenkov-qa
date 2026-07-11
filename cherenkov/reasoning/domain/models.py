@@ -93,7 +93,7 @@ class WorkflowVariant(BaseModel):
     execution_mode: ExecutionMode
 
     @model_validator(mode="after")
-    def _execute_requires_mode(self) -> "WorkflowVariant":
+    def _execute_requires_mode(self) -> WorkflowVariant:
         has_execute = Activity.EXECUTE in self.activities
         if has_execute and self.execution_mode == ExecutionMode.NONE:
             raise ValueError("variant includes EXECUTE but execution_mode is NONE")
@@ -204,7 +204,7 @@ class QAPlan(BaseModel):
     charters: list[TestCharter] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def _cases_must_trace(self) -> "QAPlan":
+    def _cases_must_trace(self) -> QAPlan:
         req_ids = {r.id for r in self.analysis.requirements}
         risk_ids = {r.id for r in self.risks}
         for case in self.cases:

@@ -107,7 +107,7 @@ class GradeReport:
         path.write_text(json.dumps(self.to_dict(), indent=2))
 
     @classmethod
-    def load(cls, path: Path) -> "GradeReport":
+    def load(cls, path: Path) -> GradeReport:
         data = json.loads(path.read_text())
         ops = [
             OperationGrade(

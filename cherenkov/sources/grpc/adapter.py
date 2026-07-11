@@ -58,7 +58,7 @@ class gRPCSourceAdapter:
 
     def __init__(self, spec_path: str):
         self.spec_path = spec_path
-        with open(self.spec_path, "r", encoding="utf-8") as f:
+        with open(self.spec_path, encoding="utf-8") as f:
             self.proto_content = f.read()
 
     def iter_operations(self) -> Iterator[gRPCOperation]:

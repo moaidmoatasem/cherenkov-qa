@@ -179,7 +179,7 @@ def _check_added_optional_params(
     return findings
 
 def detect_findings(
-    baseline_snapshot: "SpecSuiteSnapshot",  # noqa: F821
+    baseline_snapshot: SpecSuiteSnapshot,  # noqa: F821
     current_spec: dict[str, Any],
     current_suite: dict[str, Any],
     runner_violations: list[dict] | None = None,
