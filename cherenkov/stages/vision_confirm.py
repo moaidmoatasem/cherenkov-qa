@@ -130,7 +130,7 @@ class VisionConfirmPilot:
                 "hallucination_risk": False,
                 "suggestion": "Element confirmed — proceed with interaction.",
             }
-        if element_visible and confidence < 0.6:
+        if element_visible:
             return {
                 "confirmed": True,
                 "confidence": confidence,

@@ -25,7 +25,11 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+from cherenkov.drift.checker import check_proposal
 from cherenkov.drift.detect import DriftFinding, DriftKind
+from cherenkov.drift.maker import make_proposal as _make_proposal
+from cherenkov.drift.maker import patch_suite
+from cherenkov.drift.models import ReconciliationProposal
 from cherenkov.drift.reconcile import SEVERITY, DriftReport, DriftVerdict
 
 
@@ -40,17 +44,6 @@ _L2_ALLOWLIST: frozenset[DriftKind] = frozenset({
     DriftKind.NEW_OP_UNTESTED,
     DriftKind.ADDED_OPTIONAL_PARAM,
 })
-
-
-@dataclass
-class ReconciliationProposal:
-    """A maker-generated proposal for a single drifted operation."""
-
-    operation_id: str
-    drift_kind: DriftKind
-    action: str               # human-readable description of proposed change
-    patch: dict[str, Any] = field(default_factory=dict)  # structured diff (Phase 13)
-    verified: bool = False     # set True after checker pass
 
 
 @dataclass
@@ -245,15 +238,11 @@ class DriftLoop:
         **kwargs: Any,
     ) -> DriftLoop:
         """Return a DriftLoop wired with the schema-driven maker."""
-        from cherenkov.drift.maker import make_proposal as _make
-
-        return cls(maker_fn=lambda f: _make(f, spec), **kwargs)
+        return cls(maker_fn=lambda f: _make_proposal(f, spec), **kwargs)
 
     @classmethod
     def with_real_checker(cls, **kwargs: Any) -> DriftLoop:
         """Return a DriftLoop wired with the banned-pattern checker."""
-        from cherenkov.drift.checker import check_proposal
-
         return cls(checker_fn=check_proposal, **kwargs)
 
     @classmethod
@@ -271,10 +260,6 @@ class DriftLoop:
                           If None, commit is a no-op (proposals are returned only).
             auto_approve: If True, bypass human confirmation (CI/scripted use).
         """
-        from cherenkov.drift.checker import check_proposal
-        from cherenkov.drift.maker import make_proposal as _make
-        from cherenkov.drift.maker import patch_suite
-
         def _approval(proposals: list[ReconciliationProposal]) -> bool:
             if auto_approve:
                 return True
@@ -297,7 +282,7 @@ class DriftLoop:
 
         return cls(
             level=AutonomyLevel.L2_ASSISTED,
-            maker_fn=lambda f: _make(f, spec),
+            maker_fn=lambda f: _make_proposal(f, spec),
             checker_fn=check_proposal,
             approval_fn=_approval,
             commit_fn=_commit,

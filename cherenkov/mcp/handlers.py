@@ -637,7 +637,7 @@ def _resource_content(uri: str, payload: Any) -> MCPResourceReadResult:
 
 # ── Resource handlers ─────────────────────────────────────────────────────────
 
-def handle_resources_list(params: dict[str, Any]) -> dict[str, Any]:
+def handle_resources_list(_params: dict[str, Any]) -> dict[str, Any]:
     return MCPResourceListResult(resources=RESOURCES).model_dump()
 
 def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
@@ -754,7 +754,7 @@ def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
 
 # ── Tool call handlers ────────────────────────────────────────────────────────
 
-def handle_tools_list(params: dict[str, Any]) -> dict[str, Any]:
+def handle_tools_list(_params: dict[str, Any]) -> dict[str, Any]:
     return MCPToolListResult(tools=TOOLS).model_dump()
 
 def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
@@ -1176,16 +1176,16 @@ def _tool_validate_gate(args: dict[str, Any]) -> MCPToolCallResult:
 
 # ── Policy tools ──────────────────────────────────────────────────────────────
 
-def _tool_policy_list(args: dict[str, Any]) -> MCPToolCallResult:
+def _tool_policy_list(_args: dict[str, Any]) -> MCPToolCallResult:
     """Return current policy rules for all profiles."""
     return _ok_content(_policy.list_policy())
 
-def _tool_policy_reload(args: dict[str, Any]) -> MCPToolCallResult:
+def _tool_policy_reload(_args: dict[str, Any]) -> MCPToolCallResult:
     """Reload policy from cherenkov-policy.json."""
     _policy.reload()
     return _ok_content({"status": "reloaded", "policy": _policy.list_policy()})
 
-def _tool_registry_list(args: dict[str, Any]) -> MCPToolCallResult:
+def _tool_registry_list(_args: dict[str, Any]) -> MCPToolCallResult:
     """List registered MCP servers in the mesh registry."""
     from cherenkov.mcp.mesh_router import get_registry
 
@@ -1733,7 +1733,7 @@ def _tool_run_conformance_check(args: dict[str, Any]) -> MCPToolCallResult:
     except Exception as exc:
         return _err_content(f"Conformance check error: {exc}")
 
-def _tool_get_last_report(args: dict[str, Any]) -> MCPToolCallResult:
+def _tool_get_last_report(_args: dict[str, Any]) -> MCPToolCallResult:
     """Return the most recent .cherenkov/report.json without triggering a new run."""
     report_path = os.path.join(os.getcwd(), ".cherenkov", "report.json")
     if not os.path.exists(report_path):

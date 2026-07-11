@@ -125,7 +125,7 @@ class HeuristicReasoner:
     # ── review ────────────────────────────────────────────────────────
 
     def review(
-        self, artifact: Artifact, analysis: AnalysisResult, depth: Depth
+        self, artifact: Artifact, analysis: AnalysisResult, _depth: Depth
     ) -> list[ReviewFinding]:
         findings: list[ReviewFinding] = []
         if artifact.kind == ArtifactKind.OPENAPI_SPEC:
@@ -175,7 +175,7 @@ class HeuristicReasoner:
     # ── risk assessment ───────────────────────────────────────────────
 
     def assess_risks(
-        self, artifact: Artifact, analysis: AnalysisResult, depth: Depth
+        self, _artifact: Artifact, analysis: AnalysisResult, _depth: Depth
     ) -> list[RiskItem]:
         risks: list[RiskItem] = []
         for req in analysis.requirements:

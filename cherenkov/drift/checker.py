@@ -15,7 +15,7 @@ from typing import Any
 
 _log = logging.getLogger(__name__)
 
-from cherenkov.drift.loop import ReconciliationProposal
+from cherenkov.drift.models import ReconciliationProposal
 
 # ── banned assertion patterns ──────────────────────────────────────────────────
 

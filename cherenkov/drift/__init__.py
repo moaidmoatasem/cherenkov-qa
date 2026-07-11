@@ -8,8 +8,8 @@ from cherenkov.drift.loop import (
     AutonomyLevel,
     DriftLoop,
     LoopResult,
-    ReconciliationProposal,
 )
+from cherenkov.drift.models import ReconciliationProposal
 from cherenkov.drift.maker import build_test_skeleton, make_proposal, patch_suite
 from cherenkov.drift.reconcile import (
     DriftReport,

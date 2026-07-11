@@ -86,7 +86,7 @@ def _happy_path_tests(
 
 
 def _error_path_tests(
-    ctx: OperationContext, spec: dict[str, Any]
+    ctx: OperationContext, _spec: dict[str, Any]
 ) -> list[dict[str, Any]]:
     tests: list[dict[str, Any]] = []
 
@@ -122,7 +122,7 @@ def _error_path_tests(
 
 
 def _security_prober_tests(
-    ctx: OperationContext, spec: dict[str, Any]
+    ctx: OperationContext, _spec: dict[str, Any]
 ) -> list[dict[str, Any]]:
     error_codes = [c for c in ctx.error_codes if c in (401, 403)] or [401, 403]
     req: dict[str, Any] = {
@@ -184,7 +184,7 @@ def _schema_pedant_tests(
 
 
 def _boundary_seeker_tests(
-    ctx: OperationContext, spec: dict[str, Any]
+    ctx: OperationContext, _spec: dict[str, Any]
 ) -> list[dict[str, Any]]:
     tests: list[dict[str, Any]] = []
 

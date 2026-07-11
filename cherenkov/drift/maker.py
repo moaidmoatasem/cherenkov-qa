@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from cherenkov.drift.detect import DriftFinding, DriftKind
-from cherenkov.drift.loop import ReconciliationProposal
+from cherenkov.drift.models import ReconciliationProposal
 
 # ── schema → value helpers ─────────────────────────────────────────────────────
 
