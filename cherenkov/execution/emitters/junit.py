@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET  # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
 from typing import Any
-from xml.dom import minidom
 
 
 class JUnitEmitter:
@@ -57,7 +56,5 @@ class JUnitEmitter:
 
         testsuite.set("failures", str(failures_count))
 
-        # Pretty print XML
-        raw_xml = ET.tostring(testsuites, "utf-8")
-        parsed_xml = minidom.parseString(raw_xml)
-        return parsed_xml.toprettyxml(indent="  ")
+        ET.indent(testsuites, space="  ")
+        return '<?xml version="1.0" ?>\n' + ET.tostring(testsuites, encoding="unicode")

@@ -19,8 +19,9 @@ import json
 import logging
 import sys
 import time
-import urllib.request
 from pathlib import Path
+
+import requests
 from typing import Any, cast
 
 import click
@@ -332,8 +333,9 @@ def _load_spec(spec_path: str) -> dict | None:
     """Load an OpenAPI spec from a local file path or HTTP URL."""
     if spec_path.startswith("http://") or spec_path.startswith("https://"):
         try:
-            with urllib.request.urlopen(spec_path, timeout=15) as resp:
-                raw = resp.read()
+            resp = requests.get(spec_path, timeout=15)
+            resp.raise_for_status()
+            raw = resp.content
         except Exception as exc:
             click.echo(f"[ERROR] Could not fetch spec from {spec_path}: {exc}", err=True)
             return None
