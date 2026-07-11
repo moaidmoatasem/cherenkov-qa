@@ -18,13 +18,12 @@ from __future__ import annotations
 
 import time
 import uuid
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
 from cherenkov.core.contracts import DivergenceReport
 from cherenkov.verdict.models import (
-    OverallVerdict,
     RichVerdict,
     VerdictDimension,
     VerdictGrade,

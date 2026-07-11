@@ -22,7 +22,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import httpx
 
 from cherenkov.core.contracts import DivergenceHypothesis, ReproductionResult
 from cherenkov.divergence.witness import WitnessAgent

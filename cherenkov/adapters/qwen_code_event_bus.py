@@ -1,5 +1,4 @@
 from __future__ import annotations
-import contextlib
 import logging
 import subprocess
 from collections.abc import Callable
