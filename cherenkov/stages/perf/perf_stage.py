@@ -357,7 +357,7 @@ class PerfStage:
         return any(keyword in endpoint_lower for keyword in llm_keywords)
 
     def _extract_llm_metrics_from_response(
-        self, k6_output: str
+        self, _k6_output: str
     ) -> dict[str, float] | None:
         """
         Extract LLM-specific metrics from k6 output or response data.

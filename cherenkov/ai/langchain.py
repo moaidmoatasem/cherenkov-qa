@@ -34,7 +34,7 @@ class CherenkovTool(BaseTool):
         router = SubstrateRouter()
         self._agent = QAChatAgent(memory=memory, substrate_router=router)
 
-    def _run(self, query: str, run_manager: Any | None = None) -> str:
+    def _run(self, query: str, _run_manager: Any | None = None) -> str:
         """Run the CHERENKOV query synchronously."""
         msg = self._agent.chat(self._session_id, query)
         return msg.content

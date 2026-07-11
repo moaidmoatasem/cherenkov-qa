@@ -402,7 +402,7 @@ def _md_run_summary(d: dict, rv: dict | None) -> str:
     return "\n".join(lines)
 
 
-def _format_run_diff(diff: dict, record, base_record, fmt: str) -> str:
+def _format_run_diff(diff: dict, _record, _base_record, fmt: str) -> str:
     if fmt == "json":
         return json.dumps(diff, indent=2, default=str)
 

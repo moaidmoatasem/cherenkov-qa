@@ -71,7 +71,7 @@ def _grade_report_score_for(grade: str) -> float:
     return {"A": 0.925, "B": 0.775, "C": 0.625, "D": 0.475, "F": 0.20}.get(grade, 0.0)
 
 
-def _personas_for_op(op_grade: Any, spec_ctx: Any) -> list[TesterPersona]:
+def _personas_for_op(op_grade: Any, _spec_ctx: Any) -> list[TesterPersona]:
     """Choose which personas to run for a single weak operation."""
     personas: list[TesterPersona] = []
 

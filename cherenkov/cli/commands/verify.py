@@ -120,7 +120,7 @@ def verify_cmd(
     spec: str | None,
     llm: bool,
     output: str | None,
-    output_format: str,
+    _output_format: str,
     fail_on_divergence: bool,
     coverage_report: bool,
     health_score: bool,

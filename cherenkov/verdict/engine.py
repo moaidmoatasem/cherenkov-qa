@@ -338,7 +338,7 @@ class VerdictEngine:
         )
 
     def _run_traffic_capture(
-        self, reports: list[DivergenceReport]
+        self, _reports: list[DivergenceReport]
     ) -> tuple[VerdictDimension, int]:
         from cherenkov.divergence.proof_run import (
             PETSTORE_SPEC_SUBSET,

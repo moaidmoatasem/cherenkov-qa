@@ -309,7 +309,7 @@ class CoverageLoop:
                 "details": [],
             }
 
-    def _parse_results(self, stdout: str, passed: int, failed: int) -> list[dict]:
+    def _parse_results(self, stdout: str, _passed: int, _failed: int) -> list[dict]:
         """Parse test runner output into structured results."""
         details = []
         for line in stdout.splitlines():

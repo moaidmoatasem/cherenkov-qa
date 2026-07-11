@@ -76,6 +76,6 @@ class TestRailClient:
         except Exception as e:
             return {"error": str(e)}
 
-    def import_junit_xml(self, junit_xml_path: str, project_id: str) -> dict[str, Any]:
+    def import_junit_xml(self, _junit_xml_path: str, _project_id: str) -> dict[str, Any]:
         """Not natively supported by TestRail REST API without a middleware script, stubbed."""
         return {"status": "unsupported_by_native_api_use_cli"}

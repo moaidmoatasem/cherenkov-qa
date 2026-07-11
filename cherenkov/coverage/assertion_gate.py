@@ -202,7 +202,7 @@ class AssertionGate:
         self,
         bug: dict,
         test_dir: str,
-        framework: str,
+        _framework: str,
     ) -> bool:
         """Simulate running a test against a broken implementation.
 

@@ -15,7 +15,7 @@ def _text(value: str) -> str:
 class JUnitEmitter:
     """Emits DivergenceReports into the JUnit XML format for native import into Xray, Zephyr, and TestRail."""
 
-    def emit(self, report: Any, spec_path: str) -> str:
+    def emit(self, report: Any, _spec_path: str) -> str:
         """Convert a DivergenceReport into a valid JUnit XML string."""
         findings = getattr(report, "findings", [])
         failures_count = 0

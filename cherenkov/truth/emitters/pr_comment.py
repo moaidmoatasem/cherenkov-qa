@@ -20,10 +20,10 @@ class PRCommentEmitter(Emitter):
 
     def emit(
         self,
-        truth_model: TruthModel,
+        _truth_model: TruthModel,
         output_path: Path,
         divergences: list[DivergenceReport] | None = None,
-        **kwargs: Any,
+        **_kwargs: Any,
     ) -> Path:
         lines = [
             "## CHERENKOV Divergence Report",

@@ -196,7 +196,7 @@ class _ConformanceStatusNamespace:
         self.run_at = run_at
 
 
-def get_latest_status(service: str) -> _ConformanceStatusNamespace | None:
+def get_latest_status(_service: str) -> _ConformanceStatusNamespace | None:
     """Return the latest conformance status for a service, derived from the
     divergence corpus. `service` is currently unused for filtering (the
     corpus is not yet partitioned by target service) but is accepted to

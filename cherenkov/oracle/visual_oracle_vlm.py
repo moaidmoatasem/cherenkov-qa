@@ -53,7 +53,7 @@ class SemanticVisualOracle:
             "detail": raw[:300],
         }
 
-    def _pixel_diff(self, screenshot: str, expected_description: str) -> dict[str, Any]:
+    def _pixel_diff(self, _screenshot: str, _expected_description: str) -> dict[str, Any]:
         return {
             "status": "uncertain",
             "action": "escalate_to_hitl",

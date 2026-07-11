@@ -295,7 +295,7 @@ def provider_for_tier(
     )
 
 
-def _resolve_vlm_provider(device_class: str | None = None) -> str:
+def _resolve_vlm_provider(_device_class: str | None = None) -> str:
     configured = get_settings().TIER_VISION_PROVIDER
     if configured != "auto":
         return configured

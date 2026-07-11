@@ -92,7 +92,7 @@ def _run_pipeline_thread(spec_path: str, run_id: str):
 
 
 @router.post("/api/v1/run")
-async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: BackgroundTasks, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
+async def trigger_pipeline_run(payload: RunPipelinePayload, _background_tasks: BackgroundTasks, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
     from cherenkov.stages.doctor_cmd import run_doctor
 
     with contextlib.redirect_stdout(io.StringIO()):

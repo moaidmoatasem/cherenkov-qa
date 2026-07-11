@@ -319,8 +319,8 @@ class Reflector:
 
     def learn_from_history(
         self,
-        min_decay: float = 0.1,
-        max_idioms: int = 50,
+        _min_decay: float = 0.1,
+        _max_idioms: int = 50,
     ) -> int:
         """Offline replay: re-learn idioms from stored verdict history.
 

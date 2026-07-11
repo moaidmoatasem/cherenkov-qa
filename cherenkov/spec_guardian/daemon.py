@@ -94,7 +94,7 @@ class SpecGuardianDaemon:
         self.running = False
         logger.info("Spec Guardian daemon stopping")
 
-    def _signal_handler(self, signum: int, frame: Any) -> None:
+    def _signal_handler(self, signum: int, _frame: Any) -> None:
         """Handle shutdown signals."""
         logger.info("Received signal %s, shutting down", signum)
         self.stop()

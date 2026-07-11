@@ -14,7 +14,7 @@ from cherenkov.scheduling.use_cases.manage_routines import create_routine, toggl
 scheduler = APSchedulerAdapter()
 
 @asynccontextmanager
-async def router_lifespan(app: Any):
+async def router_lifespan(_app: Any):
     scheduler.start()
     yield
     scheduler.stop()

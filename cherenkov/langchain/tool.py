@@ -73,7 +73,7 @@ class CherenkovValidateTool(BaseTool):
         super().__init__(**kwargs)
         self._engine = ValidationEngine()
 
-    def _run(self, query: str, run_manager: Any | None = None) -> str:
+    def _run(self, query: str, _run_manager: Any | None = None) -> str:
         """Dispatch to the requested operation."""
         try:
             args = json.loads(query)

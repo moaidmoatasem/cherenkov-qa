@@ -46,7 +46,7 @@ class JsonlCorpusBackend:
                 + "\n"
             )
 
-    def query(self, **kw) -> list[CorpusEntry]:
+    def query(self, **_kw) -> list[CorpusEntry]:
         if not self.path.exists():
             return []
         entries = []

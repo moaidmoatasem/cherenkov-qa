@@ -199,7 +199,7 @@ def run_classify(
     actor: str | None = None,
     detail: str = "",
     json_out: bool = False,
-    db_path: str | None = None,
+    _db_path: str | None = None,
 ) -> int:
     """
     Classify a HITL item as regression, intended, or ignore (Tier-2 #150).

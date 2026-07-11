@@ -147,7 +147,7 @@ class SkepticAgent:
 
     # ── private ───────────────────────────────────────────────────────────
 
-    def _idioms_prompt(self, endpoint: str, method: str) -> str:
+    def _idioms_prompt(self, _endpoint: str, _method: str) -> str:
         """Build a prompt block from top idioms for the given endpoint.
 
         Injects learned patterns (E7) as adversarial context so the Skeptic

@@ -216,7 +216,7 @@ class DriftLoop:
         )
 
     @staticmethod
-    def _default_checker(proposal: ReconciliationProposal) -> bool:
+    def _default_checker(_proposal: ReconciliationProposal) -> bool:
         """Stub checker — always returns False (Phase 13 wires CANDOR + linter)."""
         return False
 
@@ -225,7 +225,7 @@ class DriftLoop:
         """Stub commit — no-op (Phase 13 wires actual suite write)."""
 
     @staticmethod
-    def _default_approval(proposals: list[ReconciliationProposal]) -> bool:
+    def _default_approval(_proposals: list[ReconciliationProposal]) -> bool:
         """Stub approval gate — always returns False (requires real human input)."""
         return False
 

@@ -143,7 +143,7 @@ def ws_event_callback(type_: str, payload: dict):
 # ── Lifespan ──────────────────────────────────────────────────────────
 
 @asynccontextmanager
-async def lifespan(app_: FastAPI):
+async def lifespan(_app: FastAPI):
     global main_loop
     main_loop = asyncio.get_running_loop()
     yield

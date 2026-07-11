@@ -122,11 +122,11 @@ def install_error_handlers(app: FastAPI) -> None:
     """Register global exception handlers on the FastAPI app."""
 
     @app.exception_handler(APIError)
-    async def _api_error_handler(request: Request, exc: APIError) -> JSONResponse:
+    async def _api_error_handler(_request: Request, exc: APIError) -> JSONResponse:
         return exc.to_response()
 
     @app.exception_handler(StarletteHTTPException)
-    async def _http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    async def _http_exception_handler(_request: Request, exc: StarletteHTTPException) -> JSONResponse:
         # Map Starlette HTTP codes to our error schema
         _code_map = {
             400: ErrorCode.INVALID_REQUEST,
@@ -143,7 +143,7 @@ def install_error_handlers(app: FastAPI) -> None:
         return JSONResponse(status_code=exc.status_code, content=body)
 
     @app.exception_handler(RequestValidationError)
-    async def _validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    async def _validation_error_handler(_request: Request, exc: RequestValidationError) -> JSONResponse:
         errors = exc.errors()
         first = errors[0] if errors else {}
         body = {
