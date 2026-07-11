@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from cherenkov.drift.detect import DriftFinding, DriftKind
+from cherenkov.drift.detect import DriftKind
 
 
 @dataclass
