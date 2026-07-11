@@ -285,15 +285,14 @@ def provider_for_tier(
 ) -> OllamaProvider | OpenAIProvider | GitHubModelsProvider | VLMProvider:
     if tier == "small":
         return get_provider(get_settings().TIER_SMALL_PROVIDER)
-    elif tier == "deep":
+    if tier == "deep":
         return get_provider(get_settings().TIER_DEEP_PROVIDER)
-    elif tier == "vision":
+    if tier == "vision":
         vlm_provider_name = _resolve_vlm_provider(device_class)
         return get_vlm_provider(vlm_provider_name)
-    else:
-        raise ValueError(
-            f"Unknown capability tier '{tier}'. Expected 'small', 'deep', or 'vision'."
-        )
+    raise ValueError(
+        f"Unknown capability tier '{tier}'. Expected 'small', 'deep', or 'vision'."
+    )
 
 
 def _resolve_vlm_provider(device_class: str | None = None) -> str:
@@ -305,6 +304,6 @@ def _resolve_vlm_provider(device_class: str | None = None) -> str:
     info = DeviceInfo()
     if info.vlm_tier == VLMTier.LOCAL:
         return "localai" if info.has_docker else "ollama"
-    elif info.vlm_tier == VLMTier.CLOUD:
+    if info.vlm_tier == VLMTier.CLOUD:
         return "openai"
     return "ollama"

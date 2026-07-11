@@ -47,7 +47,7 @@ def _generate_tests(
 def _base_request(ctx: OperationContext) -> dict[str, Any]:
     req: dict[str, Any] = {"method": ctx.method, "path": ctx.path}
     if ctx.path_params:
-        req["path_params"] = {p: "1" for p in ctx.path_params}
+        req["path_params"] = dict.fromkeys(ctx.path_params, "1")
     return req
 
 
@@ -94,7 +94,7 @@ def _error_path_tests(
         error_codes = [c for c in ctx.error_codes if 400 <= c < 500] or [400, 422]
         req: dict[str, Any] = {"method": ctx.method, "path": ctx.path, "body": {}}
         if ctx.path_params:
-            req["path_params"] = {p: "1" for p in ctx.path_params}
+            req["path_params"] = dict.fromkeys(ctx.path_params, "1")
         tests.append({
             "name": f"error_path_{ctx.operation_id}_missing_body",
             "description": (
@@ -113,7 +113,7 @@ def _error_path_tests(
             "request": {
                 "method": ctx.method,
                 "path": ctx.path,
-                "path_params": {p: "nonexistent-99999" for p in ctx.path_params},
+                "path_params": dict.fromkeys(ctx.path_params, "nonexistent-99999"),
             },
             "assertions": [{"type": "status", "expected": not_found}],
         })
@@ -131,7 +131,7 @@ def _security_prober_tests(
         "headers": {"Authorization": "Bearer cherenkov-invalid-probe"},
     }
     if ctx.path_params:
-        req["path_params"] = {p: "1" for p in ctx.path_params}
+        req["path_params"] = dict.fromkeys(ctx.path_params, "1")
     return [{
         "name": f"security_probe_{ctx.operation_id}",
         "description": (
@@ -190,14 +190,14 @@ def _boundary_seeker_tests(
 
     if ctx.has_request_body and ctx.required_body_fields:
         error_codes = [c for c in ctx.error_codes if 400 <= c < 500] or [400, 422]
-        boundary_body = {f: "" for f in ctx.required_body_fields}
+        boundary_body = dict.fromkeys(ctx.required_body_fields, "")
         req: dict[str, Any] = {
             "method": ctx.method,
             "path": ctx.path,
             "body": boundary_body,
         }
         if ctx.path_params:
-            req["path_params"] = {p: "1" for p in ctx.path_params}
+            req["path_params"] = dict.fromkeys(ctx.path_params, "1")
         tests.append({
             "name": f"boundary_{ctx.operation_id}_empty_fields",
             "description": (
@@ -219,7 +219,7 @@ def _boundary_seeker_tests(
             "request": {
                 "method": ctx.method,
                 "path": ctx.path,
-                "path_params": {p: "0" for p in ctx.path_params},
+                "path_params": dict.fromkeys(ctx.path_params, "0"),
             },
             "assertions": [{"type": "status", "expected": expected}],
         })

@@ -130,7 +130,7 @@ class VisionConfirmPilot:
                 "hallucination_risk": False,
                 "suggestion": "Element confirmed — proceed with interaction.",
             }
-        elif element_visible and confidence < 0.6:
+        if element_visible and confidence < 0.6:
             return {
                 "confirmed": True,
                 "confidence": confidence,
@@ -139,16 +139,15 @@ class VisionConfirmPilot:
                 "suggestion": f"Element may be present but low confidence ({confidence:.2f}). "
                 f"Consider using alternative selector: {alternatives[0] if alternatives else element_selector}",
             }
+        suggestion = "Element NOT confirmed in screenshot."
+        if alternatives:
+            suggestion += f" Try alternative selector: {alternatives[0]}"
         else:
-            suggestion = "Element NOT confirmed in screenshot."
-            if alternatives:
-                suggestion += f" Try alternative selector: {alternatives[0]}"
-            else:
-                suggestion += " The element may not be rendered. Check the page state."
-            return {
-                "confirmed": False,
-                "confidence": confidence,
-                "description": what_you_see,
-                "hallucination_risk": True,
-                "suggestion": suggestion,
-            }
+            suggestion += " The element may not be rendered. Check the page state."
+        return {
+            "confirmed": False,
+            "confidence": confidence,
+            "description": what_you_see,
+            "hallucination_risk": True,
+            "suggestion": suggestion,
+        }

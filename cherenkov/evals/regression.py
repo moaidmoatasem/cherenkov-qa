@@ -202,7 +202,7 @@ def _main() -> None:
 
     guard = RegressionGuard(
         baseline_path=Path(args.baseline),
-        tolerance={k: args.tolerance for k in _DEFAULT_TOLERANCE},
+        tolerance=dict.fromkeys(_DEFAULT_TOLERANCE, args.tolerance),
     )
 
     result = guard.report_dict(report)

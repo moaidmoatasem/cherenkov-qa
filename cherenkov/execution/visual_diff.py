@@ -102,21 +102,20 @@ class VisualDiffEngine:
                     "mismatch_detected": False,
                     "message": "Visual baseline initialized successfully. No prior snapshot to compare against.",
                 }
-            else:
-                self.log.warning(
-                    "visual baseline initialization failed",
-                    exit_code=init.returncode,
-                    detail=(init.stderr or init.stdout or "")[-500:],
-                )
-                return {
-                    "passed": False,
-                    "exit_code": init.returncode,
-                    "target_url": url,
-                    "baseline_dir": self.snapshots_dir,
-                    "mismatch_detected": False,
-                    "error_output": init.stderr or init.stdout,
-                    "message": "Visual baseline initialization failed.",
-                }
+            self.log.warning(
+                "visual baseline initialization failed",
+                exit_code=init.returncode,
+                detail=(init.stderr or init.stdout or "")[-500:],
+            )
+            return {
+                "passed": False,
+                "exit_code": init.returncode,
+                "target_url": url,
+                "baseline_dir": self.snapshots_dir,
+                "mismatch_detected": False,
+                "error_output": init.stderr or init.stdout,
+                "message": "Visual baseline initialization failed.",
+            }
 
         # Run validation
         process = self._run_playwright(url, ["--reporter=json"])

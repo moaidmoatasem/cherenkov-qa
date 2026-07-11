@@ -30,8 +30,7 @@ class SpecDriftDetector:
 
         if path.suffix in (".yaml", ".yml"):
             return yaml.safe_load(content)
-        else:
-            return json.loads(content)
+        return json.loads(content)
 
     def check_response(
         self,

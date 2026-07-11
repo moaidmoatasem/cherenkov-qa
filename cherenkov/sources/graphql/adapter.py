@@ -40,8 +40,7 @@ class GraphQLSourceAdapter:
             if "data" in data:
                 data = data["data"]
             return build_client_schema(data)
-        else:
-            return build_ast_schema(parse(content))
+        return build_ast_schema(parse(content))
 
     def _get_leaf_fields(self, field_type, depth: int = 0, max_depth: int = 5) -> list[str]:
         if depth >= max_depth:

@@ -190,12 +190,11 @@ class SandboxHealer:
                         "message": f"Test successfully healed in sandbox on attempt {attempt}!",
                     }
 
-                else:
-                    self.log.warning(
-                        "proposed repair failed to pass in sandbox", attempt=attempt
-                    )
-                    current_code = proposed_code
-                    current_failure = run_res["stderr"] or run_res["stdout"]
+                self.log.warning(
+                    "proposed repair failed to pass in sandbox", attempt=attempt
+                )
+                current_code = proposed_code
+                current_failure = run_res["stderr"] or run_res["stdout"]
 
             except Exception as e:
                 self.log.error(
