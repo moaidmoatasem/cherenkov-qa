@@ -37,8 +37,8 @@ class PlaywrightMCPClient:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        # Start a background task to read stdout
-        asyncio.create_task(self._read_stdout())
+        # Start a background task to read stdout; kept as instance attr to prevent GC
+        self._stdout_reader = asyncio.create_task(self._read_stdout())
         # Send initialize request
         await self._send_request(
             "initialize",

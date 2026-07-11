@@ -4,8 +4,8 @@ import functools
 import logging
 import os
 import uuid
-from pathlib import Path
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ class SafetyGuard:
         except Exception as exc:
             logger.warning("SafetyGuard: MS AGT init failed — %s", exc)
 
-    def _check_agt(self, fn_name: str, fn_args: dict[str, Any]) -> GuardResult:
+    def _check_agt(self, fn_name: str, _fn_args: dict[str, Any]) -> GuardResult:
         if self._agt_engine is None:
             return GuardResult(allowed=True)
         try:

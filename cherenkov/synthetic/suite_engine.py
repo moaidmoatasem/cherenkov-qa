@@ -18,15 +18,15 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from typing import Any
 
-from cherenkov.synthetic.personas import (
-    TesterPersona,
-    DEFAULT_PERSONAS,
-    build_spec_contexts,
-    OperationContext,
-)
-from cherenkov.synthetic.persona_generator import generate_for_persona
-from cherenkov.synthetic.merge import merge_suites
 from cherenkov.synthetic.enricher import enrich_suite
+from cherenkov.synthetic.merge import merge_suites
+from cherenkov.synthetic.persona_generator import generate_for_persona
+from cherenkov.synthetic.personas import (
+    DEFAULT_PERSONAS,
+    OperationContext,
+    TesterPersona,
+    build_spec_contexts,
+)
 
 # ── result dataclasses ─────────────────────────────────────────────────────────
 

@@ -10,15 +10,15 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 from cherenkov.core.contracts import (
-    IngestOutput,
     EndpointSlice,
+    IngestOutput,
     Mutation,
-    Status,
-    StageMeta,
     StageError,
+    StageMeta,
+    Status,
 )
-from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 from cherenkov.sources.mobile.adapter import MobileSourceAdapter
 
 # ── Issue #194: Lightweight DAST Mutation Profile ──────────────────────────
@@ -115,7 +115,7 @@ class IngestStage:
             )
 
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 if path.suffix in [".yaml", ".yml"]:
                     import yaml
 

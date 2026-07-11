@@ -128,7 +128,7 @@ class SkepticAgent:
     def mobile_hypothesize(
         self, app_id: str, screen_name: str, element_id: str
     ) -> dict:
-        from cherenkov.agents.pilot import PilotAgent, InMemoryRunner
+        from cherenkov.agents.pilot import InMemoryRunner, PilotAgent
 
         runner = InMemoryRunner()
         pilot = PilotAgent(runner)
@@ -147,7 +147,7 @@ class SkepticAgent:
 
     # ── private ───────────────────────────────────────────────────────────
 
-    def _idioms_prompt(self, endpoint: str, method: str) -> str:
+    def _idioms_prompt(self, _endpoint: str, _method: str) -> str:
         """Build a prompt block from top idioms for the given endpoint.
 
         Injects learned patterns (E7) as adversarial context so the Skeptic

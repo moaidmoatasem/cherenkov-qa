@@ -10,8 +10,9 @@ the generate/review contract downstream.
 
 from __future__ import annotations
 
-import json
 import hashlib
+import json
+import logging
 import time
 from pathlib import Path
 from typing import Any
@@ -19,10 +20,8 @@ from typing import Any
 import numpy as np
 import requests
 
-import logging
-
-from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 
 _log = logging.getLogger(__name__)
 
@@ -221,7 +220,7 @@ class SchemaIndex:
 
         scores.sort(key=lambda x: x[1], reverse=True)
 
-        for idx, score in scores[:top_k]:
+        for idx, _score in scores[:top_k]:
             name = self._chunks[idx].name
             if name not in result:
                 result[name] = self._chunks[idx].source

@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 from cherenkov.core.contracts import (
-    DivergenceReport,
     DivergenceClass,
-    Severity,
     DivergenceEvidence,
+    DivergenceReport,
+    Severity,
     StageMeta,
 )
 from cherenkov.federation.protocol import TruthFragment
@@ -21,7 +21,7 @@ def _response_props(node) -> dict:
     }
 
 
-def _schema_drift(a, b, key, method, path):
+def _schema_drift(a, b, _key, method, path):
     """Detect same endpoint, different response schema."""
     props_a = _response_props(a)
     props_b = _response_props(b)
@@ -53,7 +53,7 @@ def _schema_drift(a, b, key, method, path):
     return None
 
 
-def _invariant_conflict(a, b, key, method, path):
+def _invariant_conflict(a, b, _key, method, path):
     """Detect same claim predicate, contradictory values."""
     claims_a = {c.predicate: c for c in a.claims}
     claims_b = {c.predicate: c for c in b.claims}

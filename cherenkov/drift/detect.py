@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from cherenkov.drift.snapshot import SpecSuiteSnapshot
@@ -73,7 +73,7 @@ def _response_schemas(spec: dict[str, Any], operation: dict[str, Any]) -> dict[s
         if not isinstance(response, dict):
             continue
         # OpenAPI 3.x content map
-        for media_type, media_obj in response.get("content", {}).items():
+        for _media_type, media_obj in response.get("content", {}).items():
             if not isinstance(media_obj, dict):
                 continue
             schema = media_obj.get("schema", {})
@@ -179,7 +179,7 @@ def _check_added_optional_params(
     return findings
 
 def detect_findings(
-    baseline_snapshot: "SpecSuiteSnapshot",  # noqa: F821
+    baseline_snapshot: SpecSuiteSnapshot,
     current_spec: dict[str, Any],
     current_suite: dict[str, Any],
     runner_violations: list[dict] | None = None,

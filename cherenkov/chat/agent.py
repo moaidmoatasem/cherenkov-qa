@@ -7,10 +7,10 @@ import uuid
 from collections.abc import AsyncGenerator
 from typing import Any
 
-from cherenkov.chat.domain.models import Session, Message
-from cherenkov.chat.ports.memory import ConversationMemory
-from cherenkov.chat.persona import PersonaRegistry
+from cherenkov.chat.domain.models import Message, Session
 from cherenkov.chat.guard import get_guard
+from cherenkov.chat.persona import PersonaRegistry
+from cherenkov.chat.ports.memory import ConversationMemory
 
 logger = logging.getLogger(__name__)
 

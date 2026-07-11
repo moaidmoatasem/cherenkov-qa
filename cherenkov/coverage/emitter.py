@@ -12,9 +12,11 @@ import re
 import time
 from typing import Any
 
-from cherenkov.core.settings import get_settings
-from cherenkov.core.contracts import GenerateOutput, Status, StageMeta, StageError
+from cherenkov.core.contracts import GenerateOutput, StageError, StageMeta, Status
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
+
+_RE_PATH_PARTS = re.compile(r"[a-zA-Z0-9]+")
 
 
 PYTEST_TEMPLATE = '''"""Unit test for {endpoint} — {method} {path}"""
@@ -310,11 +312,11 @@ class UnitTestEmitter:
     @staticmethod
     def _to_class_name(path: str, method: str) -> str:
         """Convert path/method to a PascalCase class name."""
-        parts = re.findall(r"[a-zA-Z0-9]+", path)
+        parts = _RE_PATH_PARTS.findall(path)
         return "Test" + "".join(p.capitalize() for p in parts) + method.capitalize()
 
     @staticmethod
     def _to_test_name(path: str, method: str) -> str:
         """Convert path/method to a snake_case test name."""
-        parts = re.findall(r"[a-zA-Z0-9]+", path)
+        parts = _RE_PATH_PARTS.findall(path)
         return "_".join(p.lower() for p in parts) + f"_{method}"

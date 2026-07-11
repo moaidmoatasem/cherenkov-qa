@@ -29,10 +29,10 @@ import os
 import socket
 import time
 import urllib.request
-from urllib.parse import urlparse
 import uuid
 from collections.abc import Callable
 from typing import Any
+from urllib.parse import urlparse
 
 from pydantic import ValidationError
 
@@ -637,7 +637,7 @@ def _resource_content(uri: str, payload: Any) -> MCPResourceReadResult:
 
 # ── Resource handlers ─────────────────────────────────────────────────────────
 
-def handle_resources_list(params: dict[str, Any]) -> dict[str, Any]:
+def handle_resources_list(_params: dict[str, Any]) -> dict[str, Any]:
     return MCPResourceListResult(resources=RESOURCES).model_dump()
 
 def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
@@ -754,7 +754,7 @@ def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
 
 # ── Tool call handlers ────────────────────────────────────────────────────────
 
-def handle_tools_list(params: dict[str, Any]) -> dict[str, Any]:
+def handle_tools_list(_params: dict[str, Any]) -> dict[str, Any]:
     return MCPToolListResult(tools=TOOLS).model_dump()
 
 def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
@@ -1176,16 +1176,16 @@ def _tool_validate_gate(args: dict[str, Any]) -> MCPToolCallResult:
 
 # ── Policy tools ──────────────────────────────────────────────────────────────
 
-def _tool_policy_list(args: dict[str, Any]) -> MCPToolCallResult:
+def _tool_policy_list(_args: dict[str, Any]) -> MCPToolCallResult:
     """Return current policy rules for all profiles."""
     return _ok_content(_policy.list_policy())
 
-def _tool_policy_reload(args: dict[str, Any]) -> MCPToolCallResult:
+def _tool_policy_reload(_args: dict[str, Any]) -> MCPToolCallResult:
     """Reload policy from cherenkov-policy.json."""
     _policy.reload()
     return _ok_content({"status": "reloaded", "policy": _policy.list_policy()})
 
-def _tool_registry_list(args: dict[str, Any]) -> MCPToolCallResult:
+def _tool_registry_list(_args: dict[str, Any]) -> MCPToolCallResult:
     """List registered MCP servers in the mesh registry."""
     from cherenkov.mcp.mesh_router import get_registry
 
@@ -1201,8 +1201,8 @@ def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     if parsed_url.scheme not in ("http", "https"):
         return _err_content("Only http/https server URLs allowed")
     host = parsed_url.hostname or ""
-    _BLOCKED_HOSTS = {"localhost", "127.0.0.1", "::1", "0.0.0.0", "metadata.google.internal"}
-    if host.lower() in _BLOCKED_HOSTS:
+    blocked_hosts = {"localhost", "127.0.0.1", "::1", "0.0.0.0", "metadata.google.internal"}
+    if host.lower() in blocked_hosts:
         return _err_content("Internal network URLs not allowed")
     try:
         addr = ipaddress.ip_address(host)
@@ -1530,7 +1530,7 @@ def _tool_scan_mena_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
             mappings = report["framework_mappings"]
 
         violations = []
-        for domain, details in mappings.items():
+        for _domain, details in mappings.items():
             for sub_domain, sub_details in (
                 details.items() if isinstance(details, dict) else []
             ):
@@ -1733,7 +1733,7 @@ def _tool_run_conformance_check(args: dict[str, Any]) -> MCPToolCallResult:
     except Exception as exc:
         return _err_content(f"Conformance check error: {exc}")
 
-def _tool_get_last_report(args: dict[str, Any]) -> MCPToolCallResult:
+def _tool_get_last_report(_args: dict[str, Any]) -> MCPToolCallResult:
     """Return the most recent .cherenkov/report.json without triggering a new run."""
     report_path = os.path.join(os.getcwd(), ".cherenkov", "report.json")
     if not os.path.exists(report_path):

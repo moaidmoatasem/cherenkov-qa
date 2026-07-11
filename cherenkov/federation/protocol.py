@@ -1,10 +1,13 @@
 """E6-1 Truth Protocol"""
 
 from __future__ import annotations
+
 import json
 from enum import Enum
 from typing import Any
+
 from pydantic import BaseModel
+
 from cherenkov.core.contracts import DivergenceReport
 from cherenkov.core.truth_model import GraphEdge, GraphNode
 

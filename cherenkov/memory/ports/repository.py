@@ -15,6 +15,7 @@ from cherenkov.memory.domain.models import (
     PromotionRule,
 )
 
+
 @runtime_checkable
 class MemoryRepository(Protocol):
     """Port for reading and writing accumulated agent memory."""

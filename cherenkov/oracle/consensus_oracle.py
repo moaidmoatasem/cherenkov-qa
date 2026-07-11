@@ -29,7 +29,6 @@ from cherenkov.core.contracts import Claim
 from cherenkov.core.errors import get_logger
 from cherenkov.oracle.interface import Oracle, OracleResult
 
-
 _EVAL_SYSTEM_PROMPT = (
     "You are an expert test oracle evaluator. Given a Playwright TypeScript "
     "test and the OpenAPI operation it targets, determine whether the "

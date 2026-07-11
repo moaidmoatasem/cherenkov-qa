@@ -1,11 +1,10 @@
 # CHERENKOV ai sub-package
-from cherenkov.ai.interface import InferenceClient, CachedInferenceClient
+from cherenkov.ai.interface import CachedInferenceClient, InferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient
 from cherenkov.ai.openai_client import OpenAIInferenceClient
 from cherenkov.ai.rag_index import RAGIndex
-from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import AccountingReport, CacheStats
-
+from cherenkov.core.settings import get_settings
 
 _current_client: CachedInferenceClient | None = None
 _current_provider: str | None = None
@@ -85,14 +84,14 @@ def get_cache_stats() -> CacheStats | None:
 
 
 __all__ = [
-    "InferenceClient",
     "CachedInferenceClient",
+    "InferenceClient",
     "OllamaInferenceClient",
     "OpenAIInferenceClient",
     "RAGIndex",
-    "get_client",
-    "set_client",
-    "reset_client",
     "get_accounting_report",
     "get_cache_stats",
+    "get_client",
+    "reset_client",
+    "set_client",
 ]

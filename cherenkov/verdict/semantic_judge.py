@@ -20,7 +20,6 @@ from dataclasses import dataclass, field
 
 from cherenkov.core.contracts import DivergenceReport, ReasoningRequest
 
-
 _JUDGE_SCHEMA: dict = {
     "type": "object",
     "required": ["evaluations"],

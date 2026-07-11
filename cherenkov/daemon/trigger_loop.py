@@ -104,6 +104,7 @@ class SpecGuardianTriggerLoop:
 
                 # Push to HITL queue
                 from cherenkov.hitl.queue import HitlQueue
+
                 from cherenkov.core.contracts import DivergenceFinding
 
                 queue = HitlQueue()

@@ -28,7 +28,7 @@ class MobilePlanStage:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
 
-    def run(self, ingest_output: dict | None = None) -> MobilePlanOutput:
+    def run(self, _ingest_output: dict | None = None) -> MobilePlanOutput:
         t0 = time.monotonic()
         scenarios = [
             MobileScenario(

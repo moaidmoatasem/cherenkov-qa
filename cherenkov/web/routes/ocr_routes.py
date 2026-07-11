@@ -75,5 +75,5 @@ async def run_ocr_review(scenario_id: str, payload: OcrReviewPayload, _role=Depe
 
 
 @router.get("/review/{scenario_id}")
-async def get_ocr_review(scenario_id: str):
+async def get_ocr_review(_scenario_id: str):
     raise HTTPException(status_code=404, detail="No cached OCR review available. POST to run a review.")

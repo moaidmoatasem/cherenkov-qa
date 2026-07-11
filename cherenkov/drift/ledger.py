@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from cherenkov.drift.snapshot import SpecSuiteSnapshot
 
@@ -111,7 +111,7 @@ class DriftLedger:
         current_spec: dict[str, Any] | None = None,
         current_suite: dict[str, Any] | None = None,
         runner_violations: list[dict] | None = None,
-    ) -> "DriftReport":  # noqa: F821
+    ) -> DriftReport:
         """Run reconcile() using a ledger-looked-up or file-loaded baseline.
 
         Tier mapping:

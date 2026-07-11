@@ -1,6 +1,8 @@
 from __future__ import annotations
-from typing import Any
+
 from datetime import datetime, timezone
+from typing import Any
+
 
 class SARIFEmitter:
     """Emits DivergenceReports into the SARIF format for GitHub Advanced Security."""

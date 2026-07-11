@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from cherenkov.core.contracts import Claim, Provenance, ProvenanceType, SCHEMA_VERSION
+from cherenkov.core.contracts import SCHEMA_VERSION, Claim, Provenance, ProvenanceType
 from cherenkov.truth.sources.interface import SourceAdapter
 
 # Matches: type Query {  or  type Mutation {  or  type Subscription {
@@ -46,13 +46,14 @@ _RE_SCHEMA_DEF = re.compile(
 )
 # Matches: directive @deprecated(reason: String) on FIELD_DEFINITION
 _RE_DIRECTIVE = re.compile(r'@(\w+)(?:\([^)]*\))?')
+_RE_DOCSTRING = re.compile(r'""".*?"""', re.DOTALL)
+_RE_GQL_COMMENT = re.compile(r'#[^\n]*')
 
 
 def _strip_comments(text: str) -> str:
     """Remove # comments and block string (\"\"\"...\"\"\") descriptions."""
-    text = re.sub(r'""".*?"""', "", text, flags=re.DOTALL)
-    text = re.sub(r'#[^\n]*', "", text)
-    return text
+    text = _RE_DOCSTRING.sub("", text)
+    return _RE_GQL_COMMENT.sub("", text)
 
 
 def _parse_fields(block: str) -> list[dict]:

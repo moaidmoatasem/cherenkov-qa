@@ -7,7 +7,7 @@ import sqlite3
 import threading
 from datetime import datetime
 
-from cherenkov.chat.domain.models import Session, Message
+from cherenkov.chat.domain.models import Message, Session
 
 _log = logging.getLogger(__name__)
 

@@ -16,7 +16,6 @@ from cherenkov.spec_guardian.core import (
     DriftType,
 )
 
-
 DRIFT_DB = Path(".cherenkov/drift.db")
 
 
@@ -76,7 +75,7 @@ class DriftStore:
             try:
                 con.execute("PRAGMA journal_mode=WAL")
                 cur = con.execute(
-                    """INSERT INTO drift_events 
+                    """INSERT INTO drift_events
                        (timestamp, drift_type, severity, endpoint, method, field_path, expected, actual, message)
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (
@@ -104,7 +103,7 @@ class DriftStore:
                 con.execute("PRAGMA journal_mode=WAL")
                 cur = con.execute(
                     """INSERT INTO drift_reports
-                       (timestamp, spec_path, start_time, end_time, total_checks, 
+                       (timestamp, spec_path, start_time, end_time, total_checks,
                         compliant_checks, drift_rate, critical_count, warning_count, events_json)
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (
@@ -132,7 +131,7 @@ class DriftStore:
             try:
                 con.execute("PRAGMA journal_mode=WAL")
                 row = con.execute(
-                    """SELECT spec_path, start_time, end_time, total_checks, 
+                    """SELECT spec_path, start_time, end_time, total_checks,
                               compliant_checks, events_json
                        FROM drift_reports ORDER BY id DESC LIMIT 1"""
                 ).fetchone()

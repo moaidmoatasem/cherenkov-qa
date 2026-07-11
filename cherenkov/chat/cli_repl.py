@@ -1,9 +1,12 @@
 from __future__ import annotations
-import sys
+
 import asyncio
-from cherenkov.chat.agent import QAChatAgent
+import sys
+
 from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
+from cherenkov.chat.agent import QAChatAgent
 from cherenkov.substrate.router import SubstrateRouter
+
 
 def start_repl(initial_query=None, print_only=False, resume_session=None, continue_session=False):
     router = SubstrateRouter()
@@ -59,10 +62,10 @@ def start_repl(initial_query=None, print_only=False, resume_session=None, contin
             if user_input in ("/exit", "/quit"):
                 print("Exiting session.")
                 break
-            elif user_input == "/help":
+            if user_input == "/help":
                 print("Commands: /exit, /quit, /help, /history")
                 continue
-            elif user_input == "/history":
+            if user_input == "/history":
                 messages = memory.get_messages(session_id)
                 for msg in messages:
                     print(f"[{msg.timestamp}] {msg.role.capitalize()}: {msg.content}")

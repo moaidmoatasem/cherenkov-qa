@@ -4,15 +4,16 @@ CHERENKOV healing/diagnose.py -- core diagnostics component for classifying stag
 
 from __future__ import annotations
 
-import os
-import json
 import hashlib
+import json
+import os
 import time
-from enum import Enum
 from collections.abc import Callable
+from enum import Enum
 from typing import Any
 
 from cherenkov.core.errors import get_logger
+
 
 def hash_test_content(test_content: str) -> str:
     """Returns a stable SHA-256 hash of test source, ignoring surrounding whitespace."""
@@ -71,7 +72,7 @@ class Diagnoser:
         scenario_id: str,
         current_status: int,
         current_body: dict[str, Any],
-        test_name: str,
+        test_name: str,  # noqa: ARG002
         test_content: str | None = None,
     ) -> DiagnosisResult:
         """Determines the exact failure cause by comparing against historical snapshots."""
@@ -88,7 +89,7 @@ class Diagnoser:
 
         if snapshot_existed:
             try:
-                with open(snapshot_path, "r", encoding="utf-8") as f:
+                with open(snapshot_path, encoding="utf-8") as f:
                     snapshot = json.load(f)
                     previous_status = snapshot.get("status")
                     previous_keys = snapshot.get("body_keys", [])
@@ -101,8 +102,7 @@ class Diagnoser:
         # Detect a stale snapshot: the test source changed since the snapshot was
         # captured, so any body-shape diff reflects the rewritten test, not real drift.
         stale_snapshot = False
-        if snapshot_existed and previous_test_hash and test_content is not None:
-            if hash_test_content(test_content) != previous_test_hash:
+        if snapshot_existed and previous_test_hash and test_content is not None and hash_test_content(test_content) != previous_test_hash:
                 stale_snapshot = True
                 self.log.warning(
                     "stale snapshot flagged, not auto-diffed",
@@ -111,9 +111,7 @@ class Diagnoser:
                 )
 
         # 1. AUTH_EXPIRY: was 200/201 (success), now 401
-        if current_status == 401:
-            # If we historically passed (status in 200, 201, 204), but now we got 401
-            if previous_status in (200, 201, 204) or not snapshot_existed:
+        if current_status == 401 and (previous_status in (200, 201, 204) or not snapshot_existed):
                 detail = f"Test previously returned success ({previous_status or 'N/A'}), but now returned 401 Unauthorized."
                 self.log.info("diagnosed AUTH_EXPIRY", detail=detail)
                 return DiagnosisResult(

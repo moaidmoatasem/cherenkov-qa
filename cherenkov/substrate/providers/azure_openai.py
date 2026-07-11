@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from cherenkov.ai.interface import InferenceClient
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.settings import get_settings
-from cherenkov.ai.interface import InferenceClient
 from cherenkov.substrate.provider import ProviderCapabilities
+
 
 class AzureOpenAIProvider:
     """Bring-Your-Own-LLM provider for Azure OpenAI (Enterprise)."""

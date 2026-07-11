@@ -59,7 +59,7 @@ class AccessibilitySourceAdapter:
             pass
 
     def _parse_urls_txt(self) -> Iterator[AccessibilityScenario]:
-        with open(self.source_path, "r", encoding="utf-8") as f:
+        with open(self.source_path, encoding="utf-8") as f:
             lines = [
                 line.strip() for line in f if line.strip() and not line.startswith("#")
             ]

@@ -18,7 +18,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-
 _GRADE_THRESHOLDS = [
     (0.90, "A"),
     (0.75, "B"),
@@ -107,7 +106,7 @@ class GradeReport:
         path.write_text(json.dumps(self.to_dict(), indent=2))
 
     @classmethod
-    def load(cls, path: Path) -> "GradeReport":
+    def load(cls, path: Path) -> GradeReport:
         data = json.loads(path.read_text())
         ops = [
             OperationGrade(

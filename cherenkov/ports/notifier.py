@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Protocol, Any
+from typing import Any, Protocol
 
 from cherenkov.core.events import CHERENKOVEvent
+
 
 class NotifierPort(Protocol):
     name: str

@@ -43,7 +43,7 @@ def build_samples_from_pipeline(
     return samples
 
 
-def run_evals(samples: list[EvalSample], max_workers: int = 2) -> EvalReport:
+def run_evals(samples: list[EvalSample], _max_workers: int = 2) -> EvalReport:
     results: list[EvalResult] = []
     for sample in samples:
         result = judge_sample(sample)

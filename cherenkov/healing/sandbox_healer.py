@@ -7,18 +7,18 @@ Anti-lock-in: provider abstraction allows filesystem (default) or Docker sandbox
 
 from __future__ import annotations
 
+import difflib
 import os
 import time
 import uuid
-import difflib
 from pathlib import Path
 
+from cherenkov.ai.ollama_client import complete_code, strip_think
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
-from cherenkov.ai.ollama_client import complete_code, strip_think
 from cherenkov.healing.providers.base import SandboxProvider
-from cherenkov.healing.providers.filesystem import FilesystemSandboxProvider
 from cherenkov.healing.providers.docker_sandbox import DockerSandboxProvider
+from cherenkov.healing.providers.filesystem import FilesystemSandboxProvider
 
 SYSTEM_PROMPT = """You are an expert QA automation engineer specializing in fixing failing Playwright TypeScript E2E API tests.
 Your goal is to repair the failing test so that it matches the OpenAPI contract constraints and passes successfully.
@@ -121,7 +121,7 @@ class SandboxHealer:
             self.log.error(error_msg)
             return {"healed": False, "message": error_msg}
 
-        with open(original_file_path, "r", encoding="utf-8") as f:
+        with open(original_file_path, encoding="utf-8") as f:
             original_code = f.read()
 
         sandbox_dir = self.replicate_workspace(scenario_id)
@@ -190,12 +190,11 @@ class SandboxHealer:
                         "message": f"Test successfully healed in sandbox on attempt {attempt}!",
                     }
 
-                else:
-                    self.log.warning(
-                        "proposed repair failed to pass in sandbox", attempt=attempt
-                    )
-                    current_code = proposed_code
-                    current_failure = run_res["stderr"] or run_res["stdout"]
+                self.log.warning(
+                    "proposed repair failed to pass in sandbox", attempt=attempt
+                )
+                current_code = proposed_code
+                current_failure = run_res["stderr"] or run_res["stdout"]
 
             except Exception as e:
                 self.log.error(

@@ -8,14 +8,14 @@ from __future__ import annotations
 
 from cherenkov.core.contracts import (
     Claim,
-    DivergenceReport,
     DivergenceClass,
     DivergenceEvidence,
-    Severity,
-    Status,
+    DivergenceReport,
     Provenance,
     ProvenanceType,
+    Severity,
     StageMeta,
+    Status,
 )
 from cherenkov.core.truth_model import TruthModel
 
@@ -83,7 +83,7 @@ def render_dashboard(
     ]
     parts.append("\n" + render_truth_model(model))
     parts.append("\n" + render_divergences(reports))
-    
+
     # Add continuous conformance trend
     parts.append("\nContinuous Conformance Trend")
     parts.append("=" * 60)
@@ -91,12 +91,12 @@ def render_dashboard(
         from cherenkov.spec_guardian.store import DriftStore
         store = DriftStore()
         trend = store.drift_trend(hours=24)
-        
+
         parts.append(f"\n  Last {trend['hours']} Hours:")
         parts.append(f"  Total Drift Events: {trend['total_events']}")
         parts.append(f"  Critical Drift:     {trend['critical_events']}")
         parts.append(f"  Warning Drift:      {trend['warning_events']}")
-        
+
         if trend['by_type']:
             parts.append("\n  Drift Breakdown:")
             for dtype, count in trend['by_type'].items():

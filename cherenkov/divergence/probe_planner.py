@@ -139,7 +139,7 @@ def _path_with_samples(path: str, operation: dict[str, Any], spec: dict[str, Any
             continue
         schema = _resolve_ref(param.get("schema", {}), spec)
         value = _sample_value(schema, param.get("name", ""))
-        filled = filled.replace(f'{{{str(param.get("name", ""))}}}', str(value))
+        filled = filled.replace(f'{{{param.get("name", "")!s}}}', str(value))
     return None if "{" in filled else filled
 
 

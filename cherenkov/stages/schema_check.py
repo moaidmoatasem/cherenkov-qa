@@ -225,7 +225,7 @@ class SchemaCheckStage:
         self._spec = spec
 
     @classmethod
-    def from_file(cls, spec_path: str) -> "SchemaCheckStage":
+    def from_file(cls, spec_path: str) -> SchemaCheckStage:
         from pathlib import Path
 
         text = Path(spec_path).read_text(encoding="utf-8")

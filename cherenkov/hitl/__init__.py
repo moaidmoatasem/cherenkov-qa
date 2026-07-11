@@ -6,19 +6,19 @@ concurrency gatekeeper.
 """
 
 from cherenkov.hitl.contracts import (
+    SCHEMA_VERSION,
     HitlEnvelope,
     HitlError,
     HitlItem,
     HitlStatus,
-    SCHEMA_VERSION,
 )
 from cherenkov.hitl.store import HitlQueue
 
 __all__ = [
-    "HitlQueue",
-    "HitlItem",
-    "HitlStatus",
+    "SCHEMA_VERSION",
     "HitlEnvelope",
     "HitlError",
-    "SCHEMA_VERSION",
+    "HitlItem",
+    "HitlQueue",
+    "HitlStatus",
 ]

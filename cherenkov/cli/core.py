@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import sys
 
 import click
@@ -28,7 +29,6 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.demo_cmd import demo_cmd
     from cherenkov.cli.commands.drift_cmd import drift_cmd
     from cherenkov.cli.commands.enterprise import enterprise_cmd
-    from cherenkov.cli.commands.playbook_cmd import playbook_cmd
     from cherenkov.cli.commands.epoch import (
         author_cmd,
         daemon_cmd,
@@ -43,6 +43,7 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.examples_cmd import examples_cmd
     from cherenkov.cli.commands.generate_cmd import generate_cmd
     from cherenkov.cli.commands.ocr_cmd import ocr_cmd
+    from cherenkov.cli.commands.playbook_cmd import playbook_cmd
     from cherenkov.cli.commands.routine_cmd import routine_cmd
     from cherenkov.cli.commands.simple import (
         completion_cmd,

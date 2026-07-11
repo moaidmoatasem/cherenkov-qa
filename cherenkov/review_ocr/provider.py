@@ -6,6 +6,7 @@ from pathlib import Path
 
 from cherenkov.review_ocr.models import OCRProvider
 
+
 def _default_config_path() -> str:
     return os.path.join(str(Path.home()), ".opencodereview", "config.json")
 
@@ -18,7 +19,7 @@ class OCRProviderManager:
     def _load(self):
         if os.path.isfile(self.config_path):
             try:
-                with open(self.config_path, "r", encoding="utf-8") as f:
+                with open(self.config_path, encoding="utf-8") as f:
                     self._config = json.load(f)
             except (json.JSONDecodeError, OSError):
                 self._config = {}
@@ -61,7 +62,7 @@ class OCRProviderManager:
         )
 
     def list_providers(self) -> list[str]:
-        return list(self._config.get("providers", {})) + ["anthropic", "openai", "dashscope", "deepseek"]
+        return [*self._config.get("providers", {}), "anthropic", "openai", "dashscope", "deepseek"]
 
     def set_provider(self, name: str, config: dict):
         providers = self._config.setdefault("providers", {})

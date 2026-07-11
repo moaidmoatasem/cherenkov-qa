@@ -93,7 +93,7 @@ class BrokenImplementation:
                 props = schema.get("properties", {})
 
                 if props:
-                    omitted = list(props)[0]
+                    omitted = next(iter(props))
                     bugs.append(
                         {
                             "id": f"missing_field_{omitted}",
@@ -202,7 +202,7 @@ class AssertionGate:
         self,
         bug: dict,
         test_dir: str,
-        framework: str,
+        _framework: str,
     ) -> bool:
         """Simulate running a test against a broken implementation.
 

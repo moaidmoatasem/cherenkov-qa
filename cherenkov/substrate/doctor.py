@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import json
-
-import click
 from typing import Any
 
-from cherenkov.core.settings import get_settings
+import click
+
 from cherenkov.core.devices import DeviceInfo, VLMTier
+from cherenkov.core.settings import get_settings
 
 
 def _detect_ollama_vlm() -> dict:

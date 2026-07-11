@@ -20,10 +20,10 @@ class SpecPatchEmitter(Emitter):
 
     def emit(
         self,
-        truth_model: TruthModel,
+        truth_model: TruthModel,  # noqa: ARG002
         output_path: Path,
         divergences: list[DivergenceReport] | None = None,
-        **kwargs: Any,
+        **kwargs: Any,  # noqa: ARG002
     ) -> Path:
         if not divergences:
             spec_divergences = []

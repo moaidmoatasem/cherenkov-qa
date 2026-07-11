@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import json
 import sys
-import click
 from pathlib import Path
+
+import click
 
 
 @click.command("check-stale")
@@ -49,7 +50,7 @@ def check_stale_cmd(spec, manifest, fail_on_stale, as_json):
                 fg="yellow",
             ), err=True)
             sys.exit(1 if fail_on_stale else 0)
-        from cherenkov.core.staleness import _file_sha256, StalenessReport
+        from cherenkov.core.staleness import StalenessReport, _file_sha256
         current_hash = _file_sha256(spec)
         recorded_hash = data.get("spec_hash", "")
         test_files = data.get("tests", [])

@@ -13,6 +13,7 @@ except ImportError:
     pass  # dotenv not installed, env vars only
 
 import os
+from typing import ClassVar
 
 
 class Config:
@@ -38,7 +39,7 @@ class Config:
     TIER_VISION_MODEL: str = os.getenv("CHERENKOV_TIER_VISION_MODEL", "qwen2.5-vl:7b")
 
     # Structured tier config — prefer this over accessing individual TIER_* attributes
-    TIERS: dict = {}  # populated after class definition
+    TIERS: ClassVar[dict] = {}  # populated after class definition
 
     FALLBACK_ENABLED: bool = (
         os.getenv("CHERENKOV_FALLBACK_ENABLED", "true").lower() == "true"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import fnmatch
 import json
 import os
@@ -100,17 +101,15 @@ class OCRRuleEngine:
         if not os.path.isfile(path):
             return None
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 return json.load(f)
         except (json.JSONDecodeError, OSError):
             return None
 
     def resolve_rule(self, filepath: str) -> str | None:
         candidates = []
-        try:
+        with contextlib.suppress(ValueError, OSError):
             candidates.append(os.path.relpath(filepath, self.repo_root))
-        except (ValueError, OSError):
-            pass
         candidates.append(os.path.basename(filepath))
         for layer in self._layers:
             for entry in layer.get("rules", []):
@@ -132,6 +131,4 @@ class OCRRuleEngine:
             if _glob_match(pattern, relative):
                 return True
         ext = os.path.splitext(filepath)[1]
-        if ext and ext not in SUPPORTED_EXTENSIONS:
-            return True
-        return False
+        return bool(ext and ext not in SUPPORTED_EXTENSIONS)

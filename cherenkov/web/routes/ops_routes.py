@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import asyncio
 import contextlib
 import io
@@ -6,10 +7,12 @@ import os
 import re
 import threading
 import uuid
-
 from typing import Any
+
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 
+from cherenkov.web.auth.deps import require_role
+from cherenkov.web.auth.models import Role
 from cherenkov.web.routes.deps import (
     _validate_output_path,
     _validate_spec_url,
@@ -17,8 +20,9 @@ from cherenkov.web.routes.deps import (
     ws_event_callback,
 )
 from cherenkov.web.routes.models import EjectPayload, RunPipelinePayload, ValidatePayload
-from cherenkov.web.auth.deps import require_role
-from cherenkov.web.auth.models import Role
+
+_RE_METHOD_ATTR = re.compile(r'method:\s*["\']([A-Z]+)["\']')
+_RE_METHOD_CALL = re.compile(r"\.(get|post|put|patch|delete)\s*\(", re.IGNORECASE)
 
 router = APIRouter(tags=["operations"])
 
@@ -38,9 +42,9 @@ async def ingest_spec_file(file: UploadFile | None = File(None), url: str | None
         raise HTTPException(status_code=400, detail="Either file upload or URL must be provided.")
     try:
         if file:
-            MAX_SPEC_BYTES = 10 * 1024 * 1024
-            content = await file.read(MAX_SPEC_BYTES + 1)
-            if len(content) > MAX_SPEC_BYTES:
+            max_spec_bytes = 10 * 1024 * 1024
+            content = await file.read(max_spec_bytes + 1)
+            if len(content) > max_spec_bytes:
                 raise HTTPException(status_code=413, detail="Spec file exceeds 10MB limit")
             with open(spec_path, "wb") as f:
                 f.write(content)
@@ -70,7 +74,7 @@ async def ingest_spec_file(file: UploadFile | None = File(None), url: str | None
     except Exception:
         if os.path.exists(spec_path):
             os.remove(spec_path)
-        raise HTTPException(status_code=500, detail="Spec parsing failed. Check that the file is a valid OpenAPI 3.x document.")
+        raise HTTPException(status_code=500, detail="Spec parsing failed. Check that the file is a valid OpenAPI 3.x document.") from None
 
 
 _pipeline_threads: dict[str, threading.Thread] = {}
@@ -88,7 +92,7 @@ def _run_pipeline_thread(spec_path: str, run_id: str):
 
 
 @router.post("/api/v1/run")
-async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: BackgroundTasks, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
+async def trigger_pipeline_run(payload: RunPipelinePayload, _background_tasks: BackgroundTasks, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.reviewer))):
     from cherenkov.stages.doctor_cmd import run_doctor
 
     with contextlib.redirect_stdout(io.StringIO()):
@@ -102,7 +106,7 @@ async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: Ba
     run_id = str(uuid.uuid4())[:8]
     if not os.path.exists(payload.spec_path):
         raise HTTPException(status_code=404, detail="Ingested spec file path not found.")
-    thread = threading.Thread(target=_run_pipeline_thread, args=(payload.spec_path, run_id), name=f"pipeline-{run_id}")
+    thread = threading.Thread(target=_run_pipeline_thread, args=(payload.spec_path, run_id), name=f"pipeline-{run_id}", daemon=True)
     _pipeline_threads[run_id] = thread
     thread.start()
     return {"run_id": run_id, "status": "launched"}
@@ -128,8 +132,7 @@ async def list_generated_tests():
             if not code or not code.strip():
                 continue
             scenario_id = f.replace(".spec.ts", "")
-            method_match = re.search(r'method:\s*["\']([A-Z]+)["\']', code) or re.search(
-                r"\.(get|post|put|patch|delete)\s*\(", code, re.IGNORECASE)
+            method_match = _RE_METHOD_ATTR.search(code) or _RE_METHOD_CALL.search(code)
             method = method_match.group(1).upper() if method_match else "GET"
             tests.append({"name": f, "scenario_id": scenario_id, "endpoint": scenario_id, "method": method, "code": code})
         return tests
@@ -144,14 +147,13 @@ async def validate_test_suite(payload: ValidatePayload, _auth=Depends(verify_api
     await _validate_spec_url(payload.target_url)
     try:
         engine = ValidationEngine("api_validate")
-        results = await asyncio.wait_for(
+        return await asyncio.wait_for(
             asyncio.to_thread(engine.validate_suite, payload.target_url), timeout=300.0,
         )
-        return results
     except asyncio.TimeoutError:
-        raise HTTPException(status_code=504, detail="Validation timed out after 300 seconds.")
+        raise HTTPException(status_code=504, detail="Validation timed out after 300 seconds.") from None
     except Exception:
-        raise HTTPException(status_code=500, detail="Validation failed. Check the target URL and try again.")
+        raise HTTPException(status_code=500, detail="Validation failed. Check the target URL and try again.") from None
 
 
 @router.post("/api/v1/eject")
@@ -172,4 +174,4 @@ async def eject_test_suite(payload: EjectPayload, _auth=Depends(verify_api_key),
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Eject operation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Eject operation failed: {e}") from None

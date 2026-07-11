@@ -15,7 +15,6 @@ from cherenkov.evals.core import (
     EvalStatus,
 )
 
-
 _JUDGE_SYSTEM_PROMPT = """You are a CHERENKOV test quality judge. Evaluate Playwright API tests generated from OpenAPI specs.
 
 Rate each test on 5 metrics (score 0.0–1.0):

@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from cherenkov.core.contracts import Claim, Provenance, ProvenanceType, SCHEMA_VERSION
+from cherenkov.core.contracts import SCHEMA_VERSION, Claim, Provenance, ProvenanceType
 from cherenkov.truth.sources.interface import SourceAdapter
 
 # Matches:  service Greeter {
@@ -37,13 +37,14 @@ _RE_HTTP_OPTION = re.compile(
     r'option\s+\(google\.api\.http\)\s*=\s*\{[^}]*(?:get|post|put|delete|patch)\s*:\s*"([^"]+)"',
     re.DOTALL,
 )
+_RE_BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
+_RE_LINE_COMMENT = re.compile(r"//[^\n]*")
 
 
 def _strip_comments(text: str) -> str:
     """Remove line (//) and block (/* */) comments from proto text."""
-    text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
-    text = re.sub(r"//[^\n]*", "", text)
-    return text
+    text = _RE_BLOCK_COMMENT.sub("", text)
+    return _RE_LINE_COMMENT.sub("", text)
 
 
 def _extract_block(text: str, start_pos: int) -> str:

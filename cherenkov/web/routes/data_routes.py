@@ -65,7 +65,7 @@ async def get_failures():
     from cherenkov.core.contracts import VerdictOutcome
     from cherenkov.reflector.store import VerdictStore
 
-    _FAILURE_TYPE_MAP = {
+    failure_type_map = {
         "CONTRACT_DRIFT": "CONTRACT_DRIFT",
         "AUTH_EXPIRY": "AUTH_EXPIRY",
         "STATE_SEQUENCING": "STATE_SEQUENCING",
@@ -99,7 +99,7 @@ async def get_failures():
         {
             "id": r["id"],
             "name": r["endpoint"] or r["id"],
-            "failureType": _FAILURE_TYPE_MAP.get(
+            "failureType": failure_type_map.get(
                 r.get("failure_class") or "", "ASSERTION_DRIFT"
             ),
             "diagnosis": r.get("detail") or "Failure detected during review.",

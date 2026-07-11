@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 
-from cherenkov.core.contracts import CostEntry, AccountingReport
+from cherenkov.core.contracts import AccountingReport, CostEntry
 
 
 def _estimate_tokens(text: object) -> int:
@@ -169,8 +169,8 @@ class CostAccountant:
         self._entries.clear()
 
     def get_governance_kpis(self) -> dict[str, float | int]:
-        from cherenkov.reflector.store import VerdictStore
         from cherenkov.core.contracts import VerdictOutcome
+        from cherenkov.reflector.store import VerdictStore
 
         store = VerdictStore()
         conn = store._connect()

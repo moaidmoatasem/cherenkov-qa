@@ -94,5 +94,4 @@ class MCPClient:
 
     def read_resource(self, uri: str) -> dict[str, Any]:
         """Read a resource from the remote server by URI."""
-        result = self._rpc("resources/read", {"uri": uri}) or {}
-        return result
+        return self._rpc("resources/read", {"uri": uri}) or {}

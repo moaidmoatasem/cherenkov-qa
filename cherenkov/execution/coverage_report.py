@@ -15,8 +15,8 @@ from typing import Any
 
 def _load_spec_endpoints(spec_path: str | None) -> list[dict[str, Any]]:
     """Return [{path, method, response_codes}] for every operation in the spec."""
-    from cherenkov.stages.ingest import IngestStage
     from cherenkov.core.contracts import Status
+    from cherenkov.stages.ingest import IngestStage
 
     if not spec_path:
         # Try auto-discovery

@@ -1,7 +1,8 @@
 from __future__ import annotations
+
 import hmac
 
-from fastapi import Request, HTTPException, Header
+from fastapi import Header, HTTPException, Request
 
 from cherenkov.core.settings import get_settings
 

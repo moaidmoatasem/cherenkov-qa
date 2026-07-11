@@ -3,10 +3,10 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.core.settings import get_settings
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient
+from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
+from cherenkov.core.settings import get_settings
 from cherenkov.substrate.provider import ProviderCapabilities
 
 

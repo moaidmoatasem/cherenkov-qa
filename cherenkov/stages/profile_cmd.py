@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-
-from cherenkov.copilot.autonomy import get_profile, set_profile, PROFILE_LEVELS
+from cherenkov.copilot.autonomy import PROFILE_LEVELS, get_profile, set_profile
 
 
 def run_profile(action: str = "show", level: str | None = None) -> int:

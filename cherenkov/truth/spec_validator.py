@@ -87,8 +87,8 @@ def _parse(raw: str, fmt: str) -> dict:
     try:
         import yaml
         return yaml.safe_load(raw)
-    except ImportError:
-        raise ImportError("PyYAML is required to parse YAML specs: pip install pyyaml")
+    except ImportError as exc:
+        raise ImportError("PyYAML is required to parse YAML specs: pip install pyyaml") from exc
 
 
 def _collect_refs(obj: Any, refs: set[str]) -> None:

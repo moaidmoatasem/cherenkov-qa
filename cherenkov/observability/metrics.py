@@ -1,10 +1,11 @@
 """Lightweight metrics collector — stores to SQLite, optionally emits Prometheus-format text."""
 
 from __future__ import annotations
+
+import os
 import sqlite3
 import threading
 import time
-import os
 from dataclasses import dataclass, field
 
 try:

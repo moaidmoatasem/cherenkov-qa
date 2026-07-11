@@ -40,7 +40,4 @@ class PlaybookMatcher:
         if trigger.path_contains and trigger.path_contains not in path:
             return False
 
-        if trigger.tags and not any(t in tags for t in trigger.tags):
-            return False
-
-        return True
+        return not trigger.tags or any(t in tags for t in trigger.tags)

@@ -18,15 +18,14 @@ from __future__ import annotations
 
 import json
 import sys
-import urllib.request
 from pathlib import Path
 
 import click
+import requests
 
 from cherenkov.core.certificate import compliance_profile, issue_certificate, load_certificate
 from cherenkov.divergence.coverage import compute_coverage
 from cherenkov.divergence.proof_run import PETSTORE_BASE_URL, run_proof
-
 
 _VERDICT_COLOUR = {"PASS": "green", "WARN": "yellow", "FAIL": "red"}
 
@@ -246,8 +245,9 @@ def _verify_cert_file(path: str, signing_key: str | None) -> None:
 def _load_spec(spec_path: str) -> dict | None:
     if spec_path.startswith("http://") or spec_path.startswith("https://"):
         try:
-            with urllib.request.urlopen(spec_path, timeout=15) as resp:  # noqa: S310
-                raw = resp.read()
+            resp = requests.get(spec_path, timeout=15)
+            resp.raise_for_status()
+            raw = resp.content
         except Exception as exc:
             click.echo(f"[ERROR] Could not fetch spec: {exc}", err=True)
             return None
