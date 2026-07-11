@@ -140,7 +140,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
                 sys.exit(1)
 
             fd, temp_spec = tempfile.mkstemp(suffix=".proto")
-            with os.fdopen(fd, "w") as f:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
                 f.write(proto_content)
             spec = temp_spec
             if not quiet:
