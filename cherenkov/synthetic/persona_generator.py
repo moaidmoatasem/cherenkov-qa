@@ -209,7 +209,7 @@ def _boundary_seeker_tests(
         })
 
     elif ctx.path_params:
-        expected = list(set([*ctx.success_codes, 404, 400]))
+        expected = list({*ctx.success_codes, 404, 400})
         tests.append({
             "name": f"boundary_{ctx.operation_id}_zero_id",
             "description": (

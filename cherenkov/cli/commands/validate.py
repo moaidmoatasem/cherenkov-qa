@@ -110,7 +110,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         gql_source = GraphQLSourceAdapter(spec)
         scenarios = GraphQLScenarioPlanner().plan(gql_source)
         if not quiet:
-            click.echo(f"Planned {len(scenarios)} scenarios from {len(set(s.operation_name for s in scenarios))} operations")
+            click.echo(f"Planned {len(scenarios)} scenarios from {len({s.operation_name for s in scenarios})} operations")
         generator = GenerateStage("cli_validate")
         generated = 0
         for sc in scenarios:
@@ -154,7 +154,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         grpc_source = gRPCSourceAdapter(spec)
         scenarios = gRPCScenarioPlanner().plan(grpc_source)
         if not quiet:
-            click.echo(f"Planned {len(scenarios)} scenarios from {len(set(s.service for s in scenarios))} services")
+            click.echo(f"Planned {len(scenarios)} scenarios from {len({s.service for s in scenarios})} services")
         generator = GenerateStage("cli_validate")
         generated = 0
         for sc in scenarios:
