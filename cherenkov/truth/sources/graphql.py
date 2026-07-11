@@ -53,8 +53,7 @@ _RE_GQL_COMMENT = re.compile(r'#[^\n]*')
 def _strip_comments(text: str) -> str:
     """Remove # comments and block string (\"\"\"...\"\"\") descriptions."""
     text = _RE_DOCSTRING.sub("", text)
-    text = _RE_GQL_COMMENT.sub("", text)
-    return text
+    return _RE_GQL_COMMENT.sub("", text)
 
 
 def _parse_fields(block: str) -> list[dict]:

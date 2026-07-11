@@ -44,8 +44,7 @@ _RE_LINE_COMMENT = re.compile(r"//[^\n]*")
 def _strip_comments(text: str) -> str:
     """Remove line (//) and block (/* */) comments from proto text."""
     text = _RE_BLOCK_COMMENT.sub("", text)
-    text = _RE_LINE_COMMENT.sub("", text)
-    return text
+    return _RE_LINE_COMMENT.sub("", text)
 
 
 def _extract_block(text: str, start_pos: int) -> str:

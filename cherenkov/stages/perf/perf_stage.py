@@ -165,7 +165,7 @@ class _BaselineDB:
         itl_values = [r[1] for r in rows if r[1] is not None]
         cost_values = [r[2] for r in rows if r[2] is not None]
 
-        stats = {
+        return {
             "llm_request_count": len(rows),
             "ttft_mean_ms": round(sum(ttft_values) / len(ttft_values), 2)
             if ttft_values
@@ -214,7 +214,6 @@ class _BaselineDB:
             else 0.0,
         }
 
-        return stats
 
 K6_SCRIPT_TEMPLATE = (
     "import http from 'k6/http';\n"

@@ -147,10 +147,9 @@ async def validate_test_suite(payload: ValidatePayload, _auth=Depends(verify_api
     await _validate_spec_url(payload.target_url)
     try:
         engine = ValidationEngine("api_validate")
-        results = await asyncio.wait_for(
+        return await asyncio.wait_for(
             asyncio.to_thread(engine.validate_suite, payload.target_url), timeout=300.0,
         )
-        return results
     except asyncio.TimeoutError:
         raise HTTPException(status_code=504, detail="Validation timed out after 300 seconds.") from None
     except Exception:

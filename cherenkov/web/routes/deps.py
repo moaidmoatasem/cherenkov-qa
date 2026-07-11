@@ -108,8 +108,7 @@ async def _validate_spec_url(url: str) -> str:
         if not _is_safe_ip(addr):
             raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
     safe_host = ips[0]
-    safe_url = url.replace(f"://{host}", f"://{safe_host}", 1)
-    return safe_url
+    return url.replace(f"://{host}", f"://{safe_host}", 1)
 
 
 _RE_SAFE_SCENARIO_ID = re.compile(r"^[a-zA-Z0-9_\-]{1,128}$")
