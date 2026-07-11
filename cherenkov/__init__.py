@@ -1,6 +1,6 @@
 # CHERENKOV package
 
-from cherenkov.cli.core import main  # noqa: F401
+from cherenkov.cli.core import main
 
 try:
     from importlib.metadata import version as _version

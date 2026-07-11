@@ -19,7 +19,7 @@ from urllib.parse import urlparse
 from fastapi import FastAPI, HTTPException, WebSocket
 
 from cherenkov.hitl.store import HitlQueue
-from cherenkov.security.auth import verify_api_key  # noqa: F401 (re-exported for route modules)
+from cherenkov.security.auth import verify_api_key
 
 # ── WebSocket Manager (singleton) ─────────────────────────────────────
 
