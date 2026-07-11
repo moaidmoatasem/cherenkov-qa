@@ -24,7 +24,7 @@ class SpecGuardianWatcher:
         target_repo: str,
         target_url: str,
         source_type: str = "openapi",
-        watch_files: list[str] = None,
+        watch_files: list[str] | None = None,
     ):
         self.target_repo = Path(target_repo)
         self.watch_files = watch_files or ["openapi.yaml"]

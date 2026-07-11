@@ -23,7 +23,7 @@ class AuditLog:
         self.current_log_file = self.storage_dir / "audit.jsonl"
 
     def log_event(
-        self, actor: str, action: str, resource: str, details: dict[str, Any] = None
+        self, actor: str, action: str, resource: str, details: dict[str, Any] | None = None
     ) -> str:
         """Records an event to the audit log."""
         event_id = f"evt_{uuid.uuid4().hex}"

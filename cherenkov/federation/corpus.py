@@ -59,7 +59,7 @@ class JsonlCorpusBackend:
 
 
 class Corpus:
-    def __init__(self, path: str = None, backend: CorpusBackend = None):
+    def __init__(self, path: str | None = None, backend: CorpusBackend = None):
         self.opt_in = os.getenv("CHERENKOV_CORPUS_OPT_IN", "false").lower() == "true"
         if backend is not None:
             self._backend = backend

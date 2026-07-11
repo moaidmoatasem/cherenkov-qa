@@ -18,7 +18,7 @@ def get_latest_run_dir() -> str:
     return max(all_runs, key=os.path.getctime)
 
 
-def run_report(output: str, diff: str = None, run_id: str | None = None) -> int:
+def run_report(output: str, diff: str | None = None, run_id: str | None = None) -> int:
     get_logger("REPORT")
     if run_id:
         run_dir = os.path.abspath(os.path.join(".cherenkov/runs", run_id))

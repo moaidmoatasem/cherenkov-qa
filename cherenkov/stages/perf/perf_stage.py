@@ -618,7 +618,7 @@ class PerfStage:
             self.log.error("Failed to generate load profile from traffic", error=str(e))
             return None
 
-    def run(self, sl, use_ml: bool = False, traffic_file: str = None):
+    def run(self, sl, use_ml: bool = False, traffic_file: str | None = None):
         """
         Run performance test with enhanced Epoch 8 capabilities.
 
