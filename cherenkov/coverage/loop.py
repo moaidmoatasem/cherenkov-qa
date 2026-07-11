@@ -9,8 +9,8 @@ from __future__ import annotations
 import shutil
 import subprocess
 
-from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 from cherenkov.coverage.emitter import UnitTestEmitter
 
 

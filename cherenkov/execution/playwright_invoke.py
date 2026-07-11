@@ -7,13 +7,14 @@ from __future__ import annotations
 import json
 import os
 import shlex
-import sys
 import subprocess
+import sys
 from pathlib import Path
-from cherenkov.core.errors import get_logger
-from cherenkov.core.compat import npx as _npx, subprocess_env as _subprocess_env
-from cherenkov.core.settings import get_settings
 
+from cherenkov.core.compat import npx as _npx
+from cherenkov.core.compat import subprocess_env as _subprocess_env
+from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 
 _WSL_PREFIX = "\\\\wsl.localhost\\"
 

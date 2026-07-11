@@ -1,9 +1,12 @@
 from __future__ import annotations
-import sys
+
 import asyncio
-from cherenkov.chat.agent import QAChatAgent
+import sys
+
 from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
+from cherenkov.chat.agent import QAChatAgent
 from cherenkov.substrate.router import SubstrateRouter
+
 
 def start_repl(initial_query=None, print_only=False, resume_session=None, continue_session=False):
     router = SubstrateRouter()

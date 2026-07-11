@@ -29,10 +29,10 @@ import os
 import socket
 import time
 import urllib.request
-from urllib.parse import urlparse
 import uuid
 from collections.abc import Callable
 from typing import Any
+from urllib.parse import urlparse
 
 from pydantic import ValidationError
 
@@ -1201,8 +1201,8 @@ def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     if parsed_url.scheme not in ("http", "https"):
         return _err_content("Only http/https server URLs allowed")
     host = parsed_url.hostname or ""
-    _BLOCKED_HOSTS = {"localhost", "127.0.0.1", "::1", "0.0.0.0", "metadata.google.internal"}
-    if host.lower() in _BLOCKED_HOSTS:
+    blocked_hosts = {"localhost", "127.0.0.1", "::1", "0.0.0.0", "metadata.google.internal"}
+    if host.lower() in blocked_hosts:
         return _err_content("Internal network URLs not allowed")
     try:
         addr = ipaddress.ip_address(host)

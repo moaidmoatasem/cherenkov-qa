@@ -14,7 +14,6 @@ from typing import Any
 
 from cherenkov.eval.grader import GradeReport
 
-
 # Thresholds that trigger a suggestion
 _TARGET_DENSITY    = 3.0   # assertions per test
 _TARGET_COVERAGE   = 0.90  # fraction of spec ops tested

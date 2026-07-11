@@ -3,9 +3,10 @@ CHERENKOV validate/buf_registry.py — Buf Schema Registry Client.
 """
 from __future__ import annotations
 
+import json
 import os
 import urllib.request
-import json
+
 from cherenkov.core.errors import get_logger
 
 _log = get_logger("BUF_REGISTRY")

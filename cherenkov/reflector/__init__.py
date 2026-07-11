@@ -10,11 +10,11 @@ Exports:
   get_reflector   — process-wide Reflector singleton (used by MCP chat tools)
 """
 
-from cherenkov.reflector.store import VerdictStore
 from cherenkov.reflector.reflector import Reflector, get_reflector
+from cherenkov.reflector.store import VerdictStore
 
 __all__ = [
-    "VerdictStore",
     "Reflector",
+    "VerdictStore",
     "get_reflector",
 ]

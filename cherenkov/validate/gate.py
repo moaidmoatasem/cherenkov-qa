@@ -162,7 +162,7 @@ class ValidationGate:
             passed = False
             combined = f"Script not found: {script_path}"
             detail = "script_not_found"
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             passed = False
             combined = str(exc)
             detail = f"exception: {type(exc).__name__}"

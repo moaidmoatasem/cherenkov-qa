@@ -32,7 +32,6 @@ from cherenkov.core.contracts import (
 from cherenkov.core.errors import get_logger
 from cherenkov.reflector.store import VerdictStore
 
-
 _RE_WHITESPACE = re.compile(r"\s+")
 
 

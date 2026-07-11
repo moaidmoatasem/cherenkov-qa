@@ -9,20 +9,20 @@ import os
 import time
 from typing import Any
 
+from cherenkov.ai import get_client
+from cherenkov.ai.ollama_client import strip_think
 from cherenkov.core.contracts import (
     GenerateOutput,
     Scenario,
-    Status,
-    StageMeta,
     StageError,
+    StageMeta,
+    Status,
 )
+from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 from cherenkov.sources.accessibility.contracts import AccessibilityScenario
 from cherenkov.sources.graphql.contracts import GraphQLScenario
 from cherenkov.sources.grpc.contracts import gRPCScenario
-from cherenkov.ai import get_client
-from cherenkov.ai.ollama_client import strip_think
-from cherenkov.core.errors import get_logger
 
 
 def _is_plausibly_valid_ts(code: str) -> bool:
@@ -38,9 +38,7 @@ def _is_plausibly_valid_ts(code: str) -> bool:
     if "test(" not in stripped:
         return False
     # Unbalanced braces almost always mean the model was cut off mid-output
-    if stripped.count("{") != stripped.count("}"):
-        return False
-    return True
+    return stripped.count("{") == stripped.count("}")
 
 
 def _sanitize_prompt_input(text: str, max_len: int = 500) -> str:

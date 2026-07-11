@@ -4,10 +4,11 @@ CHERENKOV compliance/mena_scanner.py — MENA Cyber Security Framework Complianc
 
 from __future__ import annotations
 
-import os
 import json
-from typing import Any
+import os
 import time
+from typing import Any
+
 import requests
 
 from cherenkov.core.errors import get_logger

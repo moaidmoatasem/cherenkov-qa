@@ -5,9 +5,9 @@ import os
 
 from fastapi import APIRouter, Depends
 
-from cherenkov.web.routes.deps import manager
 from cherenkov.web.auth.deps import require_role
 from cherenkov.web.auth.models import Role
+from cherenkov.web.routes.deps import manager
 
 router = APIRouter(tags=["health"])
 

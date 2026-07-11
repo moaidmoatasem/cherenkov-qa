@@ -15,6 +15,7 @@ from cherenkov.spec_guardian.core import (
     DriftType,
 )
 
+
 class SpecDriftDetector:
     """Detects drift between actual API responses and OpenAPI spec."""
 
@@ -138,9 +139,7 @@ class SpecDriftDetector:
         if status_str not in responses:
             # Check for range (2XX, 4XX, etc.)
             range_str = f"{status_code // 100}XX"
-            if range_str not in responses:
-                # Check for "default" response
-                if "default" not in responses:
+            if range_str not in responses and "default" not in responses:
                     events.append(DriftEvent(
                         drift_type=DriftType.STATUS_DRIFT,
                         severity=DriftSeverity.WARNING,

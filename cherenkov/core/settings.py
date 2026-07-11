@@ -1,11 +1,15 @@
 from __future__ import annotations
+
+import os
 import threading
 import time
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
-import os
+
 import requests
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from cherenkov.core.errors import get_logger
+
 
 class CherenkovSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')

@@ -93,7 +93,7 @@ class BrokenImplementation:
                 props = schema.get("properties", {})
 
                 if props:
-                    omitted = list(props)[0]
+                    omitted = next(iter(props))
                     bugs.append(
                         {
                             "id": f"missing_field_{omitted}",

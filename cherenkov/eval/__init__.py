@@ -9,20 +9,20 @@ Four stages:
   optimizer — suggest generation profile improvements from grade data
 """
 
-from cherenkov.eval.grader import SuiteGrader, GradeReport, OperationGrade
-from cherenkov.eval.runner import EvalRunner, TestResult, RunTrace
-from cherenkov.eval.compare import compare_grades, CompareReport
-from cherenkov.eval.optimizer import optimize_profile, OptimizeSuggestion
+from cherenkov.eval.compare import CompareReport, compare_grades
+from cherenkov.eval.grader import GradeReport, OperationGrade, SuiteGrader
+from cherenkov.eval.optimizer import OptimizeSuggestion, optimize_profile
+from cherenkov.eval.runner import EvalRunner, RunTrace, TestResult
 
 __all__ = [
-    "SuiteGrader",
+    "CompareReport",
+    "EvalRunner",
     "GradeReport",
     "OperationGrade",
-    "EvalRunner",
-    "TestResult",
-    "RunTrace",
-    "compare_grades",
-    "CompareReport",
-    "optimize_profile",
     "OptimizeSuggestion",
+    "RunTrace",
+    "SuiteGrader",
+    "TestResult",
+    "compare_grades",
+    "optimize_profile",
 ]

@@ -128,7 +128,7 @@ class SkepticAgent:
     def mobile_hypothesize(
         self, app_id: str, screen_name: str, element_id: str
     ) -> dict:
-        from cherenkov.agents.pilot import PilotAgent, InMemoryRunner
+        from cherenkov.agents.pilot import InMemoryRunner, PilotAgent
 
         runner = InMemoryRunner()
         pilot = PilotAgent(runner)

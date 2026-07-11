@@ -9,8 +9,6 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from cherenkov.web.auth.deps import require_role
-from cherenkov.web.auth.models import Role
 from cherenkov.mobile.contracts import (
     DeviceKind,
     DeviceState,
@@ -23,6 +21,8 @@ from cherenkov.mobile.registry import (
     DeviceNotFoundError,
     get_registry,
 )
+from cherenkov.web.auth.deps import require_role
+from cherenkov.web.auth.models import Role
 
 router = APIRouter(tags=["mobile"])
 

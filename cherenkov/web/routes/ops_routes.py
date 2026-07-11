@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import asyncio
 import contextlib
 import io
@@ -6,10 +7,12 @@ import os
 import re
 import threading
 import uuid
-
 from typing import Any
+
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 
+from cherenkov.web.auth.deps import require_role
+from cherenkov.web.auth.models import Role
 from cherenkov.web.routes.deps import (
     _validate_output_path,
     _validate_spec_url,
@@ -17,8 +20,6 @@ from cherenkov.web.routes.deps import (
     ws_event_callback,
 )
 from cherenkov.web.routes.models import EjectPayload, RunPipelinePayload, ValidatePayload
-from cherenkov.web.auth.deps import require_role
-from cherenkov.web.auth.models import Role
 
 _RE_METHOD_ATTR = re.compile(r'method:\s*["\']([A-Z]+)["\']')
 _RE_METHOD_CALL = re.compile(r"\.(get|post|put|patch|delete)\s*\(", re.IGNORECASE)
@@ -41,9 +42,9 @@ async def ingest_spec_file(file: UploadFile | None = File(None), url: str | None
         raise HTTPException(status_code=400, detail="Either file upload or URL must be provided.")
     try:
         if file:
-            MAX_SPEC_BYTES = 10 * 1024 * 1024
-            content = await file.read(MAX_SPEC_BYTES + 1)
-            if len(content) > MAX_SPEC_BYTES:
+            max_spec_bytes = 10 * 1024 * 1024
+            content = await file.read(max_spec_bytes + 1)
+            if len(content) > max_spec_bytes:
                 raise HTTPException(status_code=413, detail="Spec file exceeds 10MB limit")
             with open(spec_path, "wb") as f:
                 f.write(content)

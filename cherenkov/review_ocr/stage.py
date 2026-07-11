@@ -2,17 +2,17 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
-import time
 import tempfile
-import re
+import time
 
 from cherenkov.core.contracts import GateResult
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 from cherenkov.review_ocr.models import OCRFinding, OCRReviewOutput, OCRSeverity
-from cherenkov.review_ocr.rules import OCRRuleEngine, SUPPORTED_EXTENSIONS
+from cherenkov.review_ocr.rules import SUPPORTED_EXTENSIONS, OCRRuleEngine
 
 _RE_OCR_SEVERITY = re.compile(r"\[(critical|error|warn|info)\]\s+(.*)", re.IGNORECASE)
 _RE_OCR_FILE_LOC = re.compile(r"(\S+):(\d+):?\s*(.*)")

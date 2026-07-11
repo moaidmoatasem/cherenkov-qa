@@ -16,7 +16,6 @@ from cherenkov.spec_guardian.core import (
     DriftType,
 )
 
-
 DRIFT_DB = Path(".cherenkov/drift.db")
 
 

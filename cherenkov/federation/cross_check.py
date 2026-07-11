@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 from cherenkov.core.contracts import (
-    DivergenceReport,
     DivergenceClass,
-    Severity,
     DivergenceEvidence,
+    DivergenceReport,
+    Severity,
     StageMeta,
 )
 from cherenkov.federation.protocol import TruthFragment

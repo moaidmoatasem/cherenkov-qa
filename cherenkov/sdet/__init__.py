@@ -16,4 +16,4 @@ mirroring the design of `divergence/self_play.py`.
 from cherenkov.sdet.assertion_gate import MeaningfulAssertionGate
 from cherenkov.sdet.coverage_loop import CoverageLoop, RunOutcome
 
-__all__ = ["MeaningfulAssertionGate", "CoverageLoop", "RunOutcome"]
+__all__ = ["CoverageLoop", "MeaningfulAssertionGate", "RunOutcome"]

@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
-from cherenkov.core.contracts import GoldSet, GoldSetItem, CertResult, ReasoningRequest
+from cherenkov.core.contracts import CertResult, GoldSet, GoldSetItem, ReasoningRequest
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 

@@ -4,10 +4,11 @@ CHERENKOV execution/eject.py — engine for ejecting standalone Playwright test 
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
-import json
 from pathlib import Path
+
 from cherenkov.core.errors import get_logger
 
 

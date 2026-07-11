@@ -15,6 +15,7 @@ _tl = threading.local()  # per-thread events file slot
 
 from enum import IntEnum
 
+
 # ── exit codes (CC-6) ────────────────────────────────────────────────────────
 class ExitCode(IntEnum):
     SUCCESS = 0

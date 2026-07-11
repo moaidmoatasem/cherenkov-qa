@@ -13,13 +13,12 @@ Design:
 
 from __future__ import annotations
 
-from typing import Any, cast
-
-import click
-
 import json
 import os
 import sys
+from typing import Any, cast
+
+import click
 
 from cherenkov.hitl.contracts import (
     HitlEnvelope,
@@ -28,7 +27,6 @@ from cherenkov.hitl.contracts import (
     ok_envelope,
 )
 from cherenkov.hitl.store import HitlQueue
-
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 

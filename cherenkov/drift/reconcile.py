@@ -14,9 +14,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from cherenkov.drift.detect import DriftKind, DriftFinding
+from cherenkov.drift.detect import DriftFinding, DriftKind
 
 if TYPE_CHECKING:
     from cherenkov.drift.snapshot import SpecSuiteSnapshot
@@ -145,7 +145,7 @@ class DriftReport:
 # ── reconcile() ───────────────────────────────────────────────────────────────
 
 def reconcile(
-    baseline: SpecSuiteSnapshot,  # noqa: F821
+    baseline: SpecSuiteSnapshot,
     current_spec: dict[str, Any],
     current_suite: dict[str, Any],
     runner_violations: list[dict] | None = None,

@@ -17,7 +17,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-
 # ── sub-models ─────────────────────────────────────────────────────────────────
 
 class CertSubject(BaseModel):

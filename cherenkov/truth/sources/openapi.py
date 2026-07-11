@@ -5,6 +5,7 @@ CHERENKOV truth/sources/openapi.py — OpenAPI Source Adapter.
 from __future__ import annotations
 
 from pathlib import Path
+
 from cherenkov.core.contracts import Claim, Provenance, ProvenanceType, Status
 from cherenkov.stages.ingest import IngestStage
 from cherenkov.truth.sources.interface import SourceAdapter

@@ -1,5 +1,6 @@
 """Shared Pydantic models for web API route modules."""
 from __future__ import annotations
+
 from pydantic import BaseModel
 
 

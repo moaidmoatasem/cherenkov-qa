@@ -113,8 +113,8 @@ def grade_cmd(spec, suite, output, as_json, fail_on):
         _print_grade_report(report)
 
     if fail_on:
-        _GRADE_ORDER = {"A": 5, "B": 4, "C": 3, "D": 2, "F": 1}
-        if _GRADE_ORDER.get(report.grade, 0) <= _GRADE_ORDER.get(fail_on, 0):
+        grade_order = {"A": 5, "B": 4, "C": 3, "D": 2, "F": 1}
+        if grade_order.get(report.grade, 0) <= grade_order.get(fail_on, 0):
             sys.exit(1)
 
 
@@ -172,8 +172,9 @@ def run_cmd(suite, spec, target, output, timeout, as_json, fail_on_failure):
     Example:
         cherenkov eval run --suite suite.json --target http://localhost:8080 -o run.jsonl
     """
+    from cherenkov.drift.snapshot import spec_hash as _spec_hash
+    from cherenkov.drift.snapshot import suite_manifest_hash
     from cherenkov.eval.runner import EvalRunner
-    from cherenkov.drift.snapshot import spec_hash as _spec_hash, suite_manifest_hash
 
     suite_dict = _load_json(suite, "suite")
     spec_dict  = _load_yaml_or_json(spec, "spec") if spec else {}
@@ -250,8 +251,8 @@ def compare_cmd(before, after, as_json, fail_on_regression):
     Example:
         cherenkov eval compare --before grade-v1.json --after grade-v2.json
     """
-    from cherenkov.eval.grader import GradeReport
     from cherenkov.eval.compare import compare_grades
+    from cherenkov.eval.grader import GradeReport
 
     before_report = GradeReport.load(Path(before))
     after_report  = GradeReport.load(Path(after))
@@ -406,9 +407,10 @@ def generate_cmd(spec, output, personas, no_enrich, no_grade, sequential, as_jso
         cherenkov eval generate --spec openapi.yaml --personas HappyPath,SchemaPedant
         cherenkov eval generate --spec openapi.yaml | cherenkov eval grade --spec openapi.yaml
     """
-    from cherenkov.synthetic.suite_engine import SuiteEngine
-    from cherenkov.synthetic.personas import DEFAULT_PERSONAS, PERSONA_BY_NAME
     from datetime import datetime, timezone
+
+    from cherenkov.synthetic.personas import DEFAULT_PERSONAS, PERSONA_BY_NAME
+    from cherenkov.synthetic.suite_engine import SuiteEngine
 
     spec_dict = _load_yaml_or_json(spec, "spec")
 

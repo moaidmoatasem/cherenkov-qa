@@ -5,12 +5,12 @@ CHERENKOV ai/interface.py — model-agnostic inference client seam.
 from __future__ import annotations
 
 import abc
-from typing import cast
 import time
+from typing import cast
 
-from cherenkov.core.contracts import CacheStats, AccountingReport
-from cherenkov.ai.cache import ResponseCache
 from cherenkov.ai.accounting import CostAccountant
+from cherenkov.ai.cache import ResponseCache
+from cherenkov.core.contracts import AccountingReport, CacheStats
 
 
 class InferenceClient(abc.ABC):

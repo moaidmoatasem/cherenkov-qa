@@ -46,10 +46,7 @@ class PostmanImporter:
 
         # Extract URL
         url_obj = request.get("url", {})
-        if isinstance(url_obj, str):
-            raw_url = url_obj
-        else:
-            raw_url = url_obj.get("raw", "")
+        raw_url = url_obj if isinstance(url_obj, str) else url_obj.get("raw", "")
 
         method = request.get("method", "GET").upper()
 

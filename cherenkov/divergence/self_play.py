@@ -22,9 +22,9 @@ from __future__ import annotations
 
 import json
 import threading
+from collections.abc import Callable
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from collections.abc import Callable
 
 
 @dataclass

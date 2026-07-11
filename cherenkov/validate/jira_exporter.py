@@ -15,6 +15,7 @@ from typing import Any
 
 from cherenkov.core.errors import get_logger
 
+
 class JiraExporter:
     """Generates sandboxed, copy-ready Jira issue payloads inside .cherenkov/jira_tickets/ on test execution failure."""
 

@@ -6,13 +6,14 @@ before attempting to interact with it. Kills click-hallucination.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import time
 
+from cherenkov.core.contracts import ReasoningRequest
 from cherenkov.core.errors import get_logger
 from cherenkov.substrate.provider import get_vlm_provider
 from cherenkov.substrate.router import route
-from cherenkov.core.contracts import ReasoningRequest
 
 
 class VisionConfirmPilot:
@@ -94,10 +95,8 @@ class VisionConfirmPilot:
         if isinstance(raw, dict):
             parsed = raw
         else:
-            try:
+            with contextlib.suppress(json.JSONDecodeError, TypeError):
                 parsed = json.loads(str(raw))
-            except (json.JSONDecodeError, TypeError):
-                pass
 
         dt_ms = int((time.monotonic() - t0) * 1000)
 

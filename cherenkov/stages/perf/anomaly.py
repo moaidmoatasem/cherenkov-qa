@@ -98,7 +98,7 @@ class LatencyAnomalyDetector:
 
         # Drift compares the RECENT window to the EARLY baseline (not the whole
         # history, which the drift itself contaminates and hides).
-        recent = (history + [value])[-self.drift_window :]
+        recent = [*history, value][-self.drift_window :]
         recent_center = statistics.median(recent)
         early = history[: max(1, len(history) // 2)]
         early_center = statistics.median(early)

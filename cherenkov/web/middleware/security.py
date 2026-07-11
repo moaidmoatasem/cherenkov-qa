@@ -46,8 +46,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 class InputValidationMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         content_type = request.headers.get("content-type", "")
-        if request.method in ("POST", "PUT", "PATCH"):
-            if "application/json" in content_type:
+        if request.method in ("POST", "PUT", "PATCH") and "application/json" in content_type:
                 try:
                     body = await request.json()
                 except Exception:

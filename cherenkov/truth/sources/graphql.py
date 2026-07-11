@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from cherenkov.core.contracts import Claim, Provenance, ProvenanceType, SCHEMA_VERSION
+from cherenkov.core.contracts import SCHEMA_VERSION, Claim, Provenance, ProvenanceType
 from cherenkov.truth.sources.interface import SourceAdapter
 
 # Matches: type Query {  or  type Mutation {  or  type Subscription {

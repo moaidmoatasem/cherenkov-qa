@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 
 from cherenkov.knowledge.domain.models import (
+    KnowledgeItem,
     KnowledgeQuery,
     KnowledgeQueryResult,
-    KnowledgeItem,
 )
 
 

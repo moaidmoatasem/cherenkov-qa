@@ -16,20 +16,22 @@ without an Ollama setup.
 from __future__ import annotations
 
 import json
-import time
-import urllib.request
-from typing import Any, cast
 import logging
 import sys
+import time
+import urllib.request
 from pathlib import Path
+from typing import Any, cast
 
 import click
+
 from cherenkov.divergence.proof_run import run_proof
 
 _log = logging.getLogger(__name__)
-from cherenkov.divergence.coverage import compute_coverage, CoverageReport
-from cherenkov.divergence.health import compute_health_score, HealthScore
-from cherenkov.persistence.run_store import RunRecord, get_run_store, spec_hash as _spec_hash
+from cherenkov.divergence.coverage import CoverageReport, compute_coverage
+from cherenkov.divergence.health import HealthScore, compute_health_score
+from cherenkov.persistence.run_store import RunRecord, get_run_store
+from cherenkov.persistence.run_store import spec_hash as _spec_hash
 
 
 @click.command("verify")
@@ -256,8 +258,8 @@ def _run_rich_verdict(
     fixture_dir: str,
     max_probes: int = 40,
 ) -> tuple:
-    from cherenkov.verdict.engine import VerdictEngine
     from cherenkov.divergence.coverage import compute_coverage
+    from cherenkov.verdict.engine import VerdictEngine
 
     engine = VerdictEngine(
         base_url=url,
@@ -330,7 +332,7 @@ def _load_spec(spec_path: str) -> dict | None:
     """Load an OpenAPI spec from a local file path or HTTP URL."""
     if spec_path.startswith("http://") or spec_path.startswith("https://"):
         try:
-            with urllib.request.urlopen(spec_path, timeout=15) as resp:  # noqa: S310
+            with urllib.request.urlopen(spec_path, timeout=15) as resp:
                 raw = resp.read()
         except Exception as exc:
             click.echo(f"[ERROR] Could not fetch spec from {spec_path}: {exc}", err=True)

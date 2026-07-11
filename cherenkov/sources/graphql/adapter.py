@@ -1,18 +1,19 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 from collections.abc import Iterator
+from dataclasses import dataclass
+
 from graphql import (
-    build_ast_schema,
-    parse,
-    build_client_schema,
-    GraphQLScalarType,
+    GraphQLInterfaceType,
     GraphQLList,
     GraphQLNonNull,
     GraphQLObjectType,
-    GraphQLInterfaceType,
+    GraphQLScalarType,
     GraphQLUnionType,
+    build_ast_schema,
+    build_client_schema,
+    parse,
 )
 
 

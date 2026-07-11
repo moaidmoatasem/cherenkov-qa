@@ -331,7 +331,7 @@ class LayeredConfig:
     def _find_toml(self) -> str | None:
         """Walk up from CWD looking for cherenkov.toml."""
         cwd = Path.cwd()
-        for parent in [cwd] + list(cwd.parents):
+        for parent in [cwd, *cwd.parents]:
             candidate = parent / "cherenkov.toml"
             if candidate.exists():
                 return str(candidate)

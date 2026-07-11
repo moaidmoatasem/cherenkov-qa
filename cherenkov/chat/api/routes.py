@@ -10,8 +10,8 @@ from pydantic import BaseModel, Field
 
 from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
 from cherenkov.chat.agent import QAChatAgent
-from cherenkov.chat.ports.memory import ConversationMemory
 from cherenkov.chat.guard import get_guard
+from cherenkov.chat.ports.memory import ConversationMemory
 
 router = APIRouter()
 

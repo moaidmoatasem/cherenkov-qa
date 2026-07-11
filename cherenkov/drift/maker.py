@@ -16,7 +16,6 @@ from typing import Any
 from cherenkov.drift.detect import DriftFinding, DriftKind
 from cherenkov.drift.loop import ReconciliationProposal
 
-
 # ── schema → value helpers ─────────────────────────────────────────────────────
 
 _TYPE_DEFAULTS: dict[str, Any] = {

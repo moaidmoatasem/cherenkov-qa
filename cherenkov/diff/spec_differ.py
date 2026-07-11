@@ -12,7 +12,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-
 _HTTP_METHODS = {"get", "post", "put", "patch", "delete", "options", "head"}
 
 

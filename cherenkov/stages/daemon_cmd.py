@@ -179,8 +179,9 @@ def run_guardian_daemon(
     """
     log = get_logger("guardian_daemon")
 
-    from cherenkov.daemon.watcher import SpecGuardianWatcher
     from pathlib import Path
+
+    from cherenkov.daemon.watcher import SpecGuardianWatcher
 
     spec_file = Path(spec_path)
     target_repo = spec_file.parent if spec_file.parent.name else Path(".")

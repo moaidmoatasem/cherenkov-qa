@@ -11,7 +11,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from cherenkov.drift.fingerprint import Fingerprint
@@ -57,7 +57,7 @@ class SpecSuiteSnapshot:
     snapshot_id: str
     spec_hash: str
     suite_hash: str
-    fingerprint: Fingerprint  # noqa: F821  (imported at runtime)
+    fingerprint: Fingerprint
     generation_profile: str
     created_at: str
 

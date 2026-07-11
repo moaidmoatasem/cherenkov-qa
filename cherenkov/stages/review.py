@@ -4,35 +4,35 @@ CHERENKOV stages/review.py — real test review stage enforcing 6 quality gates 
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
 import time
-import json
 from pathlib import Path
 from typing import Any
 
+from cherenkov.core.compat import npx as _npx
+from cherenkov.core.compat import subprocess_env as _subprocess_env
 from cherenkov.core.contracts import (
-    ReviewOutput,
-    GenerateOutput,
     GateResult,
-    Verdict,
-    Status,
+    GenerateOutput,
+    ReviewOutput,
     StageMeta,
+    Status,
+    Verdict,
 )
 from cherenkov.core.errors import get_logger
-from cherenkov.core.compat import npx as _npx, subprocess_env as _subprocess_env
 from cherenkov.core.settings import get_settings
-from cherenkov.execution.prism_mock import PrismMockServer
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
+from cherenkov.execution.prism_mock import PrismMockServer
 from cherenkov.execution.trace_reader import TraceReader
 from cherenkov.healing import (
-    Diagnoser,
-    FailureClass,
     AuthExpiryHealer,
     ContractDriftHealer,
+    Diagnoser,
+    FailureClass,
 )
-
 
 _RE_FETCH_CLIENT = re.compile(r"\bclient\.(GET|POST|PUT|DELETE|PATCH)\b")
 _RE_CLIENT_CALL = re.compile(r"client\.(GET|POST|PUT|DELETE|PATCH)\('([^']+)'")
@@ -362,8 +362,8 @@ class ReviewStage:
         passed = True
         detail = "Consensus oracle skipped (not enabled or static gates failed)."
         try:
-            from cherenkov.oracle.consensus_oracle import ConsensusOracle
             from cherenkov.core.contracts import Claim, Provenance, ProvenanceType
+            from cherenkov.oracle.consensus_oracle import ConsensusOracle
 
             oracle = ConsensusOracle(
                 passes=get_settings().CONSENSUS_ORACLE_PASSES, run_id=self.run_id,

@@ -8,6 +8,7 @@ import base64
 import json
 import os
 import zipfile
+
 from cherenkov.core.errors import get_logger
 
 
@@ -128,8 +129,7 @@ class TraceReader:
                                             body_data = response.get(
                                                 "body", params.get("responseBody", "")
                                             )
-                                            if body_data:
-                                                if isinstance(body_data, str):
+                                            if body_data and isinstance(body_data, str):
                                                     try:
                                                         body_content = base64.b64decode(
                                                             body_data

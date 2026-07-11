@@ -16,13 +16,13 @@ from __future__ import annotations
 
 import base64
 import json
+import time
 from pathlib import Path
 from typing import Any
-import time
 
-from cherenkov.core.settings import get_settings
+from cherenkov.ai.interface import CachedInferenceClient, InferenceClient
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.ai.interface import InferenceClient, CachedInferenceClient
+from cherenkov.core.settings import get_settings
 from cherenkov.substrate.provider_base import ProviderCapabilities, wrap_with_cache
 
 

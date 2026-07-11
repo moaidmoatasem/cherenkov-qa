@@ -3,6 +3,7 @@ tokens, governance, certify, profile."""
 from __future__ import annotations
 
 import sys
+
 import click
 
 

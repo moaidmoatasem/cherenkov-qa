@@ -19,17 +19,16 @@ from dataclasses import dataclass
 from typing import Any
 
 from cherenkov.eval.grader import GradeReport
+from cherenkov.synthetic.merge import merge_suites
+from cherenkov.synthetic.persona_generator import generate_for_persona
 from cherenkov.synthetic.personas import (
     DEFAULT_PERSONAS,
+    ERROR_PATH,
     HAPPY_PATH,
     SCHEMA_PEDANT,
-    ERROR_PATH,
     TesterPersona,
     build_spec_contexts,
 )
-from cherenkov.synthetic.persona_generator import generate_for_persona
-from cherenkov.synthetic.merge import merge_suites
-
 
 # Thresholds that trigger targeted persona selection
 _LOW_DENSITY    = 2.5   # assertions/test below this → add SCHEMA_PEDANT
@@ -84,13 +83,11 @@ def _personas_for_op(op_grade: Any, spec_ctx: Any) -> list[TesterPersona]:
         personas.append(SCHEMA_PEDANT)
         personas.append(HAPPY_PATH)
 
-    if op_grade.meaningful_ratio < _LOW_MEANINGFUL:
-        if SCHEMA_PEDANT not in personas:
-            personas.append(SCHEMA_PEDANT)
+    if op_grade.meaningful_ratio < _LOW_MEANINGFUL and SCHEMA_PEDANT not in personas:
+        personas.append(SCHEMA_PEDANT)
 
-    if op_grade.schema_conformance < 1.0:
-        if ERROR_PATH not in personas:
-            personas.append(ERROR_PATH)
+    if op_grade.schema_conformance < 1.0 and ERROR_PATH not in personas:
+        personas.append(ERROR_PATH)
 
     return personas or [SCHEMA_PEDANT]
 

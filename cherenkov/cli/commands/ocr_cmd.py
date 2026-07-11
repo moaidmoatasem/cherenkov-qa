@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import json
-import tempfile
-from typing import Any
 import os
 import subprocess
 import sys
+import tempfile
+from typing import Any
 
 import click
 
@@ -54,7 +54,7 @@ def ocr_test() -> None:
         '  expect(res.status).toBe(200);\n'
         "});\n"
     )
-    tmp = tempfile.NamedTemporaryFile(suffix=".spec.ts", prefix="ocr_test_", delete=False)  # noqa: SIM115 — manual cleanup in finally block
+    tmp = tempfile.NamedTemporaryFile(suffix=".spec.ts", prefix="ocr_test_", delete=False)
     tmp_path = tmp.name
     tmp.close()
     try:

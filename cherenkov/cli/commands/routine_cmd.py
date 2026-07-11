@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import click
+
 from cherenkov.scheduling.adapters.apscheduler_adapter import APSchedulerAdapter
 from cherenkov.scheduling.use_cases.manage_routines import create_routine, toggle_routine
+
 
 @click.group("routine")
 def routine_cmd() -> None:

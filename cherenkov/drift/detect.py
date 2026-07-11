@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from cherenkov.drift.snapshot import SpecSuiteSnapshot
@@ -179,7 +179,7 @@ def _check_added_optional_params(
     return findings
 
 def detect_findings(
-    baseline_snapshot: SpecSuiteSnapshot,  # noqa: F821
+    baseline_snapshot: SpecSuiteSnapshot,
     current_spec: dict[str, Any],
     current_suite: dict[str, Any],
     runner_violations: list[dict] | None = None,

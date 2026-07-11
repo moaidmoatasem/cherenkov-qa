@@ -30,6 +30,7 @@ from cherenkov.stages.ingest import IngestStage
 from cherenkov.stages.plan import PlanStage
 from cherenkov.stages.review import ReviewStage
 
+
 def _assert_not_production() -> None:
     if os.getenv("CHERENKOV_ENV", "production") == "production":
         raise RuntimeError(

@@ -1,8 +1,10 @@
 from __future__ import annotations
+
+import glob
 import json
 import os
-import glob
 from typing import Any
+
 from cherenkov.core.errors import get_logger
 
 

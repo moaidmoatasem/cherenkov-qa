@@ -13,7 +13,7 @@ import ipaddress
 import os
 import re
 import socket
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from urllib.parse import urlparse
 
 from fastapi import FastAPI, HTTPException, WebSocket
@@ -35,10 +35,8 @@ class ConnectionManager:
 
     async def disconnect(self, websocket: WebSocket):
         async with self._lock:
-            try:
+            with suppress(ValueError):
                 self.active_connections.remove(websocket)
-            except ValueError:
-                pass
 
     async def broadcast(self, message: dict):
         async with self._lock:
@@ -52,10 +50,8 @@ class ConnectionManager:
         if dead:
             async with self._lock:
                 for c in dead:
-                    try:
+                    with suppress(ValueError):
                         self.active_connections.remove(c)
-                    except ValueError:
-                        pass
 
 
 manager = ConnectionManager()

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from cherenkov.synthetic.personas import TesterPersona, OperationContext
+from cherenkov.synthetic.personas import OperationContext, TesterPersona
 
 
 def generate_for_persona(
@@ -55,7 +55,7 @@ def _base_request_from_spec(
     ctx: OperationContext, spec: dict[str, Any]
 ) -> dict[str, Any]:
     """Build a minimal valid request using the drift maker's skeleton builder."""
-    from cherenkov.drift.maker import build_test_skeleton, _find_operation
+    from cherenkov.drift.maker import _find_operation, build_test_skeleton
     found = _find_operation(ctx.operation_id, spec)
     if not found:
         return _base_request(ctx)
@@ -209,7 +209,7 @@ def _boundary_seeker_tests(
         })
 
     elif ctx.path_params:
-        expected = list(set(ctx.success_codes + [404, 400]))
+        expected = list(set([*ctx.success_codes, 404, 400]))
         tests.append({
             "name": f"boundary_{ctx.operation_id}_zero_id",
             "description": (

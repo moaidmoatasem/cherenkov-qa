@@ -72,13 +72,11 @@ def _spec_fields(spec_path: Path) -> set[str]:
 def _subject_and_field(left: ast.expr) -> tuple[str, str | None]:
     subject = ast.unparse(left)
     field: str | None = None
-    if isinstance(left, ast.Subscript) and isinstance(left.value, ast.Name):
-        if left.value.id in _BODY_NAMES and isinstance(left.slice, ast.Constant):
-            if isinstance(left.slice.value, str):
-                field = left.slice.value
-    elif isinstance(left, ast.Attribute) and isinstance(left.value, ast.Name):
-        if left.value.id in _BODY_NAMES:
-            field = left.attr
+    if isinstance(left, ast.Subscript) and isinstance(left.value, ast.Name) and left.value.id in _BODY_NAMES and isinstance(left.slice, ast.Constant):
+        if isinstance(left.slice.value, str):
+            field = left.slice.value
+    elif isinstance(left, ast.Attribute) and isinstance(left.value, ast.Name) and left.value.id in _BODY_NAMES:
+        field = left.attr
     return subject, field
 
 def _parse_suite(code: str) -> dict[str, dict[str, set[str]]]:

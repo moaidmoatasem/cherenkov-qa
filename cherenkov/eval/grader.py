@@ -18,7 +18,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-
 _GRADE_THRESHOLDS = [
     (0.90, "A"),
     (0.75, "B"),

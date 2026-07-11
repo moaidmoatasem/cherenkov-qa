@@ -13,7 +13,6 @@ import math
 from dataclasses import dataclass, field
 from typing import Any
 
-
 _NUMERIC_WEIGHT = 0.4
 _CATEGORICAL_WEIGHT = 0.3
 _SET_WEIGHT = 0.3

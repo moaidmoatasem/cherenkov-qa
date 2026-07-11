@@ -6,10 +6,10 @@ import os
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from cherenkov.web.routes.deps import _validate_scenario_id, get_queue, verify_api_key
-from cherenkov.web.routes.models import ClassifyPayload, ReviewActionPayload
 from cherenkov.web.auth.deps import require_role
 from cherenkov.web.auth.models import Role
+from cherenkov.web.routes.deps import _validate_scenario_id, get_queue, verify_api_key
+from cherenkov.web.routes.models import ClassifyPayload, ReviewActionPayload
 
 router = APIRouter(tags=["review"])
 

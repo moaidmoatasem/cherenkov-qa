@@ -28,11 +28,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from collections.abc import Sequence
-
 
 _MANIFEST_PATH = Path(".cherenkov/test_manifest.json")
 

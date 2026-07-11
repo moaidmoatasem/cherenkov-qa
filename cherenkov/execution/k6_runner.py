@@ -8,9 +8,9 @@ import os
 import re
 import shutil
 import subprocess
-from typing import Any
 from contextlib import suppress
 from pathlib import Path
+from typing import Any
 
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings

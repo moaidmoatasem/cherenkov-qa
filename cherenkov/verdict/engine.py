@@ -340,9 +340,12 @@ class VerdictEngine:
     def _run_traffic_capture(
         self, reports: list[DivergenceReport]
     ) -> tuple[VerdictDimension, int]:
+        from cherenkov.divergence.proof_run import (
+            PETSTORE_SPEC_SUBSET,
+            PROOF_RUN_PROBES,
+            _offline_hypotheses,
+        )
         from cherenkov.verdict.traffic_capture import TrafficCapture
-        from cherenkov.divergence.proof_run import PROOF_RUN_PROBES, PETSTORE_SPEC_SUBSET
-        from cherenkov.divergence.proof_run import _offline_hypotheses
 
         t0 = time.monotonic()
         try:

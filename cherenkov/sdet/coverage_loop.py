@@ -19,8 +19,8 @@ deterministic and unit-testable — mirroring `divergence/self_play.py`.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any
 
 from cherenkov.core.contracts import (

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import logging
 import os
 import platform
-import logging
 import subprocess
 from enum import Enum
 

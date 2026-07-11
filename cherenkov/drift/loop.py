@@ -19,14 +19,14 @@ drifted operations, never the whole suite. (§7)
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from cherenkov.drift.detect import DriftKind, DriftFinding
-from cherenkov.drift.reconcile import DriftReport, DriftVerdict, SEVERITY
+from cherenkov.drift.detect import DriftFinding, DriftKind
+from cherenkov.drift.reconcile import SEVERITY, DriftReport, DriftVerdict
 
 
 class AutonomyLevel(str, Enum):
@@ -260,7 +260,7 @@ class DriftLoop:
     def l2_interactive(
         cls,
         spec: dict[str, Any],
-        suite_path: Path | None = None,  # noqa: F821
+        suite_path: Path | None = None,
         auto_approve: bool = False,
     ) -> DriftLoop:
         """Full L2 loop: real maker + real checker + interactive (or auto) approval.
@@ -271,8 +271,9 @@ class DriftLoop:
                           If None, commit is a no-op (proposals are returned only).
             auto_approve: If True, bypass human confirmation (CI/scripted use).
         """
-        from cherenkov.drift.maker import make_proposal as _make, patch_suite
         from cherenkov.drift.checker import check_proposal
+        from cherenkov.drift.maker import make_proposal as _make
+        from cherenkov.drift.maker import patch_suite
 
         def _approval(proposals: list[ReconciliationProposal]) -> bool:
             if auto_approve:
@@ -284,11 +285,9 @@ class DriftLoop:
                     click.echo(f"\n  Proposal for '{p.operation_id}':")
                     click.echo(f"    action : {p.action}")
                     click.echo(f"    kind   : {p.drift_kind.value}")
-                if not click.confirm(
+                return click.confirm(
                     f"\n  Approve {len(proposals)} proposal(s)?", default=False
-                ):
-                    return False
-                return True
+                )
             except Exception:
                 return False
 

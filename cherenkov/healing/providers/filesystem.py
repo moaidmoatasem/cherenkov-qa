@@ -11,7 +11,8 @@ import os
 import shutil
 import subprocess
 
-from cherenkov.core.compat import npx as _npx, subprocess_env as _subprocess_env
+from cherenkov.core.compat import npx as _npx
+from cherenkov.core.compat import subprocess_env as _subprocess_env
 from cherenkov.core.errors import get_logger
 from cherenkov.healing.providers.base import SandboxProvider, SandboxResult
 

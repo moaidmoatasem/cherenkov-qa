@@ -8,14 +8,14 @@ from __future__ import annotations
 
 from cherenkov.core.contracts import (
     Claim,
-    DivergenceReport,
     DivergenceClass,
     DivergenceEvidence,
-    Severity,
-    Status,
+    DivergenceReport,
     Provenance,
     ProvenanceType,
+    Severity,
     StageMeta,
+    Status,
 )
 from cherenkov.core.truth_model import TruthModel
 

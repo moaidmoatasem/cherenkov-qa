@@ -11,7 +11,6 @@ cherenkov/stages/copilot_cmd.py — E10 CLI surface for the manual-QA pillar.
 
 from __future__ import annotations
 
-
 from cherenkov.core.settings import get_settings
 
 
@@ -21,8 +20,8 @@ def run_explore(
     method: str = "GET",
 ) -> int:
     """Crawl `target` and print a ranked pre-session risk digest."""
-    from cherenkov.divergence.explorer import Explorer
     from cherenkov.copilot.digest import SecondPairOfEyes
+    from cherenkov.divergence.explorer import Explorer
 
     paths = paths or ["/"]
     print("=" * 72)

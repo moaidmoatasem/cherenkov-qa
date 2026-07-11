@@ -12,15 +12,15 @@ Enforces the decisions that took the whole spec arc to settle:
 from __future__ import annotations
 
 import json
+import random
 import re
 import time
 
 import requests
-import random
 
+from cherenkov.ai.interface import InferenceClient
 from cherenkov.core.errors import OllamaJSONError, get_logger
 from cherenkov.core.settings import get_settings
-from cherenkov.ai.interface import InferenceClient
 
 _RE_FENCE_START = re.compile(r"^```[a-z]*\n?")
 _RE_FENCE_END = re.compile(r"\n?```$")

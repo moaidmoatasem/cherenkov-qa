@@ -143,10 +143,10 @@ class ValidationEngine:
         preflight = _preflight_check(self.tests_dir, spec_path)
         if preflight:
             self.log.warning("pre-flight spec/test drift warnings", warnings=preflight)
-            print("\nPRE-FLIGHT WARNINGS — tests assert fields not found in spec schemas:")  # noqa: T201
+            print("\nPRE-FLIGHT WARNINGS — tests assert fields not found in spec schemas:")
             for w in preflight:
-                print(w)  # noqa: T201
-            print()  # noqa: T201
+                print(w)
+            print()
 
         if not os.path.exists(self.tests_dir):
             self.log.warning("no generated tests directory found")

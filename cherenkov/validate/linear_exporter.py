@@ -1,10 +1,12 @@
 from __future__ import annotations
+
+import json
 import os
 import time
-import json
 import urllib.request
 
 from cherenkov.core.errors import get_logger
+
 
 class LinearExporter:
     """Generates sandboxed, copy-ready Linear issue payloads inside .cherenkov/linear_tickets/ on test execution failure."""

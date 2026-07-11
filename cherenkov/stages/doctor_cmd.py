@@ -12,12 +12,13 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from cherenkov.core.settings import get_settings
-from cherenkov.core.compat import npx as _npx, subprocess_env as _subprocess_env
+from cherenkov.core.compat import npx as _npx
+from cherenkov.core.compat import subprocess_env as _subprocess_env
 from cherenkov.core.config_loader import (
     LayeredConfig,
     load_effective_config,
 )
+from cherenkov.core.settings import get_settings
 
 
 def check_ollama_binary() -> tuple[bool, str]:

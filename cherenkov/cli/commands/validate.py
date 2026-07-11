@@ -1,11 +1,13 @@
 from __future__ import annotations
-import click
+
 import glob
-import os
 import json
+import os
 import sys
 import tempfile
 from pathlib import Path
+
+import click
 
 from cherenkov.execution.validate import ValidationEngine
 
@@ -76,7 +78,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
 
     # Pre-ingest spec validation for OpenAPI specs
     if source == "openapi" and spec:
-        from cherenkov.truth.spec_validator import validate_spec, Severity
+        from cherenkov.truth.spec_validator import Severity, validate_spec
 
         result = validate_spec(spec)
         for issue in result.issues:
@@ -97,8 +99,8 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
 
     if source == "graphql":
         from cherenkov.sources.graphql.adapter import GraphQLSourceAdapter
-        from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
         from cherenkov.stages.generate import GenerateStage
+        from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
 
         if not spec:
             click.echo(click.style("Error: --spec is required for --source graphql", fg="red"), err=True)
@@ -121,8 +123,8 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
             click.echo(f"Generated {generated}/{len(scenarios)} test files")
     elif source == "grpc":
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
-        from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
         from cherenkov.stages.generate import GenerateStage
+        from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
 
         if not spec:
             click.echo(click.style("Error: --spec is required for --source grpc", fg="red"), err=True)
@@ -165,8 +167,8 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
             click.echo(f"Generated {generated}/{len(scenarios)} test files")
     elif source == "accessibility":
         from cherenkov.sources.accessibility.adapter import AccessibilitySourceAdapter
-        from cherenkov.stages.plan_accessibility import AccessibilityScenarioPlanner
         from cherenkov.stages.generate import GenerateStage
+        from cherenkov.stages.plan_accessibility import AccessibilityScenarioPlanner
 
         a11y_source = AccessibilitySourceAdapter(spec)
         scenarios = AccessibilityScenarioPlanner().plan(a11y_source)
@@ -220,6 +222,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         os.makedirs(".cherenkov", exist_ok=True)
         emitter = SARIFEmitter()
         from types import SimpleNamespace
+
         from cherenkov.core.contracts import DivergenceFinding
 
         report_obj = SimpleNamespace(findings=[])

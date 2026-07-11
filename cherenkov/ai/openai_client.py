@@ -11,11 +11,10 @@ import time
 
 import requests
 
+from cherenkov.ai.interface import InferenceClient
+from cherenkov.ai.ollama_client import _json_repair, _try_json
 from cherenkov.core.errors import ProviderJSONError, get_logger
 from cherenkov.core.settings import get_settings
-from cherenkov.ai.interface import InferenceClient
-from cherenkov.ai.ollama_client import _try_json, _json_repair
-
 
 _RE_FENCE_START = re.compile(r"^```[a-z]*\n?")
 _RE_FENCE_END = re.compile(r"\n?```$")

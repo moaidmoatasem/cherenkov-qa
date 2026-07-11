@@ -12,9 +12,9 @@ import re
 import time
 from typing import Any
 
-from cherenkov.core.settings import get_settings
-from cherenkov.core.contracts import GenerateOutput, Status, StageMeta, StageError
+from cherenkov.core.contracts import GenerateOutput, StageError, StageMeta, Status
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 
 _RE_PATH_PARTS = re.compile(r"[a-zA-Z0-9]+")
 

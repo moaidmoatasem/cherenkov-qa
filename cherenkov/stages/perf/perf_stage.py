@@ -18,6 +18,7 @@ Anti-lock-in invariant: generated k6 script is plain JS, runs standalone.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import math
 import os
@@ -27,24 +28,26 @@ import sqlite3
 import subprocess
 import time
 from typing import Any
+
 from cherenkov.core.contracts import (
-    StageMeta,
-    StageError,
-    Status,
-    Verdict,
-    PerfSlice,
     PerfGateResult,
     PerfReport,
+    PerfSlice,
+    StageError,
+    StageMeta,
+    Status,
+    Verdict,
 )
 from cherenkov.core.errors import get_logger
 
 # Optional ML dependencies - import only when available
 ML_AVAILABLE = False
 try:
-    from sklearn.ensemble import IsolationForest
+    from datetime import datetime
+
     import numpy as np
     import pandas as pd
-    from datetime import datetime
+    from sklearn.ensemble import IsolationForest
 
     ML_AVAILABLE = True
 except ImportError:
@@ -56,10 +59,8 @@ _RE_K6_AVG_DURATION = re.compile(r"avg=([\d\.]+)(ms|s)")
 class _BaselineDB:
     def __init__(self, db_path):
         self.db_path = db_path
-        try:
+        with contextlib.suppress(FileExistsError):
             os.makedirs(os.path.dirname(db_path), exist_ok=True)
-        except FileExistsError:
-            pass
         conn = sqlite3.connect(db_path, timeout=30.0)
         conn.execute(
             "CREATE TABLE IF NOT EXISTS perf_metrics ("
@@ -250,10 +251,8 @@ class PerfStage:
         self.db = _BaselineDB(self.db_path)
 
     def _write_script(self, sl):
-        try:
+        with contextlib.suppress(FileExistsError):
             os.makedirs(self.tests_dir, exist_ok=True)
-        except FileExistsError:
-            pass
         code = _render_script(sl)
         with open(self.k6_script_path, "w", encoding="utf-8") as f:
             f.write(code)

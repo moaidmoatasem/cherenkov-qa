@@ -15,8 +15,12 @@ Usage:
 
 from __future__ import annotations
 
+import contextlib
 import re
-from typing import Any# ── Pattern registry ────────────────────────────────────────────────────────
+from typing import (
+    Any,  # ── Pattern registry ────────────────────────────────────────────────────────
+)
+
 # Each entry: (label, compiled pattern, replacement)
 # Patterns ordered from most-specific to least-specific so overlap is handled.
 
@@ -134,10 +138,8 @@ def redact(text: str, *, label_pii: bool = True) -> str:
     result = text
     for _label, pattern, placeholder in _PATTERNS:
         replacement = placeholder if label_pii else "[REDACTED]"
-        try:
+        with contextlib.suppress(re.error):
             result = pattern.sub(replacement, result)
-        except re.error:
-            pass
     return result
 
 def redact_dict(data: Any, *, label_pii: bool = True) -> Any:

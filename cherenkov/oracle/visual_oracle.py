@@ -9,13 +9,12 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from cherenkov.core.settings import get_settings
-from cherenkov.core.contracts import Claim
+from cherenkov.core.contracts import Claim, ReasoningRequest
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 from cherenkov.oracle.interface import Oracle, OracleResult
 from cherenkov.substrate.provider import get_vlm_provider
 from cherenkov.substrate.router import route
-from cherenkov.core.contracts import ReasoningRequest
 
 
 class VisualChangeKind:

@@ -96,10 +96,7 @@ class HILParser:
         raw = hil.read_text(encoding="utf-8")
         data = json.loads(raw)
 
-        if isinstance(data, list):
-            items = data
-        else:
-            items = data.get("flows", [])
+        items = data if isinstance(data, list) else data.get("flows", [])
 
         flows: list[MobileFlow] = []
         for i, item in enumerate(items):

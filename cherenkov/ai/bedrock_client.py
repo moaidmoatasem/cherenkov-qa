@@ -4,13 +4,13 @@ CHERENKOV ai/bedrock_client.py — AWS Bedrock InferenceClient.
 
 from __future__ import annotations
 
-import os
 import json
+import os
 import re
 import time
 
 from cherenkov.ai.interface import InferenceClient
-from cherenkov.ai.ollama_client import strip_think, _try_json
+from cherenkov.ai.ollama_client import _try_json, strip_think
 from cherenkov.core.errors import ProviderJSONError, get_logger
 
 _log = get_logger("BEDROCK_CLIENT")

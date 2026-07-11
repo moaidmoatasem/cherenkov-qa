@@ -11,9 +11,9 @@ import os
 from collections.abc import Callable
 from typing import Any
 
-from cherenkov.ai.ollama_client import OllamaClient
-from cherenkov.ai.model_runner_client import ModelRunnerClient
 from cherenkov.ai.interface import InferenceClient
+from cherenkov.ai.model_runner_client import ModelRunnerClient
+from cherenkov.ai.ollama_client import OllamaClient
 
 
 def _make_anthropic() -> InferenceClient:

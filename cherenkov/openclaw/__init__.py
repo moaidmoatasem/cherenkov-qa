@@ -9,4 +9,4 @@ via HitlEnvelope and provides HTTP API endpoints for external voice layers
 from cherenkov.openclaw.adapter import OpenClawAdapter, TriggerRequest
 from cherenkov.openclaw.contracts import OpenClawConfig
 
-__all__ = ["OpenClawAdapter", "TriggerRequest", "OpenClawConfig"]
+__all__ = ["OpenClawAdapter", "OpenClawConfig", "TriggerRequest"]
