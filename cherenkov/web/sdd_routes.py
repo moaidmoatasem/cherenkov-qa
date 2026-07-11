@@ -290,7 +290,7 @@ async def get_graph_status():
     return GraphStatus(
         node_count=exp.get("experience_count", 0) + 2,
         edge_count=exp.get("experience_count", 0),
-        session_count=session.get("previous_sessions", []).__len__() + 1,
+        session_count=len(session.get("previous_sessions", [])) + 1,
         experience_count=exp.get("experience_count", 0),
     ).model_dump()
 

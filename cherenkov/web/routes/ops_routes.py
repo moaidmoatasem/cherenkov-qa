@@ -105,7 +105,7 @@ async def trigger_pipeline_run(payload: RunPipelinePayload, background_tasks: Ba
     run_id = str(uuid.uuid4())[:8]
     if not os.path.exists(payload.spec_path):
         raise HTTPException(status_code=404, detail="Ingested spec file path not found.")
-    thread = threading.Thread(target=_run_pipeline_thread, args=(payload.spec_path, run_id), name=f"pipeline-{run_id}")
+    thread = threading.Thread(target=_run_pipeline_thread, args=(payload.spec_path, run_id), name=f"pipeline-{run_id}", daemon=True)
     _pipeline_threads[run_id] = thread
     thread.start()
     return {"run_id": run_id, "status": "launched"}
