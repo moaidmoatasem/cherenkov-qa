@@ -51,7 +51,7 @@ class OrchestrationEngine:
 
         run_dir = os.path.abspath(f".cherenkov/runs/{self.run_id}")
         os.makedirs(run_dir, exist_ok=True)
-        self._events_file = open(
+        self._events_file = open(  # noqa: SIM115
             os.path.join(run_dir, "events.jsonl"), "a", encoding="utf-8"
         )
         set_events_file(self._events_file)

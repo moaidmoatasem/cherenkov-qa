@@ -54,9 +54,8 @@ def ocr_test() -> None:
         '  expect(res.status).toBe(200);\n'
         "});\n"
     )
-    tmp = tempfile.NamedTemporaryFile(suffix=".spec.ts", prefix="ocr_test_", delete=False)
-    tmp_path = tmp.name
-    tmp.close()
+    with tempfile.NamedTemporaryFile(suffix=".spec.ts", prefix="ocr_test_", delete=False) as tmp:
+        tmp_path = tmp.name
     try:
         output = ocr_stage.run_on_file(tmp_path, test_code)
     finally:
