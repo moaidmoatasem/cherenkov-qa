@@ -60,7 +60,7 @@ from cherenkov.execution.validate import ValidationEngine
 @click.option("--json", "json_out", is_flag=True, help="Output purely JSON to stdout")
 @click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output; print only the final status line")
 @click.option("--verbose", "-v", is_flag=True, help="Print each gate result, retry attempt, and all scenario outcomes")
-def validate_cmd(target, source, format, workers, _no_html, no_cache, spec, output, fail_on_drift, json_summary, json_out, quiet, verbose):
+def validate_cmd(target, source, format, workers, no_html, no_cache, spec, output, fail_on_drift, json_summary, json_out, quiet, verbose):  # noqa: ARG001
     """Validate E2E test suite against a real server"""
     from cherenkov.core.errors import ExitCode
 

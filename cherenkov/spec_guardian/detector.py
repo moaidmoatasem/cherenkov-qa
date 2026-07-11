@@ -38,7 +38,7 @@ class SpecDriftDetector:
         method: str,
         status_code: int,
         response_body: Any,
-        _response_headers: dict[str, str] | None = None,
+        response_headers: dict[str, str] | None = None,  # noqa: ARG002
     ) -> list[DriftEvent]:
         """Check if an actual API response matches the spec.
 

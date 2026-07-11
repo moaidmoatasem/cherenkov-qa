@@ -93,7 +93,7 @@ class HuggingFaceInferenceClient(InferenceClient):
         model: str,
         *,
         temperature: float = 0.1,
-        _run_id: str | None = None,
+        run_id: str | None = None,  # noqa: ARG002
     ) -> str:
         model = model or _DEFAULT_MODEL
         raw = self._complete(system_prompt, user_prompt, model, temperature=temperature)
@@ -111,7 +111,7 @@ class HuggingFaceInferenceClient(InferenceClient):
         *,
         max_reprompts: int = 2,
         temperature: float = 0.1,
-        _run_id: str | None = None,
+        run_id: str | None = None,  # noqa: ARG002
     ) -> dict:
         model = model or _DEFAULT_MODEL
         for _attempt in range(max_reprompts + 1):

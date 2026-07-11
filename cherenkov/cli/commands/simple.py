@@ -22,6 +22,8 @@ def diff_cmd(before: str, after: str, fmt: str) -> None:
 # report_cmd is implemented in cherenkov.cli.commands.report (divergence JSON reports + diff)
 from cherenkov.cli.commands.report import report_cmd
 
+__all__ = ["report_cmd"]
+
 
 @click.command("eject")
 @click.option("--output", "-o", required=True, type=click.Path(), help="Target output directory for the standalone suite")

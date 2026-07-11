@@ -72,7 +72,7 @@ class Diagnoser:
         scenario_id: str,
         current_status: int,
         current_body: dict[str, Any],
-        _test_name: str,
+        test_name: str,  # noqa: ARG002
         test_content: str | None = None,
     ) -> DiagnosisResult:
         """Determines the exact failure cause by comparing against historical snapshots."""

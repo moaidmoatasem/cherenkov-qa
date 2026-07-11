@@ -21,6 +21,8 @@ from fastapi import FastAPI, HTTPException, WebSocket
 from cherenkov.hitl.store import HitlQueue
 from cherenkov.security.auth import verify_api_key
 
+__all__ = ["verify_api_key"]
+
 # ── WebSocket Manager (singleton) ─────────────────────────────────────
 
 class ConnectionManager:

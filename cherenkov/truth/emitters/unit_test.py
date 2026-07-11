@@ -39,7 +39,7 @@ class UnitTestEmitter(Emitter):
         self,
         truth_model: TruthModel,
         output_path: Path,
-        _divergences: list[DivergenceReport] | None = None,
+        divergences: list[DivergenceReport] | None = None,  # noqa: ARG002
         **kwargs: Any,
     ) -> Path:
         framework = kwargs.get("framework", "pytest")

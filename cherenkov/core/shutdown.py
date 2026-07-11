@@ -8,6 +8,7 @@ from collections.abc import Awaitable, Callable
 logger = logging.getLogger(__name__)
 
 _Handler = Callable[[], None] | Callable[[], Awaitable[None]]
+_background_tasks: set[asyncio.Task] = set()
 
 
 class ShutdownManager:
@@ -48,7 +49,9 @@ class ShutdownManager:
                 if isinstance(result, Awaitable):
                     try:
                         loop = asyncio.get_running_loop()
-                        _ = asyncio.ensure_future(result, loop=loop)
+                        task = asyncio.ensure_future(result, loop=loop)
+                        _background_tasks.add(task)
+                        task.add_done_callback(_background_tasks.discard)
                     except RuntimeError:
                         loop = asyncio.new_event_loop()
                         loop.run_until_complete(result)
