@@ -240,4 +240,4 @@ def mcp_remove(tool_id: str) -> None:
         subprocess.run(["pip", "uninstall", "-y", package_name], check=True)
         click.echo("Successfully removed tool.")
     except subprocess.CalledProcessError as e:
-        raise click.ClickException(f"Removal failed: {e}")
+        raise click.ClickException(f"Removal failed: {e}") from e

@@ -103,7 +103,7 @@ async def _validate_spec_url(url: str) -> str:
             lambda: [info[4][0] for info in socket.getaddrinfo(host, 80, family=socket.AF_INET)]
         )
     except Exception:
-        raise HTTPException(status_code=400, detail="Could not resolve host")
+        raise HTTPException(status_code=400, detail="Could not resolve host") from None
     for ip_str in ips:
         try:
             addr = ipaddress.ip_address(ip_str)

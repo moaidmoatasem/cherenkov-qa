@@ -73,7 +73,7 @@ async def ingest_spec_file(file: UploadFile | None = File(None), url: str | None
     except Exception:
         if os.path.exists(spec_path):
             os.remove(spec_path)
-        raise HTTPException(status_code=500, detail="Spec parsing failed. Check that the file is a valid OpenAPI 3.x document.")
+        raise HTTPException(status_code=500, detail="Spec parsing failed. Check that the file is a valid OpenAPI 3.x document.") from None
 
 
 _pipeline_threads: dict[str, threading.Thread] = {}
@@ -151,9 +151,9 @@ async def validate_test_suite(payload: ValidatePayload, _auth=Depends(verify_api
         )
         return results
     except asyncio.TimeoutError:
-        raise HTTPException(status_code=504, detail="Validation timed out after 300 seconds.")
+        raise HTTPException(status_code=504, detail="Validation timed out after 300 seconds.") from None
     except Exception:
-        raise HTTPException(status_code=500, detail="Validation failed. Check the target URL and try again.")
+        raise HTTPException(status_code=500, detail="Validation failed. Check the target URL and try again.") from None
 
 
 @router.post("/api/v1/eject")
@@ -174,4 +174,4 @@ async def eject_test_suite(payload: EjectPayload, _auth=Depends(verify_api_key),
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Eject operation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Eject operation failed: {e}") from None

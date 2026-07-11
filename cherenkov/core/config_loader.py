@@ -344,16 +344,16 @@ class LayeredConfig:
         except ImportError:
             try:
                 import tomli as tomllib
-            except ImportError:
+            except ImportError as exc:
                 raise ConfigError(
                     "tomllib/tomli not available. Install tomli for Python < 3.11: "
                     "pip install tomli"
-                )
+                ) from exc
         try:
             with open(path, "rb") as f:
                 return tomllib.load(f)
         except Exception as e:
-            raise ConfigError(f"Failed to parse {path}: {e}")
+            raise ConfigError(f"Failed to parse {path}: {e}") from e
 
     def autodetect_profile(self) -> str:
         """Determine the best profile heuristically.

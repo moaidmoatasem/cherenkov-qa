@@ -23,10 +23,10 @@ class APKParser:
                 text=True,
                 check=False,
             )
-        except FileNotFoundError:
+        except FileNotFoundError as exc:
             raise RuntimeError(
                 "aapt not found on PATH; install Android SDK build-tools"
-            )
+            ) from exc
 
         if result.returncode != 0:
             raise RuntimeError(f"aapt dump failed: {result.stderr.strip()}")

@@ -419,9 +419,9 @@ async def get_wiki_file(path: str):
     try:
         return await asyncio.to_thread(_read_wiki_file, path)
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Wiki file {path} not found")
+        raise HTTPException(status_code=404, detail=f"Wiki file {path} not found") from None
     except PermissionError:
-        raise HTTPException(status_code=403, detail="Path traversal blocked")
+        raise HTTPException(status_code=403, detail="Path traversal blocked") from None
 
 
 # ── Findings Endpoint ────────────────────────────────────────────────────
