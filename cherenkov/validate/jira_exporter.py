@@ -368,9 +368,9 @@ class JiraExporter:
         body = (
             f"--{boundary}\r\n"
             f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'
-            f"Content-Type: {mime_type}\r\n\r\n".encode("utf-8")
+            f"Content-Type: {mime_type}\r\n\r\n".encode()
             + file_data
-            + f"\r\n--{boundary}--\r\n".encode("utf-8")
+            + f"\r\n--{boundary}--\r\n".encode()
         )
 
         headers["Content-Type"] = f"multipart/form-data; boundary={boundary}"

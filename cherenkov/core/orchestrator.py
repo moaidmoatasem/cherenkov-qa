@@ -181,10 +181,10 @@ class OrchestrationEngine:
             cs = current_scenario
             generate = self.executor.execute(
                 "GENERATE",
-                lambda: self.run_generate(
+                lambda cs=cs: self.run_generate(
                     cs, simulate_malformed=(simulate_fail_stage == "GENERATE")
                 ),
-                lambda: GenerateOutput(
+                lambda cs=cs: GenerateOutput(
                     scenario_id=cs.mutation_id or "unknown",
                     test_code="", imports=[],
                     status=Status.FAILED,
@@ -214,10 +214,10 @@ class OrchestrationEngine:
             g = generate
             review = self.executor.execute(
                 "REVIEW",
-                lambda: self.run_review(
+                lambda g=g: self.run_review(
                     g, spec_path, simulate_malformed=(simulate_fail_stage == "REVIEW")
                 ),
-                lambda: ReviewOutput(
+                lambda g=g: ReviewOutput(
                     scenario_id=g.scenario_id, gates=[], quality_score=0.0,
                     verdict=Verdict.REGENERATE, status=Status.FAILED,
                     errors=[StageError(code="REVIEW_FALLBACK", detail="Failed after retry ladder.")],

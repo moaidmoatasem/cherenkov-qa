@@ -41,14 +41,14 @@ class SpecDriftDetector:
         response_headers: dict[str, str] | None = None,
     ) -> list[DriftEvent]:
         """Check if an actual API response matches the spec.
-        
+
         Args:
             endpoint: API endpoint path (e.g., "/users/{id}")
             method: HTTP method (e.g., "GET")
             status_code: Actual HTTP status code
             response_body: Actual response body (parsed JSON)
             response_headers: Optional response headers
-            
+
         Returns:
             List of DriftEvent objects (empty if fully compliant)
         """
@@ -114,7 +114,7 @@ class SpecDriftDetector:
         if len(actual_segments) != len(pattern_segments):
             return False
 
-        for actual_seg, pattern_seg in zip(actual_segments, pattern_segments):
+        for actual_seg, pattern_seg in zip(actual_segments, pattern_segments, strict=False):
             if pattern_seg.startswith("{") and pattern_seg.endswith("}"):
                 continue  # Path parameter, matches anything
             if actual_seg != pattern_seg:

@@ -77,7 +77,7 @@ class MENAComplianceScanner:
             security_schemes = components.get("securitySchemes", {})
 
             # Check if secure Bearer token authentication is specified
-            for scheme_name, scheme in security_schemes.items():
+            for _scheme_name, scheme in security_schemes.items():
                 if scheme.get("type") == "http" and scheme.get("scheme") == "bearer":
                     audit_results["bearer_auth_defined"] = True
                     break

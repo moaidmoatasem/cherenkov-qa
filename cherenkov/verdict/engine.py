@@ -17,7 +17,6 @@ from all dimension results plus aggregate metrics.
 from __future__ import annotations
 
 import time
-import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
@@ -76,8 +75,6 @@ class VerdictEngine:
     def run(self) -> RichVerdict:
         """Execute all agents in parallel and assemble the RichVerdict."""
         t0 = time.monotonic()
-        run_id = str(uuid.uuid4())[:8]
-
         # ── Stage 1: Divergence Probe (always runs first — others depend on it) ─
         divergence_dim, divergence_reports = self._run_divergence_probe()
 

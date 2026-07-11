@@ -221,7 +221,7 @@ class SchemaIndex:
 
         scores.sort(key=lambda x: x[1], reverse=True)
 
-        for idx, score in scores[:top_k]:
+        for idx, _score in scores[:top_k]:
             name = self._chunks[idx].name
             if name not in result:
                 result[name] = self._chunks[idx].source

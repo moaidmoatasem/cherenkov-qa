@@ -36,7 +36,7 @@ class SpecGuardianDaemon:
         db_path: Path | None = None,
     ):
         """Initialize the daemon.
-        
+
         Args:
             spec_path: Path to OpenAPI spec file
             base_url: Base URL of the API to monitor
@@ -160,10 +160,10 @@ class SpecGuardianDaemon:
 
     def _check_endpoint(self, endpoint_config: dict[str, Any]) -> list[DriftEvent]:
         """Check a single endpoint against the spec.
-        
+
         Args:
             endpoint_config: Dict with 'method', 'path', and optional 'params', 'headers'
-            
+
         Returns:
             List of drift events detected
         """
@@ -229,7 +229,7 @@ class SpecGuardianDaemon:
 
     def run_once(self) -> DriftReport:
         """Run a single check cycle and return the report.
-        
+
         Useful for testing or one-off checks.
         """
         self.session_start = datetime.now(timezone.utc)

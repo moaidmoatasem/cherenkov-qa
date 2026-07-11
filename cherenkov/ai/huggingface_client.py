@@ -114,7 +114,7 @@ class HuggingFaceInferenceClient(InferenceClient):
         run_id: str | None = None,
     ) -> dict:
         model = model or _DEFAULT_MODEL
-        for attempt in range(max_reprompts + 1):
+        for _attempt in range(max_reprompts + 1):
             raw = self._complete(
                 system_prompt, user_prompt, model, temperature=temperature
             )

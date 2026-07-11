@@ -29,7 +29,7 @@ class MobileGenerateStage:
         yaml_lines.append("---")
         yaml_lines.append(f"name: {scenario.name}")
         yaml_lines.append("")
-        for i, step in enumerate(scenario.steps, 1):
+        for _i, step in enumerate(scenario.steps, 1):
             step_id = step.lower().replace(" ", "_")
             if "tap " in step:
                 element = step.replace("tap ", "")

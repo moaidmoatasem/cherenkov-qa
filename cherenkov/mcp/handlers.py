@@ -1530,7 +1530,7 @@ def _tool_scan_mena_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
             mappings = report["framework_mappings"]
 
         violations = []
-        for domain, details in mappings.items():
+        for _domain, details in mappings.items():
             for sub_domain, sub_details in (
                 details.items() if isinstance(details, dict) else []
             ):

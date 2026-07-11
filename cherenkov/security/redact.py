@@ -132,7 +132,7 @@ def redact(text: str, *, label_pii: bool = True) -> str:
     if not isinstance(text, str) or not text:
         return text
     result = text
-    for label, pattern, placeholder in _PATTERNS:
+    for _label, pattern, placeholder in _PATTERNS:
         replacement = placeholder if label_pii else "[REDACTED]"
         try:
             result = pattern.sub(replacement, result)

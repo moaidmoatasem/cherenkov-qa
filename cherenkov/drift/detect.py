@@ -73,7 +73,7 @@ def _response_schemas(spec: dict[str, Any], operation: dict[str, Any]) -> dict[s
         if not isinstance(response, dict):
             continue
         # OpenAPI 3.x content map
-        for media_type, media_obj in response.get("content", {}).items():
+        for _media_type, media_obj in response.get("content", {}).items():
             if not isinstance(media_obj, dict):
                 continue
             schema = media_obj.get("schema", {})

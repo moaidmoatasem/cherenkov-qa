@@ -143,7 +143,7 @@ class AnthropicInferenceClient(InferenceClient):
         temperature: float = 0.1,
         run_id: str | None = None,
     ) -> dict:
-        for attempt in range(max_reprompts + 1):
+        for _attempt in range(max_reprompts + 1):
             raw = self._complete(
                 system_prompt, user_prompt, model, temperature=temperature
             )
