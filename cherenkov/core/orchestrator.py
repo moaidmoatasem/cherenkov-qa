@@ -50,7 +50,7 @@ class OrchestrationEngine:
 
         run_dir = os.path.abspath(f".cherenkov/runs/{self.run_id}")
         os.makedirs(run_dir, exist_ok=True)
-        self._events_file = open(  # noqa: SIM115 — kept open for pipeline duration
+        self._events_file = open(
             os.path.join(run_dir, "events.jsonl"), "a", encoding="utf-8"
         )
         set_events_file(self._events_file)
@@ -181,11 +181,11 @@ class OrchestrationEngine:
             cs = current_scenario
             generate = self.executor.execute(
                 "GENERATE",
-                lambda cs=cs: self.run_generate(
-                    cs, simulate_malformed=(simulate_fail_stage == "GENERATE")
+                lambda: self.run_generate(
+                    cs, simulate_malformed=(simulate_fail_stage == "GENERATE")  # noqa: B023
                 ),
-                lambda cs=cs: GenerateOutput(
-                    scenario_id=cs.mutation_id or "unknown",
+                lambda: GenerateOutput(
+                    scenario_id=cs.mutation_id or "unknown",  # noqa: B023
                     test_code="", imports=[],
                     status=Status.FAILED,
                     errors=[StageError(code="GENERATE_FALLBACK", detail="Failed after retry ladder.")],
@@ -214,11 +214,11 @@ class OrchestrationEngine:
             g = generate
             review = self.executor.execute(
                 "REVIEW",
-                lambda g=g: self.run_review(
-                    g, spec_path, simulate_malformed=(simulate_fail_stage == "REVIEW")
+                lambda: self.run_review(
+                    g, spec_path, simulate_malformed=(simulate_fail_stage == "REVIEW")  # noqa: B023
                 ),
-                lambda g=g: ReviewOutput(
-                    scenario_id=g.scenario_id, gates=[], quality_score=0.0,
+                lambda: ReviewOutput(
+                    scenario_id=g.scenario_id, gates=[], quality_score=0.0,  # noqa: B023
                     verdict=Verdict.REGENERATE, status=Status.FAILED,
                     errors=[StageError(code="REVIEW_FALLBACK", detail="Failed after retry ladder.")],
                     metadata=StageMeta(stage="REVIEW", duration_ms=0),
