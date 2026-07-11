@@ -118,26 +118,23 @@ async def list_generated_tests():
     if not os.path.exists(tests_dir):
         return []
 
-    def _scan():
-        tests = []
-        for f in sorted(os.listdir(tests_dir)):
-            if not f.endswith(".spec.ts"):
-                continue
-            file_path = os.path.join(tests_dir, f)
-            try:
-                with open(file_path, encoding="utf-8") as fh:
-                    code = fh.read()
-            except OSError:
-                continue
-            if not code or not code.strip():
-                continue
-            scenario_id = f.replace(".spec.ts", "")
-            method_match = _RE_METHOD_ATTR.search(code) or _RE_METHOD_CALL.search(code)
-            method = method_match.group(1).upper() if method_match else "GET"
-            tests.append({"name": f, "scenario_id": scenario_id, "endpoint": scenario_id, "method": method, "code": code})
-        return tests
-
-    return await asyncio.to_thread(_scan)
+    tests = []
+    for f in sorted(os.listdir(tests_dir)):
+        if not f.endswith(".spec.ts"):
+            continue
+        file_path = os.path.join(tests_dir, f)
+        try:
+            with open(file_path, encoding="utf-8") as fh:
+                code = fh.read()
+        except (OSError, UnicodeDecodeError):
+            continue
+        if not code or not code.strip():
+            continue
+        scenario_id = f.replace(".spec.ts", "")
+        method_match = _RE_METHOD_ATTR.search(code) or _RE_METHOD_CALL.search(code)
+        method = method_match.group(1).upper() if method_match else "GET"
+        tests.append({"name": f, "scenario_id": scenario_id, "endpoint": scenario_id, "method": method, "code": code})
+    return tests
 
 
 @router.post("/api/v1/validate")
