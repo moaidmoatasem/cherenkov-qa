@@ -661,7 +661,7 @@ def get_parser() -> argparse.ArgumentParser:
     # ── Phase 13: Enterprise Tier ──────────────────────────────────────────
     enterprise_parser = subparsers.add_parser("enterprise", help="Manage enterprise features (org, audit, compliance)")
     ent_sub = enterprise_parser.add_subparsers(dest="enterprise_command", required=True)
-    
+
     ent_org = ent_sub.add_parser("org", help="Manage multi-tenant organizations")
     ent_org.add_argument("action", choices=["create", "list"], help="Action to perform")
     ent_org.add_argument("--name", help="Organization name")
@@ -995,7 +995,9 @@ def main():
             except Exception:  # ConnectionError / Timeout expected when target not running
                 pass
             if not _target_live:
-                import subprocess as _sp, time as _t, atexit as _atexit
+                import subprocess as _sp
+                import time as _t
+                import atexit as _atexit
                 _target_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "target")
                 _venv_uvicorn = os.path.join(_target_dir, ".venv", "bin", "uvicorn")
                 _uvicorn_cmd = _venv_uvicorn if os.path.exists(_venv_uvicorn) else "uvicorn"
@@ -1151,17 +1153,17 @@ def main():
                     )
             setattr(report_obj, "_total_tests", total_tests)
             allure_data = emitter.emit(report_obj, args.spec or "openapi.yaml")
-            
+
             out_dir = getattr(args, "output", ".cherenkov/allure-results")
             if out_dir.endswith(".json") or out_dir.endswith(".xml"):
                 out_dir = ".cherenkov/allure-results"
             os.makedirs(out_dir, exist_ok=True)
-            
+
             for item in allure_data:
                 file_path = os.path.join(out_dir, f"{item['uuid']}-result.json")
                 with open(file_path, "w") as f:
                     json.dump(item, f, indent=2)
-            
+
             print(f"Allure results written to {out_dir}")
             sys.exit(
                 0

@@ -87,9 +87,8 @@ def main():
     if unit_success and smoke_success:
         print("\nALL TESTS PASSED! Epoch 1 is ready.")
         return 0
-    else:
-        print("\nSome tests failed. Check the output above.")
-        return 1
+    print("\nSome tests failed. Check the output above.")
+    return 1
 
 
 if __name__ == "__main__":

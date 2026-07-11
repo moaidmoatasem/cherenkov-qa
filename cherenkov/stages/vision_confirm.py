@@ -122,15 +122,15 @@ class VisionConfirmPilot:
             duration_ms=dt_ms,
         )
 
-        if element_visible and confidence >= 0.6:
-            return {
-                "confirmed": True,
-                "confidence": confidence,
-                "description": what_you_see,
-                "hallucination_risk": False,
-                "suggestion": "Element confirmed — proceed with interaction.",
-            }
         if element_visible:
+            if confidence >= 0.6:
+                return {
+                    "confirmed": True,
+                    "confidence": confidence,
+                    "description": what_you_see,
+                    "hallucination_risk": False,
+                    "suggestion": "Element confirmed — proceed with interaction.",
+                }
             return {
                 "confirmed": True,
                 "confidence": confidence,

@@ -42,7 +42,7 @@ def main():
         print(f"[FAIL] Error: GETTING_STARTED.md is missing at: {docs_file}")
         sys.exit(1)
 
-    with open(docs_file, "r", encoding="utf-8") as f:
+    with open(docs_file, encoding="utf-8") as f:
         docs_content = f.read()
 
     # Dynamically load cherenkov.py (not the cherenkov/ package)

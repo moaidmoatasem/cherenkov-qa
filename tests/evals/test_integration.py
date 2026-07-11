@@ -110,6 +110,6 @@ def test_judge_sample_without_llm():
     )
     with mock.patch("cherenkov.evals.judge.get_client", side_effect=RuntimeError("No LLM available")):
         result = judge_sample(sample)
-    
+
     assert result.error is not None
     assert result.scores == []

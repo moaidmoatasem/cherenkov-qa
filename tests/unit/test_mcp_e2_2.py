@@ -128,9 +128,8 @@ class TestMCPRegistryForward:
         with patch(
             "cherenkov.mcp.client.MCPClient.call_tool",
             side_effect=MCPClientError("network down"),
-        ):
-            with pytest.raises(MCPClientError, match="network down"):
-                reg.forward_tool_call("ext_tool", {})
+        ), pytest.raises(MCPClientError, match="network down"):
+            reg.forward_tool_call("ext_tool", {})
 
 
 # ── auto_heal_code dispatch ───────────────────────────────────────────────────

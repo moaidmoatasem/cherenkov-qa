@@ -169,7 +169,7 @@ def main():
                 file_path = os.path.join(root, file)
                 if not file.endswith((".ts", ".json", ".config.ts")):
                     continue
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read()
 
                 for pattern in code_pollution_patterns:

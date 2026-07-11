@@ -119,7 +119,8 @@ def main():
 
 def _stub_browser_available() -> bool:
     """Returns True only if the stub's Playwright install can find its Chromium browser."""
-    import json, glob
+    import json
+    import glob
 
     stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../stub"))
     browsers_path = os.environ.get(

@@ -11,7 +11,7 @@ class TestSprint5Integrations(unittest.TestCase):
     def test_pagerduty_notifier(self):
         notifier = PagerDutyNotifier()
         self.assertIsNone(notifier.routing_key)
-        
+
         # Test no failures
         result = notifier.send_report({"items": [{"status": "PASS"}]})
         self.assertFalse(result) # Fails fast due to missing key
@@ -46,11 +46,11 @@ class TestSprint5Integrations(unittest.TestCase):
                 }
             ]
         }
-        
+
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
             json.dump(mock_data, f)
             temp_path = f.name
-            
+
         try:
             importer = PostmanImporter()
             scenarios = importer.import_collection(temp_path)
