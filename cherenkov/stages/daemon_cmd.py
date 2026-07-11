@@ -139,6 +139,7 @@ def run_daemon(interval_seconds: int = 60, max_loops: int = 0, target_url: str |
                             run_id=run_id,
                             mutation_label=r.divergence_class.value,
                             confidence_reason=r.evidence.diff[:200] if r.evidence and r.evidence.diff else r.claim_b[:200],
+                            severity=r.severity,
                         )
                         hitl.enqueue(item)
                 else:

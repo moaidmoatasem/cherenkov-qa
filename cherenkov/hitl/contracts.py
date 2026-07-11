@@ -18,6 +18,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from cherenkov.core.contracts import Severity
+
 SCHEMA_VERSION = "hitl/v1"
 
 # Frozen error-code vocabulary (Appendix A).
@@ -57,6 +59,7 @@ class HitlItem(BaseModel):
     confidence: float | None = None
     confidence_reason: str | None = None
     review_gate_failed: str | None = None
+    severity: Severity | None = None
     approved_by: str | None = None
     approved_at: str | None = None
     reject_reason: str | None = None

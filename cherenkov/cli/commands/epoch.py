@@ -75,6 +75,16 @@ def author_cmd(intent: str, output: str, target: str) -> None:
     sys.exit(run_author(intent, output=output, target=target))
 
 
+@click.command("record")
+@click.argument("result_path", type=click.Path(exists=True))
+@click.option("--run-id", default=None, help="Tag enqueued HITL items with this run id")
+def record_cmd(result_path: str, run_id: str | None) -> None:
+    """Ingest live agentic-exploration scenario results into the HITL queue."""
+    from cherenkov.stages.copilot_cmd import run_record
+
+    sys.exit(run_record(result_path, run_id=run_id))
+
+
 @click.group("tokens")
 def tokens_cmd() -> None:
     """Token consumption monitor — usage, cost, recommendations."""

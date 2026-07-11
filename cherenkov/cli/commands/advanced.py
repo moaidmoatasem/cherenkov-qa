@@ -60,12 +60,16 @@ def hitl_cmd() -> None:
 @click.option("--status", type=click.Choice(["pending", "approved", "rejected", "ignored"]),
               default="pending", help="Filter by status (default: pending)")
 @click.option("--all", "-a", "list_all", is_flag=True, help="Show all statuses")
+@click.option("--severity", type=click.Choice(["low", "medium", "high", "critical"]),
+              default=None, help="Filter by severity")
 @click.option("--json", "json_out", is_flag=True, help="Emit JSON envelope")
-def hitl_list(status: str, list_all: bool, json_out: bool) -> None:
+def hitl_list(status: str, list_all: bool, severity: str | None, json_out: bool) -> None:
     """List HITL queue items."""
     from cherenkov.hitl.cmd import run_list
 
-    sys.exit(run_list(status=None if list_all else status, json_out=json_out))
+    sys.exit(run_list(
+        status=None if list_all else status, severity=severity, json_out=json_out
+    ))
 
 
 @hitl_cmd.command("show")
