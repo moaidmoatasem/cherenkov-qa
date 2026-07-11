@@ -116,8 +116,11 @@ async def _validate_spec_url(url: str) -> str:
     return safe_url
 
 
+_RE_SAFE_SCENARIO_ID = re.compile(r"^[a-zA-Z0-9_\-]{1,128}$")
+
+
 def _validate_scenario_id(scenario_id: str) -> str:
-    if not re.match(r"^[a-zA-Z0-9_\-]{1,128}$", scenario_id):
+    if not _RE_SAFE_SCENARIO_ID.match(scenario_id):
         raise HTTPException(
             status_code=400,
             detail="Invalid scenario_id: must be alphanumeric/underscore/hyphen, max 128 chars",

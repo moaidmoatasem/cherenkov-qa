@@ -33,6 +33,9 @@ from cherenkov.core.errors import get_logger
 from cherenkov.reflector.store import VerdictStore
 
 
+_RE_WHITESPACE = re.compile(r"\s+")
+
+
 def _divergence_class_from_str(s: str | None) -> DivergenceClass | None:
     if s is None:
         return None
@@ -43,7 +46,7 @@ def _divergence_class_from_str(s: str | None) -> DivergenceClass | None:
 
 
 def _norm(s: str | None) -> str:
-    return re.sub(r"\s+", " ", (s or "").strip().lower())
+    return _RE_WHITESPACE.sub(" ", (s or "").strip().lower())
 
 
 def fingerprint_of(hypothesis: DivergenceHypothesis) -> str:

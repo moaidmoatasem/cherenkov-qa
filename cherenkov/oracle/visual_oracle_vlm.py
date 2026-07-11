@@ -9,6 +9,8 @@ from typing import Any
 
 from cherenkov.substrate.router import SubstrateRouter
 
+_RE_CONFIDENCE = re.compile(r"confidence:\s*(0\.\d+)", re.IGNORECASE)
+
 
 class SemanticVisualOracle:
     def __init__(self, router: SubstrateRouter):
@@ -60,7 +62,7 @@ class SemanticVisualOracle:
         }
 
     def _parse_confidence(self, text: str) -> float:
-        match = re.search(r"confidence:\s*(0\.\d+)", text, re.IGNORECASE)
+        match = _RE_CONFIDENCE.search(text)
         if match:
             return float(match.group(1))
         return 0.0

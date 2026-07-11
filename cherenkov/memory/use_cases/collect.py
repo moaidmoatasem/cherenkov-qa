@@ -4,6 +4,10 @@ from __future__ import annotations
 import hashlib
 import re
 import uuid
+
+_RE_SESSION_ID = re.compile(r"sess_\w+")
+_RE_TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2}T[\d:.Z+-]+")
+_RE_FILE_PATH = re.compile(r"/[^\s]+")
 from datetime import datetime, timezone
 
 from cherenkov.memory.domain.models import (
@@ -72,9 +76,9 @@ def _extract_pattern(
 ) -> MemoryPattern:
     """Derive a MemoryPattern from a finding entry."""
     # Normalize: strip file paths, session IDs, timestamps
-    cleaned = re.sub(r"sess_\w+", "<session>", entry.content)
-    cleaned = re.sub(r"\d{4}-\d{2}-\d{2}T[\d:.Z+-]+", "<ts>", cleaned)
-    cleaned = re.sub(r"/[^\s]+", "<path>", cleaned)
+    cleaned = _RE_SESSION_ID.sub("<session>", entry.content)
+    cleaned = _RE_TIMESTAMP.sub("<ts>", cleaned)
+    cleaned = _RE_FILE_PATH.sub("<path>", cleaned)
     normalized = " ".join(cleaned.lower().split())
 
     fingerprint = hashlib.sha256(normalized.encode()).hexdigest()[:16]

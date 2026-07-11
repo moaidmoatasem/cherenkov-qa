@@ -50,6 +50,9 @@ try:
 except ImportError:
     pass
 
+_RE_K6_AVG_DURATION = re.compile(r"avg=([\d\.]+)(ms|s)")
+
+
 class _BaselineDB:
     def __init__(self, db_path):
         self.db_path = db_path
@@ -670,7 +673,7 @@ class PerfStage:
             avg_ms = 0.0
             for line in proc.stdout.splitlines():
                 if "http_req_duration" in line:
-                    m = re.search(r"avg=([\d\.]+)(ms|s)", line)
+                    m = _RE_K6_AVG_DURATION.search(line)
                     if m:
                         avg_ms = float(m.group(1))
                         if m.group(2) == "s":
