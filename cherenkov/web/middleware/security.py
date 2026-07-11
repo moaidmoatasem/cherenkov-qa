@@ -4,6 +4,7 @@ import logging
 import os
 import time
 from collections import defaultdict
+from typing import ClassVar
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -63,7 +64,7 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    _SECURITY_HEADERS = {
+    _SECURITY_HEADERS: ClassVar[dict[str, str]] = {
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "DENY",
         "X-XSS-Protection": "1; mode=block",
@@ -87,7 +88,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     # Only truly public, non-sensitive read-only endpoints.
     # /api/v1/metrics, /api/v1/truth-map, /api/v1/failures were removed —
     # they expose internal state that must not be publicly cached by CDNs/proxies.
-    _CACHEABLE_PATHS = {
+    _CACHEABLE_PATHS: ClassVar[set[str]] = {
         "/api/v1/health",
         "/healthz",
         "/api/v1/tokens/report",

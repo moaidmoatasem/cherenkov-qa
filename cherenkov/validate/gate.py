@@ -9,7 +9,7 @@ import subprocess
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, ClassVar, Literal
 
 from cherenkov.validate.contracts import (
     GateCriteria,
@@ -29,7 +29,7 @@ class ValidationGate:
     produce 'fail'.
     """
 
-    GATE_CRITERIA: list[GateCriteria] = [
+    GATE_CRITERIA: ClassVar[list[GateCriteria]] = [
         GateCriteria(
             name="smoke_track_a",
             description="Core Track-A API conformance smoke (smoke_test.py) passes",
@@ -73,7 +73,7 @@ class ValidationGate:
     ]
 
     # Map gate name → smoke script filename
-    _GATE_SCRIPTS: dict[str, str] = {
+    _GATE_SCRIPTS: ClassVar[dict[str, str]] = {
         "smoke_track_a": "smoke_test.py",
         "smoke_hitl_race": "smoke_test_hitl_race.py",
         "smoke_hitl_concurrency": "smoke_test_hitl_concurrency.py",
