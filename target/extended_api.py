@@ -61,8 +61,8 @@ class UserResponse(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    name: Optional[str] = None
-    email: Optional[str] = None
+    name: str | None = None
+    email: str | None = None
 
 
 class OrderCreate(BaseModel):
@@ -182,7 +182,7 @@ async def get_order(order_id: int):
 
 # ── GET /products ───────────────────────────────────────────────────────────
 @app.get("/products", status_code=200)
-async def list_products(category: Optional[str] = Query(None)):
+async def list_products(category: str | None = Query(None)):
     if REGRESSION_MODE:
         # BUG-5: ignores category filter
         return _products

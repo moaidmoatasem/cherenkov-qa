@@ -36,7 +36,7 @@ def test_grpc_generate_integration(mock_validate, mock_cache):
     try:
         sys.argv = ["cherenkov", "validate", "--source", "grpc", "--spec", temp_path, "--target", "grpc://mock-target.local:50051"]
         runpy.run_module("cherenkov.cli.core", run_name="__main__")
-        
+
         mock_validate.assert_called_once()
     except SystemExit as e:
         assert e.code == 0

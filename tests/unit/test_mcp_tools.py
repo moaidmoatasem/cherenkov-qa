@@ -163,15 +163,14 @@ def test_run_conformance_check_missing_tests(tmp_path, monkeypatch):
     spec = tmp_path / "openapi.yaml"
     spec.write_text("openapi: '3.0.0'\ninfo:\n  title: T\n  version: '1'\npaths: {}\n")
 
-    with patch("cherenkov.mcp.handlers._validate_spec_path", return_value=str(spec)):
-        with patch(
-            "cherenkov.execution.validate.ValidationEngine.validate_suite",
-            return_value={"status": "empty", "message": "No tests", "reports": []},
-        ):
-            result = _call(
-                "run_conformance_check",
-                {"target_url": "http://localhost:9999", "spec_path": str(spec)},
-            )
+    with patch("cherenkov.mcp.handlers._validate_spec_path", return_value=str(spec)), patch(
+        "cherenkov.execution.validate.ValidationEngine.validate_suite",
+        return_value={"status": "empty", "message": "No tests", "reports": []},
+    ):
+        result = _call(
+            "run_conformance_check",
+            {"target_url": "http://localhost:9999", "spec_path": str(spec)},
+        )
     payload = json.loads(result["content"][0]["text"])
     assert result["isError"] is False
     assert "status" in payload
@@ -258,31 +257,30 @@ def test_scan_mena_compliance_enhanced_valid(tmp_path, monkeypatch):
 
     from cherenkov.compliance.mena_scanner import MENAComplianceScanner
 
-    with patch.object(handlers, "_validate_spec_path", return_value=str(spec)):
-        with patch.object(
-            MENAComplianceScanner,
-            "run_compliance_audit",
-            return_value={
-                "overall_compliance_score": 80,
-                "audit_results": {},
-                "framework_mappings": {
-                    "SAMA_CCSF": {
-                        "Domain 3.1": {"status": "COMPLIANT", "remediation": ""}
-                    },
-                    "EGYPT_FinCSF": {
-                        "Section 4.2": {"status": "COMPLIANT", "remediation": ""}
-                    },
+    with patch.object(handlers, "_validate_spec_path", return_value=str(spec)), patch.object(
+        MENAComplianceScanner,
+        "run_compliance_audit",
+        return_value={
+            "overall_compliance_score": 80,
+            "audit_results": {},
+            "framework_mappings": {
+                "SAMA_CCSF": {
+                    "Domain 3.1": {"status": "COMPLIANT", "remediation": ""}
+                },
+                "EGYPT_FinCSF": {
+                    "Section 4.2": {"status": "COMPLIANT", "remediation": ""}
                 },
             },
-        ):
-            result = _call(
-                "scan_mena_compliance_enhanced",
-                {
-                    "target_url": "http://localhost:8000",
-                    "spec_path": str(spec),
-                    "framework": "sama_ccsf",
-                },
-            )
+        },
+    ):
+        result = _call(
+            "scan_mena_compliance_enhanced",
+            {
+                "target_url": "http://localhost:8000",
+                "spec_path": str(spec),
+                "framework": "sama_ccsf",
+            },
+        )
     payload = json.loads(result["content"][0]["text"])
     assert payload["framework"] == "sama_ccsf"
     assert payload["compliance_score"] == 80

@@ -242,7 +242,7 @@ class TestEgressPolicy(unittest.TestCase):
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         # The router.py file should be in cherenkov/substrate/router.py relative to project root
         router_path = os.path.join(project_root, "cherenkov", "substrate", "router.py")
-        with open(router_path, "r") as f:
+        with open(router_path) as f:
             router_code = f.read()
 
         # Should not contain hardcoded provider name checks

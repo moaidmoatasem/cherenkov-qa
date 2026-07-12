@@ -74,7 +74,7 @@ def main():
 
     try:
         # Inject an undocumented mock subcommand into get_parser()
-        with open(src_py, "r", encoding="utf-8") as f:
+        with open(src_py, encoding="utf-8") as f:
             lines = f.readlines()
 
         # Find where eject subparser is defined and inject mockcmd there

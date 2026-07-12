@@ -19,16 +19,16 @@ class TestAllureEmitter(unittest.TestCase):
             )
         ])
         setattr(report, "_total_tests", 2)
-        
+
         emitter = AllureEmitter()
         results = emitter.emit(report, "openapi.yaml")
-        
+
         self.assertEqual(len(results), 2)
-        
+
         # Check passing test
         passing = [r for r in results if r["status"] == "passed"][0]
         self.assertIn("successful_conformance_check", passing["name"])
-        
+
         # Check failing test
         failing = [r for r in results if r["status"] == "failed"][0]
         self.assertEqual(failing["name"], "POST /api/users")
