@@ -303,7 +303,7 @@ class TestMobilePlanStage(unittest.TestCase):
         self.assertEqual(out.status, "ok")
 
     def test_ingest_output_accepted(self):
-        out = MobilePlanStage().run(ingest_output={"app_id": "com.test"})
+        out = MobilePlanStage().run({"app_id": "com.test"})
         self.assertEqual(out.status, "ok")
 
 
