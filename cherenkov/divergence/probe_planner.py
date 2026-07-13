@@ -121,6 +121,32 @@ def _expected_4xx(operation: dict[str, Any], default: int = 422) -> int:
     return default
 
 
+def _response_fields(
+    operation: dict[str, Any], status: int, spec: dict[str, Any], cap: int = 3
+) -> list[str]:
+    """Top-level documented response-body fields for *status* (required first)."""
+    resp = _resolve_ref(operation.get("responses", {}).get(str(status), {}), spec)
+    media = resp.get("content", {}).get("application/json")
+    if not isinstance(media, dict):
+        return []
+    schema = _resolve_ref(media.get("schema", {}), spec)
+    if not isinstance(schema, dict) or schema.get("type") == "array":
+        return []
+    props = schema.get("properties", {})
+    required = [p for p in schema.get("required", []) if p in props]
+    ordered = required + [p for p in props if p not in required]
+    return ordered[:cap]
+
+
+def _response_headers(
+    operation: dict[str, Any], status: int, spec: dict[str, Any], cap: int = 3
+) -> list[str]:
+    """Documented response header names for *status*."""
+    resp = _resolve_ref(operation.get("responses", {}).get(str(status), {}), spec)
+    headers = resp.get("headers", {})
+    return list(headers)[:cap] if isinstance(headers, dict) else []
+
+
 def _success_code(operation: dict[str, Any]) -> int | None:
     for candidate in (200, 201, 204):
         if candidate in _documented_codes(operation):
@@ -259,27 +285,36 @@ def spec_hypotheses(
         success = _success_code(operation)
         probe_path = _path_with_samples(endpoint, operation, spec)
         if success is not None and probe_path is not None and "{" not in endpoint:
+            steps = [
+                f"Send {method} {probe_path}",
+                f"Expect {success} response per spec",
+            ]
+            # V2 oracles: documented body fields + response headers, evaluated
+            # by the Witness only when the status itself matched.
+            fields = _response_fields(operation, success, spec)
+            if fields:
+                steps.append(f"Assert response contains fields: {', '.join(fields)}")
+            for header in _response_headers(operation, success, spec):
+                steps.append(f"Expect response header {header}")
             hypotheses.append(
                 DivergenceHypothesis(
                     id=str(uuid.uuid4()),
                     divergence_class=DivergenceClass.D5_SPEC_PROD,
-                    claim_a=f"spec: {method} {endpoint} responds {success}",
-                    claim_b="implementation returns a non-documented status (5xx/404 drift)",
-                    predicted_evidence=f"{method} {probe_path} returns a status other than {success}",
+                    claim_a=f"spec: {method} {endpoint} responds {success} with documented fields/headers",
+                    claim_b="implementation drifts from the documented response (status, fields, or headers)",
+                    predicted_evidence=f"{method} {probe_path} deviates from the documented {success} response",
                     severity=Severity.MEDIUM,
                     endpoint=f"{method} {endpoint}",
-                    repro_steps=[
-                        f"Send {method} {probe_path}",
-                        f"Expect {success} response per spec",
-                    ],
+                    repro_steps=steps,
                 )
             )
 
-    # Keep only hypotheses whose expected code the Witness can parse.
+    # Keep only hypotheses whose expected code the Witness can parse
+    # (the code may appear in any step — V2 oracle steps can follow it).
     return [
         h
         for h in hypotheses
-        if any(str(c) in h.repro_steps[-1] for c in _PARSEABLE_CODES)
+        if any(str(c) in step for c in _PARSEABLE_CODES for step in h.repro_steps)
     ]
 
 
