@@ -333,7 +333,7 @@ class DivergenceFinding(BaseModel):
     actual: str
     summary: str
     description: str
-    severity: str
+    severity: Severity
     remediation: str
 
 

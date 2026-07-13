@@ -37,6 +37,7 @@ def _register_commands() -> None:
         governance_cmd,
         map_cmd,
         profile_cmd,
+        record_cmd,
         tokens_cmd,
     )
     from cherenkov.cli.commands.eval_cmd import eval_cmd
@@ -82,6 +83,7 @@ def _register_commands() -> None:
         (daemon_cmd, "daemon"),
         (explore_cmd, "explore"),
         (author_cmd, "author"),
+        (record_cmd, "record"),
         (tokens_cmd, "tokens"),
         (governance_cmd, "governance"),
         (certify_cmd, "certify"),

@@ -60,8 +60,9 @@ def _item_row(item: HitlItem) -> str:
     """One-line summary of a HitlItem for list output."""
     conf = f"{item.confidence:.2f}" if item.confidence is not None else "—"
     gate = item.review_gate_failed or "—"
+    sev = item.severity.value if item.severity else "—"
     return (
-        f"  {item.id:<36}  {item.status.value:<10}  "
+        f"  {item.id:<36}  {item.status.value:<10}  sev={sev:<8}  "
         f"conf={conf}  gate={gate}  "
         f"{item.method or '?'} {item.endpoint or '?'}"
     )
@@ -71,6 +72,7 @@ def _item_detail(item: HitlItem) -> None:
     """Multi-line item detail for `show`."""
     print(f"  id              : {item.id}")
     print(f"  status          : {item.status.value}")
+    print(f"  severity        : {item.severity.value if item.severity else None}")
     print(f"  endpoint        : {item.method} {item.endpoint}")
     print(f"  mutation_id     : {item.mutation_id}")
     print(f"  mutation_label  : {item.mutation_label}")
@@ -89,13 +91,17 @@ def _item_detail(item: HitlItem) -> None:
 
 
 def run_list(
-    status: str | None = "pending", json_out: bool = False, db_path: str | None = None
+    status: str | None = "pending",
+    severity: str | None = None,
+    json_out: bool = False,
+    db_path: str | None = None,
 ) -> int:
     """
     List HITL queue items.
 
     Args:
         status:   Filter by status string; None means all statuses.
+        severity: Filter by severity string (low/medium/high/critical); None means all.
         json_out: Emit JSON envelope instead of human table.
         db_path:  Override default DB path (used in tests).
 
@@ -103,11 +109,12 @@ def run_list(
         0 on success.
     """
     q = HitlQueue(db_path=db_path)
-    items = q.list(status=status)
+    items = q.list(status=status, severity=severity)
 
     if json_out:
         payload = {
             "status_filter": status,
+            "severity_filter": severity,
             "count": len(items),
             "items": [i.model_dump() for i in items],
         }
@@ -115,6 +122,8 @@ def run_list(
         print(json.dumps(env.model_dump(), indent=2, default=str))
     else:
         label = status or "all"
+        if severity:
+            label += f", severity={severity}"
         print(f"HITL queue — {label} ({len(items)} item(s))")
         if items:
             print(f"  {'id':<36}  {'status':<10}  info")

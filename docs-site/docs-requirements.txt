@@ -20,4 +20,4 @@ mkdocs-git-revision-date-localized-plugin~=1.5.3   # "Last updated" timestamps f
 # Mixing awesome-pages with explicit nav causes unpredictable nav overrides.
 
 # Linting (Python-native, no npm required)
-pymarkdownlnt~=0.9.38
+pymarkdownlnt~=0.9.39
