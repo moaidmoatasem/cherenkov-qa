@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import re
 import time
 from typing import Any
 
@@ -107,6 +108,29 @@ class WitnessAgent:
             expected if expected is not None else hypothesis.claim_b,
             resp.status_code,
         )
+
+        # V2 oracles: documented response fields / headers. Only meaningful
+        # when the status itself matched (otherwise the status mismatch IS
+        # the divergence) and the target didn't rate-limit us.
+        if diff == "no structural diff" and resp.status_code != 429:
+            exp_fields, exp_headers = _parse_expected_fields_headers(
+                hypothesis.repro_steps
+            )
+            parts: list[str] = []
+            if exp_fields and isinstance(actual, dict):
+                missing_fields = [f for f in exp_fields if f not in actual]
+                if missing_fields:
+                    parts.append(
+                        f"missing documented response fields: {missing_fields}"
+                    )
+            if exp_headers:
+                missing_headers = [h for h in exp_headers if h not in resp.headers]
+                if missing_headers:
+                    parts.append(
+                        f"missing documented response headers: {missing_headers}"
+                    )
+            if parts:
+                diff = "; ".join(parts)
         response_expected: str | dict = (
             f"HTTP {expected} per spec"
             if isinstance(expected, int)
@@ -148,9 +172,10 @@ def _parse_repro_steps(
 
     for step in steps:
         upper = step.upper()
-        # Extract HTTP method + path
+        # Extract HTTP method + path. Word boundaries matter: "response
+        # header" must not match HEAD, "digest" must not match GET.
         for m in ("GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"):
-            if m in upper:
+            if re.search(rf"\b{m}\b", upper):
                 method = m
                 # find the first token starting with "/"
                 for token in step.split():
@@ -174,6 +199,29 @@ def _parse_repro_steps(
                     break
 
     return method, path, payload, expected
+
+
+_FIELDS_STEP = re.compile(r"response contains fields:\s*(.+)$", re.IGNORECASE)
+_HEADER_STEP = re.compile(r"response header\b:?\s*([A-Za-z0-9\-]+)", re.IGNORECASE)
+
+
+def _parse_expected_fields_headers(steps: list[str]) -> tuple[list[str], list[str]]:
+    """
+    Extract V2 oracles from repro steps:
+      "Assert response contains fields: id, name, status"
+      "Expect response header X-Rate-Limit"
+    Returns (expected_fields, expected_headers); empty lists when absent.
+    """
+    fields: list[str] = []
+    headers: list[str] = []
+    for step in steps:
+        m = _FIELDS_STEP.search(step)
+        if m:
+            fields.extend(f.strip() for f in m.group(1).split(",") if f.strip())
+        h = _HEADER_STEP.search(step)
+        if h:
+            headers.append(h.group(1).strip())
+    return fields, headers
 
 
 def _diff(actual: Any, expected: Any, status_code: int) -> str:

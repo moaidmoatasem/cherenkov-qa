@@ -67,7 +67,27 @@ ORDERS_SPEC: dict = {
             }
         },
         "/healthz": {
-            "get": {"summary": "Health", "responses": {"200": {"description": "ok"}}}
+            "get": {
+                "summary": "Health",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "headers": {"X-Service-Version": {"schema": {"type": "string"}}},
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": ["status"],
+                                    "properties": {
+                                        "status": {"type": "string"},
+                                        "uptime_s": {"type": "integer"},
+                                    },
+                                }
+                            }
+                        },
+                    }
+                },
+            }
         },
     },
     "components": {
@@ -113,7 +133,7 @@ class _ConformantOrders(BaseHTTPRequestHandler):
             else:
                 self._respond(200, {"id": order_id, "item": "x", "quantity": 1})
         elif parsed.path == "/healthz":
-            self._respond(200, {"status": "ok"})
+            self._respond(200, {"status": "ok", "uptime_s": 1}, headers={"X-Service-Version": "test"})
         else:
             self._respond(404, {"error": "not found"})
 
@@ -132,11 +152,13 @@ class _ConformantOrders(BaseHTTPRequestHandler):
         else:
             self._respond(404, {"error": "not found"})
 
-    def _respond(self, code: int, payload: object) -> None:
+    def _respond(self, code: int, payload: object, headers: dict | None = None) -> None:
         data = json.dumps(payload).encode()
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(data)))
+        for k, v in (headers or {}).items():
+            self.send_header(k, v)
         self.end_headers()
         self.wfile.write(data)
 
@@ -258,6 +280,43 @@ class TestRunProofSpecDerived:
         with _serve(_MutantOrders) as base:
             capped = run_proof(base_url=base, spec=ORDERS_SPEC, use_llm=False, max_probes=1)
         assert len(capped) <= 2  # at most the hypotheses of a single probe
+
+
+# ── V2 oracles: response fields + headers ─────────────────────────────────────
+
+class TestV2Oracles:
+    def test_happy_path_carries_field_and_header_steps(self) -> None:
+        hyps = spec_hypotheses(
+            "/healthz", "get", ORDERS_SPEC["paths"]["/healthz"]["get"], ORDERS_SPEC
+        )
+        steps = [s for h in hyps for s in h.repro_steps]
+        assert any("response contains fields: status" in s for s in steps), steps
+        assert any("response header X-Service-Version" in s for s in steps), steps
+
+    def test_header_step_does_not_parse_as_HEAD_method(self) -> None:
+        method, path, _, expected = _parse_repro_steps(
+            [
+                "Send GET /healthz",
+                "Expect 200 response per spec",
+                "Expect response header X-Service-Version",
+            ]
+        )
+        assert (method, path, expected) == ("GET", "/healthz", 200)
+
+    def test_mutant_missing_field_and_header_caught(self) -> None:
+        # Mutant returns 200 {"status": "ok", "data": []} without the header:
+        # status matches, so the V2 oracles must carry the divergence.
+        with _serve(_MutantOrders) as base:
+            reports = run_proof(base_url=base, spec=ORDERS_SPEC, use_llm=False)
+        healthz = [r for r in reports if "healthz" in (r.endpoint or "")]
+        assert healthz, [r.endpoint for r in reports]
+        diff = healthz[0].evidence.diff
+        assert "missing documented response headers" in diff, diff
+
+    def test_conformant_still_zero_divergences_with_v2_oracles(self) -> None:
+        with _serve(_ConformantOrders) as base:
+            reports = run_proof(base_url=base, spec=ORDERS_SPEC, use_llm=False)
+        assert reports == []
 
 
 # ── regression: Petstore demo path untouched ──────────────────────────────────
