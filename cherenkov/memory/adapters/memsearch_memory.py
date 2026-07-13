@@ -46,7 +46,7 @@ class MemSearchMemoryRepository(MemoryRepository):
 
     def search(self, query: MemoryQuery) -> list[MemoryEntry]:
         """Semantic search over memory entries using MemSearch.
-        
+
         Falls back to SQLite FTS if MemSearch is unavailable.
         """
         if not self._ms:

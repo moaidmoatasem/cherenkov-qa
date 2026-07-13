@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+
 from pydantic import BaseModel, Field
 
 try:
@@ -9,9 +10,10 @@ except ImportError:
     class BaseTool:  # type: ignore
         pass
 
-from cherenkov.chat.agent import QAChatAgent
 from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
+from cherenkov.chat.agent import QAChatAgent
 from cherenkov.substrate.router import SubstrateRouter
+
 
 class CherenkovToolInput(BaseModel):
     query: str = Field(description="The QA or testing query to run through CHERENKOV.")
@@ -32,7 +34,7 @@ class CherenkovTool(BaseTool):
         router = SubstrateRouter()
         self._agent = QAChatAgent(memory=memory, substrate_router=router)
 
-    def _run(self, query: str, run_manager: Any | None = None) -> str:
+    def _run(self, query: str, _run_manager: Any | None = None) -> str:
         """Run the CHERENKOV query synchronously."""
         msg = self._agent.chat(self._session_id, query)
         return msg.content

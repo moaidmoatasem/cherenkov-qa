@@ -24,6 +24,7 @@ except ImportError:  # pragma: no cover - fallback when langchain is not install
 from cherenkov.execution.validate import ValidationEngine
 from cherenkov.web.divergences import _DIVERGENCE_CORPUS
 
+
 class GenerateTestsInput(BaseModel):
     spec_path: str = Field(description="Path to the OpenAPI spec (yaml or json).")
     target_url: str = Field(
@@ -72,7 +73,7 @@ class CherenkovValidateTool(BaseTool):
         super().__init__(**kwargs)
         self._engine = ValidationEngine()
 
-    def _run(self, query: str, run_manager: Any | None = None) -> str:
+    def _run(self, query: str, _run_manager: Any | None = None) -> str:
         """Dispatch to the requested operation."""
         try:
             args = json.loads(query)

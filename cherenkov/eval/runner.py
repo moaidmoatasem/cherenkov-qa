@@ -16,7 +16,7 @@ import json
 import time
 import urllib.parse
 import urllib.request
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -109,7 +109,7 @@ class RunTrace:
                 f.write(json.dumps(result.to_dict()) + "\n")
 
     @classmethod
-    def from_jsonl(cls, path: Path) -> "RunTrace":
+    def from_jsonl(cls, path: Path) -> RunTrace:
         lines = path.read_text().splitlines()
         meta: dict[str, Any] = {}
         results: list[TestResult] = []

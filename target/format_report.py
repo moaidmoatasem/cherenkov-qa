@@ -1,4 +1,5 @@
-import sys, re
+import sys
+import re
 
 mode = sys.argv[1] # 'green' or 'red'
 
@@ -11,7 +12,7 @@ if match:
     report = match.group(1)
     report = report.replace("CHERENKOV VALUE ASSERTION TIGHTENING REPORT", "🔍 CHERENKOV VALUE ASSERTION TIGHTENING REPORT")
     report = report.replace("Suggested Assertion Tightening", "💡 Suggested Assertion Tightening")
-    
+
     # Handle Git status clean representation
     report = report.replace(
         "WARNING: Git status reports test files were modified! (Trust rule violated)",
@@ -21,7 +22,7 @@ if match:
         "Git status is clean — zero test files were auto-modified by validation. Suggest-only constraint honored.",
         "✓ Git status is 100% clean — zero test files were auto-modified by validation. Suggest-only constraint honored."
     )
-    
+
     if mode == "green":
         report = report.replace("Scenario: password_too_short [PASSED]", "Scenario: password_too_short [PASSED] (Running Against Spec Spec-conformance Mock)")
         report = report.replace('{"detail":"Validation failed","errors":[{"field":"password","error":"string_too_short"}]}', '{"detail":"Validation Error"}')
@@ -31,7 +32,7 @@ if match:
         report = report.replace('"user_id":42', '"id":42')
         report = report.replace("password_too_short.spec.ts:11:27", "password_too_short.spec.ts:8:27")
         report = report.replace("password_too_short.spec.ts:11", "password_too_short.spec.ts:8")
-        
+
         report = report.replace("   9 |     },", "  6 |     body: { email: 'test@example.com', password: 'short' }")
         report = report.replace("  10 |   });", "  7 |   });")
         report = report.replace("> 11 |   expect(response.status).toBe(422);", "> 8 |   expect(response.status).toBe(422);")

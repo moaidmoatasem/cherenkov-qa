@@ -5,9 +5,14 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
-from cherenkov.core.settings import get_settings
-from cherenkov.core.contracts import GoldSet, GoldSetItem, CertResult, ReasoningRequest
+
+from cherenkov.core.contracts import CertResult, GoldSet, GoldSetItem, ReasoningRequest
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
+
+_RE_URL = re.compile(r"https?://\S+")
+_RE_NUM = re.compile(r"\b\d{2,}\b")
+_RE_WORD = re.compile(r"\w+")
 
 class RAGTriadEvaluator:
     """RAG-Triad metrics: Context Relevance, Answer Faithfulness, Answer Relevance.
@@ -23,8 +28,8 @@ class RAGTriadEvaluator:
         """Score how well the response stays on-topic with the prompt (0.0-1.0)."""
         if not response.strip():
             return 0.0
-        prompt_tokens = set(re.findall(r"\w+", prompt.lower()))
-        response_tokens = set(re.findall(r"\w+", response.lower()))
+        prompt_tokens = set(_RE_WORD.findall(prompt.lower()))
+        response_tokens = set(_RE_WORD.findall(response.lower()))
         if not prompt_tokens:
             return 1.0
         overlap = len(prompt_tokens & response_tokens)
@@ -43,15 +48,13 @@ class RAGTriadEvaluator:
 
         penalty = 0.0
 
-        url_pattern = re.compile(r"https?://\S+")
-        response_urls = set(url_pattern.findall(response_lower))
-        prompt_urls = set(url_pattern.findall(prompt_lower))
+        response_urls = set(_RE_URL.findall(response_lower))
+        prompt_urls = set(_RE_URL.findall(prompt_lower))
         unknown_urls = response_urls - prompt_urls
         penalty += 0.15 * len(unknown_urls)
 
-        num_pattern = re.compile(r"\b\d{2,}\b")
-        response_nums = set(num_pattern.findall(response_lower))
-        prompt_nums = set(num_pattern.findall(prompt_lower))
+        response_nums = set(_RE_NUM.findall(response_lower))
+        prompt_nums = set(_RE_NUM.findall(prompt_lower))
         unknown_nums = response_nums - prompt_nums
         penalty += 0.05 * len(unknown_nums)
 
@@ -87,14 +90,14 @@ class RAGTriadEvaluator:
             "summarize",
         }
         prompt_lower = prompt.lower()
-        prompt_words = set(re.findall(r"\w+", prompt_lower))
+        prompt_words = set(_RE_WORD.findall(prompt_lower))
 
         query_terms = {w for w in prompt_words if w not in q_words and len(w) > 2}
         if not query_terms:
             return 1.0
 
         response_lower = response.lower()
-        response_words = set(re.findall(r"\w+", response_lower))
+        response_words = set(_RE_WORD.findall(response_lower))
 
         overlap = len(query_terms & response_words)
         coverage = overlap / len(query_terms)
@@ -160,7 +163,7 @@ class ModelCertificationManager:
                 encoding="utf-8",
             )
 
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
             gold_set = GoldSet(**data)
             if not gold_set.items:

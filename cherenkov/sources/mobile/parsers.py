@@ -23,10 +23,10 @@ class APKParser:
                 text=True,
                 check=False,
             )
-        except FileNotFoundError:
+        except FileNotFoundError as exc:
             raise RuntimeError(
                 "aapt not found on PATH; install Android SDK build-tools"
-            )
+            ) from exc
 
         if result.returncode != 0:
             raise RuntimeError(f"aapt dump failed: {result.stderr.strip()}")
@@ -96,10 +96,7 @@ class HILParser:
         raw = hil.read_text(encoding="utf-8")
         data = json.loads(raw)
 
-        if isinstance(data, list):
-            items = data
-        else:
-            items = data.get("flows", [])
+        items = data if isinstance(data, list) else data.get("flows", [])
 
         flows: list[MobileFlow] = []
         for i, item in enumerate(items):

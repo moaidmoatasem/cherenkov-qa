@@ -97,7 +97,7 @@ def _optional_param_finding(op_id: str = "listPets") -> DriftFinding:
 
 
 def _drift_report(findings=None, magnitude=0.75) -> DriftReport:
-    from cherenkov.drift.reconcile import MagnitudeVerdict, aggregate, GateSignal, SEVERITY
+    from cherenkov.drift.reconcile import MagnitudeVerdict, aggregate
 
     findings = findings or [_new_op_finding()]
     signals = [GateSignal(name=f.kind.value, verdict=SEVERITY[f.kind], detail=f) for f in findings]

@@ -6,16 +6,16 @@ import threading
 import time
 from typing import Any
 
+from cherenkov.adapters.notifiers.slack import SlackNotifier
+from cherenkov.adapters.notifiers.webhook import WebhookNotifier
 from cherenkov.core.errors import get_logger
 from cherenkov.hitl.contracts import HitlEnvelope
 from cherenkov.openclaw.adapter import OpenClawAdapter
 from cherenkov.openclaw.contracts import (
+    ClassificationRequest,
     OpenClawConfig,
     TriggerRequest,
-    ClassificationRequest,
 )
-from cherenkov.adapters.notifiers.slack import SlackNotifier
-from cherenkov.adapters.notifiers.webhook import WebhookNotifier
 
 _HAS_FASTAPI = False
 try:
@@ -168,8 +168,9 @@ def serve_background(
     if not _HAS_FASTAPI:
         raise RuntimeError("FastAPI is required for the OpenClaw HTTP server.")
 
-    import uvicorn
     from threading import Thread
+
+    import uvicorn
 
     cfg = config or OpenClawConfig()
     app = create_app(adapter=adapter, config=cfg)

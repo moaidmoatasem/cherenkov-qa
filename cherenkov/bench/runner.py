@@ -13,10 +13,10 @@ import os
 import time
 from collections.abc import Sequence
 
+from cherenkov.bench.metrics import BenchReport, GateSummary, SpecBenchResult
 from cherenkov.core.contracts import GenerateOutput, StageMeta, Status
 from cherenkov.core.errors import LoggerConfig
 from cherenkov.stages.review import ReviewStage
-from cherenkov.bench.metrics import BenchReport, GateSummary, SpecBenchResult
 
 _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 _DEFAULT_SPEC = os.path.join(_REPO_ROOT, "stub", "openapi_3_1.yaml")

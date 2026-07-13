@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import sys
+
 import click
 
 
@@ -14,9 +15,9 @@ import click
               help="Baseline directory (default: stub/visual_baselines)")
 def visual_cmd(target: str, baseline_dir: str) -> None:
     """Run optional visual-regression checks against a rendered URL (Track B)."""
-    from cherenkov.core.orchestrator import OrchestrationEngine
-    from cherenkov.core.contracts import VisualSlice
     from cherenkov.cli.legacy_reports import print_visual_report
+    from cherenkov.core.contracts import VisualSlice
+    from cherenkov.core.orchestrator import OrchestrationEngine
 
     slices = [VisualSlice(name="cli_default", url=target)]
     engine = OrchestrationEngine(run_id="cli_visual")
@@ -33,9 +34,9 @@ def visual_cmd(target: str, baseline_dir: str) -> None:
 @click.option("--duration", type=int, default=5, help="Duration in seconds (default: 5)")
 def perf_cmd(target: str, endpoint: str, method: str, vus: int, duration: int) -> None:
     """Run optional performance baseline checks (Track B)."""
-    from cherenkov.core.orchestrator import OrchestrationEngine
-    from cherenkov.core.contracts import PerfSlice
     from cherenkov.cli.legacy_reports import print_perf_report
+    from cherenkov.core.contracts import PerfSlice
+    from cherenkov.core.orchestrator import OrchestrationEngine
 
     slices = [PerfSlice(
         name="cli_default",
@@ -139,6 +140,7 @@ def hitl_explain(item_id: str, json_out: bool) -> None:
 def review_cmd(host: str, port: int, demo: bool) -> None:
     """Start the review dashboard web UI (FastAPI + prebuilt frontend)."""
     import uvicorn
+
     from cherenkov.web.api import app
 
     if demo or os.environ.get("DEMO_MODE") == "1":
@@ -244,4 +246,4 @@ def mcp_remove(tool_id: str) -> None:
         subprocess.run(["pip", "uninstall", "-y", package_name], check=True)
         click.echo("Successfully removed tool.")
     except subprocess.CalledProcessError as e:
-        raise click.ClickException(f"Removal failed: {e}")
+        raise click.ClickException(f"Removal failed: {e}") from e

@@ -8,13 +8,14 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
+
 
 class SnykVulnerability(BaseModel):
     vuln_id: str = Field(alias="id")

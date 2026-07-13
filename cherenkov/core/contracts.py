@@ -11,6 +11,7 @@ from __future__ import annotations
 import uuid
 from enum import Enum
 from typing import Literal
+
 from pydantic import BaseModel, Field
 
 SCHEMA_VERSION = 1

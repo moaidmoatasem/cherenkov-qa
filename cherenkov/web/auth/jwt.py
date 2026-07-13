@@ -55,7 +55,7 @@ def decode(token: str) -> dict:
     try:
         header, body, sig = token.split(".")
     except ValueError:
-        raise ValueError("Malformed token")
+        raise ValueError("Malformed token") from None
     signing_input = f"{header}.{body}"
     expected_sig = _b64url(hmac.new(_secret().encode(), signing_input.encode(), hashlib.sha256).digest())
     if not hmac.compare_digest(sig, expected_sig):

@@ -110,7 +110,7 @@ test('create user failing assertion spec', async () => {
         assert os.path.exists(healed_diff), "Unified diff file was not written to disk."
         print(f"✓ Unified diff generated successfully: {healed_diff}")
 
-        with open(healed_diff, "r", encoding="utf-8") as df:
+        with open(healed_diff, encoding="utf-8") as df:
             diff_content = df.read()
         print("\n--- GENERATED UNIFIED DIFF SUGGESTION ---")
         print(diff_content)
@@ -127,7 +127,7 @@ test('create user failing assertion spec', async () => {
         print("✓ Unified diff contains a corrected healed status assertion.")
 
         # Ensure original E2E test file was untouched (honoring the suggest-only trust rule)
-        with open(failing_spec, "r", encoding="utf-8") as f:
+        with open(failing_spec, encoding="utf-8") as f:
             intact_code = f.read()
         assert (
             "toBe(500)" in intact_code

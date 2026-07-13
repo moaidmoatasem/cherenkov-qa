@@ -13,7 +13,6 @@ import math
 from dataclasses import dataclass, field
 from typing import Any
 
-
 _NUMERIC_WEIGHT = 0.4
 _CATEGORICAL_WEIGHT = 0.3
 _SET_WEIGHT = 0.3
@@ -42,7 +41,7 @@ class Fingerprint:
 
 def _cosine(a: list[float], b: list[float]) -> float:
     """Cosine similarity of two equal-length vectors; 1.0 if both zero."""
-    dot = sum(x * y for x, y in zip(a, b))
+    dot = sum(x * y for x, y in zip(a, b, strict=False))
     mag_a = math.sqrt(sum(x * x for x in a))
     mag_b = math.sqrt(sum(x * x for x in b))
     if mag_a == 0 and mag_b == 0:
@@ -141,7 +140,7 @@ def _detect_auth_scheme(spec: dict[str, Any]) -> str:
     schemes = components.get("securitySchemes", {}) or components
     if not schemes:
         return "none"
-    for name, scheme in schemes.items():
+    for _name, scheme in schemes.items():
         if not isinstance(scheme, dict):
             continue
         kind = scheme.get("type", "").lower()

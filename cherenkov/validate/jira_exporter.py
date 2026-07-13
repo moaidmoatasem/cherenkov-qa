@@ -15,6 +15,7 @@ from typing import Any
 
 from cherenkov.core.errors import get_logger
 
+
 class JiraExporter:
     """Generates sandboxed, copy-ready Jira issue payloads inside .cherenkov/jira_tickets/ on test execution failure."""
 
@@ -368,9 +369,9 @@ class JiraExporter:
         body = (
             f"--{boundary}\r\n"
             f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'
-            f"Content-Type: {mime_type}\r\n\r\n".encode("utf-8")
+            f"Content-Type: {mime_type}\r\n\r\n".encode()
             + file_data
-            + f"\r\n--{boundary}--\r\n".encode("utf-8")
+            + f"\r\n--{boundary}--\r\n".encode()
         )
 
         headers["Content-Type"] = f"multipart/form-data; boundary={boundary}"

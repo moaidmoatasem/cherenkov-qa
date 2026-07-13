@@ -7,18 +7,18 @@ Exports the three primary agents:
   AdversarialSelfPlay — kills tautological tests before they ship
 """
 
-from cherenkov.divergence.skeptic import SkepticAgent
-from cherenkov.divergence.witness import WitnessAgent
 from cherenkov.divergence.self_play import (
     AdversarialSelfPlay,
     BrokenImplServer,
     SelfPlayResult,
 )
+from cherenkov.divergence.skeptic import SkepticAgent
+from cherenkov.divergence.witness import WitnessAgent
 
 __all__ = [
-    "SkepticAgent",
-    "WitnessAgent",
     "AdversarialSelfPlay",
     "BrokenImplServer",
     "SelfPlayResult",
+    "SkepticAgent",
+    "WitnessAgent",
 ]

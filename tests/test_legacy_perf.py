@@ -70,7 +70,7 @@ def main():
         print(f"✓ k6 Performance script generated successfully: {k6_file}")
 
         # Check file contents to ensure correct payload mapping
-        with open(k6_file, "r", encoding="utf-8") as f:
+        with open(k6_file, encoding="utf-8") as f:
             content = f.read()
         assert (
             "http.post" in content

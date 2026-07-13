@@ -356,10 +356,9 @@ def main():
         print("STATUS: ALL KILL CRITERIA MET — Epoch 10 Explorer + Copilot is green.")
         print("=" * 72)
         return 0
-    else:
-        print(f"STATUS: {FAIL} checks FAILED — review logs above.")
-        print("=" * 72)
-        return 1
+    print(f"STATUS: {FAIL} checks FAILED — review logs above.")
+    print("=" * 72)
+    return 1
 
 
 if __name__ == "__main__":

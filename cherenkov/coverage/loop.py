@@ -9,8 +9,8 @@ from __future__ import annotations
 import shutil
 import subprocess
 
-from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 from cherenkov.coverage.emitter import UnitTestEmitter
 
 
@@ -309,7 +309,7 @@ class CoverageLoop:
                 "details": [],
             }
 
-    def _parse_results(self, stdout: str, passed: int, failed: int) -> list[dict]:
+    def _parse_results(self, stdout: str, _passed: int, _failed: int) -> list[dict]:
         """Parse test runner output into structured results."""
         details = []
         for line in stdout.splitlines():

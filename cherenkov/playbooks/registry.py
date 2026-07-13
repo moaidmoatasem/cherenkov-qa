@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from collections.abc import Sequence
+from pathlib import Path
 
 from cherenkov.playbooks.models import Playbook
 

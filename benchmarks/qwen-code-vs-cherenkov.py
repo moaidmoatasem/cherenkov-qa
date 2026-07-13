@@ -12,32 +12,32 @@ relevancy_metric = AnswerRelevancyMetric(threshold=0.7)
 
 def test_qwen_code_generation():
     prompt = "Write a pytest test for the POST /api/v1/users endpoint checking for 201 Created."
-    
+
     # Run Qwen Code
     qwen_result = run_qwen_code_agent({"prompt": prompt, "files": []})
     qwen_output = qwen_result.get("stdout", "")
-    
+
     test_case = LLMTestCase(
         input=prompt,
         actual_output=qwen_output,
         expected_output="def test_create_user():\n    assert response.status_code == 201"
     )
-    
+
     evaluate([test_case], [relevancy_metric])
 
 def test_cherenkov_generation():
     prompt = "Write a pytest test for the POST /api/v1/users endpoint checking for 201 Created."
-    
+
     # Run CHERENKOV Copilot
     agent = CopilotAgent()
     cherenkov_output = agent.generate(prompt)
-    
+
     test_case = LLMTestCase(
         input=prompt,
         actual_output=cherenkov_output,
         expected_output="def test_create_user():\n    assert response.status_code == 201"
     )
-    
+
     evaluate([test_case], [relevancy_metric])
 
 if __name__ == "__main__":

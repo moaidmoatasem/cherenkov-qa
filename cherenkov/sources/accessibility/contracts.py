@@ -5,8 +5,8 @@ Accessibility source Pydantic models.
 
 from __future__ import annotations
 
-
 from pydantic import BaseModel, Field
+
 
 class PageTarget(BaseModel):
     url: str

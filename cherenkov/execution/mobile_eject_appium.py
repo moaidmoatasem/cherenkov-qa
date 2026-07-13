@@ -5,8 +5,10 @@ CHERENKOV execution/mobile_eject_appium.py — Appium Python test ejector.
 from __future__ import annotations
 
 import os
-import yaml
 from pathlib import Path
+
+import yaml
+
 from cherenkov.core.errors import get_logger
 
 
@@ -69,7 +71,7 @@ class AppiumEjector:
                         f"    # waited for visibility of '{target}' (timeout={timeout}ms)"
                     )
                 else:
-                    lines.append(f"    # unhandled step: {list(step)[0]}")
+                    lines.append(f"    # unhandled step: {next(iter(step))}")
             else:
                 lines.append(f"    # unhandled step: {step}")
 

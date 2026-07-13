@@ -8,12 +8,14 @@ import os
 import re
 import shutil
 import subprocess
-from typing import Any
 from contextlib import suppress
 from pathlib import Path
+from typing import Any
 
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
+
+_RE_K6_AVG_DURATION = re.compile(r"avg=([\d\.]+)(ms|s)")
 
 
 class K6Runner:
@@ -132,7 +134,7 @@ export default function () {{
         # Parse average latency value from metrics
         duration_line = metrics.get("http_req_duration", "")
         avg_val = 0.0
-        match = re.search(r"avg=([\d\.]+)(ms|s)", duration_line)
+        match = _RE_K6_AVG_DURATION.search(duration_line)
         if match:
             avg_val = float(match.group(1))
             if match.group(2) == "s":

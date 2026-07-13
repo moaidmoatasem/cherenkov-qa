@@ -61,7 +61,7 @@ class PilotAgent:
                 break
         return self.runner.steps
 
-    def _parse_intent(self, intent: str) -> list[PilotStep]:
+    def _parse_intent(self, _intent: str) -> list[PilotStep]:
         return [
             PilotStep(
                 step_id="1", action="open_app", target="app", expected="app_opened"

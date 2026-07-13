@@ -8,7 +8,7 @@ except ImportError:
 
 
 def load_spec(path: str) -> dict:
-    with open(path, "r") as f:
+    with open(path) as f:
         raw = f.read()
 
     if path.endswith((".yaml", ".yml")):

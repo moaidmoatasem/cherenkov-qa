@@ -108,7 +108,6 @@ def serve_stdio(table: DispatchTable, *, input_stream=None, output_stream=None) 
 
     Both streams can be overridden for testing without monkey-patching globals.
     """
-    import cherenkov.mcp.protocol as _self_module  # noqa: F401 — keep module ref for test mocking
 
     stdin = input_stream or sys.stdin
     _orig_stdout = sys.stdout

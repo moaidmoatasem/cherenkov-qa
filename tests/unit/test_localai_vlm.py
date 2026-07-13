@@ -18,14 +18,13 @@ def test_localai_provider_init_from_config():
     with patch.object(
         get_settings(), "VLM_LOCALAI_URL",
         "http://10.0.0.1:8080",
+    ), patch.object(
+        get_settings(), "VLM_LOCALAI_MODEL",
+        "qwen2.5-vl:7b",
     ):
-        with patch.object(
-            get_settings(), "VLM_LOCALAI_MODEL",
-            "qwen2.5-vl:7b",
-        ):
-            p = LocalAIVLMProvider()
-            assert p.base_url == "http://10.0.0.1:8080"
-            assert p.model == "qwen2.5-vl:7b"
+        p = LocalAIVLMProvider()
+        assert p.base_url == "http://10.0.0.1:8080"
+        assert p.model == "qwen2.5-vl:7b"
 
 
 def test_localai_health_unavailable():

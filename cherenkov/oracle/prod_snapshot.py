@@ -25,7 +25,7 @@ class ProdSnapshotOracle(Oracle):
         self._prod_url = prod_base_url.rstrip("/")
         self._log = get_logger("oracle-prod-snapshot")
 
-    def evaluate(self, claim: Claim, **kwargs: Any) -> OracleResult:
+    def evaluate(self, claim: Claim, **_kwargs: Any) -> OracleResult:
         if claim.category not in ("endpoint", "observed_status"):
             return OracleResult(
                 is_correct=True, confidence=0.5, detail="Non-evaluable claim category"

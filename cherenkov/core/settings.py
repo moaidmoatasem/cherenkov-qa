@@ -1,11 +1,15 @@
 from __future__ import annotations
+
+import os
 import threading
 import time
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
-import os
+
 import requests
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from cherenkov.core.errors import get_logger
+
 
 class CherenkovSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')
@@ -232,10 +236,10 @@ class CherenkovSettings(BaseSettings):
     _device_cache_ts: float = 0.0
     _DEVICE_CACHE_TTL: float = 60.0  # seconds
 
-_settings_instance: "CherenkovSettings | None" = None
+_settings_instance: CherenkovSettings | None = None
 _settings_lock = threading.Lock()
 
-def get_settings() -> "CherenkovSettings":
+def get_settings() -> CherenkovSettings:
     global _settings_instance
     if _settings_instance is None:
         with _settings_lock:

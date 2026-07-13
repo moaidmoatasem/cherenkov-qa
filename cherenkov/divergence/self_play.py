@@ -22,9 +22,9 @@ from __future__ import annotations
 
 import json
 import threading
+from collections.abc import Callable
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from collections.abc import Callable
 
 
 @dataclass
@@ -65,7 +65,7 @@ class BrokenImplServer:
         self._server: HTTPServer | None = None
         self._thread: threading.Thread | None = None
 
-    def __enter__(self) -> "BrokenImplServer":
+    def __enter__(self) -> BrokenImplServer:
         self.start()
         return self
 

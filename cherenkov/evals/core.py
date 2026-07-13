@@ -95,7 +95,7 @@ class EvalReport:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "EvalReport":
+    def from_dict(cls, data: dict[str, Any]) -> EvalReport:
         """Reconstruct a lightweight EvalReport from a to_dict() snapshot.
 
         Note: individual EvalResult scores are not fully reconstructed (only

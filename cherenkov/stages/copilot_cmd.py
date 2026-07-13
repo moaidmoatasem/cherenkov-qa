@@ -27,8 +27,8 @@ def run_explore(
     method: str = "GET",
 ) -> int:
     """Crawl `target` and print a ranked pre-session risk digest."""
-    from cherenkov.divergence.explorer import Explorer
     from cherenkov.copilot.digest import SecondPairOfEyes
+    from cherenkov.divergence.explorer import Explorer
 
     paths = paths or ["/"]
     print("=" * 72)

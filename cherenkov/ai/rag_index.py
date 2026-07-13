@@ -9,6 +9,7 @@ import os
 import sqlite3
 import threading
 import time
+
 import requests
 
 from cherenkov.core.errors import get_logger
@@ -156,7 +157,7 @@ class RAGIndex:
                 item_vector = json.loads(emb_json)
 
                 # Compute Cosine Similarity
-                dot_product = sum(x * y for x, y in zip(query_vector, item_vector))
+                dot_product = sum(x * y for x, y in zip(query_vector, item_vector, strict=False))
                 norm_q = sum(x * x for x in query_vector) ** 0.5
                 norm_i = sum(y * y for y in item_vector) ** 0.5
 

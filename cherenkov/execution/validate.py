@@ -22,6 +22,11 @@ from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.trace_reader import TraceReader
 
 _log = logging.getLogger(__name__)
+_RE_TO_HAVE_PROPERTY = re.compile(r"toHaveProperty\(['\"](\w+)['\"]")
+_RE_UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
+_RE_ISO_TS = re.compile(r"^\d{4}-\d{2}-\d{2}T")
+_RE_CLIENT_CALL = re.compile(r"client\.(GET|POST|PUT|DELETE|PATCH)\('([^']+)'")
+_RE_GQL_POST = re.compile(r"request\.post\('([^']+)'")
 
 
 def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
@@ -52,7 +57,6 @@ def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
         return warnings
 
     # Scan test files for toHaveProperty('field') assertions
-    field_re = re.compile(r"toHaveProperty\(['\"](\w+)['\"]")
     for fname in os.listdir(tests_dir):
         if not fname.endswith(".spec.ts"):
             continue
@@ -63,7 +67,7 @@ def _preflight_check(tests_dir: str, spec_path: str | None) -> list[str]:
         except Exception as exc:
             _log.debug("Could not read test file during preflight %s: %s", fpath, exc)
             continue
-        for match in field_re.finditer(code):
+        for match in _RE_TO_HAVE_PROPERTY.finditer(code):
             field = match.group(1)
             if field not in spec_fields:
                 warnings.append(
@@ -76,12 +80,10 @@ def _is_stable_value(v: object) -> bool:
     """Return False for values likely to change between runs (timestamps, UUIDs, large ints)."""
     if isinstance(v, str):
         # Skip UUID-like strings
-        if re.match(
-            r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", v, re.I
-        ):
+        if _RE_UUID.match(v):
             return False
         # Skip ISO timestamps
-        if re.match(r"^\d{4}-\d{2}-\d{2}T", v):
+        if _RE_ISO_TS.match(v):
             return False
     return not (isinstance(v, int) and v > 100000)
 
@@ -141,10 +143,10 @@ class ValidationEngine:
         preflight = _preflight_check(self.tests_dir, spec_path)
         if preflight:
             self.log.warning("pre-flight spec/test drift warnings", warnings=preflight)
-            print("\nPRE-FLIGHT WARNINGS — tests assert fields not found in spec schemas:")  # noqa: T201
+            print("\nPRE-FLIGHT WARNINGS — tests assert fields not found in spec schemas:")
             for w in preflight:
-                print(w)  # noqa: T201
-            print()  # noqa: T201
+                print(w)
+            print()
 
         if not os.path.exists(self.tests_dir):
             self.log.warning("no generated tests directory found")
@@ -182,10 +184,8 @@ class ValidationEngine:
             resp_body_str = ""
 
             if passed and trace_path:
-                method_match = re.search(
-                    r"client\.(GET|POST|PUT|DELETE|PATCH)\('([^']+)'", code
-                )
-                gql_match = re.search(r"request\.post\('([^']+)'", code)
+                method_match = _RE_CLIENT_CALL.search(code)
+                gql_match = _RE_GQL_POST.search(code)
 
                 target_method = None
                 target_url_path = None

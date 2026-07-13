@@ -1,10 +1,12 @@
 from __future__ import annotations
+
 import hashlib
 import json
 import os
-from pathlib import Path
-from typing import Protocol, Any
 from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Protocol
+
 from cherenkov.core.settings import get_settings
 from cherenkov.federation.protocol import DivergenceEnvelope
 
@@ -44,7 +46,7 @@ class JsonlCorpusBackend:
                 + "\n"
             )
 
-    def query(self, **kw) -> list[CorpusEntry]:
+    def query(self, **_kw) -> list[CorpusEntry]:
         if not self.path.exists():
             return []
         entries = []
@@ -57,7 +59,7 @@ class JsonlCorpusBackend:
 
 
 class Corpus:
-    def __init__(self, path: str = None, backend: CorpusBackend = None):
+    def __init__(self, path: str | None = None, backend: CorpusBackend = None):
         self.opt_in = os.getenv("CHERENKOV_CORPUS_OPT_IN", "false").lower() == "true"
         if backend is not None:
             self._backend = backend

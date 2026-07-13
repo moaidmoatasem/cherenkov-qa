@@ -89,8 +89,8 @@ async def create_user(
         user = store.create(body.username, body.password, body.role)
     except Exception as exc:
         if "UNIQUE" in str(exc):
-            raise HTTPException(status_code=409, detail="Username already exists")
-        raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=409, detail="Username already exists") from None
+        raise HTTPException(status_code=500, detail=str(exc)) from None
     return user
 
 

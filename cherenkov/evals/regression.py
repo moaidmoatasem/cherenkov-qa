@@ -20,13 +20,12 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
 from cherenkov.evals.core import EvalReport
 from cherenkov.evals.prompt_version import get_prompt_fingerprint, prompt_changed
-
 
 _BASELINE_PATH = Path("bench/eval-baseline.json")
 
@@ -203,7 +202,7 @@ def _main() -> None:
 
     guard = RegressionGuard(
         baseline_path=Path(args.baseline),
-        tolerance={k: args.tolerance for k in _DEFAULT_TOLERANCE},
+        tolerance=dict.fromkeys(_DEFAULT_TOLERANCE, args.tolerance),
     )
 
     result = guard.report_dict(report)

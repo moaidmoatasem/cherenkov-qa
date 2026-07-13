@@ -89,9 +89,8 @@ class TestGRPCSourceAdapter:
             GRPCSourceAdapter().discover_claims("/some/file.yaml")
 
     def test_directory_with_no_protos_raises(self):
-        with tempfile.TemporaryDirectory() as d:
-            with pytest.raises(FileNotFoundError):
-                GRPCSourceAdapter().discover_claims(d)
+        with tempfile.TemporaryDirectory() as d, pytest.raises(FileNotFoundError):
+            GRPCSourceAdapter().discover_claims(d)
 
     def test_directory_discovers_all_protos(self):
         with tempfile.TemporaryDirectory() as d:

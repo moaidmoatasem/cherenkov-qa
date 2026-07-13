@@ -7,9 +7,8 @@ angle of inquiry. Personas run in parallel inside SuiteEngine.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
-
 
 # ── Persona definition ─────────────────────────────────────────────────────────
 

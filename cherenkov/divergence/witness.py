@@ -8,6 +8,7 @@ of the Skeptic — the Witness only needs a DivergenceHypothesis and a base URL.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import time
 from typing import Any
@@ -161,10 +162,8 @@ def _parse_repro_steps(
         # Extract JSON body
         brace = step.find("{")
         if brace != -1 and payload is None:
-            try:
+            with contextlib.suppress(json.JSONDecodeError):
                 payload = json.loads(step[brace:])
-            except json.JSONDecodeError:
-                pass
 
         # Extract expected status code
         step_lower = step.lower()

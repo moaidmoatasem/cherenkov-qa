@@ -1,11 +1,13 @@
 from __future__ import annotations
-import click
+
 import glob
-import os
 import json
+import os
 import sys
 import tempfile
 from pathlib import Path
+
+import click
 
 from cherenkov.execution.validate import ValidationEngine
 
@@ -58,17 +60,17 @@ from cherenkov.execution.validate import ValidationEngine
 @click.option("--json", "json_out", is_flag=True, help="Output purely JSON to stdout")
 @click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output; print only the final status line")
 @click.option("--verbose", "-v", is_flag=True, help="Print each gate result, retry attempt, and all scenario outcomes")
-def validate_cmd(target, source, format, workers, no_html, no_cache, spec, output, fail_on_drift, json_summary, json_out, quiet, verbose):
+def validate_cmd(target, source, format, workers, no_html, no_cache, spec, output, fail_on_drift, json_summary, json_out, quiet, verbose):  # noqa: ARG001
     """Validate E2E test suite against a real server"""
     from cherenkov.core.errors import ExitCode
-    
+
     if spec == "-":
         stdin_content = sys.stdin.read()
         os.makedirs(".cherenkov", exist_ok=True)
         spec = ".cherenkov/stdin_spec.yaml"
         with open(spec, "w", encoding="utf-8") as f:
             f.write(stdin_content)
-            
+
     if no_cache:
         from cherenkov.cache.endpoint_cache import EndpointCache
 
@@ -76,7 +78,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
 
     # Pre-ingest spec validation for OpenAPI specs
     if source == "openapi" and spec:
-        from cherenkov.truth.spec_validator import validate_spec, Severity
+        from cherenkov.truth.spec_validator import Severity, validate_spec
 
         result = validate_spec(spec)
         for issue in result.issues:
@@ -97,8 +99,8 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
 
     if source == "graphql":
         from cherenkov.sources.graphql.adapter import GraphQLSourceAdapter
-        from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
         from cherenkov.stages.generate import GenerateStage
+        from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
 
         if not spec:
             click.echo(click.style("Error: --spec is required for --source graphql", fg="red"), err=True)
@@ -108,7 +110,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         gql_source = GraphQLSourceAdapter(spec)
         scenarios = GraphQLScenarioPlanner().plan(gql_source)
         if not quiet:
-            click.echo(f"Planned {len(scenarios)} scenarios from {len(set(s.operation_name for s in scenarios))} operations")
+            click.echo(f"Planned {len(scenarios)} scenarios from {len({s.operation_name for s in scenarios})} operations")
         generator = GenerateStage("cli_validate")
         generated = 0
         for sc in scenarios:
@@ -121,13 +123,13 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
             click.echo(f"Generated {generated}/{len(scenarios)} test files")
     elif source == "grpc":
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
-        from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
         from cherenkov.stages.generate import GenerateStage
+        from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
 
         if not spec:
             click.echo(click.style("Error: --spec is required for --source grpc", fg="red"), err=True)
             sys.exit(1)
-        
+
         # If spec does not end in .proto and looks like a buf module, fetch it
         if not spec.endswith(".proto") and "/" in spec:
             from cherenkov.validate.buf_registry import BufRegistryClient
@@ -140,11 +142,11 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
                 sys.exit(1)
 
             fd, temp_spec = tempfile.mkstemp(suffix=".proto")
-            with os.fdopen(fd, "w") as f:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
                 f.write(proto_content)
             spec = temp_spec
             if not quiet:
-                click.echo(f"Ingesting fetched gRPC proto.")
+                click.echo("Ingesting fetched gRPC proto.")
         else:
             if not quiet:
                 click.echo(f"Ingesting gRPC proto: {spec}")
@@ -152,7 +154,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         grpc_source = gRPCSourceAdapter(spec)
         scenarios = gRPCScenarioPlanner().plan(grpc_source)
         if not quiet:
-            click.echo(f"Planned {len(scenarios)} scenarios from {len(set(s.service for s in scenarios))} services")
+            click.echo(f"Planned {len(scenarios)} scenarios from {len({s.service for s in scenarios})} services")
         generator = GenerateStage("cli_validate")
         generated = 0
         for sc in scenarios:
@@ -165,8 +167,8 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
             click.echo(f"Generated {generated}/{len(scenarios)} test files")
     elif source == "accessibility":
         from cherenkov.sources.accessibility.adapter import AccessibilitySourceAdapter
-        from cherenkov.stages.plan_accessibility import AccessibilityScenarioPlanner
         from cherenkov.stages.generate import GenerateStage
+        from cherenkov.stages.plan_accessibility import AccessibilityScenarioPlanner
 
         a11y_source = AccessibilitySourceAdapter(spec)
         scenarios = AccessibilityScenarioPlanner().plan(a11y_source)
@@ -220,6 +222,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         os.makedirs(".cherenkov", exist_ok=True)
         emitter = SARIFEmitter()
         from types import SimpleNamespace
+
         from cherenkov.core.contracts import DivergenceFinding
 
         report_obj = SimpleNamespace(findings=[])

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
@@ -25,10 +26,10 @@ async def act_on_divergence(payload: DivergenceActionPayload, _auth=Depends(veri
         new_status = divergence_store.apply_action(payload.divergence_id, payload.action)
     except KeyError:
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail=f"Unknown divergence id: {payload.divergence_id}")
+        raise HTTPException(status_code=404, detail=f"Unknown divergence id: {payload.divergence_id}") from None
     except ValueError:
         from fastapi import HTTPException
-        raise HTTPException(status_code=400, detail=f"Unknown action: {payload.action}")
+        raise HTTPException(status_code=400, detail=f"Unknown action: {payload.action}") from None
     return {
         "status": "ok",
         "divergence_id": payload.divergence_id,

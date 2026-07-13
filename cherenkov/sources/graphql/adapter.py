@@ -1,18 +1,19 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 from collections.abc import Iterator
+from dataclasses import dataclass
+
 from graphql import (
-    build_ast_schema,
-    parse,
-    build_client_schema,
-    GraphQLScalarType,
+    GraphQLInterfaceType,
     GraphQLList,
     GraphQLNonNull,
     GraphQLObjectType,
-    GraphQLInterfaceType,
+    GraphQLScalarType,
     GraphQLUnionType,
+    build_ast_schema,
+    build_client_schema,
+    parse,
 )
 
 
@@ -39,8 +40,7 @@ class GraphQLSourceAdapter:
             if "data" in data:
                 data = data["data"]
             return build_client_schema(data)
-        else:
-            return build_ast_schema(parse(content))
+        return build_ast_schema(parse(content))
 
     def _get_leaf_fields(self, field_type, depth: int = 0, max_depth: int = 5) -> list[str]:
         if depth >= max_depth:

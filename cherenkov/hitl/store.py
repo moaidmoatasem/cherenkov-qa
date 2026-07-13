@@ -17,11 +17,11 @@ encryption. Falls back to plain SQLite if pysqlcipher3 is not available.
 from __future__ import annotations
 
 import builtins
+import logging
 import os
 import sqlite3
 import threading
 import time
-import logging
 
 from cherenkov.hitl.contracts import (
     HitlEnvelope,

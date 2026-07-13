@@ -19,7 +19,18 @@ import re
 import sys
 from pathlib import Path
 
-import click# ── AST analysis (no external deps, stdlib only) ──────────────────────────────
+import click
+
+_RE_WEAK_MATCHER = re.compile(
+    r"expect\([^)]+\)\.(not\.toBe|toContain|toBeTruthy|toBeFalsy|toBeDefined)\("
+)
+_RE_STRICT_MATCHER = re.compile(r"expect\([^)]+\)\.toBe\(")
+_RE_YAML_PROPS_HDR = re.compile(r"\s*properties:\s*$")
+_RE_YAML_FIELD = re.compile(r"\s{2,}([A-Za-z_][\w]*):")
+_RE_TEST_NAME = re.compile(r"(?:it|test)\(['\"]([^'\"]+)['\"]")
+_RE_PROP_ACCESS = re.compile(r"\.([a-zA-Z_]\w+)\b")
+
+# ── AST analysis (no external deps, stdlib only) ──────────────────────────────
 
 _STRONG = {"Eq"}
 _WEAK = {"NotEq", "Lt", "LtE", "Gt", "GtE", "In", "NotIn", "Is", "IsNot"}
@@ -47,11 +58,11 @@ def _spec_fields(spec_path: Path) -> set[str]:
     except Exception:
         in_props = False
         for line in text.splitlines():
-            if re.match(r"\s*properties:\s*$", line):
+            if _RE_YAML_PROPS_HDR.match(line):
                 in_props = True
                 continue
             if in_props:
-                m = re.match(r"\s{2,}([A-Za-z_][\w]*):", line)
+                m = _RE_YAML_FIELD.match(line)
                 if m:
                     fields.add(m.group(1))
                 elif line.strip() and not line.startswith(" "):
@@ -61,13 +72,11 @@ def _spec_fields(spec_path: Path) -> set[str]:
 def _subject_and_field(left: ast.expr) -> tuple[str, str | None]:
     subject = ast.unparse(left)
     field: str | None = None
-    if isinstance(left, ast.Subscript) and isinstance(left.value, ast.Name):
-        if left.value.id in _BODY_NAMES and isinstance(left.slice, ast.Constant):
-            if isinstance(left.slice.value, str):
-                field = left.slice.value
-    elif isinstance(left, ast.Attribute) and isinstance(left.value, ast.Name):
-        if left.value.id in _BODY_NAMES:
-            field = left.attr
+    if isinstance(left, ast.Subscript) and isinstance(left.value, ast.Name) and left.value.id in _BODY_NAMES and isinstance(left.slice, ast.Constant):
+        if isinstance(left.slice.value, str):
+            field = left.slice.value
+    elif isinstance(left, ast.Attribute) and isinstance(left.value, ast.Name) and left.value.id in _BODY_NAMES:
+        field = left.attr
     return subject, field
 
 def _parse_suite(code: str) -> dict[str, dict[str, set[str]]]:
@@ -239,23 +248,20 @@ def _check_typescript(
     """Regex-based integrity check for TypeScript test suites."""
     findings: list[str] = []
 
-    weak_re = re.compile(r"expect\([^)]+\)\.(not\.toBe|toContain|toBeTruthy|toBeFalsy|toBeDefined)\(")
-    strict_re = re.compile(r"expect\([^)]+\)\.toBe\(")
-
-    cand_has_strict = bool(strict_re.search(candidate_code))
-    cand_has_weak_only = bool(weak_re.search(candidate_code)) and not cand_has_strict
+    cand_has_strict = bool(_RE_STRICT_MATCHER.search(candidate_code))
+    cand_has_weak_only = bool(_RE_WEAK_MATCHER.search(candidate_code)) and not cand_has_strict
     if cand_has_weak_only:
         findings.append("WEAKENED  candidate uses only weak matchers (no .toBe() found)")
 
     if baseline_code:
-        base_tests = set(re.findall(r"(?:it|test)\(['\"]([^'\"]+)['\"]", baseline_code))
-        cand_tests = set(re.findall(r"(?:it|test)\(['\"]([^'\"]+)['\"]", candidate_code))
+        base_tests = set(_RE_TEST_NAME.findall(baseline_code))
+        cand_tests = set(_RE_TEST_NAME.findall(candidate_code))
         for t in sorted(base_tests - cand_tests):
             findings.append(f"DELETED   test case removed: '{t}'")
 
     if spec_path:
         allowed = _spec_fields(spec_path)
-        accessed = set(re.findall(r'\.([a-zA-Z_]\w+)\b', candidate_code))
+        accessed = set(_RE_PROP_ACCESS.findall(candidate_code))
         for f in sorted(accessed):
             if f not in allowed and f not in {
                 "status", "data", "body", "json", "headers", "text",

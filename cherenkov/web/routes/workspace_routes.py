@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import asyncio
 import os
 import sqlite3
@@ -8,9 +9,9 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from cherenkov.web.routes.deps import verify_api_key
 from cherenkov.web.auth.deps import require_role
 from cherenkov.web.auth.models import Role
+from cherenkov.web.routes.deps import verify_api_key
 
 router = APIRouter(tags=["workspace"])
 
@@ -242,7 +243,7 @@ async def update_project(project_id: str, payload: dict, _role=Depends(require_r
         conn = _db()
         try:
             sets = ", ".join(f"{k}=?" for k in updates)
-            vals = list(updates.values()) + [project_id]
+            vals = [*updates.values(), project_id]
             conn.execute(f"UPDATE projects SET {sets} WHERE id=?", vals)
             conn.commit()
         finally:

@@ -5,7 +5,7 @@ Public API:
   run_bench(test_dirs, spec_path, thresholds)      -> BenchReport
 """
 
-from cherenkov.bench.runner import bench_directory, run_bench
 from cherenkov.bench.metrics import BenchReport, SpecBenchResult
+from cherenkov.bench.runner import bench_directory, run_bench
 
-__all__ = ["bench_directory", "run_bench", "BenchReport", "SpecBenchResult"]
+__all__ = ["BenchReport", "SpecBenchResult", "bench_directory", "run_bench"]

@@ -19,6 +19,7 @@ from cherenkov.mobile.contracts import (
     PlatformName,
 )
 
+
 class DeviceClaimedError(Exception):
     """Raised when a device is already claimed by another session."""
 

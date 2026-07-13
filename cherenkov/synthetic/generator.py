@@ -50,16 +50,15 @@ class SyntheticDataGenerator:
 
         if schema_type == "object":
             return self._generate_object(schema, field_path)
-        elif schema_type == "array":
+        if schema_type == "array":
             return self._generate_array(schema, field_path)
-        elif schema_type in ("integer", "number"):
+        if schema_type in ("integer", "number"):
             return self._generate_number(schema)
-        elif schema_type == "boolean":
+        if schema_type == "boolean":
             return self._generate_boolean()
-        elif schema_type == "string":
+        if schema_type == "string":
             return self._generate_string(schema, field_path)
-        else:
-            return "synthetic_value"
+        return "synthetic_value"
 
     def _generate_with_llm(self, schema: dict[str, Any], field_path: str) -> Any:
         """Generate a value using Ollama for semantically realistic output."""
@@ -101,12 +100,11 @@ class SyntheticDataGenerator:
 
             if schema_type == "integer":
                 return int(cleaned)
-            elif schema_type == "number":
+            if schema_type == "number":
                 return float(cleaned)
-            elif schema_type == "boolean":
+            if schema_type == "boolean":
                 return cleaned.lower() in ("true", "yes", "1")
-            else:
-                return cleaned
+            return cleaned
         except Exception:
             return self._generate_random(schema, field_path)
 
@@ -115,13 +113,13 @@ class SyntheticDataGenerator:
         schema_type = schema.get("type", "string")
         if schema_type == "object":
             return self._generate_object(schema, field_path)
-        elif schema_type == "array":
+        if schema_type == "array":
             return self._generate_array(schema, field_path)
-        elif schema_type in ("integer", "number"):
+        if schema_type in ("integer", "number"):
             return self._generate_number(schema)
-        elif schema_type == "boolean":
+        if schema_type == "boolean":
             return self._generate_boolean()
-        elif schema_type == "string":
+        if schema_type == "string":
             return self._generate_string(schema, field_path)
         return "synthetic_value"
 

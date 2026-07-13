@@ -6,9 +6,10 @@ import base64
 import html
 import urllib.parse
 import uuid
-import defusedxml.ElementTree as defused_ET
 from dataclasses import dataclass, field
 from typing import Any
+
+import defusedxml.ElementTree as defused_ET
 
 from cherenkov.core.errors import get_logger
 

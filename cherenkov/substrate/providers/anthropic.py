@@ -33,6 +33,7 @@ _PRICING: dict[str, dict[str, float]] = {
 
 _DEFAULT_GENERATION_MODEL = "claude-sonnet-4-6"
 _DEFAULT_HEALING_MODEL = "claude-haiku-4-5-20251001"
+_RE_JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]+?)```")
 
 
 def _cost_usd(model: str, input_tokens: int, output_tokens: int) -> float:
@@ -143,7 +144,7 @@ def _extract_json(text: str) -> str:
     """Pull the first JSON object or array out of the model response."""
     text = text.strip()
     # Strip markdown fences
-    fenced = re.search(r"```(?:json)?\s*([\s\S]+?)```", text)
+    fenced = _RE_JSON_FENCE.search(text)
     if fenced:
         return fenced.group(1).strip()
     # Direct JSON

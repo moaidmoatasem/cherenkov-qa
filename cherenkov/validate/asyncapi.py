@@ -4,6 +4,7 @@ CHERENKOV validate/asyncapi.py — AsyncAPI Specification Parser.
 from __future__ import annotations
 
 import yaml
+
 from cherenkov.core.contracts import Scenario
 from cherenkov.core.errors import get_logger
 
@@ -14,7 +15,7 @@ class AsyncAPIParser:
 
     def parse_spec(self, file_path: str) -> list[Scenario]:
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding='utf-8') as f:
                 data = yaml.safe_load(f)
         except Exception as exc:
             _log.error("Failed to read AsyncAPI spec", error=str(exc))

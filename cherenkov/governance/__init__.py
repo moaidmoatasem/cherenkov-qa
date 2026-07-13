@@ -1,11 +1,11 @@
 from cherenkov.governance.kpi import (
+    GovernanceCollector,
     GovernanceKPI,
     GovernanceReport,
-    GovernanceCollector,
 )
 
 __all__ = [
+    "GovernanceCollector",
     "GovernanceKPI",
     "GovernanceReport",
-    "GovernanceCollector",
 ]

@@ -6,13 +6,14 @@ from __future__ import annotations
 
 import json
 import time
+
 from pydantic import BaseModel, Field
 
-from cherenkov.core.contracts import Status, StageMeta, StageError
-from cherenkov.core.settings import get_settings
-from cherenkov.core.errors import get_logger
-from cherenkov.ai.rag_index import RAGIndex
 from cherenkov.ai.ollama_client import complete_json
+from cherenkov.ai.rag_index import RAGIndex
+from cherenkov.core.contracts import StageError, StageMeta, Status
+from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 
 
 class DiagnosticsOutput(BaseModel):

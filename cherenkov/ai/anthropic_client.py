@@ -14,10 +14,13 @@ import re
 import time
 
 from cherenkov.ai.interface import InferenceClient
-from cherenkov.ai.ollama_client import strip_think, _try_json
+from cherenkov.ai.ollama_client import _try_json, strip_think
 from cherenkov.core.errors import ProviderJSONError, get_logger
 
 _log = get_logger("ANTHROPIC_CLIENT")
+
+_RE_CODE_FENCE = re.compile(r"```(?:typescript|ts)?\s*([\s\S]+?)```")
+_RE_JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]+?)```")
 
 _DEFAULT_MODEL = os.getenv("CHERENKOV_ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 
@@ -120,12 +123,12 @@ class AnthropicInferenceClient(InferenceClient):
         model: str,
         *,
         temperature: float = 0.1,
-        run_id: str | None = None,
+        run_id: str | None = None,  # noqa: ARG002
     ) -> str:
         raw = self._complete(system_prompt, user_prompt, model, temperature=temperature)
         code = strip_think(raw)
         # Strip markdown fences if present
-        fenced = re.search(r"```(?:typescript|ts)?\s*([\s\S]+?)```", code)
+        fenced = _RE_CODE_FENCE.search(code)
         if fenced:
             code = fenced.group(1).strip()
         return code
@@ -138,15 +141,15 @@ class AnthropicInferenceClient(InferenceClient):
         *,
         max_reprompts: int = 2,
         temperature: float = 0.1,
-        run_id: str | None = None,
+        run_id: str | None = None,  # noqa: ARG002
     ) -> dict:
-        for attempt in range(max_reprompts + 1):
+        for _attempt in range(max_reprompts + 1):
             raw = self._complete(
                 system_prompt, user_prompt, model, temperature=temperature
             )
             text = strip_think(raw)
             # Extract JSON
-            fenced = re.search(r"```(?:json)?\s*([\s\S]+?)```", text)
+            fenced = _RE_JSON_FENCE.search(text)
             if fenced:
                 text = fenced.group(1).strip()
             else:

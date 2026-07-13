@@ -16,7 +16,7 @@ from cherenkov.mcp.auth import (
 def test_generate_and_verify_token():
     token = generate_mcp_token("test-client")
     payload = verify_mcp_token(token)
-    
+
     assert payload is not None
     assert payload["sub"] == "test-client"
     assert "exp" in payload
@@ -53,6 +53,6 @@ def test_auth_middleware_api_key():
 def test_auth_middleware_jwt():
     middleware = MCPAuthMiddleware(require_auth=True)
     token = generate_mcp_token("client-1")
-    
+
     assert middleware.authenticate(token) is True
     assert middleware.authenticate("invalid.token") is False

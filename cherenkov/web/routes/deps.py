@@ -13,13 +13,15 @@ import ipaddress
 import os
 import re
 import socket
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from urllib.parse import urlparse
 
 from fastapi import FastAPI, HTTPException, WebSocket
 
 from cherenkov.hitl.store import HitlQueue
-from cherenkov.security.auth import verify_api_key  # noqa: F401 (re-exported for route modules)
+from cherenkov.security.auth import verify_api_key
+
+__all__ = ["verify_api_key"]
 
 # ── WebSocket Manager (singleton) ─────────────────────────────────────
 
@@ -35,10 +37,8 @@ class ConnectionManager:
 
     async def disconnect(self, websocket: WebSocket):
         async with self._lock:
-            try:
+            with suppress(ValueError):
                 self.active_connections.remove(websocket)
-            except ValueError:
-                pass
 
     async def broadcast(self, message: dict):
         async with self._lock:
@@ -52,10 +52,8 @@ class ConnectionManager:
         if dead:
             async with self._lock:
                 for c in dead:
-                    try:
+                    with suppress(ValueError):
                         self.active_connections.remove(c)
-                    except ValueError:
-                        pass
 
 
 manager = ConnectionManager()
@@ -103,7 +101,7 @@ async def _validate_spec_url(url: str) -> str:
             lambda: [info[4][0] for info in socket.getaddrinfo(host, 80, family=socket.AF_INET)]
         )
     except Exception:
-        raise HTTPException(status_code=400, detail="Could not resolve host")
+        raise HTTPException(status_code=400, detail="Could not resolve host") from None
     for ip_str in ips:
         try:
             addr = ipaddress.ip_address(ip_str)
@@ -112,12 +110,14 @@ async def _validate_spec_url(url: str) -> str:
         if not _is_safe_ip(addr):
             raise HTTPException(status_code=400, detail="Internal network URLs not allowed")
     safe_host = ips[0]
-    safe_url = url.replace(f"://{host}", f"://{safe_host}", 1)
-    return safe_url
+    return url.replace(f"://{host}", f"://{safe_host}", 1)
+
+
+_RE_SAFE_SCENARIO_ID = re.compile(r"^[a-zA-Z0-9_\-]{1,128}$")
 
 
 def _validate_scenario_id(scenario_id: str) -> str:
-    if not re.match(r"^[a-zA-Z0-9_\-]{1,128}$", scenario_id):
+    if not _RE_SAFE_SCENARIO_ID.match(scenario_id):
         raise HTTPException(
             status_code=400,
             detail="Invalid scenario_id: must be alphanumeric/underscore/hyphen, max 128 chars",
@@ -145,7 +145,7 @@ def ws_event_callback(type_: str, payload: dict):
 # ── Lifespan ──────────────────────────────────────────────────────────
 
 @asynccontextmanager
-async def lifespan(app_: FastAPI):
+async def lifespan(_app: FastAPI):
     global main_loop
     main_loop = asyncio.get_running_loop()
     yield

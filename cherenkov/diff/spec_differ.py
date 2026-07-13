@@ -12,7 +12,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-
 _HTTP_METHODS = {"get", "post", "put", "patch", "delete", "options", "head"}
 
 
@@ -245,7 +244,7 @@ class SpecDiffer:
     def _load(path: str) -> dict:
         import yaml  # pyyaml in requirements.txt
 
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             if path.endswith((".yaml", ".yml")):
                 return yaml.safe_load(f) or {}
             return json.load(f)

@@ -4,11 +4,11 @@ Background process that monitors Git repos and APM telemetry.
 """
 from __future__ import annotations
 
-import time
 import logging
-
 import os
+import time
 from pathlib import Path
+
 from .trigger_loop import SpecGuardianTriggerLoop
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class SpecGuardianWatcher:
         target_repo: str,
         target_url: str,
         source_type: str = "openapi",
-        watch_files: list[str] = None,
+        watch_files: list[str] | None = None,
     ):
         self.target_repo = Path(target_repo)
         self.watch_files = watch_files or ["openapi.yaml"]

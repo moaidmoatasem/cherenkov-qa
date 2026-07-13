@@ -1,6 +1,7 @@
 """API routes for Scheduling and Routines."""
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import APIRouter
@@ -9,13 +10,11 @@ from cherenkov.scheduling.adapters.apscheduler_adapter import APSchedulerAdapter
 from cherenkov.scheduling.domain.models import Routine
 from cherenkov.scheduling.use_cases.manage_routines import create_routine, toggle_routine
 
-from contextlib import asynccontextmanager
-
 # Global scheduler instance for now
 scheduler = APSchedulerAdapter()
 
 @asynccontextmanager
-async def router_lifespan(app: Any):
+async def router_lifespan(_app: Any):
     scheduler.start()
     yield
     scheduler.stop()

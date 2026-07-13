@@ -14,7 +14,7 @@ __all__ = [
     "EvidenceCollector",
     "GateCriteria",
     "GateEvidence",
+    "JiraExporter",
     "ValidationGate",
     "ValidationReport",
-    "JiraExporter",
 ]

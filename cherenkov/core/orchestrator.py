@@ -30,6 +30,7 @@ from cherenkov.stages.ingest import IngestStage
 from cherenkov.stages.plan import PlanStage
 from cherenkov.stages.review import ReviewStage
 
+
 def _assert_not_production() -> None:
     if os.getenv("CHERENKOV_ENV", "production") == "production":
         raise RuntimeError(
@@ -50,7 +51,7 @@ class OrchestrationEngine:
 
         run_dir = os.path.abspath(f".cherenkov/runs/{self.run_id}")
         os.makedirs(run_dir, exist_ok=True)
-        self._events_file = open(  # noqa: SIM115 — kept open for pipeline duration
+        self._events_file = open(  # noqa: SIM115
             os.path.join(run_dir, "events.jsonl"), "a", encoding="utf-8"
         )
         set_events_file(self._events_file)

@@ -11,8 +11,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from cherenkov.core.settings import get_settings
 from cherenkov.core.config_loader import LayeredConfig
+from cherenkov.core.settings import get_settings
 
 
 def detect_ollama() -> tuple[bool, str]:

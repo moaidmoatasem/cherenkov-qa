@@ -7,8 +7,8 @@ from __future__ import annotations
 import click
 
 from cherenkov.stages.ingest import IngestStage
-from cherenkov.stages.mobile_plan import MobilePlanStage
 from cherenkov.stages.mobile_generate import MobileGenerateStage
+from cherenkov.stages.mobile_plan import MobilePlanStage
 from cherenkov.stages.mobile_review import MobileReviewStage
 
 
