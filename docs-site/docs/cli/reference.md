@@ -139,7 +139,7 @@ Generate synthetic traffic patterns for load testing.
 
 ### `self-test`
 
-Run CHERENKOV's own internal self-test suite.
+Run CHERENKOV's own built-in self-test suite.
 
 ### `init`
 

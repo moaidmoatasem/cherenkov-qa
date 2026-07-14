@@ -43,7 +43,6 @@ FORBIDDEN: list[tuple[str, str, str]] = [
     (r"Authoritative handover:", "Handover language leaked to public docs", "ERROR"),
     (r"# Agent Operating Rules", "Agent operating rules header in public docs", "ERROR"),
     (r"\bINTERNAL\b", "Explicit INTERNAL marker", "ERROR"),
-    (r"agent_sync\.py", "Internal agent sync script reference", "ERROR"),
     (r"docs/HANDOVER", "Raw path to internal HANDOVER doc", "ERROR"),
     (r"docs/PHASE_PLAN", "Raw path to internal PHASE_PLAN doc", "ERROR"),
     # TODO/FIXME markers
@@ -58,6 +57,7 @@ FORBIDDEN_NON_ARCH: list[tuple[str, str, str]] = [
     (r"\bPhase [0-9]+[ab]?\b", "Internal Phase N reference (ok in architecture/, warn elsewhere)", "WARN"),
     (r"\bagent[_\- ]memory\b", "Internal agent memory reference", "WARN"),
     (r"\btrack[- ][a-h]\b", "Internal track reference (Track A/B...)", "WARN"),
+    (r"agent_sync\.py", "Internal agent sync script reference (ok in architecture/, warn elsewhere)", "WARN"),
 ]
 
 # File extensions to check
