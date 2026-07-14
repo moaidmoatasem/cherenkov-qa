@@ -69,7 +69,7 @@ SKIP_PATHS = {
 }
 
 
-def check_file(path: Path, strict: bool) -> list[tuple[str, int, str, str]]:
+def check_file(path: Path, strict: bool) -> list[tuple[str, int, str, str]]:  # noqa: ARG001
     """Return list of (file, line_number, severity, message) for each violation."""
     violations = []
     try:

@@ -36,7 +36,7 @@ METHOD_HANDLERS = {
 
 
 def run_validation(
-    spec_path: str, target_base: str, strict: bool = True
+    spec_path: str, target_base: str, strict: bool = True  # noqa: ARG001
 ) -> dict[str, Any]:
     with open(spec_path) as f:
         import json
