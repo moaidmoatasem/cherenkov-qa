@@ -45,9 +45,8 @@ class TestOtelTracer:
     @pytest.mark.skipif(not OTEL_AVAILABLE, reason="opentelemetry not installed")
     def test_active_span_when_enabled(self, monkeypatch):
         monkeypatch.setenv("CHERENKOV_OTEL_ENABLED", "true")
-        with patch("cherenkov.observability.otel._is_enabled", return_value=True):
-            with patch("cherenkov.observability.otel.trace") as mock_trace:
-                mock_span = mock_trace.get_tracer.return_value.start_as_current_span.return_value.__enter__.return_value
-                tracer = CherenkovTracer()
-                with tracer.span("cherenkov.test") as span:
-                    assert span is mock_span
+        with patch("cherenkov.observability.otel._is_enabled", return_value=True), patch("cherenkov.observability.otel.trace") as mock_trace:
+            mock_span = mock_trace.get_tracer.return_value.start_as_current_span.return_value.__enter__.return_value
+            tracer = CherenkovTracer()
+            with tracer.span("cherenkov.test") as span:
+                assert span is mock_span

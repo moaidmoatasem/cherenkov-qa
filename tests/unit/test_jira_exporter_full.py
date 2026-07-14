@@ -41,14 +41,13 @@ class TestJiraExporterFull(unittest.TestCase):
             captured_payload = json.loads(data.decode("utf-8"))
             return _mock_response({"key": "QA-101"})
 
-        with patch("urllib.request.Request", side_effect=capture_request):
-            with patch("urllib.request.urlopen", return_value=_mock_response({"key": "QA-101"})):
-                exporter = JiraExporter()
-                result = exporter.create_jira_issue_full(
-                    summary="Test with labels",
-                    description="desc",
-                    labels=["regression", "api"],
-                )
+        with patch("urllib.request.Request", side_effect=capture_request), patch("urllib.request.urlopen", return_value=_mock_response({"key": "QA-101"})):
+            exporter = JiraExporter()
+            result = exporter.create_jira_issue_full(
+                summary="Test with labels",
+                description="desc",
+                labels=["regression", "api"],
+            )
 
         called_url = captured_payload.get("fields", {}).get("labels", [])
         self.assertEqual(called_url, ["regression", "api"])
@@ -62,14 +61,13 @@ class TestJiraExporterFull(unittest.TestCase):
             captured_payload = json.loads(data.decode("utf-8"))
             return _mock_response({"key": "QA-102"})
 
-        with patch("urllib.request.Request", side_effect=capture_request):
-            with patch("urllib.request.urlopen", return_value=_mock_response({"key": "QA-102"})):
-                exporter = JiraExporter()
-                result = exporter.create_jira_issue_full(
-                    summary="Test with priority",
-                    description="desc",
-                    priority="High",
-                )
+        with patch("urllib.request.Request", side_effect=capture_request), patch("urllib.request.urlopen", return_value=_mock_response({"key": "QA-102"})):
+            exporter = JiraExporter()
+            result = exporter.create_jira_issue_full(
+                summary="Test with priority",
+                description="desc",
+                priority="High",
+            )
 
         self.assertEqual(captured_payload["fields"]["priority"], {"name": "High"})
         self.assertEqual(result, "QA-102")
@@ -82,14 +80,13 @@ class TestJiraExporterFull(unittest.TestCase):
             captured_payload = json.loads(data.decode("utf-8"))
             return _mock_response({"key": "QA-103"})
 
-        with patch("urllib.request.Request", side_effect=capture_request):
-            with patch("urllib.request.urlopen", return_value=_mock_response({"key": "QA-103"})):
-                exporter = JiraExporter()
-                result = exporter.create_jira_issue_full(
-                    summary="Test with components",
-                    description="desc",
-                    components=["Backend", "API"],
-                )
+        with patch("urllib.request.Request", side_effect=capture_request), patch("urllib.request.urlopen", return_value=_mock_response({"key": "QA-103"})):
+            exporter = JiraExporter()
+            result = exporter.create_jira_issue_full(
+                summary="Test with components",
+                description="desc",
+                components=["Backend", "API"],
+            )
 
         self.assertEqual(
             captured_payload["fields"]["components"],
@@ -158,10 +155,9 @@ class TestJiraExporterFull(unittest.TestCase):
             captured_data = json.loads(data.decode("utf-8"))
             return _mock_response({})
 
-        with patch("urllib.request.Request", side_effect=capture_request):
-            with patch("urllib.request.urlopen", return_value=_mock_response({})):
-                exporter = JiraExporter()
-                result = exporter.add_comment("QA-100", "This is a test comment")
+        with patch("urllib.request.Request", side_effect=capture_request), patch("urllib.request.urlopen", return_value=_mock_response({})):
+            exporter = JiraExporter()
+            result = exporter.add_comment("QA-100", "This is a test comment")
 
         self.assertTrue(result)
         self.assertEqual(captured_data["body"]["content"][0]["content"][0]["text"], "This is a test comment")

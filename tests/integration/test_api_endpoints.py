@@ -69,9 +69,8 @@ class TestListTests(unittest.TestCase):
         self.client = _make_client()
 
     def test_empty_when_no_generated_tests(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with patch("os.getcwd", return_value=tmpdir):
-                r = self.client.get("/api/v1/tests")
+        with tempfile.TemporaryDirectory() as tmpdir, patch("os.getcwd", return_value=tmpdir):
+            r = self.client.get("/api/v1/tests")
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json(), [])
 

@@ -76,14 +76,13 @@ class TestMCPConfigGenerator(unittest.TestCase):
                 self.assertIn("existing_srv", data["mcpServers"])
 
     def test_write_cursor_config(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with patch("cherenkov.mcp.install.Path.cwd", return_value=Path(tmpdir)):
-                result = self.gen.write_cursor_config()
-                self.assertTrue(result.exists())
-                with open(result) as f:
-                    data = json.load(f)
-                self.assertIn("mcpServers", data)
-                self.assertIn("cherenkov", data["mcpServers"])
+        with tempfile.TemporaryDirectory() as tmpdir, patch("cherenkov.mcp.install.Path.cwd", return_value=Path(tmpdir)):
+            result = self.gen.write_cursor_config()
+            self.assertTrue(result.exists())
+            with open(result) as f:
+                data = json.load(f)
+            self.assertIn("mcpServers", data)
+            self.assertIn("cherenkov", data["mcpServers"])
 
     def test_write_cursor_config_merges_existing(self):
         with tempfile.TemporaryDirectory() as tmpdir:

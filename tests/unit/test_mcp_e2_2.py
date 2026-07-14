@@ -60,17 +60,15 @@ class TestMCPClientCallTool:
             "error": {"code": -32601, "message": "Method not found"},
         }
         resp.raise_for_status = MagicMock()
-        with patch("httpx.post", return_value=resp):
-            with pytest.raises(MCPClientError, match="Method not found"):
-                client.call_tool("nonexistent", {})
+        with patch("httpx.post", return_value=resp), pytest.raises(MCPClientError, match="Method not found"):
+            client.call_tool("nonexistent", {})
 
     def test_call_tool_timeout_raises(self) -> None:
         import httpx as _httpx
 
         client = MCPClient("http://localhost:9000")
-        with patch("httpx.post", side_effect=_httpx.TimeoutException("timed out")):
-            with pytest.raises(MCPClientError, match="Timeout"):
-                client.call_tool("some_tool", {})
+        with patch("httpx.post", side_effect=_httpx.TimeoutException("timed out")), pytest.raises(MCPClientError, match="Timeout"):
+            client.call_tool("some_tool", {})
 
     def test_list_tools_returns_list(self) -> None:
         client = MCPClient("http://localhost:9000")
@@ -135,10 +133,9 @@ class TestMCPRegistryForward:
 
 
 def _call(name: str, args: dict) -> dict:
-    with patch.object(handlers._policy, "is_tool_allowed", return_value=True):
-        with patch("cherenkov.mcp.handlers.get_guard") as mock_guard:
-            mock_guard.return_value.check_tool_call.return_value = MagicMock(allowed=True)
-            return handlers.handle_tool_call({"name": name, "arguments": args})
+    with patch.object(handlers._policy, "is_tool_allowed", return_value=True), patch("cherenkov.mcp.handlers.get_guard") as mock_guard:
+        mock_guard.return_value.check_tool_call.return_value = MagicMock(allowed=True)
+        return handlers.handle_tool_call({"name": name, "arguments": args})
 
 
 class TestAutoHealCode:

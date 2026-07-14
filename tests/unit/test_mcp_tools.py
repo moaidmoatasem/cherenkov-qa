@@ -17,12 +17,11 @@ from cherenkov.mcp import handlers
 
 def _call(name: str, args: dict) -> dict:
     """Helper: call handle_tool_call with policy bypass (tests/full-dev)."""
-    with patch.object(handlers._policy, "is_tool_allowed", return_value=True):
-        with patch("cherenkov.mcp.handlers.get_guard") as mock_guard:
-            mock_guard.return_value.check_tool_call.return_value = MagicMock(
-                allowed=True
-            )
-            return handlers.handle_tool_call({"name": name, "arguments": args})
+    with patch.object(handlers._policy, "is_tool_allowed", return_value=True), patch("cherenkov.mcp.handlers.get_guard") as mock_guard:
+        mock_guard.return_value.check_tool_call.return_value = MagicMock(
+            allowed=True
+        )
+        return handlers.handle_tool_call({"name": name, "arguments": args})
 
 
 # ── get_last_report ────────────────────────────────────────────────────────────

@@ -39,10 +39,9 @@ def _make_report(
 
 
 def _call(args: dict) -> dict:
-    with patch.object(handlers._policy, "is_tool_allowed", return_value=True):
-        with patch("cherenkov.mcp.handlers.get_guard") as mock_guard:
-            mock_guard.return_value.check_tool_call.return_value = MagicMock(allowed=True)
-            return handlers.handle_tool_call({"name": "verify_system", "arguments": args})
+    with patch.object(handlers._policy, "is_tool_allowed", return_value=True), patch("cherenkov.mcp.handlers.get_guard") as mock_guard:
+        mock_guard.return_value.check_tool_call.return_value = MagicMock(allowed=True)
+        return handlers.handle_tool_call({"name": "verify_system", "arguments": args})
 
 
 class TestVerifySystemRegistration:

@@ -96,9 +96,8 @@ class TestWithRetry:
         """Test the enabled=False path without module reload side-effects."""
         # Patch _ENABLED directly rather than via env to avoid module reload
         fn = MagicMock(side_effect=[Exception("rate limit"), "ok"])
-        with patch("cherenkov.substrate.retry._ENABLED", False):
-            with pytest.raises(Exception, match="rate limit"):
-                with_retry(fn, max_attempts=3, base_delay=0)
+        with patch("cherenkov.substrate.retry._ENABLED", False), pytest.raises(Exception, match="rate limit"):
+            with_retry(fn, max_attempts=3, base_delay=0)
         assert fn.call_count == 1
 
     def test_budget_exceeded_not_retried(self):
@@ -118,9 +117,8 @@ class TestWithRetry:
 
     def test_no_sleep_on_final_attempt(self):
         fn = MagicMock(side_effect=Exception("timeout"))
-        with patch("cherenkov.substrate.retry.time.sleep") as mock_sleep:
-            with pytest.raises(Exception):
-                with_retry(fn, max_attempts=2, base_delay=1.0)
+        with patch("cherenkov.substrate.retry.time.sleep") as mock_sleep, pytest.raises(Exception):
+            with_retry(fn, max_attempts=2, base_delay=1.0)
         assert mock_sleep.call_count == 1  # only between attempt 1 and 2
 
 

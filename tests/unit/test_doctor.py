@@ -117,7 +117,6 @@ def test_doctor_recommendation_cloud():
             "cpu_count": 8,
             "memory_gb": 16.0,
         }
-        with patch("cherenkov.substrate.doctor._detect_ollama_vlm"):
-            with patch("cherenkov.substrate.doctor._detect_localai_vlm"):
-                result = runner.invoke(doctor)
-                assert "openai" in result.output
+        with patch("cherenkov.substrate.doctor._detect_ollama_vlm"), patch("cherenkov.substrate.doctor._detect_localai_vlm"):
+            result = runner.invoke(doctor)
+            assert "openai" in result.output
