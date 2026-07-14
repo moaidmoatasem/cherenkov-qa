@@ -70,6 +70,28 @@ To satisfy an audit request (EU AI Act technical documentation or SOC 2 evidence
 
 ---
 
+## ISO/IEC 42001:2023 — AI management systems
+
+The certificate serves as measurement evidence *into* an AIMS (it does not certify the
+AIMS itself). Provision references use the ISO harmonized management-system structure.
+
+| Clause | Requirement | Certificate fields | Notes |
+|---|---|---|---|
+| Cl. 9.1 | Monitoring, measurement, analysis and evaluation | `verdict`, `summary`, `issued_at`, `run_id` | Automated, timestamped measurement record of AI-adjacent API behaviour. |
+| Cl. 10.2 | Nonconformity and corrective action | `divergences_json` | Each divergence carries claim_a/claim_b + repro steps enabling corrective action and re-verification. |
+
+## OWASP AI Testing Guide v1 (2025)
+
+Mapped to the guide's core evidence requirements (descriptive — the guide is a
+methodology, not a numbered-controls standard):
+
+| Requirement | Certificate fields | Notes |
+|---|---|---|
+| Repeatable trustworthiness evidence | `divergences_json`, `fingerprint` | Findings are third-party re-runnable; the record is SHA-256 tamper-evident. |
+| Oracle integrity | `verdict`, `summary` | Oracles are spec-derived (status codes, documented fields/headers), never model output. Integrity of AI-*generated* suites is evidenced by `cherenkov check-suite`, complementary to this certificate. |
+
+---
+
 ## Limitations (honesty clause)
 
 The CHERENKOV Certificate is **not**:
