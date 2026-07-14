@@ -104,11 +104,11 @@ class TestGraphQLSourceAdapter(unittest.TestCase):
     """Tests for GraphQLSourceAdapter."""
 
     def setUp(self):
-        self.sdl_file = tempfile.NamedTemporaryFile(mode='w', suffix='.graphql', delete=False)
+        self.sdl_file = tempfile.NamedTemporaryFile(mode='w', suffix='.graphql', delete=False)  # noqa: SIM115
         self.sdl_file.write(TEST_SDL)
         self.sdl_file.close()
 
-        self.introspection_file = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+        self.introspection_file = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)  # noqa: SIM115
         json.dump(TEST_INTROSPECTION, self.introspection_file)
         self.introspection_file.close()
 
@@ -169,7 +169,7 @@ class TestGraphQLScenarioPlanner(unittest.TestCase):
     """Tests for GraphQLScenarioPlanner."""
 
     def setUp(self):
-        self.sdl_file = tempfile.NamedTemporaryFile(mode='w', suffix='.graphql', delete=False)
+        self.sdl_file = tempfile.NamedTemporaryFile(mode='w', suffix='.graphql', delete=False)  # noqa: SIM115
         self.sdl_file.write(TEST_SDL)
         self.sdl_file.close()
         self.adapter = GraphQLSourceAdapter(self.sdl_file.name)

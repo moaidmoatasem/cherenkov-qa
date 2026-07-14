@@ -44,7 +44,7 @@ type Pet {
 
 class TestGRPCSourceAdapter:
     def _adapter_with_proto(self, content: str) -> tuple[GRPCSourceAdapter, str]:
-        tmp = tempfile.NamedTemporaryFile(suffix=".proto", delete=False, mode="w")
+        tmp = tempfile.NamedTemporaryFile(suffix=".proto", delete=False, mode="w")  # noqa: SIM115
         tmp.write(content)
         tmp.close()
         return GRPCSourceAdapter(), tmp.name
@@ -109,7 +109,7 @@ class TestGRPCSourceAdapter:
 
 class TestGraphQLSourceAdapter:
     def _adapter_with_sdl(self, content: str) -> tuple[GraphQLSourceAdapter, str]:
-        tmp = tempfile.NamedTemporaryFile(suffix=".graphql", delete=False, mode="w")
+        tmp = tempfile.NamedTemporaryFile(suffix=".graphql", delete=False, mode="w")  # noqa: SIM115
         tmp.write(content)
         tmp.close()
         return GraphQLSourceAdapter(), tmp.name

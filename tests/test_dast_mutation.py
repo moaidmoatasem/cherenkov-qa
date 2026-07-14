@@ -167,7 +167,7 @@ class TestDASTMutationIngest(unittest.TestCase):
     # ── helpers ──────────────────────────────────────────────────────────
 
     def _write_temp_spec(self):
-        tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+        tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)  # noqa: SIM115
         json.dump(self.spec, tmp)
         tmp.close()
         return tmp.name

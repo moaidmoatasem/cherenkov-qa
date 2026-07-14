@@ -33,7 +33,7 @@ def check(condition: bool, msg: str) -> None:
         print(f"  [OK] {msg}")
 
 
-db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
 db.close()
 store = VerdictStore(db_path=db.name, run_id="smoke_test")
 now = int(time.time())

@@ -7,7 +7,7 @@ import unittest
 
 def _make_sdl(content: str) -> str:
     """Write SDL content to a temp file and return the path."""
-    f = tempfile.NamedTemporaryFile(mode="w", suffix=".graphql", delete=False)
+    f = tempfile.NamedTemporaryFile(mode="w", suffix=".graphql", delete=False)  # noqa: SIM115
     f.write(content)
     f.close()
     return f.name
@@ -18,7 +18,7 @@ def _make_introspection(schema_str: str) -> str:
     from graphql import build_ast_schema, introspection_from_schema, parse
     schema = build_ast_schema(parse(schema_str))
     result = introspection_from_schema(schema)
-    f = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+    f = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)  # noqa: SIM115
     json.dump(result, f)
     f.close()
     return f.name

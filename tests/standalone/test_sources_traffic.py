@@ -19,7 +19,7 @@ class TestTrafficSourceAdapter(unittest.TestCase):
                 "entries": entries,
             }
         }
-        tmp = tempfile.NamedTemporaryFile(
+        tmp = tempfile.NamedTemporaryFile(  # noqa: SIM115
             mode="w", suffix=".har", delete=False, encoding="utf-8"
         )
         json.dump(har, tmp)

@@ -72,7 +72,7 @@ check(isinstance(gold, GoldSet), "load_gold_set returns GoldSet")
 check(len(gold.items) > 0, f"gold set has items: {len(gold.items)}")
 
 print("\n4. Gold set file persistence")
-f = tempfile.NamedTemporaryFile(suffix=".json", delete=False, mode="w")
+f = tempfile.NamedTemporaryFile(suffix=".json", delete=False, mode="w")  # noqa: SIM115
 f.write(json.dumps({"version": 2, "items": _DEFAULT_GOLD_SET_ITEMS[:3]}))
 f.close()
 os.environ["CHERENKOV_CERTIFICATION_GOLD_SET_PATH"] = f.name

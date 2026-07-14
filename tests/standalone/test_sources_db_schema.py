@@ -57,7 +57,7 @@ class TestDBSchemaSourceAdapter(unittest.TestCase):
         self.adapter = DBSchemaSourceAdapter()
 
     def _write_schema(self, sql: str) -> str:
-        tmp = tempfile.NamedTemporaryFile(
+        tmp = tempfile.NamedTemporaryFile(  # noqa: SIM115
             mode="w", suffix=".sql", delete=False, encoding="utf-8"
         )
         tmp.write(sql)

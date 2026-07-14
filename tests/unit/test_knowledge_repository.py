@@ -49,7 +49,7 @@ class TestKnowledgeItem(unittest.TestCase):
 
 class TestSQLiteKnowledgeRepository(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
         self.db_path = self.tmp.name
         self.tmp.close()
         self.repo = SQLiteKnowledgeRepository(self.db_path)
@@ -201,7 +201,7 @@ class TestSQLiteKnowledgeRepository(unittest.TestCase):
 
 class TestGraphRAG(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
         self.db_path = self.tmp.name
         self.tmp.close()
         self.repo = SQLiteKnowledgeRepository(self.db_path)

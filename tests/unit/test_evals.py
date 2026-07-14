@@ -90,7 +90,7 @@ class TestEvalCore(unittest.TestCase):
 
 class TestEvalStore(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
         self.db_path = Path(self.tmp.name)
         self.tmp.close()
         self.store = EvalStore(db_path=self.db_path)

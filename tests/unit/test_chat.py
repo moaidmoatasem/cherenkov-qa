@@ -125,7 +125,7 @@ class TestPersonaRegistry(unittest.TestCase):
 
 class TestSQLiteConversationMemory(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
         self.db_path = self.tmp.name
         self.tmp.close()
         self.memory = SQLiteConversationMemory(self.db_path)
@@ -204,7 +204,7 @@ class TestSQLiteConversationMemory(unittest.TestCase):
 
 class TestQAChatAgent(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
         self.db_path = self.tmp.name
         self.tmp.close()
         self.memory = SQLiteConversationMemory(self.db_path)
@@ -359,7 +359,7 @@ class TestChatAPIIntegration(unittest.TestCase):
         mock_ref = self._reflector_patcher.start()
         mock_ref.return_value.get_stats.return_value = {"recent_idioms": []}
 
-        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
         self.db_path = self.tmp.name
         self.tmp.close()
         self.memory = SQLiteConversationMemory(self.db_path)

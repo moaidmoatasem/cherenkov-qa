@@ -16,8 +16,8 @@ def main():
     wrapper = os.path.join(
         os.path.dirname(os.path.dirname(self_dir)), "scripts", "start_dashboard_api.py"
     )
-    out_f = open("dashboard_startup.log", "w", encoding="utf-8")
-    err_f = open("dashboard_startup.err", "w", encoding="utf-8")
+    out_f = open("dashboard_startup.log", "w", encoding="utf-8")  # noqa: SIM115
+    err_f = open("dashboard_startup.err", "w", encoding="utf-8")  # noqa: SIM115
     dashboard_proc = subprocess.Popen(
         ["python3", wrapper, "--port", "8080"], stdout=out_f, stderr=err_f
     )

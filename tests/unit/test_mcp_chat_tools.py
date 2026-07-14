@@ -187,7 +187,7 @@ class TestHandleToolCallRouting(unittest.TestCase):
 
 class TestHandleResourceReadChatSessions(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
         self.db_path = self.tmp.name
         self.tmp.close()
 

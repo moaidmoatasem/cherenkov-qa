@@ -1072,7 +1072,7 @@ def main():
         _validate_run_dir = os.path.abspath(f".cherenkov/runs/{_validate_run_id}")
         os.makedirs(_validate_run_dir, exist_ok=True)
         _events_path = os.path.join(_validate_run_dir, "events.jsonl")
-        _ef = open(_events_path, "a", encoding="utf-8")
+        _ef = open(_events_path, "a", encoding="utf-8")  # noqa: SIM115
         _set_ef(_ef)
 
         engine = ValidationEngine("cli_validate")

@@ -5,7 +5,7 @@ import unittest
 
 
 def _make_proto(content: str) -> str:
-    f = tempfile.NamedTemporaryFile(mode="w", suffix=".proto", delete=False)
+    f = tempfile.NamedTemporaryFile(mode="w", suffix=".proto", delete=False)  # noqa: SIM115
     f.write(content)
     f.close()
     return f.name

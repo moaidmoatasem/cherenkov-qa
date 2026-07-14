@@ -12,7 +12,7 @@ from cherenkov.knowledge.bridges.hitl_reflector import HITLReflectorBridge
 
 @pytest.fixture
 def hitl_bridge():
-    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
     db_path = tmp.name
     tmp.close()
     repo = SQLiteKnowledgeRepository(db_path)
@@ -26,7 +26,7 @@ def hitl_bridge():
 
 @pytest.fixture
 def feedback_bridge():
-    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
     db_path = tmp.name
     tmp.close()
     repo = SQLiteKnowledgeRepository(db_path)
@@ -40,7 +40,7 @@ def feedback_bridge():
 @pytest.fixture
 def agent_memory_bridge():
     tmp_dir = tempfile.TemporaryDirectory()
-    tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
     db_path = tmp_db.name
     tmp_db.close()
     repo = SQLiteKnowledgeRepository(db_path)

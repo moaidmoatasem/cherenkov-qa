@@ -35,7 +35,7 @@ SAMPLE_POLICY = {
 
 class TestPolicyEngine(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)  # noqa: SIM115
         json.dump(SAMPLE_POLICY, self.tmp)
         self.tmp.close()
         self.engine = PolicyEngine(policy_path=self.tmp.name)
