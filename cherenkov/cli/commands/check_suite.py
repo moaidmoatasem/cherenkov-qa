@@ -35,6 +35,7 @@ _RE_PROP_ACCESS = re.compile(r"\.([a-zA-Z_]\w+)\b")
 _STRONG = {"Eq"}
 _WEAK = {"NotEq", "Lt", "LtE", "Gt", "GtE", "In", "NotIn", "Is", "IsNot"}
 _BODY_NAMES = {"body", "data", "payload", "json", "resp_json", "response"}
+_JSON_METHODS = {"json", "get_json"}
 
 def _spec_fields(spec_path: Path) -> set[str]:
     text = spec_path.read_text(encoding="utf-8")
@@ -69,15 +70,38 @@ def _spec_fields(spec_path: Path) -> set[str]:
                     in_props = False
     return fields
 
-def _subject_and_field(left: ast.expr) -> tuple[str, str | None]:
-    subject = ast.unparse(left)
-    field: str | None = None
-    if isinstance(left, ast.Subscript) and isinstance(left.value, ast.Name) and left.value.id in _BODY_NAMES and isinstance(left.slice, ast.Constant):
-        if isinstance(left.slice.value, str):
-            field = left.slice.value
+def _response_field(left: ast.expr) -> str | None:
+    """Extract the response-body field a comparison's left-hand side asserts on.
+
+    Recognises the common idioms for reading a JSON response body:
+      * a bound body variable — ``body["f"]`` / ``data.f`` where the name is in
+        ``_BODY_NAMES``
+      * a chained ``.json()`` / ``.get_json()`` call — ``resp.json()["f"]``,
+        ``client.get(...).json()["f"]``
+
+    Returns the field name, or ``None`` if the LHS is not a body-field access.
+    """
+    if isinstance(left, ast.Subscript) and isinstance(left.slice, ast.Constant) and isinstance(left.slice.value, str):
+        base = left.value
+        if isinstance(base, ast.Name) and base.id in _BODY_NAMES:
+            return left.slice.value
+        # chained call: <expr>.json()["f"] / <expr>.get_json()["f"]
+        if isinstance(base, ast.Call) and isinstance(base.func, ast.Attribute) and base.func.attr in _JSON_METHODS:
+            return left.slice.value
     elif isinstance(left, ast.Attribute) and isinstance(left.value, ast.Name) and left.value.id in _BODY_NAMES:
-        field = left.attr
-    return subject, field
+        return left.attr
+    return None
+
+def _subject_and_field(left: ast.expr) -> tuple[str, str | None]:
+    field = _response_field(left)
+    if field is not None:
+        # Canonical subject: unifies `resp.json()["id"]`, `body["id"]`, and
+        # `body.id` so a semantics-preserving refactor of the access idiom
+        # does not read as a WEAKENED/DELETED assertion (avoids false positives).
+        # For the bare `body["id"]` idiom this equals the previous ast.unparse
+        # output, so existing detection is unchanged.
+        return f"body[{field!r}]", field
+    return ast.unparse(left), None
 
 def _parse_suite(code: str) -> dict[str, dict[str, set[str]]]:
     tree = ast.parse(code)
@@ -229,6 +253,12 @@ def check_suite_cmd(
                 sys.exit(2)
 
         spec_path = Path(spec) if spec else None
+        if spec_path is not None and not _spec_fields(spec_path):
+            click.echo(
+                "[WARNING] --spec defines no response-body 'properties'; "
+                "HALLUCINATED detection is inactive for this run.",
+                err=True,
+            )
         findings = check_integrity(spec_path, baseline_code, candidate_code)
 
     _print_findings(cand_path.name, findings)
