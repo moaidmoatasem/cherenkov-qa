@@ -37,7 +37,7 @@ test('test_scenario', async () => {
 
 
 def _make_hitl_score_generate(scenario_id: str = "hitl_scenario") -> GenerateOutput:
-    """GenerateOutput that will score in the HITL band (0.7–0.9):
+    """GenerateOutput that will score in the HITL band (0.7-0.9):
     pass syntax + structure + ast + assertions, fail tsc + prism → 4/6 = 0.67... no
     Actually we need exactly 0.7-0.9: pass 4-5 of 6 gates.
     We'll mock the gates directly rather than run the full stage.

@@ -98,7 +98,7 @@ class TestGRPCSourceAdapter:
                 (Path(d) / f"svc{i}.proto").write_text(_PROTO)
             claims = GRPCSourceAdapter().discover_claims(d)
             rpc_claims = [c for c in claims if c.category == "grpc_rpc"]
-            assert len(rpc_claims) == 6  # 2 RPCs × 3 files
+            assert len(rpc_claims) == 6  # 2 RPCs x 3 files
 
     def test_provenance_source_uri_is_absolute(self):
         adapter, path = self._adapter_with_proto(_PROTO)

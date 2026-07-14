@@ -1,5 +1,5 @@
 """
-Tests for cherenkov/mcp/policy.py – PolicyEngine.
+Tests for cherenkov/mcp/policy.py - PolicyEngine.
 Authority: v3.1 + delta.
 """
 

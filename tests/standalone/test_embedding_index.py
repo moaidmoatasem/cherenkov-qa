@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 try:
-    import numpy
+    import numpy  # noqa: F401
 
     _NUMPY_AVAILABLE = True
 except ImportError:

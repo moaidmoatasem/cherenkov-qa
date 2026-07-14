@@ -285,7 +285,7 @@ def test_merge_total_test_count_reasonable():
     suites = [generate_for_persona(p, ctx, _SPEC) for p in DEFAULT_PERSONAS]
     merged = merge_suites(suites)
     total = sum(len(v) for v in merged.values())
-    # 5 personas × 3 ops, many generate 1-2 tests each → expect ≥ 10
+    # 5 personas x 3 ops, many generate 1-2 tests each → expect ≥ 10
     assert total >= 10
 
 

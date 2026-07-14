@@ -63,7 +63,7 @@ def _gate(result, name: str):
 
 
 def _static_gates_only(result) -> list:
-    """Gates 1–4 — always evaluated without external infra."""
+    """Gates 1-4 — always evaluated without external infra."""
     return [g for g in result.gates if g.gate in ("syntax", "structure", "ast", "assertion")]
 
 

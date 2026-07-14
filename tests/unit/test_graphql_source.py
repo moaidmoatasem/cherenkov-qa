@@ -122,7 +122,7 @@ class TestGraphQLSourceAdapter(unittest.TestCase):
 
     def test_adapter_loads_introspection(self):
         """Adapter should skip introspection that lacks interfaces field."""
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             GraphQLSourceAdapter(self.introspection_file.name)
 
     def test_iter_operations_yields_query(self):

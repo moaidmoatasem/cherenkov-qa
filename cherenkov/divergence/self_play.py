@@ -93,11 +93,11 @@ class BrokenImplServer:
             def log_message(self, *_: object) -> None:
                 pass  # suppress server log noise
 
-            do_GET = _respond
-            do_POST = _respond
-            do_PUT = _respond
-            do_DELETE = _respond
-            do_PATCH = _respond
+            do_GET = _respond  # noqa: N815
+            do_POST = _respond  # noqa: N815
+            do_PUT = _respond  # noqa: N815
+            do_DELETE = _respond  # noqa: N815
+            do_PATCH = _respond  # noqa: N815
 
         self._server = HTTPServer(("127.0.0.1", self.port), _Handler)
         self._thread = threading.Thread(

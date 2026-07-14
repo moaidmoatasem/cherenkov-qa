@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "scripts"
 
 def test_skill_sync_import():
     try:
-        import skill_sync
+        import skill_sync  # noqa: F401
         assert True
     except ImportError:
         pytest.fail("Could not import skill_sync")

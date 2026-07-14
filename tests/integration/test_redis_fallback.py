@@ -25,7 +25,7 @@ class TestRedisFallback(unittest.TestCase):
         """VerdictStore should use SQLite when Redis connection fails."""
         try:
             with mock.patch("redis.Redis.ping", side_effect=ConnectionError("Redis down")):
-                from cherenkov.truth.model import VerdictRecord
+                from cherenkov.truth.model import VerdictRecord  # noqa: F401
 
                 from cherenkov.reflector.store import VerdictStore
 

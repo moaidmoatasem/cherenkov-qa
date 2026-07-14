@@ -272,7 +272,7 @@ def main() -> int:
     print("\n9. HTTP server smoke test (FastAPI)")
     HAS_FASTAPI = False
     try:
-        import fastapi
+        import fastapi  # noqa: F401
 
         HAS_FASTAPI = True
     except ImportError:

@@ -171,15 +171,15 @@ class TestInputValidation(unittest.TestCase):
     """Trust boundary: invalid inputs are rejected before any queue is touched."""
 
     def test_hitl_approve_rejects_empty_item_id(self):
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             HitlApproveInput.model_validate({"item_id": ""})
 
     def test_hitl_reject_rejects_empty_item_id(self):
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             HitlRejectInput.model_validate({"item_id": ""})
 
     def test_hitl_list_rejects_invalid_status(self):
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             HitlListInput.model_validate({"status": "invalid_status"})
 
     def test_hitl_list_accepts_none_status(self):

@@ -117,7 +117,7 @@ class TestWithRetry:
 
     def test_no_sleep_on_final_attempt(self):
         fn = MagicMock(side_effect=Exception("timeout"))
-        with patch("cherenkov.substrate.retry.time.sleep") as mock_sleep, pytest.raises(Exception):
+        with patch("cherenkov.substrate.retry.time.sleep") as mock_sleep, pytest.raises(Exception):  # noqa: B017
             with_retry(fn, max_attempts=2, base_delay=1.0)
         assert mock_sleep.call_count == 1  # only between attempt 1 and 2
 
