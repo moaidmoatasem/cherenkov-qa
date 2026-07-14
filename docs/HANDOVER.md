@@ -7,6 +7,24 @@
 
 ---
 
+## SESSION HANDOVER — 2026-07-13 (V2 oracles; doc reconciliation)
+
+- **Witness V2 oracles** (PR #703, `6e6fea0`): `verify` now asserts documented
+  response-schema field presence and response headers, not just status codes.
+  New repro-step forms (`_parse_expected_fields_headers()` in `witness.py`):
+  `Assert response contains fields: id, name` and `Expect response header
+  X-Rate-Limit`. `probe_planner.py` happy-path hypotheses now carry documented
+  2xx body fields (capped at 3) and response headers (capped at 3). Closes the
+  "Deferred V2 oracles" item from the R1 write-up below. 17 tests in
+  `test_probe_planner.py`.
+- **Doc reconciliation**: root `HANDOVER.md` and this file had diverged (flagged
+  by the previous session, below, as out of scope). Root `HANDOVER.md` is the
+  canonical status anchor per `CLAUDE.md`; it has been updated to include the
+  HITL severity/agentic-exploration work and the V2 oracles work above. This
+  file remains the reverse-chronological session log.
+
+---
+
 ## SESSION HANDOVER — 2026-07-11 (HITL severity + agentic-exploration skill)
 
 Inspired by a survey of `MhmdElGazzar/agentex` (agentic manual-QA testing plugin).
