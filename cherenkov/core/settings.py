@@ -73,6 +73,8 @@ class CherenkovSettings(BaseSettings):
     CONSENSUS_ORACLE_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_CONSENSUS_ORACLE')
     CONSENSUS_ORACLE_PASSES: int = Field(default=3, validation_alias='CHERENKOV_CONSENSUS_PASSES')
 
+    MEANINGFUL_ASSERTION_GATE_ENABLED: bool = Field(default=True, validation_alias='CHERENKOV_MEANINGFUL_ASSERTION_GATE')
+
     OCR_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_OCR_ENABLED')
     OCR_TIMEOUT_SECONDS: int = Field(default=120, validation_alias='CHERENKOV_OCR_TIMEOUT_SECONDS')
     OCR_BINARY: str = Field(default='', validation_alias='CHERENKOV_OCR_BINARY')

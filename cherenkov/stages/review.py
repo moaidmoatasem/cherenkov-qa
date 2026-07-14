@@ -48,13 +48,20 @@ class ReviewStage:
     _AUTO_APPROVE_THRESHOLD = 0.9
     _HITL_THRESHOLD = 0.7
     _PRISM_PORT = 4015
+    _MUTANT_PORT = 4016
 
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("REVIEW", run_id)
         self.stub_dir = str(Path(__file__).parent.parent.parent / "stub")
 
-    def run(self, generate: GenerateOutput, spec_path: str) -> ReviewOutput:
+    def run(
+        self,
+        generate: GenerateOutput,
+        spec_path: str,
+        operation: dict[str, Any] | None = None,
+        schemas: dict[str, Any] | None = None,
+    ) -> ReviewOutput:
         t0 = time.monotonic()
         code = generate.test_code
         scenario_id = generate.scenario_id
@@ -78,6 +85,7 @@ class ReviewStage:
         )
         gates.append(prism_gate)
 
+        self._gate_meaningful_assertion(generate, code, scenario_id, operation, schemas, prism_gate, gates)
         self._gate_ocr(code, test_file_path, scenario_id, gates)
         self._gate_consensus(generate, code, spec_path, gates)
 
@@ -328,6 +336,76 @@ class ReviewStage:
                 "generated healing suggestion",
                 failure_class=diag.failure_class.value,
             )
+
+    def _gate_meaningful_assertion(
+        self,
+        generate: GenerateOutput,
+        code: str,
+        scenario_id: str,
+        operation: dict[str, Any] | None,
+        schemas: dict[str, Any] | None,
+        prism_gate: GateResult,
+        gates: list[GateResult],
+    ) -> None:
+        """E11-2 applied to the default repair path: the prism gate only proves the
+        test passes a spec-conforming mock. This proves it also FAILS a synthesized
+        spec regression, so a syntactically-valid but vacuous assertion (e.g.
+        `toBeLessThan(500)`) can't reach auto_approve on that alone."""
+        if not get_settings().MEANINGFUL_ASSERTION_GATE_ENABLED:
+            return
+        if operation is None:
+            gates.append(GateResult(
+                gate="meaningful-assertion", passed=True, skipped=True,
+                detail="Meaningful-assertion gate skipped: no operation object supplied.",
+            ))
+            return
+        if prism_gate.skipped or not prism_gate.passed:
+            gates.append(GateResult(
+                gate="meaningful-assertion", passed=True, skipped=True,
+                detail="Meaningful-assertion gate skipped: prism-dryrun did not establish a passing correct-mock run.",
+            ))
+            return
+
+        from cherenkov.divergence.mutant_synth import spawn_mutant_server
+
+        endpoint = getattr(generate, "endpoint", "") or ""
+        mutant_server = spawn_mutant_server(self._MUTANT_PORT, endpoint, operation, schemas)
+        if mutant_server is None:
+            gates.append(GateResult(
+                gate="meaningful-assertion", passed=True, skipped=True,
+                detail="Meaningful-assertion gate skipped: spec has no documented success response to mutate.",
+            ))
+            return
+
+        try:
+            with mutant_server:
+                runner = PlaywrightRunner(run_id=self.run_id)
+                result = runner.execute_test(
+                    scenario_id=f"{scenario_id}-mutant",
+                    test_code=code,
+                    api_url=mutant_server.url,
+                )
+        except Exception as e:
+            gates.append(GateResult(
+                gate="meaningful-assertion", passed=True, skipped=True,
+                detail=f"Meaningful-assertion gate skipped (error): {e}",
+            ))
+            return
+
+        if not result["passed"]:
+            gates.append(GateResult(
+                gate="meaningful-assertion", passed=True,
+                detail="Test passes the spec-conforming mock and fails a synthesized spec "
+                "regression — assertions are meaningful.",
+            ))
+            return
+
+        gates.append(GateResult(
+            gate="meaningful-assertion", passed=False,
+            detail="Test also passes against a synthesized broken implementation (wrong "
+            "status / dropped field on the documented success response). Assert the exact "
+            "documented status code and field values, not just that a field exists.",
+        ))
 
     def _gate_ocr(self, code: str, test_file_path: str, scenario_id: str, gates: list[GateResult]):
         if not get_settings().OCR_ENABLED:
