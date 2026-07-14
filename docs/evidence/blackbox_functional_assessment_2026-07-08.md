@@ -122,3 +122,56 @@ cherenkov certify --url http://127.0.0.1:8765 --spec divergent-spec.json
 
 # 5. Proof of R1 — inspect the target's access log: only /pet, /store/inventory probes arrive.
 ```
+
+---
+
+# Addendum — Alignment pass on the AST Integrity Moat (`check-suite`)
+
+**Date:** 2026-07-09
+**Scope:** The first assessment (above) exercised the *live-API divergence* path (`verify`/`certify`). This addendum aligns findings with the project's **headline** claim — the README leads with `check-suite` as an "API Integrity Auditor" that "detects Weakened, Deleted, and Hallucinated assertions **without relying on an LLM**, pure Python AST" (`README.md:10`). That claim was not covered above, so it was black-box tested here with real fixtures (honest baseline + weakened / deleted / hallucinated candidates).
+
+> Note: `verify`/`certify` results above were captured at HEAD `aac3c17`. `main` has since advanced (incl. #703 "V2 oracles — documented response fields and headers"), which may affect F1–F5; those were **not** re-tested. This addendum's `check-suite` results are current.
+
+## Result — the moat's core is real; the third category is fragile
+
+| Category (README claim) | Black-box result | Verdict |
+|---|---|---|
+| **WEAKENED** | `assert r.status_code == 200` loosened to `in (200,404)` → **caught**, exit 1 | ✅ real, LLM-free |
+| **DELETED** (whole test + dropped assertion) | removed test and gutted `assert ... or True` → **caught**, exit 1 | ✅ real, LLM-free |
+| **Control** (candidate == baseline) | **PASS**, exit 0 — no false positives | ✅ |
+| **HALLUCINATED** | asserting on `is_admin` / `secret_token` (absent from spec schema) via `r.json()["..."]` → **missed**, PASS, exit 0. Same assertion via `data = r.json(); data["..."]` → **caught** | ⚠️ idiom-fragile |
+
+## Two precise, reproducible `check-suite` defects
+
+### H1 — HALLUCINATED detection silently misses the most common response-access idiom
+`_candidate_fields` → `_subject_and_field` (`cherenkov/cli/commands/check_suite.py:63-64`) only extracts a field when the subscripted value is a **bare `ast.Name`** in `_BODY_NAMES` (`{"body","data","payload","json","resp_json","response"}`). The ubiquitous chained-call idiom `r.json()["field"]` — used in CHERENKOV's *own* generated tests (`stub/generated_tests`, and the `generate` output in the main report) — has a `Call` as the subscript value, so **no field is extracted** and hallucinated fields pass undetected. Additionally, the whole check is gated by `if allowed:` (line 123): a `--spec` with no `properties` (or one `_spec_fields` can't parse) **silently disables** hallucination detection with no warning to the user.
+
+### H2 — WEAKENED/DELETED are keyed on the unparsed expression string, so a pure refactor triggers false findings
+Assertion subjects are keyed on `ast.unparse(left)` (`check_suite.py:80`). Refactoring `assert r.json()["id"] == 1` into `data = r.json(); assert data["id"] == 1` — a semantics-preserving style change — makes the baseline subject `r.json()['id']` disappear and reports a **false `DELETED assertion dropped`**. The binding is string-sensitive, not semantics-sensitive, which undercuts the "mathematically binds your tests to your spec" framing (`README.md:38`).
+
+## Alignment summary (documented claim → reality)
+
+- **"Integrity Moat: WEAKENED + DELETED, no LLM"** → **holds.** This is the honest, defensible core of the product.
+- **"HALLUCINATED"** → **holds only for `data[...]`-style access;** silently misses `r.json()[...]` and no-ops on property-less specs (H1).
+- **"mathematically binds tests to spec"** → **overstated;** string-keyed, style-sensitive (H2).
+- **`verify`/`certify` offline divergence detection** → **unsound for non-Petstore targets** (F1–F5, main report; not re-tested post-#703).
+- **HANDOVER "mypy runs clean on 530 files"** → **stale;** red under mypy 2.2.0 (`HitlQueue.list` shadows builtin `list`).
+
+## Reproduction (addendum)
+
+```bash
+# honest baseline asserts on spec fields id, item (spec2.yaml defines only id, item)
+# candidate asserts on is_admin / secret_token (not in spec):
+
+# MISS — chained-call idiom:
+#   assert r.json()["is_admin"] == True
+cherenkov check-suite -c cand_field_hall.py -b baseline2.py -s spec2.yaml --fail-on-finding
+#   -> PASS, EXIT 0   (H1)
+
+# CATCH — body-variable idiom:
+#   data = r.json(); assert data["is_admin"] == True
+cherenkov check-suite -c cand_bodyvar.py -b baseline2.py -s spec2.yaml --fail-on-finding
+#   -> HALLUCINATED is_admin / secret_token caught, BUT also 3 false DELETED
+#      findings because baseline used r.json()["id"] vs candidate data["id"]   (H2)
+```
+
