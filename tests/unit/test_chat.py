@@ -1,25 +1,25 @@
 # TODO: convert to pytest — complex file (>150 lines, heavy setUp/tearDown with FastAPI TestClient)
-import contextlib
-import unittest
 import asyncio
+import contextlib
 import os
 import tempfile
-from unittest.mock import MagicMock, patch
+import unittest
+from unittest.mock import patch
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from cherenkov.chat.domain.models import Message, Session
-from cherenkov.chat.persona import Persona, PersonaRegistry
 from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
 from cherenkov.chat.agent import QAChatAgent
+from cherenkov.chat.api.routes import get_agent, get_memory, router
+from cherenkov.chat.domain.models import Message, Session
+from cherenkov.chat.persona import Persona, PersonaRegistry
 from cherenkov.chat.tools import (
-    execute_tool,
     TOOL_REGISTRY,
-    query_verdicts,
+    execute_tool,
     query_idioms,
+    query_verdicts,
 )
-from cherenkov.chat.api.routes import router, get_memory, get_agent
 
 
 class TestMessage(unittest.TestCase):

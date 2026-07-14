@@ -4,10 +4,8 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-
 from cherenkov.core.contracts import Claim, Provenance, ProvenanceType
 from cherenkov.oracle.consensus_oracle import ConsensusOracle
-
 
 # ── fixtures ──────────────────────────────────────────────────────────────────
 
@@ -194,6 +192,6 @@ def test_confidence_is_zero_when_all_passes_fail():
 
 
 def test_consensus_oracle_importable_from_package():
-    from cherenkov.oracle import ConsensusOracle as CO  # noqa: F401
+    from cherenkov.oracle import ConsensusOracle as CO
 
     assert CO is ConsensusOracle

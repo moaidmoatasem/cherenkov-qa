@@ -3,15 +3,9 @@ tests/unit/test_daemon_e23.py — E2.3: Continuous engine divergence integration
 """
 from __future__ import annotations
 
-import json
-import time
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from cherenkov.stages.daemon_cmd import DivergenceQueue, _get_spec_mtimes, run_daemon
-
 
 # ── DivergenceQueue ────────────────────────────────────────────────────────────
 
@@ -71,7 +65,11 @@ def _make_mock_config(specs):
 
 def _make_mock_report(endpoint="/pet", divergence_class_val="D1_spec_code", diff="status mismatch"):
     from cherenkov.core.contracts import (
-        DivergenceClass, DivergenceEvidence, DivergenceReport, Severity, StageMeta, Status,
+        DivergenceClass,
+        DivergenceEvidence,
+        DivergenceReport,
+        Severity,
+        StageMeta,
     )
     return DivergenceReport(
         id="r1",

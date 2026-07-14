@@ -1,9 +1,8 @@
 """Tests for cherenkov/evals/prompt_version.py"""
 
 import hashlib
-import json
+
 import pytest
-from pathlib import Path
 
 from cherenkov.evals.prompt_version import get_prompt_fingerprint, prompt_changed
 

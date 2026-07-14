@@ -3,7 +3,6 @@
 import json
 import os
 import unittest
-from io import BytesIO
 from unittest.mock import MagicMock, patch
 
 from cherenkov.validate.jira_exporter import JiraExporter

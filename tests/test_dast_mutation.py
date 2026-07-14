@@ -1,4 +1,5 @@
 from cherenkov.core.settings import get_settings
+
 # TODO: convert to pytest — complex file (>150 lines, setUp/tearDown)
 """
 Tests for Issue #194 — Lightweight DAST Mutation Profile.
@@ -16,7 +17,6 @@ import os
 import tempfile
 import unittest
 from unittest.mock import patch
-import cherenkov.core.config
 
 from cherenkov.stages.ingest import DAST_PAYLOADS
 

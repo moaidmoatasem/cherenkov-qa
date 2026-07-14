@@ -1,11 +1,12 @@
-import os
 import json
+import os
 import tempfile
-import pytest
 from unittest.mock import patch
 
-from cherenkov.execution.maestro_runner import MaestroRunner
+import pytest
+
 from cherenkov.execution.appium_runner import AppiumRunner
+from cherenkov.execution.maestro_runner import MaestroRunner
 from cherenkov.sources.mobile.parsers import HARParser, HILParser
 
 

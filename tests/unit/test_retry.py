@@ -1,9 +1,8 @@
 """Tests for cherenkov/substrate/retry.py"""
 
-import os
-import time
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, call
 
 
 # Patch sleep globally so tests don't actually wait
@@ -13,7 +12,7 @@ def no_sleep():
         yield
 
 
-from cherenkov.substrate.retry import with_retry, retryable, _is_retryable, _delay
+from cherenkov.substrate.retry import _delay, _is_retryable, retryable, with_retry
 
 
 class TestIsRetryable:

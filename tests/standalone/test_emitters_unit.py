@@ -6,10 +6,9 @@ Tests pytest and jest code generation from Truth Model.
 
 import tempfile
 import unittest
-
 from pathlib import Path
 
-from cherenkov.core.truth_model import TruthModel, GraphNode, NodeType
+from cherenkov.core.truth_model import GraphNode, NodeType, TruthModel
 from cherenkov.truth.emitters.unit_test import UnitTestEmitter
 
 

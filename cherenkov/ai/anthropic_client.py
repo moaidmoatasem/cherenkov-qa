@@ -123,7 +123,7 @@ class AnthropicInferenceClient(InferenceClient):
         model: str,
         *,
         temperature: float = 0.1,
-        run_id: str | None = None,  # noqa: ARG002
+        run_id: str | None = None,
     ) -> str:
         raw = self._complete(system_prompt, user_prompt, model, temperature=temperature)
         code = strip_think(raw)
@@ -141,7 +141,7 @@ class AnthropicInferenceClient(InferenceClient):
         *,
         max_reprompts: int = 2,
         temperature: float = 0.1,
-        run_id: str | None = None,  # noqa: ARG002
+        run_id: str | None = None,
     ) -> dict:
         for _attempt in range(max_reprompts + 1):
             raw = self._complete(

@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from cherenkov.truth.sources import GRPCSourceAdapter, GraphQLSourceAdapter
 from cherenkov.core.contracts import Claim
+from cherenkov.truth.sources import GraphQLSourceAdapter, GRPCSourceAdapter
 
 _PROTO = """
 syntax = "proto3";
@@ -158,12 +158,12 @@ class TestGraphQLSourceAdapter:
 class TestTruthSourcesPackageExports:
     def test_all_adapters_importable_from_package(self):
         from cherenkov.truth.sources import (
-            GRPCSourceAdapter,
-            GraphQLSourceAdapter,
-            OpenAPISourceAdapter,
-            TrafficSourceAdapter,
             DBSchemaSourceAdapter,
+            GraphQLSourceAdapter,
+            GRPCSourceAdapter,
+            OpenAPISourceAdapter,
             SourceAdapter,
+            TrafficSourceAdapter,
         )
         for cls in (GRPCSourceAdapter, GraphQLSourceAdapter, OpenAPISourceAdapter,
                     TrafficSourceAdapter, DBSchemaSourceAdapter):

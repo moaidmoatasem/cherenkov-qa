@@ -1,8 +1,8 @@
 """Tests for E4-4: Daemon mode."""
 
+import tempfile
 import unittest
 import unittest.mock
-import tempfile
 from pathlib import Path
 
 from cherenkov.stages.daemon_cmd import DivergenceQueue, run_daemon

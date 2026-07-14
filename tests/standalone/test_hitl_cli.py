@@ -17,15 +17,14 @@ from unittest.mock import patch
 
 import pytest
 
-from cherenkov.hitl import HitlItem, HitlQueue, SCHEMA_VERSION
+from cherenkov.hitl import SCHEMA_VERSION, HitlItem, HitlQueue
 from cherenkov.hitl.cmd import (
-    run_list,
-    run_show,
-    run_approve,
-    run_reject,
     _default_actor,
+    run_approve,
+    run_list,
+    run_reject,
+    run_show,
 )
-
 
 # ── fixture ───────────────────────────────────────────────────────────────────
 

@@ -1,7 +1,9 @@
 import unittest
 from types import SimpleNamespace
+
 from cherenkov.core.contracts import DivergenceFinding
 from cherenkov.execution.emitters.allure import AllureEmitter
+
 
 class TestAllureEmitter(unittest.TestCase):
     def test_emit_allure_json(self):
@@ -18,7 +20,7 @@ class TestAllureEmitter(unittest.TestCase):
                 remediation="Fix it"
             )
         ])
-        setattr(report, "_total_tests", 2)
+        report._total_tests = 2
 
         emitter = AllureEmitter()
         results = emitter.emit(report, "openapi.yaml")

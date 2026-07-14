@@ -22,7 +22,6 @@ from __future__ import annotations
 import subprocess
 import sys
 from pathlib import Path
-from textwrap import indent
 
 OUTPUT_PATH = Path(__file__).parent.parent / "docs-site" / "docs" / "cli" / "_generated_reference.md"
 
@@ -64,7 +63,7 @@ def run_help(cmd: list[str]) -> str:
         )
         return (result.stdout or result.stderr).strip()
     except FileNotFoundError:
-        return f"(cherenkov not installed — install with: pip install cherenkov-qa)"
+        return "(cherenkov not installed — install with: pip install cherenkov-qa)"
     except subprocess.TimeoutExpired:
         return "(timed out)"
 

@@ -2,7 +2,8 @@
 
 import os
 import unittest
-from cherenkov.core.budget import RunBudget, BudgetExceededError, get_run_budget, reset_run_budget
+
+from cherenkov.core.budget import BudgetExceededError, RunBudget, get_run_budget, reset_run_budget
 
 
 class TestRunBudgetBasics(unittest.TestCase):

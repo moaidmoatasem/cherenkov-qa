@@ -20,11 +20,10 @@ import logging
 import sys
 import time
 from pathlib import Path
-
-import requests
 from typing import Any, cast
 
 import click
+import requests
 
 from cherenkov.divergence.proof_run import run_proof
 
@@ -120,7 +119,7 @@ def verify_cmd(
     spec: str | None,
     llm: bool,
     output: str | None,
-    output_format: str,  # noqa: ARG001
+    output_format: str,
     fail_on_divergence: bool,
     coverage_report: bool,
     health_score: bool,

@@ -1,10 +1,11 @@
-from cherenkov.core.settings import get_settings
 import json
 import os
 import tempfile
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+import pytest
+
+from cherenkov.core.settings import get_settings
 from cherenkov.substrate.providers.localai import LocalAIVLMProvider
 
 

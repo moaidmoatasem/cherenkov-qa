@@ -4,11 +4,9 @@ from __future__ import annotations
 
 import os
 import tempfile
-import unittest
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 import pytest
-
 
 # ── CircuitBreaker ──────────────────────────────────────────────────────────
 
@@ -154,7 +152,7 @@ class TestRunIngestSimulationGuard:
         assert "endpoints" in result
 
     def test_simulate_plan_blocked_in_production(self):
-        from cherenkov.core.contracts import IngestOutput, Status
+        from cherenkov.core.contracts import IngestOutput
         orch = self._make()
         dummy_ingest = MagicMock(spec=IngestOutput)
         dummy_ingest.endpoints = []

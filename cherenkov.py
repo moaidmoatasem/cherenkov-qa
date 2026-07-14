@@ -3,15 +3,16 @@
 cherenkov.py — Unified CLI for CHERENKOV E2E Suite operations.
 """
 
+import argparse
 import json
 import os
-import sys
-import argparse
 import subprocess
+import sys
+
 import argcomplete
 
-from cherenkov.execution.validate import ValidationEngine
 from cherenkov.execution.eject import EjectorEngine
+from cherenkov.execution.validate import ValidationEngine
 
 
 def print_tightening_report(results: dict):
@@ -995,9 +996,9 @@ def main():
             except Exception:  # ConnectionError / Timeout expected when target not running
                 pass
             if not _target_live:
+                import atexit as _atexit
                 import subprocess as _sp
                 import time as _t
-                import atexit as _atexit
                 _target_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "target")
                 _venv_uvicorn = os.path.join(_target_dir, ".venv", "bin", "uvicorn")
                 _uvicorn_cmd = _venv_uvicorn if os.path.exists(_venv_uvicorn) else "uvicorn"
@@ -1030,8 +1031,8 @@ def main():
 
         if getattr(args, "source", "openapi") == "graphql":
             from cherenkov.sources.graphql.adapter import GraphQLSourceAdapter
-            from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
             from cherenkov.stages.generate import GenerateStage
+            from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
 
             source = GraphQLSourceAdapter(args.spec)
             planner = GraphQLScenarioPlanner()
@@ -1040,8 +1041,8 @@ def main():
                 GenerateStage("cli_validate").run(scenario=sc, source_type="graphql")
         elif getattr(args, "source", "openapi") == "grpc":
             from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
-            from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
             from cherenkov.stages.generate import GenerateStage
+            from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
 
             source = gRPCSourceAdapter(args.spec)
             planner = gRPCScenarioPlanner()
@@ -1052,8 +1053,8 @@ def main():
             from cherenkov.sources.accessibility.adapter import (
                 AccessibilitySourceAdapter,
             )
-            from cherenkov.stages.plan_accessibility import AccessibilityScenarioPlanner
             from cherenkov.stages.generate import GenerateStage
+            from cherenkov.stages.plan_accessibility import AccessibilityScenarioPlanner
 
             source = AccessibilitySourceAdapter(args.spec)
             planner = AccessibilityScenarioPlanner()
@@ -1065,12 +1066,13 @@ def main():
 
         # Open per-run events.jsonl so all stage loggers write to it.
         import datetime as _dt
+
         from cherenkov.core.errors import set_events_file as _set_ef
         _validate_run_id = _dt.datetime.now().strftime("%Y%m%d-%H%M%S")
         _validate_run_dir = os.path.abspath(f".cherenkov/runs/{_validate_run_id}")
         os.makedirs(_validate_run_dir, exist_ok=True)
         _events_path = os.path.join(_validate_run_dir, "events.jsonl")
-        _ef = open(_events_path, "a", encoding="utf-8")  # noqa: SIM115
+        _ef = open(_events_path, "a", encoding="utf-8")
         _set_ef(_ef)
 
         engine = ValidationEngine("cli_validate")
@@ -1127,8 +1129,9 @@ def main():
             )
 
         if getattr(args, "format", None) == "allure":
-            from cherenkov.execution.emitters.allure import AllureEmitter
             from types import SimpleNamespace
+
+            from cherenkov.execution.emitters.allure import AllureEmitter
 
             emitter = AllureEmitter()
             from cherenkov.core.contracts import DivergenceFinding
@@ -1151,7 +1154,7 @@ def main():
                             remediation="Update API or spec",
                         )
                     )
-            setattr(report_obj, "_total_tests", total_tests)
+            report_obj._total_tests = total_tests
             allure_data = emitter.emit(report_obj, args.spec or "openapi.yaml")
 
             out_dir = getattr(args, "output", ".cherenkov/allure-results")
@@ -1239,8 +1242,9 @@ def main():
         print_tightening_report(results)
 
         if not getattr(args, "no_html", False):
-            from cherenkov.execution.emitters.html_report import HTMLReportEmitter
             from pathlib import Path
+
+            from cherenkov.execution.emitters.html_report import HTMLReportEmitter
 
             html_path = Path(".cherenkov") / "report.html"
             HTMLReportEmitter().emit(results, html_path)
@@ -1276,9 +1280,7 @@ def main():
 
     elif args.command == "completion":
         # Generate the argcomplete activation script for the specified shell
-        if args.shell == "bash":
-            print('eval "$(register-python-argcomplete cherenkov)"')
-        elif args.shell == "zsh":
+        if args.shell == "bash" or args.shell == "zsh":
             print('eval "$(register-python-argcomplete cherenkov)"')
         elif args.shell == "fish":
             print("register-python-argcomplete --shell fish cherenkov | source")
@@ -1307,8 +1309,8 @@ def main():
             sys.exit(1)
 
     elif args.command == "visual":
-        from cherenkov.core.orchestrator import OrchestrationEngine
         from cherenkov.core.contracts import VisualSlice
+        from cherenkov.core.orchestrator import OrchestrationEngine
 
         slices = [VisualSlice(name="cli_default", url=args.target)]
         engine = OrchestrationEngine(run_id="cli_visual")
@@ -1318,8 +1320,8 @@ def main():
         sys.exit(0 if all_ok else 1)
 
     elif args.command == "perf":
-        from cherenkov.core.orchestrator import OrchestrationEngine
         from cherenkov.core.contracts import PerfSlice
+        from cherenkov.core.orchestrator import OrchestrationEngine
 
         slices = [
             PerfSlice(
@@ -1392,7 +1394,7 @@ def main():
 
     # ── Epoch 12 subcommands ────────────────────────────────────────────────
     elif args.command == "tokens":
-        from cherenkov.stages.tokens_cmd import run_tokens_report, run_tokens_breakdown
+        from cherenkov.stages.tokens_cmd import run_tokens_breakdown, run_tokens_report
 
         if args.tokens_command == "report":
             run_tokens_report(days=args.days, as_json=args.json_out)
@@ -1417,7 +1419,7 @@ def main():
 
     # ── HITL terminal queue (A1 #109) ─────────────────────────────────────────
     elif args.command == "hitl":
-        from cherenkov.hitl.cmd import run_list, run_show, run_approve, run_reject
+        from cherenkov.hitl.cmd import run_approve, run_list, run_reject, run_show
 
         if args.hitl_command == "list":
             status_filter = None if getattr(args, "list_all", False) else args.status
@@ -1465,6 +1467,7 @@ def main():
             generate_demo_findings()
 
         import uvicorn
+
         from cherenkov.web.api import app
 
         print(f"\nCHERENKOV review dashboard starting on http://0.0.0.0:{args.port}")
@@ -1496,7 +1499,7 @@ def main():
             sys.exit(0)
 
     elif args.command == "playbook":
-        from cherenkov.cli.commands.playbook_cmd import list_cmd, show_cmd, run_cmd, new_cmd
+        from cherenkov.cli.commands.playbook_cmd import list_cmd, new_cmd, run_cmd, show_cmd
 
         sub = args.playbook_command
         if sub == "list":

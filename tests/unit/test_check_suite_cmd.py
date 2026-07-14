@@ -6,7 +6,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from cherenkov.cli.commands.check_suite import check_suite_cmd, check_integrity
+from cherenkov.cli.commands.check_suite import check_integrity, check_suite_cmd
 
 DEMO = Path(__file__).parents[2] / "demos" / "catch-the-ai-cheating"
 SPEC = DEMO / "openapi.yaml"

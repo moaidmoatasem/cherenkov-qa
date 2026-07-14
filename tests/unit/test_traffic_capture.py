@@ -4,10 +4,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
 
 from cherenkov.core.contracts import (
     DivergenceClass,
@@ -17,8 +14,8 @@ from cherenkov.core.contracts import (
     Severity,
 )
 from cherenkov.verdict.traffic_capture import (
-    CapturingWitnessAgent,
     CapturedInteraction,
+    CapturingWitnessAgent,
     TrafficCapture,
     TrafficCaptureReport,
 )

@@ -10,24 +10,20 @@ import json
 import tempfile
 from pathlib import Path
 
-import pytest
-
+from cherenkov.drift.checker import check_proposal, is_meaningful_assertion
 from cherenkov.drift.detect import DriftFinding, DriftKind
 from cherenkov.drift.loop import (
-    AutonomyLevel,
     DriftLoop,
     ReconciliationProposal,
 )
-from cherenkov.drift.maker import build_test_skeleton, make_proposal, patch_suite
-from cherenkov.drift.checker import check_proposal, is_meaningful_assertion
+from cherenkov.drift.maker import make_proposal, patch_suite
 from cherenkov.drift.reconcile import (
+    SEVERITY,
     DriftReport,
     DriftVerdict,
     GateSignal,
     MagnitudeVerdict,
-    SEVERITY,
 )
-
 
 # ── fixtures ───────────────────────────────────────────────────────────────────
 
@@ -285,7 +281,6 @@ def test_l2_round_trip_auto_approve_commits():
 
 
 def test_l2_fail_findings_always_escalate():
-    from cherenkov.drift.reconcile import aggregate
 
     fail_finding = DriftFinding(
         kind=DriftKind.BREAKING_SCHEMA_CHANGE,

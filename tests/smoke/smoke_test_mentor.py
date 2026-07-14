@@ -19,9 +19,8 @@ import uuid
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cherenkov.copilot.mentor import Mentor
+from cherenkov.core.contracts import DivergenceClass, Idiom
 from cherenkov.reflector.store import VerdictStore
-from cherenkov.core.contracts import Idiom, DivergenceClass
-
 
 errors: list[str] = []
 

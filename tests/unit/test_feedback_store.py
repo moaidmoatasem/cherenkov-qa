@@ -6,9 +6,7 @@ import json
 import tempfile
 from pathlib import Path
 
-import pytest
-
-from cherenkov.core.feedback_store import FeedbackStore, FeedbackEntry, RejectionReason
+from cherenkov.core.feedback_store import FeedbackEntry, FeedbackStore, RejectionReason
 
 
 class TestFeedbackStoreInit:

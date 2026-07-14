@@ -18,11 +18,10 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cherenkov.governance.kpi import (
+    GovernanceCollector,
     GovernanceKPI,
     GovernanceReport,
-    GovernanceCollector,
 )
-
 
 errors: list[str] = []
 

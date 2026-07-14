@@ -3,10 +3,6 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from cherenkov.mcp import handlers
-from cherenkov.mcp.handlers import TOOLS
 from cherenkov.core.contracts import (
     DivergenceClass,
     DivergenceEvidence,
@@ -14,6 +10,8 @@ from cherenkov.core.contracts import (
     Severity,
     StageMeta,
 )
+from cherenkov.mcp import handlers
+from cherenkov.mcp.handlers import TOOLS
 
 
 def _make_report(
@@ -22,7 +20,7 @@ def _make_report(
     endpoint: str = "POST /pet",
 ) -> DivergenceReport:
     ev = DivergenceEvidence(
-        request_summary=f"POST https://example.com/pet → 500",
+        request_summary="POST https://example.com/pet → 500",
         diff="status mismatch: expected=400, actual=500",
         response_actual="500",
         response_expected="400",

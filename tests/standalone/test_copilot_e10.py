@@ -14,6 +14,9 @@ import tempfile
 import unittest
 from unittest.mock import MagicMock
 
+from cherenkov.copilot.digest import SecondPairOfEyes
+from cherenkov.copilot.intent import IntentAuthor
+from cherenkov.copilot.triage import Triage, render_triage
 from cherenkov.core.contracts import (
     DivergenceClass,
     ExplorerFinding,
@@ -24,9 +27,6 @@ from cherenkov.core.contracts import (
     TriageCategory,
 )
 from cherenkov.divergence.explorer import Explorer
-from cherenkov.copilot.intent import IntentAuthor
-from cherenkov.copilot.digest import SecondPairOfEyes
-from cherenkov.copilot.triage import Triage, render_triage
 from cherenkov.healing.diagnose import FailureClass
 
 

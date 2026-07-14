@@ -22,10 +22,9 @@ from cherenkov.core.contracts import (
     Severity,
     StageMeta,
 )
-from cherenkov.divergence.skeptic import SkepticAgent
-from cherenkov.divergence.witness import WitnessAgent, _parse_repro_steps, _diff
 from cherenkov.divergence.self_play import AdversarialSelfPlay, BrokenImplServer
-
+from cherenkov.divergence.skeptic import SkepticAgent
+from cherenkov.divergence.witness import WitnessAgent, _diff, _parse_repro_steps
 
 # ── fixtures ──────────────────────────────────────────────────────────────
 

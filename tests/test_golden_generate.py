@@ -168,7 +168,8 @@ if __name__ == "__main__":
     import sys
 
     if "--regen" in sys.argv:
-        from unittest.mock import patch as _patch, MagicMock as _MM
+        from unittest.mock import MagicMock as _MM
+        from unittest.mock import patch as _patch
 
         with _patch("cherenkov.stages.generate.get_client") as mc, \
              _patch("subprocess.run") as ms, \

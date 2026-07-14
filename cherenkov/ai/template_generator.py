@@ -155,7 +155,7 @@ def generate_test(
     operation: dict[str, Any],
     schemas: dict[str, Any],
     scenario: Any,
-    instruction: str = "",  # noqa: ARG001
+    instruction: str = "",
 ) -> str:
     """
     Build a Playwright TypeScript test that passes all 6 ReviewStage gates:

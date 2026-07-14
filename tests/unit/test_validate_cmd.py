@@ -6,15 +6,12 @@ summary that is now always emitted regardless of source type.
 """
 
 import json
-import sys
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
 
 from cherenkov.cli.commands.validate import validate_cmd
-
 
 # ---------------------------------------------------------------------------
 # Helpers

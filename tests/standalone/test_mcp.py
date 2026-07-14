@@ -19,14 +19,14 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from cherenkov.mcp.contracts import (
+    METHOD_NOT_FOUND,
+    PARSE_ERROR,
     HitlApproveInput,
     HitlListInput,
     HitlRejectInput,
-    METHOD_NOT_FOUND,
-    PARSE_ERROR,
 )
 from cherenkov.mcp.protocol import dispatch_one
-from cherenkov.mcp.server import build_dispatch_table, _handle_initialize
+from cherenkov.mcp.server import _handle_initialize, build_dispatch_table
 
 
 class TestJsonRpcProtocol(unittest.TestCase):
@@ -301,9 +301,10 @@ class TestValidateRunGate(unittest.TestCase):
 
     @patch("cherenkov.mcp.handlers.ValidationGate")
     def test_validate_run_gate_returns_report(self, mock_gate_cls):
-        from cherenkov.validate.contracts import ValidationReport
         import uuid
         from datetime import datetime, timezone
+
+        from cherenkov.validate.contracts import ValidationReport
 
         mock_report = ValidationReport(
             run_id=str(uuid.uuid4()),

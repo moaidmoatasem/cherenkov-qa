@@ -22,8 +22,8 @@ class PlaywrightEmitter(Emitter):
         self,
         truth_model: TruthModel,
         output_path: Path,
-        divergences: list[DivergenceReport] | None = None,  # noqa: ARG002
-        **kwargs: Any,  # noqa: ARG002
+        divergences: list[DivergenceReport] | None = None,
+        **kwargs: Any,
     ) -> Path:
         output_path.mkdir(parents=True, exist_ok=True)
 

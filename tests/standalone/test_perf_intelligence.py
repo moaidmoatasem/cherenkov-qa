@@ -12,8 +12,8 @@ import os
 import tempfile
 import unittest
 
-from cherenkov.stages.perf.perf_stage import PerfStage, PerfSlice, _BaselineDB
 from cherenkov.stages.perf.anomaly import LatencyAnomalyDetector
+from cherenkov.stages.perf.perf_stage import PerfSlice, PerfStage, _BaselineDB
 
 
 class TestBaselineDB(unittest.TestCase):

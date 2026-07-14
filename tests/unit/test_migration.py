@@ -1,6 +1,8 @@
 import os
 import tempfile
+
 import pytest
+
 from cherenkov.core.migration import SchemaMigration
 
 

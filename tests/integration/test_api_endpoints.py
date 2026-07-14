@@ -8,19 +8,20 @@ external services (Ollama, OrchestrationEngine, ValidationEngine, EjectorEngine)
 so tests run offline and fast.  No CHERENKOV_HITL_API_KEY → auth disabled.
 """
 
-from cherenkov.core.settings import CherenkovSettings, get_settings
-
 import os
 import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
+from cherenkov.core.settings import CherenkovSettings
+
 os.environ.setdefault("CHERENKOV_ENV", "development")
 
 from fastapi.testclient import TestClient
-from cherenkov.web.api import app
 
+from cherenkov.web.api import app
 from cherenkov.web.middleware.rate_limit import _Bucket
+
 _rate_limit_patcher = patch.object(_Bucket, "consume", return_value=(True, 0.0))
 
 def setUpModule():

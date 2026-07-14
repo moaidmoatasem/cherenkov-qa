@@ -4,19 +4,15 @@ from __future__ import annotations
 
 import os
 import tempfile
-from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from cherenkov.core.config_loader import (
-    LayeredConfig,
     BUILTIN_DEFAULTS,
     PROFILE_DEFAULTS,
-    KNOWN_KEYS,
-    load_effective_config,
+    LayeredConfig,
     _flatten,
     _unflatten,
+    load_effective_config,
 )
 
 

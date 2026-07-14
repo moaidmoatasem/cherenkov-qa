@@ -2,11 +2,11 @@
 # DEPRECATED: track-b-c-deferred/ was re-integrated and deleted.
 # Dashboard now lives in cherenkov/web/. This script is dead code.
 import os
-import sys
 import subprocess
+import sys
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 
 
 def wait_for_port(port, timeout=30):

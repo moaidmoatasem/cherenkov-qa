@@ -19,6 +19,9 @@ from unittest.mock import MagicMock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from cherenkov.copilot.digest import SecondPairOfEyes
+from cherenkov.copilot.intent import IntentAuthor
+from cherenkov.copilot.triage import Triage
 from cherenkov.core.contracts import (
     DivergenceClass,
     ExplorerFinding,
@@ -29,9 +32,6 @@ from cherenkov.core.contracts import (
     TriageCategory,
 )
 from cherenkov.divergence.explorer import Explorer
-from cherenkov.copilot.intent import IntentAuthor
-from cherenkov.copilot.digest import SecondPairOfEyes
-from cherenkov.copilot.triage import Triage
 from cherenkov.healing.diagnose import FailureClass
 
 PASS = 0

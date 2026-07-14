@@ -304,7 +304,7 @@ def test_scan_mena_compliance_enhanced_invalid_spec():
 
 def test_validate_governance_certification(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    from cherenkov.governance.kpi import GovernanceReport, GovernanceKPI
+    from cherenkov.governance.kpi import GovernanceKPI, GovernanceReport
 
     mock_kpi = GovernanceKPI(
         escape_rate=0.05,
@@ -341,7 +341,7 @@ def test_validate_governance_certification(tmp_path, monkeypatch):
 
 def test_validate_governance_certification_fails(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    from cherenkov.governance.kpi import GovernanceReport, GovernanceKPI
+    from cherenkov.governance.kpi import GovernanceKPI, GovernanceReport
 
     mock_kpi = GovernanceKPI(
         escape_rate=0.25,

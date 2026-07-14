@@ -105,7 +105,7 @@ class BedrockInferenceClient(InferenceClient):
         model: str,
         *,
         temperature: float = 0.1,
-        run_id: str | None = None,  # noqa: ARG002
+        run_id: str | None = None,
     ) -> str:
         model = model or _DEFAULT_MODEL
         raw = self._complete(system_prompt, user_prompt, model, temperature=temperature)
@@ -123,7 +123,7 @@ class BedrockInferenceClient(InferenceClient):
         *,
         max_reprompts: int = 2,
         temperature: float = 0.1,
-        run_id: str | None = None,  # noqa: ARG002
+        run_id: str | None = None,
     ) -> dict:
         model = model or _DEFAULT_MODEL
         for _attempt in range(max_reprompts + 1):

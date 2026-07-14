@@ -13,10 +13,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from cherenkov.mcp import handlers
 from cherenkov.mcp.client import MCPClient, MCPClientError
 from cherenkov.mcp.mesh_router import MCPRegistry
-from cherenkov.mcp import handlers
-
 
 # ── MCPClient ─────────────────────────────────────────────────────────────────
 

@@ -1,15 +1,15 @@
 # TODO: convert to pytest — complex file (>150 lines, many test classes with setUp/tearDown)
 import contextlib
-import unittest
 import os
 import tempfile
+import unittest
 
+from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
 from cherenkov.knowledge.domain.models import (
+    KnowledgeItem,
     KnowledgeQuery,
     KnowledgeQueryResult,
-    KnowledgeItem,
 )
-from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
 from cherenkov.knowledge.graph_rag import GraphRAG
 
 

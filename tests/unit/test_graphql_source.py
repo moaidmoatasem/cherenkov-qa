@@ -5,12 +5,10 @@ import json
 import os
 import tempfile
 import unittest
-from pathlib import Path
 
-from cherenkov.sources.graphql.adapter import GraphQLSourceAdapter, GraphQLOperation
-from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
+from cherenkov.sources.graphql.adapter import GraphQLSourceAdapter
 from cherenkov.sources.graphql.contracts import GraphQLScenario
-
+from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
 
 TEST_SDL = """
 type Query {

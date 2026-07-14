@@ -1,9 +1,9 @@
 """Tests for E2-4: Traffic adapter (HAR parser)."""
 
-import unittest
 import json
-import tempfile
 import os
+import tempfile
+import unittest
 
 from cherenkov.truth.sources.traffic import TrafficSourceAdapter
 

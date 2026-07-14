@@ -82,9 +82,9 @@ class VisualOracle(Oracle):
 
     def _analyse_screenshot(
         self,
-        baseline_path: str,  # noqa: ARG002
+        baseline_path: str,
         actual_path: str,
-        diff_pixels: int,  # noqa: ARG002
+        diff_pixels: int,
     ) -> dict:
         """Use VLM to semantically analyse a screenshot."""
         get_vlm_provider(self.provider_name)

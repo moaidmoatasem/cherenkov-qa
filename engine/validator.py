@@ -1,7 +1,6 @@
-from typing import Any, Optional
+from typing import Any
 
 import requests
-
 from spec_loader import extract_routes
 
 
@@ -37,7 +36,7 @@ METHOD_HANDLERS = {
 
 
 def run_validation(
-    spec_path: str, target_base: str, strict: bool = True  # noqa: ARG001
+    spec_path: str, target_base: str, strict: bool = True
 ) -> dict[str, Any]:
     with open(spec_path) as f:
         import json

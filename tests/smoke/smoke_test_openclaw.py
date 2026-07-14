@@ -21,7 +21,7 @@ import time
 # Ensure package root is on path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cherenkov.hitl.contracts import HitlItem, HitlEnvelope
+from cherenkov.hitl.contracts import HitlEnvelope, HitlItem
 from cherenkov.hitl.store import HitlQueue
 from cherenkov.openclaw.adapter import OpenClawAdapter, TriggerRequest
 from cherenkov.openclaw.contracts import OpenClawConfig
@@ -272,7 +272,7 @@ def main() -> int:
     print("\n9. HTTP server smoke test (FastAPI)")
     HAS_FASTAPI = False
     try:
-        import fastapi  # noqa
+        import fastapi
 
         HAS_FASTAPI = True
     except ImportError:

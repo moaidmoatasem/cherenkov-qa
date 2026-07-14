@@ -1,5 +1,5 @@
-import sys
 import re
+import sys
 
 mode = sys.argv[1] # 'green' or 'red'
 

@@ -1,7 +1,7 @@
 """Tests for E4-5: Behavioral diff on PR."""
 
-import unittest
 import tempfile
+import unittest
 from pathlib import Path
 
 from cherenkov.continuity.pr_diff_action import BehavioralDiff, run_pr_diff

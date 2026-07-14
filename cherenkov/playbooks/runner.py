@@ -18,7 +18,7 @@ class PlaybookRunner:
         endpoint: str,
         method: str,
         status_code: int | None = None,
-        response_headers: dict[str, str] | None = None,  # noqa: ARG002
+        response_headers: dict[str, str] | None = None,
         response_body: Any = None,
         request_headers: dict[str, str] | None = None,
     ) -> list[PlaybookFinding]:

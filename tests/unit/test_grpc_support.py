@@ -1,7 +1,7 @@
 """Unit tests for gRPC source adapter and scenario planner."""
 
-import unittest
 import tempfile
+import unittest
 
 
 def _make_proto(content: str) -> str:

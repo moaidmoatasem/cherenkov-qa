@@ -6,7 +6,6 @@ GenerateStage (--no-repair) without invoking the LLM, Ollama, or real file I/O.
 from __future__ import annotations
 
 import types
-from pathlib import Path
 
 import pytest
 from click.testing import CliRunner

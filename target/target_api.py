@@ -8,11 +8,11 @@ Get the spec:            curl http://localhost:8000/openapi.json > ../stub/targe
 """
 
 import os
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
-
 
 app = FastAPI(
     title="CHERENKOV Week 0 Target",
@@ -26,7 +26,7 @@ REGRESSION_MODE = os.getenv("REGRESSION_MODE", "false").lower() == "true"
 # FastAPI returns 422 for validation errors by default. We normalize to 400,
 # and in regression mode we inject BUG 1: swallow the error and return 200.
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):  # noqa: ARG001
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
     if REGRESSION_MODE:
         # BUG 1 — wrong status: returns 200 instead of 400.
         # A test asserting toBe(400) will FAIL. A shallow test (status < 500) passes.

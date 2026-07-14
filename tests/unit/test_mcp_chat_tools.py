@@ -1,25 +1,24 @@
 from __future__ import annotations
-# TODO: convert to pytest — complex file (>150 lines, heavy mock patching with setUp)
 
+# TODO: convert to pytest — complex file (>150 lines, heavy mock patching with setUp)
 import json
 import os
 import tempfile
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+from cherenkov.mcp.contracts import MCPToolCallResult
 from cherenkov.mcp.handlers import (
+    RESOURCES,
+    TOOLS,
+    _tool_chat_explain_divergence,
+    _tool_chat_query_idioms,
+    _tool_chat_query_verdicts,
+    _tool_chat_run_test,
+    handle_resource_read,
     handle_tool_call,
     handle_tools_list,
-    handle_resource_read,
-    TOOLS,
-    RESOURCES,
-    _tool_chat_query_verdicts,
-    _tool_chat_query_idioms,
-    _tool_chat_explain_divergence,
-    _tool_chat_run_test,
 )
-from cherenkov.mcp.contracts import MCPToolCallResult
-
 
 CHAT_TOOL_NAMES = [
     "chat_query_verdicts",

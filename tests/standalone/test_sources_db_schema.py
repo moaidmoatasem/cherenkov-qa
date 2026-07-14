@@ -1,8 +1,8 @@
 """Tests for E2-5: DB-schema adapter."""
 
-import unittest
-import tempfile
 import os
+import tempfile
+import unittest
 
 from cherenkov.truth.sources.db_schema import DBSchemaSourceAdapter, _parse_create_table
 

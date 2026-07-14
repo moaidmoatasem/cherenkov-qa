@@ -40,7 +40,7 @@ def main() -> int:
     mean = statistics.mean(contaminated)
     sd = statistics.pstdev(contaminated)
     naive_upper = mean + 3.5 * sd
-    naive_fooled = 300 < naive_upper
+    naive_fooled = naive_upper > 300
     checks["robust detector still catches spike"] = robust
     checks["(naive mean+stddev would miss it)"] = naive_fooled
 

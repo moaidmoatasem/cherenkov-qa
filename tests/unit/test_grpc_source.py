@@ -57,7 +57,7 @@ class TestGRPCSourceAdapter(unittest.TestCase):
     """Tests for gRPCSourceAdapter."""
 
     def setUp(self):
-        self.proto_file = tempfile.NamedTemporaryFile(mode='w', suffix='.proto', delete=False)  # noqa: SIM115
+        self.proto_file = tempfile.NamedTemporaryFile(mode='w', suffix='.proto', delete=False)
         self.proto_file.write(TEST_PROTO)
         self.proto_file.close()
 
@@ -117,7 +117,7 @@ class TestGRPCScenarioPlanner(unittest.TestCase):
     """Tests for gRPCScenarioPlanner."""
 
     def setUp(self):
-        self.proto_file = tempfile.NamedTemporaryFile(mode='w', suffix='.proto', delete=False)  # noqa: SIM115
+        self.proto_file = tempfile.NamedTemporaryFile(mode='w', suffix='.proto', delete=False)
         self.proto_file.write(TEST_PROTO)
         self.proto_file.close()
         self.adapter = gRPCSourceAdapter(self.proto_file.name)

@@ -19,7 +19,6 @@ from cherenkov.memory.adapters.memsearch_memory import MemSearchMemoryRepository
 from cherenkov.memory.domain.models import EntryKind, MemoryQuery
 from cherenkov.substrate.retry import with_retry
 
-
 # ── retry: certification errors must not be retried ──────────────────────────
 
 def test_certification_error_is_not_retried(monkeypatch):
@@ -38,8 +37,8 @@ def test_certification_error_is_not_retried(monkeypatch):
 # ── judge: tracing uses the real trace_event API ─────────────────────────────
 
 def test_judge_emits_trace_event():
-    from cherenkov.evals.core import EvalSample
     from cherenkov.evals import judge as judge_mod
+    from cherenkov.evals.core import EvalSample
 
     sample = EvalSample(
         scenario_id="s-1",
@@ -61,8 +60,8 @@ def test_judge_emits_trace_event():
 
 
 def test_judge_traces_errors_too():
-    from cherenkov.evals.core import EvalSample
     from cherenkov.evals import judge as judge_mod
+    from cherenkov.evals.core import EvalSample
 
     sample = EvalSample(
         scenario_id="s-2",

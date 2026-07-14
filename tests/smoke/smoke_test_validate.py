@@ -3,12 +3,13 @@
 smoke_test_validate.py — automated integration test E2E verifying Phase 8 validation CLI reports.
 """
 
+import hashlib
 import os
+import subprocess
 import sys
 import time
-import subprocess
+
 import requests
-import hashlib
 
 
 def _to_wsl_path(windows_path: str) -> str:

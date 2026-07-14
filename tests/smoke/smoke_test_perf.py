@@ -15,8 +15,9 @@ Authority: v3.1 + delta. Track A surface, optional B2 perf layer.
 import contextlib
 import os
 import sqlite3
-import time
 import subprocess
+import time
+
 import requests
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

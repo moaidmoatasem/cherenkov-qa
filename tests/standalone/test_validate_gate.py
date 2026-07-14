@@ -77,7 +77,7 @@ class TestValidationReport:
         assert r.result == "degraded"
 
     def test_result_invalid_raises(self):
-        with pytest.raises(Exception):  # noqa: B017
+        with pytest.raises(Exception):
             _make_report(result="unknown")
 
     def test_evidence_dir_optional(self):

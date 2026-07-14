@@ -3,14 +3,11 @@
 from __future__ import annotations
 
 import uuid
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import patch
 
 from cherenkov.core.contracts import (
     DivergenceClass,
     DivergenceEvidence,
-    DivergenceHypothesis,
     DivergenceReport,
     Severity,
     StageMeta,

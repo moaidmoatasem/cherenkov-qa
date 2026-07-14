@@ -2,11 +2,12 @@
 """Dashboard E2E smoke test — 11 API endpoint assertions."""
 
 import os
+import shutil
+import subprocess
 import sys
 import time
-import subprocess
+
 import requests
-import shutil
 
 
 def main():

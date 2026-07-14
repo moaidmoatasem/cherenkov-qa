@@ -78,8 +78,8 @@ class TestDiff(unittest.TestCase):
 class TestWitnessAgentNoRepro(unittest.TestCase):
     def _make_hypothesis(self, repro_steps=None):
         from cherenkov.core.contracts import (
-            DivergenceHypothesis,
             DivergenceClass,
+            DivergenceHypothesis,
             Severity,
         )
 

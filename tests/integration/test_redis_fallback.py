@@ -26,6 +26,7 @@ class TestRedisFallback(unittest.TestCase):
         try:
             with mock.patch("redis.Redis.ping", side_effect=ConnectionError("Redis down")):
                 from cherenkov.truth.model import VerdictRecord
+
                 from cherenkov.reflector.store import VerdictStore
 
                 store = VerdictStore(db_path=":memory:")

@@ -14,11 +14,9 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-
-from cherenkov.divergence.proof_run import run_proof, PROOF_RUN_PROBES
+from cherenkov.divergence.proof_run import PROOF_RUN_PROBES, run_proof
 from cherenkov.reflector.reflector import Reflector
 from cherenkov.reflector.store import VerdictStore
-
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 

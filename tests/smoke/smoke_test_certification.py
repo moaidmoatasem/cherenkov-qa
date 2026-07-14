@@ -18,13 +18,12 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from cherenkov.core.contracts import CertResult, GoldSet
 from cherenkov.substrate.certification import (
+    _DEFAULT_GOLD_SET_ITEMS,
     ModelCertificationManager,
     RAGTriadEvaluator,
-    _DEFAULT_GOLD_SET_ITEMS,
 )
-from cherenkov.core.contracts import GoldSet, CertResult
-
 
 errors: list[str] = []
 

@@ -5,11 +5,9 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
 from click.testing import CliRunner
 
-from cherenkov.divergence.report_diff import ReportDiff, diff_reports, _stable_key
-
+from cherenkov.divergence.report_diff import _stable_key, diff_reports
 
 # ── fixtures ───────────────────────────────────────────────────────────────────
 

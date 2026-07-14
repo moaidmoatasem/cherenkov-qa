@@ -1,7 +1,6 @@
 """Unit tests for MCP install config generator."""
 
 import json
-import os
 import tempfile
 import unittest
 from pathlib import Path

@@ -5,9 +5,10 @@ Tests the new ML anomaly detection, traffic-based load profiles, and LLM-aware m
 """
 
 import os
-import tempfile
 import sqlite3
-from cherenkov.stages.perf.perf_stage import PerfStage, PerfSlice, ML_AVAILABLE
+import tempfile
+
+from cherenkov.stages.perf.perf_stage import ML_AVAILABLE, PerfSlice, PerfStage
 
 
 def test_basic_functionality():

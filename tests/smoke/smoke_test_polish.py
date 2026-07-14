@@ -5,8 +5,8 @@ Proves help systems, bash wrappers, and CI docs checkers work E2E.
 """
 
 import os
-import subprocess
 import shutil
+import subprocess
 
 
 def main():

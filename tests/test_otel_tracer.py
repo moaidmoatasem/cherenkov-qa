@@ -4,12 +4,11 @@ Tests no-op mode when disabled and active mode when enabled.
 """
 from __future__ import annotations
 
-import os
 from unittest.mock import patch
 
 import pytest
 
-from cherenkov.observability.otel import CherenkovTracer, _is_enabled, OTEL_AVAILABLE
+from cherenkov.observability.otel import OTEL_AVAILABLE, CherenkovTracer, _is_enabled
 
 
 class TestOtelTracer:

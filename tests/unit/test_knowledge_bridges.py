@@ -1,12 +1,13 @@
 import os
 import tempfile
-import pytest
 from unittest.mock import MagicMock
 
-from cherenkov.knowledge.bridges.hitl_reflector import HITLReflectorBridge
-from cherenkov.knowledge.bridges.feedback_rag import FeedbackRAGBridge
-from cherenkov.knowledge.bridges.agent_memory_rag import AgentMemoryRAGBridge
+import pytest
+
 from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
+from cherenkov.knowledge.bridges.agent_memory_rag import AgentMemoryRAGBridge
+from cherenkov.knowledge.bridges.feedback_rag import FeedbackRAGBridge
+from cherenkov.knowledge.bridges.hitl_reflector import HITLReflectorBridge
 
 
 @pytest.fixture

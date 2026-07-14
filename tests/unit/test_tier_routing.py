@@ -1,11 +1,12 @@
-from cherenkov.core.settings import get_settings
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+import pytest
+
+from cherenkov.core.settings import get_settings
 from cherenkov.substrate.provider import (
+    _resolve_vlm_provider,
     get_vlm_provider,
     provider_for_tier,
-    _resolve_vlm_provider,
 )
 
 

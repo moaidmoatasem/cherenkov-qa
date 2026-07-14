@@ -12,7 +12,6 @@ import unittest
 
 from cherenkov.mcp.policy import PolicyEngine
 
-
 SAMPLE_POLICY = {
     "version": "1.0",
     "profiles": {

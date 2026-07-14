@@ -4,10 +4,11 @@ smoke_test_eject.py — automated E2E integration test proving Standalone Ejecti
 """
 
 import os
-import sys
-import time
 import shutil
 import subprocess
+import sys
+import time
+
 import requests
 
 

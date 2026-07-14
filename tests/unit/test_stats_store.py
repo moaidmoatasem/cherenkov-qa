@@ -1,6 +1,8 @@
 import os
 import tempfile
+
 import pytest
+
 from cherenkov.core.stats_store import StatsStore
 
 

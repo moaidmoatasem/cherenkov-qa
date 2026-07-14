@@ -6,23 +6,19 @@ and the SuiteEngine end-to-end. No live API or LLM calls.
 
 from __future__ import annotations
 
-import pytest
-
-from cherenkov.synthetic.personas import (
-    build_spec_contexts,
-    DEFAULT_PERSONAS,
-    PERSONA_BY_NAME,
-    HAPPY_PATH,
-    ERROR_PATH,
-    SECURITY_PROBER,
-    SCHEMA_PEDANT,
-    BOUNDARY_SEEKER,
-)
-from cherenkov.synthetic.persona_generator import generate_for_persona
-from cherenkov.synthetic.merge import merge_suites
 from cherenkov.synthetic.enricher import enrich_suite
+from cherenkov.synthetic.merge import merge_suites
+from cherenkov.synthetic.persona_generator import generate_for_persona
+from cherenkov.synthetic.personas import (
+    BOUNDARY_SEEKER,
+    DEFAULT_PERSONAS,
+    ERROR_PATH,
+    HAPPY_PATH,
+    SCHEMA_PEDANT,
+    SECURITY_PROBER,
+    build_spec_contexts,
+)
 from cherenkov.synthetic.suite_engine import SuiteEngine
-
 
 # ── fixtures ───────────────────────────────────────────────────────────────────
 
@@ -363,8 +359,8 @@ def test_suite_engine_produces_grade_report():
 
 
 def test_suite_engine_grade_better_than_single_skeleton():
+    from cherenkov.drift.maker import _find_operation, build_test_skeleton
     from cherenkov.eval.grader import SuiteGrader
-    from cherenkov.drift.maker import build_test_skeleton, _find_operation
 
     # Minimal single-persona skeleton suite
     single_suite = {}

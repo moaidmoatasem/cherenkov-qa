@@ -2,10 +2,11 @@
 
 import json
 import os
-import pytest
 from unittest.mock import patch
 
-from cherenkov.core.flags import flag, set_flag, reset_flags, all_flags, _DEFAULTS
+import pytest
+
+from cherenkov.core.flags import _DEFAULTS, all_flags, flag, reset_flags, set_flag
 
 
 @pytest.fixture(autouse=True)

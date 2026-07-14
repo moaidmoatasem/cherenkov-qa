@@ -14,9 +14,10 @@ Authority: v3.1 + delta. Track A surface, optional B1 visual layer.
 
 import contextlib
 import os
-import time
 import shutil
 import subprocess
+import time
+
 import requests
 
 REPO = os.path.dirname(os.path.abspath(__file__))

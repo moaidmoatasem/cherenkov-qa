@@ -1,10 +1,10 @@
 """Tests for cherenkov/web/middleware/rate_limit.py"""
 
-import asyncio
 import time
+
 import pytest
 
-from cherenkov.web.middleware.rate_limit import _Bucket, RateLimitMiddleware, _ROUTE_COSTS
+from cherenkov.web.middleware.rate_limit import _ROUTE_COSTS, RateLimitMiddleware, _Bucket
 
 
 class TestBucket:
