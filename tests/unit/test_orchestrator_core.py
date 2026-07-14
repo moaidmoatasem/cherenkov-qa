@@ -51,7 +51,7 @@ class TestCircuitBreaker:
 class TestOrchestratorLifecycle:
     def _make(self, **kwargs):
         from cherenkov.core.orchestrator import OrchestrationEngine
-        with tempfile.TemporaryDirectory() as d:
+        with tempfile.TemporaryDirectory():
             with patch("os.makedirs"), patch("builtins.open", MagicMock()), \
                  patch("cherenkov.core.orchestrator.set_events_file"):
                 orch = OrchestrationEngine(run_id="test-orch", **kwargs)

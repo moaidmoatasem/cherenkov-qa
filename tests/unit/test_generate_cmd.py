@@ -177,7 +177,7 @@ class TestGenerateCmdWithRepair:
     def test_repair_is_default(self, monkeypatch, tmp_path):
         """Running without any --repair/--no-repair flag should use repair mode."""
         spec_file, _ = _make_pipeline_stubs(monkeypatch, tmp_path)
-        loop_calls = []
+        _loop_calls = []
 
         monkeypatch.setattr(
             "cherenkov.stages.repair.RepairLoop.__init__",

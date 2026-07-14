@@ -11,13 +11,13 @@ class TestParseReproSteps(unittest.TestCase):
         return _parse_repro_steps(steps)
 
     def test_get_method_extracted(self):
-        method, path, payload, expected = self._call(["Send GET /pets"])
+        method, path, payload, _expected = self._call(["Send GET /pets"])
         self.assertEqual(method, "GET")
         self.assertEqual(path, "/pets")
         self.assertIsNone(payload)
 
     def test_post_with_body_extracted(self):
-        method, path, payload, expected = self._call(
+        method, path, payload, _expected = self._call(
             ['POST /pets with body {"name": "doggie", "photoUrls": []}']
         )
         self.assertEqual(method, "POST")

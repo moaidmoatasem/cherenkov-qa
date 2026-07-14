@@ -402,7 +402,7 @@ class TestCostCheck:
             }
         }
         current_spec = _make_spec(extra_paths=extra)
-        report = reconcile(baseline, current_spec, suite)
+        _report = reconcile(baseline, current_spec, suite)
 
         after = set(sys.modules.keys())
         new_modules = after - before

@@ -231,7 +231,7 @@ def test_c9_intent_author():
 
     # 5. Durable file writing
     with tempfile.TemporaryDirectory() as temp_dir:
-        written_spec, file_path = author.author(
+        _written_spec, file_path = author.author(
             "verify cart discount apply with SAVE20",
             output_dir=temp_dir,
             target_url="http://localhost:8000",

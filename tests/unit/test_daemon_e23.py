@@ -175,9 +175,9 @@ class TestRunDaemonE23:
                 spec.write_text('{"openapi":"3.0.1"}')
             return []
 
-        captured_changes = []
+        _captured_changes = []
 
-        original_get_mtimes = _get_spec_mtimes
+        _original_get_mtimes = _get_spec_mtimes
 
         def patched_sleep(n):
             pass  # skip sleep

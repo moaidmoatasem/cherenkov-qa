@@ -52,7 +52,7 @@ def agent_memory_bridge():
 
 
 def test_on_hitl_decision_stores_item(hitl_bridge):
-    bridge, repo, reflector = hitl_bridge
+    bridge, repo, _reflector = hitl_bridge
     bridge.on_hitl_decision("item-1", "approve", "looks good", "/api/users", "GET")
     result = repo.get_by_id("hitl_item-1")
     assert result is not None
@@ -61,7 +61,7 @@ def test_on_hitl_decision_stores_item(hitl_bridge):
 
 
 def test_on_hitl_decision_calls_reflector(hitl_bridge):
-    bridge, repo, reflector = hitl_bridge
+    bridge, _repo, reflector = hitl_bridge
     bridge.on_hitl_decision("item-2", "reject", "bad spec", "/api/auth", "POST")
     reflector.ingest_human_verdict.assert_called_once_with(
         item_id="item-2",
@@ -99,7 +99,7 @@ def test_sync_feedback_empty(feedback_bridge):
 
 
 def test_sync_agent_memory_no_dir(agent_memory_bridge):
-    repo, tmp_dir = agent_memory_bridge
+    repo, _tmp_dir = agent_memory_bridge
     bridge = AgentMemoryRAGBridge(repo, memory_dir="/nonexistent/path")
     count = bridge.sync_agent_memory()
     assert count == 0

@@ -148,7 +148,7 @@ def main() -> int:
     print("\n6. Polling")
     env = adapter.poll_envelope()
     check("poll returns envelope", env.ok)
-    initial_pending = env.payload["pending_count"]
+    _initial_pending = env.payload["pending_count"]
 
     queue.enqueue(HitlItem(id="poll-fresh", endpoint="/api/new", method="POST"))
     env = adapter.poll_envelope()
@@ -283,7 +283,7 @@ def main() -> int:
             from cherenkov.openclaw.server import serve_background
 
             cfg = OpenClawConfig(port=18721)
-            app, thread = serve_background(adapter=adapter, config=cfg)
+            _app, thread = serve_background(adapter=adapter, config=cfg)
             time.sleep(0.5)
 
             import urllib.request

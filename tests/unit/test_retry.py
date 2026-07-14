@@ -184,6 +184,6 @@ class TestRouterIntegration:
                 capability_tier="standard",
                 max_cost=0.1,
             )
-            result = router.route(req)
+            _result = router.route(req)
 
         assert mock_primary.generate.call_count == 2

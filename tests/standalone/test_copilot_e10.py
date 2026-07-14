@@ -215,7 +215,7 @@ class TestIntentAuthor(unittest.TestCase):
         }
         author = IntentAuthor(router=self._router_returning(payload))
         with tempfile.TemporaryDirectory() as d:
-            spec, path = author.author(
+            _spec, path = author.author(
                 "smoke test", output_dir=d, target_url="http://x"
             )
             self.assertTrue(path.exists())

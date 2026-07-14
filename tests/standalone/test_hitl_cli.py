@@ -73,7 +73,7 @@ def test_default_actor_uses_user_env():
 
 
 def test_default_actor_fallback_to_username():
-    env = {"USERNAME": "win_user"}
+    _env = {"USERNAME": "win_user"}
     # Remove USER if set, set USERNAME
     env_copy = {k: v for k, v in os.environ.items() if k != "USER"}
     env_copy["USERNAME"] = "win_user"
@@ -93,7 +93,7 @@ def test_list_empty_db(tmp_db, capsys):
 
 
 def test_list_pending_items(queue_with_items, capsys):
-    q, ids = queue_with_items
+    q, _ids = queue_with_items
     rc = run_list(status="pending", json_out=False, db_path=q.db_path)
     assert rc == 0
     out = capsys.readouterr().out

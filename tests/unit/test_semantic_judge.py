@@ -84,13 +84,13 @@ class TestScoreHeuristic:
             diff="status mismatch: expected=400, actual=200",
             claim_a="spec: 'status' enum must be 400",
         )
-        score, label, rationale, fp_risk = SemanticJudge._score_heuristic(report)
+        score, label, _rationale, _fp_risk = SemanticJudge._score_heuristic(report)
         assert score >= 0.5
         assert label in ("strong", "weak")
 
     def test_empty_diff_gets_low_score(self):
         report = _make_report(diff="", claim_a="vague claim")
-        score, label, rationale, fp_risk = SemanticJudge._score_heuristic(report)
+        score, _label, _rationale, _fp_risk = SemanticJudge._score_heuristic(report)
         assert score < 0.5
 
     def test_no_repro_steps_reduces_score(self):
@@ -104,7 +104,7 @@ class TestScoreHeuristic:
         report = _make_report()
         result = SemanticJudge._score_heuristic(report)
         assert len(result) == 4
-        score, label, rationale, fp_risk = result
+        score, label, _rationale, fp_risk = result
         assert isinstance(score, float)
         assert label in ("strong", "weak", "false_positive", "inconclusive")
         assert fp_risk in ("low", "medium", "high")

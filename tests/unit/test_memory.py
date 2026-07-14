@@ -145,7 +145,7 @@ class TestSQLiteMemoryRepository:
         assert fingerprints == {"p2", "p3"}
 
     def test_get_default_repository_creates_db(self, tmp_path: Path) -> None:
-        repo = get_default_repository(tmp_path)
+        _repo = get_default_repository(tmp_path)
         db_path = tmp_path / "agent_memory" / "cherenkov_memory.db"
         assert db_path.exists()
 

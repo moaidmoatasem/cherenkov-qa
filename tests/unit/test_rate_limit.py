@@ -132,7 +132,7 @@ class TestRateLimitMiddleware:
         mw = RateLimitMiddleware(app, rps=1, burst=1, enabled=True)
         scope = self._make_scope()
 
-        responses_first = await self._call(mw, scope)
+        _responses_first = await self._call(mw, scope)
         # Exhaust the bucket
         for _ in range(20):
             await self._call(mw, scope)

@@ -232,7 +232,7 @@ class TestHitlToolsWithMockQueue(unittest.TestCase):
         mock_q.list.return_value = []
         mock_queue_factory.return_value = mock_q
 
-        result = self._call("hitl_list", {"status": "pending"})
+        _result = self._call("hitl_list", {"status": "pending"})
         mock_q.list.assert_called_once_with(status="pending")
         self.assertFalse(result.get("isError", False))
 
@@ -242,7 +242,7 @@ class TestHitlToolsWithMockQueue(unittest.TestCase):
         mock_q.list.return_value = []
         mock_queue_factory.return_value = mock_q
 
-        result = self._call("hitl_list", {"status": None})
+        _result = self._call("hitl_list", {"status": None})
         mock_q.list.assert_called_once_with(status=None)
 
     @patch("cherenkov.mcp.handlers._queue")
@@ -255,7 +255,7 @@ class TestHitlToolsWithMockQueue(unittest.TestCase):
         )
         mock_queue_factory.return_value = mock_q
 
-        result = self._call("hitl_approve", {"item_id": "item-1", "actor": "alice"})
+        _result = self._call("hitl_approve", {"item_id": "item-1", "actor": "alice"})
         mock_q.approve.assert_called_once_with(
             item_id="item-1", actor="alice", source="mcp"
         )
@@ -287,7 +287,7 @@ class TestHitlToolsWithMockQueue(unittest.TestCase):
         mock_q.approve.return_value = ok_envelope("hitl.approve", {})
         mock_queue_factory.return_value = mock_q
 
-        result = self._call("hitl_approve", {"item_id": "item-1"})
+        _result = self._call("hitl_approve", {"item_id": "item-1"})
         # default actor is 'mcp-peer'
         call_kwargs = mock_q.approve.call_args
         self.assertEqual(call_kwargs.kwargs["actor"], "mcp-peer")

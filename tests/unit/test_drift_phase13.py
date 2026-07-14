@@ -155,7 +155,7 @@ def test_maker_unknown_op_id_returns_fallback():
 # ── checker tests ──────────────────────────────────────────────────────────────
 
 def test_checker_accepts_valid_status_assertion():
-    ok, reason = is_meaningful_assertion({"type": "status", "expected": [200, 201]})
+    ok, _reason = is_meaningful_assertion({"type": "status", "expected": [200, 201]})
     assert ok
 
 
@@ -166,17 +166,17 @@ def test_checker_rejects_empty_assertion():
 
 
 def test_checker_rejects_missing_type():
-    ok, reason = is_meaningful_assertion({"expected": [200]})
+    ok, _reason = is_meaningful_assertion({"expected": [200]})
     assert not ok
 
 
 def test_checker_rejects_status_with_no_expected():
-    ok, reason = is_meaningful_assertion({"type": "status", "expected": []})
+    ok, _reason = is_meaningful_assertion({"type": "status", "expected": []})
     assert not ok
 
 
 def test_checker_rejects_tautological_self_comparison():
-    ok, reason = is_meaningful_assertion(
+    ok, _reason = is_meaningful_assertion(
         {"type": "equals", "field": "status_code", "expected": "status_code"}
     )
     assert not ok

@@ -107,7 +107,7 @@ class TestEvalStore(unittest.TestCase):
         status = EvalStatus.PASS if pass_rate >= 0.7 else EvalStatus.FAIL
         s = EvalScore(metric=EvalMetric.FAITHFULNESS, score=pass_rate, status=status, detail="ok")
         r = EvalResult(sample=sample, scores=[s], duration_ms=10)
-        passed = status == EvalStatus.PASS
+        _passed = status == EvalStatus.PASS
         return EvalReport(results=[r], model="test", eval_timestamp="now")
 
     def test_save_and_latest(self):

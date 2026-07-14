@@ -53,7 +53,7 @@ def test_statistical_analysis():
         stage = PerfStage(db_path=db_path)
 
         # Create baseline data
-        sl = PerfSlice(
+        _sl = PerfSlice(
             name="test_stats",
             target_url="http://localhost:3000",
             endpoint="/api/stats",

@@ -58,7 +58,7 @@ class TestUnitTestEmitter(unittest.TestCase):
 
     def test_emit_pytest_from_truth_model(self):
         tm = self._make_tm()
-        result = self.emitter.emit(tm, Path(self.tmp.name), framework="pytest")
+        _result = self.emitter.emit(tm, Path(self.tmp.name), framework="pytest")
         self.assertTrue(result.exists())
 
         py_files = list(Path(self.tmp.name).glob("*.py"))
@@ -66,7 +66,7 @@ class TestUnitTestEmitter(unittest.TestCase):
 
     def test_emit_jest_from_truth_model(self):
         tm = self._make_tm()
-        result = self.emitter.emit(tm, Path(self.tmp.name), framework="jest")
+        _result = self.emitter.emit(tm, Path(self.tmp.name), framework="jest")
         self.assertTrue(result.exists())
 
         ts_files = list(Path(self.tmp.name).glob("*.ts"))
@@ -169,7 +169,7 @@ class TestUnitTestEmitter(unittest.TestCase):
                 },
             )
             tm.add_node(node)
-        result = self.emitter.emit(tm, Path(self.tmp.name), framework="pytest")
+        _result = self.emitter.emit(tm, Path(self.tmp.name), framework="pytest")
         py_files = list(Path(self.tmp.name).glob("*.py"))
         self.assertGreaterEqual(len(py_files), 1)
 

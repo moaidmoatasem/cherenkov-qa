@@ -267,7 +267,7 @@ class TestSkepticAgent(unittest.TestCase):
 class TestParseReproSteps(unittest.TestCase):
     def test_parses_get_with_path(self):
         steps = ["Send GET /pet/findByStatus?status=available", "Expect 200"]
-        method, path, payload, expected = _parse_repro_steps(steps)
+        method, path, payload, _expected = _parse_repro_steps(steps)
         self.assertEqual(method, "GET")
         self.assertTrue(path.startswith("/pet/findByStatus"))
         self.assertIsNone(payload)
@@ -278,7 +278,7 @@ class TestParseReproSteps(unittest.TestCase):
             'Send POST /pet with body {"name": "test", "photoUrls": []}',
             "Expect 200",
         ]
-        method, path, payload, expected = _parse_repro_steps(steps)
+        method, path, payload, _expected = _parse_repro_steps(steps)
         self.assertEqual(method, "POST")
         self.assertEqual(path, "/pet")
         self.assertIsNotNone(payload)

@@ -73,7 +73,7 @@ class TestValidateCmdGRPC:
 
         with (
             patch("cherenkov.cli.commands.validate.ValidationEngine") as MockEngine,
-            patch("cherenkov.stages.generate.GenerateStage.run") as mock_gen,
+            patch("cherenkov.stages.generate.GenerateStage.run") as _mock_gen,
         ):
             MockEngine.return_value = _patch_engine()
             result = runner.invoke(validate_cmd, [
