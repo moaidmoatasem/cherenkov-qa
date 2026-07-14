@@ -258,5 +258,55 @@ def compliance_profile(cert: VerificationCertificate) -> list[ComplianceEvidence
             cert_fields=["fingerprint", "signature"],
             evidence="Tamper-evidence of the quality record itself via SHA-256.",
         ),
+        # ── ISO/IEC 42001 (AI management systems; harmonized-structure clauses) ─
+        ComplianceEvidence(
+            framework="ISO/IEC 42001:2023",
+            provision="Cl. 9.1",
+            title="Monitoring, measurement, analysis and evaluation",
+            cert_fields=["verdict", "summary", "issued_at", "run_id"],
+            evidence=(
+                f"Automated, timestamped measurement record: verdict={cert.verdict}, "
+                f"{cert.summary.total} divergences at issued_at={cert.issued_at}."
+            ),
+            caveat=(
+                "The certificate is evidence INTO an AI management system; "
+                "it does not certify the AIMS itself."
+            ),
+        ),
+        ComplianceEvidence(
+            framework="ISO/IEC 42001:2023",
+            provision="Cl. 10.2",
+            title="Nonconformity and corrective action",
+            cert_fields=["divergences_json"],
+            evidence=(
+                f"{len(cert.divergences_json)} documented nonconformit(ies) with "
+                "claim_a/claim_b and reproduction steps enabling corrective action."
+            ),
+        ),
+        # ── OWASP AI Testing Guide v1 (descriptive requirements, not numbered) ──
+        ComplianceEvidence(
+            framework="OWASP AI Testing Guide v1 (2025)",
+            provision="Repeatable trustworthiness evidence",
+            title="Documented, re-runnable test evidence",
+            cert_fields=["divergences_json", "fingerprint"],
+            evidence=(
+                f"{len(cert.divergences_json)} finding(s) each carry repro_steps a "
+                "third party can re-execute; the record is SHA-256 tamper-evident."
+            ),
+        ),
+        ComplianceEvidence(
+            framework="OWASP AI Testing Guide v1 (2025)",
+            provision="Oracle integrity",
+            title="Spec-derived, non-hallucinated test oracles",
+            cert_fields=["verdict", "summary"],
+            evidence=(
+                "Expected values derive from the OpenAPI spec (status codes, "
+                "documented fields/headers), not model output."
+            ),
+            caveat=(
+                "Integrity of AI-generated suites is evidenced by "
+                "`cherenkov check-suite`, complementary to this certificate."
+            ),
+        ),
     ]
     return items
