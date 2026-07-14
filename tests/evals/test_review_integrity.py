@@ -20,7 +20,7 @@ import os
 
 import pytest
 
-from cherenkov.core.contracts import GenerateOutput, StageMeta, Status
+from cherenkov.core.contracts import GenerateOutput, ReviewOutput, StageMeta, Status
 from cherenkov.core.errors import LoggerConfig
 from cherenkov.stages.review import ReviewStage
 

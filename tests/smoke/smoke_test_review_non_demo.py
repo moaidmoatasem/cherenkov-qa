@@ -37,7 +37,7 @@ def main():
         stdout, stderr = proc.communicate()
         print(f"Stdout:\n{stdout.decode()}")
         print(f"Stderr:\n{stderr.decode()}")
-        assert False, "Review dashboard failed to boot in non-demo mode."
+        raise AssertionError("Review dashboard failed to boot in non-demo mode.")
 
     print("Smoke test passed.")
 

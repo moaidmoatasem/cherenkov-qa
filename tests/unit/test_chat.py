@@ -474,7 +474,7 @@ class TestChatAPIIntegration(unittest.TestCase):
             resp.headers["content-type"], "text/event-stream; charset=utf-8"
         )
         lines = resp.text.strip().split("\n")
-        events = [l for l in lines if l.startswith("event:")]
+        events = [line for line in lines if line.startswith("event:")]
         self.assertTrue(len(events) >= 2)
         self.assertTrue(any("token" in e for e in events))
         self.assertTrue(any("complete" in e for e in events))

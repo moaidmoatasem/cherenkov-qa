@@ -232,7 +232,7 @@ class TestHitlToolsWithMockQueue(unittest.TestCase):
         mock_q.list.return_value = []
         mock_queue_factory.return_value = mock_q
 
-        _result = self._call("hitl_list", {"status": "pending"})
+        result = self._call("hitl_list", {"status": "pending"})
         mock_q.list.assert_called_once_with(status="pending")
         self.assertFalse(result.get("isError", False))
 
@@ -255,7 +255,7 @@ class TestHitlToolsWithMockQueue(unittest.TestCase):
         )
         mock_queue_factory.return_value = mock_q
 
-        _result = self._call("hitl_approve", {"item_id": "item-1", "actor": "alice"})
+        result = self._call("hitl_approve", {"item_id": "item-1", "actor": "alice"})
         mock_q.approve.assert_called_once_with(
             item_id="item-1", actor="alice", source="mcp"
         )
@@ -367,7 +367,7 @@ class TestStdioTransport(unittest.TestCase):
         out = io.StringIO()
         table = build_dispatch_table()
         serve_stdio(table, input_stream=inp, output_stream=out)
-        lines = [l for l in out.getvalue().splitlines() if l.strip()]
+        lines = [line for line in out.getvalue().splitlines() if line.strip()]
         self.assertEqual(len(lines), 2)
         for line in lines:
             resp = json.loads(line)
@@ -383,7 +383,7 @@ class TestStdioTransport(unittest.TestCase):
         )
         out = io.StringIO()
         serve_stdio(build_dispatch_table(), input_stream=inp, output_stream=out)
-        lines = [l for l in out.getvalue().splitlines() if l.strip()]
+        lines = [line for line in out.getvalue().splitlines() if line.strip()]
         self.assertEqual(len(lines), 1)
 
     def test_serve_stdio_handles_malformed_json(self):
@@ -392,7 +392,7 @@ class TestStdioTransport(unittest.TestCase):
         inp = io.StringIO("{{broken\n")
         out = io.StringIO()
         serve_stdio(build_dispatch_table(), input_stream=inp, output_stream=out)
-        lines = [l for l in out.getvalue().splitlines() if l.strip()]
+        lines = [line for line in out.getvalue().splitlines() if line.strip()]
         self.assertEqual(len(lines), 1)
         resp = json.loads(lines[0])
         self.assertEqual(resp["error"]["code"], PARSE_ERROR)

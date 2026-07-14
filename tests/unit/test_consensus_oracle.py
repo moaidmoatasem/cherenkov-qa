@@ -108,7 +108,7 @@ def _mock_passes(verdicts: list[str], confidences: list[float]):
     """Return a side_effect list for _single_pass mock."""
     return [
         {"verdict": v, "confidence": c, "reason": f"reason for {v}"}
-        for v, c in zip(verdicts, confidences)
+        for v, c in zip(verdicts, confidences, strict=False)
     ]
 
 

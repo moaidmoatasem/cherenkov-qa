@@ -36,7 +36,7 @@ class TestAllureEmitter(unittest.TestCase):
         self.assertEqual(failing["name"], "POST /api/users")
         self.assertEqual(failing["statusDetails"]["message"], "Drift detected")
         self.assertEqual(failing["statusDetails"]["trace"], "Failed")
-        self.assertTrue(any(l for l in failing["labels"] if l["name"] == "severity" and l["value"] == "critical"))
+        self.assertTrue(any(lbl for lbl in failing["labels"] if lbl["name"] == "severity" and lbl["value"] == "critical"))
 
 if __name__ == "__main__":
     unittest.main()

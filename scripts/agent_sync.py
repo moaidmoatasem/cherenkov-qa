@@ -493,6 +493,7 @@ def cmd_token(action_type: str | None, count: int | None, item: str | None):
     elif pct >= 60:
         line += " [near budget]"
     print(line)
+    return None
 
 
 def cmd_status(json_output: bool = False):

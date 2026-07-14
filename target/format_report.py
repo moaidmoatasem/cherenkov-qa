@@ -4,7 +4,7 @@ import sys
 mode = sys.argv[1] # 'green' or 'red'
 
 content = sys.stdin.read()
-lines = [l for l in content.splitlines() if not l.strip().startswith('{"')]
+lines = [line for line in content.splitlines() if not line.strip().startswith('{"')]
 clean_content = '\n'.join(lines)
 
 match = re.search(r"(=+\nCHERENKOV VALUE ASSERTION TIGHTENING REPORT.*)", clean_content, re.DOTALL)
