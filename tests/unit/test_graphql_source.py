@@ -5,12 +5,10 @@ import json
 import os
 import tempfile
 import unittest
-from pathlib import Path
 
-from cherenkov.sources.graphql.adapter import GraphQLSourceAdapter, GraphQLOperation
-from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
+from cherenkov.sources.graphql.adapter import GraphQLSourceAdapter
 from cherenkov.sources.graphql.contracts import GraphQLScenario
-
+from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
 
 TEST_SDL = """
 type Query {
@@ -106,11 +104,11 @@ class TestGraphQLSourceAdapter(unittest.TestCase):
     """Tests for GraphQLSourceAdapter."""
 
     def setUp(self):
-        self.sdl_file = tempfile.NamedTemporaryFile(mode='w', suffix='.graphql', delete=False)
+        self.sdl_file = tempfile.NamedTemporaryFile(mode='w', suffix='.graphql', delete=False)  # noqa: SIM115
         self.sdl_file.write(TEST_SDL)
         self.sdl_file.close()
 
-        self.introspection_file = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+        self.introspection_file = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)  # noqa: SIM115
         json.dump(TEST_INTROSPECTION, self.introspection_file)
         self.introspection_file.close()
 
@@ -124,7 +122,7 @@ class TestGraphQLSourceAdapter(unittest.TestCase):
 
     def test_adapter_loads_introspection(self):
         """Adapter should skip introspection that lacks interfaces field."""
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             GraphQLSourceAdapter(self.introspection_file.name)
 
     def test_iter_operations_yields_query(self):
@@ -171,7 +169,7 @@ class TestGraphQLScenarioPlanner(unittest.TestCase):
     """Tests for GraphQLScenarioPlanner."""
 
     def setUp(self):
-        self.sdl_file = tempfile.NamedTemporaryFile(mode='w', suffix='.graphql', delete=False)
+        self.sdl_file = tempfile.NamedTemporaryFile(mode='w', suffix='.graphql', delete=False)  # noqa: SIM115
         self.sdl_file.write(TEST_SDL)
         self.sdl_file.close()
         self.adapter = GraphQLSourceAdapter(self.sdl_file.name)

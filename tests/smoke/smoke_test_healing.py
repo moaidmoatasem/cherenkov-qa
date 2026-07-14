@@ -5,11 +5,12 @@ Proves AUTH_EXPIRY and CONTRACT_DRIFT suggestion generation without auto-committ
 """
 
 import subprocess
+
 from cherenkov.healing import (
-    Diagnoser,
-    FailureClass,
     AuthExpiryHealer,
     ContractDriftHealer,
+    Diagnoser,
+    FailureClass,
 )
 
 

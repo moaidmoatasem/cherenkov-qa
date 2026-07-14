@@ -13,20 +13,19 @@ from __future__ import annotations
 
 import pytest
 
-from cherenkov.drift.snapshot import SpecSuiteSnapshot, spec_hash, suite_manifest_hash
-from cherenkov.drift.fingerprint import Fingerprint, fingerprint_of, similarity
-from cherenkov.drift.detect import DriftKind, DriftFinding, detect_findings
+from cherenkov.drift.detect import DriftKind, detect_findings
+from cherenkov.drift.fingerprint import fingerprint_of, similarity
+from cherenkov.drift.loop import AutonomyLevel, DriftLoop
 from cherenkov.drift.reconcile import (
+    SEVERITY,
     DriftVerdict,
     GateSignal,
-    aggregate,
     MagnitudeVerdict,
+    aggregate,
     magnitude_verdict,
     reconcile,
-    SEVERITY,
 )
-from cherenkov.drift.loop import AutonomyLevel, DriftLoop
-
+from cherenkov.drift.snapshot import SpecSuiteSnapshot, spec_hash
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -403,7 +402,7 @@ class TestCostCheck:
             }
         }
         current_spec = _make_spec(extra_paths=extra)
-        report = reconcile(baseline, current_spec, suite)
+        _report = reconcile(baseline, current_spec, suite)
 
         after = set(sys.modules.keys())
         new_modules = after - before

@@ -17,11 +17,13 @@ References:
 from __future__ import annotations
 
 import os
+
 import pytest
 
-from cherenkov.core.contracts import GenerateOutput, StageMeta, Status
+from cherenkov.core.contracts import GenerateOutput, ReviewOutput, StageMeta, Status
 from cherenkov.core.errors import LoggerConfig
 from cherenkov.stages.review import ReviewStage
+
 
 @pytest.fixture(autouse=True)
 def _suppress_logging():
@@ -40,7 +42,7 @@ def _load(path: str) -> str:
         return fh.read()
 
 
-def _review(code: str, scenario_id: str) -> "ReviewOutput":  # noqa: F821
+def _review(code: str, scenario_id: str) -> ReviewOutput:
     out = GenerateOutput(
         scenario_id=scenario_id,
         test_code=code,
@@ -61,7 +63,7 @@ def _gate(result, name: str):
 
 
 def _static_gates_only(result) -> list:
-    """Gates 1–4 — always evaluated without external infra."""
+    """Gates 1-4 — always evaluated without external infra."""
     return [g for g in result.gates if g.gate in ("syntax", "structure", "ast", "assertion")]
 
 
@@ -189,8 +191,8 @@ class TestBenchRunner:
         assert result.avg_quality_score > 0.0
 
     def test_bench_report_populated(self):
-        from cherenkov.bench.runner import run_bench
         from cherenkov.bench.metrics import BenchReport
+        from cherenkov.bench.runner import run_bench
         report = run_bench([_GOLDEN_DIR], spec_path=_SPEC_PATH)
         assert isinstance(report, BenchReport)
         assert report.total_scenarios == 3

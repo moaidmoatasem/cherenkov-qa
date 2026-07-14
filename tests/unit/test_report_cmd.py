@@ -11,7 +11,6 @@ from click.testing import CliRunner
 
 from cherenkov.cli.commands.simple import report_cmd, self_test_cmd
 
-
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 def _write_events(run_dir: Path, events: list[dict]) -> None:

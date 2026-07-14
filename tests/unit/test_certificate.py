@@ -5,13 +5,9 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 from click.testing import CliRunner
 
 from cherenkov.core.certificate import (
-    CertSubject,
-    CertSummary,
-    VerificationCertificate,
     compliance_profile,
     issue_certificate,
     load_certificate,
@@ -23,7 +19,6 @@ from cherenkov.core.contracts import (
     Severity,
     StageMeta,
 )
-
 
 # ── fixtures ───────────────────────────────────────────────────────────────────
 

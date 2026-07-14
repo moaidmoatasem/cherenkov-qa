@@ -1,11 +1,12 @@
-import os
 import json
+import os
 import tempfile
-import pytest
 from unittest.mock import patch
 
-from cherenkov.execution.maestro_runner import MaestroRunner
+import pytest
+
 from cherenkov.execution.appium_runner import AppiumRunner
+from cherenkov.execution.maestro_runner import MaestroRunner
 from cherenkov.sources.mobile.parsers import HARParser, HILParser
 
 
@@ -101,5 +102,5 @@ def test_maestro_real_mode_calls_subprocess(monkeypatch):
         mock_run.return_value = type(
             "R", (), {"returncode": 0, "stdout": "ok", "stderr": ""}
         )()
-        result = runner.run_test("/some/test.yaml")
+        _result = runner.run_test("/some/test.yaml")
         assert mock_run.called

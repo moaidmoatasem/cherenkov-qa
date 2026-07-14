@@ -4,10 +4,11 @@ smoke_test_eject.py — automated E2E integration test proving Standalone Ejecti
 """
 
 import os
-import sys
-import time
 import shutil
 import subprocess
+import sys
+import time
+
 import requests
 
 
@@ -162,7 +163,7 @@ def main():
             _re.compile(r'monkey-patch', _re.IGNORECASE),
         ]
 
-        for root, dirs, files in os.walk(output_dir):
+        for root, _dirs, files in os.walk(output_dir):
             if "node_modules" in root:
                 continue
             for file in files:

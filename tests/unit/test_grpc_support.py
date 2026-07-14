@@ -1,11 +1,11 @@
 """Unit tests for gRPC source adapter and scenario planner."""
 
-import unittest
 import tempfile
+import unittest
 
 
 def _make_proto(content: str) -> str:
-    f = tempfile.NamedTemporaryFile(mode="w", suffix=".proto", delete=False)
+    f = tempfile.NamedTemporaryFile(mode="w", suffix=".proto", delete=False)  # noqa: SIM115
     f.write(content)
     f.close()
     return f.name
@@ -126,9 +126,9 @@ class TestgRPCScenarioPlanner(unittest.TestCase):
         adapter = gRPCSourceAdapter(path)
         planner = gRPCScenarioPlanner()
         scenarios = planner.plan(adapter)
-        happy = [s for s in scenarios if s.case_type == "happy_path"][0]
+        happy = next(s for s in scenarios if s.case_type == "happy_path")
         self.assertEqual(happy.mutation_id, "grpc_Greeter_SayHello_happy")
-        missing = [s for s in scenarios if s.case_type == "missing_fields"][0]
+        missing = next(s for s in scenarios if s.case_type == "missing_fields")
         self.assertEqual(missing.mutation_id, "grpc_Greeter_SayHello_missing")
 
     def test_plan_expected_status_correct(self):
@@ -138,9 +138,9 @@ class TestgRPCScenarioPlanner(unittest.TestCase):
         adapter = gRPCSourceAdapter(path)
         planner = gRPCScenarioPlanner()
         scenarios = planner.plan(adapter)
-        happy = [s for s in scenarios if s.case_type == "happy_path"][0]
+        happy = next(s for s in scenarios if s.case_type == "happy_path")
         self.assertEqual(happy.expected_status, 200)
-        missing = [s for s in scenarios if s.case_type == "missing_fields"][0]
+        missing = next(s for s in scenarios if s.case_type == "missing_fields")
         self.assertEqual(missing.expected_status, 400)
 
 

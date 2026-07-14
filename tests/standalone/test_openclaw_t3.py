@@ -1,13 +1,13 @@
-import unittest
-import tempfile
 import os
+import tempfile
+import unittest
 from unittest.mock import patch
 
+from cherenkov.core.contracts import ReasoningResult
 from cherenkov.hitl.contracts import HitlItem
 from cherenkov.hitl.store import HitlQueue
 from cherenkov.openclaw.adapter import OpenClawAdapter
 from cherenkov.openclaw.feedback import HealingFeedbackStore
-from cherenkov.core.contracts import ReasoningResult
 
 
 class TestOpenClawTier3(unittest.TestCase):

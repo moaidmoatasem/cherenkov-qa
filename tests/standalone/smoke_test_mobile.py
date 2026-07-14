@@ -25,16 +25,16 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cherenkov.sources.mobile.parsers import HARParser, HILParser
-from cherenkov.sources.mobile.adapter import MobileSourceAdapter
-from cherenkov.stages.mobile_plan import MobilePlanStage
-from cherenkov.stages.mobile_generate import MobileGenerateStage
-from cherenkov.stages.mobile_review import MobileReviewStage
-from cherenkov.execution.maestro_runner import MaestroRunner
 from cherenkov.execution.appium_runner import AppiumRunner
-from cherenkov.execution.mobile_eject_maestro import MaestroEjector
+from cherenkov.execution.maestro_runner import MaestroRunner
 from cherenkov.execution.mobile_eject_appium import AppiumEjector
+from cherenkov.execution.mobile_eject_maestro import MaestroEjector
 from cherenkov.rag.mobile_index import MobileRAGIndex
+from cherenkov.sources.mobile.adapter import MobileSourceAdapter
+from cherenkov.sources.mobile.parsers import HARParser, HILParser
+from cherenkov.stages.mobile_generate import MobileGenerateStage
+from cherenkov.stages.mobile_plan import MobilePlanStage
+from cherenkov.stages.mobile_review import MobileReviewStage
 
 errors: list[str] = []
 

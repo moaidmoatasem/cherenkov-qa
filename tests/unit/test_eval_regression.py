@@ -6,9 +6,14 @@ import unittest
 from pathlib import Path
 
 from cherenkov.evals.core import (
-    EvalMetric, EvalReport, EvalResult, EvalSample, EvalScore, EvalStatus
+    EvalMetric,
+    EvalReport,
+    EvalResult,
+    EvalSample,
+    EvalScore,
+    EvalStatus,
 )
-from cherenkov.evals.regression import RegressionGuard, RegressionError
+from cherenkov.evals.regression import RegressionError, RegressionGuard
 
 
 def _make_report(pass_rate_target: float, metric_score: float = 0.90) -> EvalReport:

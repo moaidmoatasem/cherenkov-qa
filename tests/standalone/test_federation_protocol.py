@@ -1,20 +1,22 @@
 """Tests for E6-1 Truth Protocol (wire format)."""
 
 import json
+
 import pytest
+
 from cherenkov.core.contracts import (
-    DivergenceReport,
     DivergenceClass,
-    Severity,
     DivergenceEvidence,
+    DivergenceReport,
+    Severity,
     StageMeta,
 )
-from cherenkov.core.truth_model import TruthModel, GraphNode, NodeType
+from cherenkov.core.truth_model import GraphNode, NodeType, TruthModel
 from cherenkov.federation.protocol import (
-    TruthFragment,
     DivergenceEnvelope,
     ProtocolMessage,
     ProtocolMessageType,
+    TruthFragment,
     dumps,
     loads,
 )

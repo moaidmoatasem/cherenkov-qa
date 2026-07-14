@@ -4,11 +4,9 @@ from __future__ import annotations
 
 import os
 import tempfile
-import unittest
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 import pytest
-
 
 # ── CircuitBreaker ──────────────────────────────────────────────────────────
 
@@ -53,12 +51,15 @@ class TestCircuitBreaker:
 class TestOrchestratorLifecycle:
     def _make(self, **kwargs):
         from cherenkov.core.orchestrator import OrchestrationEngine
-        with tempfile.TemporaryDirectory() as d:
-            with patch("os.makedirs"), patch("builtins.open", MagicMock()), \
-                 patch("cherenkov.core.orchestrator.set_events_file"):
-                orch = OrchestrationEngine(run_id="test-orch", **kwargs)
-                orch._events_file = MagicMock()
-                return orch
+        with (
+            tempfile.TemporaryDirectory(),
+            patch("os.makedirs"),
+            patch("builtins.open", MagicMock()),
+            patch("cherenkov.core.orchestrator.set_events_file"),
+        ):
+            orch = OrchestrationEngine(run_id="test-orch", **kwargs)
+            orch._events_file = MagicMock()
+            return orch
 
     def test_run_id_assigned(self):
         orch = self._make()
@@ -141,9 +142,8 @@ class TestRunIngestSimulationGuard:
 
     def test_simulate_malformed_blocked_in_production(self):
         orch = self._make()
-        with patch.dict(os.environ, {"CHERENKOV_ENV": "production"}):
-            with pytest.raises(RuntimeError):
-                orch.run_ingest("dummy.yaml", simulate_malformed=True)
+        with patch.dict(os.environ, {"CHERENKOV_ENV": "production"}), pytest.raises(RuntimeError):
+            orch.run_ingest("dummy.yaml", simulate_malformed=True)
 
     def test_simulate_malformed_allowed_in_development(self):
         orch = self._make()
@@ -154,10 +154,9 @@ class TestRunIngestSimulationGuard:
         assert "endpoints" in result
 
     def test_simulate_plan_blocked_in_production(self):
-        from cherenkov.core.contracts import IngestOutput, Status
+        from cherenkov.core.contracts import IngestOutput
         orch = self._make()
         dummy_ingest = MagicMock(spec=IngestOutput)
         dummy_ingest.endpoints = []
-        with patch.dict(os.environ, {"CHERENKOV_ENV": "production"}):
-            with pytest.raises(RuntimeError):
-                orch.run_plan(dummy_ingest, simulate_malformed=True)
+        with patch.dict(os.environ, {"CHERENKOV_ENV": "production"}), pytest.raises(RuntimeError):
+            orch.run_plan(dummy_ingest, simulate_malformed=True)

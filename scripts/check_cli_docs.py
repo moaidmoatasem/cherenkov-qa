@@ -87,7 +87,8 @@ def main():
     if not os.path.isfile(_DOCS_PATH):
         print(f"[FAIL] {_DOCS_PATH} not found")
         return 1
-    content = open(_DOCS_PATH, encoding="utf-8").read()
+    with open(_DOCS_PATH, encoding="utf-8") as f:
+        content = f.read()
     doc_headings = _parse_doc_headings(content)
     doc_top = set()
     doc_cmd_tags = {}

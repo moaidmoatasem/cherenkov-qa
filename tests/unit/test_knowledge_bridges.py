@@ -1,17 +1,18 @@
 import os
 import tempfile
-import pytest
 from unittest.mock import MagicMock
 
-from cherenkov.knowledge.bridges.hitl_reflector import HITLReflectorBridge
-from cherenkov.knowledge.bridges.feedback_rag import FeedbackRAGBridge
-from cherenkov.knowledge.bridges.agent_memory_rag import AgentMemoryRAGBridge
+import pytest
+
 from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
+from cherenkov.knowledge.bridges.agent_memory_rag import AgentMemoryRAGBridge
+from cherenkov.knowledge.bridges.feedback_rag import FeedbackRAGBridge
+from cherenkov.knowledge.bridges.hitl_reflector import HITLReflectorBridge
 
 
 @pytest.fixture
 def hitl_bridge():
-    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
     db_path = tmp.name
     tmp.close()
     repo = SQLiteKnowledgeRepository(db_path)
@@ -25,7 +26,7 @@ def hitl_bridge():
 
 @pytest.fixture
 def feedback_bridge():
-    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
     db_path = tmp.name
     tmp.close()
     repo = SQLiteKnowledgeRepository(db_path)
@@ -39,7 +40,7 @@ def feedback_bridge():
 @pytest.fixture
 def agent_memory_bridge():
     tmp_dir = tempfile.TemporaryDirectory()
-    tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
     db_path = tmp_db.name
     tmp_db.close()
     repo = SQLiteKnowledgeRepository(db_path)
@@ -51,7 +52,7 @@ def agent_memory_bridge():
 
 
 def test_on_hitl_decision_stores_item(hitl_bridge):
-    bridge, repo, reflector = hitl_bridge
+    bridge, repo, _reflector = hitl_bridge
     bridge.on_hitl_decision("item-1", "approve", "looks good", "/api/users", "GET")
     result = repo.get_by_id("hitl_item-1")
     assert result is not None
@@ -60,7 +61,7 @@ def test_on_hitl_decision_stores_item(hitl_bridge):
 
 
 def test_on_hitl_decision_calls_reflector(hitl_bridge):
-    bridge, repo, reflector = hitl_bridge
+    bridge, _repo, reflector = hitl_bridge
     bridge.on_hitl_decision("item-2", "reject", "bad spec", "/api/auth", "POST")
     reflector.ingest_human_verdict.assert_called_once_with(
         item_id="item-2",
@@ -98,7 +99,7 @@ def test_sync_feedback_empty(feedback_bridge):
 
 
 def test_sync_agent_memory_no_dir(agent_memory_bridge):
-    repo, tmp_dir = agent_memory_bridge
+    repo, _tmp_dir = agent_memory_bridge
     bridge = AgentMemoryRAGBridge(repo, memory_dir="/nonexistent/path")
     count = bridge.sync_agent_memory()
     assert count == 0

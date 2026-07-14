@@ -1,8 +1,9 @@
 # TODO: convert to pytest — integration test with mocks heavily (left for follow-up)
 import unittest
-from unittest.mock import patch, MagicMock
-from cherenkov.stages.generate import GenerateStage
+from unittest.mock import MagicMock, patch
+
 from cherenkov.core.contracts import Scenario
+from cherenkov.stages.generate import GenerateStage
 
 
 class TestGoldenSnapshot(unittest.TestCase):

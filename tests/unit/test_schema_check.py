@@ -1,17 +1,16 @@
 """Tests for cherenkov/stages/schema_check.py"""
 
-import pytest
-import yaml
 from pathlib import Path
 
+import pytest
+import yaml
+
 from cherenkov.stages.schema_check import (
-    check_response,
     SchemaCheckStage,
-    SchemaCheckResult,
-    SchemaViolation,
-    _resolve_ref,
     _deref,
     _extract_response_schema,
+    _resolve_ref,
+    check_response,
 )
 
 PETSTORE_PATH = Path(__file__).parent.parent.parent / "bench" / "fixtures" / "petstore.yaml"
