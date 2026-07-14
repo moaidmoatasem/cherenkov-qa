@@ -26,11 +26,11 @@ class TestAllureEmitter(unittest.TestCase):
         self.assertEqual(len(results), 2)
 
         # Check passing test
-        passing = [r for r in results if r["status"] == "passed"][0]
+        passing = next(r for r in results if r["status"] == "passed")
         self.assertIn("successful_conformance_check", passing["name"])
 
         # Check failing test
-        failing = [r for r in results if r["status"] == "failed"][0]
+        failing = next(r for r in results if r["status"] == "failed")
         self.assertEqual(failing["name"], "POST /api/users")
         self.assertEqual(failing["statusDetails"]["message"], "Drift detected")
         self.assertEqual(failing["statusDetails"]["trace"], "Failed")

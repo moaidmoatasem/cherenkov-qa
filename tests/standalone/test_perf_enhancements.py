@@ -101,7 +101,7 @@ def test_ml_availability():
             )
 
             # Create enough baseline data for ML
-            for i in range(15):
+            for _ in range(15):
                 stage.run(sl)
 
             # Test ML analysis

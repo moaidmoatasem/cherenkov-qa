@@ -99,9 +99,9 @@ class TestDBSchemaSourceAdapter(unittest.TestCase):
             claims = self.adapter.discover_claims(path)
             col_claims = [c for c in claims if c.category == "column"]
             self.assertEqual(len(col_claims), 2)
-            id_col = [c for c in col_claims if c.value["name"] == "id"][0]
+            id_col = next(c for c in col_claims if c.value["name"] == "id")
             self.assertTrue(id_col.value["primary_key"])
-            name_col = [c for c in col_claims if c.value["name"] == "name"][0]
+            name_col = next(c for c in col_claims if c.value["name"] == "name")
             self.assertFalse(name_col.value["nullable"])
         finally:
             os.unlink(path)
@@ -124,7 +124,7 @@ class TestDBSchemaSourceAdapter(unittest.TestCase):
         try:
             claims = self.adapter.discover_claims(path)
             col_claims = [c for c in claims if c.category == "column"]
-            value_col = [c for c in col_claims if c.value["name"] == "value"][0]
+            value_col = next(c for c in col_claims if c.value["name"] == "value")
             self.assertEqual(value_col.value["default"], "'active'")
         finally:
             os.unlink(path)

@@ -197,7 +197,7 @@ class TestTrafficLoadProfile(unittest.TestCase):
 
     def test_multiple_entries_picks_most_common(self):
         entries = []
-        for i in range(3):
+        for _ in range(3):
             entries.append(
                 {
                     "request": {
@@ -208,7 +208,7 @@ class TestTrafficLoadProfile(unittest.TestCase):
                     "timings": {"send": 5, "wait": 100, "receive": 10},
                 }
             )
-        for i in range(10):
+        for _ in range(10):
             entries.append(
                 {
                     "request": {

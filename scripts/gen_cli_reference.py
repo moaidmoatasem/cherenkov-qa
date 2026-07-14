@@ -57,7 +57,7 @@ def run_help(cmd: list[str]) -> str:
     """Run `cmd --help` and return the stdout."""
     try:
         result = subprocess.run(
-            cmd + ["--help"],
+            [*cmd, "--help"],
             capture_output=True,
             text=True,
             timeout=10,

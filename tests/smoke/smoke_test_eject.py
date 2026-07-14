@@ -162,7 +162,7 @@ def main():
             _re.compile(r'monkey-patch', _re.IGNORECASE),
         ]
 
-        for root, dirs, files in os.walk(output_dir):
+        for root, _dirs, files in os.walk(output_dir):
             if "node_modules" in root:
                 continue
             for file in files:

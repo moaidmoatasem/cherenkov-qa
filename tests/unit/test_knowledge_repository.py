@@ -1,4 +1,5 @@
 # TODO: convert to pytest — complex file (>150 lines, many test classes with setUp/tearDown)
+import contextlib
 import unittest
 import os
 import tempfile
@@ -57,10 +58,8 @@ class TestSQLiteKnowledgeRepository(unittest.TestCase):
         if hasattr(self, 'repo'):
             self.repo.close()
         if os.path.exists(self.db_path):
-            try:
+            with contextlib.suppress(PermissionError):
                 os.unlink(self.db_path)
-            except PermissionError:
-                pass
 
     def test_query_empty(self):
         q = KnowledgeQuery(query="test")

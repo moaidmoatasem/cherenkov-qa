@@ -12,6 +12,7 @@ Proves:
 Authority: v3.1 + delta. Track A surface, optional B2 perf layer.
 """
 
+import contextlib
 import os
 import sqlite3
 import time
@@ -61,10 +62,8 @@ def _snapshot_user_tests():
             if f == "k6_perf.js":
                 continue  # runner scratchpad — not a user-owned file
             p = os.path.join(root, f)
-            try:
+            with contextlib.suppress(OSError):
                 snap[p] = os.path.getmtime(p)
-            except OSError:
-                pass
     return snap
 
 

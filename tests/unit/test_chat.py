@@ -1,4 +1,5 @@
 # TODO: convert to pytest — complex file (>150 lines, heavy setUp/tearDown with FastAPI TestClient)
+import contextlib
 import unittest
 import asyncio
 import os
@@ -374,10 +375,8 @@ class TestChatAPIIntegration(unittest.TestCase):
         if hasattr(self, 'memory'):
             self.memory.close()
         if os.path.exists(self.db_path):
-            try:
+            with contextlib.suppress(PermissionError):
                 os.unlink(self.db_path)
-            except PermissionError:
-                pass
 
     def test_create_session(self):
         resp = self.client.post(

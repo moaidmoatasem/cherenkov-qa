@@ -41,7 +41,7 @@ _next_order_id = 1
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_handler(request, exc):
+async def validation_handler(request, exc):  # noqa: ARG001
     if REGRESSION_MODE:
         return JSONResponse(status_code=200, content={"message": "ok"})
     return JSONResponse(status_code=422, content={"detail": exc.errors()})

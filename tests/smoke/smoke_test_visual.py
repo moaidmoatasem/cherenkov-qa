@@ -12,6 +12,7 @@ Proves:
 Authority: v3.1 + delta. Track A surface, optional B1 visual layer.
 """
 
+import contextlib
 import os
 import time
 import shutil
@@ -73,10 +74,8 @@ def _snapshot_user_tests() -> dict:
             if f.startswith(VISUAL_SCRATCHPAD_PREFIX):
                 continue
             p = os.path.join(root, f)
-            try:
+            with contextlib.suppress(OSError):
                 snap[p] = os.path.getmtime(p)
-            except OSError:
-                pass
     return snap
 
 

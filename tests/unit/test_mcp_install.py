@@ -47,7 +47,7 @@ class TestMCPConfigGenerator(unittest.TestCase):
 
     def test_configs_serialize_to_json(self):
         configs = self.gen.all_configs()
-        for name, config in configs.items():
+        for _, config in configs.items():
             dumped = json.dumps(config)
             restored = json.loads(dumped)
             self.assertEqual(restored, config)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import tempfile
@@ -99,10 +100,8 @@ class TestEvalStore(unittest.TestCase):
         if hasattr(self, "store"):
             pass
         if os.path.exists(self.db_path):
-            try:
+            with contextlib.suppress(Exception):
                 os.unlink(self.db_path)
-            except Exception:
-                pass
 
     def _make_report(self, pass_rate: float = 1.0) -> EvalReport:
         sample = EvalSample(scenario_id="t1", endpoint="/x", method="GET", expected_status=200, test_code="", spec_summary="")

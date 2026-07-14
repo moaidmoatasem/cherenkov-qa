@@ -39,9 +39,9 @@ def main():
     # 2. Verify help screens
     print("Testing help outputs...")
     commands_to_test = [
-        wrapper_cmd + ["--help"],
-        wrapper_cmd + ["validate", "--help"],
-        wrapper_cmd + ["eject", "--help"],
+        [*wrapper_cmd, "--help"],
+        [*wrapper_cmd, "validate", "--help"],
+        [*wrapper_cmd, "eject", "--help"],
     ]
     for cmd in commands_to_test:
         proc = subprocess.run(cmd, capture_output=True, text=True)

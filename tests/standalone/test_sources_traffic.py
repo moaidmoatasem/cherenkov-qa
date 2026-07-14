@@ -53,7 +53,7 @@ class TestTrafficSourceAdapter(unittest.TestCase):
         try:
             claims = self.adapter.discover_claims(path)
             self.assertTrue(any(c.category == "observed_status" for c in claims))
-            status_claim = [c for c in claims if c.category == "observed_status"][0]
+            status_claim = next(c for c in claims if c.category == "observed_status")
             self.assertEqual(status_claim.value["status"], 200)
             self.assertIn("GET http://example.com/api/users", status_claim.subject)
         finally:

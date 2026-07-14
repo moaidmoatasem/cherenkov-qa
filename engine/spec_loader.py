@@ -1,3 +1,4 @@
+import contextlib
 import json
 import sys
 
@@ -35,9 +36,7 @@ def extract_routes(spec: dict) -> dict:
                 operation = methods[method]
                 expected_statuses = set()
                 for status_code in operation.get("responses", {}):
-                    try:
+                    with contextlib.suppress(ValueError):
                         expected_statuses.add(int(status_code))
-                    except ValueError:
-                        pass
                 routes[(method.upper(), path)] = expected_statuses
     return routes

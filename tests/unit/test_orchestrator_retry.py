@@ -60,7 +60,7 @@ class TestExecuteStageWithRetry:
 
     def test_returns_fallback_after_all_retries_fail(self):
         eng = _make_engine()
-        always_bad = lambda: (_ for _ in ()).throw(ContractError("bad"))
+        def always_bad(): (_ for _ in ()).throw(ContractError("bad"))
         # ContractError on every attempt -> exhausts 3 attempts -> fallback
         with patch("time.sleep"):  # skip backoff delays
             result = eng._execute_stage_with_retry(
