@@ -2,7 +2,8 @@
 
 > Maps `VerificationCertificate` fields to specific articles/controls in
 > **EU AI Act (2024/1689)**, **SOC 2 Type II (Trust Services Criteria 2022)**,
-> and **ISO/IEC 25010:2023 (SQuaRE)**.
+> **ISO/IEC 25010:2023 (SQuaRE)**, **ISO/IEC 42001:2023**, the **OWASP AI Testing
+> Guide v1**, and the **OWASP Top 10 for LLM Applications**.
 >
 > Each row cites the exact provision, states what the certificate field provides,
 > and notes any gap or caveat.
@@ -89,6 +90,22 @@ methodology, not a numbered-controls standard):
 |---|---|---|
 | Repeatable trustworthiness evidence | `divergences_json`, `fingerprint` | Findings are third-party re-runnable; the record is SHA-256 tamper-evident. |
 | Oracle integrity | `verdict`, `summary` | Oracles are spec-derived (status codes, documented fields/headers), never model output. Integrity of AI-*generated* suites is evidenced by `cherenkov check-suite`, complementary to this certificate. |
+
+---
+
+## OWASP Top 10 for LLM Applications (2025)
+
+Numbered risk categories — distinct from the methodology-level "OWASP AI Testing
+Guide" above. Only categories with an actual operational control in this repo are
+claimed; the rest (LLM03 Supply Chain, LLM04 Data/Model Poisoning, LLM07-LLM10) are
+intentionally omitted rather than force-mapped.
+
+| Risk | Title | Certificate fields | What the repo provides | Gap / caveat |
+|---|---|---|---|---|
+| LLM01 | Prompt Injection | `verdict` | `cherenkov/adversarial/injector.py` + `detector.py` probe and scan generated test code for prompt-injection payloads and markers (role-hijack, instruction-override, spec-manipulation) | Adversarial pass rate is a separate report (`.cherenkov/adversarial_report.json`), not yet a certificate field |
+| LLM02 | Sensitive Information Disclosure | — | `cherenkov/security/redact.py` scrubs API keys, bearer tokens, and PII from traces, logs, and agent memory before persistence | Applied at write-time; does not retroactively scrub existing records |
+| LLM05 | Improper Output Handling | — | `cherenkov/adversarial/detector.py` scans AI-generated test code for unsafe constructs (eval, child_process, exec, exfiltration beacons) before it is trusted or executed | Pattern-based detection, not sandboxed execution |
+| LLM06 | Excessive Agency | — | `cherenkov/hitl/` gates automated actions (e.g. auto-heal dispatch) behind a human-review queue with a PENDING/APPROVED/REJECTED state machine | Covers the auto-heal/repair paths; not every agentic action surface |
 
 ---
 
