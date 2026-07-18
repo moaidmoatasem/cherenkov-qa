@@ -32,6 +32,11 @@ class WitnessAgent:
     (see architecture doc): just HTTP + diff, no LLM required.
     """
 
+    # A rate-limited (429) probe must never be read as "conformant" — back off
+    # and retry so a busy target does not masquerade as passing. Bounded so a
+    # persistently throttling target cannot hang the run.
+    _MAX_RETRIES_429 = 4
+
     def __init__(self, base_url: str, timeout: float = 10.0) -> None:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
@@ -79,20 +84,31 @@ class WitnessAgent:
 
     # ── private ───────────────────────────────────────────────────────────
 
+    @staticmethod
+    def _send(
+        client: httpx.Client, method: str, url: str, payload: dict | None
+    ) -> httpx.Response:
+        if method in ("POST", "PUT", "PATCH") and payload is not None:
+            return getattr(client, method.lower())(
+                url, json=payload, headers={"Content-Type": "application/json"}
+            )
+        return getattr(client, method.lower())(url)
+
     def _execute(self, hypothesis: DivergenceHypothesis) -> DivergenceEvidence:
         method, path, payload, expected = _parse_repro_steps(hypothesis.repro_steps)
         url = f"{self.base_url}{path}"
 
         t0 = time.monotonic()
         with httpx.Client(timeout=self.timeout, follow_redirects=True) as client:
-            if method in ("POST", "PUT", "PATCH") and payload is not None:
-                resp = getattr(client, method.lower())(
-                    url,
-                    json=payload,
-                    headers={"Content-Type": "application/json"},
-                )
-            else:
-                resp = getattr(client, method.lower())(url)
+            resp = self._send(client, method, url, payload)
+            attempts = 0
+            while resp.status_code == 429 and attempts < self._MAX_RETRIES_429:
+                attempts += 1
+                delay = _retry_after_seconds(resp)
+                if delay is None:
+                    delay = min(2.0, 0.5 * (2 ** (attempts - 1)))
+                time.sleep(delay)
+                resp = self._send(client, method, url, payload)
         latency_ms = int((time.monotonic() - t0) * 1000)
 
         try:
@@ -152,6 +168,17 @@ class WitnessAgent:
 
 
 # ── helpers ───────────────────────────────────────────────────────────────
+
+
+def _retry_after_seconds(resp: httpx.Response) -> float | None:
+    """Parse a Retry-After header (delta-seconds form) into a bounded delay."""
+    raw = resp.headers.get("Retry-After") or resp.headers.get("retry-after")
+    if not raw:
+        return None
+    try:
+        return max(0.0, min(5.0, float(raw.strip())))
+    except (ValueError, AttributeError):
+        return None
 
 
 def _parse_repro_steps(

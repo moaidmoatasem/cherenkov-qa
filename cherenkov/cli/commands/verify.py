@@ -21,6 +21,7 @@ import sys
 import time
 from pathlib import Path
 
+import httpx
 import requests
 from typing import Any, cast
 
@@ -166,6 +167,8 @@ def verify_cmd(
     if rich_verdict:
         click.echo("  Engine  : multi-agent (rich verdict)")
     click.echo("")
+
+    _assert_reachable(url)
 
     t_start = time.monotonic()
 
@@ -327,6 +330,26 @@ def _persist_run(
         click.echo(f"  Run ID: {saved.run_id}", err=True)
     except Exception:
         _log.debug("run record persist failed (non-critical)", exc_info=True)
+
+
+def _assert_reachable(url: str) -> None:
+    """Fail fast if the target is not reachable.
+
+    A down or wrong-address target must not be scored — otherwise every probe
+    fails identically, yields zero divergences, and the run exits 0, silently
+    reporting an outage as a clean pass. Any HTTP response (even 4xx/5xx) counts
+    as reachable; only connection-level failures abort.
+    """
+    try:
+        with httpx.Client(timeout=10.0, follow_redirects=True) as client:
+            client.get(url)
+    except httpx.HTTPError as exc:
+        click.echo(
+            f"[ERROR] Target {url} is not reachable: {type(exc).__name__}. "
+            "Aborting — a target that cannot be contacted cannot be verified.",
+            err=True,
+        )
+        sys.exit(2)
 
 
 def _load_spec(spec_path: str) -> dict | None:
