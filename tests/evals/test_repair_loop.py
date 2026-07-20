@@ -160,7 +160,7 @@ class TestRepairLoopContract:
                 type("G", (), {"gate": "assertion", "passed": False, "skipped": False, "detail": "no specific status code"})()
             ]
 
-        def fake_rev_run(self, gen_out, spec_path=None):
+        def fake_rev_run(self, gen_out, spec_path=None, operation=None, schemas=None):
             return _FakeReview()
 
         monkeypatch.setattr("cherenkov.stages.repair.GenerateStage.__init__", fake_gen_init)
@@ -180,6 +180,51 @@ class TestRepairLoopContract:
         assert "REPAIR" in received_instructions[1]
         assert "assertion" in received_instructions[1]
 
+    def test_repair_instruction_targets_meaningful_assertion_failure(self, monkeypatch):
+        """A failing meaningful-assertion gate gets specific repair guidance,
+        not the generic .toBe()/.toHaveProperty() syntax hint."""
+        received_instructions = []
+
+        def fake_gen_init(self, run_id=None):
+            self.run_id = run_id
+
+        def fake_gen_run(self, **kwargs):
+            received_instructions.append(kwargs.get("instruction", ""))
+            return _make_gen_output(_WEAK_CODE)
+
+        def fake_rev_init(self, run_id=None):
+            self.run_id = run_id
+
+        class _FakeReview:
+            verdict = type("V", (), {"value": "hitl"})()
+            quality_score = 0.5
+            gates = [
+                type("G", (), {
+                    "gate": "meaningful-assertion", "passed": False, "skipped": False,
+                    "detail": "Test also passes against a synthesized broken implementation",
+                })()
+            ]
+
+        def fake_rev_run(self, gen_out, spec_path=None, operation=None, schemas=None):
+            return _FakeReview()
+
+        monkeypatch.setattr("cherenkov.stages.repair.GenerateStage.__init__", fake_gen_init)
+        monkeypatch.setattr("cherenkov.stages.repair.GenerateStage.run", fake_gen_run)
+        monkeypatch.setattr("cherenkov.stages.repair.ReviewStage.__init__", fake_rev_init)
+        monkeypatch.setattr("cherenkov.stages.repair.ReviewStage.run", fake_rev_run)
+
+        loop = RepairLoop(run_id="test-repair-meaningful", max_attempts=2)
+        loop.run(
+            scenario=_make_scenario(),
+            path="/test",
+            method="GET",
+            spec_path=_SPEC_PATH,
+            instruction="original",
+        )
+        assert len(received_instructions) >= 2
+        assert "exact documented status code" in received_instructions[1]
+        assert ".toBe(NNN)" not in received_instructions[1]
+
     def test_best_score_returned(self, monkeypatch):
         """RepairLoop returns the attempt with the highest quality_score."""
         attempt_scores = [0.3, 0.8, 0.5]
@@ -194,7 +239,7 @@ class TestRepairLoopContract:
         def fake_rev_init(self, run_id=None):
             self.run_id = run_id
 
-        def fake_rev_run(self, gen_out, spec_path=None):
+        def fake_rev_run(self, gen_out, spec_path=None, operation=None, schemas=None):
             score = attempt_scores[min(attempt_idx[0], len(attempt_scores) - 1)]
             attempt_idx[0] += 1
 
