@@ -15,18 +15,17 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from cherenkov.execution.appium_runner import AppiumRunner
+from cherenkov.execution.maestro_runner import MaestroRunner
+from cherenkov.execution.mobile_eject_appium import AppiumEjector
+from cherenkov.execution.mobile_eject_maestro import MaestroEjector
+from cherenkov.rag.mobile_index import MobileRAGIndex
+from cherenkov.sources.mobile.adapter import MobileSourceAdapter
 from cherenkov.sources.mobile.contracts import MobileApp, MobileFlow, MobileScreen
 from cherenkov.sources.mobile.parsers import HARParser, HILParser
-from cherenkov.sources.mobile.adapter import MobileSourceAdapter
+from cherenkov.stages.mobile_generate import MobileGenerateOutput, MobileGenerateStage
 from cherenkov.stages.mobile_plan import MobilePlanStage, MobileScenario
-from cherenkov.stages.mobile_generate import MobileGenerateStage, MobileGenerateOutput
 from cherenkov.stages.mobile_review import MobileReviewStage
-from cherenkov.execution.maestro_runner import MaestroRunner
-from cherenkov.execution.appium_runner import AppiumRunner
-from cherenkov.execution.mobile_eject_maestro import MaestroEjector
-from cherenkov.execution.mobile_eject_appium import AppiumEjector
-from cherenkov.rag.mobile_index import MobileRAGIndex
-
 
 # ── Contracts ────────────────────────────────────────────────────────────────
 

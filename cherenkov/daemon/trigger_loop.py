@@ -105,7 +105,7 @@ class SpecGuardianTriggerLoop:
                 # Push to HITL queue
                 from cherenkov.hitl.queue import HitlQueue
 
-                from cherenkov.core.contracts import DivergenceFinding
+                from cherenkov.core.contracts import DivergenceFinding, Severity
 
                 queue = HitlQueue()
                 for report in failed_reports:
@@ -117,7 +117,7 @@ class SpecGuardianTriggerLoop:
                         actual=report.get("error", "Error"),
                         summary="Response drift detected by Spec Guardian",
                         description=report.get("error", "Error"),
-                        severity="high",
+                        severity=Severity.HIGH,
                         remediation="Update API or spec",
                     )
                     queue.push_finding(finding, run_id=run_id)

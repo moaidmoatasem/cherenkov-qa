@@ -18,6 +18,7 @@ from unittest.mock import patch
 
 def _reload_config():
     import importlib
+
     import cherenkov.core.config
 
     importlib.reload(cherenkov.core.config)
@@ -34,8 +35,9 @@ class TestHitlAuthVerification(unittest.TestCase):
         return verify_api_key
 
     def test_missing_key_raises_401(self):
-        import fastapi
         import asyncio
+
+        import fastapi
 
         vk = self._make_vk("test-key-123")
         with self.assertRaises(fastapi.HTTPException) as ctx:
@@ -57,8 +59,9 @@ class TestHitlAuthVerification(unittest.TestCase):
         self.assertIsNone(result, "Valid Bearer token should return None (pass)")
 
     def test_wrong_api_key_raises_401(self):
-        import fastapi
         import asyncio
+
+        import fastapi
 
         vk = self._make_vk("test-key-123")
         with self.assertRaises(fastapi.HTTPException) as ctx:

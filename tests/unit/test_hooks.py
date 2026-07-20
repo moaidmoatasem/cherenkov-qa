@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 import sys
-from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -17,7 +15,6 @@ from cherenkov.hooks.domain.models import (
     HookStatus,
 )
 from cherenkov.hooks.registry import HookRegistry
-
 
 # ── SubprocessHookExecutor ────────────────────────────────────────────
 

@@ -6,7 +6,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from cherenkov.cli.commands.check_suite import check_suite_cmd, check_integrity
+from cherenkov.cli.commands.check_suite import check_integrity, check_suite_cmd
 
 DEMO = Path(__file__).parents[2] / "demos" / "catch-the-ai-cheating"
 SPEC = DEMO / "openapi.yaml"
@@ -46,6 +46,83 @@ class TestCheckIntegrity:
         cand = HALLUCINATED.read_text()
         findings = check_integrity(None, base, cand)
         assert not any("HALLUCINATED" in f for f in findings)
+
+
+class TestIdiomRobustness:
+    """Regression tests for the AST idiom fixes (H1 chained-call, H2 refactor)."""
+
+    SPEC = (
+        "openapi: 3.0.0\n"
+        "info: {title: t, version: '1'}\n"
+        "paths:\n"
+        "  /o/{id}:\n"
+        "    get:\n"
+        "      responses:\n"
+        "        '200':\n"
+        "          description: ok\n"
+        "          content:\n"
+        "            application/json:\n"
+        "              schema:\n"
+        "                type: object\n"
+        "                properties:\n"
+        "                  id: {type: integer}\n"
+        "                  item: {type: string}\n"
+    )
+    BASE = (
+        "def test_get(client):\n"
+        "    r = client.get('/o/1')\n"
+        "    assert r.status_code == 200\n"
+        "    assert r.json()['id'] == 1\n"
+        "    assert r.json()['item'] == 'x'\n"
+    )
+
+    def _spec(self, tmp_path: Path) -> Path:
+        p = tmp_path / "spec.yaml"
+        p.write_text(self.SPEC)
+        return p
+
+    def test_h1_hallucination_caught_via_chained_json_call(self, tmp_path: Path) -> None:
+        # candidate asserts on a field absent from the spec using r.json()["f"]
+        cand = self.BASE + "    assert r.json()['is_admin'] == True\n"
+        findings = check_integrity(self._spec(tmp_path), self.BASE, cand)
+        assert any("HALLUCINATED" in f and "is_admin" in f for f in findings), findings
+
+    def test_h2_no_false_deleted_on_idiom_refactor(self, tmp_path: Path) -> None:
+        # Same assertions as BASE, only the access idiom changed to a body var.
+        cand = (
+            "def test_get(client):\n"
+            "    r = client.get('/o/1')\n"
+            "    data = r.json()\n"
+            "    assert r.status_code == 200\n"
+            "    assert data['id'] == 1\n"
+            "    assert data['item'] == 'x'\n"
+        )
+        findings = check_integrity(self._spec(tmp_path), self.BASE, cand)
+        assert not any("DELETED" in f for f in findings), findings
+        assert not any("WEAKENED" in f for f in findings), findings
+
+    def test_body_var_idiom_still_detects_hallucination(self, tmp_path: Path) -> None:
+        cand = (
+            "def test_get(client):\n"
+            "    r = client.get('/o/1')\n"
+            "    data = r.json()\n"
+            "    assert data['id'] == 1\n"
+            "    assert data['item'] == 'x'\n"
+            "    assert data['secret'] == 'z'\n"
+        )
+        findings = check_integrity(self._spec(tmp_path), self.BASE, cand)
+        assert any("HALLUCINATED" in f and "secret" in f for f in findings), findings
+
+    def test_weakened_still_caught_with_chained_idiom(self, tmp_path: Path) -> None:
+        cand = (
+            "def test_get(client):\n"
+            "    r = client.get('/o/1')\n"
+            "    assert r.status_code == 200\n"
+            "    assert r.json()['id'] in (1, 2)\n"
+            "    assert r.json()['item'] == 'x'\n"
+        )
+        findings = check_integrity(self._spec(tmp_path), self.BASE, cand)
+        assert any("WEAKENED" in f for f in findings), findings
 
 
 class TestCheckSuiteCmd:

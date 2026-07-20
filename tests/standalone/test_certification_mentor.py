@@ -1,20 +1,21 @@
 import json
+
 import pytest
 
-from cherenkov.core.settings import get_settings
-from cherenkov.core.contracts import (
-    ReasoningRequest,
-    ReasoningResult,
-    VerdictRecord,
-    VerdictOutcome,
-    DivergenceClass,
-    Idiom,
-)
-from cherenkov.substrate.certification import ModelCertificationManager
-from cherenkov.substrate.router import SubstrateRouter
 from cherenkov.ai.accounting import CostAccountant
 from cherenkov.copilot.mentor import Mentor
+from cherenkov.core.contracts import (
+    DivergenceClass,
+    Idiom,
+    ReasoningRequest,
+    ReasoningResult,
+    VerdictOutcome,
+    VerdictRecord,
+)
+from cherenkov.core.settings import get_settings
 from cherenkov.reflector.store import VerdictStore
+from cherenkov.substrate.certification import ModelCertificationManager
+from cherenkov.substrate.router import SubstrateRouter
 
 
 class DummyProvider:

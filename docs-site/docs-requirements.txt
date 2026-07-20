@@ -6,7 +6,7 @@
 
 # Core MkDocs framework
 mkdocs~=1.6.1
-mkdocs-material~=9.7.6
+mkdocs-material~=9.7.7
 
 # Versioning — mike manages the gh-pages branch, version selector in nav
 # IMPORTANT: mike pushes directly to gh-pages branch via git.

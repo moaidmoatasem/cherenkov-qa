@@ -11,6 +11,7 @@ from cherenkov.core.contracts import GenerateOutput, Scenario, StageMeta, Status
 from cherenkov.core.errors import LoggerConfig
 from cherenkov.stages.repair import RepairLoop, _extract_error_feedback
 
+
 @pytest.fixture(autouse=True)
 def _suppress_logging():
     LoggerConfig.suppress_stderr = True

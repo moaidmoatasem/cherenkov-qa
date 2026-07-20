@@ -7,10 +7,11 @@ Tests cache hit measurement, per-run cost + latency reporting, and pipeline inte
 from __future__ import annotations
 
 import time
-from cherenkov.ai.cache import ResponseCache
+
 from cherenkov.ai.accounting import CostAccountant
-from cherenkov.ai.interface import InferenceClient, CachedInferenceClient
-from cherenkov.core.contracts import CacheStats, AccountingReport
+from cherenkov.ai.cache import ResponseCache
+from cherenkov.ai.interface import CachedInferenceClient, InferenceClient
+from cherenkov.core.contracts import AccountingReport, CacheStats
 
 
 # ── Mock InferenceClient for deterministic testing ────────────────────────
@@ -141,7 +142,7 @@ def test_cached_client():
     assert mock.json_call_count == 1, "Should NOT have called mock again"
 
     # Different user prompt should miss cache
-    r3 = client.complete_json("sys", "user-different", "m1")
+    _r3 = client.complete_json("sys", "user-different", "m1")
     assert mock.json_call_count == 2
 
     # Verify cache stats

@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
 
 from cherenkov.core.contracts import DivergenceClass, DivergenceHypothesis, Severity
 from cherenkov.verdict.mutation_oracle import (

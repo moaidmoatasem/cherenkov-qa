@@ -1,6 +1,7 @@
-import pytest
-from pathlib import Path
 import sys
+from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "scripts"))
 
@@ -8,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "scripts"
 # For now, we just ensure it imports correctly without throwing syntax errors.
 def test_memory_sync_import():
     try:
-        import memory_sync
+        import memory_sync  # noqa: F401
         assert True
     except ImportError:
         pytest.fail("Could not import memory_sync")

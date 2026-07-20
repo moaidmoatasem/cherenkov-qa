@@ -1,4 +1,5 @@
 from cherenkov.core.settings import get_settings
+
 """
 test_substrate_router.py — Unit tests for the Substrate Router (Epoch 1).
 
@@ -6,12 +7,12 @@ Tests routing by capability tier + egress policy, and fallback/spillover on fail
 """
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.core.errors import EgressError, AllProvidersFailedError
-from cherenkov.substrate.router import SubstrateRouter
+from cherenkov.core.errors import AllProvidersFailedError, EgressError
 from cherenkov.substrate.provider import ProviderCapabilities
+from cherenkov.substrate.router import SubstrateRouter
 
 
 def _make_mock_provider(

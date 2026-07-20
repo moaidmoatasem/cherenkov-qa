@@ -1,9 +1,11 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-07-05
-**HEAD:** see `git log`
-**Tests:** 788+ unit/integration tests (0 failures); **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
+**Date:** 2026-07-13
+**HEAD:** see `git log` (last reflected here: `6e6fea0`)
+**Tests:** 788+ unit/integration tests as of 2026-07-05, plus new coverage landed since (health score, V2 oracles, HITL severity) -- see "What landed this session" below for exact PRs; **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
 **Branch:** `main`
+
+> **Note:** `docs/HANDOVER.md` is a separate, reverse-chronological session log (older format, kept for history). This file (`HANDOVER.md`, repo root) is the canonical status anchor per `CLAUDE.md`. The 2026-07-13 update below reconciles both -- the work logged in `docs/HANDOVER.md`'s "2026-07-11 HITL severity" section is the same work as the HITL severity entry below.
 
 ---
 
@@ -59,6 +61,8 @@ All code-deliverable Phase 1 items are DONE:
 | E1.4 -- eject command hardening | **DONE** | `cherenkov/execution/eject.py`; 10 unit tests |
 | E1.5 -- install friction to near-zero | **DONE** | `install.sh` (git+pip/pipx one-liner); Dockerfile fixed (3.12, `pip install .`, `cherenkov` entrypoint); `dist/cherenkov-1.0.0.whl` built and verified |
 
+**Also landed (2026-07-10):** A-F health score for proof runs (`cherenkov verify --health-score`) — `cherenkov/divergence/health.py`; composes coverage + divergence density + check-suite integrity into a 0-100 score/grade; PR #693.
+
 ---
 
 ## Phase 2 status (Rung 2 -- "the Platform")
@@ -105,7 +109,20 @@ All Rung 3 items are DONE (merged 2026-06-27):
 |---|---|
 | (pending) | feat(review): meaningful-assertion gate wired into the default `cherenkov generate --repair` path — `cherenkov/divergence/mutant_synth.py` derives a deliberately-wrong (status, body) response from any OpenAPI operation's documented success response (no hand-authored broken-response table needed), and `ReviewStage._gate_meaningful_assertion` spins it up via `BrokenImplServer` to prove a generated test fails a synthesized spec regression, not just that it satisfies the syntactic `assertion` gate's regex. Closes a real gap: `RepairLoop` previously optimized `quality_score` purely against syntactic/LLM-judge gates and never proved a test would catch a real bug — the same "self-healing masks regressions" failure mode covered in `cherenkov/sdet/assertion_gate.py` (E11-2) but only on the separate `CoverageLoop` path, not the default generate path. New setting `CHERENKOV_MEANINGFUL_ASSERTION_GATE` (default on). `RepairLoop` repair-instruction feedback is now gate-aware (specific guidance when the failing gate is `meaningful-assertion` vs generic syntax gates). 25 new/updated tests: `tests/unit/test_mutant_synth.py`, `tests/unit/test_review_meaningful_gate.py`, `tests/evals/test_repair_loop.py`. |
 
-## What landed this session (2026-07-05)
+## What landed previous session (2026-07-13)
+
+| SHA | What |
+|---|---|
+| `6e6fea0` | feat(witness): V2 oracles — `verify` now asserts documented response-schema fields and response headers on top of status-code oracles (the deferred R1 item, below, is now closed); `probe_planner.py` happy-path hypotheses carry documented fields/headers; 17 tests; PR #703 |
+| `3d51baf` | feat(hitl,copilot): HITL queue severity (`HitlItem.severity`, SQLite migration, `hitl list --severity`) + new `agentic-exploration` skill (live agent judges plain-language scenarios, `cherenkov record` enqueues failures as `D3_ui_spec` hypotheses into the same HITL queue); inspired by a survey of `MhmdElGazzar/agentex`; PR #697 |
+| `97a9f4e` | fix: revert `_ingest_output`→`ingest_output` ARG-rename regression; resolve CodeQL alerts in `vision_confirm.py`; ruff auto-fixes; PR #696 |
+| `7660006` | fix(api): `GET /api/v1/tests` runs synchronously instead of via `asyncio.to_thread` — fixed intermittent CI 500s; PR #698 |
+| `d8dc934` | perf: hoist inline `re.compile` calls to module-level constants (cleanup cycle 8); PR #695 |
+| `649ff8a` | refactor: hoist lazy stdlib imports to module level (cleanup cycle 7); PR #694 |
+| `d77adf3` | feat(verify): A-F health score for proof runs (`verify --health-score`) — composes `CoverageReport` + divergence density + optional check-suite integrity findings into a 0-100 score/grade; `cherenkov/divergence/health.py`; PR #693 |
+| `bfb7070`, `30ab4cd`, `3798eab`, `5fc2338` | chore(deps): routine bumps — uvicorn 0.51.0, anyio >=4.14.2, pymarkdownlnt ~=0.9.39, pydantic 2.13.4 |
+
+## What landed previous session (2026-07-05)
 
 | SHA | What |
 |---|---|
@@ -194,7 +211,7 @@ All Rung 3 items are DONE (merged 2026-06-27):
 
 > **Mypy gate is now BLOCKING (2026-07-06):** all 151 type errors fixed (was `continue-on-error: true` with 162 errors); `mypy cherenkov/` runs clean on 530 files. The cleanup surfaced and fixed real runtime bugs: `review_ocr/stage.py` crashed on any log line without a file match (missing required `OCRFinding.file`) and on every `run_on_file` call (`OCRRuleEngine.SUPPORTED_EXTENSIONS` doesn't exist — it's module-level in `rules.py`); `ai/langchain.py` instantiated a Protocol (TypeError) — now uses `SQLiteConversationMemory`; `dashboard/render.py` real-model branch accessed nonexistent `GraphNode.method/.path` and a nonexistent `get_claims_by_endpoint`; `substrate/providers/{openai,ollama}.py` called nonexistent `client.complete()` → `complete_code()` (their unit tests mocked the nonexistent method — MagicMock hid the bug); `spec_guardian/daemon.py` referenced `DriftStore.DRIFT_DB` (module-level constant → AttributeError); `execution/coverage_report.py` imported nonexistent `CherenkovConfig` (→ `LayeredConfig`); `reflector/store.py` second store class used unset `self.log`; `web/sdd_routes.py` mixed `SddSession` objects into a dict list (AttributeError under `task_type` filter); `mcp/server.py` called missing `StructuredLogger.debug` (method added). 5 targeted `# type: ignore[...]` remain, each with a `TODO(#type-debt)` comment.
 
-0. ~~R1 — Spec-derived probe planner (P0)~~ **DONE** (2026-07-07) — `cherenkov/divergence/probe_planner.py`: `plan_probes()` + `spec_hypotheses()` synthesize probes and offline hypotheses mechanically from any OpenAPI spec (required-field omission, enum violation, documented error codes for integer path params, happy-path status; depth-1 `$ref`). Wired into `run_proof()` (`max_probes=40` param; Petstore demo path unchanged when spec omitted), `verdict/engine.py` traffic capture, and `cherenkov verify --max-probes`. 13 tests in `tests/unit/test_probe_planner.py` incl. mutation-pattern e2e: conformant in-process Orders server → 0 divergences, mutant → ≥3, on a spec with no Petstore path. Self-dogfood exit test: `verify` against CHERENKOV's own 81-path `/openapi.json` probes its own endpoints (`/api/v1/chat/...`, `/api/v1/sdd/...`), 0 false divergences. **Deferred V2 oracles**: response-schema field presence + header assertions (require Witness repro-step format extensions — it currently parses status codes only). E0.3 is now unblocked.
+0. ~~R1 — Spec-derived probe planner (P0)~~ **DONE** (2026-07-07) — `cherenkov/divergence/probe_planner.py`: `plan_probes()` + `spec_hypotheses()` synthesize probes and offline hypotheses mechanically from any OpenAPI spec (required-field omission, enum violation, documented error codes for integer path params, happy-path status; depth-1 `$ref`). Wired into `run_proof()` (`max_probes=40` param; Petstore demo path unchanged when spec omitted), `verdict/engine.py` traffic capture, and `cherenkov verify --max-probes`. 13 tests in `tests/unit/test_probe_planner.py` incl. mutation-pattern e2e: conformant in-process Orders server → 0 divergences, mutant → ≥3, on a spec with no Petstore path. Self-dogfood exit test: `verify` against CHERENKOV's own 81-path `/openapi.json` probes its own endpoints (`/api/v1/chat/...`, `/api/v1/sdd/...`), 0 false divergences. **V2 oracles**: DONE (2026-07-13) — response-schema field presence + header assertions landed via Witness repro-step format extensions (`_parse_expected_fields_headers()`); see PR #703 in "What landed this session" above. E0.3 is now unblocked.
 1. ~~R0 — Truth alignment~~ **DONE** (2026-07-05) — README repositioned to the integrity wedge (`c6e0cec`) and false claims fixed (PyPI badge/`pip install cherenkov-qa` removed — package is NOT on PyPI; quickstart `check-suite --demo` replaced with real commands — that flag never existed); root artifact clutter removed and `.gitignore`-guarded (`soc2_report.json`, `pr.json`, `audit.json`, `issues.txt`, `test-junit.xml`, `test-sarif.json`; `mut_spec.json` and `qwen.json` KEPT — referenced by `tests/test_mutation_validate.py:16` and MCP integration scripts). **Deferred: `cherenkov.py` removal** — it is load-bearing: `.github/workflows/ci.yml:612-626` runs it directly, `Dockerfile.mcp` COPYs it as entrypoint, `bin/cherenkov-npm.js:42` prefers it, `scripts/setup_oi.sh` + `scripts/qwen-code-integration.sh` + `package.json` reference it, and CI gates `scripts/ci_docs_check.py` + `scripts/check_cli_docs.py` load it directly. Commit `0f16fed` deleted it prematurely (docs-parity gate crashed with FileNotFoundError, CI smoke steps and Docker MCP build broken) — **restored** in PR #675; retiring it properly is a migration project (repoint all of the above to the `cherenkov` package CLI first). `0f16fed` also deleted two non-artifacts, both now restored: `mut_spec.json` (fixture for `tests/test_mutation_validate.py:16` — its absence made the Test-coverage CI job fail on every PR) and `qwen.json` (Qwen Code MCP config, see `docs/QWEN_CODE_ALIGNMENT.md`). ~~Follow-up bug worth an issue: `OrchestrationEngine.run_pipeline()` returns *success* when the input spec file is missing~~ **FIXED** — `_run_pipeline_inner` now aborts with `success=False` on a FAILED INGEST or PLAN stage (verified 2026-07-10: `run_pipeline('/nonexistent/spec.json')` → `False`).
 
    **SURFACE FREEZE (in effect until R3/E0.3 passes):** no new work on `desktop/`, `vscode/`, `cherenkov-backstage-plugin/`, `operator/`, `landing-page/`. Bug fixes only.

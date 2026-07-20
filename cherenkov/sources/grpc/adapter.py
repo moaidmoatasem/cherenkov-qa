@@ -14,7 +14,7 @@ _RE_BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
 
 
 @dataclass
-class gRPCOperation:
+class gRPCOperation:  # noqa: N801
     service: str
     rpc_name: str
     input_message: str
@@ -53,7 +53,7 @@ def _extract_service_blocks(proto: str) -> list[tuple[str, str]]:
     return results
 
 
-class gRPCSourceAdapter:
+class gRPCSourceAdapter:  # noqa: N801
     """Parses .proto files into EndpointSlice-equivalent operations."""
 
     def __init__(self, spec_path: str):
