@@ -261,7 +261,7 @@ class TestRAGIngestIntegration(unittest.TestCase):
         from cherenkov.stages.ingest import IngestStage as IngSt
 
         stage = IngSt("test_rag")
-        tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+        tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)  # noqa: SIM115
         json.dump(self.spec, tmp)
         tmp.close()
 

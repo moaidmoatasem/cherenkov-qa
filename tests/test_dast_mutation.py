@@ -1,4 +1,5 @@
 from cherenkov.core.settings import get_settings
+
 # TODO: convert to pytest — complex file (>150 lines, setUp/tearDown)
 """
 Tests for Issue #194 — Lightweight DAST Mutation Profile.
@@ -16,7 +17,6 @@ import os
 import tempfile
 import unittest
 from unittest.mock import patch
-import cherenkov.core.config
 
 from cherenkov.stages.ingest import DAST_PAYLOADS
 
@@ -167,7 +167,7 @@ class TestDASTMutationIngest(unittest.TestCase):
     # ── helpers ──────────────────────────────────────────────────────────
 
     def _write_temp_spec(self):
-        tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+        tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)  # noqa: SIM115
         json.dump(self.spec, tmp)
         tmp.close()
         return tmp.name

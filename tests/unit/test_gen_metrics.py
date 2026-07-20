@@ -13,7 +13,6 @@ from cherenkov.governance.gen_metrics import (
     RunGenMetrics,
 )
 
-
 # ── RunGenMetrics ─────────────────────────────────────────────────────────────
 
 

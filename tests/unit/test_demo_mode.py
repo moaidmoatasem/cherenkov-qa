@@ -43,7 +43,7 @@ class TestMockFindings(unittest.TestCase):
 class TestGenerateDemoFindings(unittest.TestCase):
     @patch("cherenkov.execution.demo_mode.HitlQueue")
     def test_generate_demo_findings_enqueues_items(self, mock_queue_cls):
-        from cherenkov.execution.demo_mode import generate_demo_findings, MOCK_FINDINGS
+        from cherenkov.execution.demo_mode import MOCK_FINDINGS, generate_demo_findings
 
         mock_queue = MagicMock()
         mock_queue_cls.return_value = mock_queue

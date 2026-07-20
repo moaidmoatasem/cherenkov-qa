@@ -1,11 +1,17 @@
 from __future__ import annotations
 
-import json
 from unittest import mock
 
-from cherenkov.evals.core import EvalMetric, EvalReport, EvalResult, EvalSample, EvalScore, EvalStatus
-from cherenkov.evals.runner import build_samples_from_pipeline, print_report
+from cherenkov.evals.core import (
+    EvalMetric,
+    EvalReport,
+    EvalResult,
+    EvalSample,
+    EvalScore,
+    EvalStatus,
+)
 from cherenkov.evals.judge import judge_sample
+from cherenkov.evals.runner import build_samples_from_pipeline, print_report
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 

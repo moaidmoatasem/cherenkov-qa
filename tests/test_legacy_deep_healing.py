@@ -5,10 +5,11 @@ Proves workspace replication, LLM-based repair sweeps in sandbox, and unified di
 """
 
 import os
-import subprocess
-import time
-import sys
 import shutil
+import subprocess
+import sys
+import time
+
 import pytest
 
 from cherenkov.healing.diagnose import Diagnoser
@@ -185,4 +186,4 @@ def test_legacy_deep_healing():
         main()
     except SystemExit as e:
         if e.code != 0:
-            raise AssertionError(f"Test failed with exit code {e.code}")
+            raise AssertionError(f"Test failed with exit code {e.code}") from e

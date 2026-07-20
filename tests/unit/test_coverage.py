@@ -8,11 +8,6 @@ from unittest.mock import patch
 import pytest
 from click.testing import CliRunner
 
-from cherenkov.divergence.coverage import (
-    CoverageReport,
-    EndpointCoverage,
-    compute_coverage,
-)
 from cherenkov.core.contracts import (
     DivergenceClass,
     DivergenceEvidence,
@@ -20,7 +15,9 @@ from cherenkov.core.contracts import (
     Severity,
     StageMeta,
 )
-
+from cherenkov.divergence.coverage import (
+    compute_coverage,
+)
 
 # ── fixtures ───────────────────────────────────────────────────────────────────
 

@@ -288,7 +288,7 @@ class TestGenMetricsWithGoldenSpec:
     """Eval: GenMetricsStore correctly tracks a simulated pipeline run."""
 
     def test_full_run_metrics_tracked(self):
-        from cherenkov.governance.gen_metrics import RunGenMetrics, GenMetricsStore
+        from cherenkov.governance.gen_metrics import GenMetricsStore, RunGenMetrics
         from cherenkov.stages.ingest import IngestStage
 
         ingest = IngestStage().run(str(GOLDEN_SPEC_PATH))
@@ -333,7 +333,8 @@ class TestGenMetricsWithGoldenSpec:
 
     def test_trend_summary_after_eval_run(self):
         import tempfile
-        from cherenkov.governance.gen_metrics import RunGenMetrics, GenMetricsStore
+
+        from cherenkov.governance.gen_metrics import GenMetricsStore, RunGenMetrics
 
         with tempfile.TemporaryDirectory() as tmp:
             store = GenMetricsStore(db_path=str(Path(tmp) / "eval.db"))

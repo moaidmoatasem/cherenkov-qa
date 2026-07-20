@@ -20,12 +20,11 @@ import logging
 import sys
 import time
 from pathlib import Path
-
-import httpx
-import requests
 from typing import Any, cast
 
 import click
+import httpx
+import requests
 
 from cherenkov.divergence.proof_run import run_proof
 

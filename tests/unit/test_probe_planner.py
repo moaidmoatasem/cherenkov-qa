@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import json
 import threading
+from collections.abc import Generator
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Generator
 from urllib.parse import parse_qs, urlparse
 
 from cherenkov.divergence.probe_planner import plan_probes, spec_hypotheses
@@ -256,7 +256,7 @@ class TestSpecHypotheses:
 
     def test_every_hypothesis_is_witness_parseable(self) -> None:
         for h in self._all():
-            method, path, _, expected = _parse_repro_steps(h.repro_steps)
+            _method, path, _, expected = _parse_repro_steps(h.repro_steps)
             assert path.startswith("/"), h.repro_steps
             assert expected is not None, h.repro_steps
 

@@ -69,7 +69,7 @@ SKIP_PATHS = {
 }
 
 
-def check_file(path: Path, strict: bool) -> list[tuple[str, int, str, str]]:
+def check_file(path: Path, strict: bool) -> list[tuple[str, int, str, str]]:  # noqa: ARG001
     """Return list of (file, line_number, severity, message) for each violation."""
     violations = []
     try:
@@ -114,8 +114,8 @@ def main() -> int:
         violations = check_file(path, args.strict)
         all_violations.extend(violations)
 
-    errors = [(f, l, s, m) for f, l, s, m in all_violations if s == "ERROR"]
-    warnings = [(f, l, s, m) for f, l, s, m in all_violations if s == "WARN"]
+    errors = [(f, ln, s, m) for f, ln, s, m in all_violations if s == "ERROR"]
+    warnings = [(f, ln, s, m) for f, ln, s, m in all_violations if s == "WARN"]
 
     print(f"CHERENKOV Public Docs Sanitizer — checked {files_checked} files")
     print(f"  Errors:   {len(errors)}")

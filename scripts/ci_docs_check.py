@@ -55,7 +55,7 @@ def main():
     subcommands = []
     for action in parser._actions:
         if isinstance(action, argparse._SubParsersAction):
-            for choice in action.choices.keys():
+            for choice in action.choices:
                 subcommands.append(choice)
 
     print(f"Detected subcommands from argparse: {subcommands}")

@@ -6,7 +6,7 @@ import os
 import unittest
 from unittest.mock import patch
 
-from cherenkov.observability.llm_tracer import trace_event, _detect_backend
+from cherenkov.observability.llm_tracer import _detect_backend, trace_event
 
 
 class TestLlmTracer(unittest.TestCase):

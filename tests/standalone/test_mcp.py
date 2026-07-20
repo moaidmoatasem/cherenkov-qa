@@ -19,14 +19,14 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from cherenkov.mcp.contracts import (
+    METHOD_NOT_FOUND,
+    PARSE_ERROR,
     HitlApproveInput,
     HitlListInput,
     HitlRejectInput,
-    METHOD_NOT_FOUND,
-    PARSE_ERROR,
 )
 from cherenkov.mcp.protocol import dispatch_one
-from cherenkov.mcp.server import build_dispatch_table, _handle_initialize
+from cherenkov.mcp.server import _handle_initialize, build_dispatch_table
 
 
 class TestJsonRpcProtocol(unittest.TestCase):
@@ -171,15 +171,15 @@ class TestInputValidation(unittest.TestCase):
     """Trust boundary: invalid inputs are rejected before any queue is touched."""
 
     def test_hitl_approve_rejects_empty_item_id(self):
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             HitlApproveInput.model_validate({"item_id": ""})
 
     def test_hitl_reject_rejects_empty_item_id(self):
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             HitlRejectInput.model_validate({"item_id": ""})
 
     def test_hitl_list_rejects_invalid_status(self):
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             HitlListInput.model_validate({"status": "invalid_status"})
 
     def test_hitl_list_accepts_none_status(self):
@@ -242,7 +242,7 @@ class TestHitlToolsWithMockQueue(unittest.TestCase):
         mock_q.list.return_value = []
         mock_queue_factory.return_value = mock_q
 
-        result = self._call("hitl_list", {"status": None})
+        _result = self._call("hitl_list", {"status": None})
         mock_q.list.assert_called_once_with(status=None)
 
     @patch("cherenkov.mcp.handlers._queue")
@@ -287,7 +287,7 @@ class TestHitlToolsWithMockQueue(unittest.TestCase):
         mock_q.approve.return_value = ok_envelope("hitl.approve", {})
         mock_queue_factory.return_value = mock_q
 
-        result = self._call("hitl_approve", {"item_id": "item-1"})
+        _result = self._call("hitl_approve", {"item_id": "item-1"})
         # default actor is 'mcp-peer'
         call_kwargs = mock_q.approve.call_args
         self.assertEqual(call_kwargs.kwargs["actor"], "mcp-peer")
@@ -301,9 +301,10 @@ class TestValidateRunGate(unittest.TestCase):
 
     @patch("cherenkov.mcp.handlers.ValidationGate")
     def test_validate_run_gate_returns_report(self, mock_gate_cls):
-        from cherenkov.validate.contracts import ValidationReport
         import uuid
         from datetime import datetime, timezone
+
+        from cherenkov.validate.contracts import ValidationReport
 
         mock_report = ValidationReport(
             run_id=str(uuid.uuid4()),
@@ -366,7 +367,7 @@ class TestStdioTransport(unittest.TestCase):
         out = io.StringIO()
         table = build_dispatch_table()
         serve_stdio(table, input_stream=inp, output_stream=out)
-        lines = [l for l in out.getvalue().splitlines() if l.strip()]
+        lines = [line for line in out.getvalue().splitlines() if line.strip()]
         self.assertEqual(len(lines), 2)
         for line in lines:
             resp = json.loads(line)
@@ -382,7 +383,7 @@ class TestStdioTransport(unittest.TestCase):
         )
         out = io.StringIO()
         serve_stdio(build_dispatch_table(), input_stream=inp, output_stream=out)
-        lines = [l for l in out.getvalue().splitlines() if l.strip()]
+        lines = [line for line in out.getvalue().splitlines() if line.strip()]
         self.assertEqual(len(lines), 1)
 
     def test_serve_stdio_handles_malformed_json(self):
@@ -391,7 +392,7 @@ class TestStdioTransport(unittest.TestCase):
         inp = io.StringIO("{{broken\n")
         out = io.StringIO()
         serve_stdio(build_dispatch_table(), input_stream=inp, output_stream=out)
-        lines = [l for l in out.getvalue().splitlines() if l.strip()]
+        lines = [line for line in out.getvalue().splitlines() if line.strip()]
         self.assertEqual(len(lines), 1)
         resp = json.loads(lines[0])
         self.assertEqual(resp["error"]["code"], PARSE_ERROR)

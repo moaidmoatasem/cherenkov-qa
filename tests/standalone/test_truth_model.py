@@ -9,12 +9,12 @@ import unittest
 from datetime import datetime, timezone
 
 from cherenkov.core.truth_model import (
-    NodeType,
-    EdgeType,
-    Provenance,
     Claim,
-    GraphNode,
+    EdgeType,
     GraphEdge,
+    GraphNode,
+    NodeType,
+    Provenance,
     TruthModel,
 )
 

@@ -1,6 +1,7 @@
 import pytest
+
 from cherenkov.core.settings import CherenkovSettings, get_settings
-from pydantic import ValidationError
+
 
 def test_config_validate_passes_with_defaults():
     try:

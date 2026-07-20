@@ -1,7 +1,7 @@
 """Unit tests for Buf Schema Registry Client."""
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from cherenkov.validate.buf_registry import BufRegistryClient
 

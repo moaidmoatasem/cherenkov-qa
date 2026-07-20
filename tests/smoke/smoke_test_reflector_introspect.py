@@ -20,8 +20,8 @@ from cherenkov.core.contracts import (
     VerdictOutcome,
     VerdictRecord,
 )
-from cherenkov.reflector.store import VerdictStore
 from cherenkov.reflector.introspect import SmellType, audit_memory
+from cherenkov.reflector.store import VerdictStore
 
 
 def _vr(outcome, endpoint, cls, hid=None):
@@ -57,13 +57,13 @@ def main() -> int:
     )
 
     # CONFLICTING_IDIOMS: two different patterns, same (endpoint, class)
-    base = dict(
-        divergence_class=DivergenceClass.D4_DB_CODE,
-        endpoint="POST /user",
-        confirm_count=2,
-        last_confirmed=int(time.time()),
-        decay_score=0.9,
-    )
+    base = {
+        "divergence_class": DivergenceClass.D4_DB_CODE,
+        "endpoint": "POST /user",
+        "confirm_count": 2,
+        "last_confirmed": int(time.time()),
+        "decay_score": 0.9,
+    }
     store.upsert_idiom(Idiom(id="i1", pattern="check unique(email) on create", **base))
     store.upsert_idiom(
         Idiom(id="i2", pattern="check tenant isolation on create", **base)
