@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import json
+from typing import TYPE_CHECKING
 
-from mcp.server.fastmcp import FastMCP
+if TYPE_CHECKING:
+    from mcp.server.fastmcp import FastMCP
 
 from cherenkov.continuity.sessions.adapters.sqlite_sessions import SQLiteSessionStore
 from cherenkov.continuity.sessions.use_cases.resume import ResumeSessionUseCase
