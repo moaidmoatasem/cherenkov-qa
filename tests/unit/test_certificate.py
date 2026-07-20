@@ -287,12 +287,12 @@ class TestCertifyCmd:
 # ── E3.5: compliance profile ──────────────────────────────────────────────────
 
 class TestComplianceProfile:
-    def test_returns_14_items(self):
+    def test_returns_18_items(self):
         cert = issue_certificate(reports=[], base_url="http://localhost")
         items = compliance_profile(cert)
-        assert len(items) == 14
+        assert len(items) == 18
 
-    def test_covers_five_frameworks(self):
+    def test_covers_six_frameworks(self):
         cert = issue_certificate(reports=[], base_url="http://localhost")
         frameworks = {i.framework for i in compliance_profile(cert)}
         assert "EU AI Act (2024/1689)" in frameworks
@@ -300,6 +300,15 @@ class TestComplianceProfile:
         assert "ISO/IEC 25010:2023" in frameworks
         assert "ISO/IEC 42001:2023" in frameworks
         assert "OWASP AI Testing Guide v1 (2025)" in frameworks
+        assert "OWASP Top 10 for LLM Applications (2025)" in frameworks
+
+    def test_owasp_llm_top10_names_adversarial_module(self):
+        cert = issue_certificate(reports=[], base_url="http://localhost")
+        items = compliance_profile(cert)
+        llm01 = next(i for i in items if i.provision == "LLM01")
+        assert "adversarial" in llm01.evidence
+        llm06 = next(i for i in items if i.provision == "LLM06")
+        assert "hitl" in llm06.evidence
 
     def test_iso42001_monitoring_reflects_verdict(self):
         cert = issue_certificate(reports=[], base_url="http://localhost")
