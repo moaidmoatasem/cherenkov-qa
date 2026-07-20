@@ -142,7 +142,7 @@ def create_app(
 def serve(config: OpenClawConfig | None = None) -> None:
     """Run the OpenClaw HTTP server (blocking)."""
     if not _HAS_FASTAPI:
-        print(
+        print(  # noqa: T201
             "ERROR: FastAPI + uvicorn required. pip install fastapi uvicorn",
             file=sys.stderr,
         )

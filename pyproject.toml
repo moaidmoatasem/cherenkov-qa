@@ -124,6 +124,12 @@ ignore = ["E501", "SIM108", "RUF012", "RUF100"]
 "tests/*" = ["T20", "ARG", "N"]
 "cherenkov/cli/**" = ["T20"]
 "cherenkov/stages/**" = ["T20"]
+# Scripts, demos, and root-level runner scripts are CLI tools — print is intentional
+"scripts/**" = ["T20"]
+"demos/**" = ["T20"]
+"cherenkov.py" = ["T20"]
+"run_*.py" = ["T20"]
+"notebook/**" = ["T20"]
 # Re-export shims — imports exist solely to be re-exported; F401 must not remove them
 "cherenkov/__init__.py" = ["F401"]
 "cherenkov/web/sdd_auth.py" = ["F401"]

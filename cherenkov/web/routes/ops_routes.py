@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import io
+import logging
 import os
 import re
 import threading
@@ -21,6 +22,7 @@ from cherenkov.web.routes.deps import (
 )
 from cherenkov.web.routes.models import EjectPayload, RunPipelinePayload, ValidatePayload
 
+_log = logging.getLogger(__name__)
 _RE_METHOD_ATTR = re.compile(r'method:\s*["\']([A-Z]+)["\']')
 _RE_METHOD_CALL = re.compile(r"\.(get|post|put|patch|delete)\s*\(", re.IGNORECASE)
 
@@ -102,7 +104,7 @@ async def trigger_pipeline_run(payload: RunPipelinePayload, _background_tasks: B
         generate_demo_findings()
         return {"run_id": "demo", "status": "demo_completed"}
     if doctor_status != 0:
-        print("Warning: Doctor preflight checks reported issues. Continuing anyway.")
+        _log.warning("doctor preflight checks reported issues; continuing anyway")
     run_id = str(uuid.uuid4())[:8]
     if not os.path.exists(payload.spec_path):
         raise HTTPException(status_code=404, detail="Ingested spec file path not found.")

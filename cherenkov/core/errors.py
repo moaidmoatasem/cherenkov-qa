@@ -115,7 +115,7 @@ class StructuredLogger:
         }
         line = json.dumps(record)
         if not LoggerConfig.suppress_stderr:
-            print(line, file=sys.stderr)
+            print(line, file=sys.stderr)  # noqa: T201
         ef = _get_events_file()
         if ef:
             ef.write(line + "\n")

@@ -138,5 +138,5 @@ def run_pr_diff(
     output.write_text(markdown, encoding="utf-8")
 
     log.info("pr diff report written", path=str(output), diff_count=len(diffs))
-    print(markdown)
+    print(markdown)  # noqa: T201  — GitHub Actions step output goes to stdout
     return 0

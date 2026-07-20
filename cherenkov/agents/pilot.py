@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 import time
 from dataclasses import dataclass
 from typing import Literal
+
+_log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -81,4 +84,4 @@ class PilotAgent:
         ]
 
     def _recover(self, failed_step: PilotStep):
-        print(f"Pilot recovery: {failed_step.action} failed - {failed_step.actual}")
+        _log.warning("pilot recovery: %s failed - %s", failed_step.action, failed_step.actual)

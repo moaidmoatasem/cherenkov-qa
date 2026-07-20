@@ -198,7 +198,7 @@ class CoverageLoop:
                     threshold_met=True,
                     repair_log=repair_log,
                 )
-                print(
+                print(  # noqa: T201
                     f"\n[COVERAGE] Threshold met at iteration {iteration}: "
                     f"{covered_endpoints}/{total_endpoints} endpoints, "
                     f"{status_coverage:.0%} status coverage"
