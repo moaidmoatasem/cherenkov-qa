@@ -1,4 +1,5 @@
 from unittest.mock import patch
+
 from cherenkov.execution.perf_analyzer import PerformanceAnalyzer
 
 

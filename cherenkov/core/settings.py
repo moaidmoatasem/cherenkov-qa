@@ -123,7 +123,7 @@ class CherenkovSettings(BaseSettings):
     OUTPUT_DIR: str = Field(default='output', validation_alias='CHERENKOV_OUTPUT_DIR')
 
     @property
-    def TIERS(self) -> dict[str, dict[str, str]]:
+    def TIERS(self) -> dict[str, dict[str, str]]:  # noqa: N802
         return {
             "small": {
                 "provider": self.TIER_SMALL_PROVIDER,

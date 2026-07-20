@@ -1,14 +1,14 @@
 """Tests for E4-1 and E4-2: Artifact Emitters."""
 
-import unittest
 import tempfile
+import unittest
 from pathlib import Path
 
-from cherenkov.core.truth_model import TruthModel, GraphNode, NodeType
+from cherenkov.core.truth_model import GraphNode, NodeType, TruthModel
 from cherenkov.truth.emitters.interface import Emitter
 from cherenkov.truth.emitters.playwright import PlaywrightEmitter
-from cherenkov.truth.emitters.spec_patch import SpecPatchEmitter
 from cherenkov.truth.emitters.pr_comment import PRCommentEmitter
+from cherenkov.truth.emitters.spec_patch import SpecPatchEmitter
 
 
 class TestEmitterInterface(unittest.TestCase):

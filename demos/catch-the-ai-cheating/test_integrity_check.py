@@ -9,7 +9,7 @@ import sys
 HERE = pathlib.Path(__file__).parent
 sys.path.insert(0, str(HERE))
 
-from integrity_check import check  # noqa: E402
+from integrity_check import check
 
 SPEC = HERE / "openapi.yaml"
 BASE = HERE / "suite_good.py"

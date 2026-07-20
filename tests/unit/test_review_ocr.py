@@ -6,13 +6,12 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-from cherenkov.review_ocr.models import OCRFinding, OCRReviewOutput, OCRProvider, OCRSeverity
-from cherenkov.review_ocr.rules import OCRRuleEngine, BUILT_IN_RULES, _glob_match
+from cherenkov.review_ocr.models import OCRFinding, OCRReviewOutput, OCRSeverity
 from cherenkov.review_ocr.provider import OCRProviderManager
+from cherenkov.review_ocr.rules import BUILT_IN_RULES, OCRRuleEngine, _glob_match
 from cherenkov.review_ocr.stage import ReviewStageOCR
-
 
 # ── Model Tests ──────────────────────────────────────────────────────────────
 

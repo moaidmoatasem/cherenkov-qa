@@ -1,11 +1,13 @@
-from deepeval import evaluate
-from deepeval.test_case import LLMTestCase
-from deepeval.metrics import AnswerRelevancyMetric
 import sys
 from pathlib import Path
+
+from deepeval import evaluate
+from deepeval.metrics import AnswerRelevancyMetric
+from deepeval.test_case import LLMTestCase
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
-from qwen_code_mcp import run_qwen_code_agent
 from cherenkov.agents.copilot import CopilotAgent
+from qwen_code_mcp import run_qwen_code_agent
 
 # Dummy metrics setup
 relevancy_metric = AnswerRelevancyMetric(threshold=0.7)

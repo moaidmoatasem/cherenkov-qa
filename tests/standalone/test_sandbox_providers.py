@@ -15,8 +15,8 @@ import tempfile
 import unittest
 
 from cherenkov.healing.providers.base import SandboxResult
-from cherenkov.healing.providers.filesystem import FilesystemSandboxProvider
 from cherenkov.healing.providers.docker_sandbox import DockerSandboxProvider
+from cherenkov.healing.providers.filesystem import FilesystemSandboxProvider
 
 
 class TestSandboxResult(unittest.TestCase):

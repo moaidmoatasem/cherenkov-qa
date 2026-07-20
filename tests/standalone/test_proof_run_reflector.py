@@ -14,11 +14,9 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-
-from cherenkov.divergence.proof_run import run_proof, PROOF_RUN_PROBES
+from cherenkov.divergence.proof_run import PROOF_RUN_PROBES, run_proof
 from cherenkov.reflector.reflector import Reflector
 from cherenkov.reflector.store import VerdictStore
-
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -113,7 +111,7 @@ class TestRerankcalledPerProbe:
                 use_llm=False,
                 reflector=None,
             )
-        # No assertions needed – if the code tried to call .rerank() on None it
+        # No assertions needed - if the code tried to call .rerank() on None it
         # would raise AttributeError and the test would fail.
 
 
@@ -259,7 +257,7 @@ class TestSuppressedCountPrinted:
                 reflector=reflector,
             )
 
-        # 5 probes × 1 offline hypothesis each = 5 results ingested
+        # 5 probes x 1 offline hypothesis each = 5 results ingested
         assert reflector.ingest_from_reproduction.call_count == len(PROOF_RUN_PROBES), (
             f"Expected ingest_from_reproduction called {len(PROOF_RUN_PROBES)} times, "
             f"got {reflector.ingest_from_reproduction.call_count}"

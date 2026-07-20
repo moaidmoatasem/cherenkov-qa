@@ -1,7 +1,6 @@
 """Tests for cherenkov.memory — auto-memory engine (CC-1, ADR-011)."""
 from __future__ import annotations
 
-import tempfile
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,7 +17,6 @@ from cherenkov.memory.domain.models import (
 )
 from cherenkov.memory.use_cases.collect import collect_from_findings
 from cherenkov.memory.use_cases.promote import run_promotion
-
 
 # ── Fixtures ─────────────────────────────────────────────────────────
 
@@ -147,7 +145,7 @@ class TestSQLiteMemoryRepository:
         assert fingerprints == {"p2", "p3"}
 
     def test_get_default_repository_creates_db(self, tmp_path: Path) -> None:
-        repo = get_default_repository(tmp_path)
+        _repo = get_default_repository(tmp_path)
         db_path = tmp_path / "agent_memory" / "cherenkov_memory.db"
         assert db_path.exists()
 

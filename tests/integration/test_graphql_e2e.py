@@ -1,11 +1,11 @@
 import os
-import sys
-import tempfile
-from unittest.mock import patch
 
 # We can import the script's main by treating the cherenkov package as the root
 # But since the root script is cherenkov.py, we can just use runpy
 import runpy
+import sys
+import tempfile
+from unittest.mock import patch
 
 TEST_SDL = """
 type Query {

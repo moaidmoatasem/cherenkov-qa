@@ -10,16 +10,15 @@ from unittest.mock import patch
 import pytest
 
 from cherenkov.adapters.xray_client import (
+    CHERENKOV_TO_XRAY,
     XrayClient,
     XrayCloudConfig,
     XrayServerConfig,
-    CHERENKOV_TO_XRAY,
 )
 from cherenkov.adapters.zephyr_client import (
-    ZephyrClient,
     CHERENKOV_TO_ZEPHYR,
+    ZephyrClient,
 )
-
 
 # ── Verdict mapping ────────────────────────────────────────────────────────────
 
@@ -159,7 +158,7 @@ def test_anthropic_provider_capabilities():
 
 
 def test_get_provider_anthropic():
-    from cherenkov.substrate.provider import get_provider, _PROVIDER_CACHE
+    from cherenkov.substrate.provider import _PROVIDER_CACHE, get_provider
 
     _PROVIDER_CACHE.pop("anthropic", None)
     with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "dummy"}):

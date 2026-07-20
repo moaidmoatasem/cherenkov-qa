@@ -20,8 +20,8 @@ from cherenkov.core.contracts import (
     VerdictOutcome,
     VerdictRecord,
 )
-from cherenkov.reflector.store import VerdictStore
 from cherenkov.reflector.cli import build_report
+from cherenkov.reflector.store import VerdictStore
 
 
 def main() -> int:

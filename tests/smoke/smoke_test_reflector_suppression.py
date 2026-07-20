@@ -19,8 +19,8 @@ from cherenkov.core.contracts import (
     ReproductionResult,
     Severity,
 )
-from cherenkov.reflector.store import VerdictStore
 from cherenkov.reflector.reflector import Reflector
+from cherenkov.reflector.store import VerdictStore
 
 EP = "GET /pet/{petId}"
 

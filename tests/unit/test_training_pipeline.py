@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest
 
-from cherenkov.training import DataCollector, TrainingDataset, Trainer, TrainerConfig
+from cherenkov.training import DataCollector, Trainer, TrainerConfig, TrainingDataset
 
 
 class TestTrainingPipeline(unittest.TestCase):

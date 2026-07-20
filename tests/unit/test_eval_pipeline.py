@@ -6,17 +6,13 @@ No live API or LLM calls.
 
 from __future__ import annotations
 
-import json
 import tempfile
 from pathlib import Path
 
-import pytest
-
-from cherenkov.eval.grader import SuiteGrader, GradeReport
-from cherenkov.eval.runner import EvalRunner, RunTrace
 from cherenkov.eval.compare import compare_grades
+from cherenkov.eval.grader import GradeReport, SuiteGrader
 from cherenkov.eval.optimizer import optimize_profile
-
+from cherenkov.eval.runner import EvalRunner, RunTrace
 
 # ── fixtures ───────────────────────────────────────────────────────────────────
 

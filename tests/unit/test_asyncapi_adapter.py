@@ -1,13 +1,14 @@
 """Tests for the AsyncAPI source adapter and planner."""
 
-import tempfile
 import os
-import yaml
+import tempfile
 import unittest
+
+import yaml
+
 from cherenkov.sources.asyncapi.adapter import AsyncAPISourceAdapter
 from cherenkov.sources.asyncapi.contracts import AsyncAPIOperation, AsyncAPIScenario
 from cherenkov.stages.plan_asyncapi import AsyncAPIScenarioPlanner
-
 
 SAMPLE_SPEC = {
     "asyncapi": "2.6.0",

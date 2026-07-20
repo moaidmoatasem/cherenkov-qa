@@ -32,7 +32,7 @@ class CoverageReport:
     total_endpoints: int
     tested_count: int
     untested_count: int
-    coverage_pct: float  # 0.0–100.0
+    coverage_pct: float  # 0.0-100.0
     endpoints: list[EndpointCoverage] = field(default_factory=list)
 
     @property

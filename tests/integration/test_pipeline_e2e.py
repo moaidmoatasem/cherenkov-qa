@@ -18,12 +18,9 @@ Verifies:
 
 from __future__ import annotations
 
-import os
 import textwrap
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 PETSTORE_YAML = Path(__file__).parent.parent.parent / "bench" / "fixtures" / "petstore.yaml"
 
@@ -43,8 +40,8 @@ CANNED_TS = textwrap.dedent("""\
 
 class TestIngestStage:
     def test_petstore_produces_endpoints(self):
-        from cherenkov.stages.ingest import IngestStage
         from cherenkov.core.contracts import Status
+        from cherenkov.stages.ingest import IngestStage
 
         out = IngestStage().run(str(PETSTORE_YAML))
 
@@ -61,8 +58,8 @@ class TestIngestStage:
             assert ep.path.startswith("/")
 
     def test_missing_spec_raises(self, tmp_path):
-        from cherenkov.stages.ingest import IngestStage
         from cherenkov.core.contracts import Status
+        from cherenkov.stages.ingest import IngestStage
 
         out = IngestStage().run(str(tmp_path / "nonexistent.yaml"))
         assert out.status == Status.FAILED
@@ -74,8 +71,8 @@ class TestPlanStage:
         return IngestStage().run(str(PETSTORE_YAML))
 
     def test_plan_succeeds(self):
-        from cherenkov.stages.plan import PlanStage
         from cherenkov.core.contracts import Status
+        from cherenkov.stages.plan import PlanStage
 
         plan = PlanStage().run(self._ingest())
         assert plan.status == Status.OK
@@ -98,8 +95,8 @@ class TestPlanStage:
             assert 100 <= sc.expected_status < 600
 
     def test_failed_ingest_propagates(self):
+        from cherenkov.core.contracts import IngestOutput, StageMeta, Status
         from cherenkov.stages.plan import PlanStage
-        from cherenkov.core.contracts import Status, IngestOutput, StageMeta
 
         bad_ingest = IngestOutput(
             endpoints=[],
@@ -123,8 +120,8 @@ class TestGenerateStageMocked:
         return plan.scenarios[0], ingest
 
     def test_generate_with_mocked_llm(self):
-        from cherenkov.stages.generate import GenerateStage
         from cherenkov.core.contracts import Status
+        from cherenkov.stages.generate import GenerateStage
 
         sc, ingest = self._get_first_scenario()
         ep = next(e for e in ingest.endpoints if e.method == sc.method and e.path == sc.endpoint)
@@ -148,8 +145,8 @@ class TestGenerateStageMocked:
 
     def test_generate_llm_error_falls_back_to_template(self):
         """GenerateStage has a template fallback — LLM errors yield OK with template code."""
-        from cherenkov.stages.generate import GenerateStage
         from cherenkov.core.contracts import Status
+        from cherenkov.stages.generate import GenerateStage
 
         sc, _ = self._get_first_scenario()
 
@@ -217,11 +214,11 @@ class TestFullPipelineSmoke:
     """Ingest → Plan → Generate (mocked LLM) → validate_suite (mocked Playwright)."""
 
     def test_end_to_end(self, tmp_path):
+        from cherenkov.core.contracts import Status
+        from cherenkov.execution.validate import ValidationEngine
+        from cherenkov.stages.generate import GenerateStage
         from cherenkov.stages.ingest import IngestStage
         from cherenkov.stages.plan import PlanStage
-        from cherenkov.stages.generate import GenerateStage
-        from cherenkov.execution.validate import ValidationEngine
-        from cherenkov.core.contracts import Status
 
         # Stage 1: Ingest
         ingest_out = IngestStage().run(str(PETSTORE_YAML))

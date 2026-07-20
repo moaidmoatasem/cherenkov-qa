@@ -3,16 +3,16 @@
 from __future__ import annotations
 
 import time
+
 import pytest
 
 from cherenkov.observability.token_monitor import (
     TokenMonitor,
     TokenRecord,
+    _price_for,
     compute_cost,
     get_monitor,
-    _price_for,
 )
-
 
 # ── compute_cost ──────────────────────────────────────────────────────────────
 
@@ -50,17 +50,17 @@ def monitor():
 
 
 def _make_record(**kwargs) -> TokenRecord:
-    defaults = dict(
-        run_id="run-001",
-        model="qwen2.5-coder:7b",
-        provider="ollama",
-        stage="GENERATE",
-        prompt_tokens=400,
-        completion_tokens=300,
-        total_tokens=700,
-        cost_usd=0.0,
-        cache_hit=False,
-    )
+    defaults = {
+        "run_id": "run-001",
+        "model": "qwen2.5-coder:7b",
+        "provider": "ollama",
+        "stage": "GENERATE",
+        "prompt_tokens": 400,
+        "completion_tokens": 300,
+        "total_tokens": 700,
+        "cost_usd": 0.0,
+        "cache_hit": False,
+    }
     defaults.update(kwargs)
     return TokenRecord(**defaults)
 

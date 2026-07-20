@@ -17,12 +17,11 @@ from cherenkov.mcp import handlers
 
 def _call(name: str, args: dict) -> dict:
     """Helper: call handle_tool_call with policy bypass (tests/full-dev)."""
-    with patch.object(handlers._policy, "is_tool_allowed", return_value=True):
-        with patch("cherenkov.mcp.handlers.get_guard") as mock_guard:
-            mock_guard.return_value.check_tool_call.return_value = MagicMock(
-                allowed=True
-            )
-            return handlers.handle_tool_call({"name": name, "arguments": args})
+    with patch.object(handlers._policy, "is_tool_allowed", return_value=True), patch("cherenkov.mcp.handlers.get_guard") as mock_guard:
+        mock_guard.return_value.check_tool_call.return_value = MagicMock(
+            allowed=True
+        )
+        return handlers.handle_tool_call({"name": name, "arguments": args})
 
 
 # ── get_last_report ────────────────────────────────────────────────────────────
@@ -304,7 +303,7 @@ def test_scan_mena_compliance_enhanced_invalid_spec():
 
 def test_validate_governance_certification(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    from cherenkov.governance.kpi import GovernanceReport, GovernanceKPI
+    from cherenkov.governance.kpi import GovernanceKPI, GovernanceReport
 
     mock_kpi = GovernanceKPI(
         escape_rate=0.05,
@@ -341,7 +340,7 @@ def test_validate_governance_certification(tmp_path, monkeypatch):
 
 def test_validate_governance_certification_fails(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    from cherenkov.governance.kpi import GovernanceReport, GovernanceKPI
+    from cherenkov.governance.kpi import GovernanceKPI, GovernanceReport
 
     mock_kpi = GovernanceKPI(
         escape_rate=0.25,

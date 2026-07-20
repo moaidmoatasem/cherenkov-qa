@@ -1,10 +1,11 @@
-from cherenkov.core.settings import get_settings
 import json
 import os
 import tempfile
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+import pytest
+
+from cherenkov.core.settings import get_settings
 from cherenkov.substrate.providers.localai import LocalAIVLMProvider
 
 
@@ -61,7 +62,7 @@ def test_localai_describe_image(mock_encode, mock_post):
     }
     mock_post.return_value = mock_resp
 
-    tf = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+    tf = tempfile.NamedTemporaryFile(suffix=".png", delete=False)  # noqa: SIM115
     tf.write(b"fake-image-data")
     tf.close()
 
@@ -93,8 +94,8 @@ def test_localai_compare_images(mock_encode, mock_post):
     }
     mock_post.return_value = mock_resp
 
-    tf1 = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
-    tf2 = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+    tf1 = tempfile.NamedTemporaryFile(suffix=".png", delete=False)  # noqa: SIM115
+    tf2 = tempfile.NamedTemporaryFile(suffix=".png", delete=False)  # noqa: SIM115
     tf1.write(b"baseline")
     tf2.write(b"actual")
     tf1.close()
@@ -118,8 +119,8 @@ def test_localai_compare_images_fallback_on_bad_json(mock_encode, mock_post):
     }
     mock_post.return_value = mock_resp
 
-    tf1 = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
-    tf2 = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+    tf1 = tempfile.NamedTemporaryFile(suffix=".png", delete=False)  # noqa: SIM115
+    tf2 = tempfile.NamedTemporaryFile(suffix=".png", delete=False)  # noqa: SIM115
     tf1.close()
     tf2.close()
 
@@ -139,7 +140,7 @@ def test_localai_describe_image_file_not_found():
 def test_localai_encode_image():
     from cherenkov.substrate.providers.localai import _encode_image
 
-    tf = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+    tf = tempfile.NamedTemporaryFile(suffix=".png", delete=False)  # noqa: SIM115
     tf.write(b"hello")
     tf.close()
     encoded = _encode_image(tf.name)
