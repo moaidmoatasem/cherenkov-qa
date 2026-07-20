@@ -56,7 +56,7 @@ def check(label, condition, detail=""):
         FAIL += 1
 
 
-def test_vlm_provider():
+def check_vlm_provider():
     """C6 (#121): VLMProvider tests."""
     global PASS, FAIL
     print("\n--- C6 (#121): VLMProvider as [substrate.tiers.vision] ---")
@@ -116,7 +116,7 @@ def test_vlm_provider():
     check("VLMResult has elements", len(vlm_result.elements_found) == 2)
 
 
-def test_visual_oracle():
+def check_visual_oracle():
     """C7 (#122): VisualOracle tests."""
     global PASS, FAIL
     print("\n--- C7 (#122): Semantic Visual Oracle ---")
@@ -214,7 +214,7 @@ def test_visual_oracle():
         check("classify_visual_change returns kind", "kind" in result)
 
 
-def test_visual_healer():
+def check_visual_healer():
     """C7 (#122): VisualHealer tests."""
     global PASS, FAIL
     print("\n--- C7 (#122): Visual Healer (suggest-only) ---")
@@ -282,7 +282,7 @@ def test_visual_healer():
         )
 
 
-def test_vision_confirm():
+def check_vision_confirm():
     """C7 (#122): VisionConfirmPilot tests."""
     global PASS, FAIL
     print("\n--- VisionConfirmPilot (anti-click-hallucination) ---")
@@ -353,10 +353,10 @@ def main():
     print("Epoch 9 Vision Perception — Kill-Criteria Exit Demo")
     print("=" * 60)
 
-    test_vlm_provider()
-    test_visual_oracle()
-    test_visual_healer()
-    test_vision_confirm()
+    check_vlm_provider()
+    check_visual_oracle()
+    check_visual_healer()
+    check_vision_confirm()
 
     print("\n" + "=" * 60)
     total = PASS + FAIL

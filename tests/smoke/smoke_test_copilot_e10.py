@@ -58,7 +58,7 @@ def _probe_map(mapping):
     return probe
 
 
-def test_c8_explorer():
+def check_c8_explorer():
     """C8 (#123): Explorer crawl and Skeptic hypothesis generation."""
     print("\n--- C8 (#123): Explorer Crawl & Hypothesis Generation ---")
 
@@ -119,7 +119,7 @@ def test_c8_explorer():
     )
 
 
-def test_c9_intent_author():
+def check_c9_intent_author():
     """C9 (#124): Plain-language NL-intent to ejectable Playwright artifact."""
     print("\n--- C9 (#124): Plain-Language Intent to Playwright Test ---")
 
@@ -245,7 +245,7 @@ def test_c9_intent_author():
         check("File content matches Playwright code", "await page.goto" in content)
 
 
-def test_c10_digest_and_triage():
+def check_c10_digest_and_triage():
     """C10 (#125): Risk Digest ranking & Failure Triage UX."""
     print("\n--- C10 (#125): Risk Digest & Triage UX ---")
 
@@ -345,9 +345,9 @@ def main():
     print("     CHERENKOV E10 Explorer + Copilot v1 Kill-Criteria Exit Demo")
     print("=" * 72)
 
-    test_c8_explorer()
-    test_c9_intent_author()
-    test_c10_digest_and_triage()
+    check_c8_explorer()
+    check_c9_intent_author()
+    check_c10_digest_and_triage()
 
     print("\n" + "=" * 72)
     total = PASS + FAIL
