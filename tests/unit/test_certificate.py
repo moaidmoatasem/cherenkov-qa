@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
 from click.testing import CliRunner
 
 from cherenkov.core.certificate import (
@@ -183,6 +184,13 @@ class TestRoundtrip:
 # ── E3.2: CLI command ─────────────────────────────────────────────────────────
 
 class TestCertifyCmd:
+    @pytest.fixture(autouse=True)
+    def _skip_reachability(self):
+        # These tests mock run_proof; neutralise the network reachability
+        # preflight so a dummy/demo --url does not abort the command.
+        with patch("cherenkov.cli.commands.verify._assert_reachable"):
+            yield
+
     def test_help(self):
         from cherenkov.cli.commands.certify import certify_cmd
         runner = CliRunner()
@@ -364,7 +372,8 @@ class TestComplianceProfile:
     def test_compliance_flag_in_cli(self):
         from cherenkov.cli.commands.certify import certify_cmd
         runner = CliRunner()
-        with patch("cherenkov.cli.commands.certify.run_proof", return_value=[]):
+        with patch("cherenkov.cli.commands.certify.run_proof", return_value=[]), \
+                patch("cherenkov.cli.commands.verify._assert_reachable"):
             result = runner.invoke(
                 certify_cmd,
                 ["--url", "http://localhost:9", "--compliance"],

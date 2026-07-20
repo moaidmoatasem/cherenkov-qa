@@ -169,3 +169,60 @@ class TestWitnessAgentNoRepro(unittest.TestCase):
         result = agent.reproduce(hyp)
         self.assertFalse(result.reproduced)
         self.assertIn("Execution error", result.rejection_reason)
+
+    @patch("cherenkov.divergence.witness.time.sleep", lambda *_: None)
+    @patch("cherenkov.divergence.witness.httpx.Client")
+    def test_reproduce_retries_on_429_then_detects_divergence(self, mock_client_cls):
+        # A rate-limited probe must not be read as conformant: back off, retry,
+        # and use the real (200) response to detect the divergence.
+        from cherenkov.divergence.witness import WitnessAgent
+
+        r429 = MagicMock(status_code=429, headers={})
+        r429.json.return_value = {}
+        r429.text = ""
+        r200 = MagicMock(status_code=500)  # 500 vs expected 200 -> divergence
+        r200.json.return_value = {"error": "boom"}
+        r200.text = '{"error": "boom"}'
+
+        mock_client = MagicMock()
+        mock_client.__enter__ = MagicMock(return_value=mock_client)
+        mock_client.__exit__ = MagicMock(return_value=False)
+        mock_client.get.side_effect = [r429, r429, r200]
+        mock_client_cls.return_value = mock_client
+
+        agent = WitnessAgent("http://localhost:8000")
+        result = agent.reproduce(
+            self._make_hypothesis(["Send GET /pets", "Expect 200 response"])
+        )
+        self.assertEqual(mock_client.get.call_count, 3)  # retried past both 429s
+        self.assertTrue(result.reproduced)
+
+    @patch("cherenkov.divergence.witness.time.sleep", lambda *_: None)
+    @patch("cherenkov.divergence.witness.httpx.Client")
+    def test_reproduce_429_retries_are_bounded(self, mock_client_cls):
+        # Persistent throttling must not hang the run: retries are capped.
+        from cherenkov.divergence.witness import WitnessAgent
+
+        r429 = MagicMock(status_code=429, headers={})
+        r429.json.return_value = {}
+        r429.text = ""
+        mock_client = MagicMock()
+        mock_client.__enter__ = MagicMock(return_value=mock_client)
+        mock_client.__exit__ = MagicMock(return_value=False)
+        mock_client.get.return_value = r429
+        mock_client_cls.return_value = mock_client
+
+        agent = WitnessAgent("http://localhost:8000")
+        agent.reproduce(self._make_hypothesis(["Send GET /pets", "Expect 200 response"]))
+        # 1 initial + _MAX_RETRIES_429 retries
+        self.assertEqual(
+            mock_client.get.call_count, 1 + WitnessAgent._MAX_RETRIES_429
+        )
+
+    def test_retry_after_header_parsed_and_bounded(self):
+        from cherenkov.divergence.witness import _retry_after_seconds
+
+        self.assertEqual(_retry_after_seconds(MagicMock(headers={"Retry-After": "2"})), 2.0)
+        self.assertEqual(_retry_after_seconds(MagicMock(headers={"Retry-After": "999"})), 5.0)
+        self.assertIsNone(_retry_after_seconds(MagicMock(headers={})))
+        self.assertIsNone(_retry_after_seconds(MagicMock(headers={"Retry-After": "soon"})))

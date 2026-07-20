@@ -149,6 +149,13 @@ class TestComputeCoverage:
 # ── TestVerifyCoverageFlag ─────────────────────────────────────────────────────
 
 class TestVerifyCoverageFlag:
+    @pytest.fixture(autouse=True)
+    def _skip_reachability(self):
+        # These tests mock run_proof; neutralise the network reachability
+        # preflight so a dummy --url does not abort the command.
+        with patch("cherenkov.cli.commands.verify._assert_reachable"):
+            yield
+
     def test_coverage_report_shown_when_spec_provided(self):
         from cherenkov.cli.commands.verify import verify_cmd
         runner = CliRunner()
@@ -214,6 +221,13 @@ class TestVerifyCoverageFlag:
 # ── TestCertifyCoverageFlag ────────────────────────────────────────────────────
 
 class TestCertifyCoverageFlag:
+    @pytest.fixture(autouse=True)
+    def _skip_reachability(self):
+        # These tests mock run_proof; neutralise the network reachability
+        # preflight so a dummy --url does not abort the command.
+        with patch("cherenkov.cli.commands.verify._assert_reachable"):
+            yield
+
     def test_coverage_report_in_certify(self):
         from cherenkov.cli.commands.certify import certify_cmd
         runner = CliRunner()
