@@ -141,6 +141,30 @@ class TestRunCoverageAnalyzer:
         assert pct == 30.0
         assert any("30%" in f or "30" in f for f in dim.findings)
 
+    def test_clean_pass_uses_probed_endpoints_not_just_confirmed_reports(self):
+        """
+        Regression: previously _run_coverage_analyzer only ever saw the
+        confirmed-divergence list, so a fully-probed but 100% clean target
+        (real-world case: verify against CHERENKOV's own healthy server)
+        always scored 0% coverage / SUSPECT. It must now forward the
+        endpoints actually probed by _run_divergence_probe.
+        """
+        engine = VerdictEngine(base_url="http://test")
+        with patch(
+            "cherenkov.divergence.proof_run.run_proof",
+            side_effect=lambda **kw: kw["probed_endpoints"].extend(
+                [("GET", "/a"), ("GET", "/b")]
+            ) or [],
+        ):
+            engine._run_divergence_probe()
+
+        with patch("cherenkov.divergence.coverage.compute_coverage") as mock_compute:
+            mock_compute.return_value = MagicMock(coverage_pct=100.0)
+            engine._run_coverage_analyzer([])
+
+        _, kwargs = mock_compute.call_args
+        assert kwargs.get("probed_endpoints") == [("GET", "/a"), ("GET", "/b")]
+
 
 # ── _run_mutation_oracle ───────────────────────────────────────────────────────
 

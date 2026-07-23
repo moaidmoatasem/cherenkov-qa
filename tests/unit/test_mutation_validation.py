@@ -263,3 +263,29 @@ class TestRunProofMutation:
         assert len(reports) >= 1, (
             "Mutant server should produce at least one divergence report; got zero."
         )
+
+    def test_probed_endpoints_populated_even_with_zero_divergences(self) -> None:
+        """
+        Regression: on the endpoints the conformant server actually
+        implements correctly, run_proof reports zero divergences — but it
+        must still record those endpoints as probed via the
+        probed_endpoints out-param. Callers use this to compute spec
+        coverage without conflating "no bugs found here" with "this
+        endpoint was never tested" (see cherenkov/divergence/coverage.py).
+        """
+        from cherenkov.divergence.proof_run import run_proof
+
+        probed: list[tuple[str, str]] = []
+        with _serve(_ConformantHandler) as base_url:
+            reports = run_proof(base_url=base_url, use_llm=False, probed_endpoints=probed)
+
+        handled_endpoints = {"/pet/findByStatus", "/pet"}
+        diverged_handled = [
+            r for r in reports if any(ep in (r.endpoint or "") for ep in handled_endpoints)
+        ]
+        assert diverged_handled == []
+
+        assert len(probed) > 0
+        assert all(isinstance(pair, tuple) and len(pair) == 2 for pair in probed)
+        probed_paths = {path for _method, path in probed}
+        assert handled_endpoints.issubset(probed_paths)

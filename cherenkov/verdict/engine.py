@@ -160,12 +160,15 @@ class VerdictEngine:
         from cherenkov.divergence.proof_run import run_proof
 
         t0 = time.monotonic()
+        probed_endpoints: list[tuple[str, str]] = []
+        self._probed_endpoints = probed_endpoints
         try:
             reports = run_proof(
                 base_url=self.base_url,
                 spec=self.spec,
                 use_llm=self.use_llm,
                 max_probes=self.max_probes,
+                probed_endpoints=probed_endpoints,
             )
         except Exception as exc:
             return (
@@ -226,7 +229,9 @@ class VerdictEngine:
             spec = PETSTORE_SPEC_SUBSET
 
         try:
-            cov = compute_coverage(spec, reports)
+            cov = compute_coverage(
+                spec, reports, probed_endpoints=getattr(self, "_probed_endpoints", None)
+            )
             pct = cov.coverage_pct
         except Exception:
             pct = 0.0
