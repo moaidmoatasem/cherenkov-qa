@@ -23,9 +23,10 @@ class RepairLoop:
     Returns the attempt with the highest quality_score.
     """
 
-    def __init__(self, run_id: str, max_attempts: int = _MAX_ATTEMPTS):
+    def __init__(self, run_id: str, max_attempts: int = _MAX_ATTEMPTS, cleanup_scratch: bool = False):
         self.run_id = run_id
         self.max_attempts = max_attempts
+        self.cleanup_scratch = cleanup_scratch
         self.log = get_logger("REPAIR", run_id)
 
     def run(
@@ -66,7 +67,9 @@ class RepairLoop:
                 break
 
             if spec_path:
-                rev_stage = ReviewStage(run_id=f"{self.run_id}-r{attempt}")
+                rev_stage = ReviewStage(
+                    run_id=f"{self.run_id}-r{attempt}", cleanup_scratch=self.cleanup_scratch
+                )
                 review = rev_stage.run(
                     gen_out, spec_path=spec_path, operation=operation, schemas=schemas
                 )
