@@ -56,7 +56,7 @@ class VerdictDimension(BaseModel):
     """Result from one specialised agent in the parallel fleet."""
 
     name: str                              # "divergence_probe" | "mutation_oracle" | ...
-    score: float                           # 0.0–1.0
+    score: float                           # 0.0-1.0
     grade: VerdictGrade
     passed: bool
     findings: list[str] = Field(default_factory=list)
@@ -82,7 +82,7 @@ class RichVerdict(BaseModel):
     # ── Overall verdict ──────────────────────────────────────────────────
     overall: OverallVerdict
     grade: VerdictGrade
-    confidence: float             # 0.0–1.0; how much data we have to be sure
+    confidence: float             # 0.0-1.0; how much data we have to be sure
 
     # ── Per-agent dimensions ─────────────────────────────────────────────
     dimensions: list[VerdictDimension] = Field(default_factory=list)

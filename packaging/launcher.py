@@ -12,15 +12,15 @@ Protocol (all NDJSON, one JSON object per line):
   {"event": "shutdown",  "data": {"signal": "SIGINT"}}
 """
 
-import os
-import sys
 import json
+import os
 import signal
+import socket
+import subprocess
+import sys
 import threading
 import time
 import webbrowser
-import socket
-import subprocess
 from contextlib import closing
 
 VERSION = "1.0.0"
@@ -42,6 +42,7 @@ def find_free_port(start_port: int = 8000) -> int:
 
 def run_server(port: int) -> None:
     import uvicorn
+
     from cherenkov.web.api import app as fastapi_app
 
     uvicorn.run(fastapi_app, host="127.0.0.1", port=port, log_level="warning")

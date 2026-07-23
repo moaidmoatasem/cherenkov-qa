@@ -34,9 +34,9 @@ class ValidationReport(BaseModel):
 
     result semantics
     ----------------
-    pass      – all *required* gates passed (optional may fail)
-    degraded  – all required passed, at least one *optional* gate failed
-    fail      – at least one *required* gate failed
+    pass      - all *required* gates passed (optional may fail)
+    degraded  - all required passed, at least one *optional* gate failed
+    fail      - at least one *required* gate failed
     """
 
     schema_version: str = Field(default="validate/v1")

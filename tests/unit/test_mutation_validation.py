@@ -13,9 +13,9 @@ from __future__ import annotations
 import json
 import threading
 import uuid
+from collections.abc import Generator
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Generator
 from urllib.parse import parse_qs, urlparse
 
 from cherenkov.core.contracts import (
@@ -24,7 +24,6 @@ from cherenkov.core.contracts import (
     Severity,
 )
 from cherenkov.divergence.witness import WitnessAgent
-
 
 # ── minimal in-process servers ─────────────────────────────────────────────────
 

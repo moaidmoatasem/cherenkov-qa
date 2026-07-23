@@ -1,14 +1,12 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-from cherenkov.core.events import CHERENKOVEvent, EventCategory, EventSeverity
+from cherenkov.adapters.notifiers.linear import LinearNotifier
 from cherenkov.adapters.notifiers.registry import NotifierRegistry
 from cherenkov.adapters.notifiers.slack import SlackNotifier
 from cherenkov.adapters.notifiers.teams import TeamsNotifier
-from cherenkov.adapters.notifiers.linear import LinearNotifier
 from cherenkov.adapters.notifiers.webhook import WebhookNotifier
-from cherenkov.adapters.notifiers.opsgenie import OpsGenieNotifier
-from cherenkov.adapters.notifiers.pagerduty import PagerDutyNotifier
+from cherenkov.core.events import CHERENKOVEvent, EventCategory
 
 
 class StubNotifier:

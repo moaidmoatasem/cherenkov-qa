@@ -1,7 +1,9 @@
 import unittest
 from types import SimpleNamespace
+
 from cherenkov.core.contracts import DivergenceFinding
 from cherenkov.execution.emitters.allure import AllureEmitter
+
 
 class TestAllureEmitter(unittest.TestCase):
     def test_emit_allure_json(self):
@@ -18,7 +20,7 @@ class TestAllureEmitter(unittest.TestCase):
                 remediation="Fix it"
             )
         ])
-        setattr(report, "_total_tests", 2)
+        report._total_tests = 2
 
         emitter = AllureEmitter()
         results = emitter.emit(report, "openapi.yaml")
@@ -26,15 +28,15 @@ class TestAllureEmitter(unittest.TestCase):
         self.assertEqual(len(results), 2)
 
         # Check passing test
-        passing = [r for r in results if r["status"] == "passed"][0]
+        passing = next(r for r in results if r["status"] == "passed")
         self.assertIn("successful_conformance_check", passing["name"])
 
         # Check failing test
-        failing = [r for r in results if r["status"] == "failed"][0]
+        failing = next(r for r in results if r["status"] == "failed")
         self.assertEqual(failing["name"], "POST /api/users")
         self.assertEqual(failing["statusDetails"]["message"], "Drift detected")
         self.assertEqual(failing["statusDetails"]["trace"], "Failed")
-        self.assertTrue(any(l for l in failing["labels"] if l["name"] == "severity" and l["value"] == "critical"))
+        self.assertTrue(any(lbl for lbl in failing["labels"] if lbl["name"] == "severity" and lbl["value"] == "critical"))
 
 if __name__ == "__main__":
     unittest.main()

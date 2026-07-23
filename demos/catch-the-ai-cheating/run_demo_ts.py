@@ -27,9 +27,9 @@ import time
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.insert(0, REPO_ROOT)
 
-from cherenkov.core.errors import LoggerConfig  # noqa: E402
-from cherenkov.stages.review import ReviewStage  # noqa: E402
-from cherenkov.core.contracts import GenerateOutput, StageMeta, Status  # noqa: E402
+from cherenkov.core.contracts import GenerateOutput, StageMeta, Status
+from cherenkov.core.errors import LoggerConfig
+from cherenkov.stages.review import ReviewStage
 
 # Silence JSON-lines log output — demo terminal should show only formatted output
 LoggerConfig.suppress_stderr = True

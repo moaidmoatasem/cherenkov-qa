@@ -1,9 +1,11 @@
 import json
 import os
+
 import pytest
+
 from cherenkov.enterprise import (
-    get_org_manager,
     get_audit_log,
+    get_org_manager,
     get_soc2,
 )
 

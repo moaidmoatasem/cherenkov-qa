@@ -6,10 +6,9 @@ Tests pytest and jest code generation from Truth Model.
 
 import tempfile
 import unittest
-
 from pathlib import Path
 
-from cherenkov.core.truth_model import TruthModel, GraphNode, NodeType
+from cherenkov.core.truth_model import GraphNode, NodeType, TruthModel
 from cherenkov.truth.emitters.unit_test import UnitTestEmitter
 
 
@@ -170,7 +169,7 @@ class TestUnitTestEmitter(unittest.TestCase):
                 },
             )
             tm.add_node(node)
-        result = self.emitter.emit(tm, Path(self.tmp.name), framework="pytest")
+        _result = self.emitter.emit(tm, Path(self.tmp.name), framework="pytest")
         py_files = list(Path(self.tmp.name).glob("*.py"))
         self.assertGreaterEqual(len(py_files), 1)
 

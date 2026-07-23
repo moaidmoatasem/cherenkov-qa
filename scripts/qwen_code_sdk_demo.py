@@ -8,6 +8,7 @@ A small script that demonstrates invoking Qwen Code via Python subprocess
 
 import subprocess
 
+
 def generate_test_snippet(prompt: str) -> str:
     print(f"Asking Qwen Code: {prompt}")
     cmd = ["qwen", "-p", prompt]

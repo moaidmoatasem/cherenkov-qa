@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-import io
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
-import pytest
-
+from cherenkov.core.contracts import (
+    IngestOutput,
+    StageError,
+    StageMeta,
+    Status,
+)
 from cherenkov.core.errors import ContractError
 from cherenkov.core.orchestrator import CircuitBreaker, OrchestrationEngine
-from cherenkov.core.contracts import (
-    IngestOutput, Status, StageMeta, StageError,
-)
-
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -60,7 +59,6 @@ class TestExecuteStageWithRetry:
 
     def test_returns_fallback_after_all_retries_fail(self):
         eng = _make_engine()
-        always_bad = lambda: (_ for _ in ()).throw(ContractError("bad"))
         # ContractError on every attempt -> exhausts 3 attempts -> fallback
         with patch("time.sleep"):  # skip backoff delays
             result = eng._execute_stage_with_retry(

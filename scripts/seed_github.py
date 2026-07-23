@@ -9,8 +9,8 @@ re-run: existing labels/milestones/issues (matched by name/title) are reused.
 import json
 import subprocess
 import sys
-import urllib.request
 import urllib.error
+import urllib.request
 
 OWNER, REPO = "moaidmoatasem", "cherenkov-qa"
 API = f"https://api.github.com/repos/{OWNER}/{REPO}"

@@ -9,9 +9,9 @@ import threading
 import time
 from unittest.mock import MagicMock
 
-from cherenkov.substrate import provider_base
 from cherenkov.core.contracts import ReasoningRequest
 from cherenkov.core.settings import get_settings
+from cherenkov.substrate import provider_base
 from cherenkov.substrate.certification import ModelCertificationManager
 from cherenkov.substrate.provider import OllamaProvider
 

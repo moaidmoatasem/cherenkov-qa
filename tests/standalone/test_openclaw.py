@@ -4,9 +4,9 @@ test_openclaw.py — Unit tests for OpenClaw Tier-1 adapter (Issue #116).
 Tests the OpenClawAdapter class and its hitl/v1 envelope operations.
 """
 
-import unittest
 import os
 import tempfile
+import unittest
 
 from cherenkov.hitl.contracts import HitlItem, HitlStatus, ok_envelope
 from cherenkov.hitl.store import HitlQueue

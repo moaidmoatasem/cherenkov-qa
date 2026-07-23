@@ -1,6 +1,6 @@
 """
 cherenkov/validate/evidence.py
-EvidenceCollector – writes per-gate captured output to a base directory.
+EvidenceCollector - writes per-gate captured output to a base directory.
 """
 
 from __future__ import annotations

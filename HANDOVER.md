@@ -1,8 +1,8 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-07-13
-**HEAD:** see `git log` (last reflected here: `6e6fea0`)
-**Tests:** 788+ unit/integration tests as of 2026-07-05, plus new coverage landed since (health score, V2 oracles, HITL severity) -- see "What landed this session" below for exact PRs; **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
+**Date:** 2026-07-20
+**HEAD:** see `git log` (last reflected here: `452a0a2`)
+**Tests:** 788+ unit/integration tests as of 2026-07-05, plus new coverage landed since (health score, V2 oracles, HITL severity, meaningful-assertion gate, verify soundness) -- see "What landed this session" below for exact PRs; **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
 **Branch:** `main`
 
 > **Note:** `docs/HANDOVER.md` is a separate, reverse-chronological session log (older format, kept for history). This file (`HANDOVER.md`, repo root) is the canonical status anchor per `CLAUDE.md`. The 2026-07-13 update below reconciles both -- the work logged in `docs/HANDOVER.md`'s "2026-07-11 HITL severity" section is the same work as the HITL severity entry below.
@@ -103,7 +103,18 @@ All Rung 3 items are DONE (merged 2026-06-27):
 ---
 
 
-## What landed this session (2026-07-13)
+## What landed this session (2026-07-15 to 2026-07-20)
+
+| SHA | What |
+|---|---|
+| `b2aec15` (#721) | feat(review): meaningful-assertion gate wired into the default `cherenkov generate --repair` path — `cherenkov/divergence/mutant_synth.py` derives a deliberately-wrong (status, body) response from any OpenAPI operation's documented success response (no hand-authored broken-response table needed), and `ReviewStage._gate_meaningful_assertion` spins it up via `BrokenImplServer` to prove a generated test fails a synthesized spec regression, not just that it satisfies the syntactic `assertion` gate's regex. Closes a real gap: `RepairLoop` previously optimized `quality_score` purely against syntactic/LLM-judge gates and never proved a test would catch a real bug — the same "self-healing masks regressions" failure mode covered in `cherenkov/sdet/assertion_gate.py` (E11-2) but only on the separate `CoverageLoop` path, not the default generate path. New setting `CHERENKOV_MEANINGFUL_ASSERTION_GATE` (default on). `RepairLoop` repair-instruction feedback is now gate-aware (specific guidance when the failing gate is `meaningful-assertion` vs generic syntax gates). 25 new/updated tests: `tests/unit/test_mutant_synth.py`, `tests/unit/test_review_meaningful_gate.py`, `tests/evals/test_repair_loop.py`. |
+| `f6650f5` (#720) | fix(verify): sound verdicts under rate-limiting + fail-fast on unreachable target. Follow-up to `docs/evidence/blackbox_functional_assessment_2026-07-08.md`. Two soundness gaps in the R1 probe planner (#703): (1) the witness skipped its response-field oracle on HTTP 429, so a rate-limited probe read as "conformant" and verdicts flip-flopped run-to-run against a genuinely divergent target — `WitnessAgent` now backs off/retries on 429 (honors `Retry-After`, bounded by `_MAX_RETRIES_429`); (2) an unreachable target made every probe fail identically → 0 divergences → exit 0, silently passing an outage as clean — `verify`/`certify` now run a reachability preflight (`_assert_reachable`) and abort with exit 2 (any HTTP response, incl. 4xx/5xx, counts as reachable; only connection-level failures abort). Regression tests for 429 retry/bound, `Retry-After` parsing, and the reachability preflight. mypy clean. **Note:** `#722` and `#723` are follow-on PRs with the *same* title/body as `#720` but an empty diff (identical tree) — no additional fix landed in them, just re-merges of the same session's branch. Nothing further to do here. |
+| `770a688` (#711) | refactor: lint lookover — fixed SIM117, SIM115, F401, B017, RUF unicode, N8xx naming violations (conflict-resolved). |
+| `6f1839b` (#709) | feat(certificate): map OWASP Top 10 for LLM Applications risk categories into the certificate compliance profile. |
+| `2cb33ab` (#708) | feat(certificate): map compliance profile to ISO/IEC 42001 and OWASP AI Testing Guide. |
+| `468de64`, `1320d25` (#716, #714) | chore(deps): routine bumps — mkdocs-material ~=9.7.7, fastapi 0.139.2. |
+
+## What landed previous session (2026-07-13)
 
 | SHA | What |
 |---|---|

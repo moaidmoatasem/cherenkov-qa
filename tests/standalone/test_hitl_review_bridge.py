@@ -10,9 +10,7 @@ Verifies that ReviewStage correctly bridges Verdict.HITL → HitlQueue.enqueue:
 
 from __future__ import annotations
 
-
 from cherenkov.core.contracts import GenerateOutput, Status
-
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -39,7 +37,7 @@ test('test_scenario', async () => {
 
 
 def _make_hitl_score_generate(scenario_id: str = "hitl_scenario") -> GenerateOutput:
-    """GenerateOutput that will score in the HITL band (0.7–0.9):
+    """GenerateOutput that will score in the HITL band (0.7-0.9):
     pass syntax + structure + ast + assertions, fail tsc + prism → 4/6 = 0.67... no
     Actually we need exactly 0.7-0.9: pass 4-5 of 6 gates.
     We'll mock the gates directly rather than run the full stage.
@@ -69,8 +67,9 @@ class TestHitlReviewBridge:
     def test_enqueue_called_on_hitl_verdict(self, tmp_path):
         """When REVIEW yields HITL verdict, HitlQueue.enqueue must be called once."""
         # The bridge uses a lazy import inside review.py, so we patch cherenkov.hitl.HitlQueue
-        from cherenkov.hitl import HitlItem as RealHitlItem, HitlQueue as RealQueue
         from cherenkov.core.contracts import GateResult
+        from cherenkov.hitl import HitlItem as RealHitlItem
+        from cherenkov.hitl import HitlQueue as RealQueue
 
         db = str(tmp_path / "direct_bridge.db")
         q = RealQueue(db_path=db)
@@ -135,7 +134,8 @@ class TestHitlReviewBridge:
 
     def test_enqueue_idempotent_on_same_scenario(self, tmp_path):
         """Second enqueue of same scenario_id must NOT resurrect/overwrite resolved item."""
-        from cherenkov.hitl import HitlItem as RealHitlItem, HitlQueue as RealQueue
+        from cherenkov.hitl import HitlItem as RealHitlItem
+        from cherenkov.hitl import HitlQueue as RealQueue
 
         db = str(tmp_path / "idempotent.db")
         q = RealQueue(db_path=db)
@@ -161,7 +161,8 @@ class TestHitlReviewBridge:
 
     def test_hitl_item_fields_populated_correctly(self, tmp_path):
         """HitlItem must carry confidence, review_gate_failed, and confidence_reason."""
-        from cherenkov.hitl import HitlItem as RealHitlItem, HitlQueue as RealQueue
+        from cherenkov.hitl import HitlItem as RealHitlItem
+        from cherenkov.hitl import HitlQueue as RealQueue
 
         db = str(tmp_path / "fields.db")
         q = RealQueue(db_path=db)

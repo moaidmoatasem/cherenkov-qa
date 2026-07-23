@@ -9,11 +9,11 @@ Usage:
   python3 scripts/memory_sync.py [--dry-run]
 """
 
+import hashlib
 import json
 import sqlite3
-import hashlib
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 QWEN_MEMORY_DIR = ROOT / ".qwen" / "memory"
@@ -26,7 +26,7 @@ def get_db_connection():
     conn = sqlite3.connect(CHERENKOV_DB_PATH)
     if not db_exists:
         conn.execute("""
-            CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts 
+            CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts
             USING fts5(id, source, content, timestamp);
         """)
     return conn

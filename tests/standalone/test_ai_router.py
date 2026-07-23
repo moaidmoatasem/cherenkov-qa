@@ -1,6 +1,7 @@
-import os
 import unittest
+
 from cherenkov.ai.router import InferenceRouter
+
 
 class TestInferenceRouter(unittest.TestCase):
     def test_router_resolution(self):

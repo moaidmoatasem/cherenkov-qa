@@ -13,7 +13,7 @@ Bugs injected in regression mode:
 """
 
 import os
-from typing import Optional
+
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -41,7 +41,7 @@ _next_order_id = 1
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_handler(request, exc):
+async def validation_handler(request, exc):  # noqa: ARG001
     if REGRESSION_MODE:
         return JSONResponse(status_code=200, content={"message": "ok"})
     return JSONResponse(status_code=422, content={"detail": exc.errors()})
@@ -143,7 +143,7 @@ async def delete_user(user_id: int):
     if user_id not in _users:
         raise HTTPException(status_code=404, detail="User not found")
     del _users[user_id]
-    return None
+    return
 
 
 # ── POST /orders ─────────────────────────────────────────────────────────────
