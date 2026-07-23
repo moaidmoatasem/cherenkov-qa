@@ -1,7 +1,7 @@
 """cherenkov/synthetic/persona_generator.py — Per-persona test case generation.
 
 Each TesterPersona produces tests from its own viewpoint, analogous to STORM's
-WikiWriter × TopicExpert dialogue pairs running concurrently per persona.
+WikiWriter x TopicExpert dialogue pairs running concurrently per persona.
 No LLM calls — rule-based derivation from OperationContext + OpenAPI spec.
 """
 

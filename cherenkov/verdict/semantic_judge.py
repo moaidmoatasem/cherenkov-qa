@@ -8,7 +8,7 @@ Uses the Substrate Router to evaluate the *quality* of divergence evidence:
   - Is the observed diff strong enough to constitute real evidence?
   - Could this be a false positive from a flaky test environment?
 
-Returns a semantic_score (0.0–1.0) and per-finding quality labels.
+Returns a semantic_score (0.0-1.0) and per-finding quality labels.
 Falls back gracefully when the substrate is unavailable.
 """
 
@@ -60,7 +60,7 @@ _JUDGE_SCHEMA: dict = {
 @dataclass
 class EvidenceEvaluation:
     report_id: str
-    quality_score: float          # 0.0–1.0
+    quality_score: float          # 0.0-1.0
     label: str                    # strong | weak | false_positive | inconclusive
     rationale: str
     false_positive_risk: str = "low"  # low | medium | high
@@ -68,7 +68,7 @@ class EvidenceEvaluation:
 
 @dataclass
 class SemanticJudgeReport:
-    aggregate_score: float        # 0.0–1.0 mean quality across all reports
+    aggregate_score: float        # 0.0-1.0 mean quality across all reports
     evaluations: list[EvidenceEvaluation] = field(default_factory=list)
     provider: str = "offline"
     duration_ms: int = 0

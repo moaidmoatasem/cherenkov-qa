@@ -10,21 +10,20 @@ from unittest.mock import patch
 import pytest
 
 from cherenkov.core.errors import (
-    CherenkovError,
-    ProviderJSONError,
-    OllamaJSONError,
-    ContractError,
-    RefDepthError,
-    SpecTooThinError,
-    EgressError,
     AllProvidersFailedError,
     CertificationError,
-    StructuredLogger,
+    CherenkovError,
+    ContractError,
+    EgressError,
     LoggerConfig,
+    OllamaJSONError,
+    ProviderJSONError,
+    RefDepthError,
+    SpecTooThinError,
+    StructuredLogger,
     get_logger,
     set_events_file,
 )
-
 
 # ── Exception hierarchy ──────────────────────────────────────────────────────
 

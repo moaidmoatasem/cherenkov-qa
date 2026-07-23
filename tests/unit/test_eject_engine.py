@@ -68,7 +68,7 @@ class TestEjectSuite(unittest.TestCase):
         with tempfile.TemporaryDirectory() as base:
             out = os.path.join(base, "ejected")
             self.engine.eject_suite(out)
-            pkg = json.loads(open(os.path.join(out, "package.json")).read())
+            pkg = json.loads(open(os.path.join(out, "package.json")).read())  # noqa: SIM115
             self.assertIn("@playwright/test", pkg["devDependencies"])
 
     def test_eject_cleans_existing_output_dir(self):
@@ -85,5 +85,5 @@ class TestEjectSuite(unittest.TestCase):
         with tempfile.TemporaryDirectory() as base:
             out = os.path.join(base, "ejected")
             self.engine.eject_suite(out)
-            content = open(os.path.join(out, "client.ts")).read()
+            content = open(os.path.join(out, "client.ts")).read()  # noqa: SIM115
             self.assertNotIn("cherenkov", content.lower())

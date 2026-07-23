@@ -7,7 +7,7 @@ import json
 import os
 import tempfile
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from cherenkov.compliance.mena_scanner import MENAComplianceScanner
 
@@ -137,7 +137,7 @@ class TestMENAComplianceScanner(unittest.TestCase):
 
         with patch("requests.get") as mock_get:
             mock_get.return_value = MagicMock(headers={})
-            result = self.scanner.run_compliance_audit(
+            _result = self.scanner.run_compliance_audit(
                 "http://localhost:8000", spec_path
             )
 

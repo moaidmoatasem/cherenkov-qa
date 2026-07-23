@@ -1,11 +1,11 @@
 import os
-import json
 import tempfile
 import unittest
 
 from cherenkov.adapters.notifiers.slack import SlackNotifier
 from cherenkov.validate.asyncapi import AsyncAPIParser
 from cherenkov.validate.buf_registry import BufRegistryClient
+
 
 class TestSprint6Integrations(unittest.TestCase):
     def test_slack_notifier(self):

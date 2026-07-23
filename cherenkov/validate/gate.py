@@ -1,6 +1,6 @@
 """
 cherenkov/validate/gate.py
-ValidationGate – runs Track-A smoke scripts and returns a ValidationReport.
+ValidationGate - runs Track-A smoke scripts and returns a ValidationReport.
 """
 
 from __future__ import annotations
@@ -106,7 +106,7 @@ class ValidationGate:
         evidence_dir:
             Directory path for captured output files.  Skipped when *None*.
         _subprocess_runner:
-            Injection point for tests – a callable with the same signature as
+            Injection point for tests - a callable with the same signature as
             ``subprocess.run``.  When *None*, the real ``subprocess.run`` is used.
         """
         run_id = run_id or str(uuid.uuid4())

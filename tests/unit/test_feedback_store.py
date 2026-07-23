@@ -6,16 +6,14 @@ import json
 import tempfile
 from pathlib import Path
 
-import pytest
-
-from cherenkov.core.feedback_store import FeedbackStore, FeedbackEntry, RejectionReason
+from cherenkov.core.feedback_store import FeedbackEntry, FeedbackStore, RejectionReason
 
 
 class TestFeedbackStoreInit:
     def test_creates_store_file_on_init(self):
         with tempfile.TemporaryDirectory() as d:
             path = Path(d) / "sub" / "feedback.json"
-            store = FeedbackStore(path)
+            _store = FeedbackStore(path)
             assert path.exists()
             assert json.loads(path.read_text()) == []
 
@@ -23,7 +21,7 @@ class TestFeedbackStoreInit:
         with tempfile.TemporaryDirectory() as d:
             path = Path(d) / "feedback.json"
             path.write_text(json.dumps([{"hitl_item_id": "existing"}]))
-            store = FeedbackStore(path)
+            _store = FeedbackStore(path)
             data = json.loads(path.read_text())
             assert len(data) == 1
 

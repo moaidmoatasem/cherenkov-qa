@@ -1,4 +1,4 @@
-from cherenkov.core.knowledge_result import KnowledgeResult, KnowledgeKind
+from cherenkov.core.knowledge_result import KnowledgeKind, KnowledgeResult
 
 
 def test_kinds():

@@ -1,9 +1,9 @@
 """Tests for E6-2 Cross-service contract check."""
 
 from cherenkov.core.contracts import DivergenceClass, Severity
-from cherenkov.core.truth_model import GraphNode, NodeType, Claim, Provenance
-from cherenkov.federation.protocol import TruthFragment
+from cherenkov.core.truth_model import Claim, GraphNode, NodeType, Provenance
 from cherenkov.federation.cross_check import cross_service_check
+from cherenkov.federation.protocol import TruthFragment
 
 
 def make_endpoint_node(method: str, path: str, **props) -> GraphNode:

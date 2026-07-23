@@ -6,7 +6,7 @@ Scores a suite manifest against the OpenAPI spec using four metrics:
   - meaningful_ratio     : fraction of assertions passing the banned-pattern check
   - coverage             : fraction of spec operations with at least one test
 
-Grades A–F mirror school grading: makes results immediately human-readable.
+Grades A-F mirror school grading: makes results immediately human-readable.
 
 No live API required — all analysis is against the suite JSON + spec.
 """

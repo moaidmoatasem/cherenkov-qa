@@ -6,7 +6,7 @@ import sys
 HERE = pathlib.Path(__file__).parent
 sys.path.insert(0, str(HERE))
 
-from integrity_check_ts import check  # noqa: E402
+from integrity_check_ts import check
 
 SPEC = HERE / "openapi.yaml"
 TS = HERE / "ts"

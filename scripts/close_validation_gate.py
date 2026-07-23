@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-import urllib.request
-import urllib.error
 import json
 import os
 import sys
+import urllib.error
+import urllib.request
 
 TOKEN = os.environ.get("GITHUB_TOKEN", "")
 if not TOKEN:

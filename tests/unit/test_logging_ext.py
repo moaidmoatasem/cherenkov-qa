@@ -1,5 +1,6 @@
 import json
 import logging
+
 from cherenkov.core.logging_ext import JSONFormatter, setup_json_logging
 
 

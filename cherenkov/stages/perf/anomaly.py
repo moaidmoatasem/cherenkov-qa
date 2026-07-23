@@ -109,7 +109,7 @@ class LatencyAnomalyDetector:
                 value,
                 center,
                 upper,
-                f"recent median {recent_center:.1f} ≥ {self.drift_ratio}× early-baseline "
+                f"recent median {recent_center:.1f} ≥ {self.drift_ratio}x early-baseline "
                 f"{early_center:.1f} (gradual saturation before any single spike)",
             )
 

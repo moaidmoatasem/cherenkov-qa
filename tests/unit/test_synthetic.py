@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -241,7 +240,7 @@ class TestSyntheticRunner:
     def test_generate_with_output(self, spec_file: Path, tmp_path: Path):
         """Test writing output to a file."""
         output = tmp_path / "synthetic_output.json"
-        report = generate_for_endpoints(str(spec_file), output_path=str(output))
+        _report = generate_for_endpoints(str(spec_file), output_path=str(output))
         assert output.exists()
         content = json.loads(output.read_text())
         assert "report" in content

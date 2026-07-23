@@ -10,11 +10,10 @@ from pathlib import Path
 
 import pytest
 
-from cherenkov.playbooks.models import Playbook, PlaybookFinding, PlaybookTrigger
 from cherenkov.playbooks.matcher import PlaybookMatcher
+from cherenkov.playbooks.models import Playbook, PlaybookFinding, PlaybookTrigger
 from cherenkov.playbooks.registry import PlaybookRegistry
 from cherenkov.playbooks.runner import PlaybookRunner
-
 
 # ── Model tests ───────────────────────────────────────────────────────────────
 

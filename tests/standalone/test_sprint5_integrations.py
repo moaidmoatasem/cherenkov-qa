@@ -1,11 +1,12 @@
+import json
 import os
 import tempfile
-import json
 import unittest
 
-from cherenkov.adapters.notifiers.pagerduty import PagerDutyNotifier
 from cherenkov.adapters.notifiers.opsgenie import OpsGenieNotifier
+from cherenkov.adapters.notifiers.pagerduty import PagerDutyNotifier
 from cherenkov.adapters.postman_importer import PostmanImporter
+
 
 class TestSprint5Integrations(unittest.TestCase):
     def test_pagerduty_notifier(self):

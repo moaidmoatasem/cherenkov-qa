@@ -4,10 +4,8 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-
 from cherenkov.core.contracts import Claim, Provenance, ProvenanceType
 from cherenkov.oracle.consensus_oracle import ConsensusOracle
-
 
 # ── fixtures ──────────────────────────────────────────────────────────────────
 
@@ -110,7 +108,7 @@ def _mock_passes(verdicts: list[str], confidences: list[float]):
     """Return a side_effect list for _single_pass mock."""
     return [
         {"verdict": v, "confidence": c, "reason": f"reason for {v}"}
-        for v, c in zip(verdicts, confidences)
+        for v, c in zip(verdicts, confidences, strict=False)
     ]
 
 
@@ -194,6 +192,6 @@ def test_confidence_is_zero_when_all_passes_fail():
 
 
 def test_consensus_oracle_importable_from_package():
-    from cherenkov.oracle import ConsensusOracle as CO  # noqa: F401
+    from cherenkov.oracle import ConsensusOracle as CO
 
     assert CO is ConsensusOracle

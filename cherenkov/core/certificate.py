@@ -308,5 +308,59 @@ def compliance_profile(cert: VerificationCertificate) -> list[ComplianceEvidence
                 "`cherenkov check-suite`, complementary to this certificate."
             ),
         ),
+        # ── OWASP Top 10 for LLM Applications (2025) — numbered risk categories,
+        # distinct from the methodology-level "AI Testing Guide" above. Only
+        # categories with an operational control in-repo are claimed. ──
+        ComplianceEvidence(
+            framework="OWASP Top 10 for LLM Applications (2025)",
+            provision="LLM01",
+            title="Prompt Injection",
+            cert_fields=["verdict"],
+            evidence=(
+                "`cherenkov/adversarial/injector.py` + `detector.py` probe and scan "
+                "generated test code for prompt-injection payloads and markers "
+                "(role-hijack, instruction-override, spec-manipulation)."
+            ),
+            caveat=(
+                "Adversarial pass_rate is a separate report "
+                "(`.cherenkov/adversarial_report.json`), not a certificate field; "
+                "run `cherenkov`'s adversarial stage and archive alongside the cert."
+            ),
+        ),
+        ComplianceEvidence(
+            framework="OWASP Top 10 for LLM Applications (2025)",
+            provision="LLM02",
+            title="Sensitive Information Disclosure",
+            cert_fields=[],
+            evidence=(
+                "`cherenkov/security/redact.py` scrubs API keys, bearer tokens, and "
+                "PII from traces, logs, and agent memory before persistence."
+            ),
+            caveat="Redaction is applied at write-time; does not retroactively scrub existing records.",
+        ),
+        ComplianceEvidence(
+            framework="OWASP Top 10 for LLM Applications (2025)",
+            provision="LLM05",
+            title="Improper Output Handling",
+            cert_fields=[],
+            evidence=(
+                "`cherenkov/adversarial/detector.py` scans AI-generated test code for "
+                "unsafe constructs (eval, child_process, exec, data-exfiltration "
+                "beacons) before it is trusted or executed."
+            ),
+            caveat="Pattern-based detection; not a substitute for sandboxed execution of untrusted code.",
+        ),
+        ComplianceEvidence(
+            framework="OWASP Top 10 for LLM Applications (2025)",
+            provision="LLM06",
+            title="Excessive Agency",
+            cert_fields=[],
+            evidence=(
+                "`cherenkov/hitl/` gates automated actions (e.g. auto-heal dispatch) "
+                "behind a human-review queue with an explicit "
+                "PENDING/APPROVED/REJECTED state machine."
+            ),
+            caveat="Applies to the auto-heal / repair paths; does not cover every agentic action surface.",
+        ),
     ]
     return items

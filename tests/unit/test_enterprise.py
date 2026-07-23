@@ -1,14 +1,14 @@
 """Unit tests for enterprise features: SAML, RBAC, GDPR, SOC2."""
 
-import unittest
-import tempfile
 import os
+import tempfile
+import unittest
 
 
 class TestSAMLServiceProvider(unittest.TestCase):
 
     def setUp(self):
-        from cherenkov.enterprise.saml import SAMLServiceProvider, SAMLConfig
+        from cherenkov.enterprise.saml import SAMLConfig, SAMLServiceProvider
         config = SAMLConfig(idp_metadata_url="https://idp.example.com/saml", enabled=True)
         self.sp = SAMLServiceProvider(config)
 
@@ -31,7 +31,6 @@ class TestSAMLServiceProvider(unittest.TestCase):
         self.assertEqual(sp.get_login_url(), "")
 
     def test_empty_response_returns_none(self):
-        from cherenkov.enterprise.saml import SAMLAssertion
         result = self.sp.process_response("")
         self.assertIsNotNone(result)
         self.assertEqual(result.name_id, "")
@@ -52,7 +51,7 @@ class TestSAMLServiceProvider(unittest.TestCase):
 class TestRBACEngine(unittest.TestCase):
 
     def setUp(self):
-        from cherenkov.enterprise.rbac import RBACEngine, User, Role
+        from cherenkov.enterprise.rbac import RBACEngine, Role, User
         self.rbac = RBACEngine()
         self.admin = User(id="admin-1", name="Admin", email="admin@test.com", role=Role.ADMIN)
         self.viewer = User(id="viewer-1", name="Viewer", email="viewer@test.com", role=Role.VIEWER)
@@ -60,12 +59,12 @@ class TestRBACEngine(unittest.TestCase):
         self.rbac.register_user(self.viewer)
 
     def test_register_user(self):
-        from cherenkov.enterprise.rbac import Role, Permission, User
+        from cherenkov.enterprise.rbac import Role, User
         self.rbac.register_user(User(id="new", name="New", email="new@test.com", role=Role.READ_ONLY))
         self.assertIsNotNone(self.rbac.get_user("new"))
 
     def test_admin_has_all_permissions(self):
-        from cherenkov.enterprise.rbac import Permission, Role
+        from cherenkov.enterprise.rbac import Permission
         for perm in Permission:
             self.assertTrue(self.rbac.has_permission("admin-1", perm))
 
@@ -87,7 +86,7 @@ class TestRBACEngine(unittest.TestCase):
             self.rbac.require_permission("viewer-1", Permission.HITL_APPROVE)
 
     def test_set_role(self):
-        from cherenkov.enterprise.rbac import Role, Permission
+        from cherenkov.enterprise.rbac import Permission, Role
         self.rbac.set_role("viewer-1", Role.ADMIN)
         self.assertTrue(self.rbac.has_permission("viewer-1", Permission.HITL_APPROVE))
 
@@ -108,7 +107,7 @@ class TestRBACEngine(unittest.TestCase):
 class TestGDPRManager(unittest.TestCase):
 
     def setUp(self):
-        from cherenkov.enterprise.gdpr import GDPRManager, GDPRConfig
+        from cherenkov.enterprise.gdpr import GDPRConfig, GDPRManager
         tmpdir = tempfile.mkdtemp()
         config = GDPRConfig(enabled=True, data_directory=tmpdir)
         self.gdpr = GDPRManager(config)
@@ -161,7 +160,6 @@ class TestGDPRManager(unittest.TestCase):
         self.assertEqual(result["format"], "json")
 
     def test_purge_old_data(self):
-        import time
         self.gdpr.create_request("user-1", "access")
         purged = self.gdpr.purge_old_data()
         # Should not purge recent data

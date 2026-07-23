@@ -16,7 +16,6 @@ from cherenkov.verdict.models import (
     score_to_grade,
 )
 
-
 # ── score_to_grade ─────────────────────────────────────────────────────────────
 
 class TestScoreToGrade:
@@ -268,7 +267,8 @@ class TestRichVerdictRender:
 def mock_report():
     """Minimal DivergenceReport-like object."""
     from unittest.mock import MagicMock
-    from cherenkov.core.contracts import Severity, DivergenceClass
+
+    from cherenkov.core.contracts import DivergenceClass, Severity
 
     r = MagicMock()
     r.severity = Severity.HIGH

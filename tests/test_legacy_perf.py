@@ -6,8 +6,8 @@ Proves generation of standard local k6 script files and graceful execution repor
 
 import os
 import subprocess
-import time
 import sys
+import time
 
 from cherenkov.execution.k6_runner import K6Runner
 
@@ -106,4 +106,4 @@ def test_legacy_perf():
         main()
     except SystemExit as e:
         if e.code != 0:
-            raise AssertionError(f"Test failed with exit code {e.code}")
+            raise AssertionError(f"Test failed with exit code {e.code}") from e

@@ -1,8 +1,9 @@
-import subprocess
-import shutil
 import re
+import shutil
+import subprocess
+
 from pydantic import BaseModel, Field
-from typing import Optional
+
 
 class RunQwenCodeAgentArgs(BaseModel):
     prompt: str = Field(..., description="The instruction or task to delegate to Qwen Code")
