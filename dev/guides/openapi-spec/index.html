@@ -22,8 +22,8 @@
         
       
       
-      <link rel="icon" href="../../assets/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <link rel="icon" href="../../assets/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -972,10 +972,65 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#quick-reference" class="md-nav__link">
+  <a href="#supported-formats" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Reference
+        Supported Formats
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#point-to-your-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Point to Your Spec
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-cherenkov-reads-from-the-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What CHERENKOV Reads from the Spec
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spec-validation-on-ingest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spec Validation on Ingest
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-for-spec-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tips for Spec Quality
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-spec-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging Spec Issues
       
     </span>
   </a>
@@ -1549,6 +1604,8 @@
       
         
       
+        
+      
     
     
     
@@ -1611,6 +1668,34 @@
     
   
     Latest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v1.1.1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.1.1
   
 
     
@@ -1743,10 +1828,65 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#quick-reference" class="md-nav__link">
+  <a href="#supported-formats" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Reference
+        Supported Formats
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#point-to-your-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Point to Your Spec
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-cherenkov-reads-from-the-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What CHERENKOV Reads from the Spec
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spec-validation-on-ingest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spec Validation on Ingest
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-for-spec-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tips for Spec Quality
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-spec-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging Spec Issues
       
     </span>
   </a>
@@ -1787,10 +1927,126 @@
 
 
 <h1 id="openapi-spec-integration">OpenAPI Spec Integration<a class="headerlink" href="#openapi-spec-integration" title="Permanent link">&para;</a></h1>
-<p>This guide is under active development. Check back soon or <a href="https://github.com/moaidmoatasem/cherenkov-qa">contribute on GitHub</a>.</p>
-<h2 id="quick-reference">Quick Reference<a class="headerlink" href="#quick-reference" title="Permanent link">&para;</a></h2>
-<p>CHERENKOV supports OpenAPI 3.x (YAML or JSON). Point to your spec:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>cherenkov<span class="w"> </span>validate<span class="w"> </span>--spec<span class="w"> </span>./api/openapi.yaml<span class="w"> </span>--target<span class="w"> </span>http://localhost:8000
+<p>CHERENKOV supports <strong>OpenAPI 3.x</strong> specifications in YAML or JSON format. The spec is the single source of truth for all conformance testing — endpoints, schemas, status codes, and constraints are all derived from it.</p>
+<h2 id="supported-formats">Supported Formats<a class="headerlink" href="#supported-formats" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Extension</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenAPI 3.0</td>
+<td><code>.yaml</code>, <code>.yml</code>, <code>.json</code></td>
+<td>Full support</td>
+</tr>
+<tr>
+<td>OpenAPI 3.1</td>
+<td><code>.yaml</code>, <code>.yml</code>, <code>.json</code></td>
+<td>Full support (JSON Schema 2020-12)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="point-to-your-spec">Point to Your Spec<a class="headerlink" href="#point-to-your-spec" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Local file</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>cherenkov<span class="w"> </span>validate<span class="w"> </span>--spec<span class="w"> </span>./api/openapi.yaml<span class="w"> </span>--target<span class="w"> </span>http://localhost:8000
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Remote URL</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>cherenkov<span class="w"> </span>validate<span class="w"> </span>--spec<span class="w"> </span>https://example.com/openapi.json<span class="w"> </span>--target<span class="w"> </span>http://localhost:8000
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Read from stdin (pipe)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>cat<span class="w"> </span>api.yaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>cherenkov<span class="w"> </span>validate<span class="w"> </span>--spec<span class="w"> </span>-<span class="w"> </span>--target<span class="w"> </span>http://localhost:8000
+</span></code></pre></div>
+<h2 id="what-cherenkov-reads-from-the-spec">What CHERENKOV Reads from the Spec<a class="headerlink" href="#what-cherenkov-reads-from-the-spec" title="Permanent link">&para;</a></h2>
+<p>CHERENKOV extracts the following from your OpenAPI specification:</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Used For</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Paths + methods</td>
+<td>Endpoint discovery and test generation</td>
+</tr>
+<tr>
+<td>Request schemas</td>
+<td>Request body and parameter validation</td>
+</tr>
+<tr>
+<td>Response schemas</td>
+<td>Response body type assertions</td>
+</tr>
+<tr>
+<td>Status codes</td>
+<td>Expected HTTP status per operation</td>
+</tr>
+<tr>
+<td>Parameters (path, query, header, cookie)</td>
+<td>Parameterized test scenarios</td>
+</tr>
+<tr>
+<td>Security schemes</td>
+<td>Authentication setup</td>
+</tr>
+<tr>
+<td><code>$ref</code> references</td>
+<td>Resolved schema composition</td>
+</tr>
+</tbody>
+</table>
+<h2 id="spec-validation-on-ingest">Spec Validation on Ingest<a class="headerlink" href="#spec-validation-on-ingest" title="Permanent link">&para;</a></h2>
+<p>When you run <code>cherenkov validate</code>, the spec is validated before any tests are generated:</p>
+<ol>
+<li><strong>Structure check</strong> — valid OpenAPI 3.x document</li>
+<li><strong>Reference resolution</strong> — all <code>$ref</code> pointers resolve</li>
+<li><strong>Schema coherence</strong> — no contradictory constraints</li>
+<li><strong>Path uniqueness</strong> — no duplicate path+method combinations</li>
+</ol>
+<p>If validation fails, CHERENKOV exits with code <code>2</code> and reports the specific errors.</p>
+<h2 id="tips-for-spec-quality">Tips for Spec Quality<a class="headerlink" href="#tips-for-spec-quality" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Use <strong><code>example</code></strong> fields — they help the LLM generate more realistic test data</li>
+<li>Define <strong><code>required</code></strong> fields explicitly — CHERENKOV checks response bodies against these</li>
+<li>Set <strong><code>minimum</code>/<code>maximum</code></strong> on numeric fields — enables boundary testing</li>
+<li>Use <strong><code>enum</code></strong> for constrained values — tests will validate against allowed values</li>
+<li>Include <strong><code>description</code></strong> on operations — the LLM uses this for test scenario planning</li>
+</ul>
+<p>A well-annotated spec produces better conformance coverage:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">paths</span><span class="p">:</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">/pets</span><span class="p">:</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">get</span><span class="p">:</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">      </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">List all pets</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Returns a paginated list of pets with optional filters</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">      </span><span class="nt">parameters</span><span class="p">:</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">limit</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">          </span><span class="nt">in</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">query</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">          </span><span class="nt">schema</span><span class="p">:</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">            </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">integer</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">            </span><span class="nt">minimum</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">            </span><span class="nt">maximum</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">            </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">      </span><span class="nt">responses</span><span class="p">:</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">        </span><span class="s">&#39;200&#39;</span><span class="p p-Indicator">:</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">          </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A list of pets</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">          </span><span class="nt">content</span><span class="p">:</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">            </span><span class="nt">application/json</span><span class="p">:</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">              </span><span class="nt">schema</span><span class="p">:</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">                </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">array</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">                </span><span class="nt">items</span><span class="p">:</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">                  </span><span class="nt">$ref</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;#/components/schemas/Pet&#39;</span>
+</span></code></pre></div>
+<h2 id="debugging-spec-issues">Debugging Spec Issues<a class="headerlink" href="#debugging-spec-issues" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Validate just the spec parsing without running tests</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>cherenkov<span class="w"> </span>doctor
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Generate tests only (no execution) to see what CHERENKOV extracts</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>cherenkov<span class="w"> </span>generate<span class="w"> </span>--spec<span class="w"> </span>api.yaml<span class="w"> </span>--output<span class="w"> </span>./tests
 </span></code></pre></div>
 
 
@@ -1814,7 +2070,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 29, 2026 00:05:04 UTC"><span class="timeago" datetime="2026-06-29T00:05:04+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 29, 2026 00:05:04 UTC">2026-06-29</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 5, 2026 16:34:06 UTC"><span class="timeago" datetime="2026-07-05T16:34:06+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 5, 2026 16:34:06 UTC">2026-07-05</span>
   </span>
 
     
@@ -1841,6 +2097,8 @@
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -1943,10 +2201,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "search.highlight", "search.suggest", "search.share", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "announce.dismiss", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "search.highlight", "search.suggest", "search.share", "content.code.copy", "content.code.select", "content.code.annotate", "content.tabs.link", "content.action.edit", "content.action.view", "announce.dismiss", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../js/timeago.min.js"></script>
       
