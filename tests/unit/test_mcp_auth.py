@@ -1,15 +1,15 @@
 """Unit tests for MCP Authentication (CC-3)."""
 
-import pytest
 import time
+
 import jwt
 
 from cherenkov.mcp.auth import (
+    JWT_ALGORITHM,
+    JWT_SECRET,
+    MCPAuthMiddleware,
     generate_mcp_token,
     verify_mcp_token,
-    MCPAuthMiddleware,
-    JWT_SECRET,
-    JWT_ALGORITHM
 )
 
 

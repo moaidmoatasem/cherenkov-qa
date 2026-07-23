@@ -17,12 +17,11 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cherenkov.copilot.autonomy import (
+    PROFILE_LEVELS,
     AutonomyProfile,
     get_profile,
     set_profile,
-    PROFILE_LEVELS,
 )
-
 
 errors: list[str] = []
 

@@ -3,20 +3,19 @@ test_epoch11_coverage.py — Unit tests for Epoch 11 Coverage SDET (Issue #92).
 Tests: UnitTestEmitter, CoverageLoop, AssertionGate.
 """
 
+import os
+import tempfile
 import unittest
 from unittest import mock
-import tempfile
-import os
 
-from cherenkov.coverage.emitter import UnitTestEmitter
-from cherenkov.coverage.loop import CoverageLoop, CoverageReport
+from cherenkov.core.contracts import Status
 from cherenkov.coverage.assertion_gate import (
     AssertionGate,
     AssertionGateResult,
     BrokenImplementation,
 )
-from cherenkov.core.contracts import Status
-
+from cherenkov.coverage.emitter import UnitTestEmitter
+from cherenkov.coverage.loop import CoverageLoop, CoverageReport
 
 SAMPLE_ENDPOINT = {
     "path": "/users",

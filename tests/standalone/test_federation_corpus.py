@@ -1,15 +1,17 @@
 import os
 import tempfile
+
 import pytest
+
 from cherenkov.core.contracts import (
-    DivergenceReport,
     DivergenceClass,
-    Severity,
     DivergenceEvidence,
+    DivergenceReport,
+    Severity,
     StageMeta,
 )
+from cherenkov.federation.corpus import Corpus, CorpusEntry, CorpusOptInError
 from cherenkov.federation.protocol import DivergenceEnvelope
-from cherenkov.federation.corpus import Corpus, CorpusOptInError, CorpusEntry
 
 
 def make_divergence():

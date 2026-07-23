@@ -76,12 +76,10 @@ def _subject_and_field(left: ast.expr) -> tuple[str, str | None]:
     field = None
     node = left
     if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name):
-        if node.value.id in BODY_NAMES and isinstance(node.slice, ast.Constant):
-            if isinstance(node.slice.value, str):
-                field = node.slice.value
-    elif isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name):
-        if node.value.id in BODY_NAMES:
-            field = node.attr
+        if node.value.id in BODY_NAMES and isinstance(node.slice, ast.Constant) and isinstance(node.slice.value, str):
+            field = node.slice.value
+    elif isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id in BODY_NAMES:
+        field = node.attr
     return subject, field
 
 

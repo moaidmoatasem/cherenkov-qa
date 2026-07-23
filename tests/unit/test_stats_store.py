@@ -1,12 +1,14 @@
 import os
 import tempfile
+
 import pytest
+
 from cherenkov.core.stats_store import StatsStore
 
 
 @pytest.fixture
 def stats_store():
-    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
     db_path = tmp.name
     tmp.close()
     store = StatsStore(db_path)

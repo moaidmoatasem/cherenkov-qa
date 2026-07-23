@@ -6,12 +6,14 @@ Designed to run in CI with no external dependencies (Ollama, Redis, Playwright, 
 """
 
 from __future__ import annotations
+
 import importlib
-import os
 import json
+import os
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
+
 import pytest
 
 REPO_ROOT = Path(__file__).parent.parent.parent
@@ -80,9 +82,9 @@ def test_gp2_ingest_stage_accepts_spec():
 def test_gp2_contracts_are_versioned():
     """GP-2: Stage contracts have version numbers."""
     from cherenkov.core.contracts import (
+        GenerateOutput,
         IngestOutput,
         PlanOutput,
-        GenerateOutput,
         ReviewOutput,
     )
 

@@ -6,8 +6,8 @@ Proves active/static SAMA CCSF and CBE FinCSF framework audit mapping and PDF/HT
 
 import os
 import subprocess
-import time
 import sys
+import time
 
 from cherenkov.compliance.mena_scanner import MENAComplianceScanner
 
@@ -106,4 +106,4 @@ def test_legacy_compliance():
         main()
     except SystemExit as e:
         if e.code != 0:
-            raise AssertionError(f"Test failed with exit code {e.code}")
+            raise AssertionError(f"Test failed with exit code {e.code}") from e

@@ -17,8 +17,8 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cherenkov.stages.perf.perf_stage import PerfStage, PerfSlice
 from cherenkov.stages.perf.anomaly import LatencyAnomalyDetector
+from cherenkov.stages.perf.perf_stage import PerfSlice, PerfStage
 
 PASS = 0
 FAIL = 0

@@ -13,8 +13,11 @@ All tests use in-memory SQLite — no disk I/O, fully deterministic.
 
 from __future__ import annotations
 
-import uuid
+import os
 
+# ── fixtures ──────────────────────────────────────────────────────────────────
+import tempfile
+import uuid
 
 from cherenkov.core.contracts import (
     DivergenceClass,
@@ -25,11 +28,6 @@ from cherenkov.core.contracts import (
 )
 from cherenkov.reflector.reflector import Reflector, fingerprint_of
 from cherenkov.reflector.store import VerdictStore
-
-
-# ── fixtures ──────────────────────────────────────────────────────────────────
-import tempfile
-import os
 
 
 def _store() -> VerdictStore:
@@ -289,7 +287,7 @@ class TestSuppressionViafFingerprint:
         h1 = _make_hypothesis(claim_a="fresh claim 1")
         h2 = _make_hypothesis(claim_a="fresh claim 2")
         result = reflector.rerank([h1, h2])
-        assert set(r.id for r in result) == {
+        assert {r.id for r in result} == {
             h1.id,
             h2.id,
         }, "All unseen hypotheses should pass through rerank()."

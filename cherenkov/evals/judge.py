@@ -17,7 +17,7 @@ from cherenkov.evals.core import (
 
 _JUDGE_SYSTEM_PROMPT = """You are a CHERENKOV test quality judge. Evaluate Playwright API tests generated from OpenAPI specs.
 
-Rate each test on 5 metrics (score 0.0–1.0):
+Rate each test on 5 metrics (score 0.0-1.0):
 
 1. FAITHFULNESS — Does the test assert the CORRECT HTTP status per the spec? (expected_status)
 2. HALLUCINATION — Does the test avoid asserting properties/behaviors NOT in the spec?
@@ -38,7 +38,7 @@ def _build_judge_prompt(sample: EvalSample) -> str:
         f"Spec summary: {sample.spec_summary}\n"
         f"Scenario: {sample.scenario_id}\n\n"
         f"Test code:\n```typescript\n{sample.test_code}\n```\n\n"
-        f"Rate each metric 0.0–1.0."
+        f"Rate each metric 0.0-1.0."
     )
 
 

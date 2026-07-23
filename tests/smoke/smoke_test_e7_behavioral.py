@@ -36,7 +36,6 @@ from cherenkov.divergence.proof_run import (
 from cherenkov.reflector.reflector import Reflector, fingerprint_of
 from cherenkov.reflector.store import VerdictStore
 
-
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 
@@ -75,8 +74,8 @@ def main() -> None:
     print("=" * 70)
 
     # ── Step 1: Create in-memory Reflector ────────────────────────────────────
-    import tempfile
     import os
+    import tempfile
 
     fd, temp_db_path = tempfile.mkstemp(suffix=".db")
     os.close(fd)

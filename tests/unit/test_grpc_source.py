@@ -5,10 +5,9 @@ import os
 import tempfile
 import unittest
 
-from cherenkov.sources.grpc.adapter import gRPCSourceAdapter, gRPCOperation
-from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
+from cherenkov.sources.grpc.adapter import gRPCOperation, gRPCSourceAdapter
 from cherenkov.sources.grpc.contracts import gRPCScenario
-
+from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
 
 TEST_PROTO = """
 syntax = "proto3";
@@ -58,7 +57,7 @@ class TestGRPCSourceAdapter(unittest.TestCase):
     """Tests for gRPCSourceAdapter."""
 
     def setUp(self):
-        self.proto_file = tempfile.NamedTemporaryFile(mode='w', suffix='.proto', delete=False)
+        self.proto_file = tempfile.NamedTemporaryFile(mode='w', suffix='.proto', delete=False)  # noqa: SIM115
         self.proto_file.write(TEST_PROTO)
         self.proto_file.close()
 
@@ -93,7 +92,7 @@ class TestGRPCSourceAdapter(unittest.TestCase):
         adapter = gRPCSourceAdapter(self.proto_file.name)
         ops = list(adapter.iter_operations())
 
-        services = set(op.service for op in ops)
+        services = {op.service for op in ops}
         self.assertIn('UserService', services)
         self.assertIn('HealthService', services)
 
@@ -118,7 +117,7 @@ class TestGRPCScenarioPlanner(unittest.TestCase):
     """Tests for gRPCScenarioPlanner."""
 
     def setUp(self):
-        self.proto_file = tempfile.NamedTemporaryFile(mode='w', suffix='.proto', delete=False)
+        self.proto_file = tempfile.NamedTemporaryFile(mode='w', suffix='.proto', delete=False)  # noqa: SIM115
         self.proto_file.write(TEST_PROTO)
         self.proto_file.close()
         self.adapter = gRPCSourceAdapter(self.proto_file.name)
@@ -158,7 +157,7 @@ class TestGRPCScenarioPlanner(unittest.TestCase):
 
     def test_scenario_per_operation(self):
         scenarios = self.planner.plan(self.adapter)
-        unique_rpcs = set((s.service, s.rpc_name) for s in scenarios)
+        unique_rpcs = {(s.service, s.rpc_name) for s in scenarios}
         self.assertIn(('UserService', 'GetUser'), unique_rpcs)
         self.assertIn(('UserService', 'ListUsers'), unique_rpcs)
         self.assertIn(('HealthService', 'Check'), unique_rpcs)

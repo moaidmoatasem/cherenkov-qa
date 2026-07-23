@@ -117,7 +117,7 @@ def slice_spec(spec: dict) -> list[dict]:
     return slices
 
 
-def build_user_prompt(slice_: dict, client_types: str | None) -> str:
+def build_user_prompt(slice_: dict, client_types: str | None) -> str:  # noqa: ARG001
     return (
         "ENDPOINT SLICE (the only schema you need):\n"
         + json.dumps(

@@ -7,8 +7,9 @@ class TestConformanceCheckOperatorConfig(unittest.TestCase):
     """Verify K8s operator RBAC and CRD config files are well-formed."""
 
     def test_rbac_role_yaml_exists_and_valid(self):
-        import yaml
         import os
+
+        import yaml
 
         rbac_candidates = [
             "operator/config/rbac/role.yaml",
@@ -26,8 +27,9 @@ class TestConformanceCheckOperatorConfig(unittest.TestCase):
         self.assertIn("batch", all_groups, "Missing batch RBAC rule")
 
     def test_crd_yaml_exists_and_valid(self):
-        import yaml
         import glob
+
+        import yaml
 
         crds = glob.glob("operator/config/crd/bases/*.yaml")
         self.assertTrue(crds, "No CRD YAML files found")

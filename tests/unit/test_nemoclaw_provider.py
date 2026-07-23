@@ -6,11 +6,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from cherenkov.core.contracts import ReasoningRequest
-from cherenkov.substrate.providers.nemoclaw import NemoClawProvider
-from cherenkov.substrate.provider import get_provider, ProviderCapabilities
 from cherenkov.ai.nemoclaw_client import NemoClawInferenceClient
-
+from cherenkov.core.contracts import ReasoningRequest
+from cherenkov.substrate.provider import ProviderCapabilities, get_provider
+from cherenkov.substrate.providers.nemoclaw import NemoClawProvider
 
 # ---------------------------------------------------------------------------
 # Helpers

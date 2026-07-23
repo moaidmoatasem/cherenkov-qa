@@ -1,9 +1,8 @@
 """Tests for cherenkov/evals/prompt_version.py"""
 
 import hashlib
-import json
+
 import pytest
-from pathlib import Path
 
 from cherenkov.evals.prompt_version import get_prompt_fingerprint, prompt_changed
 
@@ -54,7 +53,7 @@ class TestGetPromptFingerprint:
     def test_fingerprint_with_all_missing(self, tmp_path):
         fp = get_prompt_fingerprint(tmp_path)
         expected_sentinel = hashlib.sha256(b"<missing>").hexdigest()[:16]
-        for name, h in fp["files"].items():
+        for _, h in fp["files"].items():
             assert h == expected_sentinel
 
 

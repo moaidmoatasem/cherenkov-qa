@@ -1,8 +1,8 @@
 import os
+import runpy
 import sys
 import tempfile
 from unittest.mock import patch
-import runpy
 
 TEST_PROTO = """
 syntax = "proto3";

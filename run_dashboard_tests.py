@@ -2,11 +2,11 @@
 # DEPRECATED: track-b-c-deferred/ was re-integrated and deleted.
 # Dashboard now lives in cherenkov/web/. This script is dead code.
 import os
-import sys
 import subprocess
+import sys
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 
 
 def wait_for_port(port, timeout=30):
@@ -46,10 +46,10 @@ def main():
     # 2. Boot up Backend on port 8000
     backend_script = os.path.join(project_root, "scripts", "start_dashboard_api.py")
     print("Booting up backend server on port 8000...")
-    backend_log = open(
+    backend_log = open(  # noqa: SIM115
         os.path.join(project_root, "backend_test.log"), "w", encoding="utf-8"
     )
-    backend_err = open(
+    backend_err = open(  # noqa: SIM115
         os.path.join(project_root, "backend_test.err"), "w", encoding="utf-8"
     )
 
@@ -62,10 +62,10 @@ def main():
 
     # 3. Boot up Frontend on port 3000
     print("Booting up frontend Vite server on port 3000...")
-    frontend_log = open(
+    frontend_log = open(  # noqa: SIM115
         os.path.join(project_root, "frontend_test.log"), "w", encoding="utf-8"
     )
-    frontend_err = open(
+    frontend_err = open(  # noqa: SIM115
         os.path.join(project_root, "frontend_test.err"), "w", encoding="utf-8"
     )
 

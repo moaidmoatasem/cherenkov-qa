@@ -2,7 +2,7 @@
 
 Design choice: JSONL over SQLite for the first cut.
   - Git-diffable, human-inspectable, survives crashes without WAL corruption.
-  - brute-force scan is fast enough at tens–low-hundreds of operations (no ANN needed).
+  - brute-force scan is fast enough at tens-low-hundreds of operations (no ANN needed).
   - Each line is one JSON-serialized SpecSuiteSnapshot.
 
 Three execution tiers (spec §2):

@@ -39,11 +39,11 @@ _DEFAULT_SPEC = os.path.join(_REPO_ROOT, "stub", "openapi_3_1.yaml")
 )
 @click.option(
     "--threshold-compile", default=0.9, show_default=True, type=float,
-    help="Min tsc gate pass rate (0–1). Bench fails below this.",
+    help="Min tsc gate pass rate (0-1). Bench fails below this.",
 )
 @click.option(
     "--threshold-quality", default=0.85, show_default=True, type=float,
-    help="Min average quality score (0–1). Bench fails below this.",
+    help="Min average quality score (0-1). Bench fails below this.",
 )
 @click.option(
     "--output", "-o", type=click.Path(),

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 import tempfile
 import unittest
@@ -38,16 +37,18 @@ class TestK6Runner(unittest.TestCase):
             stdout=fake_stdout,
             stderr="",
         )
-        with mock.patch("cherenkov.execution.k6_runner.shutil.which", return_value="/usr/bin/k6"):
-            with mock.patch("subprocess.run", return_value=fake_process):
-                with mock.patch("cherenkov.execution.perf_analyzer.PerformanceAnalyzer") as MockAnalyzer:
-                    instance = MockAnalyzer.return_value
-                    instance.record_latency.return_value = None
-                    instance.analyze_anomaly.return_value = {
-                        "status": "ok",
-                        "message": "Performance verification completed.",
-                    }
-                    report = runner.run_k6_validation("http://localhost:8000")
+        with (
+            mock.patch("cherenkov.execution.k6_runner.shutil.which", return_value="/usr/bin/k6"),
+            mock.patch("subprocess.run", return_value=fake_process),
+            mock.patch("cherenkov.execution.perf_analyzer.PerformanceAnalyzer") as MockAnalyzer,
+        ):
+            instance = MockAnalyzer.return_value
+            instance.record_latency.return_value = None
+            instance.analyze_anomaly.return_value = {
+                "status": "ok",
+                "message": "Performance verification completed.",
+            }
+            report = runner.run_k6_validation("http://localhost:8000")
         self.assertEqual(report["status"], "success")
         self.assertIn("http_req_duration", report["metrics"])
         self.assertIn("123.45ms", report["metrics"]["http_req_duration"])
