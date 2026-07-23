@@ -18,14 +18,21 @@ from __future__ import annotations
 import json
 import logging
 import sys
+import time
 from pathlib import Path
+from typing import Any, cast
 
 import click
+import httpx
+import requests
+
 from cherenkov.divergence.proof_run import run_proof
 
 _log = logging.getLogger(__name__)
-from cherenkov.divergence.coverage import compute_coverage, CoverageReport
-from cherenkov.persistence.run_store import RunRecord, get_run_store, spec_hash as _spec_hash
+from cherenkov.divergence.coverage import CoverageReport, compute_coverage
+from cherenkov.divergence.health import HealthScore, compute_health_score
+from cherenkov.persistence.run_store import RunRecord, get_run_store
+from cherenkov.persistence.run_store import spec_hash as _spec_hash
 
 
 @click.command("verify")
@@ -73,6 +80,12 @@ from cherenkov.persistence.run_store import RunRecord, get_run_store, spec_hash 
     help="Print a spec coverage-gap report after the proof run (requires --spec).",
 )
 @click.option(
+    "--health-score",
+    is_flag=True,
+    default=False,
+    help="Print an A-F health grade for the proof run (coverage + divergence density; requires --spec).",
+)
+@click.option(
     "--rich-verdict/--simple",
     default=True,
     help="Run the full multi-agent verdict engine (default: on).  Pass --simple for the legacy summary.",
@@ -95,18 +108,27 @@ from cherenkov.persistence.run_store import RunRecord, get_run_store, spec_hash 
     show_default=True,
     help="Directory for captured golden fixtures.",
 )
+@click.option(
+    "--max-probes",
+    default=40,
+    show_default=True,
+    type=click.IntRange(1, 500),
+    help="Maximum spec-derived endpoint probes per run (requires --spec).",
+)
 def verify_cmd(
     url: str,
     spec: str | None,
     llm: bool,
     output: str | None,
-    output_format: str,
+    output_format: str,  # noqa: ARG001
     fail_on_divergence: bool,
     coverage_report: bool,
+    health_score: bool,
     rich_verdict: bool,
     no_mutation_oracle: bool,
     no_traffic_capture: bool,
     fixture_dir: str,
+    max_probes: int,
 ) -> None:
     """Verify a live API against its OpenAPI spec -- find spec<->implementation divergences.
 
@@ -142,10 +164,11 @@ def verify_cmd(
     click.echo(f"  Spec    : {spec or 'built-in Petstore demo'}")
     click.echo(f"  Mode    : {mode_label}")
     if rich_verdict:
-        click.echo(f"  Engine  : multi-agent (rich verdict)")
+        click.echo("  Engine  : multi-agent (rich verdict)")
     click.echo("")
 
-    import time
+    _assert_reachable(url)
+
     t_start = time.monotonic()
 
     if rich_verdict:
@@ -157,6 +180,7 @@ def verify_cmd(
             run_mutation=not no_mutation_oracle,
             run_traffic=not no_traffic_capture,
             fixture_dir=fixture_dir,
+            max_probes=max_probes,
         )
         duration_ms = int((time.monotonic() - t_start) * 1000)
 
@@ -174,6 +198,12 @@ def verify_cmd(
             else:
                 click.echo("[WARN] --coverage-report requires --spec; skipping.", err=True)
 
+        if health_score:
+            if cov is not None:
+                _print_health(compute_health_score(cov))
+            else:
+                click.echo("[WARN] --health-score requires --spec; skipping.", err=True)
+
         if output:
             _write_rich_json(rich, reports, output, spec_dict=spec_dict)
             click.echo(f"\nReport written to {output}")
@@ -186,7 +216,7 @@ def verify_cmd(
     else:
         # Legacy simple path
         try:
-            reports = run_proof(base_url=url, spec=spec_dict, use_llm=llm)
+            reports = run_proof(base_url=url, spec=spec_dict, use_llm=llm, max_probes=max_probes)
         except Exception as exc:
             click.echo(f"\n[ERROR] Probe failed: {exc}", err=True)
             sys.exit(2)
@@ -201,6 +231,13 @@ def verify_cmd(
             else:
                 cov_report = compute_coverage(spec_dict, reports)
                 _print_coverage(cov_report)
+
+        if health_score:
+            if spec_dict is None:
+                click.echo("[WARN] --health-score requires --spec; skipping.", err=True)
+            else:
+                cov_report = cov_report or compute_coverage(spec_dict, reports)
+                _print_health(compute_health_score(cov_report))
 
         if output:
             _write_json(reports, output)
@@ -222,9 +259,10 @@ def _run_rich_verdict(
     run_mutation: bool,
     run_traffic: bool,
     fixture_dir: str,
+    max_probes: int = 40,
 ) -> tuple:
-    from cherenkov.verdict.engine import VerdictEngine
     from cherenkov.divergence.coverage import compute_coverage
+    from cherenkov.verdict.engine import VerdictEngine
 
     engine = VerdictEngine(
         base_url=url,
@@ -235,6 +273,7 @@ def _run_rich_verdict(
         run_semantic_judge=True,
         run_traffic_capture=run_traffic,
         fixture_dir=fixture_dir,
+        max_probes=max_probes,
     )
     try:
         rich = engine.run()
@@ -244,7 +283,7 @@ def _run_rich_verdict(
 
     # Extract raw divergence reports for detail printing
     try:
-        reports = run_proof(base_url=url, spec=spec_dict, use_llm=False)
+        reports = run_proof(base_url=url, spec=spec_dict, use_llm=False, max_probes=max_probes)
     except Exception:
         reports = []
 
@@ -280,7 +319,7 @@ def _persist_run(
             command="verify",
             target_url=url,
             spec_hash=_spec_hash(json.dumps(spec_dict, sort_keys=True).encode()) if spec_dict else "",
-            verdict=verdict_str,
+            verdict=cast(Any, verdict_str),
             divergence_count=divergence_count,
             coverage_pct=coverage_pct,
             duration_ms=duration_ms,
@@ -292,14 +331,33 @@ def _persist_run(
         _log.debug("run record persist failed (non-critical)", exc_info=True)
 
 
+def _assert_reachable(url: str) -> None:
+    """Fail fast if the target is not reachable.
+
+    A down or wrong-address target must not be scored — otherwise every probe
+    fails identically, yields zero divergences, and the run exits 0, silently
+    reporting an outage as a clean pass. Any HTTP response (even 4xx/5xx) counts
+    as reachable; only connection-level failures abort.
+    """
+    try:
+        with httpx.Client(timeout=10.0, follow_redirects=True) as client:
+            client.get(url)
+    except httpx.HTTPError as exc:
+        click.echo(
+            f"[ERROR] Target {url} is not reachable: {type(exc).__name__}. "
+            "Aborting — a target that cannot be contacted cannot be verified.",
+            err=True,
+        )
+        sys.exit(2)
+
+
 def _load_spec(spec_path: str) -> dict | None:
     """Load an OpenAPI spec from a local file path or HTTP URL."""
-    import urllib.request
-
     if spec_path.startswith("http://") or spec_path.startswith("https://"):
         try:
-            with urllib.request.urlopen(spec_path, timeout=15) as resp:  # noqa: S310
-                raw = resp.read()
+            resp = requests.get(spec_path, timeout=15)
+            resp.raise_for_status()
+            raw = resp.content
         except Exception as exc:
             click.echo(f"[ERROR] Could not fetch spec from {spec_path}: {exc}", err=True)
             return None
@@ -421,5 +479,26 @@ def _print_coverage(cov: CoverageReport) -> None:
         for ep in cov.tested_endpoints:
             div_tag = f"  ({ep.divergence_count} divergence(s))" if ep.divergence_count else ""
             click.echo(f"    {ep.method:<7} {ep.path}{div_tag}")
+    click.echo("─" * width + "\n")
+
+
+def _print_health(health: HealthScore) -> None:
+    width = 68
+    colour = {"A": "green", "B": "green", "C": "yellow", "D": "red", "F": "red"}.get(
+        health.grade, "white"
+    )
+    click.echo("\n" + "─" * width)
+    click.echo(
+        "  Health grade: "
+        + click.style(f"{health.grade}", fg=colour, bold=True)
+        + f"  ({health.score:.1f}/100)"
+    )
+    click.echo(
+        f"    coverage {health.coverage_component:.1f}  ·  "
+        f"integrity {health.integrity_component:.1f}  ·  "
+        f"divergence {health.divergence_component:.1f}"
+    )
+    for d in health.deductions:
+        click.echo(f"    {d}")
     click.echo("─" * width + "\n")
 

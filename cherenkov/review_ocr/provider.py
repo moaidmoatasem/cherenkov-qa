@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Optional
 
 from cherenkov.review_ocr.models import OCRProvider
 
@@ -11,9 +10,8 @@ from cherenkov.review_ocr.models import OCRProvider
 def _default_config_path() -> str:
     return os.path.join(str(Path.home()), ".opencodereview", "config.json")
 
-
 class OCRProviderManager:
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         self.config_path = config_path or _default_config_path()
         self._config: dict = {}
         self._load()
@@ -21,7 +19,7 @@ class OCRProviderManager:
     def _load(self):
         if os.path.isfile(self.config_path):
             try:
-                with open(self.config_path, "r", encoding="utf-8") as f:
+                with open(self.config_path, encoding="utf-8") as f:
                     self._config = json.load(f)
             except (json.JSONDecodeError, OSError):
                 self._config = {}
@@ -64,7 +62,7 @@ class OCRProviderManager:
         )
 
     def list_providers(self) -> list[str]:
-        return list(self._config.get("providers", {}).keys()) + ["anthropic", "openai", "dashscope", "deepseek"]
+        return [*self._config.get("providers", {}), "anthropic", "openai", "dashscope", "deepseek"]
 
     def set_provider(self, name: str, config: dict):
         providers = self._config.setdefault("providers", {})
@@ -76,7 +74,7 @@ class OCRProviderManager:
         self._config["provider"] = name
         self._save()
 
-    def get_provider(self, name: str) -> Optional[OCRProvider]:
+    def get_provider(self, name: str) -> OCRProvider | None:
         providers = self._config.get("providers", {})
         cfg = providers.get(name)
         if not cfg:

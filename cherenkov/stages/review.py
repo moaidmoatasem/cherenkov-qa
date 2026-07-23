@@ -4,32 +4,42 @@ CHERENKOV stages/review.py — real test review stage enforcing 6 quality gates 
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
 import time
-import json
+from pathlib import Path
+from typing import Any
 
+from cherenkov.core.compat import npx as _npx
+from cherenkov.core.compat import subprocess_env as _subprocess_env
 from cherenkov.core.contracts import (
-    ReviewOutput,
-    GenerateOutput,
     GateResult,
-    Verdict,
-    Status,
+    GenerateOutput,
+    ReviewOutput,
     StageMeta,
+    Status,
+    Verdict,
 )
 from cherenkov.core.errors import get_logger
-from cherenkov.core.compat import npx as _npx, subprocess_env as _subprocess_env
 from cherenkov.core.settings import get_settings
-from cherenkov.execution.prism_mock import PrismMockServer
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
+from cherenkov.execution.prism_mock import PrismMockServer
 from cherenkov.execution.trace_reader import TraceReader
 from cherenkov.healing import (
-    Diagnoser,
-    FailureClass,
     AuthExpiryHealer,
     ContractDriftHealer,
+    Diagnoser,
+    FailureClass,
 )
+
+_RE_FETCH_CLIENT = re.compile(r"\bclient\.(GET|POST|PUT|DELETE|PATCH)\b")
+_RE_CLIENT_CALL = re.compile(r"client\.(GET|POST|PUT|DELETE|PATCH)\('([^']+)'")
+_RE_FORBIDDEN_HTTP = re.compile(r"\b(fetch|axios)\b|\.request\b|throw new Error")
+_RE_STATUS_TOBE = re.compile(r"\.status\)?\s*\)?\s*\.toBe\(\s*\d{3}\s*\)")
+_RE_STATUS_LITERAL = re.compile(r"toBe\(\s*(200|201|204|400|401|404|422|500)\s*\)")
+_RE_BODY_SHAPE = re.compile(r"toHaveProperty\(|typeof\s")
 
 
 class ReviewStage:
@@ -38,14 +48,20 @@ class ReviewStage:
     _AUTO_APPROVE_THRESHOLD = 0.9
     _HITL_THRESHOLD = 0.7
     _PRISM_PORT = 4015
+    _MUTANT_PORT = 4016
 
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("REVIEW", run_id)
-        from pathlib import Path as _Path
-        self.stub_dir = str(_Path(__file__).parent.parent.parent / "stub")
+        self.stub_dir = str(Path(__file__).parent.parent.parent / "stub")
 
-    def run(self, generate: GenerateOutput, spec_path: str) -> ReviewOutput:
+    def run(
+        self,
+        generate: GenerateOutput,
+        spec_path: str,
+        operation: dict[str, Any] | None = None,
+        schemas: dict[str, Any] | None = None,
+    ) -> ReviewOutput:
         t0 = time.monotonic()
         code = generate.test_code
         scenario_id = generate.scenario_id
@@ -69,6 +85,7 @@ class ReviewStage:
         )
         gates.append(prism_gate)
 
+        self._gate_meaningful_assertion(generate, code, scenario_id, operation, schemas, prism_gate, gates)
         self._gate_ocr(code, test_file_path, scenario_id, gates)
         self._gate_consensus(generate, code, spec_path, gates)
 
@@ -127,12 +144,8 @@ class ReviewStage:
         detail = (
             "Verified usage of openapi-fetch client with zero raw fetch/axios bleed."
         )
-        uses_fetch_client = bool(
-            re.search(r"\bclient\.(GET|POST|PUT|DELETE|PATCH)\b", code)
-        )
-        has_forbidden = bool(
-            re.search(r"\b(fetch|axios)\b|\.request\b|throw new Error", code)
-        )
+        uses_fetch_client = bool(_RE_FETCH_CLIENT.search(code))
+        has_forbidden = bool(_RE_FORBIDDEN_HTTP.search(code))
         if not uses_fetch_client:
             passed = False
             detail = "Test fails to invoke the openapi-fetch client correctly."
@@ -144,10 +157,10 @@ class ReviewStage:
     def _gate_assertion(self, code: str) -> GateResult:
         passed = True
         detail = "Asserts specific status code and response body shape."
-        specific_status = bool(
-            re.search(r"\.status\)?\s*\)?\s*\.toBe\(\s*\d{3}\s*\)", code)
-        ) or bool(re.search(r"toBe\(\s*(200|201|204|400|401|404|422|500)\s*\)", code))
-        body_shape = bool(re.search(r"toHaveProperty\(|typeof\s", code))
+        specific_status = bool(_RE_STATUS_TOBE.search(code)) or bool(
+            _RE_STATUS_LITERAL.search(code)
+        )
+        body_shape = bool(_RE_BODY_SHAPE.search(code))
         if not specific_status:
             passed = False
             detail = (
@@ -248,9 +261,7 @@ class ReviewStage:
         trace_path = run_result.get("trace_path", "")
         if not trace_path:
             return
-        method_match = re.search(
-            r"client\.(GET|POST|PUT|DELETE|PATCH)\('([^']+)'", code
-        )
+        method_match = _RE_CLIENT_CALL.search(code)
         if not method_match:
             return
         target_method = method_match.group(1)
@@ -278,9 +289,7 @@ class ReviewStage:
         trace_path = run_result.get("trace_path", "")
         if not trace_path:
             return
-        method_match = re.search(
-            r"client\.(GET|POST|PUT|DELETE|PATCH)\('([^']+)'", code
-        )
+        method_match = _RE_CLIENT_CALL.search(code)
         if not method_match:
             return
         target_method = method_match.group(1)
@@ -310,7 +319,7 @@ class ReviewStage:
                 "healing snapshot is stale; skipping auto-diff",
                 scenario_id=scenario_id,
             )
-        suggestion = ""
+        suggestion: dict[str, Any] = {}
         if diag.failure_class == FailureClass.AUTH_EXPIRY:
             suggestion = AuthExpiryHealer(self.run_id).suggest_heal(scenario_id, target_url_path)
         elif diag.failure_class == FailureClass.CONTRACT_DRIFT:
@@ -327,6 +336,76 @@ class ReviewStage:
                 "generated healing suggestion",
                 failure_class=diag.failure_class.value,
             )
+
+    def _gate_meaningful_assertion(
+        self,
+        generate: GenerateOutput,
+        code: str,
+        scenario_id: str,
+        operation: dict[str, Any] | None,
+        schemas: dict[str, Any] | None,
+        prism_gate: GateResult,
+        gates: list[GateResult],
+    ) -> None:
+        """E11-2 applied to the default repair path: the prism gate only proves the
+        test passes a spec-conforming mock. This proves it also FAILS a synthesized
+        spec regression, so a syntactically-valid but vacuous assertion (e.g.
+        `toBeLessThan(500)`) can't reach auto_approve on that alone."""
+        if not get_settings().MEANINGFUL_ASSERTION_GATE_ENABLED:
+            return
+        if operation is None:
+            gates.append(GateResult(
+                gate="meaningful-assertion", passed=True, skipped=True,
+                detail="Meaningful-assertion gate skipped: no operation object supplied.",
+            ))
+            return
+        if prism_gate.skipped or not prism_gate.passed:
+            gates.append(GateResult(
+                gate="meaningful-assertion", passed=True, skipped=True,
+                detail="Meaningful-assertion gate skipped: prism-dryrun did not establish a passing correct-mock run.",
+            ))
+            return
+
+        from cherenkov.divergence.mutant_synth import spawn_mutant_server
+
+        endpoint = getattr(generate, "endpoint", "") or ""
+        mutant_server = spawn_mutant_server(self._MUTANT_PORT, endpoint, operation, schemas)
+        if mutant_server is None:
+            gates.append(GateResult(
+                gate="meaningful-assertion", passed=True, skipped=True,
+                detail="Meaningful-assertion gate skipped: spec has no documented success response to mutate.",
+            ))
+            return
+
+        try:
+            with mutant_server:
+                runner = PlaywrightRunner(run_id=self.run_id)
+                result = runner.execute_test(
+                    scenario_id=f"{scenario_id}-mutant",
+                    test_code=code,
+                    api_url=mutant_server.url,
+                )
+        except Exception as e:
+            gates.append(GateResult(
+                gate="meaningful-assertion", passed=True, skipped=True,
+                detail=f"Meaningful-assertion gate skipped (error): {e}",
+            ))
+            return
+
+        if not result["passed"]:
+            gates.append(GateResult(
+                gate="meaningful-assertion", passed=True,
+                detail="Test passes the spec-conforming mock and fails a synthesized spec "
+                "regression — assertions are meaningful.",
+            ))
+            return
+
+        gates.append(GateResult(
+            gate="meaningful-assertion", passed=False,
+            detail="Test also passes against a synthesized broken implementation (wrong "
+            "status / dropped field on the documented success response). Assert the exact "
+            "documented status code and field values, not just that a field exists.",
+        ))
 
     def _gate_ocr(self, code: str, test_file_path: str, scenario_id: str, gates: list[GateResult]):
         if not get_settings().OCR_ENABLED:
@@ -361,8 +440,8 @@ class ReviewStage:
         passed = True
         detail = "Consensus oracle skipped (not enabled or static gates failed)."
         try:
-            from cherenkov.oracle.consensus_oracle import ConsensusOracle
             from cherenkov.core.contracts import Claim, Provenance, ProvenanceType
+            from cherenkov.oracle.consensus_oracle import ConsensusOracle
 
             oracle = ConsensusOracle(
                 passes=get_settings().CONSENSUS_ORACLE_PASSES, run_id=self.run_id,
@@ -373,7 +452,7 @@ class ReviewStage:
                 subject=f"{getattr(generate, 'method', '?')} {getattr(generate, 'endpoint', '?')}",
                 provenance=Provenance(source_type=ProvenanceType.SPEC, source_uri=spec_path),
             )
-            endpoint_slice = {
+            endpoint_slice: dict[str, Any] = {
                 "path": getattr(generate, "endpoint", ""),
                 "method": getattr(generate, "method", ""),
                 "operation": {}, "schemas": {},

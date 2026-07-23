@@ -5,6 +5,7 @@ CHERENKOV truth/sources/interface.py — Source Adapter SPI interface.
 from __future__ import annotations
 
 import abc
+
 from cherenkov.core.contracts import Claim
 
 

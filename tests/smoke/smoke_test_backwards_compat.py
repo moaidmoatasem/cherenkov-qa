@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -26,9 +26,9 @@ print("--- Core imports ---")
 check("cherenkov package importable", True)
 
 from cherenkov.core.contracts import (
-    Verdict,
-    Status,
     StageMeta,
+    Status,
+    Verdict,
 )
 
 check("core.contracts types importable", True)
@@ -67,8 +67,8 @@ result = ch.suggest_heal("test_id", "/test", "GET", ["email"], ["name"])
 check("ContractDriftHealer returns dict", isinstance(result, dict))
 check("ContractDriftHealer has suggestion key", "suggestion" in result)
 
+from cherenkov.core.contracts import VisualGateResult, VisualReport
 from cherenkov.healing.visual_heal import VisualHealer
-from cherenkov.core.contracts import VisualReport, VisualGateResult
 
 report = VisualReport(
     scenario_id="test",
@@ -137,7 +137,7 @@ ev = CHERENKOVEvent.pipeline_start("test")
 check("CHERENKOVEvent factory works", ev.name == "pipeline.start")
 check("CHERENKOVEvent.to_dict works", "event_id" in ev.to_dict())
 
-from cherenkov.core.knowledge_result import KnowledgeResult, KnowledgeKind
+from cherenkov.core.knowledge_result import KnowledgeKind, KnowledgeResult
 
 check("core.knowledge_result importable", True)
 kr = KnowledgeResult(id="t1", kind=KnowledgeKind.IDIOM, key="/api/test", summary="test")
@@ -146,7 +146,7 @@ check("KnowledgeResult.to_event_payload works", "key" in kr.to_event_payload())
 
 check("core.migration importable", True)
 
-from cherenkov.core.error_handling import GracefulDegradation, DegradationLevel
+from cherenkov.core.error_handling import DegradationLevel, GracefulDegradation
 
 check("core.error_handling importable", True)
 gd = GracefulDegradation()

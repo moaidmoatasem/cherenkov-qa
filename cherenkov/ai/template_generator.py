@@ -59,6 +59,7 @@ def _infer_body(
         t = info.get("type", "string")
         if isinstance(t, list):
             t = next((x for x in t if x != "null"), "string")
+        val: Any
         if t == "integer":
             val = (
                 999
@@ -144,7 +145,7 @@ def _path_with_example_param(
                 if (mutation_id and "invalid" in mutation_id)
                 else "test-id"
             )
-        result = result.replace("{" + name + "}", val)
+        result = result.replace(f"{{{name}}}", val)
     return result
 
 
@@ -154,7 +155,7 @@ def generate_test(
     operation: dict[str, Any],
     schemas: dict[str, Any],
     scenario: Any,
-    instruction: str = "",
+    instruction: str = "",  # noqa: ARG001
 ) -> str:
     """
     Build a Playwright TypeScript test that passes all 6 ReviewStage gates:

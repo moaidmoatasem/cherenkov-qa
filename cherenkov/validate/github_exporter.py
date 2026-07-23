@@ -1,7 +1,9 @@
-import os
+from __future__ import annotations
+
 import json
+import os
 import urllib.request
-from typing import Optional
+
 
 class GitHubExporter:
     """Creates GitHub issues for failed validation items."""
@@ -10,7 +12,7 @@ class GitHubExporter:
         self.token = os.environ.get("CHERENKOV_GITHUB_TOKEN", "")
         self.repo = os.environ.get("CHERENKOV_GITHUB_REPO", "") # Format: owner/repo
 
-    def create_github_issue(self, title: str, body: str) -> Optional[str]:
+    def create_github_issue(self, title: str, body: str) -> str | None:
         """Creates a real GitHub issue using the GitHub REST API if token is present."""
         if not self.token or not self.repo:
             return None

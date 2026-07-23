@@ -18,7 +18,11 @@ import re
 import time
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.substrate.provider import ModelProvider, ProviderCapabilities
+from cherenkov.substrate.provider_base import (
+    ModelProvider,
+    ProviderCapabilities,
+    shared_response_cache,
+)
 
 # Pricing (USD per 1M tokens, approximate as of 2025)
 _PRICING: dict[str, dict[str, float]] = {
@@ -29,6 +33,7 @@ _PRICING: dict[str, dict[str, float]] = {
 
 _DEFAULT_GENERATION_MODEL = "claude-sonnet-4-6"
 _DEFAULT_HEALING_MODEL = "claude-haiku-4-5-20251001"
+_RE_JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]+?)```")
 
 
 def _cost_usd(model: str, input_tokens: int, output_tokens: int) -> float:
@@ -83,6 +88,18 @@ class AnthropicProvider(ModelProvider):
                 f"{json.dumps(request.output_schema, indent=2)}"
             )
 
+        cache = shared_response_cache()
+        cached_raw = cache.get(model, system, user_prompt) if cache else None
+        if cached_raw is not None:
+            return ReasoningResult(
+                content=str(cached_raw),
+                provider="anthropic",
+                model=model,
+                cost_usd=0.0,
+                latency_ms=0,
+                cached=True,
+            )
+
         client = self._get_client()
         t0 = time.monotonic()
         message = client.messages.create(
@@ -102,6 +119,9 @@ class AnthropicProvider(ModelProvider):
         input_tokens = message.usage.input_tokens
         output_tokens = message.usage.output_tokens
         cost = _cost_usd(model, input_tokens, output_tokens)
+
+        if cache is not None:
+            cache.set(model, system, user_prompt, raw)
 
         return ReasoningResult(
             content=raw,
@@ -124,7 +144,7 @@ def _extract_json(text: str) -> str:
     """Pull the first JSON object or array out of the model response."""
     text = text.strip()
     # Strip markdown fences
-    fenced = re.search(r"```(?:json)?\s*([\s\S]+?)```", text)
+    fenced = _RE_JSON_FENCE.search(text)
     if fenced:
         return fenced.group(1).strip()
     # Direct JSON

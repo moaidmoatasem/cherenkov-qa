@@ -4,11 +4,17 @@ CHERENKOV validate/jira_exporter.py - Suggest-Only Jira Ticket Exporter.
 
 from __future__ import annotations
 
+import base64
+import json
+import mimetypes
 import os
 import time
-from typing import Optional
+import urllib.request
+import uuid
+from typing import Any
 
 from cherenkov.core.errors import get_logger
+
 
 class JiraExporter:
     """Generates sandboxed, copy-ready Jira issue payloads inside .cherenkov/jira_tickets/ on test execution failure."""
@@ -34,12 +40,12 @@ class JiraExporter:
         scenario_id: str,
         failure_class: str,
         error_message: str,
-        expected_status: Optional[str | int] = None,
-        received_status: Optional[str | int] = None,
-        hypothesis: Optional[str] = None,
-        resolution_steps: Optional[list[str]] = None,
+        expected_status: str | int | None = None,
+        received_status: str | int | None = None,
+        hypothesis: str | None = None,
+        resolution_steps: list[str] | None = None,
         similar_cases_count: int = 0,
-        compliance_score: Optional[int] = None,
+        compliance_score: int | None = None,
     ) -> str:
         """Formats failed scenario information into a highly descriptive Markdown ticket payload."""
         lines = []
@@ -100,12 +106,12 @@ class JiraExporter:
         scenario_id: str,
         failure_class: str,
         error_message: str,
-        expected_status: Optional[str | int] = None,
-        received_status: Optional[str | int] = None,
-        hypothesis: Optional[str] = None,
-        resolution_steps: Optional[list[str]] = None,
+        expected_status: str | int | None = None,
+        received_status: str | int | None = None,
+        hypothesis: str | None = None,
+        resolution_steps: list[str] | None = None,
         similar_cases_count: int = 0,
-        compliance_score: Optional[int] = None,
+        compliance_score: int | None = None,
     ) -> str:
         """Writes the formatted copy-ready Markdown ticket to the standard local ticket directory."""
         os.makedirs(self.ticket_dir, exist_ok=True)
@@ -134,11 +140,7 @@ class JiraExporter:
         )
         return file_path
 
-    def create_jira_issue(self, summary: str, description: str) -> Optional[str]:
-        import base64
-        import urllib.request
-        import json
-
+    def create_jira_issue(self, summary: str, description: str) -> str | None:
         jira_url = os.environ.get("CHERENKOV_JIRA_URL")
         jira_token = os.environ.get("CHERENKOV_JIRA_TOKEN")
         jira_project = os.environ.get("CHERENKOV_JIRA_PROJECT", "QA")
@@ -201,8 +203,6 @@ class JiraExporter:
             raise
 
     def _build_auth_headers(self, content_type="application/json"):
-        import base64
-
         if not self.jira_url or not self.jira_token:
             return None
 
@@ -229,10 +229,7 @@ class JiraExporter:
         priority: dict | str | None = None,
         components: list[str] | None = None,
         issuetype: str = "Bug",
-    ) -> Optional[str]:
-        import urllib.request
-        import json
-
+    ) -> str | None:
         headers = self._build_auth_headers()
         if headers is None:
             self.log.warning(
@@ -242,7 +239,7 @@ class JiraExporter:
 
         url = f"{self.jira_url.rstrip('/')}/rest/api/3/issue"
 
-        fields = {
+        fields: dict[str, Any] = {
             "project": {"key": self.jira_project},
             "summary": summary,
             "description": {
@@ -308,9 +305,6 @@ class JiraExporter:
         return created_keys
 
     def add_comment(self, issue_key: str, comment: str) -> bool:
-        import urllib.request
-        import json
-
         headers = self._build_auth_headers()
         if headers is None:
             self.log.warning("Jira URL or Token not set. Skipping add_comment.")
@@ -347,10 +341,6 @@ class JiraExporter:
             return False
 
     def add_attachment(self, issue_key: str, file_path: str) -> bool:
-        import urllib.request
-        import mimetypes
-        import uuid
-
         if not os.path.isfile(file_path):
             self.log.error("Attachment file not found", file_path=file_path)
             return False
@@ -379,9 +369,9 @@ class JiraExporter:
         body = (
             f"--{boundary}\r\n"
             f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'
-            f"Content-Type: {mime_type}\r\n\r\n".encode("utf-8")
+            f"Content-Type: {mime_type}\r\n\r\n".encode()
             + file_data
-            + f"\r\n--{boundary}--\r\n".encode("utf-8")
+            + f"\r\n--{boundary}--\r\n".encode()
         )
 
         headers["Content-Type"] = f"multipart/form-data; boundary={boundary}"

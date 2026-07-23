@@ -5,11 +5,12 @@ Proves snapshot baseline initialization and layout validation checks.
 """
 
 import os
+import shutil
 import socket
 import subprocess
-import time
 import sys
-import shutil
+import time
+
 import pytest
 
 from cherenkov.execution.visual_diff import VisualDiffEngine
@@ -119,7 +120,8 @@ def main():
 
 def _stub_browser_available() -> bool:
     """Returns True only if the stub's Playwright install can find its Chromium browser."""
-    import json, glob
+    import glob
+    import json
 
     stub_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../stub"))
     browsers_path = os.environ.get(
@@ -132,7 +134,8 @@ def _stub_browser_available() -> bool:
     )
     if os.path.isfile(browsers_json):
         try:
-            data = json.loads(open(browsers_json).read())
+            with open(browsers_json) as _f:
+                data = json.loads(_f.read())
             for b in data.get("browsers", []):
                 if b.get("name") == "chromium":
                     rev = b.get("revision", "")
@@ -156,6 +159,10 @@ def _stub_browser_available() -> bool:
     reason="Windows CMD does not support UNC paths as current directory",
 )
 @pytest.mark.skipif(
+    hasattr(os, "uname") and "microsoft-standard" in os.uname().release.lower(),
+    reason="WSL interop invokes Windows npx.cmd which fails with UNC paths",
+)
+@pytest.mark.skipif(
     not _stub_browser_available(),
     reason="Playwright Chromium not installed — run npx playwright install chromium",
 )
@@ -164,4 +171,4 @@ def test_legacy_visual():
         main()
     except SystemExit as e:
         if e.code != 0:
-            raise AssertionError(f"Test failed with exit code {e.code}")
+            raise AssertionError(f"Test failed with exit code {e.code}") from e

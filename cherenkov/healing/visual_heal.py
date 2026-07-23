@@ -6,10 +6,9 @@ produces a healing suggestion, never auto-applies.
 
 from __future__ import annotations
 
-
+from cherenkov.core.contracts import Verdict, VisualReport
 from cherenkov.core.errors import get_logger
-from cherenkov.core.contracts import VisualReport, Verdict
-from cherenkov.oracle.visual_oracle import VisualOracle, VisualChangeKind
+from cherenkov.oracle.visual_oracle import VisualChangeKind, VisualOracle
 
 
 class VisualHealer:

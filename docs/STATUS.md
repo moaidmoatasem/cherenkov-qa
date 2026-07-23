@@ -78,3 +78,4 @@ CHERENKOV is an **API Integrity Auditor** that uses pure AST static analysis to 
 1. `HANDOVER.md` — The authoritative source of truth for current tasks.
 2. `docs/reviews/STRATEGY_REVIEW_2026-07-05.md` — The latest strategic review.
 3. `docs/NORTH_STAR.md` — 10-year vision.
+4. `docs/recordings/` — 8 Loom recording scripts for onboarding, demos, and pitching (live evidence captured 2026-07-06).

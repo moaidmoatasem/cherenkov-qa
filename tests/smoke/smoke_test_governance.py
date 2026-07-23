@@ -18,11 +18,10 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cherenkov.governance.kpi import (
+    GovernanceCollector,
     GovernanceKPI,
     GovernanceReport,
-    GovernanceCollector,
 )
-
 
 errors: list[str] = []
 
@@ -77,7 +76,7 @@ check(json_report["escape_rate"] == 0.1, "render_json() has escape_rate")
 check(json_report["passed_tests"] == 85, "render_json() has passed_tests")
 
 print("\n4. GovernanceCollector")
-db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
 db.close()
 collector = GovernanceCollector(db_path=db.name, run_id="smoke_test")
 collected = collector.collect()

@@ -1,3 +1,4 @@
+import contextlib
 import json
 import sys
 
@@ -8,7 +9,7 @@ except ImportError:
 
 
 def load_spec(path: str) -> dict:
-    with open(path, "r") as f:
+    with open(path) as f:
         raw = f.read()
 
     if path.endswith((".yaml", ".yml")):
@@ -35,9 +36,7 @@ def extract_routes(spec: dict) -> dict:
                 operation = methods[method]
                 expected_statuses = set()
                 for status_code in operation.get("responses", {}):
-                    try:
+                    with contextlib.suppress(ValueError):
                         expected_statuses.add(int(status_code))
-                    except ValueError:
-                        pass
                 routes[(method.upper(), path)] = expected_statuses
     return routes

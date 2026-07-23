@@ -1,6 +1,10 @@
+from __future__ import annotations
+
+import glob
 import json
 import os
-import glob
+from typing import Any
+
 from cherenkov.core.errors import get_logger
 
 
@@ -14,7 +18,7 @@ def get_latest_run_dir() -> str:
     return max(all_runs, key=os.path.getctime)
 
 
-def run_report(output: str, diff: str = None, run_id: str | None = None) -> int:
+def run_report(output: str, diff: str | None = None, run_id: str | None = None) -> int:
     get_logger("REPORT")
     if run_id:
         run_dir = os.path.abspath(os.path.join(".cherenkov/runs", run_id))
@@ -32,7 +36,7 @@ def run_report(output: str, diff: str = None, run_id: str | None = None) -> int:
         print(f"Error: {events_file} not found")
         return 1
 
-    report_data = {
+    report_data: dict[str, Any] = {
         "run_id": os.path.basename(run_dir),
         "skipped_endpoints": [],
         "scenarios": [],
@@ -41,7 +45,7 @@ def run_report(output: str, diff: str = None, run_id: str | None = None) -> int:
         "passed_scenarios": 0,
     }
 
-    with open(events_file, "r", encoding="utf-8") as f:
+    with open(events_file, encoding="utf-8") as f:
         for line in f:
             if not line.strip():
                 continue
@@ -88,7 +92,7 @@ def run_report(output: str, diff: str = None, run_id: str | None = None) -> int:
         if not os.path.exists(diff):
             print(f"Error: Diff file {diff} not found.")
             return 1
-        with open(diff, "r", encoding="utf-8") as f:
+        with open(diff, encoding="utf-8") as f:
             diff_data = json.load(f)
 
         print(f"\n--- DIFF REPORT vs {diff} ---")

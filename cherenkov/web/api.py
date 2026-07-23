@@ -21,17 +21,17 @@ app = FastAPI(
 )
 
 # ── Phase 1: Knowledge Mesh API ─────────────────────────────────────────────────
-from cherenkov.knowledge.api.routes import router as knowledge_router  # noqa: E402
+from cherenkov.knowledge.api.routes import router as knowledge_router
 
 app.include_router(knowledge_router)
 
 # ── Phase 4: Chat Agent API ────────────────────────────────────────────────────
-from cherenkov.chat.api.routes import router as chat_router  # noqa: E402
+from cherenkov.chat.api.routes import router as chat_router
 
 app.include_router(chat_router)
 
 # ── Sprint 1: SDD Agent Cockpit API ─────────────────────────────────────────
-from cherenkov.web.sdd_routes import router as sdd_router  # noqa: E402
+from cherenkov.web.sdd_routes import router as sdd_router
 
 app.include_router(sdd_router)
 
@@ -48,89 +48,96 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from cherenkov.web.middleware.rate_limit import RateLimitMiddleware  # noqa: E402
+from cherenkov.web.middleware.rate_limit import RateLimitMiddleware
 
 app.add_middleware(RateLimitMiddleware)
 
-from cherenkov.web.middleware.auth_middleware import JWTAuthMiddleware  # noqa: E402
+from cherenkov.web.middleware.auth_middleware import JWTAuthMiddleware
+
 app.add_middleware(JWTAuthMiddleware)
 
-from cherenkov.web.middleware.security import SecurityHeadersMiddleware  # noqa: E402
+from cherenkov.web.middleware.security import SecurityHeadersMiddleware
+
 app.add_middleware(SecurityHeadersMiddleware)
 
 # ── Phase 0b: Monitoring & Security (conditionally added) ────────────
-from cherenkov.web.monitoring import router as monitor_router  # noqa: E402
+from cherenkov.web.monitoring import router as monitor_router
 
 app.include_router(monitor_router)
 
-from cherenkov.web.routes.metrics_routes import router as metrics_router  # noqa: E402
+from cherenkov.web.routes.metrics_routes import router as metrics_router
 
 app.include_router(metrics_router)
 
-from cherenkov.web.routes.conformance_routes import router as conformance_router  # noqa: E402
+from cherenkov.web.routes.conformance_routes import router as conformance_router
 
 app.include_router(conformance_router)
 
-from cherenkov.web.routes.static_routes import router as static_router  # noqa: E402
+from cherenkov.web.routes.static_routes import router as static_router
 
 app.include_router(static_router)
 
-from cherenkov.web.routes.data_routes import router as data_router  # noqa: E402
+from cherenkov.web.routes.data_routes import router as data_router
 
 app.include_router(data_router)
 
-from cherenkov.web.routes.health_routes import router as health_router  # noqa: E402
+from cherenkov.web.routes.health_routes import router as health_router
 
 app.include_router(health_router)
 
-from cherenkov.web.routes.divergence_routes import router as divergence_router  # noqa: E402
+from cherenkov.web.routes.divergence_routes import router as divergence_router
 
 app.include_router(divergence_router)
 
-from cherenkov.web.routes.mobile_routes import router as mobile_router  # noqa: E402
+from cherenkov.web.routes.mobile_routes import router as mobile_router
 
 app.include_router(mobile_router)
 
-from cherenkov.web.routes.workspace_routes import router as workspace_router  # noqa: E402
+from cherenkov.web.routes.workspace_routes import router as workspace_router
 
 app.include_router(workspace_router)
 
-from cherenkov.web.routes.review_routes import router as review_router  # noqa: E402
+from cherenkov.web.routes.review_routes import router as review_router
 
 app.include_router(review_router)
 
-from cherenkov.web.routes.ocr_routes import router as ocr_router  # noqa: E402
+from cherenkov.web.routes.ocr_routes import router as ocr_router
 
 app.include_router(ocr_router)
 from cherenkov.web.routes.teleport import router as teleport_router
+
 app.include_router(teleport_router)
 
 from cherenkov.web.routes.push_notify import router as push_notify_router
+
 app.include_router(push_notify_router)
-from cherenkov.web.routes.ops_routes import router as ops_router  # noqa: E402
+from cherenkov.web.routes.ops_routes import router as ops_router
 
 app.include_router(ops_router)
 
-from cherenkov.web.routes.agents import router as agents_router  # noqa: E402
+from cherenkov.web.routes.agents import router as agents_router
 
 app.include_router(agents_router)
 
-from cherenkov.web.middleware.security import add_security_middleware  # noqa: E402
+from cherenkov.web.middleware.security import add_security_middleware
 
 add_security_middleware(app)
 
-from cherenkov.web.errors import install_error_handlers  # noqa: E402
+from cherenkov.web.errors import install_error_handlers
 
 install_error_handlers(app)
 
-from cherenkov.web.auth.routes import router as auth_router  # noqa: E402
+from cherenkov.web.auth.routes import router as auth_router
 
 app.include_router(auth_router)
 
 from cherenkov.web.routes.webhooks_github import github_webhook_router
+
 app.include_router(github_webhook_router)
 from cherenkov.scheduling.api.routes import router as routines_router
+
 app.include_router(routines_router)
 
-from cherenkov.web.routes.runs_router import router as runs_router  # noqa: E402
+from cherenkov.web.routes.runs_router import router as runs_router
+
 app.include_router(runs_router)

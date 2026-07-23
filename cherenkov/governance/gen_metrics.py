@@ -151,10 +151,9 @@ class GenMetricsStore:
             )
 
         from contextlib import closing
-        with closing(sqlite3.connect(self.db_path)) as conn:
-            with conn:
-                conn.execute(
-                """
+        with closing(sqlite3.connect(self.db_path)) as conn, conn:
+            conn.execute(
+            """
                 INSERT INTO gen_metrics (
                     run_id, ts,
                     total_generated, gate_passed, gate_pass_rate,
@@ -162,18 +161,18 @@ class GenMetricsStore:
                     faults_500, below_threshold
                 ) VALUES (?,?,?,?,?,?,?,?,?,?)
                 """,
-                (
-                    metrics.run_id,
-                    int(time.time()),
-                    metrics.total_generated,
-                    metrics.gate_passed,
-                    metrics.gate_pass_rate,
-                    metrics.operations_total,
-                    metrics.operations_covered,
-                    metrics.operation_coverage,
-                    metrics.faults_500,
-                    int(metrics.below_threshold),
-                ),
+            (
+                metrics.run_id,
+                int(time.time()),
+                metrics.total_generated,
+                metrics.gate_passed,
+                metrics.gate_pass_rate,
+                metrics.operations_total,
+                metrics.operations_covered,
+                metrics.operation_coverage,
+                metrics.faults_500,
+                int(metrics.below_threshold),
+            ),
             )
 
     def history(self, limit: int = 10) -> list[dict[str, Any]]:
@@ -207,6 +206,5 @@ class GenMetricsStore:
     def _ensure_schema(self) -> None:
         Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         from contextlib import closing
-        with closing(sqlite3.connect(self.db_path)) as conn:
-            with conn:
-                conn.execute(_DB_SCHEMA)
+        with closing(sqlite3.connect(self.db_path)) as conn, conn:
+            conn.execute(_DB_SCHEMA)

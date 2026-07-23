@@ -7,18 +7,18 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 from cherenkov.core.contracts import (
-    IngestOutput,
     EndpointSlice,
+    IngestOutput,
     Mutation,
-    Status,
-    StageMeta,
     StageError,
+    StageMeta,
+    Status,
 )
-from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 from cherenkov.sources.mobile.adapter import MobileSourceAdapter
 
 # ── Issue #194: Lightweight DAST Mutation Profile ──────────────────────────
@@ -73,6 +73,8 @@ def resolve_refs_depth(
 class IngestStage:
     """Parses OpenAPI specifications, slices them with depth-1 reference resolution, and extracts deterministic mutations."""
 
+    _rag: ClassVar[Any] = None  # lazily-built SchemaIndex shared across instances
+
     def __init__(self, run_id: str | None = None):
         self.log = get_logger("INGEST", run_id)
         self.mobile_adapter = MobileSourceAdapter()
@@ -113,7 +115,7 @@ class IngestStage:
             )
 
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 if path.suffix in [".yaml", ".yml"]:
                     import yaml
 
@@ -173,7 +175,7 @@ class IngestStage:
                         for param in op.get("parameters", []):
                             if isinstance(param, dict):
                                 query_parts.append(param.get("name", ""))
-                        explicit_refs = set(resolved_schemas.keys())
+                        explicit_refs = set(resolved_schemas)
                         rag_schemas = _rag_index.retrieve(
                             query_text=" | ".join(query_parts),
                             explicit_refs=explicit_refs,
@@ -285,7 +287,7 @@ class IngestStage:
                                 continue
 
                             prop_type = prop_schema.get("type")
-                            if isinstance(prop_type, list) and len(prop_type) > 0:
+                            if isinstance(prop_type, list) and prop_type:
                                 prop_type = prop_type[0]
 
                             # String length violation

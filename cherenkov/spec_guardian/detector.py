@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,7 @@ from cherenkov.spec_guardian.core import (
     DriftSeverity,
     DriftType,
 )
+
 
 class SpecDriftDetector:
     """Detects drift between actual API responses and OpenAPI spec."""
@@ -28,8 +30,7 @@ class SpecDriftDetector:
 
         if path.suffix in (".yaml", ".yml"):
             return yaml.safe_load(content)
-        else:
-            return json.loads(content)
+        return json.loads(content)
 
     def check_response(
         self,
@@ -37,17 +38,17 @@ class SpecDriftDetector:
         method: str,
         status_code: int,
         response_body: Any,
-        response_headers: dict[str, str] | None = None,
+        response_headers: dict[str, str] | None = None,  # noqa: ARG002
     ) -> list[DriftEvent]:
         """Check if an actual API response matches the spec.
-        
+
         Args:
             endpoint: API endpoint path (e.g., "/users/{id}")
             method: HTTP method (e.g., "GET")
             status_code: Actual HTTP status code
             response_body: Actual response body (parsed JSON)
             response_headers: Optional response headers
-            
+
         Returns:
             List of DriftEvent objects (empty if fully compliant)
         """
@@ -113,7 +114,7 @@ class SpecDriftDetector:
         if len(actual_segments) != len(pattern_segments):
             return False
 
-        for actual_seg, pattern_seg in zip(actual_segments, pattern_segments):
+        for actual_seg, pattern_seg in zip(actual_segments, pattern_segments, strict=False):
             if pattern_seg.startswith("{") and pattern_seg.endswith("}"):
                 continue  # Path parameter, matches anything
             if actual_seg != pattern_seg:
@@ -137,16 +138,14 @@ class SpecDriftDetector:
         if status_str not in responses:
             # Check for range (2XX, 4XX, etc.)
             range_str = f"{status_code // 100}XX"
-            if range_str not in responses:
-                # Check for "default" response
-                if "default" not in responses:
+            if range_str not in responses and "default" not in responses:
                     events.append(DriftEvent(
                         drift_type=DriftType.STATUS_DRIFT,
                         severity=DriftSeverity.WARNING,
                         endpoint=endpoint,
                         method=method,
                         field_path=None,
-                        expected=list(responses.keys()),
+                        expected=list(responses),
                         actual=status_code,
                         message=f"Status code {status_code} not defined in spec",
                     ))
@@ -409,7 +408,6 @@ class SpecDriftDetector:
 
     def _matches_pattern(self, value: str, pattern: str) -> bool:
         """Check if value matches regex pattern."""
-        import re
         try:
             return bool(re.match(pattern, value))
         except re.error:

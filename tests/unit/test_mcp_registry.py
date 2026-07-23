@@ -84,7 +84,6 @@ class TestMCPRegistry(unittest.TestCase):
         self.assertEqual(server.url, "http://localhost:8080/mcp")
 
     def test_prune_stale(self):
-        import time
         self.reg.register_server(
             "srv1", "http://localhost:8080/mcp", [{"name": "tool1"}]
         )

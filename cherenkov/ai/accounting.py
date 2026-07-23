@@ -4,7 +4,9 @@ CHERENKOV ai/accounting.py — per-request cost & latency accounting. E1-5.
 
 from __future__ import annotations
 
-from cherenkov.core.contracts import CostEntry, AccountingReport
+import json
+
+from cherenkov.core.contracts import AccountingReport, CostEntry
 
 
 def _estimate_tokens(text: object) -> int:
@@ -110,9 +112,7 @@ class CostAccountant:
         run_id: str = "",
         reprompts: int = 0,
     ) -> None:
-        import json as _json
-
-        estimated = _estimate_tokens(_json.dumps(output, default=str))
+        estimated = _estimate_tokens(json.dumps(output, default=str))
         self.record(
             model,
             duration_ms,
@@ -169,8 +169,8 @@ class CostAccountant:
         self._entries.clear()
 
     def get_governance_kpis(self) -> dict[str, float | int]:
-        from cherenkov.reflector.store import VerdictStore
         from cherenkov.core.contracts import VerdictOutcome
+        from cherenkov.reflector.store import VerdictStore
 
         store = VerdictStore()
         conn = store._connect()

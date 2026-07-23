@@ -17,15 +17,15 @@ from unittest.mock import patch
 
 import pytest
 
-from cherenkov.hitl import HitlItem, HitlQueue, SCHEMA_VERSION
+from cherenkov.core.contracts import Severity
+from cherenkov.hitl import SCHEMA_VERSION, HitlItem, HitlQueue
 from cherenkov.hitl.cmd import (
-    run_list,
-    run_show,
-    run_approve,
-    run_reject,
     _default_actor,
+    run_approve,
+    run_list,
+    run_reject,
+    run_show,
 )
-
 
 # ── fixture ───────────────────────────────────────────────────────────────────
 
@@ -74,7 +74,7 @@ def test_default_actor_uses_user_env():
 
 
 def test_default_actor_fallback_to_username():
-    env = {"USERNAME": "win_user"}
+    _env = {"USERNAME": "win_user"}
     # Remove USER if set, set USERNAME
     env_copy = {k: v for k, v in os.environ.items() if k != "USER"}
     env_copy["USERNAME"] = "win_user"
@@ -94,7 +94,7 @@ def test_list_empty_db(tmp_db, capsys):
 
 
 def test_list_pending_items(queue_with_items, capsys):
-    q, ids = queue_with_items
+    q, _ids = queue_with_items
     rc = run_list(status="pending", json_out=False, db_path=q.db_path)
     assert rc == 0
     out = capsys.readouterr().out
@@ -278,3 +278,45 @@ def test_reject_conflict_returns_1(tmp_db, capsys):
     raw = capsys.readouterr().out
     data = json.loads(raw)
     assert data["error"]["code"] == "conflict"
+
+
+# ── severity ───────────────────────────────────────────────────────────────────
+
+
+def test_enqueue_persists_severity(tmp_db):
+    q = HitlQueue(db_path=tmp_db)
+    q.enqueue(
+        HitlItem(id="sev_1", endpoint="/x", method="GET", severity=Severity.HIGH)
+    )
+    item = q.get("sev_1")
+    assert item.severity == Severity.HIGH
+
+
+def test_enqueue_without_severity_defaults_none(tmp_db):
+    q = HitlQueue(db_path=tmp_db)
+    q.enqueue(HitlItem(id="sev_none", endpoint="/x", method="GET"))
+    item = q.get("sev_none")
+    assert item.severity is None
+
+
+def test_list_filters_by_severity(tmp_db, capsys):
+    q = HitlQueue(db_path=tmp_db)
+    q.enqueue(HitlItem(id="sev_crit", endpoint="/a", method="GET", severity=Severity.CRITICAL))
+    q.enqueue(HitlItem(id="sev_low", endpoint="/b", method="GET", severity=Severity.LOW))
+    rc = run_list(status="pending", severity="critical", json_out=True, db_path=tmp_db)
+    assert rc == 0
+    raw = capsys.readouterr().out
+    data = json.loads(raw)
+    assert data["payload"]["count"] == 1
+    assert data["payload"]["items"][0]["id"] == "sev_crit"
+
+
+def test_show_displays_severity(tmp_db, capsys):
+    q = HitlQueue(db_path=tmp_db)
+    q.enqueue(
+        HitlItem(id="sev_show", endpoint="/c", method="POST", severity=Severity.MEDIUM)
+    )
+    rc = run_show("sev_show", json_out=False, db_path=tmp_db)
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "medium" in out

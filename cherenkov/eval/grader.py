@@ -6,7 +6,7 @@ Scores a suite manifest against the OpenAPI spec using four metrics:
   - meaningful_ratio     : fraction of assertions passing the banned-pattern check
   - coverage             : fraction of spec operations with at least one test
 
-Grades A–F mirror school grading: makes results immediately human-readable.
+Grades A-F mirror school grading: makes results immediately human-readable.
 
 No live API required — all analysis is against the suite JSON + spec.
 """
@@ -17,7 +17,6 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
-
 
 _GRADE_THRESHOLDS = [
     (0.90, "A"),
@@ -107,7 +106,7 @@ class GradeReport:
         path.write_text(json.dumps(self.to_dict(), indent=2))
 
     @classmethod
-    def load(cls, path: Path) -> "GradeReport":
+    def load(cls, path: Path) -> GradeReport:
         data = json.loads(path.read_text())
         ops = [
             OperationGrade(

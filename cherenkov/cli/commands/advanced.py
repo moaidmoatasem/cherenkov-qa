@@ -1,7 +1,11 @@
 """Advanced CLI commands — visual, perf, hitl, review, mcp."""
 from __future__ import annotations
 
+import json
+import os
+import subprocess
 import sys
+
 import click
 
 
@@ -11,9 +15,9 @@ import click
               help="Baseline directory (default: stub/visual_baselines)")
 def visual_cmd(target: str, baseline_dir: str) -> None:
     """Run optional visual-regression checks against a rendered URL (Track B)."""
-    from cherenkov.core.orchestrator import OrchestrationEngine
-    from cherenkov.core.contracts import VisualSlice
     from cherenkov.cli.legacy_reports import print_visual_report
+    from cherenkov.core.contracts import VisualSlice
+    from cherenkov.core.orchestrator import OrchestrationEngine
 
     slices = [VisualSlice(name="cli_default", url=target)]
     engine = OrchestrationEngine(run_id="cli_visual")
@@ -30,9 +34,9 @@ def visual_cmd(target: str, baseline_dir: str) -> None:
 @click.option("--duration", type=int, default=5, help="Duration in seconds (default: 5)")
 def perf_cmd(target: str, endpoint: str, method: str, vus: int, duration: int) -> None:
     """Run optional performance baseline checks (Track B)."""
-    from cherenkov.core.orchestrator import OrchestrationEngine
-    from cherenkov.core.contracts import PerfSlice
     from cherenkov.cli.legacy_reports import print_perf_report
+    from cherenkov.core.contracts import PerfSlice
+    from cherenkov.core.orchestrator import OrchestrationEngine
 
     slices = [PerfSlice(
         name="cli_default",
@@ -57,12 +61,16 @@ def hitl_cmd() -> None:
 @click.option("--status", type=click.Choice(["pending", "approved", "rejected", "ignored"]),
               default="pending", help="Filter by status (default: pending)")
 @click.option("--all", "-a", "list_all", is_flag=True, help="Show all statuses")
+@click.option("--severity", type=click.Choice(["low", "medium", "high", "critical"]),
+              default=None, help="Filter by severity")
 @click.option("--json", "json_out", is_flag=True, help="Emit JSON envelope")
-def hitl_list(status: str, list_all: bool, json_out: bool) -> None:
+def hitl_list(status: str, list_all: bool, severity: str | None, json_out: bool) -> None:
     """List HITL queue items."""
     from cherenkov.hitl.cmd import run_list
 
-    sys.exit(run_list(status=None if list_all else status, json_out=json_out))
+    sys.exit(run_list(
+        status=None if list_all else status, severity=severity, json_out=json_out
+    ))
 
 
 @hitl_cmd.command("show")
@@ -131,8 +139,8 @@ def hitl_explain(item_id: str, json_out: bool) -> None:
 @click.option("--demo", is_flag=True, help="Load demo fixture data into HITL queue on startup")
 def review_cmd(host: str, port: int, demo: bool) -> None:
     """Start the review dashboard web UI (FastAPI + prebuilt frontend)."""
-    import os
     import uvicorn
+
     from cherenkov.web.api import app
 
     if demo or os.environ.get("DEMO_MODE") == "1":
@@ -169,7 +177,6 @@ def mcp_serve() -> None:
 def mcp_publish(name: str, url: str, tools: str, resources: str,
                 version: str, attestation: str) -> None:
     """Register an external MCP server with the mesh registry."""
-    import json
     from cherenkov.mcp.mesh_router import get_registry
 
     registry = get_registry()
@@ -232,7 +239,6 @@ def mcp_install_tool(tool_id: str) -> None:
 @click.argument("tool_id")
 def mcp_remove(tool_id: str) -> None:
     """Remove a marketplace tool."""
-    import subprocess
     click.echo(f"Removing {tool_id}...")
     try:
         # In a real scenario, map tool_id to package name
@@ -240,4 +246,4 @@ def mcp_remove(tool_id: str) -> None:
         subprocess.run(["pip", "uninstall", "-y", package_name], check=True)
         click.echo("Successfully removed tool.")
     except subprocess.CalledProcessError as e:
-        raise click.ClickException(f"Removal failed: {e}")
+        raise click.ClickException(f"Removal failed: {e}") from e

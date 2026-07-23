@@ -30,7 +30,7 @@ class ReportDiff:
 
     @property
     def has_new(self) -> bool:
-        return len(self.new) > 0
+        return bool(self.new)
 
     @property
     def summary_line(self) -> str:

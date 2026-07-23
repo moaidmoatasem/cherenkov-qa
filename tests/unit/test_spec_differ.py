@@ -4,9 +4,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
 from click.testing import CliRunner
 
+from cherenkov.cli.commands.simple import diff_cmd
 from cherenkov.diff.spec_differ import (
     ChangeType,
     SpecChange,
@@ -14,8 +14,6 @@ from cherenkov.diff.spec_differ import (
     SpecDiffReport,
     print_diff_report,
 )
-from cherenkov.cli.commands.simple import diff_cmd
-
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 

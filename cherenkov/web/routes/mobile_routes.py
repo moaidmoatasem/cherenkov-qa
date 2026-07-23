@@ -9,8 +9,6 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from cherenkov.web.auth.deps import require_role
-from cherenkov.web.auth.models import Role
 from cherenkov.mobile.contracts import (
     DeviceKind,
     DeviceState,
@@ -23,6 +21,8 @@ from cherenkov.mobile.registry import (
     DeviceNotFoundError,
     get_registry,
 )
+from cherenkov.web.auth.deps import require_role
+from cherenkov.web.auth.models import Role
 
 router = APIRouter(tags=["mobile"])
 
@@ -118,9 +118,9 @@ async def create_session(req: ClaimSessionRequest, _role=Depends(require_role(Ro
             app_activity=req.app_activity,
         )
     except DeviceNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Device {req.device_id!r} not found")
+        raise HTTPException(status_code=404, detail=f"Device {req.device_id!r} not found") from None
     except DeviceClaimedError as e:
-        raise HTTPException(status_code=409, detail=str(e))
+        raise HTTPException(status_code=409, detail=str(e)) from None
     return session.to_dict()
 
 
@@ -214,6 +214,6 @@ async def start_mobile_pilot(_role=Depends(require_role(Role.reviewer))):
         registry.update_session_status(session.session_id, MobileSessionStatus.RUNNING)
         return {"status": "started", "session_id": session.session_id}
     except DeviceClaimedError as e:
-        raise HTTPException(status_code=409, detail=str(e))
+        raise HTTPException(status_code=409, detail=str(e)) from None
     except DeviceNotFoundError:
-        raise HTTPException(status_code=503, detail="Default emulator not available")
+        raise HTTPException(status_code=503, detail="Default emulator not available") from None

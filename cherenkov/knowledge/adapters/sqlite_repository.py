@@ -10,9 +10,9 @@ from typing import Any
 _log = logging.getLogger(__name__)
 
 from cherenkov.knowledge.domain.models import (
+    KnowledgeItem,
     KnowledgeQuery,
     KnowledgeQueryResult,
-    KnowledgeItem,
 )
 
 _BUSY_TIMEOUT_S = 30.0

@@ -4,12 +4,13 @@ CHERENKOV healing/diagnose.py -- core diagnostics component for classifying stag
 
 from __future__ import annotations
 
-import os
-import json
 import hashlib
+import json
+import os
 import time
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Optional, Callable
+from typing import Any
 
 from cherenkov.core.errors import get_logger
 
@@ -18,16 +19,14 @@ def hash_test_content(test_content: str) -> str:
     """Returns a stable SHA-256 hash of test source, ignoring surrounding whitespace."""
     return hashlib.sha256(test_content.strip().encode("utf-8")).hexdigest()
 
-
 def _compute_snapshot_hash(test_code: str, spec_path: str | None = None) -> str:
     """Hash both the test code and the spec it was generated from."""
     hasher = hashlib.sha256()
     hasher.update(test_code.encode())
-    if spec_path and __import__("os").path.exists(spec_path):
+    if spec_path and os.path.exists(spec_path):
         with open(spec_path, "rb") as f:
             hasher.update(f.read())
     return hasher.hexdigest()
-
 
 class FailureClass(str, Enum):
     AUTH_EXPIRY = "AUTH_EXPIRY"
@@ -37,7 +36,6 @@ class FailureClass(str, Enum):
     DETERMINISTIC_FAILURE = "DETERMINISTIC_FAILURE"
     GENERIC_FAILURE = "GENERIC_FAILURE"
 
-
 class DiagnosisResult:
     """Represents the classified diagnostic output of a failed test run."""
 
@@ -45,8 +43,8 @@ class DiagnosisResult:
         self,
         failure_class: FailureClass,
         detail: str,
-        missing_fields: Optional[list[str]] = None,
-        added_fields: Optional[list[str]] = None,
+        missing_fields: list[str] | None = None,
+        added_fields: list[str] | None = None,
         snapshot_existed: bool = False,
         stale_snapshot: bool = False,
     ):
@@ -58,7 +56,6 @@ class DiagnosisResult:
         # True when the test source changed since the snapshot was captured, so a
         # contract diff would be misleading: the snapshot is flagged stale, not auto-diffed.
         self.stale_snapshot = stale_snapshot
-
 
 class Diagnoser:
     """Diagnoses test failures before any repair is suggested, ensuring high-quality classifications."""
@@ -75,8 +72,8 @@ class Diagnoser:
         scenario_id: str,
         current_status: int,
         current_body: dict[str, Any],
-        test_name: str,
-        test_content: Optional[str] = None,
+        test_name: str,  # noqa: ARG002
+        test_content: str | None = None,
     ) -> DiagnosisResult:
         """Determines the exact failure cause by comparing against historical snapshots."""
         self.log.info(
@@ -92,7 +89,7 @@ class Diagnoser:
 
         if snapshot_existed:
             try:
-                with open(snapshot_path, "r", encoding="utf-8") as f:
+                with open(snapshot_path, encoding="utf-8") as f:
                     snapshot = json.load(f)
                     previous_status = snapshot.get("status")
                     previous_keys = snapshot.get("body_keys", [])
@@ -105,8 +102,7 @@ class Diagnoser:
         # Detect a stale snapshot: the test source changed since the snapshot was
         # captured, so any body-shape diff reflects the rewritten test, not real drift.
         stale_snapshot = False
-        if snapshot_existed and previous_test_hash and test_content is not None:
-            if hash_test_content(test_content) != previous_test_hash:
+        if snapshot_existed and previous_test_hash and test_content is not None and hash_test_content(test_content) != previous_test_hash:
                 stale_snapshot = True
                 self.log.warning(
                     "stale snapshot flagged, not auto-diffed",
@@ -115,9 +111,7 @@ class Diagnoser:
                 )
 
         # 1. AUTH_EXPIRY: was 200/201 (success), now 401
-        if current_status == 401:
-            # If we historically passed (status in 200, 201, 204), but now we got 401
-            if previous_status in (200, 201, 204) or not snapshot_existed:
+        if current_status == 401 and (previous_status in (200, 201, 204) or not snapshot_existed):
                 detail = f"Test previously returned success ({previous_status or 'N/A'}), but now returned 401 Unauthorized."
                 self.log.info("diagnosed AUTH_EXPIRY", detail=detail)
                 return DiagnosisResult(
@@ -130,13 +124,13 @@ class Diagnoser:
         # Parse current body shape keys
         current_keys = []
         if isinstance(current_body, dict):
-            current_keys = list(current_body.keys())
+            current_keys = list(current_body)
         elif (
             isinstance(current_body, list)
-            and len(current_body) > 0
+            and current_body
             and isinstance(current_body[0], dict)
         ):
-            current_keys = list(current_body[0].keys())
+            current_keys = list(current_body[0])
 
         # 2. CONTRACT_DRIFT: Snapshot exists, and keys differ.
         # Skipped when the snapshot is stale: the test itself changed, so a key diff
@@ -206,7 +200,7 @@ class Diagnoser:
         scenario_id: str,
         status: int,
         body: Any,
-        test_content: Optional[str] = None,
+        test_content: str | None = None,
     ) -> None:
         """Stores the response status and shape keys of a successful test execution for subsequent diffing.
 
@@ -218,9 +212,9 @@ class Diagnoser:
 
         body_keys = []
         if isinstance(body, dict):
-            body_keys = list(body.keys())
-        elif isinstance(body, list) and len(body) > 0 and isinstance(body[0], dict):
-            body_keys = list(body[0].keys())
+            body_keys = list(body)
+        elif isinstance(body, list) and body and isinstance(body[0], dict):
+            body_keys = list(body[0])
 
         snapshot_data = {
             "scenario_id": scenario_id,

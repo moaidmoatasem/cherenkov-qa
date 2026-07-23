@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 import sys
-from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -17,7 +15,6 @@ from cherenkov.hooks.domain.models import (
     HookStatus,
 )
 from cherenkov.hooks.registry import HookRegistry
-
 
 # ── SubprocessHookExecutor ────────────────────────────────────────────
 
@@ -57,7 +54,6 @@ class TestSubprocessHookExecutor:
         assert exc_info.value.result.exit_code == 2
 
     def test_timeout_warn_mode_returns_timeout(self) -> None:
-        import sys
         config = self._config(
             run=f'{sys.executable} -c "import time; time.sleep(10)"',
             timeout=1, fail_mode=FailMode.WARN,
@@ -67,7 +63,6 @@ class TestSubprocessHookExecutor:
         assert "Timed out" in result.error_message
 
     def test_timeout_abort_mode_raises(self) -> None:
-        import sys
         config = self._config(
             run=f'{sys.executable} -c "import time; time.sleep(10)"',
             timeout=1, fail_mode=FailMode.ABORT,

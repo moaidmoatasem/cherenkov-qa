@@ -1,5 +1,10 @@
+from __future__ import annotations
+
+import http.client
+import json
 import sys
 import textwrap
+from urllib.parse import urlparse
 
 import click
 
@@ -21,17 +26,13 @@ BROKEN_RESPONSES: dict[str, tuple[int, dict]] = {
 
 
 def _post(base_url: str, path: str, body: dict) -> tuple[int, dict]:
-    import http.client
-    import json as _json
-    from urllib.parse import urlparse
-
     parsed = urlparse(base_url)
     conn = http.client.HTTPConnection(parsed.hostname, parsed.port, timeout=3)
     try:
-        conn.request("POST", path, _json.dumps(body), {"Content-Type": "application/json"})
+        conn.request("POST", path, json.dumps(body), {"Content-Type": "application/json"})
         resp = conn.getresponse()
         try:
-            data = _json.loads(resp.read().decode())
+            data = json.loads(resp.read().decode())
         except Exception:
             data = {}
         return resp.status, data

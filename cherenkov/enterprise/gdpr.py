@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import time
+import uuid
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
@@ -118,8 +119,6 @@ class GDPRManager:
     def create_request(
         self, user_id: str, request_type: str
     ) -> DataSubjectRequest:
-        import uuid
-
         req = DataSubjectRequest(
             request_id=str(uuid.uuid4())[:12],
             user_id=user_id,

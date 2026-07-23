@@ -66,12 +66,10 @@ def generate_for_endpoints(
     # Count fields
     field_count = 0
     generated_samples = 0
-    for endpoint, samples in data.items():
-        for sample_key, value in samples.items():
+    for _endpoint, samples in data.items():
+        for _sample_key, value in samples.items():
             generated_samples += 1
-            if isinstance(value, dict):
-                field_count += len(value)
-            elif isinstance(value, list):
+            if isinstance(value, (dict, list)):
                 field_count += len(value)
 
     report = SyntheticDataReport(

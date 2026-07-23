@@ -6,6 +6,8 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
+from typing import Any
 
 import click
 
@@ -52,10 +54,8 @@ def ocr_test() -> None:
         '  expect(res.status).toBe(200);\n'
         "});\n"
     )
-    import tempfile
-    tmp = tempfile.NamedTemporaryFile(suffix=".spec.ts", prefix="ocr_test_", delete=False)  # noqa: SIM115 — manual cleanup in finally block
-    tmp_path = tmp.name
-    tmp.close()
+    with tempfile.NamedTemporaryFile(suffix=".spec.ts", prefix="ocr_test_", delete=False) as tmp:
+        tmp_path = tmp.name
     try:
         output = ocr_stage.run_on_file(tmp_path, test_code)
     finally:
@@ -101,7 +101,7 @@ def ocr_review(filepath: str, fmt: str) -> None:
         sys.exit(0)
 
     all_passed = True
-    results = []
+    results: list[dict[str, Any]] = []
     for fname in sorted(files):
         fpath = os.path.join(stub_dir, fname)
         with open(fpath, encoding="utf-8") as f:

@@ -315,7 +315,7 @@ class LayeredConfig:
         return self._store.get(key, [])
 
     def all_keys(self) -> set[str]:
-        return set(self._store.keys())
+        return set(self._store)
 
     def errors(self) -> list[str]:
         return self._errors
@@ -331,7 +331,7 @@ class LayeredConfig:
     def _find_toml(self) -> str | None:
         """Walk up from CWD looking for cherenkov.toml."""
         cwd = Path.cwd()
-        for parent in [cwd] + list(cwd.parents):
+        for parent in [cwd, *cwd.parents]:
             candidate = parent / "cherenkov.toml"
             if candidate.exists():
                 return str(candidate)
@@ -344,16 +344,16 @@ class LayeredConfig:
         except ImportError:
             try:
                 import tomli as tomllib
-            except ImportError:
+            except ImportError as exc:
                 raise ConfigError(
                     "tomllib/tomli not available. Install tomli for Python < 3.11: "
                     "pip install tomli"
-                )
+                ) from exc
         try:
             with open(path, "rb") as f:
                 return tomllib.load(f)
         except Exception as e:
-            raise ConfigError(f"Failed to parse {path}: {e}")
+            raise ConfigError(f"Failed to parse {path}: {e}") from e
 
     def autodetect_profile(self) -> str:
         """Determine the best profile heuristically.

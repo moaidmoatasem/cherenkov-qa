@@ -11,18 +11,18 @@ different sources of truth:
 - SourceAdapter: Abstract base class for custom source adapters
 """
 
+from cherenkov.truth.sources.db_schema import DBSchemaSourceAdapter
+from cherenkov.truth.sources.graphql import GraphQLSourceAdapter
+from cherenkov.truth.sources.grpc import GRPCSourceAdapter
 from cherenkov.truth.sources.interface import SourceAdapter
 from cherenkov.truth.sources.openapi import OpenAPISourceAdapter
 from cherenkov.truth.sources.traffic import TrafficSourceAdapter
-from cherenkov.truth.sources.db_schema import DBSchemaSourceAdapter
-from cherenkov.truth.sources.grpc import GRPCSourceAdapter
-from cherenkov.truth.sources.graphql import GraphQLSourceAdapter
 
 __all__ = [
-    "SourceAdapter",
-    "OpenAPISourceAdapter",
-    "TrafficSourceAdapter",
     "DBSchemaSourceAdapter",
     "GRPCSourceAdapter",
     "GraphQLSourceAdapter",
+    "OpenAPISourceAdapter",
+    "SourceAdapter",
+    "TrafficSourceAdapter",
 ]

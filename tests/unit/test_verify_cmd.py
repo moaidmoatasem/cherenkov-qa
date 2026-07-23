@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
 from click.testing import CliRunner
 
 from cherenkov.cli.commands.verify import verify_cmd
@@ -42,6 +43,13 @@ def _make_report(
 
 
 class TestVerifyCmd:
+    @pytest.fixture(autouse=True)
+    def _skip_reachability(self):
+        # These tests mock run_proof; neutralise the network reachability
+        # preflight so a dummy --url does not abort the command.
+        with patch("cherenkov.cli.commands.verify._assert_reachable"):
+            yield
+
     def test_help(self) -> None:
         runner = CliRunner()
         result = runner.invoke(verify_cmd, ["--help"])
@@ -57,7 +65,7 @@ class TestVerifyCmd:
         assert result.exit_code == 0
         assert "No divergences found" in result.output
         mock.assert_called_once_with(
-            base_url="http://localhost:9999", spec=None, use_llm=False
+            base_url="http://localhost:9999", spec=None, use_llm=False, max_probes=40
         )
 
     def test_divergences_printed(self) -> None:
@@ -111,7 +119,7 @@ class TestVerifyCmd:
         with patch("cherenkov.cli.commands.verify.run_proof", return_value=[]) as mock:
             runner.invoke(verify_cmd, ["--url", "http://localhost:9999", "--llm", "--simple"])
         mock.assert_called_once_with(
-            base_url="http://localhost:9999", spec=None, use_llm=True
+            base_url="http://localhost:9999", spec=None, use_llm=True, max_probes=40
         )
 
     def test_multiple_severities_displayed(self) -> None:
@@ -128,3 +136,45 @@ class TestVerifyCmd:
         assert "[HIGH]" in result.output
         assert "[MEDIUM]" in result.output
         assert "[LOW]" in result.output
+
+
+class TestReachabilityPreflight:
+    """A target that cannot be contacted must abort, not score as a clean pass."""
+
+    def test_unreachable_target_exits_2(self) -> None:
+        import httpx
+
+        runner = CliRunner()
+        with patch(
+            "cherenkov.cli.commands.verify.httpx.Client"
+        ) as mock_cls:
+            client = MagicMock()
+            client.__enter__ = MagicMock(return_value=client)
+            client.__exit__ = MagicMock(return_value=False)
+            client.get.side_effect = httpx.ConnectError("refused")
+            mock_cls.return_value = client
+            with patch("cherenkov.cli.commands.verify.run_proof") as run_proof:
+                result = runner.invoke(
+                    verify_cmd, ["--url", "http://127.0.0.1:59999", "--simple"]
+                )
+        assert result.exit_code == 2
+        assert "not reachable" in result.output
+        run_proof.assert_not_called()  # aborted before probing
+
+    def test_reachable_target_with_error_status_proceeds(self) -> None:
+        # A 4xx/5xx response still means reachable — do not abort.
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.verify.httpx.Client") as mock_cls:
+            client = MagicMock()
+            client.__enter__ = MagicMock(return_value=client)
+            client.__exit__ = MagicMock(return_value=False)
+            client.get.return_value = MagicMock(status_code=503)
+            mock_cls.return_value = client
+            with patch(
+                "cherenkov.cli.commands.verify.run_proof", return_value=[]
+            ) as run_proof:
+                result = runner.invoke(
+                    verify_cmd, ["--url", "http://127.0.0.1:9999", "--simple"]
+                )
+        assert result.exit_code == 0
+        run_proof.assert_called_once()

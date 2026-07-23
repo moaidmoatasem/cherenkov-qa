@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import os
 import sqlite3
 import time
-import hashlib
 from typing import Any
 
 from cherenkov.core.errors import get_logger

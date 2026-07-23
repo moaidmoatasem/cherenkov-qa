@@ -5,11 +5,9 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
 from click.testing import CliRunner
 
-from cherenkov.divergence.report_diff import ReportDiff, diff_reports, _stable_key
-
+from cherenkov.divergence.report_diff import _stable_key, diff_reports
 
 # ── fixtures ───────────────────────────────────────────────────────────────────
 
@@ -288,16 +286,17 @@ class TestReportCmdStoreMode:
         recs = records if records is not None else [_make_record()]
         store = _mock_store(recs, diff_result)
         runner = CliRunner()
-        with patch("cherenkov.cli.commands.report.get_run_store", return_value=store), \
-             patch("cherenkov.persistence.run_store.get_run_store", return_value=store):
-            # patch inside report module's lazy imports
-            with patch("cherenkov.cli.commands.report._resolve_run") as mock_resolve:
-                if args and args[0] not in ("--list", "--run", "--format", "--output", "--fail-on-new"):
-                    pass  # file mode — don't patch resolve_run
-                mock_resolve.side_effect = lambda rid: (
-                    recs[0] if rid == "latest" else next((r for r in recs if r.run_id == rid), None)
-                )
-                return runner.invoke(report_cmd, args)
+        with (
+            patch("cherenkov.cli.commands.report.get_run_store", return_value=store),
+            patch("cherenkov.persistence.run_store.get_run_store", return_value=store),
+            patch("cherenkov.cli.commands.report._resolve_run") as mock_resolve,
+        ):
+            if args and args[0] not in ("--list", "--run", "--format", "--output", "--fail-on-new"):
+                pass  # file mode — don't patch resolve_run
+            mock_resolve.side_effect = lambda rid: (
+                recs[0] if rid == "latest" else next((r for r in recs if r.run_id == rid), None)
+            )
+            return runner.invoke(report_cmd, args)
 
     def test_default_no_args_shows_latest_run(self):
         from cherenkov.cli.commands.report import report_cmd

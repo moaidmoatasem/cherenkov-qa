@@ -4,15 +4,15 @@ test_egress_policy.py — Comprehensive tests for egress policy enforcement (Iss
 Tests the sovereignty dial: egress=none|internal|any with property-driven provider checks.
 """
 
-import unittest
 import os
-from unittest.mock import patch, MagicMock
+import unittest
+from unittest.mock import MagicMock, patch
 
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.errors import EgressError
 from cherenkov.core.settings import get_settings
-from cherenkov.substrate.router import SubstrateRouter
 from cherenkov.substrate.provider import ProviderCapabilities
+from cherenkov.substrate.router import SubstrateRouter
 
 
 def _make_mock_provider(
@@ -242,7 +242,7 @@ class TestEgressPolicy(unittest.TestCase):
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         # The router.py file should be in cherenkov/substrate/router.py relative to project root
         router_path = os.path.join(project_root, "cherenkov", "substrate", "router.py")
-        with open(router_path, "r") as f:
+        with open(router_path) as f:
             router_code = f.read()
 
         # Should not contain hardcoded provider name checks

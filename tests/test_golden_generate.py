@@ -101,11 +101,75 @@ def test_generate_output_matches_golden(mock_subproc, mock_get_client):
     )
 
 
+# ── Retry-on-bad-output (#627) ──────────────────────────────────────────────
+
+_BAD_TS = """\
+import { client } from '../client';
+import { test, expect } from '@playwright/test';
+// truncated — unbalanced brace
+test('create user happy_path', async () => {
+  const { data, response } = await client.POST('/users', {
+"""
+
+_GOOD_TS = """\
+import { client } from '../client';
+import { test, expect } from '@playwright/test';
+
+test('create user happy_path', async () => {
+  const { data, response } = await client.POST('/users', { body: { email: 'a@b.com', password: 'pw123' } });
+  expect(response.status).toBe(201);
+  expect(data).toHaveProperty('id');
+});"""
+
+
+@patch("cherenkov.stages.generate.get_client")
+@patch("subprocess.run")
+def test_retries_on_structurally_invalid_output(mock_subproc, mock_get_client):
+    """Stage must retry when the first attempt returns unbalanced / test()-less TS."""
+    from cherenkov.core.contracts import Scenario
+    from cherenkov.stages.generate import GenerateStage
+
+    mock_client = MagicMock()
+    # First call returns badly-formed code; second call returns valid code.
+    mock_client.complete_code.side_effect = [_BAD_TS, _GOOD_TS]
+    mock_get_client.return_value = mock_client
+    mock_subproc.return_value = MagicMock(returncode=0)
+
+    scenario = Scenario(
+        endpoint="/users",
+        method="POST",
+        case_type="happy_path",
+        mutation_id="retry_mut",
+        expected_status=201,
+        priority="high",
+    )
+
+    stage = GenerateStage("retry_run")
+    with patch("cherenkov.cache.endpoint_cache.EndpointCache") as mock_cache_cls:
+        mock_cache = MagicMock()
+        mock_cache.get.return_value = None
+        mock_cache_cls.return_value = mock_cache
+        output = stage.run(
+            scenario=scenario,
+            path="/users",
+            method="POST",
+            operation={},
+            schemas={},
+            instruction="Create user happy path",
+        )
+
+    assert output.status == "ok", f"expected ok, got {output.status}: {getattr(output, 'errors', '')}"
+    assert mock_client.complete_code.call_count == 2, "should have retried once"
+    assert "test(" in output.test_code
+    assert output.test_code.count("{") == output.test_code.count("}")
+
+
 if __name__ == "__main__":
     import sys
 
     if "--regen" in sys.argv:
-        from unittest.mock import patch as _patch, MagicMock as _MM
+        from unittest.mock import MagicMock as _MM
+        from unittest.mock import patch as _patch
 
         with _patch("cherenkov.stages.generate.get_client") as mc, \
              _patch("subprocess.run") as ms, \

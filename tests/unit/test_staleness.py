@@ -1,13 +1,10 @@
 """Tests for cherenkov/core/staleness.py and cherenkov/cli/commands/check_stale.py"""
 
 import json
-from pathlib import Path
 
-import pytest
 from click.testing import CliRunner
 
 from cherenkov.core.staleness import StalenessManifest, _file_sha256
-
 
 # ── _file_sha256 ──────────────────────────────────────────────────────────────
 

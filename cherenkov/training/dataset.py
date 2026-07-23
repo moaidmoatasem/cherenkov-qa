@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import json
 import random
-
 
 PROMPT_TEMPLATE = """### Spec:
 {spec_slice}

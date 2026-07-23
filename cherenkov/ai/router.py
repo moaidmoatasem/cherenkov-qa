@@ -8,11 +8,12 @@ Non-Docker fallback: Ollama provider is always available.
 from __future__ import annotations
 
 import os
-from typing import Callable
+from collections.abc import Callable
+from typing import Any
 
-from cherenkov.ai.ollama_client import OllamaClient
-from cherenkov.ai.model_runner_client import ModelRunnerClient
 from cherenkov.ai.interface import InferenceClient
+from cherenkov.ai.model_runner_client import ModelRunnerClient
+from cherenkov.ai.ollama_client import OllamaClient
 
 
 def _make_anthropic() -> InferenceClient:
@@ -31,7 +32,8 @@ def _make_huggingface() -> InferenceClient:
 
 
 # Add new providers here without touching InferenceRouter.
-_REGISTRY: dict[str, Callable[[], InferenceClient]] = {
+# TODO(#type-debt): ModelRunnerClient duck-types a narrower interface than InferenceClient
+_REGISTRY: dict[str, Callable[[], Any]] = {
     "ollama": OllamaClient,
     "model-runner": ModelRunnerClient,
     "anthropic": _make_anthropic,

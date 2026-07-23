@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import json
 import csv
-from datetime import datetime, timezone
+import json
 import uuid
-from typing import Any
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 from cherenkov.core.errors import get_logger
 
@@ -23,7 +23,7 @@ class AuditLog:
         self.current_log_file = self.storage_dir / "audit.jsonl"
 
     def log_event(
-        self, actor: str, action: str, resource: str, details: dict[str, Any] = None
+        self, actor: str, action: str, resource: str, details: dict[str, Any] | None = None
     ) -> str:
         """Records an event to the audit log."""
         event_id = f"evt_{uuid.uuid4().hex}"
@@ -46,7 +46,7 @@ class AuditLog:
         """Exports the audit log to a JSON array."""
         events = []
         if self.current_log_file.exists():
-            with open(self.current_log_file, "r", encoding="utf-8") as f:
+            with open(self.current_log_file, encoding="utf-8") as f:
                 for line in f:
                     if line.strip():
                         events.append(json.loads(line))
@@ -58,7 +58,7 @@ class AuditLog:
         """Exports the audit log to a CSV file."""
         events = []
         if self.current_log_file.exists():
-            with open(self.current_log_file, "r", encoding="utf-8") as f:
+            with open(self.current_log_file, encoding="utf-8") as f:
                 for line in f:
                     if line.strip():
                         events.append(json.loads(line))
@@ -70,14 +70,14 @@ class AuditLog:
             return
 
         with open(output_path, "w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(
+            dict_writer = csv.DictWriter(
                 f, fieldnames=["id", "timestamp", "actor", "action", "resource", "details"]
             )
-            writer.writeheader()
+            dict_writer.writeheader()
             for evt in events:
                 row = evt.copy()
                 row["details"] = json.dumps(row["details"])
-                writer.writerow(row)
+                dict_writer.writerow(row)
 
 
 # Global singleton

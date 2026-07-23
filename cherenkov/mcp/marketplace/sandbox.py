@@ -23,7 +23,7 @@ class SandboxValidator:
     def validate_tool_manifest(self, manifest: dict[str, Any]) -> bool:
         """Validate a tool manifest to ensure it is safe to install."""
         required_keys = {"id", "name", "install_command"}
-        if not required_keys.issubset(manifest.keys()):
+        if not required_keys.issubset(manifest):
             _log.warning("Manifest missing required keys: %s", required_keys - manifest.keys())
             return False
 

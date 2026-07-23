@@ -30,6 +30,38 @@ If you only have 2 minutes, read **§ "What it does (30 seconds)"** in
 
 ---
 
+## 📹 Onboarding & KT Sessions
+
+> All sessions use **real caught bugs** — no fabricated examples. Full package lives at [`docs/onboarding/`](onboarding/).
+
+### Session Scripts
+
+| Session | Audience | Duration | Script |
+|---------|----------|----------|--------|
+| **A — Zero to Hero** | Developers / Engineers | 10 min | [session_a_zero_to_hero.md](onboarding/sessions/session_a_zero_to_hero.md) |
+| **B — Live Case: Real API** | QA Leads / SDETs | 15 min | [session_b_live_case.md](onboarding/sessions/session_b_live_case.md) |
+| **C — Pitch Companion** | Executives / Stakeholders | 5 min | [session_c_pitch_companion.md](onboarding/sessions/session_c_pitch_companion.md) |
+
+### Demo Harness & Cast Scripts
+
+- [run_demo.sh](onboarding/run_demo.sh) — 3-phase green→red conformance harness, Docker health checks, ANSI output, zero zombie processes
+- [casts/cast_session_a.sh](onboarding/casts/cast_session_a.sh) — asciinema-ready: Zero to Hero (8 steps, sleep delays, echo banners)
+- [casts/cast_session_b.sh](onboarding/casts/cast_session_b.sh) — asciinema-ready: HITL queue + repair loop + eject
+
+### Pitch Deck & FAQ
+
+- [PITCH_DECK.html](onboarding/PITCH_DECK.html) — interactive 10-slide HTML (dark theme, glassmorphism, keyboard nav `←→`, speaker notes `N`, fullscreen `F`)
+- [PITCH_DECK.md](onboarding/PITCH_DECK.md) — markdown outline with per-slide talking points, visual descriptions, demo timestamps
+- [FAQ_OBJECTIONS.md](onboarding/FAQ_OBJECTIONS.md) — 25+ Q&A across Technical, Trust/Compliance, and Business categories
+
+### Recording Guide
+
+- [VIDEO_RECORDING_GUIDE.md](onboarding/VIDEO_RECORDING_GUIDE.md) — 9-chapter guide: Loom/OBS/asciinema setup, pre-flight checklist, per-session walkthrough, audio quality, publishing
+- [RECORDING_ASSETS/README.md](onboarding/RECORDING_ASSETS/README.md) — naming conventions, recording commands, asset manifest template
+
+> **Also see:** [`docs/recordings/`](recordings/) — 8 extended session scripts (Loom-format), evidence log, and recorded output.
+
+
 ## 🛠️ If you're building on CHERENKOV
 
 | Doc | What's in it |
@@ -157,6 +189,7 @@ docs/
 ├── reviews/             ← external + internal reviews
 ├── spikes/              ← investigation notes
 ├── vision/              ← earlier vision (most is stale)
+├── recordings/          ← Loom recording scripts + live evidence
 └── wiki/                ← lightweight wiki
 ```
 

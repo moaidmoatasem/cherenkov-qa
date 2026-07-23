@@ -26,14 +26,13 @@ Design constraints:
 from __future__ import annotations
 
 import argparse
-import os
-import sys
-import subprocess
 import datetime
+import os
+import subprocess
+import sys
 import textwrap
 from pathlib import Path
 from typing import NamedTuple
-
 
 # ---------------------------------------------------------------------------
 # Smoke test registry — ordered as the runbook prescribes
@@ -162,7 +161,7 @@ def run_smoke(
         stdout = ""
         stderr = f"Timed out after {timeout}s"
         returncode = -2
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         passed = False
         stdout = ""
         stderr = f"Exception launching subprocess: {exc}"

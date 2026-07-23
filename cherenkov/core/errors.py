@@ -15,6 +15,7 @@ _tl = threading.local()  # per-thread events file slot
 
 from enum import IntEnum
 
+
 # ── exit codes (CC-6) ────────────────────────────────────────────────────────
 class ExitCode(IntEnum):
     SUCCESS = 0
@@ -122,6 +123,9 @@ class StructuredLogger:
         if self._file:
             self._file.write(line + "\n")
             self._file.flush()
+
+    def debug(self, msg: str, **f):
+        self._emit("DEBUG", msg, **f)
 
     def info(self, msg: str, **f):
         self._emit("INFO", msg, **f)

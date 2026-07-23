@@ -17,11 +17,11 @@ Three invocation tiers (spec §7):
 
 from __future__ import annotations
 
-import sys
 import json
-import click
+import sys
 from pathlib import Path
 
+import click
 
 # ── helpers ────────────────────────────────────────────────────────────────────
 
@@ -258,8 +258,8 @@ def reconcile_cmd(spec, suite, baseline_id, baseline_file, ledger_path,
         cherenkov drift reconcile --spec openapi.yaml --suite suite.json \\
             --level L2 --suite-out suite-updated.json
     """
-    from cherenkov.drift.reconcile import DriftVerdict
     from cherenkov.drift.loop import DriftLoop
+    from cherenkov.drift.reconcile import DriftVerdict
 
     spec_dict = _load_yaml_or_json(spec, "spec")
     suite_dict = _load_json(suite, "suite")
@@ -303,7 +303,7 @@ def reconcile_cmd(spec, suite, baseline_id, baseline_file, ledger_path,
 
 
 def _print_report(report) -> None:
-    from cherenkov.drift.reconcile import DriftVerdict, MagnitudeVerdict, SEVERITY
+    from cherenkov.drift.reconcile import SEVERITY, DriftVerdict, MagnitudeVerdict
 
     # Header
     mag_color = {

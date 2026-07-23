@@ -27,24 +27,24 @@ SKILL_MAP = {
 
 def main():
     validate_only = "--validate" in sys.argv
-    
+
     if not QWEN_SKILLS.exists():
         print(f"Error: {QWEN_SKILLS} does not exist.")
         sys.exit(1 if validate_only else 0)
-        
+
     errors = 0
-    
+
     print("Validating skill harmonization...")
     for qwen_skill, cher_skill in SKILL_MAP.items():
         q_path = QWEN_SKILLS / qwen_skill
-        
+
         if not q_path.exists():
             print(f"❌ Missing Qwen Code skill: {qwen_skill}")
             errors += 1
             continue
-            
+
         print(f"✅ Found Qwen Code skill: {qwen_skill}")
-        
+
         if cher_skill:
             c_path = CHERENKOV_SKILLS / cher_skill
             if not c_path.exists():
@@ -52,11 +52,11 @@ def main():
                 errors += 1
             else:
                 print(f"  ↳ Maps to: {cher_skill}")
-                
+
     if errors > 0:
         print(f"\nFailed with {errors} errors. Skill directories are out of sync.")
         sys.exit(1)
-        
+
     print("\nSkill directories are harmonized.")
     sys.exit(0)
 

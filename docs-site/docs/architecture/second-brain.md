@@ -53,13 +53,10 @@ url = "redis://localhost:6379"
 
 ```bash
 # CLI query
-cherenkov knowledge query "Which endpoints drift most often?"
-
-# List stored idioms
-cherenkov knowledge list --type idioms --limit 10
+python scripts/agent_sync.py experience query "Which endpoints drift most often?"
 
 # Full-text search
-cherenkov knowledge search "authentication 401"
+python scripts/agent_sync.py memory search "authentication 401"
 ```
 
 ---
@@ -97,14 +94,14 @@ CHERENKOV automatically extracts and promotes reusable patterns from sessions:
 
 ```bash
 # Check memory status
-cherenkov memory status
+python scripts/agent_sync.py memory status
 
 # List known patterns
-cherenkov memory list --limit 20
+python scripts/agent_sync.py memory list --limit 20
 
 # Full-text search memory
-cherenkov memory search "timeout"
+python scripts/agent_sync.py memory search "timeout"
 
 # Force-promote eligible patterns
-cherenkov memory promote --threshold 3
+python scripts/agent_sync.py memory promote --threshold 3
 ```

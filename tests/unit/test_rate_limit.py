@@ -1,10 +1,10 @@
 """Tests for cherenkov/web/middleware/rate_limit.py"""
 
-import asyncio
 import time
+
 import pytest
 
-from cherenkov.web.middleware.rate_limit import _Bucket, RateLimitMiddleware, _ROUTE_COSTS
+from cherenkov.web.middleware.rate_limit import _ROUTE_COSTS, RateLimitMiddleware, _Bucket
 
 
 class TestBucket:
@@ -132,7 +132,7 @@ class TestRateLimitMiddleware:
         mw = RateLimitMiddleware(app, rps=1, burst=1, enabled=True)
         scope = self._make_scope()
 
-        responses_first = await self._call(mw, scope)
+        _responses_first = await self._call(mw, scope)
         # Exhaust the bucket
         for _ in range(20):
             await self._call(mw, scope)

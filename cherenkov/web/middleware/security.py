@@ -4,6 +4,7 @@ import logging
 import os
 import time
 from collections import defaultdict
+from typing import ClassVar
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -26,7 +27,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         client_ip = request.client.host if request.client else "unknown"
-        now = time.time()
+        now = time.monotonic()
         window_start = now - self.window_seconds
         filtered = [t for t in self._requests[client_ip] if t > window_start]
         # Evict IPs with no recent requests to prevent unbounded dict growth
@@ -46,8 +47,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 class InputValidationMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         content_type = request.headers.get("content-type", "")
-        if request.method in ("POST", "PUT", "PATCH"):
-            if "application/json" in content_type:
+        if request.method in ("POST", "PUT", "PATCH") and "application/json" in content_type:
                 try:
                     body = await request.json()
                 except Exception:
@@ -64,7 +64,7 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    _SECURITY_HEADERS = {
+    _SECURITY_HEADERS: ClassVar[dict[str, str]] = {
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "DENY",
         "X-XSS-Protection": "1; mode=block",
@@ -88,7 +88,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     # Only truly public, non-sensitive read-only endpoints.
     # /api/v1/metrics, /api/v1/truth-map, /api/v1/failures were removed —
     # they expose internal state that must not be publicly cached by CDNs/proxies.
-    _CACHEABLE_PATHS = {
+    _CACHEABLE_PATHS: ClassVar[set[str]] = {
         "/api/v1/health",
         "/healthz",
         "/api/v1/tokens/report",
@@ -122,6 +122,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 def add_security_middleware(app: FastAPI) -> None:
-    app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(RateLimitMiddleware)  # type: ignore[arg-type]  # TODO(#type-debt): FastAPI-kwargs middleware vs Starlette _MiddlewareFactory
     app.add_middleware(InputValidationMiddleware)
     app.add_middleware(SecurityHeadersMiddleware)

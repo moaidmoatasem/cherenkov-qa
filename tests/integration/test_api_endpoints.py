@@ -8,18 +8,27 @@ external services (Ollama, OrchestrationEngine, ValidationEngine, EjectorEngine)
 so tests run offline and fast.  No CHERENKOV_HITL_API_KEY → auth disabled.
 """
 
-from cherenkov.core.settings import CherenkovSettings, get_settings
-
 import os
 import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
+from cherenkov.core.settings import CherenkovSettings
+
 os.environ.setdefault("CHERENKOV_ENV", "development")
 
 from fastapi.testclient import TestClient
-from cherenkov.web.api import app
 
+from cherenkov.web.api import app
+from cherenkov.web.middleware.rate_limit import _Bucket
+
+_rate_limit_patcher = patch.object(_Bucket, "consume", return_value=(True, 0.0))
+
+def setUpModule():
+    _rate_limit_patcher.start()
+
+def tearDownModule():
+    _rate_limit_patcher.stop()
 
 def _make_client() -> TestClient:
     return TestClient(app, raise_server_exceptions=False)
@@ -60,9 +69,8 @@ class TestListTests(unittest.TestCase):
         self.client = _make_client()
 
     def test_empty_when_no_generated_tests(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with patch("os.getcwd", return_value=tmpdir):
-                r = self.client.get("/api/v1/tests")
+        with tempfile.TemporaryDirectory() as tmpdir, patch("os.getcwd", return_value=tmpdir):
+            r = self.client.get("/api/v1/tests")
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json(), [])
 

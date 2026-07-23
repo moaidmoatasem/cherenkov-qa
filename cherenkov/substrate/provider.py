@@ -1,32 +1,44 @@
 from __future__ import annotations
-import time
-from typing import Protocol
-from pydantic import BaseModel
-import json
 
-from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.core.settings import get_settings
-from cherenkov.ai.interface import InferenceClient
+import json
+import time
+from typing import Any
+
+from cherenkov.ai.interface import CachedInferenceClient, InferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient
 from cherenkov.ai.openai_client import OpenAIInferenceClient
+from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
+from cherenkov.core.settings import get_settings
+from cherenkov.substrate.provider_base import (
+    ModelProvider,
+    ProviderCapabilities,
+    shared_response_cache,
+)
+from cherenkov.substrate.provider_base import (
+    wrap_with_cache as _wrap_with_cache,
+)
 from cherenkov.substrate.vlm_provider import VLMProvider
 
-
-class ProviderCapabilities(BaseModel):
-    capability_tiers: list[str]
-    requires_egress: bool
-    provider_name: str = ""
-
-
-class ModelProvider(Protocol):
-    def generate(self, request: ReasoningRequest) -> ReasoningResult: ...
-
-    def capabilities(self) -> ProviderCapabilities: ...
+__all__ = [
+    "GitHubModelsProvider",
+    "ModelProvider",
+    "OllamaProvider",
+    "OpenAIProvider",
+    "ProviderCapabilities",
+    "get_provider",
+    "get_vlm_provider",
+    "provider_for_tier",
+    "shared_response_cache",
+]
 
 
 class OllamaProvider:
     def __init__(self, client: InferenceClient | None = None):
-        self.client = client or OllamaInferenceClient()
+        self.client = (
+            _wrap_with_cache(OllamaInferenceClient(), "ollama")
+            if client is None
+            else client
+        )
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
         system_prompt = "You are a logical AI."
@@ -44,7 +56,13 @@ class OllamaProvider:
                 f"{json.dumps(request.output_schema)}"
             )
 
+        hits_before = (
+            self.client.cache_stats.hits
+            if isinstance(self.client, CachedInferenceClient)
+            else 0
+        )
         t0 = time.monotonic()
+        content: dict[str, Any] | str
         if request.output_schema:
             content = self.client.complete_json(
                 system_prompt=system_prompt,
@@ -58,6 +76,10 @@ class OllamaProvider:
                 model=model,
             )
         latency_ms = int((time.monotonic() - t0) * 1000)
+        cache_hit = (
+            isinstance(self.client, CachedInferenceClient)
+            and self.client.cache_stats.hits > hits_before
+        )
 
         return ReasoningResult(
             content=content,
@@ -65,7 +87,7 @@ class OllamaProvider:
             model=model,
             cost_usd=0.0,
             latency_ms=latency_ms,
-            cached=False,
+            cached=cache_hit,
         )
 
     def capabilities(self) -> ProviderCapabilities:
@@ -78,7 +100,11 @@ class OllamaProvider:
 
 class OpenAIProvider:
     def __init__(self, client: InferenceClient | None = None):
-        self.client = client or OpenAIInferenceClient()
+        self.client = (
+            _wrap_with_cache(OpenAIInferenceClient(), "openai")
+            if client is None
+            else client
+        )
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
         system_prompt = "You are a logical AI."
@@ -92,7 +118,13 @@ class OpenAIProvider:
                 f"{json.dumps(request.output_schema)}"
             )
 
+        hits_before = (
+            self.client.cache_stats.hits
+            if isinstance(self.client, CachedInferenceClient)
+            else 0
+        )
         t0 = time.monotonic()
+        content: dict[str, Any] | str
         if request.output_schema:
             content = self.client.complete_json(
                 system_prompt=system_prompt,
@@ -106,14 +138,18 @@ class OpenAIProvider:
                 model=model,
             )
         latency_ms = int((time.monotonic() - t0) * 1000)
+        cache_hit = (
+            isinstance(self.client, CachedInferenceClient)
+            and self.client.cache_stats.hits > hits_before
+        )
 
         return ReasoningResult(
             content=content,
             provider="openai",
             model=model,
-            cost_usd=0.02,
+            cost_usd=0.0 if cache_hit else 0.02,
             latency_ms=latency_ms,
-            cached=False,
+            cached=cache_hit,
         )
 
     def capabilities(self) -> ProviderCapabilities:
@@ -131,12 +167,10 @@ class GitHubModelsProvider:
         if client is None:
             from cherenkov.ai.github_models_client import GitHubModelsInferenceClient
 
-            client = GitHubModelsInferenceClient()
+            client = _wrap_with_cache(GitHubModelsInferenceClient(), "github")
         self.client = client
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
-        import json
-
         model = (
             get_settings().GITHUB_MODELS_SMALL_MODEL
             if request.capability_tier == "small"
@@ -152,7 +186,13 @@ class GitHubModelsProvider:
                 f"\n\nOutput JSON matching: {json.dumps(request.output_schema)}"
             )
 
+        hits_before = (
+            self.client.cache_stats.hits
+            if isinstance(self.client, CachedInferenceClient)
+            else 0
+        )
         t0 = time.monotonic()
+        content: dict[str, Any] | str
         if request.output_schema:
             content = self.client.complete_json(
                 system_prompt=system_prompt, user_prompt=user_prompt, model=model
@@ -162,6 +202,10 @@ class GitHubModelsProvider:
                 system_prompt=system_prompt, user_prompt=user_prompt, model=model
             )
         latency_ms = int((time.monotonic() - t0) * 1000)
+        cache_hit = (
+            isinstance(self.client, CachedInferenceClient)
+            and self.client.cache_stats.hits > hits_before
+        )
 
         return ReasoningResult(
             content=content,
@@ -169,7 +213,7 @@ class GitHubModelsProvider:
             model=model,
             cost_usd=0.0,
             latency_ms=latency_ms,
-            cached=False,
+            cached=cache_hit,
         )
 
     def capabilities(self) -> ProviderCapabilities:
@@ -217,7 +261,8 @@ def get_vlm_provider(name: str | None = None) -> VLMProvider:
     if provider_name == "localai":
         from cherenkov.substrate.providers.localai import LocalAIVLMProvider
 
-        p: VLMProvider = LocalAIVLMProvider()
+        # TODO(#type-debt): LocalAIVLMProvider duck-types VLMProvider without subclassing
+        p: VLMProvider = LocalAIVLMProvider()  # type: ignore[assignment]
     elif provider_name == "ollama":
         p = VLMProvider(OllamaInferenceClient())
     elif provider_name == "openai":
@@ -240,18 +285,17 @@ def provider_for_tier(
 ) -> OllamaProvider | OpenAIProvider | GitHubModelsProvider | VLMProvider:
     if tier == "small":
         return get_provider(get_settings().TIER_SMALL_PROVIDER)
-    elif tier == "deep":
+    if tier == "deep":
         return get_provider(get_settings().TIER_DEEP_PROVIDER)
-    elif tier == "vision":
+    if tier == "vision":
         vlm_provider_name = _resolve_vlm_provider(device_class)
         return get_vlm_provider(vlm_provider_name)
-    else:
-        raise ValueError(
-            f"Unknown capability tier '{tier}'. Expected 'small', 'deep', or 'vision'."
-        )
+    raise ValueError(
+        f"Unknown capability tier '{tier}'. Expected 'small', 'deep', or 'vision'."
+    )
 
 
-def _resolve_vlm_provider(device_class: str | None = None) -> str:
+def _resolve_vlm_provider(_device_class: str | None = None) -> str:
     configured = get_settings().TIER_VISION_PROVIDER
     if configured != "auto":
         return configured
@@ -260,6 +304,6 @@ def _resolve_vlm_provider(device_class: str | None = None) -> str:
     info = DeviceInfo()
     if info.vlm_tier == VLMTier.LOCAL:
         return "localai" if info.has_docker else "ollama"
-    elif info.vlm_tier == VLMTier.CLOUD:
+    if info.vlm_tier == VLMTier.CLOUD:
         return "openai"
     return "ollama"

@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-
-from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.core.settings import get_settings
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.openai_client import OpenAIInferenceClient
+from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
+from cherenkov.core.settings import get_settings
 from cherenkov.substrate.provider import ProviderCapabilities
 
 
@@ -16,7 +15,7 @@ class OpenAIProvider:
         self.client = client or OpenAIInferenceClient()
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
-        content = self.client.complete(
+        content = self.client.complete_code(
             system_prompt="You are a logical AI.",
             user_prompt=request.task,
             model=get_settings().OPENAI_MODEL,

@@ -1,6 +1,7 @@
 """
 CHERENKOV adapters/notifiers/pagerduty.py — PagerDuty Events API V2 Notifier.
 """
+from __future__ import annotations
 
 import json
 import os

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Callable
+import json
+import urllib.request
+from collections.abc import Callable
+from typing import Any
 
-from cherenkov.core.errors import get_logger
 from cherenkov.core.contracts import ReasoningRequest
-from cherenkov.substrate.router import route
+from cherenkov.core.errors import get_logger
 from cherenkov.hitl.contracts import (
     HitlEnvelope,
     HitlItem,
@@ -14,11 +16,12 @@ from cherenkov.hitl.contracts import (
 )
 from cherenkov.hitl.store import HitlQueue
 from cherenkov.openclaw.contracts import (
+    ClassificationRequest,
     OpenClawConfig,
     TriggerRequest,
-    ClassificationRequest,
 )
 from cherenkov.openclaw.feedback import HealingFeedbackStore
+from cherenkov.substrate.router import route
 
 NotifyCallback = Callable[[HitlEnvelope], None]
 TriggerCallback = Callable[[TriggerRequest], HitlEnvelope]
@@ -85,9 +88,6 @@ class OpenClawAdapter:
         self._trigger_handlers.append(handler)
 
     def _notify(self, envelope: HitlEnvelope) -> None:
-        import urllib.request
-        import json
-
         for cb in self._notify_callbacks:
             try:
                 cb(envelope)
@@ -440,5 +440,5 @@ class OpenClawAdapter:
             return err_envelope(
                 "openclaw.explain",
                 "llm_unavailable",
-                f"Offline path: Local model is down or unreachable. Error: {str(exc)}",
+                f"Offline path: Local model is down or unreachable. Error: {exc!s}",
             )

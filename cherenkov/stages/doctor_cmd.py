@@ -6,15 +6,19 @@ Report effective config, device/model/egress health, and where each value came f
 
 from __future__ import annotations
 
+import glob
+import os
 import shutil
 import subprocess
+from pathlib import Path
 
-from cherenkov.core.settings import get_settings
-from cherenkov.core.compat import npx as _npx, subprocess_env as _subprocess_env
+from cherenkov.core.compat import npx as _npx
+from cherenkov.core.compat import subprocess_env as _subprocess_env
 from cherenkov.core.config_loader import (
     LayeredConfig,
     load_effective_config,
 )
+from cherenkov.core.settings import get_settings
 
 
 def check_ollama_binary() -> tuple[bool, str]:
@@ -73,8 +77,6 @@ _NODE_FALLBACK_PATHS = [
 
 
 def check_node() -> tuple[bool, str]:
-    import os
-    import glob as _glob
     path = shutil.which("node")
     if not path:
         # nvm-managed node won't be on the detached server's PATH — probe known locations
@@ -84,7 +86,7 @@ def check_node() -> tuple[bool, str]:
                 break
     if not path:
         # last resort: glob nvm versions directory
-        matches = _glob.glob("/home/*/.nvm/versions/node/*/bin/node")
+        matches = glob.glob("/home/*/.nvm/versions/node/*/bin/node")
         if matches:
             path = sorted(matches)[-1]
     if path:
@@ -184,7 +186,7 @@ def check_egress_blocked(cfg: LayeredConfig) -> tuple[bool, str]:
             "If this provider is external, set egress=any."
         )
 
-    healthy = len(warnings) == 0
+    healthy = not warnings
     return healthy, "; ".join(warnings) if warnings else "egress policy consistent"
 
 
@@ -283,9 +285,8 @@ def run_doctor(desktop: bool = False) -> int:
         )
 
     # ── Demo mode availability ───────────────────────────────────────────
-    import os as _os, pathlib as _pl
-    _demo_fixtures = _pl.Path(__file__).parent.parent.parent / "stub" / "generated_tests"
-    _demo_target = _pl.Path(__file__).parent.parent.parent / "target" / "target_api.py"
+    _demo_fixtures = Path(__file__).parent.parent.parent / "stub" / "generated_tests"
+    _demo_target = Path(__file__).parent.parent.parent / "target" / "target_api.py"
     _demo_ok = _demo_fixtures.exists() and any(_demo_fixtures.glob("*.spec.ts")) and _demo_target.exists()
     print(
         f"\n  {'demo mode':<30} {'[OK]' if _demo_ok else '[NO]'}  "

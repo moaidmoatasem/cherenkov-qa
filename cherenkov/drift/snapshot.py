@@ -11,7 +11,10 @@ import hashlib
 import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from cherenkov.drift.fingerprint import Fingerprint
 
 
 def canonicalize_spec(spec: dict[str, Any]) -> str:
@@ -54,7 +57,7 @@ class SpecSuiteSnapshot:
     snapshot_id: str
     spec_hash: str
     suite_hash: str
-    fingerprint: "Fingerprint"  # noqa: F821  (imported at runtime)
+    fingerprint: Fingerprint
     generation_profile: str
     created_at: str
 
@@ -64,7 +67,7 @@ class SpecSuiteSnapshot:
         spec: dict[str, Any],
         suite: dict[str, Any],
         generation_profile: str = "default",
-    ) -> "SpecSuiteSnapshot":
+    ) -> SpecSuiteSnapshot:
         from cherenkov.drift.fingerprint import fingerprint_of
 
         now = datetime.now(timezone.utc)
@@ -104,7 +107,7 @@ class SpecSuiteSnapshot:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "SpecSuiteSnapshot":
+    def from_dict(cls, data: dict[str, Any]) -> SpecSuiteSnapshot:
         from cherenkov.drift.fingerprint import Fingerprint
 
         fp_data = data["fingerprint"]

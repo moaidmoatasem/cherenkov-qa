@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from cherenkov.truth.sources import GRPCSourceAdapter, GraphQLSourceAdapter
 from cherenkov.core.contracts import Claim
+from cherenkov.truth.sources import GraphQLSourceAdapter, GRPCSourceAdapter
 
 _PROTO = """
 syntax = "proto3";
@@ -44,7 +44,7 @@ type Pet {
 
 class TestGRPCSourceAdapter:
     def _adapter_with_proto(self, content: str) -> tuple[GRPCSourceAdapter, str]:
-        tmp = tempfile.NamedTemporaryFile(suffix=".proto", delete=False, mode="w")
+        tmp = tempfile.NamedTemporaryFile(suffix=".proto", delete=False, mode="w")  # noqa: SIM115
         tmp.write(content)
         tmp.close()
         return GRPCSourceAdapter(), tmp.name
@@ -89,9 +89,8 @@ class TestGRPCSourceAdapter:
             GRPCSourceAdapter().discover_claims("/some/file.yaml")
 
     def test_directory_with_no_protos_raises(self):
-        with tempfile.TemporaryDirectory() as d:
-            with pytest.raises(FileNotFoundError):
-                GRPCSourceAdapter().discover_claims(d)
+        with tempfile.TemporaryDirectory() as d, pytest.raises(FileNotFoundError):
+            GRPCSourceAdapter().discover_claims(d)
 
     def test_directory_discovers_all_protos(self):
         with tempfile.TemporaryDirectory() as d:
@@ -99,7 +98,7 @@ class TestGRPCSourceAdapter:
                 (Path(d) / f"svc{i}.proto").write_text(_PROTO)
             claims = GRPCSourceAdapter().discover_claims(d)
             rpc_claims = [c for c in claims if c.category == "grpc_rpc"]
-            assert len(rpc_claims) == 6  # 2 RPCs × 3 files
+            assert len(rpc_claims) == 6  # 2 RPCs x 3 files
 
     def test_provenance_source_uri_is_absolute(self):
         adapter, path = self._adapter_with_proto(_PROTO)
@@ -110,7 +109,7 @@ class TestGRPCSourceAdapter:
 
 class TestGraphQLSourceAdapter:
     def _adapter_with_sdl(self, content: str) -> tuple[GraphQLSourceAdapter, str]:
-        tmp = tempfile.NamedTemporaryFile(suffix=".graphql", delete=False, mode="w")
+        tmp = tempfile.NamedTemporaryFile(suffix=".graphql", delete=False, mode="w")  # noqa: SIM115
         tmp.write(content)
         tmp.close()
         return GraphQLSourceAdapter(), tmp.name
@@ -159,12 +158,12 @@ class TestGraphQLSourceAdapter:
 class TestTruthSourcesPackageExports:
     def test_all_adapters_importable_from_package(self):
         from cherenkov.truth.sources import (
-            GRPCSourceAdapter,
-            GraphQLSourceAdapter,
-            OpenAPISourceAdapter,
-            TrafficSourceAdapter,
             DBSchemaSourceAdapter,
+            GraphQLSourceAdapter,
+            GRPCSourceAdapter,
+            OpenAPISourceAdapter,
             SourceAdapter,
+            TrafficSourceAdapter,
         )
         for cls in (GRPCSourceAdapter, GraphQLSourceAdapter, OpenAPISourceAdapter,
                     TrafficSourceAdapter, DBSchemaSourceAdapter):

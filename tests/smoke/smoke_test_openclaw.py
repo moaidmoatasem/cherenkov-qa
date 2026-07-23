@@ -21,7 +21,7 @@ import time
 # Ensure package root is on path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cherenkov.hitl.contracts import HitlItem, HitlEnvelope
+from cherenkov.hitl.contracts import HitlEnvelope, HitlItem
 from cherenkov.hitl.store import HitlQueue
 from cherenkov.openclaw.adapter import OpenClawAdapter, TriggerRequest
 from cherenkov.openclaw.contracts import OpenClawConfig
@@ -148,7 +148,7 @@ def main() -> int:
     print("\n6. Polling")
     env = adapter.poll_envelope()
     check("poll returns envelope", env.ok)
-    initial_pending = env.payload["pending_count"]
+    _initial_pending = env.payload["pending_count"]
 
     queue.enqueue(HitlItem(id="poll-fresh", endpoint="/api/new", method="POST"))
     env = adapter.poll_envelope()
@@ -272,7 +272,7 @@ def main() -> int:
     print("\n9. HTTP server smoke test (FastAPI)")
     HAS_FASTAPI = False
     try:
-        import fastapi  # noqa
+        import fastapi  # noqa: F401
 
         HAS_FASTAPI = True
     except ImportError:
@@ -283,7 +283,7 @@ def main() -> int:
             from cherenkov.openclaw.server import serve_background
 
             cfg = OpenClawConfig(port=18721)
-            app, thread = serve_background(adapter=adapter, config=cfg)
+            _app, thread = serve_background(adapter=adapter, config=cfg)
             time.sleep(0.5)
 
             import urllib.request

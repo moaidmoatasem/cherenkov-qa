@@ -6,8 +6,8 @@ Proves generation of standard local k6 script files and graceful execution repor
 
 import os
 import subprocess
-import time
 import sys
+import time
 
 from cherenkov.execution.k6_runner import K6Runner
 
@@ -70,7 +70,7 @@ def main():
         print(f"✓ k6 Performance script generated successfully: {k6_file}")
 
         # Check file contents to ensure correct payload mapping
-        with open(k6_file, "r", encoding="utf-8") as f:
+        with open(k6_file, encoding="utf-8") as f:
             content = f.read()
         assert (
             "http.post" in content
@@ -106,4 +106,4 @@ def test_legacy_perf():
         main()
     except SystemExit as e:
         if e.code != 0:
-            raise AssertionError(f"Test failed with exit code {e.code}")
+            raise AssertionError(f"Test failed with exit code {e.code}") from e

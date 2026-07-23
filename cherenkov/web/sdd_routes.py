@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-import re as _re
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -37,6 +37,7 @@ router = APIRouter(tags=["sdd"])
 SYNC_DIR = Path("agent_memory/sync")
 FINDINGS_DIR = SYNC_DIR / "findings"
 MEMORY_DIR = Path("agent_memory").resolve()
+_RE_SAFE_ID = re.compile(r"^[a-zA-Z0-9_\-]{1,128}$")
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -47,7 +48,7 @@ def _read_json(path: Path) -> dict[str, Any]:
 
 
 def _validate_session_id(session_id: str) -> str:
-    if not _re.match(r"^[a-zA-Z0-9_\-]{1,128}$", session_id):
+    if not _RE_SAFE_ID.match(session_id):
         raise HTTPException(
             status_code=400,
             detail="Invalid session_id: must be alphanumeric/underscore/hyphen, max 128 chars",
@@ -97,9 +98,9 @@ async def list_sessions(
     session = await asyncio.to_thread(_read_json, SYNC_DIR / "session.json")
     prev = session.get("previous_sessions", [])
     current = session.get("session", {})
-    result = []
+    result: list[dict[str, Any]] = []
     if current and current.get("id") and current["id"] != "sess_init":
-        result.append(_coerce_session(current))
+        result.append(_coerce_session(current).model_dump())
     for p in reversed(prev[-limit:]):
         result.append(
             SddSession(
@@ -289,7 +290,7 @@ async def get_graph_status():
     return GraphStatus(
         node_count=exp.get("experience_count", 0) + 2,
         edge_count=exp.get("experience_count", 0),
-        session_count=session.get("previous_sessions", []).__len__() + 1,
+        session_count=len(session.get("previous_sessions", [])) + 1,
         experience_count=exp.get("experience_count", 0),
     ).model_dump()
 
@@ -418,9 +419,9 @@ async def get_wiki_file(path: str):
     try:
         return await asyncio.to_thread(_read_wiki_file, path)
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Wiki file {path} not found")
+        raise HTTPException(status_code=404, detail=f"Wiki file {path} not found") from None
     except PermissionError:
-        raise HTTPException(status_code=403, detail="Path traversal blocked")
+        raise HTTPException(status_code=403, detail="Path traversal blocked") from None
 
 
 # ── Findings Endpoint ────────────────────────────────────────────────────

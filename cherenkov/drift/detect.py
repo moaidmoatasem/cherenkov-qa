@@ -12,7 +12,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from cherenkov.drift.snapshot import SpecSuiteSnapshot
 
 class DriftKind(str, Enum):
     REMOVED_OP_STILL_TESTED = "removed_op_still_tested"
@@ -70,7 +73,7 @@ def _response_schemas(spec: dict[str, Any], operation: dict[str, Any]) -> dict[s
         if not isinstance(response, dict):
             continue
         # OpenAPI 3.x content map
-        for media_type, media_obj in response.get("content", {}).items():
+        for _media_type, media_obj in response.get("content", {}).items():
             if not isinstance(media_obj, dict):
                 continue
             schema = media_obj.get("schema", {})
@@ -176,7 +179,7 @@ def _check_added_optional_params(
     return findings
 
 def detect_findings(
-    baseline_snapshot: "SpecSuiteSnapshot",  # noqa: F821
+    baseline_snapshot: SpecSuiteSnapshot,
     current_spec: dict[str, Any],
     current_suite: dict[str, Any],
     runner_violations: list[dict] | None = None,
@@ -203,8 +206,8 @@ def detect_findings(
     # the operation_set from the fingerprint as the ground truth for "what existed."
     baseline_op_ids: frozenset[str] = baseline_snapshot.fingerprint.operation_set
     current_spec_ops = _extract_operations(current_spec)
-    current_op_ids = frozenset(current_spec_ops.keys())
-    suite_op_ids = frozenset(current_suite.keys()) - {"_generation_profile"}
+    current_op_ids = frozenset(current_spec_ops)
+    suite_op_ids = frozenset(current_suite) - {"_generation_profile"}
 
     # A1: REMOVED_OP_STILL_TESTED — op was in baseline spec, gone from current, still in suite
     removed_ops = baseline_op_ids - current_op_ids

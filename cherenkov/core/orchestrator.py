@@ -30,6 +30,7 @@ from cherenkov.stages.ingest import IngestStage
 from cherenkov.stages.plan import PlanStage
 from cherenkov.stages.review import ReviewStage
 
+
 def _assert_not_production() -> None:
     if os.getenv("CHERENKOV_ENV", "production") == "production":
         raise RuntimeError(
@@ -50,7 +51,7 @@ class OrchestrationEngine:
 
         run_dir = os.path.abspath(f".cherenkov/runs/{self.run_id}")
         os.makedirs(run_dir, exist_ok=True)
-        self._events_file = open(  # noqa: SIM115 — kept open for pipeline duration
+        self._events_file = open(  # noqa: SIM115
             os.path.join(run_dir, "events.jsonl"), "a", encoding="utf-8"
         )
         set_events_file(self._events_file)
@@ -68,7 +69,7 @@ class OrchestrationEngine:
             self._events_file = None
 
     def _progress(self, *args, **kwargs) -> None:
-        print(*args, **kwargs)
+        print(*args, **kwargs)  # noqa: T201
 
     def _emit_event(self, event: str, data: dict) -> None:
         if self.event_callback:
@@ -178,13 +179,14 @@ class OrchestrationEngine:
             if self.breaker.tripped:
                 return False, 0, 0
 
+            cs = current_scenario
             generate = self.executor.execute(
                 "GENERATE",
-                lambda cs=current_scenario: self.run_generate(
-                    cs, simulate_malformed=(simulate_fail_stage == "GENERATE")
+                lambda: self.run_generate(
+                    cs, simulate_malformed=(simulate_fail_stage == "GENERATE")  # noqa: B023
                 ),
-                lambda cs=current_scenario: GenerateOutput(
-                    scenario_id=cs.mutation_id or "unknown",
+                lambda: GenerateOutput(
+                    scenario_id=cs.mutation_id or "unknown",  # noqa: B023
                     test_code="", imports=[],
                     status=Status.FAILED,
                     errors=[StageError(code="GENERATE_FALLBACK", detail="Failed after retry ladder.")],
@@ -210,13 +212,14 @@ class OrchestrationEngine:
 
             self._emit_event("stage_start", {"stage": "REVIEW"})
 
+            g = generate
             review = self.executor.execute(
                 "REVIEW",
-                lambda g=generate: self.run_review(
-                    g, spec_path, simulate_malformed=(simulate_fail_stage == "REVIEW")
+                lambda: self.run_review(
+                    g, spec_path, simulate_malformed=(simulate_fail_stage == "REVIEW")  # noqa: B023
                 ),
-                lambda g=generate: ReviewOutput(
-                    scenario_id=g.scenario_id, gates=[], quality_score=0.0,
+                lambda: ReviewOutput(
+                    scenario_id=g.scenario_id, gates=[], quality_score=0.0,  # noqa: B023
                     verdict=Verdict.REGENERATE, status=Status.FAILED,
                     errors=[StageError(code="REVIEW_FALLBACK", detail="Failed after retry ladder.")],
                     metadata=StageMeta(stage="REVIEW", duration_ms=0),
@@ -570,12 +573,27 @@ class OrchestrationEngine:
             self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
             return False
 
+        # A FAILED ingest (e.g. missing/unreadable spec) yields zero endpoints,
+        # which would otherwise flow into _run_scenarios_phase and vacuously pass
+        # (0 scenarios -> success). Honor the stage's own FAILED status instead.
+        if getattr(ingest, "status", None) == Status.FAILED:
+            self.log.error("pipeline aborted", reason="ingest stage failed")
+            self._progress("\n  ABORTED: INGEST failed — no valid spec to test.\n")
+            self._emit_event("pipeline_complete", {"success": False, "reason": "INGEST failed"})
+            return False
+
         plan = self._run_plan_stage(ingest, simulate_fail_stage)
 
         if self.breaker.tripped:
             self.log.error("pipeline aborted", reason="circuit breaker tripped")
             self._progress(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
             self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
+            return False
+
+        if getattr(plan, "status", None) == Status.FAILED:
+            self.log.error("pipeline aborted", reason="plan stage failed")
+            self._progress("\n  ABORTED: PLAN failed — no scenarios to run.\n")
+            self._emit_event("pipeline_complete", {"success": False, "reason": "PLAN failed"})
             return False
 
         pipeline_success, scenario_results, all_durations, all_endpoints, passed_endpoints = \
