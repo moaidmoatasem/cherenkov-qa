@@ -139,7 +139,7 @@ Generate synthetic traffic patterns for load testing.
 
 ### `self-test`
 
-Run CHERENKOV's own internal self-test suite.
+Run a deterministic dry-run of the pipeline (mocking Ollama and the server).
 
 ### `init`
 

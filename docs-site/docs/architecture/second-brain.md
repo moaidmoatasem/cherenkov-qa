@@ -51,12 +51,11 @@ url = "redis://localhost:6379"
 
 ## Query the Second Brain
 
-```bash
-# CLI query
-python scripts/agent_sync.py experience query "Which endpoints drift most often?"
+The knowledge mesh is queryable over its REST API:
 
-# Full-text search
-python scripts/agent_sync.py memory search "authentication 401"
+```bash
+curl -H "X-API-Key: $CHERENKOV_API_KEY" \
+  "http://localhost:8000/api/v1/knowledge/query?q=Which+endpoints+drift+most+often&limit=10"
 ```
 
 ---
@@ -88,20 +87,7 @@ Future Generation
 
 CHERENKOV automatically extracts and promotes reusable patterns from sessions:
 
-- Every `cherenkov validate` run logs findings to `agent_memory/cherenkov_memory.db`
+- Every `cherenkov validate` run logs findings to a local memory store
 - Patterns that appear 3+ times are auto-promoted to "known idioms"
 - Idioms are recalled at generation time to avoid repeating past mistakes
-
-```bash
-# Check memory status
-python scripts/agent_sync.py memory status
-
-# List known patterns
-python scripts/agent_sync.py memory list --limit 20
-
-# Full-text search memory
-python scripts/agent_sync.py memory search "timeout"
-
-# Force-promote eligible patterns
-python scripts/agent_sync.py memory promote --threshold 3
-```
+- Query promoted idioms through the same `/api/v1/knowledge/query` endpoint above
