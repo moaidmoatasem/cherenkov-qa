@@ -30,7 +30,7 @@ click>=8.4.1,<9.0.0
 PyJWT>=2.8.0,<3.0.0
 
 # Mobile testing
-Appium-Python-Client>=3.0.0,<4.0.0
+Appium-Python-Client>=3.0.0,<6.0.0
 
 # Optional: Redis session/vector store (graceful fallback to SQLite if absent)
 redis>=8.0.1,<9.0.0
