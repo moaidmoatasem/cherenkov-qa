@@ -13,7 +13,7 @@ requests>=2.32.0,<3.0.0
 websockets>=12.0,<14.0
 
 # Config parsing
-pyyaml>=6.0.1,<7.0.0
+pyyaml>=6.0.3,<7.0.0
 
 # Web framework (review dashboard + API)
 fastapi>=0.110.0,<1.0.0
