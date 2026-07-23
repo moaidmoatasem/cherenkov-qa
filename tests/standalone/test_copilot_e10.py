@@ -10,24 +10,33 @@ Covers:
 All model calls are mocked; no network, no browser, no Ollama required.
 """
 
+import json
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock
 
+from cherenkov.copilot.digest import SecondPairOfEyes
+from cherenkov.copilot.intent import IntentAuthor
+from cherenkov.copilot.live_session import (
+    enqueue_scenario_finding,
+    hypothesis_from_scenario,
+)
+from cherenkov.copilot.triage import Triage, render_triage
 from cherenkov.core.contracts import (
     DivergenceClass,
     ExplorerFinding,
     ExplorerFindingKind,
+    IntentSpec,
+    IntentStep,
     ReasoningResult,
     Severity,
     Status,
     TriageCategory,
 )
 from cherenkov.divergence.explorer import Explorer
-from cherenkov.copilot.intent import IntentAuthor
-from cherenkov.copilot.digest import SecondPairOfEyes
-from cherenkov.copilot.triage import Triage, render_triage
 from cherenkov.healing.diagnose import FailureClass
+from cherenkov.hitl.store import HitlQueue
 
 
 def _result(content) -> ReasoningResult:
@@ -215,7 +224,7 @@ class TestIntentAuthor(unittest.TestCase):
         }
         author = IntentAuthor(router=self._router_returning(payload))
         with tempfile.TemporaryDirectory() as d:
-            spec, path = author.author(
+            _spec, path = author.author(
                 "smoke test", output_dir=d, target_url="http://x"
             )
             self.assertTrue(path.exists())
@@ -329,6 +338,110 @@ class TestTriage(unittest.TestCase):
         self.assertEqual(res.category, TriageCategory.ENV)
         out = render_triage([res])
         self.assertIn("ENV", out)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Agentic exploration — live_session + `cherenkov record`
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class TestLiveSession(unittest.TestCase):
+    def _spec(self) -> IntentSpec:
+        return IntentSpec(
+            id="s1",
+            raw_intent="submit valid signup and confirm success message",
+            title="Signup shows confirmation",
+            target_url="http://shop/signup",
+            steps=[
+                IntentStep(action="navigate", value="/signup"),
+                IntentStep(action="fill", target="the Email field", value="a@b.com"),
+                IntentStep(action="click", target="the Sign up button"),
+            ],
+        )
+
+    def test_hypothesis_from_scenario_is_d3(self):
+        hyp = hypothesis_from_scenario(
+            self._spec(),
+            expected="A visible success message appears",
+            actual="Page stayed on the form, no message shown",
+            severity=Severity.HIGH,
+        )
+        self.assertEqual(hyp.divergence_class, DivergenceClass.D3_UI_SPEC)
+        self.assertEqual(hyp.severity, Severity.HIGH)
+        self.assertIn("Signup shows confirmation", hyp.claim_a)
+        self.assertIn("Page stayed on the form", hyp.claim_b)
+        self.assertTrue(hyp.repro_steps)
+
+    def test_hypothesis_falls_back_to_raw_intent_when_no_steps(self):
+        spec = IntentSpec(
+            id="s2", raw_intent="do the thing", title="Untitled", steps=[]
+        )
+        hyp = hypothesis_from_scenario(spec, expected="x", actual="y")
+        self.assertEqual(hyp.repro_steps, ["do the thing"])
+
+    def test_enqueue_scenario_finding_lands_in_hitl(self):
+        with tempfile.TemporaryDirectory() as d:
+            q = HitlQueue(db_path=str(Path(d) / "hitl.db"))
+            hyp = hypothesis_from_scenario(
+                self._spec(),
+                expected="success",
+                actual="nothing",
+                severity=Severity.CRITICAL,
+            )
+            item = enqueue_scenario_finding(hyp, run_id="run_x", queue=q)
+            self.assertEqual(item.severity, Severity.CRITICAL)
+            stored = q.get(hyp.id)
+            self.assertIsNotNone(stored)
+            self.assertEqual(stored.run_id, "run_x")
+            self.assertEqual(stored.mutation_label, "D3_ui_spec")
+
+
+class TestRunRecord(unittest.TestCase):
+    def test_run_record_enqueues_only_failures(self):
+        from cherenkov.stages import copilot_cmd
+
+        with tempfile.TemporaryDirectory() as d:
+            db_path = str(Path(d) / "hitl.db")
+            result_path = Path(d) / "results.json"
+            result_path.write_text(
+                json.dumps(
+                    {
+                        "scenarios": [
+                            {
+                                "title": "Passing scenario",
+                                "passed": True,
+                            },
+                            {
+                                "title": "Signup shows confirmation",
+                                "target_url": "http://shop/signup",
+                                "raw_intent": "submit valid signup",
+                                "steps": [
+                                    {"action": "navigate", "value": "/signup"}
+                                ],
+                                "passed": False,
+                                "expected": "success message",
+                                "actual": "nothing shown",
+                                "severity": "high",
+                            },
+                        ]
+                    }
+                )
+            )
+            import cherenkov.hitl.store as store_mod
+
+            original_default = store_mod._default_db_path
+            store_mod._default_db_path = lambda: db_path
+            try:
+                rc = copilot_cmd.run_record(str(result_path), run_id="run_y")
+            finally:
+                store_mod._default_db_path = original_default
+
+            self.assertEqual(rc, 0)
+            q = HitlQueue(db_path=db_path)
+            items = q.list(status=None)
+            self.assertEqual(len(items), 1)
+            self.assertEqual(items[0].severity, Severity.HIGH)
+            self.assertEqual(items[0].run_id, "run_y")
 
 
 if __name__ == "__main__":

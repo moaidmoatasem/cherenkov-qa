@@ -12,20 +12,23 @@ Enforces the decisions that took the whole spec arc to settle:
 from __future__ import annotations
 
 import json
+import random
 import re
 import time
 
 import requests
-import random as _random
 
+from cherenkov.ai.interface import InferenceClient
 from cherenkov.core.errors import OllamaJSONError, get_logger
 from cherenkov.core.settings import get_settings
-from cherenkov.ai.interface import InferenceClient
+
+_RE_FENCE_START = re.compile(r"^```[a-z]*\n?")
+_RE_FENCE_END = re.compile(r"\n?```$")
 
 
 def _post_with_retry(
     url: str, payload: dict, timeout: int, max_retries: int = 4
-) -> "requests.Response":
+) -> requests.Response:
     """POST with exponential backoff retry on Timeout or ConnectionError."""
     last_err: Exception | None = None
     for attempt in range(max_retries):
@@ -34,7 +37,7 @@ def _post_with_retry(
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
             last_err = e
             if attempt < max_retries - 1:
-                wait = (2**attempt) * 0.5 + _random.uniform(0, 0.5)
+                wait = (2**attempt) * 0.5 + random.uniform(0, 0.5)
                 time.sleep(wait)
     if last_err is None:
         raise RuntimeError("_post_with_retry called with max_retries=0")
@@ -225,8 +228,8 @@ class OllamaInferenceClient(InferenceClient):
             text = body.get("response", "").strip()
             self._token_usage["prompt_tokens"] = body.get("prompt_eval_count", 0)
             self._token_usage["completion_tokens"] = body.get("eval_count", 0)
-            text = re.sub(r"^```[a-z]*\n?", "", text)
-            text = re.sub(r"\n?```$", "", text)
+            text = _RE_FENCE_START.sub("", text)
+            text = _RE_FENCE_END.sub("", text)
             text = text.strip()
             log.info(
                 "code ok",

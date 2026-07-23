@@ -1,0 +1,50 @@
+"""tests/unit/test_mcp_surface_drift.py — MCP-surface method-name drift.
+
+Two surfaces called methods that don't exist on their collaborators:
+- web/routes/agents.py SSE stream called MCPRegistry.get_all_servers()
+  (real: list_servers() -> list[dict]) and read attributes off the dicts,
+  so /api/v1/agents/stream emitted an error event every poll.
+- mcp/handlers.py query_rag tool called RAGIndex.query() (real:
+  query_similar_incidents()), so the tool returned an error on every call.
+"""
+from __future__ import annotations
+
+import json
+
+import pytest
+
+from cherenkov.mcp.handlers import _tool_query_rag
+from cherenkov.mcp.mesh_router import MCPRegistry
+from cherenkov.web.routes import agents as agents_route
+
+
+@pytest.mark.anyio
+async def test_agents_sse_emits_status_for_registered_server(monkeypatch):
+    registry = MCPRegistry()
+    registry.register_server(
+        "srv1", "http://localhost:8080/mcp", [{"name": "echo"}, {"name": "ping"}]
+    )
+    monkeypatch.setattr(agents_route, "get_registry", lambda: registry)
+
+    gen = agents_route.event_generator()
+    try:
+        first = await gen.__anext__()
+    finally:
+        await gen.aclose()
+
+    assert first.startswith("data: ")
+    payload = json.loads(first[len("data: ") :])
+    agent = payload["active_agents"][0]
+    assert agent["name"] == "srv1"
+    assert agent["status"] == "healthy"
+    assert agent["tools"] == 2
+
+
+def test_query_rag_tool_returns_ok_not_error():
+    # No Ollama in this env → query_similar_incidents returns [], but the tool
+    # must complete successfully rather than crash on a missing method.
+    result = _tool_query_rag({"query": "connection refused"})
+    assert result.isError is False
+    body = json.loads(result.content[0].text)
+    assert body["query"] == "connection refused"
+    assert isinstance(body["results"], list)

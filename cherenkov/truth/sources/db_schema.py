@@ -13,16 +13,18 @@ from typing import Any
 from cherenkov.core.contracts import Claim, Provenance, ProvenanceType
 from cherenkov.truth.sources.interface import SourceAdapter
 
+_RE_CREATE_TABLE = re.compile(
+    r"CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:\w+\.)?(\w+)\s*\((.*?)\)\s*;",
+    re.IGNORECASE | re.DOTALL,
+)
+_RE_DEFAULT_VALUE = re.compile(r"DEFAULT\s+(\S+)", re.IGNORECASE)
+
 
 def _parse_create_table(sql: str) -> list[dict[str, Any]]:
     """Extract table definitions and their constraints from a SQL CREATE statement."""
     tables: list[dict[str, Any]] = []
-    pattern = re.compile(
-        r"CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:\w+\.)?(\w+)\s*\((.*?)\)\s*;",
-        re.IGNORECASE | re.DOTALL,
-    )
 
-    for match in pattern.finditer(sql):
+    for match in _RE_CREATE_TABLE.finditer(sql):
         table_name = match.group(1)
         body = match.group(2)
 
@@ -58,7 +60,7 @@ def _parse_create_table(sql: str) -> list[dict[str, Any]]:
                 col["primary_key"] = "PRIMARY KEY" in rest_upper
                 col["unique"] = "UNIQUE" in rest_upper
                 col["default"] = None
-                default_match = re.search(r"DEFAULT\s+(\S+)", rest_raw, re.IGNORECASE)
+                default_match = _RE_DEFAULT_VALUE.search(rest_raw)
                 if default_match:
                     col["default"] = default_match.group(1)
                 columns.append(col)

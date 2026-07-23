@@ -6,14 +6,16 @@ and surfaces issues for agent-driven remediation.
 
 from __future__ import annotations
 
+import argparse
 import json
-import sys
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
+
 
 class SnykVulnerability(BaseModel):
     vuln_id: str = Field(alias="id")
@@ -209,8 +211,6 @@ def print_summary(report: SnykReport) -> None:
 
 def main() -> None:
     """CLI entry point: parse Snyk JSON and write agent memory."""
-    import argparse
-
     parser = argparse.ArgumentParser(
         description="Import Snyk scan results for agent remediation"
     )

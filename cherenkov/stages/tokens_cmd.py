@@ -57,7 +57,7 @@ def run_tokens_report(days: int = 30, as_json: bool = False) -> None:
         print(f"  {'─'*56}")
         for rec in report.recommendations:
             sev = rec["severity"].upper()
-            icon = {"OK": "✓", "INFO": "ℹ", "WARNING": "⚠", "ERROR": "✗"}.get(sev, "·")
+            icon = {"OK": "✓", "INFO": "i", "WARNING": "⚠", "ERROR": "✗"}.get(sev, "·")
             print(f"\n  {icon} [{sev}] {rec['title']}")
             print(f"    {rec['detail']}")
             if rec.get("action"):

@@ -1,10 +1,15 @@
-import threading as _threading
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
+from __future__ import annotations
+
 import os
-import time as _time
+import threading
+import time
+
 import requests
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from cherenkov.core.errors import get_logger
+
 
 class CherenkovSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')
@@ -19,6 +24,7 @@ class CherenkovSettings(BaseSettings):
 
     PLAYWRIGHT_TIMEOUT_SECONDS: int = Field(default=120, validation_alias='CHERENKOV_PLAYWRIGHT_TIMEOUT_SECONDS')
     TSC_TIMEOUT_SECONDS: int = Field(default=60, validation_alias='CHERENKOV_TSC_TIMEOUT_SECONDS')
+    GEN_TIMEOUT_S: int = Field(default=120, validation_alias='CHERENKOV_GEN_TIMEOUT_S')
     PRISM_DOCKER_START_TIMEOUT_SECONDS: int = Field(default=30, validation_alias='CHERENKOV_PRISM_DOCKER_START_TIMEOUT_SECONDS')
     PRISM_DOCKER_STOP_TIMEOUT_SECONDS: int = Field(default=15, validation_alias='CHERENKOV_PRISM_DOCKER_STOP_TIMEOUT_SECONDS')
 
@@ -58,6 +64,7 @@ class CherenkovSettings(BaseSettings):
     CERTIFICATION_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_CERTIFICATION_ENABLED')
     CERTIFICATION_GOLD_SET_PATH: str = Field(default='.cherenkov/gold_set.json', validation_alias='CHERENKOV_CERTIFICATION_GOLD_SET_PATH')
     CERTIFICATION_MIN_FAITHFULNESS: float = Field(default=0.8, validation_alias='CHERENKOV_CERTIFICATION_MIN_FAITHFULNESS')
+    CERTIFICATION_MAX_CONCURRENCY: int = Field(default=4, validation_alias='CHERENKOV_CERTIFICATION_MAX_CONCURRENCY')
 
     MAX_CONCURRENT_SCENARIOS: int = Field(default=4, validation_alias='CHERENKOV_PARALLEL_SCENARIOS')
     DAST_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_DAST_ENABLED')
@@ -65,6 +72,8 @@ class CherenkovSettings(BaseSettings):
 
     CONSENSUS_ORACLE_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_CONSENSUS_ORACLE')
     CONSENSUS_ORACLE_PASSES: int = Field(default=3, validation_alias='CHERENKOV_CONSENSUS_PASSES')
+
+    MEANINGFUL_ASSERTION_GATE_ENABLED: bool = Field(default=True, validation_alias='CHERENKOV_MEANINGFUL_ASSERTION_GATE')
 
     OCR_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_OCR_ENABLED')
     OCR_TIMEOUT_SECONDS: int = Field(default=120, validation_alias='CHERENKOV_OCR_TIMEOUT_SECONDS')
@@ -116,7 +125,7 @@ class CherenkovSettings(BaseSettings):
     OUTPUT_DIR: str = Field(default='output', validation_alias='CHERENKOV_OUTPUT_DIR')
 
     @property
-    def TIERS(self) -> dict[str, dict[str, str]]:
+    def TIERS(self) -> dict[str, dict[str, str]]:  # noqa: N802
         return {
             "small": {
                 "provider": self.TIER_SMALL_PROVIDER,
@@ -145,7 +154,7 @@ class CherenkovSettings(BaseSettings):
         Results are cached for _DEVICE_CACHE_TTL seconds to avoid blocking HTTP calls
         on every health check invocation.
         """
-        now = _time.monotonic()
+        now = time.monotonic()
         if (
             self._device_cache is not None
             and (now - self._device_cache_ts) < self._DEVICE_CACHE_TTL
@@ -194,7 +203,7 @@ class CherenkovSettings(BaseSettings):
                                 size=size,
                             )
                             self._device_cache = "GPU"
-                            self._device_cache_ts = _time.monotonic()
+                            self._device_cache_ts = time.monotonic()
                             return self._device_cache
                         cpu_warn = (
                             "CPU mode — generation ~10x slower, GPU recommended."
@@ -206,7 +215,7 @@ class CherenkovSettings(BaseSettings):
                             size_vram=0,
                         )
                         self._device_cache = "CPU"
-                        self._device_cache_ts = _time.monotonic()
+                        self._device_cache_ts = time.monotonic()
                         return self._device_cache
         except Exception as e:
             log.warning(
@@ -215,13 +224,13 @@ class CherenkovSettings(BaseSettings):
                 processor="UNKNOWN",
             )
             self._device_cache = "UNKNOWN"
-            self._device_cache_ts = _time.monotonic()
+            self._device_cache_ts = time.monotonic()
             return self._device_cache
 
         cpu_warn = "CPU mode — generation ~10x slower, GPU recommended."
         log.warning("device status", details=cpu_warn, processor="CPU", size_vram=0)
         self._device_cache = "CPU"
-        self._device_cache_ts = _time.monotonic()
+        self._device_cache_ts = time.monotonic()
         return self._device_cache
 
     # Device detection cache
@@ -229,10 +238,10 @@ class CherenkovSettings(BaseSettings):
     _device_cache_ts: float = 0.0
     _DEVICE_CACHE_TTL: float = 60.0  # seconds
 
-_settings_instance: "CherenkovSettings | None" = None
-_settings_lock = _threading.Lock()
+_settings_instance: CherenkovSettings | None = None
+_settings_lock = threading.Lock()
 
-def get_settings() -> "CherenkovSettings":
+def get_settings() -> CherenkovSettings:
     global _settings_instance
     if _settings_instance is None:
         with _settings_lock:

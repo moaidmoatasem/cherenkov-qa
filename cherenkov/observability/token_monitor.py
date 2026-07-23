@@ -18,7 +18,6 @@ import time
 
 _log = logging.getLogger(__name__)
 from dataclasses import dataclass, field
-from typing import Optional
 
 _DEFAULT_DB= os.path.join(".cherenkov", "token_usage.db")
 _BUSY_TIMEOUT_S = 10
@@ -57,7 +56,7 @@ def _price_for(provider: str, model: str) -> dict[str, float]:
     """Return {input, output} per-1K-token pricing for a provider/model pair."""
     table = _PRICE_TABLE.get(provider.lower(), _PRICE_TABLE["openai"])
     # Longest prefix match first
-    for prefix in sorted(table.keys(), key=len, reverse=True):
+    for prefix in sorted(table, key=len, reverse=True):
         if prefix == "default":
             continue
         if model.lower().startswith(prefix):
@@ -122,7 +121,7 @@ class TokenMonitor:
     def __init__(self, db_path: str | None = None):
         self.db_path = db_path or _DEFAULT_DB
         if self.db_path == ":memory:":
-            self._mem_conn: Optional[sqlite3.Connection] = sqlite3.connect(
+            self._mem_conn: sqlite3.Connection | None = sqlite3.connect(
                 ":memory:", check_same_thread=False
             )
             if self._mem_conn is not None:

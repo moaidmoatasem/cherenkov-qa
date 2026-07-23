@@ -47,7 +47,7 @@ from cherenkov.mcp.protocol import DispatchTable, serve_stdio
 log = get_logger(__name__)
 
 
-def _handle_initialize(params: dict[str, Any]) -> dict[str, Any]:
+def _handle_initialize(_params: dict[str, Any]) -> dict[str, Any]:
     """MCP initialize handshake — advertise capabilities."""
     result = MCPInitializeResult(
         protocolVersion="2024-11-05",
@@ -61,13 +61,13 @@ def _handle_initialize(params: dict[str, Any]) -> dict[str, Any]:
     return result.model_dump()
 
 
-def _handle_initialized(params: dict[str, Any]) -> None:
+def _handle_initialized(_params: dict[str, Any]) -> None:
     """MCP initialized notification — no reply required (notification handler)."""
     log.debug("MCP client initialized")
     return
 
 
-def _handle_ping(params: dict[str, Any]) -> dict[str, Any]:
+def _handle_ping(_params: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 

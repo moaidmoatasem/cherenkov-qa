@@ -35,7 +35,7 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(exc),
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from None
     user = get_user_store().get(payload.get("sub", ""))
     if not user or user.disabled:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found or disabled")

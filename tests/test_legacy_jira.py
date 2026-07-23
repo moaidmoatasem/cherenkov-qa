@@ -65,7 +65,7 @@ def run_jira_smoke_tests():
     print(f"✓ Jira ticket successfully written to disk at: {ticket_path}\n")
 
     # Read and assert contents
-    with open(ticket_path, "r", encoding="utf-8") as f:
+    with open(ticket_path, encoding="utf-8") as f:
         content = f.read()
 
     assert (

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 import xml.etree.ElementTree as ET
-from typing import Iterator
+from collections.abc import Iterator
 
 from cherenkov.sources.accessibility.contracts import AccessibilityScenario, PageTarget
 
@@ -59,7 +59,7 @@ class AccessibilitySourceAdapter:
             pass
 
     def _parse_urls_txt(self) -> Iterator[AccessibilityScenario]:
-        with open(self.source_path, "r", encoding="utf-8") as f:
+        with open(self.source_path, encoding="utf-8") as f:
             lines = [
                 line.strip() for line in f if line.strip() and not line.startswith("#")
             ]

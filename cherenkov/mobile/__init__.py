@@ -19,10 +19,10 @@ from cherenkov.mobile.registry import DeviceRegistry
 __all__ = [
     "DeviceInfo",
     "DeviceKind",
+    "DeviceRegistry",
     "DeviceState",
     "MobileLocatorStrategy",
     "MobileSession",
     "MobileSessionStatus",
     "PlatformName",
-    "DeviceRegistry",
 ]

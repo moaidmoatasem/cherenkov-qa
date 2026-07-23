@@ -13,7 +13,7 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 _DEFAULT_DB = Path.home() / ".cherenkov" / "runs.db"
 _BUSY_TIMEOUT_S = 10.0
@@ -46,7 +46,7 @@ class RunStore:
 
     def _connect(self) -> sqlite3.Connection:
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        conn = sqlite3.connect(str(self._path), timeout=_BUSY_TIMEOUT_S, check_same_thread=False)
+        conn = sqlite3.connect(self._path, timeout=_BUSY_TIMEOUT_S, check_same_thread=False)
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA journal_mode=WAL")
         return conn
@@ -105,7 +105,8 @@ class RunStore:
         command: str | None = None,
         limit: int = 50,
     ) -> list[RunRecord]:
-        clauses, params = [], []
+        clauses: list[str] = []
+        params: list[Any] = []
         if target_url:
             clauses.append("target_url=?")
             params.append(target_url)

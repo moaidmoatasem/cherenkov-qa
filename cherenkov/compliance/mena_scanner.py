@@ -4,9 +4,11 @@ CHERENKOV compliance/mena_scanner.py — MENA Cyber Security Framework Complianc
 
 from __future__ import annotations
 
-import os
 import json
+import os
 import time
+from typing import Any
+
 import requests
 
 from cherenkov.core.errors import get_logger
@@ -30,7 +32,7 @@ class MENAComplianceScanner:
             target_url=target_url,
         )
 
-        audit_results = {
+        audit_results: dict[str, Any] = {
             "tls_enforced": False,
             "hsts_present": False,
             "clickjacking_protection": False,
@@ -69,14 +71,14 @@ class MENAComplianceScanner:
 
         # 2. Static OpenAPI Contract Audit (Authentication structures)
         try:
-            with open(spec_path, "r", encoding="utf-8") as f:
+            with open(spec_path, encoding="utf-8") as f:
                 spec = json.load(f)
 
             components = spec.get("components", {})
             security_schemes = components.get("securitySchemes", {})
 
             # Check if secure Bearer token authentication is specified
-            for scheme_name, scheme in security_schemes.items():
+            for _scheme_name, scheme in security_schemes.items():
                 if scheme.get("type") == "http" and scheme.get("scheme") == "bearer":
                     audit_results["bearer_auth_defined"] = True
                     break

@@ -1,11 +1,11 @@
 """Tests for the Postman Collection importer."""
 
-import tempfile
-import os
 import json
+import os
+import tempfile
 import unittest
-from cherenkov.adapters.postman_importer import PostmanImporter
 
+from cherenkov.adapters.postman_importer import PostmanImporter
 
 SAMPLE_COLLECTION = {
     "info": {

@@ -99,7 +99,7 @@ class StageExecutor:
         stage_factory: Callable[[], Any],
         run_slice: Callable,
         fallback_report_factory: Callable[[str, str], Any],
-        report_type: type,
+        report_type: type[Any],
         contract_error_msg: str,
     ) -> list[Any]:
         """Shared retry ladder for visual/perf stages (eliminates code clone)."""
@@ -208,7 +208,7 @@ class StageExecutor:
         stage_factory: Callable[[], Awaitable[Any]],
         run_slice: Callable[..., Awaitable[Any]],
         fallback_report_factory: Callable[[str, str], Awaitable[Any]],
-        report_type: type,
+        report_type: type[Any],
         contract_error_msg: str,
     ) -> list[Any]:
         stage = await stage_factory()

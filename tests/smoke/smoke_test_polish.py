@@ -5,8 +5,8 @@ Proves help systems, bash wrappers, and CI docs checkers work E2E.
 """
 
 import os
-import subprocess
 import shutil
+import subprocess
 
 
 def main():
@@ -39,9 +39,9 @@ def main():
     # 2. Verify help screens
     print("Testing help outputs...")
     commands_to_test = [
-        wrapper_cmd + ["--help"],
-        wrapper_cmd + ["validate", "--help"],
-        wrapper_cmd + ["eject", "--help"],
+        [*wrapper_cmd, "--help"],
+        [*wrapper_cmd, "validate", "--help"],
+        [*wrapper_cmd, "eject", "--help"],
     ]
     for cmd in commands_to_test:
         proc = subprocess.run(cmd, capture_output=True, text=True)
@@ -74,7 +74,7 @@ def main():
 
     try:
         # Inject an undocumented mock subcommand into get_parser()
-        with open(src_py, "r", encoding="utf-8") as f:
+        with open(src_py, encoding="utf-8") as f:
             lines = f.readlines()
 
         # Find where eject subparser is defined and inject mockcmd there

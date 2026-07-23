@@ -13,7 +13,7 @@ class SSHRunner(RemoteRunnerPort):
         self.user = user
         self.port = port
 
-    async def execute_command(self, command: str, env: dict[str, str] | None = None) -> dict[str, Any]:
+    async def execute_command(self, command: str, _env: dict[str, str] | None = None) -> dict[str, Any]:
         """Execute command over SSH (stub implementation)."""
         # In a real implementation we would use asyncssh or paramiko
         # For Phase CC-5, we simulate the remote execution

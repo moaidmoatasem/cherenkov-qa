@@ -12,12 +12,10 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from cherenkov.adversarial.core import ThreatCategory
 from cherenkov.adversarial.detector import scan_test_code
 from cherenkov.adversarial.runner import run_adversarial_tests, save_report
-from cherenkov.evals.core import EvalSample, EvalMetric
+from cherenkov.evals.core import EvalMetric, EvalSample
 from cherenkov.evals.runner import build_samples_from_pipeline, run_evals
 from cherenkov.evals.store import EvalStore
 

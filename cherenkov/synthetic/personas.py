@@ -7,9 +7,8 @@ angle of inquiry. Personas run in parallel inside SuiteEngine.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
-
 
 # ── Persona definition ─────────────────────────────────────────────────────────
 
@@ -169,7 +168,7 @@ def _response_fields(responses: dict[str, Any], spec: dict[str, Any]) -> list[st
         for media_type, media_obj in content.items():
             if "json" in media_type and isinstance(media_obj, dict):
                 schema = _resolve_ref(media_obj.get("schema", {}), spec)
-                keys = list(schema.get("properties", {}).keys())
+                keys = list(schema.get("properties", {}))
                 if keys:
                     return keys
     return []

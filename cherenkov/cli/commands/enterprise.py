@@ -1,11 +1,13 @@
 """CLI entrypoints for Enterprise features."""
+from __future__ import annotations
+
+import json
 
 import click
-import json
-import sys
+
 from cherenkov.enterprise import (
-    get_org_manager,
     get_audit_log,
+    get_org_manager,
     get_soc2,
 )
 

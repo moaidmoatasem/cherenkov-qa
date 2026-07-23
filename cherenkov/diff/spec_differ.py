@@ -12,7 +12,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-
 _HTTP_METHODS = {"get", "post", "put", "patch", "delete", "options", "head"}
 
 
@@ -45,7 +44,7 @@ class SpecDiffReport:
 
     @property
     def has_breaking_changes(self) -> bool:
-        return len(self.breaking) > 0
+        return bool(self.breaking)
 
     def to_dict(self) -> dict:
         def _change_to_dict(c: SpecChange) -> dict:
@@ -78,8 +77,8 @@ class SpecDiffer:
         after = self._load(after_path)
         report = SpecDiffReport()
 
-        before_paths = set(before.get("paths", {}).keys())
-        after_paths = set(after.get("paths", {}).keys())
+        before_paths = set(before.get("paths", {}))
+        after_paths = set(after.get("paths", {}))
 
         # Removed endpoints — BREAKING
         for p in sorted(before_paths - after_paths):
@@ -227,8 +226,8 @@ class SpecDiffer:
         method: str,
         report: SpecDiffReport,
     ) -> None:
-        before_resp = set(before_op.get("responses", {}).keys())
-        after_resp = set(after_op.get("responses", {}).keys())
+        before_resp = set(before_op.get("responses", {}))
+        after_resp = set(after_op.get("responses", {}))
 
         for code in before_resp - after_resp:
             report.breaking.append(
@@ -245,7 +244,7 @@ class SpecDiffer:
     def _load(path: str) -> dict:
         import yaml  # pyyaml in requirements.txt
 
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             if path.endswith((".yaml", ".yml")):
                 return yaml.safe_load(f) or {}
             return json.load(f)

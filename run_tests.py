@@ -8,8 +8,8 @@ defined at their module level resolve correctly, and so a crash in one does not
 abort the others.
 """
 
-import sys
 import subprocess
+import sys
 import unittest
 
 # Add current directory and tests to Python path
@@ -26,8 +26,8 @@ def run_unit_tests():
     print("Running unit tests...")
 
     try:
-        from test_substrate_router import TestSubstrateRouter
         from test_egress_policy import TestEgressPolicy
+        from test_substrate_router import TestSubstrateRouter
 
         loader = unittest.TestLoader()
         suite = unittest.TestSuite()
@@ -87,9 +87,8 @@ def main():
     if unit_success and smoke_success:
         print("\nALL TESTS PASSED! Epoch 1 is ready.")
         return 0
-    else:
-        print("\nSome tests failed. Check the output above.")
-        return 1
+    print("\nSome tests failed. Check the output above.")
+    return 1
 
 
 if __name__ == "__main__":

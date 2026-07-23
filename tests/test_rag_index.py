@@ -7,7 +7,7 @@ import os
 import sqlite3
 import tempfile
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from cherenkov.ai.rag_index import RAGIndex
 from cherenkov.core.errors import get_logger

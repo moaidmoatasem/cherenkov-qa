@@ -87,8 +87,8 @@ def _parse(raw: str, fmt: str) -> dict:
     try:
         import yaml
         return yaml.safe_load(raw)
-    except ImportError:
-        raise ImportError("PyYAML is required to parse YAML specs: pip install pyyaml")
+    except ImportError as exc:
+        raise ImportError("PyYAML is required to parse YAML specs: pip install pyyaml") from exc
 
 
 def _collect_refs(obj: Any, refs: set[str]) -> None:
@@ -188,7 +188,7 @@ def validate_spec(source: str, *, fatal_on_warnings: bool = False) -> Validation
         ))
         return ValidationResult(ok=False, issues=issues, spec=spec)
 
-    if not isinstance(paths, dict) or len(paths) == 0:
+    if not isinstance(paths, dict) or not paths:
         issues.append(SpecIssue(
             severity=Severity.ERROR,
             code="SPEC_PARSE_ERROR",

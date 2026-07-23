@@ -5,9 +5,10 @@ Tests the new ML anomaly detection, traffic-based load profiles, and LLM-aware m
 """
 
 import os
-import tempfile
 import sqlite3
-from cherenkov.stages.perf.perf_stage import PerfStage, PerfSlice, ML_AVAILABLE
+import tempfile
+
+from cherenkov.stages.perf.perf_stage import ML_AVAILABLE, PerfSlice, PerfStage
 
 
 def test_basic_functionality():
@@ -52,7 +53,7 @@ def test_statistical_analysis():
         stage = PerfStage(db_path=db_path)
 
         # Create baseline data
-        sl = PerfSlice(
+        _sl = PerfSlice(
             name="test_stats",
             target_url="http://localhost:3000",
             endpoint="/api/stats",
@@ -101,7 +102,7 @@ def test_ml_availability():
             )
 
             # Create enough baseline data for ML
-            for i in range(15):
+            for _ in range(15):
                 stage.run(sl)
 
             # Test ML analysis

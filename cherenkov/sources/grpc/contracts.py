@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 from pydantic import BaseModel
 
-class gRPCScenario(BaseModel):
+
+class gRPCScenario(BaseModel):  # noqa: N801
     service: str = ""
     rpc_name: str = ""
     input_message: str = ""

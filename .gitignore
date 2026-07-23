@@ -190,3 +190,11 @@ playwright-suite/tests/post_*.spec.ts
 
 # Ad-hoc/debug scripts
 __test_review.py
+
+# Generated run artifacts — never commit (R0 truth alignment)
+/audit.json
+/test-junit.xml
+/test-sarif.json
+/soc2_report*.json
+/pr.json
+/issues.txt

@@ -9,18 +9,22 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from cherenkov.core.truth_model import (
-    TruthModel,
+    Claim as TMClaim,
+)
+from cherenkov.core.truth_model import (
+    EdgeType,
+    GraphEdge,
     GraphNode,
     NodeType,
-    GraphEdge,
-    EdgeType,
-    Claim as TMClaim,
+    TruthModel,
+)
+from cherenkov.core.truth_model import (
     Provenance as TMProvenance,
 )
+from cherenkov.truth.sources.db_schema import DBSchemaSourceAdapter
 from cherenkov.truth.sources.interface import SourceAdapter
 from cherenkov.truth.sources.openapi import OpenAPISourceAdapter
 from cherenkov.truth.sources.traffic import TrafficSourceAdapter
-from cherenkov.truth.sources.db_schema import DBSchemaSourceAdapter
 
 
 def _to_tm_claim(contract_claim) -> TMClaim:
@@ -41,7 +45,7 @@ def _to_tm_claim(contract_claim) -> TMClaim:
 
 
 def _adapter_for_source_type(source_type: str) -> SourceAdapter:
-    mapping = {
+    mapping: dict[str, type[SourceAdapter]] = {
         "openapi": OpenAPISourceAdapter,
         "traffic": TrafficSourceAdapter,
         "db_schema": DBSchemaSourceAdapter,
@@ -177,7 +181,7 @@ def run_map(sources: dict[str, list[str]] | None = None, detailed: bool = False)
         if db:
             sources["db_schema"] = db if isinstance(db, list) else [db]
 
-    if not sources or all(len(v) == 0 for v in sources.values()):
+    if not sources or not any(sources.values()):
         print("No sources configured. Run `cherenkov init` first.")
         return 1
 

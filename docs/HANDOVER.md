@@ -7,6 +7,57 @@
 
 ---
 
+## SESSION HANDOVER — 2026-07-13 (V2 oracles; doc reconciliation)
+
+- **Witness V2 oracles** (PR #703, `6e6fea0`): `verify` now asserts documented
+  response-schema field presence and response headers, not just status codes.
+  New repro-step forms (`_parse_expected_fields_headers()` in `witness.py`):
+  `Assert response contains fields: id, name` and `Expect response header
+  X-Rate-Limit`. `probe_planner.py` happy-path hypotheses now carry documented
+  2xx body fields (capped at 3) and response headers (capped at 3). Closes the
+  "Deferred V2 oracles" item from the R1 write-up below. 17 tests in
+  `test_probe_planner.py`.
+- **Doc reconciliation**: root `HANDOVER.md` and this file had diverged (flagged
+  by the previous session, below, as out of scope). Root `HANDOVER.md` is the
+  canonical status anchor per `CLAUDE.md`; it has been updated to include the
+  HITL severity/agentic-exploration work and the V2 oracles work above. This
+  file remains the reverse-chronological session log.
+
+---
+
+## SESSION HANDOVER — 2026-07-11 (HITL severity + agentic-exploration skill)
+
+Inspired by a survey of `MhmdElGazzar/agentex` (agentic manual-QA testing plugin).
+Two small, non-duplicative additions, both reusing existing contracts:
+
+- **HITL queue severity**: `HitlItem` gained a `severity: Severity | None` field
+  (`cherenkov/hitl/contracts.py`), threaded through `HitlQueue`'s SQLite schema
+  (`cherenkov/hitl/store.py`, with an `ALTER TABLE` migration for pre-existing
+  DBs), `hitl list --severity <level>` filter, and populated at the one enqueue
+  site that has a `DivergenceReport` in hand (`cherenkov/stages/daemon_cmd.py`).
+  Legacy `DivergenceFinding.severity` normalized from bare `str` to the shared
+  `Severity` enum. Tests: `tests/standalone/test_hitl_cli.py`.
+- **`agentic-exploration` skill** (`skills/agentic-exploration/SKILL.md`): a live
+  agent judges plain-language scenarios (reusing the existing `IntentSpec`/
+  `IntentStep` shape `cherenkov author` already produces) against a running app,
+  then `cherenkov record results.json` (`cherenkov/copilot/live_session.py` +
+  `cherenkov/stages/copilot_cmd.py::run_record`) converts failures into
+  `D3_ui_spec` `DivergenceHypothesis` records enqueued into the same HITL queue
+  every other finding uses. Composes with, does not duplicate, the existing
+  `cherenkov explore` (mechanical crawl, `divergence/explorer.py`) and
+  `cherenkov author` (intent → static ejectable Playwright test,
+  `copilot/intent.py`). Tests: `tests/standalone/test_copilot_e10.py`.
+
+Verified end-to-end manually: `cherenkov record` on a sample results file
+correctly enqueues only the failed scenario, and `cherenkov hitl list
+--severity high` surfaces it.
+
+Note: this session found `docs/HANDOVER.md` and root `HANDOVER.md` have
+diverged (different dates, different content) — did not attempt to reconcile
+them, out of scope for this change.
+
+---
+
 ## SESSION HANDOVER — 2026-07-05 (Strategic Review Execution, UI Fixes, Test Verification)
 
 > **This section is a summary.** For the full 2026-07-05 review notes, see `project_review_2026_07_05.md` in the artifacts directory.
@@ -258,6 +309,9 @@ Recruit 5 QA people. Run the demo from [QA_DEMO_KIT.md](QA_DEMO_KIT.md).
 Count yeses. [QA_OUTREACH_TEMPLATES.md](QA_OUTREACH_TEMPLATES.md) exists to
 help with recruiting. **Note:** The validation gate has passed per owner decision
 (2026-06-08), but evidence collection continues for attributable QA reviews.
+
+For recorded onboarding sessions (Loom scripts, live evidence, recording setup):
+→ [docs/recordings/](recordings/) — 8 sessions covering developers, QA, managers, DevOps.
 
 ### 6.4 — AFTER PHASE 8 — open-source release
 Once Phase 8 is complete (K8s + Cloud + Validation Gate), prepare for open-source release:

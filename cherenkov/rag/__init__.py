@@ -3,7 +3,7 @@ cherenkov/rag/ — Issue #195: Semantic chunking / RAG for large OpenAPI specs.
 """
 
 try:
-    from cherenkov.rag.schema_index import SchemaIndex, embed_text, Chunk
+    from cherenkov.rag.schema_index import Chunk, SchemaIndex, embed_text
 
     _schema_available = True
 except ImportError:
@@ -15,8 +15,8 @@ except ImportError:
 from cherenkov.rag.mobile_index import MobileRAGIndex
 
 __all__ = [
-    "SchemaIndex",
-    "embed_text",
     "Chunk",
     "MobileRAGIndex",
+    "SchemaIndex",
+    "embed_text",
 ]

@@ -29,7 +29,6 @@ from cherenkov.core.contracts import Claim
 from cherenkov.core.errors import get_logger
 from cherenkov.oracle.interface import Oracle, OracleResult
 
-
 _EVAL_SYSTEM_PROMPT = (
     "You are an expert test oracle evaluator. Given a Playwright TypeScript "
     "test and the OpenAPI operation it targets, determine whether the "
@@ -155,7 +154,7 @@ class ConsensusOracle(Oracle):
         path = endpoint_slice.get("path", "?")
         method = endpoint_slice.get("method", "?").upper()
         operation = endpoint_slice.get("operation", {})
-        expected_codes = list(operation.get("responses", {}).keys())
+        expected_codes = list(operation.get("responses", {}))
 
         user_prompt = (
             f"ENDPOINT: {method} {path}\n"

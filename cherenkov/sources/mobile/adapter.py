@@ -36,12 +36,11 @@ class MobileSourceAdapter:
 
         if suffix == ".apk":
             return self._apk_parser.parse(source_path)
-        elif suffix == ".har":
+        if suffix == ".har":
             return self._har_parser.parse(source_path)
-        elif suffix == ".hil":
+        if suffix == ".hil":
             return self._hil_parser.parse(source_path)
-        else:
-            raise ValueError(
-                f"Unsupported mobile source file: {suffix} "
-                f"(expected .apk, .har, or .hil)"
-            )
+        raise ValueError(
+            f"Unsupported mobile source file: {suffix} "
+            f"(expected .apk, .har, or .hil)"
+        )

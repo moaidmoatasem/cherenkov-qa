@@ -2,7 +2,7 @@
 
 Design choice: JSONL over SQLite for the first cut.
   - Git-diffable, human-inspectable, survives crashes without WAL corruption.
-  - brute-force scan is fast enough at tens–low-hundreds of operations (no ANN needed).
+  - brute-force scan is fast enough at tens-low-hundreds of operations (no ANN needed).
   - Each line is one JSON-serialized SpecSuiteSnapshot.
 
 Three execution tiers (spec §2):
@@ -16,9 +16,12 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from cherenkov.drift.snapshot import SpecSuiteSnapshot
+
+if TYPE_CHECKING:
+    from cherenkov.drift.reconcile import DriftReport
 
 
 _DEFAULT_LEDGER_PATH = Path(os.environ.get(
@@ -78,7 +81,7 @@ class DriftLedger:
             since: ISO-8601 snapshot_id; return only snapshots created after this.
             limit: Maximum number of results.
         """
-        all_snapshots = list(reversed(list(self._iter_all())))
+        all_snapshots = list(self._iter_all())[::-1]
         if since:
             all_snapshots = [s for s in all_snapshots if s.snapshot_id > since]
         if limit is not None:
@@ -108,7 +111,7 @@ class DriftLedger:
         current_spec: dict[str, Any] | None = None,
         current_suite: dict[str, Any] | None = None,
         runner_violations: list[dict] | None = None,
-    ) -> "DriftReport":  # noqa: F821
+    ) -> DriftReport:
         """Run reconcile() using a ledger-looked-up or file-loaded baseline.
 
         Tier mapping:

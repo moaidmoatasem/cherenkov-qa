@@ -15,13 +15,13 @@ from typing import Any
 
 def _load_spec_endpoints(spec_path: str | None) -> list[dict[str, Any]]:
     """Return [{path, method, response_codes}] for every operation in the spec."""
-    from cherenkov.stages.ingest import IngestStage
     from cherenkov.core.contracts import Status
+    from cherenkov.stages.ingest import IngestStage
 
     if not spec_path:
         # Try auto-discovery
-        from cherenkov.core.config_loader import CherenkovConfig
-        found = CherenkovConfig().autodetect_spec()
+        from cherenkov.core.config_loader import LayeredConfig
+        found = LayeredConfig().autodetect_spec()
         if not found:
             return []
         spec_path = found[0]
@@ -35,7 +35,7 @@ def _load_spec_endpoints(spec_path: str | None) -> list[dict[str, Any]]:
 
     for ep in result.endpoints:
         response_codes = sorted(
-            str(k) for k in ep.operation.get("responses", {}).keys()
+            str(k) for k in ep.operation.get("responses", {})
             if str(k).isdigit()
         )
         endpoints.append({

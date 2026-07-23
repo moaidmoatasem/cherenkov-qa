@@ -32,7 +32,7 @@ class CoverageReport:
     total_endpoints: int
     tested_count: int
     untested_count: int
-    coverage_pct: float  # 0.0–100.0
+    coverage_pct: float  # 0.0-100.0
     endpoints: list[EndpointCoverage] = field(default_factory=list)
 
     @property
@@ -86,10 +86,7 @@ def compute_coverage(
         if not raw:
             continue
         parts = raw.split(None, 1)
-        if len(parts) == 2:
-            key = _endpoint_key(parts[0], parts[1])
-        else:
-            key = raw.upper()
+        key = _endpoint_key(parts[0], parts[1]) if len(parts) == 2 else raw.upper()
         tested_keys.add(key)
         divergence_by_key[key] = divergence_by_key.get(key, 0) + 1
 

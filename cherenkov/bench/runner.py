@@ -3,7 +3,7 @@
 Scans a directory for .spec.ts files, runs each through ReviewStage,
 and aggregates gate-level pass rates and quality scores.
 
-No LLM, no network, no Docker required for the static gates (1–4).
+No LLM, no network, no Docker required for the static gates (1-4).
 Gate 5 (tsc) requires node/tsc on PATH; Gate 6 (prism) requires Docker.
 Both are automatically skipped and reported as N/A when unavailable.
 """
@@ -11,12 +11,12 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Sequence
+from collections.abc import Sequence
 
+from cherenkov.bench.metrics import BenchReport, GateSummary, SpecBenchResult
 from cherenkov.core.contracts import GenerateOutput, StageMeta, Status
 from cherenkov.core.errors import LoggerConfig
 from cherenkov.stages.review import ReviewStage
-from cherenkov.bench.metrics import BenchReport, GateSummary, SpecBenchResult
 
 _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 _DEFAULT_SPEC = os.path.join(_REPO_ROOT, "stub", "openapi_3_1.yaml")

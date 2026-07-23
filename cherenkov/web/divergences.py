@@ -13,6 +13,7 @@ dashboard, so an in-memory store is sufficient.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from typing import Any
 
 _DIVERGENCE_CORPUS: list[dict] = [
     {
@@ -138,6 +139,12 @@ class DivergenceFindingNamespace:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
+    def __getattr__(self, name: str) -> Any:
+        try:
+            return self.__dict__[name]
+        except KeyError as exc:
+            raise AttributeError(name) from exc
+
     def dict(self):
         return {k: v for k, v in self.__dict__.items() if k != "dict"}
 
@@ -189,7 +196,7 @@ class _ConformanceStatusNamespace:
         self.run_at = run_at
 
 
-def get_latest_status(service: str) -> _ConformanceStatusNamespace | None:
+def get_latest_status(_service: str) -> _ConformanceStatusNamespace | None:
     """Return the latest conformance status for a service, derived from the
     divergence corpus. `service` is currently unused for filtering (the
     corpus is not yet partitioned by target service) but is accepted to

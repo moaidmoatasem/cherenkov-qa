@@ -21,9 +21,10 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from pathlib import Path
-from cherenkov.core.truth_model import TruthModel, GraphNode, NodeType
-from cherenkov.truth.emitters.unit_test import UnitTestEmitter
+
+from cherenkov.core.truth_model import GraphNode, NodeType, TruthModel
 from cherenkov.truth.emitters.interface import Emitter
+from cherenkov.truth.emitters.unit_test import UnitTestEmitter
 
 PASS = 0
 FAIL = 0

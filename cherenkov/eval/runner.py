@@ -14,7 +14,9 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import dataclass, field, asdict
+import urllib.parse
+import urllib.request
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -107,7 +109,7 @@ class RunTrace:
                 f.write(json.dumps(result.to_dict()) + "\n")
 
     @classmethod
-    def from_jsonl(cls, path: Path) -> "RunTrace":
+    def from_jsonl(cls, path: Path) -> RunTrace:
         lines = path.read_text().splitlines()
         meta: dict[str, Any] = {}
         results: list[TestResult] = []
@@ -260,8 +262,6 @@ class EvalRunner:
         response = None
         error = None
         try:
-            import urllib.request, urllib.parse
-
             req_data = json.dumps(body).encode() if body is not None else None
             if params:
                 url += "?" + urllib.parse.urlencode(params)

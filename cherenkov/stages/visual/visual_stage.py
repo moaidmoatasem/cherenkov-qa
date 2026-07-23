@@ -21,17 +21,18 @@ from __future__ import annotations
 import os
 import sys
 import time
+
 from cherenkov.core.contracts import (
-    StageMeta,
-    StageError,
-    Status,
-    Verdict,
-    VisualSlice,
-    VisualGateResult,
-    VisualReport,
     Claim,
     Provenance,
     ProvenanceType,
+    StageError,
+    StageMeta,
+    Status,
+    Verdict,
+    VisualGateResult,
+    VisualReport,
+    VisualSlice,
 )
 from cherenkov.core.errors import get_logger
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
@@ -124,11 +125,7 @@ class VisualStage:
         snap_dir = os.path.join(
             self.runner.tests_dir, f"{scenario_id}.spec.ts-snapshots"
         )
-        platform = (
-            sys.platform
-            if sys.platform in ("linux", "darwin", "win32")
-            else sys.platform
-        )
+        platform = sys.platform
         baseline_file = os.path.join(snap_dir, f"{sl.name}-{platform}.png")
         needs_init = self.init_mode or not os.path.exists(baseline_file)
 

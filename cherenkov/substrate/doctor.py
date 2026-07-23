@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 
 import click
 
-from cherenkov.core.settings import get_settings
 from cherenkov.core.devices import DeviceInfo, VLMTier
+from cherenkov.core.settings import get_settings
 
 
 def _detect_ollama_vlm() -> dict:
@@ -71,7 +72,7 @@ def _detect_device() -> dict:
 @click.option("--evals", is_flag=True, help="Show latest eval report")
 @click.option("--adversarial", is_flag=True, help="Show latest adversarial report")
 def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool, adversarial: bool) -> None:
-    report = {"device": {}, "vlm": {}, "localai": {}, "recommendations": []}
+    report: dict[str, Any] = {"device": {}, "vlm": {}, "localai": {}, "recommendations": []}
     show_all = not vlm and not localai and not device
 
     if show_all or device:
@@ -155,10 +156,9 @@ def doctor(vlm: bool, localai: bool, device: bool, json_out: bool, evals: bool, 
     if show_all or adversarial:
         try:
             from pathlib import Path
-            import json as json_module
             adv_path = Path(".cherenkov/adversarial_report.json")
             if adv_path.exists():
-                latest = json_module.loads(adv_path.read_text())
+                latest = json.loads(adv_path.read_text())
                 report["latest_adversarial"] = latest
                 if not json_out:
                     click.echo("\nLatest Adversarial Report")

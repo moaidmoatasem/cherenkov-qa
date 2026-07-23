@@ -8,7 +8,9 @@ of the Skeptic — the Witness only needs a DivergenceHypothesis and a base URL.
 
 from __future__ import annotations
 
+import contextlib
 import json
+import re
 import time
 from typing import Any
 
@@ -29,6 +31,11 @@ class WitnessAgent:
     Does NOT use the Substrate Router; the Witness is near-zero intelligence
     (see architecture doc): just HTTP + diff, no LLM required.
     """
+
+    # A rate-limited (429) probe must never be read as "conformant" — back off
+    # and retry so a busy target does not masquerade as passing. Bounded so a
+    # persistently throttling target cannot hang the run.
+    _MAX_RETRIES_429 = 4
 
     def __init__(self, base_url: str, timeout: float = 10.0) -> None:
         self.base_url = base_url.rstrip("/")
@@ -77,20 +84,31 @@ class WitnessAgent:
 
     # ── private ───────────────────────────────────────────────────────────
 
+    @staticmethod
+    def _send(
+        client: httpx.Client, method: str, url: str, payload: dict | None
+    ) -> httpx.Response:
+        if method in ("POST", "PUT", "PATCH") and payload is not None:
+            return getattr(client, method.lower())(
+                url, json=payload, headers={"Content-Type": "application/json"}
+            )
+        return getattr(client, method.lower())(url)
+
     def _execute(self, hypothesis: DivergenceHypothesis) -> DivergenceEvidence:
         method, path, payload, expected = _parse_repro_steps(hypothesis.repro_steps)
         url = f"{self.base_url}{path}"
 
         t0 = time.monotonic()
         with httpx.Client(timeout=self.timeout, follow_redirects=True) as client:
-            if method in ("POST", "PUT", "PATCH") and payload is not None:
-                resp = getattr(client, method.lower())(
-                    url,
-                    json=payload,
-                    headers={"Content-Type": "application/json"},
-                )
-            else:
-                resp = getattr(client, method.lower())(url)
+            resp = self._send(client, method, url, payload)
+            attempts = 0
+            while resp.status_code == 429 and attempts < self._MAX_RETRIES_429:
+                attempts += 1
+                delay = _retry_after_seconds(resp)
+                if delay is None:
+                    delay = min(2.0, 0.5 * (2 ** (attempts - 1)))
+                time.sleep(delay)
+                resp = self._send(client, method, url, payload)
         latency_ms = int((time.monotonic() - t0) * 1000)
 
         try:
@@ -106,6 +124,29 @@ class WitnessAgent:
             expected if expected is not None else hypothesis.claim_b,
             resp.status_code,
         )
+
+        # V2 oracles: documented response fields / headers. Only meaningful
+        # when the status itself matched (otherwise the status mismatch IS
+        # the divergence) and the target didn't rate-limit us.
+        if diff == "no structural diff" and resp.status_code != 429:
+            exp_fields, exp_headers = _parse_expected_fields_headers(
+                hypothesis.repro_steps
+            )
+            parts: list[str] = []
+            if exp_fields and isinstance(actual, dict):
+                missing_fields = [f for f in exp_fields if f not in actual]
+                if missing_fields:
+                    parts.append(
+                        f"missing documented response fields: {missing_fields}"
+                    )
+            if exp_headers:
+                missing_headers = [h for h in exp_headers if h not in resp.headers]
+                if missing_headers:
+                    parts.append(
+                        f"missing documented response headers: {missing_headers}"
+                    )
+            if parts:
+                diff = "; ".join(parts)
         response_expected: str | dict = (
             f"HTTP {expected} per spec"
             if isinstance(expected, int)
@@ -129,6 +170,17 @@ class WitnessAgent:
 # ── helpers ───────────────────────────────────────────────────────────────
 
 
+def _retry_after_seconds(resp: httpx.Response) -> float | None:
+    """Parse a Retry-After header (delta-seconds form) into a bounded delay."""
+    raw = resp.headers.get("Retry-After") or resp.headers.get("retry-after")
+    if not raw:
+        return None
+    try:
+        return max(0.0, min(5.0, float(raw.strip())))
+    except (ValueError, AttributeError):
+        return None
+
+
 def _parse_repro_steps(
     steps: list[str],
 ) -> tuple[str, str, dict | None, Any]:
@@ -147,9 +199,10 @@ def _parse_repro_steps(
 
     for step in steps:
         upper = step.upper()
-        # Extract HTTP method + path
+        # Extract HTTP method + path. Word boundaries matter: "response
+        # header" must not match HEAD, "digest" must not match GET.
         for m in ("GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"):
-            if m in upper:
+            if re.search(rf"\b{m}\b", upper):
                 method = m
                 # find the first token starting with "/"
                 for token in step.split():
@@ -161,10 +214,8 @@ def _parse_repro_steps(
         # Extract JSON body
         brace = step.find("{")
         if brace != -1 and payload is None:
-            try:
+            with contextlib.suppress(json.JSONDecodeError):
                 payload = json.loads(step[brace:])
-            except json.JSONDecodeError:
-                pass
 
         # Extract expected status code
         step_lower = step.lower()
@@ -175,6 +226,29 @@ def _parse_repro_steps(
                     break
 
     return method, path, payload, expected
+
+
+_FIELDS_STEP = re.compile(r"response contains fields:\s*(.+)$", re.IGNORECASE)
+_HEADER_STEP = re.compile(r"response header\b:?\s*([A-Za-z0-9\-]+)", re.IGNORECASE)
+
+
+def _parse_expected_fields_headers(steps: list[str]) -> tuple[list[str], list[str]]:
+    """
+    Extract V2 oracles from repro steps:
+      "Assert response contains fields: id, name, status"
+      "Expect response header X-Rate-Limit"
+    Returns (expected_fields, expected_headers); empty lists when absent.
+    """
+    fields: list[str] = []
+    headers: list[str] = []
+    for step in steps:
+        m = _FIELDS_STEP.search(step)
+        if m:
+            fields.extend(f.strip() for f in m.group(1).split(",") if f.strip())
+        h = _HEADER_STEP.search(step)
+        if h:
+            headers.append(h.group(1).strip())
+    return fields, headers
 
 
 def _diff(actual: Any, expected: Any, status_code: int) -> str:
@@ -189,6 +263,9 @@ def _diff(actual: Any, expected: Any, status_code: int) -> str:
 
     if isinstance(expected, int):
         # expected is a status code integer
+        if status_code == 429 and expected != 429:
+            # Rate-limited by the target: inconclusive, not spec drift.
+            return "no structural diff"
         if status_code != expected:
             return f"status mismatch: expected={expected}, actual={status_code}"
         return "no structural diff"

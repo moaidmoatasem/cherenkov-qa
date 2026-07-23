@@ -56,8 +56,8 @@ class TestResolveRefsDepth(unittest.TestCase):
 
 class TestIngestStageMissingSpec(unittest.TestCase):
     def test_missing_spec_returns_failed_status(self):
-        from cherenkov.stages.ingest import IngestStage
         from cherenkov.core.contracts import Status
+        from cherenkov.stages.ingest import IngestStage
 
         stage = IngestStage(run_id="test")
         result = stage.run("/no/such/spec.yaml")
@@ -71,8 +71,8 @@ class TestIngestStageYAML(unittest.TestCase):
         import os
         import tempfile
 
-        from cherenkov.stages.ingest import IngestStage
         from cherenkov.core.contracts import Status
+        from cherenkov.stages.ingest import IngestStage
 
         yaml_content = """
 openapi: "3.0.0"

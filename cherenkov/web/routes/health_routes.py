@@ -1,8 +1,13 @@
+from __future__ import annotations
+
+import asyncio
+import os
+
 from fastapi import APIRouter, Depends
 
-from cherenkov.web.routes.deps import manager
 from cherenkov.web.auth.deps import require_role
 from cherenkov.web.auth.models import Role
+from cherenkov.web.routes.deps import manager
 
 router = APIRouter(tags=["health"])
 
@@ -33,9 +38,6 @@ async def tokens_recommendations(days: int = 30):
 
 @router.get("/api/v1/health")
 async def health_check():
-    import asyncio
-    import os
-
     from cherenkov.core.settings import get_settings
     try:
         device = await asyncio.wait_for(

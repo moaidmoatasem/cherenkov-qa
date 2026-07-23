@@ -22,7 +22,7 @@ class SnapshotSessionUseCase:
     def execute(self, session_id: str, state_data: dict[str, Any]) -> SessionSnapshot:
         """Create a new session snapshot and generate a teleport token."""
         # Use an expiration of 15 minutes for the teleport token
-        expires_at = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=15)
+        expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=15)
         token = TeleportToken(token=generate_token(), expires_at=expires_at)
 
         snapshot = SessionSnapshot(

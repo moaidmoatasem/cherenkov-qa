@@ -12,15 +12,15 @@ Exit 0 = all checks pass (the kill criterion for A1).
 
 from __future__ import annotations
 
+import contextlib
 import json
 import sys
 import tempfile
 from io import StringIO
 from pathlib import Path
-import contextlib
 
-from cherenkov.hitl import HitlItem, HitlQueue, SCHEMA_VERSION
-from cherenkov.hitl.cmd import run_list, run_show, run_approve, run_reject
+from cherenkov.hitl import SCHEMA_VERSION, HitlItem, HitlQueue
+from cherenkov.hitl.cmd import run_approve, run_list, run_reject, run_show
 
 
 def capture_json(fn, *args, **kwargs) -> tuple[int, dict]:

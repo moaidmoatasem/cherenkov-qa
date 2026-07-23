@@ -29,13 +29,13 @@ def test_asyncapi_generate_integration():
         # Even if asyncapi is not a valid choice in argparse, we test the adapter directly
         from cherenkov.sources.asyncapi.adapter import AsyncAPISourceAdapter
         from cherenkov.stages.plan_asyncapi import AsyncAPIScenarioPlanner
-        
+
         adapter = AsyncAPISourceAdapter(temp_path)
         planner = AsyncAPIScenarioPlanner()
         scenarios = planner.plan(adapter)
-        
+
         assert len(scenarios) > 0
         assert scenarios[0].channel == "orders/created"
-        
+
     finally:
         os.unlink(temp_path)

@@ -1,0 +1,81 @@
+"""Unit tests for cherenkov/divergence/health.py."""
+from __future__ import annotations
+
+from cherenkov.divergence.coverage import CoverageReport, EndpointCoverage
+from cherenkov.divergence.health import compute_health_score
+
+
+def _coverage(
+    total: int, tested: int, divergence_counts: list[int] | None = None
+) -> CoverageReport:
+    counts = divergence_counts or [0] * tested
+    endpoints = [
+        EndpointCoverage(
+            method="GET",
+            path=f"/e{i}",
+            operation_id=f"op{i}",
+            tested=i < tested,
+            divergence_count=counts[i] if i < tested else 0,
+        )
+        for i in range(total)
+    ]
+    return CoverageReport(
+        total_endpoints=total,
+        tested_count=tested,
+        untested_count=total - tested,
+        coverage_pct=(tested / total * 100.0) if total else 100.0,
+        endpoints=endpoints,
+    )
+
+
+def test_full_coverage_no_divergences_is_grade_a():
+    cov = _coverage(total=4, tested=4)
+    health = compute_health_score(cov)
+    assert health.grade == "A"
+    assert health.score == 100.0
+    assert health.coverage_component == 100.0
+    assert health.integrity_component == 100.0
+    assert health.divergence_component == 100.0
+    assert health.deductions == []
+
+
+def test_zero_coverage_is_grade_f():
+    cov = _coverage(total=4, tested=0)
+    health = compute_health_score(cov)
+    assert health.grade == "F"
+    assert health.coverage_component == 0.0
+
+
+def test_divergences_reduce_divergence_component():
+    cov = _coverage(total=2, tested=2, divergence_counts=[1, 0])
+    health = compute_health_score(cov)
+    assert health.divergence_component == 50.0
+    assert any("carry divergences" in d for d in health.deductions)
+
+
+def test_integrity_findings_apply_penalties_and_are_recorded():
+    cov = _coverage(total=2, tested=2)
+    findings = [
+        "WEAKENED  test_foo(): `status` strict check (==) loosened to ['NotEq']",
+        "HALLUCINATED candidate asserts on `secret` — not defined in the spec",
+    ]
+    health = compute_health_score(cov, findings)
+    assert health.integrity_component == 100.0 - 5 - 10
+    assert len(health.deductions) == 2
+    assert health.grade in {"A", "B", "C"}
+
+
+def test_score_bounded_between_0_and_100():
+    cov = _coverage(total=1, tested=1, divergence_counts=[1])
+    findings = ["DELETED   test removed entirely: t()"] * 20
+    health = compute_health_score(cov, findings)
+    assert 0.0 <= health.score <= 100.0
+    assert health.grade == "F"
+
+
+def test_empty_spec_defaults_to_full_coverage():
+    cov = _coverage(total=0, tested=0)
+    health = compute_health_score(cov)
+    assert health.coverage_component == 100.0
+    assert health.divergence_component == 100.0
+    assert health.grade == "A"

@@ -2,11 +2,9 @@
 
 import json
 import textwrap
-import pytest
 from pathlib import Path
 
-from cherenkov.truth.spec_validator import validate_spec, Severity, SpecIssue
-
+from cherenkov.truth.spec_validator import Severity, validate_spec
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -282,6 +280,7 @@ class TestDanglingRefs:
 class TestValidateCmdWithSpecValidator:
     def test_bad_spec_causes_exit(self, tmp_path):
         from click.testing import CliRunner
+
         from cherenkov.cli.commands.validate import validate_cmd
 
         bad = _write(tmp_path, "bad.yaml", "not an openapi spec\n")
@@ -295,9 +294,11 @@ class TestValidateCmdWithSpecValidator:
         assert "error" in result.output.lower() or "warn" in result.output.lower()
 
     def test_good_spec_proceeds_past_validation(self, tmp_path):
-        from click.testing import CliRunner
-        from cherenkov.cli.commands.validate import validate_cmd
         from unittest.mock import patch
+
+        from click.testing import CliRunner
+
+        from cherenkov.cli.commands.validate import validate_cmd
 
         good = _write(tmp_path, "api.yaml", MINIMAL_OPENAPI)
         runner = CliRunner()

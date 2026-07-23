@@ -6,7 +6,6 @@ from cherenkov.adversarial.core import (
     ThreatCategory,
 )
 
-
 _PAYLOADS: list[InjectionPayload] = [
     InjectionPayload(
         id="PI-001",

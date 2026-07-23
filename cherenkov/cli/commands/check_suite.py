@@ -14,19 +14,28 @@ first-class CLI command (E2.5 / MCP_VERIFICATION_SERVER.md §4.1 wedge).
 from __future__ import annotations
 
 import ast
+import json
 import re
 import sys
 from pathlib import Path
-from typing import Optional
 
 import click
+
+_RE_WEAK_MATCHER = re.compile(
+    r"expect\([^)]+\)\.(not\.toBe|toContain|toBeTruthy|toBeFalsy|toBeDefined)\("
+)
+_RE_STRICT_MATCHER = re.compile(r"expect\([^)]+\)\.toBe\(")
+_RE_YAML_PROPS_HDR = re.compile(r"\s*properties:\s*$")
+_RE_YAML_FIELD = re.compile(r"\s{2,}([A-Za-z_][\w]*):")
+_RE_TEST_NAME = re.compile(r"(?:it|test)\(['\"]([^'\"]+)['\"]")
+_RE_PROP_ACCESS = re.compile(r"\.([a-zA-Z_]\w+)\b")
 
 # ── AST analysis (no external deps, stdlib only) ──────────────────────────────
 
 _STRONG = {"Eq"}
 _WEAK = {"NotEq", "Lt", "LtE", "Gt", "GtE", "In", "NotIn", "Is", "IsNot"}
 _BODY_NAMES = {"body", "data", "payload", "json", "resp_json", "response"}
-
+_JSON_METHODS = {"json", "get_json"}
 
 def _spec_fields(spec_path: Path) -> set[str]:
     text = spec_path.read_text(encoding="utf-8")
@@ -39,7 +48,7 @@ def _spec_fields(spec_path: Path) -> set[str]:
             if isinstance(node, dict):
                 props = node.get("properties")
                 if isinstance(props, dict):
-                    fields.update(props.keys())
+                    fields.update(props)
                 for v in node.values():
                     _walk(v)
             elif isinstance(node, list):
@@ -50,30 +59,49 @@ def _spec_fields(spec_path: Path) -> set[str]:
     except Exception:
         in_props = False
         for line in text.splitlines():
-            if re.match(r"\s*properties:\s*$", line):
+            if _RE_YAML_PROPS_HDR.match(line):
                 in_props = True
                 continue
             if in_props:
-                m = re.match(r"\s{2,}([A-Za-z_][\w]*):", line)
+                m = _RE_YAML_FIELD.match(line)
                 if m:
                     fields.add(m.group(1))
                 elif line.strip() and not line.startswith(" "):
                     in_props = False
     return fields
 
+def _response_field(left: ast.expr) -> str | None:
+    """Extract the response-body field a comparison's left-hand side asserts on.
+
+    Recognises the common idioms for reading a JSON response body:
+      * a bound body variable — ``body["f"]`` / ``data.f`` where the name is in
+        ``_BODY_NAMES``
+      * a chained ``.json()`` / ``.get_json()`` call — ``resp.json()["f"]``,
+        ``client.get(...).json()["f"]``
+
+    Returns the field name, or ``None`` if the LHS is not a body-field access.
+    """
+    if isinstance(left, ast.Subscript) and isinstance(left.slice, ast.Constant) and isinstance(left.slice.value, str):
+        base = left.value
+        if isinstance(base, ast.Name) and base.id in _BODY_NAMES:
+            return left.slice.value
+        # chained call: <expr>.json()["f"] / <expr>.get_json()["f"]
+        if isinstance(base, ast.Call) and isinstance(base.func, ast.Attribute) and base.func.attr in _JSON_METHODS:
+            return left.slice.value
+    elif isinstance(left, ast.Attribute) and isinstance(left.value, ast.Name) and left.value.id in _BODY_NAMES:
+        return left.attr
+    return None
 
 def _subject_and_field(left: ast.expr) -> tuple[str, str | None]:
-    subject = ast.unparse(left)
-    field: str | None = None
-    if isinstance(left, ast.Subscript) and isinstance(left.value, ast.Name):
-        if left.value.id in _BODY_NAMES and isinstance(left.slice, ast.Constant):
-            if isinstance(left.slice.value, str):
-                field = left.slice.value
-    elif isinstance(left, ast.Attribute) and isinstance(left.value, ast.Name):
-        if left.value.id in _BODY_NAMES:
-            field = left.attr
-    return subject, field
-
+    field = _response_field(left)
+    if field is not None:
+        # Canonical subject: unifies `resp.json()["id"]`, `body["id"]`, and
+        # `body.id` so a semantics-preserving refactor of the access idiom
+        # does not read as a WEAKENED/DELETED assertion (avoids false positives).
+        # For the bare `body["id"]` idiom this equals the previous ast.unparse
+        # output, so existing detection is unchanged.
+        return f"body[{field!r}]", field
+    return ast.unparse(left), None
 
 def _parse_suite(code: str) -> dict[str, dict[str, set[str]]]:
     tree = ast.parse(code)
@@ -89,7 +117,6 @@ def _parse_suite(code: str) -> dict[str, dict[str, set[str]]]:
             out[fn.name] = subjects
     return out
 
-
 def _candidate_fields(code: str) -> set[str]:
     tree = ast.parse(code)
     fields: set[str] = set()
@@ -99,7 +126,6 @@ def _candidate_fields(code: str) -> set[str]:
             if f:
                 fields.add(f)
     return fields
-
 
 def check_integrity(
     spec_path: Path | None,
@@ -135,7 +161,6 @@ def check_integrity(
                     f"HALLUCINATED candidate asserts on `{f}` — not defined in the spec"
                 )
     return findings
-
 
 # ── CLI command ────────────────────────────────────────────────────────────────
 
@@ -176,9 +201,9 @@ def check_integrity(
 )
 def check_suite_cmd(
     candidate: str,
-    baseline: Optional[str],
-    spec: Optional[str],
-    output: Optional[str],
+    baseline: str | None,
+    spec: str | None,
+    output: str | None,
     fail_on_finding: bool,
 ) -> None:
     """Catch AI cheating in a test suite — detect WEAKENED, DELETED, or HALLUCINATED assertions.
@@ -228,44 +253,45 @@ def check_suite_cmd(
                 sys.exit(2)
 
         spec_path = Path(spec) if spec else None
+        if spec_path is not None and not _spec_fields(spec_path):
+            click.echo(
+                "[WARNING] --spec defines no response-body 'properties'; "
+                "HALLUCINATED detection is inactive for this run.",
+                err=True,
+            )
         findings = check_integrity(spec_path, baseline_code, candidate_code)
 
     _print_findings(cand_path.name, findings)
 
     if output:
-        import json
         Path(output).write_text(json.dumps({"candidate": candidate, "findings": findings}, indent=2))
         click.echo(f"\nFindings written to {output}")
 
     if fail_on_finding and findings:
         sys.exit(1)
 
-
 def _check_typescript(
     candidate_code: str,
-    baseline_code: Optional[str],
-    spec_path: Optional[Path],
+    baseline_code: str | None,
+    spec_path: Path | None,
 ) -> list[str]:
     """Regex-based integrity check for TypeScript test suites."""
     findings: list[str] = []
 
-    weak_re = re.compile(r"expect\([^)]+\)\.(not\.toBe|toContain|toBeTruthy|toBeFalsy|toBeDefined)\(")
-    strict_re = re.compile(r"expect\([^)]+\)\.toBe\(")
-
-    cand_has_strict = bool(strict_re.search(candidate_code))
-    cand_has_weak_only = bool(weak_re.search(candidate_code)) and not cand_has_strict
+    cand_has_strict = bool(_RE_STRICT_MATCHER.search(candidate_code))
+    cand_has_weak_only = bool(_RE_WEAK_MATCHER.search(candidate_code)) and not cand_has_strict
     if cand_has_weak_only:
         findings.append("WEAKENED  candidate uses only weak matchers (no .toBe() found)")
 
     if baseline_code:
-        base_tests = set(re.findall(r"(?:it|test)\(['\"]([^'\"]+)['\"]", baseline_code))
-        cand_tests = set(re.findall(r"(?:it|test)\(['\"]([^'\"]+)['\"]", candidate_code))
+        base_tests = set(_RE_TEST_NAME.findall(baseline_code))
+        cand_tests = set(_RE_TEST_NAME.findall(candidate_code))
         for t in sorted(base_tests - cand_tests):
             findings.append(f"DELETED   test case removed: '{t}'")
 
     if spec_path:
         allowed = _spec_fields(spec_path)
-        accessed = set(re.findall(r'\.([a-zA-Z_]\w+)\b', candidate_code))
+        accessed = set(_RE_PROP_ACCESS.findall(candidate_code))
         for f in sorted(accessed):
             if f not in allowed and f not in {
                 "status", "data", "body", "json", "headers", "text",
@@ -274,7 +300,6 @@ def _check_typescript(
                 pass  # too noisy for regex — skip hallucination check for TS
 
     return findings
-
 
 def _print_findings(label: str, findings: list[str]) -> None:
     width = 64

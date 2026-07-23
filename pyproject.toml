@@ -35,6 +35,7 @@ dependencies = [
     "click>=8.4.1",
     "websockets",
     "PyJWT>=2.8.0",
+    "defusedxml>=0.7.1",
     "jsonschema>=4.0.0",
     "memsearch>=0.1.0",
     "jinja2>=3.1.6",
@@ -123,6 +124,11 @@ ignore = ["E501", "SIM108", "RUF012"]
 "tests/*" = ["T20", "ARG", "N"]
 "cherenkov/cli/**" = ["T20"]
 "cherenkov/stages/**" = ["T20"]
+# Re-export shims — imports exist solely to be re-exported; F401 must not remove them
+"cherenkov/__init__.py" = ["F401"]
+"cherenkov/web/sdd_auth.py" = ["F401"]
+"cherenkov/cli/commands/simple.py" = ["F401"]
+"cherenkov/web/routes/deps.py" = ["F401"]
 
 [tool.mypy]
 python_version = "3.10"

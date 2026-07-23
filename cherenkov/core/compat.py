@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+import glob
 import os
-import glob as _glob
 import shutil
 import sys
 
@@ -30,7 +30,7 @@ def _find_posix_bin(name: str) -> str | None:
         if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
             return candidate
     # Last resort: glob nvm versions
-    matches = _glob.glob(f"/home/*/.nvm/versions/node/*/bin/{name}")
+    matches = glob.glob(f"/home/*/.nvm/versions/node/*/bin/{name}")
     if matches:
         return sorted(matches)[-1]
     return None

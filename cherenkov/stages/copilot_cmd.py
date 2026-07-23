@@ -7,10 +7,16 @@ cherenkov/stages/copilot_cmd.py — E10 CLI surface for the manual-QA pillar.
 
   cherenkov author "plain language intent" --output DIR [--target URL]
       Turn plain-language intent into an ejectable Playwright test (no selectors).
+
+  cherenkov record RESULTS.json [--run-id ID]
+      Ingest live agent-driven scenario judgments (see
+      skills/agentic-exploration/SKILL.md) into the HITL queue as D3
+      (ui<->spec) hypotheses for human triage.
 """
 
 from __future__ import annotations
 
+import json
 
 from cherenkov.core.settings import get_settings
 
@@ -21,8 +27,8 @@ def run_explore(
     method: str = "GET",
 ) -> int:
     """Crawl `target` and print a ranked pre-session risk digest."""
-    from cherenkov.divergence.explorer import Explorer
     from cherenkov.copilot.digest import SecondPairOfEyes
+    from cherenkov.divergence.explorer import Explorer
 
     paths = paths or ["/"]
     print("=" * 72)
@@ -98,6 +104,67 @@ def run_author(
     print("  This file is yours - runs standalone, no CHERENKOV runtime required.")
     print("=" * 72)
     return 1 if unsupported else 0
+
+
+def run_record(result_path: str, run_id: str | None = None) -> int:
+    """Ingest a live agentic-exploration results file into the HITL queue.
+
+    Expects {"scenarios": [{title, target_url, raw_intent, steps, expected,
+    actual, severity, passed}, ...]}. Only failed scenarios are enqueued —
+    passes are just summarised, mirroring the Explorer's "findings are
+    anomalies" contract.
+    """
+    from cherenkov.core.contracts import IntentSpec, IntentStep, Severity
+    from cherenkov.copilot.live_session import (
+        enqueue_scenario_finding,
+        hypothesis_from_scenario,
+    )
+
+    print("=" * 72)
+    print("  CHERENKOV record - agentic scenario results -> HITL (E10)")
+    print("=" * 72)
+
+    with open(result_path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    scenarios = data.get("scenarios", [])
+    passed = 0
+    enqueued: list[str] = []
+    for s in scenarios:
+        if s.get("passed", False):
+            passed += 1
+            continue
+        spec = IntentSpec(
+            id=s.get("id", ""),
+            raw_intent=s.get("raw_intent", s.get("title", "")),
+            title=s.get("title", "Untitled scenario"),
+            target_url=s.get("target_url", ""),
+            steps=[
+                IntentStep(
+                    action=st.get("action", "expect"),
+                    target=st.get("target", ""),
+                    value=st.get("value", ""),
+                    note=st.get("note", ""),
+                )
+                for st in s.get("steps", [])
+            ],
+        )
+        severity = Severity(s.get("severity", "medium"))
+        hypothesis = hypothesis_from_scenario(
+            spec,
+            expected=s.get("expected", ""),
+            actual=s.get("actual", ""),
+            severity=severity,
+        )
+        enqueue_scenario_finding(hypothesis, run_id=run_id)
+        enqueued.append(spec.title)
+
+    print(f"  Scenarios: {len(scenarios)} total, {passed} passed, {len(enqueued)} failed")
+    for title in enqueued:
+        print(f"    - {title}  -> queued for HITL review")
+    print("\n  Next: cherenkov hitl list --status pending")
+    print("=" * 72)
+    return 0
 
 
 def _maybe_reflector():

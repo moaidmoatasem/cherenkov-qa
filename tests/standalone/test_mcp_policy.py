@@ -1,5 +1,5 @@
 """
-Tests for cherenkov/mcp/policy.py – PolicyEngine.
+Tests for cherenkov/mcp/policy.py - PolicyEngine.
 Authority: v3.1 + delta.
 """
 
@@ -11,7 +11,6 @@ import tempfile
 import unittest
 
 from cherenkov.mcp.policy import PolicyEngine
-
 
 SAMPLE_POLICY = {
     "version": "1.0",
@@ -36,7 +35,7 @@ SAMPLE_POLICY = {
 
 class TestPolicyEngine(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)  # noqa: SIM115
         json.dump(SAMPLE_POLICY, self.tmp)
         self.tmp.close()
         self.engine = PolicyEngine(policy_path=self.tmp.name)

@@ -68,8 +68,8 @@ class MCPCapabilities(BaseModel):
 
 
 class MCPInitializeResult(BaseModel):
-    protocolVersion: str = "2024-11-05"
-    serverInfo: MCPServerInfo = Field(default_factory=MCPServerInfo)
+    protocolVersion: str = "2024-11-05"  # noqa: N815
+    serverInfo: MCPServerInfo = Field(default_factory=MCPServerInfo)  # noqa: N815
     capabilities: MCPCapabilities = Field(default_factory=MCPCapabilities)
 
 
@@ -80,12 +80,12 @@ class MCPResource(BaseModel):
     uri: str
     name: str
     description: str
-    mimeType: str = "application/json"
+    mimeType: str = "application/json"  # noqa: N815
 
 
 class MCPResourceContent(BaseModel):
     uri: str
-    mimeType: str = "application/json"
+    mimeType: str = "application/json"  # noqa: N815
     text: str  # JSON-serialised payload
 
 
@@ -114,7 +114,7 @@ class MCPToolInputSchema(BaseModel):
 class MCPTool(BaseModel):
     name: str
     description: str
-    inputSchema: MCPToolInputSchema
+    inputSchema: MCPToolInputSchema  # noqa: N815
 
 
 class MCPToolListResult(BaseModel):
@@ -135,7 +135,7 @@ class MCPContent(BaseModel):
 
 class MCPToolCallResult(BaseModel):
     content: list[MCPContent]
-    isError: bool = False
+    isError: bool = False  # noqa: N815
 
 
 # ── Input validation models (trust boundary — MCP peers are untrusted) ───────

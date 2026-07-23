@@ -9,9 +9,9 @@ from __future__ import annotations
 
 import os
 import sys
-from fastapi.testclient import TestClient
-
 import tempfile
+
+from fastapi.testclient import TestClient
 
 _db_dir = tempfile.mkdtemp()
 _db_path = os.path.join(_db_dir, "gp.db")

@@ -9,13 +9,15 @@ from __future__ import annotations
 import base64
 import json
 import time
+from typing import Any
+
 from pydantic import BaseModel, Field
 
-from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.core.settings import get_settings
-from cherenkov.core.errors import get_logger
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient
+from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
+from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 
 
 def _encode_image(image_path: str) -> str:
@@ -54,6 +56,7 @@ class VLMProvider:
 
         t0 = time.monotonic()
 
+        content: dict[str, Any] | str
         if image_path:
             image_data = _encode_image(image_path)
             content = self.client.complete_vision(

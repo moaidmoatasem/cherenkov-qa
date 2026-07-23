@@ -26,7 +26,7 @@ async def get_knowledge(q: str, source: str | None = None, limit: int = 10, _aut
     d = result.to_dict()
     if isinstance(d.get("data"), list):
         d["data"] = [
-            dataclasses.asdict(item) if dataclasses.is_dataclass(item) else item
+            dataclasses.asdict(item) if dataclasses.is_dataclass(item) and not isinstance(item, type) else item
             for item in d["data"]
         ]
     return d

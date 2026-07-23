@@ -2,19 +2,18 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sqlite3
 import threading
 from datetime import datetime
 
-from cherenkov.chat.domain.models import Session, Message
+from cherenkov.chat.domain.models import Message, Session
 
 _log = logging.getLogger(__name__)
 
 
 class SQLiteConversationMemory:
     def __init__(self, db_path: str = "data/chat.db"):
-        import os
-
         # Resolve relative path against the project root so it works regardless of cwd
         if not os.path.isabs(db_path):
             root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))

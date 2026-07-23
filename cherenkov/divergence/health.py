@@ -1,0 +1,93 @@
+"""
+cherenkov/divergence/health.py — A-F health grade for a proof run.
+
+Composes an existing CoverageReport (cherenkov/divergence/coverage.py) and,
+optionally, integrity findings from `cherenkov check-suite`
+(cherenkov/cli/commands/check_suite.py: WEAKENED/DELETED/HALLUCINATED tags)
+into a single 0-100 score and letter grade — the same shape as CodeFlow's
+(github.com/braedonsaunders/codeflow) A-F codebase health score, adapted to
+grade "how much of the API did we actually prove, and can we trust the
+suite that proved it" instead of dead code / circular deps.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+from cherenkov.divergence.coverage import CoverageReport
+
+_INTEGRITY_PENALTY = {"WEAKENED": 5, "DELETED": 8, "HALLUCINATED": 10}
+_GRADE_THRESHOLDS = (("A", 90.0), ("B", 80.0), ("C", 70.0), ("D", 60.0))
+
+
+@dataclass
+class HealthScore:
+    score: float  # 0.0-100.0
+    grade: str  # "A".."F"
+    coverage_component: float
+    integrity_component: float
+    divergence_component: float
+    deductions: list[str] = field(default_factory=list)
+
+
+def _grade_for(score: float) -> str:
+    for letter, floor in _GRADE_THRESHOLDS:
+        if score >= floor:
+            return letter
+    return "F"
+
+
+def compute_health_score(
+    coverage: CoverageReport,
+    integrity_findings: list[str] | None = None,
+    *,
+    coverage_weight: float = 0.5,
+    integrity_weight: float = 0.3,
+    divergence_weight: float = 0.2,
+) -> HealthScore:
+    """Grade a proof run A-F from spec coverage, suite integrity, and divergence density.
+
+    - coverage_component: CoverageReport.coverage_pct as-is.
+    - integrity_component: 100 minus penalties for WEAKENED/DELETED/HALLUCINATED
+      findings (as produced by `cherenkov check-suite`). 100 when no findings given.
+    - divergence_component: 100 minus the share of probed endpoints that carry
+      at least one divergence.
+    """
+    findings = integrity_findings or []
+    deductions: list[str] = []
+
+    coverage_component = coverage.coverage_pct
+
+    integrity_penalty = 0.0
+    for finding in findings:
+        tag = finding.split()[0] if finding else ""
+        penalty = _INTEGRITY_PENALTY.get(tag, 3)
+        integrity_penalty += penalty
+        deductions.append(f"-{penalty} integrity: {finding}")
+    integrity_component = max(0.0, 100.0 - integrity_penalty)
+
+    tested = coverage.tested_endpoints
+    if tested:
+        diverging = sum(1 for ep in tested if ep.divergence_count > 0)
+        divergence_component = 100.0 * (1 - diverging / len(tested))
+        if diverging:
+            deductions.append(
+                f"-{diverging}/{len(tested)} probed endpoint(s) carry divergences"
+            )
+    else:
+        divergence_component = 100.0
+
+    score = (
+        coverage_component * coverage_weight
+        + integrity_component * integrity_weight
+        + divergence_component * divergence_weight
+    )
+    score = max(0.0, min(100.0, score))
+
+    return HealthScore(
+        score=round(score, 1),
+        grade=_grade_for(score),
+        coverage_component=round(coverage_component, 1),
+        integrity_component=round(integrity_component, 1),
+        divergence_component=round(divergence_component, 1),
+        deductions=deductions,
+    )

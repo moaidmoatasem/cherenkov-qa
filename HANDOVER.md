@@ -1,11 +1,38 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-07-05
-**HEAD:** see `git log`
-**Tests:** 788+ unit/integration tests (0 failures); **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
+**Date:** 2026-07-20
+**HEAD:** see `git log` (last reflected here: `452a0a2`)
+**Tests:** 788+ unit/integration tests as of 2026-07-05, plus new coverage landed since (health score, V2 oracles, HITL severity, meaningful-assertion gate, verify soundness) -- see "What landed this session" below for exact PRs; **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
 **Branch:** `main`
 
+> **Note:** `docs/HANDOVER.md` is a separate, reverse-chronological session log (older format, kept for history). This file (`HANDOVER.md`, repo root) is the canonical status anchor per `CLAUDE.md`. The 2026-07-13 update below reconciles both -- the work logged in `docs/HANDOVER.md`'s "2026-07-11 HITL severity" section is the same work as the HITL severity entry below.
+
 ---
+
+## 📹 Onboarding & KT Package (NEW — 2026-07-06)
+
+A complete onboarding and Knowledge Transfer package was produced for documentation and stakeholder pitching. All content uses **real test data and real caught bugs**.
+
+**Package root:** `docs/onboarding/ (in-repo)`
+
+| Artifact | Description |
+|----------|-------------|
+| `sessions/session_a_zero_to_hero.md` | 10-min developer demo: install → generate → validate (4 real Petstore bugs) |
+| `sessions/session_b_live_case.md` | 15-min QA Lead demo: Stripe/Prism mock, `--repair` loop, HITL queue, `eject` |
+| `sessions/session_c_pitch_companion.md` | 5-min exec pitch: 5-QA gate (4/5 yes), verbatim quotes, business case |
+| `run_demo.sh` | One-command green→red conformance detection harness with Docker health checks |
+| `casts/cast_session_a.sh` | asciinema-ready terminal cast for Session A |
+| `casts/cast_session_b.sh` | asciinema-ready terminal cast for Session B |
+| `PITCH_DECK.md` | 10-slide markdown pitch deck with talking points, visual cues, timestamps |
+| `PITCH_DECK.html` | Interactive HTML presentation (dark theme, glassmorphism, keyboard nav) |
+| `FAQ_OBJECTIONS.md` | 25+ Q&A across Technical, Trust/Compliance, and Business categories |
+| `VIDEO_RECORDING_GUIDE.md` | 9-chapter guide: Loom/OBS/asciinema setup, audio, publishing |
+| `RECORDING_ASSETS/README.md` | Asset directory: naming conventions, recording instructions, manifest template |
+
+**Docs integration:** `docs/INDEX.md` updated with `📹 Onboarding & KT Sessions` section.
+
+**Next human action:** Record the actual Loom/asciinema sessions using the guide and scripts above, then fill in `RECORDING_ASSETS/MANIFEST.md` with published URLs.
+
 
 ## Gate G0 status (EPIC #535)
 
@@ -15,7 +42,7 @@ G0 requires E0.1 AND E0.2 AND E0.3 AND E0.4.
 |---|---|---|
 | E0.1 -- real divergences on 3rd-party APIs | **DONE** | `docs/evidence/e0.1_divergences.md` -- 6 divergences across 3 APIs |
 | E0.2 -- integrity catch (catch the AI cheating) | DONE | `demos/catch-the-ai-cheating/`; CI-gated; 10/10 pass |
-| E0.3 -- 3 practitioners complete quickstart unaided | NOT YET | User-research activity (can't code our way out) |
+| E0.3 -- 3 practitioners complete quickstart unaided | NOT YET (unblocked by R1; kit ready) | `docs/e0.3/PRACTITIONER_KIT.md` — recruitment message, cold-run protocol, survey, pass criteria. R2 write-up ready too: `docs/marketing/CATCH_THE_AI_CHEATING_WRITEUP.md` |
 | E0.4 -- honest differentiation sentence vs Schemathesis | DONE | `docs/NORTH_STAR.md` section 8 |
 
 **Gate G0: 3/4. Only E0.3 (human recruitment) remains.**
@@ -33,6 +60,8 @@ All code-deliverable Phase 1 items are DONE:
 | E1.3 -- guardrails-can't-be-weakened proof | **DONE** | `demos/catch-the-ai-cheating/`; CI-gated |
 | E1.4 -- eject command hardening | **DONE** | `cherenkov/execution/eject.py`; 10 unit tests |
 | E1.5 -- install friction to near-zero | **DONE** | `install.sh` (git+pip/pipx one-liner); Dockerfile fixed (3.12, `pip install .`, `cherenkov` entrypoint); `dist/cherenkov-1.0.0.whl` built and verified |
+
+**Also landed (2026-07-10):** A-F health score for proof runs (`cherenkov verify --health-score`) — `cherenkov/divergence/health.py`; composes coverage + divergence density + check-suite integrity into a 0-100 score/grade; PR #693.
 
 ---
 
@@ -74,7 +103,31 @@ All Rung 3 items are DONE (merged 2026-06-27):
 ---
 
 
-## What landed this session (2026-07-05)
+## What landed this session (2026-07-15 to 2026-07-20)
+
+| SHA | What |
+|---|---|
+| `b2aec15` (#721) | feat(review): meaningful-assertion gate wired into the default `cherenkov generate --repair` path — `cherenkov/divergence/mutant_synth.py` derives a deliberately-wrong (status, body) response from any OpenAPI operation's documented success response (no hand-authored broken-response table needed), and `ReviewStage._gate_meaningful_assertion` spins it up via `BrokenImplServer` to prove a generated test fails a synthesized spec regression, not just that it satisfies the syntactic `assertion` gate's regex. Closes a real gap: `RepairLoop` previously optimized `quality_score` purely against syntactic/LLM-judge gates and never proved a test would catch a real bug — the same "self-healing masks regressions" failure mode covered in `cherenkov/sdet/assertion_gate.py` (E11-2) but only on the separate `CoverageLoop` path, not the default generate path. New setting `CHERENKOV_MEANINGFUL_ASSERTION_GATE` (default on). `RepairLoop` repair-instruction feedback is now gate-aware (specific guidance when the failing gate is `meaningful-assertion` vs generic syntax gates). 25 new/updated tests: `tests/unit/test_mutant_synth.py`, `tests/unit/test_review_meaningful_gate.py`, `tests/evals/test_repair_loop.py`. |
+| `f6650f5` (#720) | fix(verify): sound verdicts under rate-limiting + fail-fast on unreachable target. Follow-up to `docs/evidence/blackbox_functional_assessment_2026-07-08.md`. Two soundness gaps in the R1 probe planner (#703): (1) the witness skipped its response-field oracle on HTTP 429, so a rate-limited probe read as "conformant" and verdicts flip-flopped run-to-run against a genuinely divergent target — `WitnessAgent` now backs off/retries on 429 (honors `Retry-After`, bounded by `_MAX_RETRIES_429`); (2) an unreachable target made every probe fail identically → 0 divergences → exit 0, silently passing an outage as clean — `verify`/`certify` now run a reachability preflight (`_assert_reachable`) and abort with exit 2 (any HTTP response, incl. 4xx/5xx, counts as reachable; only connection-level failures abort). Regression tests for 429 retry/bound, `Retry-After` parsing, and the reachability preflight. mypy clean. **Note:** `#722` and `#723` are follow-on PRs with the *same* title/body as `#720` but an empty diff (identical tree) — no additional fix landed in them, just re-merges of the same session's branch. Nothing further to do here. |
+| `770a688` (#711) | refactor: lint lookover — fixed SIM117, SIM115, F401, B017, RUF unicode, N8xx naming violations (conflict-resolved). |
+| `6f1839b` (#709) | feat(certificate): map OWASP Top 10 for LLM Applications risk categories into the certificate compliance profile. |
+| `2cb33ab` (#708) | feat(certificate): map compliance profile to ISO/IEC 42001 and OWASP AI Testing Guide. |
+| `468de64`, `1320d25` (#716, #714) | chore(deps): routine bumps — mkdocs-material ~=9.7.7, fastapi 0.139.2. |
+
+## What landed previous session (2026-07-13)
+
+| SHA | What |
+|---|---|
+| `6e6fea0` | feat(witness): V2 oracles — `verify` now asserts documented response-schema fields and response headers on top of status-code oracles (the deferred R1 item, below, is now closed); `probe_planner.py` happy-path hypotheses carry documented fields/headers; 17 tests; PR #703 |
+| `3d51baf` | feat(hitl,copilot): HITL queue severity (`HitlItem.severity`, SQLite migration, `hitl list --severity`) + new `agentic-exploration` skill (live agent judges plain-language scenarios, `cherenkov record` enqueues failures as `D3_ui_spec` hypotheses into the same HITL queue); inspired by a survey of `MhmdElGazzar/agentex`; PR #697 |
+| `97a9f4e` | fix: revert `_ingest_output`→`ingest_output` ARG-rename regression; resolve CodeQL alerts in `vision_confirm.py`; ruff auto-fixes; PR #696 |
+| `7660006` | fix(api): `GET /api/v1/tests` runs synchronously instead of via `asyncio.to_thread` — fixed intermittent CI 500s; PR #698 |
+| `d8dc934` | perf: hoist inline `re.compile` calls to module-level constants (cleanup cycle 8); PR #695 |
+| `649ff8a` | refactor: hoist lazy stdlib imports to module level (cleanup cycle 7); PR #694 |
+| `d77adf3` | feat(verify): A-F health score for proof runs (`verify --health-score`) — composes `CoverageReport` + divergence density + optional check-suite integrity findings into a 0-100 score/grade; `cherenkov/divergence/health.py`; PR #693 |
+| `bfb7070`, `30ab4cd`, `3798eab`, `5fc2338` | chore(deps): routine bumps — uvicorn 0.51.0, anyio >=4.14.2, pymarkdownlnt ~=0.9.39, pydantic 2.13.4 |
+
+## What landed previous session (2026-07-05)
 
 | SHA | What |
 |---|---|
@@ -161,8 +214,12 @@ All Rung 3 items are DONE (merged 2026-06-27):
 
 > Reprioritized 2026-07-05 per `docs/reviews/STRATEGY_REVIEW_2026-07-05.md` (full strategic + technical review).
 
-0. **R1 — Spec-derived probe planner (P0).** `run_proof()` iterates hardcoded Petstore `PROOF_RUN_PROBES` regardless of the `--spec` passed (`cherenkov/divergence/proof_run.py:318`); both `verify` paths route through it (`cli/commands/verify.py:189`, `verdict/engine.py:162`). Offline `verify` against an arbitrary API currently probes Petstore paths. Fix: synthesize offline hypotheses from the loaded spec (enum violation, required-field omission, documented error codes, response schema/headers). Blocks E0.3 — practitioners pointing verify at their own APIs will hit this.
-1. **R0 — Truth alignment.** Reposition README to lead with the integrity wedge (`check-suite`) instead of LLM test generation; remove root artifact clutter (`soc2_report.json`, `pr.json`, `qwen.json`, `test-junit.xml`, `issues.txt`, `mut_spec.json`); remove legacy `cherenkov.py` duplicate entry point; surface freeze on desktop/vscode/backstage/operator/landing-page until R3.
+> **Mypy gate is now BLOCKING (2026-07-06):** all 151 type errors fixed (was `continue-on-error: true` with 162 errors); `mypy cherenkov/` runs clean on 530 files. The cleanup surfaced and fixed real runtime bugs: `review_ocr/stage.py` crashed on any log line without a file match (missing required `OCRFinding.file`) and on every `run_on_file` call (`OCRRuleEngine.SUPPORTED_EXTENSIONS` doesn't exist — it's module-level in `rules.py`); `ai/langchain.py` instantiated a Protocol (TypeError) — now uses `SQLiteConversationMemory`; `dashboard/render.py` real-model branch accessed nonexistent `GraphNode.method/.path` and a nonexistent `get_claims_by_endpoint`; `substrate/providers/{openai,ollama}.py` called nonexistent `client.complete()` → `complete_code()` (their unit tests mocked the nonexistent method — MagicMock hid the bug); `spec_guardian/daemon.py` referenced `DriftStore.DRIFT_DB` (module-level constant → AttributeError); `execution/coverage_report.py` imported nonexistent `CherenkovConfig` (→ `LayeredConfig`); `reflector/store.py` second store class used unset `self.log`; `web/sdd_routes.py` mixed `SddSession` objects into a dict list (AttributeError under `task_type` filter); `mcp/server.py` called missing `StructuredLogger.debug` (method added). 5 targeted `# type: ignore[...]` remain, each with a `TODO(#type-debt)` comment.
+
+0. ~~R1 — Spec-derived probe planner (P0)~~ **DONE** (2026-07-07) — `cherenkov/divergence/probe_planner.py`: `plan_probes()` + `spec_hypotheses()` synthesize probes and offline hypotheses mechanically from any OpenAPI spec (required-field omission, enum violation, documented error codes for integer path params, happy-path status; depth-1 `$ref`). Wired into `run_proof()` (`max_probes=40` param; Petstore demo path unchanged when spec omitted), `verdict/engine.py` traffic capture, and `cherenkov verify --max-probes`. 13 tests in `tests/unit/test_probe_planner.py` incl. mutation-pattern e2e: conformant in-process Orders server → 0 divergences, mutant → ≥3, on a spec with no Petstore path. Self-dogfood exit test: `verify` against CHERENKOV's own 81-path `/openapi.json` probes its own endpoints (`/api/v1/chat/...`, `/api/v1/sdd/...`), 0 false divergences. **V2 oracles**: DONE (2026-07-13) — response-schema field presence + header assertions landed via Witness repro-step format extensions (`_parse_expected_fields_headers()`); see PR #703 in "What landed this session" above. E0.3 is now unblocked.
+1. ~~R0 — Truth alignment~~ **DONE** (2026-07-05) — README repositioned to the integrity wedge (`c6e0cec`) and false claims fixed (PyPI badge/`pip install cherenkov-qa` removed — package is NOT on PyPI; quickstart `check-suite --demo` replaced with real commands — that flag never existed); root artifact clutter removed and `.gitignore`-guarded (`soc2_report.json`, `pr.json`, `audit.json`, `issues.txt`, `test-junit.xml`, `test-sarif.json`; `mut_spec.json` and `qwen.json` KEPT — referenced by `tests/test_mutation_validate.py:16` and MCP integration scripts). **Deferred: `cherenkov.py` removal** — it is load-bearing: `.github/workflows/ci.yml:612-626` runs it directly, `Dockerfile.mcp` COPYs it as entrypoint, `bin/cherenkov-npm.js:42` prefers it, `scripts/setup_oi.sh` + `scripts/qwen-code-integration.sh` + `package.json` reference it, and CI gates `scripts/ci_docs_check.py` + `scripts/check_cli_docs.py` load it directly. Commit `0f16fed` deleted it prematurely (docs-parity gate crashed with FileNotFoundError, CI smoke steps and Docker MCP build broken) — **restored** in PR #675; retiring it properly is a migration project (repoint all of the above to the `cherenkov` package CLI first). `0f16fed` also deleted two non-artifacts, both now restored: `mut_spec.json` (fixture for `tests/test_mutation_validate.py:16` — its absence made the Test-coverage CI job fail on every PR) and `qwen.json` (Qwen Code MCP config, see `docs/QWEN_CODE_ALIGNMENT.md`). ~~Follow-up bug worth an issue: `OrchestrationEngine.run_pipeline()` returns *success* when the input spec file is missing~~ **FIXED** — `_run_pipeline_inner` now aborts with `success=False` on a FAILED INGEST or PLAN stage (verified 2026-07-10: `run_pipeline('/nonexistent/spec.json')` → `False`).
+
+   **SURFACE FREEZE (in effect until R3/E0.3 passes):** no new work on `desktop/`, `vscode/`, `cherenkov-backstage-plugin/`, `operator/`, `landing-page/`. Bug fixes only.
 2. **E0.3 -- Human validation gate** -- recruit ≥3 QA practitioners to complete quickstart unaided. Cannot be automated. Land R1 first. Recommended pool: Egypt's ESTB/ISTQB CT-GenAI community (see `docs/reviews/STRATEGY_REVIEW_2026-07-05.md` §8.4).
 2. ~~Full pipeline integration test~~ **DONE** -- `tests/integration/test_pipeline_e2e.py` 15/15 green.
 3. ~~Spec coverage-gap report~~ **DONE** -- `cherenkov/divergence/coverage.py`; `--coverage-report` flag on `verify` + `certify`; 18 tests.
@@ -187,3 +244,44 @@ All Rung 3 items are DONE (merged 2026-06-27):
 - **CRLF noise**: `stub/generated_tests/*.spec.ts` and `npm-package/` show as modified constantly -- cosmetic, do not commit.
 - **GitHub CLI**: not authenticated in this agent environment -- PRs must be created manually.
 - **Note on E1.2 warning in ROADMAP_AQE.md**: the "do NOT merge the stale branch" caveat is outdated -- `cherenkov/sdet/` is already on `main` via #92. E1.2 is done.
+
+---
+
+## Onboarding & KT Package
+
+**Built:** 2026-07-06 | **Location:** `docs/onboarding/ (in-repo)`
+
+A complete knowledge-transfer and onboarding package was produced for practitioners, engineering leaders, and demo presenters. All assets are self-contained and link back to the canonical `docs/` SSOT.
+
+### Files Produced
+
+| File | Purpose |
+|------|---------|
+| `run_demo.sh` | Live conformance demo harness — 3-phase: green run, regression injection (REGRESSION_MODE=true), Prism/Stripe validation. Docker health checks, ANSI colour output, cleanup trap. |
+| `casts/cast_session_a.sh` | Recordable bash script for Session A (Zero to Hero): init → spec download → generate → validate → regression → report. Drives `asciinema rec`. |
+| `casts/cast_session_b.sh` | Recordable bash script for Session B (HITL + Eject): --repair, HITL queue approve/reject, daemon, certify, eject, standalone pytest run. |
+| `FAQ_OBJECTIONS.md` | 25-question FAQ across Technical (9), Trust/Compliance (8), and Business (8) categories. Honest answers including current limitations. |
+| `RECORDING_ASSETS/README.md` | Directory guide for `.cast`, `.mp4`, `.gif`, and thumbnail assets — naming conventions, recording instructions, asset status tracker. |
+
+### docs/ Updates
+
+| File | Change |
+|------|--------|
+| `docs/INDEX.md` | Added `📹 Onboarding & KT Sessions` section after top callouts, linking to all 7 onboarding assets. |
+| `HANDOVER.md` | Added this section (Onboarding & KT Package). |
+
+### Integration with existing docs
+
+The onboarding package deliberately does **not** duplicate spec content from `docs/`. Instead it links back:
+- Session scripts reference `docs/GETTING_STARTED.md` and `docs/CLI_DEMO.md`
+- FAQ answers cite specific files (e.g., `cherenkov/truth/sources/graphql.py`, `hitl_audit.jsonl`, `docs/specs/CHERENKOV_CERTIFICATE.md`)
+- The demo harness uses the real `./bin/cherenkov` binary from the live tree
+
+### Next steps for this package
+
+1. Record `.cast` files using `asciinema rec` with the cast scripts
+2. Screen-record `.mp4` files and produce `.gif` highlights
+3. Create thumbnail PNG assets per specs in `RECORDING_ASSETS/README.md`
+4. Link recorded assets from `sessions/session_a_zero_to_hero.md` etc.
+5. Run the E0.3 gate: 3 practitioners complete Session A unaided
+

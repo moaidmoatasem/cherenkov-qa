@@ -13,7 +13,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from cherenkov.hitl import HitlItem, HitlQueue, SCHEMA_VERSION
+from cherenkov.hitl import SCHEMA_VERSION, HitlItem, HitlQueue
 
 
 def main() -> int:

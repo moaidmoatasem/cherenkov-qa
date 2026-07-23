@@ -244,24 +244,24 @@ def _handle_list(fmt: str) -> str:
     if fmt == "markdown":
         lines = ["# Run History\n", "| Run ID | Time | Verdict | Grade | Div | Cov% | URL |",
                  "|--------|------|---------|-------|-----|------|-----|"]
-        for r in rows:
-            cov = f"{r['coverage_pct']:.0f}" if r['coverage_pct'] is not None else "—"
-            grade = r["grade"] or "—"
+        for row in rows:
+            cov = f"{row['coverage_pct']:.0f}" if row['coverage_pct'] is not None else "—"
+            grade = row["grade"] or "—"
             lines.append(
-                f"| `{r['run_id'][:8]}` | {r['timestamp']} | {r['verdict']} | "
-                f"{grade} | {r['divergence_count']} | {cov} | {r['target_url']} |"
+                f"| `{row['run_id'][:8]}` | {row['timestamp']} | {row['verdict']} | "
+                f"{grade} | {row['divergence_count']} | {cov} | {row['target_url']} |"
             )
         return "\n".join(lines) + "\n"
 
     # text
     lines = [f"  {'RUN ID':36}  {'TIME':20}  {'VRD':12}  GR  DIV  COV%"]
     lines.append("  " + "-" * 80)
-    for r in rows:
-        cov = f"{r['coverage_pct']:.0f}%" if r['coverage_pct'] is not None else "  —"
-        grade = r["grade"] or "—"
+    for row in rows:
+        cov = f"{row['coverage_pct']:.0f}%" if row['coverage_pct'] is not None else "  —"
+        grade = row["grade"] or "—"
         lines.append(
-            f"  {r['run_id']:36}  {r['timestamp']:20}  {r['verdict']:12}  {grade:2}  "
-            f"{r['divergence_count']:3}  {cov}"
+            f"  {row['run_id']:36}  {row['timestamp']:20}  {row['verdict']:12}  {grade:2}  "
+            f"{row['divergence_count']:3}  {cov}"
         )
     return "\n".join(lines) + "\n"
 
@@ -376,7 +376,7 @@ def _md_run_summary(d: dict, rv: dict | None) -> str:
     grade = d.get("grade", "—")
     overall = d.get("overall", d["verdict"])
     lines = [
-        f"# CHERENKOV Run Report\n",
+        "# CHERENKOV Run Report\n",
         f"**Run:** `{d['run_id']}`  \n**Time:** {d['timestamp']}  \n**URL:** {d['target_url']}\n",
         f"## Grade: {grade} — {overall}\n",
         f"- Divergences: **{d['divergence_count']}**",
@@ -402,7 +402,7 @@ def _md_run_summary(d: dict, rv: dict | None) -> str:
     return "\n".join(lines)
 
 
-def _format_run_diff(diff: dict, record, base_record, fmt: str) -> str:
+def _format_run_diff(diff: dict, _record, _base_record, fmt: str) -> str:
     if fmt == "json":
         return json.dumps(diff, indent=2, default=str)
 
@@ -419,8 +419,8 @@ def _format_run_diff(diff: dict, record, base_record, fmt: str) -> str:
             "# CHERENKOV Run Diff\n",
             f"**Run A (baseline):** `{diff['run_a']}`  ({diff.get('timestamp_a', '')})",
             f"**Run B (current):**  `{diff['run_b']}`  ({diff.get('timestamp_b', '')})\n",
-            f"| | Baseline | Current | Delta |",
-            f"|---|---|---|---|",
+            "| | Baseline | Current | Delta |",
+            "|---|---|---|---|",
             f"| Verdict | {diff.get('verdict_a', '—')} | {diff.get('verdict_b', '—')} | {'changed' if diff.get('verdict_changed') else 'same'} |",
             f"| Grade | {grade_a} | {grade_b} | {grade_arrow} |",
             f"| Divergences | — | — | {delta_str} |",
@@ -429,7 +429,7 @@ def _format_run_diff(diff: dict, record, base_record, fmt: str) -> str:
         ])
 
     lines = ["=" * w]
-    lines.append(f"  CHERENKOV Diff")
+    lines.append("  CHERENKOV Diff")
     lines.append(f"  Baseline : {diff['run_a']}  ({diff.get('timestamp_a', '')})")
     lines.append(f"  Current  : {diff['run_b']}  ({diff.get('timestamp_b', '')})")
     lines.append("=" * w)

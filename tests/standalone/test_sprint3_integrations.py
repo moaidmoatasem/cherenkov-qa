@@ -1,6 +1,8 @@
 import unittest
+
 from cherenkov.adapters.notifiers.teams import TeamsNotifier
 from cherenkov.validate.github_exporter import GitHubExporter
+
 
 class TestSprint3Integrations(unittest.TestCase):
     def test_teams_notifier_init(self):

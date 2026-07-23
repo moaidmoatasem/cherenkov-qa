@@ -15,14 +15,13 @@ interaction.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
-
-import httpx
 
 from cherenkov.core.contracts import DivergenceHypothesis, ReproductionResult
 from cherenkov.divergence.witness import WitnessAgent
@@ -121,10 +120,8 @@ class CapturingWitnessAgent(WitnessAgent):
         latency_ms = 0
         for token in parts:
             if token.endswith("ms)") and token.startswith("("):
-                try:
+                with contextlib.suppress(ValueError):
                     latency_ms = int(token[1:-3])
-                except ValueError:
-                    pass
 
         # Determine spec conformance: NOT reproduced → response matched spec
         spec_conformant = not result.reproduced

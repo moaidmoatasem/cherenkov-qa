@@ -8,7 +8,7 @@ app_file = "cherenkov/web/ui/src/App.tsx"
 
 # PipelineScreen
 pipeline_path = os.path.join(ui_src_dir, "PipelineScreen.tsx")
-with open(pipeline_path, "r") as f:
+with open(pipeline_path) as f:
     content = f.read()
 content = content.replace("import { PIPELINE_STREAMING_TESTS } from '../mockData';", "")
 content = content.replace(
@@ -21,7 +21,7 @@ with open(pipeline_path, "w") as f:
 
 # OverviewScreen
 overview_path = os.path.join(ui_src_dir, "OverviewScreen.tsx")
-with open(overview_path, "r") as f:
+with open(overview_path) as f:
     content = f.read()
 content = content.replace(
     "import { MOCK_OVERVIEW } from '../mockData';",
@@ -38,7 +38,7 @@ with open(overview_path, "w") as f:
 
 # HealingScreen
 healing_path = os.path.join(ui_src_dir, "HealingScreen.tsx")
-with open(healing_path, "r") as f:
+with open(healing_path) as f:
     content = f.read()
 content = content.replace(
     "import { INITIAL_FAILURES } from '../mockData';",
@@ -54,7 +54,7 @@ with open(healing_path, "w") as f:
 
 # TruthMapScreen
 truth_path = os.path.join(ui_src_dir, "TruthMapScreen.tsx")
-with open(truth_path, "r") as f:
+with open(truth_path) as f:
     content = f.read()
 content = content.replace(
     "import { MOCK_TRUTH_MAP } from '../mockData';",
@@ -70,7 +70,7 @@ with open(truth_path, "w") as f:
 
 # SignalsScreen
 signals_path = os.path.join(ui_src_dir, "SignalsScreen.tsx")
-with open(signals_path, "r") as f:
+with open(signals_path) as f:
     content = f.read()
 content = content.replace(
     "import { MOCK_SIGNALS } from '../mockData';",
@@ -86,7 +86,7 @@ with open(signals_path, "w") as f:
 
 # GovernanceScreen
 gov_path = os.path.join(ui_src_dir, "GovernanceScreen.tsx")
-with open(gov_path, "r") as f:
+with open(gov_path) as f:
     content = f.read()
 content = content.replace(
     "import { MOCK_GOVERNANCE } from '../mockData';",
@@ -102,7 +102,7 @@ with open(gov_path, "w") as f:
 
 # MemoryScreen
 memory_path = os.path.join(ui_src_dir, "MemoryScreen.tsx")
-with open(memory_path, "r") as f:
+with open(memory_path) as f:
     content = f.read()
 content = content.replace(
     "import { MOCK_IDIOMS, MOCK_PAIRING } from '../mockData';",
@@ -118,7 +118,7 @@ with open(memory_path, "w") as f:
 
 # AuthorScreen
 author_path = os.path.join(ui_src_dir, "AuthorScreen.tsx")
-with open(author_path, "r") as f:
+with open(author_path) as f:
     content = f.read()
 content = content.replace(
     "import { MOCK_MENTOR_IDIOMS } from '../mockData';",
@@ -134,7 +134,7 @@ with open(author_path, "w") as f:
 
 # EjectScreen
 eject_path = os.path.join(ui_src_dir, "EjectScreen.tsx")
-with open(eject_path, "r") as f:
+with open(eject_path) as f:
     content = f.read()
 content = content.replace("import { MOCK_FILE_TREE } from '../mockData';", "")
 content = re.sub(

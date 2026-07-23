@@ -5,6 +5,7 @@ from typing import Protocol, runtime_checkable
 
 from cherenkov.scheduling.domain.models import Routine
 
+
 @runtime_checkable
 class SchedulerPort(Protocol):
     """Protocol for the underlying job scheduler (e.g. APScheduler)."""

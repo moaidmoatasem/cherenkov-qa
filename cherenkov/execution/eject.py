@@ -4,11 +4,21 @@ CHERENKOV execution/eject.py — engine for ejecting standalone Playwright test 
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
-import json
 from pathlib import Path
+
 from cherenkov.core.errors import get_logger
+
+
+def _safe_dest(base_dir: str, filename: str) -> str:
+    """Join *filename* onto *base_dir* and refuse any path that escapes it."""
+    base = os.path.realpath(base_dir)
+    dest = os.path.normpath(os.path.join(base, filename))
+    if not dest.startswith(base + os.sep):
+        raise ValueError(f"unsafe output path outside {base}: {dest}")
+    return dest
 
 
 class EjectorEngine:
@@ -83,7 +93,7 @@ class EjectorEngine:
             types_src = os.path.join(self.stub_dir, "generated-types.ts")
             if not os.path.exists(types_src):
                 types_src = os.path.join(self.fixtures_dir, "generated-types.ts")
-            types_dest = os.path.join(output_path, "generated-types.ts")
+            types_dest = _safe_dest(output_path, "generated-types.ts")
             if os.path.exists(types_src):
                 shutil.copy2(types_src, types_dest)
                 self.log.info("copied generated types", source=types_src)
@@ -103,9 +113,9 @@ export const client = createClient<paths>({
   baseUrl: process.env.API_URL ?? "http://localhost:8000",
 });
 """
-            client_dest = os.path.join(output_path, "client.ts")
-            with open(client_dest, "w", encoding="utf-8") as f:
-                f.write(clean_client_content)
+            client_dest = _safe_dest(output_path, "client.ts")
+            with open(client_dest, "w", encoding="utf-8") as fh:
+                fh.write(clean_client_content)
             self.log.info("emitted clean standalone client.ts")
 
             # 5. Emit a standard playwright.config.ts configured to run tests/ folder
@@ -127,9 +137,9 @@ export default defineConfig({
   },
 });
 """
-            config_dest = os.path.join(output_path, "playwright.config.ts")
-            with open(config_dest, "w", encoding="utf-8") as f:
-                f.write(clean_playwright_config)
+            config_dest = _safe_dest(output_path, "playwright.config.ts")
+            with open(config_dest, "w", encoding="utf-8") as fh:
+                fh.write(clean_playwright_config)
             self.log.info("emitted standard playwright.config.ts")
 
             # 6. Emit a standard package.json with standard devDependencies
@@ -145,9 +155,9 @@ export default defineConfig({
                 },
                 "dependencies": {"openapi-fetch": "^0.17.0"},
             }
-            package_json_dest = os.path.join(output_path, "package.json")
-            with open(package_json_dest, "w", encoding="utf-8") as f:
-                json.dump(clean_package_json, f, indent=2)
+            package_json_dest = _safe_dest(output_path, "package.json")
+            with open(package_json_dest, "w", encoding="utf-8") as fh:
+                json.dump(clean_package_json, fh, indent=2)
             self.log.info("emitted standalone package.json")
 
             # 7. Emit standard tsconfig.json
@@ -161,9 +171,9 @@ export default defineConfig({
                     "skipLibCheck": True,
                 }
             }
-            tsconfig_dest = os.path.join(output_path, "tsconfig.json")
-            with open(tsconfig_dest, "w", encoding="utf-8") as f:
-                json.dump(clean_tsconfig, f, indent=2)
+            tsconfig_dest = _safe_dest(output_path, "tsconfig.json")
+            with open(tsconfig_dest, "w", encoding="utf-8") as fh:
+                json.dump(clean_tsconfig, fh, indent=2)
             self.log.info("emitted standard tsconfig.json")
 
             self.log.info("standalone test suite ejection completed successfully")

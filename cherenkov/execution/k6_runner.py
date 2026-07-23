@@ -5,13 +5,17 @@ CHERENKOV execution/k6_runner.py — local k6 performance script exporter and va
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 from contextlib import suppress
 from pathlib import Path
+from typing import Any
 
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
+
+_RE_K6_AVG_DURATION = re.compile(r"avg=([\d\.]+)(ms|s)")
 
 
 class K6Runner:
@@ -105,7 +109,7 @@ export default function () {{
         )
 
         passed = process.returncode == 0
-        report = {
+        report: dict[str, Any] = {
             "status": "success" if passed else "failed",
             "exit_code": process.returncode,
             "api_url": url,
@@ -128,11 +132,9 @@ export default function () {{
         report["metrics"] = metrics
 
         # Parse average latency value from metrics
-        import re
-
         duration_line = metrics.get("http_req_duration", "")
         avg_val = 0.0
-        match = re.search(r"avg=([\d\.]+)(ms|s)", duration_line)
+        match = _RE_K6_AVG_DURATION.search(duration_line)
         if match:
             avg_val = float(match.group(1))
             if match.group(2) == "s":
