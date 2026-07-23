@@ -1,0 +1,119 @@
+"""tests/unit/test_review_meaningful_gate.py — unit tests for ReviewStage's
+meaningful-assertion gate (mutant-server integration of E11-2 into the
+default `cherenkov generate --repair` path).
+
+PlaywrightRunner.execute_test is monkeypatched so these run without Docker,
+node_modules, or a browser — only the gate's own decision logic is under test.
+"""
+from __future__ import annotations
+
+import pytest
+
+from cherenkov.core.contracts import GateResult, GenerateOutput, StageMeta, Status
+from cherenkov.core.errors import LoggerConfig
+from cherenkov.core.settings import get_settings
+from cherenkov.stages.review import ReviewStage
+
+
+@pytest.fixture(autouse=True)
+def _suppress_logging():
+    LoggerConfig.suppress_stderr = True
+    yield
+    LoggerConfig.suppress_stderr = False
+
+
+_OPERATION = {
+    "parameters": [
+        {"name": "id", "in": "path", "required": True, "schema": {"type": "integer"}},
+    ],
+    "responses": {
+        "200": {
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "required": ["id"],
+                        "properties": {"id": {"type": "integer"}},
+                    }
+                }
+            }
+        }
+    }
+}
+_OPERATION_NO_SUCCESS = {"responses": {"400": {}}}
+
+_PASSING_PRISM = GateResult(gate="prism-dryrun", passed=True, skipped=False, detail="ok")
+_SKIPPED_PRISM = GateResult(gate="prism-dryrun", passed=True, skipped=True, detail="no docker")
+_FAILED_PRISM = GateResult(gate="prism-dryrun", passed=False, skipped=False, detail="failed")
+
+
+def _make_generate() -> GenerateOutput:
+    return GenerateOutput(
+        scenario_id="s1",
+        test_code="// irrelevant, PlaywrightRunner is mocked",
+        endpoint="/orders/{id}",
+        method="GET",
+        status=Status.OK,
+        metadata=StageMeta(stage="GENERATE"),
+    )
+
+
+def _run_gate(prism_gate, operation=_OPERATION, execute_result=None, monkeypatch=None):
+    stage = ReviewStage(run_id="gate-test")
+    gates: list[GateResult] = []
+    if execute_result is not None and monkeypatch is not None:
+        monkeypatch.setattr(
+            "cherenkov.stages.review.PlaywrightRunner.execute_test",
+            lambda self, **kwargs: execute_result,
+        )
+    stage._gate_meaningful_assertion(
+        _make_generate(), "code", "s1", operation, None, prism_gate, gates
+    )
+    return gates
+
+
+class TestMeaningfulAssertionGate:
+    def test_skips_without_operation(self, monkeypatch):
+        gates = _run_gate(_PASSING_PRISM, operation=None, monkeypatch=monkeypatch)
+        assert len(gates) == 1
+        assert gates[0].skipped
+        assert gates[0].passed
+
+    def test_skips_when_prism_skipped(self, monkeypatch):
+        gates = _run_gate(_SKIPPED_PRISM, monkeypatch=monkeypatch)
+        assert gates[0].skipped
+
+    def test_skips_when_prism_failed(self, monkeypatch):
+        gates = _run_gate(_FAILED_PRISM, monkeypatch=monkeypatch)
+        assert gates[0].skipped
+
+    def test_skips_when_no_documented_success_response(self, monkeypatch):
+        gates = _run_gate(_PASSING_PRISM, operation=_OPERATION_NO_SUCCESS, monkeypatch=monkeypatch)
+        assert gates[0].skipped
+
+    def test_passes_when_test_fails_against_mutant(self, monkeypatch):
+        gates = _run_gate(
+            _PASSING_PRISM,
+            execute_result={"passed": False, "failure_message": "expected 200 got 201"},
+            monkeypatch=monkeypatch,
+        )
+        assert len(gates) == 1
+        assert gates[0].gate == "meaningful-assertion"
+        assert gates[0].passed
+        assert not gates[0].skipped
+
+    def test_fails_when_test_also_passes_against_mutant(self, monkeypatch):
+        gates = _run_gate(
+            _PASSING_PRISM,
+            execute_result={"passed": True, "failure_message": ""},
+            monkeypatch=monkeypatch,
+        )
+        assert len(gates) == 1
+        assert gates[0].gate == "meaningful-assertion"
+        assert not gates[0].passed
+        assert not gates[0].skipped
+
+    def test_disabled_via_settings_adds_no_gate(self, monkeypatch):
+        monkeypatch.setattr(get_settings(), "MEANINGFUL_ASSERTION_GATE_ENABLED", False)
+        gates = _run_gate(_PASSING_PRISM, monkeypatch=monkeypatch)
+        assert gates == []

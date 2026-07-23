@@ -19,6 +19,9 @@ from unittest.mock import MagicMock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from cherenkov.copilot.digest import SecondPairOfEyes
+from cherenkov.copilot.intent import IntentAuthor
+from cherenkov.copilot.triage import Triage
 from cherenkov.core.contracts import (
     DivergenceClass,
     ExplorerFinding,
@@ -29,9 +32,6 @@ from cherenkov.core.contracts import (
     TriageCategory,
 )
 from cherenkov.divergence.explorer import Explorer
-from cherenkov.copilot.intent import IntentAuthor
-from cherenkov.copilot.digest import SecondPairOfEyes
-from cherenkov.copilot.triage import Triage
 from cherenkov.healing.diagnose import FailureClass
 
 PASS = 0
@@ -231,7 +231,7 @@ def test_c9_intent_author():
 
     # 5. Durable file writing
     with tempfile.TemporaryDirectory() as temp_dir:
-        written_spec, file_path = author.author(
+        _written_spec, file_path = author.author(
             "verify cart discount apply with SAVE20",
             output_dir=temp_dir,
             target_url="http://localhost:8000",

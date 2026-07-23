@@ -1,7 +1,7 @@
 """
 CHERENKOV divergence/skeptic.py — E3-1 Skeptic Agent.
 
-Generates divergence hypotheses across the 5-way space (D1–D5) from spec
+Generates divergence hypotheses across the 5-way space (D1-D5) from spec
 claims, via the Substrate Router. Never hardcodes a model.
 """
 

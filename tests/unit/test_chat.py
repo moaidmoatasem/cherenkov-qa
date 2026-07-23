@@ -1,24 +1,25 @@
 # TODO: convert to pytest — complex file (>150 lines, heavy setUp/tearDown with FastAPI TestClient)
-import unittest
 import asyncio
+import contextlib
 import os
 import tempfile
-from unittest.mock import MagicMock, patch
+import unittest
+from unittest.mock import patch
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from cherenkov.chat.domain.models import Message, Session
-from cherenkov.chat.persona import Persona, PersonaRegistry
 from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
 from cherenkov.chat.agent import QAChatAgent
+from cherenkov.chat.api.routes import get_agent, get_memory, router
+from cherenkov.chat.domain.models import Message, Session
+from cherenkov.chat.persona import Persona, PersonaRegistry
 from cherenkov.chat.tools import (
-    execute_tool,
     TOOL_REGISTRY,
-    query_verdicts,
+    execute_tool,
     query_idioms,
+    query_verdicts,
 )
-from cherenkov.chat.api.routes import router, get_memory, get_agent
 
 
 class TestMessage(unittest.TestCase):
@@ -124,7 +125,7 @@ class TestPersonaRegistry(unittest.TestCase):
 
 class TestSQLiteConversationMemory(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
         self.db_path = self.tmp.name
         self.tmp.close()
         self.memory = SQLiteConversationMemory(self.db_path)
@@ -203,7 +204,7 @@ class TestSQLiteConversationMemory(unittest.TestCase):
 
 class TestQAChatAgent(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
         self.db_path = self.tmp.name
         self.tmp.close()
         self.memory = SQLiteConversationMemory(self.db_path)
@@ -358,7 +359,7 @@ class TestChatAPIIntegration(unittest.TestCase):
         mock_ref = self._reflector_patcher.start()
         mock_ref.return_value.get_stats.return_value = {"recent_idioms": []}
 
-        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
         self.db_path = self.tmp.name
         self.tmp.close()
         self.memory = SQLiteConversationMemory(self.db_path)
@@ -374,10 +375,8 @@ class TestChatAPIIntegration(unittest.TestCase):
         if hasattr(self, 'memory'):
             self.memory.close()
         if os.path.exists(self.db_path):
-            try:
+            with contextlib.suppress(PermissionError):
                 os.unlink(self.db_path)
-            except PermissionError:
-                pass
 
     def test_create_session(self):
         resp = self.client.post(
@@ -475,7 +474,7 @@ class TestChatAPIIntegration(unittest.TestCase):
             resp.headers["content-type"], "text/event-stream; charset=utf-8"
         )
         lines = resp.text.strip().split("\n")
-        events = [l for l in lines if l.startswith("event:")]
+        events = [line for line in lines if line.startswith("event:")]
         self.assertTrue(len(events) >= 2)
         self.assertTrue(any("token" in e for e in events))
         self.assertTrue(any("complete" in e for e in events))

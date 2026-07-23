@@ -31,7 +31,7 @@ def test_oracle_body_validation_passes_valid_body():
         "required": ["id"],
         "properties": {"id": {"type": "integer"}},
     }
-    ok, conf, detail = oracle._validate_response_body({"id": 42}, schema)
+    ok, _conf, _detail = oracle._validate_response_body({"id": 42}, schema)
     assert ok
 
 
@@ -52,6 +52,6 @@ def test_oracle_201_missing_location_header():
     except ImportError:
         pytest.skip("SpecPrismOracle not available")
     oracle = SpecPrismOracle.__new__(SpecPrismOracle)
-    ok, conf, detail = oracle._validate_response_headers({}, None, 201)
+    ok, _conf, detail = oracle._validate_response_headers({}, None, 201)
     assert not ok
     assert "Location" in detail

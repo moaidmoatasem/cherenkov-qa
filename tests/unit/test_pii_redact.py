@@ -1,7 +1,8 @@
 """Unit tests for cherenkov/security/redact.py — PII redaction engine."""
 
 import unittest
-from cherenkov.security.redact import redact, redact_dict, is_clean
+
+from cherenkov.security.redact import is_clean, redact, redact_dict
 
 
 class TestRedactEmail(unittest.TestCase):

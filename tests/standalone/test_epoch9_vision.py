@@ -4,27 +4,28 @@ Tests: VLMProvider, VisualOracle, VisualHealer, VisionConfirmPilot, substrate vi
 """
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.core.settings import get_settings
-from cherenkov.core.config_loader import KNOWN_KEYS, PROFILE_DEFAULTS, BUILTIN_DEFAULTS
-from cherenkov.substrate.provider import provider_for_tier, get_vlm_provider
-from cherenkov.substrate.vlm_provider import VLMProvider
-from cherenkov.oracle.visual_oracle import VisualOracle
-from cherenkov.healing.visual_heal import VisualHealer
-from cherenkov.stages.vision_confirm import VisionConfirmPilot
+from cherenkov.core.config_loader import BUILTIN_DEFAULTS, KNOWN_KEYS, PROFILE_DEFAULTS
 from cherenkov.core.contracts import (
-    VisualReport,
-    VisualGateResult,
-    Verdict,
-    Status,
-    StageMeta,
-    StageError,
     Claim,
     Provenance,
     ProvenanceType,
+    ReasoningRequest,
+    ReasoningResult,
+    StageError,
+    StageMeta,
+    Status,
+    Verdict,
+    VisualGateResult,
+    VisualReport,
 )
+from cherenkov.core.settings import get_settings
+from cherenkov.healing.visual_heal import VisualHealer
+from cherenkov.oracle.visual_oracle import VisualOracle
+from cherenkov.stages.vision_confirm import VisionConfirmPilot
+from cherenkov.substrate.provider import get_vlm_provider, provider_for_tier
+from cherenkov.substrate.vlm_provider import VLMProvider
 
 
 def _make_claim(category="screenshot", subject="visual"):

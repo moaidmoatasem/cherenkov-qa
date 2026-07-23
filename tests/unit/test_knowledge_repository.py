@@ -1,14 +1,15 @@
 # TODO: convert to pytest — complex file (>150 lines, many test classes with setUp/tearDown)
-import unittest
+import contextlib
 import os
 import tempfile
+import unittest
 
+from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
 from cherenkov.knowledge.domain.models import (
+    KnowledgeItem,
     KnowledgeQuery,
     KnowledgeQueryResult,
-    KnowledgeItem,
 )
-from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
 from cherenkov.knowledge.graph_rag import GraphRAG
 
 
@@ -48,7 +49,7 @@ class TestKnowledgeItem(unittest.TestCase):
 
 class TestSQLiteKnowledgeRepository(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
         self.db_path = self.tmp.name
         self.tmp.close()
         self.repo = SQLiteKnowledgeRepository(self.db_path)
@@ -57,10 +58,8 @@ class TestSQLiteKnowledgeRepository(unittest.TestCase):
         if hasattr(self, 'repo'):
             self.repo.close()
         if os.path.exists(self.db_path):
-            try:
+            with contextlib.suppress(PermissionError):
                 os.unlink(self.db_path)
-            except PermissionError:
-                pass
 
     def test_query_empty(self):
         q = KnowledgeQuery(query="test")
@@ -202,7 +201,7 @@ class TestSQLiteKnowledgeRepository(unittest.TestCase):
 
 class TestGraphRAG(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
         self.db_path = self.tmp.name
         self.tmp.close()
         self.repo = SQLiteKnowledgeRepository(self.db_path)

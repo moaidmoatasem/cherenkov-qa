@@ -1,14 +1,14 @@
-import pytest
-from unittest.mock import patch, MagicMock
 import subprocess
-import shutil
 
 # Modify sys.path to allow importing tools/qwen_code_mcp.py
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "tools"))
 
-from qwen_code_mcp import run_qwen_code_agent, RunQwenCodeAgentArgs
+from qwen_code_mcp import RunQwenCodeAgentArgs, run_qwen_code_agent
+
 
 def test_qwen_code_agent_not_installed():
     with patch("shutil.which", return_value=None):

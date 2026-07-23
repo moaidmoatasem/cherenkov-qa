@@ -17,30 +17,30 @@ Exit code 0 = all criteria passed.
 
 import os
 import sys
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from cherenkov.core.config_loader import KNOWN_KEYS, PROFILE_DEFAULTS
 from cherenkov.core.contracts import (
-    ReasoningRequest,
-    ReasoningResult,
     Claim,
     Provenance,
     ProvenanceType,
-    VisualReport,
-    VisualGateResult,
-    Verdict,
-    Status,
-    StageMeta,
+    ReasoningRequest,
+    ReasoningResult,
     StageError,
+    StageMeta,
+    Status,
+    Verdict,
+    VisualGateResult,
+    VisualReport,
 )
 from cherenkov.core.settings import get_settings
-from cherenkov.core.config_loader import KNOWN_KEYS, PROFILE_DEFAULTS
+from cherenkov.healing.visual_heal import VisualHealer
+from cherenkov.oracle.visual_oracle import VisualOracle, classify_visual_change
+from cherenkov.stages.vision_confirm import VisionConfirmPilot
 from cherenkov.substrate.provider import provider_for_tier
 from cherenkov.substrate.vlm_provider import VLMProvider, VLMResult
-from cherenkov.oracle.visual_oracle import VisualOracle, classify_visual_change
-from cherenkov.healing.visual_heal import VisualHealer
-from cherenkov.stages.vision_confirm import VisionConfirmPilot
 
 PASS = 0
 FAIL = 0

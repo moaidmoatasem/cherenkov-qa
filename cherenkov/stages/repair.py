@@ -67,7 +67,9 @@ class RepairLoop:
 
             if spec_path:
                 rev_stage = ReviewStage(run_id=f"{self.run_id}-r{attempt}")
-                review = rev_stage.run(gen_out, spec_path=spec_path)
+                review = rev_stage.run(
+                    gen_out, spec_path=spec_path, operation=operation, schemas=schemas
+                )
                 score = getattr(review, "quality_score", 0.0)
             else:
                 review = None
@@ -93,9 +95,15 @@ class RepairLoop:
 
             # Keep feedback under 300 chars so _sanitize_prompt_input doesn't truncate the critical rules
             feedback_short = feedback[:280]
+            if feedback.startswith("gate 'meaningful-assertion'"):
+                fix_hint = (
+                    "Fix it: assert the exact documented status code and exact field "
+                    "values from the spec response, not just that a field exists."
+                )
+            else:
+                fix_hint = "Fix it: use .toBe(NNN) for status, .toHaveProperty() for body shape."
             current_instruction = (
-                f"REPAIR {attempt}: Previous test failed quality gate — {feedback_short}. "
-                f"Fix it: use .toBe(NNN) for status, .toHaveProperty() for body shape."
+                f"REPAIR {attempt}: Previous test failed quality gate — {feedback_short}. {fix_hint}"
             )
             self.log.info("repair instruction set", attempt=attempt, feedback=feedback_short)
 

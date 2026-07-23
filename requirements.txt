@@ -10,10 +10,10 @@ defusedxml>=0.7.1
 
 # HTTP / networking
 requests>=2.32.0,<3.0.0
-websockets>=12.0,<14.0
+websockets>=16.1.1,<17.0
 
 # Config parsing
-pyyaml>=6.0.1,<7.0.0
+pyyaml>=6.0.3,<7.0.0
 
 # Web framework (review dashboard + API)
 fastapi>=0.110.0,<1.0.0
@@ -30,7 +30,7 @@ click>=8.4.1,<9.0.0
 PyJWT>=2.8.0,<3.0.0
 
 # Mobile testing
-Appium-Python-Client>=3.0.0,<4.0.0
+Appium-Python-Client>=3.0.0,<6.0.0
 
 # Optional: Redis session/vector store (graceful fallback to SQLite if absent)
 redis>=8.0.1,<9.0.0

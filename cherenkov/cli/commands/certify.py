@@ -131,6 +131,9 @@ def certify_cmd(
     click.echo(f"  Mode    : {'LLM Skeptic' if llm else 'offline (no LLM required)'}")
     click.echo("")
 
+    from cherenkov.cli.commands.verify import _assert_reachable
+    _assert_reachable(effective_url)
+
     try:
         reports = run_proof(base_url=effective_url, spec=spec_dict, use_llm=llm)
     except Exception as exc:

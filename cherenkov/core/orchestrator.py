@@ -69,7 +69,7 @@ class OrchestrationEngine:
             self._events_file = None
 
     def _progress(self, *args, **kwargs) -> None:
-        print(*args, **kwargs)
+        print(*args, **kwargs)  # noqa: T201
 
     def _emit_event(self, event: str, data: dict) -> None:
         if self.event_callback:
@@ -183,10 +183,10 @@ class OrchestrationEngine:
             generate = self.executor.execute(
                 "GENERATE",
                 lambda: self.run_generate(
-                    cs, simulate_malformed=(simulate_fail_stage == "GENERATE")
+                    cs, simulate_malformed=(simulate_fail_stage == "GENERATE")  # noqa: B023
                 ),
                 lambda: GenerateOutput(
-                    scenario_id=cs.mutation_id or "unknown",
+                    scenario_id=cs.mutation_id or "unknown",  # noqa: B023
                     test_code="", imports=[],
                     status=Status.FAILED,
                     errors=[StageError(code="GENERATE_FALLBACK", detail="Failed after retry ladder.")],
@@ -216,10 +216,10 @@ class OrchestrationEngine:
             review = self.executor.execute(
                 "REVIEW",
                 lambda: self.run_review(
-                    g, spec_path, simulate_malformed=(simulate_fail_stage == "REVIEW")
+                    g, spec_path, simulate_malformed=(simulate_fail_stage == "REVIEW")  # noqa: B023
                 ),
                 lambda: ReviewOutput(
-                    scenario_id=g.scenario_id, gates=[], quality_score=0.0,
+                    scenario_id=g.scenario_id, gates=[], quality_score=0.0,  # noqa: B023
                     verdict=Verdict.REGENERATE, status=Status.FAILED,
                     errors=[StageError(code="REVIEW_FALLBACK", detail="Failed after retry ladder.")],
                     metadata=StageMeta(stage="REVIEW", duration_ms=0),
