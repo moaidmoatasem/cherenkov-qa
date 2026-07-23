@@ -33,7 +33,7 @@ class NotifierRegistry:
         return self._notifiers.get(name)
 
     def list_notifiers(self) -> list[str]:
-        return list(self._notifiers.keys())
+        return list(self._notifiers)
 
     @classmethod
     def from_env(cls) -> NotifierRegistry:
@@ -46,7 +46,7 @@ class NotifierRegistry:
             "opsgenie": ("CHERENKOV_OPSGENIE_API_KEY", "cherenkov.adapters.notifiers.opsgenie", "OpsGenieNotifier"),
             "pagerduty": ("CHERENKOV_PAGERDUTY_ROUTING_KEY", "cherenkov.adapters.notifiers.pagerduty", "PagerDutyNotifier"),
         }
-        for key, (env_var, module_path, class_name) in env_map.items():
+        for _key, (env_var, module_path, class_name) in env_map.items():
             if os.environ.get(env_var):
                 import importlib
                 module = importlib.import_module(module_path)

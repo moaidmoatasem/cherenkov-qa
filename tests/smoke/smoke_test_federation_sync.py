@@ -1,12 +1,12 @@
 import os
-import tempfile
 import sys
+import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cherenkov.core.settings import get_settings
-from cherenkov.openclaw.feedback import HealingFeedbackStore
 from cherenkov.federation.corpus import Corpus
+from cherenkov.openclaw.feedback import HealingFeedbackStore
 
 
 def run_sync_smoke():

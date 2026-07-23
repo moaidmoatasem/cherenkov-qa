@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import json
 
-from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 from cherenkov.substrate.certification import ModelCertificationManager
 from cherenkov.substrate.provider import provider_for_tier
 

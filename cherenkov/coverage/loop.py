@@ -6,10 +6,11 @@ coverage traces, and repairs tests until coverage threshold is met.
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 
-from cherenkov.core.settings import get_settings
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 from cherenkov.coverage.emitter import UnitTestEmitter
 
 
@@ -241,8 +242,6 @@ class CoverageLoop:
             cmd = shlex.split(test_command)
 
         try:
-            import shutil
-
             runner_bin = cmd[0]
             if not shutil.which(
                 runner_bin.replace("python3", "python").replace("npx", "").strip()
@@ -310,7 +309,7 @@ class CoverageLoop:
                 "details": [],
             }
 
-    def _parse_results(self, stdout: str, passed: int, failed: int) -> list[dict]:
+    def _parse_results(self, stdout: str, _passed: int, _failed: int) -> list[dict]:
         """Parse test runner output into structured results."""
         details = []
         for line in stdout.splitlines():

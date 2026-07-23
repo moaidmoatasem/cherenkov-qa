@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 
 from cherenkov.knowledge.domain.models import (
+    KnowledgeItem,
     KnowledgeQuery,
     KnowledgeQueryResult,
-    KnowledgeItem,
 )
 
 
@@ -16,11 +16,11 @@ class RedisKnowledgeRepository:
 
             self.redis = redis_client.from_url(redis_url)
             self._available = True
-        except ImportError:
+        except ImportError as exc:
             raise ImportError(
                 "redis package is required for RedisKnowledgeRepository. "
                 "Install with: pip install cherenkov[knowledge-redis]"
-            )
+            ) from exc
 
     def query(self, query: KnowledgeQuery) -> KnowledgeQueryResult:
         pattern = f"knowledge:{query.source or '*'}:*"

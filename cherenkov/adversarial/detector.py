@@ -8,7 +8,6 @@ from cherenkov.adversarial.core import (
     ThreatCategory,
 )
 
-
 _EXFIL_PATTERNS = [
     (r"fetch\s*\(\s*['\"]https?://(?!localhost|127\.0\.0\.1)", "External URL fetch detected"),
     (r"XMLHttpRequest", "XMLHttpRequest usage detected"),

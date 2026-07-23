@@ -19,9 +19,8 @@ import uuid
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cherenkov.copilot.mentor import Mentor
+from cherenkov.core.contracts import DivergenceClass, Idiom
 from cherenkov.reflector.store import VerdictStore
-from cherenkov.core.contracts import Idiom, DivergenceClass
-
 
 errors: list[str] = []
 
@@ -34,7 +33,7 @@ def check(condition: bool, msg: str) -> None:
         print(f"  [OK] {msg}")
 
 
-db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
 db.close()
 store = VerdictStore(db_path=db.name, run_id="smoke_test")
 now = int(time.time())

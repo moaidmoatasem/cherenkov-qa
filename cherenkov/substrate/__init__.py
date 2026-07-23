@@ -7,17 +7,27 @@ from cherenkov.substrate.provider import (
     get_vlm_provider,
     provider_for_tier,
 )
-from cherenkov.substrate.vlm_provider import (
-    VLMProvider as OldVLMProvider,
-    VLMResult as OldVLMResult,
+from cherenkov.substrate.providers import (
+    NemoClawProvider,
 )
-from cherenkov.substrate.router import SubstrateRouter, route
 from cherenkov.substrate.providers import (
     OllamaProvider as OllamaProviderNew,
+)
+from cherenkov.substrate.providers import (
     OpenAIProvider as OpenAIProviderNew,
+)
+from cherenkov.substrate.providers import (
     VLMProvider as VLMProviderNew,
+)
+from cherenkov.substrate.providers import (
     VLMResult as VLMResultNew,
-    NemoClawProvider,
+)
+from cherenkov.substrate.router import SubstrateRouter, route
+from cherenkov.substrate.vlm_provider import (
+    VLMProvider as OldVLMProvider,
+)
+from cherenkov.substrate.vlm_provider import (
+    VLMResult as OldVLMResult,
 )
 
 # Legacy aliases (backward compat)
@@ -28,19 +38,19 @@ VLMResult = OldVLMResult
 
 __all__ = [
     "ModelProvider",
-    "ProviderCapabilities",
+    "NemoClawProvider",
     "OllamaProvider",
+    "OllamaProviderNew",
     "OpenAIProvider",
+    "OpenAIProviderNew",
+    "ProviderCapabilities",
+    "SubstrateRouter",
     "VLMProvider",
+    "VLMProviderNew",
     "VLMResult",
+    "VLMResultNew",
     "get_provider",
     "get_vlm_provider",
     "provider_for_tier",
-    "SubstrateRouter",
     "route",
-    "OllamaProviderNew",
-    "OpenAIProviderNew",
-    "VLMProviderNew",
-    "VLMResultNew",
-    "NemoClawProvider",
 ]

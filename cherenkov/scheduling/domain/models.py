@@ -1,7 +1,7 @@
 """Domain models for CC-4 Scheduling and Routines."""
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -22,7 +22,7 @@ class Routine(BaseModel):
     trigger: RoutineTrigger
     target_module: str  # e.g., "cherenkov.scheduling.templates.daily_health_check:run"
     target_kwargs: dict[str, Any] = Field(default_factory=dict)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     last_run: datetime | None = None
     next_run: datetime | None = None
     enabled: bool = True

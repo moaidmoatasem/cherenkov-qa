@@ -19,12 +19,18 @@ drifted operations, never the whole suite. (§7)
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable
+from pathlib import Path
+from typing import Any
 
-from cherenkov.drift.detect import DriftKind, DriftFinding
-from cherenkov.drift.reconcile import DriftReport, DriftVerdict, SEVERITY
+from cherenkov.drift.checker import check_proposal
+from cherenkov.drift.detect import DriftFinding, DriftKind
+from cherenkov.drift.maker import make_proposal as _make_proposal
+from cherenkov.drift.maker import patch_suite
+from cherenkov.drift.models import ReconciliationProposal
+from cherenkov.drift.reconcile import SEVERITY, DriftReport, DriftVerdict
 
 
 class AutonomyLevel(str, Enum):
@@ -38,17 +44,6 @@ _L2_ALLOWLIST: frozenset[DriftKind] = frozenset({
     DriftKind.NEW_OP_UNTESTED,
     DriftKind.ADDED_OPTIONAL_PARAM,
 })
-
-
-@dataclass
-class ReconciliationProposal:
-    """A maker-generated proposal for a single drifted operation."""
-
-    operation_id: str
-    drift_kind: DriftKind
-    action: str               # human-readable description of proposed change
-    patch: dict[str, Any] = field(default_factory=dict)  # structured diff (Phase 13)
-    verified: bool = False     # set True after checker pass
 
 
 @dataclass
@@ -221,7 +216,7 @@ class DriftLoop:
         )
 
     @staticmethod
-    def _default_checker(proposal: ReconciliationProposal) -> bool:
+    def _default_checker(_proposal: ReconciliationProposal) -> bool:
         """Stub checker — always returns False (Phase 13 wires CANDOR + linter)."""
         return False
 
@@ -230,7 +225,7 @@ class DriftLoop:
         """Stub commit — no-op (Phase 13 wires actual suite write)."""
 
     @staticmethod
-    def _default_approval(proposals: list[ReconciliationProposal]) -> bool:
+    def _default_approval(_proposals: list[ReconciliationProposal]) -> bool:
         """Stub approval gate — always returns False (requires real human input)."""
         return False
 
@@ -241,26 +236,22 @@ class DriftLoop:
         cls,
         spec: dict[str, Any],
         **kwargs: Any,
-    ) -> "DriftLoop":
+    ) -> DriftLoop:
         """Return a DriftLoop wired with the schema-driven maker."""
-        from cherenkov.drift.maker import make_proposal as _make
-
-        return cls(maker_fn=lambda f: _make(f, spec), **kwargs)
+        return cls(maker_fn=lambda f: _make_proposal(f, spec), **kwargs)
 
     @classmethod
-    def with_real_checker(cls, **kwargs: Any) -> "DriftLoop":
+    def with_real_checker(cls, **kwargs: Any) -> DriftLoop:
         """Return a DriftLoop wired with the banned-pattern checker."""
-        from cherenkov.drift.checker import check_proposal
-
         return cls(checker_fn=check_proposal, **kwargs)
 
     @classmethod
     def l2_interactive(
         cls,
         spec: dict[str, Any],
-        suite_path: "Path | None" = None,  # noqa: F821
+        suite_path: Path | None = None,
         auto_approve: bool = False,
-    ) -> "DriftLoop":
+    ) -> DriftLoop:
         """Full L2 loop: real maker + real checker + interactive (or auto) approval.
 
         Args:
@@ -269,9 +260,6 @@ class DriftLoop:
                           If None, commit is a no-op (proposals are returned only).
             auto_approve: If True, bypass human confirmation (CI/scripted use).
         """
-        from cherenkov.drift.maker import make_proposal as _make, patch_suite
-        from cherenkov.drift.checker import check_proposal
-
         def _approval(proposals: list[ReconciliationProposal]) -> bool:
             if auto_approve:
                 return True
@@ -282,11 +270,9 @@ class DriftLoop:
                     click.echo(f"\n  Proposal for '{p.operation_id}':")
                     click.echo(f"    action : {p.action}")
                     click.echo(f"    kind   : {p.drift_kind.value}")
-                if not click.confirm(
+                return click.confirm(
                     f"\n  Approve {len(proposals)} proposal(s)?", default=False
-                ):
-                    return False
-                return True
+                )
             except Exception:
                 return False
 
@@ -296,7 +282,7 @@ class DriftLoop:
 
         return cls(
             level=AutonomyLevel.L2_ASSISTED,
-            maker_fn=lambda f: _make(f, spec),
+            maker_fn=lambda f: _make_proposal(f, spec),
             checker_fn=check_proposal,
             approval_fn=_approval,
             commit_fn=_commit,

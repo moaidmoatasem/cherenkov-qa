@@ -1,11 +1,17 @@
+from __future__ import annotations
+
 import os
-import time
 import subprocess
+import time
+from pathlib import Path
+
 import requests
-from cherenkov.core.settings import get_settings
-from cherenkov.core.compat import npx as _npx, subprocess_env as _subprocess_env
+
 from cherenkov.ai import get_client
 from cherenkov.ai.ollama_client import strip_think
+from cherenkov.core.compat import npx as _npx
+from cherenkov.core.compat import subprocess_env as _subprocess_env
+from cherenkov.core.settings import get_settings
 
 MINI_SPEC = {
     "path": "/self-test",
@@ -58,8 +64,7 @@ def run_self_test() -> int:
     # 3. TSC Compilation
     print("[3/3] Compiling test with tsc --noEmit...", end=" ")
     try:
-        from pathlib import Path as _Path
-        stub_dir = str(_Path(__file__).parent.parent.parent / "stub")
+        stub_dir = str(Path(__file__).parent.parent.parent / "stub")
         temp_dir = os.path.join(stub_dir, "generated_tests")
         os.makedirs(temp_dir, exist_ok=True)
         temp_file = os.path.join(temp_dir, "self_test.spec.ts")

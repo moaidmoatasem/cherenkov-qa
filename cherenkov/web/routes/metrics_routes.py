@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse
 
@@ -33,7 +35,7 @@ def get_pipeline_metrics(last_runs: int = 10):
         collector = MetricsCollector()
         return {"metrics": collector.get_summary(last_n_runs=last_runs)}
     except Exception:
-        raise HTTPException(status_code=500, detail="Could not load metrics")
+        raise HTTPException(status_code=500, detail="Could not load metrics") from None
 
 
 @router.get("/prometheus")
@@ -46,4 +48,4 @@ def get_metrics_prometheus():
             collector.to_prometheus(), media_type="text/plain; version=0.0.4"
         )
     except Exception:
-        raise HTTPException(status_code=500, detail="Could not load metrics")
+        raise HTTPException(status_code=500, detail="Could not load metrics") from None

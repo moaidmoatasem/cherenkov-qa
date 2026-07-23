@@ -162,7 +162,7 @@ flowchart TB
   KB --> Adapters
   Adapters --> Stores
   Bridges --> KB
-  CLI["cherenkov knowledge query"] --> KB
+  CLI["agent_sync.py experience query"] --> KB
   APIRoute["/api/v1/knowledge/query"] --> KB
   ChatAgent[Chat Agent] --> KB
 ```

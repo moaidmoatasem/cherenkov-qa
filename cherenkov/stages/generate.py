@@ -7,19 +7,38 @@ from __future__ import annotations
 import json
 import os
 import time
-from typing import Any, Optional
+from typing import Any
 
+from cherenkov.ai import get_client
+from cherenkov.ai.ollama_client import strip_think
 from cherenkov.core.contracts import (
     GenerateOutput,
     Scenario,
-    Status,
-    StageMeta,
     StageError,
+    StageMeta,
+    Status,
 )
-from cherenkov.core.settings import get_settings
-from cherenkov.ai import get_client
-from cherenkov.ai.ollama_client import strip_think
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
+from cherenkov.sources.accessibility.contracts import AccessibilityScenario
+from cherenkov.sources.graphql.contracts import GraphQLScenario
+from cherenkov.sources.grpc.contracts import gRPCScenario
+
+
+def _is_plausibly_valid_ts(code: str) -> bool:
+    """Fast pre-tsc structural gate — rejects obviously malformed output before accepting a generation attempt.
+
+    Catches two common failure modes: truncated output (unbalanced braces) and
+    empty/prose responses (no test() call).  Full tsc --noEmit validation still
+    runs in ReviewStage Gate 5; this check only decides whether to retry here.
+    """
+    stripped = code.strip()
+    if not stripped:
+        return False
+    if "test(" not in stripped:
+        return False
+    # Unbalanced braces almost always mean the model was cut off mid-output
+    return stripped.count("{") == stripped.count("}")
 
 
 def _sanitize_prompt_input(text: str, max_len: int = 500) -> str:
@@ -41,7 +60,6 @@ def _sanitize_prompt_input(text: str, max_len: int = 500) -> str:
     sanitized = sanitized.encode("ascii", errors="ignore").decode()[:max_len]
     return sanitized.strip()
 
-
 def _load_system_prompt() -> str:
     """Loads the tuned generator system prompt committed to prompts/generator_system.txt.
 
@@ -54,7 +72,7 @@ def _load_system_prompt() -> str:
         os.path.join(os.path.dirname(__file__), "../../prompts/generator_system.txt")
     )
     try:
-        with open(prompt_path, "r", encoding="utf-8") as f:
+        with open(prompt_path, encoding="utf-8") as f:
             return f.read().strip()
     except OSError as e:
         raise RuntimeError(
@@ -62,16 +80,13 @@ def _load_system_prompt() -> str:
             "Reinstall cherenkov-qa or set CHERENKOV_GENERATOR_PROMPT to a valid file."
         ) from e
 
-
 _system_prompt_cache: str | None = None
-
 
 def _get_system_prompt() -> str:
     global _system_prompt_cache
     if _system_prompt_cache is None:
         _system_prompt_cache = _load_system_prompt()
     return _system_prompt_cache
-
 
 def __getattr__(name: str) -> str:
     # Lazy module attribute (PEP 562): keeps `from ... import SYSTEM_PROMPT`
@@ -80,7 +95,6 @@ def __getattr__(name: str) -> str:
     if name == "SYSTEM_PROMPT":
         return _get_system_prompt()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-
 
 class GenerateStage:
     """Invokes local LLM qwen2.5-coder to write compile-ready Playwright TypeScript tests."""
@@ -162,11 +176,11 @@ class GenerateStage:
 
     def run(
         self,
-        scenario: Scenario,
+        scenario: Scenario | GraphQLScenario | gRPCScenario | AccessibilityScenario,
         path: str = "",
         method: str = "",
-        operation: Optional[dict[str, Any]] = None,
-        schemas: Optional[dict[str, Any]] = None,
+        operation: dict[str, Any] | None = None,
+        schemas: dict[str, Any] | None = None,
         instruction: str = "",
         source_type: str = "openapi",
         strategies_block: str = "",
@@ -178,6 +192,8 @@ class GenerateStage:
         self.log.info("stage start", scenario_id=mutation_id)
 
         if source_type == "graphql":
+            if not isinstance(scenario, GraphQLScenario):
+                raise TypeError("source_type 'graphql' requires a GraphQLScenario")
             import jinja2
 
             env = jinja2.Environment(
@@ -196,6 +212,8 @@ class GenerateStage:
                 expected_response_structure=scenario.expected_response_structure,
             )
         elif source_type == "grpc":
+            if not isinstance(scenario, gRPCScenario):
+                raise TypeError("source_type 'grpc' requires a gRPCScenario")
             import jinja2
             env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))))
             template = env.get_template("grpc_test.j2")
@@ -206,6 +224,8 @@ class GenerateStage:
                 proto_content=scenario.proto_content
             )
         elif source_type == "accessibility":
+            if not isinstance(scenario, AccessibilityScenario):
+                raise TypeError("source_type 'accessibility' requires an AccessibilityScenario")
             import jinja2
 
             env = jinja2.Environment(
@@ -232,9 +252,11 @@ class GenerateStage:
                 status=Status.OK,
                 metadata=StageMeta(stage="GENERATE", duration_ms=dt),
             )
-        # RESTGPT-style spec enrichment: extract rules + example values from
-        # OpenAPI descriptions before building the prompt so the LLM has
-        # concrete values to use rather than inventing them.
+        else:
+            # openapi (default): RESTGPT-style spec enrichment — extract rules +
+            # example values from OpenAPI descriptions before building the prompt.
+            if not isinstance(scenario, Scenario):
+                raise TypeError(f"source_type {source_type!r} requires a Scenario")
             spec_rules_block = ""
             try:
                 from cherenkov.stages.enrich import SpecEnrichStage
@@ -295,8 +317,13 @@ class GenerateStage:
         temperatures = [0.2, 0.1, 0.05]
         code = ""
         last_error = ""
+        _gen_deadline = time.monotonic() + get_settings().GEN_TIMEOUT_S
 
         for temp in temperatures:
+            if time.monotonic() >= _gen_deadline:
+                last_error = f"generation timed out after {get_settings().GEN_TIMEOUT_S}s"
+                self.log.warning("gen timeout reached", scenario_id=mutation_id)
+                break
             try:
                 client = get_client()
                 raw_code = client.complete_code(
@@ -306,9 +333,17 @@ class GenerateStage:
                     temperature=temp,
                     run_id=self.run_id,
                 )
-                code = strip_think(raw_code)
-                if code.strip():
-                    break  # TypeScript compilation is validated by Gate 5 in ReviewStage
+                candidate = strip_think(raw_code)
+                if not _is_plausibly_valid_ts(candidate):
+                    self.log.warning(
+                        "generated code failed structural check, retrying",
+                        temperature=temp,
+                        brace_balance=candidate.count("{") - candidate.count("}"),
+                        has_test=("test(" in candidate),
+                    )
+                    continue
+                code = candidate
+                break
             except Exception as e:
                 last_error = f"Ollama generation failed: {e}"
                 self.log.warning(

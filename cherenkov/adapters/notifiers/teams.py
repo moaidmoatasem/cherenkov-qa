@@ -1,6 +1,7 @@
 """
 cherenkov/adapters/notifiers/teams.py — Microsoft Teams Adaptive Card Notifier.
 """
+from __future__ import annotations
 
 import json
 import os

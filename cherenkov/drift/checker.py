@@ -15,8 +15,7 @@ from typing import Any
 
 _log = logging.getLogger(__name__)
 
-from cherenkov.drift.loop import ReconciliationProposal
-
+from cherenkov.drift.models import ReconciliationProposal
 
 # ── banned assertion patterns ──────────────────────────────────────────────────
 
@@ -98,17 +97,14 @@ def check_proposal(proposal: ReconciliationProposal) -> bool:
             return False  # rejected: must have at least one assertion
 
         for assertion in assertions:
-            ok, reason = is_meaningful_assertion(assertion)
+            ok, _ = is_meaningful_assertion(assertion)
             if not ok:
                 return False
 
         # Verify request has method + path
         test = patch.get("test", {})
         request = test.get("request", {}) if isinstance(test, dict) else {}
-        if not request.get("method") or not isinstance(request.get("path"), str):
-            return False
-
-        return True
+        return bool(request.get("method")) and isinstance(request.get("path"), str)
 
     # Unknown op — accept (don't block unknown future patch types)
     return True

@@ -99,3 +99,15 @@ Record their answer verbatim. That's the data.
 If 3+ say yes: **You shipped.** The tool generates tests that QA professionals would keep. That was the whole thesis.
 
 If fewer than 3: Read the verbatim feedback. The gap between "no" and "yes" is your Week 2 roadmap.
+
+---
+
+## Recorded Sessions
+
+For pre-recorded walkthroughs of the same demo flows (Loom-ready scripts with voiceover, commands, and expected output):
+→ [docs/recordings/](recordings/) — 8 sessions covering developers, QA, managers, and DevOps.
+
+## Full Onboarding & KT Package
+
+For the complete onboarding and knowledge-transfer package (slide deck, video guide, harness):
+→ [docs/onboarding/](onboarding/) — sessions A/B/C, interactive HTML pitch deck, demo harness, FAQ, recording guide.

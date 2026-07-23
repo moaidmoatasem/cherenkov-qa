@@ -8,6 +8,12 @@ import re
 import time
 from dataclasses import dataclass, field
 
+_RE_MAESTRO_CMD = re.compile(
+    r"^- (tapOn|inputText|assertVisible|assertNotVisible|waitFor|takeScreenshot|runFlow|scrollUntilVisible)",
+    re.MULTILINE,
+)
+_RE_INDENTED_VALUE = re.compile(r"^\s+text:|^\s+path:|^\s+when:", re.MULTILINE)
+
 from cherenkov.stages.mobile_generate import MobileGenerateOutput
 
 
@@ -36,20 +42,14 @@ class MobileReviewStage:
         if "appId:" not in yaml_text:
             errors.append("Missing required 'appId' field")
 
-        if not re.search(
-            r"^- (tapOn|inputText|assertVisible|assertNotVisible|waitFor|takeScreenshot|runFlow|scrollUntilVisible)",
-            yaml_text,
-            re.MULTILINE,
-        ):
+        if not _RE_MAESTRO_CMD.search(yaml_text):
             errors.append("No Maestro commands found in generated YAML")
 
-        has_indented_value = bool(
-            re.search(r"^\s+text:|^\s+path:|^\s+when:", yaml_text, re.MULTILINE)
-        )
+        has_indented_value = bool(_RE_INDENTED_VALUE.search(yaml_text))
         if not has_indented_value:
             errors.append("Commands missing required indented values (text/path/when)")
 
-        passed = len(errors) == 0
+        passed = not errors
 
         dt = int((time.monotonic() - t0) * 1000)
         if self.run_id:

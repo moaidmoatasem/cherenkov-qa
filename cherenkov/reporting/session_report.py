@@ -30,7 +30,6 @@ from typing import Any
 
 from cherenkov.core.errors import get_logger
 
-
 # ── data models ──────────────────────────────────────────────────────────────
 
 
@@ -120,7 +119,7 @@ class SessionReportBuilder:
         actual_status: int,
         response_body: str = "",
         trace_path: str = "",
-    ) -> "SessionReportBuilder":
+    ) -> SessionReportBuilder:
         if actual_status == expected_status:
             return self
         severity = "critical" if actual_status >= 500 else "high"
@@ -161,7 +160,7 @@ class SessionReportBuilder:
         vlm_confidence: float,
         screenshot_path: str = "",
         baseline_path: str = "",
-    ) -> "SessionReportBuilder":
+    ) -> SessionReportBuilder:
         screenshot_b64 = _encode_image(screenshot_path)
         severity_map = {
             "anomaly": "high",
@@ -199,7 +198,7 @@ class SessionReportBuilder:
 
     # ── JS / browser errors ───────────────────────────────────────────────
 
-    def add_js_error(self, url: str, error_text: str) -> "SessionReportBuilder":
+    def add_js_error(self, url: str, error_text: str) -> SessionReportBuilder:
         self._findings.append(
             SessionFinding(
                 kind="js_error",
@@ -223,7 +222,7 @@ class SessionReportBuilder:
 
     # ── explorer findings ─────────────────────────────────────────────────
 
-    def add_explorer_finding(self, finding: Any) -> "SessionReportBuilder":
+    def add_explorer_finding(self, finding: Any) -> SessionReportBuilder:
         """Accept a cherenkov.core.contracts.ExplorerFinding object."""
         sev_raw = str(getattr(finding, "severity", "medium")).lower().split(".")[-1]
         severity = (
@@ -256,7 +255,7 @@ class SessionReportBuilder:
 
     # ── visual report integration ─────────────────────────────────────────
 
-    def add_visual_report(self, report: Any) -> "SessionReportBuilder":
+    def add_visual_report(self, report: Any) -> SessionReportBuilder:
         """Accept a cherenkov.core.contracts.VisualReport and ingest its gates."""
         for gate in getattr(report, "gates", []):
             if gate.gate == "vlm_semantic":

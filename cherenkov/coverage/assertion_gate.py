@@ -6,6 +6,7 @@ to verify that assertions actually catch real bugs.
 
 from __future__ import annotations
 
+import os
 import time
 
 from cherenkov.core.errors import get_logger
@@ -92,7 +93,7 @@ class BrokenImplementation:
                 props = schema.get("properties", {})
 
                 if props:
-                    omitted = list(props.keys())[0]
+                    omitted = next(iter(props))
                     bugs.append(
                         {
                             "id": f"missing_field_{omitted}",
@@ -201,7 +202,7 @@ class AssertionGate:
         self,
         bug: dict,
         test_dir: str,
-        framework: str,
+        _framework: str,
     ) -> bool:
         """Simulate running a test against a broken implementation.
 
@@ -270,9 +271,7 @@ class AssertionGate:
 
     def _find_test_files(self, test_dir: str) -> list[dict]:
         """Find test files in the directory and read their contents."""
-        import os
-
-        files = []
+        files: list[dict] = []
         if not os.path.exists(test_dir):
             return files
         for fname in os.listdir(test_dir):

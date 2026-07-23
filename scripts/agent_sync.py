@@ -298,7 +298,7 @@ def _memory_collect(session_id: str, task_type: str, findings: list) -> None:
     try:
         def _get_repo():
             try:
-                import memsearch
+                import memsearch  # noqa: F401
 
                 from cherenkov.memory.adapters.memsearch_memory import MemSearchMemoryRepository
                 return MemSearchMemoryRepository(ROOT / "agent_memory" / "cherenkov_memory.db", ROOT)
@@ -332,7 +332,7 @@ def cmd_memory(action: str, args: list) -> None:
     try:
         def _get_repo():
             try:
-                import memsearch
+                import memsearch  # noqa: F401
 
                 from cherenkov.memory.adapters.memsearch_memory import MemSearchMemoryRepository
                 return MemSearchMemoryRepository(ROOT / "agent_memory" / "cherenkov_memory.db", ROOT)
@@ -493,6 +493,7 @@ def cmd_token(action_type: str | None, count: int | None, item: str | None):
     elif pct >= 60:
         line += " [near budget]"
     print(line)
+    return None
 
 
 def cmd_status(json_output: bool = False):

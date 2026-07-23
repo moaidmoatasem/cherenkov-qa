@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from cherenkov.chat.domain.models import Session, Message
+from cherenkov.chat.domain.models import Message, Session
 
 
 class ConversationMemory(Protocol):

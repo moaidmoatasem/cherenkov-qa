@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import sys
 from unittest.mock import patch
 
 
@@ -22,7 +21,7 @@ class TestNpx:
     def test_falls_back_to_npx_cmd_on_windows_when_not_found(self):
         with patch("shutil.which", return_value=None), \
              patch("sys.platform", "win32"):
-            from importlib import reload
+
             import cherenkov.core.compat as compat
             result = compat.npx()
         assert result == "npx.cmd"
@@ -31,7 +30,7 @@ class TestNpx:
         with patch("cherenkov.core.compat.shutil.which", return_value=None), \
              patch("sys.platform", "linux"), \
              patch("cherenkov.core.compat._NODE_FALLBACK_DIRS", []), \
-             patch("cherenkov.core.compat._glob.glob", return_value=[]):
+             patch("cherenkov.core.compat.glob.glob", return_value=[]):
             import cherenkov.core.compat as compat
             result = compat.npx()
         assert result == "npx"

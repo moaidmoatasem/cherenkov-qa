@@ -1,13 +1,14 @@
-import subprocess
-import shutil
 import re
+import shutil
+import subprocess
+
 from pydantic import BaseModel, Field
-from typing import Optional
+
 
 class RunQwenCodeAgentArgs(BaseModel):
     prompt: str = Field(..., description="The instruction or task to delegate to Qwen Code")
-    context: Optional[str] = Field(None, description="Additional context to provide to the agent")
-    files: Optional[list[str]] = Field(None, description="List of files to process")
+    context: str | None = Field(None, description="Additional context to provide to the agent")
+    files: list[str] | None = Field(None, description="List of files to process")
 
 def run_qwen_code_agent(args: RunQwenCodeAgentArgs) -> dict:
     """
@@ -16,24 +17,24 @@ def run_qwen_code_agent(args: RunQwenCodeAgentArgs) -> dict:
     """
     if not shutil.which("qwen"):
         return {"status": "error", "error": "qwen not found in PATH"}
-        
+
     cmd = ["qwen", "-p"]
-    
+
     # Check if args is a dict or BaseModel depending on caller
     prompt = getattr(args, "prompt", args.get("prompt", "")) if isinstance(args, dict) else args.prompt
     context = getattr(args, "context", args.get("context", "")) if isinstance(args, dict) else args.context
     files = getattr(args, "files", args.get("files", [])) if isinstance(args, dict) else args.files
-    
+
     full_prompt = prompt
     if context:
         full_prompt += f"\n\nContext:\n{context}"
-    
+
     if files:
         files_str = " ".join([f"@{f}" for f in files])
         full_prompt = f"{files_str} {full_prompt}"
-        
+
     cmd.append(full_prompt)
-    
+
     try:
         # Run headless Qwen Code via CLI
         result = subprocess.run(
@@ -43,10 +44,10 @@ def run_qwen_code_agent(args: RunQwenCodeAgentArgs) -> dict:
             check=False,
             timeout=120
         )
-        
+
         stdout_clean = re.sub(r'\x1b\[[0-9;]*m', '', result.stdout)
         stderr_clean = re.sub(r'\x1b\[[0-9;]*m', '', result.stderr)
-        
+
         return {
             "status": "success" if result.returncode == 0 else "error",
             "exit_code": result.returncode,

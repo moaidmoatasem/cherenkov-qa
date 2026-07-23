@@ -42,7 +42,7 @@ def main():
         print(f"[FAIL] Error: GETTING_STARTED.md is missing at: {docs_file}")
         sys.exit(1)
 
-    with open(docs_file, "r", encoding="utf-8") as f:
+    with open(docs_file, encoding="utf-8") as f:
         docs_content = f.read()
 
     # Dynamically load cherenkov.py (not the cherenkov/ package)
@@ -55,7 +55,7 @@ def main():
     subcommands = []
     for action in parser._actions:
         if isinstance(action, argparse._SubParsersAction):
-            for choice in action.choices.keys():
+            for choice in action.choices:
                 subcommands.append(choice)
 
     print(f"Detected subcommands from argparse: {subcommands}")

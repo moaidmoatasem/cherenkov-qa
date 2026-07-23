@@ -14,7 +14,6 @@ from typing import Any
 
 from cherenkov.eval.grader import GradeReport
 
-
 # Thresholds that trigger a suggestion
 _TARGET_DENSITY    = 3.0   # assertions per test
 _TARGET_COVERAGE   = 0.90  # fraction of spec ops tested
@@ -46,7 +45,7 @@ class OptimizeSuggestion:
             for s in self.suggestions:
                 lines.append(f"  • {s}")
         if self.weakest_operations:
-            lines.append(f"\nWeakest operations (address first):")
+            lines.append("\nWeakest operations (address first):")
             for op in self.weakest_operations:
                 lines.append(f"  • {op}")
         return "\n".join(lines)

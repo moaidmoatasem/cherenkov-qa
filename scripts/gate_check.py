@@ -14,7 +14,7 @@ def check_gate():
         print("ERROR: Evidence ledger not found.")
         sys.exit(1)
 
-    with open(ledger_path, "r", encoding="utf-8") as f:
+    with open(ledger_path, encoding="utf-8") as f:
         content = f.read()
 
     # Count rows that have "Yes" in the Vote column and are not _pending_
@@ -35,7 +35,7 @@ def check_gate():
         for fname in os.listdir(evidence_dir):
             if fname.endswith(".md"):
                 with open(
-                    os.path.join(evidence_dir, fname), "r", encoding="utf-8"
+                    os.path.join(evidence_dir, fname), encoding="utf-8"
                 ) as ef:
                     ef_content = ef.read().lower()
                     if "mobile" in ef_content:

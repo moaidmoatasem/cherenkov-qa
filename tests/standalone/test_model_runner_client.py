@@ -6,7 +6,7 @@ Authority: v3.1 + delta.
 from __future__ import annotations
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from cherenkov.ai.model_runner_client import ModelRunnerClient
 from cherenkov.ai.router import InferenceRouter

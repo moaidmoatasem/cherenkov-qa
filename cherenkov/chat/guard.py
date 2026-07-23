@@ -3,8 +3,10 @@ from __future__ import annotations
 import functools
 import logging
 import os
+import uuid
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +94,7 @@ class SafetyGuard:
         except Exception as exc:
             logger.warning("SafetyGuard: MS AGT init failed — %s", exc)
 
-    def _check_agt(self, fn_name: str, fn_args: dict[str, Any]) -> GuardResult:
+    def _check_agt(self, fn_name: str, _fn_args: dict[str, Any]) -> GuardResult:
         if self._agt_engine is None:
             return GuardResult(allowed=True)
         try:
@@ -125,8 +127,6 @@ class SafetyGuard:
     # ── AgentRR: record/replay debugging ──────────────────────────────────
 
     def _init_agentrr(self) -> None:
-        import uuid as _uuid
-
         try:
             from agentrr_core.log.writer import LogWriter, LogWriterConfig
             from agentrr_core.schema.events import RunHeader
@@ -143,7 +143,7 @@ class SafetyGuard:
             config = LogWriterConfig(path=log_path)
             writer = LogWriter(config=config)
             header = RunHeader(
-                run_id=f"cherenkov-{_uuid.uuid4().hex[:8]}",
+                run_id=f"cherenkov-{uuid.uuid4().hex[:8]}",
                 entrypoint="cherenkov.chat.guard",
             )
             recorder = Recorder.create(writer, header)
@@ -157,13 +157,12 @@ class SafetyGuard:
         if self._agentrr_recorder is None:
             return
         try:
-            import uuid as _uuid
             from agentrr_core.schema.events import EventType
             from agentrr_recorder.pending_event import PendingBoundary
 
             et = getattr(EventType, event_type.upper(), EventType.RECORD)
             pending = PendingBoundary(
-                event_id=f"e-{_uuid.uuid4().hex[:12]}",
+                event_id=f"e-{uuid.uuid4().hex[:12]}",
                 event_type=et,
                 request=payload,
                 parent_id=None,

@@ -29,6 +29,10 @@ from cherenkov.core.contracts import (
 from cherenkov.core.errors import get_logger
 from cherenkov.substrate.router import SubstrateRouter
 
+_RE_ARTICLE_PREFIX = re.compile(r"^(the|a|an)\s+")
+_RE_ROLE_SUFFIX = re.compile(r"\s+(button|link|field|input|checkbox|tab|menu item)$")
+_RE_SLUG = re.compile(r"[^a-z0-9]+")
+
 _INTENT_SCHEMA: dict = {
     "type": "object",
     "required": ["title", "kind", "steps"],
@@ -247,10 +251,8 @@ class IntentAuthor:
         t = (target or "").strip()
         low = t.lower()
         # crude role inference from the description; keeps tests selector-free
-        name = re.sub(r"^(the|a|an)\s+", "", low)
-        name = re.sub(
-            r"\s+(button|link|field|input|checkbox|tab|menu item)$", "", name
-        ).strip()
+        name = _RE_ARTICLE_PREFIX.sub("", low)
+        name = _RE_ROLE_SUFFIX.sub("", name).strip()
         pretty = name.title() if name else t
         if "button" in low:
             return f'page.getByRole("button", {{ name: {json.dumps(pretty)} }})'
@@ -287,5 +289,5 @@ class IntentAuthor:
 
     @staticmethod
     def _slug(title: str) -> str:
-        s = re.sub(r"[^a-z0-9]+", "_", title.lower()).strip("_")
+        s = _RE_SLUG.sub("_", title.lower()).strip("_")
         return s or "intent_test"

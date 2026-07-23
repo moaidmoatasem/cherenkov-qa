@@ -91,6 +91,6 @@ class SQLiteSessionStore(SessionStore):
             row = cursor.fetchone()
             if row:
                 snapshot = self._row_to_snapshot(row)
-                if snapshot.token and snapshot.token.expires_at > datetime.datetime.now(datetime.UTC):
+                if snapshot.token and snapshot.token.expires_at > datetime.datetime.now(datetime.timezone.utc):
                     return snapshot
         return None

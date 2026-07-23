@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from typing import Any
 
@@ -106,7 +107,7 @@ class HookRegistry:
 
     def all_events(self) -> list[HookEvent]:
         """Return all events that have at least one hook registered."""
-        return list(self._configs.keys())
+        return list(self._configs)
 
     def __repr__(self) -> str:
         summary = {e.value: len(cfgs) for e, cfgs in self._configs.items()}
@@ -124,8 +125,6 @@ def load_registry_from_project(project_root: Path | None = None) -> HookRegistry
     Falls back to an empty registry if no hooks are configured or the config
     cannot be loaded (graceful degradation for environments without cherenkov.toml).
     """
-    import os
-
     try:
         from cherenkov.core.config_loader import LayeredConfig
 

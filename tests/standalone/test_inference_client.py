@@ -5,16 +5,16 @@ Verifies the abstraction contract, concrete implementation, and mock-tested beha
 """
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from cherenkov.ai.interface import InferenceClient
 from cherenkov.ai.ollama_client import (
     OllamaInferenceClient,
-    complete_json,
     complete_code,
+    complete_json,
 )
-from cherenkov.core.errors import OllamaJSONError, ProviderJSONError
 from cherenkov.ai.openai_client import OpenAIInferenceClient
+from cherenkov.core.errors import OllamaJSONError, ProviderJSONError
 
 
 class TestInferenceClient(unittest.TestCase):
@@ -253,7 +253,7 @@ class TestClientMemoization(unittest.TestCase):
     def test_set_and_reset_client(self):
         """set_client() injects; reset_client() clears so get_client() rebuilds."""
         import cherenkov.ai as ai_mod
-        from cherenkov.ai import set_client, reset_client, CachedInferenceClient
+        from cherenkov.ai import CachedInferenceClient, reset_client, set_client
         from cherenkov.core.settings import get_settings
 
         original = get_settings().PROVIDER

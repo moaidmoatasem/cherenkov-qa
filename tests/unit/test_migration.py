@@ -1,12 +1,14 @@
 import os
 import tempfile
+
 import pytest
+
 from cherenkov.core.migration import SchemaMigration
 
 
 @pytest.fixture
 def db_path():
-    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
     path = tmp.name
     tmp.close()
     yield path

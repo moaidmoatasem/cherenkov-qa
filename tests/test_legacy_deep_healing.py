@@ -5,10 +5,11 @@ Proves workspace replication, LLM-based repair sweeps in sandbox, and unified di
 """
 
 import os
-import subprocess
-import time
-import sys
 import shutil
+import subprocess
+import sys
+import time
+
 import pytest
 
 from cherenkov.healing.diagnose import Diagnoser
@@ -110,7 +111,7 @@ test('create user failing assertion spec', async () => {
         assert os.path.exists(healed_diff), "Unified diff file was not written to disk."
         print(f"✓ Unified diff generated successfully: {healed_diff}")
 
-        with open(healed_diff, "r", encoding="utf-8") as df:
+        with open(healed_diff, encoding="utf-8") as df:
             diff_content = df.read()
         print("\n--- GENERATED UNIFIED DIFF SUGGESTION ---")
         print(diff_content)
@@ -127,7 +128,7 @@ test('create user failing assertion spec', async () => {
         print("✓ Unified diff contains a corrected healed status assertion.")
 
         # Ensure original E2E test file was untouched (honoring the suggest-only trust rule)
-        with open(failing_spec, "r", encoding="utf-8") as f:
+        with open(failing_spec, encoding="utf-8") as f:
             intact_code = f.read()
         assert (
             "toBe(500)" in intact_code
@@ -185,4 +186,4 @@ def test_legacy_deep_healing():
         main()
     except SystemExit as e:
         if e.code != 0:
-            raise AssertionError(f"Test failed with exit code {e.code}")
+            raise AssertionError(f"Test failed with exit code {e.code}") from e

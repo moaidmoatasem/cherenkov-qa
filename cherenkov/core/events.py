@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import uuid
 import time
-from enum import Enum
+import uuid
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any
 
 

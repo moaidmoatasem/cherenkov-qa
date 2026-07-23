@@ -14,7 +14,7 @@ result (`AssertionGateResult`) plus a batch filter.
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from cherenkov.core.contracts import AssertionGateResult
 from cherenkov.core.errors import get_logger

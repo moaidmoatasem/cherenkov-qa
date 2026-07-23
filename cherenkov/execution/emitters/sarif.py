@@ -1,5 +1,8 @@
-from typing import Any
+from __future__ import annotations
+
 from datetime import datetime, timezone
+from typing import Any
+
 
 class SARIFEmitter:
     """Emits DivergenceReports into the SARIF format for GitHub Advanced Security."""
@@ -60,7 +63,7 @@ class SARIFEmitter:
                     },
                     "invocations": [
                         {
-                            "executionSuccessful": len(results) == 0,
+                            "executionSuccessful": not results,
                             "endTimeUtc": datetime.now(timezone.utc).isoformat() + "Z",
                         }
                     ],

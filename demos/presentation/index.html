@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CHERENKOV QA - Knowledge Transfer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/dracula.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/monokai.min.css">
+  <style>
+    .reveal pre code { max-height: 500px; }
+    .reveal h1, .reveal h2, .reveal h3 { text-transform: none; }
+    .highlight-red { color: #ff5555; font-weight: bold; }
+    .highlight-green { color: #50fa7b; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Slide 1 -->
+      <section>
+        <h2>CHERENKOV QA</h2>
+        <h3>Knowledge Transfer & Pitch</h3>
+        <p>From zero to fully verified test suite in 60 seconds.</p>
+        <p><small>Target Audience: Engineering Leads & QA Managers</small></p>
+      </section>
+
+      <!-- Slide 2 -->
+      <section>
+        <h2>The Problem</h2>
+        <p>In the world of AI coding, generation is <span class="highlight-green">free</span>. But trust <span class="highlight-red">isn't</span>.</p>
+        <p class="fragment fade-up">If an AI hallucinates the expected outcome, you end up with green builds that are actually broken.</p>
+      </section>
+
+      <!-- Slide 3 -->
+      <section>
+        <h2>The Solution</h2>
+        <p><strong>The OpenAPI Specification is the Single Source of Truth.</strong></p>
+        <ul>
+          <li class="fragment">Generates Playwright tests via LLM.</li>
+          <li class="fragment">Deterministically verifies assertions against the spec.</li>
+          <li class="fragment">Catches AI hallucinations statically.</li>
+        </ul>
+      </section>
+
+      <!-- Slide 4 -->
+      <section>
+        <section>
+          <h2>Zero to Hero Quickstart</h2>
+          <p>Let's use the public Petstore API.</p>
+        </section>
+        <section>
+          <h3>Initialize & Generate</h3>
+          <pre><code class="bash" data-trim data-noescape>
+# 1. Initialize
+cherenkov init
+
+# 2. Download standard Petstore spec
+curl -s https://petstore3.swagger.io/api/v3/openapi.json -o petstore.json
+
+# 3. Generate the tests
+cherenkov generate --spec petstore.json --output-dir tests/ --no-repair
+          </code></pre>
+        </section>
+        <section>
+          <h3>Validate</h3>
+          <p>Run against the real, live API to find spec drift.</p>
+          <pre><code class="bash" data-trim data-noescape>
+cherenkov validate \
+  --target https://petstore3.swagger.io/api/v3 \
+  --spec petstore.json \
+  --fail-on-drift
+          </code></pre>
+        </section>
+      </section>
+
+      <!-- Slide 5 -->
+      <section>
+        <section>
+          <h2>The Live Case</h2>
+          <p>JSONPlaceholder API (Real Production API)</p>
+        </section>
+        <section>
+          <h3>Generate with Self-Healing</h3>
+          <pre><code class="bash" data-trim data-noescape>
+# Generate and fix errors automatically
+cherenkov generate \
+  --spec jsonplaceholder_spec.json \
+  --output-dir tests-jsonplaceholder/ \
+  --repair
+          </code></pre>
+        </section>
+        <section>
+          <h3>Validate</h3>
+          <p>Hitting real endpoints across the internet.</p>
+          <pre><code class="bash" data-trim data-noescape>
+cherenkov validate \
+  --target https://jsonplaceholder.typicode.com \
+  --spec jsonplaceholder_spec.json
+          </code></pre>
+        </section>
+      </section>
+
+      <!-- Slide 6 -->
+      <section>
+        <h2>Dashboard & CI/CD</h2>
+        <p>Beautiful visuals for QA teams and Managers.</p>
+        <pre><code class="bash" data-trim data-noescape>
+# Launch the dashboard
+cherenkov dashboard
+
+# CI/CD validation
+cherenkov certify
+        </code></pre>
+      </section>
+
+      <!-- Slide 7 -->
+      <section>
+        <h2>Conclusion</h2>
+        <ol>
+          <li class="fragment">Generation is fast, CHERENKOV makes it <strong>safe</strong>.</li>
+          <li class="fragment">Finds spec drift against real APIs.</li>
+          <li class="fragment">Integrates into CI/CD flawlessly.</li>
+        </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.min.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      plugins: [ RevealHighlight ]
+    });
+  </script>
+</body>
+</html>

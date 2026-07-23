@@ -1,0 +1,9 @@
+version: "3"
+services:
+  prism:
+    image: stoplight/prism:4
+    command: mock -h 0.0.0.0 /tmp/stripe_spec.json
+    ports:
+      - "4010:4010"
+    volumes:
+      - ./stripe_spec.json:/tmp/stripe_spec.json:ro

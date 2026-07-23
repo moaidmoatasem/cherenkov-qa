@@ -8,8 +8,9 @@ without requiring a GPU or Ollama instance. This allows the Horizon V review UI 
 from __future__ import annotations
 
 import logging
-from cherenkov.hitl.store import HitlQueue
+
 from cherenkov.hitl.contracts import HitlItem
+from cherenkov.hitl.store import HitlQueue
 
 logger = logging.getLogger(__name__)
 

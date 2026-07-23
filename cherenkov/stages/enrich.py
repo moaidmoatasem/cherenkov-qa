@@ -19,7 +19,6 @@ from typing import Any
 
 from cherenkov.core.errors import get_logger
 
-
 # Phrases that typically introduce a constraint in natural language
 _CONSTRAINT_PHRASES = [
     r"must\s+be",

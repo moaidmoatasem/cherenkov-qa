@@ -1,4 +1,5 @@
 """AsyncAPI scenario planner."""
+from __future__ import annotations
 
 from cherenkov.sources.asyncapi.adapter import AsyncAPISourceAdapter
 from cherenkov.sources.asyncapi.contracts import AsyncAPIScenario

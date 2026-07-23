@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import logging
 import os
 import platform
-import logging
+import subprocess
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -72,8 +73,6 @@ class DeviceInfo:
         if nvidia_smi:
             return False
         try:
-            import subprocess
-
             result = subprocess.run(
                 ["nvidia-smi"], capture_output=True, text=True, timeout=5
             )
@@ -84,8 +83,6 @@ class DeviceInfo:
     @staticmethod
     def _check_docker() -> bool:
         try:
-            import subprocess
-
             result = subprocess.run(
                 ["docker", "info"], capture_output=True, text=True, timeout=5
             )

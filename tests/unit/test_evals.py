@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json
+import contextlib
 import os
 import tempfile
 import unittest
@@ -90,7 +90,7 @@ class TestEvalCore(unittest.TestCase):
 
 class TestEvalStore(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)  # noqa: SIM115
         self.db_path = Path(self.tmp.name)
         self.tmp.close()
         self.store = EvalStore(db_path=self.db_path)
@@ -99,17 +99,15 @@ class TestEvalStore(unittest.TestCase):
         if hasattr(self, "store"):
             pass
         if os.path.exists(self.db_path):
-            try:
+            with contextlib.suppress(Exception):
                 os.unlink(self.db_path)
-            except Exception:
-                pass
 
     def _make_report(self, pass_rate: float = 1.0) -> EvalReport:
         sample = EvalSample(scenario_id="t1", endpoint="/x", method="GET", expected_status=200, test_code="", spec_summary="")
         status = EvalStatus.PASS if pass_rate >= 0.7 else EvalStatus.FAIL
         s = EvalScore(metric=EvalMetric.FAITHFULNESS, score=pass_rate, status=status, detail="ok")
         r = EvalResult(sample=sample, scores=[s], duration_ms=10)
-        passed = status == EvalStatus.PASS
+        _passed = status == EvalStatus.PASS
         return EvalReport(results=[r], model="test", eval_timestamp="now")
 
     def test_save_and_latest(self):

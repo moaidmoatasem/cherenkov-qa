@@ -1,12 +1,12 @@
 """Tests for E4-3: Oracle SPI."""
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from cherenkov.core.contracts import Claim, Provenance, ProvenanceType
 from cherenkov.oracle.interface import Oracle, OracleResult
-from cherenkov.oracle.spec_prism import SpecPrismOracle
 from cherenkov.oracle.prod_snapshot import ProdSnapshotOracle
+from cherenkov.oracle.spec_prism import SpecPrismOracle
 
 
 class TestOracleInterface(unittest.TestCase):

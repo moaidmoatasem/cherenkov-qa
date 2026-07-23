@@ -1,4 +1,5 @@
-import contextlib
+from __future__ import annotations
+
 import logging
 import subprocess
 from collections.abc import Callable

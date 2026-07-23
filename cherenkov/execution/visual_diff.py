@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import os
 import subprocess
+from pathlib import Path
+
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 
@@ -43,8 +45,7 @@ class VisualDiffEngine:
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("VISUAL_DIFF", run_id)
-        from pathlib import Path as _Path
-        self.stub_dir = str(_Path(__file__).parent.parent.parent / "stub")
+        self.stub_dir = str(Path(__file__).parent.parent.parent / "stub")
         self.spec_path = os.path.join(self.stub_dir, VISUAL_SPEC_RELPATH)
         # Playwright writes snapshots beside the spec by default.
         self.snapshots_dir = self.spec_path + "-snapshots"
@@ -101,21 +102,20 @@ class VisualDiffEngine:
                     "mismatch_detected": False,
                     "message": "Visual baseline initialized successfully. No prior snapshot to compare against.",
                 }
-            else:
-                self.log.warning(
-                    "visual baseline initialization failed",
-                    exit_code=init.returncode,
-                    detail=(init.stderr or init.stdout or "")[-500:],
-                )
-                return {
-                    "passed": False,
-                    "exit_code": init.returncode,
-                    "target_url": url,
-                    "baseline_dir": self.snapshots_dir,
-                    "mismatch_detected": False,
-                    "error_output": init.stderr or init.stdout,
-                    "message": "Visual baseline initialization failed.",
-                }
+            self.log.warning(
+                "visual baseline initialization failed",
+                exit_code=init.returncode,
+                detail=(init.stderr or init.stdout or "")[-500:],
+            )
+            return {
+                "passed": False,
+                "exit_code": init.returncode,
+                "target_url": url,
+                "baseline_dir": self.snapshots_dir,
+                "mismatch_detected": False,
+                "error_output": init.stderr or init.stdout,
+                "message": "Visual baseline initialization failed.",
+            }
 
         # Run validation
         process = self._run_playwright(url, ["--reporter=json"])

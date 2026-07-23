@@ -16,12 +16,12 @@ encryption. Falls back to plain SQLite if pysqlcipher3 is not available.
 
 from __future__ import annotations
 
-import os as _os
+import builtins
+import logging
 import os
 import sqlite3
 import threading
 import time
-import logging
 
 from cherenkov.hitl.contracts import (
     HitlEnvelope,
@@ -75,12 +75,12 @@ def _default_db_path() -> str:
 def _validate_db_path(path: str) -> str:
     if path == ":memory:":
         return path
-    resolved = _os.path.realpath(_os.path.abspath(path))
+    resolved = os.path.realpath(os.path.abspath(path))
     if not resolved.endswith(".db"):
         raise ValueError(f"db_path must end with .db, got: {path!r}")
-    parent = _os.path.dirname(resolved)
-    if not _os.path.exists(parent):
-        _os.makedirs(parent, exist_ok=True)
+    parent = os.path.dirname(resolved)
+    if not os.path.exists(parent):
+        os.makedirs(parent, exist_ok=True)
     return resolved
 
 
@@ -105,10 +105,13 @@ class HitlQueue:
                     endpoint TEXT, method TEXT, mutation_id TEXT, mutation_label TEXT,
                     confidence REAL, confidence_reason TEXT, review_gate_failed TEXT,
                     approved_by TEXT, approved_at TEXT, reject_reason TEXT,
-                    run_id TEXT, spec_hash TEXT, created_at TEXT
+                    run_id TEXT, spec_hash TEXT, created_at TEXT,
+                    severity TEXT
                 );
                 CREATE INDEX IF NOT EXISTS idx_hitl_status
                     ON hitl_queue(status, created_at);
+                CREATE INDEX IF NOT EXISTS idx_hitl_severity
+                    ON hitl_queue(severity);
                 CREATE TABLE IF NOT EXISTS audit_log (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     command TEXT NOT NULL, actor TEXT NOT NULL, source TEXT NOT NULL,
@@ -116,6 +119,14 @@ class HitlQueue:
                 );
                 """
             )
+            # Migration: back-fill severity column on pre-existing DBs (the
+            # CREATE TABLE IF NOT EXISTS above only applies to fresh DBs).
+            cols = {row[1] for row in con.execute("PRAGMA table_info(hitl_queue)")}
+            if "severity" not in cols:
+                con.execute("ALTER TABLE hitl_queue ADD COLUMN severity TEXT")
+                con.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_hitl_severity ON hitl_queue(severity)"
+                )
             con.commit()
         finally:
             con.close()
@@ -130,8 +141,8 @@ class HitlQueue:
             con.execute(
                 "INSERT OR IGNORE INTO hitl_queue (id,status,endpoint,method,mutation_id,"
                 "mutation_label,confidence,confidence_reason,review_gate_failed,approved_by,"
-                "approved_at,reject_reason,run_id,spec_hash,created_at) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "approved_at,reject_reason,run_id,spec_hash,created_at,severity) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (
                     item.id,
                     item.status.value,
@@ -148,14 +159,22 @@ class HitlQueue:
                     item.run_id,
                     item.spec_hash,
                     item.created_at,
+                    item.severity.value if item.severity else None,
                 ),
             )
-            # Back-fill endpoint/method on pending items that were enqueued without them
+            # Back-fill endpoint/method/severity on pending items that were
+            # enqueued without them (e.g. a re-run that now has more context).
             if item.endpoint or item.method:
                 con.execute(
                     "UPDATE hitl_queue SET endpoint=?, method=? "
                     "WHERE id=? AND status='pending' AND (endpoint IS NULL OR method IS NULL)",
                     (item.endpoint, item.method, item.id),
+                )
+            if item.severity:
+                con.execute(
+                    "UPDATE hitl_queue SET severity=? "
+                    "WHERE id=? AND status='pending' AND severity IS NULL",
+                    (item.severity.value, item.id),
                 )
             con.commit()
         finally:
@@ -166,26 +185,32 @@ class HitlQueue:
         con = self._connect()
         try:
             row = con.execute("SELECT * FROM hitl_queue WHERE id=?", (item_id,)).fetchone()
-            return HitlItem(**{k: row[k] for k in row.keys()}) if row else None
+            return HitlItem(**dict(row)) if row else None
         finally:
             con.close()
 
-    def list(self, status: str | None = "pending") -> list[HitlItem]:
+    def list(
+        self, status: str | None = "pending", severity: str | None = None
+    ) -> list[HitlItem]:
         con = self._connect()
         try:
+            clauses = []
+            vals: list[str] = []
             if status:
-                rows = con.execute(
-                    "SELECT * FROM hitl_queue WHERE status=? ORDER BY created_at", (status,)
-                ).fetchall()
-            else:
-                rows = con.execute(
-                    "SELECT * FROM hitl_queue ORDER BY created_at"
-                ).fetchall()
-            return [HitlItem(**{k: r[k] for k in r.keys()}) for r in rows]
+                clauses.append("status=?")
+                vals.append(status)
+            if severity:
+                clauses.append("severity=?")
+                vals.append(severity)
+            where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+            rows = con.execute(
+                f"SELECT * FROM hitl_queue {where} ORDER BY created_at", vals
+            ).fetchall()
+            return [HitlItem(**dict(r)) for r in rows]
         finally:
             con.close()
 
-    def audit_rows(self) -> list[dict]:
+    def audit_rows(self) -> builtins.list[dict]:
         con = self._connect()
         try:
             rows = con.execute("SELECT * FROM audit_log ORDER BY id").fetchall()
@@ -207,7 +232,7 @@ class HitlQueue:
         con = self._connect()
         try:
             sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=? WHERE id=? AND status='pending'"
-            vals = (new_status.value, actor, _now(), item_id)
+            vals: tuple = (new_status.value, actor, _now(), item_id)
             if extra_sql:
                 sql = "UPDATE hitl_queue SET status=?, approved_by=?, approved_at=?, reject_reason=? WHERE id=? AND status='pending'"
                 vals = (new_status.value, actor, _now(), extra_vals[0], item_id)

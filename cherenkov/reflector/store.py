@@ -346,6 +346,7 @@ class ReflectorStore:
     """
 
     def __init__(self, db_path: str | None = None):
+        self.log = get_logger("REFLECTOR")
         self.db_path = db_path or _default_db_path().replace(
             "verdicts.db", "reflector.db"
         )

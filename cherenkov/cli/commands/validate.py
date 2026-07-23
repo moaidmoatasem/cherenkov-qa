@@ -1,8 +1,13 @@
-import click
-import os
+from __future__ import annotations
+
+import glob
 import json
+import os
 import sys
-from pathlib import Path as _Path
+import tempfile
+from pathlib import Path
+
+import click
 
 from cherenkov.execution.validate import ValidationEngine
 
@@ -53,18 +58,19 @@ from cherenkov.execution.validate import ValidationEngine
     help="Write a machine-readable JSON summary to this path (used by CI integrations)",
 )
 @click.option("--json", "json_out", is_flag=True, help="Output purely JSON to stdout")
-@click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output")
-def validate_cmd(target, source, format, workers, no_html, no_cache, spec, output, fail_on_drift, json_summary, json_out, quiet):
+@click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output; print only the final status line")
+@click.option("--verbose", "-v", is_flag=True, help="Print each gate result, retry attempt, and all scenario outcomes")
+def validate_cmd(target, source, format, workers, no_html, no_cache, spec, output, fail_on_drift, json_summary, json_out, quiet, verbose):  # noqa: ARG001
     """Validate E2E test suite against a real server"""
     from cherenkov.core.errors import ExitCode
-    
+
     if spec == "-":
         stdin_content = sys.stdin.read()
         os.makedirs(".cherenkov", exist_ok=True)
         spec = ".cherenkov/stdin_spec.yaml"
         with open(spec, "w", encoding="utf-8") as f:
             f.write(stdin_content)
-            
+
     if no_cache:
         from cherenkov.cache.endpoint_cache import EndpointCache
 
@@ -72,7 +78,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
 
     # Pre-ingest spec validation for OpenAPI specs
     if source == "openapi" and spec:
-        from cherenkov.truth.spec_validator import validate_spec, Severity
+        from cherenkov.truth.spec_validator import Severity, validate_spec
 
         result = validate_spec(spec)
         for issue in result.issues:
@@ -86,23 +92,25 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
             else:
                 click.echo(click.style(f"Spec validation failed: {spec}", fg="red", bold=True), err=True)
             sys.exit(ExitCode.VALIDATION_ERROR.value)
-        if result.issues:
+        if result.issues and not quiet:
             click.echo(click.style(
                 f"Spec OK with {len(result.warnings)} warning(s) — proceeding.", fg="yellow"
             ))
 
     if source == "graphql":
         from cherenkov.sources.graphql.adapter import GraphQLSourceAdapter
-        from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
         from cherenkov.stages.generate import GenerateStage
+        from cherenkov.stages.plan_graphql import GraphQLScenarioPlanner
 
         if not spec:
             click.echo(click.style("Error: --spec is required for --source graphql", fg="red"), err=True)
             sys.exit(1)
-        click.echo(f"Ingesting GraphQL SDL: {spec}")
+        if not quiet:
+            click.echo(f"Ingesting GraphQL SDL: {spec}")
         gql_source = GraphQLSourceAdapter(spec)
         scenarios = GraphQLScenarioPlanner().plan(gql_source)
-        click.echo(f"Planned {len(scenarios)} scenarios from {len(set(s.operation_name for s in scenarios))} operations")
+        if not quiet:
+            click.echo(f"Planned {len(scenarios)} scenarios from {len({s.operation_name for s in scenarios})} operations")
         generator = GenerateStage("cli_validate")
         generated = 0
         for sc in scenarios:
@@ -111,38 +119,42 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
                 generated += 1
             except Exception as e:
                 click.echo(click.style(f"  warn: skipped {sc.operation_name}/{sc.scenario_type}: {e}", fg="yellow"), err=True)
-        click.echo(f"Generated {generated}/{len(scenarios)} test files")
+        if not quiet:
+            click.echo(f"Generated {generated}/{len(scenarios)} test files")
     elif source == "grpc":
         from cherenkov.sources.grpc.adapter import gRPCSourceAdapter
-        from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
         from cherenkov.stages.generate import GenerateStage
+        from cherenkov.stages.plan_grpc import gRPCScenarioPlanner
 
         if not spec:
             click.echo(click.style("Error: --spec is required for --source grpc", fg="red"), err=True)
             sys.exit(1)
-        
+
         # If spec does not end in .proto and looks like a buf module, fetch it
         if not spec.endswith(".proto") and "/" in spec:
             from cherenkov.validate.buf_registry import BufRegistryClient
-            click.echo(f"Fetching gRPC proto from Buf Schema Registry: {spec}")
+            if not quiet:
+                click.echo(f"Fetching gRPC proto from Buf Schema Registry: {spec}")
             buf_client = BufRegistryClient()
             proto_content = buf_client.fetch_proto_content(spec)
             if proto_content is None:
                 click.echo(click.style(f"Error: failed to fetch from Buf Schema Registry: {spec}", fg="red"), err=True)
                 sys.exit(1)
-            
-            import tempfile
+
             fd, temp_spec = tempfile.mkstemp(suffix=".proto")
-            with os.fdopen(fd, "w") as f:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
                 f.write(proto_content)
             spec = temp_spec
-            click.echo(f"Ingesting fetched gRPC proto.")
+            if not quiet:
+                click.echo("Ingesting fetched gRPC proto.")
         else:
-            click.echo(f"Ingesting gRPC proto: {spec}")
-            
+            if not quiet:
+                click.echo(f"Ingesting gRPC proto: {spec}")
+
         grpc_source = gRPCSourceAdapter(spec)
         scenarios = gRPCScenarioPlanner().plan(grpc_source)
-        click.echo(f"Planned {len(scenarios)} scenarios from {len(set(s.service for s in scenarios))} services")
+        if not quiet:
+            click.echo(f"Planned {len(scenarios)} scenarios from {len({s.service for s in scenarios})} services")
         generator = GenerateStage("cli_validate")
         generated = 0
         for sc in scenarios:
@@ -151,30 +163,32 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
                 generated += 1
             except Exception as e:
                 click.echo(click.style(f"  warn: skipped {sc.service}/{sc.rpc_name}: {e}", fg="yellow"), err=True)
-        click.echo(f"Generated {generated}/{len(scenarios)} test files")
+        if not quiet:
+            click.echo(f"Generated {generated}/{len(scenarios)} test files")
     elif source == "accessibility":
         from cherenkov.sources.accessibility.adapter import AccessibilitySourceAdapter
-        from cherenkov.stages.plan_accessibility import AccessibilityScenarioPlanner
         from cherenkov.stages.generate import GenerateStage
+        from cherenkov.stages.plan_accessibility import AccessibilityScenarioPlanner
 
         a11y_source = AccessibilitySourceAdapter(spec)
         scenarios = AccessibilityScenarioPlanner().plan(a11y_source)
-        click.echo(f"Planned {len(scenarios)} accessibility scenarios")
+        if not quiet:
+            click.echo(f"Planned {len(scenarios)} accessibility scenarios")
         generator = GenerateStage("cli_validate")
         for sc in scenarios:
             generator.run(scenario=sc, source_type="accessibility")
 
     # Record manifest so `cherenkov check-stale` can detect spec drift later
     if source == "openapi" and spec:
-        import glob as _glob
         from cherenkov.core.staleness import StalenessManifest
 
-        tests_dir = str(_Path(__file__).parent.parent.parent.parent / "stub" / "generated_tests")
-        test_files = _glob.glob(os.path.join(tests_dir, "*.spec.ts"))
+        tests_dir = str(Path(__file__).parent.parent.parent.parent / "stub" / "generated_tests")
+        test_files = glob.glob(os.path.join(tests_dir, "*.spec.ts"))
         StalenessManifest().record(spec_path=spec, test_files=test_files)
 
     # The engine handles the heavy lifting
-    click.echo(f"\nRunning tests against {target} ...")
+    if not quiet:
+        click.echo(f"\nRunning tests against {target} ...")
     engine = ValidationEngine("cli_validate")
     results = engine.validate_suite(target, workers=workers)
 
@@ -183,14 +197,24 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
     _passed = sum(1 for r in _reports if r.get("passed", False))
     _total = len(_reports)
     _status_color = "green" if _passed == _total else ("yellow" if _passed > 0 else "red")
+
+    if verbose:
+        for r in _reports:
+            icon = "PASS" if r.get("passed", False) else "FAIL"
+            color = "green" if r.get("passed", False) else "red"
+            sid = r.get("scenario_id", "?")
+            err = f"  {r.get('error', '')[:120]}" if not r.get("passed", False) else ""
+            click.echo(click.style(f"  {icon}  {sid}{err}", fg=color))
+
     click.echo(click.style(
         f"\nResults: {_passed}/{_total} passed  [{results.get('status', 'done').upper()}]",
         fg=_status_color,
         bold=True,
     ))
-    for r in _reports:
-        if not r.get("passed", False):
-            click.echo(f"  FAIL  {r.get('scenario_id', '?')}  {r.get('error', '')[:120]}")
+    if not verbose:
+        for r in _reports:
+            if not r.get("passed", False):
+                click.echo(f"  FAIL  {r.get('scenario_id', '?')}  {r.get('error', '')[:120]}")
 
     if format == "sarif":
         from cherenkov.execution.emitters.sarif import SARIFEmitter
@@ -198,6 +222,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         os.makedirs(".cherenkov", exist_ok=True)
         emitter = SARIFEmitter()
         from types import SimpleNamespace
+
         from cherenkov.core.contracts import DivergenceFinding
 
         report_obj = SimpleNamespace(findings=[])
@@ -242,7 +267,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
             "violation_count": len(violations),
             "total_tests": len(reports),
             "passed": len(reports) - len(violations),
-            "drift_detected": len(violations) > 0,
+            "drift_detected": bool(violations),
             "status": results.get("status", "unknown"),
         }
         with open(json_summary, "w", encoding="utf-8") as f:

@@ -6,13 +6,12 @@ import json
 import time
 from pathlib import Path
 from typing import Any
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import yaml
 
-from cherenkov.evals.core import EvalSample, EvalResult, EvalScore, EvalMetric, EvalStatus
-
+from cherenkov.evals.core import EvalMetric, EvalResult, EvalSample, EvalScore, EvalStatus
 
 # ── Sample test code simulating GENERATE stage output ───────────────────
 SAMPLE_TEST_CODE_PASS = """

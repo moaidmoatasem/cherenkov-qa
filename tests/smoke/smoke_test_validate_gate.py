@@ -129,9 +129,8 @@ def main() -> int:
     if all_ok:
         print("[PASS] smoke_test_validate_gate: kill criterion MET — exit 0")
         return 0
-    else:
-        print("[FAIL] smoke_test_validate_gate: kill criterion NOT MET — exit 1")
-        return 1
+    print("[FAIL] smoke_test_validate_gate: kill criterion NOT MET — exit 1")
+    return 1
 
 
 if __name__ == "__main__":

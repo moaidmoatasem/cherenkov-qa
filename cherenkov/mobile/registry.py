@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import threading
 import uuid
-from typing import Optional
 
 from cherenkov.mobile.contracts import (
     DeviceInfo,
@@ -24,10 +23,8 @@ from cherenkov.mobile.contracts import (
 class DeviceClaimedError(Exception):
     """Raised when a device is already claimed by another session."""
 
-
 class DeviceNotFoundError(Exception):
     """Raised when a requested device_id is not in the registry."""
-
 
 class DeviceRegistry:
     """Thread-safe registry of known devices with claim/release lifecycle.
@@ -53,7 +50,7 @@ class DeviceRegistry:
         with self._lock:
             return list(self._devices.values())
 
-    def get_device(self, device_id: str) -> Optional[DeviceInfo]:
+    def get_device(self, device_id: str) -> DeviceInfo | None:
         with self._lock:
             return self._devices.get(device_id)
 
@@ -90,7 +87,7 @@ class DeviceRegistry:
             self._device_to_session[device_id] = session.session_id
             return session
 
-    def get_session(self, session_id: str) -> Optional[MobileSession]:
+    def get_session(self, session_id: str) -> MobileSession | None:
         with self._lock:
             return self._sessions.get(session_id)
 
@@ -124,11 +121,10 @@ class DeviceRegistry:
             device_id = session.device.device_id
             self._device_to_session.pop(device_id, None)
 
-    def session_for_device(self, device_id: str) -> Optional[MobileSession]:
+    def session_for_device(self, device_id: str) -> MobileSession | None:
         with self._lock:
             sid = self._device_to_session.get(device_id)
             return self._sessions.get(sid) if sid else None
-
 
 # Module-level singleton used by the FastAPI routes.
 _registry = DeviceRegistry()
@@ -144,7 +140,6 @@ _registry.register_device(
         name="Android Emulator",
     )
 )
-
 
 def get_registry() -> DeviceRegistry:
     return _registry

@@ -18,20 +18,19 @@ from cherenkov.validate.contracts import GateCriteria, GateEvidence, ValidationR
 from cherenkov.validate.evidence import EvidenceCollector
 from cherenkov.validate.gate import ValidationGate
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
 def _make_report(**kwargs) -> ValidationReport:
-    defaults = dict(
-        run_id="test-run-1",
-        timestamp="2026-01-01T00:00:00+00:00",
-        result="pass",
-        gates=[],
-        summary="result=PASS  gates=0/0 passed",
-    )
+    defaults = {
+        "run_id": "test-run-1",
+        "timestamp": "2026-01-01T00:00:00+00:00",
+        "result": "pass",
+        "gates": [],
+        "summary": "result=PASS  gates=0/0 passed",
+    }
     defaults.update(kwargs)
     return ValidationReport(**defaults)
 
@@ -78,7 +77,7 @@ class TestValidationReport:
         assert r.result == "degraded"
 
     def test_result_invalid_raises(self):
-        with pytest.raises(Exception):
+        with pytest.raises(Exception):  # noqa: B017
             _make_report(result="unknown")
 
     def test_evidence_dir_optional(self):
@@ -129,7 +128,7 @@ class TestValidationGateRun:
 
         def runner(*args, **kwargs):
             call_count[0] += 1
-            # fail the first script (smoke_track_a – required)
+            # fail the first script (smoke_track_a - required)
             rc = 1 if call_count[0] == 1 else 0
             return SimpleNamespace(
                 returncode=rc, stdout="", stderr="fail" if rc else ""
@@ -250,5 +249,5 @@ class TestEvidenceCollector:
     def test_base_dir_created_if_missing(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             nested = os.path.join(tmpdir, "a", "b", "c")
-            col = EvidenceCollector(base_dir=nested)
+            EvidenceCollector(base_dir=nested)
             assert Path(nested).exists()

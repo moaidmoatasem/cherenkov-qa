@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import time
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -113,14 +114,13 @@ def run_daemon(interval_seconds: int = 60, max_loops: int = 0, target_url: str |
         if target_url:
             log.info("running divergence proof", url=target_url)
             try:
-                import json as _json
                 from cherenkov.divergence.proof_run import run_proof
 
                 # Load first spec file as dict if available, else use bundled Petstore
                 spec_dict = None
                 if specs:
                     try:
-                        spec_dict = _json.loads(Path(specs[0]).read_text(encoding="utf-8"))
+                        spec_dict = json.loads(Path(specs[0]).read_text(encoding="utf-8"))
                     except Exception:
                         spec_dict = None
 
@@ -129,17 +129,17 @@ def run_daemon(interval_seconds: int = 60, max_loops: int = 0, target_url: str |
                 if divergences:
                     log.warning("divergences found", count=len(divergences))
                     from cherenkov.hitl import HitlItem, HitlQueue
-                    import uuid as _uuid
 
                     hitl = HitlQueue()
                     run_id = f"daemon_{loop_count}_{int(time.time())}"
                     for r in divergences:
                         item = HitlItem(
-                            id=str(_uuid.uuid4()),
+                            id=str(uuid.uuid4()),
                             endpoint=r.endpoint,
                             run_id=run_id,
                             mutation_label=r.divergence_class.value,
                             confidence_reason=r.evidence.diff[:200] if r.evidence and r.evidence.diff else r.claim_b[:200],
+                            severity=r.severity,
                         )
                         hitl.enqueue(item)
                 else:
@@ -180,8 +180,9 @@ def run_guardian_daemon(
     """
     log = get_logger("guardian_daemon")
 
-    from cherenkov.daemon.watcher import SpecGuardianWatcher
     from pathlib import Path
+
+    from cherenkov.daemon.watcher import SpecGuardianWatcher
 
     spec_file = Path(spec_path)
     target_repo = spec_file.parent if spec_file.parent.name else Path(".")

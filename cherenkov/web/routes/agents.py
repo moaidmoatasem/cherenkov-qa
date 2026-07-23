@@ -1,4 +1,6 @@
 """API routes for Multi-Agent Conductor SSE streams (CC-2)."""
+from __future__ import annotations
+
 import asyncio
 import json
 import logging
@@ -23,15 +25,15 @@ async def event_generator() -> AsyncGenerator[str, None]:
     while True:
         # Simulate an event stream by polling registry status periodically
         try:
-            servers = registry.get_all_servers()
+            servers = registry.list_servers()
             # We wrap it in SSE format
             payload = {
                 "active_agents": [
                     {
-                        "id": s.id,
-                        "name": s.name,
-                        "status": s.status,
-                        "tools": s.supported_tools,
+                        "id": s["id"],
+                        "name": s["name"],
+                        "status": "healthy" if s["healthy"] else "unhealthy",
+                        "tools": s["tools_count"],
                     }
                     for s in servers
                 ]

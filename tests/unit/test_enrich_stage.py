@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-
 from cherenkov.stages.enrich import (
     SpecEnrichStage,
     SpecRules,
@@ -10,7 +9,6 @@ from cherenkov.stages.enrich import (
     _collect_schema_hints,
     _extract_constraint_sentences,
 )
-
 
 # ── helper builders ───────────────────────────────────────────────────────────
 

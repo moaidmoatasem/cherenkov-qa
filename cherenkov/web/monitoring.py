@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import time
 from typing import Any
@@ -69,6 +70,4 @@ async def health_detail():
 
 
 def json_dumps(data: dict[str, Any]) -> str:
-    import json
-
     return json.dumps(data)

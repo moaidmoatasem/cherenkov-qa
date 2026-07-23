@@ -29,7 +29,7 @@ class MobileGenerateStage:
         yaml_lines.append("---")
         yaml_lines.append(f"name: {scenario.name}")
         yaml_lines.append("")
-        for i, step in enumerate(scenario.steps, 1):
+        for _i, step in enumerate(scenario.steps, 1):
             step_id = step.lower().replace(" ", "_")
             if "tap " in step:
                 element = step.replace("tap ", "")
@@ -37,7 +37,7 @@ class MobileGenerateStage:
                 yaml_lines.append(f'    text: "{element}"')
             elif "enter " in step:
                 parts = step.replace("enter ", "").split(" ", 1)
-                field = parts[0] if len(parts) == 1 else parts[0]
+                field = parts[0]
                 yaml_lines.append("- inputText:")
                 yaml_lines.append(f'    text: "test_{field}"')
             elif "launch" in step or "wait" in step:

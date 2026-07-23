@@ -18,6 +18,8 @@ Anti-lock-in invariant: generated k6 script is plain JS, runs standalone.
 
 from __future__ import annotations
 
+import contextlib
+import json
 import math
 import os
 import re
@@ -25,37 +27,40 @@ import shutil
 import sqlite3
 import subprocess
 import time
-from typing import Optional, Any
+from typing import Any
+
 from cherenkov.core.contracts import (
-    StageMeta,
-    StageError,
-    Status,
-    Verdict,
-    PerfSlice,
     PerfGateResult,
     PerfReport,
+    PerfSlice,
+    StageError,
+    StageMeta,
+    Status,
+    Verdict,
 )
 from cherenkov.core.errors import get_logger
 
 # Optional ML dependencies - import only when available
 ML_AVAILABLE = False
 try:
-    from sklearn.ensemble import IsolationForest
+    from datetime import datetime
+
     import numpy as np
     import pandas as pd
-    from datetime import datetime
+    from sklearn.ensemble import IsolationForest
 
     ML_AVAILABLE = True
 except ImportError:
     pass
 
+_RE_K6_AVG_DURATION = re.compile(r"avg=([\d\.]+)(ms|s)")
+
+
 class _BaselineDB:
     def __init__(self, db_path):
         self.db_path = db_path
-        try:
+        with contextlib.suppress(FileExistsError):
             os.makedirs(os.path.dirname(db_path), exist_ok=True)
-        except FileExistsError:
-            pass
         conn = sqlite3.connect(db_path, timeout=30.0)
         conn.execute(
             "CREATE TABLE IF NOT EXISTS perf_metrics ("
@@ -81,9 +86,9 @@ class _BaselineDB:
         endpoint,
         method,
         latency_ms,
-        ttft_ms: Optional[float] = None,
-        itl_ms: Optional[float] = None,
-        cost_usd: Optional[float] = None,
+        ttft_ms: float | None = None,
+        itl_ms: float | None = None,
+        cost_usd: float | None = None,
         is_llm: bool = False,
     ):
         """
@@ -160,7 +165,7 @@ class _BaselineDB:
         itl_values = [r[1] for r in rows if r[1] is not None]
         cost_values = [r[2] for r in rows if r[2] is not None]
 
-        stats = {
+        return {
             "llm_request_count": len(rows),
             "ttft_mean_ms": round(sum(ttft_values) / len(ttft_values), 2)
             if ttft_values
@@ -209,7 +214,6 @@ class _BaselineDB:
             else 0.0,
         }
 
-        return stats
 
 K6_SCRIPT_TEMPLATE = (
     "import http from 'k6/http';\n"
@@ -246,10 +250,8 @@ class PerfStage:
         self.db = _BaselineDB(self.db_path)
 
     def _write_script(self, sl):
-        try:
+        with contextlib.suppress(FileExistsError):
             os.makedirs(self.tests_dir, exist_ok=True)
-        except FileExistsError:
-            pass
         code = _render_script(sl)
         with open(self.k6_script_path, "w", encoding="utf-8") as f:
             f.write(code)
@@ -355,8 +357,8 @@ class PerfStage:
         return any(keyword in endpoint_lower for keyword in llm_keywords)
 
     def _extract_llm_metrics_from_response(
-        self, k6_output: str
-    ) -> Optional[dict[str, float]]:
+        self, _k6_output: str
+    ) -> dict[str, float] | None:
         """
         Extract LLM-specific metrics from k6 output or response data.
 
@@ -491,7 +493,7 @@ class PerfStage:
 
     def generate_load_profile_from_traffic(
         self, traffic_file_path: str, base_target_url: str = "http://localhost:3000"
-    ) -> Optional[PerfSlice]:
+    ) -> PerfSlice | None:
         """
         Generate a realistic load profile from HAR traffic data.
 
@@ -503,7 +505,6 @@ class PerfStage:
             PerfSlice with traffic-based load profile or None if generation fails
         """
         try:
-            import json
             from pathlib import Path
 
             har_path = Path(traffic_file_path)
@@ -561,7 +562,7 @@ class PerfStage:
             )  # 3x capture window
 
             # Find most common endpoint pattern
-            endpoint_counts = {}
+            endpoint_counts: dict[str, int] = {}
             for entry in entries:
                 request = entry.get("request", {})
                 url = request.get("url", "")
@@ -617,7 +618,7 @@ class PerfStage:
             self.log.error("Failed to generate load profile from traffic", error=str(e))
             return None
 
-    def run(self, sl, use_ml: bool = False, traffic_file: str = None):
+    def run(self, sl, use_ml: bool = False, traffic_file: str | None = None):
         """
         Run performance test with enhanced Epoch 8 capabilities.
 
@@ -670,7 +671,7 @@ class PerfStage:
             avg_ms = 0.0
             for line in proc.stdout.splitlines():
                 if "http_req_duration" in line:
-                    m = re.search(r"avg=([\d\.]+)(ms|s)", line)
+                    m = _RE_K6_AVG_DURATION.search(line)
                     if m:
                         avg_ms = float(m.group(1))
                         if m.group(2) == "s":

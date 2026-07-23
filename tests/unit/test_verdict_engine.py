@@ -5,8 +5,6 @@ from __future__ import annotations
 import uuid
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from cherenkov.core.contracts import (
     DivergenceClass,
     DivergenceEvidence,
@@ -19,8 +17,6 @@ from cherenkov.verdict.engine import VerdictEngine, _dim_name
 from cherenkov.verdict.models import (
     OverallVerdict,
     RichVerdict,
-    VerdictDimension,
-    VerdictGrade,
 )
 
 

@@ -1,11 +1,11 @@
 import os
-import sys
-import tempfile
-from unittest.mock import patch
 
 # We can import the script's main by treating the cherenkov package as the root
 # But since the root script is cherenkov.py, we can just use runpy
 import runpy
+import sys
+import tempfile
+from unittest.mock import patch
 
 TEST_SDL = """
 type Query {
@@ -39,7 +39,7 @@ def test_graphql_generate_integration(mock_validate, mock_cache):
     try:
         sys.argv = ["cherenkov", "validate", "--source", "graphql", "--spec", temp_path, "--target", "http://mock-target.local"]
         runpy.run_module("cherenkov.cli.core", run_name="__main__")
-        
+
         mock_validate.assert_called_once()
     except SystemExit as e:
         # argparse or sys.exit might raise SystemExit. Return code 0 is expected.

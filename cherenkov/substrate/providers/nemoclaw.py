@@ -14,13 +14,16 @@ Default model mapping:
 
 from __future__ import annotations
 
+import base64
 import json
 import time
+from pathlib import Path
+from typing import Any
 
-from cherenkov.core.settings import get_settings
+from cherenkov.ai.interface import CachedInferenceClient, InferenceClient
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
-from cherenkov.ai.interface import InferenceClient
-from cherenkov.substrate.provider import ProviderCapabilities
+from cherenkov.core.settings import get_settings
+from cherenkov.substrate.provider_base import ProviderCapabilities, wrap_with_cache
 
 
 class NemoClawProvider:
@@ -38,7 +41,7 @@ class NemoClawProvider:
         if client is None:
             from cherenkov.ai.nemoclaw_client import NemoClawInferenceClient
 
-            client = NemoClawInferenceClient()
+            client = wrap_with_cache(NemoClawInferenceClient(), "nemoclaw")
         self.client = client
 
     def _model_for_tier(self, tier: str) -> str:
@@ -55,6 +58,11 @@ class NemoClawProvider:
         user_prompt = request.task
         model = self._model_for_tier(request.capability_tier)
 
+        hits_before = (
+            self.client.cache_stats.hits
+            if isinstance(self.client, CachedInferenceClient)
+            else 0
+        )
         t0 = time.monotonic()
 
         if (
@@ -62,12 +70,9 @@ class NemoClawProvider:
             and request.output_schema
             and "image_path" in request.output_schema
         ):
-            import base64
-            import pathlib
-
-            image_bytes = pathlib.Path(request.output_schema["image_path"]).read_bytes()
+            image_bytes = Path(request.output_schema["image_path"]).read_bytes()
             image_data = base64.b64encode(image_bytes).decode()
-            content = self.client.complete_vision(
+            content: dict[str, Any] | str = self.client.complete_vision(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 image_data=image_data,
@@ -93,6 +98,10 @@ class NemoClawProvider:
             )
 
         latency_ms = int((time.monotonic() - t0) * 1000)
+        cache_hit = (
+            isinstance(self.client, CachedInferenceClient)
+            and self.client.cache_stats.hits > hits_before
+        )
 
         return ReasoningResult(
             content=content,
@@ -100,7 +109,7 @@ class NemoClawProvider:
             model=model,
             cost_usd=0.0,
             latency_ms=latency_ms,
-            cached=False,
+            cached=cache_hit,
         )
 
     def capabilities(self) -> ProviderCapabilities:

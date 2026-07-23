@@ -6,10 +6,11 @@ from __future__ import annotations
 
 import abc
 import time
+from typing import cast
 
-from cherenkov.core.contracts import CacheStats, AccountingReport
-from cherenkov.ai.cache import ResponseCache
 from cherenkov.ai.accounting import CostAccountant
+from cherenkov.ai.cache import ResponseCache
+from cherenkov.core.contracts import AccountingReport, CacheStats
 
 
 class InferenceClient(abc.ABC):
@@ -44,6 +45,17 @@ class InferenceClient(abc.ABC):
     ) -> str:
         """For the GENERATE stage: we want raw TS code, not JSON."""
         pass
+
+    def chat(
+        self,
+        messages: list[dict],
+        model: str,
+        *,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> str:
+        """Multi-turn chat. Optional capability — implementations may override."""
+        raise NotImplementedError(f"{type(self).__name__} does not support chat()")
 
     def complete_vision(
         self,
@@ -115,7 +127,7 @@ class CachedInferenceClient(InferenceClient):
                 stage=stage,
                 run_id=run_id or "",
             )
-            return cached
+            return cast(dict, cached)
 
         t0 = time.monotonic()
         result = self._client.complete_json(

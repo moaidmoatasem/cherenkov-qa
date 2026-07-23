@@ -19,7 +19,6 @@ import sys
 
 import click
 
-
 _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
 _GOLDEN_DIR = os.path.join(_REPO_ROOT, "bench", "fixtures", "golden_tests")
 _DEFAULT_SPEC = os.path.join(_REPO_ROOT, "stub", "openapi_3_1.yaml")
@@ -40,11 +39,11 @@ _DEFAULT_SPEC = os.path.join(_REPO_ROOT, "stub", "openapi_3_1.yaml")
 )
 @click.option(
     "--threshold-compile", default=0.9, show_default=True, type=float,
-    help="Min tsc gate pass rate (0–1). Bench fails below this.",
+    help="Min tsc gate pass rate (0-1). Bench fails below this.",
 )
 @click.option(
     "--threshold-quality", default=0.85, show_default=True, type=float,
-    help="Min average quality score (0–1). Bench fails below this.",
+    help="Min average quality score (0-1). Bench fails below this.",
 )
 @click.option(
     "--output", "-o", type=click.Path(),
@@ -75,8 +74,8 @@ def bench_cmd(
       cherenkov bench --dir stub/generated_tests --no-golden
       cherenkov bench --threshold-quality 0.90 --output bench_report.json
     """
-    from cherenkov.bench.runner import run_bench
     from cherenkov.bench.report import print_report, write_json
+    from cherenkov.bench.runner import run_bench
 
     dirs: list[str] = list(test_dirs)
     if golden:

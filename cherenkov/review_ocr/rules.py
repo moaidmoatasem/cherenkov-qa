@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import contextlib
+import fnmatch
 import json
 import os
 from pathlib import Path
-from typing import Optional
-
 
 BUILT_IN_RULES: list[dict] = [
     {"path": "**/*.spec.ts", "rule": "Check Playwright assertions reference valid HTTP status codes and response body properties"},
@@ -24,7 +24,6 @@ DEFAULT_EXCLUDE = [
 
 SUPPORTED_EXTENSIONS = {".ts", ".tsx", ".js", ".jsx", ".py", ".yaml", ".yml", ".json", ".md"}
 
-
 def _brace_expand(pattern: str) -> list[str]:
     if "{" not in pattern or "}" not in pattern:
         return [pattern]
@@ -35,9 +34,7 @@ def _brace_expand(pattern: str) -> list[str]:
     alternatives = pattern[start + 1:end].split(",")
     return [f"{prefix}{alt}{suffix}" for alt in alternatives]
 
-
 def _glob_match(pattern: str, filepath: str) -> bool:
-    import fnmatch
     patterns = _brace_expand(pattern)
     for pat in patterns:
         if "**" not in pat:
@@ -71,14 +68,13 @@ def _glob_match(pattern: str, filepath: str) -> bool:
                     return True
     return False
 
-
 class OCRRuleEngine:
-    def __init__(self, cli_rule_path: Optional[str] = None, repo_root: Optional[str] = None):
+    def __init__(self, cli_rule_path: str | None = None, repo_root: str | None = None):
         self.repo_root = repo_root or os.getcwd()
         self._layers: list[dict] = []
         self._load_layers(cli_rule_path)
 
-    def _load_layers(self, cli_rule_path: Optional[str] = None):
+    def _load_layers(self, cli_rule_path: str | None = None):
         layers = []
 
         cli_rules = self._load_rule_file(cli_rule_path)
@@ -99,23 +95,21 @@ class OCRRuleEngine:
 
         self._layers = layers
 
-    def _load_rule_file(self, path: Optional[str]) -> Optional[dict]:
+    def _load_rule_file(self, path: str | None) -> dict | None:
         if not path:
             return None
         if not os.path.isfile(path):
             return None
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 return json.load(f)
         except (json.JSONDecodeError, OSError):
             return None
 
-    def resolve_rule(self, filepath: str) -> Optional[str]:
+    def resolve_rule(self, filepath: str) -> str | None:
         candidates = []
-        try:
+        with contextlib.suppress(ValueError, OSError):
             candidates.append(os.path.relpath(filepath, self.repo_root))
-        except (ValueError, OSError):
-            pass
         candidates.append(os.path.basename(filepath))
         for layer in self._layers:
             for entry in layer.get("rules", []):
@@ -125,7 +119,7 @@ class OCRRuleEngine:
                         return entry.get("rule")
         return None
 
-    def is_excluded(self, filepath: str, custom_exclude: Optional[list[str]] = None) -> bool:
+    def is_excluded(self, filepath: str, custom_exclude: list[str] | None = None) -> bool:
         try:
             relative = os.path.relpath(filepath, self.repo_root)
         except ValueError:
@@ -137,6 +131,4 @@ class OCRRuleEngine:
             if _glob_match(pattern, relative):
                 return True
         ext = os.path.splitext(filepath)[1]
-        if ext and ext not in SUPPORTED_EXTENSIONS:
-            return True
-        return False
+        return bool(ext and ext not in SUPPORTED_EXTENSIONS)

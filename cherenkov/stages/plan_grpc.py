@@ -1,7 +1,10 @@
-from cherenkov.sources.grpc.adapter import gRPCSourceAdapter, gRPCOperation
+from __future__ import annotations
+
+from cherenkov.sources.grpc.adapter import gRPCOperation, gRPCSourceAdapter
 from cherenkov.sources.grpc.contracts import gRPCScenario
 
-class gRPCScenarioPlanner:
+
+class gRPCScenarioPlanner:  # noqa: N801
     def plan(self, adapter: gRPCSourceAdapter) -> list[gRPCScenario]:
         scenarios = []
         for op in adapter.iter_operations():

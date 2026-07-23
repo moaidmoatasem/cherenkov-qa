@@ -13,7 +13,7 @@ __all__ = [
     "DriftEvent",
     "DriftReport",
     "DriftSeverity",
+    "DriftStore",
     "DriftType",
     "SpecDriftDetector",
-    "DriftStore",
 ]

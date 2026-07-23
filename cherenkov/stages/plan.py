@@ -10,11 +10,11 @@ from __future__ import annotations
 import time
 
 from cherenkov.core.contracts import (
-    PlanOutput,
     IngestOutput,
+    PlanOutput,
     Scenario,
-    Status,
     StageMeta,
+    Status,
 )
 from cherenkov.core.errors import get_logger
 

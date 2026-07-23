@@ -14,8 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from cherenkov.drift.detect import DriftFinding, DriftKind
-from cherenkov.drift.loop import ReconciliationProposal
-
+from cherenkov.drift.models import ReconciliationProposal
 
 # ── schema → value helpers ─────────────────────────────────────────────────────
 
@@ -47,7 +46,7 @@ def _placeholder(schema: dict[str, Any], name: str = "") -> Any:
         if "id" in name.lower():
             return "1"
         return "example"
-    return _TYPE_DEFAULTS.get(typ, None)
+    return _TYPE_DEFAULTS.get(typ)
 
 
 def _build_body(schema: dict[str, Any], spec: dict[str, Any]) -> dict[str, Any]:
@@ -103,7 +102,7 @@ def build_test_skeleton(
     req_body = operation.get("requestBody", {})
     if req_body:
         content = req_body.get("content", {})
-        for media_type, media_obj in content.items():
+        for _media_type, media_obj in content.items():
             if isinstance(media_obj, dict):
                 body = _build_body(media_obj.get("schema", {}), spec)
                 break

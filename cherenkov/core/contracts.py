@@ -8,8 +8,10 @@ can't quietly break a downstream consumer.
 
 from __future__ import annotations
 
+import uuid
 from enum import Enum
 from typing import Literal
+
 from pydantic import BaseModel, Field
 
 SCHEMA_VERSION = 1
@@ -56,7 +58,7 @@ class StageMeta(BaseModel):
     tokens: int = 0
     duration_ms: int = 0
     schema_version: int = SCHEMA_VERSION
-    run_id: str = Field(default_factory=lambda: str(__import__("uuid").uuid4())[:8])
+    run_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
 
 
 class StageError(BaseModel):
@@ -101,7 +103,7 @@ class EndpointSlice(BaseModel):
     method: str  # "GET" | "POST" | ...
     operation: dict  # the OpenAPI operation object
     schemas: dict = Field(default_factory=dict)  # depth-limited resolved refs
-    richness: float = 0.0  # 0.0–1.0
+    richness: float = 0.0  # 0.0-1.0
     mutations: list[Mutation] = Field(
         default_factory=list
     )  # may be [] (GET) -> happy/auth
@@ -331,7 +333,7 @@ class DivergenceFinding(BaseModel):
     actual: str
     summary: str
     description: str
-    severity: str
+    severity: Severity
     remediation: str
 
 
@@ -559,7 +561,7 @@ class RiskItem(BaseModel):
     """One entry in the pre-session 'second pair of eyes' digest."""
 
     title: str
-    score: float  # 0.0–1.0 ranked risk weight
+    score: float  # 0.0-1.0 ranked risk weight
     severity: Severity
     source: str  # "explorer" | "skeptic" | "idiom" | "reflector"
     detail: str = ""
@@ -609,7 +611,7 @@ class TriageResult(BaseModel):
 
     scenario_id: str
     category: TriageCategory
-    confidence: float = 0.5  # 0.0–1.0
+    confidence: float = 0.5  # 0.0-1.0
     failure_class: str | None = None  # the healing/diagnose FailureClass it came from
     rationale: str = ""
     suggested_action: str = ""
@@ -672,7 +674,7 @@ class CoverageReport(BaseModel):
     """Outcome of a bounded generate→run→read-trace→repair SDET run (E11-1)."""
 
     target: str
-    threshold: float  # 0.0–1.0 desired coverage
+    threshold: float  # 0.0-1.0 desired coverage
     items: list[CoverageItem] = Field(default_factory=list)
     status: Status = Status.OK
 

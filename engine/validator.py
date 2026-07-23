@@ -1,7 +1,6 @@
-from typing import Any, Optional
+from typing import Any
 
 import requests
-
 from spec_loader import extract_routes
 
 
@@ -11,14 +10,14 @@ def expand_path(path: str) -> str:
     return path
 
 
-def http_get(url: str, timeout: int = 10) -> Optional[requests.Response]:
+def http_get(url: str, timeout: int = 10) -> requests.Response | None:
     try:
         return requests.get(url, timeout=timeout)
     except requests.RequestException:
         return None
 
 
-def http_post(url: str, timeout: int = 10) -> Optional[requests.Response]:
+def http_post(url: str, timeout: int = 10) -> requests.Response | None:
     try:
         return requests.post(url, json={"name": "test"}, timeout=timeout)
     except requests.RequestException:
@@ -37,9 +36,9 @@ METHOD_HANDLERS = {
 
 
 def run_validation(
-    spec_path: str, target_base: str, strict: bool = True
+    spec_path: str, target_base: str, strict: bool = True  # noqa: ARG001
 ) -> dict[str, Any]:
-    with open(spec_path, "r") as f:
+    with open(spec_path) as f:
         import json
 
         try:

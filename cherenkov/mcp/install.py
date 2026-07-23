@@ -6,6 +6,7 @@ import json
 import os
 import platform
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -16,8 +17,6 @@ def _resolve_python() -> str:
 
 def install_marketplace_tool(tool_id: str) -> bool:
     """Install a tool from the MCP Marketplace."""
-    import subprocess
-
     from cherenkov.mcp.marketplace.registry import MarketplaceRegistry
     from cherenkov.mcp.marketplace.sandbox import SandboxValidator
 

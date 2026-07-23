@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import Idiom
 from cherenkov.core.errors import get_logger
+from cherenkov.core.settings import get_settings
 from cherenkov.reflector.store import VerdictStore
 
 # Default minimum confirmations before an idiom is surfaced

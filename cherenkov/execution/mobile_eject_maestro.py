@@ -5,8 +5,10 @@ CHERENKOV execution/mobile_eject_maestro.py — Maestro YAML ejector.
 from __future__ import annotations
 
 import os
-import yaml
 from pathlib import Path
+
+import yaml
+
 from cherenkov.core.errors import get_logger
 
 

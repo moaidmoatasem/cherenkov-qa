@@ -17,8 +17,9 @@ Design constraints:
 
 from __future__ import annotations
 
+import time
 import uuid
-from typing import Callable, Iterable
+from collections.abc import Callable, Iterable
 from urllib.parse import urljoin
 
 from cherenkov.core.contracts import (
@@ -41,8 +42,6 @@ HttpProbe = Callable[[str, str], tuple[int | None, int, str]]
 
 def _default_http_probe(url: str, method: str) -> tuple[int | None, int, str]:
     """Issue a single request with a short budget. Never raises."""
-    import time
-
     try:
         import requests
     except Exception:  # pragma: no cover - requests is a project dep

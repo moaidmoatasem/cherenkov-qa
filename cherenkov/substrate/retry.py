@@ -25,9 +25,10 @@ from __future__ import annotations
 
 import functools
 import os
-import time
 import random
-from typing import Any, Callable
+import time
+from collections.abc import Callable
+from typing import Any
 
 from cherenkov.core.errors import get_logger
 
@@ -86,7 +87,7 @@ def _is_retryable(exc: Exception) -> bool:
 def _delay(attempt: int, base: float, maximum: float) -> float:
     """Full-jitter exponential back-off: uniform(0, min(max, base * 2^attempt))."""
     ceiling = min(maximum, base * (2 ** attempt))
-    return random.uniform(0, ceiling)  # noqa: S311 — not used for crypto
+    return random.uniform(0, ceiling)
 
 
 def with_retry(

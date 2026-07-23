@@ -2,21 +2,24 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
-import time
-import tempfile
 import re
-from typing import Optional
+import shutil
+import subprocess
+import tempfile
+import time
 
 from cherenkov.core.contracts import GateResult
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 from cherenkov.review_ocr.models import OCRFinding, OCRReviewOutput, OCRSeverity
-from cherenkov.review_ocr.rules import OCRRuleEngine
+from cherenkov.review_ocr.rules import SUPPORTED_EXTENSIONS, OCRRuleEngine
+
+_RE_OCR_SEVERITY = re.compile(r"\[(critical|error|warn|info)\]\s+(.*)", re.IGNORECASE)
+_RE_OCR_FILE_LOC = re.compile(r"(\S+):(\d+):?\s*(.*)")
 
 
 class ReviewStageOCR:
-    def __init__(self, run_id: Optional[str] = None):
+    def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("OCR_REVIEW", run_id)
         self.rule_engine = OCRRuleEngine(repo_root=os.getcwd())
@@ -100,13 +103,13 @@ class ReviewStageOCR:
             line = line.strip()
             if not line:
                 continue
-            match = re.match(r"\[(critical|error|warn|info)\]\s+(.*)", line, re.IGNORECASE)
+            match = _RE_OCR_SEVERITY.match(line)
             if match:
                 sev = severity_map.get(match.group(1).lower(), OCRSeverity.INFO)
                 msg = match.group(2)
-                file_match = re.match(r"(\S+):(\d+):?\s*(.*)", msg)
+                file_match = _RE_OCR_FILE_LOC.match(msg)
             else:
-                file_match = re.match(r"(\S+):(\d+):?\s*(.*)", line)
+                file_match = _RE_OCR_FILE_LOC.match(line)
                 if file_match:
                     sev = OCRSeverity.INFO
                     msg = file_match.group(3)
@@ -121,7 +124,7 @@ class ReviewStageOCR:
                     message=msg,
                 )
             else:
-                finding = OCRFinding(message=line, severity=sev)
+                finding = OCRFinding(file="", message=line, severity=sev)
             output.findings.append(finding)
 
         critical_count = sum(1 for f in output.findings if f.severity == OCRSeverity.CRITICAL)
@@ -135,8 +138,8 @@ class ReviewStageOCR:
         binary = self._get_ocr_binary()
 
         ext = os.path.splitext(filepath)[1].lower()
-        if ext and ext not in self.rule_engine.SUPPORTED_EXTENSIONS:
-            err_msg = f"Unsupported file type '{ext}' — OCR review only supports: {', '.join(sorted(self.rule_engine.SUPPORTED_EXTENSIONS))}"
+        if ext and ext not in SUPPORTED_EXTENSIONS:
+            err_msg = f"Unsupported file type '{ext}' — OCR review only supports: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"
             self.log.warning("ocr_unsupported_type", file=filepath, ext=ext)
             return OCRReviewOutput(passed=True, score_deduction=0.0, error=err_msg, duration_ms=0)
 
@@ -198,10 +201,9 @@ class ReviewStageOCR:
             self.log.error("ocr_review_error", error=err_str)
             return OCRReviewOutput(passed=True, score_deduction=0.0, error=err_str, duration_ms=dt)
         finally:
-            import shutil
             shutil.rmtree(tmpdir, ignore_errors=True)
 
-    def run(self, test_code: str, filepath: Optional[str] = None, scenario_id: str = "") -> GateResult:
+    def run(self, test_code: str, filepath: str | None = None, scenario_id: str = "") -> GateResult:
         if not self._check_ocr_installed():
             return GateResult(
                 gate="ocr",

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import time
+import warnings
 from typing import Any
 
 import jwt
@@ -36,7 +37,6 @@ class MCPAuthMiddleware:
         self.require_auth = require_auth
         self.valid_api_keys = valid_api_keys or set()
         if require_auth and JWT_SECRET == _DEFAULT_JWT_SECRET:
-            import warnings
             warnings.warn(
                 "CHERENKOV_JWT_SECRET is not set; MCP auth is enabled with an insecure default secret. "
                 "Set CHERENKOV_JWT_SECRET before exposing this service.",

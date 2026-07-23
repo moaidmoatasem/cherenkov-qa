@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import uuid
 from enum import Enum
-from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -57,7 +56,7 @@ class VerdictDimension(BaseModel):
     """Result from one specialised agent in the parallel fleet."""
 
     name: str                              # "divergence_probe" | "mutation_oracle" | ...
-    score: float                           # 0.0–1.0
+    score: float                           # 0.0-1.0
     grade: VerdictGrade
     passed: bool
     findings: list[str] = Field(default_factory=list)
@@ -83,7 +82,7 @@ class RichVerdict(BaseModel):
     # ── Overall verdict ──────────────────────────────────────────────────
     overall: OverallVerdict
     grade: VerdictGrade
-    confidence: float             # 0.0–1.0; how much data we have to be sure
+    confidence: float             # 0.0-1.0; how much data we have to be sure
 
     # ── Per-agent dimensions ─────────────────────────────────────────────
     dimensions: list[VerdictDimension] = Field(default_factory=list)
@@ -113,9 +112,6 @@ class RichVerdict(BaseModel):
     def render(self) -> str:
         """Rich CLI-ready verdict card."""
         w = 68
-        grade_colour = _grade_colour(self.grade)
-        verdict_colour = _verdict_colour(self.overall)
-
         lines: list[str] = []
         lines.append("╔" + "═" * (w - 2) + "╗")
         lines.append(_row("CHERENKOV VERDICT", w))
@@ -182,21 +178,6 @@ def _row(text: str, width: int) -> str:
 def _bar(score: float, length: int = 14) -> str:
     filled = round(score * length)
     return "█" * filled + "░" * (length - filled)
-
-
-def _grade_colour(grade: VerdictGrade) -> str:
-    return {"A": "green", "B": "green", "C": "yellow", "D": "red", "F": "red"}.get(
-        grade.value, "white"
-    )
-
-
-def _verdict_colour(verdict: OverallVerdict) -> str:
-    return {
-        "CERTIFIED": "green",
-        "DIVERGENT": "red",
-        "SUSPECT": "yellow",
-        "INCONCLUSIVE": "white",
-    }.get(verdict.value, "white")
 
 
 def score_to_grade(score: float) -> VerdictGrade:

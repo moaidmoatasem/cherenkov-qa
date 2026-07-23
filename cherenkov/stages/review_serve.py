@@ -30,6 +30,7 @@ def run_review_server() -> int:
     print(DEPRECATION_MSG)
     # Delegate to the canonical FastAPI server
     import uvicorn
+
     from cherenkov.web.api import app
 
     print("\nCHERENKOV review dashboard starting on http://0.0.0.0:8000")

@@ -24,6 +24,7 @@ npx skills add moaidmoatasem/cherenkov-qa --skill verify
 | [`check-suite`](check-suite/SKILL.md) | Audit test suite quality through the 6-gate pipeline |
 | [`certify`](certify/SKILL.md) | Issue a signed conformance certificate |
 | [`hitl-review`](hitl-review/SKILL.md) | Manage the Human-In-The-Loop review queue |
+| [`agentic-exploration`](agentic-exploration/SKILL.md) | Live agent-driven scenario testing, feeding failures into HITL |
 | [`self-healing`](self-healing/SKILL.md) | Diagnose failures and suggest fixes (suggest-only) |
 | [`eject-standalone`](eject-standalone/SKILL.md) | Export tests to a standalone Playwright suite |
 | [`mcp-integration`](mcp-integration/SKILL.md) | Set up the CHERENKOV MCP server |

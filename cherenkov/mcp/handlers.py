@@ -21,14 +21,18 @@ Suggest-only: validate_run_gate returns a report, never auto-applies anything.
 
 from __future__ import annotations
 
+import glob
 import hashlib
+import ipaddress
 import json
 import os
+import socket
 import time
 import urllib.request
 import uuid
 from collections.abc import Callable
 from typing import Any
+from urllib.parse import urlparse
 
 from pydantic import ValidationError
 
@@ -633,7 +637,7 @@ def _resource_content(uri: str, payload: Any) -> MCPResourceReadResult:
 
 # ── Resource handlers ─────────────────────────────────────────────────────────
 
-def handle_resources_list(params: dict[str, Any]) -> dict[str, Any]:
+def handle_resources_list(_params: dict[str, Any]) -> dict[str, Any]:
     return MCPResourceListResult(resources=RESOURCES).model_dump()
 
 def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
@@ -750,7 +754,7 @@ def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
 
 # ── Tool call handlers ────────────────────────────────────────────────────────
 
-def handle_tools_list(params: dict[str, Any]) -> dict[str, Any]:
+def handle_tools_list(_params: dict[str, Any]) -> dict[str, Any]:
     return MCPToolListResult(tools=TOOLS).model_dump()
 
 def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
@@ -1172,16 +1176,16 @@ def _tool_validate_gate(args: dict[str, Any]) -> MCPToolCallResult:
 
 # ── Policy tools ──────────────────────────────────────────────────────────────
 
-def _tool_policy_list(args: dict[str, Any]) -> MCPToolCallResult:
+def _tool_policy_list(_args: dict[str, Any]) -> MCPToolCallResult:
     """Return current policy rules for all profiles."""
     return _ok_content(_policy.list_policy())
 
-def _tool_policy_reload(args: dict[str, Any]) -> MCPToolCallResult:
+def _tool_policy_reload(_args: dict[str, Any]) -> MCPToolCallResult:
     """Reload policy from cherenkov-policy.json."""
     _policy.reload()
     return _ok_content({"status": "reloaded", "policy": _policy.list_policy()})
 
-def _tool_registry_list(args: dict[str, Any]) -> MCPToolCallResult:
+def _tool_registry_list(_args: dict[str, Any]) -> MCPToolCallResult:
     """List registered MCP servers in the mesh registry."""
     from cherenkov.mcp.mesh_router import get_registry
 
@@ -1190,11 +1194,6 @@ def _tool_registry_list(args: dict[str, Any]) -> MCPToolCallResult:
 
 def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     """Register an external MCP server with the mesh registry."""
-    import ipaddress
-    import json
-    import socket
-    from urllib.parse import urlparse
-
     from cherenkov.mcp.mesh_router import get_registry
 
     inp = args
@@ -1202,8 +1201,8 @@ def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     if parsed_url.scheme not in ("http", "https"):
         return _err_content("Only http/https server URLs allowed")
     host = parsed_url.hostname or ""
-    _BLOCKED_HOSTS = {"localhost", "127.0.0.1", "::1", "0.0.0.0", "metadata.google.internal"}
-    if host.lower() in _BLOCKED_HOSTS:
+    blocked_hosts = {"localhost", "127.0.0.1", "::1", "0.0.0.0", "metadata.google.internal"}
+    if host.lower() in blocked_hosts:
         return _err_content("Internal network URLs not allowed")
     try:
         addr = ipaddress.ip_address(host)
@@ -1344,7 +1343,7 @@ def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
         from cherenkov.ai.rag_index import RAGIndex
 
         rag = RAGIndex()
-        res = rag.query(query)
+        res = rag.query_similar_incidents(query)
         return _ok_content({"query": query, "results": res})
     except Exception as exc:
         return _err_content(f"RAG error: {exc}")
@@ -1531,7 +1530,7 @@ def _tool_scan_mena_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
             mappings = report["framework_mappings"]
 
         violations = []
-        for domain, details in mappings.items():
+        for _domain, details in mappings.items():
             for sub_domain, sub_details in (
                 details.items() if isinstance(details, dict) else []
             ):
@@ -1693,9 +1692,6 @@ def _tool_chat_run_test(args: dict[str, Any]) -> MCPToolCallResult:
 
 def _get_latest_validation_report() -> dict[str, Any]:
     """Return the most recent ValidationReport from evidence/, or a stub."""
-    import glob
-    import os
-
     evidence_dir = os.path.join(os.getcwd(), ".cherenkov", "evidence")
     pattern = os.path.join(evidence_dir, "*.json")
     files = sorted(glob.glob(pattern), reverse=True)
@@ -1737,7 +1733,7 @@ def _tool_run_conformance_check(args: dict[str, Any]) -> MCPToolCallResult:
     except Exception as exc:
         return _err_content(f"Conformance check error: {exc}")
 
-def _tool_get_last_report(args: dict[str, Any]) -> MCPToolCallResult:
+def _tool_get_last_report(_args: dict[str, Any]) -> MCPToolCallResult:
     """Return the most recent .cherenkov/report.json without triggering a new run."""
     report_path = os.path.join(os.getcwd(), ".cherenkov", "report.json")
     if not os.path.exists(report_path):
@@ -1777,11 +1773,9 @@ def _tool_get_tightening_suggestions(args: dict[str, Any]) -> MCPToolCallResult:
 
         # Suggest based on trace evidence in .cherenkov/evidence/
         evidence_dir = os.path.join(os.getcwd(), ".cherenkov", "evidence")
-        import glob as _glob
-
         patterns: list[str] = []
         if os.path.isdir(evidence_dir):
-            for ev_file in sorted(_glob.glob(os.path.join(evidence_dir, "*.json")))[
+            for ev_file in sorted(glob.glob(os.path.join(evidence_dir, "*.json")))[
                 -10:
             ]:
                 with open(ev_file, encoding="utf-8") as f:
@@ -1933,7 +1927,6 @@ _TOOL_DISPATCH: dict[str, Callable[[dict[str, Any]], MCPToolCallResult]] = {
 
 def _get_evidence_listing() -> dict[str, Any]:
     """Return a directory listing of .cherenkov/evidence/."""
-    import os
 
     evidence_dir = os.path.join(os.getcwd(), ".cherenkov", "evidence")
     if not os.path.isdir(evidence_dir):

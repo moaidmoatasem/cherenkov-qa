@@ -25,8 +25,8 @@ import sys
 
 import requests
 
-from cherenkov.core.settings import get_settings
 from cherenkov.core.contracts import Scenario, Status
+from cherenkov.core.settings import get_settings
 from cherenkov.stages.generate import GenerateStage
 
 

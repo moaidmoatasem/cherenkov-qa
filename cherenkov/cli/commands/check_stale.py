@@ -1,6 +1,10 @@
 """cherenkov/cli/commands/check_stale.py — `cherenkov check-stale` command."""
+from __future__ import annotations
 
+import json
 import sys
+from pathlib import Path
+
 import click
 
 
@@ -33,7 +37,6 @@ def check_stale_cmd(spec, manifest, fail_on_stale, as_json):
         cherenkov check-stale --fail-on-stale
         cherenkov check-stale --spec openapi.yaml --json
     """
-    from pathlib import Path
     from cherenkov.core.staleness import StalenessManifest
 
     m = StalenessManifest(manifest_path=Path(manifest))
@@ -47,12 +50,11 @@ def check_stale_cmd(spec, manifest, fail_on_stale, as_json):
                 fg="yellow",
             ), err=True)
             sys.exit(1 if fail_on_stale else 0)
-        from cherenkov.core.staleness import _file_sha256, StalenessReport
-        from pathlib import Path as _Path
+        from cherenkov.core.staleness import StalenessReport, _file_sha256
         current_hash = _file_sha256(spec)
         recorded_hash = data.get("spec_hash", "")
         test_files = data.get("tests", [])
-        missing = [f for f in test_files if not _Path(f).exists()]
+        missing = [f for f in test_files if not Path(f).exists()]
         hash_changed = recorded_hash != current_hash
         stale = hash_changed or bool(missing)
         parts = []
@@ -73,7 +75,6 @@ def check_stale_cmd(spec, manifest, fail_on_stale, as_json):
         report = m.check()
 
     if as_json:
-        import json
         click.echo(json.dumps({
             "stale": report.stale,
             "spec_path": report.spec_path,

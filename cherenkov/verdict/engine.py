@@ -17,14 +17,12 @@ from all dimension results plus aggregate metrics.
 from __future__ import annotations
 
 import time
-import uuid
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
 from cherenkov.core.contracts import DivergenceReport
 from cherenkov.verdict.models import (
-    OverallVerdict,
     RichVerdict,
     VerdictDimension,
     VerdictGrade,
@@ -60,6 +58,7 @@ class VerdictEngine:
         fixture_dir: str | Path = ".cherenkov/fixtures",
         max_workers: int = 4,
         timeout: float = 15.0,
+        max_probes: int = 40,
     ) -> None:
         self.base_url = base_url
         self.spec = spec
@@ -71,12 +70,11 @@ class VerdictEngine:
         self.fixture_dir = Path(fixture_dir)
         self.max_workers = max_workers
         self.timeout = timeout
+        self.max_probes = max_probes
 
     def run(self) -> RichVerdict:
         """Execute all agents in parallel and assemble the RichVerdict."""
         t0 = time.monotonic()
-        run_id = str(uuid.uuid4())[:8]
-
         # ── Stage 1: Divergence Probe (always runs first — others depend on it) ─
         divergence_dim, divergence_reports = self._run_divergence_probe()
 
@@ -167,6 +165,7 @@ class VerdictEngine:
                 base_url=self.base_url,
                 spec=self.spec,
                 use_llm=self.use_llm,
+                max_probes=self.max_probes,
             )
         except Exception as exc:
             return (
@@ -339,18 +338,29 @@ class VerdictEngine:
         )
 
     def _run_traffic_capture(
-        self, reports: list[DivergenceReport]
+        self, _reports: list[DivergenceReport]
     ) -> tuple[VerdictDimension, int]:
+        from cherenkov.divergence.proof_run import (
+            PETSTORE_SPEC_SUBSET,
+            PROOF_RUN_PROBES,
+            _offline_hypotheses,
+        )
         from cherenkov.verdict.traffic_capture import TrafficCapture
-        from cherenkov.divergence.proof_run import PROOF_RUN_PROBES, PETSTORE_SPEC_SUBSET
-        from cherenkov.divergence.proof_run import _offline_hypotheses
 
         t0 = time.monotonic()
         try:
             capture = TrafficCapture(base_url=self.base_url, timeout=self.timeout)
             hypotheses = []
-            for endpoint, method, _, _ in PROOF_RUN_PROBES:
-                hypotheses.extend(_offline_hypotheses(endpoint, method))
+            if self.spec is not None and self.spec is not PETSTORE_SPEC_SUBSET:
+                from cherenkov.divergence.probe_planner import plan_probes, spec_hypotheses
+
+                for endpoint, method, operation, _ in plan_probes(self.spec):
+                    hypotheses.extend(
+                        spec_hypotheses(endpoint, method, operation, self.spec)
+                    )
+            else:
+                for endpoint, method, _, _ in PROOF_RUN_PROBES:
+                    hypotheses.extend(_offline_hypotheses(endpoint, method))
 
             cap_report = capture.run(hypotheses, fixture_dir=self.fixture_dir)
             golden = cap_report.golden_count

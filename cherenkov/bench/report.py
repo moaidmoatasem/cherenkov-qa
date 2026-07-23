@@ -63,8 +63,8 @@ def print_report(report: BenchReport, verbose: bool = False) -> None:
 
 
 def _print_spec_result(console: Any, result: SpecBenchResult, verbose: bool = False) -> None:
-    from rich.table import Table
     import rich.box as rich_box
+    from rich.table import Table
 
     console.print(f"  [dim]spec:[/dim] {result.spec_path}")
     console.print(f"  [dim]tests:[/dim] {result.scenario_count}  "

@@ -1,6 +1,6 @@
 """
 cherenkov/validate/gate.py
-ValidationGate – runs Track-A smoke scripts and returns a ValidationReport.
+ValidationGate - runs Track-A smoke scripts and returns a ValidationReport.
 """
 
 from __future__ import annotations
@@ -9,7 +9,7 @@ import subprocess
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar, Literal
 
 from cherenkov.validate.contracts import (
     GateCriteria,
@@ -29,7 +29,7 @@ class ValidationGate:
     produce 'fail'.
     """
 
-    GATE_CRITERIA: list[GateCriteria] = [
+    GATE_CRITERIA: ClassVar[list[GateCriteria]] = [
         GateCriteria(
             name="smoke_track_a",
             description="Core Track-A API conformance smoke (smoke_test.py) passes",
@@ -73,7 +73,7 @@ class ValidationGate:
     ]
 
     # Map gate name → smoke script filename
-    _GATE_SCRIPTS: dict[str, str] = {
+    _GATE_SCRIPTS: ClassVar[dict[str, str]] = {
         "smoke_track_a": "smoke_test.py",
         "smoke_hitl_race": "smoke_test_hitl_race.py",
         "smoke_hitl_concurrency": "smoke_test_hitl_concurrency.py",
@@ -106,7 +106,7 @@ class ValidationGate:
         evidence_dir:
             Directory path for captured output files.  Skipped when *None*.
         _subprocess_runner:
-            Injection point for tests – a callable with the same signature as
+            Injection point for tests - a callable with the same signature as
             ``subprocess.run``.  When *None*, the real ``subprocess.run`` is used.
         """
         run_id = run_id or str(uuid.uuid4())
@@ -162,7 +162,7 @@ class ValidationGate:
             passed = False
             combined = f"Script not found: {script_path}"
             detail = "script_not_found"
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             passed = False
             combined = str(exc)
             detail = f"exception: {type(exc).__name__}"
@@ -184,7 +184,7 @@ class ValidationGate:
         )
 
     @staticmethod
-    def _compute_result(gates: list[GateEvidence]) -> str:
+    def _compute_result(gates: list[GateEvidence]) -> Literal["pass", "fail", "degraded"]:
         """Determine overall result based on gate outcomes and criteria."""
         # Build name→required mapping from GATE_CRITERIA
         required_map: dict[str, bool] = {

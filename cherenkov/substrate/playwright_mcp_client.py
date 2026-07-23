@@ -2,11 +2,12 @@
 Playwright MCP Client Interface (Horizon 3)
 Connects to an external Playwright MCP Server to execute web automation via Semantic Accessibility Trees.
 """
+from __future__ import annotations
 
 import asyncio
 import json
 import logging
-from typing import Any, Optional
+from typing import Any
 
 logger= logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ class PlaywrightMCPClient:
     def __init__(self, command: str, args: list[str]):
         self.command = command
         self.args = args
-        self.process: Optional[asyncio.subprocess.Process] = None
+        self.process: asyncio.subprocess.Process | None = None
         self._message_id = 1
         self._pending_requests: dict[int, asyncio.Future] = {}
 
@@ -36,8 +37,8 @@ class PlaywrightMCPClient:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        # Start a background task to read stdout
-        asyncio.create_task(self._read_stdout())
+        # Start a background task to read stdout; kept as instance attr to prevent GC
+        self._stdout_reader = asyncio.create_task(self._read_stdout())
         # Send initialize request
         await self._send_request(
             "initialize",
@@ -81,7 +82,7 @@ class PlaywrightMCPClient:
 
         request = {"jsonrpc": "2.0", "id": req_id, "method": method, "params": params}
 
-        future = asyncio.get_event_loop().create_future()
+        future = asyncio.get_running_loop().create_future()
         self._pending_requests[req_id] = future
 
         self.process.stdin.write((json.dumps(request) + "\\n").encode())

@@ -11,16 +11,16 @@ from typing import Any
 
 import requests
 
+from cherenkov.playbooks.matcher import PlaybookMatcher
+from cherenkov.playbooks.models import PlaybookFinding
+from cherenkov.playbooks.registry import PlaybookRegistry
+from cherenkov.playbooks.runner import PlaybookRunner
 from cherenkov.spec_guardian.core import (
     DriftEvent,
     DriftReport,
 )
 from cherenkov.spec_guardian.detector import SpecDriftDetector
-from cherenkov.spec_guardian.store import DriftStore
-from cherenkov.playbooks.registry import PlaybookRegistry
-from cherenkov.playbooks.matcher import PlaybookMatcher
-from cherenkov.playbooks.runner import PlaybookRunner
-from cherenkov.playbooks.models import PlaybookFinding
+from cherenkov.spec_guardian.store import DRIFT_DB, DriftStore
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class SpecGuardianDaemon:
         db_path: Path | None = None,
     ):
         """Initialize the daemon.
-        
+
         Args:
             spec_path: Path to OpenAPI spec file
             base_url: Base URL of the API to monitor
@@ -49,7 +49,7 @@ class SpecGuardianDaemon:
         self.check_interval = check_interval
         self.endpoints = endpoints or []
         self.detector = SpecDriftDetector(spec_path)
-        self.store = DriftStore(db_path or DriftStore.DRIFT_DB)
+        self.store = DriftStore(db_path or DRIFT_DB)
         self.running = False
         self.session_start: datetime | None = None
         self.total_checks = 0
@@ -86,7 +86,7 @@ class SpecGuardianDaemon:
                 self._run_check_cycle()
                 time.sleep(self.check_interval)
             except Exception:
-                logger.error("Error in check cycle", exc_info=True)
+                logger.exception("Error in check cycle")
                 time.sleep(self.check_interval)
 
     def stop(self) -> None:
@@ -94,7 +94,7 @@ class SpecGuardianDaemon:
         self.running = False
         logger.info("Spec Guardian daemon stopping")
 
-    def _signal_handler(self, signum: int, frame: Any) -> None:
+    def _signal_handler(self, signum: int, _frame: Any) -> None:
         """Handle shutdown signals."""
         logger.info("Received signal %s, shutting down", signum)
         self.stop()
@@ -160,10 +160,10 @@ class SpecGuardianDaemon:
 
     def _check_endpoint(self, endpoint_config: dict[str, Any]) -> list[DriftEvent]:
         """Check a single endpoint against the spec.
-        
+
         Args:
             endpoint_config: Dict with 'method', 'path', and optional 'params', 'headers'
-            
+
         Returns:
             List of drift events detected
         """
@@ -229,7 +229,7 @@ class SpecGuardianDaemon:
 
     def run_once(self) -> DriftReport:
         """Run a single check cycle and return the report.
-        
+
         Useful for testing or one-off checks.
         """
         self.session_start = datetime.now(timezone.utc)

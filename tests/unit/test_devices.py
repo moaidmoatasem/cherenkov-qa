@@ -1,4 +1,4 @@
-from cherenkov.core.devices import DeviceClass, VLMTier, DeviceInfo
+from cherenkov.core.devices import DeviceClass, DeviceInfo, VLMTier
 
 
 def test_device_class_values():

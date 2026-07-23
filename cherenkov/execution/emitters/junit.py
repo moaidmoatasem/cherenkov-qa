@@ -1,61 +1,53 @@
-import xml.etree.ElementTree as ET
-from xml.dom import minidom
+from __future__ import annotations
+
+from html import escape
 from typing import Any
+
+
+def _attr(value: str) -> str:
+    return escape(str(value), quote=True)
+
+
+def _text(value: str) -> str:
+    return escape(str(value))
 
 
 class JUnitEmitter:
     """Emits DivergenceReports into the JUnit XML format for native import into Xray, Zephyr, and TestRail."""
 
-    def emit(self, report: Any, spec_path: str) -> str:
+    def emit(self, report: Any, _spec_path: str) -> str:
         """Convert a DivergenceReport into a valid JUnit XML string."""
-        testsuites = ET.Element("testsuites", name="Cherenkov API Conformance")
-        testsuite = ET.SubElement(
-            testsuites,
-            "testsuite",
-            name="conformance-drift",
-            tests=str(len(getattr(report, "findings", []))),
-            failures="0",
-            errors="0",
-            skipped="0",
-            time="0",
-        )
-
+        findings = getattr(report, "findings", [])
         failures_count = 0
+        testcase_lines: list[str] = []
 
-        for finding in getattr(report, "findings", []):
-            testcase = ET.SubElement(
-                testsuite,
-                "testcase",
-                name=getattr(finding, "summary", "Response drift detected"),
-                classname=getattr(finding, "endpoint", "unknown").replace("/", "."),
-                time="0",
-            )
-
-            # Since these are all findings from a DivergenceReport, they are considered failures/drifts
-            failure = ET.SubElement(
-                testcase,
-                "failure",
-                message=getattr(finding, "description", ""),
-                type=getattr(finding, "violation_type", "conformance-drift")
-            )
-
-            actual = getattr(finding, "actual", "")
-            expected = getattr(finding, "expected", "")
-            method = getattr(finding, "http_method", "ANY")
-
+        for finding in findings:
+            name = _attr(getattr(finding, "summary", "Response drift detected"))
+            classname = _attr(getattr(finding, "endpoint", "unknown").replace("/", "."))
+            message = _attr(getattr(finding, "description", ""))
+            ftype = _attr(getattr(finding, "violation_type", "conformance-drift"))
             details = (
                 f"Endpoint: {getattr(finding, 'endpoint', 'unknown')}\n"
-                f"Method: {method}\n"
-                f"Expected: {expected}\n"
-                f"Actual: {actual}\n"
+                f"Method: {getattr(finding, 'http_method', 'ANY')}\n"
+                f"Expected: {getattr(finding, 'expected', '')}\n"
+                f"Actual: {getattr(finding, 'actual', '')}\n"
                 f"Remediation: {getattr(finding, 'remediation', '')}"
             )
-            failure.text = details
+            testcase_lines.append(
+                f'    <testcase name="{name}" classname="{classname}" time="0">\n'
+                f'      <failure message="{message}" type="{ftype}">{_text(details)}</failure>\n'
+                f'    </testcase>'
+            )
             failures_count += 1
 
-        testsuite.set("failures", str(failures_count))
-
-        # Pretty print XML
-        raw_xml = ET.tostring(testsuites, "utf-8")
-        parsed_xml = minidom.parseString(raw_xml)
-        return parsed_xml.toprettyxml(indent="  ")
+        total = len(findings)
+        inner = "\n".join(testcase_lines)
+        return (
+            '<?xml version="1.0" ?>\n'
+            '<testsuites name="Cherenkov API Conformance">\n'
+            f'  <testsuite name="conformance-drift" tests="{total}"'
+            f' failures="{failures_count}" errors="0" skipped="0" time="0">\n'
+            f'{inner}\n'
+            f'  </testsuite>\n'
+            '</testsuites>\n'
+        )

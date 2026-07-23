@@ -1,7 +1,7 @@
 """Tests for E2-6: cherenkov map command."""
 
-import unittest
 import os
+import unittest
 
 from cherenkov.core.truth_model import TruthModel
 from cherenkov.stages.map_cmd import build_truth_model, render_truth_model

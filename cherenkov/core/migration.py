@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import sqlite3
 import logging
+import sqlite3
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,7 @@ class SchemaMigration:
                     conn.executescript(sql)
                     conn.execute(
                         f"INSERT INTO {_SCHEMA_TABLE} (version, applied_at) VALUES (?, ?)",
-                        (version, int(__import__("time").time())),
+                        (version, int(time.time())),
                     )
             conn.commit()
             return True
