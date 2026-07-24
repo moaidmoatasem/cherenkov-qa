@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHERENKOV-QA | AI-Native API Conformance Testing</title>
+    <meta name="description" content="CHERENKOV-QA is the industry-leading AI-native API conformance testing platform. Auto-generate typing Playwright tests from OpenAPI specs instantly.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-effects">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+    </div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">CHERENKOV</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="https://docs.cherenkov.dev" target="_blank">Docs</a>
+                <a href="https://github.com/moaidmoatasem/cherenkov-qa" target="_blank" class="github-link">
+                    <svg height="24" aria-hidden="true" viewBox="0 0 16 16" version="1.1" width="24" fill="currentColor">
+                        <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.46-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <div class="badge">Production-Ready • v1.0.0</div>
+            <h1 class="hero-title">AI-Native API <span class="text-gradient">Conformance</span> Testing</h1>
+            <p class="hero-subtitle">Ingest OpenAPI specs. Generate typed Playwright tests via local LLMs. Validate real server compliance. Zero vendor lock-in.</p>
+            
+            <div class="quickstart-container">
+                <div class="terminal-header">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                    <span class="terminal-title">bash</span>
+                </div>
+                <div class="terminal-body">
+                    <pre><code class="prompt">$ </code><code class="command" id="typewriter">npx cherenkov init</code></pre>
+                    <div class="terminal-output" id="term-output">
+                        <div class="line delay-1">🚀 Initializing CHERENKOV-QA...</div>
+                        <div class="line delay-2">✅ Created cherenkov.toml</div>
+                        <div class="line delay-3">✅ Created sample openapi.yaml</div>
+                        <div class="line delay-4 highlight">🎉 Setup complete! You are ready to generate tests.</div>
+                    </div>
+                </div>
+                <button class="copy-btn" id="copy-cmd">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    Copy Command
+                </button>
+            </div>
+            
+            <div class="cta-group">
+                <a href="#features" class="btn btn-secondary">Explore Features</a>
+                <a href="https://docs.cherenkov.dev" class="btn btn-outline" target="_blank">Read the Docs</a>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="features">
+        <div class="section-header">
+            <h2>Why Choose <span class="text-gradient">CHERENKOV</span></h2>
+            <p>Built for the modern enterprise, designed with absolute trust and transparency.</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card glass-panel">
+                <div class="feature-icon">🛡️</div>
+                <h3>6-Gate Review Pipeline</h3>
+                <p>Tests must pass syntax, structure, AST, assertion, TypeScript compile, and Prism mock gates before they ever touch a real server.</p>
+            </div>
+            
+            <div class="feature-card glass-panel">
+                <div class="feature-icon">🧠</div>
+                <h3>Suggest-Only Healing</h3>
+                <p>Safety-first constraint that builds deep developer trust. The agent diagnoses issues but never auto-commits or auto-applies fixes blindly.</p>
+            </div>
+            
+            <div class="feature-card glass-panel">
+                <div class="feature-icon">🚪</div>
+                <h3>Zero Vendor Lock-In</h3>
+                <p>Run <code class="inline-code">cherenkov eject</code> to strip all CHERENKOV imports. You are left with 100% vanilla, standalone Playwright tests.</p>
+            </div>
+            
+            <div class="feature-card glass-panel">
+                <div class="feature-icon">🔌</div>
+                <h3>Omnipresent Integrations</h3>
+                <p>Natively integrates with VS Code, GitHub Actions, Jira, Slack, Teams, Xray, and the broader MCP ecosystem.</p>
+            </div>
+            
+            <div class="feature-card glass-panel">
+                <div class="feature-icon">🌐</div>
+                <h3>Spec-Derived Values</h3>
+                <p>The LLM generates test structure; the OpenAPI spec provides expected values. This architecture makes generation highly hallucination-resistant.</p>
+            </div>
+            
+            <div class="feature-card glass-panel">
+                <div class="feature-icon">☸️</div>
+                <h3>K8s Operator Native</h3>
+                <p>Deploy the CHERENKOV enterprise tier as a K8s operator using the custom <code class="inline-code">ConformanceCheck</code> CRD for continuous monitoring.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="integration-banner">
+        <h2>Works With Your Stack</h2>
+        <div class="integration-logos">
+            <span class="tech-tag">Playwright</span>
+            <span class="tech-tag">OpenAPI 3.0</span>
+            <span class="tech-tag">Ollama</span>
+            <span class="tech-tag">GitHub Actions</span>
+            <span class="tech-tag">VS Code</span>
+            <span class="tech-tag">Jira</span>
+            <span class="tech-tag">Kubernetes</span>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>CHERENKOV QA</h3>
+                <p>The standard in AI-driven conformance verification.</p>
+            </div>
+            <div class="footer-links">
+                <a href="https://github.com/moaidmoatasem/cherenkov-qa">GitHub Repository</a>
+                <a href="https://docs.cherenkov.dev">Documentation</a>
+                <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 CHERENKOV Contributors. MIT Licensed.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

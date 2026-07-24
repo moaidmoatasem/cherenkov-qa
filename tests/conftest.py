@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import os
 
@@ -33,6 +33,8 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "test_judge_sample" in item.nodeid:
             item.add_marker(pytest.mark.skip(reason="Ollama not reachable (needed by LLM-judge evals)"))
+        if "test_graphql_generate_integration" in item.nodeid:
+            item.add_marker(pytest.mark.skip(reason="Ollama not reachable (needed by E2E generation)"))
 
 
 @pytest.fixture(autouse=True)
