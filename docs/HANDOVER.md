@@ -7,6 +7,43 @@
 
 ---
 
+## SESSION HANDOVER — 2026-07-24 (Headless QA user tests)
+
+- **Headless UI testing as real QA user** (PR #726, `14b0533+`): Created
+  `cherenkov/web/ui/tests/qa/headless-qa-user.spec.ts` — 34 Playwright tests
+  across 5 workflow groups that test the dashboard against a **real backend**
+  (port 8000), not mocks. Key test groups:
+  1. **Backend Guard** (4 tests): health check, app shell render, sidebar nav
+  2. **Spec Setup & Generation Journey** (8 tests): setup → pipeline → review → eject
+  3. **Divergence Triage & Healing** (6 tests): divergences list → detail → drift cards
+  4. **Chat Agent SSE Streaming** (6 tests): session create → send → stream tokens via `mockChatStream()`
+  5. **Settings + Keyboard + Stress** (10 tests): settings roundtrip, compact mode, keyboard nav, Cmd+K, rapid nav, cross-screen data
+- **Page objects extended** (`page-objects.ts`): added `bootstrapReal()` (no mocks),
+  `waitForBackend()`, `mockChatStream()` (mocks only the SSE endpoint, rest hits real
+  backend), `MobilePilotPage`, `VerdictPage`, `VisualRegressionPage`. Extended
+  `ChatPage` with `waitForStreamResponse()` + `messagesList`. Extended `AuthorPage`
+  with `generateBtn` + `deterministicToggle`.
+- **CI workflow** (`.github/workflows/qa-headless.yml`): separate workflow (not in
+  `ci.yml`), triggered on `workflow_dispatch`, `schedule` (nightly), or PR with label
+  `qa-headless`. Two shards for parallel execution.
+- **Design decisions**: Chat SSE is mocked via `page.route()` (Ollama not required);
+  all other endpoints hit the real backend; no mocking of health/projects/divergences/etc.
+- **Locator alignment fix**: All 34 test locators verified against actual component
+  DOM (HealingScreen, DivergencesScreen, ChatScreen, SetupScreen, etc.). Fixes:
+  - `DivergencesPage`: switched from `#divergences-screen` (no ID) to
+    `[data-testid="divergences-screen"]`; `select:has()` → `[data-testid="severity-filter"]`
+  - `HealingPage`: diff buttons from `#btn-diff-*` to `[data-testid="btn-diff-*"]`
+  - `ChatPage`: `input`/`sendBtn` from fragile CSS selectors to `[data-testid]`
+  - Spec: divergence count from `[id^="D-"]` (no element has this attr) to
+    `getByText('D-')`; `/api/v1/overview` fetch removed (endpoint doesn't exist);
+    `mockChatStream()` adds 100ms delay before fulfilling to allow React to commit
+    `isStreaming=true` render for pulse indicator test
+  - Every `id=` used in page-objects (`#setup-screen`, `#btn-launch-generation`,
+    `#eject-screen`, `#healing-banner`, `#drift-card-*`, `#chat-screen`, etc.)
+    confirmed present in component .tsx files via grep audit
+
+---
+
 ## SESSION HANDOVER — 2026-07-13 (V2 oracles; doc reconciliation)
 
 - **Witness V2 oracles** (PR #703, `6e6fea0`): `verify` now asserts documented
