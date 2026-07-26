@@ -86,7 +86,8 @@ class TestRAGIndex(unittest.TestCase):
 
     def test_empty_corpus_returns_empty(self):
         """Test empty corpus returns empty list (no fabricated results)."""
-        results = self.index.query_similar_incidents("Any error", limit=3)
+        with patch.object(self.index, "_get_embedding", return_value=[0.1] * 768):
+            results = self.index.query_similar_incidents("Any error", limit=3)
         self.assertEqual(results, [])
 
     def test_query_with_limit(self):
