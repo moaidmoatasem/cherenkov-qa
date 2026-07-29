@@ -80,6 +80,129 @@ def synthesize_mutant_response(
     return concrete_path, _mutate_status(success), body
 
 
+def _enum_field(
+    schema: dict[str, Any] | None, spec: dict[str, Any]
+) -> tuple[str, list[Any]] | None:
+    """First property carrying an `enum`, with its allowed values."""
+    if not schema:
+        return None
+    for name, prop in (schema.get("properties") or {}).items():
+        prop = _resolve_ref(prop, spec)
+        values = prop.get("enum")
+        if isinstance(values, list) and values:
+            return str(name), values
+    return None
+
+
+def _wrong_same_type(value: Any) -> Any:
+    """A different value of the same JSON type.
+
+    Type-preserving on purpose: a type change is caught by any schema
+    validator, so it proves nothing about whether the assertion checked the
+    *value*. This is what separates `toBe(99.5)` from `toBeDefined()`.
+    """
+    if isinstance(value, bool):
+        return not value
+    if isinstance(value, (int, float)):
+        return 0 if value != 0 else 1
+    if isinstance(value, str):
+        return "cherenkov_wrong_value" if value != "cherenkov_wrong_value" else "x"
+    if isinstance(value, list):
+        return []
+    if isinstance(value, dict):
+        return {}
+    return None
+
+
+def synthesize_mutant_battery(
+    path: str,
+    operation: dict[str, Any],
+    schemas: dict[str, Any] | None = None,
+    base: tuple[int, dict[str, Any]] | None = None,
+) -> tuple[str, dict[str, tuple[int, dict[str, Any]]]] | None:
+    """One mutant per failure axis, plus the conforming control.
+
+    **`base` matters more than it looks.** Pass the response actually observed
+    from the target — status and body — and every mutant perturbs *that*.
+    Omit it and the body is sampled from the schema, which yields the right
+    *types* but arbitrary *values* (`{"id": 1, "total": 1.0}` where the API
+    returns 42 and 99.5).
+
+    Schema sampling is only sound inside a closed loop, where the test was
+    written against the same mock that now serves it — the repair loop's
+    prism-dryrun path. For auditing a suite someone else wrote, sampled values
+    make the honest suite fail the conforming control, and every verdict below
+    becomes meaningless. Record first, then perturb.
+
+    `synthesize_mutant_response` perturbs the status code *and* drops a
+    required field in the same response. Measured against the labelled corpus
+    in `demos/catch-the-ai-cheating/` that combination separates nothing: every
+    suite fails it for some reason, so a deliberately weakened suite is scored
+    "assertions are meaningful". See `docs/evidence/e0.5e_oracle_discrimination.md`.
+
+    Isolating one axis at a time makes a failure attributable. A suite that
+    passes the `conforming` control but also passes a mutant has an assertion
+    blind to that axis:
+
+      conforming  the documented success response, unperturbed. A suite that
+                  fails this is broken or hallucinating — not weak — and no
+                  mutant verdict below is meaningful for it.
+      status      documented success code swapped for another plausible 2xx.
+                  Passing means the status assertion is loose.
+      value       one documented field set to a different value of the same
+                  type. Passing means the field is checked for presence only.
+      enum        an enum field set outside its allowed values. Passing means
+                  the constraint is unasserted.
+      missing     a required field dropped. Kept for conformance coverage; it
+                  discriminates poorly, since honest suites fail it too.
+
+    Returns (concrete_path, {name: (status, body)}) or None when the operation
+    cannot be mutated — see `explain_unmutatable()` for why.
+    """
+    success = _success_code(operation)
+    if success is None:
+        return None
+
+    spec_stub = {"components": {"schemas": schemas or {}}}
+    concrete_path = _path_with_samples(path, operation, spec_stub)
+    if concrete_path is None:
+        return None
+
+    schema = _response_body_schema(operation, success, spec_stub)
+    if base is not None:
+        success, conforming = base[0], dict(base[1])
+    else:
+        conforming = _sample_body(schema, spec_stub) if schema else {}
+
+    battery: dict[str, tuple[int, dict[str, Any]]] = {
+        "conforming": (success, dict(conforming)),
+        "status": (_mutate_status(success), dict(conforming)),
+    }
+
+    fields = _response_fields(operation, success, spec_stub)
+
+    if conforming:
+        target = fields[0] if fields and fields[0] in conforming else next(iter(conforming))
+        battery["value"] = (
+            success,
+            {**conforming, target: _wrong_same_type(conforming[target])},
+        )
+
+    enum = _enum_field(schema, spec_stub)
+    if enum:
+        name, allowed = enum
+        outside = "cherenkov_not_in_enum"
+        while outside in allowed:
+            outside += "_x"
+        battery["enum"] = (success, {**conforming, name: outside})
+
+    if fields:
+        dropped = {k: v for k, v in conforming.items() if k != fields[0]}
+        battery["missing"] = (success, dropped)
+
+    return concrete_path, battery
+
+
 def explain_unmutatable(
     path: str,
     operation: dict[str, Any],

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`synthesize_mutant_battery()`** (`cherenkov/divergence/mutant_synth.py`) — emits one mutant per failure axis (status, single-value, enum, missing-field) plus a conforming control, so a test's failure is attributable to a specific weak assertion. Validated against the labelled cheat corpus in `demos/catch-the-ai-cheating/`: 3 of 3 cheat classes detected with no false alarm on the honest suite, where the existing single coarse mutant detects none. Takes an optional `base` — the response actually recorded from the target — because a spec constrains types, not instance values, and mutating a schema-sampled body makes an honest suite fail its own control.
+
 ### Fixed
 
 - **Soundness: `verify` could report a clean run on an endpoint it never probed.** OpenAPI 3.x allows a path parameter to be declared once on the PathItem and inherited by every operation beneath it. Probe planning read only `operation.parameters`, so on the inherited form the path placeholder was never filled and the endpoint was dropped from planning entirely — yielding zero divergences and exit code 0. The same API written the two legal ways planned 1 probe and 0 probes respectively. `merge_path_item_parameters()` is now the single definition of the `(name, in)` precedence rule, applied both in `cherenkov/divergence/probe_planner.py` and at the ingestion slicing point in `cherenkov/stages/ingest.py`, so every downstream consumer — probe planning, the meaningful-assertion gate, `truth/sources/openapi.py` — receives inherited parameters. 11 regression tests.
