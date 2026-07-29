@@ -17,9 +17,13 @@ from __future__ import annotations
 
 import contextlib
 import json
+import threading
 import time
+import urllib.error
+import urllib.request
 import uuid
 from dataclasses import dataclass, field
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from typing import Any
 
@@ -195,3 +199,157 @@ class TrafficCapture:
                     except json.JSONDecodeError:
                         continue
         return fixtures
+
+
+class RecordingProxy:
+    """Forwarding HTTP proxy that records what a test suite actually receives.
+
+    `CapturingWitnessAgent` above records CHERENKOV's *own* probe traffic. This
+    records *someone else's* suite: point their `API_URL` at this proxy, run
+    the suite, and every request is forwarded to the real target while the
+    response is captured.
+
+    This is the record half of record-then-perturb, the only sound basis for a
+    baseline-free audit. A spec constrains types, not instance values, so
+    mutating a schema-sampled body makes an honest suite fail its own
+    conforming control and voids every verdict — see
+    `docs/evidence/e0.5e_oracle_discrimination.md`. Feed `recorded_base()`
+    into `synthesize_mutant_battery(..., base=...)` instead.
+
+    Use as a context manager:
+
+        with RecordingProxy(port=9100, target="https://api.example.com") as rec:
+            runner.execute_test(scenario_id=..., test_code=..., api_url=rec.url)
+        base = rec.recorded_base("/orders/42")
+    """
+
+    def __init__(self, port: int, target: str, timeout: float = 30.0) -> None:
+        self.port = port
+        self.target = target.rstrip("/")
+        self.timeout = timeout
+        self.interactions: list[CapturedInteraction] = []
+        self._server: HTTPServer | None = None
+        self._thread: threading.Thread | None = None
+
+    def __enter__(self) -> RecordingProxy:
+        self.start()
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.stop()
+
+    def start(self) -> None:
+        proxy = self
+
+        class _Handler(BaseHTTPRequestHandler):
+            def _forward(self) -> None:
+                length = int(self.headers.get("Content-Length") or 0)
+                raw = self.rfile.read(length) if length else b""
+                started = time.monotonic()
+
+                req = urllib.request.Request(
+                    proxy.target + self.path,
+                    data=raw or None,
+                    method=self.command,
+                    headers={
+                        k: v
+                        for k, v in self.headers.items()
+                        # Host must reflect the real target; hop-by-hop headers
+                        # and the original length are recomputed downstream.
+                        if k.lower() not in ("host", "content-length", "connection")
+                    },
+                )
+                try:
+                    with urllib.request.urlopen(req, timeout=proxy.timeout) as resp:
+                        status, body, headers = resp.status, resp.read(), dict(resp.headers)
+                except urllib.error.HTTPError as exc:
+                    # A 4xx/5xx is a real answer worth recording, not a failure.
+                    status, body, headers = exc.code, exc.read(), dict(exc.headers or {})
+                except Exception as exc:
+                    status, body, headers = 502, json.dumps({"error": str(exc)}).encode(), {}
+
+                proxy._record(self.command, self.path, raw, status, body, headers, started)
+
+                self.send_response(status)
+                self.send_header(
+                    "Content-Type", headers.get("Content-Type", "application/json")
+                )
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *_: object) -> None:
+                pass
+
+            do_GET = _forward  # noqa: N815
+            do_POST = _forward  # noqa: N815
+            do_PUT = _forward  # noqa: N815
+            do_DELETE = _forward  # noqa: N815
+            do_PATCH = _forward  # noqa: N815
+
+        self._server = HTTPServer(("127.0.0.1", self.port), _Handler)
+        self._thread = threading.Thread(
+            target=self._server.serve_forever,
+            daemon=True,
+            name=f"recording-proxy-{self.port}",
+        )
+        self._thread.start()
+
+    def _record(
+        self,
+        method: str,
+        path: str,
+        raw_request: bytes,
+        status: int,
+        body: bytes,
+        headers: dict,
+        started: float,
+    ) -> None:
+        self.interactions.append(
+            CapturedInteraction(
+                method=method,
+                url=path,
+                request_body=_maybe_json(raw_request),
+                response_status=status,
+                response_body=_maybe_json(body),
+                response_headers=headers,
+                latency_ms=int((time.monotonic() - started) * 1000),
+            )
+        )
+
+    def stop(self) -> None:
+        if self._server is not None:
+            self._server.shutdown()
+            self._server = None
+            self._thread = None
+
+    @property
+    def url(self) -> str:
+        return f"http://127.0.0.1:{self.port}"
+
+    def recorded_base(self, path: str) -> tuple[int, Any] | None:
+        """The last recorded (status, body) for `path`, ready for the battery.
+
+        Last rather than first: a suite that mutates state should be perturbed
+        against the response its assertions were written against most recently.
+        """
+        for interaction in reversed(self.interactions):
+            if interaction.url == path:
+                return interaction.response_status, interaction.response_body
+        return None
+
+    def replay_map(self) -> dict[str, tuple[int, Any]]:
+        """Every recorded path as a `BrokenImplServer` response map."""
+        return {
+            i.url: (i.response_status, i.response_body)
+            for i in self.interactions
+        }
+
+
+def _maybe_json(raw: bytes) -> Any:
+    if not raw:
+        return None
+    try:
+        return json.loads(raw)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return raw.decode("utf-8", errors="replace")
