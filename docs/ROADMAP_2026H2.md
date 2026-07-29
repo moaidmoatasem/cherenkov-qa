@@ -56,7 +56,13 @@ A working harness over these shipped parts was built and run this session agains
 
 **Decision:** the wedge is a baseline-free `audit` — *point it at tests you already have, no baseline, no adoption*. It creates the awareness that the rest of the ladder depends on. `generate` competes with Copilot for a job developers think they have solved; `audit` has no incumbent and zero switching cost.
 
-**The honest caveat, measured not assumed:** the synthesized mutant differs from the real response in several fields at once, so it reliably catches *fully* vacuous tests (weak matchers only) but does not cleanly separate *subtly* weakened ones. Discriminating power must be measured before this ships as a headline claim — that is E0.5 in M0.
+**Now measured, and the measurement moved the plan** ([evidence](evidence/e0.5e_oracle_discrimination.md)):
+
+- Baseline-free detection **works** — isolated single-axis mutants plus a conforming run catch all three cheat classes in the labelled corpus (weakened, deleted, hallucinated) with no false alarms on the honest suite.
+- But the **single coarse mutant that ships today catches none of them.** It perturbs status *and* drops a field at once, so failure can't be attributed and a weakened suite scores as meaningful.
+- So the earlier claim that this was "one command away from being a product" was wrong. It needs a mutation battery and a conforming-run precondition — well-scoped work, not a wiring job. E0.5f.
+
+Corpus is one API and three fixtures. Directionally strong; not yet a benchmark, and not yet a claim to make publicly.
 
 ---
 
@@ -82,13 +88,15 @@ graph LR
 
 The engine has only ever been proven against Petstore and FastAPI-generated specs. Both declare parameters at the operation level. Real-world specs do not.
 
-- [x] **E0.5a** — PathItem-level parameters merged; 4 regression tests *(done this session)*
-- [ ] **E0.5b** — meaningful-assertion gate still cannot fire on PathItem-level specs: `mutant_synth` builds a `spec_stub` with no `paths`, so the merge never reaches it. Gate degrades to *skip* (safe, but silently off). Thread the effective parameters through `synthesize_mutant_response`.
-- [ ] **E0.5c** — the skip message says *"spec has no documented success response to mutate"* when the real cause is unfillable path params. Two distinct causes, one misleading message. Split them.
-- [ ] **E0.5d** — **spec-shape conformance corpus.** Run `verify` against ≥10 real third-party OpenAPI specs (Stripe, GitHub, Twilio, Kubernetes, and hand-written ones). Record, per spec: probes planned, endpoints silently dropped, crashes. *Any endpoint that plans zero probes must be reported to the user, never silently skipped.*
-- [ ] **E0.5e** — measure the audit oracle's discriminating power against the labelled `demos/catch-the-ai-cheating` corpus (good / weakened / deleted). Publish precision and recall. If it cannot separate weakened from good, say so plainly and scope the wedge to fully-vacuous detection.
+- [x] **E0.5a** — PathItem-level parameters merged into probe planning; 4 regression tests — `90d8829`
+- [x] **E0.5b** — the same inheritance applied at the ingestion slicing point, so the meaningful-assertion gate (and `truth/sources/openapi.py`) actually receive it; verified end to end — `7780c1d`
+- [x] **E0.5c** — skip message split: `explain_unmutatable()` names the real cause instead of always blaming a missing 200 — `7780c1d`
+- [x] **E0.5e** — oracle discrimination measured. **Result changes the plan** → [`docs/evidence/e0.5e_oracle_discrimination.md`](evidence/e0.5e_oracle_discrimination.md)
+- [ ] **E0.5f** — **NEW, now the top item: the shipped gate's mutation has no discriminating power.** Isolated single-axis mutants (status-only, value-only, enum-only) plus a conforming-run precondition catch 3/3 cheat classes with zero false alarms. The coarse status+field mutation that ships today catches **0 of 3** — a weakened suite reads as meaningful. Build the battery; decide where it runs (a battery per repair-loop candidate is too slow, an audit command can afford it).
+- [ ] **E0.5g** — undeclared path parameters. The demo's own `openapi.yaml` never declares `{id}` (invalid OpenAPI, very common in hand-written specs). The engine drops the endpoint silently. **Report every zero-probe endpoint to the user; never skip in silence.** Inferring a sample value is the riskier alternative — it can manufacture a spurious divergence — so reporting comes first.
+- [ ] **E0.5d** — **spec-shape conformance corpus.** Run `verify` against ≥10 real third-party OpenAPI specs (Stripe, GitHub, Twilio, Kubernetes, plus hand-written ones). Record per spec: probes planned, endpoints dropped, crashes.
 
-**Exit criterion:** zero silent endpoint drops across the corpus, and a measured number for oracle discrimination.
+**Exit criterion:** zero *silent* endpoint drops across the corpus, and a mutation battery that separates weakened from honest on the labelled corpus.
 
 **This is also the cheapest marketing asset in the plan.** E0.5d produces "we ran the engine against 10 major public APIs and here is what we found" — an artifact that recruits *for* M1 instead of cold-asking strangers for a favour.
 
