@@ -11,6 +11,7 @@ Proves `cherenkov verify` works on an arbitrary (non-Petstore) OpenAPI spec:
 """
 from __future__ import annotations
 
+import copy
 import json
 import threading
 from collections.abc import Generator
@@ -330,3 +331,63 @@ class TestPetstoreDemoRegression:
         # Dead port: every reproduction fails to execute → no reports, no raise.
         reports = run_proof(base_url="http://127.0.0.1:1", spec=None, use_llm=False)
         assert reports == []
+
+
+# ── PathItem-level parameters (OpenAPI 3.x shared-parameter form) ─────────────
+
+def _hoist_params_to_path_item(spec: dict) -> dict:
+    """Move every operation's `parameters` up onto its PathItem.
+
+    Same API, the other legal spelling. Reading only `operation.parameters`
+    made `{orderId}` unfillable, so the endpoint was dropped from planning
+    entirely and `verify` reported a clean run on an unprobed endpoint.
+    """
+    out = copy.deepcopy(spec)
+    for path_item in out["paths"].values():
+        hoisted: list[dict] = []
+        for method, operation in path_item.items():
+            if method.lower() not in {"get", "put", "post", "delete", "patch"}:
+                continue
+            hoisted.extend(operation.pop("parameters", []) or [])
+        if hoisted:
+            path_item["parameters"] = hoisted
+    return out
+
+
+class TestPathItemLevelParameters:
+    def test_path_param_on_path_item_still_plans_probes(self) -> None:
+        shared = _hoist_params_to_path_item(ORDERS_SPEC)
+        assert not shared["paths"]["/orders/{orderId}"]["get"].get("parameters")
+
+        planned = {p for p, _, _, _ in plan_probes(shared)}
+        assert "/orders/{orderId}" in planned, (
+            "endpoint silently dropped — verify would report it clean without probing it"
+        )
+
+    def test_hypotheses_match_the_operation_level_spelling(self) -> None:
+        shared = _hoist_params_to_path_item(ORDERS_SPEC)
+        own = spec_hypotheses(
+            "/orders/{orderId}", "get", ORDERS_SPEC["paths"]["/orders/{orderId}"]["get"], ORDERS_SPEC
+        )
+        inherited = spec_hypotheses(
+            "/orders/{orderId}", "get", shared["paths"]["/orders/{orderId}"]["get"], shared
+        )
+        assert {h.claim_a for h in inherited} == {h.claim_a for h in own}
+
+    def test_enum_query_param_on_path_item_is_probed(self) -> None:
+        shared = _hoist_params_to_path_item(ORDERS_SPEC)
+        hyps = spec_hypotheses("/orders", "get", shared["paths"]["/orders"]["get"], shared)
+        assert [h for h in hyps if "enum" in h.claim_a.lower()]
+
+    def test_operation_level_wins_on_collision(self) -> None:
+        spec = copy.deepcopy(ORDERS_SPEC)
+        item = spec["paths"]["/orders/{orderId}"]
+        # A shared param that would fill the same placeholder with a different value.
+        item["parameters"] = [
+            {"name": "orderId", "in": "path", "schema": {"type": "string", "default": "SHARED"}}
+        ]
+        hyps = spec_hypotheses("/orders/{orderId}", "get", item["get"], spec)
+        pathparam = [h for h in hyps if "invalid" in h.claim_a.lower()]
+        assert pathparam
+        _, path, _, _ = _parse_repro_steps(pathparam[0].repro_steps)
+        assert path == "/orders/0", "operation-level parameter must take precedence"
