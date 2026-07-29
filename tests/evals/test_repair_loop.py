@@ -150,7 +150,7 @@ class TestRepairLoopContract:
             received_instructions.append(kwargs.get("instruction", ""))
             return _make_gen_output(_WEAK_CODE)
 
-        def fake_rev_init(self, run_id=None):
+        def fake_rev_init(self, run_id=None, cleanup_scratch=False):
             self.run_id = run_id
 
         class _FakeReview:
@@ -192,7 +192,7 @@ class TestRepairLoopContract:
             received_instructions.append(kwargs.get("instruction", ""))
             return _make_gen_output(_WEAK_CODE)
 
-        def fake_rev_init(self, run_id=None):
+        def fake_rev_init(self, run_id=None, cleanup_scratch=False):
             self.run_id = run_id
 
         class _FakeReview:
@@ -236,7 +236,7 @@ class TestRepairLoopContract:
         def fake_gen_run(self, **kwargs):
             return _make_gen_output(_WEAK_CODE)
 
-        def fake_rev_init(self, run_id=None):
+        def fake_rev_init(self, run_id=None, cleanup_scratch=False):
             self.run_id = run_id
 
         def fake_rev_run(self, gen_out, spec_path=None, operation=None, schemas=None):

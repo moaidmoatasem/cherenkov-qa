@@ -71,12 +71,16 @@ class VerdictEngine:
         self.max_workers = max_workers
         self.timeout = timeout
         self.max_probes = max_probes
+        self.divergence_reports: list[DivergenceReport] = []
 
     def run(self) -> RichVerdict:
         """Execute all agents in parallel and assemble the RichVerdict."""
         t0 = time.monotonic()
         # ── Stage 1: Divergence Probe (always runs first — others depend on it) ─
         divergence_dim, divergence_reports = self._run_divergence_probe()
+        # Stashed so callers (e.g. `cherenkov verify`) can reuse this probe
+        # sweep for detail printing / coverage instead of re-running it.
+        self.divergence_reports = divergence_reports
 
         # ── Stage 2: parallel agents ──────────────────────────────────────
         futures: dict[str, Any] = {}
@@ -160,12 +164,15 @@ class VerdictEngine:
         from cherenkov.divergence.proof_run import run_proof
 
         t0 = time.monotonic()
+        probed_endpoints: list[tuple[str, str]] = []
+        self._probed_endpoints = probed_endpoints
         try:
             reports = run_proof(
                 base_url=self.base_url,
                 spec=self.spec,
                 use_llm=self.use_llm,
                 max_probes=self.max_probes,
+                probed_endpoints=probed_endpoints,
             )
         except Exception as exc:
             return (
@@ -226,7 +233,9 @@ class VerdictEngine:
             spec = PETSTORE_SPEC_SUBSET
 
         try:
-            cov = compute_coverage(spec, reports)
+            cov = compute_coverage(
+                spec, reports, probed_endpoints=getattr(self, "_probed_endpoints", None)
+            )
             pct = cov.coverage_pct
         except Exception:
             pct = 0.0

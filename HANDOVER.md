@@ -1,10 +1,53 @@
 # CHERENKOV -- Session Handover
 
 **Date:** 2026-07-30
-**HEAD:** see `git log` (last reflected here: `bbe24e5` on `feat/qa-headless-locator-alignment`)
-**Tests:** **1753 passed, 1 skipped, 0 failed** — measured 2026-07-30 (`pytest tests/unit tests/integration`). The previous "788+" figure was badly stale. **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
-**Mypy gate:** ⚠️ **FAILING** — 7 errors in 3 files (`cherenkov/ai/openai_client.py`, `cherenkov/ai/nemoclaw_client.py`, `cherenkov/substrate/providers/localai.py`). The 2026-07-06 note below claiming "runs clean on 530 files" no longer holds.
-**Branch:** `feat/qa-headless-locator-alignment` — contains all of `origin/main`; merged into local `main`. Run `git rev-list --left-right --count origin/main...HEAD` for the current count rather than trusting a number written here.
+**HEAD:** see `git log`. Last reflected here: `39ec376` on `feat/qa-headless-locator-alignment`, merged into local `main`, which also carries `origin/main` through #726 and #730.
+**Tests:** **1769 passed, 1 skipped, 0 failed** — measured 2026-07-30 (`pytest tests/unit tests/integration`). The previous "788+" figure was badly stale. Re-measure after this merge rather than trusting the number here.
+**UI E2E:** 260 headed (qa/ suite), 0 failed (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37 — **not re-verified since 2026-07-20**; the figure is carried forward, not confirmed.
+**Mypy gate:** ⚠️ **FAILING** — 7 errors in 3 files (`cherenkov/ai/openai_client.py`, `cherenkov/ai/nemoclaw_client.py`, `cherenkov/substrate/providers/localai.py`). The 2026-07-06 note below claiming "runs clean on 530 files" no longer holds. A fix is in progress in a separate session.
+**Branch:** `feat/qa-headless-locator-alignment`. Run `git rev-list --left-right --count origin/main...HEAD` for the current count rather than trusting a number written here.
+
+## Readiness check (2026-07-29)
+
+Ran independently, not from memory: `pytest tests/unit tests/evals` green (one file,
+`test_mcp_auth.py`, fails to even *collect* in this sandbox due to a missing system
+`cffi` package -- confirmed to be a container-environment gap, not a code defect, by
+installing `cffi` and re-running it clean in isolation). Live-reproduced both G0
+demos: `demos/catch-the-ai-cheating/run_demo.sh` (control PASS, all 3 injected cheats
+CAUGHT) and `cherenkov demo`. Re-verified `docs/evidence/e0.1_divergences.md`'s
+methodology is sound (curl-reproducible, dated, real third-party targets).
+
+**Gate G0 is still 3/4 -- E0.3 (≥3 outside practitioners complete the quickstart
+unaided) has not been attempted.** `docs/e0.3/PRACTITIONER_KIT.md` exists (PR #689)
+but no `docs/e0.3/runs/*.md` results exist. This is the one gate that cannot be
+automated and is the sole blocker on Gate G0 / public launch. Feature work was
+otherwise idle 2026-07-20 -> 2026-07-29 (dependency bumps + one docs fix only).
+
+**Dry run (agent, not a substitute for E0.3):** followed `docs/e0.3/PRACTITIONER_KIT.md`
+steps 1-4 cold in a fresh venv against a live dogfood target (own `/openapi.json`,
+81 paths) to surface friction before real practitioners spend their one shot on it.
+Found and fixed a real bug in the process:
+
+- **Bug:** `cherenkov verify` (rich-verdict mode, the default) ran the full
+  spec-derived probe sweep against the live target *twice* per invocation --
+  `cherenkov/verdict/engine.py`'s `VerdictEngine.run()` already computes
+  `divergence_reports` internally, but `cherenkov/cli/commands/verify.py`'s
+  `_run_rich_verdict()` then called `run_proof(...)` a second time from scratch
+  just to get a list it already had, to print divergence detail / compute
+  coverage. Symptom a cold user would hit: on an 81-path spec this doubled
+  wall-clock time (63s -> 9s after the fix) and printed the identical-looking
+  probe sweep twice back-to-back with no distinguishing label -- reads exactly
+  like a stuck loop, which is exactly the kind of thing E0.3's own survey asks
+  about ("What almost made you quit?").
+  **Fix:** `VerdictEngine` now stashes the reports it already computed on
+  `self.divergence_reports`; `_run_rich_verdict` reads that instead of
+  re-running `run_proof`. Verified before/after against the same live target:
+  identical verdict output, 40 probes instead of 80, 9s instead of 63s.
+  Updated `tests/unit/test_verify_cmd.py` / `tests/unit/test_coverage.py`
+  mocks that were patching the now-removed call site
+  (`cherenkov.cli.commands.verify.run_proof`) to patch
+  `cherenkov.divergence.proof_run.run_proof` instead, matching where the
+  engine actually resolves it. Full unit/eval suite green after the change.
 
 > **Note:** `docs/HANDOVER.md` is a separate, reverse-chronological session log (older format, kept for history). This file (`HANDOVER.md`, repo root) is the canonical status anchor per `CLAUDE.md`. The 2026-07-13 update below reconciles both -- the work logged in `docs/HANDOVER.md`'s "2026-07-11 HITL severity" section is the same work as the HITL severity entry below.
 
