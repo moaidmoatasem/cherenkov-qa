@@ -1,5 +1,11 @@
 # CHERENKOV-QA — Comprehensive Project Review
 
+> **⚠️ SUPERSEDED.** This review is dated 2026-06-15 and is stale — several of its
+> P0/P1 findings have since been fixed (CLI is no longer a single argparse file,
+> see `cherenkov/cli/commands/`; Docker now runs as non-root with a HEALTHCHECK).
+> For current status, use `HANDOVER.md` (repo root) per `CLAUDE.md`'s status-anchor
+> convention. Kept here for historical record only — do not cite as current state.
+
 **Reviewed:** 2026-06-15  
 **Reviewer:** AI Code Review Agent  
 **Project:** [cherenkov-qa](https://github.com/moaidmoatasem/cherenkov-qa)  

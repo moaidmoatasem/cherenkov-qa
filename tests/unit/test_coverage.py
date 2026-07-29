@@ -145,6 +145,40 @@ class TestComputeCoverage:
         cov = compute_coverage(spec, [])
         assert cov.total_endpoints == 1
 
+    # ── probed_endpoints (clean-run coverage) ───────────────────────────────
+
+    def test_clean_run_with_probed_endpoints_is_not_zero_coverage(self):
+        """Regression: a run that probes every endpoint and finds zero
+        divergences must not be reported as 0% coverage. Coverage means
+        'we tested it', not 'we found a bug there' — previously, an all-pass
+        run (reports=[]) always computed 0% coverage because tested_keys was
+        built only from `reports`.
+        """
+        probed = [("GET", "/pets"), ("POST", "/pets"), ("GET", "/pets/{id}"), ("DELETE", "/pets/{id}")]
+        cov = compute_coverage(_SPEC, [], probed_endpoints=probed)
+        assert cov.coverage_pct == pytest.approx(100.0)
+        assert cov.tested_count == 4
+        assert cov.gap_endpoints == []
+
+    def test_probed_endpoints_partial_coverage(self):
+        probed = [("GET", "/pets")]
+        cov = compute_coverage(_SPEC, [], probed_endpoints=probed)
+        assert cov.tested_count == 1
+        assert cov.coverage_pct == pytest.approx(25.0)
+
+    def test_probed_endpoints_union_with_confirmed_reports(self):
+        # A confirmed divergence on one endpoint, plus a clean probe on another —
+        # both should count as tested.
+        reports = [_report("GET /pets")]
+        probed = [("POST", "/pets")]
+        cov = compute_coverage(_SPEC, reports, probed_endpoints=probed)
+        assert cov.tested_count == 2
+
+    def test_probed_endpoints_omitted_falls_back_to_reports_only(self):
+        # Backward-compat: no probed_endpoints given -> old behaviour.
+        cov = compute_coverage(_SPEC, [])
+        assert cov.coverage_pct == 0.0
+
 
 # ── TestVerifyCoverageFlag ─────────────────────────────────────────────────────
 
