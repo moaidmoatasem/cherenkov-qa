@@ -131,7 +131,7 @@ The engine has only ever been proven against Petstore and FastAPI-generated spec
 - [ ] **Write-up** — `docs/marketing/CATCH_THE_AI_CHEATING_WRITEUP.md` published
 - [ ] Clean-VM test: fresh container → install → `verify` against a live target → correct exit code
 
-**Ship the three bug-fix PRs (#726, #730, #731) as `1.1.2` patches, not folded into the minor bump** — all three touch CLI internals; keeping the minor release purely additive keeps the changelog honest.
+**#726 and #730 landed upstream on 2026-07-30** — the coverage-score and false-Ollama-detection fixes, and the Docker/CI alignment that also untracked `build/cherenkov-launcher/*` and added `.github/workflows/surface-freeze-gate.yml`. The freeze is now CI-enforced rather than convention, which strengthens M3. Only #731 remains for the `1.1.2` patch line; keep it out of the minor bump so the changelog stays honest.
 
 ---
 
