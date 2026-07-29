@@ -366,14 +366,17 @@ class ReviewStage:
             ))
             return
 
-        from cherenkov.divergence.mutant_synth import spawn_mutant_server
+        from cherenkov.divergence.mutant_synth import explain_unmutatable, spawn_mutant_server
 
         endpoint = getattr(generate, "endpoint", "") or ""
         mutant_server = spawn_mutant_server(self._MUTANT_PORT, endpoint, operation, schemas)
         if mutant_server is None:
             gates.append(GateResult(
                 gate="meaningful-assertion", passed=True, skipped=True,
-                detail="Meaningful-assertion gate skipped: spec has no documented success response to mutate.",
+                detail=(
+                    "Meaningful-assertion gate skipped: "
+                    f"{explain_unmutatable(endpoint, operation, schemas)}."
+                ),
             ))
             return
 
