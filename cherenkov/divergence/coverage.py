@@ -68,16 +68,26 @@ def _endpoint_key(method: str, path: str) -> str:
 def compute_coverage(
     spec: dict[str, Any],
     reports: list,
+    probed_endpoints: list[tuple[str, str]] | None = None,
 ) -> CoverageReport:
     """Compute which spec endpoints were probed in this proof run.
 
     `reports` is a list of DivergenceReport (or any object with `.endpoint` str
-    attribute in the form "METHOD /path").  Endpoints appearing in any report
-    are counted as tested; the rest are the coverage gap.
+    attribute in the form "METHOD /path") — i.e. endpoints where a divergence
+    was *confirmed*. `probed_endpoints` is an optional list of (METHOD, path)
+    pairs covering every endpoint that was actually probed in the run,
+    whether or not a divergence was found there.
+
+    Endpoints appearing in either `reports` or `probed_endpoints` are counted
+    as tested; the rest are the coverage gap. When `probed_endpoints` is
+    omitted, coverage falls back to `reports` alone — note that this
+    understates coverage on a clean run (0 confirmed divergences reads as
+    0% coverage even if every endpoint was probed and passed), so callers
+    that have access to the full probed set should always pass it.
     """
     spec_endpoints = _extract_endpoints(spec)
 
-    # Build a set of (METHOD, path) keys that appear in the reports
+    # Build a set of (METHOD, path) keys that were actually probed
     tested_keys: set[str] = set()
     divergence_by_key: dict[str, int] = {}
     for r in reports:
@@ -89,6 +99,9 @@ def compute_coverage(
         key = _endpoint_key(parts[0], parts[1]) if len(parts) == 2 else raw.upper()
         tested_keys.add(key)
         divergence_by_key[key] = divergence_by_key.get(key, 0) + 1
+
+    for method, path in probed_endpoints or []:
+        tested_keys.add(_endpoint_key(method, path))
 
     endpoint_list: list[EndpointCoverage] = []
     for method, path, op_id in spec_endpoints:

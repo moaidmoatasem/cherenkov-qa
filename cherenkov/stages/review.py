@@ -42,6 +42,17 @@ _RE_STATUS_LITERAL = re.compile(r"toBe\(\s*(200|201|204|400|401|404|422|500)\s*\
 _RE_BODY_SHAPE = re.compile(r"toHaveProperty\(|typeof\s")
 
 
+def default_review_scratch_dir() -> str:
+    """The stub/generated_tests/ directory ReviewStage's tsc/Prism gates require.
+
+    Exposed so callers (e.g. `cherenkov generate --output-dir`) can detect
+    when their real output destination differs from this scratch location
+    and opt into `cleanup_scratch=True`, instead of leaving stray review
+    working files behind in the tracked fixture directory.
+    """
+    return str(Path(__file__).parent.parent.parent / "stub" / "generated_tests")
+
+
 class ReviewStage:
     """Enforces 6 static and dynamic quality gates on generated tests."""
 
@@ -50,10 +61,19 @@ class ReviewStage:
     _PRISM_PORT = 4015
     _MUTANT_PORT = 4016
 
-    def __init__(self, run_id: str | None = None):
+    def __init__(self, run_id: str | None = None, cleanup_scratch: bool = False):
         self.run_id = run_id
         self.log = get_logger("REVIEW", run_id)
         self.stub_dir = str(Path(__file__).parent.parent.parent / "stub")
+        # The tsc and Prism/Playwright gates below need the candidate file to
+        # sit inside stub/generated_tests/ — that's the only directory
+        # tsconfig.json's `include` and playwright.config.ts's `testDir` know
+        # about, so it can't simply be relocated. When the caller's real
+        # destination is elsewhere (a custom --output-dir), that makes this
+        # a scratch working copy rather than a final artifact; set
+        # cleanup_scratch=True so run() removes it once the gates are done,
+        # instead of silently leaving stray files in the tracked fixture dir.
+        self._cleanup_scratch = cleanup_scratch
 
     def run(
         self,
@@ -94,6 +114,14 @@ class ReviewStage:
 
         self._log_finetune(verdict, generate, quality_score, gates, code)
         self._bridge_hitl(verdict, generate, quality_score, gates, scenario_id)
+
+        if self._cleanup_scratch:
+            try:
+                os.remove(test_file_path)
+            except OSError as exc:
+                self.log.warning(
+                    "failed to remove review scratch file", path=test_file_path, error=str(exc)
+                )
 
         dt = int((time.monotonic() - t0) * 1000)
         self.log.info(

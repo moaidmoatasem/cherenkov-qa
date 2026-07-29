@@ -27,10 +27,14 @@ export default function OnboardingWizard({ onComplete, onEnableDemo }: Onboardin
         if (mounted) {
           setEngineStatus('online');
           if (!hw) {
-            // gen_model being set means Ollama is configured even if device
-            // detection timed out on cold start (detect_ollama_device has a 2s
-            // timeout that fires before Ollama loads the model into memory).
-            const ollamaReady = h.device !== 'unknown' || (h.gen_model && h.gen_model !== 'unknown');
+            // `device` is the only field here backed by a live probe
+            // (detect_ollama_device actually calls the Ollama daemon); the
+            // backend's "not detected" sentinel is "UNKNOWN" (see
+            // cherenkov/core/settings.py / init_cmd.py). `gen_model` is just
+            // the *configured* model name from settings — it is set to a
+            // real-looking value even when Ollama isn't installed at all,
+            // so it must never be treated as a positive detection signal.
+            const ollamaReady = !!h.device && h.device.toUpperCase() !== 'UNKNOWN';
             if (ollamaReady) {
               setOllamaStatus('found');
             } else if (attempt < 3) {

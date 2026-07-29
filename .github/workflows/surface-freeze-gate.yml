@@ -1,0 +1,56 @@
+name: Surface Freeze Gate
+
+# Enforces the SURFACE FREEZE noted in HANDOVER.md: until R3/E0.3 passes,
+# desktop/, vscode/, cherenkov-backstage-plugin/, operator/, and landing-page/
+# accept bug fixes only, no new work. This was previously a prose convention;
+# this gate makes it a checked one.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check-frozen-surfaces:
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check frozen-surface changes are bug fixes
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          if echo ",$LABELS," | grep -qi ",surface-freeze-exempt,"; then
+            echo "PR labeled surface-freeze-exempt — skipping."
+            exit 0
+          fi
+
+          FROZEN_PATHS='^(desktop/|vscode/|cherenkov-backstage-plugin/|operator/|landing-page/)'
+
+          CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -E "$FROZEN_PATHS" || true)
+
+          if [ -z "$CHANGED" ]; then
+            echo "No changes under frozen surfaces."
+            exit 0
+          fi
+
+          echo "Changed files under frozen surfaces:"
+          echo "$CHANGED"
+
+          if echo "$PR_TITLE" | grep -qiE '^(fix|revert)(\(|:)'; then
+            echo "PR title looks like a bug fix ('$PR_TITLE') — allowed under the freeze."
+            exit 0
+          fi
+
+          echo ""
+          echo "::error::This PR touches a frozen surface (desktop/, vscode/, cherenkov-backstage-plugin/, operator/, landing-page/) but its title doesn't look like a bug fix. Per HANDOVER.md, these surfaces are bug-fixes-only until R3/E0.3 passes. Either retitle as 'fix(...): ...'/'revert: ...', or add the 'surface-freeze-exempt' label if this is an intentional, reviewed exception."
+          exit 1
