@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Soundness: `verify` could report a clean run on an endpoint it never probed.** OpenAPI 3.x allows a path parameter to be declared once on the PathItem and inherited by every operation beneath it. Probe planning read only `operation.parameters`, so on the inherited form the path placeholder was never filled and the endpoint was dropped from planning entirely — yielding zero divergences and exit code 0. The same API written the two legal ways planned 1 probe and 0 probes respectively. `merge_path_item_parameters()` is now the single definition of the `(name, in)` precedence rule, applied both in `cherenkov/divergence/probe_planner.py` and at the ingestion slicing point in `cherenkov/stages/ingest.py`, so every downstream consumer — probe planning, the meaningful-assertion gate, `truth/sources/openapi.py` — receives inherited parameters. 11 regression tests.
+- **Misleading gate skip message.** `synthesize_mutant_response()` returns `None` for two unrelated reasons — no documented 2xx response, or path parameters that cannot be sampled — and both were reported as "spec has no documented success response to mutate". `explain_unmutatable()` now names the real cause, and for unfillable parameters says where to declare them.
+- **Hanging unit test.** `test_returns_suggested_patch_not_applied` patched the handler with `wraps=`, which mocks nothing, so the real inference router opened a live LLM connection and the test hung until the suite timed out.
+
+### Documentation
+
+- **`docs/ROADMAP_2026H2.md`** — consolidated forward plan (milestones M0–M5) with verifiable exit criteria, derived from `HANDOVER.md`. Supersedes the scattered roadmap documents as the forward reference; `PRODUCT_STRATEGY_ROADMAP.md` is reclassified as a hypothesis register rather than a plan.
+- **`docs/evidence/e0.5e_oracle_discrimination.md`** — measured the baseline-free integrity oracle against the labelled cheat corpus. Isolated single-axis mutants plus a conforming run separate all three cheat classes with no false alarm on the honest suite; the coarse status-plus-field mutation currently used by the meaningful-assertion gate separates none of them. Building the mutation battery is tracked as roadmap item E0.5f.
+- `HANDOVER.md` status anchor refreshed — the stale "788+ tests" figure corrected to a measured 1753, and the "mypy runs clean" claim corrected to record the gate as failing.
+
+### Known issues
+
+- **Mypy gate is failing** — 7 errors across `cherenkov/ai/openai_client.py`, `cherenkov/ai/nemoclaw_client.py` and `cherenkov/substrate/providers/localai.py`.
+- **Release tags are inconsistent with the package version.** `pyproject.toml` declares `1.1.1`, while the tag list contains `v1.2.0`, `v3.1-delta` and a malformed `v.1.1.1`. Reconcile before the next publish — a release cut from this state is not reproducible.
+- **The meaningful-assertion gate under-detects.** See the evidence document above; it is sound as a per-test check behind the prism-dryrun precondition, but its single coarse mutant does not catch a deliberately weakened suite.
+
 ## [1.1.1] - 2026-06-29
 
 ### Added

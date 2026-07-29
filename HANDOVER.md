@@ -4,7 +4,7 @@
 **HEAD:** see `git log` (last reflected here: `bbe24e5` on `feat/qa-headless-locator-alignment`)
 **Tests:** **1753 passed, 1 skipped, 0 failed** — measured 2026-07-30 (`pytest tests/unit tests/integration`). The previous "788+" figure was badly stale. **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
 **Mypy gate:** ⚠️ **FAILING** — 7 errors in 3 files (`cherenkov/ai/openai_client.py`, `cherenkov/ai/nemoclaw_client.py`, `cherenkov/substrate/providers/localai.py`). The 2026-07-06 note below claiming "runs clean on 530 files" no longer holds.
-**Branch:** `feat/qa-headless-locator-alignment` (3 commits behind-nothing, 8 ahead of `origin/main`)
+**Branch:** `feat/qa-headless-locator-alignment` — contains all of `origin/main`; merged into local `main`. Run `git rev-list --left-right --count origin/main...HEAD` for the current count rather than trusting a number written here.
 
 > **Note:** `docs/HANDOVER.md` is a separate, reverse-chronological session log (older format, kept for history). This file (`HANDOVER.md`, repo root) is the canonical status anchor per `CLAUDE.md`. The 2026-07-13 update below reconciles both -- the work logged in `docs/HANDOVER.md`'s "2026-07-11 HITL severity" section is the same work as the HITL severity entry below.
 
