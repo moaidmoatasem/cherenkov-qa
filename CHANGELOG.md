@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`RecordingProxy`** (`cherenkov/verdict/traffic_capture.py`) — a forwarding HTTP proxy that records what a test suite actually receives from a live target. Where `CapturingWitnessAgent` records CHERENKOV's own probe traffic, this records someone else's suite: point their `API_URL` at the proxy and every request is forwarded while the response is captured. `recorded_base()` feeds straight into `synthesize_mutant_battery(base=...)`, completing a **record-then-perturb** audit that needs no known-honest baseline suite — only a live target, which `verify` already requires. Demonstrated end to end against a live server with no hand-supplied values: 3 of 3 cheat classes detected, 0 false alarms; hallucinated suites are caught by the green run itself, before any mutation.
 - **`synthesize_mutant_battery()`** (`cherenkov/divergence/mutant_synth.py`) — emits one mutant per failure axis (status, single-value, enum, missing-field) plus a conforming control, so a test's failure is attributable to a specific weak assertion. Validated against the labelled cheat corpus in `demos/catch-the-ai-cheating/`: 3 of 3 cheat classes detected with no false alarm on the honest suite, where the existing single coarse mutant detects none. Takes an optional `base` — the response actually recorded from the target — because a spec constrains types, not instance values, and mutating a schema-sampled body makes an honest suite fail its own control.
 
 ### Fixed
