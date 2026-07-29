@@ -8,6 +8,7 @@ from __future__ import annotations
 from cherenkov.divergence.mutant_synth import (
     explain_unmutatable,
     spawn_mutant_server,
+    synthesize_mutant_battery,
     synthesize_mutant_response,
 )
 
@@ -87,6 +88,103 @@ class TestSpawnMutantServer:
         assert server is not None
         assert server.port == 19999
         assert server.responses == {"/orders/1": (201, {"status": "probe_status"})}
+
+
+_OPERATION_ENUM = {
+    "parameters": [
+        {"name": "id", "in": "path", "required": True, "schema": {"type": "integer"}},
+    ],
+    "responses": {
+        "200": {
+            "description": "OK",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "required": ["id", "total", "status"],
+                        "properties": {
+                            "id": {"type": "integer"},
+                            "total": {"type": "number"},
+                            "status": {"type": "string", "enum": ["paid", "pending"]},
+                        },
+                    }
+                }
+            },
+        }
+    },
+}
+
+
+class TestSynthesizeMutantBattery:
+    """One mutant per axis, so a failure is attributable.
+
+    The single coarse mutant perturbs status AND drops a field together, which
+    measured zero discrimination on the labelled cheat corpus — every suite
+    fails it, so a weakened one scores meaningful.
+    See docs/evidence/e0.5e_oracle_discrimination.md.
+    """
+
+    RECORDED = (200, {"id": 42, "total": 99.5, "status": "paid"})
+
+    def test_returns_none_when_unmutatable(self):
+        assert synthesize_mutant_battery("/x", _OPERATION_NO_SUCCESS) is None
+
+    def test_axes_are_isolated_from_each_other(self):
+        built = synthesize_mutant_battery("/orders/{id}", _OPERATION_ENUM, base=self.RECORDED)
+        assert built is not None
+        _, battery = built
+
+        base_status, base_body = self.RECORDED
+        # status mutant: body untouched, status differs
+        assert battery["status"][1] == base_body
+        assert battery["status"][0] != base_status
+        # value mutant: status untouched, exactly one field differs
+        assert battery["value"][0] == base_status
+        differing = [k for k, v in battery["value"][1].items() if base_body[k] != v]
+        assert len(differing) == 1, differing
+
+    def test_conforming_control_is_the_recorded_response(self):
+        built = synthesize_mutant_battery("/orders/{id}", _OPERATION_ENUM, base=self.RECORDED)
+        assert built is not None
+        assert built[1]["conforming"] == self.RECORDED
+
+    def test_base_overrides_schema_sampling(self):
+        """Schema sampling yields the right types but arbitrary values, which
+        makes an honest suite fail the control. `base` is what fixes that."""
+        sampled = synthesize_mutant_battery("/orders/{id}", _OPERATION_ENUM)
+        recorded = synthesize_mutant_battery(
+            "/orders/{id}", _OPERATION_ENUM, base=self.RECORDED
+        )
+        assert sampled is not None and recorded is not None
+        assert sampled[1]["conforming"] != recorded[1]["conforming"]
+        assert recorded[1]["conforming"][1]["total"] == 99.5
+
+    def test_value_mutation_preserves_json_type(self):
+        built = synthesize_mutant_battery("/orders/{id}", _OPERATION_ENUM, base=self.RECORDED)
+        assert built is not None
+        mutated = built[1]["value"][1]
+        for key, original in self.RECORDED[1].items():
+            assert isinstance(mutated[key], type(original)), (
+                f"{key} changed JSON type — a validator would catch that, which "
+                "proves nothing about whether the assertion checked the value"
+            )
+
+    def test_enum_mutation_falls_outside_the_allowed_set(self):
+        built = synthesize_mutant_battery("/orders/{id}", _OPERATION_ENUM, base=self.RECORDED)
+        assert built is not None
+        assert "enum" in built[1]
+        assert built[1]["enum"][1]["status"] not in ("paid", "pending")
+
+    def test_no_enum_mutant_without_an_enum_in_the_schema(self):
+        built = synthesize_mutant_battery("/orders/{id}", _OPERATION_GET, base=self.RECORDED)
+        assert built is not None
+        assert "enum" not in built[1]
+
+    def test_missing_mutant_drops_a_required_field(self):
+        built = synthesize_mutant_battery("/orders/{id}", _OPERATION_ENUM, base=self.RECORDED)
+        assert built is not None
+        dropped = set(self.RECORDED[1]) - set(built[1]["missing"][1])
+        assert len(dropped) == 1
 
 
 class TestExplainUnmutatable:
