@@ -6,6 +6,9 @@ docs tree. Pick the path that matches who you are.
 > **Status check first?** → [STATUS.md](STATUS.md) — the one place that says
 > what's done, what's blocked, and what's next.
 
+> **What we're doing next (forward plan):** [ROADMAP_2026H2.md](ROADMAP_2026H2.md) —
+> milestones M1–M5 with exit criteria, derived from the root `HANDOVER.md` anchor.
+
 > **Where we're going (strategy):** [NORTH_STAR.md](NORTH_STAR.md) (the world-class
 > 10-year product) · [VISION_AQE_2026.md](VISION_AQE_2026.md) (why — the market) ·
 > [ROADMAP_AQE.md](ROADMAP_AQE.md) (phased epics/tickets) ·
