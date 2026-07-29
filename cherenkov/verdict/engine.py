@@ -72,6 +72,7 @@ class VerdictEngine:
         self.timeout = timeout
         self.max_probes = max_probes
         self.divergence_reports: list[DivergenceReport] = []
+        self.probed_endpoints: list[tuple[str, str]] = []
 
     def run(self) -> RichVerdict:
         """Execute all agents in parallel and assemble the RichVerdict."""
@@ -164,12 +165,15 @@ class VerdictEngine:
         from cherenkov.divergence.proof_run import run_proof
 
         t0 = time.monotonic()
+        probed_endpoints: list[tuple[str, str]] = []
+        self.probed_endpoints = probed_endpoints
         try:
             reports = run_proof(
                 base_url=self.base_url,
                 spec=self.spec,
                 use_llm=self.use_llm,
                 max_probes=self.max_probes,
+                probed_endpoints=probed_endpoints,
             )
         except Exception as exc:
             return (
@@ -230,7 +234,9 @@ class VerdictEngine:
             spec = PETSTORE_SPEC_SUBSET
 
         try:
-            cov = compute_coverage(spec, reports)
+            cov = compute_coverage(
+                spec, reports, probed_endpoints=self.probed_endpoints
+            )
             pct = cov.coverage_pct
         except Exception:
             pct = 0.0

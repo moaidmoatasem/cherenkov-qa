@@ -289,6 +289,7 @@ def run_proof(
     use_llm: bool = True,
     reflector: Reflector | None = None,
     max_probes: int = 40,
+    probed_endpoints: list[tuple[str, str]] | None = None,
 ) -> list[DivergenceReport]:
     """
     Run the Skeptic → Witness loop against *base_url*.
@@ -302,6 +303,13 @@ def run_proof(
         spec:      OpenAPI spec dict; defaults to the bundled Petstore subset
         use_llm:   If False, use hand-crafted hypotheses (offline / CI mode)
         reflector: Optional Reflector instance for verdict-memory learning loop.
+        probed_endpoints: Optional output list. When provided, every
+            (METHOD, endpoint) pair actually probed during this run is
+            appended, regardless of whether a divergence was confirmed.
+            Callers use this to compute spec coverage without conflating
+            "we tested it" with "we found a bug" — a clean run with real
+            coverage should not look identical to a run that never probed
+            anything (see cherenkov/divergence/coverage.py).
 
     Returns:
         List of confirmed DivergenceReport instances.
@@ -326,6 +334,8 @@ def run_proof(
         probes = plan_probes(spec, max_probes=max_probes, include_bare=use_llm)
 
     for endpoint, method, spec_fragment, context in probes:
+        if probed_endpoints is not None:
+            probed_endpoints.append((method.upper(), endpoint))
         print(f"\n── Probing {method} {endpoint} ──────────────────")
 
         if use_llm and skeptic is not None:

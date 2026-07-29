@@ -61,6 +61,17 @@ def generate_cmd(spec, output_dir, repair, max_attempts):
 
     os.makedirs(output_dir, exist_ok=True)
 
+    # The review/repair loop's tsc + Prism gates must physically write the
+    # candidate file into stub/generated_tests/ (tsconfig.json + playwright
+    # config only know about that path). When --output-dir points somewhere
+    # else, that write is just scratch working state, not the user's real
+    # output — clean it up afterwards instead of leaving stray files behind
+    # in the tracked fixture directory.
+    from cherenkov.stages.review import default_review_scratch_dir
+    _writing_to_scratch_dir = os.path.abspath(output_dir) == os.path.abspath(
+        default_review_scratch_dir()
+    )
+
     ep_map = {}
     for ep in ingest_out.endpoints:
         ep_map[ep.path + ":" + ep.method] = ep
@@ -75,7 +86,11 @@ def generate_cmd(spec, output_dir, repair, max_attempts):
         try:
             if repair:
                 from cherenkov.stages.repair import RepairLoop
-                loop = RepairLoop(run_id=f"cli_generate_{sc.mutation_id}", max_attempts=max_attempts)
+                loop = RepairLoop(
+                    run_id=f"cli_generate_{sc.mutation_id}",
+                    max_attempts=max_attempts,
+                    cleanup_scratch=not _writing_to_scratch_dir,
+                )
                 gen_out, review = loop.run(
                     scenario=sc,
                     path=sc.endpoint,

@@ -154,7 +154,7 @@ class TestGenerateCmdWithRepair:
         spec_file, _ = _make_pipeline_stubs(monkeypatch, tmp_path)
         loop_calls = []
 
-        def fake_loop_init(self, run_id=None, max_attempts=3):
+        def fake_loop_init(self, run_id=None, max_attempts=3, cleanup_scratch=False):
             self.run_id = run_id
             self.max_attempts = max_attempts
 
@@ -174,6 +174,61 @@ class TestGenerateCmdWithRepair:
         assert len(loop_calls) == 1
         assert "repair loop" in result.output
 
+    def test_custom_output_dir_enables_scratch_cleanup(self, monkeypatch, tmp_path):
+        """
+        Regression: ReviewStage's tsc/Prism gates always write into
+        stub/generated_tests/ regardless of --output-dir (that's the only
+        path tsconfig.json/playwright.config.ts know about). generate_cmd
+        must tell RepairLoop to clean that scratch copy up whenever the
+        user's real --output-dir is something else, so a custom-output run
+        doesn't leave stray files behind in the tracked fixture directory.
+        """
+        spec_file, _ = _make_pipeline_stubs(monkeypatch, tmp_path)
+        captured = {}
+
+        def fake_loop_init(self, run_id=None, max_attempts=3, cleanup_scratch=False):
+            captured["cleanup_scratch"] = cleanup_scratch
+
+        monkeypatch.setattr("cherenkov.stages.repair.RepairLoop.__init__", fake_loop_init)
+        monkeypatch.setattr(
+            "cherenkov.stages.repair.RepairLoop.run",
+            lambda self, **kw: (_make_gen_output(), None),
+        )
+
+        runner = CliRunner()
+        result = runner.invoke(
+            generate_cmd,
+            ["--spec", str(spec_file), "--output-dir", str(tmp_path / "out")],
+        )
+        assert result.exit_code == 0, result.output
+        assert captured.get("cleanup_scratch") is True
+
+    def test_default_output_dir_disables_scratch_cleanup(self, monkeypatch, tmp_path):
+        """When --output-dir resolves to the real stub/generated_tests/
+        destination, RepairLoop must not be told to clean it up out from
+        under the user."""
+        spec_file, _ = _make_pipeline_stubs(monkeypatch, tmp_path)
+        captured = {}
+
+        def fake_loop_init(self, run_id=None, max_attempts=3, cleanup_scratch=False):
+            captured["cleanup_scratch"] = cleanup_scratch
+
+        monkeypatch.setattr("cherenkov.stages.repair.RepairLoop.__init__", fake_loop_init)
+        monkeypatch.setattr(
+            "cherenkov.stages.repair.RepairLoop.run",
+            lambda self, **kw: (_make_gen_output(), None),
+        )
+
+        from cherenkov.stages.review import default_review_scratch_dir
+
+        runner = CliRunner()
+        result = runner.invoke(
+            generate_cmd,
+            ["--spec", str(spec_file), "--output-dir", default_review_scratch_dir()],
+        )
+        assert result.exit_code == 0, result.output
+        assert captured.get("cleanup_scratch") is False
+
     def test_repair_is_default(self, monkeypatch, tmp_path):
         """Running without any --repair/--no-repair flag should use repair mode."""
         spec_file, _ = _make_pipeline_stubs(monkeypatch, tmp_path)
@@ -181,7 +236,7 @@ class TestGenerateCmdWithRepair:
 
         monkeypatch.setattr(
             "cherenkov.stages.repair.RepairLoop.__init__",
-            lambda self, run_id=None, max_attempts=3: None,
+            lambda self, run_id=None, max_attempts=3, cleanup_scratch=False: None,
         )
         monkeypatch.setattr(
             "cherenkov.stages.repair.RepairLoop.run",
@@ -201,7 +256,7 @@ class TestGenerateCmdWithRepair:
 
         monkeypatch.setattr(
             "cherenkov.stages.repair.RepairLoop.__init__",
-            lambda self, run_id=None, max_attempts=3: None,
+            lambda self, run_id=None, max_attempts=3, cleanup_scratch=False: None,
         )
         monkeypatch.setattr(
             "cherenkov.stages.repair.RepairLoop.run",
@@ -222,7 +277,7 @@ class TestGenerateCmdWithRepair:
         spec_file, _ = _make_pipeline_stubs(monkeypatch, tmp_path)
         captured = {}
 
-        def fake_init(self, run_id=None, max_attempts=3):
+        def fake_init(self, run_id=None, max_attempts=3, cleanup_scratch=False):
             captured["max_attempts"] = max_attempts
 
         monkeypatch.setattr("cherenkov.stages.repair.RepairLoop.__init__", fake_init)
@@ -247,7 +302,7 @@ class TestGenerateCmdWithRepair:
 
         monkeypatch.setattr(
             "cherenkov.stages.repair.RepairLoop.__init__",
-            lambda self, run_id=None, max_attempts=3: None,
+            lambda self, run_id=None, max_attempts=3, cleanup_scratch=False: None,
         )
         monkeypatch.setattr(
             "cherenkov.stages.repair.RepairLoop.run",
@@ -267,7 +322,7 @@ class TestGenerateCmdWithRepair:
 
         monkeypatch.setattr(
             "cherenkov.stages.repair.RepairLoop.__init__",
-            lambda self, run_id=None, max_attempts=3: None,
+            lambda self, run_id=None, max_attempts=3, cleanup_scratch=False: None,
         )
         monkeypatch.setattr(
             "cherenkov.stages.repair.RepairLoop.run",
@@ -308,7 +363,7 @@ class TestGenerateCmdErrorHandling:
 
         monkeypatch.setattr(
             "cherenkov.stages.repair.RepairLoop.__init__",
-            lambda self, run_id=None, max_attempts=3: None,
+            lambda self, run_id=None, max_attempts=3, cleanup_scratch=False: None,
         )
         monkeypatch.setattr(
             "cherenkov.stages.repair.RepairLoop.run",

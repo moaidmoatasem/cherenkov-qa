@@ -215,8 +215,15 @@ def verify_cmd(
 
     else:
         # Legacy simple path
+        probed_endpoints: list[tuple[str, str]] = []
         try:
-            reports = run_proof(base_url=url, spec=spec_dict, use_llm=llm, max_probes=max_probes)
+            reports = run_proof(
+                base_url=url,
+                spec=spec_dict,
+                use_llm=llm,
+                max_probes=max_probes,
+                probed_endpoints=probed_endpoints,
+            )
         except Exception as exc:
             click.echo(f"\n[ERROR] Probe failed: {exc}", err=True)
             sys.exit(2)
@@ -229,14 +236,16 @@ def verify_cmd(
             if spec_dict is None:
                 click.echo("[WARN] --coverage-report requires --spec; skipping.", err=True)
             else:
-                cov_report = compute_coverage(spec_dict, reports)
+                cov_report = compute_coverage(spec_dict, reports, probed_endpoints=probed_endpoints)
                 _print_coverage(cov_report)
 
         if health_score:
             if spec_dict is None:
                 click.echo("[WARN] --health-score requires --spec; skipping.", err=True)
             else:
-                cov_report = cov_report or compute_coverage(spec_dict, reports)
+                cov_report = cov_report or compute_coverage(
+                    spec_dict, reports, probed_endpoints=probed_endpoints
+                )
                 _print_health(compute_health_score(cov_report))
 
         if output:
@@ -281,15 +290,16 @@ def _run_rich_verdict(
         click.echo(f"\n[ERROR] Verdict engine failed: {exc}", err=True)
         sys.exit(2)
 
-    # Reuse the probe sweep the engine already ran for detail printing —
-    # re-running run_proof() here used to double every live request against
-    # the target and print the same probe sweep twice.
+    # Reuse the probe sweep the engine already ran for detail printing and
+    # coverage — re-running run_proof() here used to double every live request
+    # against the target and print the same probe sweep twice.
     reports = engine.divergence_reports
+    probed_endpoints: list[tuple[str, str]] = engine.probed_endpoints
 
     cov = None
     if spec_dict is not None:
         try:
-            cov = compute_coverage(spec_dict, reports)
+            cov = compute_coverage(spec_dict, reports, probed_endpoints=probed_endpoints)
         except Exception:
             _log.debug("coverage computation failed (non-critical)", exc_info=True)
 
