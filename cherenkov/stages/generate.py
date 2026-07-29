@@ -9,6 +9,8 @@ import os
 import time
 from typing import Any
 
+import requests
+
 from cherenkov.ai import get_client
 from cherenkov.ai.ollama_client import strip_think
 from cherenkov.core.contracts import (
@@ -343,6 +345,19 @@ class GenerateStage:
                     )
                     continue
                 code = candidate
+                break
+            except requests.exceptions.ConnectionError as e:
+                # The daemon isn't reachable at all — retrying at a different
+                # temperature can't fix that, and each attempt already pays
+                # _post_with_retry's own multi-second backoff ladder. Bail
+                # out to the template fallback immediately instead of paying
+                # that cost once per temperature (previously up to 3x).
+                last_error = f"Ollama generation failed: {e}"
+                self.log.warning(
+                    "ollama unreachable, skipping remaining temperature attempts",
+                    temperature=temp,
+                    error=last_error,
+                )
                 break
             except Exception as e:
                 last_error = f"Ollama generation failed: {e}"

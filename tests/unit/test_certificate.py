@@ -208,7 +208,7 @@ class TestCertifyCmd:
         assert result.exit_code == 0
         assert "demo mode" in result.output
         mock.assert_called_once_with(
-            base_url=PETSTORE_BASE_URL, spec=None, use_llm=False
+            base_url=PETSTORE_BASE_URL, spec=None, use_llm=False, probed_endpoints=[]
         )
 
     def test_pass_verdict_exit_0(self):
