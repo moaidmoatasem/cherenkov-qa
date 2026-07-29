@@ -243,7 +243,7 @@ class TestVerifyCoverageFlag:
         ]
         with runner.isolated_filesystem():
             Path("spec.json").write_text(spec)
-            with patch("cherenkov.cli.commands.verify.run_proof", return_value=reports):
+            with patch("cherenkov.divergence.proof_run.run_proof", return_value=reports):
                 result = runner.invoke(
                     verify_cmd,
                     ["--url", "http://localhost:9", "--spec", "spec.json", "--coverage-report"],
