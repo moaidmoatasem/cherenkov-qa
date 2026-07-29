@@ -197,3 +197,85 @@ class TestBenchRunner:
         assert isinstance(report, BenchReport)
         assert report.total_scenarios == 3
         assert report.overall_quality_score >= 0.0
+
+
+# ── cleanup_scratch (stub/generated_tests pollution regression) ───────────────
+
+
+class TestReviewScratchCleanup:
+    """
+    Regression: ReviewStage._write_test_file() always writes its candidate
+    into stub/generated_tests/ — required by tsconfig.json's `include` and
+    playwright.config.ts's `testDir`, neither of which point anywhere else.
+    That's correct when the caller's real destination *is*
+    stub/generated_tests/, but `cherenkov generate --output-dir <custom>`
+    used to leave a duplicate, untracked file behind there too. With
+    cleanup_scratch=True, ReviewStage must remove its working copy once the
+    gates that need it (tsc, Prism) have finished running.
+    """
+
+    def test_cleanup_scratch_removes_file_after_run(self):
+        scratch_dir = os.path.join(_REPO_ROOT, "stub", "generated_tests")
+        scenario_id = "test_cleanup_scratch_regression"
+        expected_path = os.path.join(scratch_dir, f"{scenario_id}.spec.ts")
+        assert not os.path.exists(expected_path), "test fixture collision — pick another id"
+
+        out = GenerateOutput(
+            scenario_id=scenario_id,
+            test_code=(
+                "import { client } from '../client';\n"
+                "import { test, expect } from '@playwright/test';\n"
+                "test('x', async () => {\n"
+                "  const { data, response } = await client.GET('/test', {});\n"
+                "  expect(response.status).toBe(200);\n"
+                "  expect(data).toHaveProperty('id');\n"
+                "});\n"
+            ),
+            endpoint="/test",
+            method="POST",
+            status=Status.OK,
+            metadata=StageMeta(stage="GENERATE"),
+        )
+        try:
+            stage = ReviewStage(run_id="eval-cleanup", cleanup_scratch=True)
+            result = stage.run(out, spec_path=_SPEC_PATH)
+            assert isinstance(result, ReviewOutput)
+            assert not os.path.exists(expected_path), (
+                "cleanup_scratch=True must remove the scratch file after review"
+            )
+        finally:
+            if os.path.exists(expected_path):
+                os.remove(expected_path)
+
+    def test_default_leaves_file_in_place(self):
+        """Backward-compat: cleanup_scratch defaults to False, so callers
+        that genuinely want output in stub/generated_tests/ (the CLI's own
+        default --output-dir) see unchanged behaviour."""
+        scratch_dir = os.path.join(_REPO_ROOT, "stub", "generated_tests")
+        scenario_id = "test_cleanup_scratch_default_off"
+        expected_path = os.path.join(scratch_dir, f"{scenario_id}.spec.ts")
+        assert not os.path.exists(expected_path), "test fixture collision — pick another id"
+
+        out = GenerateOutput(
+            scenario_id=scenario_id,
+            test_code=(
+                "import { client } from '../client';\n"
+                "import { test, expect } from '@playwright/test';\n"
+                "test('x', async () => {\n"
+                "  const { data, response } = await client.GET('/test', {});\n"
+                "  expect(response.status).toBe(200);\n"
+                "  expect(data).toHaveProperty('id');\n"
+                "});\n"
+            ),
+            endpoint="/test",
+            method="POST",
+            status=Status.OK,
+            metadata=StageMeta(stage="GENERATE"),
+        )
+        try:
+            stage = ReviewStage(run_id="eval-cleanup-default")
+            stage.run(out, spec_path=_SPEC_PATH)
+            assert os.path.exists(expected_path)
+        finally:
+            if os.path.exists(expected_path):
+                os.remove(expected_path)

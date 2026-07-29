@@ -134,8 +134,14 @@ def certify_cmd(
     from cherenkov.cli.commands.verify import _assert_reachable
     _assert_reachable(effective_url)
 
+    probed_endpoints: list[tuple[str, str]] = []
     try:
-        reports = run_proof(base_url=effective_url, spec=spec_dict, use_llm=llm)
+        reports = run_proof(
+            base_url=effective_url,
+            spec=spec_dict,
+            use_llm=llm,
+            probed_endpoints=probed_endpoints,
+        )
     except Exception as exc:
         click.echo(f"\n[ERROR] Proof run failed: {exc}", err=True)
         sys.exit(2)
@@ -160,7 +166,7 @@ def certify_cmd(
             )
         else:
             from cherenkov.cli.commands.verify import _print_coverage
-            cov = compute_coverage(spec_dict, reports)
+            cov = compute_coverage(spec_dict, reports, probed_endpoints=probed_endpoints)
             _print_coverage(cov)
 
     if output:
