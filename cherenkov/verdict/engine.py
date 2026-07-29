@@ -71,12 +71,16 @@ class VerdictEngine:
         self.max_workers = max_workers
         self.timeout = timeout
         self.max_probes = max_probes
+        self.divergence_reports: list[DivergenceReport] = []
 
     def run(self) -> RichVerdict:
         """Execute all agents in parallel and assemble the RichVerdict."""
         t0 = time.monotonic()
         # ── Stage 1: Divergence Probe (always runs first — others depend on it) ─
         divergence_dim, divergence_reports = self._run_divergence_probe()
+        # Stashed so callers (e.g. `cherenkov verify`) can reuse this probe
+        # sweep for detail printing / coverage instead of re-running it.
+        self.divergence_reports = divergence_reports
 
         # ── Stage 2: parallel agents ──────────────────────────────────────
         futures: dict[str, Any] = {}

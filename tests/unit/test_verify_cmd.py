@@ -71,7 +71,7 @@ class TestVerifyCmd:
     def test_divergences_printed(self) -> None:
         runner = CliRunner()
         reports = [_make_report()]
-        with patch("cherenkov.cli.commands.verify.run_proof", return_value=reports):
+        with patch("cherenkov.divergence.proof_run.run_proof", return_value=reports):
             result = runner.invoke(verify_cmd, ["--url", "http://localhost:9999"])
         assert result.exit_code == 0
         assert "1 divergence(s) found" in result.output
@@ -82,7 +82,7 @@ class TestVerifyCmd:
     def test_fail_on_divergence(self) -> None:
         runner = CliRunner()
         reports = [_make_report()]
-        with patch("cherenkov.cli.commands.verify.run_proof", return_value=reports):
+        with patch("cherenkov.divergence.proof_run.run_proof", return_value=reports):
             result = runner.invoke(
                 verify_cmd,
                 ["--url", "http://localhost:9999", "--fail-on-divergence"],
@@ -91,7 +91,7 @@ class TestVerifyCmd:
 
     def test_no_fail_when_clean(self) -> None:
         runner = CliRunner()
-        with patch("cherenkov.cli.commands.verify.run_proof", return_value=[]):
+        with patch("cherenkov.divergence.proof_run.run_proof", return_value=[]):
             result = runner.invoke(
                 verify_cmd,
                 ["--url", "http://localhost:9999", "--fail-on-divergence"],
@@ -129,7 +129,7 @@ class TestVerifyCmd:
             _make_report(sev=Severity.MEDIUM, dc=DivergenceClass.D2_CODE_PROD, endpoint="GET /store"),
             _make_report(sev=Severity.LOW, dc=DivergenceClass.D5_SPEC_PROD, endpoint="GET /pet/0"),
         ]
-        with patch("cherenkov.cli.commands.verify.run_proof", return_value=reports):
+        with patch("cherenkov.divergence.proof_run.run_proof", return_value=reports):
             result = runner.invoke(verify_cmd, ["--url", "http://localhost:9999"])
         assert result.exit_code == 0
         assert "3 divergence(s) found" in result.output

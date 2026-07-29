@@ -281,11 +281,10 @@ def _run_rich_verdict(
         click.echo(f"\n[ERROR] Verdict engine failed: {exc}", err=True)
         sys.exit(2)
 
-    # Extract raw divergence reports for detail printing
-    try:
-        reports = run_proof(base_url=url, spec=spec_dict, use_llm=False, max_probes=max_probes)
-    except Exception:
-        reports = []
+    # Reuse the probe sweep the engine already ran for detail printing —
+    # re-running run_proof() here used to double every live request against
+    # the target and print the same probe sweep twice.
+    reports = engine.divergence_reports
 
     cov = None
     if spec_dict is not None:
