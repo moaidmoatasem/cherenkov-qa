@@ -154,12 +154,46 @@ def _success_code(operation: dict[str, Any]) -> int | None:
     return None
 
 
+def merge_path_item_parameters(
+    operation: dict[str, Any], shared: list[Any] | None
+) -> list[dict[str, Any]]:
+    """Operation parameters plus the PathItem's inherited ones.
+
+    OpenAPI 3.x lets a path parameter be declared once on the PathItem and
+    inherited by every operation under it. Reading only `operation.parameters`
+    leaves `{id}` unfillable on those specs, which silently drops the endpoint
+    from probe planning — a clean verdict on an endpoint that was never probed.
+    Operation-level entries win on a (name, in) collision, per the spec.
+
+    This is the single definition of that precedence rule; callers that hold a
+    PathItem directly (spec ingestion, webhooks) use it, and
+    `_effective_parameters` adapts it for callers that hold a whole spec.
+    """
+    own = [p for p in operation.get("parameters", []) or [] if isinstance(p, dict)]
+    seen = {(p.get("name"), p.get("in")) for p in own}
+    inherited = [
+        p
+        for p in (shared or [])
+        if isinstance(p, dict) and (p.get("name"), p.get("in")) not in seen
+    ]
+    return own + inherited
+
+
+def _effective_parameters(
+    path: str, operation: dict[str, Any], spec: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """`merge_path_item_parameters` for callers that hold the full spec."""
+    return merge_path_item_parameters(
+        operation, spec.get("paths", {}).get(path, {}).get("parameters")
+    )
+
+
 def _path_with_samples(path: str, operation: dict[str, Any], spec: dict[str, Any]) -> str | None:
     """Substitute sample values for path params; None if any param is unfillable."""
     if "{" not in path:
         return path
     filled = path
-    for param in operation.get("parameters", []):
+    for param in _effective_parameters(path, operation, spec):
         param = _resolve_ref(param, spec)
         if param.get("in") != "path":
             continue
@@ -217,7 +251,7 @@ def spec_hypotheses(
             )
 
     # 2. enum violation (query params)
-    for param in operation.get("parameters", []) or []:
+    for param in _effective_parameters(endpoint, operation, spec):
         param = _resolve_ref(param, spec)
         if param.get("in") != "query":
             continue
@@ -248,7 +282,7 @@ def spec_hypotheses(
 
     # 3. documented error code for invalid integer path param
     if "{" in endpoint:
-        for param in operation.get("parameters", []) or []:
+        for param in _effective_parameters(endpoint, operation, spec):
             param = _resolve_ref(param, spec)
             if param.get("in") != "path":
                 continue

@@ -54,8 +54,12 @@ def synthesize_mutant_response(
 
     `schemas` is the already-resolved component-schema map carried on
     EndpointSlice/RepairLoop, wrapped here as a minimal spec stub so $ref
-    resolution reuses probe_planner's helpers unchanged. Returns None when
-    the operation documents no success response to mutate from.
+    resolution reuses probe_planner's helpers unchanged.
+
+    Returns None for two distinct reasons — no documented success response to
+    mutate from, or path parameters that cannot be filled with sample values.
+    Call `explain_unmutatable()` for which one, so the gate's skip message
+    names the real cause instead of guessing.
     """
     success = _success_code(operation)
     if success is None:
@@ -74,6 +78,34 @@ def synthesize_mutant_response(
         body.pop(fields[0], None)
 
     return concrete_path, _mutate_status(success), body
+
+
+def explain_unmutatable(
+    path: str,
+    operation: dict[str, Any],
+    schemas: dict[str, Any] | None = None,
+) -> str:
+    """Why `synthesize_mutant_response` returned None, in the user's terms.
+
+    The two causes need different fixes — one is a spec that documents no
+    success response, the other is a path parameter the planner cannot sample.
+    Reporting them under one message sent readers looking for a missing 200
+    that was never missing.
+    """
+    if _success_code(operation) is None:
+        documented = ", ".join(sorted(str(c) for c in operation.get("responses", {}))) or "none"
+        return (
+            "spec documents no 2xx success response to mutate from "
+            f"(documented: {documented})"
+        )
+    if _path_with_samples(path, operation, {"components": {"schemas": schemas or {}}}) is None:
+        unfilled = [seg for seg in path.split("/") if seg.startswith("{")]
+        return (
+            f"path parameters could not be sampled: {', '.join(unfilled) or path}. "
+            "Declare them under the operation's or the PathItem's `parameters` "
+            "with a typed schema."
+        )
+    return "unknown cause"
 
 
 def spawn_mutant_server(

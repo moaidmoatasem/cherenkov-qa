@@ -1,9 +1,10 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-07-20
-**HEAD:** see `git log` (last reflected here: `452a0a2`)
-**Tests:** 788+ unit/integration tests as of 2026-07-05, plus new coverage landed since (health score, V2 oracles, HITL severity, meaningful-assertion gate, verify soundness) -- see "What landed this session" below for exact PRs; **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
-**Branch:** `main`
+**Date:** 2026-07-30
+**HEAD:** see `git log` (last reflected here: `bbe24e5` on `feat/qa-headless-locator-alignment`)
+**Tests:** **1753 passed, 1 skipped, 0 failed** — measured 2026-07-30 (`pytest tests/unit tests/integration`). The previous "788+" figure was badly stale. **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37
+**Mypy gate:** ⚠️ **FAILING** — 7 errors in 3 files (`cherenkov/ai/openai_client.py`, `cherenkov/ai/nemoclaw_client.py`, `cherenkov/substrate/providers/localai.py`). The 2026-07-06 note below claiming "runs clean on 530 files" no longer holds.
+**Branch:** `feat/qa-headless-locator-alignment` — contains all of `origin/main`; merged into local `main`. Run `git rev-list --left-right --count origin/main...HEAD` for the current count rather than trusting a number written here.
 
 > **Note:** `docs/HANDOVER.md` is a separate, reverse-chronological session log (older format, kept for history). This file (`HANDOVER.md`, repo root) is the canonical status anchor per `CLAUDE.md`. The 2026-07-13 update below reconciles both -- the work logged in `docs/HANDOVER.md`'s "2026-07-11 HITL severity" section is the same work as the HITL severity entry below.
 
@@ -103,7 +104,20 @@ All Rung 3 items are DONE (merged 2026-06-27):
 ---
 
 
-## What landed this session (2026-07-15 to 2026-07-20)
+## What landed this session (2026-07-30) — spec-shape soundness
+
+Forward plan now lives in [`docs/ROADMAP_2026H2.md`](docs/ROADMAP_2026H2.md) (milestones M0–M5). **M0 is new and gates E0.3.**
+
+| SHA | What |
+|---|---|
+| `90d8829` | **fix(divergence): honor PathItem-level parameters in probe planning.** OpenAPI 3.x lets a path parameter be declared once on the PathItem and inherited by every operation under it. `probe_planner` read only `operation.parameters`, so on the inherited form `{id}` was never filled, `_path_with_samples` returned None, and the endpoint was **dropped from planning entirely** — `verify` then reported a clean run on an endpoint it never probed. Reproduced with one API written both legal ways: operation-level planned 1 probe, PathItem-level planned 0 and exited 0 "conformant". Same failure class as #720. `merge_path_item_parameters()` is the single definition of the (name, in) precedence rule, routed through all three parameter call sites. 4 regression tests. |
+| `7780c1d` | **fix(ingest): inherit PathItem parameters onto endpoint slices.** Completes the above — the meaningful-assertion gate reads parameters from `EndpointSlice.operation`, sliced in `IngestStage`, so it was still silently skipping. `truth/sources/openapi.py:72` had the same blind spot. Merging once at the slicing point fixes every downstream consumer. Also splits the gate's skip message via `explain_unmutatable()`: the two None causes (no documented 2xx vs unfillable path params) previously shared one misleading message. 7 tests. |
+| `bbe24e5` | **docs(evidence): E0.5e — measured the baseline-free integrity oracle.** See `docs/evidence/e0.5e_oracle_discrimination.md`. Baseline-free detection **works**: isolated single-axis mutants plus a conforming run catch 3/3 cheat classes with no false alarm on the honest suite. But **the coarse mutation that ships today catches 0 of 3** — it changes the status code and drops a required field in the same response, so failure can't be attributed and a deliberately weakened suite scores "assertions are meaningful". The gate's docstring cites `toBeLessThan(500)` as the case it prevents; that is the exact assertion in `suite_cheat_weakened`, and it is not caught. **E0.5f (build the mutation battery) is now M0's top item.** |
+| `0b19e36` | fix(test): `test_returns_suggested_patch_not_applied` patched `_tool_auto_heal_code` with `wraps=`, which mocks nothing, so the real `InferenceRouter` opened a live LLM connection and the test hung until the suite timed out. Mock the router, matching the sibling test. |
+
+**Known-open from this session:** `demos/catch-the-ai-cheating/openapi.yaml` never declares `{id}` — invalid OpenAPI, and common in hand-written specs. The engine drops such endpoints silently; E0.5g requires reporting every zero-probe endpoint before considering inferred sample values.
+
+## What landed previous session (2026-07-15 to 2026-07-20)
 
 | SHA | What |
 |---|---|

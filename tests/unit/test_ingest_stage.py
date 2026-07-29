@@ -107,3 +107,118 @@ paths:
             self.assertEqual(result.endpoints[0].method, "GET")
         finally:
             os.unlink(path)
+
+
+class TestPathItemParameterInheritance(unittest.TestCase):
+    """OpenAPI 3.x lets path params live on the PathItem, shared by every
+    operation under it. Slices built without them left `{id}` unfillable, so
+    downstream consumers — probe planning, the meaningful-assertion gate,
+    truth/sources/openapi.py — silently skipped the endpoint.
+    """
+
+    ID_PARAM = {
+        "name": "id",
+        "in": "path",
+        "required": True,
+        "schema": {"type": "integer"},
+    }
+    OK_200 = {
+        "200": {
+            "description": "ok",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "required": ["id"],
+                        "properties": {"id": {"type": "integer"}},
+                    }
+                }
+            },
+        }
+    }
+
+    def _ingest(self, spec: dict):
+        import json
+        import os
+        import tempfile
+
+        from cherenkov.stages.ingest import IngestStage
+
+        with tempfile.NamedTemporaryFile(suffix=".json", mode="w", delete=False) as f:
+            json.dump(spec, f)
+            path = f.name
+        try:
+            return IngestStage(run_id="test").run(path).endpoints
+        finally:
+            os.unlink(path)
+
+    def test_shared_parameter_lands_on_the_slice(self):
+        endpoints = self._ingest(
+            {
+                "openapi": "3.0.0",
+                "paths": {
+                    "/orders/{id}": {
+                        "parameters": [self.ID_PARAM],
+                        "get": {"responses": self.OK_200},
+                    }
+                },
+            }
+        )
+        self.assertEqual(len(endpoints), 1)
+        names = [p.get("name") for p in endpoints[0].operation.get("parameters", [])]
+        self.assertIn("id", names)
+
+    def test_gate_oracle_can_fire_on_the_resulting_slice(self):
+        from cherenkov.divergence.mutant_synth import synthesize_mutant_response
+
+        endpoints = self._ingest(
+            {
+                "openapi": "3.0.0",
+                "paths": {
+                    "/orders/{id}": {
+                        "parameters": [self.ID_PARAM],
+                        "get": {"responses": self.OK_200},
+                    }
+                },
+            }
+        )
+        slice_ = endpoints[0]
+        mutation = synthesize_mutant_response(slice_.path, slice_.operation, slice_.schemas)
+        self.assertIsNotNone(
+            mutation, "meaningful-assertion gate would silently skip this endpoint"
+        )
+
+    def test_operation_level_parameter_still_wins(self):
+        endpoints = self._ingest(
+            {
+                "openapi": "3.0.0",
+                "paths": {
+                    "/orders/{id}": {
+                        "parameters": [
+                            {"name": "id", "in": "path", "schema": {"type": "string"}}
+                        ],
+                        "get": {
+                            "parameters": [self.ID_PARAM],
+                            "responses": self.OK_200,
+                        },
+                    }
+                },
+            }
+        )
+        params = [p for p in endpoints[0].operation["parameters"] if p.get("name") == "id"]
+        self.assertEqual(len(params), 1, "inherited duplicate must not be appended")
+        self.assertEqual(params[0]["schema"]["type"], "integer")
+
+    def test_spec_without_shared_parameters_is_unchanged(self):
+        endpoints = self._ingest(
+            {
+                "openapi": "3.0.0",
+                "paths": {
+                    "/orders/{id}": {
+                        "get": {"parameters": [self.ID_PARAM], "responses": self.OK_200}
+                    }
+                },
+            }
+        )
+        names = [p.get("name") for p in endpoints[0].operation.get("parameters", [])]
+        self.assertEqual(names, ["id"])
