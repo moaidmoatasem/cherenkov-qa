@@ -112,6 +112,7 @@ class TestReviewQueue(unittest.TestCase):
         item.confidence_reason = "high"
         item.review_gate_failed = False
         item.status.value = "pending"
+        item.reject_reason = None
         item.created_at = "2026-01-01T00:00:00Z"
         with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q:
             mock_q.return_value.list.return_value = [item]
@@ -121,6 +122,31 @@ class TestReviewQueue(unittest.TestCase):
         self.assertEqual(len(body), 1)
         self.assertEqual(body[0]["id"], "s1")
         self.assertEqual(body[0]["endpoint"], "/users")
+
+    def test_queue_serialises_reject_reason(self):
+        item = MagicMock()
+        item.id = "s2"
+        item.endpoint = "/orders"
+        item.method = "DELETE"
+        item.confidence = 0.4
+        item.confidence_reason = "low"
+        item.review_gate_failed = "quality"
+        item.status.value = "rejected"
+        item.reject_reason = "wrong assertion"
+        item.created_at = "2026-01-01T00:00:00Z"
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q:
+            mock_q.return_value.list.return_value = [item]
+            r = self.client.get("/api/v1/review/queue?status=rejected")
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertEqual(body[0]["reject_reason"], "wrong assertion")
+
+    def test_queue_status_all_bypasses_filter(self):
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q:
+            mock_q.return_value.list.return_value = []
+            r = self.client.get("/api/v1/review/queue?status=all")
+        self.assertEqual(r.status_code, 200)
+        mock_q.return_value.list.assert_called_once_with(status=None)
 
 
 # ── Review approve / reject ───────────────────────────────────────────────────

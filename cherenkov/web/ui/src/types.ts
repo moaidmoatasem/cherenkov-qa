@@ -201,6 +201,7 @@ export interface TestItem {
   verdict: 'approved' | 'review' | 'regenerating' | 'rejected';
   gates: TestGate;
   gateReasons: { [key in keyof TestGate]?: string };
+  rejectReason?: string;
   code: string;
   actualResult?: {
     status: 'passed' | 'failed';

@@ -17,7 +17,8 @@ router = APIRouter(tags=["review"])
 @router.get("/api/v1/review/queue")
 async def list_review_queue(status: str | None = "pending", _auth=Depends(verify_api_key)):
     queue = get_queue()
-    items = queue.list(status=status)
+    query_status = None if status == "all" else status
+    items = queue.list(status=query_status)
     tests_dir = os.path.abspath(os.path.join(os.getcwd(), "stub/generated_tests"))
 
     def _load_all_codes():
@@ -41,6 +42,7 @@ async def list_review_queue(status: str | None = "pending", _auth=Depends(verify
             "confidence_reason": item.confidence_reason,
             "review_gate_failed": item.review_gate_failed,
             "status": item.status.value,
+            "reject_reason": item.reject_reason,
             "generated_test": codes.get(item.id),
             "created_at": item.created_at,
         }
