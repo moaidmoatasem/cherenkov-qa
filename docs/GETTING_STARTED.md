@@ -194,6 +194,10 @@ Copies all your generated specs and TypeScript compilation files, emits a clean 
 # Eject the suite to a standalone folder
 ./bin/cherenkov eject --output ejected_suite
 
+# If you generated with a custom --output-dir, tell eject where to find it —
+# otherwise it only ever reads stub/generated_tests and won't see your tests:
+./bin/cherenkov eject --output ejected_suite --tests-dir ./tests
+
 # The ejected folder runs with vanilla Playwright
 cd ejected_suite
 npm install
@@ -203,6 +207,7 @@ npx playwright test
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--output`, `-o` | *(required)* | Target output directory for the standalone suite |
+| `--tests-dir`, `-t` | `stub/generated_tests` | Directory containing the `.spec.ts` files to eject — must match `generate`'s `--output-dir` if you used a custom one |
 
 ---
 
