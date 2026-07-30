@@ -70,6 +70,28 @@ def resolve_refs_depth(
         for item in node:
             resolve_refs_depth(item, schemas, resolved, depth, max_depth)
 
+
+def _inline_schema_field_count(node: Any) -> int:
+    """Count properties in schemas declared inline (no $ref) within *node*.
+
+    resolve_refs_depth only resolves named `#/components/schemas/...` refs,
+    so a spec that declares its request/response schemas inline (common for
+    hand-written or exported specs that don't bother with reusable
+    components) would otherwise contribute zero fields to the richness
+    score no matter how much real structure it has.
+    """
+    count = 0
+    if isinstance(node, dict):
+        properties = node.get("properties")
+        if isinstance(properties, dict):
+            count += len(properties)
+        for value in node.values():
+            count += _inline_schema_field_count(value)
+    elif isinstance(node, list):
+        for item in node:
+            count += _inline_schema_field_count(item)
+    return count
+
 class IngestStage:
     """Parses OpenAPI specifications, slices them with depth-1 reference resolution, and extracts deterministic mutations."""
 
@@ -197,11 +219,17 @@ class IngestStage:
 
                 # 2. Richness score calculation
                 # Richness is a mathematical metric (0.0 to 1.0) based on fields in schemas + parameters.
-                num_params = len(op.get("parameters", []))
+                # Parameters can be declared on the operation itself or inherited
+                # from the path item (shared across GET/PUT/DELETE on the same path).
+                path_level_params = methods.get("parameters", [])
+                num_params = len(op.get("parameters", [])) + (
+                    len(path_level_params) if isinstance(path_level_params, list) else 0
+                )
                 num_fields = 0
                 for schema in resolved_schemas.values():
                     if isinstance(schema, dict) and "properties" in schema:
                         num_fields += len(schema["properties"])
+                num_fields += _inline_schema_field_count(op)
                 richness = min(1.0, (num_params + num_fields + 1.0) / 10.0)
 
                 # Skip/warn low richness endpoints

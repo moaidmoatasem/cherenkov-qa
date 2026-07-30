@@ -56,7 +56,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
     setIsLoading(true);
     setLoadError(null);
     Promise.all([
-      fetchReviewQueue('pending'),
+      fetchReviewQueue('all'),
       fetchGeneratedTests()
     ])
       .then(([queueItems, generatedTests]) => {
@@ -662,6 +662,19 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
 
                   </div>
                 </div>
+
+                {/* Reviewer rejection reason, if this test was rejected */}
+                {activeTest.verdict === 'rejected' && activeTest.rejectReason && (
+                  <div className="p-3 rounded-xl border border-[#D29922]/30 bg-[#D29922]/5 space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <X className="w-3.5 h-3.5 text-[#D29922]" />
+                      <span className="font-mono text-[10px] font-bold text-text-primary uppercase">Reviewer Rejection</span>
+                    </div>
+                    <p className="text-[11px] text-[#7D8DA1]/85 leading-relaxed font-sans">
+                      {activeTest.rejectReason}
+                    </p>
+                  </div>
+                )}
 
                 {/* OCR Findings Panel */}
                 <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 space-y-2">

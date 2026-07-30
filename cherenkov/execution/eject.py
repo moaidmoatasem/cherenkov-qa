@@ -24,11 +24,18 @@ def _safe_dest(base_dir: str, filename: str) -> str:
 class EjectorEngine:
     """Manages the lifecycle of standalone Playwright test suite ejection, stripping all CHERENKOV metadata."""
 
-    def __init__(self, run_id: str | None = None):
+    def __init__(self, run_id: str | None = None, tests_src_dir: str | None = None):
         self.run_id = run_id or "eject"
         self.log = get_logger("EJECT", self.run_id)
         self.stub_dir = str(Path(__file__).parent.parent.parent / "stub")
-        self.tests_src_dir = str(Path(self.stub_dir) / "generated_tests")
+        # `tests_src_dir` lets callers point at wherever `cherenkov generate
+        # --output-dir <dir>` actually wrote its output (documented in
+        # docs/GETTING_STARTED.md as a supported combo). Without this override,
+        # eject always read the hardcoded `stub/generated_tests/` default and
+        # silently ignored any custom --output-dir generate was given, ejecting
+        # unrelated tracked fixtures instead of the user's own generated tests
+        # while still printing "successfully ejected" / "runs standalone".
+        self.tests_src_dir = tests_src_dir or str(Path(self.stub_dir) / "generated_tests")
         # Tracked reference specs. `stub/generated_tests/` is gitignored, so on a
         # fresh checkout (e.g. CI) it is empty; fall back to these committed
         # fixtures so the eject path stays exercisable end-to-end.
@@ -82,6 +89,7 @@ class EjectorEngine:
                     "no spec files found to eject (generated dir and fixtures both empty)"
                 )
                 return False
+            self.log.info("reading generated tests from", tests_src_dir=tests_src_dir)
 
             for f in spec_files:
                 src_file = os.path.join(tests_src_dir, f)
