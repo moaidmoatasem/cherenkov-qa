@@ -41,6 +41,7 @@ async def list_review_queue(status: str | None = "pending", _auth=Depends(verify
             "confidence_reason": item.confidence_reason,
             "review_gate_failed": item.review_gate_failed,
             "status": item.status.value,
+            "reject_reason": item.reject_reason,
             "generated_test": codes.get(item.id),
             "created_at": item.created_at,
         }
