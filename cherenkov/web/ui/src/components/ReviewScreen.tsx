@@ -25,7 +25,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { TestItem, TestGate } from '../types';
-import { approveTestScenario, rejectTestScenario, editTestScenario, fetchGeneratedTests, fetchReviewQueue, ReviewQueueItem, explainTestScenario, createChatSession, streamChatMessage, fetchOcrReview, runOcrReview, OCRFindingResponse } from '../lib/api';
+import { approveTestScenario, rejectTestScenario, editTestScenario, fetchGeneratedTests, fetchReviewQueue, ReviewQueueItem, explainTestScenario, createChatSession, streamChatMessage, fetchOcrReview, runOcrReview, OCRFindingResponse, REJECTION_REASONS } from '../lib/api';
 import { useToast } from './ui/Toast';
 import CherenkovLogo from './CherenkovLogo';
 import { Skeleton } from './ui';
@@ -83,6 +83,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
           gateReasons: {
             quality: item.confidence_reason || item.review_gate_failed || 'Awaiting review.',
           },
+          rejectReason: item.reject_reason,
           code: testMap.get(item.id) || `// Generated test for ${item.method} ${item.endpoint}\n`
         }));
 
@@ -104,7 +105,8 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
   const [editedCode, setEditedCode] = useState('');
   const [approveTriggerId, setApproveTriggerId] = useState<string | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
+  const [rejectCategory, setRejectCategory] = useState<string>(REJECTION_REASONS[0].value);
+  const [rejectNote, setRejectNote] = useState('');
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [isExplaining, setIsExplaining] = useState(false);
   const [ocrFindings, setOcrFindings] = useState<OCRFindingResponse[] | null>(null);
@@ -221,7 +223,8 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
         case 'r': // Reject
           if (activeTest && activeTest.verdict !== 'rejected') {
             setRejectingId(activeTest.id);
-            setRejectReason('');
+            setRejectCategory(REJECTION_REASONS[0].value);
+            setRejectNote('');
           }
           break;
         default:
@@ -285,10 +288,11 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
     setIsEditing(false);
   };
 
-  const handleReject = async (id: string, reason: string) => {
+  const handleReject = async (id: string, category: string, note: string) => {
+    const label = REJECTION_REASONS.find(r => r.value === category)?.label || category;
     try {
-      await rejectTestScenario(id, reason);
-      toast(`Rejected ${id}. "${reason}"`, 'success');
+      await rejectTestScenario(id, category, note || undefined);
+      toast(`Rejected ${id}. "${label}"`, 'success');
     } catch (err) {
       toast(`Failed to reject: ${(err as Error).message}`, 'error');
       return;
@@ -299,7 +303,8 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
         return {
           ...t,
           verdict: 'rejected' as const,
-          gates: { ...t.gates, quality: false }
+          gates: { ...t.gates, quality: false },
+          rejectReason: note ? `${category}: ${note}` : category,
         };
       }
       return t;
@@ -469,6 +474,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                 const isApproved = test.verdict === 'approved';
                 const isReview = test.verdict === 'review';
                 const isRegenerating = test.verdict === 'regenerating';
+                const isRejected = test.verdict === 'rejected';
 
                 return (
                   <div
@@ -499,6 +505,17 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                         {test.verdict}
                       </span>
                     </div>
+
+                    {/* Stored rejection reason, if any */}
+                    {isRejected && test.rejectReason && (
+                      <p
+                        data-testid={`reject-reason-${test.id}`}
+                        className="mt-1.5 text-[10px] font-mono text-red-400/80 truncate"
+                        title={test.rejectReason}
+                      >
+                        Rejected: {test.rejectReason}
+                      </p>
+                    )}
 
                     {/* Confidence percentage and bar */}
                     <div className="mt-3 flex items-center justify-between gap-4 font-mono text-[10px]">
@@ -830,7 +847,11 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                   <>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => setRejectingId(activeTest.id)}
+                        onClick={() => {
+                          setRejectingId(activeTest.id);
+                          setRejectCategory(REJECTION_REASONS[0].value);
+                          setRejectNote('');
+                        }}
                         data-testid="review-reject-btn"
                         className="px-4 py-2 text-red-400 border border-red-500/20 bg-red-500/5 hover:bg-red-500 hover:text-slate-950 text-xs font-mono font-bold tracking-wider rounded-xl uppercase transition cursor-pointer"
                       >
@@ -875,10 +896,20 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
             <p className="text-xs text-[#7D8DA1]">
               Describe what's wrong. Your feedback helps the AI generate better tests next time.
             </p>
+            <select
+              value={rejectCategory}
+              onChange={(e) => setRejectCategory(e.target.value)}
+              data-testid="reject-reason-select"
+              className="w-full p-2.5 font-sans text-xs text-[#E6EDF3] bg-black/30 border border-white/10 rounded-xl focus:outline-none focus:border-glow-blue transition"
+            >
+              {REJECTION_REASONS.map(({ value, label }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
             <textarea
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="e.g. Assertion values are hardcoded incorrectly. Must verify dynamic IDs..."
+              value={rejectNote}
+              onChange={(e) => setRejectNote(e.target.value)}
+              placeholder="Optional details, e.g. Assertion values are hardcoded incorrectly. Must verify dynamic IDs..."
               className="w-full h-24 p-3 font-sans text-xs text-[#E6EDF3] bg-black/30 border border-white/10 rounded-xl focus:outline-none focus:border-glow-blue transition"
             />
             <div className="flex justify-end gap-3 text-xs">
@@ -889,7 +920,8 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                 CANCEL
               </button>
               <button
-                onClick={() => handleReject(rejectingId, rejectReason || 'Rejected by reviewer')}
+                onClick={() => handleReject(rejectingId, rejectCategory, rejectNote)}
+                data-testid="reject-confirm-btn"
                 className="px-4 py-2 bg-red-500 hover:bg-opacity-95 text-slate-950 font-bold rounded-xl font-mono uppercase transition"
               >
                 CONFIRM REJECT

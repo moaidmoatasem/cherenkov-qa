@@ -11,7 +11,7 @@ so tests run offline and fast.  No CHERENKOV_HITL_API_KEY → auth disabled.
 import os
 import tempfile
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 from cherenkov.core.settings import CherenkovSettings
 
@@ -112,6 +112,7 @@ class TestReviewQueue(unittest.TestCase):
         item.confidence_reason = "high"
         item.review_gate_failed = False
         item.status.value = "pending"
+        item.reject_reason = None
         item.created_at = "2026-01-01T00:00:00Z"
         with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q:
             mock_q.return_value.list.return_value = [item]
@@ -121,6 +122,25 @@ class TestReviewQueue(unittest.TestCase):
         self.assertEqual(len(body), 1)
         self.assertEqual(body[0]["id"], "s1")
         self.assertEqual(body[0]["endpoint"], "/users")
+        self.assertIsNone(body[0]["reject_reason"])
+
+    def test_queue_surfaces_stored_reject_reason(self):
+        item = MagicMock()
+        item.id = "s2"
+        item.endpoint = "/orders"
+        item.method = "DELETE"
+        item.confidence = 0.4
+        item.confidence_reason = None
+        item.review_gate_failed = None
+        item.status.value = "rejected"
+        item.reject_reason = "too_noisy: flaky under load"
+        item.created_at = "2026-01-01T00:00:00Z"
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q:
+            mock_q.return_value.list.return_value = [item]
+            r = self.client.get("/api/v1/review/queue?status=rejected")
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertEqual(body[0]["reject_reason"], "too_noisy: flaky under load")
 
 
 # ── Review approve / reject ───────────────────────────────────────────────────
@@ -196,6 +216,45 @@ class TestReviewReject(unittest.TestCase):
             )
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()["status"], "rejected")
+
+    def test_reject_with_category_and_note_persists_split_and_combined_reason(self):
+        env = MagicMock(ok=True)
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q, patch(
+            "cherenkov.core.feedback_store.FeedbackStore"
+        ) as mock_fs, patch("cherenkov.reflector.reflector.Reflector"):
+            mock_q.return_value.reject.return_value = env
+            r = self.client.post(
+                "/api/v1/review/reject",
+                json={
+                    "scenario_id": "scenario-2",
+                    "reason": "too_noisy",
+                    "note": "flaky under load",
+                },
+            )
+        self.assertEqual(r.status_code, 200)
+        # HitlQueue gets the human-readable combined string...
+        mock_q.return_value.reject.assert_called_once_with(
+            "scenario-2", actor=ANY, reason="too_noisy: flaky under load", source="web"
+        )
+        # ...while FeedbackStore keeps the category and note as separate fields.
+        entry = mock_fs.return_value.record_feedback.call_args[0][0]
+        self.assertEqual(entry.reason, "too_noisy")
+        self.assertEqual(entry.notes, "flaky under load")
+
+    def test_reject_without_note_falls_back_to_category_only(self):
+        env = MagicMock(ok=True)
+        with patch("cherenkov.web.routes.review_routes.get_queue") as mock_q, patch(
+            "cherenkov.core.feedback_store.FeedbackStore"
+        ), patch("cherenkov.reflector.reflector.Reflector"):
+            mock_q.return_value.reject.return_value = env
+            r = self.client.post(
+                "/api/v1/review/reject",
+                json={"scenario_id": "scenario-3", "reason": "env_issue"},
+            )
+        self.assertEqual(r.status_code, 200)
+        mock_q.return_value.reject.assert_called_once_with(
+            "scenario-3", actor=ANY, reason="env_issue", source="web"
+        )
 
 
 # ── Review edit ───────────────────────────────────────────────────────────────
