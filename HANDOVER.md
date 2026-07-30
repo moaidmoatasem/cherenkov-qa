@@ -1,9 +1,81 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-07-29
-**HEAD:** see `git log` (last reflected here: `96ac7ad`)
-**Tests:** 788+ unit/integration tests as of 2026-07-05, plus new coverage landed since (health score, V2 oracles, HITL severity, meaningful-assertion gate, verify soundness) -- see "What landed this session" below for exact PRs; **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37 -- **E2E count not re-verified 2026-07-29 (see readiness check below); unit/eval suite was re-run and is green.**
+**Date:** 2026-07-30
+**HEAD:** see `git log` (last reflected here: `87fbf33`)
+**Tests:** 788+ unit/integration tests as of 2026-07-05, plus new coverage landed since (health score, V2 oracles, HITL severity, meaningful-assertion gate, verify soundness) -- see "What landed this session" below for exact PRs; **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37 -- **E2E count not re-verified 2026-07-29/30 (see readiness checks below); unit/eval suite was re-run both days and is green.**
 **Branch:** `main`
+
+## Readiness check follow-up (2026-07-30) -- CLI surface dry-run sweep
+
+Continuation of the 2026-07-29 check below. PR #731 (verify double-probe fix)
+merged as `677b450`. Picked up the same methodology -- cold dry-runs against
+live targets, not code reading -- and swept the rest of the documented CLI
+surface: `certify`, `check-suite`, `generate --repair`, `eject`, `report`,
+`daemon`, `doctor`. Two more real, live-verified bugs found and fixed (PR
+#734, bundled per this repo's own precedent in #726 of grouping several
+small fixes found in one investigative pass):
+
+- **Bug:** `cherenkov generate` silently produced **zero output** on a small,
+  valid, realistic spec (`demos/catch-the-ai-cheating/openapi.yaml`) and
+  exited 0 ("Successfully generated 0/0 test suites."). Root cause:
+  `cherenkov/stages/ingest.py`'s richness heuristic that gates whether an
+  endpoint is even used only counts fields reachable via named
+  `#/components/schemas/...` `$ref`s and only counts operation-level
+  `parameters` -- any endpoint with an **inline** response/request schema
+  (common for hand-written or exported specs) or a **path-item-level**
+  shared `parameters` block scored near-zero richness and got silently
+  dropped. **Fix:** additionally count properties from inline schemas found
+  anywhere in the operation, and union operation-level with path-level
+  parameters. Verified live: same spec now ingests 1 endpoint, plans 2
+  scenarios, generates 2/2 test suites (template-fallback path, no
+  Ollama/Docker in this sandbox). New tests in `tests/unit/test_ingest_stage.py`.
+- **Bug:** `cherenkov doctor` told users **without Ollama installed at all**
+  to "get a GPU" -- `detect_ollama_device()` returns `"UNKNOWN"` specifically
+  when Ollama isn't reachable (distinct from `"CPU"`, meaning reachable but
+  not GPU-accelerated), but the device-health line treated both the same way
+  and printed the CPU/GPU message regardless, plus double-counted the same
+  root cause as two separate issues in the summary tally. Same bug class as
+  #726's "false Ollama-detected onboarding" fix, but in a different code path
+  (`cherenkov/stages/doctor_cmd.py`, the CLI's own doctor, not the web
+  onboarding wizard) that fix didn't reach. **Fix:** device line now prints
+  "Ollama not reachable -- install/start Ollama..." when unknown, keeps the
+  original CPU-mode message only when Ollama is actually reachable, and
+  doesn't double-count. New tests in `tests/unit/test_doctor_cmd.py`.
+
+**Clean (no bugs found):** `certify` (incl. `--coverage-report`, `--compliance`,
+`--verify` roundtrip -- correctly reuses the single probe sweep, unaffected by
+the verify fix's sibling issue since certify never had the double-call);
+`check-suite` (all 4 modes -- control/weakened/deleted/hallucinated -- matched
+the standalone demo script exactly, `--fail-on-finding` gates correctly);
+`report` (`--list`, `--run latest`, `--format json`, `--diff`); `daemon`
+(`--max-loops` exits cleanly, correctly re-validated the ingest richness fix
+against its own default-watched `stub/target_spec.json`).
+
+**Flagged, deliberately not fixed:** `cherenkov eject`'s zero-lock-in claim
+holds (verified with a real `npm install` + `npx playwright test --list` in
+the ejected output -- zero `cherenkov` imports). But `npx tsc --noEmit` on
+the ejected output fails: 3 of the 12 tracked `stub/generated_tests/golden_*.spec.ts`
+fixtures reference a `/pets` endpoint not present in `stub/generated-types.ts`
+(which itself doesn't fully match the current `stub/target_spec.json` --
+it has `/orders`/`/products` paths the current spec no longer declares), and
+2 fixtures build a `/users` POST body missing a `name` field the current
+types require. Real inconsistency, but `stub/generated_tests/` and
+`stub/generated-types.ts` are generated artifacts (`RUN_ORDER.md`: `npx
+openapi-typescript` + `generate_and_score.py` against `stub/target_spec.json`)
+that `CLAUDE.md` explicitly says not to hand-edit, and no CI job currently
+runs `tsc --noEmit` against them (checked: no workflow does) so this isn't an
+active regression, just a real latent one. Left as a finding, not a fix --
+regenerating requires the actual codegen pipeline, not a manual patch.
+**Note on process:** the first eject dry-run in this session was contaminated
+by untracked local cruft in the shared working tree (leftover `*.spec.spec.ts`
+files from earlier dogfooding, gitignored, not part of the repo) that
+produced a misleading larger failure count; re-ran from a clean `git clone`
+of the branch to get the trustworthy result above -- exactly the
+"Environment hazards: shared working tree" risk this file already warns about.
+
+**Gate G0 status unchanged: still 3/4, E0.3 still not attempted.** Nothing in
+this sweep required or constitutes E0.3 evidence -- it's hardening the path
+E0.3 will walk, not a substitute for it.
 
 ## Readiness check (2026-07-29)
 
