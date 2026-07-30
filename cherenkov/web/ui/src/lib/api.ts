@@ -54,6 +54,7 @@ export interface ReviewQueueItem {
   confidence_reason: string | null;
   review_gate_failed: string | null;
   status: string;
+  reject_reason: string | null;
   generated_test: string | null;
   created_at: string;
 }
