@@ -111,7 +111,6 @@ Error: model 'qwen2.5-coder:7b' not found
 
 ```bash
 ollama pull qwen2.5-coder:7b
-ollama pull deepseek-r1:8b    # For planning stage
 
 # Check pulled models
 ollama list

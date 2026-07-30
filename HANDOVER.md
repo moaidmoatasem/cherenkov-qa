@@ -121,6 +121,25 @@ Found and fixed a real bug in the process:
 
 > **Note:** `docs/HANDOVER.md` is a separate, reverse-chronological session log (older format, kept for history). This file (`HANDOVER.md`, repo root) is the canonical status anchor per `CLAUDE.md`. The 2026-07-13 update below reconciles both -- the work logged in `docs/HANDOVER.md`'s "2026-07-11 HITL severity" section is the same work as the HITL severity entry below.
 
+## What landed this session (2026-07-29 to 2026-07-30)
+
+The `_run_rich_verdict` double-probe-sweep fix is already narrated in full above
+(the "Dry run" bullet) -- it landed as PR #731. Also landed, not yet logged here:
+
+| SHA | What |
+|---|---|
+| `4ffd7ea` (#726) | fix: spec coverage no longer conflates "no bugs found" with "not tested" -- a fully-probed, 100%-clean target (incl. CHERENKOV's own self-dogfood run) was grading D/SUSPECT with a false LOW_COVERAGE flag; `run_proof` now tracks every endpoint actually probed via an optional `probed_endpoints` out-param. Also: onboarding no longer falsely reports Ollama as detected; generate output pollution + a retry storm fixed. |
+| `75a2fbd` (#730) | fix(ops): Dockerfile `python:3.14-slim` -> `3.12-slim` (a 2026-07-05 fix that was logged as landed but had never actually made it into the file -- confirmed via full `git log -p` on `Dockerfile`, which had only ever contained `3.14-slim`); untracked 126MB of committed PyInstaller build output under `build/cherenkov-launcher/` (already gitignored, force-added at some point); marked `PROJECT_REVIEW.md` (dated 2026-06-15, stale) as superseded; added `.github/workflows/surface-freeze-gate.yml` to enforce the SURFACE FREEZE below as a checked CI gate instead of a prose convention. |
+| `87fbf33` (#732) | fix(ci): stage placeholder sidecar before Tauri build. |
+
+**Known pre-existing CI red, unrelated to any of the above:** `tauri-build.yml`'s
+`build (macos-latest)` / `build (ubuntu-latest)` jobs have failed on every run on
+`main` back to at least 2026-07-01 -- `A public key has been found, but no private
+key. Make sure to set TAURI_SIGNING_PRIVATE_KEY environment variable.` This is the
+already-tracked "Tauri updater signing key" item further down this file (needs
+`cargo tauri signer generate` + storing the private half as a repo secret -- an
+owner action, not something an agent should do unilaterally).
+
 ---
 
 ## 📹 Onboarding & KT Package (NEW — 2026-07-06)

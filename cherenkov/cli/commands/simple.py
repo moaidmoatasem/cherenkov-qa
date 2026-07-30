@@ -27,11 +27,24 @@ __all__ = ["report_cmd"]
 
 @click.command("eject")
 @click.option("--output", "-o", required=True, type=click.Path(), help="Target output directory for the standalone suite")
-def eject_cmd(output: str) -> None:
+@click.option(
+    "--tests-dir",
+    "-t",
+    default=None,
+    type=click.Path(exists=True, file_okay=False),
+    help=(
+        "Directory containing the generated .spec.ts test files to eject. "
+        "Defaults to stub/generated_tests. Pass this when you ran "
+        "`cherenkov generate --output-dir <dir>` with a custom directory — "
+        "eject does not otherwise know where generate wrote its output."
+    ),
+)
+def eject_cmd(output: str, tests_dir: str | None) -> None:
     """Eject generated tests to a standalone Playwright suite."""
     from cherenkov.execution.eject import EjectorEngine
 
-    ejector = EjectorEngine("cli_eject")
+    ejector = EjectorEngine("cli_eject", tests_src_dir=tests_dir)
+    click.echo(f"Reading generated tests from: {ejector.tests_src_dir}")
     if ejector.eject_suite(output):
         click.echo(f"\nCHERENKOV E2E suite ejected successfully to: {output}")
         click.echo("All CHERENKOV metadata and hooks stripped successfully.")
