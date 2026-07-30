@@ -85,21 +85,24 @@ async def reject_review_item(payload: ReviewActionPayload, _auth=Depends(verify_
 
     queue = get_queue()
     actor = os.environ.get("USER", "dashboard")
-    reason = payload.reason or "Rejected by reviewer"
-    envelope = queue.reject(payload.scenario_id, actor=actor, reason=reason, source="web")
+    category = payload.reason or "other"
+    stored_reason = f"{category}: {payload.note}" if payload.note else category
+    envelope = queue.reject(payload.scenario_id, actor=actor, reason=stored_reason, source="web")
     if not envelope.ok:
         raise HTTPException(
             status_code=409 if envelope.error and envelope.error.code == "conflict" else 404,
             detail=envelope.error.message if envelope.error else "reject failed",
         )
     store = FeedbackStore()
-    store.record_feedback(FeedbackEntry(hitl_item_id=payload.scenario_id, action="reject", reason=reason))
+    store.record_feedback(
+        FeedbackEntry(hitl_item_id=payload.scenario_id, action="reject", reason=category, notes=payload.note)
+    )
     try:
         from cherenkov.core.contracts import VerdictOutcome
         from cherenkov.reflector.reflector import Reflector
         reflector = Reflector(run_id="web")
         reflector.ingest_human_verdict(
-            hypothesis_id=payload.scenario_id, outcome=VerdictOutcome.REJECT, detail=reason,
+            hypothesis_id=payload.scenario_id, outcome=VerdictOutcome.REJECT, detail=stored_reason,
         )
     except Exception as e:
         logging.getLogger("HITL").warning("failed to feed reject verdict to Reflector", exc_info=e)

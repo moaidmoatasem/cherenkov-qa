@@ -413,6 +413,11 @@ Reject a **pending** item with a mandatory reason string.
 
 # Reject and emit JSON envelope
 ./bin/cherenkov hitl reject ck_abc123-... --reason "flaky_endpoint" --actor @bob --json
+
+# Reject with a short reason plus a longer free-text elaboration — kept as
+# separate fields in FeedbackStore (cherenkov/core/feedback_store.py) so the
+# learning loop can distinguish category from detail
+./bin/cherenkov hitl reject ck_abc123-... --reason too_noisy --note "flaky under load"
 ```
 
 ##### `hitl classify <id>` (Tier-2)

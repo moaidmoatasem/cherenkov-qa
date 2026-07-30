@@ -97,13 +97,19 @@ def hitl_approve(item_id: str, actor: str | None, json_out: bool) -> None:
 @hitl_cmd.command("reject")
 @click.argument("item_id")
 @click.option("--reason", "-r", required=True, help="Rejection reason")
+@click.option("--note", "-n", default=None, help="Optional free-text elaboration, kept separate "
+              "from --reason so the learning loop can distinguish category from detail")
 @click.option("--actor", default=None, help="Reviewer identity (default: $USER)")
 @click.option("--json", "json_out", is_flag=True, help="Emit JSON envelope")
-def hitl_reject(item_id: str, reason: str, actor: str | None, json_out: bool) -> None:
+def hitl_reject(item_id: str, reason: str, note: str | None, actor: str | None, json_out: bool) -> None:
     """Reject a HITL item."""
+    from cherenkov.core.feedback_store import FeedbackStore
     from cherenkov.hitl.cmd import run_reject
 
-    sys.exit(run_reject(item_id=item_id, reason=reason, actor=actor, json_out=json_out))
+    sys.exit(run_reject(
+        item_id=item_id, reason=reason, note=note, actor=actor, json_out=json_out,
+        feedback_store=FeedbackStore(),
+    ))
 
 
 @hitl_cmd.command("classify")
