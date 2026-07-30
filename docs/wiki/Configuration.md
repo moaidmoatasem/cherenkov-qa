@@ -36,7 +36,6 @@ output: .cherenkov/                # Output directory
 llm:
   provider: ollama                 # ollama | localai | openai
   model: qwen2.5-coder:7b         # Generation model
-  plan_model: deepseek-r1:8b      # Planning model (optional, defaults to model)
   ollama_url: http://localhost:11434
   timeout: 60                      # Per-LLM-call timeout (seconds)
   max_retries: 3                   # Retries on LLM failure
@@ -132,12 +131,14 @@ Environment variables override config file values.
 
 ### Choosing a Model
 
-CHERENKOV uses two models: one for planning scenarios (reasoning), one for generating tests (code).
+The PLAN stage is deterministic Python — it maps Ingest's mutation menu straight
+into `Scenario` contracts with no LLM call. The only model CHERENKOV runs is the
+generation model (code-focused), configured via `llm.model` above.
 
 ```mermaid
 flowchart LR
-    subgraph PLANNING ["Planning Stage"]
-        P1["deepseek-r1:8b\n(default plan model)\n— reasoning focused"]
+    subgraph PLANNING ["Planning Stage (deterministic, no LLM)"]
+        P1[Mutation menu → Scenario contracts]
     end
     subgraph GENERATION ["Generation Stage"]
         G1["qwen2.5-coder:7b\n(default gen model)\n— code focused"]
