@@ -19,7 +19,12 @@ class RejectionReason:
     INTENDED_CHANGE = "intended_change"
     TOO_NOISY = "too_noisy"
     WRONG_ASSERTION = "wrong_assertion"
+    ENV_ISSUE = "env_issue"
     OTHER = "other"
+
+    @classmethod
+    def choices(cls) -> list[str]:
+        return [cls.INTENDED_CHANGE, cls.TOO_NOISY, cls.WRONG_ASSERTION, cls.ENV_ISSUE, cls.OTHER]
 
 
 @dataclass

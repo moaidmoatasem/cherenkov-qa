@@ -267,6 +267,63 @@ def test_reject_json_envelope(tmp_db, capsys):
     assert data["command"] == "hitl.reject"
 
 
+def test_reject_with_note_combines_into_reject_reason(tmp_db, capsys):
+    q = HitlQueue(db_path=tmp_db)
+    q.enqueue(HitlItem(id="rej_note", endpoint="/z", method="PATCH"))
+    rc = run_reject(
+        "rej_note",
+        reason="too_noisy",
+        note="flaky under load",
+        actor="@carol",
+        json_out=False,
+        db_path=tmp_db,
+    )
+    assert rc == 0
+    item = q.get("rej_note")
+    assert item.reject_reason == "too_noisy: flaky under load"
+
+
+def test_reject_without_feedback_store_has_no_side_effect(tmp_db):
+    """Omitting feedback_store (the default) must not touch the filesystem —
+    existing callers (and this test suite) rely on that."""
+    q = HitlQueue(db_path=tmp_db)
+    q.enqueue(HitlItem(id="rej_no_fs", endpoint="/z", method="GET"))
+    rc = run_reject("rej_no_fs", reason="other", db_path=tmp_db)
+    assert rc == 0
+
+
+def test_reject_records_feedback_when_store_provided(tmp_db):
+    from cherenkov.core.feedback_store import FeedbackStore
+
+    q = HitlQueue(db_path=tmp_db)
+    q.enqueue(HitlItem(id="rej_fs", endpoint="/z", method="GET"))
+    store = FeedbackStore(store_path=tmp_db.replace(".db", "_feedback.json"))
+    rc = run_reject(
+        "rej_fs", reason="wrong_assertion", note="bad status code", db_path=tmp_db,
+        feedback_store=store,
+    )
+    assert rc == 0
+    entries = store.get_all()
+    assert len(entries) == 1
+    assert entries[0].hitl_item_id == "rej_fs"
+    assert entries[0].reason == "wrong_assertion"
+    assert entries[0].notes == "bad status code"
+
+
+def test_reject_does_not_record_feedback_on_conflict(tmp_db):
+    from cherenkov.core.feedback_store import FeedbackStore
+
+    q = HitlQueue(db_path=tmp_db)
+    q.enqueue(HitlItem(id="rej_conflict_fs", endpoint="/z", method="GET"))
+    q.reject("rej_conflict_fs", "@alice", "fp")
+    store = FeedbackStore(store_path=tmp_db.replace(".db", "_feedback2.json"))
+    rc = run_reject(
+        "rej_conflict_fs", reason="other", db_path=tmp_db, feedback_store=store
+    )
+    assert rc == 1
+    assert store.get_all() == []
+
+
 def test_reject_conflict_returns_1(tmp_db, capsys):
     q = HitlQueue(db_path=tmp_db)
     q.enqueue(HitlItem(id="rej_c", endpoint="/b", method="POST"))

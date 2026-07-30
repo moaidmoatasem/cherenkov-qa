@@ -59,6 +59,14 @@ export interface ReviewQueueItem {
   created_at: string;
 }
 
+export const REJECTION_REASONS = [
+  { value: 'intended_change', label: 'Intended change' },
+  { value: 'too_noisy', label: 'Too noisy' },
+  { value: 'wrong_assertion', label: 'Wrong assertion' },
+  { value: 'env_issue', label: 'Environment issue' },
+  { value: 'other', label: 'Other' },
+] as const;
+
 export interface ValidationResponse {
   status: string;
   target_url: string;
@@ -159,11 +167,11 @@ export async function approveTestScenario(scenarioId: string): Promise<void> {
 /**
  * Handles rejecting and triggering regeneration of a test scenario
  */
-export async function rejectTestScenario(scenarioId: string, reason: string): Promise<void> {
+export async function rejectTestScenario(scenarioId: string, reason: string, note?: string): Promise<void> {
   const res = await fetch(`${API_BASE}/review/reject`, {
     method: 'POST',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
-    body: JSON.stringify({ scenario_id: scenarioId, reason }),
+    body: JSON.stringify({ scenario_id: scenarioId, reason, note: note || undefined }),
   });
   if (!res.ok) {
     throw new Error(`Failed to reject scenario ${scenarioId}`);

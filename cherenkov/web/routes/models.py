@@ -15,6 +15,7 @@ class RunPipelinePayload(BaseModel):
 class ReviewActionPayload(BaseModel):
     scenario_id: str
     reason: str | None = None
+    note: str | None = None
     test_code: str | None = None
 
 
