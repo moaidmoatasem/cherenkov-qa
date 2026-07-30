@@ -56,7 +56,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
     setIsLoading(true);
     setLoadError(null);
     Promise.all([
-      fetchReviewQueue('pending'),
+      fetchReviewQueue('all'),
       fetchGeneratedTests()
     ])
       .then(([queueItems, generatedTests]) => {
@@ -65,26 +65,30 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
           testMap.set(gt.scenario_id, gt.code);
         }
 
-        const mapped: TestItem[] = queueItems.map((item: ReviewQueueItem) => ({
-          id: item.id,
-          name: `${item.method} ${item.endpoint}`,
-          path: '/' + (item.endpoint || '').replace(/^\//, ''),
-          method: item.method || 'GET',
-          confidence: item.confidence ?? 0.5,
-          verdict: item.status === 'approved' ? 'approved' : 'review',
-          gates: {
-            syntax: true,
-            structure: true,
-            ast: true,
-            novelty: true,
-            dryRun: true,
-            quality: item.review_gate_failed !== 'quality',
-          },
-          gateReasons: {
-            quality: item.confidence_reason || item.review_gate_failed || 'Awaiting review.',
-          },
-          code: testMap.get(item.id) || `// Generated test for ${item.method} ${item.endpoint}\n`
-        }));
+        const mapped: TestItem[] = queueItems
+          // Ignored items have no corresponding tab and stay out of the UI, same as before.
+          .filter((item: ReviewQueueItem) => item.status !== 'ignored')
+          .map((item: ReviewQueueItem) => ({
+            id: item.id,
+            name: `${item.method} ${item.endpoint}`,
+            path: '/' + (item.endpoint || '').replace(/^\//, ''),
+            method: item.method || 'GET',
+            confidence: item.confidence ?? 0.5,
+            verdict: item.status === 'approved' ? 'approved' : item.status === 'rejected' ? 'rejected' : 'review',
+            gates: {
+              syntax: true,
+              structure: true,
+              ast: true,
+              novelty: true,
+              dryRun: true,
+              quality: item.review_gate_failed !== 'quality',
+            },
+            gateReasons: {
+              quality: item.confidence_reason || item.review_gate_failed || 'Awaiting review.',
+            },
+            rejectReason: item.reject_reason || undefined,
+            code: testMap.get(item.id) || `// Generated test for ${item.method} ${item.endpoint}\n`
+          }));
 
         if (mapped.length > 0) {
           setTests(mapped);
@@ -299,7 +303,8 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
         return {
           ...t,
           verdict: 'rejected' as const,
-          gates: { ...t.gates, quality: false }
+          gates: { ...t.gates, quality: false },
+          rejectReason: reason
         };
       }
       return t;
@@ -500,6 +505,15 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                       </span>
                     </div>
 
+                    {test.verdict === 'rejected' && test.rejectReason && (
+                      <p
+                        className="mt-2 text-[10px] font-mono text-[#7D8DA1] italic truncate"
+                        title={test.rejectReason}
+                      >
+                        Reason: {test.rejectReason}
+                      </p>
+                    )}
+
                     {/* Confidence percentage and bar */}
                     <div className="mt-3 flex items-center justify-between gap-4 font-mono text-[10px]">
                       <div className="flex-1 flex items-center gap-2">
@@ -645,6 +659,19 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
 
                   </div>
                 </div>
+
+                {/* Reviewer rejection reason, if this test was rejected */}
+                {activeTest.verdict === 'rejected' && activeTest.rejectReason && (
+                  <div className="p-3 rounded-xl border border-[#D29922]/30 bg-[#D29922]/5 space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <X className="w-3.5 h-3.5 text-[#D29922]" />
+                      <span className="font-mono text-[10px] font-bold text-text-primary uppercase">Reviewer Rejection</span>
+                    </div>
+                    <p className="text-[11px] text-[#7D8DA1]/85 leading-relaxed font-sans">
+                      {activeTest.rejectReason}
+                    </p>
+                  </div>
+                )}
 
                 {/* OCR Findings Panel */}
                 <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 space-y-2">
