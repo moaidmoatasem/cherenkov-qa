@@ -231,11 +231,20 @@ def run_doctor(desktop: bool = False) -> int:
 
     device = get_settings().detect_ollama_device()
     is_gpu = device == "GPU"
-    print(f"  {'device':<30} {'[OK]' if is_gpu else '[WARN]'}  {device}")
-    if not is_gpu:
+    if device == "UNKNOWN":
+        # Ollama itself isn't reachable (already reflected in the "ollama
+        # binary"/"ollama daemon" checks above) — telling the user to get a
+        # GPU here is misleading; there's no CPU-vs-GPU generation happening
+        # at all until Ollama is installed and running.
         print(
-            f"  {'':<30}  Warning: CPU mode - generation ~10x slower. GPU recommended."
+            f"  {'device':<30} [WARN]  Ollama not reachable — install/start Ollama to enable local generation"
         )
+    else:
+        print(f"  {'device':<30} {'[OK]' if is_gpu else '[WARN]'}  {device}")
+        if not is_gpu:
+            print(
+                f"  {'':<30}  Warning: CPU mode - generation ~10x slower. GPU recommended."
+            )
 
     small_model = cfg.get("substrate.tiers.small.model", "qwen2.5-coder:7b")
     deep_model = cfg.get("substrate.tiers.deep.model", "deepseek-r1:8b")
@@ -299,8 +308,10 @@ def run_doctor(desktop: bool = False) -> int:
         issues += 1
     if is_gpu:
         pass  # best case
+    elif device == "UNKNOWN" and not ollama_bin:
+        pass  # same root cause already counted via `not ollama_bin` above
     else:
-        issues += 1  # CPU is a warning
+        issues += 1  # CPU-only, or Ollama binary present but daemon unreachable
     if not node_ok:
         issues += 1
     if not pw_ok:
