@@ -167,6 +167,8 @@ def verify_cmd(
         click.echo("  Engine  : multi-agent (rich verdict)")
     click.echo("")
 
+    _warn_unprobed(spec_dict, max_probes=max_probes, use_llm=llm)
+
     _assert_reachable(url)
 
     t_start = time.monotonic()
@@ -358,6 +360,40 @@ def _assert_reachable(url: str) -> None:
             err=True,
         )
         sys.exit(2)
+
+
+def _warn_unprobed(
+    spec_dict: dict | None, max_probes: int, use_llm: bool, limit: int = 10
+) -> None:
+    """Tell the user which endpoints will not be probed, and why.
+
+    A zero-probe endpoint produces zero divergences, which is indistinguishable
+    from a conformant one: the run exits 0 and the user believes it was checked.
+    Silence here is how a PathItem-level `parameters` declaration removed an
+    endpoint from coverage entirely without anyone noticing.
+
+    Advisory, not fatal — an unprobeable endpoint is often a legitimately
+    under-specified one, and only the user can judge whether it matters.
+    """
+    if spec_dict is None:
+        return
+    from cherenkov.divergence.probe_planner import unprobed_endpoints
+
+    missing = unprobed_endpoints(spec_dict, max_probes=max_probes, include_bare=use_llm)
+    if not missing:
+        return
+
+    click.echo(f"  [WARN] {len(missing)} endpoint(s) will NOT be probed:", err=True)
+    for item in missing[:limit]:
+        click.echo(f"         {item}", err=True)
+    if len(missing) > limit:
+        click.echo(f"         ... and {len(missing) - limit} more", err=True)
+    click.echo(
+        "         These contribute no divergences, so a clean result does not "
+        "cover them.",
+        err=True,
+    )
+    click.echo("", err=True)
 
 
 def _load_spec(spec_path: str) -> dict | None:
