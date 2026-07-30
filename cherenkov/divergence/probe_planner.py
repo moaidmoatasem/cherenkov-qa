@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import uuid
+from dataclasses import dataclass
 from typing import Any
 
 from cherenkov.core.contracts import (
@@ -353,6 +354,100 @@ def spec_hypotheses(
 
 
 # ── probe planning ───────────────────────────────────────────────────────────
+
+
+@dataclass(frozen=True)
+class UnprobedEndpoint:
+    """An endpoint in the spec that planning produced no probe for."""
+
+    path: str
+    method: str
+    reason: str
+
+    def __str__(self) -> str:
+        return f"{self.method} {self.path} — {self.reason}"
+
+
+def _why_unprobed(
+    path: str, method: str, operation: dict[str, Any], spec: dict[str, Any]
+) -> str:
+    """Name the actual cause. Most are deliberate limits, not defects.
+
+    Order matters: an unfillable path parameter also empties the hypothesis
+    list, so it has to be checked before the generic cases or it gets
+    misattributed — the same mistake `explain_unmutatable` was written to undo.
+    """
+    templated = "{" in path
+    if templated and _path_with_samples(path, operation, spec) is None:
+        unfilled = ", ".join(seg for seg in path.split("/") if seg.startswith("{"))
+        return (
+            f"path parameters could not be sampled ({unfilled}) — declare them "
+            "under the operation's or the PathItem's `parameters` with a typed schema"
+        )
+
+    if spec_hypotheses(path, method, operation, spec):
+        return "dropped by the max_probes cap, not by anything about the endpoint"
+
+    # No hypothesis was derivable. The happy-path probe is deliberately narrow;
+    # say which guard excluded it so the gap reads as a known limit.
+    if method.upper() != "GET":
+        return (
+            f"no probe for {method.upper()}: a happy-path probe is GET-only, since "
+            "sending sampled data would mutate state. Mutation probes need a "
+            "required request-body field or an enum to violate, and this "
+            "operation documents neither"
+        )
+    if templated:
+        return (
+            "happy-path probe is skipped on templated paths — a sampled value "
+            "would address a resource that need not exist, and its 404 would "
+            "read as a divergence. Covering it needs a known-good identifier"
+        )
+    required = [p.get("name") for p in _required_query_params(operation, spec)]
+    if required:
+        return (
+            f"happy-path probe is skipped when query parameters are required "
+            f"({', '.join(str(n) for n in required)}) — no value can be assumed safe"
+        )
+    return (
+        "no mechanical hypothesis was derivable from the documented responses, "
+        "request body, or parameters"
+    )
+
+
+def unprobed_endpoints(
+    spec: dict[str, Any], max_probes: int = 40, include_bare: bool = False
+) -> list[UnprobedEndpoint]:
+    """Every endpoint `plan_probes` produced no probe for, and why.
+
+    A zero-probe endpoint yields zero divergences, which reads identically to a
+    conformant one: `verify` exits 0 and the user believes it was checked. That
+    is how a PathItem-level `parameters` declaration silently removed an
+    endpoint from coverage entirely — the same false-clean class as an
+    unreachable target passing as clean (#720).
+
+    Callers must surface this. Coverage that was never attempted is not
+    coverage, and the user is the only one who can tell whether it matters.
+    """
+    planned = {(p, m) for p, m, _, _ in plan_probes(spec, max_probes, include_bare)}
+    missing: list[UnprobedEndpoint] = []
+
+    for path, path_item in spec.get("paths", {}).items():
+        if not isinstance(path_item, dict):
+            continue
+        for method, operation in path_item.items():
+            if method.lower() not in _HTTP_METHODS or not isinstance(operation, dict):
+                continue
+            if (path, method.upper()) in planned:
+                continue
+            missing.append(
+                UnprobedEndpoint(
+                    path=path,
+                    method=method.upper(),
+                    reason=_why_unprobed(path, method, operation, spec),
+                )
+            )
+    return missing
 
 
 def plan_probes(
