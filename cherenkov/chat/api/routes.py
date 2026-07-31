@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 from functools import lru_cache
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -12,6 +13,12 @@ from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
 from cherenkov.chat.agent import QAChatAgent
 from cherenkov.chat.guard import get_guard
 from cherenkov.chat.ports.memory import ConversationMemory
+from cherenkov.core.errors import get_logger
+
+if TYPE_CHECKING:  # pragma: no cover
+    from cherenkov.substrate.router import SubstrateRouter
+
+logger = get_logger("CHAT_API")
 
 router = APIRouter()
 
@@ -31,8 +38,31 @@ def get_memory() -> ConversationMemory:
     return SQLiteConversationMemory()
 
 
+@lru_cache(maxsize=1)
+def get_substrate_router() -> "SubstrateRouter | None":
+    """The inference router for the web chat path.
+
+    Omitting this is why the dashboard replied to every message with the
+    literal string "[MOCK] AI substrate unavailable" — `QAChatAgent` falls
+    through to `_fallback_llm` when no router is supplied. The CLI REPL
+    (`chat/cli_repl.py:14`) and the LangChain tool both injected one; only the
+    web path did not. Constructed lazily and cached so an unavailable backend
+    degrades to the existing fallback instead of failing app startup.
+    """
+    try:
+        from cherenkov.substrate.router import SubstrateRouter
+
+        return SubstrateRouter()
+    except Exception:  # noqa: BLE001 — never let chat wiring break the API
+        logger.warning(
+            "substrate router unavailable; chat will use the offline fallback",
+            exc_info=True,
+        )
+        return None
+
+
 def get_agent(memory: ConversationMemory = Depends(get_memory)) -> QAChatAgent:
-    return QAChatAgent(memory=memory)
+    return QAChatAgent(memory=memory, substrate_router=get_substrate_router())
 
 
 @router.post("/api/v1/chat/sessions")
