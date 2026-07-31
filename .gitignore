@@ -203,3 +203,9 @@ __test_review.py
 /soc2_report*.json
 /pr.json
 /issues.txt
+
+# Untracked triage
+playwright-suite/
+bench/escaped_defect/
+svgs_dump.json
+cherenkov-security-landing.png

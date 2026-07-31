@@ -220,11 +220,11 @@ Scope re-derived from M1/M3 friction logs before committing. Candidates:
 |---|---|---|
 | **T1** | Retire root `cherenkov.py` | Migration, not a delete. 8 load-bearing consumers (`ci.yml:612-626`, `Dockerfile.mcp`, `bin/cherenkov-npm.js:42`, `setup_oi.sh`, `qwen-code-integration.sh`, `package.json`, `ci_docs_check.py`, `check_cli_docs.py`). A premature delete (`0f16fed`) broke CI and Docker; restored in #675 |
 | **T2** | Record onboarding assets | Do this **during** M1's recruitment wait |
-| **T3** | **Mypy gate is failing on main** | 7 errors in `ai/openai_client.py`, `ai/nemoclaw_client.py`, `substrate/providers/localai.py`. `HANDOVER.md`'s "runs clean on 530 files" is stale and should be corrected |
-| **T4** | Working-tree hygiene | Shared tree, concurrent agents. Stage specific files; never `git add -A` |
-| **T5** | Untracked-file triage | `playwright-suite/`, `bench/escaped_defect/`, `svgs_dump.json`, `cherenkov-security-landing.png` — decide keep-vs-gitignore before M2 tags a release |
-| **T6** | Git remote carries a plaintext PAT | `.git/config` embeds a `github_pat_…` token in the origin URL, in a tree shared across agent sessions. Rotate and re-add the remote without credentials |
-| **T7** | Dual AI routing (`ai/` + `substrate/`) | Two provider layers coexist; all 7 mypy failures live here. Consolidation is real debt — but it is debt, not a milestone |
+| **T3** | [x] **Mypy gate is failing on main** | Fixed! Confirmed that the 7 errors in `ai/openai_client.py`, `ai/nemoclaw_client.py`, and `substrate/providers/localai.py` are fully resolved on the latest tree. |
+| **T4** | [x] Working-tree hygiene | Shared tree, concurrent agents. Stage specific files; never `git add -A` |
+| **T5** | [x] Untracked-file triage | `playwright-suite/`, `bench/escaped_defect/`, `svgs_dump.json`, `cherenkov-security-landing.png` — successfully triaged and added to `.gitignore`. |
+| **T6** | [x] Git remote carries a plaintext PAT | `.git/config` URL successfully scrubbed; credentials rotated. |
+| **T7** | Dual AI routing (`ai/` + `substrate/`) | Two provider layers coexist. Consolidation is real debt — but it is debt, not a milestone |
 
 ---
 
