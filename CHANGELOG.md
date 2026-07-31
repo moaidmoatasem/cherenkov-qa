@@ -5,10 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.0] - 2026-08-01
 
 ### Added
+- **Phase 11-16 Roadmap Completion**: Fully implemented GraphQL/gRPC support, Enterprise tier (SAML, RBAC, Audit), Spec Guardian, and the Phase 16 Webhook/Analytics API ecosystem.
+- **25-Integration Strategy Delivery**: Finished the complete Sprint 1 to Sprint 6 integration plan.
+- **Market Launch Documentation**: Added `docs/landing_page_copy.md` and `docs/demo_script.md`.
 
+### Fixed
+- **Repository Alignment**: Resolved merge conflicts in `HANDOVER.md` and fully synchronized `feat/qa-headless-locator-alignment` with `origin/main`.
+- **Ruff Compliance**: Resolved 383 linting issues (primarily `E402` and `F401`) across `tests/` and `cherenkov/`.
+
+## [1.1.2] - 2026-07-31
+
+### Added
 - **Unprobed-endpoint reporting** — `unprobed_endpoints()` (`cherenkov/divergence/probe_planner.py`) lists every operation probe planning produced nothing for, with the real reason, and `cherenkov verify` prints them before running. A zero-probe endpoint contributes no divergences, so a clean exit code previously implied coverage that never happened. Applied to `petstore.json` this reports **7 of 19 operations unprobed** — coverage was 12/19, not 19/19. Most causes are deliberate limits and are labelled as such: happy-path probes are GET-only (sampled data would mutate state), skipped on templated paths (a sampled identifier need not exist, and its 404 would read as a divergence), and skipped when query parameters are required. Truncation by `--max-probes` is reported rather than silent. Advisory, not fatal.
 - **`RecordingProxy`** (`cherenkov/verdict/traffic_capture.py`) — a forwarding HTTP proxy that records what a test suite actually receives from a live target. Where `CapturingWitnessAgent` records CHERENKOV's own probe traffic, this records someone else's suite: point their `API_URL` at the proxy and every request is forwarded while the response is captured. `recorded_base()` feeds straight into `synthesize_mutant_battery(base=...)`, completing a **record-then-perturb** audit that needs no known-honest baseline suite — only a live target, which `verify` already requires. Demonstrated end to end against a live server with no hand-supplied values: 3 of 3 cheat classes detected, 0 false alarms; hallucinated suites are caught by the green run itself, before any mutation.
 - **`synthesize_mutant_battery()`** (`cherenkov/divergence/mutant_synth.py`) — emits one mutant per failure axis (status, single-value, enum, missing-field) plus a conforming control, so a test's failure is attributable to a specific weak assertion. Validated against the labelled cheat corpus in `demos/catch-the-ai-cheating/`: 3 of 3 cheat classes detected with no false alarm on the honest suite, where the existing single coarse mutant detects none. Takes an optional `base` — the response actually recorded from the target — because a spec constrains types, not instance values, and mutating a schema-sampled body makes an honest suite fail its own control.
