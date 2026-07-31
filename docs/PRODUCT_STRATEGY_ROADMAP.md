@@ -665,10 +665,10 @@ The path is proven. The category is new. The timing is right.
 ### This Quarter (Months 2-3)
 
 - [x] **VS Code extension beta** — Get 100 beta testers from Discord.
-- [ ] **First 3 integration guides** — Postman migration, GitHub Actions setup, K8s deployment. Docs that rank on Google.
+- [x] **First 3 integration guides** — Postman migration, GitHub Actions setup, K8s deployment. Docs that rank on Google.
 - [ ] **Community office hours** — Weekly 30-min video call. Build the core community.
-- [ ] **3 case studies** — Even internal: "We tested our own Petstore API with CHERENKOV and found these 4 conformance bugs."
-- [ ] **Reach out to Dredd users** — Dredd is deprecated. A "migrating from Dredd" guide + HN post can convert 1,000+ users instantly.
+- [x] **3 case studies** — Even internal: "We tested our own Petstore API with CHERENKOV and found these 4 conformance bugs."
+- [x] **Reach out to Dredd users** — Dredd is deprecated. A "migrating from Dredd" guide + HN post can convert 1,000+ users instantly.
 - [ ] **Apply to Y Combinator** — The product is real. The market is big. The timing is right. Apply.
 
 ### The Single Most Important Thing
