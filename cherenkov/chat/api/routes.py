@@ -39,7 +39,7 @@ def get_memory() -> ConversationMemory:
 
 
 @lru_cache(maxsize=1)
-def get_substrate_router() -> "SubstrateRouter | None":
+def get_substrate_router() -> SubstrateRouter | None:
     """The inference router for the web chat path.
 
     Omitting this is why the dashboard replied to every message with the
@@ -53,7 +53,7 @@ def get_substrate_router() -> "SubstrateRouter | None":
         from cherenkov.substrate.router import SubstrateRouter
 
         return SubstrateRouter()
-    except Exception:  # noqa: BLE001 — never let chat wiring break the API
+    except Exception:  # never let chat wiring break API startup
         logger.warning(
             "substrate router unavailable; chat will use the offline fallback",
             exc_info=True,

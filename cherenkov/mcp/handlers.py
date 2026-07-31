@@ -1327,7 +1327,7 @@ def _tool_run_perf(args: dict[str, Any]) -> MCPToolCallResult:
         inp = RunK6PerfInput.model_validate(args)
         target_url = inp.target_url
         scenario_name = inp.scenario_name or "soak"
-        
+
         duration_sec = 30
         if inp.duration is not None:
             if isinstance(inp.duration, int):

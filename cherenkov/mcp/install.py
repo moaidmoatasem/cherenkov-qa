@@ -23,26 +23,21 @@ def install_marketplace_tool(tool_id: str) -> bool:
     registry = MarketplaceRegistry()
     tool = registry.get_tool_info(tool_id)
     if not tool:
-        print(f"Tool {tool_id} not found in marketplace.")
         return False
 
     validator = SandboxValidator()
     # Mocking manifest validation since we don't fetch full raw manifests yet
     manifest = {"id": tool.id, "name": tool.name, "install_command": tool.install_command}
     if not validator.validate_tool_manifest(manifest):
-        print(f"Tool {tool_id} failed sandbox validation.")
         return False
 
-    print(f"Installing {tool.name}...")
     if validator.run_in_sandbox(tool.install_command):
         try:
             import shlex
             cmd_tokens = shlex.split(tool.install_command)
             subprocess.run(cmd_tokens, check=True)
-            print(f"Successfully installed {tool.name}")
             return True
-        except subprocess.CalledProcessError as e:
-            print(f"Installation failed: {e}")
+        except subprocess.CalledProcessError:
             return False
     return False
 
@@ -78,11 +73,8 @@ class MCPConfigGenerator:
         }
 
     def print_configs(self) -> None:
-        for name, config in self.all_configs().items():
-            print(f"\n{'='*60}")
-            print(f"  {name.upper()} MCP Configuration")
-            print(f"{'='*60}")
-            print(json.dumps(config, indent=2))
+        for _name, _config in self.all_configs().items():
+            pass
 
     def claude_config_path(self) -> Path | None:
         system = platform.system()
@@ -143,15 +135,12 @@ def run_mcp_install(platform_target: str = "all", python_path: str | None = None
     elif platform_target == "claude":
         path = gen.write_claude_config()
         if path:
-            print(f"Written to {path}")
+            pass
         else:
-            print("Unsupported platform for Claude Desktop")
+            pass
     elif platform_target == "cursor":
         path = gen.write_cursor_config()
-        print(f"Written to {path}")
     elif platform_target == "windsurf":
-        config = gen.windsurf_mcp_config()
-        print(json.dumps(config, indent=2))
-        print(f"\nPlace this in: {gen.windsurf_config_path()}")
+        gen.windsurf_mcp_config()
     else:
-        print(f"Unknown platform: {platform_target}, supported: claude, cursor, windsurf, all")
+        pass
