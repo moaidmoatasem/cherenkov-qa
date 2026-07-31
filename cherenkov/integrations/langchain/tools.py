@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 try:
     from pydantic.v1 import BaseModel, Field
 except ImportError:
-    from pydantic import BaseModel, Field  # type: ignore[no-redef]
+    from pydantic import BaseModel, Field  # type: ignore[assignment,no-redef]
 
 
 class GenerateTestsInput(BaseModel):
@@ -73,19 +73,17 @@ def _build_cherenkov_tool():  # type: ignore[return]
         )
 
         def _run(self, action: str, **kwargs: Any) -> Any:
-            from cherenkov.core.engine import CherenkovEngine
-
-            from cherenkov.core.contracts import TargetConfig
-
-            engine = CherenkovEngine()
             if action == "generate_tests":
-                return engine.generate_tests(
+                return generate_tests(
                     spec_path=kwargs.get("spec_path", ""),
                     output_dir=kwargs.get("output_dir", "stub/generated_tests"),
                 )
             if action == "validate":
-                config = TargetConfig(url=kwargs.get("target_url", ""), env=kwargs.get("env", "dev"))
-                return engine.run_validation(target=config, spec_path=kwargs.get("spec_path", ""))
+                return validate_endpoint(
+                    target_url=kwargs.get("target_url", ""),
+                    spec_path=kwargs.get("spec_path", ""),
+                    env=kwargs.get("env", "dev"),
+                )
             return f"Unknown action: {action}"
 
         async def _arun(self, action: str, **kwargs: Any) -> Any:
@@ -107,11 +105,36 @@ def generate_tests(spec_path: str, output_dir: str = "stub/generated_tests") -> 
     @tool("cherenkov_generate_tests", args_schema=GenerateTestsInput)
     def _generate_tests(spec_path: str, output_dir: str = "stub/generated_tests") -> str:
         """Generate API conformance tests from an OpenAPI specification."""
+        import os
+
         try:
-            from cherenkov.core.engine import CherenkovEngine
-            engine = CherenkovEngine()
-            result = engine.generate_tests(spec_path=spec_path, output_dir=output_dir)
-            return f"Tests generated successfully. Result: {result}"
+            from cherenkov.stages.generate import GenerateStage
+            from cherenkov.stages.ingest import IngestStage
+            from cherenkov.stages.plan import PlanStage
+
+            ingest_out = IngestStage("langchain_generate").run(spec_path)
+            plan_out = PlanStage("langchain_generate").run(ingest_out)
+            scenarios = plan_out.scenarios
+            ep_map = {f"{ep.path}:{ep.method}": ep for ep in ingest_out.endpoints}
+
+            os.makedirs(output_dir, exist_ok=True)
+            success_count = 0
+            for sc in scenarios:
+                ep = ep_map.get(f"{sc.endpoint}:{sc.method}")
+                gen_out = GenerateStage("langchain_generate").run(
+                    scenario=sc,
+                    path=sc.endpoint,
+                    method=sc.method,
+                    operation=ep.operation if ep else None,
+                    schemas=ep.schemas if ep else None,
+                    instruction=getattr(sc, "instruction", ""),
+                    source_type="openapi",
+                )
+                test_file = os.path.join(output_dir, f"{sc.mutation_id}.spec.ts")
+                with open(test_file, "w", encoding="utf-8") as f:
+                    f.write(gen_out.test_code)
+                success_count += 1
+            return f"Generated {success_count}/{len(scenarios)} test suite(s) in {output_dir}/"
         except Exception as e:
             return f"Error generating tests: {e!s}"
 
@@ -128,15 +151,15 @@ def validate_endpoint(target_url: str, spec_path: str, env: str = "dev") -> str:
     """
     _require_langchain()
     try:
-        from cherenkov.core.engine import CherenkovEngine
+        from cherenkov.execution.validate import ValidationEngine
 
-        from cherenkov.core.contracts import TargetConfig
-        engine = CherenkovEngine()
-        config = TargetConfig(url=target_url, env=env)
-        report = engine.run_validation(target=config, spec_path=spec_path)
+        engine = ValidationEngine(run_id=f"langchain_validate_{env}")
+        results = engine.validate_suite(target_url, spec_path=spec_path)
+        reports = results.get("reports", [])
+        passed = sum(1 for r in reports if r.get("passed"))
         return (
-            f"Validation completed. Verdict: {getattr(report, 'verdict', 'Unknown')}\n"
-            f"Details: {getattr(report, 'summary', str(report))}"
+            f"Validation completed. Status: {results.get('status', 'unknown')}. "
+            f"{passed}/{len(reports)} scenario(s) passed."
         )
     except Exception as e:
         return f"Error validating endpoint: {e!s}"

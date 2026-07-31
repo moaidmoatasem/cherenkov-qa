@@ -257,3 +257,29 @@ class TestValidateSummaryOutput:
 
         assert "FAIL" in result.output
         assert "user_happy_path" in result.output
+
+
+class TestFindingsReport:
+    """Regression: severity was passed as a raw string ("high") where DivergenceFinding
+    requires the Severity enum — mypy-blocking (arg-type) and would also have raised a
+    pydantic ValidationError at runtime the first time a failing scenario was reported."""
+
+    def test_builds_finding_with_severity_enum(self):
+        from cherenkov.cli.commands.validate import _findings_report
+        from cherenkov.core.contracts import Severity
+
+        report = _findings_report({
+            "reports": [
+                {"scenario_id": "user_happy_path", "passed": False, "error": "connection refused"},
+            ],
+        })
+
+        assert len(report.findings) == 1
+        assert report.findings[0].severity == Severity.HIGH
+
+    def test_skips_passing_scenarios(self):
+        from cherenkov.cli.commands.validate import _findings_report
+
+        report = _findings_report({"reports": [{"scenario_id": "s1", "passed": True}]})
+
+        assert report.findings == []

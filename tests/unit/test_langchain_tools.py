@@ -1,0 +1,120 @@
+"""tests/unit/test_langchain_tools.py — regression tests for cherenkov/integrations/langchain/tools.py.
+
+Guards against the module referencing nonexistent APIs (`cherenkov.core.engine.CherenkovEngine`,
+`cherenkov.core.contracts.TargetConfig`) — both never existed in this codebase, so every tool
+call silently fell into an `except Exception` branch and returned an error string instead of
+doing anything. mypy caught the `TargetConfig` attribute errors, but nothing caught the equally
+broken `CherenkovEngine` import (mypy's `ignore_missing_imports` silences missing first-party
+modules the same as missing third-party ones). These tests exercise the real code paths so a
+future regression back to a fictional engine fails loudly instead of just returning an error string.
+"""
+from __future__ import annotations
+
+import types
+
+import pytest
+
+langchain_core = pytest.importorskip("langchain_core")
+
+
+@pytest.fixture(autouse=True)
+def _suppress_logging():
+    from cherenkov.core.errors import LoggerConfig
+
+    LoggerConfig.suppress_stderr = True
+    yield
+    LoggerConfig.suppress_stderr = False
+
+
+def _make_pipeline_stubs(monkeypatch, tmp_path):
+    """Patch IngestStage/PlanStage/GenerateStage to avoid Ollama/network calls."""
+    spec_file = tmp_path / "spec.yaml"
+    spec_file.write_text("openapi: '3.1.0'\ninfo:\n  title: T\n  version: '1'\npaths: {}")
+
+    from cherenkov.core.contracts import GenerateOutput, Scenario, StageMeta, Status
+
+    fake_scenario = Scenario(
+        mutation_id="get_test_happy_path",
+        endpoint="/test",
+        method="GET",
+        case_type="happy_path",
+        expected_status=200,
+    )
+    fake_endpoint = types.SimpleNamespace(
+        path="/test", method="GET", operation={"responses": {"200": {}}}, schemas={},
+    )
+
+    class _FakeIngestOut:
+        endpoints = [fake_endpoint]
+
+    class _FakePlanOut:
+        scenarios = [fake_scenario]
+
+    monkeypatch.setattr(
+        "cherenkov.stages.ingest.IngestStage",
+        lambda run_id: types.SimpleNamespace(run=lambda spec: _FakeIngestOut()),
+    )
+    monkeypatch.setattr(
+        "cherenkov.stages.plan.PlanStage",
+        lambda run_id: types.SimpleNamespace(run=lambda ingest_out: _FakePlanOut()),
+    )
+    monkeypatch.setattr("cherenkov.stages.generate.GenerateStage.__init__", lambda self, run_id=None: None)
+    monkeypatch.setattr(
+        "cherenkov.stages.generate.GenerateStage.run",
+        lambda self, **kw: GenerateOutput(
+            scenario_id="s1", test_code="// generated", status=Status.OK,
+            metadata=StageMeta(stage="GENERATE"), endpoint="/test", method="GET",
+        ),
+    )
+    return spec_file
+
+
+class TestGenerateTests:
+    def test_writes_real_files_via_real_pipeline(self, monkeypatch, tmp_path):
+        """Regression: previously called nonexistent cherenkov.core.engine.CherenkovEngine
+        and always fell into the except-branch, writing nothing."""
+        spec_file = _make_pipeline_stubs(monkeypatch, tmp_path)
+        from cherenkov.integrations.langchain.tools import generate_tests
+
+        out_dir = tmp_path / "out"
+        result = generate_tests(str(spec_file), str(out_dir))
+
+        assert "Error" not in result, result
+        assert "Generated 1/1" in result
+        written = list(out_dir.glob("*.spec.ts"))
+        assert len(written) == 1
+        assert written[0].read_text() == "// generated"
+
+
+class TestValidateEndpoint:
+    def test_uses_real_validation_engine(self, monkeypatch):
+        """Regression: previously constructed a nonexistent TargetConfig and called a
+        nonexistent CherenkovEngine.run_validation, always hitting the except-branch."""
+        from cherenkov.execution.validate import ValidationEngine
+        from cherenkov.integrations.langchain.tools import validate_endpoint
+
+        monkeypatch.setattr(
+            ValidationEngine,
+            "validate_suite",
+            lambda self, target_url, spec_path=None, **kw: {
+                "status": "ok",
+                "reports": [{"passed": True}, {"passed": False}],
+            },
+        )
+
+        result = validate_endpoint("http://example.invalid", "spec.yaml", env="test")
+
+        assert "Error" not in result, result
+        assert "1/2 scenario(s) passed" in result
+
+
+class TestGetLangchainTools:
+    def test_builds_three_tools_with_expected_names(self):
+        from cherenkov.integrations.langchain.tools import get_langchain_tools
+
+        tools = get_langchain_tools()
+        assert {t.name for t in tools} == {
+            "cherenkov_generate_tests",
+            "cherenkov_validate_endpoint",
+            "cherenkov_explain_violation",
+        }
