@@ -46,6 +46,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
+      # tauri build validates that the externalBin sidecar declared in
+      # tauri.conf.json exists at compile time. This workflow only checks
+      # that the app builds/bundles, so a stub stands in for the real
+      # PyInstaller launcher (built and bundled by build-desktop.yml at
+      # release time). Mirrors the same placeholder used by desktop-build.yml.
+      - name: Create placeholder sidecar
+        shell: bash
+        working-directory: desktop/src-tauri
+        run: |
+          TRIPLE=$(rustc -vV | sed -n 's/^host: //p')
+          EXT=""
+          if [[ "${{ runner.os }}" == "Windows" ]]; then EXT=".exe"; fi
+          mkdir -p binaries
+          printf '#!/bin/sh\nexit 0\n' > "binaries/cherenkov-launcher-${TRIPLE}${EXT}"
+          chmod +x "binaries/cherenkov-launcher-${TRIPLE}${EXT}"
+
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:

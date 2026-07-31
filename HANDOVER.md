@@ -36,6 +36,78 @@ All 5 tracks from the Phase 11 roadmap have been built and verified:
 **Mypy gate:** ⚠️ **FAILING** — 7 errors in 3 files (`cherenkov/ai/openai_client.py`, `cherenkov/ai/nemoclaw_client.py`, `cherenkov/substrate/providers/localai.py`). The 2026-07-06 note below claiming "runs clean on 530 files" no longer holds. A fix is in progress in a separate session.
 **Branch:** `feat/qa-headless-locator-alignment`. Run `git rev-list --left-right --count origin/main...HEAD` for the current count rather than trusting a number written here.
 
+## Readiness check follow-up (2026-07-30) -- CLI surface dry-run sweep
+
+Continuation of the 2026-07-29 check below. PR #731 (verify double-probe fix)
+merged as `677b450`. Picked up the same methodology -- cold dry-runs against
+live targets, not code reading -- and swept the rest of the documented CLI
+surface: `certify`, `check-suite`, `generate --repair`, `eject`, `report`,
+`daemon`, `doctor`. Two more real, live-verified bugs found and fixed (PR
+#734, bundled per this repo's own precedent in #726 of grouping several
+small fixes found in one investigative pass):
+
+- **Bug:** `cherenkov generate` silently produced **zero output** on a small,
+  valid, realistic spec (`demos/catch-the-ai-cheating/openapi.yaml`) and
+  exited 0 ("Successfully generated 0/0 test suites."). Root cause:
+  `cherenkov/stages/ingest.py`'s richness heuristic that gates whether an
+  endpoint is even used only counts fields reachable via named
+  `#/components/schemas/...` `$ref`s and only counts operation-level
+  `parameters` -- any endpoint with an **inline** response/request schema
+  (common for hand-written or exported specs) or a **path-item-level**
+  shared `parameters` block scored near-zero richness and got silently
+  dropped. **Fix:** additionally count properties from inline schemas found
+  anywhere in the operation, and union operation-level with path-level
+  parameters. Verified live: same spec now ingests 1 endpoint, plans 2
+  scenarios, generates 2/2 test suites (template-fallback path, no
+  Ollama/Docker in this sandbox). New tests in `tests/unit/test_ingest_stage.py`.
+- **Bug:** `cherenkov doctor` told users **without Ollama installed at all**
+  to "get a GPU" -- `detect_ollama_device()` returns `"UNKNOWN"` specifically
+  when Ollama isn't reachable (distinct from `"CPU"`, meaning reachable but
+  not GPU-accelerated), but the device-health line treated both the same way
+  and printed the CPU/GPU message regardless, plus double-counted the same
+  root cause as two separate issues in the summary tally. Same bug class as
+  #726's "false Ollama-detected onboarding" fix, but in a different code path
+  (`cherenkov/stages/doctor_cmd.py`, the CLI's own doctor, not the web
+  onboarding wizard) that fix didn't reach. **Fix:** device line now prints
+  "Ollama not reachable -- install/start Ollama..." when unknown, keeps the
+  original CPU-mode message only when Ollama is actually reachable, and
+  doesn't double-count. New tests in `tests/unit/test_doctor_cmd.py`.
+
+**Clean (no bugs found):** `certify` (incl. `--coverage-report`, `--compliance`,
+`--verify` roundtrip -- correctly reuses the single probe sweep, unaffected by
+the verify fix's sibling issue since certify never had the double-call);
+`check-suite` (all 4 modes -- control/weakened/deleted/hallucinated -- matched
+the standalone demo script exactly, `--fail-on-finding` gates correctly);
+`report` (`--list`, `--run latest`, `--format json`, `--diff`); `daemon`
+(`--max-loops` exits cleanly, correctly re-validated the ingest richness fix
+against its own default-watched `stub/target_spec.json`).
+
+**Flagged, deliberately not fixed:** `cherenkov eject`'s zero-lock-in claim
+holds (verified with a real `npm install` + `npx playwright test --list` in
+the ejected output -- zero `cherenkov` imports). But `npx tsc --noEmit` on
+the ejected output fails: 3 of the 12 tracked `stub/generated_tests/golden_*.spec.ts`
+fixtures reference a `/pets` endpoint not present in `stub/generated-types.ts`
+(which itself doesn't fully match the current `stub/target_spec.json` --
+it has `/orders`/`/products` paths the current spec no longer declares), and
+2 fixtures build a `/users` POST body missing a `name` field the current
+types require. Real inconsistency, but `stub/generated_tests/` and
+`stub/generated-types.ts` are generated artifacts (`RUN_ORDER.md`: `npx
+openapi-typescript` + `generate_and_score.py` against `stub/target_spec.json`)
+that `CLAUDE.md` explicitly says not to hand-edit, and no CI job currently
+runs `tsc --noEmit` against them (checked: no workflow does) so this isn't an
+active regression, just a real latent one. Left as a finding, not a fix --
+regenerating requires the actual codegen pipeline, not a manual patch.
+**Note on process:** the first eject dry-run in this session was contaminated
+by untracked local cruft in the shared working tree (leftover `*.spec.spec.ts`
+files from earlier dogfooding, gitignored, not part of the repo) that
+produced a misleading larger failure count; re-ran from a clean `git clone`
+of the branch to get the trustworthy result above -- exactly the
+"Environment hazards: shared working tree" risk this file already warns about.
+
+**Gate G0 status unchanged: still 3/4, E0.3 still not attempted.** Nothing in
+this sweep required or constitutes E0.3 evidence -- it's hardening the path
+E0.3 will walk, not a substitute for it.
+
 ## Readiness check (2026-07-29)
 
 Ran independently, not from memory: `pytest tests/unit tests/evals` green (one file,
@@ -79,6 +151,25 @@ Found and fixed a real bug in the process:
   engine actually resolves it. Full unit/eval suite green after the change.
 
 > **Note:** `docs/HANDOVER.md` is a separate, reverse-chronological session log (older format, kept for history). This file (`HANDOVER.md`, repo root) is the canonical status anchor per `CLAUDE.md`. The 2026-07-13 update below reconciles both -- the work logged in `docs/HANDOVER.md`'s "2026-07-11 HITL severity" section is the same work as the HITL severity entry below.
+
+## What landed this session (2026-07-29 to 2026-07-30)
+
+The `_run_rich_verdict` double-probe-sweep fix is already narrated in full above
+(the "Dry run" bullet) -- it landed as PR #731. Also landed, not yet logged here:
+
+| SHA | What |
+|---|---|
+| `4ffd7ea` (#726) | fix: spec coverage no longer conflates "no bugs found" with "not tested" -- a fully-probed, 100%-clean target (incl. CHERENKOV's own self-dogfood run) was grading D/SUSPECT with a false LOW_COVERAGE flag; `run_proof` now tracks every endpoint actually probed via an optional `probed_endpoints` out-param. Also: onboarding no longer falsely reports Ollama as detected; generate output pollution + a retry storm fixed. |
+| `75a2fbd` (#730) | fix(ops): Dockerfile `python:3.14-slim` -> `3.12-slim` (a 2026-07-05 fix that was logged as landed but had never actually made it into the file -- confirmed via full `git log -p` on `Dockerfile`, which had only ever contained `3.14-slim`); untracked 126MB of committed PyInstaller build output under `build/cherenkov-launcher/` (already gitignored, force-added at some point); marked `PROJECT_REVIEW.md` (dated 2026-06-15, stale) as superseded; added `.github/workflows/surface-freeze-gate.yml` to enforce the SURFACE FREEZE below as a checked CI gate instead of a prose convention. |
+| `87fbf33` (#732) | fix(ci): stage placeholder sidecar before Tauri build. |
+
+**Known pre-existing CI red, unrelated to any of the above:** `tauri-build.yml`'s
+`build (macos-latest)` / `build (ubuntu-latest)` jobs have failed on every run on
+`main` back to at least 2026-07-01 -- `A public key has been found, but no private
+key. Make sure to set TAURI_SIGNING_PRIVATE_KEY environment variable.` This is the
+already-tracked "Tauri updater signing key" item further down this file (needs
+`cargo tauri signer generate` + storing the private half as a repo secret -- an
+owner action, not something an agent should do unilaterally).
 
 ---
 

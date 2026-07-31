@@ -97,13 +97,19 @@ def hitl_approve(item_id: str, actor: str | None, json_out: bool) -> None:
 @hitl_cmd.command("reject")
 @click.argument("item_id")
 @click.option("--reason", "-r", required=True, help="Rejection reason")
+@click.option("--note", "-n", default=None, help="Optional free-text elaboration, kept separate "
+              "from --reason so the learning loop can distinguish category from detail")
 @click.option("--actor", default=None, help="Reviewer identity (default: $USER)")
 @click.option("--json", "json_out", is_flag=True, help="Emit JSON envelope")
-def hitl_reject(item_id: str, reason: str, actor: str | None, json_out: bool) -> None:
+def hitl_reject(item_id: str, reason: str, note: str | None, actor: str | None, json_out: bool) -> None:
     """Reject a HITL item."""
+    from cherenkov.core.feedback_store import FeedbackStore
     from cherenkov.hitl.cmd import run_reject
 
-    sys.exit(run_reject(item_id=item_id, reason=reason, actor=actor, json_out=json_out))
+    sys.exit(run_reject(
+        item_id=item_id, reason=reason, note=note, actor=actor, json_out=json_out,
+        feedback_store=FeedbackStore(),
+    ))
 
 
 @hitl_cmd.command("classify")
@@ -137,8 +143,12 @@ def hitl_explain(item_id: str, json_out: bool) -> None:
 @click.option("--host", default="0.0.0.0", help="Host to bind (default: 0.0.0.0)")
 @click.option("--port", "-p", type=int, default=8000, help="Port to bind (default: 8000)")
 @click.option("--demo", is_flag=True, help="Load demo fixture data into HITL queue on startup")
-def review_cmd(host: str, port: int, demo: bool) -> None:
+@click.option("--no-browser", is_flag=True, help="Don't auto-open the dashboard in a browser")
+def review_cmd(host: str, port: int, demo: bool, no_browser: bool) -> None:
     """Start the review dashboard web UI (FastAPI + prebuilt frontend)."""
+    import threading
+    import webbrowser
+
     import uvicorn
 
     from cherenkov.web.api import app
@@ -149,8 +159,24 @@ def review_cmd(host: str, port: int, demo: bool) -> None:
         click.echo("Loading demo findings into HITL queue...")
         generate_demo_findings()
 
-    click.echo(f"\nCHERENKOV review dashboard starting on http://{host}:{port}")
+    dist_index = os.path.join(
+        os.path.dirname(__file__), "..", "..", "web", "ui", "dist", "index.html"
+    )
+    if not os.path.exists(dist_index):
+        click.echo(
+            "Note: prebuilt UI not found — the dashboard will show a build hint "
+            "instead of the review screen. Run `npm install && npm run build` in "
+            "cherenkov/web/ui/ to build it locally.",
+        )
+
+    open_host = "127.0.0.1" if host == "0.0.0.0" else host
+    url = f"http://{open_host}:{port}"
+    click.echo(f"\nCHERENKOV review dashboard starting on {url}")
     click.echo("Hit Ctrl+C to stop.\n")
+
+    if not no_browser:
+        threading.Timer(1.0, lambda: webbrowser.open(url)).start()
+
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 

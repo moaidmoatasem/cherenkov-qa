@@ -270,6 +270,35 @@ test.describe('Review Screen — Deep Flow Coverage', () => {
     await expect(page.getByText('No tests match this audit filter')).toBeVisible();
   });
 
+  // ── Previously-rejected items persist across reload ────────────────
+  test('previously-rejected items load from server with their stored reason', async ({ page }) => {
+    await setupApiMocks(page);
+    await page.route('**/api/v1/review/queue*', async (route: any) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
+        { id: 'test-3', method: 'PUT', endpoint: '/pets', status: 'review', confidence: 0.81, review_gate_failed: 'quality', confidence_reason: 'Assertion checks shape but not descriptive name' },
+        { id: 'rejected-1', method: 'DELETE', endpoint: '/store/order/{orderId}', status: 'rejected', confidence: 0.3, review_gate_failed: 'quality', confidence_reason: 'weak', reject_reason: 'Hardcoded fixture ID' },
+      ]) });
+    });
+
+    await page.goto('/');
+    await page.evaluate(() => {
+      localStorage.setItem('[copilot] tour_seen', 'true');
+      localStorage.setItem('[cherenkov] onboarding_seen', 'true');
+    });
+    await page.reload();
+    await page.waitForSelector('#cherenkov-app-core');
+    await page.waitForTimeout(SETTLEMENT);
+    await page.click('#nav-item-review');
+    await page.waitForSelector('#review-screen');
+    await page.waitForTimeout(SETTLEMENT);
+
+    // Rejected tab already shows the historical item — no client-side reject action taken
+    await expect(page.locator('#filter-tab-rejected')).toContainText('(1)');
+    await page.locator('#filter-tab-rejected').click();
+    await page.waitForTimeout(200);
+    await expect(page.getByText('Reason: Hardcoded fixture ID')).toBeVisible();
+  });
+
   // ── Keyboard navigation: J/K moves selection ──────────────────────
   test('keyboard J/K navigates between test items', async ({ page }) => {
     await gotoReview(page);

@@ -1,0 +1,75 @@
+"""Unit tests for the `cherenkov hitl reject` Click command (cherenkov/cli/commands/advanced.py).
+
+Covers the CLI-layer contract added for issue #624 (rejection-reason capture):
+`--reason` stays free-form (existing docs/onboarding scripts pass descriptive
+text like "flaky_endpoint", not a fixed category — constraining it would break
+them), `--note` carries an optional separate elaboration, and a successful
+rejection seeds FeedbackStore for the learning loop.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+
+from click.testing import CliRunner
+
+from cherenkov.cli.commands.advanced import hitl_cmd
+from cherenkov.core.feedback_store import FeedbackStore
+from cherenkov.hitl.contracts import HitlItem
+from cherenkov.hitl.store import HitlQueue
+
+
+def _runner_env(tmp_path):
+    db_path = str(tmp_path / "hitl.db")
+    HitlQueue(db_path=db_path).enqueue(HitlItem(id="cli_item", endpoint="/foo", method="GET"))
+    return db_path
+
+
+def test_reject_still_accepts_free_text_reason(tmp_path, monkeypatch):
+    """Documented usage (GETTING_STARTED.md, QA_VALIDATION_RUNBOOK.md, the
+    onboarding cast script) passes arbitrary descriptive text, not a fixed
+    category — this must keep working."""
+    db_path = _runner_env(tmp_path)
+    monkeypatch.setenv("CHERENKOV_DATA_DIR", str(tmp_path))
+
+    runner = CliRunner()
+    result = runner.invoke(
+        hitl_cmd, ["reject", "cli_item", "--reason", "flaky_endpoint", "--json"]
+    )
+    assert result.exit_code == 0
+    envelope = json.loads(result.output)
+    assert envelope["ok"] is True
+
+    item = HitlQueue(db_path=db_path).get("cli_item")
+    assert item.reject_reason == "flaky_endpoint"
+
+
+def test_reject_accepts_reason_and_note_and_seeds_feedback_store(tmp_path, monkeypatch):
+    db_path = _runner_env(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("CHERENKOV_DATA_DIR", str(tmp_path))
+
+    runner = CliRunner()
+    result = runner.invoke(
+        hitl_cmd,
+        [
+            "reject", "cli_item",
+            "--reason", "too_noisy",
+            "--note", "flaky under load",
+            "--json",
+        ],
+    )
+    assert result.exit_code == 0
+    envelope = json.loads(result.output)
+    assert envelope["ok"] is True
+
+    q = HitlQueue(db_path=db_path)
+    item = q.get("cli_item")
+    assert item.reject_reason == "too_noisy: flaky under load"
+
+    store = FeedbackStore(store_path=os.path.join(str(tmp_path), ".cherenkov", "feedback.json"))
+    entries = store.get_all()
+    assert len(entries) == 1
+    assert entries[0].reason == "too_noisy"
+    assert entries[0].notes == "flaky under load"

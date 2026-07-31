@@ -66,6 +66,137 @@ class TestIngestStageMissingSpec(unittest.TestCase):
         self.assertTrue(any("SPEC_NOT_FOUND" in e.code for e in result.errors))
 
 
+class TestInlineSchemaFieldCount(unittest.TestCase):
+    def _call(self, node):
+        from cherenkov.stages.ingest import _inline_schema_field_count
+
+        return _inline_schema_field_count(node)
+
+    def test_no_properties_counts_zero(self):
+        self.assertEqual(self._call({"type": "string"}), 0)
+
+    def test_top_level_properties_counted(self):
+        node = {"properties": {"a": {}, "b": {}}}
+        self.assertEqual(self._call(node), 2)
+
+    def test_nested_response_schema_counted(self):
+        # Mirrors an operation dict with an inline (non-$ref) response schema.
+        node = {
+            "responses": {
+                "200": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {"id": {}, "total": {}, "status": {}},
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        self.assertEqual(self._call(node), 3)
+
+    def test_list_nodes_are_traversed(self):
+        node = [{"properties": {"a": {}}}, {"properties": {"b": {}, "c": {}}}]
+        self.assertEqual(self._call(node), 3)
+
+
+class TestIngestStageRichness(unittest.TestCase):
+    """Regression: an endpoint with a real, typed inline response schema must
+    not be dropped as 'low richness' just because it doesn't use a named
+    $ref to components.schemas.
+    """
+
+    def _run(self, yaml_content: str):
+        import os
+        import tempfile
+
+        from cherenkov.stages.ingest import IngestStage
+
+        with tempfile.NamedTemporaryFile(suffix=".yaml", mode="w", delete=False) as f:
+            f.write(yaml_content)
+            path = f.name
+        try:
+            return IngestStage(run_id="test").run(path)
+        finally:
+            os.unlink(path)
+
+    def test_inline_response_schema_is_not_skipped_as_low_richness(self):
+        from cherenkov.core.contracts import Status
+
+        result = self._run(
+            """
+openapi: "3.0.0"
+info:
+  title: Orders API
+  version: "1.0"
+paths:
+  /orders/{id}:
+    get:
+      summary: Get an order by id
+      responses:
+        "200":
+          description: The order
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, total, status]
+                properties:
+                  id:
+                    type: integer
+                  total:
+                    type: number
+                  status:
+                    type: string
+        "404":
+          description: Not found
+"""
+        )
+        self.assertNotEqual(result.status, Status.DEGRADED)
+        self.assertEqual(len(result.endpoints), 1)
+        self.assertFalse(any(e.code == "LOW_RICHNESS" for e in result.errors))
+
+    def test_path_level_parameters_counted_toward_richness(self):
+        # A shared path-level `id` parameter plus a nontrivial response body
+        # should be enough to clear the richness floor even without any
+        # operation-level `parameters` key.
+        from cherenkov.core.contracts import Status
+
+        result = self._run(
+            """
+openapi: "3.0.0"
+info:
+  title: Items API
+  version: "1.0"
+paths:
+  /items/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+"""
+        )
+        self.assertNotEqual(result.status, Status.DEGRADED)
+        self.assertEqual(len(result.endpoints), 1)
+
+
 class TestIngestStageYAML(unittest.TestCase):
     def test_yaml_spec_parses_successfully(self):
         import os
