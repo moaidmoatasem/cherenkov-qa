@@ -22,7 +22,7 @@ def _findings_report(results: dict):
     """
     from types import SimpleNamespace
 
-    from cherenkov.core.contracts import DivergenceFinding
+    from cherenkov.core.contracts import DivergenceFinding, Severity
 
     report_obj = SimpleNamespace(findings=[])
     for r in results.get("reports", []):
@@ -37,7 +37,7 @@ def _findings_report(results: dict):
                 actual=r.get("error", ""),
                 summary="Response drift detected",
                 description=f"Error: {r.get('error', '')}",
-                severity="high",
+                severity=Severity.HIGH,
                 remediation="Update API or spec",
             )
         )

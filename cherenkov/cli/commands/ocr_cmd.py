@@ -114,8 +114,8 @@ def ocr_review(filepath: str, fmt: str) -> None:
     if fmt == "json":
         click.echo(json.dumps([
             {"file": r["file"], "passed": r["output"].passed,
-             "findings": [{"severity": f.severity.value, "line": f.line, "message": f.message}
-                          for f in r["output"].findings],
+             "findings": [{"severity": finding.severity.value, "line": finding.line, "message": finding.message}
+                          for finding in r["output"].findings],
              "score_deduction": r["output"].score_deduction}
             for r in results
         ], indent=2))
@@ -123,8 +123,8 @@ def ocr_review(filepath: str, fmt: str) -> None:
         for r in results:
             status = "PASS" if r["output"].passed else "FAIL"
             click.echo(f"  {r['file']}: {status}")
-            for f in r["output"].findings:
-                click.echo(f"    [{f.severity.value}] {f.file}:{f.line} - {f.message[:120]}")
+            for finding in r["output"].findings:
+                click.echo(f"    [{finding.severity.value}] {finding.file}:{finding.line} - {finding.message[:120]}")
     sys.exit(0 if all_passed else 1)
 
 

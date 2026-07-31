@@ -135,9 +135,7 @@ class SemanticJudge:
             result = router.route(request)
             duration_ms = int((time.monotonic() - t0) * 1000)
 
-            content = result.content
-            if isinstance(content, str):
-                content = json.loads(content)
+            content_dict: dict = result.content if isinstance(result.content, dict) else json.loads(result.content)
 
             evals = [
                 EvidenceEvaluation(
@@ -147,10 +145,10 @@ class SemanticJudge:
                     rationale=e.get("rationale", ""),
                     false_positive_risk=e.get("false_positive_risk", "low"),
                 )
-                for e in content.get("evaluations", [])
+                for e in content_dict.get("evaluations", [])
             ]
             agg = float(
-                content.get("aggregate_score", sum(e.quality_score for e in evals) / len(evals))
+                content_dict.get("aggregate_score", sum(e.quality_score for e in evals) / len(evals))
             )
             return SemanticJudgeReport(
                 aggregate_score=agg,
