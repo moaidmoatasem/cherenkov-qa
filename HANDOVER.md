@@ -1,5 +1,34 @@
 # CHERENKOV -- Session Handover
 
+**Date:** 2026-07-31
+**HEAD:** see `git log`. Last reflected here: Sprint 4 / Phase 11 integration pass.
+**Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"` — all passing. LangChain integration verified live (Tools: `cherenkov_generate_tests`, `cherenkov_validate_endpoint`, `cherenkov_explain_violation`).
+**Branch:** `main` (or create `feat/sprint4-phase11` before merging).
+
+## Sprint 4 / Phase 11 Completion (2026-07-31)
+
+All 5 tracks from the Phase 11 roadmap have been built and verified:
+
+| Track | Status | Key Files |
+|-------|--------|-----------|
+| **T1 – MCP Stub Tools** | ✅ Complete | `cherenkov/mcp/handlers.py`, `cherenkov/adapters/notifiers/jira_client.py`, `cherenkov/stages/perf/perf_stage.py`, `cherenkov/compliance/mena_scanner.py` |
+| **T2 – LangChain Integration** | ✅ Complete | `cherenkov/integrations/langchain/tools.py`, `cherenkov/integrations/langchain/__init__.py`, `pyproject.toml` (added `langchain-core>=0.1.0`) |
+| **T3 – Desktop Setup Wizard** | ✅ Complete | `cherenkov/web/ui/src/components/SetupWizard.tsx`, `desktop/src-tauri/src/main.rs` |
+| **T4 – VS Code Expansion** | ✅ Complete | `vscode/src/providers/CodeLensProvider.ts` (heal CodeLens), `vscode/src/extension.ts` (`cherenkov.heal` cmd), `vscode/package.json` |
+| **T5 – MCP Registry** | ✅ Complete | `smithery.yaml` (already present with correct config) |
+
+### Key Decisions
+- **LangChain dependency**: Added `langchain-core` as a core dep in `pyproject.toml` (not optional), since it's lightweight and the integration is a core product feature.
+- **Healing CodeLens**: Dispatches to the dashboard `/healing` URL — full inline suggestion UI is in the web dashboard, not in the extension itself (keeps extension footprint small, D7 invariant respected).
+- **`smithery.yaml`**: Was already present — verified it points to `cherenkov mcp serve` correctly.
+
+### Next Actions
+- Create feature branch and open PR against `main`.
+- Record Loom/asciinema sessions for the LangChain integration usage.
+- Publish to Smithery / MCP registry after PR is merged.
+
+---
+
 **Date:** 2026-07-30
 **HEAD:** see `git log`. Last reflected here: `39ec376` on `feat/qa-headless-locator-alignment`, merged into local `main`, which also carries `origin/main` through #726 and #730.
 **Tests:** **1769 passed, 1 skipped, 0 failed** — measured 2026-07-30 (`pytest tests/unit tests/integration`). The previous "788+" figure was badly stale. Re-measure after this merge rather than trusting the number here.
