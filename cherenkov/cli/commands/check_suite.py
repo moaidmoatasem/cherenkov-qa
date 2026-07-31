@@ -185,7 +185,11 @@ def check_integrity(
     "-s",
     default=None,
     type=click.Path(exists=True),
-    help="Path to the OpenAPI spec (YAML/JSON). Required for HALLUCINATED detection.",
+    help=(
+        "Path to the OpenAPI spec (YAML/JSON). Required for HALLUCINATED "
+        "detection on Python suites; HALLUCINATED is not implemented for "
+        "TypeScript, where this flag has no effect."
+    ),
 )
 @click.option(
     "--output",
@@ -223,11 +227,24 @@ def check_suite_cmd(
     """
     cand_path = Path(candidate)
 
-    if cand_path.suffix not in (".py", ".ts"):
+    # The `.ts` warning below used to be unreachable: `.ts` sat inside this
+    # guard tuple, so the one audience that needed to hear "this is regex, not
+    # AST" was the only audience never shown it. Split into two messages.
+    if cand_path.suffix == ".ts":
+        click.echo(
+            "[WARNING] TypeScript suites use regex-based detection, not AST "
+            "analysis. WEAKENED is a file-level heuristic (it does not compare "
+            "against the baseline per assertion), DELETED only tracks test "
+            "names, and HALLUCINATED is NOT IMPLEMENTED for TypeScript — "
+            "--spec will not surface hallucinated assertions here. Full AST "
+            "analysis is available for Python (.py) suites.",
+            err=True,
+        )
+    elif cand_path.suffix != ".py":
         click.echo(
             f"[WARNING] Candidate file has extension '{cand_path.suffix}'. "
-            "Full AST analysis is only available for Python (.py) suites. "
-            "TypeScript suites use regex-based detection.",
+            "Only Python (.py) and TypeScript (.ts) suites are supported; "
+            "results for other extensions are unreliable.",
             err=True,
         )
 
