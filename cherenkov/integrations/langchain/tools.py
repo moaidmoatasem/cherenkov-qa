@@ -9,10 +9,10 @@ Or install all LangChain extras with:
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from langchain_core.tools import BaseTool
+    pass
 
 
 try:
@@ -29,12 +29,12 @@ class GenerateTestsInput(BaseModel):
 class ValidateInput(BaseModel):
     target_url: str = Field(description="The URL of the target API to validate.")
     spec_path: str = Field(description="Path to the OpenAPI specification file.")
-    env: Optional[str] = Field(default="dev", description="Target environment.")
+    env: str | None = Field(default="dev", description="Target environment.")
 
 
 class ExplainViolationInput(BaseModel):
     violation_id: str = Field(description="The ID or message of the conformance violation.")
-    context: Optional[str] = Field(default="", description="Additional context about the API or the failure.")
+    context: str | None = Field(default="", description="Additional context about the API or the failure.")
 
 
 def _require_langchain() -> None:
@@ -56,7 +56,7 @@ class CherenkovTool:
     Requires: pip install langchain-core
     """
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> "CherenkovTool":
+    def __new__(cls, *args: Any, **kwargs: Any) -> CherenkovTool:
         _require_langchain()
         from langchain_core.tools import BaseTool  # noqa: F401 — deferred import
         return _build_cherenkov_tool()(*args, **kwargs)  # type: ignore[return-value]
@@ -64,7 +64,7 @@ class CherenkovTool:
 
 def _build_cherenkov_tool():  # type: ignore[return]
     """Build the actual LangChain BaseTool subclass — called only when langchain-core is present."""
-    from langchain_core.tools import BaseTool  # noqa: F811
+    from langchain_core.tools import BaseTool
 
     class _CherenkovTool(BaseTool):
         name: str = "cherenkov_qa_tool"
@@ -74,6 +74,7 @@ def _build_cherenkov_tool():  # type: ignore[return]
 
         def _run(self, action: str, **kwargs: Any) -> Any:
             from cherenkov.core.engine import CherenkovEngine
+
             from cherenkov.core.contracts import TargetConfig
 
             engine = CherenkovEngine()
@@ -82,11 +83,10 @@ def _build_cherenkov_tool():  # type: ignore[return]
                     spec_path=kwargs.get("spec_path", ""),
                     output_dir=kwargs.get("output_dir", "stub/generated_tests"),
                 )
-            elif action == "validate":
+            if action == "validate":
                 config = TargetConfig(url=kwargs.get("target_url", ""), env=kwargs.get("env", "dev"))
                 return engine.run_validation(target=config, spec_path=kwargs.get("spec_path", ""))
-            else:
-                return f"Unknown action: {action}"
+            return f"Unknown action: {action}"
 
         async def _arun(self, action: str, **kwargs: Any) -> Any:
             raise NotImplementedError("CherenkovTool does not support async yet.")
@@ -113,7 +113,7 @@ def generate_tests(spec_path: str, output_dir: str = "stub/generated_tests") -> 
             result = engine.generate_tests(spec_path=spec_path, output_dir=output_dir)
             return f"Tests generated successfully. Result: {result}"
         except Exception as e:
-            return f"Error generating tests: {str(e)}"
+            return f"Error generating tests: {e!s}"
 
     return _generate_tests.run({"spec_path": spec_path, "output_dir": output_dir})  # type: ignore[return-value]
 
@@ -129,6 +129,7 @@ def validate_endpoint(target_url: str, spec_path: str, env: str = "dev") -> str:
     _require_langchain()
     try:
         from cherenkov.core.engine import CherenkovEngine
+
         from cherenkov.core.contracts import TargetConfig
         engine = CherenkovEngine()
         config = TargetConfig(url=target_url, env=env)
@@ -138,7 +139,7 @@ def validate_endpoint(target_url: str, spec_path: str, env: str = "dev") -> str:
             f"Details: {getattr(report, 'summary', str(report))}"
         )
     except Exception as e:
-        return f"Error validating endpoint: {str(e)}"
+        return f"Error validating endpoint: {e!s}"
 
 
 def explain_violation(violation_id: str, context: str = "") -> str:
@@ -155,7 +156,7 @@ def explain_violation(violation_id: str, context: str = "") -> str:
         res = rag.query_similar_incidents(violation_id + " " + context)
         return f"Explanation for violation '{violation_id}':\n{res}"
     except Exception as e:
-        return f"Error explaining violation: {str(e)}"
+        return f"Error explaining violation: {e!s}"
 
 
 def get_langchain_tools() -> list:
@@ -194,11 +195,11 @@ def get_langchain_tools() -> list:
 
 __all__ = [
     "CherenkovTool",
-    "generate_tests",
-    "validate_endpoint",
-    "explain_violation",
-    "get_langchain_tools",
+    "ExplainViolationInput",
     "GenerateTestsInput",
     "ValidateInput",
-    "ExplainViolationInput",
+    "explain_violation",
+    "generate_tests",
+    "get_langchain_tools",
+    "validate_endpoint",
 ]

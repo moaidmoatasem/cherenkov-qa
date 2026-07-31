@@ -1,13 +1,15 @@
-import requests
 from abc import ABC, abstractmethod
-from typing import Dict, Any
 from dataclasses import dataclass
+from typing import Any
+
+import requests
+
 
 # Domain
 @dataclass
 class WebhookEvent:
     event_type: str
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
 
 # Ports
 class WebhookDispatcherPort(ABC):
@@ -25,7 +27,7 @@ class HttpWebhookDispatcher(WebhookDispatcherPort):
         for attempt in range(self.max_retries):
             try:
                 response = requests.post(
-                    self.target_url, 
+                    self.target_url,
                     json={"type": event.event_type, "data": event.payload},
                     timeout=5
                 )

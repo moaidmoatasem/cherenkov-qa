@@ -15,8 +15,8 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-import requests
 import pytest
+import requests
 
 from cherenkov.core.contracts import Scenario, Status
 from cherenkov.core.errors import LoggerConfig

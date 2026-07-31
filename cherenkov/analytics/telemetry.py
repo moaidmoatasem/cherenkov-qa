@@ -1,20 +1,20 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List
 from dataclasses import dataclass, field
+
 
 # Domain
 @dataclass
 class RunStatistics:
     endpoints_tested: int = 0
     divergence_count: int = 0
-    api_call_latencies_ms: List[float] = field(default_factory=list)
+    api_call_latencies_ms: list[float] = field(default_factory=list)
 
     @property
     def divergence_rate(self) -> float:
         if self.endpoints_tested == 0:
             return 0.0
         return self.divergence_count / self.endpoints_tested
-        
+
     @property
     def average_latency_ms(self) -> float:
         if not self.api_call_latencies_ms:

@@ -114,11 +114,11 @@ def run_record(result_path: str, run_id: str | None = None) -> int:
     passes are just summarised, mirroring the Explorer's "findings are
     anomalies" contract.
     """
-    from cherenkov.core.contracts import IntentSpec, IntentStep, Severity
     from cherenkov.copilot.live_session import (
         enqueue_scenario_finding,
         hypothesis_from_scenario,
     )
+    from cherenkov.core.contracts import IntentSpec, IntentStep, Severity
 
     print("=" * 72)
     print("  CHERENKOV record - agentic scenario results -> HITL (E10)")
