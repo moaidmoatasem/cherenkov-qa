@@ -122,6 +122,20 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 def add_security_middleware(app: FastAPI) -> None:
-    app.add_middleware(RateLimitMiddleware)  # type: ignore[arg-type]  # TODO(#type-debt): FastAPI-kwargs middleware vs Starlette _MiddlewareFactory
+    """Register the security middleware this module owns.
+
+    Deliberately does NOT register a rate limiter or the security headers.
+    Both were registered here *and* in `cherenkov/web/api.py` (:53 and :61),
+    so every request passed through two independent rate limiters that share a
+    class name but not an algorithm — a token bucket (10 rps, burst 100) and
+    this module's sliding window (1.67 rps, burst 20). They were not nested
+    fallbacks: whichever tripped first depended on traffic shape, and the two
+    returned different 429 body schemas, only one carrying `Retry-After`.
+    Because `CORSMiddleware` sits innermost, neither 429 carried CORS headers
+    and the React UI surfaced rate limiting as an opaque CORS failure.
+
+    `api.py` is the single registration point. The sliding-window
+    implementation below is retained for direct use but is no longer wired by
+    default. See `docs/evidence/e0.6_claim_verification.md`.
+    """
     app.add_middleware(InputValidationMiddleware)
-    app.add_middleware(SecurityHeadersMiddleware)

@@ -72,10 +72,15 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
           method: item.method || 'GET',
           confidence: item.confidence ?? 0.5,
           verdict: item.status === 'approved' ? 'approved' : 'review',
+          // FIXME(E0.6-T0): these five are hardcoded true, not read from the
+          // backend's real GateResult list. The screen therefore renders green
+          // badges for gates that were never evaluated on this item — the same
+          // fabricated-result defect found in the Allure emitter. Only `quality`
+          // reflects real data (`review_gate_failed`). Tracked as M0b Tier 0.
           gates: {
             syntax: true,
             structure: true,
-            ast: true,
+            clientUsage: true,
             novelty: true,
             dryRun: true,
             quality: item.review_gate_failed !== 'quality',
@@ -381,7 +386,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
     switch (gate) {
       case 'syntax': return 'SYN';
       case 'structure': return 'STR';
-      case 'ast': return 'AST';
+      case 'clientUsage': return 'CLI';
       case 'novelty': return 'NVL';
       case 'dryRun': return 'DRY';
       case 'quality': return 'QLT';

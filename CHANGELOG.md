@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-08-01
+
+### Added
+- **Phase 11-16 Roadmap Completion**: Fully implemented GraphQL/gRPC support, Enterprise tier (SAML, RBAC, Audit), Spec Guardian, and the Phase 16 Webhook/Analytics API ecosystem.
+- **25-Integration Strategy Delivery**: Finished the complete Sprint 1 to Sprint 6 integration plan.
+- **Market Launch Documentation**: Added `docs/landing_page_copy.md` and `docs/demo_script.md`.
+
+### Fixed
+- **Repository Alignment**: Resolved merge conflicts in `HANDOVER.md` and fully synchronized `feat/qa-headless-locator-alignment` with `origin/main`.
+- **Ruff Compliance**: Resolved 383 linting issues (primarily `E402` and `F401`) across `tests/` and `cherenkov/`.
+
+## [1.1.2] - 2026-07-31
+
+### Added
+- **Unprobed-endpoint reporting** — `unprobed_endpoints()` (`cherenkov/divergence/probe_planner.py`) lists every operation probe planning produced nothing for, with the real reason, and `cherenkov verify` prints them before running. A zero-probe endpoint contributes no divergences, so a clean exit code previously implied coverage that never happened. Applied to `petstore.json` this reports **7 of 19 operations unprobed** — coverage was 12/19, not 19/19. Most causes are deliberate limits and are labelled as such: happy-path probes are GET-only (sampled data would mutate state), skipped on templated paths (a sampled identifier need not exist, and its 404 would read as a divergence), and skipped when query parameters are required. Truncation by `--max-probes` is reported rather than silent. Advisory, not fatal.
+- **`RecordingProxy`** (`cherenkov/verdict/traffic_capture.py`) — a forwarding HTTP proxy that records what a test suite actually receives from a live target. Where `CapturingWitnessAgent` records CHERENKOV's own probe traffic, this records someone else's suite: point their `API_URL` at the proxy and every request is forwarded while the response is captured. `recorded_base()` feeds straight into `synthesize_mutant_battery(base=...)`, completing a **record-then-perturb** audit that needs no known-honest baseline suite — only a live target, which `verify` already requires. Demonstrated end to end against a live server with no hand-supplied values: 3 of 3 cheat classes detected, 0 false alarms; hallucinated suites are caught by the green run itself, before any mutation.
+- **`synthesize_mutant_battery()`** (`cherenkov/divergence/mutant_synth.py`) — emits one mutant per failure axis (status, single-value, enum, missing-field) plus a conforming control, so a test's failure is attributable to a specific weak assertion. Validated against the labelled cheat corpus in `demos/catch-the-ai-cheating/`: 3 of 3 cheat classes detected with no false alarm on the honest suite, where the existing single coarse mutant detects none. Takes an optional `base` — the response actually recorded from the target — because a spec constrains types, not instance values, and mutating a schema-sampled body makes an honest suite fail its own control.
+
+### Fixed
+
+- **Soundness: `verify` could report a clean run on an endpoint it never probed.** OpenAPI 3.x allows a path parameter to be declared once on the PathItem and inherited by every operation beneath it. Probe planning read only `operation.parameters`, so on the inherited form the path placeholder was never filled and the endpoint was dropped from planning entirely — yielding zero divergences and exit code 0. The same API written the two legal ways planned 1 probe and 0 probes respectively. `merge_path_item_parameters()` is now the single definition of the `(name, in)` precedence rule, applied both in `cherenkov/divergence/probe_planner.py` and at the ingestion slicing point in `cherenkov/stages/ingest.py`, so every downstream consumer — probe planning, the meaningful-assertion gate, `truth/sources/openapi.py` — receives inherited parameters. 11 regression tests.
+- **Misleading gate skip message.** `synthesize_mutant_response()` returns `None` for two unrelated reasons — no documented 2xx response, or path parameters that cannot be sampled — and both were reported as "spec has no documented success response to mutate". `explain_unmutatable()` now names the real cause, and for unfillable parameters says where to declare them.
+- **Hanging unit test.** `test_returns_suggested_patch_not_applied` patched the handler with `wraps=`, which mocks nothing, so the real inference router opened a live LLM connection and the test hung until the suite timed out.
+
+### Documentation
+
+- **`docs/ROADMAP_2026H2.md`** — consolidated forward plan (milestones M0–M5) with verifiable exit criteria, derived from `HANDOVER.md`. Supersedes the scattered roadmap documents as the forward reference; `PRODUCT_STRATEGY_ROADMAP.md` is reclassified as a hypothesis register rather than a plan.
+- **`docs/evidence/e0.5e_oracle_discrimination.md`** — measured the baseline-free integrity oracle against the labelled cheat corpus. Isolated single-axis mutants plus a conforming run separate all three cheat classes with no false alarm on the honest suite; the coarse status-plus-field mutation currently used by the meaningful-assertion gate separates none of them. Building the mutation battery is tracked as roadmap item E0.5f.
+- `HANDOVER.md` status anchor refreshed — the stale "788+ tests" figure corrected to a measured 1753, and the "mypy runs clean" claim corrected to record the gate as failing.
+
+### Known issues
+
+- **Mypy gate is failing** — 7 errors across `cherenkov/ai/openai_client.py`, `cherenkov/ai/nemoclaw_client.py` and `cherenkov/substrate/providers/localai.py`.
+- **Release tags are inconsistent with the package version.** `pyproject.toml` declares `1.1.1`, while the tag list contains `v1.2.0`, `v3.1-delta` and a malformed `v.1.1.1`. Reconcile before the next publish — a release cut from this state is not reproducible.
+- **The meaningful-assertion gate under-detects.** See the evidence document above; it is sound as a per-test check behind the prism-dryrun precondition, but its single coarse mutant does not catch a deliberately weakened suite.
+
 ## [1.1.1] - 2026-06-29
 
 ### Added

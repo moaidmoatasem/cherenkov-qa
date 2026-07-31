@@ -3,7 +3,15 @@
 from __future__ import annotations
 
 import json
+import socket
+import threading
+import urllib.error
+import urllib.request
 import uuid
+from collections.abc import Generator
+from contextlib import contextmanager
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from typing import Any, ClassVar
 from unittest.mock import MagicMock
 
 from cherenkov.core.contracts import (
@@ -16,6 +24,7 @@ from cherenkov.core.contracts import (
 from cherenkov.verdict.traffic_capture import (
     CapturedInteraction,
     CapturingWitnessAgent,
+    RecordingProxy,
     TrafficCapture,
     TrafficCaptureReport,
 )
@@ -165,3 +174,124 @@ class TestTrafficCapture:
             golden_count=1,
         )
         assert report.total == 2
+
+
+# ── RecordingProxy — the record half of record-then-perturb ───────────────────
+
+
+class _FakeTarget(BaseHTTPRequestHandler):
+    """Stands in for a user's live API."""
+
+    ROUTES: ClassVar[dict[str, tuple[int, dict]]] = {
+        "/orders/42": (200, {"id": 42, "total": 99.5, "status": "paid"}),
+        "/orders/7": (200, {"id": 7, "total": 1.0, "status": "pending"}),
+        "/forbidden": (403, {"error": "nope"}),
+    }
+
+    def _reply(self) -> None:
+        status, body = self.ROUTES.get(self.path, (404, {"error": "not found"}))
+        raw = json.dumps(body).encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(raw)))
+        self.end_headers()
+        self.wfile.write(raw)
+
+    do_GET = _reply
+    do_POST = _reply
+
+    def log_message(self, *_: object) -> None:
+        pass
+
+
+@contextmanager
+def _target() -> Generator[str, None, None]:
+    srv = HTTPServer(("127.0.0.1", 0), _FakeTarget)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        yield f"http://127.0.0.1:{srv.server_port}"
+    finally:
+        srv.shutdown()
+
+
+def _free_port() -> int:
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        return int(s.getsockname()[1])
+
+
+def _get(url: str) -> tuple[int, Any]:
+    try:
+        with urllib.request.urlopen(url, timeout=10) as resp:
+            return resp.status, json.loads(resp.read())
+    except urllib.error.HTTPError as exc:
+        return exc.code, json.loads(exc.read())
+
+
+class TestRecordingProxy:
+    """A spec constrains types, not instance values, so a baseline-free audit
+    must perturb the response the target ACTUALLY returned. This records it.
+    """
+
+    def test_forwards_the_targets_response_unchanged(self):
+        with _target() as target, RecordingProxy(_free_port(), target) as proxy:
+            status, body = _get(f"{proxy.url}/orders/42")
+        assert status == 200
+        assert body == {"id": 42, "total": 99.5, "status": "paid"}
+
+    def test_records_the_interaction(self):
+        with _target() as target, RecordingProxy(_free_port(), target) as proxy:
+            _get(f"{proxy.url}/orders/42")
+            interactions = list(proxy.interactions)
+        assert len(interactions) == 1
+        rec = interactions[0]
+        assert rec.method == "GET"
+        assert rec.url == "/orders/42"
+        assert rec.response_status == 200
+        assert rec.response_body["total"] == 99.5
+
+    def test_recorded_base_is_ready_for_the_battery(self):
+        with _target() as target, RecordingProxy(_free_port(), target) as proxy:
+            _get(f"{proxy.url}/orders/42")
+            base = proxy.recorded_base("/orders/42")
+        assert base == (200, {"id": 42, "total": 99.5, "status": "paid"})
+
+    def test_recorded_base_is_none_for_an_unseen_path(self):
+        with _target() as target, RecordingProxy(_free_port(), target) as proxy:
+            _get(f"{proxy.url}/orders/42")
+            assert proxy.recorded_base("/never/called") is None
+
+    def test_recorded_base_prefers_the_most_recent_response(self):
+        """A suite that mutates state should be perturbed against the response
+        its assertions were most recently written against."""
+        with _target() as target, RecordingProxy(_free_port(), target) as proxy:
+            _get(f"{proxy.url}/orders/42")
+            _get(f"{proxy.url}/orders/7")
+            _get(f"{proxy.url}/orders/42")
+            proxy.interactions[-1].response_body = {"id": 42, "total": 0.0, "status": "paid"}
+            base = proxy.recorded_base("/orders/42")
+        assert base is not None
+        assert base[1]["total"] == 0.0
+
+    def test_records_a_4xx_as_a_real_answer(self):
+        with _target() as target, RecordingProxy(_free_port(), target) as proxy:
+            status, _ = _get(f"{proxy.url}/forbidden")
+            recorded = proxy.recorded_base("/forbidden")
+        assert status == 403
+        assert recorded is not None and recorded[0] == 403
+
+    def test_replay_map_covers_every_recorded_path(self):
+        with _target() as target, RecordingProxy(_free_port(), target) as proxy:
+            _get(f"{proxy.url}/orders/42")
+            _get(f"{proxy.url}/orders/7")
+            mapping = proxy.replay_map()
+        assert set(mapping) == {"/orders/42", "/orders/7"}
+        assert mapping["/orders/7"][0] == 200
+
+    def test_unreachable_target_records_502_rather_than_raising(self):
+        dead = f"http://127.0.0.1:{_free_port()}"
+        with RecordingProxy(_free_port(), dead) as proxy:
+            status, _ = _get(f"{proxy.url}/orders/42")
+            recorded = proxy.recorded_base("/orders/42")
+        assert status == 502
+        assert recorded is not None and recorded[0] == 502

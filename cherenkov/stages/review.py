@@ -91,7 +91,7 @@ class ReviewStage:
 
         gates.append(self._gate_syntax(code))
         gates.append(self._gate_structure(code))
-        gates.append(self._gate_ast(code))
+        gates.append(self._gate_client_usage(code))
         gates.append(self._gate_assertion(code))
 
         test_file_path = self._write_test_file(code, scenario_id)
@@ -141,8 +141,14 @@ class ReviewStage:
         )
 
     def _gate_syntax(self, code: str) -> GateResult:
+        """Cheap shape check. NOT a syntax parse — `tsc` (gate 5) is the parser.
+
+        Naming this "syntax well-formed" overstated what it does: it only
+        rejects empty output and stray markdown fences. Real TypeScript syntax
+        is established by `_gate_tsc`, which shells out to the compiler.
+        """
         passed = True
-        detail = "TS syntax well-formed."
+        detail = "Non-empty and free of markdown fences (not a syntax parse — see the tsc gate)."
         if not code.strip():
             passed = False
             detail = "Generated test code is empty."
@@ -167,10 +173,20 @@ class ReviewStage:
             detail = "Missing imports for '@playwright/test'."
         return GateResult(gate="structure", passed=passed, detail=detail)
 
-    def _gate_ast(self, code: str) -> GateResult:
+    def _gate_client_usage(self, code: str) -> GateResult:
+        """Regex scan for client usage. Deliberately NOT named "ast".
+
+        This gate was previously emitted as `gate="ast"` — a machine-readable
+        field consumed downstream and rendered in reports — while containing no
+        parser at all. For a product that exists to catch tests overstating what
+        they verify, naming a regex scan after a syntax tree was the sharpest
+        self-inflicted wound in the tree. Genuine AST analysis does exist, in
+        `cherenkov/cli/commands/check_suite.py` (`ast.parse`, Python suites);
+        it has never been here.
+        """
         passed = True
         detail = (
-            "Verified usage of openapi-fetch client with zero raw fetch/axios bleed."
+            "Regex scan: openapi-fetch client invoked, no raw fetch/axios matched."
         )
         uses_fetch_client = bool(_RE_FETCH_CLIENT.search(code))
         has_forbidden = bool(_RE_FORBIDDEN_HTTP.search(code))
@@ -180,7 +196,7 @@ class ReviewStage:
         elif has_forbidden:
             passed = False
             detail = "Test contains forbidden HTTP keywords (raw fetch, axios, or custom throw statement)."
-        return GateResult(gate="ast", passed=passed, detail=detail)
+        return GateResult(gate="client-usage", passed=passed, detail=detail)
 
     def _gate_assertion(self, code: str) -> GateResult:
         passed = True
@@ -394,14 +410,17 @@ class ReviewStage:
             ))
             return
 
-        from cherenkov.divergence.mutant_synth import spawn_mutant_server
+        from cherenkov.divergence.mutant_synth import explain_unmutatable, spawn_mutant_server
 
         endpoint = getattr(generate, "endpoint", "") or ""
         mutant_server = spawn_mutant_server(self._MUTANT_PORT, endpoint, operation, schemas)
         if mutant_server is None:
             gates.append(GateResult(
                 gate="meaningful-assertion", passed=True, skipped=True,
-                detail="Meaningful-assertion gate skipped: spec has no documented success response to mutate.",
+                detail=(
+                    "Meaningful-assertion gate skipped: "
+                    f"{explain_unmutatable(endpoint, operation, schemas)}."
+                ),
             ))
             return
 

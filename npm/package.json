@@ -1,0 +1,21 @@
+{
+  "name": "cherenkov-qa",
+  "version": "1.0.0",
+  "description": "AI-Native API Conformance Testing",
+  "main": "bin/cherenkov.js",
+  "bin": {
+    "cherenkov": "bin/cherenkov.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "api",
+    "testing",
+    "conformance",
+    "ai",
+    "playwright"
+  ],
+  "author": "Moaid",
+  "license": "MIT"
+}

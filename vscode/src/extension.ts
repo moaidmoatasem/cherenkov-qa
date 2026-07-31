@@ -161,6 +161,12 @@ export function activate(context: vscode.ExtensionContext): void {
       ConformancePanel.createOrShow(context.extensionUri, treeProvider.getReport());
     }),
 
+    vscode.commands.registerCommand('cherenkov.heal', async (endpoint: string) => {
+      const healUrl = vscode.workspace.getConfiguration('cherenkov').get<string>('targetUrl', 'http://localhost:8000') + '/healing';
+      vscode.window.showInformationMessage(`Healing process started for ${endpoint}...`);
+      void vscode.env.openExternal(vscode.Uri.parse(healUrl));
+    }),
+
     // Config change listener
     vscode.workspace.onDidChangeConfiguration(e => {
       if (e.affectsConfiguration('cherenkov')) {

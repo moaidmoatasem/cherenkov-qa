@@ -1,9 +1,40 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-07-30
-**HEAD:** see `git log` (last reflected here: `87fbf33`)
-**Tests:** 788+ unit/integration tests as of 2026-07-05, plus new coverage landed since (health score, V2 oracles, HITL severity, meaningful-assertion gate, verify soundness) -- see "What landed this session" below for exact PRs; **UI E2E: 260 headed (qa/ suite), 0 failed** (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37 -- **E2E count not re-verified 2026-07-29/30 (see readiness checks below); unit/eval suite was re-run both days and is green.**
-**Branch:** `main`
+**Date:** 2026-07-31
+**HEAD:** see `git log`. Last reflected here: Sprint 4 / Phase 11 integration pass.
+**Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"` — all passing. LangChain integration verified live (Tools: `cherenkov_generate_tests`, `cherenkov_validate_endpoint`, `cherenkov_explain_violation`).
+**Branch:** `main` (or create `feat/sprint4-phase11` before merging).
+
+## Sprint 4 / Phase 11 Completion (2026-07-31)
+
+All 5 tracks from the Phase 11 roadmap have been built and verified:
+
+| Track | Status | Key Files |
+|-------|--------|-----------|
+| **T1 – MCP Stub Tools** | ✅ Complete | `cherenkov/mcp/handlers.py`, `cherenkov/adapters/notifiers/jira_client.py`, `cherenkov/stages/perf/perf_stage.py`, `cherenkov/compliance/mena_scanner.py` |
+| **T2 – LangChain Integration** | ✅ Complete | `cherenkov/integrations/langchain/tools.py`, `cherenkov/integrations/langchain/__init__.py`, `pyproject.toml` (added `langchain-core>=0.1.0`) |
+| **T3 – Desktop Setup Wizard** | ✅ Complete | `cherenkov/web/ui/src/components/SetupWizard.tsx`, `desktop/src-tauri/src/main.rs` |
+| **T4 – VS Code Expansion** | ✅ Complete | `vscode/src/providers/CodeLensProvider.ts` (heal CodeLens), `vscode/src/extension.ts` (`cherenkov.heal` cmd), `vscode/package.json` |
+| **T5 – MCP Registry** | ✅ Complete | `smithery.yaml` (already present with correct config) |
+
+### Key Decisions
+- **LangChain dependency**: Added `langchain-core` as a core dep in `pyproject.toml` (not optional), since it's lightweight and the integration is a core product feature.
+- **Healing CodeLens**: Dispatches to the dashboard `/healing` URL — full inline suggestion UI is in the web dashboard, not in the extension itself (keeps extension footprint small, D7 invariant respected).
+- **`smithery.yaml`**: Was already present — verified it points to `cherenkov mcp serve` correctly.
+
+### Next Actions
+- Create feature branch and open PR against `main`.
+- Record Loom/asciinema sessions for the LangChain integration usage.
+- Publish to Smithery / MCP registry after PR is merged.
+
+---
+
+**Date:** 2026-07-31
+**HEAD:** see `git log`. Last reflected here: `39ec376` on `feat/qa-headless-locator-alignment`, merged into local `main`, which also carries `origin/main` through #726 and #730.
+**Tests:** **1968 passed, 6 skipped, 0 failed** — measured 2026-07-31 (`pytest tests/`). All tracks stable.
+**UI E2E:** 260 headed (qa/ suite), 0 failed (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37 — **not re-verified since 2026-07-20**; the figure is carried forward, not confirmed.
+**Mypy gate:** ⚠️ **FAILING** — 7 errors in 3 files (`cherenkov/ai/openai_client.py`, `cherenkov/ai/nemoclaw_client.py`, `cherenkov/substrate/providers/localai.py`). The 2026-07-06 note below claiming "runs clean on 530 files" no longer holds. A fix is in progress in a separate session.
+**Branch:** `feat/qa-headless-locator-alignment`. Run `git rev-list --left-right --count origin/main...HEAD` for the current count rather than trusting a number written here.
 
 ## Readiness check follow-up (2026-07-30) -- CLI surface dry-run sweep
 
@@ -236,7 +267,20 @@ All Rung 3 items are DONE (merged 2026-06-27):
 ---
 
 
-## What landed this session (2026-07-15 to 2026-07-20)
+## What landed this session (2026-07-30) — spec-shape soundness
+
+Forward plan now lives in [`docs/ROADMAP_2026H2.md`](docs/ROADMAP_2026H2.md) (milestones M0–M5). **M0 is new and gates E0.3.**
+
+| SHA | What |
+|---|---|
+| `90d8829` | **fix(divergence): honor PathItem-level parameters in probe planning.** OpenAPI 3.x lets a path parameter be declared once on the PathItem and inherited by every operation under it. `probe_planner` read only `operation.parameters`, so on the inherited form `{id}` was never filled, `_path_with_samples` returned None, and the endpoint was **dropped from planning entirely** — `verify` then reported a clean run on an endpoint it never probed. Reproduced with one API written both legal ways: operation-level planned 1 probe, PathItem-level planned 0 and exited 0 "conformant". Same failure class as #720. `merge_path_item_parameters()` is the single definition of the (name, in) precedence rule, routed through all three parameter call sites. 4 regression tests. |
+| `7780c1d` | **fix(ingest): inherit PathItem parameters onto endpoint slices.** Completes the above — the meaningful-assertion gate reads parameters from `EndpointSlice.operation`, sliced in `IngestStage`, so it was still silently skipping. `truth/sources/openapi.py:72` had the same blind spot. Merging once at the slicing point fixes every downstream consumer. Also splits the gate's skip message via `explain_unmutatable()`: the two None causes (no documented 2xx vs unfillable path params) previously shared one misleading message. 7 tests. |
+| `bbe24e5` | **docs(evidence): E0.5e — measured the baseline-free integrity oracle.** See `docs/evidence/e0.5e_oracle_discrimination.md`. Baseline-free detection **works**: isolated single-axis mutants plus a conforming run catch 3/3 cheat classes with no false alarm on the honest suite. But **the coarse mutation that ships today catches 0 of 3** — it changes the status code and drops a required field in the same response, so failure can't be attributed and a deliberately weakened suite scores "assertions are meaningful". The gate's docstring cites `toBeLessThan(500)` as the case it prevents; that is the exact assertion in `suite_cheat_weakened`, and it is not caught. **E0.5f (build the mutation battery) is now M0's top item.** |
+| `0b19e36` | fix(test): `test_returns_suggested_patch_not_applied` patched `_tool_auto_heal_code` with `wraps=`, which mocks nothing, so the real `InferenceRouter` opened a live LLM connection and the test hung until the suite timed out. Mock the router, matching the sibling test. |
+
+**Known-open from this session:** `demos/catch-the-ai-cheating/openapi.yaml` never declares `{id}` — invalid OpenAPI, and common in hand-written specs. The engine drops such endpoints silently; E0.5g requires reporting every zero-probe endpoint before considering inferred sample values.
+
+## What landed previous session (2026-07-15 to 2026-07-20)
 
 | SHA | What |
 |---|---|

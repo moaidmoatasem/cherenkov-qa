@@ -63,8 +63,19 @@ class SARIFEmitter:
                     },
                     "invocations": [
                         {
-                            "executionSuccessful": not results,
-                            "endTimeUtc": datetime.now(timezone.utc).isoformat() + "Z",
+                            # `executionSuccessful` means "the analysis ran",
+                            # not "the analysis found nothing". It was `not
+                            # results`, so every run that actually detected
+                            # drift reported its own invocation as failed —
+                            # which is how GitHub decides whether to trust the
+                            # upload at all. Finding results IS a successful run.
+                            "executionSuccessful": True,
+                            # `.isoformat()` on an aware datetime already ends
+                            # in "+00:00"; appending "Z" produced "+00:00Z",
+                            # two designators, and an invalid SARIF timestamp.
+                            "endTimeUtc": datetime.now(timezone.utc)
+                            .strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
+                            + "Z",
                         }
                     ],
                     "results": results,

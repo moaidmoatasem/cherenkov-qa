@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import uuid
+from dataclasses import dataclass
 from typing import Any
 
 from cherenkov.core.contracts import (
@@ -154,12 +155,46 @@ def _success_code(operation: dict[str, Any]) -> int | None:
     return None
 
 
+def merge_path_item_parameters(
+    operation: dict[str, Any], shared: list[Any] | None
+) -> list[dict[str, Any]]:
+    """Operation parameters plus the PathItem's inherited ones.
+
+    OpenAPI 3.x lets a path parameter be declared once on the PathItem and
+    inherited by every operation under it. Reading only `operation.parameters`
+    leaves `{id}` unfillable on those specs, which silently drops the endpoint
+    from probe planning — a clean verdict on an endpoint that was never probed.
+    Operation-level entries win on a (name, in) collision, per the spec.
+
+    This is the single definition of that precedence rule; callers that hold a
+    PathItem directly (spec ingestion, webhooks) use it, and
+    `_effective_parameters` adapts it for callers that hold a whole spec.
+    """
+    own = [p for p in operation.get("parameters", []) or [] if isinstance(p, dict)]
+    seen = {(p.get("name"), p.get("in")) for p in own}
+    inherited = [
+        p
+        for p in (shared or [])
+        if isinstance(p, dict) and (p.get("name"), p.get("in")) not in seen
+    ]
+    return own + inherited
+
+
+def _effective_parameters(
+    path: str, operation: dict[str, Any], spec: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """`merge_path_item_parameters` for callers that hold the full spec."""
+    return merge_path_item_parameters(
+        operation, spec.get("paths", {}).get(path, {}).get("parameters")
+    )
+
+
 def _path_with_samples(path: str, operation: dict[str, Any], spec: dict[str, Any]) -> str | None:
     """Substitute sample values for path params; None if any param is unfillable."""
     if "{" not in path:
         return path
     filled = path
-    for param in operation.get("parameters", []):
+    for param in _effective_parameters(path, operation, spec):
         param = _resolve_ref(param, spec)
         if param.get("in") != "path":
             continue
@@ -217,7 +252,7 @@ def spec_hypotheses(
             )
 
     # 2. enum violation (query params)
-    for param in operation.get("parameters", []) or []:
+    for param in _effective_parameters(endpoint, operation, spec):
         param = _resolve_ref(param, spec)
         if param.get("in") != "query":
             continue
@@ -248,7 +283,7 @@ def spec_hypotheses(
 
     # 3. documented error code for invalid integer path param
     if "{" in endpoint:
-        for param in operation.get("parameters", []) or []:
+        for param in _effective_parameters(endpoint, operation, spec):
             param = _resolve_ref(param, spec)
             if param.get("in") != "path":
                 continue
@@ -319,6 +354,100 @@ def spec_hypotheses(
 
 
 # ── probe planning ───────────────────────────────────────────────────────────
+
+
+@dataclass(frozen=True)
+class UnprobedEndpoint:
+    """An endpoint in the spec that planning produced no probe for."""
+
+    path: str
+    method: str
+    reason: str
+
+    def __str__(self) -> str:
+        return f"{self.method} {self.path} — {self.reason}"
+
+
+def _why_unprobed(
+    path: str, method: str, operation: dict[str, Any], spec: dict[str, Any]
+) -> str:
+    """Name the actual cause. Most are deliberate limits, not defects.
+
+    Order matters: an unfillable path parameter also empties the hypothesis
+    list, so it has to be checked before the generic cases or it gets
+    misattributed — the same mistake `explain_unmutatable` was written to undo.
+    """
+    templated = "{" in path
+    if templated and _path_with_samples(path, operation, spec) is None:
+        unfilled = ", ".join(seg for seg in path.split("/") if seg.startswith("{"))
+        return (
+            f"path parameters could not be sampled ({unfilled}) — declare them "
+            "under the operation's or the PathItem's `parameters` with a typed schema"
+        )
+
+    if spec_hypotheses(path, method, operation, spec):
+        return "dropped by the max_probes cap, not by anything about the endpoint"
+
+    # No hypothesis was derivable. The happy-path probe is deliberately narrow;
+    # say which guard excluded it so the gap reads as a known limit.
+    if method.upper() != "GET":
+        return (
+            f"no probe for {method.upper()}: a happy-path probe is GET-only, since "
+            "sending sampled data would mutate state. Mutation probes need a "
+            "required request-body field or an enum to violate, and this "
+            "operation documents neither"
+        )
+    if templated:
+        return (
+            "happy-path probe is skipped on templated paths — a sampled value "
+            "would address a resource that need not exist, and its 404 would "
+            "read as a divergence. Covering it needs a known-good identifier"
+        )
+    required = [p.get("name") for p in _required_query_params(operation, spec)]
+    if required:
+        return (
+            f"happy-path probe is skipped when query parameters are required "
+            f"({', '.join(str(n) for n in required)}) — no value can be assumed safe"
+        )
+    return (
+        "no mechanical hypothesis was derivable from the documented responses, "
+        "request body, or parameters"
+    )
+
+
+def unprobed_endpoints(
+    spec: dict[str, Any], max_probes: int = 40, include_bare: bool = False
+) -> list[UnprobedEndpoint]:
+    """Every endpoint `plan_probes` produced no probe for, and why.
+
+    A zero-probe endpoint yields zero divergences, which reads identically to a
+    conformant one: `verify` exits 0 and the user believes it was checked. That
+    is how a PathItem-level `parameters` declaration silently removed an
+    endpoint from coverage entirely — the same false-clean class as an
+    unreachable target passing as clean (#720).
+
+    Callers must surface this. Coverage that was never attempted is not
+    coverage, and the user is the only one who can tell whether it matters.
+    """
+    planned = {(p, m) for p, m, _, _ in plan_probes(spec, max_probes, include_bare)}
+    missing: list[UnprobedEndpoint] = []
+
+    for path, path_item in spec.get("paths", {}).items():
+        if not isinstance(path_item, dict):
+            continue
+        for method, operation in path_item.items():
+            if method.lower() not in _HTTP_METHODS or not isinstance(operation, dict):
+                continue
+            if (path, method.upper()) in planned:
+                continue
+            missing.append(
+                UnprobedEndpoint(
+                    path=path,
+                    method=method.upper(),
+                    reason=_why_unprobed(path, method, operation, spec),
+                )
+            )
+    return missing
 
 
 def plan_probes(

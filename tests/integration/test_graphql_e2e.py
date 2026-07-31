@@ -5,7 +5,7 @@ import os
 import runpy
 import sys
 import tempfile
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 TEST_SDL = """
 type Query {
@@ -26,9 +26,24 @@ input CreateUserInput {
 }
 """
 
+
+def _fake_ollama_response():
+    """Return a minimal fake requests.Response mimicking Ollama's generate API."""
+    fake = MagicMock()
+    fake.raise_for_status = MagicMock()
+    fake.json.return_value = {
+        "response": "// auto-generated graphql test stub",
+        "prompt_eval_count": 10,
+        "eval_count": 20,
+    }
+    fake.status_code = 200
+    return fake
+
+
 @patch("cherenkov.cache.endpoint_cache.EndpointCache")
 @patch("cherenkov.execution.validate.ValidationEngine.validate_suite")
-def test_graphql_generate_integration(mock_validate, mock_cache):
+@patch("cherenkov.ai.ollama_client._post_with_retry", return_value=_fake_ollama_response())
+def test_graphql_generate_integration(mock_post, mock_validate, mock_cache):
     mock_validate.return_value = {"status": "ok", "reports": [{"passed": True, "scenario_id": "test", "request_body": "req", "response_body": "res", "response_status": 200}]}
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".graphql", delete=False) as f:
@@ -47,3 +62,4 @@ def test_graphql_generate_integration(mock_validate, mock_cache):
     finally:
         sys.argv = old_argv
         os.unlink(temp_path)
+

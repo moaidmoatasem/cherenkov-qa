@@ -164,9 +164,12 @@ class TestAutoHealCode:
 
         with patch("cherenkov.mcp.handlers.HitlQueue") as MockQ:
             MockQ.return_value.get.return_value = fake_item
+            # Mock the router: the real one opens a socket to the LLM backend and
+            # hangs this unit test. The LLM-unavailable path is covered separately
+            # by test_llm_unavailable_returns_stub_patch.
             with patch(
-                "cherenkov.mcp.handlers._tool_auto_heal_code",
-                wraps=handlers._tool_auto_heal_code,
+                "cherenkov.ai.router.InferenceRouter.generate",
+                return_value="- assert r.status == 200\n+ assert r.status == 422",
             ):
                 result = _call("auto_heal_code", {"item_id": "item-abc"})
 

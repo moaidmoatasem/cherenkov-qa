@@ -29,6 +29,12 @@ CHERENKOV is an **API Integrity Auditor** that uses pure AST static analysis to 
 | CC-3–6| MCP Expansion, Scheduling, Remote, CLI | ✅ Complete | All shipped |
 | 9 | Semantic Memory | ✅ Complete | MemSearch + SDD protocol |
 | 10 | CI/CD Native | ✅ Complete | Jenkins Shared Library |
+| 11 | VS Code Extension | ✅ Complete | Test Explorer, inline indicators |
+| 12 | GraphQL + gRPC | ✅ Complete | Schema ingest, API generation |
+| 13 | Enterprise Tier | ✅ Complete | SAML 2.0, RBAC, org management |
+| 14 | Spec Guardian | ✅ Complete | Conformance monitoring daemon |
+| 15 | Fine-Tuned Model | ✅ Complete | Data pipeline, dataset curation |
+| 16 | Platform & Marketplace | ✅ Complete | Webhooks, Analytics API, Plugin SDK |
 
 ---
 

@@ -11,6 +11,7 @@ Proves `cherenkov verify` works on an arbitrary (non-Petstore) OpenAPI spec:
 """
 from __future__ import annotations
 
+import copy
 import json
 import threading
 from collections.abc import Generator
@@ -18,7 +19,12 @@ from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 
-from cherenkov.divergence.probe_planner import plan_probes, spec_hypotheses
+from cherenkov.divergence.probe_planner import (
+    UnprobedEndpoint,
+    plan_probes,
+    spec_hypotheses,
+    unprobed_endpoints,
+)
 from cherenkov.divergence.proof_run import PROOF_RUN_PROBES, run_proof
 from cherenkov.divergence.witness import _parse_repro_steps
 
@@ -330,3 +336,179 @@ class TestPetstoreDemoRegression:
         # Dead port: every reproduction fails to execute → no reports, no raise.
         reports = run_proof(base_url="http://127.0.0.1:1", spec=None, use_llm=False)
         assert reports == []
+
+
+# ── unprobed coverage reporting ───────────────────────────────────────────────
+
+
+class TestUnprobedEndpoints:
+    """A zero-probe endpoint yields zero divergences, which is indistinguishable
+    from a conformant one. Whatever planning declines to cover must be said out
+    loud, and the stated reason must be the real one.
+    """
+
+    def test_every_operation_is_either_planned_or_reported(self) -> None:
+        """The accounting invariant. If this drifts, coverage is being lost
+        somewhere that nothing reports."""
+        operations = {
+            (path, method.upper())
+            for path, item in ORDERS_SPEC["paths"].items()
+            for method in item
+            if method.lower() in {"get", "put", "post", "delete", "patch"}
+        }
+        planned = {(p, m) for p, m, _, _ in plan_probes(ORDERS_SPEC)}
+        reported = {(u.path, u.method) for u in unprobed_endpoints(ORDERS_SPEC)}
+
+        assert planned | reported == operations
+        assert not (planned & reported), "an endpoint cannot be both probed and unprobed"
+
+    def test_non_get_is_attributed_to_the_get_only_guard(self) -> None:
+        spec = {
+            "openapi": "3.0.0",
+            "paths": {
+                "/things": {
+                    "post": {"responses": {"200": {"description": "ok"}}},
+                }
+            },
+        }
+        missing = unprobed_endpoints(spec)
+        assert len(missing) == 1
+        assert "GET-only" in missing[0].reason
+        assert "mutate state" in missing[0].reason
+
+    def test_required_query_param_guard_names_the_parameter(self) -> None:
+        spec = {
+            "openapi": "3.0.0",
+            "paths": {
+                "/search": {
+                    "get": {
+                        "parameters": [
+                            {"name": "q", "in": "query", "required": True,
+                             "schema": {"type": "string"}}
+                        ],
+                        "responses": {"200": {"description": "ok"}},
+                    }
+                }
+            },
+        }
+        missing = unprobed_endpoints(spec)
+        assert len(missing) == 1
+        assert "query parameters are required" in missing[0].reason
+        assert "q" in missing[0].reason
+
+    def test_templated_get_is_not_blamed_on_missing_status_codes(self) -> None:
+        """Regression on a wrong diagnosis: this endpoint documents 200/400/404,
+        so 'documents no status code' was false. The real cause is the
+        templated-path guard."""
+        spec = {
+            "openapi": "3.0.0",
+            "paths": {
+                "/user/{name}": {
+                    "get": {
+                        "parameters": [
+                            {"name": "name", "in": "path", "required": True,
+                             "schema": {"type": "string"}}
+                        ],
+                        "responses": {
+                            "200": {"description": "ok"},
+                            "400": {"description": "bad"},
+                            "404": {"description": "missing"},
+                        },
+                    }
+                }
+            },
+        }
+        missing = unprobed_endpoints(spec)
+        assert len(missing) == 1
+        reason = missing[0].reason
+        assert "templated paths" in reason
+        assert "status code" not in reason, f"misattributed: {reason}"
+
+    def test_cap_truncation_is_reported_not_silent(self) -> None:
+        missing = unprobed_endpoints(ORDERS_SPEC, max_probes=1)
+        capped = [m for m in missing if "max_probes" in m.reason]
+        assert capped, "a silent cap is a silent loss of coverage"
+
+    def test_str_is_human_readable(self) -> None:
+        item = UnprobedEndpoint(path="/x", method="POST", reason="because")
+        assert str(item) == "POST /x — because"
+
+    def test_fully_probeable_spec_reports_nothing(self) -> None:
+        spec = {
+            "openapi": "3.0.0",
+            "paths": {"/healthz": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        }
+        assert unprobed_endpoints(spec) == []
+
+
+# ── PathItem-level parameters (OpenAPI 3.x shared-parameter form) ─────────────
+
+def _hoist_params_to_path_item(spec: dict) -> dict:
+    """Move every operation's `parameters` up onto its PathItem.
+
+    Same API, the other legal spelling. Reading only `operation.parameters`
+    made `{orderId}` unfillable, so the endpoint was dropped from planning
+    entirely and `verify` reported a clean run on an unprobed endpoint.
+    """
+    out = copy.deepcopy(spec)
+    for path_item in out["paths"].values():
+        hoisted: list[dict] = []
+        for method, operation in path_item.items():
+            if method.lower() not in {"get", "put", "post", "delete", "patch"}:
+                continue
+            hoisted.extend(operation.pop("parameters", []) or [])
+        if hoisted:
+            path_item["parameters"] = hoisted
+    return out
+
+
+class TestPathItemLevelParameters:
+    def test_path_param_on_path_item_still_plans_probes(self) -> None:
+        shared = _hoist_params_to_path_item(ORDERS_SPEC)
+        assert not shared["paths"]["/orders/{orderId}"]["get"].get("parameters")
+
+        planned = {p for p, _, _, _ in plan_probes(shared)}
+        assert "/orders/{orderId}" in planned, (
+            "endpoint silently dropped — verify would report it clean without probing it"
+        )
+
+    def test_hypotheses_match_the_operation_level_spelling(self) -> None:
+        shared = _hoist_params_to_path_item(ORDERS_SPEC)
+        own = spec_hypotheses(
+            "/orders/{orderId}", "get", ORDERS_SPEC["paths"]["/orders/{orderId}"]["get"], ORDERS_SPEC
+        )
+        inherited = spec_hypotheses(
+            "/orders/{orderId}", "get", shared["paths"]["/orders/{orderId}"]["get"], shared
+        )
+        assert {h.claim_a for h in inherited} == {h.claim_a for h in own}
+
+    def test_enum_query_param_on_path_item_is_probed(self) -> None:
+        shared = _hoist_params_to_path_item(ORDERS_SPEC)
+        hyps = spec_hypotheses("/orders", "get", shared["paths"]["/orders"]["get"], shared)
+        assert [h for h in hyps if "enum" in h.claim_a.lower()]
+
+    def test_unprobed_report_names_the_inheritance_failure(self) -> None:
+        """The false-clean this whole class exists for: before the merge, this
+        endpoint vanished from planning with no warning at all."""
+        shared = _hoist_params_to_path_item(ORDERS_SPEC)
+        # Strip the declaration entirely — the shape the demo spec actually has.
+        del shared["paths"]["/orders/{orderId}"]["parameters"]
+
+        missing = unprobed_endpoints(shared)
+        orders = [m for m in missing if m.path == "/orders/{orderId}"]
+        assert orders, "an endpoint dropped from planning must be reported"
+        assert "could not be sampled" in orders[0].reason
+        assert "{orderId}" in orders[0].reason
+
+    def test_operation_level_wins_on_collision(self) -> None:
+        spec = copy.deepcopy(ORDERS_SPEC)
+        item = spec["paths"]["/orders/{orderId}"]
+        # A shared param that would fill the same placeholder with a different value.
+        item["parameters"] = [
+            {"name": "orderId", "in": "path", "schema": {"type": "string", "default": "SHARED"}}
+        ]
+        hyps = spec_hypotheses("/orders/{orderId}", "get", item["get"], spec)
+        pathparam = [h for h in hyps if "invalid" in h.claim_a.lower()]
+        assert pathparam
+        _, path, _, _ = _parse_repro_steps(pathparam[0].repro_steps)
+        assert path == "/orders/0", "operation-level parameter must take precedence"

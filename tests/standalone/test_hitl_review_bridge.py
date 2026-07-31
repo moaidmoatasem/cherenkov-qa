@@ -80,7 +80,7 @@ class TestHitlReviewBridge:
         gates = [
             GateResult(gate="syntax", passed=True, detail="ok"),
             GateResult(gate="structure", passed=True, detail="ok"),
-            GateResult(gate="ast", passed=True, detail="ok"),
+            GateResult(gate="client-usage", passed=True, detail="ok"),
             GateResult(gate="assertion", passed=True, detail="ok"),
             GateResult(gate="tsc", passed=True, detail="ok"),
             GateResult(gate="prism-dryrun", passed=False, detail="prism failed"),

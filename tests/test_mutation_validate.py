@@ -1,13 +1,27 @@
 import os
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from cherenkov.core.orchestrator import OrchestrationEngine
 
 
+def _fake_ollama_resp():
+    """Stub Ollama /api/generate response so GENERATE stage completes without LLM."""
+    fake = MagicMock()
+    fake.raise_for_status = MagicMock()
+    fake.json.return_value = {
+        "response": "// stub generated test",
+        "prompt_eval_count": 5,
+        "eval_count": 10,
+    }
+    fake.status_code = 200
+    return fake
+
+
 @patch.dict(os.environ, {"CHERENKOV_ENV": "development"})
 @patch("cherenkov.core.settings.CherenkovSettings.detect_ollama_device", return_value="cpu")
-def test_validation_mutation(mock_detect):
-    # We simulate a pipeline run that fails during GENERATE or REVIEW
+@patch("cherenkov.ai.ollama_client._post_with_retry", return_value=_fake_ollama_resp())
+def test_validation_mutation(mock_post, mock_detect):
+    # We simulate a pipeline run that fails during REVIEW (GENERATE stage mocked above)
     engine = OrchestrationEngine(run_id="mut_val")
 
     # Test that simulate_fail_stage triggers the circuit breaker or fails the pipeline

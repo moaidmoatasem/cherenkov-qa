@@ -35,6 +35,24 @@ from cherenkov.web.sdd_routes import router as sdd_router
 
 app.include_router(sdd_router)
 
+from cherenkov.web.middleware.rate_limit import RateLimitMiddleware
+
+app.add_middleware(RateLimitMiddleware)
+
+from cherenkov.web.middleware.auth_middleware import JWTAuthMiddleware
+
+app.add_middleware(JWTAuthMiddleware)
+
+from cherenkov.web.middleware.security import SecurityHeadersMiddleware
+
+app.add_middleware(SecurityHeadersMiddleware)
+
+# CORS is registered LAST so it is OUTERMOST — Starlette prepends each
+# `add_middleware`, so the final call wraps everything before it. Registered
+# first (as it was until 2026-07-31) it sat innermost, so any response produced
+# *above* it carried no CORS headers: a 429 from the rate limiter, or a 401
+# from JWT auth, reached the browser as an opaque CORS failure instead of the
+# real status. Rate limiting was effectively invisible to the React UI.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -47,18 +65,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-from cherenkov.web.middleware.rate_limit import RateLimitMiddleware
-
-app.add_middleware(RateLimitMiddleware)
-
-from cherenkov.web.middleware.auth_middleware import JWTAuthMiddleware
-
-app.add_middleware(JWTAuthMiddleware)
-
-from cherenkov.web.middleware.security import SecurityHeadersMiddleware
-
-app.add_middleware(SecurityHeadersMiddleware)
 
 # ── Phase 0b: Monitoring & Security (conditionally added) ────────────
 from cherenkov.web.monitoring import router as monitor_router

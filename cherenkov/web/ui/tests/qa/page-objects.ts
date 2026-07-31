@@ -2,6 +2,7 @@ import { Page, Locator, expect } from '@playwright/test';
 import { setupApiMocks } from '../api_mocks';
 
 const SETTLE = 400;
+const API = 'http://localhost:8000';
 
 export async function bootstrap(page: Page, overrides?: (page: Page) => Promise<void>) {
   page.on('pageerror', err => console.error(`[UNCAUGHT] ${err.message}`));
@@ -16,6 +17,47 @@ export async function bootstrap(page: Page, overrides?: (page: Page) => Promise<
   await page.reload();
   await page.waitForSelector('#cherenkov-app-core');
   await page.waitForTimeout(SETTLE);
+}
+
+export async function bootstrapReal(page: Page, overrides?: (page: Page) => Promise<void>) {
+  page.on('pageerror', err => console.error(`[UNCAUGHT] ${err.message}`));
+  if (overrides) await overrides(page);
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.setItem('[copilot] tour_seen', 'true');
+    localStorage.setItem('[cherenkov] onboarding_seen', 'true');
+    localStorage.setItem('[cherenkov] sidebar_mode', 'expert');
+    localStorage.setItem('[cherenkov] auth_token', 'demo-token');
+  });
+  await page.reload();
+  await page.waitForSelector('#cherenkov-app-core');
+  await page.waitForTimeout(SETTLE);
+}
+
+export async function waitForBackend(request: any): Promise<boolean> {
+  try {
+    const res = await request.get(`${API}/api/v1/health`);
+    return res.status() === 200;
+  } catch {
+    return false;
+  }
+}
+
+export async function mockChatStream(page: Page) {
+  const tokens = ['[MOCK] ', 'This ', 'is ', 'a ', 'mock ', 'response'];
+  let body = '';
+  for (const t of tokens) {
+    body += `event: token\ndata: ${JSON.stringify({ token: t })}\n\n`;
+  }
+  body += 'event: complete\ndata: {}\n\n';
+  await page.route('**/api/v1/chat/sessions/**/stream', async route => {
+    await new Promise(r => setTimeout(r, 100));
+    route.fulfill({
+      status: 200,
+      headers: { 'content-type': 'text/event-stream' },
+      body,
+    });
+  });
 }
 
 export class Sidebar {
@@ -121,9 +163,9 @@ export class HealingPage {
   get banner() { return this.page.locator('#healing-banner'); }
   card(id: string) { return this.page.locator(`#drift-card-${id}`); }
   diffViewer() { return this.page.locator('#read-only-diff-viewer'); }
-  get diffCopyBtn() { return this.page.locator('#btn-diff-copy'); }
-  get diffDownloadBtn() { return this.page.locator('#btn-diff-download'); }
-  get diffDismissBtn() { return this.page.locator('#btn-diff-dismiss'); }
+  get diffCopyBtn() { return this.page.locator('[data-testid="btn-diff-copy"]'); }
+  get diffDownloadBtn() { return this.page.locator('[data-testid="btn-diff-download"]'); }
+  get diffDismissBtn() { return this.page.locator('[data-testid="btn-diff-dismiss"]'); }
   async viewDiff(cardId: string) {
     await this.card(cardId).getByText('VIEW SUGGESTION DIFF').click();
     await this.page.waitForTimeout(300);
@@ -173,9 +215,9 @@ export class TruthMapPage {
 
 export class DivergencesPage {
   constructor(private page: Page) {}
-  get el() { return this.page.locator('#divergences-screen'); }
+  get el() { return this.page.locator('[data-testid="divergences-screen"]'); }
   get heading() { return this.page.locator('h1'); }
-  get severitySelect() { return this.page.locator('select:has(option[value="critical"])'); }
+  get severitySelect() { return this.page.locator('[data-testid="severity-filter"]'); }
   async filterBySeverity(value: string) {
     await this.severitySelect.selectOption(value);
     await this.page.waitForTimeout(200);
@@ -193,6 +235,8 @@ export class AuthorPage {
   get el() { return this.page.locator('#author-screen'); }
   get heading() { return this.page.locator('#author-screen h1'); }
   get textarea() { return this.page.locator('#txt-author-intent'); }
+  get generateBtn() { return this.page.locator('#author-screen button:has-text("Generate")'); }
+  get deterministicToggle() { return this.page.locator('#author-screen input[type="checkbox"]'); }
   chip(text: string) { return this.page.getByText(text).first(); }
   get mentorPanel() { return this.page.getByText('Mentor Context Idioms'); }
   async typeIntent(text: string) {
@@ -202,6 +246,10 @@ export class AuthorPage {
   async clickChip(text: string) {
     await this.chip(text).click();
     await this.page.waitForTimeout(200);
+  }
+  async generate() {
+    await this.generateBtn.click();
+    await this.page.waitForTimeout(500);
   }
 }
 
@@ -236,8 +284,9 @@ export class ChatPage {
   constructor(private page: Page) {}
   get el() { return this.page.locator('#chat-screen'); }
   get heading() { return this.page.locator('#chat-screen h1'); }
-  get input() { return this.page.locator('#chat-screen input[type="text"]'); }
-  get sendBtn() { return this.page.locator('#chat-screen button').last(); }
+  get input() { return this.page.locator('[data-testid="chat-input"]'); }
+  get sendBtn() { return this.page.locator('[data-testid="send-btn"]'); }
+  get messagesList() { return this.page.locator('[data-testid="messages-list"]'); }
   async send(text: string) {
     await this.input.fill(text);
     await this.sendBtn.click();
@@ -249,6 +298,12 @@ export class ChatPage {
     await this.page.waitForTimeout(500);
   }
   messageBubble(text: string) { return this.page.getByText(text); }
+  async waitForStreamResponse(timeout = 15000) {
+    await this.page.waitForResponse(
+      resp => resp.url().includes('/stream') && resp.status() === 200,
+      { timeout }
+    );
+  }
 }
 
 export class KnowledgePage {
@@ -326,3 +381,45 @@ export class CommandPalette {
     await this.page.waitForTimeout(200);
   }
 }
+
+export class MobilePilotPage {
+  constructor(private page: Page) {}
+  get el() { return this.page.locator('#mobile-pilot-screen'); }
+  get heading() { return this.page.locator('#mobile-pilot-screen h1'); }
+  get startBtn() { return this.page.locator('button:has-text("Start Pilot Run")'); }
+  get stopBtn() { return this.page.locator('button:has-text("Stop Pilot Run")'); }
+  get steps() { return this.page.locator('.pilot-step'); }
+  async start() {
+    await this.startBtn.click();
+    await this.page.waitForTimeout(500);
+  }
+  async waitForStep(stepName: string) {
+    await this.page.getByText(stepName).first().waitFor({ state: 'visible', timeout: 10000 });
+  }
+}
+
+export class VerdictPage {
+  constructor(private page: Page) {}
+  get el() { return this.page.locator('#verdict-screen'); }
+  get heading() { return this.page.locator('#verdict-screen h1'); }
+  get grade() { return this.page.locator('.verdict-grade'); }
+  get dimensions() { return this.page.locator('.verdict-dimension'); }
+  get findings() { return this.page.locator('.actionable-finding'); }
+}
+
+export class VisualRegressionPage {
+  constructor(private page: Page) {}
+  get el() { return this.page.locator('#visual-regression-screen'); }
+  get heading() { return this.page.locator('#visual-regression-screen h1'); }
+  get scenarios() { return this.page.locator('.visual-scenario'); }
+  async approveScenario(id: string) {
+    await this.page.locator(`#visual-scenario-${id} button:has-text("Approve")`).click();
+    await this.page.waitForTimeout(300);
+  }
+  async rejectScenario(id: string) {
+    await this.page.locator(`#visual-scenario-${id} button:has-text("Reject")`).click();
+    await this.page.waitForTimeout(300);
+  }
+}
+
+

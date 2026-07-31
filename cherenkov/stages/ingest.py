@@ -19,6 +19,7 @@ from cherenkov.core.contracts import (
 )
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
+from cherenkov.divergence.probe_planner import merge_path_item_parameters
 from cherenkov.sources.mobile.adapter import MobileSourceAdapter
 
 # ── Issue #194: Lightweight DAST Mutation Profile ──────────────────────────
@@ -169,6 +170,13 @@ class IngestStage:
             for method, op in methods.items():
                 if method.lower() not in ("get", "post", "put", "delete", "patch"):
                     continue
+
+                # 0. Inherit PathItem-level parameters (OpenAPI 3.x shared form).
+                # Done before $ref resolution so refs inside inherited params
+                # resolve too. Non-destructive: the spec's own dict is untouched.
+                shared_params = methods.get("parameters")
+                if shared_params:
+                    op = {**op, "parameters": merge_path_item_parameters(op, shared_params)}
 
                 # 1. Depth-limited reference resolution
                 resolved_schemas: dict[str, Any] = {}

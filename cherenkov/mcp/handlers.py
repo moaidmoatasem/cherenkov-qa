@@ -47,6 +47,7 @@ from cherenkov.mcp.contracts import (
     ChatRunTestInput,
     ComplianceFindingsInput,
     ExplainFindingInput,
+    ExportJiraInput,
     GetTighteningInput,
     GovernanceCertificationInput,
     HitlApproveInput,
@@ -65,6 +66,7 @@ from cherenkov.mcp.contracts import (
     MCPToolParam,
     MenaComplianceEnhancedInput,
     RunConformanceCheckInput,
+    RunK6PerfInput,
     ValidateRunGateInput,
     VerifySuiteInput,
     VerifySystemInput,
@@ -310,10 +312,31 @@ TOOLS: list[MCPTool] = [
         inputSchema=MCPToolInputSchema(
             properties={
                 "target_url": MCPToolParam(
-                    type="string", description="Optional target URL."
-                )
+                    type="string", description="Target API base URL."
+                ),
+                "scenario_name": MCPToolParam(
+                    type="string", description="K6 scenario name (default: soak)."
+                ),
+                "duration": MCPToolParam(
+                    type="string", description="Duration string (default: 30s)."
+                ),
+                "vus": MCPToolParam(
+                    type="integer", description="Virtual users count (default: 10)."
+                ),
+                "endpoint": MCPToolParam(
+                    type="string", description="Endpoint path (default: /)."
+                ),
+                "method": MCPToolParam(
+                    type="string", description="HTTP method (default: GET)."
+                ),
+                "use_ml": MCPToolParam(
+                    type="boolean", description="Enable ML latency anomaly detection (default: false)."
+                ),
+                "traffic_file": MCPToolParam(
+                    type="string", description="HAR or traffic log file path (optional)."
+                ),
             },
-            required=[],
+            required=["target_url"],
         ),
     ),
     MCPTool(
@@ -330,14 +353,26 @@ TOOLS: list[MCPTool] = [
     ),
     MCPTool(
         name="export_jira_ticket",
-        description="Suggest-only Jira export for failed validation items.",
+        description="Suggest-only Jira export for failed validation items or custom summary/description.",
         inputSchema=MCPToolInputSchema(
             properties={
                 "item_id": MCPToolParam(
-                    type="string", description="Validation item ID."
-                )
+                    type="string", description="Validation item ID (optional if summary and description provided)."
+                ),
+                "summary": MCPToolParam(
+                    type="string", description="Ticket summary/title."
+                ),
+                "description": MCPToolParam(
+                    type="string", description="Ticket description."
+                ),
+                "project_key": MCPToolParam(
+                    type="string", description="Jira project key (default: QA)."
+                ),
+                "sandbox_only": MCPToolParam(
+                    type="boolean", description="Sandbox mode flag (default: true)."
+                ),
             },
-            required=["item_id"],
+            required=[],
         ),
     ),
     MCPTool(
@@ -1288,16 +1323,28 @@ def _tool_visual_diff_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
         return _err_content(f"VisualDiff enhanced error: {exc}")
 
 def _tool_run_perf(args: dict[str, Any]) -> MCPToolCallResult:
-    target_url = (
-        args.get("target_url") or os.environ.get("API_URL") or "http://localhost:8000"
-    )
-    scenario_name = args.get("scenario_name") or "mcp_test"
-    duration = args.get("duration") or 5
-    vus = args.get("vus") or 5
-    endpoint = args.get("endpoint") or "/"
-    method = args.get("method") or "GET"
-
     try:
+        inp = RunK6PerfInput.model_validate(args)
+        target_url = inp.target_url
+        scenario_name = inp.scenario_name or "soak"
+
+        duration_sec = 30
+        if inp.duration is not None:
+            if isinstance(inp.duration, int):
+                duration_sec = inp.duration
+            else:
+                dur_str = str(inp.duration).strip().rstrip("s").rstrip("S")
+                try:
+                    duration_sec = int(dur_str)
+                except ValueError:
+                    duration_sec = 30
+
+        vus = inp.vus if inp.vus is not None else 10
+        endpoint = inp.endpoint or "/"
+        method = inp.method or "GET"
+        use_ml = bool(inp.use_ml)
+        traffic_file = inp.traffic_file
+
         from cherenkov.core.contracts import PerfSlice
 
         sl = PerfSlice(
@@ -1306,12 +1353,12 @@ def _tool_run_perf(args: dict[str, Any]) -> MCPToolCallResult:
             endpoint=endpoint,
             method=method,
             vus=vus,
-            duration_sec=duration,
+            duration_sec=duration_sec,
         )
         from cherenkov.stages.perf.perf_stage import PerfStage
 
         stage = PerfStage()
-        report = stage.run(sl)
+        report = stage.run(sl, use_ml=use_ml, traffic_file=traffic_file)
         return _ok_content(
             {
                 "scenario_id": report.scenario_id,
@@ -1338,54 +1385,98 @@ def _tool_run_perf(args: dict[str, Any]) -> MCPToolCallResult:
         return _err_content(f"Perf error: {exc}")
 
 def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
+    import logging
+    import sqlite3
+
     query = args.get("query", "")
+    _handler_log = logging.getLogger(__name__)
     try:
         from cherenkov.ai.rag_index import RAGIndex
 
         rag = RAGIndex()
         res = rag.query_similar_incidents(query)
         return _ok_content({"query": query, "results": res})
+    except sqlite3.OperationalError as exc:
+        # SQLite transient errors (database locked, disk I/O, etc.) are not
+        # code defects — degrade gracefully with an empty result set and a
+        # warning so callers still get a well-formed success response.
+        _handler_log.warning("RAG index temporarily unavailable: %s", exc)
+        return _ok_content({"query": query, "results": [], "warning": f"RAG index unavailable: {exc}"})
     except Exception as exc:
+        # Also treat "database is locked" errors surfaced through other exception types.
+        if "database is locked" in str(exc).lower() or "disk i/o" in str(exc).lower():
+            _handler_log.warning("RAG index temporarily unavailable: %s", exc)
+            return _ok_content({"query": query, "results": [], "warning": f"RAG index unavailable: {exc}"})
         return _err_content(f"RAG error: {exc}")
 
-def _tool_export_jira(args: dict[str, Any]) -> MCPToolCallResult:
-    item_id = args.get("item_id", "")
-    try:
-        q = _queue()
-        item = q.get(item_id)
-        if not item:
-            return _err_content(f"HITL item {item_id} not found in queue.")
 
+def _tool_export_jira(args: dict[str, Any]) -> MCPToolCallResult:
+    try:
+        inp = ExportJiraInput.model_validate(args)
         from cherenkov.validate.jira_exporter import JiraExporter
 
-        exporter = JiraExporter()
+        project_key = inp.project_key or "QA"
+        exporter = JiraExporter(jira_project=project_key)
+        item_id = inp.item_id or "direct_export"
+        summary = inp.summary
+        description = inp.description
+        file_path = None
 
-        file_path = exporter.export_ticket(
-            scenario_id=item.id,
-            failure_class=item.mutation_label or "conformance-drift",
-            error_message=item.review_gate_failed or "Validation failed",
-            expected_status="Valid response",
-            received_status="Divergent response",
-            hypothesis=item.confidence_reason,
-            compliance_score=80,
-        )
+        if inp.item_id:
+            q = _queue()
+            item = q.get(inp.item_id)
+            if item:
+                if not summary:
+                    summary = f"🛑 CHERENKOV QA — DRIFT DETECTED: {item.id}"
+                if not description:
+                    description = exporter.format_ticket(
+                        scenario_id=item.id,
+                        failure_class=item.mutation_label or "conformance-drift",
+                        error_message=item.review_gate_failed or "Validation failed",
+                        expected_status="Valid response",
+                        received_status="Divergent response",
+                        hypothesis=item.confidence_reason,
+                        compliance_score=80,
+                    )
+                file_path = exporter.export_ticket(
+                    scenario_id=item.id,
+                    failure_class=item.mutation_label or "conformance-drift",
+                    error_message=item.review_gate_failed or "Validation failed",
+                    expected_status="Valid response",
+                    received_status="Divergent response",
+                    hypothesis=item.confidence_reason,
+                    compliance_score=80,
+                )
+            elif not (summary and description):
+                return _err_content(f"HITL item {inp.item_id} not found in queue and missing summary/description.")
 
-        summary = f"🛑 CHERENKOV QA — DRIFT DETECTED: {item.id}"
-        description = exporter.format_ticket(
-            scenario_id=item.id,
-            failure_class=item.mutation_label or "conformance-drift",
-            error_message=item.review_gate_failed or "Validation failed",
-            expected_status="Valid response",
-            received_status="Divergent response",
-            hypothesis=item.confidence_reason,
-            compliance_score=80,
-        )
+        if not summary or not description:
+            return _err_content("Either valid item_id in queue or both summary and description must be provided.")
 
-        issue_key = exporter.create_jira_issue(summary, description)
+        if file_path is None:
+            file_path = exporter.export_ticket(
+                scenario_id=item_id,
+                failure_class="direct-export",
+                error_message=description,
+                expected_status="N/A",
+                received_status="N/A",
+                hypothesis=summary,
+            )
+
+        issue_key = None
+        if not inp.sandbox_only:
+            try:
+                issue_key = exporter.create_jira_issue(summary, description)
+            except Exception:
+                issue_key = None
 
         return _ok_content(
             {
                 "item_id": item_id,
+                "summary": summary,
+                "description": description,
+                "project_key": project_key,
+                "sandbox_only": inp.sandbox_only,
                 "status": "exported",
                 "file_path": file_path,
                 "jira_issue_key": issue_key or "sandboxed",
@@ -1486,18 +1577,25 @@ def _tool_scan_mena(args: dict[str, Any]) -> MCPToolCallResult:
             target_url=target_url, spec_path=spec_path
         )
         violations = []
-        for domain, details in report["framework_mappings"]["SAMA_CCSF"].items():
-            if details["status"] == "NON-COMPLIANT":
-                violations.append(f"{domain}: {details['remediation']}")
-        for domain, details in report["framework_mappings"]["EGYPT_FinCSF"].items():
-            if details["status"] == "NON-COMPLIANT":
-                violations.append(f"{domain}: {details['remediation']}")
+        framework_mappings = report.get("framework_mappings", {})
+        sama_ccsf = framework_mappings.get("SAMA_CCSF", {})
+        egypt_fincsf = framework_mappings.get("EGYPT_FinCSF", {})
+
+        for domain, details in sama_ccsf.items():
+            if isinstance(details, dict) and details.get("status") == "NON-COMPLIANT":
+                violations.append(f"{domain}: {details.get('remediation', '')}")
+        for domain, details in egypt_fincsf.items():
+            if isinstance(details, dict) and details.get("status") == "NON-COMPLIANT":
+                violations.append(f"{domain}: {details.get('remediation', '')}")
 
         return _ok_content(
             {
-                "compliance_score": report["overall_compliance_score"],
+                "compliance_score": report.get("overall_compliance_score", 0),
                 "violations": violations,
-                "mappings": report["framework_mappings"],
+                "mappings": framework_mappings,
+                "sama_ccsf": sama_ccsf,
+                "egypt_fincsf": egypt_fincsf,
+                "audit_results": report.get("audit_results", {}),
             }
         )
     except Exception as exc:
@@ -1544,10 +1642,12 @@ def _tool_scan_mena_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
 
         return _ok_content(
             {
-                "compliance_score": report["overall_compliance_score"],
+                "compliance_score": report.get("overall_compliance_score", 0),
                 "framework": inp.framework,
                 "violations": violations,
                 "mappings": mappings,
+                "sama_ccsf": report.get("framework_mappings", {}).get("SAMA_CCSF", {}),
+                "egypt_fincsf": report.get("framework_mappings", {}).get("EGYPT_FinCSF", {}),
                 "audit_results": report.get("audit_results", {}),
             }
         )

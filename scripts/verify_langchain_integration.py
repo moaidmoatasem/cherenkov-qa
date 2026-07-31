@@ -1,0 +1,88 @@
+#!/usr/bin/env python
+"""
+Standalone smoke test for the CHERENKOV LangChain integration.
+Run with: python scripts/verify_langchain_integration.py
+
+Does NOT require a running server or Ollama — verifies module structure only.
+"""
+from __future__ import annotations
+
+import json
+import sys
+
+
+def check(label: str, ok: bool, detail: str = "") -> None:
+    status = "[OK]" if ok else "[FAIL]"
+    print(f"  {status}  {label}", f"({detail})" if detail else "")
+    if not ok:
+        sys.exit(1)
+
+
+def main() -> None:
+    print("\n-- CHERENKOV LangChain Integration Smoke Test --\n")
+
+    # 1. Module imports
+    print("1. Module structure")
+    try:
+        from cherenkov.integrations.langchain import (
+            CherenkovTool,
+            ExplainViolationInput,
+            GenerateTestsInput,
+            ValidateInput,
+            explain_violation,
+            generate_tests,
+            get_langchain_tools,
+            validate_endpoint,
+        )
+        check("cherenkov.integrations.langchain imports OK", True)
+    except ImportError as e:
+        check("cherenkov.integrations.langchain imports OK", False, str(e))
+        return
+
+    # 2. Input schemas are valid Pydantic models
+    print("\n2. Input schemas")
+    try:
+        g = GenerateTestsInput(spec_path="openapi.yaml")
+        check("GenerateTestsInput", g.spec_path == "openapi.yaml", f"spec_path={g.spec_path}")
+
+        v = ValidateInput(target_url="http://localhost:8000", spec_path="openapi.yaml")
+        check("ValidateInput", v.env == "dev", f"env={v.env}")
+
+        e = ExplainViolationInput(violation_id="VIO-001")
+        check("ExplainViolationInput", e.context == "", f"context='{e.context}'")
+    except Exception as ex:
+        check("Input schemas", False, str(ex))
+        return
+
+    # 3. get_langchain_tools() returns 3 tools with the correct names
+    print("\n3. Tool registry")
+    try:
+        tools = get_langchain_tools()
+        names = [t.name for t in tools]
+        expected = {"cherenkov_generate_tests", "cherenkov_validate_endpoint", "cherenkov_explain_violation"}
+        check("3 tools returned", len(tools) == 3, f"got {len(tools)}")
+        check("Tool names correct", set(names) == expected, str(names))
+        for t in tools:
+            check(f"  Tool '{t.name}' has description", bool(t.description), t.description[:60])
+    except Exception as ex:
+        check("Tool registry", False, str(ex))
+        return
+
+    # 4. CherenkovTool can be constructed (requires langchain-core)
+    print("\n4. CherenkovTool class")
+    try:
+        import langchain_core  # noqa: F401
+        tool = CherenkovTool()
+        check("CherenkovTool instantiates", tool.name == "cherenkov_qa_tool", f"name={tool.name}")
+    except ImportError:
+        check("CherenkovTool (langchain-core not installed -- skipped)", True, "skip")
+    except Exception as ex:
+        check("CherenkovTool instantiates", False, str(ex))
+        return
+
+    print("\n-- All checks passed --\n")
+
+
+
+if __name__ == "__main__":
+    main()

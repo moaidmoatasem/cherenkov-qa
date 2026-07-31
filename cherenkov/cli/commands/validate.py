@@ -12,6 +12,38 @@ import click
 from cherenkov.execution.validate import ValidationEngine
 
 
+def _findings_report(results: dict):
+    """Build the findings object the SARIF/JUnit/Allure emitters all expect.
+
+    The emitters read `report.findings`; the engine returns `results["reports"]`
+    as a `list[dict]`. Passing the raw list straight through yields an empty
+    document rather than an error, so this conversion is the difference between
+    a real report and a silently blank one. Both export paths share it.
+    """
+    from types import SimpleNamespace
+
+    from cherenkov.core.contracts import DivergenceFinding
+
+    report_obj = SimpleNamespace(findings=[])
+    for r in results.get("reports", []):
+        if r.get("passed", False):
+            continue
+        report_obj.findings.append(
+            DivergenceFinding(
+                violation_type="conformance-drift",
+                endpoint=r.get("scenario_id", "unknown"),
+                http_method="ANY",
+                expected="Valid response",
+                actual=r.get("error", ""),
+                summary="Response drift detected",
+                description=f"Error: {r.get('error', '')}",
+                severity="high",
+                remediation="Update API or spec",
+            )
+        )
+    return report_obj
+
+
 @click.command("validate")
 @click.option("--target", "-t", required=True, help="The real server target base URL")
 @click.option(
@@ -221,26 +253,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
 
         os.makedirs(".cherenkov", exist_ok=True)
         emitter = SARIFEmitter()
-        from types import SimpleNamespace
-
-        from cherenkov.core.contracts import DivergenceFinding
-
-        report_obj = SimpleNamespace(findings=[])
-        for r in results.get("reports", []):
-            if not r.get("passed", False):
-                report_obj.findings.append(
-                    DivergenceFinding(
-                        violation_type="conformance-drift",
-                        endpoint=r.get("scenario_id", "unknown"),
-                        http_method="ANY",
-                        expected="Valid response",
-                        actual=r.get("error", ""),
-                        summary="Response drift detected",
-                        description=f"Error: {r.get('error', '')}",
-                        severity="high",
-                        remediation="Update API or spec",
-                    )
-                )
+        report_obj = _findings_report(results)
         sarif_data = emitter.emit(report_obj, spec or "openapi.yaml")
         out_path = output if output.endswith(".sarif") else output + ".sarif"
         with open(out_path, "w", encoding="utf-8") as f:
@@ -252,10 +265,15 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
 
         os.makedirs(".cherenkov", exist_ok=True)
         emitter = JUnitEmitter()
-        reports = results.get("reports", [])
+        # Previously `emitter.emit(reports)` — wrong arity (TypeError on every
+        # invocation of a documented flag) AND wrong type: `reports` is a
+        # list[dict], while the emitter reads `report.findings`. Fixing only the
+        # arity would have produced a silently empty testsuite. Both call sites
+        # now share one builder.
+        report_obj = _findings_report(results)
         out_path = output if output.endswith(".xml") else output + ".xml"
         with open(out_path, "w", encoding="utf-8") as f:
-            f.write(emitter.emit(reports))
+            f.write(emitter.emit(report_obj, spec or "openapi.yaml"))
         print(f"JUnit XML report written to {out_path}")
 
     # Write machine-readable JSON summary (consumed by CI integrations, action.yml)
