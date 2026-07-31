@@ -147,3 +147,8 @@ app.include_router(routines_router)
 from cherenkov.web.routes.runs_router import router as runs_router
 
 app.include_router(runs_router)
+
+# ── Integrity-as-a-Service API (Pillar 5 — INNOVATION_ROADMAP_V2) ────────────
+from cherenkov.integrity.api import router as integrity_router
+
+app.include_router(integrity_router)
