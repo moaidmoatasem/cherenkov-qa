@@ -46,6 +46,12 @@ outputs:
   sarif-path:
     description: Path to SARIF output (for GitHub Security tab)
     value: ${{ steps.run.outputs.sarif-path }}
+  sarif:
+    description: Path to SARIF output report
+    value: ${{ steps.run.outputs.sarif }}
+  sarif_report:
+    description: Path to SARIF output report
+    value: ${{ steps.run.outputs.sarif_report }}
   drift-detected:
     description: true if any conformance violations were found
     value: ${{ steps.run.outputs.drift-detected }}
@@ -60,7 +66,7 @@ runs:
 
     - name: Install CHERENKOV
       shell: bash
-      run: pip install . --quiet
+      run: pip install "${{ github.action_path }}" --quiet
 
     - name: Run conformance check
       id: run
@@ -88,6 +94,8 @@ runs:
         echo "violations=${VIOLATIONS}" >> "$GITHUB_OUTPUT"
         echo "drift-detected=${DRIFT_DETECTED}" >> "$GITHUB_OUTPUT"
         echo "report-path=${OUTPUT_FILE}" >> "$GITHUB_OUTPUT"
+        echo "sarif=${OUTPUT_FILE}" >> "$GITHUB_OUTPUT"
+        echo "sarif_report=${OUTPUT_FILE}" >> "$GITHUB_OUTPUT"
         [ "${FORMAT}" = "sarif" ] && echo "sarif-path=${OUTPUT_FILE}" >> "$GITHUB_OUTPUT"
         printf "CHERENKOV: %s violation(s) detected.\n" "${VIOLATIONS}"
         if [ "${{ inputs.fail-on-drift }}" = "true" ] && [ "${DRIFT_DETECTED}" = "true" ]; then

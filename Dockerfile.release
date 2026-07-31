@@ -1,0 +1,43 @@
+# Multi-Stage Dockerfile for CHERENKOV QA Release
+# Stage 1: Build Web UI Assets
+FROM node:22-slim AS ui-build
+WORKDIR /app/cherenkov/web/ui
+COPY cherenkov/web/ui/package*.json ./
+RUN npm install
+COPY cherenkov/web/ui/ ./
+RUN npx vite build || npm run build
+
+# Stage 2: Python 3.12 Production Runtime
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Set environment variables for seamless CLI execution
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    HOME=/app
+
+# Install minimal runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy python packaging and source files
+COPY pyproject.toml README.md ./
+COPY cherenkov/ ./cherenkov/
+
+# Copy compiled Web UI assets from Stage 1
+COPY --from=ui-build /app/cherenkov/web/ui/dist /app/cherenkov/web/ui/dist
+
+# Install cherenkov-qa package
+RUN pip install --no-cache-dir .
+
+# Security hardening: Create non-root system user
+RUN adduser --system --group --uid 1000 --home /app cherenkov && chown -R cherenkov:cherenkov /app
+USER cherenkov
+
+
+# CLI Entrypoint & default arguments
+ENTRYPOINT ["cherenkov"]
+CMD ["--help"]

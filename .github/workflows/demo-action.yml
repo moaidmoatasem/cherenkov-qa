@@ -1,0 +1,37 @@
+name: Demo CHERENKOV Conformance Action
+
+'on':
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  conformance-check:
+    name: Run API Conformance Tests & Upload SARIF
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run CHERENKOV Conformance Check
+        id: cherenkov
+        uses: ./
+        with:
+          spec: docs/openapi-demo.yaml
+          target: http://localhost:8000
+          fail-on-drift: "false"
+          output-format: sarif
+          output-path: cherenkov-report.sarif
+
+      - name: Upload SARIF report to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: ${{ steps.cherenkov.outputs.sarif_report }}
+          category: cherenkov-api-conformance
