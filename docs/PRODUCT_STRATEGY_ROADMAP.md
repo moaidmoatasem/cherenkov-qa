@@ -646,25 +646,25 @@ The path is proven. The category is new. The timing is right.
 
 ### This Week (Days 1-7)
 
-- [ ] **Fix the `cargo` blocker** — Tauri 3 desktop app doesn't need Rust locally; use `tauri-action` in CI instead. Unblock Phase 3.
-- [ ] **Complete Phase 8** — Ship the K8s operator (CRDs are done). This is the enterprise proof point.
-- [ ] **Write the landing page copy** — Focus on the 3 core pains: spec drift, manual tests, tool lock-in.
-- [ ] **Record the demo video** — Show: `cherenkov generate → 6-gate review → conformance violation caught → eject`. 90 seconds. No voiceover needed.
-- [ ] **Cut v1.0.0** — Semantic version, GitHub Release, CHANGELOG.md. Signal stability.
-- [ ] **Push Docker Hub image** — `docker pull cherenkov/cli:latest` works publicly.
+- [x] **Fix the `cargo` blocker** — Tauri 3 desktop app doesn't need Rust locally; use `tauri-action` in CI instead. Unblock Phase 3.
+- [x] **Complete Phase 8** — Ship the K8s operator (CRDs are done). This is the enterprise proof point.
+- [x] **Write the landing page copy** — Focus on the 3 core pains: spec drift, manual tests, tool lock-in.
+- [x] **Record the demo video** — Show: `cherenkov generate → 6-gate review → conformance violation caught → eject`. 90 seconds. No voiceover needed.
+- [x] **Cut v1.0.0** — Semantic version, GitHub Release, CHANGELOG.md. Signal stability.
+- [x] **Push Docker Hub image** — `docker pull cherenkov/cli:latest` works publicly.
 
 ### This Month (Weeks 2-4)
 
-- [ ] **Ship `npx cherenkov init`** — Zero install. 30-second quickstart. The demo must run without reading docs.
-- [ ] **Launch docs site** — Mintlify or Docusaurus. Getting Started, CLI Reference, Architecture. 10 pages.
-- [ ] **GitHub Actions action** — `uses: cherenkov-qa/action@v1` in 3-step quickstart. This is viral.
+- [x] **Ship `npx cherenkov init`** — Zero install. 30-second quickstart. The demo must run without reading docs.
+- [x] **Launch docs site** — Mintlify or Docusaurus. Getting Started, CLI Reference, Architecture. 10 pages.
+- [x] **GitHub Actions action** — `uses: cherenkov-qa/action@v1` in 3-step quickstart. This is viral.
 - [ ] **Product Hunt launch** — Coordinate upvotes from network. Tuesday 8AM PT.
 - [ ] **HackerNews Show HN** — Write the honest technical story. Hackers respect honesty + depth.
 - [ ] **Add to `awesome-testing` list** — Free discovery.
 
 ### This Quarter (Months 2-3)
 
-- [ ] **VS Code extension beta** — Get 100 beta testers from Discord.
+- [x] **VS Code extension beta** — Get 100 beta testers from Discord.
 - [ ] **First 3 integration guides** — Postman migration, GitHub Actions setup, K8s deployment. Docs that rank on Google.
 - [ ] **Community office hours** — Weekly 30-min video call. Build the core community.
 - [ ] **3 case studies** — Even internal: "We tested our own Petstore API with CHERENKOV and found these 4 conformance bugs."
