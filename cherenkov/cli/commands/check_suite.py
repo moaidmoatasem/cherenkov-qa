@@ -30,6 +30,21 @@ _RE_YAML_FIELD = re.compile(r"\s{2,}([A-Za-z_][\w]*):")
 _RE_TEST_NAME = re.compile(r"(?:it|test)\(['\"]([^'\"]+)['\"]")
 _RE_PROP_ACCESS = re.compile(r"\.([a-zA-Z_]\w+)\b")
 
+# ── TypeScript suite grammar (see _check_typescript) ─────────────────────────
+_TS_STRONG = {"toBe", "toEqual", "toStrictEqual"}
+_TS_WEAK = {
+    "toBeLessThan", "toBeGreaterThan", "toBeLessThanOrEqual",
+    "toBeGreaterThanOrEqual", "toBeTruthy", "toBeFalsy", "toBeDefined",
+    "toBeUndefined", "toContain", "toMatch", "toHaveProperty",
+    "not.toBeNull", "not.toBeUndefined", "toBeNull",
+}
+_TS_DATA_NAMES = ("data", "body", "json", "payload")
+_RE_TS_TEST = re.compile(r"""\btest\s*\(\s*['"`](?P<name>[^'"`]+)['"`]""")
+_RE_TS_EXPECT = re.compile(
+    r"""expect\(\s*(?P<subj>.*?)\s*\)\s*\.\s*"""
+    r"""(?P<matcher>(?:not\.)?[A-Za-z]+)\s*\(\s*(?P<arg>[^)]*)\)"""
+)
+
 # ── AST analysis (no external deps, stdlib only) ──────────────────────────────
 
 _STRONG = {"Eq"}
@@ -287,34 +302,109 @@ def check_suite_cmd(
     if fail_on_finding and findings:
         sys.exit(1)
 
+def _ts_normalise_subject(raw: str) -> str:
+    """`(data as any).total` and `data.total` are the same subject."""
+    s = re.sub(r"\(\s*data\s+as\s+any\s*\)", "data", raw)
+    s = s.replace("as any", "").replace("(", "").replace(")", "")
+    return re.sub(r"\s+", "", s)
+
+
+def _ts_field_of(subject: str) -> str | None:
+    """`data.total` -> `total`; anything else -> None."""
+    for name in _TS_DATA_NAMES:
+        m = re.match(rf"^{name}\.([A-Za-z_]\w*)$", subject)
+        if m:
+            return m.group(1)
+    return None
+
+
+def _ts_parse_suite(code: str) -> dict[str, dict[str, set[str]]]:
+    """`{test_name: {subject: {matchers}}}`, segmented per `test(...)` block.
+
+    Segmenting matters: without it, DELETED and WEAKENED can only be judged
+    across the whole file, so dropping an assertion from one test while another
+    still asserts the same subject is invisible.
+    """
+    bounds = [(m.start(), m.group("name")) for m in _RE_TS_TEST.finditer(code)]
+    out: dict[str, dict[str, set[str]]] = {}
+    for i, (start, name) in enumerate(bounds):
+        end = bounds[i + 1][0] if i + 1 < len(bounds) else len(code)
+        segment = code[start:end]
+        subjects: dict[str, set[str]] = {}
+        for em in _RE_TS_EXPECT.finditer(segment):
+            subject = _ts_normalise_subject(em.group("subj"))
+            matcher = em.group("matcher")
+            arg = em.group("arg").strip().strip("'\"`")
+            # `expect(data).toHaveProperty('total')` asserts on data.total
+            if matcher == "toHaveProperty" and arg:
+                subject = f"data.{arg}"
+            subjects.setdefault(subject, set()).add(matcher)
+        out[name] = subjects
+    return out
+
+
 def _check_typescript(
     candidate_code: str,
     baseline_code: str | None,
     spec_path: Path | None,
 ) -> list[str]:
-    """Regex-based integrity check for TypeScript test suites."""
-    findings: list[str] = []
+    """Integrity check for TypeScript suites.
 
-    cand_has_strict = bool(_RE_STRICT_MATCHER.search(candidate_code))
-    cand_has_weak_only = bool(_RE_WEAK_MATCHER.search(candidate_code)) and not cand_has_strict
-    if cand_has_weak_only:
-        findings.append("WEAKENED  candidate uses only weak matchers (no .toBe() found)")
+    Regex over the Playwright assertion grammar — genuinely weaker than the
+    `ast.parse` path used for Python, and the CLI says so before running.
+
+    This is a port of `demos/catch-the-ai-cheating/integrity_check_ts.py`,
+    which the CLI claimed to wrap while actually reimplementing a degraded
+    version: WEAKENED was a whole-file heuristic that never consulted the
+    baseline (so weakening nine of ten assertions passed clean if one
+    `.toBe()` survived anywhere), DELETED compared only test names (so an
+    assertion dropped from a surviving test was invisible), and HALLUCINATED
+    was dead code — a `pass` statement under a loop, reachable by nothing.
+    Since `.spec.ts` is CHERENKOV's own primary output format, the format the
+    product emits had the weakest analysis behind it.
+    """
+    findings: list[str] = []
+    candidate = _ts_parse_suite(candidate_code)
 
     if baseline_code:
-        base_tests = set(_RE_TEST_NAME.findall(baseline_code))
-        cand_tests = set(_RE_TEST_NAME.findall(candidate_code))
-        for t in sorted(base_tests - cand_tests):
-            findings.append(f"DELETED   test case removed: '{t}'")
+        baseline = _ts_parse_suite(baseline_code)
+        for test_name, base_subjects in baseline.items():
+            if test_name not in candidate:
+                findings.append(f"DELETED   test removed entirely: '{test_name}'")
+                continue
+            cand_subjects = candidate[test_name]
+            for subject, base_matchers in base_subjects.items():
+                if subject not in cand_subjects:
+                    findings.append(
+                        f"DELETED   assertion dropped in '{test_name}': "
+                        f"`{subject}` no longer checked"
+                    )
+                    continue
+                cand_matchers = cand_subjects[subject]
+                strong_before = bool(base_matchers & _TS_STRONG)
+                strong_after = bool(cand_matchers & _TS_STRONG)
+                weak_after = bool(cand_matchers & _TS_WEAK)
+                if strong_before and not strong_after and weak_after:
+                    findings.append(
+                        f"WEAKENED  '{test_name}': `{subject}` exact check "
+                        f"loosened to {sorted(cand_matchers)}"
+                    )
 
     if spec_path:
         allowed = _spec_fields(spec_path)
-        accessed = set(_RE_PROP_ACCESS.findall(candidate_code))
-        for f in sorted(accessed):
-            if f not in allowed and f not in {
-                "status", "data", "body", "json", "headers", "text",
-                "toBe", "toEqual", "toContain", "not", "expect",
-            }:
-                pass  # too noisy for regex — skip hallucination check for TS
+        if allowed:
+            asserted: set[str] = set()
+            for subjects in candidate.values():
+                for subject in subjects:
+                    field = _ts_field_of(subject)
+                    if field:
+                        asserted.add(field)
+            for field in sorted(asserted):
+                if field not in allowed:
+                    findings.append(
+                        f"HALLUCINATED candidate asserts on `{field}` — "
+                        "not defined in the spec"
+                    )
 
     return findings
 
