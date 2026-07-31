@@ -623,7 +623,7 @@ LOW EFFORT ──────────────┼────────
 ## The Integration Delivery Plan
 
 ### Sprint 1 (Weeks 1-2): Foundation
-- [ ] Complete 3 MCP stub tools (`run_k6_perf`, `export_jira_ticket`, `scan_mena_compliance`)
+- [x] Complete 3 MCP stub tools (`run_k6_perf`, `export_jira_ticket`, `scan_mena_compliance`)
 - [x] GitHub Actions marketplace action (SARIF output included)
 - [x] JUnit XML output format (unblocks Xray/Zephyr/TestRail at zero extra cost)
 - [x] `SlackNotifier` adapter wired to `OpenClawAdapter`
@@ -646,9 +646,9 @@ LOW EFFORT ──────────────┼────────
 ### Sprint 4 (Weeks 11-14): AI Ecosystem
 - [x] Anthropic/Claude provider in substrate router
 - [x] OpenAI provider (for BYOK enterprise tier)
-- [ ] LangChain tool package
-- [ ] Publish MCP server to official registry
-- [ ] Desktop auto-setup wizard
+- [x] LangChain tool package
+- [x] Publish MCP server to official registry
+- [x] Desktop auto-setup wizard
 
 ### Sprint 5 (Weeks 15-20): Observability & Platform
 - [x] OpenTelemetry export
