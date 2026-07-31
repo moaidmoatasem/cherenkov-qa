@@ -29,9 +29,9 @@ All 5 tracks from the Phase 11 roadmap have been built and verified:
 
 ---
 
-**Date:** 2026-07-30
+**Date:** 2026-07-31
 **HEAD:** see `git log`. Last reflected here: `39ec376` on `feat/qa-headless-locator-alignment`, merged into local `main`, which also carries `origin/main` through #726 and #730.
-**Tests:** **1769 passed, 1 skipped, 0 failed** — measured 2026-07-30 (`pytest tests/unit tests/integration`). The previous "788+" figure was badly stale. Re-measure after this merge rather than trusting the number here.
+**Tests:** **1968 passed, 6 skipped, 0 failed** — measured 2026-07-31 (`pytest tests/`). All tracks stable.
 **UI E2E:** 260 headed (qa/ suite), 0 failed (smoke 39 + journeys 24 + functional 97 + api-contract 23 + nonfunctional 76 + settings-journey 1); pet-store eject suite 37/37 — **not re-verified since 2026-07-20**; the figure is carried forward, not confirmed.
 **Mypy gate:** ⚠️ **FAILING** — 7 errors in 3 files (`cherenkov/ai/openai_client.py`, `cherenkov/ai/nemoclaw_client.py`, `cherenkov/substrate/providers/localai.py`). The 2026-07-06 note below claiming "runs clean on 530 files" no longer holds. A fix is in progress in a separate session.
 **Branch:** `feat/qa-headless-locator-alignment`. Run `git rev-list --left-right --count origin/main...HEAD` for the current count rather than trusting a number written here.
