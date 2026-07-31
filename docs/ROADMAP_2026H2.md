@@ -24,6 +24,40 @@
 
 ---
 
+## 0b. M0b — Integrity of the integrity tool · **NEW 2026-07-31, gates M2**
+
+A 12-claim verification sweep was run against this codebase to settle contradictions across ~10 external analyses. Full findings: `docs/evidence/e0.6_claim_verification.md`. One result reorders the plan.
+
+**Every external roadmap recommends distribution first (PyPI, playground, wizard). That sequencing is wrong, and the verification says why.** There are five defects a hostile reader falsifies in under sixty seconds — and each one is *the product failing at the exact thing it sells*. Shipping to PyPI before fixing them means the integrity tool gets caught faking integrity, on the public record, in front of the first audience it ever has. Distribution converts these from private bugs into a permanent reputation.
+
+### Tier 0 — falsifiable in <60 seconds, blocks M2
+
+- [ ] **`gate="ast"` contains no parser.** `cherenkov/stages/review.py:183` emits a structured, machine-readable `GateResult(gate="ast")`. The file has no `import ast`; the mechanism is `_RE_FETCH_CLIENT` (`:37`,`:175`) and `_RE_FORBIDDEN_HTTP` (`:39`,`:176`). Paired with `README.md:10` ("mathematically proves … using pure AST analysis") this is the most damaging fact in the set. Rename the gate to `client-usage`; fix `_gate_syntax:143-152`, which claims "TS syntax well-formed" while only checking the string is non-empty.
+- [ ] **The Allure exporter fabricates passing tests that never ran.** `execution/emitters/allure.py:23-38` synthesizes `successful_conformance_check_{i}` with `"status": "passed"` from a count. A product that catches AI fabricating test results ships a reporter that fabricates test results — and `tests/standalone/test_allure_emitter.py:31-32` *asserts the fabricated name exists*, locking it in. Also `historyId` = fresh `uuid4` per run, permanently breaking Allure history.
+- [ ] **Web chat answers users with the literal string `[MOCK]`.** `chat/api/routes.py:34-35` builds `QAChatAgent(memory=memory)` with no `substrate_router`, so `agent.py:56-61` returns `"[MOCK] AI substrate unavailable"`. The router *is* injected at `chat/cli_repl.py:14` and `langchain/tool.py:113` — only the web path is unwired. `Sidebar.tsx:145` gives chat no DEMO badge and `docs/STATUS.md:22` grades it "✅ Complete". The honesty-labelling system fails on the one screen that needs it.
+- [ ] **`cherenkov validate --format junit` raises TypeError on first call.** `emitters/junit.py:18` declares `emit(self, report, _spec_path)`; `cli/commands/validate.py:258` calls it with one argument (the SARIF path at `:244` passes two — one call site was changed, the other wasn't). Advertised in `validate.py:25`, `action.yml:31`, and the docs site.
+- [ ] **`cherenkov demo` contradicts its own README line.** `README.md:24` says "Zero network calls, zero LLM"; `demo_cmd.py:77` binds ports 18800/18801 and probes over HTTP. This is the *first command in the quickstart*.
+
+### Tier 1 — real correctness bugs
+
+- [ ] **Two rate limiters on every request.** `api.py:53` (token bucket) and `api.py:124` → `security.py:125` (sliding window, same class name). Not redundant — non-nested, 1.67 rps vs 10 rps, two different 429 body schemas, only one with `Retry-After`. `CORSMiddleware` is innermost so neither 429 carries CORS headers: the React UI surfaces rate-limiting as an opaque CORS failure. `SecurityHeadersMiddleware` is double-registered too. Fix is ~10 lines in one file. `rate_limit.py:106` also does `startswith("/health")`, which never matches the real endpoint `/api/v1/health`.
+- [ ] **SARIF is invalid on the GitHub Action's default path.** `action.yml:33` defaults to `sarif` → Security tab. `sarif.py:67` emits `...+00:00Z` (two timezone designators, invalid); `sarif.py:66` sets `"executionSuccessful": not results`, so every run that *finds something* self-reports its invocation as failed.
+- [ ] **TypeScript HALLUCINATED detection is dead code.** `check_suite.py:292-301` computes `allowed`/`accessed`, then the loop body is `pass  # too noisy for regex`. `.ts` is CHERENKOV's *own* primary output format, so the format the product emits has the least analysis behind it. Worse, the honest disclosure at `:226-232` never fires because `.ts` is inside the `if suffix not in (".py", ".ts")` guard — the correct sentence exists and is shown to nobody. `demos/catch-the-ai-cheating/integrity_check_ts.py` already contains a far stronger TS engine the CLI ignores.
+
+### What the sweep corrected in the analysts' favour, and against
+
+- **check-suite's Python path uses real `ast.parse`** (`check_suite.py:16,106-118`), with WEAKENED decided by comparing AST comparison-operator node types (`:35-36`). The audit indicted the one component where AST is genuine and load-bearing. **Do not let a rebuttal open `check_suite.py:106`, point at `ast.parse`, and dismiss the whole finding** — the real defects are in `review.py` and the TS path.
+- **Codebase size:** 536 files / 64,250 LOC in `cherenkov/`, plus 248 test files / 42,364 LOC. Not "110,000 lines". Quote as two numbers.
+- **CLI surface:** 38 top-level commands, 10 groups, 45 subcommands = 73 addressable — *worse* than the "37" claimed. But do not cut: restructure `--help` into a ~8-command golden path. Cutting is expensive, breaking, and aimed at the wrong defect.
+- **`cherenkov author` exists and is registered** (`epoch.py:67-76`, `core.py:33,85`) — it is not missing. But the web seam discards the user's `intent`, so it would demo as working while ignoring input. Fix the wiring before promoting it.
+
+### Killed outright
+
+- [x] **"Migrate the Playwright runner to the Playwright Python API"** — closed as a category error. The eject invariant means generated tests are `.ts` run by the node runner; the Python API cannot execute them. Descriptively the claim is exact (233 lines, `subprocess.run`, WSL path handling); prescriptively it cannot be built without breaking a documented gate. Pointer: `docs/process/QA_VALIDATION_RUNBOOK.md:201-208`.
+- [x] **All sovereign-security material** — MEISSNER / ABLATION / TOKAMAK / Qdrant / LATTICE / "shred receipts" / "cryptographic proof chain" / "5 validated scanners" describe **`cherenkov-professional`**, a different repository with a different remote (`github.com/moaidmoatasem/cherenkov-professional`), confirmed present at `/home/moaid/cherenkov-professional`. Roughly two full analyses in the corpus are about the wrong codebase. Quarantine wholesale; do not reconcile.
+
+---
+
 ## 1. What changed this revision — and why it reorders everything
 
 The previous draft treated **E0.3 (recruit 3 practitioners)** as the single blocker, with recruitment latency as the only risk. That was wrong, and the reason matters more than the correction.
