@@ -73,6 +73,7 @@ from cherenkov.mcp.contracts import (
     VisualDiffBaselineInput,
 )
 from cherenkov.mcp.mesh_router import get_registry
+from cherenkov.mcp.tools.sentinel import SENTINEL_HANDLERS, SENTINEL_TOOL_DEFS
 from cherenkov.mcp.policy import PolicyEngine
 from cherenkov.validate.gate import ValidationGate
 
@@ -642,6 +643,23 @@ TOOLS: list[MCPTool] = [
     ),
 ]
 
+# ── Sentinel tools (Pillar 2: IDE Integrity Feedback) ────────────────────────
+TOOLS.extend([
+    MCPTool(
+        name=t["name"],
+        description=t["description"],
+        inputSchema=MCPToolInputSchema(
+            type=t["inputSchema"]["type"],
+            properties={
+                k: MCPToolParam(**{kk: vv for kk, vv in v.items() if kk in MCPToolParam.model_fields})
+                for k, v in t["inputSchema"]["properties"].items()
+            },
+            required=t["inputSchema"].get("required", []),
+        ),
+    )
+    for t in SENTINEL_TOOL_DEFS
+])
+
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
 def _queue() -> HitlQueue:
@@ -874,6 +892,13 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_registry_publish(arguments).model_dump()
         if name == "auto_heal_code":
             return _tool_auto_heal_code(arguments).model_dump()
+        # ── Sentinel tools (Pillar 2 — IDE Integrity Feedback) ────────────────────
+        if name in SENTINEL_HANDLERS:
+            result = SENTINEL_HANDLERS[name](arguments)
+            return MCPToolCallResult(
+                content=[MCPContent(type="text", text=str(result))],
+                isError=False,
+            ).model_dump()
     except ValidationError as exc:
         return _err_content(f"Invalid input: {exc}").model_dump()
     except Exception as exc:
