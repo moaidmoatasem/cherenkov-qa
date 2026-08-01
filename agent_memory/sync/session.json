@@ -1,25 +1,18 @@
 {
   "session": {
-    "id": "sess_20260801145438_5dce7e",
+    "id": "sess_20260801205653_afe1db",
     "status": "open",
-    "task": "E0.5d_conformance_corpus_remediation",
-    "started_at": "2026-08-01T14:54:38.001311+00:00",
+    "task": "docs_fix_826",
+    "started_at": "2026-08-01T20:56:53.608522+00:00",
     "ended_at": null,
     "findings_count": 0,
     "token_total": 0,
     "summary": null,
     "compacted": false,
-    "task_type": "E0.5d_conformance_corpus_remediation",
+    "task_type": "docs_fix_826",
     "source": "cherenkov"
   },
   "previous_sessions": [
-    {
-      "id": "sess_20260628120453_e38cc9",
-      "task": "cc1-auto-memory-hooks",
-      "ended_at": "2026-06-28T12:11:33.272663+00:00",
-      "summary": "CC-1: built cherenkov/memory/ (SQLite FTS5 MemoryRepository) and cherenkov/hooks/ (SubprocessHookExecutor + HookRegistry). ADR-011 + ADR-012 written. 32 tests all pass, ruff clean, committed de4a5bb",
-      "token_total": 0
-    },
     {
       "id": "sess_20260628121416_870da2",
       "task": "cc1-memory-smoke",
@@ -82,7 +75,14 @@
       "ended_at": "2026-08-01T14:53:50.069514+00:00",
       "summary": "Explorer 1 completed read-only exploration for Phase M0 - E0.5d: analyzed cherenkov verify CLI, verified 10 real OpenAPI 3.x spec URLs, documented SDD protocol, and provided execution strategy in handoff.md",
       "token_total": 0
+    },
+    {
+      "id": "sess_20260801145438_5dce7e",
+      "task": "E0.5d_conformance_corpus_remediation",
+      "ended_at": null,
+      "summary": null,
+      "token_total": 0
     }
   ],
-  "sessions_since_compact": 15
+  "sessions_since_compact": 16
 }
