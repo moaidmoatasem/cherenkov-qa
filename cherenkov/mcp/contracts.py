@@ -375,6 +375,139 @@ class VerifySystemInput(BaseModel):
     )
 
 
+# ── check_suite (#812 — static integrity check of a candidate suite) ──────────
+
+
+class CheckSuiteInput(BaseModel):
+    """Input for the check_suite MCP tool (#812).
+
+    Machine-facing twin of `cherenkov check-suite`. Exactly one of
+    candidate_path or candidate_inline must be provided. The baseline is
+    optional (required for WEAKENED/DELETED detection); the spec is required
+    for HALLUCINATED detection on Python suites.
+    """
+
+    candidate_path: str | None = Field(
+        default=None,
+        description="Filesystem path to the candidate test suite (.py or .ts). "
+        "Must be within the working directory.",
+    )
+    candidate_inline: str | None = Field(
+        default=None,
+        description="Raw test code to check inline (use when the file hasn't "
+        "been written to disk yet).",
+    )
+    baseline_path: str | None = Field(
+        default=None,
+        description="Filesystem path to the known-honest baseline suite. "
+        "Required for WEAKENED and DELETED detection.",
+    )
+    baseline_inline: str | None = Field(
+        default=None,
+        description="Raw baseline test code inline.",
+    )
+    spec_path: str | None = Field(
+        default=None,
+        description="Path to the OpenAPI spec (YAML/JSON). Required for "
+        "HALLUCINATED detection on Python suites.",
+    )
+    fail_on_finding: bool = Field(
+        default=False,
+        description="If true, report verdict 'fail' when any integrity "
+        "violation is found (CI gate mode).",
+    )
+
+
+# ── verify (#812 — divergence proof of a live system) ─────────────────────────
+
+
+class VerifyInput(BaseModel):
+    """Input for the verify MCP tool (#812).
+
+    Machine-facing twin of `cherenkov verify`. Probes a live server against
+    its OpenAPI spec using the Skeptic→Witness divergence engine. Offline by
+    default — no LLM required.
+    """
+
+    base_url: str = Field(
+        description="Base URL of the live server to probe "
+        "(e.g. https://petstore3.swagger.io/api/v3).",
+    )
+    spec_source: str | None = Field(
+        default=None,
+        description="Path or URL to the OpenAPI spec JSON/YAML. "
+        "Omit to use the built-in Petstore demo spec.",
+    )
+    use_llm: bool = Field(
+        default=False,
+        description="If true, use the LLM Skeptic for hypothesis generation "
+        "(requires Ollama). Default: offline mode (no LLM required).",
+    )
+    max_probes: int = Field(
+        default=40,
+        ge=1,
+        le=500,
+        description="Maximum spec-derived endpoint probes per run (requires --spec).",
+    )
+    allow_mutations: bool = Field(
+        default=False,
+        description="Allow planning of happy-path probes for POST/PUT/DELETE.",
+    )
+    identifiers: str | None = Field(
+        default=None,
+        description="JSON file path or inline JSON object mapping path "
+        "parameters to known valid values.",
+    )
+    coverage_report: bool = Field(
+        default=False,
+        description="Include a spec coverage-gap report in the result "
+        "(requires spec_source).",
+    )
+    health_score: bool = Field(
+        default=False,
+        description="Include an A-F health grade in the result "
+        "(requires spec_source).",
+    )
+    run_id: str | None = Field(
+        default=None,
+        description="Optional run identifier for correlation.",
+    )
+
+
+# ── generate (#812 — Playwright E2E suite generation from a spec) ─────────────
+
+
+class GenerateInput(BaseModel):
+    """Input for the generate MCP tool (#812).
+
+    Machine-facing twin of `cherenkov generate`. Runs the Ingest→Plan→
+    Generate (→Review→Repair) pipeline against an OpenAPI spec. By default the
+    generated test code is returned inline; pass output_dir to write files to
+    disk instead.
+    """
+
+    spec_path: str = Field(
+        min_length=1,
+        description="Path to the OpenAPI spec (JSON/YAML) to generate tests for. "
+        "Must be within the working directory.",
+    )
+    output_dir: str | None = Field(
+        default=None,
+        description="Directory to write generated Playwright test files to. "
+        "Omit to return generated test code inline (default).",
+    )
+    repair: bool = Field(
+        default=True,
+        description="Run the generate→review→repair loop. Default: on.",
+    )
+    max_attempts: int = Field(
+        default=3,
+        ge=1,
+        le=10,
+        description="Maximum repair attempts per scenario (only used with repair).",
+    )
+
+
 # ── JSON-RPC error codes (MCP uses standard JSON-RPC + MCP extensions) ───────
 PARSE_ERROR = -32700
 INVALID_REQUEST = -32600
