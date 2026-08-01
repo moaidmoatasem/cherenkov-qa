@@ -25,6 +25,7 @@ export const ROUTES = {
   sddGraph: '/sdd/graph',
   sddWiki: '/sdd/wiki',
   sddConfig: '/sdd/config',
+  specVsReality: '/spec-vs-reality',
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;

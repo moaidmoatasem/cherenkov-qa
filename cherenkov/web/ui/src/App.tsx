@@ -30,6 +30,7 @@ import MobileScreen from './components/MobileScreen';
 import KnowledgeExplorerScreen from './components/KnowledgeExplorerScreen';
 import SddDashboardScreen from './components/SddDashboardScreen';
 import VerdictScreen from './screens/VerdictScreen';
+import SpecVsRealityScreen from './screens/SpecVsRealityScreen';
 import VisualRegressionScreen from './components/VisualRegressionScreen';
 import ExplorerScreen from './components/ExplorerScreen';
 import GlobalShortcuts from './components/GlobalShortcuts';
@@ -430,6 +431,10 @@ function InnerApp() {
 
             {activeTab === 'divergences' && (
               <DivergencesScreen />
+            )}
+
+            {activeTab === 'spec-vs-reality' && (
+              <SpecVsRealityScreen />
             )}
 
             {activeTab === 'explore' && (
