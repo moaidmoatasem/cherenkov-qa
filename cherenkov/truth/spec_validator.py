@@ -29,6 +29,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -65,7 +66,24 @@ class ValidationResult:
 
 
 _HTTP_METHODS = {"get", "post", "put", "patch", "delete", "head", "options", "trace"}
-_KNOWN_VERSIONS = {"3.0.0", "3.0.1", "3.0.2", "3.0.3", "3.1.0", "2.0"}
+_KNOWN_VERSIONS = {
+    "2.0",
+    "3.0.0",
+    "3.0.1",
+    "3.0.2",
+    "3.0.3",
+    "3.0.4",
+    "3.1.0",
+}
+# The OAS 3.x lines are patch-released (3.0.4 after 3.0.3, 3.1.1, 3.2.0, ...),
+# so any 3.x patch version is legitimate — don't warn on valid specs.
+_KNOWN_VERSION_PREFIXES = ("2.0", "3.0.", "3.1.", "3.2.")
+
+
+def _is_known_version(version: str) -> bool:
+    if version in _KNOWN_VERSIONS:
+        return True
+    return any(version.startswith(prefix) for prefix in _KNOWN_VERSION_PREFIXES)
 
 
 def _load_raw(source: str) -> tuple[str, str]:
@@ -199,12 +217,12 @@ def validate_spec(source: str, *, fatal_on_warnings: bool = False) -> Validation
 
     # ── 4. Version check ─────────────────────────────────────────────────────
     version = spec.get("openapi") or spec.get("swagger", "")
-    if version and str(version) not in _KNOWN_VERSIONS:
+    if version and not _is_known_version(str(version)):
         issues.append(SpecIssue(
             severity=Severity.WARNING,
             code="SPEC_PARSE_ERROR",
             message=f"Unrecognised OpenAPI version: {version!r}. "
-                    f"Known: {sorted(_KNOWN_VERSIONS)}.",
+                    f"Known: {sorted(_KNOWN_VERSIONS)} or any 3.x patch release.",
             location="openapi",
         ))
 
