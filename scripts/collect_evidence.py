@@ -347,7 +347,7 @@ def main() -> int:
         return 0
 
     # Validate working directory
-    if not (root / "cherenkov.py").exists() and not (root / "cherenkov").is_dir():
+    if not (root / "cherenkov").is_dir():
         print(
             f"Error: script must be run from the cherenkov-qa repo root.\n"
             f"Detected root: {root}\n"

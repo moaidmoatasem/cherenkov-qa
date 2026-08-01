@@ -582,6 +582,28 @@ Any unrecognised action emits a warning and is skipped as a comment in the outpu
 
 ---
 
+#### `audit` (E0.5h — Baseline-Free Oracle suite audit)
+Evaluates whether an existing test suite actually catches regressions by recording
+baseline traffic against a live target, generating spec-derived mutants (status,
+value, missing, enum), and replaying the suite against those mutants.
+
+```bash
+# Audit a Playwright suite against a live API (baseline-free oracle)
+./bin/cherenkov audit --target http://localhost:8000 \
+  --spec openapi.yaml \
+  --test-cmd "npx playwright test tests/"
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--target`, `-t` | *(required)* | Base URL of the live server to record the baseline from |
+| `--spec`, `-s` | *(required)* | Path or URL to the OpenAPI spec JSON/YAML |
+| `--test-cmd`, `-c` | *(required)* | Command to run the test suite (receives `API_URL` in the environment) |
+| `--proxy-port` | `9100` | Port for the recording proxy |
+| `--mock-port` | `9101` | Port for the mutant mock server |
+
+---
+
 #### `governance` (E12 — Governance KPI panel)
 Surfaces escape-rate, false-positive, coverage, and maintenance KPIs over the
 verdict/audit history.
@@ -640,6 +662,25 @@ Shows or sets the autonomy level the pipeline operates at.
 
 ---
 
+#### `record` (CC-5 — teleport session ingestion)
+Ingests live agentic-exploration scenario results into the HITL review queue from a
+result file, optionally tagging the enqueued items with a run id.
+
+```bash
+# Ingest exploration results into the HITL queue
+./bin/cherenkov record .cherenkov/explore_results.json
+
+# Tag enqueued items with a run id
+./bin/cherenkov record .cherenkov/explore_results.json --run-id 20260801-120000
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `RESULT_PATH` | *(positional, required)* | Path to the scenario results file |
+| `--run-id` | *(none)* | Tag enqueued HITL items with this run id |
+
+---
+
 #### `mcp` (X4 — Model Context Protocol server)
 Exposes CHERENKOV over the [Model Context Protocol](https://modelcontextprotocol.io)
 (JSON-RPC 2.0 over stdio) so Claude Desktop, Open Interpreter, Cursor, and other MCP
@@ -682,7 +723,7 @@ without leaving their editor or terminal.
 {
   "cherenkov": {
     "command": "python3",
-    "args": ["/home/you/cherenkov-qa/cherenkov.py", "mcp", "serve"],
+    "args": ["-m", "cherenkov", "mcp", "serve"],
     "cwd": "/home/you/cherenkov-qa"
   }
 }
@@ -704,7 +745,7 @@ See [docs/guides/OPEN_INTERPRETER_SETUP.md](guides/OPEN_INTERPRETER_SETUP.md) fo
   "mcpServers": {
     "cherenkov": {
       "command": "python3",
-      "args": ["cherenkov.py", "mcp", "serve"],
+      "args": ["-m", "cherenkov", "mcp", "serve"],
       "cwd": "/home/you/cherenkov-qa"
     }
   }

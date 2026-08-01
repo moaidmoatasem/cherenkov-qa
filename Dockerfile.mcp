@@ -9,11 +9,17 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY cherenkov/ cherenkov/
-COPY cherenkov.py .
+# The Click CLI eagerly imports command modules at startup, some of which write
+# state to ~/.cherenkov and .cherenkov/ under the workdir at import time. The
+# unprivileged user needs a writable home and workdir.
+RUN mkdir -p /home/cherenkov && \
+    chown -R cherenkov:cherenkov /home/cherenkov /app
+
+ENV HOME=/home/cherenkov
 
 USER cherenkov
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)" || exit 1
 
-ENTRYPOINT ["python", "cherenkov.py", "mcp", "serve"]
+ENTRYPOINT ["python", "-m", "cherenkov", "mcp", "serve"]
