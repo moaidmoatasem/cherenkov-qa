@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './components/LoginPage';
 import Sidebar from './components/Sidebar';
@@ -55,9 +55,12 @@ function InnerApp() {
   const navigate = useNavigate();
   const location = useLocation();
   const activeTab = (location.pathname === '/' || location.pathname === '/index.html') ? 'projects' : location.pathname.replace(/^[/]+/, '');
-  const setActiveTab = (tab: string) => {
-    navigate(tab === 'projects' ? '/' : `/${tab}`);
-  };
+  const setActiveTab = useCallback(
+    (tab: string) => {
+      navigate(tab === 'projects' ? '/' : `/${tab}`);
+    },
+    [navigate]
+  );
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [status, setStatus] = useState<'Live' | 'Idle'>('Idle');

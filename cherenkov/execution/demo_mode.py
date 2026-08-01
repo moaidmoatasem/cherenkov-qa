@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 MOCK_FINDINGS = [
     {
         "id": "demo-hitl-1",
-        "endpoint": "POST /pets",
+        "endpoint": "/pets",
         "method": "POST",
         "mutation_id": "mut_missing_name",
         "status": "pending",
@@ -26,7 +26,7 @@ MOCK_FINDINGS = [
     },
     {
         "id": "demo-hitl-2",
-        "endpoint": "GET /pets/{petId}",
+        "endpoint": "/pets/{petId}",
         "method": "GET",
         "mutation_id": "mut_invalid_id",
         "status": "pending",
@@ -35,7 +35,7 @@ MOCK_FINDINGS = [
     },
     {
         "id": "demo-hitl-3",
-        "endpoint": "POST /pets",
+        "endpoint": "/pets",
         "method": "POST",
         "mutation_id": "mut_extra_fields",
         "status": "pending",

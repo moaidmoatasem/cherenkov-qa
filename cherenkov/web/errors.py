@@ -118,6 +118,22 @@ def api_error(
     return APIError(code=code, message=message, detail=detail, status_code=status_code)
 
 
+def _json_safe(value: Any) -> Any:
+    """Recursively coerce a value into something json.dumps can encode.
+
+    dict/list/tuple structure is preserved; str/int/float/bool/None pass
+    through unchanged; anything else (e.g. a stray callable ending up in a
+    pydantic error's `ctx`/`input`) is stringified rather than raising.
+    """
+    if isinstance(value, dict):
+        return {str(k): _json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(v) for v in value]
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    return str(value)
+
+
 def install_error_handlers(app: FastAPI) -> None:
     """Register global exception handlers on the FastAPI app."""
 
@@ -144,7 +160,13 @@ def install_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error_handler(_request: Request, exc: RequestValidationError) -> JSONResponse:
-        errors = exc.errors()
+        # pydantic's error `ctx`/`input` fields can carry arbitrary Python
+        # objects (e.g. a dependency-injected callable when a route is
+        # misconfigured) that json.dumps can't serialize. Recursing through
+        # dict/list structure and stringifying only the non-JSON-safe leaves
+        # keeps this handler from itself raising a 500 and masking the real
+        # validation error.
+        errors = _json_safe(exc.errors())
         first = errors[0] if errors else {}
         body = {
             "error": {
