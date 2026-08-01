@@ -3,7 +3,7 @@
 **The AI-Native API Conformance Testing Platform**
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-green.svg)](https://github.com/moaidmoatasem/cherenkov-qa/releases/tag/v1.1.1)
+[![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-green.svg)](https://github.com/moaidmoatasem/cherenkov-qa/releases/tag/v1.2.0)
 
 Every API has an OpenAPI spec, but those specs silently drift from the real server implementations every day. Moreover, AI-generated tests often hallucinate expected outcomes or silently weaken assertions to force a "green" build.
 
@@ -83,9 +83,9 @@ By default, CHERENKOV uses `qwen2.5-coder:7b` running locally via Ollama. Your p
 ---
 
 ## 📚 Documentation
-- [Getting Started Guide](https://moaidmoatasem.github.io/cherenkov-qa/getting-started/)
-- [CLI Reference](https://moaidmoatasem.github.io/cherenkov-qa/cli/reference/)
-- [Architecture & Design Decisions](https://moaidmoatasem.github.io/cherenkov-qa/architecture/)
+- [Getting Started Guide](https://moaidmoatasem.github.io/cherenkov-qa/latest/getting-started/)
+- [CLI Reference](https://moaidmoatasem.github.io/cherenkov-qa/latest/cli/reference/)
+- [Architecture & Design Decisions](https://moaidmoatasem.github.io/cherenkov-qa/latest/architecture/)
 - [Onboarding & Demo Recordings](./docs/recordings/) — 8 Loom scripts with live evidence for developers, QA, managers, and DevOps
 
 ---

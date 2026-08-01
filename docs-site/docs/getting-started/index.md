@@ -47,7 +47,7 @@ And then runs it against your live server — catching drift between spec and re
 
 ## At a Glance
 
-**Current status:** v1.1.1, production-ready core.
+**Current status:** v1.2.0, production-ready core.
 
 | Capability | Status |
 |-----------|--------|
