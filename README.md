@@ -3,13 +3,13 @@
 **The AI-Native API Conformance Testing Platform**
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-green.svg)](https://github.com/moaidmoatasem/cherenkov-qa/releases/tag/v1.1.1)
+[![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-green.svg)](https://github.com/moaidmoatasem/cherenkov-qa/releases/tag/v1.2.0)
 
 Every API has an OpenAPI spec, but those specs silently drift from the real server implementations every day. Moreover, AI-generated tests often hallucinate expected outcomes or silently weaken assertions to force a "green" build.
 
-**CHERENKOV-QA** is an **API Integrity Auditor**. It checks whether your test suite actually enforces your OpenAPI contract, detecting Weakened, Deleted, and Hallucinated assertions with no LLM involved — then provides a spec-derived local LLM engine to generate conformant Playwright tests.
+**CHERENKOV-QA** is an **API Integrity Auditor**. Point it at any test suite and it will tell you, with no LLM involved, whether your tests actually enforce your OpenAPI contract — detecting Weakened, Deleted, and Hallucinated assertions. It also verifies your live API conforms to the spec, and generates conformant Playwright tests locally.
 
-For **Python** suites the audit is genuine AST analysis: `check-suite` parses with `ast.parse` and decides WEAKENED by comparing comparison-operator node types, so `== 200` → `in (200, 201)` is caught structurally rather than textually. For **TypeScript** suites it is regex-based pattern matching, which is weaker — see [Detection depth by language](#detection-depth-by-language).
+For **Python** suites the audit is genuine AST analysis: `check-suite` parses with `ast.parse` and decides WEAKENED by comparing comparison-operator node types, so `== 200` → `in (200, 201)` is caught structurally rather than textually. For **TypeScript** suites it uses a per-subject regex engine (proven against the labelled corpus: **4/4 cheat classes caught**, including hallucination).
 
 *Zero vendor lock-in. 100% private. No telemetry, no cloud calls.*
 
@@ -23,46 +23,59 @@ pip install .
 cherenkov demo
 ```
 
-Watch it catch the AI attempting to cheat by loosening assertions or deleting tests. No LLM, no API key, no internet — the demo starts two throwaway HTTP servers on `127.0.0.1:18800/18801` (one spec-conforming, one deliberately broken) and runs the suite against both, so a test that passes the broken one is provably vacuous. (PyPI publish is on the roadmap — until then, install from source as above, or use the one-liner: `curl -fsSL https://raw.githubusercontent.com/moaidmoatasem/cherenkov-qa/main/install.sh | bash`.)
+Watch it catch the AI attempting to cheat by loosening assertions or deleting tests. No LLM, no API key, no internet — the demo starts two throwaway HTTP servers on `127.0.0.1:18800/18801` (one spec-conforming, one deliberately broken) and runs the suite against both, so a test that passes the broken one is provably vacuous.
 
-**Then audit a real test suite, and verify your own API:**
+**Then audit a real test suite and verify your own API:**
 
 ```bash
+# Audit: is your existing test suite actually enforcing the spec?
+cherenkov audit --spec ./openapi.yaml --target http://localhost:8080 --test-cmd "npx playwright test"
+
+# Check-suite: find weakened / deleted / hallucinated assertions against a baseline
 cherenkov check-suite --candidate ./tests --spec ./openapi.yaml --fail-on-finding
+
+# Verify: probe the live API directly against the spec
 cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml
+
+# Verify with known real identifiers (to probe templated endpoints like /users/{id})
+cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml \
+  --identifiers identifiers.json --allow-mutations
 ```
 
 ---
 
 ## 💡 Why CHERENKOV?
 
-### 1. The Integrity Moat (`check-suite`)
-AI coding tools are notorious for weakening assertions (e.g., changing `==` to `in`) just to make tests pass. CHERENKOV-QA catches **Weakened**, **Deleted**, or **Hallucinated** assertions and binds your tests to your OpenAPI spec.
+### 1. Baseline-Free Audit (`cherenkov audit`) — **the wedge**
+Point it at any test suite you already have — no baseline, no adoption cost. CHERENKOV records a green run against your live target, then replays the suite against deliberately-broken responses (one mutant per axis: wrong status, wrong value type, enum violation, missing required field). A test that still passes against a broken response is **provably vacuous**. All three AI cheat classes (Weakened, Deleted, Hallucinated) are caught.
+
+### 2. The Integrity Moat (`check-suite`)
+AI coding tools are notorious for weakening assertions (e.g., changing `==` to `in`) just to make tests pass. CHERENKOV catches **Weakened**, **Deleted**, or **Hallucinated** assertions and binds your tests to your OpenAPI spec.
 
 #### Detection depth by language
 
 | Suite | Engine | Weakened | Deleted | Hallucinated |
 |---|---|---|---|---|
 | **Python** (`.py`) | `ast.parse` — compares comparison-operator node types | ✅ per-assertion, baseline-relative | ✅ per-test | ✅ cross-referenced against the spec |
-| **TypeScript** (`.spec.ts`) | regex over Playwright assertion grammar | ⚠️ file-level heuristic only | ⚠️ per-test-name only | ❌ **not implemented** |
+| **TypeScript** (`.spec.ts`) | Per-subject regex engine (validated: 4/4 cheat classes) | ✅ per-test | ✅ per-test | ✅ implemented |
 
-The TypeScript path is materially weaker than the Python path, and hallucination detection there is not implemented at all. This is stated plainly because CHERENKOV exists to catch tools that overstate what they verify; it would be self-defeating to do the same. Closing the gap is tracked as M0b in [`docs/ROADMAP_2026H2.md`](docs/ROADMAP_2026H2.md).
+### 3. Spec-Shape Robustness
+Proven against **10 real-world production API specs** (Stripe, GitHub, Twilio, Kubernetes, OpenAI, Slack, Box, SendGrid, DigitalOcean, Petstore) — **3,428 endpoints analyzed, 0 silent drops**. Every endpoint that can't be probed is explicitly reported with a machine-readable reason. See the full corpus report: [`docs/marketing/E0.5d_conformance_corpus.md`](docs/marketing/E0.5d_conformance_corpus.md).
 
-### 2. Hallucination-Resistant Generation
-When CHERENKOV does generate tests, it only uses the LLM to write the *structure*. The *expected values* (status codes, response schemas) are derived strictly from your OpenAPI spec. If the spec says `422`, CHERENKOV ensures the test demands a `422`.
+### 4. Hallucination-Resistant Generation
+When CHERENKOV generates tests, it only uses the LLM to write the *structure*. The *expected values* (status codes, response schemas) are derived strictly from your OpenAPI spec. If the spec says `422`, CHERENKOV ensures the test demands a `422`.
 
-### 3. Suggest-Only Healing
+### 5. Suggest-Only Healing
 When tests fail, CHERENKOV suggests how to tighten your backend validations or fix the spec. But it **never auto-edits** your code. You stay in control.
 
-### 4. Zero Vendor Lock-in (Eject Anytime)
-We believe in open standards. You can eject the generated tests into standard, standalone Playwright code at any time:
+### 6. Zero Vendor Lock-in (Eject Anytime)
 ```bash
 cherenkov eject --output ./tests
 ```
-Your tests will run perfectly with `playwright test`, completely detached from CHERENKOV.
+Your tests run perfectly with `playwright test`, completely detached from CHERENKOV.
 
-### 5. 100% Private (Local LLM First)
-By default, CHERENKOV uses `qwen2.5-coder:7b` running locally via Ollama. Your proprietary API specs never leave your laptop. (Cloud models like OpenAI are supported as opt-in).
+### 7. 100% Private (Local LLM First)
+By default, CHERENKOV uses `qwen2.5-coder:7b` running locally via Ollama. Your proprietary API specs never leave your laptop.
 
 ---
 
@@ -74,11 +87,17 @@ By default, CHERENKOV uses `qwen2.5-coder:7b` running locally via Ollama. Your p
 
 ---
 
-## 🛠️ Features
-- **6-Gate Review Pipeline**: Tests are syntax-checked, AST-validated, type-checked, and mock-tested before ever hitting a real server.
-- **OWASP Mutation Engine**: Automatically injects DAST (Dynamic Application Security Testing) payloads to test edge-cases.
-- **Visual Dashboard**: Explore conformance maps and test results via the built-in React UI (`npx cherenkov dashboard`).
-- **K8s Native Operator**: Deploy the `ConformanceCheck` CRD to run CHERENKOV natively in your Kubernetes CI/CD pipelines.
+## 🛠️ Key Commands
+
+| Command | What it does |
+|---|---|
+| `cherenkov demo` | Self-contained demo, no setup. Catches all 3 AI cheat classes in ~10s. |
+| `cherenkov audit` | Baseline-free oracle: record → perturb → replay. Works on any existing test suite. |
+| `cherenkov verify` | Probe the live API against the spec. Reports every unprobed endpoint with an explicit reason. |
+| `cherenkov check-suite` | AST / regex analysis to detect Weakened, Deleted, Hallucinated assertions. |
+| `cherenkov generate` | Generate conformant Playwright tests from an OpenAPI spec via local LLM. |
+| `cherenkov eject` | Strip all CHERENKOV imports — tests run standalone with `playwright test`. |
+| `cherenkov dashboard` | Launch the React UI for conformance maps, triage, and healing suggestions. |
 
 ---
 
@@ -86,7 +105,8 @@ By default, CHERENKOV uses `qwen2.5-coder:7b` running locally via Ollama. Your p
 - [Getting Started Guide](https://moaidmoatasem.github.io/cherenkov-qa/getting-started/)
 - [CLI Reference](https://moaidmoatasem.github.io/cherenkov-qa/cli/reference/)
 - [Architecture & Design Decisions](https://moaidmoatasem.github.io/cherenkov-qa/architecture/)
-- [Onboarding & Demo Recordings](./docs/recordings/) — 8 Loom scripts with live evidence for developers, QA, managers, and DevOps
+- [Corpus Benchmark Report](docs/marketing/E0.5d_conformance_corpus.md) — 10 real-world APIs, 3,428 endpoints, 0 silent drops
+- [Roadmap](docs/ROADMAP_2026H2.md)
 
 ---
 
