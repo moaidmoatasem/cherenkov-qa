@@ -4,6 +4,7 @@ import { runGenerate } from './commands/generate';
 import { runEject } from './commands/eject';
 import { runDoctor, runInit } from './commands/doctor';
 import { ConformanceTreeProvider } from './providers/TreeDataProvider';
+import { IntegrityCodeLensProvider } from './providers/IntegrityCodeLensProvider';
 import { CherenkovCodeLensProvider } from './providers/CodeLensProvider';
 import { CherenkovDiagnosticsProvider } from './providers/DiagnosticsProvider';
 import { CherenkovHoverProvider } from './providers/HoverProvider';
@@ -30,6 +31,14 @@ export function activate(context: vscode.ExtensionContext): void {
   const codeLensDisposable = vscode.languages.registerCodeLensProvider(
     [{ language: 'yaml' }, { language: 'json' }],
     codeLensProvider
+  );
+
+
+  // Code lens for test files (Integrity TIaaS / Sentinel Tools)
+  const integrityCodeLensProvider = new IntegrityCodeLensProvider();
+  const integrityCodeLensDisposable = vscode.languages.registerCodeLensProvider(
+    [{ language: 'typescript' }, { language: 'python' }],
+    integrityCodeLensProvider
   );
 
   // Diagnostics, hover, and quick fix providers
@@ -177,6 +186,7 @@ export function activate(context: vscode.ExtensionContext): void {
     outputChannel,
     treeView,
     codeLensDisposable,
+    integrityCodeLensDisposable,
     hoverDisposable,
     quickFixDisposable,
     diagnosticsProvider,
