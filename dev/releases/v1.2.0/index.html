@@ -6,17 +6,17 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="How CHERENKOV-QA performs API conformance testing — from spec ingestion to drift reporting.">
+        <meta name="description" content="AI-native API conformance testing — OpenAPI spec to Playwright tests, locally, privately, with zero vendor lock-in.">
       
       
       
-        <link rel="canonical" href="https://moaidmoatasem.github.io/cherenkov-qa/dev/guides/api-conformance/">
+        <link rel="canonical" href="https://moaidmoatasem.github.io/cherenkov-qa/dev/releases/v1.2.0/">
       
       
-        <link rel="prev" href="../../cli/completions/">
+        <link rel="prev" href="../../changelog/">
       
       
-        <link rel="next" href="../openapi-spec/">
+        <link rel="next" href="../v1.1.2/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>API Conformance Testing - CHERENKOV-QA</title>
+        <title>v1.2.0 - CHERENKOV-QA</title>
       
     
     
@@ -107,7 +107,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-conformance-testing" class="md-skip">
+        <a href="#release-notes-cherenkov-qa-v120" class="md-skip">
           Skip to content
         </a>
       
@@ -158,7 +158,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              API Conformance Testing
+              v1.2.0
             
           </span>
         </div>
@@ -331,13 +331,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../guides/api-conformance/" class="md-tabs__link">
           
   
   
@@ -399,10 +397,12 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../../changelog/" class="md-tabs__link">
           
   
@@ -806,10 +806,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -831,22 +829,21 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
             
   
   
@@ -864,7 +861,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -879,37 +876,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Conformance Testing
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../guides/api-conformance/" class="md-nav__link">
         
   
   
@@ -925,105 +895,6 @@
   
 
       </a>
-      
-        
-
-  
-
-<nav class="md-nav md-nav--secondary" aria-label="On this page">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      On this page
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#what-is-conformance-testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What Is Conformance Testing?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-conformance-loop" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Conformance Loop
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#run-a-conformance-check" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run a Conformance Check
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#types-of-drift-detected" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Types of Drift Detected
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#generating-tests-without-executing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Generating Tests Without Executing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-gate-review" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6-Gate Review
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#evidence-based-reporting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Evidence-Based Reporting
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1036,7 +907,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../openapi-spec/" class="md-nav__link">
+      <a href="../../guides/openapi-spec/" class="md-nav__link">
         
   
   
@@ -1064,7 +935,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../local-llm/" class="md-nav__link">
+      <a href="../../guides/local-llm/" class="md-nav__link">
         
   
   
@@ -1092,7 +963,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../eject/" class="md-nav__link">
+      <a href="../../guides/eject/" class="md-nav__link">
         
   
   
@@ -1120,7 +991,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ci-cd/" class="md-nav__link">
+      <a href="../../guides/ci-cd/" class="md-nav__link">
         
   
   
@@ -1148,7 +1019,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../k8s-operator/" class="md-nav__link">
+      <a href="../../guides/k8s-operator/" class="md-nav__link">
         
   
   
@@ -1176,7 +1047,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../security/" class="md-nav__link">
+      <a href="../../guides/security/" class="md-nav__link">
         
   
   
@@ -1604,8 +1475,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -1625,21 +1498,22 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
             
   
   
@@ -1657,7 +1531,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1700,10 +1574,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../releases/v1.2.0/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.2.0
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1719,6 +1620,78 @@
   
 
       </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#whats-new-since-v112" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's New Since v1.1.2
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What&#39;s New Since v1.1.2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ux-redesign" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UX Redesign
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roadmap
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1731,7 +1704,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../releases/v1.1.2/" class="md-nav__link">
+      <a href="../v1.1.2/" class="md-nav__link">
         
   
   
@@ -1759,7 +1732,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../releases/v1.1.1/" class="md-nav__link">
+      <a href="../v1.1.1/" class="md-nav__link">
         
   
   
@@ -1787,7 +1760,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../releases/v1.1.0/" class="md-nav__link">
+      <a href="../v1.1.0/" class="md-nav__link">
         
   
   
@@ -1815,7 +1788,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../releases/v1.0.0/" class="md-nav__link">
+      <a href="../v1.0.0/" class="md-nav__link">
         
   
   
@@ -1899,79 +1872,52 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-is-conformance-testing" class="md-nav__link">
+  <a href="#whats-new-since-v112" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What Is Conformance Testing?
+        What's New Since v1.1.2
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What&#39;s New Since v1.1.2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ux-redesign" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UX Redesign
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#the-conformance-loop" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Conformance Loop
+        Fixed
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#run-a-conformance-check" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#roadmap" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Run a Conformance Check
+        Roadmap
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#types-of-drift-detected" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Types of Drift Detected
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#generating-tests-without-executing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Generating Tests Without Executing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-gate-review" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6-Gate Review
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#evidence-based-reporting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Evidence-Based Reporting
-      
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1992,7 +1938,7 @@
 
 
   
-    <a href="https://github.com/moaidmoatasem/cherenkov-qa/edit/main/docs-site/docs/guides/api-conformance.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/moaidmoatasem/cherenkov-qa/edit/main/docs-site/docs/releases/v1.2.0.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -2001,125 +1947,31 @@
     
       
     
-    <a href="https://github.com/moaidmoatasem/cherenkov-qa/raw/main/docs-site/docs/guides/api-conformance.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/moaidmoatasem/cherenkov-qa/raw/main/docs-site/docs/releases/v1.2.0.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
     </a>
   
 
 
-<h1 id="api-conformance-testing">API Conformance Testing<a class="headerlink" href="#api-conformance-testing" title="Permanent link">&para;</a></h1>
-<p>CHERENKOV-QA automates the full API conformance loop: spec → tests → execution → drift report.</p>
-<hr />
-<h2 id="what-is-conformance-testing">What Is Conformance Testing?<a class="headerlink" href="#what-is-conformance-testing" title="Permanent link">&para;</a></h2>
-<p>API conformance testing validates that your live server <strong>matches its OpenAPI specification</strong>. If the spec says <code>GET /pets</code> returns a 200 with a list of pets, conformance testing verifies that the real server does exactly that — every field, every status code, every schema constraint.</p>
-<p>Most teams skip this because writing these tests is tedious. CHERENKOV eliminates the tedium.</p>
-<hr />
-<h2 id="the-conformance-loop">The Conformance Loop<a class="headerlink" href="#the-conformance-loop" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>OpenAPI Spec (ground truth)
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>         │
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>         ▼
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>CHERENKOV generates typed tests
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>         │
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>         ▼
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Tests execute against real server
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>         │
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>         ▼
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>Response vs Spec → DRIFT REPORT
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>         │
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    ┌────┴────┐
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    │         │
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    ▼         ▼
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a> PASS (0)  DRIFT (1)
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a> Spec OK   CI fails
-</span></code></pre></div>
-<hr />
-<h2 id="run-a-conformance-check">Run a Conformance Check<a class="headerlink" href="#run-a-conformance-check" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>cherenkov<span class="w"> </span>validate<span class="w"> </span>--spec<span class="w"> </span>api.yaml<span class="w"> </span>--target<span class="w"> </span>http://localhost:8000
-</span></code></pre></div>
-<p>Output:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>CHERENKOV Conformance Report
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>════════════════════════════
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>✅ GET  /pets             200 — Conformant
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>✅ POST /pets             201 — Conformant
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>❌ GET  /pets/{petId}     Expected: 200, Got: 404 — DRIFT DETECTED
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>   Field &#39;name&#39; required by spec but missing in response body
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>✅ DELETE /pets/{petId}   204 — Conformant
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>Summary: 3/4 passed · 1 drift · Exit: 1
-</span></code></pre></div>
-<hr />
-<h2 id="types-of-drift-detected">Types of Drift Detected<a class="headerlink" href="#types-of-drift-detected" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Drift Type</th>
-<th>Example</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Status code mismatch</strong></td>
-<td>Spec: 200, Server: 404</td>
-</tr>
-<tr>
-<td><strong>Missing required field</strong></td>
-<td>Spec: <code>name</code> required, Response: <code>name</code> absent</td>
-</tr>
-<tr>
-<td><strong>Wrong field type</strong></td>
-<td>Spec: <code>integer</code>, Response: <code>string</code></td>
-</tr>
-<tr>
-<td><strong>Extra undocumented field</strong></td>
-<td>Response has <code>internal_id</code> not in spec</td>
-</tr>
-<tr>
-<td><strong>Schema constraint violation</strong></td>
-<td>Spec: <code>minimum: 0</code>, Response: <code>-1</code></td>
-</tr>
-<tr>
-<td><strong>Missing endpoint</strong></td>
-<td>Spec: <code>PUT /pets/{id}</code>, Server: 404 Not Found</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="generating-tests-without-executing">Generating Tests Without Executing<a class="headerlink" href="#generating-tests-without-executing" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Generate only — don&#39;t run</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>cherenkov<span class="w"> </span>generate<span class="w"> </span>--spec<span class="w"> </span>api.yaml<span class="w"> </span>--output<span class="w"> </span>./tests
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Review generated tests</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>ls<span class="w"> </span>./tests/
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1"># GET_pets_test.ts</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># POST_pets_test.ts</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="c1"># GET_pets_{petId}_test.ts</span>
-</span></code></pre></div>
-<hr />
-<h2 id="6-gate-review">6-Gate Review<a class="headerlink" href="#6-gate-review" title="Permanent link">&para;</a></h2>
-<p>Every generated test passes 6 automated quality gates before being written:</p>
-<ol>
-<li>TypeScript syntax valid</li>
-<li>Required test structure present</li>
-<li>AST: no forbidden patterns</li>
-<li>Meaningful assertions present</li>
-<li><code>tsc --noEmit</code> passes (type-safe)</li>
-<li>Prism dry-run validates against spec</li>
-</ol>
-<p>Only tests passing all 6 gates are accepted. Others loop back to the LLM for correction or go to the HITL queue for human review.</p>
-<hr />
-<h2 id="evidence-based-reporting">Evidence-Based Reporting<a class="headerlink" href="#evidence-based-reporting" title="Permanent link">&para;</a></h2>
-<p>Every divergence includes raw evidence:</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;GET /pets/{petId}&quot;</span><span class="p">,</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">&quot;hypothesis&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Server returns 404 for valid pet IDs&quot;</span><span class="p">,</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">&quot;request&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;GET&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/pets/1&quot;</span><span class="w"> </span><span class="p">},</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">&quot;expected&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;schema&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Pet&quot;</span><span class="w"> </span><span class="p">},</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">&quot;actual&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">404</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{\&quot;error\&quot;: \&quot;Not Found\&quot;}&quot;</span><span class="w"> </span><span class="p">},</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="nt">&quot;evidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Response diff attached&quot;</span><span class="p">,</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span><span class="nt">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.97</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="p">}</span>
-</span></code></pre></div>
+<h1 id="release-notes-cherenkov-qa-v120">Release Notes: CHERENKOV-QA v1.2.0<a class="headerlink" href="#release-notes-cherenkov-qa-v120" title="Permanent link">&para;</a></h1>
+<p><strong>Date:</strong> 2026-08-01</p>
+<h2 id="whats-new-since-v112">What's New Since v1.1.2<a class="headerlink" href="#whats-new-since-v112" title="Permanent link">&para;</a></h2>
+<h3 id="ux-redesign">UX Redesign<a class="headerlink" href="#ux-redesign" title="Permanent link">&para;</a></h3>
+<p>The web dashboard was reorganized around a 5-hub information architecture — Overview, Author &amp; Generate, Triage, Coverage &amp; Certification, and Knowledge — replacing the prior flat navigation. Alongside the restructure:</p>
+<ul>
+<li><strong>Triage</strong> moved to a Kanban board, with the "View Spec Diff" action wired to the real divergence detail.</li>
+<li><strong>Spec vs. Reality</strong> and <strong>Coverage &amp; Certification</strong> now render live data from <code>/api/v1/divergences</code> instead of hardcoded samples; the certificate panel points to the <code>cherenkov certify</code> CLI rather than a fabricated history view.</li>
+<li><strong>Test Management</strong> is a new screen backed by real generated-test and run data, including a coverage/health trend chart.</li>
+<li><strong>Chat</strong> now lists real prior sessions (<code>GET /api/v1/chat/sessions</code>) instead of a placeholder history panel.</li>
+</ul>
+<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Release/tag reconciliation</strong> — <code>.release-please-manifest.json</code> and <code>package.json</code> had drifted to <code>1.0.0</code> while <code>pyproject.toml</code> and the actual tag history had already moved to <code>1.2.0</code>, and the <code>v1.1.1</code> release was tagged <code>v.1.1.1</code> (stray dot), which breaks the docs-deploy version-extraction step. Manifest and package version now match; going forward, releases should be cut through release-please rather than hand-tagged to avoid a repeat.</li>
+<li>Several runtime bugs surfaced by driving the app end-to-end in a real browser rather than relying on typecheck/build alone: an infinite Chat re-render loop, a missing <code>Depends()</code> wrapper causing 500s on the runs API, a non-JSON-serializable validation-error path, and duplicate React keys on the doctor/health checks list.</li>
+</ul>
+<h3 id="roadmap">Roadmap<a class="headerlink" href="#roadmap" title="Permanent link">&para;</a></h3>
+<p>Phase 11 (VS Code extension) and Phase 12 (GraphQL/gRPC/AsyncAPI) are complete and wired in. Phase 13 (Enterprise: SAML/RBAC/GDPR) has real backend logic but is not yet wired into any route or CLI command. Phase 14's Spec Guardian daemon exists but has no caller. Phase 15 (fine-tuned model) is an explicit simulation, not a real training pipeline. Phase 16 (platform/marketplace) is mostly stub data. See the <a href="https://github.com/moaidmoatasem/cherenkov-qa/issues">project issue tracker</a> for current status per item — an earlier note here claimed all of Phase 11-16 was complete; that was inaccurate and has been corrected.</p>
 
 
 
@@ -2142,7 +1994,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 29, 2026 00:05:04 UTC"><span class="timeago" datetime="2026-06-29T00:05:04+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 29, 2026 00:05:04 UTC">2026-06-29</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 1, 2026 15:30:35 UTC"><span class="timeago" datetime="2026-08-01T15:30:35+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 1, 2026 15:30:35 UTC">2026-08-01</span>
   </span>
 
     
@@ -2152,7 +2004,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 29, 2026 00:05:04 UTC"><span class="timeago" datetime="2026-06-29T00:05:04+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 29, 2026 00:05:04 UTC">2026-06-29</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 1, 2026 15:30:35 UTC"><span class="timeago" datetime="2026-08-01T15:30:35+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 1, 2026 15:30:35 UTC">2026-08-01</span>
   </span>
 
     
@@ -2189,7 +2041,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../cli/completions/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Shell Completions">
+          <a href="../../changelog/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Latest">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2199,20 +2051,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Shell Completions
+                Latest
               </div>
             </div>
           </a>
         
         
           
-          <a href="../openapi-spec/" class="md-footer__link md-footer__link--next" aria-label="Next: OpenAPI Spec Integration">
+          <a href="../v1.1.2/" class="md-footer__link md-footer__link--next" aria-label="Next: v1.1.2">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                OpenAPI Spec Integration
+                v1.1.2
               </div>
             </div>
             <div class="md-footer__button md-icon">
