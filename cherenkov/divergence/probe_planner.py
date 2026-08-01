@@ -32,7 +32,7 @@ from cherenkov.core.contracts import (
     Severity,
 )
 
-_HTTP_METHODS = {"get", "post", "put", "patch", "delete", "head"}
+_HTTP_METHODS = {"get", "post", "put", "patch", "delete", "options", "head", "trace"}
 
 # Status codes the Witness's repro-step parser recognises.
 _PARSEABLE_CODES = {200, 201, 204, 400, 401, 403, 404, 409, 422, 500}
