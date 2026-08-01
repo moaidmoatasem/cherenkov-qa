@@ -2,7 +2,7 @@
   "$schema": "https://modelcontextprotocol.io/schema/mcp.json",
   "name": "cherenkov-qa",
   "displayName": "CHERENKOV QA MCP Server",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "AI-native API conformance testing framework exposing test generation, API drift detection, and HITL review over MCP.",
   "vendor": "CHERENKOV QA",
   "homepage": "https://github.com/moaidmoatasem/cherenkov-qa",
@@ -26,28 +26,152 @@
   },
   "tools": [
     {
-      "name": "run_conformance_check",
-      "description": "Execute API conformance tests against target OpenAPI specification"
-    },
-    {
-      "name": "validate_run_gate",
-      "description": "Run strict Validation Gate check (P0/P1 invariants)"
-    },
-    {
       "name": "hitl_list",
-      "description": "List pending Human-In-The-Loop review items"
+      "description": "List HITL queue items matching the given status. Returns a hitl/v1 envelope."
     },
     {
       "name": "hitl_approve",
-      "description": "Approve a pending HITL review item"
+      "description": "Approve a pending HITL item. Returns a hitl/v1 envelope."
     },
     {
-      "name": "explain_finding",
-      "description": "Provide detailed explanation and resolution advice for an API drift finding"
+      "name": "hitl_reject",
+      "description": "Reject a pending HITL item. Returns a hitl/v1 envelope."
+    },
+    {
+      "name": "verify_suite",
+      "description": "Run the 6-gate integrity check on an AI-generated test suite and return a VerificationReport (verify/v1). Suggest-only — never auto-applies fixes."
+    },
+    {
+      "name": "verify_system",
+      "description": "Probe a live server against its OpenAPI spec; return spec-drift divergences as a VerificationReport (verify/v1). Offline by default — no LLM required."
+    },
+    {
+      "name": "check_suite",
+      "description": "Static integrity check of a candidate test suite against a baseline: catches WEAKENED, DELETED, and HALLUCINATED assertions (`cherenkov check-suite`). Fast, offline, no execution."
+    },
+    {
+      "name": "verify",
+      "description": "Probe a live server against its OpenAPI spec and return spec-drift divergences (`cherenkov verify`). Offline by default — no LLM required. Supports coverage and health-score reports."
+    },
+    {
+      "name": "generate",
+      "description": "Generate Playwright E2E tests from an OpenAPI spec (`cherenkov generate`). Returns generated test code inline, or writes files when output_dir is given."
+    },
+    {
+      "name": "validate_run_gate",
+      "description": "Run the Validation Gate and return a validate/v1 ValidationReport. Suggest-only."
+    },
+    {
+      "name": "policy_list",
+      "description": "List policy allow/block rules from cherenkov-policy.json."
+    },
+    {
+      "name": "policy_reload",
+      "description": "Reload cherenkov-policy.json from disk without restarting the server."
+    },
+    {
+      "name": "visual_diff_baseline",
+      "description": "Run visual snapshot regression and UI matching checks."
+    },
+    {
+      "name": "visual_diff_baseline_enhanced",
+      "description": "Run comprehensive visual snapshot regression with baseline management, configurable diff thresholds, pixel/structural/auto comparison modes, and custom report paths."
+    },
+    {
+      "name": "run_k6_perf",
+      "description": "Run K6 performance load testing and latency analysis."
+    },
+    {
+      "name": "query_rag_index",
+      "description": "Query the SQLite RAG index for test historical artifacts."
+    },
+    {
+      "name": "export_jira_ticket",
+      "description": "Suggest-only Jira export for failed validation items or custom summary/description."
+    },
+    {
+      "name": "export_linear_ticket",
+      "description": "Suggest-only Linear export for failed validation items."
+    },
+    {
+      "name": "export_github_ticket",
+      "description": "Suggest-only GitHub issue export for failed validation items."
+    },
+    {
+      "name": "auto_heal_code",
+      "description": "Generate a suggested code patch for a failed validation item. Suggest-only."
+    },
+    {
+      "name": "scan_mena_compliance",
+      "description": "Run the MENA compliance localization and data residency checks."
+    },
+    {
+      "name": "scan_mena_compliance_enhanced",
+      "description": "Run targeted MENA compliance checks (SAMA CCSF / Egypt CBE FinCSF) against a live API."
+    },
+    {
+      "name": "validate_governance_certification",
+      "description": "Validate a governance certification ID against quality standards."
+    },
+    {
+      "name": "report_compliance_findings",
+      "description": "Return structured compliance findings, filterable by severity and endpoint."
+    },
+    {
+      "name": "chat_query_verdicts",
+      "description": "Query recent test verdicts from the Reflector."
+    },
+    {
+      "name": "chat_query_idioms",
+      "description": "Query learned idiom patterns from the Reflector."
+    },
+    {
+      "name": "chat_explain_divergence",
+      "description": "Explain a divergence using the Knowledge Mesh GraphRAG."
+    },
+    {
+      "name": "chat_run_test",
+      "description": "Plan test scenarios for a specific endpoint (suggest-only, does not execute)."
+    },
+    {
+      "name": "run_conformance_check",
+      "description": "Run cherenkov validate against a target URL and return the report summary."
+    },
+    {
+      "name": "get_last_report",
+      "description": "Return the most recent .cherenkov/report.json without triggering a new run."
     },
     {
       "name": "list_drift_findings",
-      "description": "Retrieve active API drift findings"
+      "description": "Return structured spec-drift findings from the last conformance run."
+    },
+    {
+      "name": "get_tightening_suggestions",
+      "description": "Return OpenAPI spec tightening suggestions for a specific endpoint."
+    },
+    {
+      "name": "explain_finding",
+      "description": "Natural-language explanation of a specific drift finding using the LLM."
+    },
+    {
+      "name": "mcp_registry_list",
+      "description": "List all MCP servers registered in the mesh registry."
+    },
+    {
+      "name": "mcp_registry_publish",
+      "description": "Register an external MCP server with the mesh registry."
+    },
+    {
+      "name": "cherenkov/audit-test-file",
+      "description": "Audit a test file for integrity issues: weakened assertions, tautological checks, spec mismatches, and AI test-cheating patterns. Returns a verdict (PASS/WEAK/FAIL), an integrity score, specific issues with line numbers, and a SHA-256 certificate if the score is >= 0.90. Call this before committing AI-generated test code."
+    },
+    {
+      "name": "cherenkov/check-assertion",
+      "description": "Quickly check whether a single test assertion line is strong or weak. Returns 'strong', 'weak', or 'tautological' with a brief explanation. Use this for real-time CodeLens-style feedback during test authoring."
+    },
+    {
+      "name": "cherenkov/suggest-spec-fix",
+      "description": "Given an integrity issue found in a test file, suggest a spec-anchored fix. Returns the corrected assertion line and a plain-English explanation of why the original is problematic and how the fix resolves it."
     }
   ]
 }

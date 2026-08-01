@@ -2,7 +2,7 @@
 # Reference: https://smithery.ai/docs/config
 $schema: https://smithery.ai/schema/smithery.json
 name: cherenkov-qa
-version: 1.1.1
+version: 1.2.0
 description: AI-native API conformance testing framework with spec-driven test generation, drift detection, and HITL review over MCP.
 repository: https://github.com/moaidmoatasem/cherenkov-qa
 license: Apache-2.0
