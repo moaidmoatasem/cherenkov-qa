@@ -174,23 +174,20 @@ curl -s https://petstore3.swagger.io/api/v3/openapi.json -o petstore.json
 ```
 $ ./bin/cherenkov generate --spec petstore.json --output-dir stub/generated_tests --no-repair
 
-================================================================================
-🤖 CHERENKOV TEST GENERATOR
-================================================================================
-Ingesting spec: petstore.json (32 endpoints detected)
-Planning scenarios...
-  - [GET]  /pet/{petId} -> happy_path, invalid_id
-  - [POST] /pet -> happy_path, missing_required
-  - [GET]  /store/inventory -> happy_path
-  - [GET]  /user/login -> happy_path, invalid_credentials
-Generating Playwright test suites...
-[INFO] Routing requests to local LLM (qwen2.5-coder:7b)
-✓ Generated post_pet_missing_photourls.spec.ts
-✓ Generated get_store_inventory.spec.ts
-✓ Generated get_pet_by_id_zero.spec.ts
-✓ Generated get_user_login_headers.spec.ts
-================================================================================
+Ingesting OpenAPI spec: petstore.json
+Planned 38 scenarios. Handing off to AI Generator...
+  Mode: single-pass (--no-repair)
+  Generating tests for scenario: happy_path...
+  Generating tests for scenario: unauthorized...
+  ...
+Successfully generated 38/38 test suites.
+Output located in stub/generated_tests/
 ```
+
+> **Note:** the per-file log lines above are illustrative — the generator
+> prints one progress line per scenario. Each scenario persists its own file
+> named `METHOD_endpoint_mutation.spec.ts` (e.g. `POST_pet_happy_path.spec.ts`),
+> so all 38 generated suites land on disk as distinct files.
 
 ---
 
@@ -201,7 +198,7 @@ Generating Playwright test suites...
 **[Visual: A clean terminal window.]**
 
 **Presenter:**
-"Now we have our tests. But here is the critical part: we want to run these tests against the live, public Swagger Petstore API to see if the actual implementation matches the spec contract. We run the `cherenkov validate` command. 
+"Now we have our tests. But here is the critical part: we want to run these tests against the live, public Swagger Petstore API to see if the actual implementation matches the spec contract. We run the `cherenkov validate` command.
 
 CHERENKOV runs these tests, programmatically intercepting all HTTP exchanges, and diffs them against the spec. Let's see what happens."
 
@@ -211,95 +208,50 @@ CHERENKOV runs these tests, programmatically intercepting all HTTP exchanges, an
 ./bin/cherenkov validate --target https://petstore3.swagger.io/api/v3 --spec petstore.json
 ```
 
-**[Visual: Terminal displaying validation results, showing the 4 conformance failures in bright red.]**
+**Presenter:**
+"Two things to notice. First, the Petstore spec declares OpenAPI `3.0.4` — a valid patch release — and CHERENKOV accepts it without complaint. Second, this unscoped run picked up every `*.spec.ts` under `stub/generated_tests/`, including the 13 demo/golden fixture files CHERENKOV ships for the catch-the-AI-cheating demos. Those fixtures intentionally assert things the API doesn't guarantee, so they fail by design — noise that drowns out our real results. They are demos, not validation failures. Scope the run to the suites we just generated with `--tests` (a glob or substring against the filenames)."
+
+**[Action: Run validate scoped to the generated tests.]**
+
+```bash
+./bin/cherenkov validate --target https://petstore3.swagger.io/api/v3 --spec petstore.json --tests 'happy_path'
+```
+
+**[Visual: Terminal displaying validation results, showing the conformance failures in bright red.]**
 
 ```
-$ ./bin/cherenkov validate --target https://petstore3.swagger.io/api/v3 --spec petstore.json
+$ ./bin/cherenkov validate --target https://petstore3.swagger.io/api/v3 --spec petstore.json --tests 'happy_path'
 
-================================================================================
-🔍 CHERENKOV VALUE ASSERTION TIGHTENING REPORT
-================================================================================
-Target Server URL: https://petstore3.swagger.io/api/v3
-Scenarios Verified: 4
-================================================================================
+Running tests against https://petstore3.swagger.io/api/v3 ...
 
-Scenario: post_pet_missing_photourls [ FAILED ]
---------------------------------------------------------------------------------
-🚫 Failure Error: Error: expect(received).toBeLessThan(500)
+Results: 14/17 passed  [DONE]
+  FAIL  POST_pet_happy_path  expect(received).toBeLessThan(500)
 
-Expected: < 500
-Received: 500
+         Expected: < 500
+         Received: 500
+  FAIL  GET_pet_petId_happy_path  expect(received).toBe(400)
 
-   at post_pet_missing_photourls.spec.ts:12
-> 12 |   expect(response.status).toBeLessThan(500);
-
-Captured HTTP Exchange:
-  Sent Payload:     {"name":"test-dog","status":"available"}
-  Received Status:  500 Internal Server Error
-  Received Body:    {"code":500,"type":"unknown","message":"something went wrong"}
-
-
-Scenario: get_store_inventory [ FAILED ]
---------------------------------------------------------------------------------
-🚫 Failure Error: Error: expect(received).toBe(expected)
-
-Expected: 200
-Received: 500
-
-   at get_store_inventory.spec.ts:10
-> 10 |   expect(response.status).toBe(200);
-
-Captured HTTP Exchange:
-  Sent Payload:     (empty)
-  Received Status:  500 Internal Server Error
-  Received Body:    {"code":500,"message":"There was an error processing your request..."}
-
-
-Scenario: get_pet_by_id_zero [ FAILED ]
---------------------------------------------------------------------------------
-🚫 Failure Error: Error: expect(received).toBe(expected)
-
-Expected: 400
-Received: 500
-
-   at get_pet_by_id_zero.spec.ts:8
-> 8 |   expect(response.status).toBe(400);
-
-Captured HTTP Exchange:
-  Sent Payload:     (empty)
-  Received Status:  500 Internal Server Error
-  Received Body:    {"code":500,"message":"something went wrong"}
-
-
-Scenario: get_user_login_headers [ FAILED ]
---------------------------------------------------------------------------------
-🚫 Failure Error: Error: expect(received).not.toBeUndefined()
-
-Expected: header X-Rate-Limit not undefined
-Received: undefined
-
-   at get_user_login_headers.spec.ts:15
-> 15 |   expect(response.headers['x-rate-limit']).toBeDefined();
-
-Captured HTTP Exchange:
-  Sent Payload:     (empty)
-  Received Status:  200 OK
-  Received Headers: { "content-type": "application/json", "content-length": "42" }
-
-================================================================================
-Git status verification:
-✓ Git status is 100% clean — zero test files were auto-modified by validation. Suggest-only constraint honored.
-================================================================================
+         Expected: 400
+         Received: 500
+  FAIL  GET_user_login_happy_path  expect(response.headers['x-rate-limit']).toBeDefined()
 ```
+
+> **Note:** output above is illustrative from a live run — exact counts and
+> error text vary with spec version and the API's state at run time.
 
 **Presenter:**
-"Look at that output! CHERENKOV has exposed **four major conformance bugs** between the public Swagger Petstore API and its official specification:
+"Look at that output! CHERENKOV has exposed **real conformance drift** between the public Swagger Petstore API and its official specification:
 
-1. **D1 (POST /pet)**: The spec lists `photoUrls` as a required field. The server should validate and return a `4xx` error if omitted. Instead, the server crashes and returns a `500 Internal Server Error`.
-2. **D2 (GET /store/inventory)**: The spec defines this endpoint as returning status counts. Instead, the live production server completely fails with a `500` error code.
-3. **D3 (GET /pet/{petId})**: The spec promises that sending `petId=0` will return a `400 Bad Request` ('Invalid ID supplied'). However, the live server returns a `500` crash.
-4. **D4 (GET /user/login)**: The spec dictates that a successful login must return headers `X-Rate-Limit` and `X-Expires-After`. The live server returns `200 OK`, but omits these headers entirely.
+1. **D1 (POST /pet)**: The spec says validation failures should return a `4xx` error. Instead, the server crashes with a `500 Internal Server Error`.
+2. **D2 (GET /pet/{petId})**: The spec promises that an invalid pet id returns `400 Bad Request` ('Invalid ID supplied'). Instead, the live server returns a `500` crash.
+3. **D3 (GET /user/login)**: The spec dictates that a successful login returns headers `X-Rate-Limit` and `X-Expires-After`. The live server returns `200 OK`, but omits these headers entirely.
 
-And notice that final line: CHERENKOV leaves our Git status 100% clean. It suggests tightening assertions but respects our strict **suggest-only** design invariant, preventing the tool from ever mutating your test codebase without human consent.
+For CI, pass `--fail-on-drift` to make the command exit with code `1` whenever any conformance violations are found — without it, `validate` reports the results and exits `0`, since failure semantics belong to your pipeline:
 
-You've just initialized, generated, and uncovered four real-world API drifts in less than ten minutes. In the next session, we'll dive into how CHERENKOV heals these issues. Thanks for watching!"
+```bash
+./bin/cherenkov validate --target https://petstore3.swagger.io/api/v3 --spec petstore.json --tests 'happy_path' --fail-on-drift
+```
+
+And one more thing to appreciate: CHERENKOV leaves the test files untouched — it suggests tightening assertions but respects our strict **suggest-only** design invariant, preventing the tool from ever mutating your test codebase without human consent.
+
+You've just initialized, generated, and uncovered real-world API drift in less than ten minutes. In the next session, we'll dive into how CHERENKOV heals these issues. Thanks for watching!"

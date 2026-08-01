@@ -275,6 +275,50 @@ class TestDanglingRefs:
         assert result.ok
 
 
+# ── OpenAPI version recognition ──────────────────────────────────────────────
+
+class TestOpenApiVersionRecognition:
+    """Regression (#829): the OpenAPI 3.x lines are patch-released — 3.0.4 is
+    served by petstore3 and is a valid spec version, not a warning."""
+
+    def _validate_version(self, tmp_path, version):
+        content = (
+            f"openapi: '{version}'\n"
+            "info:\n"
+            "  title: T\n"
+            "  version: '1'\n"
+            "paths:\n"
+            "  /x:\n"
+            "    get:\n"
+            "      responses:\n"
+            "        '200':\n"
+            "          description: ok\n"
+        )
+        path = _write(tmp_path, "version.yaml", content)
+        return validate_spec(path)
+
+    def test_3_0_4_is_known(self, tmp_path):
+        result = self._validate_version(tmp_path, "3.0.4")
+        assert result.ok
+        assert result.warnings == []
+
+    def test_any_3_0_x_patch_is_known(self, tmp_path):
+        result = self._validate_version(tmp_path, "3.0.9")
+        assert result.ok
+        assert result.warnings == []
+
+    def test_3_1_patch_releases_are_known(self, tmp_path):
+        result = self._validate_version(tmp_path, "3.1.1")
+        assert result.ok
+        assert result.warnings == []
+
+    def test_unknown_major_still_warns(self, tmp_path):
+        result = self._validate_version(tmp_path, "9.9.9")
+        assert result.ok
+        assert any(i.severity == Severity.WARNING for i in result.issues)
+        assert any("Unrecognised OpenAPI version" in i.message for i in result.issues)
+
+
 # ── CLI integration ───────────────────────────────────────────────────────────
 
 class TestValidateCmdWithSpecValidator:

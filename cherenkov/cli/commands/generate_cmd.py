@@ -1,9 +1,26 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 
 import click
+
+_FILENAME_UNSAFE = re.compile(r"[^A-Za-z0-9_.-]+")
+
+
+def scenario_spec_filename(endpoint: str, method: str, mutation_id: str) -> str:
+    """Build a collision-free ``.spec.ts`` filename for one scenario.
+
+    ``mutation_id`` alone is not unique across scenarios: every endpoint
+    contributes a ``happy_path`` and ``unauthorized`` mutation, so keying the
+    file on mutation_id alone silently overwrites earlier scenarios (the CLI
+    would report "38/38 generated" while only four files persist). Including
+    method + sanitized endpoint path guarantees each scenario gets its own
+    file, e.g. ``POST_pet_happy_path.spec.ts``.
+    """
+    path_part = _FILENAME_UNSAFE.sub("_", endpoint.strip("/")).strip("_")
+    return f"{method}_{path_part}_{mutation_id}.spec.ts"
 
 
 @click.command("generate")
@@ -123,9 +140,27 @@ def generate_cmd(spec, output_dir, repair, max_attempts):
                     source_type="openapi",
                 )
 
-            test_file = os.path.join(output_dir, f"{sc.mutation_id}.spec.ts")
+            test_file = os.path.join(
+                output_dir,
+                scenario_spec_filename(sc.endpoint, sc.method, sc.mutation_id),
+            )
             with open(test_file, "w", encoding="utf-8") as f:
                 f.write(gen_out.test_code)
+            if repair and _writing_to_scratch_dir:
+                # The repair loop's review gates always write a scratch copy
+                # at {mutation_id}.spec.ts (tsc/Prism only know that path).
+                # With unique output filenames that scratch copy no longer
+                # doubles as the final artifact — drop the stale,
+                # collision-prone file instead of leaving it behind.
+                scratch = os.path.join(output_dir, f"{sc.mutation_id}.spec.ts")
+                if os.path.exists(scratch):
+                    try:
+                        os.remove(scratch)
+                    except OSError as e:
+                        click.echo(
+                            f"  [WARN] could not remove review scratch {scratch}: {e}",
+                            err=True,
+                        )
             success_count += 1
         except Exception as e:
             click.echo(f"  [ERROR] Generation failed for {sc.mutation_id}: {e}", err=True)

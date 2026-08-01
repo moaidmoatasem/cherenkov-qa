@@ -4,6 +4,7 @@ CHERENKOV execution/validate.py — validation and value assertion tightening re
 
 from __future__ import annotations
 
+import fnmatch
 import json
 import logging
 import os
@@ -134,10 +135,21 @@ class ValidationEngine:
         workers: int = 1,
         headed: bool = False,
         spec_path: str | None = None,
+        tests_filter: str | None = None,
     ) -> dict[str, Any]:
-        """Runs all spec tests in generated_tests against target_url and parses trace files for tightening suggestions."""
+        """Runs spec tests in generated_tests against target_url and parses trace files for tightening suggestions.
+
+        tests_filter optionally narrows the run to matching files (glob or
+        substring). The tests directory also ships intentional demo/golden
+        fixtures used by the catch-the-AI-cheating demos — they are not
+        validation failures, so scoping keeps results meaningful.
+        """
         self.log.info(
-            "starting suite validation", target_url=target_url, workers=workers, headed=headed
+            "starting suite validation",
+            target_url=target_url,
+            workers=workers,
+            headed=headed,
+            tests_filter=tests_filter,
         )
 
         preflight = _preflight_check(self.tests_dir, spec_path)
@@ -157,8 +169,19 @@ class ValidationEngine:
             }
 
         test_files = [f for f in os.listdir(self.tests_dir) if f.endswith(".spec.ts")]
+        if tests_filter:
+            test_files = [
+                f
+                for f in test_files
+                if fnmatch.fnmatch(f, tests_filter) or tests_filter in f
+            ]
         if not test_files:
-            return {"status": "empty", "message": "No spec files found.", "reports": []}
+            message = (
+                f"No spec files match --tests filter {tests_filter!r}."
+                if tests_filter
+                else "No spec files found."
+            )
+            return {"status": "empty", "message": message, "reports": []}
 
         reports = []
 
