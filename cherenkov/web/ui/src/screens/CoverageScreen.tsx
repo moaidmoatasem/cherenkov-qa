@@ -1,17 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Shield, Award, CheckCircle2, AlertTriangle, FileText } from 'lucide-react';
-import { PageHeader, Card, Skeleton } from '../components/ui';
+import React, { useState } from 'react';
+import { Award, FileText } from 'lucide-react';
+import { PageHeader, Card, MockBadge } from '../components/ui';
 import IntegrityHeatmap from '../components/IntegrityHeatmap';
-import { fetchMetricsData } from '../lib/api';
 
 export default function CoverageScreen() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [certHistory, setCertHistory] = useState<any[]>([
+  const [certHistory] = useState<any[]>([
     { id: 'cert-1', date: '2026-07-28', score: 92, target: 'prod-eu-west', status: 'valid' },
     { id: 'cert-2', date: '2026-07-25', score: 85, target: 'staging-01', status: 'superseded' },
   ]);
 
-  // Mocking the live /api/v1/integrity/audit fetch for now until the backend endpoint lands
+  // TODO(Phase B): the /api/v1/integrity/audit endpoint already exists (cherenkov/integrity/api.py)
+  // and is not yet wired here — this is static placeholder data, not a backend gap.
   const endpoints = [
     { id: '1', path: '/api/v1/users', method: 'GET', integrityScore: 95, driftCount: 0 },
     { id: '2', path: '/api/v1/users', method: 'POST', integrityScore: 88, driftCount: 1 },
@@ -23,6 +22,7 @@ export default function CoverageScreen() {
 
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10">
+      <MockBadge />
       <div className="flex items-start justify-between">
         <PageHeader
           title="Coverage & Certification"

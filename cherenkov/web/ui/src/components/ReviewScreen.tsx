@@ -454,7 +454,12 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                         <span className="text-text-muted/50 text-[10px] font-mono">NO ITEMS</span>
                      </div>
                    ) : (
-                                     return (
+                     colTests.map((test) => {
+                       const isSelected = selectedTestId === test.id;
+                       const isApproved = test.verdict === 'approved';
+                       const isReview = test.verdict === 'review';
+                       const isRejected = test.verdict === 'rejected';
+                       return (
                   <div
                     key={test.id}
                     id={`test-row-${test.id}`}
@@ -539,8 +544,8 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                       )}
                     </div>
                   </div>
-                );
-              })
+                       );
+                     })
                    )}
                  </div>
                </div>
