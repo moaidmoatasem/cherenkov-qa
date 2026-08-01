@@ -1,0 +1,114 @@
+"""Unit tests for the wired enterprise CLI commands (cherenkov/cli/commands/enterprise.py).
+
+Covers issue #810: `enterprise saml configure` and `enterprise rbac assign`
+delegate to the real SAMLServiceProvider / RBACEngine modules instead of
+printing placeholder text.
+"""
+
+from __future__ import annotations
+
+from click.testing import CliRunner
+
+from cherenkov.cli.commands.enterprise import enterprise_cmd
+from cherenkov.enterprise import get_rbac
+from cherenkov.enterprise.rbac import Permission, Role
+
+IDP_URL = "https://idp.example.com/saml"
+
+
+def test_saml_configure_delegates_to_saml_sp():
+    result = CliRunner().invoke(
+        enterprise_cmd,
+        ["saml", "configure", "--idp-metadata-url", IDP_URL],
+    )
+    assert result.exit_code == 0
+    assert f"IdP {IDP_URL}" in result.output
+    assert "SP-initiated login URL" in result.output
+    assert "SAMLRequest=" in result.output
+
+
+def test_saml_configure_respects_entity_id_and_acs_url():
+    result = CliRunner().invoke(
+        enterprise_cmd,
+        [
+            "saml", "configure",
+            "--idp-metadata-url", IDP_URL,
+            "--entity-id", "my-entity",
+            "--acs-url", "/custom/acs",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "my-entity" in result.output
+    assert "/custom/acs" in result.output
+
+
+def test_saml_configure_disabled_prints_no_login_url():
+    result = CliRunner().invoke(
+        enterprise_cmd,
+        ["saml", "configure", "--idp-metadata-url", IDP_URL, "--disabled"],
+    )
+    assert result.exit_code == 0
+    assert "disabled" in result.output
+    assert "SAMLRequest=" not in result.output
+
+
+def test_saml_configure_requires_idp_metadata_url():
+    result = CliRunner().invoke(enterprise_cmd, ["saml", "configure"])
+    assert result.exit_code == 2
+
+
+def test_rbac_assign_registers_user_with_role():
+    engine = get_rbac()
+    try:
+        result = CliRunner().invoke(
+            enterprise_cmd,
+            ["rbac", "assign", "--user", "cli-admin-810", "--role", "admin"],
+        )
+        assert result.exit_code == 0
+        assert "Registered user 'cli-admin-810' with role 'admin'" in result.output
+        user = engine.get_user("cli-admin-810")
+        assert user is not None
+        assert user.role == Role.ADMIN
+        assert engine.has_permission("cli-admin-810", Permission.RBAC_MANAGE)
+    finally:
+        engine.remove_user("cli-admin-810")
+
+
+def test_rbac_assign_updates_existing_user_role():
+    engine = get_rbac()
+    try:
+        CliRunner().invoke(
+            enterprise_cmd,
+            ["rbac", "assign", "--user", "cli-user-810", "--role", "viewer"],
+        )
+        result = CliRunner().invoke(
+            enterprise_cmd,
+            ["rbac", "assign", "--user", "cli-user-810", "--role", "admin"],
+        )
+        assert result.exit_code == 0
+        assert "Assigned role 'admin' to user 'cli-user-810'" in result.output
+        user = engine.get_user("cli-user-810")
+        assert user is not None
+        assert user.role == Role.ADMIN
+        assert engine.has_permission("cli-user-810", Permission.CONFIG_WRITE)
+    finally:
+        engine.remove_user("cli-user-810")
+
+
+def test_rbac_assign_rejects_unknown_role():
+    result = CliRunner().invoke(
+        enterprise_cmd,
+        ["rbac", "assign", "--user", "x", "--role", "superadmin"],
+    )
+    assert result.exit_code == 2
+
+
+def test_rbac_assign_requires_user_and_role():
+    runner = CliRunner()
+    assert runner.invoke(enterprise_cmd, ["rbac", "assign"]).exit_code == 2
+    assert runner.invoke(
+        enterprise_cmd, ["rbac", "assign", "--user", "x"]
+    ).exit_code == 2
+    assert runner.invoke(
+        enterprise_cmd, ["rbac", "assign", "--role", "viewer"]
+    ).exit_code == 2
