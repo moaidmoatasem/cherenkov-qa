@@ -1,0 +1,208 @@
+"""
+cherenkov/cli/commands/audit.py — E0.5h: Productize the Audit.
+
+Baseline-Free Oracle audit command. Evaluates the quality of an existing test suite
+by running it against a target (to record expected behavior) and then against
+mutants derived from the OpenAPI spec.
+"""
+from __future__ import annotations
+
+import json
+import logging
+import os
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+import click
+import httpx
+
+from cherenkov.cli.commands.verify import _load_spec, _warn_unprobed
+from cherenkov.divergence.mutant_synth import synthesize_mutant_battery, explain_unmutatable
+from cherenkov.divergence.self_play import BrokenImplServer
+from cherenkov.verdict.traffic_capture import RecordingProxy
+
+_log = logging.getLogger(__name__)
+
+
+def _run_suite(test_cmd: list[str], url: str) -> tuple[bool, str]:
+    """Run the user's test suite, returning (passed, output)."""
+    env = os.environ.copy()
+    env["API_URL"] = url
+    try:
+        proc = subprocess.run(
+            test_cmd,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        passed = proc.returncode == 0
+        return passed, proc.stdout + "\n" + proc.stderr
+    except subprocess.TimeoutExpired:
+        return False, "Timeout expired"
+    except Exception as exc:
+        return False, str(exc)
+
+
+@click.command("audit")
+@click.option(
+    "--target",
+    "-t",
+    required=True,
+    help="Base URL of the live server to record baseline from.",
+)
+@click.option(
+    "--spec",
+    "-s",
+    required=True,
+    help="Path or URL to the OpenAPI spec JSON/YAML file.",
+)
+@click.option(
+    "--test-cmd",
+    "-c",
+    required=True,
+    help="Command to run the test suite (e.g. 'npx playwright test tests/'). Will receive API_URL in environment.",
+)
+@click.option(
+    "--proxy-port",
+    default=9100,
+    help="Port for the recording proxy (default 9100).",
+)
+@click.option(
+    "--mock-port",
+    default=9101,
+    help="Port for the mutant mock server (default 9101).",
+)
+def audit_cmd(
+    target: str,
+    spec: str,
+    test_cmd: str,
+    proxy_port: int,
+    mock_port: int,
+) -> None:
+    """Audit a test suite for meaningful assertions.
+
+    Evaluates whether the test suite actually catches regressions by:
+      1. Recording the baseline against the live target.
+      2. Generating spec-derived mutants (status, value, missing, enum).
+      3. Replaying the test suite against the mutants.
+    """
+    click.echo("\nCHERENKOV audit (Baseline-Free Oracle)")
+    click.echo(f"  Target   : {target}")
+    click.echo(f"  Spec     : {spec}")
+    click.echo(f"  Test Cmd : {test_cmd}")
+    click.echo("")
+
+    spec_dict = _load_spec(spec)
+    if spec_dict is None:
+        sys.exit(2)
+
+    # 1. Record Baseline
+    click.echo(f"[*] Recording baseline against live target ({target})...")
+    with RecordingProxy(port=proxy_port, target=target) as proxy:
+        passed, out = _run_suite(test_cmd.split(), proxy.url)
+        if not passed:
+            click.echo(f"[ERROR] Test suite failed against the live target! Output:\n{out}", err=True)
+            click.echo("The test suite must pass the baseline to be audited.")
+            sys.exit(1)
+        
+        interactions = len(proxy.interactions)
+        replay_map = proxy.replay_map()
+        click.echo(f"    ✓ Suite passed baseline. Recorded {interactions} interactions.")
+
+    if not replay_map:
+        click.echo("[ERROR] No traffic was recorded. Is the test suite using API_URL?")
+        sys.exit(1)
+
+    # 2. Iterate endpoints and mutate
+    click.echo("\n[*] Generating and testing mutants...")
+    paths = spec_dict.get("paths", {})
+    schemas = spec_dict.get("components", {}).get("schemas", {})
+
+    total_mutants = 0
+    killed_mutants = 0
+    survived_mutants = 0
+
+    results = []
+
+    for path_str, path_item in paths.items():
+        if not isinstance(path_item, dict):
+            continue
+        for method, operation in path_item.items():
+            if method.lower() not in ("get", "post", "put", "delete", "patch"):
+                continue
+
+            # Need to find the recorded base for this path
+            # The RecordingProxy records the concrete path (e.g. /pet/1)
+            # We don't have a perfect OpenAPI path to concrete path matcher here,
+            # but mutant_synth generates a concrete path itself.
+            from cherenkov.divergence.probe_planner import _path_with_samples
+            concrete = _path_with_samples(path_str, operation, {"components": {"schemas": schemas}})
+            if not concrete:
+                # unmutatable
+                continue
+
+            base = proxy.recorded_base(concrete)
+            if not base:
+                # the test suite didn't hit this endpoint, skip
+                continue
+
+            mutation = synthesize_mutant_battery(path_str, operation, schemas, base=base)
+            if not mutation:
+                continue
+            
+            mutated_path, battery = mutation
+            
+            click.echo(f"  Testing {method.upper()} {path_str}")
+            
+            # Check conforming first (sanity check)
+            conf_status, conf_body = battery["conforming"]
+            conf_map = dict(replay_map)
+            conf_map[mutated_path] = (conf_status, conf_body)
+            
+            with BrokenImplServer(port=mock_port, responses=conf_map) as mock:
+                passed, _ = _run_suite(test_cmd.split(), mock.url)
+                if not passed:
+                    click.echo("    ✗ FAILED conforming control (test is brittle to expected values). Skipping mutants.")
+                    continue
+
+            # Check mutants
+            for m_name, (m_status, m_body) in battery.items():
+                if m_name == "conforming":
+                    continue
+                
+                total_mutants += 1
+                m_map = dict(replay_map)
+                m_map[mutated_path] = (m_status, m_body)
+                
+                with BrokenImplServer(port=mock_port, responses=m_map) as mock:
+                    passed, _ = _run_suite(test_cmd.split(), mock.url)
+                    
+                    if not passed:
+                        click.echo(f"    ✓ Killed mutant: {m_name}")
+                        killed_mutants += 1
+                    else:
+                        click.echo(click.style(f"    ✗ SURVIVED mutant: {m_name} (vacuous assertion)", fg="red"))
+                        survived_mutants += 1
+                        results.append({
+                            "endpoint": f"{method.upper()} {path_str}",
+                            "mutant": m_name,
+                            "survived": True
+                        })
+
+    click.echo("\n" + "=" * 50)
+    click.echo("Audit Summary:")
+    click.echo(f"Total Mutants Evaluated : {total_mutants}")
+    if total_mutants > 0:
+        score = (killed_mutants / total_mutants) * 100
+        color = "green" if score > 80 else "yellow" if score > 50 else "red"
+        click.echo(f"Mutation Score          : " + click.style(f"{score:.1f}%", fg=color, bold=True))
+        click.echo(f"Killed                  : {killed_mutants}")
+        click.echo(f"Survived (Weaknesses)   : {survived_mutants}")
+    else:
+        click.echo("No mutants evaluated (no endpoints hit or spec missing schemas).")
+
+    if survived_mutants > 0:
+        sys.exit(1)

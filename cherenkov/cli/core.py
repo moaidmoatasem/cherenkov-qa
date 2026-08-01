@@ -22,6 +22,7 @@ def _register_commands() -> None:
         review_cmd,
         visual_cmd,
     )
+    from cherenkov.cli.commands.audit import audit_cmd
     from cherenkov.cli.commands.bench import bench_cmd
     from cherenkov.cli.commands.certify import certify_cmd
     from cherenkov.cli.commands.check_stale import check_stale_cmd
@@ -61,6 +62,7 @@ def _register_commands() -> None:
     from cherenkov.synthetic.cmd import synthetic_cmd
 
     for cmd, name in [
+        (audit_cmd, "audit"),
         (verify_cmd, "verify"),
         (check_suite_cmd, "check-suite"),
         (validate_cmd, "validate"),
