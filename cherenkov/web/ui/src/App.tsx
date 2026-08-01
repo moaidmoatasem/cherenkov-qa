@@ -399,6 +399,7 @@ function InnerApp() {
               <ReviewScreen
                 onUpdatePassRateAndCount={handleUpdatePassRateAndCount}
                 autonomy={autonomy}
+                onNavigate={setActiveTab}
               />
             )}
 
