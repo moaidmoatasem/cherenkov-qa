@@ -27,6 +27,22 @@ except ImportError:
     memsearch = None
 
 
+def _memsearch_client():
+    """Build a MemSearch client over the repo root, or None if unavailable.
+
+    MemSearch >=0.4 renamed the workspace kwarg to ``paths`` and eagerly
+    builds its embedding client at init (raises without credentials) —
+    mirror the adapter's documented fallback instead of crashing.
+    """
+    if not memsearch:
+        return None
+    try:
+        return memsearch.MemSearch(paths=[str(ROOT)])
+    except Exception as exc:
+        print(f"[SDD] MemSearch unavailable ({exc}); falling back to JSON files.")
+        return None
+
+
 # ── Path resolution ──────────────────────────────────────────────────
 
 
@@ -154,9 +170,9 @@ def cmd_before(task_type: str, budget: int | None = None, source: str = "cherenk
 
     # Load context snippets for this task type
     loaded = []
-    if memsearch:
+    ms = _memsearch_client()
+    if ms is not None:
         print("[SDD] MemSearch enabled: retrieving semantic context from Milvus...")
-        ms = memsearch.MemSearch(workspace_dir=str(ROOT))
         results = ms.search(task_type, limit=5)
         for r in results:
             loaded.append({"key": getattr(r, "id", "doc"), "content": getattr(r, "content", ""), "tokens_estimate": 200})
@@ -272,8 +288,8 @@ def cmd_after(summary: str):
     exp["pattern_index"] = pidx
     _write_json(EXPERIENCE_FILE, exp)
 
-    if memsearch:
-        ms = memsearch.MemSearch(workspace_dir=str(ROOT))
+    ms = _memsearch_client()
+    if ms is not None:
         ms.add_memory(f"Session {sid} Summary", summary, metadata={"task_type": tt, "token_total": total})
 
     # ── CC-1: auto-collect into SQLite memory store ───────────────────
@@ -608,9 +624,9 @@ def cmd_experience_query(
     pattern: str, outcome: str | None = None, sort: str | None = None
 ):
     """Query past experiences by pattern."""
-    if memsearch:
+    ms = _memsearch_client()
+    if ms is not None:
         print(f"[SDD] Using MemSearch to query for: {pattern}")
-        ms = memsearch.MemSearch(workspace_dir=str(ROOT))
         results = ms.search(pattern, limit=10)
         if not results:
             print(f"No experiences match pattern '{pattern}'.")

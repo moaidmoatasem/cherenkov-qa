@@ -1,0 +1,99 @@
+"""Regression tests for the agent_sync MemSearch integration (SDD runtime).
+
+History: memsearch 0.4.x renamed the ``workspace_dir`` constructor kwarg to
+``paths`` (positional list) and began eagerly building its embedding client
+at init. scripts/agent_sync.py called the old kwarg and crashed every agent
+session with ``TypeError: MemSearch.__init__() got an unexpected keyword
+argument 'workspace_dir'``, then crashed again on machines without embedding
+credentials. These tests pin the corrected call shape and the documented
+JSON fallback (mirroring cherenkov/memory/adapters/memsearch_memory.py).
+"""
+from __future__ import annotations
+
+import importlib.util
+import json
+import sys
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import MagicMock
+
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+AGENT_SYNC = REPO_ROOT / "scripts" / "agent_sync.py"
+
+
+@pytest.fixture
+def mod(tmp_path, monkeypatch):
+    """Load scripts/agent_sync.py with CHERENKOV_ROOT isolated to tmp_path."""
+    monkeypatch.setenv("CHERENKOV_ROOT", str(tmp_path))
+    spec = importlib.util.spec_from_file_location("agent_sync", str(AGENT_SYNC))
+    loaded = importlib.util.module_from_spec(spec)
+    monkeypatch.setitem(sys.modules, "agent_sync", loaded)
+    spec.loader.exec_module(loaded)
+    return loaded
+
+
+def _fake_memsearch(results=None, init_error=None):
+    fake = MagicMock()
+    if init_error is not None:
+        fake.MemSearch.side_effect = init_error
+    else:
+        chunks = results if results is not None else [
+            SimpleNamespace(id="snip-1", content="memsearch context chunk")
+        ]
+        fake.MemSearch.return_value.search.return_value = chunks
+    return fake
+
+
+def _write_json(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data))
+
+
+def test_memsearch_constructed_with_paths_not_workspace_dir(mod):
+    fake = _fake_memsearch()
+    mod.memsearch = fake
+    mod.cmd_before("test")
+    fake.MemSearch.assert_called_once_with(paths=[str(mod.ROOT)])
+
+
+def test_before_falls_back_to_json_context_when_memsearch_init_fails(mod, capsys):
+    fake = _fake_memsearch(init_error=RuntimeError("Missing credentials"))
+    mod.memsearch = fake
+    _write_json(
+        mod.CONTEXT_FILE,
+        {"snippets": [{"key": "rail_001", "content": "docs is SSOT", "tokens_estimate": 30}], "task_type_map": {"*": ["rail_001"]}},
+    )
+    mod.cmd_before("test")
+    out = capsys.readouterr().out
+    assert "MemSearch unavailable" in out
+    assert "rail_001" in out
+
+
+def test_after_adds_session_memory_via_memsearch(mod):
+    fake = _fake_memsearch()
+    mod.memsearch = fake
+    mod.cmd_before("test")
+    mod.cmd_after("verified paths kwarg")
+    fake.MemSearch.return_value.add_memory.assert_called_once()
+    args, kwargs = fake.MemSearch.return_value.add_memory.call_args
+    assert kwargs["metadata"]["task_type"] == "test"
+
+
+def test_after_survives_memsearch_init_failure(mod):
+    fake = _fake_memsearch(init_error=RuntimeError("Missing credentials"))
+    mod.memsearch = fake
+    mod.cmd_before("test")
+    mod.cmd_after("closed without memsearch")
+    session = json.loads(mod.SESSION_FILE.read_text())
+    assert session["session"]["status"] == "closed"
+
+
+def test_experience_query_uses_memsearch_when_available(mod, capsys):
+    fake = _fake_memsearch(results=[])
+    mod.memsearch = fake
+    mod.cmd_experience_query("no-such-pattern")
+    out = capsys.readouterr().out
+    assert "No experiences match" in out
+    fake.MemSearch.return_value.search.assert_called_once_with("no-such-pattern", limit=10)
