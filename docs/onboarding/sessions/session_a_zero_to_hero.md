@@ -2,13 +2,68 @@
 
 > **Target Audience:** Backend Developers and Software Engineers.
 > **Format:** Loom-style walk-through with screen recording and live narration.
-> **Estimated Duration:** 10 Minutes
+> **Estimated Duration:** 12 Minutes
+
+---
+
+## 🛠️ Act 0: Prerequisites & Workspace Provisioning (2 Minutes)
+
+**[Timing: 00:00 - 02:00]**
+
+**[Visual: Terminal showing `git clone`, venv creation, and `pip install` completing successfully. A clean WSL Ubuntu shell inside the freshly cloned `cherenkov-qa` directory.]**
+
+**Presenter (Voiceover):**
+"Before we write a single test, let's provision a cold workspace. CHERENKOV is not published to PyPI yet, so we install it straight from the source repository. This act clones the repo, creates a Python virtual environment, and installs CHERENKOV's **own** runtime dependencies — `httpx`, `requests`, `PyYAML`, `Jinja2`, and the rest — from the **root** `requirements.txt`. Don't confuse that with `target/requirements.txt`: that file only holds the demo *target server's* dependencies (FastAPI/uvicorn/pydantic) and is installed later in Act 2."
+
+**Prerequisites (verified before starting the recording):**
+
+| Tool | Requirement | Purpose |
+|------|-------------|---------|
+| Git | any recent version | Clone the repository |
+| Python | 3.10+, 3.12 recommended | CHERENKOV runtime (`requires-python = ">=3.10"`) |
+| Node.js + npm | v18+ | Playwright test runner in `stub/` |
+| Ollama | optional | Local LLM for `cherenkov generate` (Act 3) |
+
+**[Action: Type the provisioning commands in the terminal.]**
+
+```bash
+# 1. Clone the repository (CHERENKOV is installed from source — not on PyPI yet)
+git clone https://github.com/moaidmoatasem/cherenkov-qa.git
+cd cherenkov-qa
+
+# 2. Create and activate the Python virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 3. Install CHERENKOV itself + its runtime dependencies (repo ROOT requirements.txt,
+#    not target/) — this is the step that makes `./bin/cherenkov` work
+pip install -r requirements.txt
+pip install -e .          # editable install → `cherenkov` command is also on PATH
+
+# 4. Sanity-check the CLI before going further
+./bin/cherenkov --help
+
+# 5. Verify Node.js + npm (used for the Playwright runner in Act 2)
+node --version            # v18 or higher
+npm --version
+```
+
+**Presenter:**
+"If you are on WSL — like this recording — run everything inside your WSL Ubuntu shell. Note: `pip install -r target/requirements.txt` only installs the demo server's FastAPI/uvicorn/pydantic stack; CHERENKOV's own runtime comes from the root `requirements.txt` above. Playwright browser binaries are downloaded in Act 2 with `npx playwright install`."
+
+**Presenter:**
+"Ollama is optional and only needed for the LLM-backed generation path in Act 3. If you want that, pull the local coding model now — otherwise CHERENKOV still runs offline; the generate step is the only one that touches the LLM:"
+
+```bash
+# 6. (Optional) Local LLM for `cherenkov generate` — only needed for LLM-backed generation
+ollama pull qwen2.5-coder:7b
+```
 
 ---
 
 ## 🎬 Act 1: The Pitch & Core Architecture (2 Minutes)
 
-**[Timing: 00:00 - 02:00]**
+**[Timing: 02:00 - 04:00]**
 
 **[Visual: Title Slide: "CHERENKOV QA — Zero to Hero Developer Quickstart". Underneath: "OpenAPI as the Single Source of Truth". The background shows a clean VS Code layout with an OpenAPI specification next to a Playwright test file.]**
 
@@ -25,22 +80,24 @@ Instead of blindly trusting the LLM, CHERENKOV takes the generated tests and run
 
 ## 🛠️ Act 2: Local Setup & Initialization (2 Minutes)
 
-**[Timing: 02:00 - 04:00]**
+**[Timing: 04:00 - 06:00]**
 
-**[Visual: A clean, empty WSL terminal screen inside `/home/moaid/cherenkov_onboarding`.]**
+**[Visual: The provisioned CHERENKOV workspace from Act 0 (`~/cherenkov-qa`), with the virtual environment activated.]**
 
 **Presenter:**
-"Let's start by setting up our local workspace. First, we need to create our virtual environment, activate it, and install our Python dependencies. Then, we will configure the Node environment inside our stub directory."
+"Act 0 already gave us a working CHERENKOV install inside our virtual environment. Now we add the *demo target server's* dependencies — that's what `target/requirements.txt` is for — and then we configure the Node environment inside our Playwright stub directory."
 
 **[Action: Type the setup commands in the terminal.]**
 
 ```bash
-# 1. Set up the Python virtual environment and install dependencies
-python3 -m venv .venv
+# 1. (Re-activate the venv from Act 0 if you opened a new terminal)
 source .venv/bin/activate
+
+# 2. Install the demo target server dependencies (FastAPI/uvicorn/pydantic —
+#    used by the local demo API / run_demo.sh, NOT by CHERENKOV itself)
 pip install -r target/requirements.txt
 
-# 2. Navigate to the Playwright stub directory and install Node packages
+# 3. Navigate to the Playwright stub directory and install Node packages
 cd stub
 npm install
 npx playwright install
@@ -76,7 +133,7 @@ Writing cherenkov.toml...
 
 ## 🚀 Act 3: Generating Tests (3 Minutes)
 
-**[Timing: 04:00 - 07:00]**
+**[Timing: 06:00 - 09:00]**
 
 **[Visual: Return to terminal. Download the public Petstore OpenAPI spec.]**
 
@@ -125,7 +182,7 @@ Generating Playwright test suites...
 
 ## 🔍 Act 4: Running Validation & Detecting Spec Drift (3 Minutes)
 
-**[Timing: 07:00 - 10:00]**
+**[Timing: 09:00 - 12:00]**
 
 **[Visual: A clean terminal window.]**
 
