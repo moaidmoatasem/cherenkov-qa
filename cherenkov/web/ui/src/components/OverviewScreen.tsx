@@ -6,7 +6,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowRight, Zap, CheckCircle2, AlertTriangle, Play, RefreshCw } from 'lucide-react';
 import { Card, PageHeader, KpiRing, Skeleton, EmptyState, MockBadge } from './ui';
-import IntegrityHeatmap from './IntegrityHeatmap';
 import { fetchDivergences, fetchReviewQueue, ReviewQueueItem, fetchMetricsData } from '../lib/api';
 import { Divergence } from '../types';
 import { useToast } from './ui/Toast';
@@ -290,20 +289,6 @@ export default function OverviewScreen({ onNewRun, onPilotRun, onNavigate }: Ove
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </Card>
-      </div>
-
-      {/* Integrity Heatmap Row */}
-      <div className="w-full">
-        <IntegrityHeatmap 
-          endpoints={[
-            { id: '1', path: '/api/v1/users', method: 'GET', integrityScore: 95, driftCount: 0 },
-            { id: '2', path: '/api/v1/users', method: 'POST', integrityScore: 88, driftCount: 1 },
-            { id: '3', path: '/api/v1/projects', method: 'GET', integrityScore: 100, driftCount: 0 },
-            { id: '4', path: '/api/v1/projects/{id}', method: 'GET', integrityScore: 65, driftCount: 3 },
-            { id: '5', path: '/api/v1/auth/login', method: 'POST', integrityScore: 40, driftCount: 5 },
-            { id: '6', path: '/api/v1/billing', method: 'GET', integrityScore: 75, driftCount: 2 },
-          ]}
-        />
       </div>
 
       {/* Data source transparency footer */}
