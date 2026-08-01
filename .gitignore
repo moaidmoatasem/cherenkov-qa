@@ -94,16 +94,11 @@ k8s/conformancecheck-mobile-test.yaml
 
 # Generated test files
 stub/generated_tests/k6_perf.js
-# Pipeline-generated test artifacts (written by GENERATE/REVIEW stages at runtime)
-stub/generated_tests/age_exceeds_max.spec.ts
-stub/generated_tests/name_too_long.spec.ts
-stub/generated_tests/test_happy_path.spec.ts
-stub/generated_tests/ui_audit.spec.ts
-# Catch all future pipeline-run spec files (non-fixture)
-stub/generated_tests/*_path.spec.ts
-stub/generated_tests/*_auth*.spec.ts
-# Integration-test generated fixtures (double-suffixed .spec.spec.ts)
-stub/generated_tests/*.spec.spec.ts
+# Pipeline-generated test artifacts (written by GENERATE/REVIEW stages at
+# runtime, named METHOD_endpoint_mutation.spec.ts). The demo/golden fixtures
+# are tracked, so gitignore (which never affects tracked files) can safely
+# blanket-ignore all .spec.ts files here without untracking them.
+stub/generated_tests/*.spec.ts
 
 # temp artifacts
 nul

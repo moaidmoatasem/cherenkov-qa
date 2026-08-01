@@ -337,6 +337,170 @@ class TestGenerateCmdWithRepair:
         assert "review:" not in result.output
 
 
+class TestScenarioSpecFilename:
+    """Regression (#828): mutation_id alone is not unique across scenarios
+    (every endpoint contributes happy_path/unauthorized), so keying output
+    filenames on it silently overwrote earlier scenarios — 38/38 reported
+    "generated" while only 4 files persisted on disk."""
+
+    def test_filename_includes_method_endpoint_and_mutation(self):
+        from cherenkov.cli.commands.generate_cmd import scenario_spec_filename
+
+        assert (
+            scenario_spec_filename("/pet", "POST", "happy_path")
+            == "POST_pet_happy_path.spec.ts"
+        )
+
+    def test_duplicate_mutation_ids_produce_distinct_filenames(self):
+        from cherenkov.cli.commands.generate_cmd import scenario_spec_filename
+
+        a = scenario_spec_filename("/pet", "POST", "happy_path")
+        b = scenario_spec_filename("/pet", "PUT", "happy_path")
+        assert a != b
+        assert a == "POST_pet_happy_path.spec.ts"
+        assert b == "PUT_pet_happy_path.spec.ts"
+
+    def test_endpoint_special_chars_sanitized(self):
+        from cherenkov.cli.commands.generate_cmd import scenario_spec_filename
+
+        assert (
+            scenario_spec_filename("/pet/{petId}", "GET", "happy_path")
+            == "GET_pet_petId_happy_path.spec.ts"
+        )
+        assert (
+            scenario_spec_filename("/store/order/{orderId}", "DELETE", "unauthorized")
+            == "DELETE_store_order_orderId_unauthorized.spec.ts"
+        )
+
+
+class TestGenerateCmdFilenameCollision:
+    """CLI-level regression (#828): scenarios sharing one mutation_id must
+    each persist a distinct file instead of overwriting each other."""
+
+    def _stub_multi_scenario_plan(self, monkeypatch, tmp_path, plan_scenarios):
+        spec_file = tmp_path / "spec.yaml"
+        spec_file.write_text("openapi: '3.0.4'\ninfo:\n  title: T\n  version: '1'\npaths: {}")
+
+        class _FakeIngestOut:
+            endpoints = [types.SimpleNamespace(
+                path="/pet", method="POST",
+                operation={"responses": {"200": {"description": "ok"}}},
+                schemas={},
+            )]
+
+        class _FakePlanOut:
+            scenarios = plan_scenarios
+
+        monkeypatch.setattr(
+            "cherenkov.stages.ingest.IngestStage",
+            lambda run_id: types.SimpleNamespace(run=lambda spec: _FakeIngestOut()),
+        )
+        monkeypatch.setattr(
+            "cherenkov.stages.plan.PlanStage",
+            lambda run_id: types.SimpleNamespace(run=lambda ingest_out: _FakePlanOut()),
+        )
+        return spec_file
+
+    def test_scenarios_sharing_mutation_id_persist_distinct_files(self, monkeypatch, tmp_path):
+        from cherenkov.core.contracts import Scenario
+
+        scenarios = [
+            Scenario(mutation_id="happy_path", endpoint="/pet", method="POST",
+                     case_type="happy_path", expected_status=201),
+            Scenario(mutation_id="happy_path", endpoint="/pet", method="PUT",
+                     case_type="happy_path", expected_status=200),
+            Scenario(mutation_id="unauthorized", endpoint="/pet", method="POST",
+                     case_type="auth", expected_status=401),
+        ]
+        spec_file = self._stub_multi_scenario_plan(monkeypatch, tmp_path, scenarios)
+
+        monkeypatch.setattr(
+            "cherenkov.stages.generate.GenerateStage.__init__",
+            lambda self, run_id=None: None,
+        )
+        monkeypatch.setattr(
+            "cherenkov.stages.generate.GenerateStage.run",
+            lambda self, **kw: _make_gen_output(),
+        )
+
+        out_dir = tmp_path / "out"
+        runner = CliRunner()
+        result = runner.invoke(
+            generate_cmd,
+            ["--spec", str(spec_file), "--output-dir", str(out_dir), "--no-repair"],
+        )
+        assert result.exit_code == 0, result.output
+        assert "3/3" in result.output
+        written = sorted(p.name for p in out_dir.glob("*.spec.ts"))
+        assert written == [
+            "POST_pet_happy_path.spec.ts",
+            "POST_pet_unauthorized.spec.ts",
+            "PUT_pet_happy_path.spec.ts",
+        ]
+        for name in written:
+            assert _GOOD_CODE in (out_dir / name).read_text()
+
+    def test_no_repair_never_removes_existing_files(self, monkeypatch, tmp_path):
+        """D7-adjacent guard: --no-repair must never delete pre-existing files
+        in the output directory (only the repair loop's own scratch copy is
+        ever cleaned up, and only when writing to the scratch dir)."""
+        spec_file, _ = _make_pipeline_stubs(monkeypatch, tmp_path)
+        monkeypatch.setattr(
+            "cherenkov.stages.generate.GenerateStage.__init__",
+            lambda self, run_id=None: None,
+        )
+        monkeypatch.setattr(
+            "cherenkov.stages.generate.GenerateStage.run",
+            lambda self, **kw: _make_gen_output(),
+        )
+
+        out_dir = tmp_path / "out"
+        unrelated = out_dir / "happy_path.spec.ts"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        unrelated.write_text("user file", encoding="utf-8")
+        runner = CliRunner()
+        result = runner.invoke(
+            generate_cmd,
+            ["--spec", str(spec_file), "--output-dir", str(out_dir), "--no-repair"],
+        )
+        assert result.exit_code == 0
+        assert unrelated.exists()
+
+    def test_repair_mode_removes_collision_prone_scratch_copy(self, monkeypatch, tmp_path):
+        """Regression (#828): the review gates leave a scratch copy at
+        {mutation_id}.spec.ts inside the output dir. Once final files carry
+        unique names, that stale collision-prone copy must be removed instead
+        of lingering as a phantom fifth file."""
+        spec_file, _ = _make_pipeline_stubs(monkeypatch, tmp_path)
+        monkeypatch.setattr(
+            "cherenkov.stages.repair.RepairLoop.__init__",
+            lambda self, run_id=None, max_attempts=3, cleanup_scratch=False: None,
+        )
+        monkeypatch.setattr(
+            "cherenkov.stages.repair.RepairLoop.run",
+            lambda self, **kw: (_make_gen_output(), None),
+        )
+        monkeypatch.setattr(
+            "cherenkov.stages.review.default_review_scratch_dir",
+            lambda: str(tmp_path / "scratch"),
+        )
+
+        out_dir = tmp_path / "scratch"
+        scratch = out_dir / "get_test_happy_path.spec.ts"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        scratch.write_text("stale scratch from review gates", encoding="utf-8")
+
+        runner = CliRunner()
+        result = runner.invoke(
+            generate_cmd,
+            ["--spec", str(spec_file), "--output-dir", str(out_dir), "--repair"],
+        )
+        assert result.exit_code == 0, result.output
+        assert not scratch.exists(), "collision-prone scratch copy must be removed"
+        written = sorted(p.name for p in out_dir.glob("*.spec.ts"))
+        assert written == ["GET_test_get_test_happy_path.spec.ts"]
+
+
 class TestGenerateCmdErrorHandling:
     """Error cases in the generate command."""
 
