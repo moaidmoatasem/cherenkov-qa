@@ -1,8 +1,32 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-07-31
-**HEAD:** see `git log`. Last reflected here: Sprint 4 / Phase 11 integration pass.
-**Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"` — all passing. LangChain integration verified live (Tools: `cherenkov_generate_tests`, `cherenkov_validate_endpoint`, `cherenkov_explain_violation`).
+**Date:** 2026-08-01
+**HEAD:** `main` at `a77b630` + this session's branch `claude/cherenkov-qa-ux-redesign-b6s2i7` (release/docs fixes, not yet merged — see below).
+**Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"`.
+
+## 2026-08-01 — UX redesign + release/docs/issue-tracker reconciliation
+
+### UX redesign (PRs #797-806, all merged to `main`)
+5-hub IA shipped and live-verified in a real browser (not just tsc/build): Overview, Author & Generate, Triage (Kanban), Coverage & Certification, Knowledge. Spec vs Reality, Coverage & Certification, Test Management, and Chat history are all wired to real backend data — no more hardcoded mocks. Six real runtime bugs found via live click-through and fixed (React infinite-render loop, missing FastAPI `Depends()`, non-JSON-serializable validation errors, duplicate React keys, endpoint-string bug in demo seed data, Drawer `size` prop silently ignored). Full detail in `docs/reviews/UX_REDESIGN_PROPOSAL_2026-08.md`.
+
+### Release/tag/docs reconciliation (this session, branch `claude/cherenkov-qa-ux-redesign-b6s2i7`, not yet merged)
+- **Root cause found**: `.release-please-manifest.json` and `package.json` were stuck at `1.0.0` while `pyproject.toml`/`CHANGELOG.md`/the actual `v1.2.0` git tag had already moved on, and the `v1.1.1` release was tagged `v.1.1.1` (stray dot) — this silently breaks `docs-deploy.yml`'s `cut -d. -f1,2` version-extraction step. This was even self-documented as a known issue in the 1.1.2 CHANGELOG entry ("Reconcile before the next publish") but never fixed. **Fixed**: manifest + package.json now read `1.2.0`.
+- **v1.2.0 has a git tag but no published GitHub Release** — `docs-deploy.yml` only fires `mike deploy`/`latest` alias updates on `release: published`, so the live docs site's `/latest/` has been stuck on old (pre-1.2.0, pre-UX-redesign) content. **Not yet fixed**: someone needs to either publish a GitHub Release for the `v1.2.0` tag (preferred — let CI's own `mike deploy` do it), or manually run `mike deploy --push --update-aliases 1.2 latest && mike set-default --push latest` from `docs-site/`. There's also an orphan `1.1.1` version directory on `gh-pages` (`git ls-tree -d --name-only origin/gh-pages` shows `1.0`, `1.1`, `1.1.1`, `dev` — `1.1.1` doesn't match the major.minor scheme every other version uses and should probably be `mike delete 1.1.1 --push`'d).
+- **CHANGELOG.md's 1.2.0 entry falsely claimed "Phase 11-16 Roadmap Completion: fully implemented"** — corrected in place (see the "Corrected" subsection under `[1.2.0]`) after a code-level audit found Phase 13 (Enterprise SAML/RBAC/GDPR) has real logic behind literal `"""Placeholder"""` CLI stubs, Phase 14's Spec Guardian daemon has zero callers, Phase 15 (fine-tuning) is an explicit simulation (`"SIMULATED_LORA_WEIGHTS"`), and Phase 16 (marketplace/platform) is almost entirely stub data.
+- **Added missing docs-site release notes** for v1.1.2 and v1.2.0 (previously absent entirely — only v1.0.0/v1.1.0/v1.1.1 existed), synced `docs-site/docs/changelog.md` (was stuck showing 1.1.1 as latest), added both to `mkdocs.yml` nav. `mkdocs build --strict` passes clean.
+- **GitHub issue tracker reconciled against real code** (55 open Phase 11-16 issues, none touched since 2026-07-30): 18 closed as genuinely shipped (VS Code extension epic #739-745, GraphQL/gRPC/AsyncAPI epic #746-753, audit log #758, LangChain #791, desktop wizard #793) with file:line evidence in each closing comment; 14 left open but annotated with exactly what's real vs. missing (mostly Phase 13 Enterprise — real logic modules, unwired CLI/API); ~23 left open untouched (genuinely not started — Phase 15 fine-tuning, most of Phase 16 marketplace, SLA dashboard, enterprise support portal, etc.)
+- **Added `docs/reviews/COMPETITIVE_POSITIONING_2026-08.md`** synthesizing external competitive research the maintainer pasted in — cross-checked against real repo state (e.g., corrected the false "no MCP server" claim several external reports made; `cherenkov/mcp/` is real). Bottom line: CHERENKOV is not a competitor to Momentic/TestSprite/Vibium, it's a complementary contract-integrity layer; the actionable gap is MCP tool *depth* (wire `check-suite`/`verify`/`generate` as agent-invokable MCP tools, publish per issue #792), not MCP existence.
+
+### Next steps for whoever picks this up
+1. **Merge the release/docs branch** (`claude/cherenkov-qa-ux-redesign-b6s2i7`) — PR to be opened this session.
+2. **Publish a GitHub Release for tag `v1.2.0`** (or manually `mike deploy`) so the live docs site stops serving stale content at `/latest/`.
+3. **Delete the orphan `1.1.1` mike version** on `gh-pages`.
+4. **Wire the Phase 13 Enterprise CLI placeholders** (`cli/commands/enterprise.py`: `saml_configure`, `rbac_assign`) to the real logic modules that already exist (`cherenkov/enterprise/{saml,rbac}.py`) — highest-value partial-completion items per the issue triage.
+5. **Give the Spec Guardian daemon (`cherenkov/spec_guardian/daemon.py`) a CLI entrypoint** — it's fully written but has zero callers anywhere.
+6. **MCP tool depth** — see `docs/reviews/COMPETITIVE_POSITIONING_2026-08.md`'s concrete next step.
+
+---
+
 **Branch:** `main` (or create `feat/sprint4-phase11` before merging).
 
 ## Sprint 4 / Phase 11 Completion (2026-07-31)

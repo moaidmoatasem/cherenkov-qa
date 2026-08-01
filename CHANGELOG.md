@@ -8,13 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.0] - 2026-08-01
 
 ### Added
-- **Phase 11-16 Roadmap Completion**: Fully implemented GraphQL/gRPC support, Enterprise tier (SAML, RBAC, Audit), Spec Guardian, and the Phase 16 Webhook/Analytics API ecosystem.
-- **25-Integration Strategy Delivery**: Finished the complete Sprint 1 to Sprint 6 integration plan.
+- **GraphQL/gRPC/AsyncAPI ingest + generation** (Phase 12): schema/proto ingest, test generation, conformance validation, and Buf schema registry integration are real and wired into the CLI.
+- **VS Code extension** (Phase 11): inline conformance indicators, healing suggestions, drift-on-save, test explorer, and quick-fix are all wired into the extension.
+- **Enterprise audit log** and **LangChain tool package**: real, wired implementations.
+- **Desktop auto-setup wizard**: real Tauri state machine.
 - **Market Launch Documentation**: Added `docs/landing_page_copy.md` and `docs/demo_script.md`.
+- **UX Redesign**: 5-hub information architecture, Kanban triage, live-wired Spec vs. Reality / Coverage & Certification / Test Management screens, real chat session history.
+
+### Corrected
+- **The previous entry in this changelog claimed Phase 11-16 was "fully implemented," including Enterprise tier, Spec Guardian, and the Phase 16 marketplace/webhook/analytics ecosystem. That claim was false.** A code-level audit (2026-08-01) against the corresponding GitHub issues found: Enterprise SAML/RBAC/GDPR (Phase 13) have real logic modules but are not wired into any route or CLI command (several are literal `"""Placeholder"""` stubs); the Spec Guardian daemon (Phase 14) exists but has zero callers anywhere in the codebase; the fine-tuning pipeline (Phase 15) is an explicit simulation (`"SIMULATION: would train..."`, a fake `"SIMULATED_LORA_WEIGHTS"` marker file); and the Phase 16 platform/marketplace layer is almost entirely absent or stub data. See the tracking issues on GitHub for the current, per-item status.
 
 ### Fixed
 - **Repository Alignment**: Resolved merge conflicts in `HANDOVER.md` and fully synchronized `feat/qa-headless-locator-alignment` with `origin/main`.
 - **Ruff Compliance**: Resolved 383 linting issues (primarily `E402` and `F401`) across `tests/` and `cherenkov/`.
+- **Release/tag reconciliation**: `.release-please-manifest.json` and `package.json` had drifted to `1.0.0`; the `v1.1.1` release was tagged `v.1.1.1` (stray dot), breaking the docs-deploy version-extraction step.
 
 ## [1.1.2] - 2026-07-31
 
