@@ -6,15 +6,19 @@ import json
 import click
 
 from cherenkov.enterprise import (
+    SAMLConfig,
+    SAMLServiceProvider,
     get_audit_log,
     get_org_manager,
+    get_rbac,
     get_soc2,
 )
+from cherenkov.enterprise.rbac import Role, User
 
 
 @click.group("enterprise")
 def enterprise_cmd():
-    """Enterprise-tier commands: org management, SSO, audit logs, compliance."""
+    """Enterprise feature commands: org management, SSO, RBAC, audit, compliance."""
     pass
 
 
@@ -87,9 +91,24 @@ def saml_group():
     pass
 
 @saml_group.command("configure")
-def saml_configure():
-    """Placeholder for SAML configuration."""
-    click.echo("SAML SSO configured.")
+@click.option("--idp-metadata-url", required=True, help="SAML IdP metadata endpoint URL")
+@click.option("--entity-id", default="cherenkov-qa", help="SAML entity ID advertised to the IdP")
+@click.option("--acs-url", default="/api/v1/auth/saml/callback", help="Assertion Consumer Service URL")
+@click.option("--enabled/--disabled", "enabled", default=True, help="Enable or disable SAML SSO")
+def saml_configure(idp_metadata_url, entity_id, acs_url, enabled):
+    """Configure SAML 2.0 / SSO against an IdP metadata endpoint."""
+    config = SAMLConfig(
+        idp_metadata_url=idp_metadata_url,
+        entity_id=entity_id,
+        acs_url=acs_url,
+        enabled=enabled,
+    )
+    sp = SAMLServiceProvider(config)
+    click.echo(f"SAML SSO {'enabled' if enabled else 'disabled'} for IdP {idp_metadata_url}")
+    click.echo(f"Entity ID: {entity_id}  |  ACS URL: {acs_url}")
+    login_url = sp.get_login_url()
+    if login_url:
+        click.echo(f"SP-initiated login URL: {login_url}")
 
 
 @enterprise_cmd.group("rbac")
@@ -98,6 +117,15 @@ def rbac_group():
     pass
 
 @rbac_group.command("assign")
-def rbac_assign():
-    """Placeholder for RBAC assignment."""
-    click.echo("RBAC role assigned.")
+@click.option("--user", required=True, help="User ID to assign the role to")
+@click.option("--role", required=True, type=click.Choice([r.value for r in Role]), help="Role to assign")
+def rbac_assign(user, role):
+    """Assign a role to a user in the RBAC engine."""
+    engine = get_rbac()
+    target_role = Role(role)
+    if engine.get_user(user) is None:
+        engine.register_user(User(id=user, name=user, email="", role=target_role))
+        click.echo(f"Registered user '{user}' with role '{role}'")
+    else:
+        engine.set_role(user, target_role)
+        click.echo(f"Assigned role '{role}' to user '{user}'")

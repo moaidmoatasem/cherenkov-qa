@@ -1,4 +1,15 @@
-"""Application-level Role-Based Access Control for CHERENKOV enterprise mode."""
+"""Application-level Role-Based Access Control for CHERENKOV.
+
+Enforcement decision (issue #810): HTTP request authorization is enforced
+through the existing ``require_role`` dependency in
+``cherenkov/web/auth/deps.py`` (role-hierarchy check wired into every
+route handler), NOT through this module. This engine provides the
+permission-level model (role -> permission mapping) for application and
+CLI layers, e.g. the ``enterprise rbac assign`` command. The web Role
+vocabulary (viewer/reviewer/admin) and this engine's Role vocabulary
+(admin/engineer/viewer/read_only) are intentionally kept separate; a
+unified model would invent new API surface and is out of scope.
+"""
 
 from __future__ import annotations
 
