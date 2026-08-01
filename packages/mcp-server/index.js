@@ -4,14 +4,13 @@
 /**
  * @cherenkov-qa/mcp-server
  *
- * Thin Node.js shim that spawns the CHERENKOV Python MCP server over stdio.
- * The Python package performs the actual JSON-RPC handling; this wrapper just
- * wires stdin/stdout and ensures a clean shutdown.
+ * Thin Node.js shim that spawns the CHERENKOV Python MCP server over stdio
+ * via the canonical `python -m cherenkov mcp serve` entry point. The Python
+ * package performs the actual JSON-RPC handling; this wrapper just wires
+ * stdin/stdout and ensures a clean shutdown.
  */
 
 const { spawn } = require('child_process');
-const path = require('path');
-const fs = require('fs');
 
 function findPython() {
   for (const candidate of ['python3', 'python']) {
@@ -27,24 +26,13 @@ function findPython() {
   return null;
 }
 
-function findCherenkovEntry() {
-  // When running inside the published package, the repo root is two levels up.
-  const packagedRoot = path.resolve(__dirname, '../..');
-  const cherenkovPy = path.join(packagedRoot, 'cherenkov.py');
-  if (fs.existsSync(cherenkovPy)) return cherenkovPy;
-
-  // Fall back to installed Python module.
-  return null;
-}
-
 const python = findPython();
 if (!python) {
   process.stderr.write('CHERENKOV MCP server requires Python 3.10 or later.\n');
   process.exit(1);
 }
 
-const entry = findCherenkovEntry();
-const args = entry ? [entry, 'mcp', 'serve'] : ['-m', 'cherenkov', 'mcp', 'serve'];
+const args = ['-m', 'cherenkov', 'mcp', 'serve'];
 
 const proc = spawn(python, args, {
   stdio: ['pipe', 'pipe', 'pipe'],

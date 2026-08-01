@@ -3,16 +3,14 @@
  * npx cherenkov — thin Node.js shim that delegates to the Python CLI.
  *
  * Checks Python 3.10+ is available, then forwards all arguments to
- * `python3 cherenkov.py` in the current working directory (or falls back
- * to the globally installed `cherenkov` entry-point if the local copy isn't
- * found).  The shim exits with the same code as the Python process.
+ * `python -m cherenkov` (the package entry point, resolved from the current
+ * working directory or the installed distribution).  The shim exits with the
+ * same code as the Python process.
  */
 
 'use strict';
 
-const { execFileSync, spawnSync } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+const { spawnSync } = require('child_process');
 
 function findPython() {
   for (const candidate of ['python3', 'python']) {
@@ -38,16 +36,7 @@ if (!python) {
   process.exit(1);
 }
 
-// Prefer the local cherenkov.py (works from a git clone / extracted archive)
-const localEntry = path.join(process.cwd(), 'cherenkov.py');
 const args = process.argv.slice(2);
-
-let proc;
-if (fs.existsSync(localEntry)) {
-  proc = spawnSync(python, [localEntry, ...args], { stdio: 'inherit' });
-} else {
-  // Fall back to installed entry-point (pip install cherenkov-qa)
-  proc = spawnSync(python, ['-m', 'cherenkov', ...args], { stdio: 'inherit' });
-}
+const proc = spawnSync(python, ['-m', 'cherenkov', ...args], { stdio: 'inherit' });
 
 process.exit(proc.status ?? 1);

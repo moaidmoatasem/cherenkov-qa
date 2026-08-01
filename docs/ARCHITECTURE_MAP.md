@@ -87,8 +87,10 @@ These modules are required for the basic OpenAPI → Playwright pipeline:
 | `ai/ollama_client.py` | Ollama LLM client | `OllamaClient` |
 | `ai/openai_client.py` | OpenAI-compatible client | `OpenAIClient` |
 | `ai/interface.py` | LLM provider interface | `AIInterface` |
+| `ai/router.py` | LEGACY env-based router — superseded by `SubstrateRouter` (#815) | `InferenceRouter` |
 | `substrate/router.py` | Tier-aware model routing | `SubstrateRouter` |
-| `substrate/provider.py` | Provider abstraction | `ModelProvider` |
+| `substrate/provider.py` | Provider abstraction (Epoch-1 factory, current for ollama/openai/github) | `ModelProvider` |
+| `substrate/providers/` | New-style per-provider backend (wired for anthropic/nemoclaw/localai; ollama/openai pending migration) | `ModelProvider` |
 | `oracle/spec_prism.py` | Spec-derived oracle | `SpecPrismOracle` |
 | `oracle/interface.py` | Oracle SPI definition | `Oracle` |
 

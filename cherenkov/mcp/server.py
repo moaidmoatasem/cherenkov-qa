@@ -20,7 +20,7 @@ Usage
   {
     "cherenkov": {
       "command": "python3",
-      "args": ["/path/to/cherenkov.py", "mcp", "serve"],
+      "args": ["-m", "cherenkov", "mcp", "serve"],
       "cwd": "/path/to/your/project"
     }
   }

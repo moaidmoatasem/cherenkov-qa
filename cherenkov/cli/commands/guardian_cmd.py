@@ -1,7 +1,13 @@
-"""cherenkov guardian — run the Spec Guardian drift-monitoring daemon.
+"""cherenkov/cli/commands/guardian_cmd.py — `cherenkov guardian` command.
 
-Wires `cherenkov.spec_guardian.daemon.SpecGuardianDaemon` (a complete polling
-loop that had zero callers) to a CLI entrypoint. See issue #811.
+CLI entrypoint for the Spec Guardian daemon (issue #811).
+
+  Start:  cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8080
+            Polls the live API against the OpenAPI spec, persisting drift
+            events and reports until interrupted (SIGINT/SIGTERM).
+
+  Endpoints default to every concrete GET path declared in the spec; override
+  with repeatable --endpoint METHOD:PATH flags.
 """
 
 from __future__ import annotations
@@ -12,14 +18,17 @@ from pathlib import Path
 from typing import Any
 
 import click
+import yaml
 
 
 def _load_spec(spec_path: str) -> dict[str, Any]:
-    path = Path(spec_path)
-    text = path.read_text(encoding="utf-8")
-    if path.suffix in (".yaml", ".yml"):
-        import yaml
-
+    """Load an OpenAPI spec from YAML or JSON."""
+    p = Path(spec_path)
+    if not p.exists():
+        click.echo(click.style(f"[ERROR] spec not found: {spec_path}", fg="red"), err=True)
+        sys.exit(1)
+    text = p.read_text(encoding="utf-8")
+    if p.suffix in (".yaml", ".yml"):
         return yaml.safe_load(text)
     return json.loads(text)
 
@@ -54,12 +63,22 @@ def _parse_endpoint_opts(raw: tuple[str, ...]) -> list[dict[str, Any]]:
 
 @click.group("guardian")
 def guardian_cmd() -> None:
-    """Continuously monitor a live API for drift against its OpenAPI spec."""
+    """Continuously monitor API endpoints for OpenAPI spec drift.
+
+    \b
+    Examples:
+        # Start the drift-monitoring daemon (all concrete GET paths, 60s interval)
+        cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8080
+
+        # Watch one endpoint every 10s, store history elsewhere
+        cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8080 \\
+            --endpoint "GET:/health" --interval 10 --db .cherenkov/guardian.db
+    """
 
 
 @guardian_cmd.command("start")
 @click.option("--spec", required=True, help="Path to the OpenAPI spec (YAML or JSON).")
-@click.option("--url", required=True, help="Base URL of the live API to monitor.")
+@click.option("--base-url", required=True, help="Base URL of the live API to monitor.")
 @click.option(
     "--interval", "-i", type=int, default=60, show_default=True,
     help="Seconds between check cycles.",
@@ -79,7 +98,7 @@ def guardian_cmd() -> None:
 )
 def guardian_start_cmd(
     spec: str,
-    url: str,
+    base_url: str,
     interval: int,
     raw_endpoints: tuple[str, ...],
     max_loops: int,
@@ -87,10 +106,14 @@ def guardian_start_cmd(
 ) -> None:
     """Start the Spec Guardian daemon.
 
+    Polls each endpoint against the spec and persists drift events and
+    reports to the drift store until interrupted (SIGINT/SIGTERM) or
+    until --max-loops is reached.
+
     \b
     Example:
-        cherenkov guardian start --spec openapi.yaml --url https://api.example.com
-        cherenkov guardian start --spec openapi.yaml --url http://localhost:8000 \\
+        cherenkov guardian start --spec openapi.yaml --base-url https://api.example.com
+        cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8000 \\
             --endpoint GET:/health --max-loops 1
     """
     from cherenkov.spec_guardian.daemon import SpecGuardianDaemon
@@ -107,7 +130,7 @@ def guardian_start_cmd(
 
     daemon = SpecGuardianDaemon(
         spec_path=spec,
-        base_url=url,
+        base_url=base_url,
         check_interval=interval,
         endpoints=endpoints,
         db_path=Path(db_path) if db_path else None,
@@ -115,7 +138,7 @@ def guardian_start_cmd(
 
     click.echo(
         click.style("[GUARDIAN] ", fg="cyan", bold=True)
-        + f"Watching {len(endpoints)} endpoint(s) on {url} every {interval}s"
+        + f"Watching {len(endpoints)} endpoint(s) on {base_url} every {interval}s"
     )
 
     if max_loops > 0:

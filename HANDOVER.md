@@ -1,9 +1,29 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-08-01
-**HEAD:** `main` at `e3ec44e`. PRs #797-808 all merged. No open PRs, no branch with unmerged work.
+**Date:** 2026-08-01 (evening — T-track swarm)
+**HEAD:** `main` at `4d23bd0`. T-track swarm (#810-#816) delivered via PRs #820-825: 1824 passed, 2 failed (pre-existing `test_verify_cmd.py` mock drift, tracked as #819).
 **Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"`.
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
+
+## T-track swarm result (2026-08-01)
+
+7-agent swarm (parallel worktrees under `~/cherenkov-worktrees/track-*`) closed the T-track backlog:
+
+| Issue | Delivered | PR |
+|---|---|---|
+| **#810** SAML/RBAC CLI wiring | `saml_configure` + `rbac_assign` call real `cherenkov/enterprise/{saml,rbac}.py`; enforcement decision: keep existing `require_role` in `web/auth/deps.py` (documented in rbac.py docstring); 8 new tests | #824 |
+| **#811** Guardian CLI | `cherenkov guardian start` (`cli/commands/guardian_cmd.py`), registered in `cli/core.py:106`; 7 new tests | #823 |
+| **#812** MCP tool depth | `check_suite`/`verify`/`generate` MCP tools (37 total now) reusing real pipeline code, path-containment guard; 29 new tests | #822 |
+| **#814** Retire root `cherenkov.py` | All 8 consumers migrated to `python -m cherenkov` (13 commits, consumer-by-consumer); root shim **deleted** (−1629 lines); docs-parity gates green | #821 |
+| **#815** AI routing consolidation | ai/=client layer (current), substrate/=orchestration (current), `ai/router.py`=legacy (1 call site); plan in `agent_memory/findings_2026-08-01_dual_ai_routing_layers.md`; 5 guard tests | #820 |
+| **#809** Release hygiene | v1.2.0 release already published; `/latest/` verified → 1.2; orphan `1.1.1` docs dir removed via mike; **`v.1.1.1` malformed tag still needs human decision** | — |
+| **#816** Onboarding prep | Cold run FAILS today: 6 friction issues filed (#826-831). Blockers: no tool install step (`init` crashes, missing httpx) + no workspace provisioning. Fix #826/#827 before M1 | — |
+
+**Notes for next agents:**
+- Pre-existing test failures `test_verify_cmd.py::{test_no_divergences_exits_0,test_llm_flag_passed}` (mock drift vs E0.5i `known_identifiers`/`allow_mutations` kwargs) — tracked as **#819**, D7 means agents don't fix; needs SDET owner.
+- `scripts/agent_sync.py before/after` crash (`MemSearch.__init__() unexpected kwarg workspace_dir`) — broken SDD runtime, worth an issue.
+- PAT (moaidmoatasem) has **repo write but no issues/PR write scope**: issue comments, issue close, and PR close (incl. duplicate #825) are blocked — flag to maintainer.
+- M1 (human validation) still owns 08-12 → 08-26; onboarding doc needs fixes from #826/#827 before recruitment.
 
 ## Product decision: no enterprise/paid tier — fully open source for the community (2026-08-01)
 
