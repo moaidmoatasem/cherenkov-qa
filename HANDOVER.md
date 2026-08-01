@@ -1,29 +1,37 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-08-01
-**HEAD:** `main` at `a77b630` + this session's branch `claude/cherenkov-qa-ux-redesign-b6s2i7` (release/docs fixes, not yet merged — see below).
+**Date:** 2026-08-01 (maintainer away until Tuesday — see "Operating without the maintainer" below)
+**HEAD:** `main` at `e3ec44e`. PRs #797-808 all merged. No open PRs, no branch with unmerged work.
 **Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"`.
+**Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
 
-## 2026-08-01 — UX redesign + release/docs/issue-tracker reconciliation
+## Where things actually stand (2026-08-01)
 
-### UX redesign (PRs #797-806, all merged to `main`)
-5-hub IA shipped and live-verified in a real browser (not just tsc/build): Overview, Author & Generate, Triage (Kanban), Coverage & Certification, Knowledge. Spec vs Reality, Coverage & Certification, Test Management, and Chat history are all wired to real backend data — no more hardcoded mocks. Six real runtime bugs found via live click-through and fixed (React infinite-render loop, missing FastAPI `Depends()`, non-JSON-serializable validation errors, duplicate React keys, endpoint-string bug in demo seed data, Drawer `size` prop silently ignored). Full detail in `docs/reviews/UX_REDESIGN_PROPOSAL_2026-08.md`.
+- **M0 (spec-shape robustness) is CLOSED** (#808) — gates M1. Zero silent endpoint drops across a 10-spec corpus, mutation battery separates 3/3 cheat classes. See `docs/ROADMAP_2026H2.md` M0 section for the full checklist, all boxes checked.
+- **M1 (human validation) has NOT started** — window 2026-08-12 → 2026-08-26, **owner: human**. Its exit criterion is ≥3 real practitioners from outside this repo completing onboarding unaided, with ≥1 re-running it unprompted within 7 days. **No agent can complete this milestone** — do not fabricate, simulate, or approximate practitioner validation. If you're an agent reading this before 08-12, M1 is simply not yours to work on; work the tech-debt track (T, below) instead.
+- **UX redesign** (PRs #797-806): 5-hub IA shipped and live-verified in a real browser — Overview, Author & Generate, Triage (Kanban), Coverage & Certification, Knowledge. Full detail in `docs/reviews/UX_REDESIGN_PROPOSAL_2026-08.md`.
+- **Release/docs/issue-tracker reconciliation** (PR #807, merged): `.release-please-manifest.json`/`package.json` fixed to `1.2.0`; `CHANGELOG.md`'s false "Phase 11-16 fully implemented" claim corrected; missing docs-site release notes (v1.1.2, v1.2.0) added; 55 open Phase 11-16 GitHub issues reconciled against real code (18 closed with evidence, 14 annotated partial, ~23 genuinely not started — left as-is). Full detail in `docs/reviews/COMPETITIVE_POSITIONING_2026-08.md` (also covers external competitive positioning vs. TestSprite/Momentic/Vibium/MCP, critically cross-checked).
 
-### Release/tag/docs reconciliation (this session, branch `claude/cherenkov-qa-ux-redesign-b6s2i7`, not yet merged)
-- **Root cause found**: `.release-please-manifest.json` and `package.json` were stuck at `1.0.0` while `pyproject.toml`/`CHANGELOG.md`/the actual `v1.2.0` git tag had already moved on, and the `v1.1.1` release was tagged `v.1.1.1` (stray dot) — this silently breaks `docs-deploy.yml`'s `cut -d. -f1,2` version-extraction step. This was even self-documented as a known issue in the 1.1.2 CHANGELOG entry ("Reconcile before the next publish") but never fixed. **Fixed**: manifest + package.json now read `1.2.0`.
-- **v1.2.0 has a git tag but no published GitHub Release** — `docs-deploy.yml` only fires `mike deploy`/`latest` alias updates on `release: published`, so the live docs site's `/latest/` has been stuck on old (pre-1.2.0, pre-UX-redesign) content. **Not yet fixed**: someone needs to either publish a GitHub Release for the `v1.2.0` tag (preferred — let CI's own `mike deploy` do it), or manually run `mike deploy --push --update-aliases 1.2 latest && mike set-default --push latest` from `docs-site/`. There's also an orphan `1.1.1` version directory on `gh-pages` (`git ls-tree -d --name-only origin/gh-pages` shows `1.0`, `1.1`, `1.1.1`, `dev` — `1.1.1` doesn't match the major.minor scheme every other version uses and should probably be `mike delete 1.1.1 --push`'d).
-- **CHANGELOG.md's 1.2.0 entry falsely claimed "Phase 11-16 Roadmap Completion: fully implemented"** — corrected in place (see the "Corrected" subsection under `[1.2.0]`) after a code-level audit found Phase 13 (Enterprise SAML/RBAC/GDPR) has real logic behind literal `"""Placeholder"""` CLI stubs, Phase 14's Spec Guardian daemon has zero callers, Phase 15 (fine-tuning) is an explicit simulation (`"SIMULATED_LORA_WEIGHTS"`), and Phase 16 (marketplace/platform) is almost entirely stub data.
-- **Added missing docs-site release notes** for v1.1.2 and v1.2.0 (previously absent entirely — only v1.0.0/v1.1.0/v1.1.1 existed), synced `docs-site/docs/changelog.md` (was stuck showing 1.1.1 as latest), added both to `mkdocs.yml` nav. `mkdocs build --strict` passes clean.
-- **GitHub issue tracker reconciled against real code** (55 open Phase 11-16 issues, none touched since 2026-07-30): 18 closed as genuinely shipped (VS Code extension epic #739-745, GraphQL/gRPC/AsyncAPI epic #746-753, audit log #758, LangChain #791, desktop wizard #793) with file:line evidence in each closing comment; 14 left open but annotated with exactly what's real vs. missing (mostly Phase 13 Enterprise — real logic modules, unwired CLI/API); ~23 left open untouched (genuinely not started — Phase 15 fine-tuning, most of Phase 16 marketplace, SLA dashboard, enterprise support portal, etc.)
-- **Added `docs/reviews/COMPETITIVE_POSITIONING_2026-08.md`** synthesizing external competitive research the maintainer pasted in — cross-checked against real repo state (e.g., corrected the false "no MCP server" claim several external reports made; `cherenkov/mcp/` is real). Bottom line: CHERENKOV is not a competitor to Momentic/TestSprite/Vibium, it's a complementary contract-integrity layer; the actionable gap is MCP tool *depth* (wire `check-suite`/`verify`/`generate` as agent-invokable MCP tools, publish per issue #792), not MCP existence.
+## Open work, as GitHub issues (pick these, don't invent new scope)
 
-### Next steps for whoever picks this up
-1. **Merge the release/docs branch** (`claude/cherenkov-qa-ux-redesign-b6s2i7`) — PR to be opened this session.
-2. **Publish a GitHub Release for tag `v1.2.0`** (or manually `mike deploy`) so the live docs site stops serving stale content at `/latest/`.
-3. **Delete the orphan `1.1.1` mike version** on `gh-pages`.
-4. **Wire the Phase 13 Enterprise CLI placeholders** (`cli/commands/enterprise.py`: `saml_configure`, `rbac_assign`) to the real logic modules that already exist (`cherenkov/enterprise/{saml,rbac}.py`) — highest-value partial-completion items per the issue triage.
-5. **Give the Spec Guardian daemon (`cherenkov/spec_guardian/daemon.py`) a CLI entrypoint** — it's fully written but has zero callers anywhere.
-6. **MCP tool depth** — see `docs/reviews/COMPETITIVE_POSITIONING_2026-08.md`'s concrete next step.
+| Issue | What | Notes |
+|---|---|---|
+| **#809** | Release hygiene follow-up | Publish `v1.2.0` GitHub Release (fixes stale `/latest/` docs); the malformed `v.1.1.1` tag rename is flagged for a **human decision**, not autonomous action |
+| **#810** | Wire Enterprise SAML/RBAC CLI placeholders | Real logic exists in `cherenkov/enterprise/{saml,rbac}.py`; CLI commands are literal `"""Placeholder"""` stubs |
+| **#811** | Spec Guardian daemon CLI entrypoint | `cherenkov/spec_guardian/daemon.py` is complete, has zero callers |
+| **#812** | MCP tool depth + registry publish | `check-suite`/`verify`/`generate` as agent-invokable MCP tools; `smithery.yaml` exists but nothing's been submitted to a registry |
+| **T1, T2, T7** (roadmap) | Retire root `cherenkov.py`, record onboarding assets, consolidate dual AI routing | See `docs/ROADMAP_2026H2.md` T-track table for full context |
+
+37 other open GitHub issues remain (Phase 13 Enterprise partials, Phase 15/16 — mostly genuinely unstarted). Their current status is accurate as of this session's triage; don't re-triage them without new evidence.
+
+## Operating without the maintainer (until Tuesday)
+
+- **Verify before trusting.** This repo has a documented history of prior agent sessions fabricating completion claims (see `CHANGELOG.md`'s "Corrected" note under `[1.2.0]`, and the general norm in `CLAUDE.md`: don't trust `ROADMAP_RECONCILIATION.md`, memory files are hints not truth). Before claiming anything is "done," grep for the actual code and cite file:line.
+- **One branch per concern, PR against `main`, draft by default.** Don't push directly to `main`. Check `git status` and recent `git log` before starting — this is a shared, volatile tree; other agents may be mid-edit.
+- **Stage specific files, never `git add -A`.**
+- **Don't touch M1.** It requires real external practitioners; there is no code change that satisfies it.
+- **Don't open new roadmap docs.** `docs/ROADMAP_2026H2.md` explicitly says "No roadmap docs... this file plus HANDOVER.md are the forward plan." Update these two, not a new file.
+- **A separate autonomous multi-agent system** (`.agents/` — sentinel/auditor archetypes, orchestrator-driven) may also be active on the maintainer's local machine working the same roadmap. If you see `.agents/*/BRIEFING.md` or `.agents/*/handoff.md` state that conflicts with this file, this file (committed to `main`) wins — those are per-machine working notes, not synced truth.
 
 ---
 
