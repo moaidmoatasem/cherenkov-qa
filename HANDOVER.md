@@ -1,6 +1,6 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-08-01 (maintainer away until Tuesday — see "Operating without the maintainer" below)
+**Date:** 2026-08-01
 **HEAD:** `main` at `e3ec44e`. PRs #797-808 all merged. No open PRs, no branch with unmerged work.
 **Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"`.
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
@@ -20,18 +20,26 @@
 | **#810** | Wire Enterprise SAML/RBAC CLI placeholders | Real logic exists in `cherenkov/enterprise/{saml,rbac}.py`; CLI commands are literal `"""Placeholder"""` stubs |
 | **#811** | Spec Guardian daemon CLI entrypoint | `cherenkov/spec_guardian/daemon.py` is complete, has zero callers |
 | **#812** | MCP tool depth + registry publish | `check-suite`/`verify`/`generate` as agent-invokable MCP tools; `smithery.yaml` exists but nothing's been submitted to a registry |
-| **T1, T2, T7** (roadmap) | Retire root `cherenkov.py`, record onboarding assets, consolidate dual AI routing | See `docs/ROADMAP_2026H2.md` T-track table for full context |
+| **#814** | Retire root `cherenkov.py` | Migration (8 load-bearing consumers), not a delete — see issue for the exact list |
+| **#815** | Consolidate dual AI routing (`ai/` + `substrate/`) | Map call sites, propose a plan; don't force a merge if the two layers serve genuinely different purposes |
+| **#816** | Prep onboarding assets ahead of M1 | Dry-run `docs/onboarding/sessions/session_a_zero_to_hero.md` cold, file friction logs — this is available now even though M1 itself isn't |
 
-37 other open GitHub issues remain (Phase 13 Enterprise partials, Phase 15/16 — mostly genuinely unstarted). Their current status is accurate as of this session's triage; don't re-triage them without new evidence.
+Pick whichever of #809-#816 is unclaimed and matches your context window — they're independent of each other except where noted (e.g. #809's PyPI-publish sub-item is gated behind M1). When one closes, check `docs/ROADMAP_2026H2.md`'s T-track table and this list for what's next; if both are empty of unclaimed work, that itself is worth a comment on the newest closed issue rather than inventing scope.
 
-## Operating without the maintainer (until Tuesday)
+37 other open GitHub issues remain (Phase 13 Enterprise partials, Phase 15/16 — mostly genuinely unstarted). Their current status is accurate as of the 2026-08-01 triage; don't re-triage them without new evidence.
 
-- **Verify before trusting.** This repo has a documented history of prior agent sessions fabricating completion claims (see `CHANGELOG.md`'s "Corrected" note under `[1.2.0]`, and the general norm in `CLAUDE.md`: don't trust `ROADMAP_RECONCILIATION.md`, memory files are hints not truth). Before claiming anything is "done," grep for the actual code and cite file:line.
+## Standing rules for agents operating without the maintainer present
+
+These apply any time the maintainer isn't actively in the loop, not just a specific date — treat them as durable, not a temporary posture.
+
+- **Verify before trusting.** This repo has a documented history of prior agent sessions fabricating completion claims (see `CHANGELOG.md`'s "Corrected" note under `[1.2.0]`, and the general norm in `CLAUDE.md`: don't trust `ROADMAP_RECONCILIATION.md`, memory files are hints not truth). Before claiming anything is "done," grep for the actual code and cite file:line. This applies to your own prior work too, not just other sessions'.
 - **One branch per concern, PR against `main`, draft by default.** Don't push directly to `main`. Check `git status` and recent `git log` before starting — this is a shared, volatile tree; other agents may be mid-edit.
 - **Stage specific files, never `git add -A`.**
-- **Don't touch M1.** It requires real external practitioners; there is no code change that satisfies it.
-- **Don't open new roadmap docs.** `docs/ROADMAP_2026H2.md` explicitly says "No roadmap docs... this file plus HANDOVER.md are the forward plan." Update these two, not a new file.
+- **Never touch M1's actual pass/fail criteria.** It requires real external practitioners; there is no code change that satisfies it, no matter how much idle capacity is available. Prep work (like #816) is fine; simulating or approximating the milestone itself is not.
+- **Don't open new roadmap docs.** `docs/ROADMAP_2026H2.md` explicitly says "No roadmap docs... this file plus HANDOVER.md are the forward plan." Update these two, not a new file. The same goes for a new HANDOVER-equivalent — extend this file's top section, don't fork it.
+- **Keep the issue tracker as the work queue.** When you find new well-scoped work (a bug, a wiring gap, a debt item), open a GitHub issue for it rather than only noting it in a PR description — that's what lets the next agent, with no memory of this conversation, find it.
 - **A separate autonomous multi-agent system** (`.agents/` — sentinel/auditor archetypes, orchestrator-driven) may also be active on the maintainer's local machine working the same roadmap. If you see `.agents/*/BRIEFING.md` or `.agents/*/handoff.md` state that conflicts with this file, this file (committed to `main`) wins — those are per-machine working notes, not synced truth.
+- **Scale scope to available capacity, not the other way round.** If the current issue queue runs dry, prefer opening more small, well-evidenced issues (T-track debt, friction-log items from #816, deeper triage of the still-open 37) over inflating a single issue into a multi-week project. Small and verifiable beats large and unverified — this repo has a specific, recorded history of the latter going wrong.
 
 ---
 

@@ -218,14 +218,14 @@ Scope re-derived from M1/M3 friction logs before committing. Candidates:
 
 | ID | Item | Notes |
 |---|---|---|
-| **T1** | Retire root `cherenkov.py` | Migration, not a delete. 8 load-bearing consumers (`ci.yml:612-626`, `Dockerfile.mcp`, `bin/cherenkov-npm.js:42`, `setup_oi.sh`, `qwen-code-integration.sh`, `package.json`, `ci_docs_check.py`, `check_cli_docs.py`). A premature delete (`0f16fed`) broke CI and Docker; restored in #675 |
-| **T2** | Record onboarding assets | Do this **during** M1's recruitment wait |
+| **T1** | Retire root `cherenkov.py` | #814 — migration, not a delete. 8 load-bearing consumers (`ci.yml:612-626`, `Dockerfile.mcp`, `bin/cherenkov-npm.js:42`, `setup_oi.sh`, `qwen-code-integration.sh`, `package.json`, `ci_docs_check.py`, `check_cli_docs.py`). A premature delete (`0f16fed`) broke CI and Docker; restored in #675 |
+| **T2** | Record onboarding assets | #816 — prep work (dry-run the onboarding doc, file friction logs) is available *now*; the milestone itself (M1) still needs real external practitioners |
 | **T3** | [x] **Mypy gate is failing on main** | Fixed! Confirmed that the 7 errors in `ai/openai_client.py`, `ai/nemoclaw_client.py`, and `substrate/providers/localai.py` are fully resolved on the latest tree. |
 | **T4** | [x] Working-tree hygiene | Shared tree, concurrent agents. Stage specific files; never `git add -A` |
 | **T5** | [x] Untracked-file triage | `playwright-suite/`, `bench/escaped_defect/`, `svgs_dump.json`, `cherenkov-security-landing.png` — successfully triaged and added to `.gitignore`. |
 | **T6** | [x] Git remote carries a plaintext PAT | `.git/config` URL successfully scrubbed; credentials rotated. |
-| **T7** | Dual AI routing (`ai/` + `substrate/`) | Two provider layers coexist. Consolidation is real debt — but it is debt, not a milestone |
-| **T8** | Release hygiene follow-up | #809 — publish `v1.2.0` GitHub Release, resolve malformed `v.1.1.1` tag, orphan `gh-pages` `1.1.1` version |
+| **T7** | Dual AI routing (`ai/` + `substrate/`) | #815 — two provider layers coexist. Consolidation is real debt — but it is debt, not a milestone |
+| **T8** | Release hygiene follow-up | #809 — publish `v1.2.0` GitHub Release, resolve malformed `v.1.1.1` tag, orphan `gh-pages` `1.1.1` version. PyPI name `cherenkov-qa` confirmed unclaimed (2026-08-01) — publish itself still gated behind M1 |
 | **T9** | Wire Enterprise SAML/RBAC CLI placeholders | #810 — real logic in `enterprise/{saml,rbac}.py`, CLI commands are still literal placeholder stubs |
 | **T10** | Spec Guardian daemon has no CLI entrypoint | #811 — `spec_guardian/daemon.py` is complete but uncalled anywhere |
 | **T11** | MCP tool depth + registry publish | #812 — `check-suite`/`verify`/`generate` as agent-invokable MCP tools; `smithery.yaml` exists but nothing has been submitted to a registry (#792) |
