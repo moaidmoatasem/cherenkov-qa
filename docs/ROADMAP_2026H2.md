@@ -117,9 +117,9 @@ graph LR
 
 ---
 
-## M0 — Spec-shape robustness · **NEW, gates M1**
+## M0 — Spec-shape robustness · **CLOSED 2026-08-01** (#808), gated M1
 
-**Window:** 2026-07-29 → 2026-08-12 · **Owner:** engineering · **Why:** a false-clean verdict in front of a recruited practitioner is unrecoverable.
+**Window:** 2026-07-29 → 2026-08-12 (closed early) · **Owner:** engineering · **Why:** a false-clean verdict in front of a recruited practitioner is unrecoverable.
 
 The engine has only ever been proven against Petstore and FastAPI-generated specs. Both declare parameters at the operation level. Real-world specs do not.
 
@@ -161,7 +161,7 @@ The engine has only ever been proven against Petstore and FastAPI-generated spec
 **Window:** 2026-08-26 → 2026-09-09 · **Depends on:** M1
 
 - [ ] **PyPI** — `twine upload dist/*`. Check name availability on day 1, not at upload. README badge restored *only after* the package is live (R0 was spent removing a badge for an install that did not exist — do not regress that)
-- [ ] **Tag hygiene first** — `git tag` already shows `v1.2.0` and `v3.1-delta` while `pyproject.toml` says `1.1.1`, plus a malformed `v.1.1.1`. Reconcile before anything is published; a release tagged from this state is unreproducible
+- [x] **Tag hygiene, part 1** — `.release-please-manifest.json`/`package.json` reconciled to `1.2.0`, matching `pyproject.toml` and the `v1.2.0` tag (#807, 2026-08-01). `v3.1-delta` no longer exists. **Still open** (#809): no GitHub Release published for `v1.2.0` (docs site `/latest/` stuck on old content), and the `v1.1.1` release is still tagged `v.1.1.1` (malformed) — retagging a published release needs a human call, not an autonomous one
 - [ ] **MCP registries** — per `docs/README-MCP-PUBLISH.md`; `cherenkov mcp install` verified from a clean machine
 - [ ] **Write-up** — `docs/marketing/CATCH_THE_AI_CHEATING_WRITEUP.md` published
 - [ ] Clean-VM test: fresh container → install → `verify` against a live target → correct exit code
@@ -225,6 +225,10 @@ Scope re-derived from M1/M3 friction logs before committing. Candidates:
 | **T5** | [x] Untracked-file triage | `playwright-suite/`, `bench/escaped_defect/`, `svgs_dump.json`, `cherenkov-security-landing.png` — successfully triaged and added to `.gitignore`. |
 | **T6** | [x] Git remote carries a plaintext PAT | `.git/config` URL successfully scrubbed; credentials rotated. |
 | **T7** | Dual AI routing (`ai/` + `substrate/`) | Two provider layers coexist. Consolidation is real debt — but it is debt, not a milestone |
+| **T8** | Release hygiene follow-up | #809 — publish `v1.2.0` GitHub Release, resolve malformed `v.1.1.1` tag, orphan `gh-pages` `1.1.1` version |
+| **T9** | Wire Enterprise SAML/RBAC CLI placeholders | #810 — real logic in `enterprise/{saml,rbac}.py`, CLI commands are still literal placeholder stubs |
+| **T10** | Spec Guardian daemon has no CLI entrypoint | #811 — `spec_guardian/daemon.py` is complete but uncalled anywhere |
+| **T11** | MCP tool depth + registry publish | #812 — `check-suite`/`verify`/`generate` as agent-invokable MCP tools; `smithery.yaml` exists but nothing has been submitted to a registry (#792) |
 
 ---
 
