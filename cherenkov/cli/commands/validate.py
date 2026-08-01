@@ -77,6 +77,17 @@ def _findings_report(results: dict):
     help="Output path (extension inferred from --format if not given)",
 )
 @click.option(
+    "--tests",
+    "tests_filter",
+    default=None,
+    help=(
+        "Only validate matching test files under stub/generated_tests (glob "
+        "or substring, e.g. --tests 'POST_*'). The directory also ships "
+        "intentional demo/golden fixtures; scope runs to your generated "
+        "files to keep results meaningful."
+    ),
+)
+@click.option(
     "--fail-on-drift",
     "fail_on_drift",
     is_flag=True,
@@ -92,7 +103,7 @@ def _findings_report(results: dict):
 @click.option("--json", "json_out", is_flag=True, help="Output purely JSON to stdout")
 @click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output; print only the final status line")
 @click.option("--verbose", "-v", is_flag=True, help="Print each gate result, retry attempt, and all scenario outcomes")
-def validate_cmd(target, source, format, workers, no_html, no_cache, spec, output, fail_on_drift, json_summary, json_out, quiet, verbose):  # noqa: ARG001
+def validate_cmd(target, source, format, workers, no_html, no_cache, spec, output, tests_filter, fail_on_drift, json_summary, json_out, quiet, verbose):  # noqa: ARG001
     """Validate E2E test suite against a real server"""
     from cherenkov.core.errors import ExitCode
 
@@ -222,7 +233,7 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
     if not quiet:
         click.echo(f"\nRunning tests against {target} ...")
     engine = ValidationEngine("cli_validate")
-    results = engine.validate_suite(target, workers=workers)
+    results = engine.validate_suite(target, workers=workers, tests_filter=tests_filter)
 
     # Always print a human-readable summary so every source type gets output
     _reports = results.get("reports", [])

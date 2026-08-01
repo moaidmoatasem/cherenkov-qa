@@ -259,6 +259,68 @@ class TestValidateSummaryOutput:
         assert "user_happy_path" in result.output
 
 
+class TestValidateCmdTestsFilter:
+    """Regression (#829): the --tests flag must reach the ValidationEngine so
+    runs can be scoped away from the shipped demo/golden fixtures."""
+
+    def test_tests_flag_forwarded_to_engine(self, runner, tmp_path):
+        spec = tmp_path / "spec.yaml"
+        spec.write_text(
+            "openapi: '3.0.4'\n"
+            "info:\n"
+            "  title: T\n"
+            "  version: '1'\n"
+            "paths:\n"
+            "  /x:\n"
+            "    get:\n"
+            "      responses:\n"
+            "        '200':\n"
+            "          description: ok\n",
+            encoding="utf-8",
+        )
+
+        with patch("cherenkov.cli.commands.validate.ValidationEngine") as MockEngine:
+            engine = _patch_engine()
+            MockEngine.return_value = engine
+            result = runner.invoke(validate_cmd, [
+                "--target", "http://localhost:4000",
+                "--source", "openapi",
+                "--spec", str(spec),
+                "--tests", "POST_*",
+            ])
+
+        assert result.exit_code == 0
+        assert engine.validate_suite.call_args.kwargs["tests_filter"] == "POST_*"
+
+    def test_no_tests_flag_means_no_filter(self, runner, tmp_path):
+        spec = tmp_path / "spec.yaml"
+        spec.write_text(
+            "openapi: '3.0.4'\n"
+            "info:\n"
+            "  title: T\n"
+            "  version: '1'\n"
+            "paths:\n"
+            "  /x:\n"
+            "    get:\n"
+            "      responses:\n"
+            "        '200':\n"
+            "          description: ok\n",
+            encoding="utf-8",
+        )
+
+        with patch("cherenkov.cli.commands.validate.ValidationEngine") as MockEngine:
+            engine = _patch_engine()
+            MockEngine.return_value = engine
+            result = runner.invoke(validate_cmd, [
+                "--target", "http://localhost:4000",
+                "--source", "openapi",
+                "--spec", str(spec),
+            ])
+
+        assert result.exit_code == 0
+        assert engine.validate_suite.call_args.kwargs["tests_filter"] is None
+
+
 class TestFindingsReport:
     """Regression: severity was passed as a raw string ("high") where DivergenceFinding
     requires the Severity enum — mypy-blocking (arg-type) and would also have raised a
