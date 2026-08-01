@@ -11,5 +11,6 @@ export * from './Drawer';
 export * from './MockBadge';
 export * from './KpiRing';
 export * from './Toast';
+export * from './CoverageTrendChart';
 export { default as OfflineOverlay } from './OfflineOverlay';
 export * from './ReadOnlyDiffViewer';
