@@ -1,0 +1,890 @@
+{
+  "$schema": "https://json.schemastore.org/smithery.json",
+  "id": "cherenkov-core-mcp",
+  "name": "cherenkov-qa",
+  "displayName": "CHERENKOV QA MCP Server",
+  "version": "1.2.0",
+  "description": "AI-native API conformance testing — OpenAPI spec to Playwright tests, locally, privately, with zero vendor lock-in. Exposes HITL review, Validation Gate, drift detection, visual/perf testing, chat agents, and compliance tools over MCP.",
+  "vendor": "CHERENKOV QA",
+  "author": "moaidmoatasem",
+  "license": "Apache-2.0",
+  "repository_url": "https://github.com/moaidmoatasem/cherenkov-qa",
+  "homepage": "https://github.com/moaidmoatasem/cherenkov-qa",
+  "documentation_url": "https://moaidmoatasem.github.io/cherenkov-qa/",
+  "install_command": "pip install cherenkov-qa",
+  "start_command": [
+    "cherenkov",
+    "mcp",
+    "serve"
+  ],
+  "transport": "stdio",
+  "protocol_version": "2024-11-05",
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": false
+  },
+  "environment": {
+    "optional": [
+      {
+        "name": "CHERENKOV_JWT_SECRET",
+        "description": "JWT signing secret for MCP auth (auth.py). MUST be set when require_auth is enabled; the default is insecure."
+      }
+    ]
+  },
+  "auth": {
+    "scheme": "bearer-jwt",
+    "issuer": "cherenkov-mcp",
+    "algorithm": "HS256",
+    "note": "Enabled via MCPAuthMiddleware(require_auth=True); API keys also supported."
+  },
+  "resources": [
+    {
+      "uri": "cherenkov://hitl/pending",
+      "name": "HITL Pending Queue",
+      "description": "List of HITL items awaiting human review (hitl/v1 envelope)."
+    },
+    {
+      "uri": "cherenkov://hitl/item/{id}",
+      "name": "HITL Item Detail",
+      "description": "Single HITL item by ID (hitl/v1 envelope)."
+    },
+    {
+      "uri": "cherenkov://validate/latest",
+      "name": "Latest Validation Report",
+      "description": "Most recent validate/v1 ValidationReport from the Validation Gate."
+    },
+    {
+      "uri": "cherenkov://validate/evidence",
+      "name": "Validation Evidence Directory",
+      "description": "Listing of evidence files captured by the Validation Gate."
+    },
+    {
+      "uri": "cherenkov://chat/sessions",
+      "name": "Active Chat Sessions",
+      "description": "List of active chat sessions from the Chat Agent."
+    },
+    {
+      "uri": "cherenkov://gates",
+      "name": "CHERENKOV Integrity Gates",
+      "description": "Machine-readable description of the 6 REVIEW gates so agents can self-correct before calling verify_suite. Each entry explains what the gate checks, what a passing test must contain, and what cheat pattern it catches."
+    }
+  ],
+  "tools": [
+    {
+      "name": "hitl_list",
+      "description": "List HITL queue items matching the given status. Returns a hitl/v1 envelope.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Filter by status: pending | approved | rejected | ignored. Omit or pass null for pending."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "hitl_approve",
+      "description": "Approve a pending HITL item. Returns a hitl/v1 envelope.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "description": "ID of the HITL item to approve."
+          },
+          "actor": {
+            "type": "string",
+            "description": "Reviewer identity."
+          }
+        },
+        "required": [
+          "item_id"
+        ]
+      }
+    },
+    {
+      "name": "hitl_reject",
+      "description": "Reject a pending HITL item. Returns a hitl/v1 envelope.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "description": "ID of the HITL item to reject."
+          },
+          "actor": {
+            "type": "string",
+            "description": "Reviewer identity."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Rejection reason."
+          }
+        },
+        "required": [
+          "item_id"
+        ]
+      }
+    },
+    {
+      "name": "verify_suite",
+      "description": "Run the 6-gate integrity check on an AI-generated test suite and return a VerificationReport (verify/v1). Suggest-only — never auto-applies fixes.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "suite_path": {
+            "type": "string",
+            "description": "Path to a .spec.ts file to verify (must be within working directory)."
+          },
+          "suite_inline": {
+            "type": "string",
+            "description": "Raw TypeScript test code to verify inline."
+          },
+          "spec_source": {
+            "type": "string",
+            "description": "Path to the OpenAPI spec for oracle derivation. Defaults to stub/openapi_3_1.yaml."
+          },
+          "scenario_id": {
+            "type": "string",
+            "description": "Scenario identifier used in finding IDs."
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "API endpoint under test, e.g. /users."
+          },
+          "method": {
+            "type": "string",
+            "description": "HTTP method (GET, POST, PUT, DELETE, PATCH). Default: POST."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "verify_system",
+      "description": "Probe a live server against its OpenAPI spec; return spec-drift divergences as a VerificationReport (verify/v1). Offline by default — no LLM required.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "base_url": {
+            "type": "string",
+            "description": "Base URL of the live server to probe (e.g. https://petstore3.swagger.io/api/v3)."
+          },
+          "spec_source": {
+            "type": "string",
+            "description": "Path or HTTP URL to the OpenAPI spec JSON/YAML. Omit for built-in Petstore demo."
+          },
+          "use_llm": {
+            "type": "boolean",
+            "description": "If true, use the LLM Skeptic (requires Ollama). Default: false (offline mode)."
+          },
+          "run_id": {
+            "type": "string",
+            "description": "Optional run identifier for correlation."
+          }
+        },
+        "required": [
+          "base_url"
+        ]
+      }
+    },
+    {
+      "name": "check_suite",
+      "description": "Static integrity check of a candidate test suite against a baseline: catches WEAKENED, DELETED, and HALLUCINATED assertions (`cherenkov check-suite`). Fast, offline, no execution.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "candidate_path": {
+            "type": "string",
+            "description": "Path to the candidate test suite (.py or .ts) to check."
+          },
+          "candidate_inline": {
+            "type": "string",
+            "description": "Raw test code to check inline (when the file isn't on disk yet)."
+          },
+          "baseline_path": {
+            "type": "string",
+            "description": "Path to the known-honest baseline suite. Required for WEAKENED and DELETED detection."
+          },
+          "baseline_inline": {
+            "type": "string",
+            "description": "Raw baseline test code inline."
+          },
+          "spec_path": {
+            "type": "string",
+            "description": "Path to the OpenAPI spec (YAML/JSON). Required for HALLUCINATED detection on Python suites."
+          },
+          "fail_on_finding": {
+            "type": "boolean",
+            "description": "Report verdict 'fail' if any integrity violation is found."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "verify",
+      "description": "Probe a live server against its OpenAPI spec and return spec-drift divergences (`cherenkov verify`). Offline by default — no LLM required. Supports coverage and health-score reports.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "base_url": {
+            "type": "string",
+            "description": "Base URL of the live server to probe (e.g. https://petstore3.swagger.io/api/v3)."
+          },
+          "spec_source": {
+            "type": "string",
+            "description": "Path or URL to the OpenAPI spec JSON/YAML. Omit for the built-in Petstore demo."
+          },
+          "use_llm": {
+            "type": "boolean",
+            "description": "Use the LLM Skeptic (requires Ollama). Default: false."
+          },
+          "max_probes": {
+            "type": "integer",
+            "description": "Maximum spec-derived endpoint probes (1-500, default 40)."
+          },
+          "allow_mutations": {
+            "type": "boolean",
+            "description": "Allow happy-path probes for POST/PUT/DELETE. Default: false."
+          },
+          "identifiers": {
+            "type": "string",
+            "description": "JSON file path or inline JSON mapping path parameters to known valid values."
+          },
+          "coverage_report": {
+            "type": "boolean",
+            "description": "Include spec coverage-gap report (requires spec_source)."
+          },
+          "health_score": {
+            "type": "boolean",
+            "description": "Include A-F health grade (requires spec_source)."
+          },
+          "run_id": {
+            "type": "string",
+            "description": "Optional run identifier for correlation."
+          }
+        },
+        "required": [
+          "base_url"
+        ]
+      }
+    },
+    {
+      "name": "generate",
+      "description": "Generate Playwright E2E tests from an OpenAPI spec (`cherenkov generate`). Returns generated test code inline, or writes files when output_dir is given.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "spec_path": {
+            "type": "string",
+            "description": "Path to the OpenAPI spec (JSON/YAML) to generate tests for."
+          },
+          "output_dir": {
+            "type": "string",
+            "description": "Directory to write generated test files to. Omit to return code inline."
+          },
+          "repair": {
+            "type": "boolean",
+            "description": "Run the generate→review→repair loop. Default: true."
+          },
+          "max_attempts": {
+            "type": "integer",
+            "description": "Max repair attempts per scenario (1-10, default 3)."
+          }
+        },
+        "required": [
+          "spec_path"
+        ]
+      }
+    },
+    {
+      "name": "validate_run_gate",
+      "description": "Run the Validation Gate and return a validate/v1 ValidationReport. Suggest-only.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "Sandbox provider: \"filesystem\" (default) or \"docker\""
+          },
+          "target_url": {
+            "type": "string",
+            "description": "Optional target API URL"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "policy_list",
+      "description": "List policy allow/block rules from cherenkov-policy.json.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "policy_reload",
+      "description": "Reload cherenkov-policy.json from disk without restarting the server.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "visual_diff_baseline",
+      "description": "Run visual snapshot regression and UI matching checks.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_url": {
+            "type": "string",
+            "description": "Optional target URL."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "visual_diff_baseline_enhanced",
+      "description": "Run comprehensive visual snapshot regression with baseline management, configurable diff thresholds, pixel/structural/auto comparison modes, and custom report paths.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_url": {
+            "type": "string",
+            "description": "Optional target URL for visual testing"
+          },
+          "baseline_dir": {
+            "type": "string",
+            "description": "Baseline directory path (default: stub/visual_baselines)"
+          },
+          "diff_threshold": {
+            "type": "number",
+            "description": "Pixel diff threshold (0.0-1.0, default: 0.5)"
+          },
+          "comparison_mode": {
+            "type": "string",
+            "description": "Comparison mode: pixel, structural, or auto"
+          },
+          "report_path": {
+            "type": "string",
+            "description": "Path to save visual report (default: .cherenkov/visual_report.json)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "run_k6_perf",
+      "description": "Run K6 performance load testing and latency analysis.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_url": {
+            "type": "string",
+            "description": "Target API base URL."
+          },
+          "scenario_name": {
+            "type": "string",
+            "description": "K6 scenario name (default: soak)."
+          },
+          "duration": {
+            "type": "string",
+            "description": "Duration string (default: 30s)."
+          },
+          "vus": {
+            "type": "integer",
+            "description": "Virtual users count (default: 10)."
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "Endpoint path (default: /)."
+          },
+          "method": {
+            "type": "string",
+            "description": "HTTP method (default: GET)."
+          },
+          "use_ml": {
+            "type": "boolean",
+            "description": "Enable ML latency anomaly detection (default: false)."
+          },
+          "traffic_file": {
+            "type": "string",
+            "description": "HAR or traffic log file path (optional)."
+          }
+        },
+        "required": [
+          "target_url"
+        ]
+      }
+    },
+    {
+      "name": "query_rag_index",
+      "description": "Query the SQLite RAG index for test historical artifacts.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Natural language query."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "export_jira_ticket",
+      "description": "Suggest-only Jira export for failed validation items or custom summary/description.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "description": "Validation item ID (optional if summary and description provided)."
+          },
+          "summary": {
+            "type": "string",
+            "description": "Ticket summary/title."
+          },
+          "description": {
+            "type": "string",
+            "description": "Ticket description."
+          },
+          "project_key": {
+            "type": "string",
+            "description": "Jira project key (default: QA)."
+          },
+          "sandbox_only": {
+            "type": "boolean",
+            "description": "Sandbox mode flag (default: true)."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "export_linear_ticket",
+      "description": "Suggest-only Linear export for failed validation items.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "description": "Validation item ID."
+          }
+        },
+        "required": [
+          "item_id"
+        ]
+      }
+    },
+    {
+      "name": "export_github_ticket",
+      "description": "Suggest-only GitHub issue export for failed validation items.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "description": "Validation item ID."
+          }
+        },
+        "required": [
+          "item_id"
+        ]
+      }
+    },
+    {
+      "name": "auto_heal_code",
+      "description": "Generate a suggested code patch for a failed validation item. Suggest-only.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "description": "Validation item ID."
+          }
+        },
+        "required": [
+          "item_id"
+        ]
+      }
+    },
+    {
+      "name": "scan_mena_compliance",
+      "description": "Run the MENA compliance localization and data residency checks.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "scan_mena_compliance_enhanced",
+      "description": "Run targeted MENA compliance checks (SAMA CCSF / Egypt CBE FinCSF) against a live API.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_url": {
+            "type": "string",
+            "description": "Target API base URL"
+          },
+          "spec_path": {
+            "type": "string",
+            "description": "Path to OpenAPI spec (default: stub/openapi.yaml)"
+          },
+          "framework": {
+            "type": "string",
+            "description": "Compliance framework: sama_ccsf or egypt_cbef"
+          }
+        },
+        "required": [
+          "target_url"
+        ]
+      }
+    },
+    {
+      "name": "validate_governance_certification",
+      "description": "Validate a governance certification ID against quality standards.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cert_id": {
+            "type": "string",
+            "description": "Certification ID to validate"
+          },
+          "validation_criteria": {
+            "type": "string",
+            "description": "Validation criteria or standards to check against"
+          }
+        },
+        "required": [
+          "cert_id",
+          "validation_criteria"
+        ]
+      }
+    },
+    {
+      "name": "report_compliance_findings",
+      "description": "Return structured compliance findings, filterable by severity and endpoint.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "severity": {
+            "type": "string",
+            "description": "Filter by severity: high, medium, low, or all"
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "Filter by endpoint path (optional)"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum results to return (default: 20)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "chat_query_verdicts",
+      "description": "Query recent test verdicts from the Reflector.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "description": "Filter by endpoint (optional)."
+          },
+          "status_code": {
+            "type": "integer",
+            "description": "Filter by HTTP status code (optional)."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results to return (default 10)."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "chat_query_idioms",
+      "description": "Query learned idiom patterns from the Reflector.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Filter by pattern substring (optional)."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results to return (default 10)."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "chat_explain_divergence",
+      "description": "Explain a divergence using the Knowledge Mesh GraphRAG.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "description": "API endpoint that diverged."
+          },
+          "method": {
+            "type": "string",
+            "description": "HTTP method (default GET)."
+          }
+        },
+        "required": [
+          "endpoint"
+        ]
+      }
+    },
+    {
+      "name": "chat_run_test",
+      "description": "Plan test scenarios for a specific endpoint (suggest-only, does not execute).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "description": "API endpoint to plan tests for."
+          },
+          "method": {
+            "type": "string",
+            "description": "HTTP method (default GET)."
+          },
+          "spec_path": {
+            "type": "string",
+            "description": "Path to OpenAPI spec (optional)."
+          }
+        },
+        "required": [
+          "endpoint"
+        ]
+      }
+    },
+    {
+      "name": "run_conformance_check",
+      "description": "Run cherenkov validate against a target URL and return the report summary.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_url": {
+            "type": "string",
+            "description": "Target API base URL."
+          },
+          "spec_path": {
+            "type": "string",
+            "description": "Path to OpenAPI spec (default: stub/openapi.yaml)."
+          },
+          "workers": {
+            "type": "integer",
+            "description": "Parallel workers (default 1)."
+          }
+        },
+        "required": [
+          "target_url"
+        ]
+      }
+    },
+    {
+      "name": "get_last_report",
+      "description": "Return the most recent .cherenkov/report.json without triggering a new run.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "list_drift_findings",
+      "description": "Return structured spec-drift findings from the last conformance run.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "severity": {
+            "type": "string",
+            "description": "Filter by severity: high | medium | low. Omit for all."
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "Filter by endpoint path (optional)."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results to return (default 20)."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "get_tightening_suggestions",
+      "description": "Return OpenAPI spec tightening suggestions for a specific endpoint.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "description": "e.g. /users/{id}"
+          },
+          "method": {
+            "type": "string",
+            "description": "HTTP method (default GET)."
+          }
+        },
+        "required": [
+          "endpoint"
+        ]
+      }
+    },
+    {
+      "name": "explain_finding",
+      "description": "Natural-language explanation of a specific drift finding using the LLM.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "description": "Finding ID from list_drift_findings."
+          },
+          "detail_level": {
+            "type": "string",
+            "description": "concise (default) or detailed."
+          }
+        },
+        "required": [
+          "finding_id"
+        ]
+      }
+    },
+    {
+      "name": "mcp_registry_list",
+      "description": "List all MCP servers registered in the mesh registry.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "mcp_registry_publish",
+      "description": "Register an external MCP server with the mesh registry.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Server name."
+          },
+          "url": {
+            "type": "string",
+            "description": "Server URL."
+          },
+          "tools": {
+            "type": "string",
+            "description": "JSON list of tool definitions."
+          },
+          "resources": {
+            "type": "string",
+            "description": "JSON list of resource definitions."
+          },
+          "version": {
+            "type": "string",
+            "description": "Server version (default 1.0.0)."
+          }
+        },
+        "required": [
+          "name",
+          "url",
+          "tools"
+        ]
+      }
+    },
+    {
+      "name": "cherenkov/audit-test-file",
+      "description": "Audit a test file for integrity issues: weakened assertions, tautological checks, spec mismatches, and AI test-cheating patterns. Returns a verdict (PASS/WEAK/FAIL), an integrity score, specific issues with line numbers, and a SHA-256 certificate if the score is >= 0.90. Call this before committing AI-generated test code.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "test_content": {
+            "type": "string",
+            "description": "Raw content of the test file to audit"
+          },
+          "test_format": {
+            "type": "string",
+            "description": "Test framework format"
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "Optional identifier of the calling AI agent"
+          }
+        },
+        "required": [
+          "test_content"
+        ]
+      }
+    },
+    {
+      "name": "cherenkov/check-assertion",
+      "description": "Quickly check whether a single test assertion line is strong or weak. Returns 'strong', 'weak', or 'tautological' with a brief explanation. Use this for real-time CodeLens-style feedback during test authoring.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "line": {
+            "type": "string",
+            "description": "The assertion line to check (e.g. 'expect(response.status()).toBeLessThan(500)')"
+          },
+          "format": {
+            "type": "string",
+            "description": "Test framework format"
+          }
+        },
+        "required": [
+          "line"
+        ]
+      }
+    },
+    {
+      "name": "cherenkov/suggest-spec-fix",
+      "description": "Given an integrity issue found in a test file, suggest a spec-anchored fix. Returns the corrected assertion line and a plain-English explanation of why the original is problematic and how the fix resolves it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "original_line": {
+            "type": "string",
+            "description": "The problematic test line to fix"
+          },
+          "issue_type": {
+            "type": "string",
+            "description": "The type of integrity issue identified"
+          },
+          "expected_status": {
+            "type": "integer",
+            "description": "Expected HTTP status code from the OpenAPI spec (if applicable)"
+          }
+        },
+        "required": [
+          "original_line",
+          "issue_type"
+        ]
+      }
+    }
+  ]
+}
