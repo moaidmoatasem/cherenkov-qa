@@ -7,9 +7,15 @@ interface DrawerProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  size?: 'md' | 'xl';
 }
 
-export function Drawer({ isOpen, onClose, title, children }: DrawerProps) {
+const SIZE_CLASSES: Record<NonNullable<DrawerProps['size']>, string> = {
+  md: 'max-w-xl',
+  xl: 'max-w-4xl',
+};
+
+export function Drawer({ isOpen, onClose, title, children, size = 'md' }: DrawerProps) {
   const isReduced = useReducedMotion();
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -54,7 +60,7 @@ export function Drawer({ isOpen, onClose, title, children }: DrawerProps) {
       {/* Drawer slide-in panel */}
       <div
         ref={drawerRef}
-        className={`w-full max-w-xl bg-bg-base border-l border-border-custom flex flex-col h-full shadow-2xl z-10 relative
+        className={`w-full ${SIZE_CLASSES[size]} bg-bg-base border-l border-border-custom flex flex-col h-full shadow-2xl z-10 relative
           ${isReduced ? '' : 'transition-transform duration-200 ease-out translate-x-0'}`}
         style={{
           transform: isReduced ? 'none' : undefined,

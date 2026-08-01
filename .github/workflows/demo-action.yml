@@ -23,7 +23,7 @@ jobs:
         id: cherenkov
         uses: ./
         with:
-          spec: docs/openapi-demo.yaml
+          spec: stub/openapi_3_1.yaml
           target: http://localhost:8000
           fail-on-drift: "false"
           output-format: sarif

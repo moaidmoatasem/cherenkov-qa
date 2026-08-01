@@ -22,13 +22,14 @@ import {
   Send,
   Bot,
   User,
-  Loader2
+  Loader2,
+  SplitSquareHorizontal
 } from 'lucide-react';
 import { TestItem, TestGate } from '../types';
 import { approveTestScenario, rejectTestScenario, editTestScenario, fetchGeneratedTests, fetchReviewQueue, ReviewQueueItem, explainTestScenario, createChatSession, streamChatMessage, fetchOcrReview, runOcrReview, OCRFindingResponse, REJECTION_REASONS } from '../lib/api';
 import { useToast } from './ui/Toast';
 import CherenkovLogo from './CherenkovLogo';
-import { Skeleton } from './ui';
+import { Skeleton, Drawer } from './ui';
 
 interface ReviewScreenProps {
   onUpdatePassRateAndCount: (testCount: number, approvedCount: number) => void;
@@ -106,6 +107,7 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
   }, [toast]);
   const [activeFilter, setActiveFilter] = useState<'all' | 'approved' | 'review' | 'regenerating' | 'rejected'>('all');
   const [selectedTestId, setSelectedTestId] = useState<string>('');
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedCode, setEditedCode] = useState('');
   const [approveTriggerId, setApproveTriggerId] = useState<string | null>(null);
@@ -402,10 +404,10 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
           <CherenkovLogo variant="icon" size={42} />
           <div>
             <h1 className="font-display font-semibold text-2xl text-text-primary tracking-tight">
-              Human-In-The-Loop Validation Gate
+              Triage & Healing Board
             </h1>
             <p className="text-xs text-[#7D8DA1] mt-0.5">
-              Audit high & low confidence tests. Approved tests are indexed as Playwright specs & positive learning vectors.
+              Triage test failures, approve fixes, and audit API drift before merging.
             </p>
           </div>
         </div>
@@ -423,69 +425,45 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
         </div>
       </div>
 
-      {/* Main Two-Pane Split screen */}
-      <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-5 gap-6 mt-6 items-stretch">
+      
+      {/* Kanban Board Split screen */}
+      <div className="flex-1 overflow-x-auto overflow-y-hidden mt-6">
+        <div className="flex gap-4 h-full min-w-max pb-4 px-1 items-stretch">
+          {(['review', 'regenerating', 'approved', 'rejected'] as const).map(column => {
+             const colTests = tests.filter(t => t.verdict === column);
+             
+             let colHeaderColor = 'text-[#7D8DA1]';
+             if (column === 'review') colHeaderColor = 'text-amber-500';
+             if (column === 'approved') colHeaderColor = 'text-[#3FB950]';
+             if (column === 'rejected') colHeaderColor = 'text-red-400';
+             if (column === 'regenerating') colHeaderColor = 'text-glow-blue';
 
-        {/* LEFT COLUMN: FILTER & QUEUE LIST PANEL (2/5 size) */}
-        <div className="lg:col-span-2 flex flex-col bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden h-full">
-          {/* Tabs Filter Header */}
-          <div className="flex border-b border-white/5 bg-black/40 p-2 gap-1 justify-between shrink-0 select-none">
-            {(['all', 'approved', 'review', 'regenerating', 'rejected'] as const).map((filter) => {
-              const count = filter === 'all'
-                ? tests.length
-                : tests.filter(t => t.verdict === filter).length;
-
-              return (
-                <button
-                  key={filter}
-                  onClick={() => setActiveFilter(filter)}
-                  id={`filter-tab-${filter}`}
-                  className={`flex-1 py-1.5 px-2 rounded font-mono text-[10px] uppercase font-bold truncate transition cursor-pointer text-center ${
-                    activeFilter === filter
-                      ? 'bg-[#131d31] text-glow-bright border border-white/10 font-semibold'
-                      : 'text-[#7D8DA1] hover:text-text-primary hover:bg-white/5'
-                  }`}
-                >
-                  <span className="block truncate">{filter}</span>
-                  <span className="block text-[9px] text-[#7D8DA1]/70 font-normal mt-0.5 font-sans">({count})</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Test items lists */}
-          <div className="flex-1 overflow-y-auto divide-y divide-white/5 p-4 space-y-2.5" data-testid="review-queue-list">
-            {isLoading ? (
-              <div className="h-full flex flex-col items-center justify-center text-center font-sans space-y-1.5 py-24">
-                <Skeleton className="w-10 h-10 rounded-full" />
-                <p className="text-text-muted text-xs font-semibold">Loading review queue...</p>
-                <p className="text-[11px] text-text-muted/60">Fetching from backend.</p>
-              </div>
-            ) : loadError ? (
-              <div className="h-full flex flex-col items-center justify-center text-center font-sans space-y-1.5 py-24">
-                <AlertTriangle className="w-12 h-12 text-amber-400" />
-                <p className="text-text-muted text-xs font-semibold">Failed to load review items</p>
-                <p className="text-[11px] text-text-muted/60">{loadError}</p>
-              </div>
-            ) : filteredTests.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center font-sans space-y-1.5 py-24">
-                <FolderCheck className="w-12 h-12 text-[#7D8DA1] animate-pulse font-bold" />
-                <p className="text-text-muted text-xs font-semibold">No tests match this audit filter</p>
-                <p className="text-[11px] text-text-muted/60">Generate more endpoints to populate queues</p>
-              </div>
-            ) : (
-              filteredTests.map((test) => {
-                const isSelected = selectedTestId === test.id;
-                const isApproved = test.verdict === 'approved';
-                const isReview = test.verdict === 'review';
-                const isRegenerating = test.verdict === 'regenerating';
-                const isRejected = test.verdict === 'rejected';
-
-                return (
+             return (
+               <div key={column} className="w-80 flex flex-col bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden h-full shrink-0">
+                 <div className="flex items-center justify-between p-3 border-b border-white/5 bg-black/40">
+                   <span className={`font-mono text-[11px] uppercase font-bold tracking-wider ${colHeaderColor}`}>{column}</span>
+                   <span className="bg-white/10 px-2 py-0.5 rounded text-[10px] text-[#7D8DA1]">{colTests.length}</span>
+                 </div>
+                 <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                   {isLoading ? (
+                     <div className="flex flex-col items-center justify-center p-8 space-y-2">
+                       <Skeleton className="w-8 h-8 rounded-full" />
+                     </div>
+                   ) : colTests.length === 0 ? (
+                     <div className="flex flex-col items-center justify-center h-32 text-center">
+                        <span className="text-text-muted/50 text-[10px] font-mono">NO ITEMS</span>
+                     </div>
+                   ) : (
+                     colTests.map((test) => {
+                       const isSelected = selectedTestId === test.id;
+                       const isApproved = test.verdict === 'approved';
+                       const isReview = test.verdict === 'review';
+                       const isRejected = test.verdict === 'rejected';
+                       return (
                   <div
                     key={test.id}
                     id={`test-row-${test.id}`}
-                    onClick={() => setSelectedTestId(test.id)}
+                    onClick={() => { setSelectedTestId(test.id); setIsDrawerOpen(true); }}
                     className={`p-3 rounded-xl border cursor-pointer transition-all duration-300 relative ${
                       isSelected
                         ? 'bg-white/10 border-glow-blue shadow-lg shadow-cyan-500/5'
@@ -566,14 +544,25 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                       )}
                     </div>
                   </div>
-                );
-              })
-            )}
-          </div>
+                       );
+                     })
+                   )}
+                 </div>
+               </div>
+             );
+          })}
         </div>
+      </div>
 
-        {/* RIGHT COLUMN: CODE REVIEW & DETAILS SUB-PANEL (3/5 size) */}
-        <div className="lg:col-span-3 flex flex-col bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden h-full">
+      <Drawer
+         isOpen={!!selectedTestId && isDrawerOpen}
+         onClose={() => setIsDrawerOpen(false)}
+         title="Test Scenario Review"
+         size="xl"
+      >
+         <div className="h-full overflow-hidden flex flex-col">
+           {/* RIGHT COLUMN: CODE REVIEW & DETAILS SUB-PANEL (3/5 size) */}
+        
           {activeTest ? (
             <div className="h-full flex flex-col justify-between">
 
@@ -589,6 +578,13 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                     <span className="block text-[10px] font-mono uppercase text-[#7D8DA1]">Confidence metrics</span>
                     <span className="text-base font-bold text-glow-bright font-mono">{activeTest.confidence * 100}%</span>
                     <div className="w-px h-6 bg-white/10 mx-1" />
+                    <button
+                      title="Compare API spec with live reality"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[9px] font-mono uppercase font-bold tracking-wider border border-amber-500/30 text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 transition cursor-pointer"
+                    >
+                      <SplitSquareHorizontal className="w-3 h-3" />
+                      View Spec Diff
+                    </button>
                     <button
                       onClick={() => setShowChat(!showChat)}
                       title="Discuss this test with AI"
@@ -900,9 +896,10 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
               Select an item on the left index trace to verify code schema.
             </div>
           )}
-        </div>
+        
+         </div>
+      </Drawer>
 
-      </div>
 
       {/* Rejection Reason Modal */}
       {rejectingId && (

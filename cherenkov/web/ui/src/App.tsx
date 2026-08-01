@@ -31,6 +31,8 @@ import KnowledgeExplorerScreen from './components/KnowledgeExplorerScreen';
 import SddDashboardScreen from './components/SddDashboardScreen';
 import VerdictScreen from './screens/VerdictScreen';
 import SpecVsRealityScreen from './screens/SpecVsRealityScreen';
+import CoverageScreen from './screens/CoverageScreen';
+import TestManagementScreen from './screens/TestManagementScreen';
 import VisualRegressionScreen from './components/VisualRegressionScreen';
 import ExplorerScreen from './components/ExplorerScreen';
 import GlobalShortcuts from './components/GlobalShortcuts';
@@ -439,6 +441,14 @@ function InnerApp() {
 
             {activeTab === 'explore' && (
               <ExplorerScreen />
+            )}
+
+            {activeTab === 'test-management' && (
+              <TestManagementScreen />
+            )}
+
+            {activeTab === 'coverage' && (
+              <CoverageScreen />
             )}
 
             {activeTab === 'visual-regression' && (
