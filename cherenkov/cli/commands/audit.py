@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import subprocess
 import sys
 import time
@@ -116,9 +117,22 @@ def audit_cmd(
         click.echo("[ERROR] No traffic was recorded. Is the test suite using API_URL?")
         sys.exit(1)
 
+    # Extract known identifiers from recorded traffic
+    known_identifiers: dict[str, list[str]] = {}
+    paths = spec_dict.get("paths", {})
+    for recorded_path in replay_map.keys():
+        for path_str in paths.keys():
+            if "{" not in path_str:
+                continue
+            # convert /users/{id} to ^/users/(?P<id>[^/]+)$
+            pattern = "^" + re.sub(r"\{([^}]+)\}", r"(?P<\1>[^/]+)", path_str) + "$"
+            match = re.match(pattern, recorded_path)
+            if match:
+                for k, v in match.groupdict().items():
+                    known_identifiers.setdefault(k, []).append(v)
+
     # 2. Iterate endpoints and mutate
     click.echo("\n[*] Generating and testing mutants...")
-    paths = spec_dict.get("paths", {})
     schemas = spec_dict.get("components", {}).get("schemas", {})
 
     total_mutants = 0
@@ -139,7 +153,7 @@ def audit_cmd(
             # We don't have a perfect OpenAPI path to concrete path matcher here,
             # but mutant_synth generates a concrete path itself.
             from cherenkov.divergence.probe_planner import _path_with_samples
-            concrete = _path_with_samples(path_str, operation, {"components": {"schemas": schemas}})
+            concrete = _path_with_samples(path_str, operation, {"components": {"schemas": schemas}}, known_identifiers)
             if not concrete:
                 # unmutatable
                 continue
