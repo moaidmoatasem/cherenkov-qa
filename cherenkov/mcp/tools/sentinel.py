@@ -128,6 +128,7 @@ def handle_audit_test_file(params: dict[str, Any]) -> dict[str, Any]:
     try:
         request = IntegrityAuditRequest(
             test_content=test_content,
+            spec_content=None,
             test_format=test_format,
             agent_id=agent_id,
         )
@@ -176,7 +177,7 @@ def handle_check_assertion(params: dict[str, Any]) -> dict[str, Any]:
         wrapped = f"def test_inline():\n    {line}\n"
 
     try:
-        request = IntegrityAuditRequest(test_content=wrapped, test_format=fmt)
+        request = IntegrityAuditRequest(test_content=wrapped, spec_content=None, test_format=fmt, agent_id=None)
         result = audit_test_integrity(request)
     except Exception as exc:
         return {"strength": "unknown", "explanation": str(exc)}
