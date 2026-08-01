@@ -48,7 +48,7 @@ cd ..
 ```
 
 **Presenter:**
-"Perfect. Now that our dependencies are ready, we will initialize our CHERENKOV project. The `cherenkov init` command automatically detects any OpenAPI specifications in the workspace and creates a local configuration file called `cherenkov.toml` with offline-first, local-first settings."
+"Perfect. Now that our dependencies are ready, we will initialize our CHERENKOV project. The `cherenkov init` command automatically detects any OpenAPI specifications in the workspace (filenames matching `openapi.*` or `*spec*`) and creates a local configuration file called `cherenkov.toml` with offline-first, local-first settings. In this workspace it picks up the repo's own spec files — `mut_spec.json` and `stub/target_spec.json`. We'll point it at the Petstore spec explicitly in the next act."
 
 **[Action: Type init command.]**
 
@@ -61,15 +61,28 @@ cd ..
 ```
 $ ./bin/cherenkov init
 
-================================================================================
-🔧 CHERENKOV INITIALIZATION
-================================================================================
-Auto-detecting OpenAPI specifications...
-Found: petstore.json (auto-matched spec target)
-Creating configuration profile: autodetect (laptop)
-Writing cherenkov.toml...
-✓ cherenkov.toml created successfully.
-================================================================================
+============================================================
+  CHERENKOV init -- zero-config setup
+============================================================
+
+  [1/4] Ollama:     OK Ollama daemon is running
+  [2/4] Device:     CPU
+  [3/4] Spec files: 2 found
+         - mut_spec.json
+         - stub/target_spec.json
+  [4/4] Profile:    laptop
+
+  [OK] Generated cherenkov.toml
+  [OK] Generated .github/workflows/cherenkov.yml
+
+------------------------------------------------------------
+  Next steps:
+    Run:    ./bin/cherenkov doctor    # verify your setup
+    Run:    ./bin/cherenkov validate --target <url>  # run tests
+
+  Defaults: offline, free, deterministic
+  Upgrade:  edit profile in cherenkov.toml, or set CHERENKOV_* env vars
+============================================================
 ```
 
 ---
