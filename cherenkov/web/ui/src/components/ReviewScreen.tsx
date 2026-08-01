@@ -34,9 +34,10 @@ import { Skeleton, Drawer } from './ui';
 interface ReviewScreenProps {
   onUpdatePassRateAndCount: (testCount: number, approvedCount: number) => void;
   autonomy?: 'Assisted' | 'Augmented' | 'Agentic';
+  onNavigate?: (tab: string) => void;
 }
 
-export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Assisted' }: ReviewScreenProps) {
+export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Assisted', onNavigate }: ReviewScreenProps) {
   const { toast } = useToast();
   const [tests, setTests] = useState<TestItem[]>([]);
   const testsRef = useRef(tests);
@@ -579,8 +580,10 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                     <span className="text-base font-bold text-glow-bright font-mono">{activeTest.confidence * 100}%</span>
                     <div className="w-px h-6 bg-white/10 mx-1" />
                     <button
+                      onClick={() => onNavigate?.('spec-vs-reality')}
+                      disabled={!onNavigate}
                       title="Compare API spec with live reality"
-                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[9px] font-mono uppercase font-bold tracking-wider border border-amber-500/30 text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 transition cursor-pointer"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[9px] font-mono uppercase font-bold tracking-wider border border-amber-500/30 text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <SplitSquareHorizontal className="w-3 h-3" />
                       View Spec Diff
