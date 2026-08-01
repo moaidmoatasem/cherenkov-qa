@@ -31,6 +31,7 @@ import time
 import urllib.request
 import uuid
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
@@ -45,9 +46,11 @@ from cherenkov.mcp.contracts import (
     ChatQueryIdiomsInput,
     ChatQueryVerdictsInput,
     ChatRunTestInput,
+    CheckSuiteInput,
     ComplianceFindingsInput,
     ExplainFindingInput,
     ExportJiraInput,
+    GenerateInput,
     GetTighteningInput,
     GovernanceCertificationInput,
     HitlApproveInput,
@@ -68,6 +71,7 @@ from cherenkov.mcp.contracts import (
     RunConformanceCheckInput,
     RunK6PerfInput,
     ValidateRunGateInput,
+    VerifyInput,
     VerifySuiteInput,
     VerifySystemInput,
     VisualDiffBaselineInput,
@@ -89,6 +93,22 @@ def _validate_spec_path(path: str) -> str:
         raise ValueError("spec_path must be within working directory")
     if not resolved.endswith((".yaml", ".yml", ".json")):
         raise ValueError("spec_path must be a .yaml, .yml, or .json file")
+    return resolved
+
+def _resolve_within_cwd(path: str, must_exist: bool = True) -> Path | str:
+    """Resolve a caller-supplied path inside the working directory.
+
+    Returns the resolved ``Path`` on success, or an error message string
+    (meant for ``_err_content``) when the path escapes the working directory
+    or does not exist. MCP peers are untrusted — path containment is part of
+    the trust boundary.
+    """
+    resolved = Path(path).resolve()
+    cwd = Path.cwd().resolve()
+    if not str(resolved).startswith(str(cwd)):
+        return f"{path} must be within the working directory."
+    if must_exist and not resolved.exists():
+        return f"File not found: {path}"
     return resolved
 
 # ── Resource catalogue ────────────────────────────────────────────────────────
@@ -234,6 +254,128 @@ TOOLS: list[MCPTool] = [
                 ),
             },
             required=["base_url"],
+        ),
+    ),
+    # ── Issue #812: Deepened agent-invokable tool surface ─────────────────────
+    MCPTool(
+        name="check_suite",
+        description=(
+            "Static integrity check of a candidate test suite against a "
+            "baseline: catches WEAKENED, DELETED, and HALLUCINATED assertions "
+            "(`cherenkov check-suite`). Fast, offline, no execution."
+        ),
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "candidate_path": MCPToolParam(
+                    type="string",
+                    description="Path to the candidate test suite (.py or .ts) to check.",
+                ),
+                "candidate_inline": MCPToolParam(
+                    type="string",
+                    description="Raw test code to check inline (when the file isn't on disk yet).",
+                ),
+                "baseline_path": MCPToolParam(
+                    type="string",
+                    description="Path to the known-honest baseline suite. "
+                    "Required for WEAKENED and DELETED detection.",
+                ),
+                "baseline_inline": MCPToolParam(
+                    type="string",
+                    description="Raw baseline test code inline.",
+                ),
+                "spec_path": MCPToolParam(
+                    type="string",
+                    description="Path to the OpenAPI spec (YAML/JSON). Required for "
+                    "HALLUCINATED detection on Python suites.",
+                ),
+                "fail_on_finding": MCPToolParam(
+                    type="boolean",
+                    description="Report verdict 'fail' if any integrity violation is found.",
+                ),
+            },
+            required=[],
+        ),
+    ),
+    MCPTool(
+        name="verify",
+        description=(
+            "Probe a live server against its OpenAPI spec and return "
+            "spec-drift divergences (`cherenkov verify`). Offline by default — "
+            "no LLM required. Supports coverage and health-score reports."
+        ),
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "base_url": MCPToolParam(
+                    type="string",
+                    description="Base URL of the live server to probe "
+                    "(e.g. https://petstore3.swagger.io/api/v3).",
+                ),
+                "spec_source": MCPToolParam(
+                    type="string",
+                    description="Path or URL to the OpenAPI spec JSON/YAML. "
+                    "Omit for the built-in Petstore demo.",
+                ),
+                "use_llm": MCPToolParam(
+                    type="boolean",
+                    description="Use the LLM Skeptic (requires Ollama). Default: false.",
+                ),
+                "max_probes": MCPToolParam(
+                    type="integer",
+                    description="Maximum spec-derived endpoint probes (1-500, default 40).",
+                ),
+                "allow_mutations": MCPToolParam(
+                    type="boolean",
+                    description="Allow happy-path probes for POST/PUT/DELETE. Default: false.",
+                ),
+                "identifiers": MCPToolParam(
+                    type="string",
+                    description="JSON file path or inline JSON mapping path parameters "
+                    "to known valid values.",
+                ),
+                "coverage_report": MCPToolParam(
+                    type="boolean",
+                    description="Include spec coverage-gap report (requires spec_source).",
+                ),
+                "health_score": MCPToolParam(
+                    type="boolean",
+                    description="Include A-F health grade (requires spec_source).",
+                ),
+                "run_id": MCPToolParam(
+                    type="string",
+                    description="Optional run identifier for correlation.",
+                ),
+            },
+            required=["base_url"],
+        ),
+    ),
+    MCPTool(
+        name="generate",
+        description=(
+            "Generate Playwright E2E tests from an OpenAPI spec "
+            "(`cherenkov generate`). Returns generated test code inline, or "
+            "writes files when output_dir is given."
+        ),
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "spec_path": MCPToolParam(
+                    type="string",
+                    description="Path to the OpenAPI spec (JSON/YAML) to generate tests for.",
+                ),
+                "output_dir": MCPToolParam(
+                    type="string",
+                    description="Directory to write generated test files to. "
+                    "Omit to return code inline.",
+                ),
+                "repair": MCPToolParam(
+                    type="boolean",
+                    description="Run the generate→review→repair loop. Default: true.",
+                ),
+                "max_attempts": MCPToolParam(
+                    type="integer",
+                    description="Max repair attempts per scenario (1-10, default 3).",
+                ),
+            },
+            required=["spec_path"],
         ),
     ),
     MCPTool(
@@ -834,6 +976,12 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_verify_suite(arguments).model_dump()
         if name == "verify_system":
             return _tool_verify_system(arguments).model_dump()
+        if name == "check_suite":
+            return _tool_check_suite(arguments).model_dump()
+        if name == "verify":
+            return _tool_verify(arguments).model_dump()
+        if name == "generate":
+            return _tool_generate(arguments).model_dump()
         if name == "hitl_list":
             return _tool_hitl_list(arguments).model_dump()
         if name == "hitl_approve":
@@ -1215,6 +1363,356 @@ def _tool_verify_system(args: dict[str, Any]) -> MCPToolCallResult:
     }
 
     return _ok_content(report)
+
+def _tool_check_suite(args: dict[str, Any]) -> MCPToolCallResult:
+    """Static integrity check of a candidate suite (#812).
+
+    Machine-facing twin of `cherenkov check-suite` (E2.5). Detects the three
+    canonical "AI cheating" patterns against a baseline + spec:
+      WEAKENED, DELETED, HALLUCINATED.
+    Fast static analysis — no execution, no server, no LLM. D7: suggest-only.
+    """
+    inp = CheckSuiteInput.model_validate(args)
+
+    # ── Resolve candidate code (path xor inline) ─────────────────────────────
+    if inp.candidate_path:
+        resolved = _resolve_within_cwd(inp.candidate_path, must_exist=True)
+        if isinstance(resolved, str):
+            return _err_content(resolved)
+        candidate_code = resolved.read_text(encoding="utf-8")
+        candidate_ref = inp.candidate_path
+        is_ts = resolved.suffix == ".ts"
+    elif inp.candidate_inline:
+        candidate_code = inp.candidate_inline
+        candidate_ref = f"inline:{hashlib.sha256(candidate_code.encode()).hexdigest()[:12]}"
+        try:
+            compile(candidate_code, "<candidate>", "exec")
+            is_ts = False
+        except SyntaxError:
+            is_ts = True
+    else:
+        return _err_content("One of candidate_path or candidate_inline is required.")
+
+    # ── Resolve baseline (optional; required for WEAKENED/DELETED) ───────────
+    baseline_code = None
+    if inp.baseline_path:
+        resolved = _resolve_within_cwd(inp.baseline_path, must_exist=True)
+        if isinstance(resolved, str):
+            return _err_content(resolved)
+        baseline_code = resolved.read_text(encoding="utf-8")
+    elif inp.baseline_inline:
+        baseline_code = inp.baseline_inline
+
+    # ── Resolve spec (optional; required for HALLUCINATED on Python) ─────────
+    spec_path = None
+    if inp.spec_path:
+        resolved = _resolve_within_cwd(inp.spec_path, must_exist=True)
+        if isinstance(resolved, str):
+            return _err_content(resolved)
+        spec_path = resolved
+
+    # ── Run the static analysis engine ───────────────────────────────────────
+    try:
+        if is_ts:
+            from cherenkov.cli.commands.check_suite import _check_typescript
+
+            findings = _check_typescript(candidate_code, baseline_code, spec_path)
+        else:
+            from cherenkov.cli.commands.check_suite import check_integrity
+
+            findings = check_integrity(spec_path, baseline_code or "", candidate_code)
+    except Exception as exc:
+        return _err_content(f"check_suite error running static analysis: {exc}")
+
+    counts = {"WEAKENED": 0, "DELETED": 0, "HALLUCINATED": 0}
+    for f in findings:
+        tag = f.split()[0]
+        if tag in counts:
+            counts[tag] += 1
+
+    report = {
+        "schema_version": "check-suite/v1",
+        "candidate": candidate_ref,
+        "language": "typescript" if is_ts else "python",
+        "verdict": "fail" if (findings and inp.fail_on_finding) else ("pass" if not findings else "warn"),
+        "ok": not findings,
+        "findings": findings,
+        "summary": counts,
+        "baseline_present": baseline_code is not None,
+        "spec_present": spec_path is not None,
+        "meta": {
+            "engine": "cherenkov check-suite (E2.5)",
+            "local_only": True,
+            "suggest_only": True,
+        },
+    }
+    return _ok_content(report)
+
+def _tool_verify(args: dict[str, Any]) -> MCPToolCallResult:
+    """Verify a live server against its OpenAPI spec (#812).
+
+    Machine-facing twin of `cherenkov verify` (E1.1). Runs the
+    Skeptic→Witness divergence engine in offline mode by default, optionally
+    extending the report with spec-coverage and health-score sections.
+    """
+    inp = VerifyInput.model_validate(args)
+
+    # ── Load spec (optional) ──────────────────────────────────────────────────
+    spec_dict: dict | None = None
+    if inp.spec_source:
+        if inp.spec_source.startswith("http://") or inp.spec_source.startswith("https://"):
+            try:
+                with urllib.request.urlopen(inp.spec_source, timeout=15) as resp:
+                    spec_dict = json.loads(resp.read())
+            except Exception as exc:
+                return _err_content(f"Could not fetch spec from {inp.spec_source}: {exc}")
+        else:
+            resolved = _resolve_within_cwd(inp.spec_source, must_exist=True)
+            if isinstance(resolved, str):
+                return _err_content(resolved)
+            try:
+                import yaml  # type: ignore[import]
+
+                text = resolved.read_text(encoding="utf-8")
+                if resolved.suffix in (".yaml", ".yml"):
+                    spec_dict = yaml.safe_load(text)
+                else:
+                    spec_dict = json.loads(text)
+            except Exception as exc:
+                return _err_content(f"Could not parse spec: {exc}")
+
+    # ── Load known identifiers (file path or inline JSON) ────────────────────
+    known_identifiers: dict[str, list[str]] | None = None
+    if inp.identifiers:
+        raw: str = inp.identifiers
+        if os.path.isfile(raw) and _resolve_within_cwd(raw, must_exist=True) is not None:
+            try:
+                with open(raw, encoding="utf-8") as fh:
+                    known_identifiers = json.load(fh)
+            except Exception as exc:
+                return _err_content(f"Could not load identifiers: {exc}")
+        else:
+            try:
+                known_identifiers = json.loads(raw)
+            except Exception as exc:
+                return _err_content(f"identifiers must be a JSON file path or inline JSON: {exc}")
+
+    # ── Run divergence engine ─────────────────────────────────────────────────
+    try:
+        t0 = time.monotonic()
+        reports = run_proof(
+            base_url=inp.base_url,
+            spec=spec_dict,
+            use_llm=inp.use_llm,
+            max_probes=inp.max_probes,
+            known_identifiers=known_identifiers,
+            allow_mutations=inp.allow_mutations,
+        )
+        duration_ms = int((time.monotonic() - t0) * 1000)
+    except Exception as exc:
+        return _err_content(f"verify error running divergence engine: {exc}")
+
+    # ── Map DivergenceReport list → VerificationReport (verify/v1) ────────────
+    findings = []
+    for r in reports:
+        sev = getattr(r.severity, "value", str(r.severity))
+        dc = getattr(r.divergence_class, "value", str(r.divergence_class))
+        ev = r.evidence
+        reproduction = ""
+        if r.repro_steps:
+            reproduction = "\n".join(r.repro_steps[:3])
+        findings.append(
+            {
+                "id": r.id,
+                "severity": sev,
+                "category": dc,
+                "title": f"{dc} — {r.endpoint or 'unknown'}",
+                "evidence": ev.request_summary if ev else "",
+                "diff": ev.diff if ev else "",
+                "claim_a": r.claim_a,
+                "claim_b": r.claim_b,
+                "reproduction": reproduction,
+                "suggested_fix": "Investigate the divergence and fix the implementation or spec.",
+            }
+        )
+
+    report: dict[str, Any] = {
+        "schema_version": "verify/v1",
+        "report_id": inp.run_id or str(uuid.uuid4()),
+        "target": {
+            "kind": "system",
+            "ref": inp.base_url,
+            "spec": inp.spec_source or "built-in Petstore demo",
+        },
+        "verdict": "fail" if findings else "pass",
+        "divergences": findings,
+        "summary": {
+            "total": len(findings),
+            "high": sum(1 for f in findings if f["severity"] == "high"),
+            "medium": sum(1 for f in findings if f["severity"] == "medium"),
+            "low": sum(1 for f in findings if f["severity"] == "low"),
+        },
+        "meta": {
+            "engine_version": "1.0.0",
+            "mode": "llm" if inp.use_llm else "offline",
+            "duration_ms": duration_ms,
+            "local_only": True,
+        },
+    }
+
+    # ── Optional coverage / health sections ───────────────────────────────────
+    if (inp.coverage_report or inp.health_score) and spec_dict is not None:
+        try:
+            from cherenkov.divergence.coverage import compute_coverage
+            from cherenkov.divergence.health import compute_health_score
+
+            probed_endpoints = [tuple(r.endpoint.split(" ", 1)) if r.endpoint and " " in r.endpoint else (r.endpoint or "", "") for r in reports]
+            cov = compute_coverage(spec_dict, reports, probed_endpoints=probed_endpoints)
+            if inp.coverage_report:
+                report["coverage"] = {
+                    "coverage_pct": cov.coverage_pct,
+                    "tested_count": cov.tested_count,
+                    "untested_count": cov.untested_count,
+                    "total_endpoints": cov.total_endpoints,
+                    "gap_endpoints": [
+                        {"method": ep.method, "path": ep.path, "operation_id": ep.operation_id}
+                        for ep in cov.gap_endpoints
+                    ],
+                }
+            if inp.health_score:
+                health = compute_health_score(cov)
+                report["health"] = {
+                    "grade": health.grade,
+                    "score": health.score,
+                    "coverage_component": health.coverage_component,
+                    "integrity_component": health.integrity_component,
+                    "divergence_component": health.divergence_component,
+                    "deductions": [str(d) for d in health.deductions],
+                }
+        except Exception as exc:
+            report["warning"] = f"coverage/health computation failed: {exc}"
+
+    return _ok_content(report)
+
+def _tool_generate(args: dict[str, Any]) -> MCPToolCallResult:
+    """Generate Playwright E2E tests from an OpenAPI spec (#812).
+
+    Machine-facing twin of `cherenkov generate`. Runs Ingest→Plan→
+    Generate(→Review→Repair). Returns test code inline by default; pass
+    output_dir to write files to disk. D7: only writes to the caller's
+    explicitly requested output_dir.
+    """
+    inp = GenerateInput.model_validate(args)
+
+    spec_resolved = _resolve_within_cwd(inp.spec_path, must_exist=True)
+    if isinstance(spec_resolved, str):
+        return _err_content(spec_resolved)
+    spec = str(spec_resolved)
+
+    try:
+        from cherenkov.stages.generate import GenerateStage
+        from cherenkov.stages.ingest import IngestStage
+        from cherenkov.stages.plan import PlanStage
+        from cherenkov.stages.repair import RepairLoop
+        from cherenkov.stages.review import default_review_scratch_dir
+
+        write_dir = None
+        if inp.output_dir:
+            resolved_out = _resolve_within_cwd(inp.output_dir, must_exist=False)
+            if isinstance(resolved_out, str):
+                return _err_content(resolved_out)
+            write_dir = str(resolved_out)
+            os.makedirs(write_dir, exist_ok=True)
+        else:
+            os.makedirs(default_review_scratch_dir(), exist_ok=True)
+
+        ingest_stage = IngestStage("mcp_generate")
+        ingest_out = ingest_stage.run(spec)
+        plan_stage = PlanStage("mcp_generate")
+        plan_out = plan_stage.run(ingest_out)
+
+        ep_map = {
+            ep.path + ":" + ep.method: ep for ep in ingest_out.endpoints
+        }
+        generated: list[dict[str, Any]] = []
+        for sc in plan_out.scenarios:
+            ep = ep_map.get(sc.endpoint + ":" + sc.method)
+            ep_operation = ep.operation if ep else None
+            ep_schemas = ep.schemas if ep else None
+            entry: dict[str, Any] = {
+                "scenario_id": sc.mutation_id or sc.endpoint,
+                "endpoint": sc.endpoint,
+                "method": sc.method,
+                "case_type": sc.case_type,
+                "expected_status": sc.expected_status,
+            }
+            try:
+                if inp.repair:
+                    loop = RepairLoop(
+                        run_id=f"mcp_generate_{sc.mutation_id or 'scenario'}",
+                        max_attempts=inp.max_attempts,
+                        cleanup_scratch=True,
+                    )
+                    gen_out, review = loop.run(
+                        scenario=sc,
+                        path=sc.endpoint,
+                        method=sc.method,
+                        operation=ep_operation,
+                        schemas=ep_schemas,
+                        instruction=getattr(sc, "instruction", ""),
+                        source_type="openapi",
+                        spec_path=spec,
+                    )
+                    if review is not None:
+                        entry["verdict"] = getattr(
+                            getattr(review, "verdict", None), "value", None
+                        )
+                        entry["quality_score"] = getattr(review, "quality_score", None)
+                else:
+                    stage = GenerateStage("mcp_generate")
+                    gen_out = stage.run(
+                        scenario=sc,
+                        path=sc.endpoint,
+                        method=sc.method,
+                        operation=ep_operation,
+                        schemas=ep_schemas,
+                        instruction=getattr(sc, "instruction", ""),
+                        source_type="openapi",
+                    )
+            except Exception as exc:
+                entry["error"] = str(exc)
+                generated.append(entry)
+                continue
+
+            if write_dir is not None:
+                file_name = f"{sc.mutation_id or sc.endpoint.replace('/', '_')}.spec.ts"
+                file_path = os.path.join(write_dir, file_name)
+                with open(file_path, "w", encoding="utf-8") as fh:
+                    fh.write(gen_out.test_code)
+                entry["file_path"] = file_path
+            else:
+                entry["test_code"] = gen_out.test_code
+            generated.append(entry)
+
+        return _ok_content(
+            {
+                "schema_version": "generate/v1",
+                "spec_path": spec,
+                "output_dir": write_dir,
+                "repair": inp.repair,
+                "max_attempts": inp.max_attempts,
+                "generated": len(generated),
+                "success_count": sum(1 for g in generated if "error" not in g),
+                "scenarios": generated,
+                "meta": {
+                    "engine": "cherenkov generate (ChatTester repair loop)",
+                    "local_only": False,
+                    "suggest_only": False,
+                },
+            }
+        )
+    except Exception as exc:
+        return _err_content(f"generate error: {exc}")
 
 def _tool_validate_gate(args: dict[str, Any]) -> MCPToolCallResult:
     """
@@ -2019,6 +2517,9 @@ def _tool_auto_heal_code(args: dict[str, Any]) -> MCPToolCallResult:
 _TOOL_DISPATCH: dict[str, Callable[[dict[str, Any]], MCPToolCallResult]] = {
     "verify_suite": _tool_verify_suite,
     "verify_system": _tool_verify_system,
+    "check_suite": _tool_check_suite,
+    "verify": _tool_verify,
+    "generate": _tool_generate,
     "hitl_list": _tool_hitl_list,
     "hitl_approve": _tool_hitl_approve,
     "hitl_reject": _tool_hitl_reject,
