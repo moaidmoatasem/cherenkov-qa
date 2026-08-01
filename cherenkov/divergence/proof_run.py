@@ -290,6 +290,8 @@ def run_proof(
     reflector: Reflector | None = None,
     max_probes: int = 40,
     probed_endpoints: list[tuple[str, str]] | None = None,
+    known_identifiers: dict[str, list[str]] | None = None,
+    allow_mutations: bool = False,
 ) -> list[DivergenceReport]:
     """
     Run the Skeptic → Witness loop against *base_url*.
@@ -331,7 +333,10 @@ def run_proof(
     else:
         from cherenkov.divergence.probe_planner import plan_probes
 
-        probes = plan_probes(spec, max_probes=max_probes, include_bare=use_llm)
+        probes = plan_probes(
+            spec, max_probes=max_probes, include_bare=use_llm,
+            known_identifiers=known_identifiers, allow_mutations=allow_mutations
+        )
 
     for endpoint, method, spec_fragment, context in probes:
         if probed_endpoints is not None:
@@ -348,7 +353,10 @@ def run_proof(
         else:
             from cherenkov.divergence.probe_planner import spec_hypotheses
 
-            hypotheses = spec_hypotheses(endpoint, method, spec_fragment, spec)
+            hypotheses = spec_hypotheses(
+                endpoint, method, spec_fragment, spec,
+                known_identifiers=known_identifiers, allow_mutations=allow_mutations
+            )
             print(f"  Offline (spec-derived): {len(hypotheses)} hypothesis(es)")
 
         # A7 #114 — live rerank: suppress rejected fingerprints before witness loop

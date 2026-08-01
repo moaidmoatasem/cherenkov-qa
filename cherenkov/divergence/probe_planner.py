@@ -21,6 +21,7 @@ Heuristics, priority-ordered per endpoint:
 from __future__ import annotations
 
 import json
+import re
 import uuid
 from dataclasses import dataclass
 from typing import Any
@@ -189,7 +190,12 @@ def _effective_parameters(
     )
 
 
-def _path_with_samples(path: str, operation: dict[str, Any], spec: dict[str, Any]) -> str | None:
+def _path_with_samples(
+    path: str,
+    operation: dict[str, Any],
+    spec: dict[str, Any],
+    known_identifiers: dict[str, list[str]] | None = None,
+) -> str | None:
     """Substitute sample values for path params; None if any param is unfillable."""
     if "{" not in path:
         return path
@@ -199,8 +205,12 @@ def _path_with_samples(path: str, operation: dict[str, Any], spec: dict[str, Any
         if param.get("in") != "path":
             continue
         schema = _resolve_ref(param.get("schema", {}), spec)
-        value = _sample_value(schema, param.get("name", ""))
-        filled = filled.replace(f'{{{param.get("name", "")!s}}}', str(value))
+        name = param.get("name", "")
+        if known_identifiers and name in known_identifiers and known_identifiers[name]:
+            value = known_identifiers[name][0]
+        else:
+            value = _sample_value(schema, name)
+        filled = filled.replace(f'{{{name!s}}}', str(value))
     return None if "{" in filled else filled
 
 
@@ -221,6 +231,8 @@ def spec_hypotheses(
     method: str,
     operation: dict[str, Any],
     spec: dict[str, Any],
+    known_identifiers: dict[str, list[str]] | None = None,
+    allow_mutations: bool = False,
 ) -> list[DivergenceHypothesis]:
     """Mechanically derive offline hypotheses for one operation from the spec."""
     hypotheses: list[DivergenceHypothesis] = []
@@ -315,11 +327,22 @@ def spec_hypotheses(
             )
             break
 
-    # 4. happy path (GET without required query params)
-    if method == "GET" and not _required_query_params(operation, spec):
+    # 4. happy path (GET without required query params, or opted-in mutation)
+    is_mutation = method != "GET"
+    if (method == "GET" or (is_mutation and allow_mutations)) and not _required_query_params(operation, spec):
         success = _success_code(operation)
-        probe_path = _path_with_samples(endpoint, operation, spec)
-        if success is not None and probe_path is not None and "{" not in endpoint:
+        probe_path = _path_with_samples(endpoint, operation, spec, known_identifiers)
+        
+        allow_happy = False
+        if success is not None and probe_path is not None:
+            if "{" not in endpoint:
+                allow_happy = True
+            elif known_identifiers:
+                path_vars = re.findall(r"\{([^}]+)\}", endpoint)
+                if all(v in known_identifiers for v in path_vars):
+                    allow_happy = True
+
+        if allow_happy:
             steps = [
                 f"Send {method} {probe_path}",
                 f"Expect {success} response per spec",
@@ -369,7 +392,12 @@ class UnprobedEndpoint:
 
 
 def _why_unprobed(
-    path: str, method: str, operation: dict[str, Any], spec: dict[str, Any]
+    path: str,
+    method: str,
+    operation: dict[str, Any],
+    spec: dict[str, Any],
+    known_identifiers: dict[str, list[str]] | None = None,
+    allow_mutations: bool = False,
 ) -> str:
     """Name the actual cause. Most are deliberate limits, not defects.
 
@@ -378,19 +406,19 @@ def _why_unprobed(
     misattributed — the same mistake `explain_unmutatable` was written to undo.
     """
     templated = "{" in path
-    if templated and _path_with_samples(path, operation, spec) is None:
+    if templated and _path_with_samples(path, operation, spec, known_identifiers) is None:
         unfilled = ", ".join(seg for seg in path.split("/") if seg.startswith("{"))
         return (
             f"path parameters could not be sampled ({unfilled}) — declare them "
             "under the operation's or the PathItem's `parameters` with a typed schema"
         )
 
-    if spec_hypotheses(path, method, operation, spec):
+    if spec_hypotheses(path, method, operation, spec, known_identifiers, allow_mutations):
         return "dropped by the max_probes cap, not by anything about the endpoint"
 
     # No hypothesis was derivable. The happy-path probe is deliberately narrow;
     # say which guard excluded it so the gap reads as a known limit.
-    if method.upper() != "GET":
+    if method.upper() != "GET" and not allow_mutations:
         return (
             f"no probe for {method.upper()}: a happy-path probe is GET-only, since "
             "sending sampled data would mutate state. Mutation probes need a "
@@ -416,7 +444,11 @@ def _why_unprobed(
 
 
 def unprobed_endpoints(
-    spec: dict[str, Any], max_probes: int = 40, include_bare: bool = False
+    spec: dict[str, Any],
+    max_probes: int = 40,
+    include_bare: bool = False,
+    known_identifiers: dict[str, list[str]] | None = None,
+    allow_mutations: bool = False,
 ) -> list[UnprobedEndpoint]:
     """Every endpoint `plan_probes` produced no probe for, and why.
 
@@ -429,7 +461,7 @@ def unprobed_endpoints(
     Callers must surface this. Coverage that was never attempted is not
     coverage, and the user is the only one who can tell whether it matters.
     """
-    planned = {(p, m) for p, m, _, _ in plan_probes(spec, max_probes, include_bare)}
+    planned = {(p, m) for p, m, _, _ in plan_probes(spec, max_probes, include_bare, known_identifiers, allow_mutations)}
     missing: list[UnprobedEndpoint] = []
 
     for path, path_item in spec.get("paths", {}).items():
@@ -444,14 +476,18 @@ def unprobed_endpoints(
                 UnprobedEndpoint(
                     path=path,
                     method=method.upper(),
-                    reason=_why_unprobed(path, method, operation, spec),
+                    reason=_why_unprobed(path, method, operation, spec, known_identifiers, allow_mutations),
                 )
             )
     return missing
 
 
 def plan_probes(
-    spec: dict[str, Any], max_probes: int = 40, include_bare: bool = False
+    spec: dict[str, Any],
+    max_probes: int = 40,
+    include_bare: bool = False,
+    known_identifiers: dict[str, list[str]] | None = None,
+    allow_mutations: bool = False,
 ) -> list[tuple[str, str, dict[str, Any], str]]:
     """Enumerate (endpoint, method, spec_fragment, context) probes from *spec*.
 
@@ -468,7 +504,7 @@ def plan_probes(
         for method, operation in path_item.items():
             if method.lower() not in _HTTP_METHODS or not isinstance(operation, dict):
                 continue
-            if not include_bare and not spec_hypotheses(path, method, operation, spec):
+            if not include_bare and not spec_hypotheses(path, method, operation, spec, known_identifiers, allow_mutations):
                 continue
             summary = operation.get("summary") or operation.get("operationId") or ""
             context = (

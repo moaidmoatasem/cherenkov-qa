@@ -115,6 +115,18 @@ from cherenkov.persistence.run_store import spec_hash as _spec_hash
     type=click.IntRange(1, 500),
     help="Maximum spec-derived endpoint probes per run (requires --spec).",
 )
+@click.option(
+    "--identifiers",
+    type=click.Path(exists=True),
+    default=None,
+    help="JSON file mapping path parameters to known valid values.",
+)
+@click.option(
+    "--allow-mutations",
+    is_flag=True,
+    default=False,
+    help="Allow planning of happy-path probes for POST/PUT/DELETE.",
+)
 def verify_cmd(
     url: str,
     spec: str | None,
@@ -129,6 +141,8 @@ def verify_cmd(
     no_traffic_capture: bool,
     fixture_dir: str,
     max_probes: int,
+    identifiers: str | None,
+    allow_mutations: bool,
 ) -> None:
     """Verify a live API against its OpenAPI spec -- find spec<->implementation divergences.
 
@@ -158,6 +172,15 @@ def verify_cmd(
         if spec_dict is None:
             sys.exit(2)
 
+    known_identifiers: dict[str, list[str]] | None = None
+    if identifiers:
+        try:
+            with open(identifiers, "r", encoding="utf-8") as f:
+                known_identifiers = json.load(f)
+        except Exception as exc:
+            click.echo(f"[ERROR] Could not load identifiers from {identifiers}: {exc}", err=True)
+            sys.exit(2)
+
     mode_label = "LLM Skeptic" if llm else "offline (no LLM required)"
     click.echo("\nCHERENKOV verify")
     click.echo(f"  Target  : {url}")
@@ -167,7 +190,7 @@ def verify_cmd(
         click.echo("  Engine  : multi-agent (rich verdict)")
     click.echo("")
 
-    _warn_unprobed(spec_dict, max_probes=max_probes, use_llm=llm)
+    _warn_unprobed(spec_dict, max_probes=max_probes, use_llm=llm, known_identifiers=known_identifiers, allow_mutations=allow_mutations)
 
     _assert_reachable(url)
 
@@ -183,6 +206,8 @@ def verify_cmd(
             run_traffic=not no_traffic_capture,
             fixture_dir=fixture_dir,
             max_probes=max_probes,
+            known_identifiers=known_identifiers,
+            allow_mutations=allow_mutations,
         )
         duration_ms = int((time.monotonic() - t_start) * 1000)
 
@@ -225,6 +250,8 @@ def verify_cmd(
                 use_llm=llm,
                 max_probes=max_probes,
                 probed_endpoints=probed_endpoints,
+                known_identifiers=known_identifiers,
+                allow_mutations=allow_mutations,
             )
         except Exception as exc:
             click.echo(f"\n[ERROR] Probe failed: {exc}", err=True)
@@ -271,6 +298,8 @@ def _run_rich_verdict(
     run_traffic: bool,
     fixture_dir: str,
     max_probes: int = 40,
+    known_identifiers: dict[str, list[str]] | None = None,
+    allow_mutations: bool = False,
 ) -> tuple:
     from cherenkov.divergence.coverage import compute_coverage
     from cherenkov.verdict.engine import VerdictEngine
@@ -285,6 +314,8 @@ def _run_rich_verdict(
         run_traffic_capture=run_traffic,
         fixture_dir=fixture_dir,
         max_probes=max_probes,
+        known_identifiers=known_identifiers,
+        allow_mutations=allow_mutations,
     )
     try:
         rich = engine.run()
@@ -363,7 +394,9 @@ def _assert_reachable(url: str) -> None:
 
 
 def _warn_unprobed(
-    spec_dict: dict | None, max_probes: int, use_llm: bool, limit: int = 10
+    spec_dict: dict | None, max_probes: int, use_llm: bool, limit: int = 10,
+    known_identifiers: dict[str, list[str]] | None = None,
+    allow_mutations: bool = False,
 ) -> None:
     """Tell the user which endpoints will not be probed, and why.
 
@@ -379,7 +412,10 @@ def _warn_unprobed(
         return
     from cherenkov.divergence.probe_planner import unprobed_endpoints
 
-    missing = unprobed_endpoints(spec_dict, max_probes=max_probes, include_bare=use_llm)
+    missing = unprobed_endpoints(
+        spec_dict, max_probes=max_probes, include_bare=use_llm,
+        known_identifiers=known_identifiers, allow_mutations=allow_mutations
+    )
     if not missing:
         return
 

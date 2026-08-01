@@ -39,6 +39,7 @@ export default function PipelineScreen({
     { id: 'ingest', name: 'INGEST', status: 'done', summary: '20 endpoints indexed' },
     { id: 'plan', name: 'PLAN', status: 'done', summary: 'Contract & validation plans complete' },
     { id: 'generate', name: 'GENERATE', status: 'running', summary: 'Synthesizing Playwright specs' },
+    { id: 'verify', name: 'VERIFY', status: 'queued', summary: 'Running tests & detecting drift' },
     { id: 'review', name: 'REVIEW', status: 'queued', summary: 'HITL checklist pending' },
     { id: 'visual', name: 'VISUAL E2E', status: 'queued', summary: 'UI screenshot verification' },
     { id: 'perf', name: 'PERFORMANCE', status: 'queued', summary: 'Statistical latency analysis' }
@@ -81,7 +82,8 @@ export default function PipelineScreen({
         if (s.id === stage.toLowerCase()) return { ...s, status: 'running', summary: 'Stage execution active' };
         if (s.id === 'ingest' && stage === 'PLAN') return { ...s, status: 'done' };
         if (s.id === 'plan' && stage === 'GENERATE') return { ...s, status: 'done' };
-        if (s.id === 'generate' && stage === 'REVIEW') return { ...s, status: 'done' };
+        if (s.id === 'generate' && stage === 'VERIFY') return { ...s, status: 'done' };
+        if (s.id === 'verify' && stage === 'REVIEW') return { ...s, status: 'done' };
         if (s.id === 'review' && stage === 'VISUAL') return { ...s, status: 'done' };
         if (s.id === 'visual' && stage === 'PERF') return { ...s, status: 'done' };
         return s;
@@ -172,13 +174,22 @@ export default function PipelineScreen({
             // Simulated only fallback complete
             setStages(prev => prev.map(s => {
               if (s.id === 'generate') return { ...s, status: 'done', summary: 'All suites compiled successfully' };
-              if (s.id === 'review') return { ...s, status: 'running', summary: 'Awaiting human authorization gate' };
+              if (s.id === 'verify') return { ...s, status: 'running', summary: 'Executing tests against target' };
               return s;
             }));
-            setActiveStageId('review');
+            setActiveStageId('verify');
 
             setTimeout(() => {
-              onCompletePipeline();
+              setStages(prev => prev.map(s => {
+                if (s.id === 'verify') return { ...s, status: 'done', summary: 'Target conformance validated' };
+                if (s.id === 'review') return { ...s, status: 'running', summary: 'Awaiting human authorization gate' };
+                return s;
+              }));
+              setActiveStageId('review');
+              
+              setTimeout(() => {
+                onCompletePipeline();
+              }, 3000);
             }, 3000);
           }
         }, 1500);
@@ -295,7 +306,7 @@ export default function PipelineScreen({
                   </div>
 
                   <div className="mt-3 flex items-center justify-between text-[10px] font-mono text-[#7D8DA1]">
-                    <span>STAGE {idx + 1}/4</span>
+                    <span>STAGE {idx + 1}/{stages.length}</span>
                     <span className="text-glow-bright hover:underline">DRT Trace</span>
                   </div>
                 </div>

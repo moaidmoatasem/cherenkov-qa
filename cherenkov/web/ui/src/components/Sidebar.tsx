@@ -145,6 +145,7 @@ export default function Sidebar({
       items: [
         { id: 'coverage', label: 'Coverage Hub', icon: Shield, desc: 'Integrity Heatmap & Certificates' },
         { id: 'test-management', label: 'Test Plans', icon: Map, desc: 'Historical test plans' },
+        { id: 'certificate', label: 'Verify Certificate', icon: ShieldCheck, desc: 'Public verification badge' },
       ]
     },
     {

@@ -1,0 +1,108 @@
+import json
+import traceback
+from collections import defaultdict
+from pathlib import Path
+
+import httpx
+
+from cherenkov.cli.commands.verify import _load_spec
+from cherenkov.divergence.probe_planner import unprobed_endpoints, plan_probes
+
+SPECS = {
+    "Stripe": "https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json",
+    "GitHub": "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json",
+    "OpenAI": "https://raw.githubusercontent.com/openai/openai-openapi/master/openapi.yaml",
+    "Slack": "https://raw.githubusercontent.com/slackapi/slack-api-specs/master/openapi-v2.json",
+    "Discord": "https://raw.githubusercontent.com/discord/discord-api-spec/main/specs/openapi.json",
+    "DigitalOcean": "https://raw.githubusercontent.com/digitalocean/openapi/main/specification/DigitalOcean-public.v2.yaml",
+    "GitLab": "https://gitlab.com/gitlab-org/gitlab/-/raw/master/doc/api/openapi/openapi.yaml",
+    "Petstore": "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/examples/v3.0/petstore.json",
+    "Twilio": "https://raw.githubusercontent.com/twilio/twilio-oai/main/spec/yaml/twilio_api_v2010.yaml",
+    "Kubernetes": "https://raw.githubusercontent.com/kubernetes/kubernetes/master/api/openapi-spec/swagger.json",
+}
+
+def evaluate_corpus():
+    results = {}
+    aggregated_reasons = defaultdict(int)
+    
+    for name, url in SPECS.items():
+        print(f"Evaluating {name}...")
+        try:
+            # Kubernets swagger.json is OpenAPI 2.0, cherenkov mostly assumes 3.x
+            # We'll see how it handles it.
+            spec = _load_spec(url)
+            if not spec:
+                results[name] = {"error": "Failed to load"}
+                continue
+            
+            # total endpoints
+            paths = spec.get("paths", {})
+            total_ops = 0
+            for p, path_item in paths.items():
+                if not isinstance(path_item, dict):
+                    continue
+                for m in path_item.keys():
+                    if m.lower() in ("get", "post", "put", "delete", "patch"):
+                        total_ops += 1
+                        
+            unprobed = unprobed_endpoints(spec, max_probes=5000, include_bare=False)
+            
+            # Try to plan to see if it crashes
+            try:
+                probes = plan_probes(spec, max_probes=5000, include_bare=False)
+                crashed = False
+                crash_trace = ""
+            except Exception as exc:
+                crashed = True
+                crash_trace = traceback.format_exc()
+                probes = []
+                
+            reasons = defaultdict(int)
+            for ep in unprobed:
+                reason = ep.reason
+                reasons[reason] += 1
+                aggregated_reasons[reason] += 1
+                
+            results[name] = {
+                "total_ops": total_ops,
+                "planned_probes": len(probes),
+                "unprobed_count": len(unprobed),
+                "reasons": dict(reasons),
+                "crashed": crashed,
+                "crash_trace": crash_trace,
+            }
+            print(f"  {len(probes)} planned, {len(unprobed)} dropped out of {total_ops}")
+            
+        except Exception as exc:
+            results[name] = {"error": str(exc), "trace": traceback.format_exc()}
+            print(f"  Failed: {exc}")
+
+    with open("corpus_report.md", "w") as f:
+        f.write("# E0.5d Spec-Shape Conformance Corpus Report\n\n")
+        
+        f.write("## Aggregated Reasons for Dropped Endpoints\n")
+        f.write("| Reason | Count |\n|---|---|\n")
+        for reason, count in sorted(aggregated_reasons.items(), key=lambda x: x[1], reverse=True):
+            f.write(f"| {reason} | {count} |\n")
+            
+        f.write("\n## Per-API Breakdown\n")
+        for name, data in results.items():
+            f.write(f"### {name}\n")
+            if "error" in data:
+                f.write(f"**Error loading/parsing:** {data['error']}\n")
+                continue
+            
+            f.write(f"- Total Operations: {data['total_ops']}\n")
+            f.write(f"- Probes Planned: {data['planned_probes']}\n")
+            f.write(f"- Endpoints Dropped: {data['unprobed_count']}\n")
+            if data["crashed"]:
+                f.write(f"- **CRASHED DURING PLANNING**\n")
+                
+            if data["reasons"]:
+                f.write("- **Drop Reasons:**\n")
+                for r, c in data["reasons"].items():
+                    f.write(f"  - {c}: {r}\n")
+            f.write("\n")
+
+if __name__ == "__main__":
+    evaluate_corpus()

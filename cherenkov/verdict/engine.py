@@ -59,6 +59,8 @@ class VerdictEngine:
         max_workers: int = 4,
         timeout: float = 15.0,
         max_probes: int = 40,
+        known_identifiers: dict[str, list[str]] | None = None,
+        allow_mutations: bool = False,
     ) -> None:
         self.base_url = base_url
         self.spec = spec
@@ -71,6 +73,8 @@ class VerdictEngine:
         self.max_workers = max_workers
         self.timeout = timeout
         self.max_probes = max_probes
+        self.known_identifiers = known_identifiers
+        self.allow_mutations = allow_mutations
         self.divergence_reports: list[DivergenceReport] = []
 
     def run(self) -> RichVerdict:
@@ -173,6 +177,8 @@ class VerdictEngine:
                 use_llm=self.use_llm,
                 max_probes=self.max_probes,
                 probed_endpoints=probed_endpoints,
+                known_identifiers=self.known_identifiers,
+                allow_mutations=self.allow_mutations,
             )
         except Exception as exc:
             return (
