@@ -26,7 +26,7 @@ The maintainer decided CHERENKOV-QA has **no enterprise tier and no monetization
 |---|---|---|
 | **#809** | Release hygiene follow-up | Publish `v1.2.0` GitHub Release (fixes stale `/latest/` docs); the malformed `v.1.1.1` tag rename is flagged for a **human decision**, not autonomous action |
 | **#810** | Wire Enterprise SAML/RBAC CLI placeholders | Real logic exists in `cherenkov/enterprise/{saml,rbac}.py`; CLI commands are literal `"""Placeholder"""` stubs |
-| **#811** | Spec Guardian daemon CLI entrypoint | `cherenkov/spec_guardian/daemon.py` is complete, has zero callers |
+| **#811** | Spec Guardian daemon CLI entrypoint | **PR open** (`claude/happy-noether-kt638y`) — `cherenkov guardian start` wired to `SpecGuardianDaemon`; also fixed a real `extra={"message": ...}` logging crash the new smoke test surfaced on first-ever exercise of that code path |
 | **#812** | MCP tool depth + registry publish | `check-suite`/`verify`/`generate` as agent-invokable MCP tools; `smithery.yaml` exists but nothing's been submitted to a registry |
 | **#814** | Retire root `cherenkov.py` | Migration (8 load-bearing consumers), not a delete — see issue for the exact list |
 | **#815** | Consolidate dual AI routing (`ai/` + `substrate/`) | Map call sites, propose a plan; don't force a merge if the two layers serve genuinely different purposes |
