@@ -103,7 +103,6 @@ def main():
 
 def test_legacy_perf():
     """Perf smoke test: verifies k6 script generation without real server or k6 binary."""
-    import tempfile
     from unittest.mock import MagicMock, patch
 
     # Create a temp k6 file with expected content so file-existence asserts pass
@@ -117,7 +116,7 @@ def test_legacy_perf():
         "message": "k6 script generated; k6 not installed — manual run required.",
         "instructions": "k6 run stub/generated_tests/k6_perf.js",
     }
-    
+
     def fake_run_k6_validation(*args, **kwargs):
         with open(k6_file, "w") as _f:
             _f.write("// k6 stub\nexport default function() { http.post('http://x'); }\nthresholds: {}\n")

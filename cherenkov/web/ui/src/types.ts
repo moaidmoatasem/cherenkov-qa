@@ -186,7 +186,10 @@ export interface PipelineStage {
 export interface TestGate {
   syntax: boolean;
   structure: boolean;
-  ast: boolean;
+  /** Regex scan that the openapi-fetch client is used and no raw fetch/axios
+   *  leaked in. Named `ast` until 2026-07-31, which was wrong: no syntax tree
+   *  is involved. Real AST analysis lives in `cherenkov check-suite`. */
+  clientUsage: boolean;
   novelty: boolean;
   dryRun: boolean;
   quality: boolean;
@@ -201,6 +204,7 @@ export interface TestItem {
   verdict: 'approved' | 'review' | 'regenerating' | 'rejected';
   gates: TestGate;
   gateReasons: { [key in keyof TestGate]?: string };
+  rejectReason?: string | null;
   code: string;
   actualResult?: {
     status: 'passed' | 'failed';

@@ -86,4 +86,10 @@ class TestRejectionReason:
         assert RejectionReason.INTENDED_CHANGE == "intended_change"
         assert RejectionReason.TOO_NOISY == "too_noisy"
         assert RejectionReason.WRONG_ASSERTION == "wrong_assertion"
+        assert RejectionReason.ENV_ISSUE == "env_issue"
         assert RejectionReason.OTHER == "other"
+
+    def test_choices_lists_all_constants(self):
+        assert RejectionReason.choices() == [
+            "intended_change", "too_noisy", "wrong_assertion", "env_issue", "other",
+        ]

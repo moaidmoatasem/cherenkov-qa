@@ -7,9 +7,11 @@
 
 Every API has an OpenAPI spec, but those specs silently drift from the real server implementations every day. Moreover, AI-generated tests often hallucinate expected outcomes or silently weaken assertions to force a "green" build.
 
-**CHERENKOV-QA** is an **API Integrity Auditor**. It mathematically proves that your test suites actually enforce your OpenAPI contract using pure AST (Abstract Syntax Tree) analysis. It detects Weakened, Deleted, and Hallucinated assertions without relying on an LLM, and then provides a spec-derived local LLM engine to generate conformant Playwright tests.
+**CHERENKOV-QA** is an **API Integrity Auditor**. It checks whether your test suite actually enforces your OpenAPI contract, detecting Weakened, Deleted, and Hallucinated assertions with no LLM involved — then provides a spec-derived local LLM engine to generate conformant Playwright tests.
 
-*Zero vendor lock-in. 100% private. Pure Python AST Integrity Moat.*
+For **Python** suites the audit is genuine AST analysis: `check-suite` parses with `ast.parse` and decides WEAKENED by comparing comparison-operator node types, so `== 200` → `in (200, 201)` is caught structurally rather than textually. For **TypeScript** suites it is regex-based pattern matching, which is weaker — see [Detection depth by language](#detection-depth-by-language).
+
+*Zero vendor lock-in. 100% private. No telemetry, no cloud calls.*
 
 ---
 
@@ -21,7 +23,7 @@ pip install .
 cherenkov demo
 ```
 
-Watch it catch the AI attempting to cheat by loosening assertions or deleting tests. Zero network calls, zero LLM, pure static AST analysis. (PyPI publish is on the roadmap — until then, install from source as above, or use the one-liner: `curl -fsSL https://raw.githubusercontent.com/moaidmoatasem/cherenkov-qa/main/install.sh | bash`.)
+Watch it catch the AI attempting to cheat by loosening assertions or deleting tests. No LLM, no API key, no internet — the demo starts two throwaway HTTP servers on `127.0.0.1:18800/18801` (one spec-conforming, one deliberately broken) and runs the suite against both, so a test that passes the broken one is provably vacuous. (PyPI publish is on the roadmap — until then, install from source as above, or use the one-liner: `curl -fsSL https://raw.githubusercontent.com/moaidmoatasem/cherenkov-qa/main/install.sh | bash`.)
 
 **Then audit a real test suite, and verify your own API:**
 
@@ -35,7 +37,16 @@ cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml
 ## 💡 Why CHERENKOV?
 
 ### 1. The Integrity Moat (`check-suite`)
-AI coding tools are notorious for weakening assertions (e.g., changing `==` to `in`) just to make tests pass. CHERENKOV-QA uses pure Python AST analysis to catch **Weakened**, **Deleted**, or **Hallucinated** assertions in your test suites. It mathematically binds your tests to your OpenAPI spec.
+AI coding tools are notorious for weakening assertions (e.g., changing `==` to `in`) just to make tests pass. CHERENKOV-QA catches **Weakened**, **Deleted**, or **Hallucinated** assertions and binds your tests to your OpenAPI spec.
+
+#### Detection depth by language
+
+| Suite | Engine | Weakened | Deleted | Hallucinated |
+|---|---|---|---|---|
+| **Python** (`.py`) | `ast.parse` — compares comparison-operator node types | ✅ per-assertion, baseline-relative | ✅ per-test | ✅ cross-referenced against the spec |
+| **TypeScript** (`.spec.ts`) | regex over Playwright assertion grammar | ⚠️ file-level heuristic only | ⚠️ per-test-name only | ❌ **not implemented** |
+
+The TypeScript path is materially weaker than the Python path, and hallucination detection there is not implemented at all. This is stated plainly because CHERENKOV exists to catch tools that overstate what they verify; it would be self-defeating to do the same. Closing the gap is tracked as M0b in [`docs/ROADMAP_2026H2.md`](docs/ROADMAP_2026H2.md).
 
 ### 2. Hallucination-Resistant Generation
 When CHERENKOV does generate tests, it only uses the LLM to write the *structure*. The *expected values* (status codes, response schemas) are derived strictly from your OpenAPI spec. If the spec says `422`, CHERENKOV ensures the test demands a `422`.

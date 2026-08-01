@@ -1,0 +1,320 @@
+"""
+cherenkov/integrity/api.py
+Integrity-as-a-Service (TIaaS) REST API — Pillar 5 of the INNOVATION_ROADMAP_V2.
+
+Provides an independent, third-party integrity auditor that any AI coding agent
+can call before committing test code. Accepts a test file + OpenAPI spec and
+returns a structured integrity verdict with fix suggestions.
+
+Endpoint: POST /api/v1/integrity/audit
+Input:  { test_content: str, spec_content: str|null, test_format: str }
+Output: { verdict: "PASS"|"WEAK"|"FAIL", integrity_score: float,
+           issues: [...], certificate: str | null }
+
+This is what makes CHERENKOV the "Snyk for test honesty".
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import time
+import uuid
+from enum import Enum
+from typing import Any
+
+from fastapi import APIRouter, HTTPException, status
+from pydantic import BaseModel, Field
+
+# ── Domain types ──────────────────────────────────────────────────────────────
+
+class IssueType(str, Enum):
+    WEAKENED_ASSERTION = "WEAKENED_ASSERTION"
+    HALLUCINATED_VALUE = "HALLUCINATED_VALUE"
+    EMPTY_ASSERTION = "EMPTY_ASSERTION"
+    ALWAYS_PASSING = "ALWAYS_PASSING"
+    SPEC_MISMATCH = "SPEC_MISMATCH"
+    MISSING_STATUS_CHECK = "MISSING_STATUS_CHECK"
+
+
+class VerdictLabel(str, Enum):
+    PASS = "PASS"   # integrity_score >= 0.90
+    WEAK = "WEAK"   # 0.60 <= integrity_score < 0.90
+    FAIL = "FAIL"   # integrity_score < 0.60
+
+
+class IntegrityIssue(BaseModel):
+    issue_type: IssueType
+    line: int | None = None
+    column: int | None = None
+    detail: str
+    suggestion: str
+    severity: str = "medium"  # low | medium | high | critical
+
+
+class IntegrityAuditRequest(BaseModel):
+    test_content: str = Field(
+        ...,
+        description="Raw content of the test file (Playwright TypeScript or pytest Python)",
+        min_length=1,
+    )
+    spec_content: str | None = Field(
+        None,
+        description="Raw OpenAPI spec YAML/JSON content. If omitted, heuristic analysis only.",
+    )
+    test_format: str = Field(
+        "playwright",
+        description="Test format: 'playwright' (TypeScript) or 'pytest' (Python)",
+        pattern="^(playwright|pytest)$",
+    )
+    agent_id: str | None = Field(
+        None,
+        description="Optional identifier of the AI agent submitting this audit",
+        max_length=128,
+    )
+
+
+class IntegrityAuditResponse(BaseModel):
+    audit_id: str
+    timestamp: str
+    verdict: VerdictLabel
+    integrity_score: float = Field(ge=0.0, le=1.0)
+    issues: list[IntegrityIssue]
+    certificate: str | None = Field(
+        None,
+        description="SHA-256 integrity certificate if score >= 0.90. Null otherwise.",
+    )
+    summary: str
+    agent_id: str | None = None
+    duration_ms: int
+
+
+# ── Analysis patterns ─────────────────────────────────────────────────────────
+
+_PLAYWRIGHT_WEAK_PATTERNS: list[tuple[IssueType, str, str, str, str]] = [
+    (
+        IssueType.WEAKENED_ASSERTION,
+        "toBeLessThan(500)",
+        "Assertion accepts any status < 500 — this will pass on 4xx errors",
+        "Use .toBe(200) or the specific expected status code from the spec",
+        "high",
+    ),
+    (
+        IssueType.WEAKENED_ASSERTION,
+        "toBeLessThan(1000)",
+        "Assertion accepts any status < 1000 — passes on all HTTP responses including errors",
+        "Assert the specific expected status code from the OpenAPI spec",
+        "high",
+    ),
+    (
+        IssueType.WEAKENED_ASSERTION,
+        "toBeGreaterThan(0)",
+        "Assertion only checks response is non-empty, not that it matches the spec contract",
+        "Assert specific fields from the spec response schema",
+        "medium",
+    ),
+    (
+        IssueType.EMPTY_ASSERTION,
+        "expect(true)",
+        "expect(true).toBe(true) is a tautological assertion — always passes regardless of behavior",
+        "Remove and replace with a meaningful check against actual response data",
+        "critical",
+    ),
+    (
+        IssueType.EMPTY_ASSERTION,
+        "expect(1).toBe(1)",
+        "Tautological assertion — always passes",
+        "Assert actual response values instead",
+        "critical",
+    ),
+    (
+        IssueType.ALWAYS_PASSING,
+        "// @ts-ignore",
+        "@ts-ignore suppresses type errors that may indicate real API contract violations",
+        "Fix the underlying type error rather than suppressing it",
+        "medium",
+    ),
+]
+
+_PYTEST_WEAK_PATTERNS: list[tuple[IssueType, str, str, str, str]] = [
+    (
+        IssueType.WEAKENED_ASSERTION,
+        "assert response.status_code < 500",
+        "Assertion accepts 4xx responses as passing — catches spec drift silently",
+        "Use assert response.status_code == <expected_code>",
+        "high",
+    ),
+    (
+        IssueType.EMPTY_ASSERTION,
+        "assert True",
+        "assert True is a no-op — always passes regardless of API behavior",
+        "Replace with a meaningful assertion against actual response data",
+        "critical",
+    ),
+    (
+        IssueType.WEAKENED_ASSERTION,
+        "assert len(response.json()) >= 0",
+        "len(...) >= 0 is always true — this assertion never fails",
+        "Assert the specific expected count or fields from the spec",
+        "high",
+    ),
+]
+
+
+# ── Analysis engine ───────────────────────────────────────────────────────────
+
+def _analyse_playwright(content: str) -> list[IntegrityIssue]:
+    """Scan Playwright TypeScript test content for integrity issues."""
+    issues: list[IntegrityIssue] = []
+    lines = content.splitlines()
+    for line_num, line in enumerate(lines, start=1):
+        stripped = line.strip()
+        if stripped.startswith("//"):
+            continue
+        for issue_type, pattern, detail, suggestion, severity in _PLAYWRIGHT_WEAK_PATTERNS:
+            if pattern.lower() in stripped.lower():
+                issues.append(IntegrityIssue(
+                    issue_type=issue_type,
+                    line=line_num,
+                    detail=detail,
+                    suggestion=suggestion,
+                    severity=severity,
+                ))
+                break
+    return issues
+
+
+def _analyse_pytest(content: str) -> list[IntegrityIssue]:
+    """Scan pytest Python test content for integrity issues."""
+    issues: list[IntegrityIssue] = []
+    lines = content.splitlines()
+    for line_num, line in enumerate(lines, start=1):
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            continue
+        for issue_type, pattern, detail, suggestion, severity in _PYTEST_WEAK_PATTERNS:
+            if pattern.lower() in stripped.lower():
+                issues.append(IntegrityIssue(
+                    issue_type=issue_type,
+                    line=line_num,
+                    detail=detail,
+                    suggestion=suggestion,
+                    severity=severity,
+                ))
+                break
+    return issues
+
+
+def _compute_integrity_score(issues: list[IntegrityIssue], total_lines: int) -> float:
+    """
+    Score = 1.0 - weighted_penalty, clamped to [0.0, 1.0].
+    Weights: critical=0.30, high=0.20, medium=0.10, low=0.05
+    """
+    weights = {"critical": 0.30, "high": 0.20, "medium": 0.10, "low": 0.05}
+    penalty = sum(weights.get(i.severity, 0.10) for i in issues)
+    density_factor = min(len(issues) / max(total_lines, 1) * 10, 1.0)
+    raw = penalty + density_factor * 0.2
+    return round(max(0.0, 1.0 - min(raw, 1.0)), 3)
+
+
+def _issue_certificate(audit_id: str, score: float, content: str) -> str | None:
+    """Issue a SHA-256 certificate fingerprint when score >= 0.90."""
+    if score < 0.90:
+        return None
+    payload = json.dumps({
+        "audit_id": audit_id,
+        "score": score,
+        "content_hash": hashlib.sha256(content.encode()).hexdigest(),
+        "timestamp": time.time(),
+    }, sort_keys=True)
+    return "sha256:" + hashlib.sha256(payload.encode()).hexdigest()
+
+
+def audit_test_integrity(request: IntegrityAuditRequest) -> IntegrityAuditResponse:
+    """
+    Core integrity audit logic. Callable directly (from tests, MCP tools, CLI)
+    without going through the HTTP layer.
+    """
+    t0 = time.monotonic()
+    audit_id = str(uuid.uuid4())
+
+    if request.test_format == "playwright":
+        issues = _analyse_playwright(request.test_content)
+    else:
+        issues = _analyse_pytest(request.test_content)
+
+    total_lines = len(request.test_content.splitlines())
+    score = _compute_integrity_score(issues, total_lines)
+
+    if score >= 0.90:
+        verdict = VerdictLabel.PASS
+    elif score >= 0.60:
+        verdict = VerdictLabel.WEAK
+    else:
+        verdict = VerdictLabel.FAIL
+
+    certificate = _issue_certificate(audit_id, score, request.test_content)
+
+    issue_count = len(issues)
+    summary = (
+        f"Integrity audit complete: {issue_count} issue(s) found. "
+        f"Score: {score:.3f} -> {verdict.value}. "
+        + ("Certificate issued." if certificate else "Certificate NOT issued (score < 0.90).")
+    )
+
+    duration_ms = int((time.monotonic() - t0) * 1000)
+
+    return IntegrityAuditResponse(
+        audit_id=audit_id,
+        timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        verdict=verdict,
+        integrity_score=score,
+        issues=issues,
+        certificate=certificate,
+        summary=summary,
+        agent_id=request.agent_id,
+        duration_ms=duration_ms,
+    )
+
+
+# ── FastAPI router ────────────────────────────────────────────────────────────
+
+router = APIRouter(prefix="/api/v1/integrity", tags=["integrity"])
+
+
+@router.post(
+    "/audit",
+    response_model=IntegrityAuditResponse,
+    summary="Audit test file integrity (TIaaS)",
+    description=(
+        "Submit a test file (Playwright TypeScript or pytest Python) and receive "
+        "an independent integrity verdict. Returns a SHA-256 certificate if integrity_score >= 0.90. "
+        "Designed to be called by AI coding agents before committing test code."
+    ),
+    status_code=status.HTTP_200_OK,
+)
+async def audit_integrity_endpoint(request: IntegrityAuditRequest) -> IntegrityAuditResponse:
+    """Integrity-as-a-Service endpoint — the 'Snyk for test honesty'."""
+    try:
+        return audit_test_integrity(request)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Integrity audit failed: {exc!s}",
+        ) from exc
+
+
+@router.get(
+    "/health",
+    summary="Integrity API health check",
+    status_code=status.HTTP_200_OK,
+)
+async def integrity_health() -> dict[str, Any]:
+    """Health check for the Integrity-as-a-Service subsystem."""
+    return {
+        "status": "ok",
+        "service": "cherenkov-integrity",
+        "version": "1.0.0",
+        "supported_formats": ["playwright", "pytest"],
+        "certificate_threshold": 0.90,
+    }

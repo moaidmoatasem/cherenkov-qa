@@ -139,3 +139,33 @@ export function autoDetectSpec(workspaceRoot: string): string | undefined {
   }
   return undefined;
 }
+
+
+export interface IntegrityAuditResult {
+  verdict: string;
+  integrity_score: number;
+  summary: string;
+  issues: Array<{
+    line?: number;
+    detail: string;
+    suggestion: string;
+  }>;
+}
+
+export async function fetchIntegrityAudit(baseUrl: string, text: string, format: string): Promise<IntegrityAuditResult | null> {
+  try {
+    const res = await fetch(`${baseUrl}/api/v1/integrity/audit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        test_content: text,
+        test_format: format,
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    return await res.json() as IntegrityAuditResult;
+  } catch {
+    return null;
+  }
+}

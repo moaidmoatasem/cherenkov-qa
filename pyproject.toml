@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cherenkov-qa"
-version = "1.1.1"
+version = "1.2.0"
 description = "AI-native API conformance testing — OpenAPI spec to Playwright tests, locally, privately, with zero vendor lock-in."
 readme = "README.md"
 license = {text = "Apache-2.0"}
@@ -41,6 +41,7 @@ dependencies = [
     "jinja2>=3.1.6",
     "graphql-core>=3.2.0",
     "argcomplete>=3.3.0",
+    "langchain-core>=0.1.0",
 ]
 
 [project.urls]
@@ -63,6 +64,18 @@ dev = [
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
     "deepeval>=0.21.0",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+cherenkov = [
+    "execution/emitters/*.html",
+    "prompts/*.j2",
+    "playbooks/builtins/*.yaml",
+    "web/ui/dist/*",
+    "web/ui/dist/**/*",
 ]
 
 [tool.setuptools.packages.find]

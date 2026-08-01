@@ -32,7 +32,8 @@ import {
   Layers,
   SlidersHorizontal,
   Wand2,
-  ShieldCheck
+  ShieldCheck,
+  SplitSquareHorizontal
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
 import GuidedFlow from './GuidedFlow';
@@ -132,6 +133,7 @@ export default function Sidebar({
       label: 'INVESTIGATE',
       demoLabel: true,
       items: [
+        { id: 'spec-vs-reality', label: 'Spec vs Reality', icon: SplitSquareHorizontal, desc: 'Side-by-side visual diff' },
         { id: 'divergences', label: 'Divergences', icon: Zap, desc: 'Risk-scored triage' },
         { id: 'explore', label: 'Explorer', icon: Search, desc: 'Autonomous crawler', isDemo: true },
         { id: 'visual-regression', label: 'Visual Regression', icon: Eye, desc: 'VLM screenshot diff', isDemo: true },

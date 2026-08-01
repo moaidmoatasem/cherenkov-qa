@@ -5,38 +5,88 @@ from cherenkov.core.contracts import DivergenceFinding
 from cherenkov.execution.emitters.allure import AllureEmitter
 
 
+def _report(findings, total_tests=2, duration_ms=250):
+    report = SimpleNamespace(findings=findings, duration_ms=duration_ms)
+    report._total_tests = total_tests
+    return report
+
+
+def _finding():
+    return DivergenceFinding(
+        violation_type="conformance-drift",
+        endpoint="POST /api/users",
+        http_method="POST",
+        expected="201 Created",
+        actual="400 Bad Request",
+        summary="Drift detected",
+        description="Failed",
+        severity="critical",
+        remediation="Fix it",
+    )
+
+
 class TestAllureEmitter(unittest.TestCase):
-    def test_emit_allure_json(self):
-        report = SimpleNamespace(findings=[
-            DivergenceFinding(
-                violation_type="conformance-drift",
-                endpoint="POST /api/users",
-                http_method="POST",
-                expected="201 Created",
-                actual="400 Bad Request",
-                summary="Drift detected",
-                description="Failed",
-                severity="critical",
-                remediation="Fix it"
-            )
-        ])
-        report._total_tests = 2
+    def test_emits_one_case_per_finding(self):
+        results = AllureEmitter().emit(_report([_finding()]), "openapi.yaml")
+        self.assertEqual(len(results), 1)
 
-        emitter = AllureEmitter()
-        results = emitter.emit(report, "openapi.yaml")
-
-        self.assertEqual(len(results), 2)
-
-        # Check passing test
-        passing = next(r for r in results if r["status"] == "passed")
-        self.assertIn("successful_conformance_check", passing["name"])
-
-        # Check failing test
-        failing = next(r for r in results if r["status"] == "failed")
+        failing = results[0]
+        self.assertEqual(failing["status"], "failed")
         self.assertEqual(failing["name"], "POST /api/users")
         self.assertEqual(failing["statusDetails"]["message"], "Drift detected")
         self.assertEqual(failing["statusDetails"]["trace"], "Failed")
-        self.assertTrue(any(lbl for lbl in failing["labels"] if lbl["name"] == "severity" and lbl["value"] == "critical"))
+        self.assertTrue(
+            any(
+                lbl["name"] == "severity" and lbl["value"] == "critical"
+                for lbl in failing["labels"]
+            )
+        )
+
+    def test_never_fabricates_passing_results(self):
+        """Regression guard for E0.6 Tier 0.
+
+        This emitter used to synthesize `successful_conformance_check_{i}`
+        entries with status "passed" from `_total_tests - len(findings)` —
+        named test cases that corresponded to nothing that ran. The previous
+        version of this test asserted that fabrication existed, which locked
+        the defect in. A tool that catches AI fabricating green results must
+        not fabricate green results.
+        """
+        results = AllureEmitter().emit(_report([_finding()], total_tests=50), "s.yaml")
+
+        self.assertTrue(
+            all(r["status"] == "failed" for r in results),
+            "emitter invented a passing result that never executed",
+        )
+        self.assertFalse(
+            any("successful_conformance_check" in r["name"] for r in results),
+            "the fabricated success case has returned",
+        )
+        # A large probe count must not inflate the number of emitted cases.
+        self.assertEqual(len(results), 1)
+
+    def test_probe_total_is_reported_as_a_label_not_invented_cases(self):
+        results = AllureEmitter().emit(_report([_finding()], total_tests=50), "s.yaml")
+        labels = {lbl["name"]: lbl["value"] for lbl in results[0]["labels"]}
+        self.assertEqual(labels["probes_total"], "50")
+
+    def test_history_id_is_stable_across_runs(self):
+        """Allure keys history/flakiness on historyId; uuid4 per run empties it."""
+        first = AllureEmitter().emit(_report([_finding()]), "openapi.yaml")
+        second = AllureEmitter().emit(_report([_finding()]), "openapi.yaml")
+
+        self.assertEqual(first[0]["historyId"], second[0]["historyId"])
+        self.assertNotEqual(
+            first[0]["uuid"], second[0]["uuid"], "uuid must stay per-execution"
+        )
+
+    def test_no_findings_emits_nothing(self):
+        self.assertEqual(AllureEmitter().emit(_report([], total_tests=9), "s.yaml"), [])
+
+    def test_duration_comes_from_the_report(self):
+        results = AllureEmitter().emit(_report([_finding()], duration_ms=1234), "s.yaml")
+        self.assertEqual(results[0]["stop"] - results[0]["start"], 1234)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -186,18 +186,32 @@ def run_reject(
     item_id: str,
     reason: str,
     actor: str | None = None,
+    note: str | None = None,
     json_out: bool = False,
     db_path: str | None = None,
+    feedback_store: Any | None = None,
 ) -> int:
     """
     Reject a pending HITL item with a reason.
+
+    `note` is an optional free-text elaboration folded into the queue's
+    `reject_reason` column (`"<reason>: <note>"`); pass `feedback_store` (a
+    `FeedbackStore` instance) to also seed the learning loop — omitted by
+    default so plain calls (e.g. from tests) have no filesystem side effects.
 
     Returns:
         0 on success, 1 on conflict/not_found.
     """
     resolved_actor = actor or _default_actor()
     q = HitlQueue(db_path=db_path)
-    env = q.reject(item_id=item_id, actor=resolved_actor, reason=reason, source="cli")
+    stored_reason = f"{reason}: {note}" if note else reason
+    env = q.reject(item_id=item_id, actor=resolved_actor, reason=stored_reason, source="cli")
+    if env.ok and feedback_store is not None:
+        from cherenkov.core.feedback_store import FeedbackEntry
+
+        feedback_store.record_feedback(
+            FeedbackEntry(hitl_item_id=item_id, action="reject", reason=reason, notes=note)
+        )
     _emit(env, json_out)
     return 0 if env.ok else 1
 

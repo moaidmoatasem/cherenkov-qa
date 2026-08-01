@@ -424,5 +424,251 @@ def test_issue_457_458_tools_in_manifest():
         "scan_mena_compliance_enhanced",
         "validate_governance_certification",
         "report_compliance_findings",
+        "export_jira_ticket",
+        "run_k6_perf",
+        "scan_mena_compliance",
     }
     assert expected.issubset(tool_names), f"Missing: {expected - tool_names}"
+
+
+# ── Milestone 1: export_jira_ticket, run_k6_perf, scan_mena_compliance ──────
+
+
+def test_export_jira_ticket_direct_export():
+    result = _call(
+        "export_jira_ticket",
+        {
+            "summary": "Custom Jira Ticket Summary",
+            "description": "Custom description of drift",
+            "project_key": "TEST",
+            "sandbox_only": True,
+        },
+    )
+    assert result["isError"] is False
+    payload = json.loads(result["content"][0]["text"])
+    assert payload["summary"] == "Custom Jira Ticket Summary"
+    assert payload["description"] == "Custom description of drift"
+    assert payload["project_key"] == "TEST"
+    assert payload["sandbox_only"] is True
+    assert payload["status"] == "exported"
+
+
+def test_export_jira_ticket_queue_lookup(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    from cherenkov.hitl.contracts import HitlItem
+    from cherenkov.hitl.store import HitlQueue
+
+    q = HitlQueue()
+    item = HitlItem(
+        id="hitl_test_001",
+        run_id="run_001",
+        stage="GENERATE",
+        endpoint="/test",
+        status="pending",
+        review_gate_failed="assertion",
+        confidence_reason="Assertion failed",
+    )
+    q.enqueue(item)
+
+    result = _call(
+        "export_jira_ticket",
+        {
+            "item_id": "hitl_test_001",
+            "project_key": "CHER",
+            "sandbox_only": True,
+        },
+    )
+    assert result["isError"] is False
+    payload = json.loads(result["content"][0]["text"])
+    assert payload["item_id"] == "hitl_test_001"
+    assert payload["status"] == "exported"
+    assert "hitl_test_001" in payload["summary"]
+
+
+def test_run_k6_perf_with_full_params(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    from cherenkov.core.contracts import (
+        PerfGateResult,
+        PerfReport,
+        StageMeta,
+        Status,
+        Verdict,
+    )
+
+    mock_report = PerfReport(
+        scenario_id="perf_custom_scenario",
+        gates=[
+            PerfGateResult(
+                gate="latency_baseline",
+                passed=True,
+                latency_ms=42.0,
+                baseline_count=5,
+                baseline_mean_ms=40.0,
+                baseline_stddev_ms=2.0,
+                threshold_limit_ms=44.0,
+                anomaly_detected=False,
+                k6_available=False,
+            )
+        ],
+        verdict=Verdict.AUTO_APPROVE,
+        status=Status.OK,
+        errors=[],
+        metadata=StageMeta(stage="perf"),
+    )
+
+    with patch(
+        "cherenkov.stages.perf.perf_stage.PerfStage.run", return_value=mock_report
+    ) as mock_run, patch("cherenkov.stages.perf.perf_stage._BaselineDB"):
+        result = _call(
+            "run_k6_perf",
+            {
+                "target_url": "http://localhost:9000",
+                "scenario_name": "custom_scenario",
+                "duration": "10s",
+                "vus": 20,
+                "endpoint": "/api/v1/resource",
+                "method": "POST",
+                "use_ml": True,
+            },
+        )
+        assert result["isError"] is False
+        payload = json.loads(result["content"][0]["text"])
+        assert payload["scenario_id"] == "perf_custom_scenario"
+        assert payload["verdict"].upper() == "AUTO_APPROVE"
+        mock_run.assert_called_once()
+        sl_arg = mock_run.call_args[0][0]
+        assert sl_arg.name == "custom_scenario"
+        assert sl_arg.target_url == "http://localhost:9000"
+        assert sl_arg.endpoint == "/api/v1/resource"
+        assert sl_arg.method == "POST"
+        assert sl_arg.vus == 20
+        assert sl_arg.duration_sec == 10
+        assert mock_run.call_args[1].get("use_ml") is True
+
+
+def test_scan_mena_compliance_yaml_spec(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    spec_file = tmp_path / "openapi.yaml"
+    spec_content = """
+openapi: 3.0.0
+info:
+  title: Test API
+  version: 1.0.0
+paths:
+  /users:
+    get:
+      summary: List users
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+"""
+    spec_file.write_text(spec_content, encoding="utf-8")
+
+    with patch("requests.get") as mock_get:
+        mock_resp = MagicMock()
+        mock_resp.headers = {
+            "Strict-Transport-Security": "max-age=31536000",
+            "X-Frame-Options": "DENY",
+            "X-Content-Type-Options": "nosniff",
+        }
+        mock_get.return_value = mock_resp
+        result = _call(
+            "scan_mena_compliance",
+            {
+                "target_url": "http://localhost:8000",
+                "spec_path": str(spec_file),
+            },
+        )
+    assert result["isError"] is False
+    payload = json.loads(result["content"][0]["text"])
+    assert "compliance_score" in payload
+    assert "violations" in payload
+    assert "mappings" in payload
+    assert "sama_ccsf" in payload
+    assert "egypt_fincsf" in payload
+
+
+def test_export_jira_ticket_defaults():
+    result = _call(
+        "export_jira_ticket",
+        {
+            "summary": "Default Jira Ticket",
+            "description": "Default Description",
+        },
+    )
+    assert result["isError"] is False
+    payload = json.loads(result["content"][0]["text"])
+    assert payload["summary"] == "Default Jira Ticket"
+    assert payload["project_key"] == "QA"
+    assert payload["sandbox_only"] is True
+
+
+def test_run_k6_perf_defaults(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    from cherenkov.core.contracts import (
+        PerfReport,
+        StageMeta,
+        Status,
+        Verdict,
+    )
+
+    mock_report = PerfReport(
+        scenario_id="perf_soak",
+        gates=[],
+        verdict=Verdict.AUTO_APPROVE,
+        status=Status.OK,
+        errors=[],
+        metadata=StageMeta(stage="perf"),
+    )
+
+    with patch(
+        "cherenkov.stages.perf.perf_stage.PerfStage.run", return_value=mock_report
+    ) as mock_run, patch("cherenkov.stages.perf.perf_stage._BaselineDB"):
+        result = _call("run_k6_perf", {"target_url": "http://localhost:8000"})
+        assert result["isError"] is False
+        payload = json.loads(result["content"][0]["text"])
+        assert payload["scenario_id"] == "perf_soak"
+        mock_run.assert_called_once()
+        sl_arg = mock_run.call_args[0][0]
+        assert sl_arg.name == "soak"
+        assert sl_arg.vus == 10
+        assert sl_arg.duration_sec == 30
+
+
+def test_scan_mena_compliance_json_spec(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    spec_file = tmp_path / "openapi.json"
+    spec_dict = {
+        "openapi": "3.0.0",
+        "info": {"title": "Test JSON API", "version": "1.0.0"},
+        "paths": {},
+        "components": {
+            "securitySchemes": {
+                "bearerAuth": {"type": "http", "scheme": "bearer"}
+            }
+        },
+    }
+    spec_file.write_text(json.dumps(spec_dict), encoding="utf-8")
+
+    with patch("requests.get") as mock_get:
+        mock_resp = MagicMock()
+        mock_resp.headers = {
+            "Strict-Transport-Security": "max-age=31536000",
+            "X-Frame-Options": "DENY",
+            "X-Content-Type-Options": "nosniff",
+        }
+        mock_get.return_value = mock_resp
+        result = _call(
+            "scan_mena_compliance",
+            {
+                "target_url": "http://localhost:8000",
+                "spec_path": str(spec_file),
+            },
+        )
+    assert result["isError"] is False
+    payload = json.loads(result["content"][0]["text"])
+    assert payload["compliance_score"] >= 20
+    assert payload["sama_ccsf"]["SAMA CCSF Domain 3.1 (Cyber Security Governance)"]["status"] == "COMPLIANT"
+

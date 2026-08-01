@@ -1,0 +1,53 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schema/mcp.json",
+  "name": "cherenkov-qa",
+  "displayName": "CHERENKOV QA MCP Server",
+  "version": "1.1.1",
+  "description": "AI-native API conformance testing framework exposing test generation, API drift detection, and HITL review over MCP.",
+  "vendor": "CHERENKOV QA",
+  "homepage": "https://github.com/moaidmoatasem/cherenkov-qa",
+  "license": "Apache-2.0",
+  "server": {
+    "command": "cherenkov",
+    "args": [
+      "mcp",
+      "serve"
+    ],
+    "env": {
+      "PYTHONUNBUFFERED": "1"
+    }
+  },
+  "npmPackage": "@cherenkov-qa/mcp-server",
+  "pypiPackage": "cherenkov-qa",
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": false
+  },
+  "tools": [
+    {
+      "name": "run_conformance_check",
+      "description": "Execute API conformance tests against target OpenAPI specification"
+    },
+    {
+      "name": "validate_run_gate",
+      "description": "Run strict Validation Gate check (P0/P1 invariants)"
+    },
+    {
+      "name": "hitl_list",
+      "description": "List pending Human-In-The-Loop review items"
+    },
+    {
+      "name": "hitl_approve",
+      "description": "Approve a pending HITL review item"
+    },
+    {
+      "name": "explain_finding",
+      "description": "Provide detailed explanation and resolution advice for an API drift finding"
+    },
+    {
+      "name": "list_drift_findings",
+      "description": "Retrieve active API drift findings"
+    }
+  ]
+}

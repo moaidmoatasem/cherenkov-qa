@@ -149,6 +149,11 @@ run_e2e.py
 build/
 dist/
 
+# Prebuilt review dashboard is committed on purpose so `cherenkov review`
+# works without a separate `npm install && npm run build` step (#622).
+!cherenkov/web/ui/dist/
+!cherenkov/web/ui/dist/**
+
 # vscode test framework
 vscode-cherenkov/.vscode-test/
 vscode/.vscode-test/
@@ -198,3 +203,9 @@ __test_review.py
 /soc2_report*.json
 /pr.json
 /issues.txt
+
+# Untracked triage
+playwright-suite/
+bench/escaped_defect/
+svgs_dump.json
+cherenkov-security-landing.png

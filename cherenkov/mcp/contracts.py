@@ -275,6 +275,35 @@ class ComplianceFindingsInput(BaseModel):
     )
 
 
+class ExportJiraInput(BaseModel):
+    item_id: str | None = Field(default=None, description="Validation item ID.")
+    summary: str | None = Field(default=None, description="Ticket summary/title.")
+    description: str | None = Field(default=None, description="Ticket description.")
+    project_key: str | None = Field(default="QA", description="Jira project key.")
+    sandbox_only: bool = Field(default=True, description="Sandbox mode flag.")
+
+
+class RunK6PerfInput(BaseModel):
+    target_url: str = Field(description="Target API base URL.")
+    scenario_name: str | None = Field(
+        default="soak", description="K6 scenario name."
+    )
+    duration: str | int | None = Field(
+        default="30s", description="Test duration in seconds or duration string (e.g., '30s')."
+    )
+    vus: int | None = Field(
+        default=10, ge=1, description="Virtual users (VUs) count."
+    )
+    endpoint: str | None = Field(default="/", description="Endpoint path.")
+    method: str | None = Field(default="GET", description="HTTP method.")
+    use_ml: bool | None = Field(
+        default=False, description="Enable ML latency anomaly detection."
+    )
+    traffic_file: str | None = Field(
+        default=None, description="Path to HAR/traffic file for load profile."
+    )
+
+
 # ── verify_suite (E2.1 — integrity check for AI-generated suites) ────────────
 
 
