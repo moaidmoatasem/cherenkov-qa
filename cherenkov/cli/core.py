@@ -44,6 +44,7 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.eval_cmd import eval_cmd
     from cherenkov.cli.commands.examples_cmd import examples_cmd
     from cherenkov.cli.commands.generate_cmd import generate_cmd
+    from cherenkov.cli.commands.guardian_cmd import guardian_cmd
     from cherenkov.cli.commands.ocr_cmd import ocr_cmd
     from cherenkov.cli.commands.playbook_cmd import playbook_cmd
     from cherenkov.cli.commands.routine_cmd import routine_cmd
@@ -101,6 +102,7 @@ def _register_commands() -> None:
         (teleport_cmd, "teleport"),
         (enterprise_cmd, "enterprise"),
         (playbook_cmd, "playbook"),
+        (guardian_cmd, "guardian"),
     ]:
         cli.add_command(cmd, name=name)
 
