@@ -72,27 +72,27 @@ async def run_doctor_api(_role=Depends(require_role(Role.admin))):
     checks = []
 
     ollama_bin, bin_det = check_ollama_binary()
-    checks.append({"name": "Ollama Binary", "status": "passed" if ollama_bin else "failed", "message": bin_det})
+    checks.append({"id": "ollama-binary", "name": "Ollama Binary", "status": "passed" if ollama_bin else "failed", "message": bin_det})
 
     if ollama_bin:
         ollama_daemon, daemon_det = check_ollama_daemon()
-        checks.append({"name": "Ollama Daemon", "status": "passed" if ollama_daemon else "failed", "message": daemon_det})
+        checks.append({"id": "ollama-daemon", "name": "Ollama Daemon", "status": "passed" if ollama_daemon else "failed", "message": daemon_det})
 
     node_ok, node_det = check_node()
-    checks.append({"name": "Node.js", "status": "passed" if node_ok else "failed", "message": node_det})
+    checks.append({"id": "node", "name": "Node.js", "status": "passed" if node_ok else "failed", "message": node_det})
 
     pw_ok, pw_det = check_npx_playwright()
-    checks.append({"name": "Playwright", "status": "passed" if pw_ok else "failed", "message": pw_det})
+    checks.append({"id": "playwright", "name": "Playwright", "status": "passed" if pw_ok else "failed", "message": pw_det})
 
     prism_ok, prism_det = check_prism_docker()
-    checks.append({"name": "Prism Docker", "status": "passed" if prism_ok else "failed", "message": prism_det})
+    checks.append({"id": "prism-docker", "name": "Prism Docker", "status": "passed" if prism_ok else "failed", "message": prism_det})
 
     egress_ok, egress_det = check_egress_blocked(cfg)
-    checks.append({"name": "Egress Policy", "status": "passed" if egress_ok else "failed", "message": egress_det})
+    checks.append({"id": "egress-policy", "name": "Egress Policy", "status": "passed" if egress_ok else "failed", "message": egress_det})
 
     device = get_settings().detect_ollama_device()
     is_gpu = device == "GPU"
-    checks.append({"name": "Device", "status": "passed" if is_gpu else "failed", "message": device + " (GPU recommended)"})
+    checks.append({"id": "device", "name": "Device", "status": "passed" if is_gpu else "failed", "message": device + " (GPU recommended)"})
 
     ready = ollama_bin and node_ok and pw_ok and prism_ok
     return {"checks": checks, "ready": ready}

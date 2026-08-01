@@ -38,10 +38,13 @@ interface GuidedTourProps {
 export default function GuidedTour({ onClose, onNavigate }: GuidedTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
-  // Set initial tab on mount
+  // Set initial tab on mount only -- onNavigate is not guaranteed to be
+  // referentially stable across renders, and re-running this on every
+  // identity change causes an infinite navigate -> re-render -> navigate loop.
   useEffect(() => {
     onNavigate(TOUR_STEPS[0].tabId);
-  }, [onNavigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleNext = () => {
     if (currentStep < TOUR_STEPS.length - 1) {

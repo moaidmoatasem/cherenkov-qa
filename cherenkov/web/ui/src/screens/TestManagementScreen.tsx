@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FileCode, Clock, ShieldCheck, ShieldAlert, AlertTriangle } from 'lucide-react';
-import { PageHeader, Card, Skeleton, EmptyState } from '../components/ui';
+import { PageHeader, Card, Skeleton, EmptyState, CoverageTrendChart } from '../components/ui';
 import { fetchGeneratedTests, fetchRuns, GeneratedTestFile, RunRecord } from '../lib/api';
 
 export default function TestManagementScreen() {
@@ -32,12 +32,29 @@ export default function TestManagementScreen() {
     return () => { cancelled = true; };
   }, []);
 
+  // RunStore returns most-recent-first; the trend chart reads left-to-right chronologically.
+  const coveragePoints = useMemo(
+    () =>
+      runs
+        .filter((r) => r.coverage_pct != null)
+        .slice()
+        .reverse()
+        .map((r) => ({ timestamp: r.timestamp, value: r.coverage_pct as number })),
+    [runs]
+  );
+
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10">
       <PageHeader
         title="Test Plans"
         description="Generated test inventory and run history, pulled live from the backend RunStore."
       />
+
+      {!isLoading && !loadError && (
+        <Card className="p-6">
+          <CoverageTrendChart points={coveragePoints} />
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Test inventory (from /api/v1/tests) */}
