@@ -221,7 +221,7 @@ class SpecGuardianDaemon:
                             "playbook": f.playbook_name,
                             "endpoint": f.endpoint,
                             "level": f.level,
-                            "message": f.message,
+                            "finding_message": f.message,
                         },
                     )
 
