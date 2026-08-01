@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-08-01
+
+### Added
+- **UX Redesign**: 5-hub information architecture (Overview, Author & Generate, Triage, Coverage & Certification, Knowledge); Kanban triage board; live-wired Spec vs. Reality, Coverage & Certification, and Test Management screens; real chat session history.
+
+### Fixed
+- **Release/tag reconciliation** — manifest and package version brought in line with the actual tag history; see the [v1.2.0 release notes](releases/v1.2.0.md) for details.
+- Several runtime bugs found by driving the app end-to-end in a real browser (Chat render loop, missing FastAPI `Depends()` wrapper, non-JSON-serializable validation errors, duplicate React keys).
+
+## [1.1.2] - 2026-07-31
+
+### Added
+- **Unprobed-endpoint reporting** — `cherenkov verify` lists every operation probe planning produced nothing for, with the real reason.
+- **`RecordingProxy`** — forwards and records what a test suite actually receives from a live target for record-then-perturb auditing.
+- **`synthesize_mutant_battery()`** — one mutant per failure axis plus a conforming control, so a failure is attributable to a specific weak assertion.
+
+### Fixed
+- **Soundness fix**: `verify` could report a clean run on an endpoint it never probed, when a path parameter was declared once on the PathItem and inherited by every operation beneath it.
+- Misleading mutant-synthesis skip message; a hanging unit test caused by a mock that mocked nothing.
+
 ## [1.1.1] - 2026-06-29
 
 ### Added
