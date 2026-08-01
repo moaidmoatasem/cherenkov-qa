@@ -5,6 +5,14 @@
 **Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"`.
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
 
+## Product decision: no enterprise/paid tier — fully open source for the community (2026-08-01)
+
+The maintainer decided CHERENKOV-QA has **no enterprise tier and no monetization** — it's a fully open-source (Apache 2.0), community project. Scope: **positioning only**, not a feature retreat:
+
+- The former "L5 Enterprise, $300+/mo, contact us" framing is gone from `docs-site/docs/index.md`, `docs-site/docs/getting-started/cost-tiers.md`, and `docs-site/docs/cli/reference.md` — SSO/SAML, RBAC, audit logging, and the K8s operator are now presented as ordinary free, self-hosted features, same tier as everything else.
+- **The Phase 13 "Enterprise" feature work itself is unchanged and still worth finishing** (#754-763, #810) — SAML/RBAC/audit/GDPR are still real, still useful, still on the roadmap. Just don't reintroduce paywall language, a "contact sales" flow, or license-gated features anywhere (README, docs-site, CLI help text, UI).
+- Do not add pricing pages, license-key gating, or an `enterprise@` contact anywhere going forward — if a task seems to call for it, that's a signal the task description is stale, not a signal to build it.
+
 ## Where things actually stand (2026-08-01)
 
 - **M0 (spec-shape robustness) is CLOSED** (#808) — gates M1. Zero silent endpoint drops across a 10-spec corpus, mutation battery separates 3/3 cheat classes. See `docs/ROADMAP_2026H2.md` M0 section for the full checklist, all boxes checked.

@@ -122,7 +122,7 @@ CHERENKOV has been rigorously validated against complex, real-world APIs:
 
 ## Zero Cost Execution
 
-CHERENKOV runs entirely locally. No subscriptions. No usage fees. No data exfiltration.
+CHERENKOV runs entirely locally. No subscriptions. No usage fees. No data exfiltration. There is no paid tier — the full feature set, including SSO/SAML, RBAC, audit logging, and the K8s operator, is free and self-hosted.
 
 | Tier | Monthly Cost |
 |------|-------------|
@@ -130,7 +130,7 @@ CHERENKOV runs entirely locally. No subscriptions. No usage fees. No data exfilt
 | + Ollama (local LLM) | **$0** |
 | + Docker + LocalAI | **$0** |
 | + Full stack (mobile, desktop) | **$0** |
-| Enterprise (K8s operator, SSO) | $300+/mo |
+| + K8s operator, SSO, RBAC, audit logging | **$0** |
 
 [See full cost tier breakdown →](getting-started/cost-tiers.md)
 

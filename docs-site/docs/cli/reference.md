@@ -270,7 +270,7 @@ Generate conformance certification reports.
 
 ### `enterprise`
 
-Enterprise-tier commands (SSO, audit log, RBAC).
+Organization-management commands (SSO, audit log, RBAC) — free and self-hosted, no paid tier required.
 
 ```bash
 # View audit log

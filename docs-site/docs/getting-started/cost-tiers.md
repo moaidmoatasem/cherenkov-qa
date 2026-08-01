@@ -1,11 +1,11 @@
 ---
 title: Cost Tiers
-description: CHERENKOV-QA runs at zero cost for individuals and small teams. Enterprise tier available for K8s and SSO.
+description: CHERENKOV-QA is fully open source and free for individuals, teams, and organizations alike — no enterprise tier, no paywall.
 ---
 
 # Cost Tiers
 
-CHERENKOV-QA is designed to run at **$0/month** for the vast majority of users.
+CHERENKOV-QA is fully open source (Apache 2.0) and designed to run at **$0/month**. There is no paid or "enterprise" tier — every feature, including the K8s operator, SSO/SAML, RBAC, and audit logging, is available to everyone, self-hosted.
 
 ---
 
@@ -17,8 +17,8 @@ CHERENKOV-QA is designed to run at **$0/month** for the vast majority of users.
 | **L1 — + Ollama** | Ollama installed locally | **$0** | L0 + local LLM, API testing, visual testing |
 | **L2 — + Docker** | Docker Desktop/Engine | **$0** | L1 + LocalAI (VLM), Redis (vector/sessions) |
 | **L3 — Full Stack** | Android emulator or device | **$0** | L2 + mobile testing, Maestro, desktop app |
-| **L4 — + Cloud** | Cloud VM / GPU | ~$50–100 | L3 + cloud VLM/devices, CI scaling |
-| **L5 — Enterprise** | K8s cluster | $300+/mo | L4 + K8s operator, SSO, audit logs, compliance |
+| **L4 — + Cloud** | Cloud VM / GPU | ~$50–100 | L3 + cloud VLM/devices, CI scaling (your own cloud bill, not a CHERENKOV fee) |
+| **L5 — + K8s / org features** | K8s cluster | **$0** | L4 + K8s operator, SSO, RBAC, audit logs, compliance reporting — all free, self-hosted |
 
 ---
 
@@ -96,9 +96,9 @@ For teams that need cloud GPU, remote device farms, or scaling beyond a single m
 
 ---
 
-### L5 — Enterprise ($300+/month)
+### L5 — + K8s / org features ($0)
 
-For organizations requiring:
+For organizations that need, self-hosted at no cost:
 
 - **SAML 2.0 / SSO** (Okta, Azure AD, Google Workspace)
 - **K8s Operator** — `ConformanceCheck` CRD for scheduled in-cluster runs
@@ -108,7 +108,7 @@ For organizations requiring:
 - **Multi-tenant org management** with quotas
 - **BYO-LLM** — Azure OpenAI and AWS Bedrock adapters
 
-[Contact us for enterprise pricing →](mailto:enterprise@cherenkov.dev){ .md-button }
+CHERENKOV-QA has no enterprise pricing, no sales contact, and no paywalled tier — these are ordinary features you run yourself, same as everything else in this list.
 
 ---
 
