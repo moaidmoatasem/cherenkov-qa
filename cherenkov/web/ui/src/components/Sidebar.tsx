@@ -76,12 +76,12 @@ export default function Sidebar({
 }: SidebarProps) {
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    'PIPELINE': true,
-    'CREATE': true,
-    'INVESTIGATE': true,
-    'INTELLIGENCE': true,
-    'RELEASE': true,
-    'SYSTEM': true,
+    'OVERVIEW': true,
+    'AUTHOR & GENERATE': true,
+    'TRIAGE': true,
+    'COVERAGE & CERTIFICATION': true,
+    'KNOWLEDGE': true,
+    'SYSTEM': false,
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<Set<string>>(() => {
@@ -115,46 +115,45 @@ export default function Sidebar({
 
   const sections: NavSection[] = [
     {
-      label: 'PIPELINE',
+      label: 'OVERVIEW',
       items: [
-        { id: 'setup', label: 'Spec Ingest', icon: Layers, desc: 'Upload spec + doctor check' },
-        { id: 'pipeline', label: 'Pipeline', icon: LayoutDashboard, desc: 'Live test generation DAG' },
-        { id: 'review', label: 'Review Gate', icon: CheckSquare, desc: 'HITL verdict memory gates' },
-      ]
-    },
-    {
-      label: 'CREATE',
-      items: [
-        { id: 'author', label: 'Author by Intent', icon: Compass, desc: 'NL-intent Pilot runs' },
-        { id: 'healing', label: 'Healing Options', icon: Sparkles, desc: 'API Drift suggestions (suggest-only)' },
-      ]
-    },
-    {
-      label: 'INVESTIGATE',
-      demoLabel: true,
-      items: [
-        { id: 'spec-vs-reality', label: 'Spec vs Reality', icon: SplitSquareHorizontal, desc: 'Side-by-side visual diff' },
-        { id: 'divergences', label: 'Divergences', icon: Zap, desc: 'Risk-scored triage' },
-        { id: 'explore', label: 'Explorer', icon: Search, desc: 'Autonomous crawler', isDemo: true },
-        { id: 'visual-regression', label: 'Visual Regression', icon: Eye, desc: 'VLM screenshot diff', isDemo: true },
-      ]
-    },
-    {
-      label: 'INTELLIGENCE',
-      items: [
-        { id: 'memory', label: 'Memory & Pairing', icon: Brain, desc: 'Reflector senior idioms' },
-        { id: 'knowledge', label: 'Knowledge', icon: Brain, desc: 'Second Brain mesh' },
-        { id: 'chat', label: 'Chat', icon: MessageSquare, desc: 'SSE streaming assistant' },
-      ]
-    },
-    {
-      label: 'RELEASE',
-      demoLabel: true,
-      items: [
-        { id: 'verdict', label: 'Verdict', icon: ShieldCheck, desc: 'Run grades & history' },
         { id: 'overview', label: 'Release Readiness', icon: Map, desc: 'Ship/no-ship gate' },
         { id: 'truth-map', label: 'Truth Map', icon: Network, desc: 'Endpoint claim graph', isDemo: true },
-        { id: 'signals', label: 'Signals', icon: TrendingUp, desc: 'Perf & Coverage telemetry', isDemo: true },
+        { id: 'signals', label: 'Telemetry', icon: TrendingUp, desc: 'Perf & Coverage signals', isDemo: true },
+        { id: 'verdict', label: 'Verdict History', icon: ShieldCheck, desc: 'Run grades & history' },
+      ]
+    },
+    {
+      label: 'AUTHOR & GENERATE',
+      items: [
+        { id: 'setup', label: 'Spec Ingest', icon: Layers, desc: 'Upload spec + doctor check' },
+        { id: 'pipeline', label: 'Live Pipeline', icon: LayoutDashboard, desc: 'Live test generation DAG' },
+        { id: 'author', label: 'Author by Intent', icon: Compass, desc: 'NL-intent Pilot runs' },
+        { id: 'healing', label: 'Healing Options', icon: Sparkles, desc: 'API Drift suggestions' },
+      ]
+    },
+    {
+      label: 'TRIAGE',
+      items: [
+        { id: 'review', label: 'Review Gate', icon: CheckSquare, desc: 'HITL verdict memory gates' },
+        { id: 'divergences', label: 'Divergences', icon: Zap, desc: 'Risk-scored triage' },
+        { id: 'spec-vs-reality', label: 'Spec vs Reality', icon: SplitSquareHorizontal, desc: 'Side-by-side visual diff' },
+      ]
+    },
+    {
+      label: 'COVERAGE & CERTIFICATION',
+      items: [
+        { id: 'coverage', label: 'Coverage Hub', icon: Shield, desc: 'Integrity Heatmap & Certificates' },
+        { id: 'test-management', label: 'Test Plans', icon: Map, desc: 'Historical test plans' },
+      ]
+    },
+    {
+      label: 'KNOWLEDGE',
+      items: [
+        { id: 'memory', label: 'Memory & Pairing', icon: Brain, desc: 'Reflector senior idioms' },
+        { id: 'knowledge', label: 'Knowledge Base', icon: Brain, desc: 'Second Brain mesh' },
+        { id: 'chat', label: 'Chat Assistant', icon: MessageSquare, desc: 'SSE streaming assistant' },
+        { id: 'explore', label: 'Autonomous Explorer', icon: Search, desc: 'Spec-optional crawler', isDemo: true },
       ]
     },
     {
@@ -166,6 +165,7 @@ export default function Sidebar({
         { id: 'eject', label: 'Eject Suite', icon: Download, desc: 'Export plain Playwright' },
         { id: 'sdd', label: 'SDD Cockpit', icon: Gauge, desc: 'Agent sync & tokens' },
         { id: 'setup-wizard', label: 'Setup Wizard', icon: Wand2, desc: 'Desktop dependency checks' },
+        { id: 'visual-regression', label: 'Visual Regression', icon: Eye, desc: 'VLM screenshot diff', isDemo: true },
       ]
     },
   ];
