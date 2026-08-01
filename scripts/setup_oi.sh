@@ -18,7 +18,7 @@ with open("$CONFIG_FILE") as f:
     config = json.load(f)
 config.setdefault("mcpServers", {})["cherenkov"] = {
     "command": "python3",
-    "args": ["$REPO_ROOT/cherenkov.py", "mcp", "serve"],
+    "args": ["-m", "cherenkov", "mcp", "serve"],
     "cwd": "$REPO_ROOT",
     "env": {"MCP_PROFILE": "full-dev"}
 }
@@ -32,7 +32,7 @@ else
   "mcpServers": {
     "cherenkov": {
       "command": "python3",
-      "args": ["$REPO_ROOT/cherenkov.py", "mcp", "serve"],
+      "args": ["-m", "cherenkov", "mcp", "serve"],
       "cwd": "$REPO_ROOT",
       "env": {
         "MCP_PROFILE": "full-dev"

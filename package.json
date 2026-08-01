@@ -28,7 +28,6 @@
   },
   "files": [
     "bin/cherenkov-npm.js",
-    "cherenkov.py",
     "cherenkov/",
     "requirements.txt",
     "stub/",
