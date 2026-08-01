@@ -1,39 +1,18 @@
 {
   "session": {
-    "id": "sess_20260706215654_8ea271",
-    "status": "closed",
-    "task": "onboarding_verification",
-    "started_at": "2026-07-06T21:56:54.317200+00:00",
-    "ended_at": "2026-07-06T22:01:19.059858+00:00",
-    "findings_count": 1,
+    "id": "sess_20260801145438_5dce7e",
+    "status": "open",
+    "task": "E0.5d_conformance_corpus_remediation",
+    "started_at": "2026-08-01T14:54:38.001311+00:00",
+    "ended_at": null,
+    "findings_count": 0,
     "token_total": 0,
-    "summary": "Updated docs/INDEX.md to insert onboarding sessions, verified run_demo.sh execution (exits with 0 and cleans up port 8000), and verified cast_session_a.sh/cast_session_b.sh simulations.",
-    "compacted": true,
-    "task_type": "onboarding_verification",
+    "summary": null,
+    "compacted": false,
+    "task_type": "E0.5d_conformance_corpus_remediation",
     "source": "cherenkov"
   },
   "previous_sessions": [
-    {
-      "id": "sess_20260616010121_88e84d",
-      "task": "integration-tests",
-      "ended_at": "2026-06-16T01:21:24.399466+00:00",
-      "summary": "Built 18 integration tests bridging evals, adversarial, and synthetic modules, verifying post-generation pipeline stages with mocked LLM and filesystem. All 100 tests pass.",
-      "token_total": 0
-    },
-    {
-      "id": "sess_20260618212938_e64967",
-      "task": "qa_report",
-      "ended_at": "2026-06-27T14:40:40.028197+00:00",
-      "summary": "Completed Phases 0-2 architecture improvements. Renamed port, decomposed orchestrator (1016->627 lines), built event bus, added use_cases layers, hardened Dockerfiles + security. All 173 tests passing. 29 files changed, +895/-767. Committed to feat/arch-improvement-phases-0-2. Ready for human review PR.",
-      "token_total": 0
-    },
-    {
-      "id": "sess_20260628114354_58dfce",
-      "task": "general",
-      "ended_at": "2026-06-28T11:45:18.107578+00:00",
-      "summary": "Explored SDD system: agent_sync.py operational, context.json has 2 snippets, 4 prior sessions, 3 experience records. SDD protocol demonstrated with before/log/token/after workflow.",
-      "token_total": 1500
-    },
     {
       "id": "sess_20260628120453_e38cc9",
       "task": "cc1-auto-memory-hooks",
@@ -82,7 +61,28 @@
       "ended_at": "2026-06-28T20:42:17.773893+00:00",
       "summary": "Implemented Phase 10 CI/CD additions",
       "token_total": 0
+    },
+    {
+      "id": "sess_20260706215654_8ea271",
+      "task": "onboarding_verification",
+      "ended_at": "2026-07-06T22:01:19.059858+00:00",
+      "summary": "Updated docs/INDEX.md to insert onboarding sessions, verified run_demo.sh execution (exits with 0 and cleans up port 8000), and verified cast_session_a.sh/cast_session_b.sh simulations.",
+      "token_total": 0
+    },
+    {
+      "id": "sess_20260801144819_bc0b43",
+      "task": "exploration",
+      "ended_at": null,
+      "summary": null,
+      "token_total": 0
+    },
+    {
+      "id": "sess_20260801144835_36a447",
+      "task": "E0.5d_conformance_corpus",
+      "ended_at": "2026-08-01T14:53:50.069514+00:00",
+      "summary": "Explorer 1 completed read-only exploration for Phase M0 - E0.5d: analyzed cherenkov verify CLI, verified 10 real OpenAPI 3.x spec URLs, documented SDD protocol, and provided execution strategy in handoff.md",
+      "token_total": 0
     }
   ],
-  "sessions_since_compact": 12
+  "sessions_since_compact": 15
 }

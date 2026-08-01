@@ -12815,7 +12815,7 @@ paths:
                     access_token: xoxb-REDACTED-SAMPLE-TOKEN
                     app_id: A0KRD7HC3
                     authed_user:
-                      access_token: xoxp-1234
+                      access_token: xoxp-REDACTED
                       id: U1234
                       scope: chat:write
                       token_type: user

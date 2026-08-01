@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "last_updated": "2026-07-06T22:01:19.060357+00:00",
-  "experience_count": 7,
-  "sessions_contributing": 15,
+  "last_updated": "2026-08-01T14:53:50.206119+00:00",
+  "experience_count": 8,
+  "sessions_contributing": 16,
   "experiences": [
     {
       "id": "exp_seed_001",
@@ -101,6 +101,19 @@
         "onboarding_verification"
       ],
       "session_id": "sess_20260706215654_8ea271"
+    },
+    {
+      "id": "exp_sess_20260801144835_36a447_e9c2",
+      "timestamp": "2026-08-01T14:53:50.206119+00:00",
+      "task": "E0.5d_conformance_corpus",
+      "action": "decision Explorer 1 verified cherenkov verify CLI options, probe planner logic in probe_planner.py, and error handling",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "E0.5d_conformance_corpus"
+      ],
+      "session_id": "sess_20260801144835_36a447"
     }
   ],
   "pattern_index": {
@@ -130,6 +143,9 @@
     ],
     "onboarding_verification": [
       "exp_sess_20260706215654_8ea271_1dee"
+    ],
+    "E0.5d_conformance_corpus": [
+      "exp_sess_20260801144835_36a447_e9c2"
     ]
   }
 }
