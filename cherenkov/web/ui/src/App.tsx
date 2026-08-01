@@ -33,6 +33,7 @@ import VerdictScreen from './screens/VerdictScreen';
 import SpecVsRealityScreen from './screens/SpecVsRealityScreen';
 import CoverageScreen from './screens/CoverageScreen';
 import TestManagementScreen from './screens/TestManagementScreen';
+import CertificateVerificationScreen from './screens/CertificateVerificationScreen';
 import VisualRegressionScreen from './components/VisualRegressionScreen';
 import ExplorerScreen from './components/ExplorerScreen';
 import GlobalShortcuts from './components/GlobalShortcuts';
@@ -225,7 +226,7 @@ function InnerApp() {
 
   // Called when character stream compiles and finishes writing
   const handleCompletePipeline = () => {
-    setActiveTab('review');
+    setActiveTab('verdict');
     setStatus('Idle');
   };
 
@@ -453,6 +454,10 @@ function InnerApp() {
 
             {activeTab === 'coverage' && (
               <CoverageScreen />
+            )}
+
+            {activeTab === 'certificate' && (
+              <CertificateVerificationScreen />
             )}
 
             {activeTab === 'visual-regression' && (

@@ -13,9 +13,9 @@ import {
   Database,
   Shield,
   Activity,
-  Layers,
   Unlock,
-  Coins
+  Coins,
+  Zap
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
 import { fetchSettings, updateSettings, SystemSettings } from '../lib/api';
@@ -122,38 +122,57 @@ export default function SettingsScreen() {
                 <span>Synthetic Synthesis Model Provider</span>
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                {/* local option */}
-                <div
-                  onClick={() => setModel('qwen-coder')}
-                  className={`p-4 rounded-xl border transition cursor-pointer flex flex-col justify-between ${
-                    model === 'qwen-coder'
-                      ? 'bg-white/10 border-glow-blue shadow-lg shadow-cyan-500/5'
-                      : 'bg-black/20 border-white/5 hover:border-text-muted'
-                  }`}
-                >
-                  <div>
-                    <span className="block font-sans font-bold text-text-primary text-sm">Qwen 2.5 Coder (7B)</span>
-                    <span className="block text-[10px] text-[#7D8DA1] mt-1 font-mono">Local execution · Ollama integration</span>
-                  </div>
-                  <span className="text-[9px] font-mono text-glow-bright mt-3 block">0% API COST PROJECTIONS</span>
-                </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs font-mono">
+                {(['openai', 'anthropic', 'azure', 'bedrock', 'ollama', 'localai', 'nemoclaw', 'vlm'] as const).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setModel(p)}
+                    className={`py-2 px-3 rounded-xl border transition cursor-pointer uppercase ${
+                      model === p
+                        ? 'bg-glow-blue/10 border-glow-blue text-glow-bright font-bold'
+                        : 'bg-black/25 border-white/5 text-[#7D8DA1] hover:text-[#E6EDF3]'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                {/* Gemini flash option */}
-                <div
-                  onClick={() => setModel('gemini-flash')}
-                  className={`p-4 rounded-xl border transition cursor-pointer flex flex-col justify-between ${
-                    model === 'gemini-flash'
-                      ? 'bg-white/10 border-glow-blue shadow-lg shadow-cyan-500/5'
-                      : 'bg-black/20 border-white/5 hover:border-text-muted'
-                  }`}
-                >
-                  <div>
-                    <span className="block font-sans font-bold text-text-primary text-sm">Gemini 2.5 Flash</span>
-                    <span className="block text-[10px] text-[#7D8DA1] mt-1 font-mono">Cloud execution · Serverless token endpoints</span>
+            {/* Truth Sources Section */}
+            <div className="space-y-4 pt-4 border-t border-white/5">
+              <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
+                <Database className="w-4 h-4 text-glow-blue" />
+                <span>Truth Source Adapters</span>
+              </h2>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs font-mono">
+                {['OpenAPI', 'gRPC', 'GraphQL', 'Traffic Capture', 'DB Schema'].map((ts) => (
+                  <div key={ts} className="p-3 rounded-xl bg-black/25 border border-white/5 flex items-center gap-2">
+                     <CheckCircle className="w-3.5 h-3.5 text-[#3FB950]" />
+                     <span className="text-[#E6EDF3]">{ts}</span>
                   </div>
-                  <span className="text-[9px] font-mono text-glow-bright mt-3 block">HIGH COVERAGE DISPATCHER</span>
-                </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Execution Engines Section */}
+            <div className="space-y-4 pt-4 border-t border-white/5">
+              <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
+                <Zap className="w-4 h-4 text-glow-blue" />
+                <span>Active Execution Engines</span>
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs font-mono">
+                {[{name: 'Playwright', desc: 'Web E2E'}, {name: 'Appium + Maestro', desc: 'Mobile App'}, {name: 'k6', desc: 'Performance/Load'}].map((ee) => (
+                  <div key={ee.name} className="p-3 rounded-xl bg-black/25 border border-white/5 flex flex-col gap-1">
+                     <div className="flex items-center gap-2">
+                       <CheckCircle className="w-3.5 h-3.5 text-[#3FB950]" />
+                       <span className="text-glow-bright font-bold uppercase">{ee.name}</span>
+                     </div>
+                     <span className="text-[9px] text-[#7D8DA1] uppercase">{ee.desc}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
