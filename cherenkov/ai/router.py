@@ -1,5 +1,13 @@
 """
-CHERENKOV ai/router.py — Inference provider router.
+CHERENKOV ai/router.py — LEGACY inference provider router.
+
+Deprecated: superseded by cherenkov.substrate.router.SubstrateRouter, which
+adds capability-tier routing, run-budget checks, egress policy enforcement,
+model certification (E12 gate) and fallback/spillover. This router only
+resolves a provider from CHERENKOV_INFERENCE_PROVIDER and forwards the call.
+
+The only remaining production call site is mcp/handlers.py (HITL repair).
+Do not add new consumers — prefer SubstrateRouter or cherenkov.ai.get_client().
 
 Anti-lock-in: providers are swappable via config.
 Non-Docker fallback: Ollama provider is always available.

@@ -1,4 +1,30 @@
-# CHERENKOV ai sub-package
+"""
+CHERENKOV ai package — the model-access (client) layer.
+
+CURRENT (not legacy): this is the foundational client layer that the
+cherenkov.substrate orchestration layer builds on. It owns:
+
+  - the InferenceClient protocol + CachedInferenceClient (interface.py)
+  - one transport client per backend: ollama, openai, anthropic, bedrock,
+    huggingface, github_models, nemoclaw, model_runner (incl. transport-level
+    retry via _post_with_retry in ollama_client.py)
+  - response cache + cost accounting (cache.py, accounting.py)
+  - RAG index + template generation (rag_index.py, template_generator.py)
+  - get_client(): the memoized provider factory keyed on settings.PROVIDER
+    (used directly by stages/, evals/, synthetic/, oracle/ consensus)
+
+LEGACY within this package: ai/router.py (InferenceRouter / AIRouter) is an
+env-based router superseded by cherenkov.substrate.router.SubstrateRouter
+(tier routing + budget + egress policy + certification + fallback). The only
+production call site left is mcp/handlers.py (HITL repair). Do not add new
+callers; prefer SubstrateRouter or get_client().
+
+Retry layering: transport-level retry lives in the clients here;
+orchestration-level retry (with_retry) lives in substrate/retry.py. They have
+different scopes and error classification — see agent_memory
+findings_2026-08-01_dual_ai_routing_layers.md.
+"""
+
 from cherenkov.ai.interface import CachedInferenceClient, InferenceClient
 from cherenkov.ai.ollama_client import OllamaInferenceClient
 from cherenkov.ai.openai_client import OpenAIInferenceClient
