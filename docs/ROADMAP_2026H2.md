@@ -219,7 +219,7 @@ Scope re-derived from M1/M3 friction logs before committing. Candidates:
 | ID | Item | Notes |
 |---|---|---|
 | **T1** | [x] Retire root `cherenkov.py` | **DONE 2026-08-01** (#814, PR #821) — all 8 consumers migrated to `python -m cherenkov` consumer-by-consumer (13 commits), root shim deleted. |
-| **T2** | Record onboarding assets | #816 prep done 2026-08-01: cold run fails today — 6 friction issues (#826-831), blockers #826 (no tool install, `init` crashes) + #827 (no workspace provisioning). Fix before M1 recruitment. The milestone itself (M1) still needs real external practitioners. |
+| **T2** | Record onboarding assets | #816 prep done 2026-08-01: cold run initially failed — 6 friction issues (#826-831) filed and **all fixed same day** (prereq/install steps, init/generate/validate transcript alignment, FAQ stale refs). Cold run now **verified green** end-to-end (`init` exits 0). The milestone itself (M1) still needs real external practitioners (window 08-12 → 08-26). |
 | **T3** | [x] **Mypy gate is failing on main** | Fixed! Confirmed that the 7 errors in `ai/openai_client.py`, `ai/nemoclaw_client.py`, and `substrate/providers/localai.py` are fully resolved on the latest tree. |
 | **T4** | [x] Working-tree hygiene | Shared tree, concurrent agents. Stage specific files; never `git add -A` |
 | **T5** | [x] Untracked-file triage | `playwright-suite/`, `bench/escaped_defect/`, `svgs_dump.json`, `cherenkov-security-landing.png` — successfully triaged and added to `.gitignore`. |
@@ -228,7 +228,7 @@ Scope re-derived from M1/M3 friction logs before committing. Candidates:
 | **T8** | Release hygiene follow-up | #809 mostly done 2026-08-01: v1.2.0 release live, `/latest/` → 1.2, orphan `1.1.1` docs dir removed. **Remaining: malformed `v.1.1.1` tag — human decision** (retag rewrites published history). PyPI publish still gated behind M1. |
 | **T9** | [x] Wire Enterprise SAML/RBAC CLI placeholders | **DONE 2026-08-01** (#810, PR #824) — `saml_configure`/`rbac_assign` wired to real modules; RBAC enforcement stays on `web/auth/deps.py` `require_role` (decision documented in rbac.py). |
 | **T10** | [x] Spec Guardian daemon has no CLI entrypoint | **DONE 2026-08-01** (#811, PR #823) — `cherenkov guardian start` shipped with defaults + smoke test. |
-| **T11** | MCP tool depth + registry publish | #812 code done 2026-08-01 (PR #822): `check-suite`/`verify`/`generate` agent-invokable tools (37 total). **Registry publish (#792) remains** — needs human account; manifest fields documented in PR #822. |
+| **T11** | MCP tool depth + registry publish | #812 code done 2026-08-01 (PR #822): `check-suite`/`verify`/`generate` agent-invokable tools (37 total). **Manifest ready 2026-08-01** (#792): `manifest.json` (37 tools + auth + resources), `docs/README-MCP-PUBLISH.md` rewritten, `mcp serve` smoke PASS. **Registry submission remains — needs human account** (Smithery login, marketplace.cherenkov.dev, later official modelcontextprotocol/registry PR). |
 
 ---
 

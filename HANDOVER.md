@@ -1,29 +1,30 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-08-01 (evening — T-track swarm)
-**HEAD:** `main` at `4d23bd0`. T-track swarm (#810-#816) delivered via PRs #820-825: 1824 passed, 2 failed (pre-existing `test_verify_cmd.py` mock drift, tracked as #819).
+**Date:** 2026-08-01 (night — round 2: onboarding blockers + SDD fix)
+**HEAD:** `main` at `1df92b2`. Round 1 (T-track #810-816) merged; round 2 (friction fixes #826-831 + #792 manifest + SDD runtime) merged: **1849 passed, 2 failed** (pre-existing `test_verify_cmd.py` mock drift, tracked as #819).
 **Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"`.
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
 
-## T-track swarm result (2026-08-01)
+## Round 2 swarm result (2026-08-01 night)
 
-7-agent swarm (parallel worktrees under `~/cherenkov-worktrees/track-*`) closed the T-track backlog:
+Follow-up swarm on the #816 friction log + #792 + SDD runtime:
 
-| Issue | Delivered | PR |
+| Issue | Delivered | Branch (merged to main) |
 |---|---|---|
-| **#810** SAML/RBAC CLI wiring | `saml_configure` + `rbac_assign` call real `cherenkov/enterprise/{saml,rbac}.py`; enforcement decision: keep existing `require_role` in `web/auth/deps.py` (documented in rbac.py docstring); 8 new tests | #824 |
-| **#811** Guardian CLI | `cherenkov guardian start` (`cli/commands/guardian_cmd.py`), registered in `cli/core.py:106`; 7 new tests | #823 |
-| **#812** MCP tool depth | `check_suite`/`verify`/`generate` MCP tools (37 total now) reusing real pipeline code, path-containment guard; 29 new tests | #822 |
-| **#814** Retire root `cherenkov.py` | All 8 consumers migrated to `python -m cherenkov` (13 commits, consumer-by-consumer); root shim **deleted** (−1629 lines); docs-parity gates green | #821 |
-| **#815** AI routing consolidation | ai/=client layer (current), substrate/=orchestration (current), `ai/router.py`=legacy (1 call site); plan in `agent_memory/findings_2026-08-01_dual_ai_routing_layers.md`; 5 guard tests | #820 |
-| **#809** Release hygiene | v1.2.0 release already published; `/latest/` verified → 1.2; orphan `1.1.1` docs dir removed via mike; **`v.1.1.1` malformed tag still needs human decision** | — |
-| **#816** Onboarding prep | Cold run FAILS today: 6 friction issues filed (#826-831). Blockers: no tool install step (`init` crashes, missing httpx) + no workspace provisioning. Fix #826/#827 before M1 | — |
+| **#826/#827** (onboarding blockers) | New "Act 0: Prerequisites & Workspace Provisioning" (clone, venv, `pip install -r requirements.txt` + `pip install -e .`, Node, Ollama); Act 2 install fixed; **cold-run verified end-to-end** — `init` exits 0, `cherenkov.toml` created | `fix/track-826-onboarding` |
+| **#828** (generate 38/38 → 4 files) | Root cause: `mutation_id` per-endpoint → filename collision → silent overwrite. Fix: `scenario_spec_filename()` in `generate_cmd.py:12` — 38 scenarios now persist 38 files; scratch cleanup on repair path; `.gitignore` covers generated specs | `fix/track-828-validate` |
+| **#829** (validate fixture noise + 3.0.4) | `spec_validator.py:69-86` accepts 3.0.x/3.1.x/3.2.x patch versions; **new `validate --tests` filter** (glob/substring, `status: "empty"` on no-match) scopes runs away from the 13 shipped demo fixtures; Act-4 transcript rewritten to real format + `--fail-on-drift` documented (exit 0 by design) | `fix/track-828-validate` |
+| **#830** (init transcript) | Real `init` output (mut_spec.json/stub/target_spec.json autodetect, `cherenkov.yml` scaffold) replaces fabricated petstore.json visual; verified byte-accurate | `fix/track-831-faq` |
+| **#831** (FAQ stale refs) | `validate-spec`→`validate`+external swagger2openapi; `docs/ci/`→`docs/guides/github-actions-setup.md`; `dist/*.whl`→honest install story; env vars→real `CHERENKOV_TIER_*`/`OLLAMA_URL`/`CHERENKOV_VLM_LOCALAI_URL`; grep-clean verified | `fix/track-831-faq` |
+| **#792** (MCP registry) | `manifest.json` (repo root, 890 lines: 37 tools with inputSchemas, auth, resources, 1.2.0); `mcp serve` initialize/tools-list smoke PASS; `docs/README-MCP-PUBLISH.md` rewrite with human checklist. **Submission still needs human** (Smithery login, marketplace account) | `feat/track-792-mcp-manifest` |
+| SDD runtime (agent_sync) | `scripts/agent_sync.py:40` `_memsearch_client()` uses `paths=[...]` (memsearch 0.4.x API) + graceful fallback; before/log/token/after/status all exit 0; 5 regression tests | `fix/sdd-runtime` |
 
 **Notes for next agents:**
+- **M1 prep is now unblocked**: session_a_zero_to_hero.md survives a cold run (verified). Remaining friction findings: `docs/wiki/` stale `CHERENKOV_LLM_PROVIDER`/`LOCALAI_BASE_URL` refs (FAQ.md:41,142,146; Configuration.md:79,185,194,215,302; Concepts.md:148; Security.md:49) — file an issue (PAT blocked issue-create).
 - Pre-existing test failures `test_verify_cmd.py::{test_no_divergences_exits_0,test_llm_flag_passed}` (mock drift vs E0.5i `known_identifiers`/`allow_mutations` kwargs) — tracked as **#819**, D7 means agents don't fix; needs SDET owner.
-- `scripts/agent_sync.py before/after` crash (`MemSearch.__init__() unexpected kwarg workspace_dir`) — broken SDD runtime, worth an issue.
-- PAT (moaidmoatasem) has **repo write but no issues/PR write scope**: issue comments, issue close, and PR close (incl. duplicate #825) are blocked — flag to maintainer.
-- M1 (human validation) still owns 08-12 → 08-26; onboarding doc needs fixes from #826/#827 before recruitment.
+- PAT (moaidmoatasem) has **repo write but NO issues/PR write scope** — can't create issues, comment, close PRs (duplicate #825 still open), or close issues. Maintainer action needed.
+- **Shared-tree hazard confirmed**: a parallel Claude agent (`claude/happy-noether-kt638y`) switched the shared tree mid-swarm; round-2 merges briefly landed on its branch then were redone on main. Check `git status`/`git branch` before and after any merge.
+- M1 (human validation) window 08-12 → 08-26; onboarding doc is now cold-run-ready.
 
 ## Product decision: no enterprise/paid tier — fully open source for the community (2026-08-01)
 
