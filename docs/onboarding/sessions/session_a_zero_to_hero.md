@@ -117,17 +117,31 @@ cd ..
 
 ```
 $ ./bin/cherenkov init
+============================================================
+  CHERENKOV init -- zero-config setup
+============================================================
 
-================================================================================
-🔧 CHERENKOV INITIALIZATION
-================================================================================
-Auto-detecting OpenAPI specifications...
-Found: petstore.json (auto-matched spec target)
-Creating configuration profile: autodetect (laptop)
-Writing cherenkov.toml...
-✓ cherenkov.toml created successfully.
-================================================================================
+  [1/4] Ollama:     OK Ollama daemon is running
+  [2/4] Device:     CPU
+  [3/4] Spec files: 2 found
+         - mut_spec.json
+         - stub/target_spec.json
+  [4/4] Profile:    laptop
+
+  [OK] Generated ./cherenkov.toml
+
+------------------------------------------------------------
+  Next steps:
+    Run:    ./bin/cherenkov doctor    # verify your setup
+    Run:    ./bin/cherenkov validate --target <url>  # run tests
+
+  Defaults: offline, free, deterministic
+============================================================
 ```
+
+> If Ollama is not installed, `[1/4] Ollama` simply reports it as unavailable and
+> initialization still succeeds — Ollama is only needed for the LLM-backed
+> generation step in Act 3.
 
 ---
 
