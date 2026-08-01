@@ -2,7 +2,7 @@
 
 > **Audience:** Engineering leads, QA practitioners, architects, and executive stakeholders.
 > **Purpose:** Honest, thorough answers to the most common questions and objections.
-> **Last updated:** 2026-07-06
+> **Last updated:** 2026-08-02
 
 ---
 
@@ -14,7 +14,7 @@
 
 **Short answer:** OAS 3.0+ is the primary supported format. OAS 2.0 (Swagger) support is available via automatic conversion.
 
-CHERENKOV's parser targets OpenAPI Specification 3.0 and 3.1 natively. If your team is still on Swagger 2.0, CHERENKOV ships a built-in conversion step that calls `swagger2openapi` under the hood before ingesting the spec. This conversion is lossy for certain Swagger-specific extensions, so it is strongly recommended to migrate your spec to OAS 3.x first. For most real-world Swagger 2.0 specs (standard REST endpoints with JSON bodies), the conversion works without manual intervention. Edge cases — particularly specs using custom `x-` extensions or Swagger-only `formData` parameters — may require minor spec cleanup. Run `cherenkov validate-spec --spec swagger.json` to get a pre-flight report on conversion fidelity.
+CHERENKOV's parser targets OpenAPI Specification 3.0 and 3.1 natively. If your team is still on Swagger 2.0, note that CHERENKOV recognises the legacy `swagger` (v2.0) field at ingest but has no built-in conversion step — migrate your spec to OAS 3.x first (e.g. with the `swagger2openapi` CLI). This conversion is lossy for certain Swagger-specific extensions, so it is strongly recommended to review the converted spec. For most real-world Swagger 2.0 specs (standard REST endpoints with JSON bodies), the conversion works without manual intervention. Edge cases — particularly specs using custom `x-` extensions or Swagger-only `formData` parameters — may require minor spec cleanup. Run `cherenkov validate --target <base-url> --spec swagger.json` for a pre-flight check: the spec is validated before ingestion (reachability, YAML/JSON parse, required fields, `$ref` resolution) and errors abort the run with a non-zero exit.
 
 ---
 
@@ -22,7 +22,7 @@ CHERENKOV's parser targets OpenAPI Specification 3.0 and 3.1 natively. If your t
 
 **Short answer:** Yes. CHERENKOV supports multiple LLM backends via a tier-routing system.
 
-By default, CHERENKOV uses a locally-hosted model (Qwen via LocalAI) to ensure zero data egress and air-gap compatibility. The `cherenkov.toml` config exposes a `[llm]` section where you can configure the backend: `provider = "openai"` with your API key, `provider = "anthropic"` for Claude, or `provider = "localai"` for the default self-hosted path. Tier routing (Phase 2) automatically selects the cheapest capable model for each task — lightweight paraphrasing goes to the local model; complex multi-step repair chains escalate to a stronger model. GPT-4o and Claude 3.5 Sonnet have been tested and are fully supported. To use them, set `CHERENKOV_LLM_PROVIDER=openai` and `OPENAI_API_KEY=...` in your environment, or update `cherenkov.toml`. Enterprise teams can pin a specific model version for reproducibility.
+By default, CHERENKOV uses a locally-hosted model (Qwen via Ollama) to ensure zero data egress and air-gap compatibility. The `cherenkov.toml` config exposes `[substrate.tiers]` sections (`small`, `deep`, `vision`) where you can configure each backend: `provider = "openai"` with your API key, `provider = "anthropic"` for Claude, or `provider = "ollama"` for the default self-hosted path. Tier routing (Phase 2) automatically selects the cheapest capable model for each task — lightweight paraphrasing goes to the local model; complex multi-step repair chains escalate to a stronger model. GPT-4o and Claude 3.5 Sonnet have been tested and are fully supported. To use them, set `CHERENKOV_TIER_SMALL_PROVIDER=openai` (and `OPENAI_API_KEY=...`) in your environment, or update the corresponding `[substrate.tiers.*]` section in `cherenkov.toml`. Enterprise teams can pin a specific model version for reproducibility.
 
 ---
 
@@ -70,7 +70,7 @@ The source adapter system (`cherenkov/truth/sources/graphql.py`, `grpc.py`) was 
 
 **Short answer:** Native GitHub Actions workflow and a Jenkins Shared Library are both shipped.
 
-For GitHub Actions, add `.github/workflows/cherenkov.yml` (a template is in `docs/ci/`) and configure the `cherenkov-action` step with your `--target` URL, `--spec` path, and exit-code behaviour. The `cherenkov certify` command can post a badge to your README on every green run. For Jenkins, Phase 10 delivered `ci/jenkins/vars/cherenkovValidate.groovy` — a Shared Library step callable as `cherenkovValidate(target: 'http://staging:8000', spec: 'openapi.yaml')`. Both integrations support fail-fast (non-zero exit on any divergence) and warn-only modes (always exit 0 but emit a structured report). A Docker image (`ghcr.io/cherenkov-qa/cherenkov:latest`) is available for containerised CI runners. The `--output report.json` flag feeds structured results to any CI dashboard (Allure, ReportPortal, DataDog, etc.).
+For GitHub Actions, add `.github/workflows/cherenkov.yml` (a template is in `docs/guides/github-actions-setup.md`; `cherenkov init` also scaffolds `.github/workflows/cherenkov.yml` for you) and configure the `cherenkov-action` step with your `--target` URL, `--spec` path, and exit-code behaviour. The `cherenkov certify` command can post a badge to your README on every green run. For Jenkins, Phase 10 delivered `ci/jenkins/vars/cherenkovValidate.groovy` — a Shared Library step callable as `cherenkovValidate(target: 'http://staging:8000', spec: 'openapi.yaml')`. Both integrations support fail-fast (non-zero exit on any divergence) and warn-only modes (always exit 0 but emit a structured report). A Docker image (`ghcr.io/cherenkov-qa/cherenkov:latest`) is available for containerised CI runners. The `--output report.json` flag feeds structured results to any CI dashboard (Allure, ReportPortal, DataDog, etc.).
 
 ---
 
@@ -88,9 +88,9 @@ HITL triggers in three situations: (1) `--repair` exhausts 3 self-heal attempts 
 
 ### 10. Does my OpenAPI spec or test code ever leave my machine?
 
-**Short answer:** Only if you configure an external LLM provider. With the default LocalAI backend, nothing leaves your machine.
+**Short answer:** Only if you configure an external LLM provider. With the default local (Ollama) backend, nothing leaves your machine.
 
-The default CHERENKOV configuration uses a locally-hosted Qwen model via LocalAI, running entirely on your workstation or CI runner. In this mode, your OpenAPI spec, generated test code, API request/response payloads, and any business-logic details never leave the machine. If you configure an external LLM provider (OpenAI, Anthropic, etc.), your spec fragments and test generation prompts are sent to that provider's API under your account's terms of service — the same as any other OpenAI API call you might make. CHERENKOV does not have its own cloud backend; there is no CHERENKOV cloud service that receives your data. The `cherenkov certify` command signs certificates locally using a keypair you control.
+The default CHERENKOV configuration uses a locally-hosted Qwen model via Ollama, running entirely on your workstation or CI runner. In this mode, your OpenAPI spec, generated test code, API request/response payloads, and any business-logic details never leave the machine. If you configure an external LLM provider (OpenAI, Anthropic, etc.), your spec fragments and test generation prompts are sent to that provider's API under your account's terms of service — the same as any other OpenAI API call you might make. CHERENKOV does not have its own cloud backend; there is no CHERENKOV cloud service that receives your data. The `cherenkov certify` command signs certificates locally using a keypair you control.
 
 ---
 
@@ -98,7 +98,7 @@ The default CHERENKOV configuration uses a locally-hosted Qwen model via LocalAI
 
 **Short answer:** Yes. Air-gap mode is a first-class deployment scenario.
 
-Install CHERENKOV from the prebuilt wheel (`dist/cherenkov-1.0.0.whl`) or via `pip install` from an internal mirror. Pre-pull the LocalAI Docker image (`localai/localai:latest`) and the Qwen model weights to your internal registry. Set `CHERENKOV_LLM_PROVIDER=localai` and `LOCALAI_BASE_URL=http://your-internal-localai:8080` in `cherenkov.toml`. With these settings, CHERENKOV makes zero outbound network calls. The `eject` command produces a pure pytest/requests suite with no runtime CHERENKOV dependency, so even CI runners without CHERENKOV installed can execute the ejected tests. The Tauri desktop app (Phase 3) bundles the LocalAI sidecar, making it fully self-contained for offline workstations. Contact the team for an air-gap deployment guide with pre-tested model configurations.
+Install CHERENKOV from source: clone the repository (or mirror it to your internal Git host) and run `pip install .` (or `pip install -e .` for development). There is no prebuilt wheel — the package is not yet published to PyPI (M2-gated); `install.sh` automates the source install. Pre-pull the Ollama images and Qwen model weights (`qwen2.5-coder:7b`, `deepseek-r1:8b`, `qwen2.5-vl:7b`) to your internal registry, and point the tiers at them: `OLLAMA_URL=http://your-internal-ollama:11434/api/generate` (or `CHERENKOV_VLM_LOCALAI_URL=http://your-internal-localai:8080` for the VLM tier), and keep `egress = "internal"` (the default). With these settings, CHERENKOV makes zero outbound network calls. The `eject` command produces a pure pytest/requests suite with no runtime CHERENKOV dependency, so even CI runners without CHERENKOV installed can execute the ejected tests. The Tauri desktop app (Phase 3) bundles the LocalAI sidecar, making it fully self-contained for offline workstations. Contact the team for an air-gap deployment guide with pre-tested model configurations.
 
 ---
 

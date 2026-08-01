@@ -105,7 +105,7 @@ cd ..
 ```
 
 **Presenter:**
-"Perfect. Now that our dependencies are ready, we will initialize our CHERENKOV project. The `cherenkov init` command automatically detects any OpenAPI specifications in the workspace and creates a local configuration file called `cherenkov.toml` with offline-first, local-first settings."
+"Perfect. Now that our dependencies are ready, we will initialize our CHERENKOV project. The `cherenkov init` command automatically detects any OpenAPI specifications in the workspace (filenames matching `openapi.*` or `*spec*`) and creates a local configuration file called `cherenkov.toml` with offline-first, local-first settings. In this workspace it picks up the repo's own spec files — `mut_spec.json` and `stub/target_spec.json`. We'll point it at the Petstore spec explicitly in the next act."
 
 **[Action: Type init command.]**
 
@@ -128,7 +128,8 @@ $ ./bin/cherenkov init
          - stub/target_spec.json
   [4/4] Profile:    laptop
 
-  [OK] Generated ./cherenkov.toml
+  [OK] Generated cherenkov.toml
+  [OK] Generated .github/workflows/cherenkov.yml
 
 ------------------------------------------------------------
   Next steps:
@@ -136,6 +137,7 @@ $ ./bin/cherenkov init
     Run:    ./bin/cherenkov validate --target <url>  # run tests
 
   Defaults: offline, free, deterministic
+  Upgrade:  edit profile in cherenkov.toml, or set CHERENKOV_* env vars
 ============================================================
 ```
 
