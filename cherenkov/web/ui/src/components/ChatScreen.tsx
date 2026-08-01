@@ -4,9 +4,9 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, MessageSquare, Bot, User, Loader2 } from 'lucide-react';
+import { Send, MessageSquare, Bot, User, Loader2, Plus } from 'lucide-react';
 import { PageHeader } from './ui';
-import { createChatSession } from '../lib/api';
+import { createChatSession, fetchChatSessions, fetchChatMessages, ChatSessionSummary } from '../lib/api';
 
 interface ChatMessage {
   role: string;
@@ -19,14 +19,49 @@ export default function ChatScreen() {
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<ChatSessionSummary[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [selectedPersona, setSelectedPersona] = useState('developer');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  const loadSessions = () => {
+    fetchChatSessions()
+      .then(setSessions)
+      .finally(() => setSessionsLoading(false));
+  };
 
   useEffect(() => {
     createChatSession()
       .then((data) => setSessionId(data.session_id))
       .catch(() => setError('Failed to create chat session'));
+    loadSessions();
   }, []);
+
+  const startNewChat = () => {
+    abortRef.current?.abort();
+    setIsStreaming(false);
+    setInput('');
+    setMessages([]);
+    setError(null);
+    createChatSession(selectedPersona)
+      .then((data) => {
+        setSessionId(data.session_id);
+        loadSessions();
+      })
+      .catch(() => setError('Failed to create chat session'));
+  };
+
+  const openSession = (session: ChatSessionSummary) => {
+    abortRef.current?.abort();
+    setIsStreaming(false);
+    setInput('');
+    setSessionId(session.session_id);
+    setError(null);
+    fetchChatMessages(session.session_id)
+      .then((data) => setMessages(data.messages))
+      .catch(() => setError('Failed to load session history'));
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -142,22 +177,43 @@ export default function ChatScreen() {
     }
   };
 
-  const [selectedPersona, setSelectedPersona] = useState('developer');
-
   return (
     <div className="h-full flex grid-bg bg-transparent relative z-10" id="chat-screen" data-testid="chat-screen">
-      {/* Conversation History Panel Placeholder */}
+      {/* Conversation history, from live GET /api/v1/chat/sessions */}
       <div className="w-64 border-r border-white/10 bg-black/20 hidden md:flex flex-col shrink-0">
-        <div className="p-4 border-b border-white/10">
+        <div className="p-4 border-b border-white/10 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-[#E6EDF3]">History</h3>
+          <button
+            onClick={startNewChat}
+            title="Start a new chat"
+            className="p-1 rounded hover:bg-white/10 text-[#7D8DA1] hover:text-white transition cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
         </div>
         <div className="flex-1 p-4 overflow-y-auto space-y-2">
-          <div className="p-2 text-xs text-[#7D8DA1] bg-white/5 rounded-md cursor-pointer hover:bg-white/10 transition">
-            Previous Session A
-          </div>
-          <div className="p-2 text-xs text-[#7D8DA1] bg-white/5 rounded-md cursor-pointer hover:bg-white/10 transition">
-            Previous Session B
-          </div>
+          {sessionsLoading ? (
+            <p className="text-xs text-[#7D8DA1]/60 text-center py-4">Loading...</p>
+          ) : sessions.length === 0 ? (
+            <p className="text-xs text-[#7D8DA1]/60 text-center py-4">No previous sessions yet.</p>
+          ) : (
+            sessions.map((s) => (
+              <button
+                key={s.session_id}
+                onClick={() => openSession(s)}
+                className={`w-full text-left p-2 text-xs rounded-md cursor-pointer transition ${
+                  s.session_id === sessionId
+                    ? 'bg-glow-blue/10 border border-glow-blue/30 text-text-primary'
+                    : 'text-[#7D8DA1] bg-white/5 border border-transparent hover:bg-white/10'
+                }`}
+              >
+                <div className="font-medium truncate">{s.persona_id}</div>
+                <div className="text-[10px] text-[#7D8DA1]/70 font-mono mt-0.5">
+                  {s.message_count} msg{s.message_count === 1 ? '' : 's'}
+                </div>
+              </button>
+            ))
+          )}
         </div>
       </div>
 

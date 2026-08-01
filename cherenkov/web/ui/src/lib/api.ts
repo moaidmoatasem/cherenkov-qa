@@ -494,6 +494,20 @@ export async function createChatSession(persona_id = 'qa_assistant'): Promise<{ 
   return res.json();
 }
 
+export interface ChatSessionSummary {
+  session_id: string;
+  persona_id: string;
+  created_at: string;
+  message_count: number;
+}
+
+export async function fetchChatSessions(limit = 20): Promise<ChatSessionSummary[]> {
+  const res = await fetch(`${API_BASE}/chat/sessions?limit=${limit}`, { headers: authHeaders() });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.sessions ?? [];
+}
+
 /**
  * Stream a chat message via SSE. Calls onToken for each streamed token,
  * resolves the full accumulated response when the stream completes.
