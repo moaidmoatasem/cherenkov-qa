@@ -2,6 +2,8 @@
 
 from cherenkov.substrate.provider import (
     ModelProvider,
+    OllamaProvider,
+    OpenAIProvider,
     ProviderCapabilities,
     get_provider,
     get_vlm_provider,
@@ -30,9 +32,10 @@ from cherenkov.substrate.vlm_provider import (
     VLMResult as OldVLMResult,
 )
 
-# Legacy aliases (backward compat)
-OllamaProvider = get_provider("ollama").__class__
-OpenAIProvider = get_provider("openai").__class__
+# Legacy aliases (backward compat) — direct class references only.
+# NOTE: previously computed as get_provider("ollama").__class__, which
+# instantiated real provider clients (and possibly the shared response cache)
+# at import time. Direct re-export of the provider.py classes is identical.
 VLMProvider = OldVLMProvider
 VLMResult = OldVLMResult
 
