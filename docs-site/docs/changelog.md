@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-08-02
+
+### Added
+- **Spec Guardian CLI** (Phase 14): `cherenkov guardian start --spec <spec> --base-url <url>`
+  polls every declared endpoint and persists drift events; the `SpecGuardianDaemon` now
+  has its first real caller (#811, #823).
+- **Enterprise CLI wiring** (Phase 13): `cherenkov enterprise` (SAML/RBAC/org/audit/
+  compliance) now wires the real `cherenkov/enterprise/` modules (#810, #824).
+- **MCP agent tools**: check-suite/verify/generate exposed for IDEs/agents (#812, #821);
+  MCP registry `manifest.json` + publish instructions (#792).
+- 5-Workspace UI/UX revamp + FastAPI wiring + Playwright E2E suite (2e66658).
+- `validate --tests` scope filter; OpenAPI 3.0.x patch acceptance (#829).
+
+### Fixed
+- **FTS5 query refactor** (#832): join on shadow-table `rowid`; escape embedded quotes.
+- Generate persists one distinct file per scenario (#828); SDD MemSearch API repaired.
+- Corrected the malformed `v1.1.1` tag.
+
 ## [1.2.0] - 2026-08-01
 
 ### Added

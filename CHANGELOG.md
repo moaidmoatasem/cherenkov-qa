@@ -52,12 +52,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * T-track swarm result — [#810](https://github.com/moaidmoatasem/cherenkov-qa/issues/810)-[#816](https://github.com/moaidmoatasem/cherenkov-qa/issues/816) done, friction logs filed ([#826](https://github.com/moaidmoatasem/cherenkov-qa/issues/826)-831), [#819](https://github.com/moaidmoatasem/cherenkov-qa/issues/819) tracked ([fe6f37b](https://github.com/moaidmoatasem/cherenkov-qa/commit/fe6f37b6164cca08a9c73f17464370b73a53bfbc))
 * **wiki:** replace stale env vars with real settings names ([156dba0](https://github.com/moaidmoatasem/cherenkov-qa/commit/156dba073d1823d28bf2edecaed0772eb685dd5d))
 
-## [Unreleased]
-
-### Added
-- **Enterprise CLI wiring** (Phase 13): `cherenkov enterprise` now wires SAML (`enterprise saml configure`), RBAC (`enterprise rbac assign`), org management (`enterprise org create/list`), audit export (`enterprise audit export`), and SOC2 compliance reports (`enterprise compliance generate`) to the real `cherenkov/enterprise/` modules. 114 tests in `tests/unit/test_enterprise_cli.py` (#810/#824).
-- **Spec Guardian CLI entrypoint** (Phase 14): `cherenkov guardian start --spec <spec> --base-url <url>` polls every declared endpoint (repeatable `--endpoint METHOD:PATH` to override, `--interval` and `--db` to tune) and persists drift events via `SpecGuardianDaemon`, giving the previously caller-less daemon its first real caller. 147 tests in `tests/unit/test_guardian_cmd.py` (#811/#823).
-
 ## [1.2.0] - 2026-08-01
 
 ### Added
