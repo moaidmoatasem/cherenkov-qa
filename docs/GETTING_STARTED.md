@@ -868,7 +868,7 @@ Enterprise-tier commands for org management, SSO, audit logs, and compliance.
  
  ---
  
- #### `guardian`
+#### `guardian`
  Continuous spec-drift monitoring against a live API. `guardian start` polls every endpoint declared in the OpenAPI spec and persists drift events to the drift store until interrupted (SIGINT/SIGTERM).
  
  ```bash
