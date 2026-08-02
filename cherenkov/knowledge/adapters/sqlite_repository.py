@@ -148,7 +148,8 @@ class SQLiteKnowledgeRepository:
         try:
             if not terms:
                 raise sqlite3.OperationalError("empty pattern")
-            fts_query = " AND ".join(f'"{t.replace(\'"\', \'""\')}"' for t in terms)
+            escaped_terms = [t.replace('"', '""') for t in terms]
+            fts_query = " AND ".join(f'"{t}"' for t in escaped_terms)
             # Join on rowid (the FTS shadow-table integer key) rather than item_id TEXT
             # to avoid an UNINDEXED join predicate that forces a full-table scan.
             cursor = conn.execute(

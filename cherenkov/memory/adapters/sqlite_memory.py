@@ -151,9 +151,8 @@ class SQLiteMemoryRepository:
 
             if query.query:
                 # FTS5 match — AND-join terms, fallback to LIKE on empty
-                fts_query = " AND ".join(
-                    f'"{t.replace(\'"\', \'""\')}"' for t in query.query.split() if t
-                ) or query.query
+                escaped_terms = [t.replace('"', '""') for t in query.query.split() if t]
+                fts_query = " AND ".join(f'"{t}"' for t in escaped_terms) or query.query
                 clauses.append(
                     "e.rowid IN (SELECT rowid FROM memory_fts WHERE memory_fts MATCH ?)"
                 )
