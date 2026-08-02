@@ -1,0 +1,84 @@
+from click.testing import CliRunner
+
+from cherenkov.cli.core import _register_commands, cli
+from cherenkov.cli.groups import GROUP_LAYOUT, build_groups
+
+ALL_TOP_LEVEL = [
+    "audit", "verify", "check-suite", "validate", "synthetic", "diff",
+    "report", "eject", "self-test", "completion", "init", "doctor",
+    "visual", "perf", "hitl", "review", "mcp", "generate", "dashboard",
+    "map", "daemon", "explore", "author", "record", "tokens", "governance",
+    "certify", "profile", "bench", "ocr", "check-stale", "drift", "demo",
+    "eval", "examples", "routine", "teleport", "enterprise", "playbook",
+    "guardian",
+]
+
+
+def _reset_cli():
+    cli.commands.clear()
+
+
+def test_all_commands_are_grouped():
+    _reset_cli()
+    _register_commands()
+    grouped = set()
+    for layout in GROUP_LAYOUT.values():
+        grouped.update(layout["commands"])
+    assert grouped == set(ALL_TOP_LEVEL)
+
+
+def test_seven_groups_registered():
+    _reset_cli()
+    _register_commands()
+    for name in GROUP_LAYOUT:
+        assert name in cli.commands, f"group {name} missing"
+
+
+def test_groups_contain_expected_commands():
+    _reset_cli()
+    _register_commands()
+    runner = CliRunner()
+    for name, layout in GROUP_LAYOUT.items():
+        group = cli.commands[name]
+        for cmd_name in layout["commands"]:
+            assert cmd_name in group.commands, f"{name}/{cmd_name} missing"
+
+
+def test_top_level_aliases_preserved():
+    _reset_cli()
+    _register_commands()
+    for name in ALL_TOP_LEVEL:
+        assert name in cli.commands, f"top-level {name} missing"
+
+
+def test_grouped_invocation_works():
+    _reset_cli()
+    _register_commands()
+    runner = CliRunner()
+    result = runner.invoke(cli, ["pipeline", "validate", "--help"])
+    assert result.exit_code == 0
+    assert "validate" in result.output
+
+
+def test_top_level_alias_still_invokable():
+    _reset_cli()
+    _register_commands()
+    runner = CliRunner()
+    result = runner.invoke(cli, ["doctor", "--help"])
+    assert result.exit_code == 0
+    assert "doctor" in result.output
+
+
+def test_group_help_lists_commands():
+    _reset_cli()
+    _register_commands()
+    runner = CliRunner()
+    result = runner.invoke(cli, ["pipeline", "--help"])
+    assert result.exit_code == 0
+    for cmd_name in GROUP_LAYOUT["pipeline"]["commands"]:
+        assert cmd_name in result.output
+
+
+def test_build_groups_skips_missing_commands():
+    groups = build_groups({"validate": cli.commands.get("validate")})
+    assert len(groups) == len(GROUP_LAYOUT)
