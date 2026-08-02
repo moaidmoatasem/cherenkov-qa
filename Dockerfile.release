@@ -1,6 +1,6 @@
 # Multi-Stage Dockerfile for CHERENKOV QA Release
 # Stage 1: Build Web UI Assets
-FROM node:22-slim AS ui-build
+FROM node:26-slim AS ui-build
 WORKDIR /app/cherenkov/web/ui
 COPY cherenkov/web/ui/package*.json ./
 RUN npm install
