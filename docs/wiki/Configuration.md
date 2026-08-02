@@ -76,14 +76,16 @@ Environment variables override config file values.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CHERENKOV_LLM_PROVIDER` | `ollama` | LLM provider: `ollama`, `localai`, `openai` |
-| `CHERENKOV_LLM_MODEL` | `qwen2.5-coder:7b` | Model for test generation |
-| `CHERENKOV_LLM_PLAN_MODEL` | same as `MODEL` | Model for scenario planning |
-| `OLLAMA_URL` | `http://localhost:11434` | Ollama server URL |
-| `LOCALAI_URL` | `http://localhost:8080` | LocalAI server URL |
+| `PROVIDER` | `ollama` | LLM provider: `ollama`, `openai`, `github`, `anthropic`, `nemoclaw` |
+| `GEN_MODEL` | `qwen2.5-coder:7b` | Model for test generation |
+| `OLLAMA_URL` | `http://localhost:11434/api/generate` | Ollama server URL |
+| `CHERENKOV_TIER_SMALL_PROVIDER` | `ollama` | Tier-routed provider for small/quick tasks |
+| `CHERENKOV_TIER_DEEP_PROVIDER` | `ollama` | Tier-routed provider for deep analysis |
+| `CHERENKOV_TIER_VISION_PROVIDER` | `ollama` | Tier-routed provider for vision/VLM tasks |
+| `CHERENKOV_FALLBACK_ENABLED` | `true` | Enable fallback when the primary provider fails |
+| `CHERENKOV_FALLBACK_PROVIDER` | `openai` | Fallback provider (needs `OPENAI_API_KEY`) |
 | `OPENAI_API_KEY` | — | OpenAI API key (cloud fallback only) |
-| `CHERENKOV_LLM_TIMEOUT` | `60` | LLM call timeout in seconds |
-| `CHERENKOV_LLM_MAX_RETRIES` | `3` | Max retries on LLM failure |
+| `OLLAMA_TIMEOUT` | `300` | LLM call timeout in seconds |
 
 ### Validation
 
@@ -162,7 +164,7 @@ flowchart LR
 
 ```bash
 # Via environment variable (recommended for CI)
-export CHERENKOV_LLM_MODEL=qwen2.5-coder:14b
+export GEN_MODEL=qwen2.5-coder:14b
 
 # Via CLI flag
 ./bin/cherenkov validate --target http://localhost:8000 --model qwen2.5-coder:14b
@@ -181,19 +183,23 @@ cat .cherenkov/config.yaml
 # Start LocalAI via Docker Compose
 docker compose -f docker-compose.ai.yml up localai
 
-# Point CHERENKOV at LocalAI
-export CHERENKOV_LLM_PROVIDER=localai
-export LOCALAI_URL=http://localhost:8080
+# Point CHERENKOV's VLM tier at LocalAI
+export CHERENKOV_VLM_PROVIDER=localai
+export CHERENKOV_VLM_LOCALAI_URL=http://localhost:8080
+export CHERENKOV_VLM_LOCALAI_MODEL=llava
 
 ./bin/cherenkov validate --target http://localhost:8000
 ```
 
+> LocalAI serves the vision (VLM) tier. The small/deep generation tiers remain on Ollama (see `[substrate.tiers.*]` in `cherenkov.toml`).
+
 ### Using OpenAI (Cloud Fallback)
 
 ```bash
-export CHERENKOV_LLM_PROVIDER=openai
+export CHERENKOV_TIER_SMALL_PROVIDER=openai
+export CHERENKOV_FALLBACK_PROVIDER=openai
 export OPENAI_API_KEY=sk-...
-export CHERENKOV_LLM_MODEL=gpt-4o
+export CHERENKOV_TIER_SMALL_MODEL=gpt-4o
 
 ./bin/cherenkov validate --target http://localhost:8000
 ```
@@ -209,11 +215,12 @@ Choose your setup based on budget and needs:
 <details>
 <summary><strong>L0 — Bare CLI ($0/month)</strong></summary>
 
-No Docker, no Ollama. Uses a stub LLM (useful for testing the pipeline without a GPU).
+No Docker, no Ollama. `generate` falls back to template-based tests when no LLM is reachable (useful for testing the pipeline without a GPU).
 
 ```bash
-export CHERENKOV_LLM_PROVIDER=stub  # No actual LLM calls
-./bin/cherenkov validate --target http://localhost:8000 --dry-run
+# No LLM calls — template fallback
+./bin/cherenkov generate --spec target/openapi.yaml --no-repair
+./bin/cherenkov validate --target http://localhost:8000
 ```
 
 </details>
@@ -299,8 +306,8 @@ jobs:
 
       - name: Run conformance tests
         env:
-          CHERENKOV_LLM_PROVIDER: stub  # Use stub LLM in CI (no GPU)
           CHERENKOV_TARGET: http://localhost:8000
+          CHERENKOV_FALLBACK_ENABLED: "false"  # keep runs local; template fallback used when no LLM
         run: |
           PYTHONPATH=. ./bin/cherenkov validate --format json > report.json
 

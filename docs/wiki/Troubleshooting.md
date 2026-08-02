@@ -126,7 +126,7 @@ ollama run qwen2.5-coder:7b
 # Look for "using cuda" in the output
 
 # If no GPU available, use a smaller model
-export CHERENKOV_LLM_MODEL=qwen2.5-coder:3b
+export GEN_MODEL=qwen2.5-coder:3b
 ```
 
 ### Ollama OOM (out of memory)
@@ -139,13 +139,13 @@ The model doesn't fit in GPU VRAM. Switch to a smaller model:
 
 ```bash
 # 8GB VRAM: use 7b
-export CHERENKOV_LLM_MODEL=qwen2.5-coder:7b
+export GEN_MODEL=qwen2.5-coder:7b
 
 # 4-6GB VRAM: use 3b
-export CHERENKOV_LLM_MODEL=qwen2.5-coder:3b
+export GEN_MODEL=qwen2.5-coder:3b
 
 # CPU only: use 3b
-export CHERENKOV_LLM_MODEL=qwen2.5-coder:3b
+export GEN_MODEL=qwen2.5-coder:3b
 ```
 
 ---
@@ -249,7 +249,7 @@ export CHERENKOV_SKIP_PRISM=true
 
 ```bash
 # 1. Try a different model
-export CHERENKOV_LLM_MODEL=qwen2.5-coder:14b
+export GEN_MODEL=qwen2.5-coder:14b
 
 # 2. Check if the spec has unusual patterns
 ./bin/cherenkov explore --spec ./openapi.yaml

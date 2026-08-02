@@ -145,7 +145,7 @@ CHERENKOV uses a local LLM for test generation and defaults to the safest tier:
 |------|---------|---------|
 | **Local** (default) | Ollama + `qwen2.5-coder:7b` | All generation — your spec stays on your machine |
 | **LocalAI** | LocalAI server | Docker-based alternative, compatible with OpenAI API |
-| **Cloud** | OpenAI, Anthropic | Opt-in only — requires explicit `CHERENKOV_LLM_PROVIDER=openai` |
+| **Cloud** | OpenAI, Anthropic | Opt-in only — requires explicit `CHERENKOV_TIER_SMALL_PROVIDER=openai` (or `CHERENKOV_FALLBACK_PROVIDER=openai` with `CHERENKOV_FALLBACK_ENABLED=true`) |
 
 The router is a strategy pattern: you switch providers by setting an env var, not by changing code. The LLM is only used for generation (Stage 3) — all oracle logic is deterministic and spec-derived.
 

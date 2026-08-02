@@ -46,7 +46,7 @@ flowchart TD
     CLI --> SPEC
     CLI --> TESTS
     CLI --> API
-    CLI -. "only with CHERENKOV_LLM_PROVIDER=openai" .-> OPENAI
+    CLI -. "only with CHERENKOV_TIER_SMALL_PROVIDER=openai" .-> OPENAI
     CLI -. "only with K8s operator" .-> K8S
 
     style LOCAL fill:#dcfce7,stroke:#16a34a
@@ -61,7 +61,7 @@ flowchart TD
 - LLM prompts and responses (Ollama is local)
 
 **What leaves your machine only with explicit configuration:**
-- Your spec (if `CHERENKOV_LLM_PROVIDER=openai` is set)
+- Your spec (if `CHERENKOV_TIER_SMALL_PROVIDER=openai` or `CHERENKOV_FALLBACK_PROVIDER=openai` is set)
 - Test run data (if Logfire token configured)
 
 ---
@@ -117,7 +117,7 @@ Never put credentials in config files committed to source control.
 
 ### OpenAI Provider
 
-If you configure `CHERENKOV_LLM_PROVIDER=openai`:
+If you configure `CHERENKOV_TIER_SMALL_PROVIDER=openai` (or `CHERENKOV_FALLBACK_PROVIDER=openai` with `CHERENKOV_FALLBACK_ENABLED=true`):
 
 - Your OpenAPI spec is sent to OpenAI's servers
 - OpenAI's data retention policy applies

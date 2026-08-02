@@ -38,7 +38,7 @@ All three run **headed** (visible window) or **headless** (CI mode).
 
 ### Does my data leave my machine?
 
-No — by default everything runs locally via Ollama. The only exception is if you explicitly set `CHERENKOV_LLM_PROVIDER=openai`, which sends your spec to OpenAI's servers. The default is always local.
+No — by default everything runs locally via Ollama. The only exception is if you explicitly set `CHERENKOV_TIER_SMALL_PROVIDER=openai` (or `CHERENKOV_FALLBACK_PROVIDER=openai` with `CHERENKOV_FALLBACK_ENABLED=true`), which sends your spec to OpenAI's servers. The default is always local.
 
 ### Is this just another API testing tool?
 
@@ -139,12 +139,7 @@ Suggestions only. Never auto-applied.
 
 ### Can I run it in CI without a GPU?
 
-Yes. Use `CHERENKOV_LLM_PROVIDER=stub` to skip LLM calls:
-
-```yaml
-env:
-  CHERENKOV_LLM_PROVIDER: stub
-```
+Yes. Ollama runs on CPU (slower, but works) and `generate` falls back to template-based tests when no LLM is reachable. If you want to skip LLM repair loops entirely, use `cherenkov generate --no-repair`:
 
 Or use a self-hosted runner with Ollama pre-installed.
 

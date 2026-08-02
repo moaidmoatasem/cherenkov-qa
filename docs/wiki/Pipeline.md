@@ -142,7 +142,7 @@ test('password_too_short — POST /users returns 422 for short password', async 
 
 **Key point:** the expected status (`422`) comes from the OpenAPI spec, not from the LLM's knowledge. The LLM writes the test structure; the spec provides the oracle.
 
-**LLM used:** `qwen2.5-coder:7b` via Ollama (default). Swap via `CHERENKOV_LLM_MODEL` env var. See [Configuration](Configuration.md).
+**LLM used:** `qwen2.5-coder:7b` via Ollama (default). Swap via `GEN_MODEL` env var. See [Configuration](Configuration.md).
 
 ---
 

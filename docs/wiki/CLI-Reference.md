@@ -392,7 +392,7 @@ All CLI options can be set via environment variables (useful for CI):
 | `CHERENKOV_TARGET` | `--target` | `http://api:8000` |
 | `CHERENKOV_SPEC` | `--spec` | `./api/openapi.yaml` |
 | `CHERENKOV_OUTPUT` | `--output` | `./.cherenkov` |
-| `CHERENKOV_LLM_MODEL` | `--model` | `qwen2.5-coder:14b` |
+| `GEN_MODEL` | `--model` | `qwen2.5-coder:14b` |
 | `CHERENKOV_OLLAMA_URL` | — | `http://localhost:11434` |
 | `CHERENKOV_TIMEOUT` | `--timeout` | `120` |
 | `CHERENKOV_WORKERS` | `--workers` | `8` |
