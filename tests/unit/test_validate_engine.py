@@ -34,14 +34,14 @@ _FILES = [
 
 
 class TestValidationEngineTestsFilter:
-    def test_no_filter_runs_everything(self, tmp_path, monkeypatch):
+    def test_no_filter_skips_shipped_fixtures(self, tmp_path, monkeypatch):
         engine = _make_engine(tmp_path, _FILES)
         monkeypatch.setattr(
             "cherenkov.execution.validate.PlaywrightRunner.execute_test", _fake_execute
         )
         results = engine.validate_suite("http://localhost:9999")
         ids = sorted(r["scenario_id"] for r in results["reports"])
-        assert ids == ["POST_pet_happy_path", "demo_correct", "golden_weakened"]
+        assert ids == ["POST_pet_happy_path"]
 
     def test_glob_filter_limits_run(self, tmp_path, monkeypatch):
         engine = _make_engine(tmp_path, _FILES)

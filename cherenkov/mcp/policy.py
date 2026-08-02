@@ -10,12 +10,14 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 from pathlib import Path
 from typing import Any
 
 
 class PolicyEngine:
     def __init__(self, policy_path: str | None = None):
+        self._lock = threading.RLock()
         self.policy_path = policy_path or os.getenv(
             "CHERENKOV_POLICY_FILE", "cherenkov-policy.json"
         )
@@ -28,10 +30,12 @@ class PolicyEngine:
         return json.loads(path.read_text())
 
     def reload(self) -> None:
-        self.policy = self._load()
+        with self._lock:
+            self.policy = self._load()
 
     def is_tool_allowed(self, profile: str, server: str, tool: str) -> bool:
-        profile_cfg = self.policy.get("profiles", {}).get(profile, {})
+        with self._lock:
+            profile_cfg = self.policy.get("profiles", {}).get(profile, {})
         server_cfg = profile_cfg.get("servers", {}).get(server, {})
         allowed = server_cfg.get("tools", ["*"])
         blocked = server_cfg.get("blocked_tools", [])
@@ -42,7 +46,8 @@ class PolicyEngine:
         return tool in allowed
 
     def is_network_allowed(self, profile: str, server: str, host: str) -> bool:
-        profile_cfg = self.policy.get("profiles", {}).get(profile, {})
+        with self._lock:
+            profile_cfg = self.policy.get("profiles", {}).get(profile, {})
         server_cfg = profile_cfg.get("servers", {}).get(server, {})
         allowed = server_cfg.get("allow_network", ["*"])
         if "*" in allowed:
@@ -50,4 +55,5 @@ class PolicyEngine:
         return host in allowed
 
     def list_policy(self) -> dict[str, Any]:
-        return dict(self.policy)
+        with self._lock:
+            return dict(self.policy)

@@ -850,21 +850,35 @@ cherenkov playbook new my-playbook
 Enterprise-tier commands for org management, SSO, audit logs, and compliance.
 
 ```bash
-# Manage organizations and tenants
-cherenkov enterprise org
-
-# Configure SAML 2.0 / SSO
-cherenkov enterprise saml
-
-# Manage Role-Based Access Control
-cherenkov enterprise rbac
-
-# Generate compliance reports
-cherenkov enterprise compliance
-
-# Access audit logs
-cherenkov enterprise audit
-```
+ # Manage organizations and tenants
+ cherenkov enterprise org
+ 
+ # Configure SAML 2.0 / SSO
+ cherenkov enterprise saml
+ 
+ # Manage Role-Based Access Control
+ cherenkov enterprise rbac
+ 
+ # Generate compliance reports
+ cherenkov enterprise compliance
+ 
+ # Access audit logs
+ cherenkov enterprise audit
+ ```
+ 
+ ---
+ 
+ #### `guardian`
+ Continuous spec-drift monitoring against a live API. `guardian start` polls every endpoint declared in the OpenAPI spec and persists drift events to the drift store until interrupted (SIGINT/SIGTERM).
+ 
+ ```bash
+ # Monitor all spec paths (every 60s)
+ cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8080
+ 
+ # Watch a single endpoint every 10s, store history elsewhere
+ cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8080 \
+   --endpoint "GET:/health" --interval 10 --db .cherenkov/guardian.db
+ ```
 
 ---
 

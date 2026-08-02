@@ -9,6 +9,8 @@ import os
 import shlex
 import subprocess
 import time
+import signal
+import sys
 
 from cherenkov.hooks.domain.models import (
     FailMode,
@@ -47,14 +49,28 @@ class SubprocessHookExecutor:
 
         start = time.monotonic()
         try:
-            proc = subprocess.run(
-                rendered_cmd,
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=config.timeout,
-                env={**_current_env(), **config.env},
-            )
+            if sys.platform == "win32":
+                proc = subprocess.Popen(
+                    rendered_cmd,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+                    env={**_current_env(), **config.env},
+                )
+            else:
+                proc = subprocess.Popen(
+                    rendered_cmd,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    start_new_session=True,
+                    env={**_current_env(), **config.env},
+                )
+                
+            stdout, stderr = proc.communicate(timeout=config.timeout)
             duration_ms = int((time.monotonic() - start) * 1000)
 
             if proc.returncode == 0:
@@ -63,8 +79,8 @@ class SubprocessHookExecutor:
                     status=HookStatus.SUCCESS,
                     command=rendered_cmd,
                     exit_code=proc.returncode,
-                    stdout=proc.stdout,
-                    stderr=proc.stderr,
+                    stdout=stdout,
+                    stderr=stderr,
                     duration_ms=duration_ms,
                 )
             result = HookResult(
@@ -72,19 +88,28 @@ class SubprocessHookExecutor:
                 status=HookStatus.FAILED,
                 command=rendered_cmd,
                 exit_code=proc.returncode,
-                stdout=proc.stdout,
-                stderr=proc.stderr,
+                stdout=stdout,
+                stderr=stderr,
                 duration_ms=duration_ms,
                 error_message=f"Exit code {proc.returncode}",
             )
             return self._handle_failure(config, result)
 
         except subprocess.TimeoutExpired:
+            if sys.platform != "win32":
+                try:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                except Exception:
+                    pass
+            proc.kill()
+            stdout, stderr = proc.communicate()
             duration_ms = int((time.monotonic() - start) * 1000)
             result = HookResult(
                 event=config.event,
                 status=HookStatus.TIMEOUT,
                 command=rendered_cmd,
+                stdout=stdout,
+                stderr=stderr,
                 duration_ms=duration_ms,
                 error_message=f"Timed out after {config.timeout}s",
             )

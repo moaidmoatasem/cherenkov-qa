@@ -1,23 +1,24 @@
-# Orchestrator Progress — Phase M0 - E0.5d: Spec-Shape Conformance Corpus
+# Orchestrator Progress
+
+## Current Status
+Last visited: 2026-08-02T10:23:25Z
 
 ## Iteration Status
 Current iteration: 2 / 32
-Last visited: 2026-08-01T17:54:35+03:00
 
-## Current Status
-- [x] Initialized project briefing, project scope
-- [x] Iteration 1 completed (REJECTED by Reviewer 1 & Victory Auditor)
-- [x] Iteration 2 Remediation:
-  - [x] Explorer 2: Root cause analysis & remediation plan designed
-  - [x] Worker 2: Created `specs/corpus/` with 10 downloaded local OpenAPI specs, created `scripts/run_conformance_corpus.py`, executed `cherenkov verify`, verified zero silent drop math match (4,387 ops = 880 planned + 3,507 dropped), published `docs/marketing/E0.5d_conformance_corpus.md`, pytest passed (32/32), committed & pushed real SHA `e2998a6bfb0a6e3860ea3d0144d2d46e96a29792`
-  - [x] Reviewer 2: Verified file paths, HTTP verb math, zero silent drop invariant, and marketing report (APPROVED)
-  - [x] Forensic Auditor 2: Re-audited metric authenticity, git commit hash, and verification output (CLEAN)
-
-## Log & Retrospective Notes
-- 2026-08-01 (Iteration 2 complete): All audit findings resolved:
-  1. `specs/corpus/` exists locally with 10 downloaded, valid OpenAPI 3.x specifications.
-  2. `scripts/run_conformance_corpus.py` exists at exact path and runs against local `specs/corpus/`.
-  3. `docs/marketing/E0.5d_conformance_corpus.md` published at exact path.
-  4. Real engine metrics: 4,387 operations, 880 planned probes, 3,507 dropped endpoints, 0 crashes, 0 silent drops. Math equation holds 100% per spec.
-  5. Real git commit `e2998a6bfb0a6e3860ea3d0144d2d46e96a29792` pushed to origin main.
-  6. Reviewer 2 APPROVED & Forensic Auditor 2 CLEAN.
+## Checklist
+- [x] Initialized workspace state (`ORIGINAL_REQUEST.md`, `BRIEFING.md`, `progress.md`)
+- [x] Schedule heartbeat cron (task-9)
+- [x] Dispatch 5 parallel Explorer subagents for Subsystem Audits
+  - [x] Track 1: Core CLI & Engine & Clean Architecture (Conv: 7d192a39) — COMPLETED
+  - [x] Track 2: Second Brain & Memory Subsystem (Conv: b88dea28) — COMPLETED
+  - [x] Track 3: MCP Server & Hooks Subsystem (Conv: 3fd98973) — COMPLETED
+  - [x] Track 4: Conductor, Agents & VLM Subsystem (Conv: 6a205ad7) — COMPLETED
+  - [x] Track 5: Desktop Host & Dashboard UI Subsystem (Conv: cec5932f) — COMPLETED
+- [x] Aggregate Explorer audit reports
+- [x] Dispatch Worker subagent (`d5eab424`) to produce `comprehensive_architecture_review.md` — COMPLETED
+- [x] Dispatch Reviewer (`a6d71d82`) & Forensic Auditor (`94c23d73`) subagents for verification — AUDIT VETO (2 symbol discrepancies)
+- [x] Dispatch Remediation Worker (`73a47341`) to fix symbol discrepancies — COMPLETED
+- [/] Dispatch fresh Forensic Auditor (`1e520c5d`) to re-verify deliverable
+- [ ] Verify audit deliverable against criteria
+- [ ] Write `handoff.md` and complete task

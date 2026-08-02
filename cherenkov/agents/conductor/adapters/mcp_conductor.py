@@ -41,30 +41,38 @@ class MCPConductor:
         start_time = time.monotonic()
         results: list[SubAgentResult] = []
 
-        # Fan-out: execute sub-tasks in parallel using a thread pool.
-        # In a fully asynchronous stack this would use asyncio.gather,
-        # but the MCPClient uses synchronous requests for now.
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(task.sub_tasks) or 1) as executor:
-            future_to_task = {
-                executor.submit(self._run_sub_task, sub_task, task.global_timeout_seconds): sub_task
+        import asyncio
+
+        async def _run_all():
+            tasks = [
+                asyncio.to_thread(self._run_sub_task, sub_task, task.global_timeout_seconds)
                 for sub_task in task.sub_tasks
-            }
-            for future in concurrent.futures.as_completed(future_to_task):
-                try:
-                    result = future.result()
-                    results.append(result)
-                except Exception as exc:
-                    sub_task = future_to_task[future]
-                    _log.error("Sub-task %s failed with exception: %s", sub_task.task_id, exc)
-                    results.append(
-                        SubAgentResult(
-                            task_id=sub_task.task_id,
-                            agent_id="unknown",
-                            status="failed",
-                            output=None,
-                            error_message=str(exc),
-                        )
+            ]
+            return await asyncio.gather(*tasks, return_exceptions=True)
+
+        try:
+            raw_results = asyncio.run(_run_all())
+        except RuntimeError:
+            # Fallback if event loop is already running
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                future = pool.submit(asyncio.run, _run_all())
+                raw_results = future.result()
+
+        for i, res in enumerate(raw_results):
+            if isinstance(res, Exception):
+                sub_task = task.sub_tasks[i]
+                _log.error("Sub-task %s failed with exception: %s", sub_task.task_id, res)
+                results.append(
+                    SubAgentResult(
+                        task_id=sub_task.task_id,
+                        agent_id="unknown",
+                        status="failed",
+                        output=None,
+                        error_message=str(res),
                     )
+                )
+            else:
+                results.append(res)
 
         duration = time.monotonic() - start_time
         _log.info("Conductor completed in %.2fs", duration)

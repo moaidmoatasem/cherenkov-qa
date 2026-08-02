@@ -70,6 +70,8 @@ class TestVerifyCmd:
             use_llm=False,
             max_probes=40,
             probed_endpoints=[],
+            known_identifiers=None,
+            allow_mutations=False,
         )
 
     def test_divergences_printed(self) -> None:
@@ -128,6 +130,8 @@ class TestVerifyCmd:
             use_llm=True,
             max_probes=40,
             probed_endpoints=[],
+            known_identifiers=None,
+            allow_mutations=False,
         )
 
     def test_multiple_severities_displayed(self) -> None:

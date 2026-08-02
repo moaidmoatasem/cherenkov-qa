@@ -169,6 +169,12 @@ class ValidationEngine:
             }
 
         test_files = [f for f in os.listdir(self.tests_dir) if f.endswith(".spec.ts")]
+        
+        # Prevent picking up shipped catch-the-AI-cheating fixtures by default
+        _fixtures = ("demo_", "golden_", "password_too_short")
+        if not tests_filter:
+            test_files = [f for f in test_files if not f.startswith(_fixtures)]
+
         if tests_filter:
             test_files = [
                 f

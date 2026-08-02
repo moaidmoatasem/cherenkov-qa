@@ -1,78 +1,83 @@
-# BRIEFING — 2026-08-01T17:54:35+03:00
+# BRIEFING — 2026-08-02T10:23:25Z
 
 ## Mission
-Lead and execute Phase M0 - E0.5d: Spec-Shape Conformance Corpus for CHERENKOV QA. Download ≥10 real-world OpenAPI 3.x specifications (Stripe, GitHub, Twilio, Kubernetes, + 6 from APIs.guru), execute `cherenkov verify` across all specs, record probes planned / endpoints dropped (with explicit reasons, zero silent drops), and publish `docs/marketing/E0.5d_conformance_corpus.md`.
+Perform a full, comprehensive technical audit of the entire CHERENKOV-QA codebase and produce `comprehensive_architecture_review.md` at project root with file-level evidence, architectural analysis, system design, design patterns, and code quality evaluations.
 
 ## 🔒 My Identity
-- Archetype: Orchestrator
+- Archetype: Project Orchestrator
 - Roles: orchestrator, user_liaison, human_reporter, successor
-- Working directory: Z:\home\moaid\cherenkov-qa\.agents\orchestrator\
-- Original parent: 0384b95b-6f07-4078-ae21-dd264605fb13
-- Original parent conversation ID: 0384b95b-6f07-4078-ae21-dd264605fb13
+- Working directory: Z:\home\moaid\cherenkov-qa\.agents\orchestrator
+- Original parent: 4132cdfc-86df-475a-94a9-9c075a4d6153
+- Original parent conversation ID: 4132cdfc-86df-475a-94a9-9c075a4d6153
 
 ## 🔒 My Workflow
-- **Pattern**: Project Orchestrator
-- **Scope document**: Z:\home\moaid\cherenkov-qa\.agents\orchestrator\PROJECT.md
-1. **Decompose**: Decomposed Phase M0 - E0.5d into 4 milestones (M1: Corpus Acquisition, M2: Conformance Engine Execution, M3: Marketing Artifact, M4: Audit & Proof of Work).
+- **Pattern**: Project / Parallel Subsystem Audit
+- **Scope document**: Z:\home\moaid\cherenkov-qa\PROJECT.md
+1. **Decompose**: Decompose audit into 5 parallel Explorer tracks covering all major subsystems of CHERENKOV-QA:
+   - Track 1: Core CLI & Engine & Clean Architecture Ports/Adapters (`cherenkov/core/`, `cherenkov/cli/`, `cherenkov/engine/`)
+   - Track 2: Second Brain & Memory (`cherenkov/memory/`, SQLite FTS5, GraphRAG, event bridges, MemSearch SDD, agent_memory)
+   - Track 3: MCP Server & Hooks Ecosystem (`cherenkov/mcp/`, MCP marketplace, JWT auth, push events, `cherenkov/hooks/`)
+   - Track 4: Multi-Agent Conductor, Chat Agent & VLM / LocalAI Tier Routing (`cherenkov/agents/`, `cherenkov/vlm/`, SSE streaming)
+   - Track 5: Desktop Host (Tauri 2 `desktop/`) & Dashboard UI (`dashboard/`, screens, device manager, SSE)
 2. **Dispatch & Execute**:
-   - **Direct (iteration loop)**: Dispatch workers and reviewers for each milestone via `invoke_subagent`.
-3. **On failure** (in this order): Retry, Replace, Skip, Redistribute, Redesign, Escalate.
-4. **Succession**: at 16 spawns, write handoff.md, spawn successor
-- **Work items**:
-  1. M1: Spec Corpus Acquisition (10 real specs saved in `specs/corpus/`) [done]
-  2. M2: Conformance Engine Execution (`scripts/run_conformance_corpus.py`, 4,387 ops, 880 planned probes, 3,507 dropped, zero silent drop math match) [done]
-  3. M3: Marketing Artifact (`docs/marketing/E0.5d_conformance_corpus.md`) [done]
-  4. M4: Gate G0 Audit & Proof of Work (SDD, pytest, real git commit `e2998a6bfb0a6e3860ea3d0144d2d46e96a29792` & push, Forensic Audit) [done]
-- **Current phase**: 4 (Completed)
-- **Current focus**: Task Completed & Cleaned Up
+   - Step 2a: Launch 5 parallel Explorer subagents to conduct deep-dive file-level audits. (Done)
+   - Step 2b: Aggregate Explorer audit reports into synthesis file. (Done)
+   - Step 2c: Launch Worker subagent to author `comprehensive_architecture_review.md`. (Done - Conv: d5eab424)
+   - Step 2d: Launch Reviewer and Forensic Auditor subagents to verify deliverable quality and integrity. (Auditor vetoed due to 2 symbol discrepancies)
+   - Step 2e: Launch Remediation Worker to correct symbol inaccuracies in `comprehensive_architecture_review.md`. (Done - Conv: 73a47341)
+   - Step 2f: Re-audit with fresh Forensic Auditor (`auditor_recheck`, Conv: 1e520c5d). (In Progress)
+3. **On failure**: Retry / Replace stuck agents, ensure comprehensive coverage.
+4. **Succession**: Self-succeed at 16 spawns if necessary.
 
 ## 🔒 Key Constraints
-- Dispatch-only orchestrator. Cannot write code or execute terminal commands directly.
-- Must delegate all execution to subagents via `invoke_subagent`.
-- Zero silent endpoint drops — every dropped endpoint must have explicit accounting.
-- Exact file paths required: `specs/corpus/`, `scripts/run_conformance_corpus.py`, `docs/marketing/E0.5d_conformance_corpus.md`.
-- Proof of work via git commit and push before task completion.
-- PowerShell syntax (;) in Windows environment.
+- NEVER write, modify, or create source code files directly.
+- NEVER run build/test commands yourself — require workers to do so.
+- MAY use file-editing tools ONLY for metadata/state files (.md) in .agents/ folder.
+- Subagents MUST perform actual file reading and analysis; all claims MUST have concrete file path and code evidence.
 
 ## Current Parent
-- Conversation ID: 0384b95b-6f07-4078-ae21-dd264605fb13
-- Updated: 2026-08-01T17:54:35+03:00
+- Conversation ID: 4132cdfc-86df-475a-94a9-9c075a4d6153
+- Updated: 2026-08-02T10:23:25Z
 
 ## Key Decisions Made
-- Iteration 1 rejected by Reviewer 1 & Victory Auditor.
-- Explorer 2 completed root cause analysis and remediation design.
-- Worker 2 executed remediation plan (created `specs/corpus/`, `scripts/run_conformance_corpus.py`, `docs/marketing/E0.5d_conformance_corpus.md`, pytest 32/32 pass, git commit `e2998a6bfb0a6e3860ea3d0144d2d46e96a29792` & push).
-- Reviewer 2 (9fd867a8-2cac-4de1-b802-c5d3c7870a68) approved deliverables.
-- Forensic Auditor 2 (0edec766-caf9-4311-9a19-aa1495ffa4bf) issued CLEAN audit verdict.
-- Cancelled heartbeat task-72.
+- Decomposed codebase into 5 parallel audit tracks across all technical subsystems.
+- All 5 Explorer subagents completed deep-dive file-level audits and produced detailed reports.
+- Worker subagent `worker_report_writer` generated `comprehensive_architecture_review.md`.
+- `worker_remediation` fixed symbol discrepancies (`PatternCandidate` -> `PromotionRule`/`EntryKind`, `HookAction` -> `HookStatus`/`HookContext`).
+- Dispatched fresh Forensic Auditor `auditor_recheck` (Conv ID `1e520c5d`) for final integrity verification.
 
 ## Team Roster
 | Agent | Type | Work Item | Status | Conv ID |
 |-------|------|-----------|--------|---------|
-| explorer_1 | teamwork_preview_explorer | Investigate verify engine, spec sources & SDD protocol | completed | 3f2f48d8-0e61-4449-bcee-19673fc2aace |
-| worker_1 | teamwork_preview_worker | Execute M1-M3 (Iteration 1 - rejected) | completed | 40388c75-f1d7-4963-b19e-63fe463619eb |
-| reviewer_1 | teamwork_preview_reviewer | Review Iteration 1 (REQUEST_CHANGES) | completed | fd2b23ad-c5fd-4321-aa23-5220dd76bb80 |
-| auditor_1 | teamwork_preview_auditor | Forensic audit Iteration 1 (REJECTED) | completed | b22c480a-769b-469b-b0c8-26fcb3231b4c |
-| explorer_2 | teamwork_preview_explorer | Analyze Audit Evidence & Remediation Strategy | completed | a7a83862-de69-4b48-9cef-507404bf9fd4 |
-| worker_2 | teamwork_preview_worker | Execute Iteration 2 Remediation Plan | completed | e5b1c18e-fbb0-4f2b-887f-82ab0d273e2a |
-| reviewer_2 | teamwork_preview_reviewer | Review Iteration 2 Remediation Deliverables | completed | 9fd867a8-2cac-4de1-b802-c5d3c7870a68 |
-| auditor_2 | teamwork_preview_auditor | Forensic Audit Iteration 2 Remediation | completed | 0edec766-caf9-4311-9a19-aa1495ffa4bf |
+| Explorer 1 | teamwork_preview_explorer | Core CLI & Engine Audit | completed | 7d192a39-ab22-4ac0-bee6-4b8f0be5d32d |
+| Explorer 2 | teamwork_preview_explorer | Second Brain & Memory Audit | completed | b88dea28-65a6-41f9-abeb-5d46745972fd |
+| Explorer 3 | teamwork_preview_explorer | MCP Server & Hooks Audit | completed | 3fd98973-7877-42c6-89ba-20b9ed7002fd |
+| Explorer 4 | teamwork_preview_explorer | Conductor Agents & VLM Audit | completed | 6a205ad7-edf0-4fc4-afd3-940dd13f19a2 |
+| Explorer 5 | teamwork_preview_explorer | Desktop & Dashboard UI Audit | completed | cec5932f-b5cf-4ff3-b27a-a4f218330b71 |
+| Worker 1 | teamwork_preview_worker | Author Review Deliverable | completed | d5eab424-7ccc-42ac-a916-d71327287590 |
+| Reviewer | teamwork_preview_reviewer | Review Deliverable Quality | completed | a6d71d82-dbf0-4c39-9040-5cc86e5cf957 |
+| Auditor 1 | teamwork_preview_auditor | Forensic Integrity Audit | completed (veto) | 94c23d73-017f-4b69-bd41-40c449ae4e53 |
+| Worker 2 | teamwork_preview_worker | Symbol Remediation | completed | 73a47341-262e-4f10-bb49-113fa842802d |
+| Auditor 2 | teamwork_preview_auditor | Forensic Re-Audit | in-progress | 1e520c5d-6b8e-4f65-b307-fda194ec3aeb |
 
 ## Succession Status
 - Succession required: no
-- Spawn count: 8 / 16
-- Pending subagents: none
+- Spawn count: 10 / 16
+- Pending subagents: 1e520c5d-6b8e-4f65-b307-fda194ec3aeb
 - Predecessor: none
 - Successor: not yet spawned
 
 ## Active Timers
-- Heartbeat cron: cancelled
+- Heartbeat cron: task-9
 - Safety timer: none
-- On succession: kill all timers before spawning successor
-- On context truncation: run `manage_task(Action="list")` — re-create if missing
 
 ## Artifact Index
-- Z:\home\moaid\cherenkov-qa\.agents\orchestrator\BRIEFING.md — identity and state
-- Z:\home\moaid\cherenkov-qa\.agents\orchestrator\PROJECT.md — project roadmap & milestone spec
-- Z:\home\moaid\cherenkov-qa\.agents\orchestrator\progress.md — iteration status and progress tracking
-- Z:\home\moaid\cherenkov-qa\.agents\orchestrator\handoff.md — final handoff report
+- Z:\home\moaid\cherenkov-qa\.agents\orchestrator\ORIGINAL_REQUEST.md — Verbatim user request
+- Z:\home\moaid\cherenkov-qa\.agents\orchestrator\BRIEFING.md — Persistent briefing index
+- Z:\home\moaid\cherenkov-qa\.agents\orchestrator\progress.md — Liveness & status tracking
+- Z:\home\moaid\cherenkov-qa\.agents\explorer_core_cli\audit_report.md — Audit report for Subsystem 1
+- Z:\home\moaid\cherenkov-qa\.agents\explorer_memory_brain\audit_report.md — Audit report for Subsystem 2
+- Z:\home\moaid\cherenkov-qa\.agents\explorer_mcp_hooks\audit_report.md — Audit report for Subsystem 3
+- Z:\home\moaid\cherenkov-qa\.agents\explorer_conductor_vlm\audit_report.md — Audit report for Subsystem 4
+- Z:\home\moaid\cherenkov-qa\.agents\explorer_desktop_dashboard\audit_report.md — Audit report for Subsystem 5
+- Z:\home\moaid\cherenkov-qa\comprehensive_architecture_review.md — Final deliverable

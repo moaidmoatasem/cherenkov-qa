@@ -11,27 +11,21 @@ Usage:
 
 import hashlib
 import json
-import sqlite3
 from datetime import datetime
 from pathlib import Path
 
+from cherenkov.knowledge.adapters.sqlite_repository import SQLiteKnowledgeRepository
+from cherenkov.knowledge.domain.models import KnowledgeItem
+
 ROOT = Path(__file__).resolve().parent.parent
 QWEN_MEMORY_DIR = ROOT / ".qwen" / "memory"
-CHERENKOV_DB_PATH = ROOT / "agent_memory" / "knowledge.db"
+CHERENKOV_DB_PATH = str(ROOT / "agent_memory" / "knowledge.db")
 SYNC_DIR = ROOT / "agent_memory" / "sync"
 
 def get_db_connection():
-    # Ensure DB exists
-    db_exists = CHERENKOV_DB_PATH.exists()
-    conn = sqlite3.connect(CHERENKOV_DB_PATH)
-    if not db_exists:
-        conn.execute("""
-            CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts
-            USING fts5(id, source, content, timestamp);
-        """)
-    return conn
+    return SQLiteKnowledgeRepository(CHERENKOV_DB_PATH)
 
-def sync_qwen_seeds(conn, dry_run=False):
+def sync_qwen_seeds(repo: SQLiteKnowledgeRepository, dry_run=False):
     """Sync static markdown seeds from .qwen/memory into FTS5."""
     print("Syncing static seeds...")
     if not QWEN_MEMORY_DIR.exists():
@@ -45,22 +39,22 @@ def sync_qwen_seeds(conn, dry_run=False):
         doc_id = hashlib.sha256(content.encode()).hexdigest()[:16]
 
         # Check if already synced
-        cur = conn.cursor()
-        cur.execute("SELECT id FROM knowledge_fts WHERE id = ?", (doc_id,))
-        if cur.fetchone():
+        if repo.get_by_id(doc_id):
             continue
 
         if not dry_run:
-            conn.execute(
-                "INSERT INTO knowledge_fts (id, source, content, timestamp) VALUES (?, ?, ?, ?)",
-                (doc_id, f"qwen_seed:{md_file.name}", content, datetime.now().isoformat())
+            item = KnowledgeItem(
+                item_id=doc_id,
+                source=f"qwen_seed:{md_file.name}",
+                data={"text": content},
+                metadata={"timestamp": datetime.now().isoformat()}
             )
-            conn.commit()
+            repo.store(item)
         count += 1
 
     return count
 
-def sync_session_decisions(conn, dry_run=False):
+def sync_session_decisions(repo: SQLiteKnowledgeRepository, dry_run=False):
     """Sync decisions from agent_memory/sync/findings into FTS5."""
     print("Syncing session decisions...")
     findings_dir = SYNC_DIR / "findings"
@@ -80,17 +74,17 @@ def sync_session_decisions(conn, dry_run=False):
                     ts = finding.get("timestamp", "")
                     doc_id = f"dec_{session_id}_{hashlib.md5((ts+content).encode()).hexdigest()[:8]}"
 
-                    cur = conn.cursor()
-                    cur.execute("SELECT id FROM knowledge_fts WHERE id = ?", (doc_id,))
-                    if cur.fetchone():
+                    if repo.get_by_id(doc_id):
                         continue
 
                     if not dry_run:
-                        conn.execute(
-                            "INSERT INTO knowledge_fts (id, source, content, timestamp) VALUES (?, ?, ?, ?)",
-                            (doc_id, f"session:{session_id}", content, ts)
+                        item = KnowledgeItem(
+                            item_id=doc_id,
+                            source=f"session:{session_id}",
+                            data={"text": content},
+                            metadata={"timestamp": ts}
                         )
-                        conn.commit()
+                        repo.store(item)
                     count += 1
         except Exception as e:
             print(f"Error processing {finding_file.name}: {e}")
@@ -104,17 +98,18 @@ def main():
     if dry_run:
         print("Running in DRY-RUN mode. No changes will be saved.")
 
-    conn = get_db_connection()
+    repo = get_db_connection()
     try:
-        seed_count = sync_qwen_seeds(conn, dry_run)
+        seed_count = sync_qwen_seeds(repo, dry_run)
         print(f"Added {seed_count} new static seeds to FTS5.")
 
-        decision_count = sync_session_decisions(conn, dry_run)
+        decision_count = sync_session_decisions(repo, dry_run)
         print(f"Added {decision_count} new decisions to FTS5.")
 
         print("Sync complete.")
     finally:
-        conn.close()
+        repo.close()
 
 if __name__ == "__main__":
     main()
+

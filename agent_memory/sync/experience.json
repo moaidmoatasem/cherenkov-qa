@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "last_updated": "2026-08-01T14:53:50.206119+00:00",
-  "experience_count": 8,
-  "sessions_contributing": 16,
+  "last_updated": "2026-08-02T01:38:58.213829+00:00",
+  "experience_count": 11,
+  "sessions_contributing": 21,
   "experiences": [
     {
       "id": "exp_seed_001",
@@ -114,6 +114,45 @@
         "E0.5d_conformance_corpus"
       ],
       "session_id": "sess_20260801144835_36a447"
+    },
+    {
+      "id": "exp_sess_20260802012546_9bbede_2e81",
+      "timestamp": "2026-08-02T01:30:09.481412+00:00",
+      "task": "ui_revamp",
+      "action": "decision Implemented 5-Workspace UI architecture and live FastAPI backend wiring",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "ui_revamp"
+      ],
+      "session_id": "sess_20260802012546_9bbede"
+    },
+    {
+      "id": "exp_sess_20260802013052_d17a3e_35ec",
+      "timestamp": "2026-08-02T01:33:56.885185+00:00",
+      "task": "ui_e2e",
+      "action": "decision Implemented 5-Workspace Playwright E2E UI Automation suite",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "ui_e2e"
+      ],
+      "session_id": "sess_20260802013052_d17a3e"
+    },
+    {
+      "id": "exp_sess_20260802013724_ca849e_769f",
+      "timestamp": "2026-08-02T01:38:58.213829+00:00",
+      "task": "ui_remediation",
+      "action": "decision Fixed static_router order in api.py, 38/38 pytest pass, git commit & push complete",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "ui_remediation"
+      ],
+      "session_id": "sess_20260802013724_ca849e"
     }
   ],
   "pattern_index": {
@@ -146,6 +185,15 @@
     ],
     "E0.5d_conformance_corpus": [
       "exp_sess_20260801144835_36a447_e9c2"
+    ],
+    "ui_revamp": [
+      "exp_sess_20260802012546_9bbede_2e81"
+    ],
+    "ui_e2e": [
+      "exp_sess_20260802013052_d17a3e_35ec"
+    ],
+    "ui_remediation": [
+      "exp_sess_20260802013724_ca849e_769f"
     ]
   }
 }

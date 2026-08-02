@@ -8,6 +8,7 @@ from typing import Any
 import requests
 
 from cherenkov.core.settings import get_settings
+from cherenkov.ports.vlm_provider import VLMProvider
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ def _encode_image(image_path: str) -> str:
         return base64.b64encode(f.read()).decode("utf-8")
 
 
-class LocalAIVLMProvider:
+class LocalAIVLMProvider(VLMProvider):
     def __init__(
         self,
         base_url: str | None = None,
