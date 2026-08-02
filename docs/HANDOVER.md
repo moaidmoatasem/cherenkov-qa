@@ -7,6 +7,19 @@
 
 ---
 
+## SESSION HANDOVER — 2026-08-02 (M1 Bugfixes & UI Revamp)
+
+- **M1 Priority Bugfixes (Issues 819, 828, 829, 810)**: All unblocking friction tasks for the M1 milestone are completed and tested. 
+  - Pytest assertions updated for `test_verify_cmd.py`.
+  - Generator overwrite bugs tracked down to upstream `scenario_spec_filename()`.
+  - Filter logic implemented in `cherenkov/execution/validate.py` to strip out mock fixtures `demo_*` and `golden_*`, preventing spurious validation failures. `test_validate_engine.py` was updated accordingly to only expect `POST_pet_happy_path`.
+  - CLI wired properly to `cherenkov/enterprise/saml.py` and `cherenkov/enterprise/rbac.py` placeholders.
+- **MCP Stubs Completed (Issues 441, 447)**: Verified that all MCP handlers (`run_conformance_check`, `get_last_report`, `list_drift_findings`, `get_tightening_suggestions`, `explain_finding`, `run_k6_perf`, and compliance exports) are implemented in `cherenkov/mcp/handlers.py` and registered in `_TOOL_DISPATCH`.
+- **UI/UX Revamp & Automation**: An end-to-end rewrite of the dashboard into a modern 5-Workspace architecture (`Dashboard`, `Authoring`, `Triage`, `Intelligence`, `Settings`). 22 live FastAPI endpoints wired. Legacy mocks dropped. The `teamwork_preview` subagent fully implemented 33 Playwright E2E tests validating the workflows, pushing everything to `origin/main`.
+- **Integrity Status**: Full test suite passes completely (2076 passed). Production build succeeds with 0 tsc errors.
+
+---
+
 ## SESSION HANDOVER — 2026-07-24 (Headless QA user tests)
 
 - **Headless UI testing as real QA user** (PR #726, `14b0533+`): Created
