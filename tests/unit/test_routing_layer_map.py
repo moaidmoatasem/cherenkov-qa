@@ -17,12 +17,14 @@ See agent_memory/findings_2026-08-01_dual_ai_routing_layers.md.
 
 from unittest.mock import patch
 
-from cherenkov.ai import CachedInferenceClient, get_client, reset_client
-from cherenkov.ai.interface import InferenceClient
 from cherenkov.core.settings import get_settings
 from cherenkov.substrate import OllamaProvider as SubstrateOllamaProvider
+from cherenkov.substrate.client_factory import CachedInferenceClient, get_client, reset_client
+from cherenkov.substrate.interfaces import InferenceClient
 from cherenkov.substrate.provider import (
     OllamaProvider as FactoryOllamaProvider,
+)
+from cherenkov.substrate.provider import (
     get_vlm_provider,
     provider_for_tier,
 )

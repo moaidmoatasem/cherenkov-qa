@@ -6,7 +6,6 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
-from cherenkov.ai import get_accounting_report, get_cache_stats
 from cherenkov.core.contracts import (
     EndpointSlice,
     GenerateOutput,
@@ -29,6 +28,7 @@ from cherenkov.stages.generate import GenerateStage
 from cherenkov.stages.ingest import IngestStage
 from cherenkov.stages.plan import PlanStage
 from cherenkov.stages.review import ReviewStage
+from cherenkov.substrate.client_factory import get_accounting_report, get_cache_stats
 
 
 def _assert_not_production() -> None:

@@ -18,9 +18,9 @@ import time
 
 import requests
 
-from cherenkov.ai.interface import InferenceClient
 from cherenkov.core.errors import OllamaJSONError, get_logger
 from cherenkov.core.settings import get_settings
+from cherenkov.substrate.interfaces import InferenceClient
 
 _RE_FENCE_START = re.compile(r"^```[a-z]*\n?")
 _RE_FENCE_END = re.compile(r"\n?```$")

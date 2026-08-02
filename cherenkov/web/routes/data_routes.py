@@ -11,8 +11,8 @@ router = APIRouter(tags=["data"])
 
 @router.get("/api/v1/overview")
 async def get_overview():
-    from cherenkov.ai.accounting import CostAccountant
     from cherenkov.core.feedback_store import FeedbackStore
+    from cherenkov.substrate.accounting import CostAccountant
 
     accountant = CostAccountant()
     kpi = accountant.get_governance_kpis()
@@ -148,8 +148,8 @@ async def get_memory():
 
 @router.get("/api/v1/signals")
 async def get_signals():
-    from cherenkov.ai.accounting import CostAccountant
     from cherenkov.reflector.store import VerdictStore
+    from cherenkov.substrate.accounting import CostAccountant
 
     store = VerdictStore()
 

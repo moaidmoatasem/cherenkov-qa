@@ -4,12 +4,16 @@ from __future__ import annotations
 import signal
 import threading
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
 
-from cherenkov.cli.commands.guardian_cmd import guardian_cmd, _default_endpoints, _parse_endpoint_opts
+from cherenkov.cli.commands.guardian_cmd import (
+    _default_endpoints,
+    _parse_endpoint_opts,
+    guardian_cmd,
+)
 from cherenkov.spec_guardian.daemon import SpecGuardianDaemon
 
 # ── fixtures ──────────────────────────────────────────────────────────────────
@@ -38,22 +42,22 @@ def runner() -> CliRunner:
 
 class StubDaemon:
     """Captures constructor kwargs; records whether start() was called."""
-    instances: list["StubDaemon"] = []
-    
+    instances: list[StubDaemon] = []
+
     def __init__(self, **kwargs):
         self.kwargs = kwargs
         self.started = False
         StubDaemon.instances.append(self)
-        
+
     def start(self) -> None:
         self.started = True
-        
+
     def run_once(self) -> MagicMock:
         report = MagicMock()
         report.total_checks = 1
         report.events = []
         return report
-        
+
     def stop(self) -> None:
         pass
 
@@ -169,7 +173,7 @@ class TestGuardianDaemonSmoke:
             )
             # Override endpoints to just /health to avoid calling other mocked stuff
             daemon.endpoints = [{"method": "GET", "path": "/health"}]
-            
+
             stopper = threading.Timer(0.5, daemon.stop)
             stopper.start()
             # mock request so we don't actually hit 127.0.0.1

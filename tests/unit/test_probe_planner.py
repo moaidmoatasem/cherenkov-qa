@@ -519,7 +519,7 @@ class TestPathItemLevelParameters:
 class TestKnownIdentifiers:
     def test_known_identifiers_used_for_path_generation(self) -> None:
         spec = copy.deepcopy(ORDERS_SPEC)
-        
+
         # Even with schema, default is 0. If we provide known_identifiers, it should use that instead.
         hyps = spec_hypotheses(
             "/orders/{orderId}", "get", spec["paths"]["/orders/{orderId}"]["get"], spec,
@@ -530,7 +530,7 @@ class TestKnownIdentifiers:
         assert happy
         method, path, _, _ = _parse_repro_steps(happy[0].repro_steps)
         assert path == "/orders/42"
-        
+
         # Test planning with it
         probes_with = plan_probes(spec, known_identifiers={"orderId": ["99"]})
         assert "/orders/{orderId}" in {p for p, _, _, _ in probes_with}
@@ -539,7 +539,7 @@ class TestKnownIdentifiers:
 class TestAllowMutations:
     def test_allow_mutations_generates_post_happy_path(self) -> None:
         spec = copy.deepcopy(ORDERS_SPEC)
-        
+
         # Without allow_mutations, no happy path hypothesis for POST
         hyps_without = spec_hypotheses(
             "/orders", "post", spec["paths"]["/orders"]["post"], spec, allow_mutations=False

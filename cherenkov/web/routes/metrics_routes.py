@@ -8,7 +8,7 @@ router = APIRouter(prefix="/api/v1/metrics", tags=["metrics"])
 
 @router.get("")
 async def get_metrics():
-    from cherenkov.ai.accounting import CostAccountant
+    from cherenkov.substrate.accounting import CostAccountant
 
     accountant = CostAccountant()
     report = accountant.report

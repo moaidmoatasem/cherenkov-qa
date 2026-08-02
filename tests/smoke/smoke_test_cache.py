@@ -8,10 +8,10 @@ from __future__ import annotations
 
 import time
 
-from cherenkov.ai.accounting import CostAccountant
-from cherenkov.ai.cache import ResponseCache
-from cherenkov.ai.interface import CachedInferenceClient, InferenceClient
 from cherenkov.core.contracts import AccountingReport, CacheStats
+from cherenkov.substrate.accounting import CostAccountant
+from cherenkov.substrate.cache import ResponseCache
+from cherenkov.substrate.interfaces import CachedInferenceClient, InferenceClient
 
 
 # ── Mock InferenceClient for deterministic testing ────────────────────────
@@ -247,7 +247,7 @@ def test_cache_key_independence():
 # ── Test 10: Module-level get_accounting_report / get_cache_stats API ──
 def test_module_api():
     print("=== TEST 10: Module-level get_accounting_report / get_cache_stats ===")
-    import cherenkov.ai as ai_mod
+    import cherenkov.substrate.client_factory as ai_mod
 
     # Before any client is created, should return None
     assert ai_mod.get_accounting_report() is None
@@ -281,7 +281,7 @@ def test_module_api():
 # ── Test 11: Orchestrator pipeline result includes cache/accounting lines ──
 def test_orchestrator_integration():
     print("=== TEST 11: Orchestrator pipeline output includes cache/accounting ===")
-    import cherenkov.ai as ai_mod
+    import cherenkov.substrate.client_factory as ai_mod
 
     # Wire up a CachedInferenceClient with MockClient
     mock = MockClient()

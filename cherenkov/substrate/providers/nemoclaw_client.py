@@ -1,7 +1,10 @@
 """
-CHERENKOV ai/openai_client.py — OpenAI provider implementing InferenceClient.
+CHERENKOV ai/nemoclaw_client.py — NVIDIA NemoClaw inference client.
 
-Proves agnosticism: a cloud provider implementing the same SPI as Ollama.
+NemoClaw runs Nemotron models locally via the OpenShell runtime, which exposes
+an OpenAI-compatible /v1/chat/completions endpoint.  All inference stays on
+device (requires_egress=False).  Authentication uses a Bearer token that is
+empty by default in development setups.
 """
 
 from __future__ import annotations
@@ -11,28 +14,45 @@ import time
 
 import requests
 
-from cherenkov.ai.interface import InferenceClient
-from cherenkov.ai.ollama_client import _json_repair, _try_json
 from cherenkov.core.errors import ProviderJSONError, get_logger
 from cherenkov.core.settings import get_settings
+from cherenkov.substrate.interfaces import InferenceClient
+from cherenkov.substrate.providers.ollama_client import _json_repair, _try_json, strip_think
 
 _RE_FENCE_START = re.compile(r"^```[a-z]*\n?")
 _RE_FENCE_END = re.compile(r"\n?```$")
 
 
-class OpenAIInferenceClient(InferenceClient):
-    """OpenAI-specific implementation of the InferenceClient interface."""
+class NemoClawInferenceClient(InferenceClient):
+    """OpenShell-backed inference client for NVIDIA NemoClaw.
 
-    def __init__(self):
-        self.api_key = get_settings().OPENAI_API_KEY
-        self.base_url = "https://api.openai.com/v1"
+    Communicates with the NemoClaw OpenShell runtime, which provides an
+    OpenAI-compatible chat completions API with optional policy enforcement
+    (network/filesystem isolation, real-time approval for external access).
+    """
+
+    def __init__(
+        self,
+        base_url: str | None = None,
+        api_key: str | None = None,
+        timeout: int | None = None,
+    ) -> None:
+        self.base_url = (base_url or get_settings().NEMOCLAW_URL).rstrip("/")
+        self.api_key = api_key if api_key is not None else get_settings().NEMOCLAW_API_KEY
+        self.timeout = timeout or get_settings().NEMOCLAW_TIMEOUT
         self._token_usage: dict[str, int] = {
             "prompt_tokens": 0,
             "completion_tokens": 0,
             "reprompts": 0,
         }
 
-    def _chat_completion(
+    def _headers(self) -> dict[str, str]:
+        headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+        return headers
+
+    def _chat(
         self,
         system_prompt: str,
         user_prompt: str,
@@ -41,11 +61,7 @@ class OpenAIInferenceClient(InferenceClient):
         temperature: float = 0.1,
         response_format: dict | None = None,
     ) -> str:
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
-        body = {
+        body: dict = {
             "model": model,
             "messages": [
                 {"role": "system", "content": system_prompt},
@@ -58,9 +74,9 @@ class OpenAIInferenceClient(InferenceClient):
 
         resp = requests.post(
             f"{self.base_url}/chat/completions",
-            headers=headers,
+            headers=self._headers(),
             json=body,
-            timeout=300,
+            timeout=self.timeout,
         )
         resp.raise_for_status()
         data = resp.json()
@@ -79,35 +95,38 @@ class OpenAIInferenceClient(InferenceClient):
         temperature: float = 0.1,
         run_id: str | None = None,
     ) -> dict:
-        log = get_logger("openai", run_id)
+        log = get_logger("nemoclaw", run_id)
         attempt = 0
         last_raw = ""
+        self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
 
         while attempt <= max_reprompts:
             t0 = time.monotonic()
             try:
-                last_raw = self._chat_completion(
+                last_raw = self._chat(
                     system_prompt=system_prompt,
                     user_prompt=user_prompt,
                     model=model,
                     temperature=temperature,
                     response_format={"type": "json_object"},
                 )
-            except requests.RequestException as e:
+            except requests.RequestException as exc:
                 attempt += 1
                 if attempt > max_reprompts:
                     raise ProviderJSONError(
-                        f"OpenAI API request failed after {max_reprompts} retries: {e}"
-                    ) from e
+                        f"NemoClaw request failed after {max_reprompts} retries: {exc}"
+                    ) from exc
                 continue
 
             dt_ms = int((time.monotonic() - t0) * 1000)
-            parsed = _try_json(last_raw) or _json_repair(last_raw)
+            cleaned = strip_think(last_raw)
+            parsed = _try_json(cleaned) or _json_repair(cleaned)
             if parsed is not None:
                 log.info("json ok", model=model, attempt=attempt, duration_ms=dt_ms)
                 return parsed
 
             attempt += 1
+            self._token_usage["reprompts"] = attempt
             log.warning(
                 "json invalid, reprompting",
                 model=model,
@@ -129,18 +148,26 @@ class OpenAIInferenceClient(InferenceClient):
         temperature: float = 0.1,
         run_id: str | None = None,
     ) -> str:
-        log = get_logger("openai", run_id)
+        log = get_logger("nemoclaw", run_id)
         t0 = time.monotonic()
-        text = self._chat_completion(
+        self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
+
+        text = self._chat(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             model=model,
             temperature=temperature,
         ).strip()
+        text = strip_think(text)
         text = _RE_FENCE_START.sub("", text)
         text = _RE_FENCE_END.sub("", text)
-        log.info("code ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
-        return text.strip()
+        text = text.strip()
+        log.info(
+            "code ok",
+            model=model,
+            duration_ms=int((time.monotonic() - t0) * 1000),
+        )
+        return text
 
     def complete_vision(
         self,
@@ -152,13 +179,10 @@ class OpenAIInferenceClient(InferenceClient):
         temperature: float = 0.1,
         run_id: str | None = None,
     ) -> str:
-        """Vision request: send image as base64 data URI to OpenAI."""
-        log = get_logger("openai-vision", run_id)
+        log = get_logger("nemoclaw-vision", run_id)
         t0 = time.monotonic()
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
+        self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
+
         body = {
             "model": model,
             "messages": [
@@ -178,12 +202,16 @@ class OpenAIInferenceClient(InferenceClient):
         }
         resp = requests.post(
             f"{self.base_url}/chat/completions",
-            headers=headers,
+            headers=self._headers(),
             json=body,
-            timeout=300,
+            timeout=self.timeout,
         )
         resp.raise_for_status()
-        text = resp.json()["choices"][0]["message"]["content"].strip()
+        data = resp.json()
+        usage = data.get("usage", {})
+        self._token_usage["prompt_tokens"] = usage.get("prompt_tokens", 0)
+        self._token_usage["completion_tokens"] = usage.get("completion_tokens", 0)
+        text = data["choices"][0]["message"]["content"].strip()
         log.info("vision ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
         return text
 
@@ -195,12 +223,10 @@ class OpenAIInferenceClient(InferenceClient):
         temperature: float = 0.1,
         run_id: str | None = None,
     ) -> str:
-        log = get_logger("openai-chat", run_id)
+        log = get_logger("nemoclaw-chat", run_id)
         t0 = time.monotonic()
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
+        self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
+
         body = {
             "model": model,
             "messages": messages,
@@ -208,11 +234,27 @@ class OpenAIInferenceClient(InferenceClient):
         }
         resp = requests.post(
             f"{self.base_url}/chat/completions",
-            headers=headers,
+            headers=self._headers(),
             json=body,
-            timeout=300,
+            timeout=self.timeout,
         )
         resp.raise_for_status()
-        text = resp.json()["choices"][0]["message"]["content"].strip()
+        data = resp.json()
+        usage = data.get("usage", {})
+        self._token_usage["prompt_tokens"] = usage.get("prompt_tokens", 0)
+        self._token_usage["completion_tokens"] = usage.get("completion_tokens", 0)
+        text = data["choices"][0]["message"]["content"].strip()
         log.info("chat ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
         return text
+
+    def health(self) -> bool:
+        """Return True if the NemoClaw OpenShell runtime is reachable."""
+        try:
+            resp = requests.get(
+                f"{self.base_url}/models",
+                headers=self._headers(),
+                timeout=5,
+            )
+            return resp.status_code == 200
+        except requests.RequestException:
+            return False

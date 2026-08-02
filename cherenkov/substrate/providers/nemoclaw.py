@@ -20,9 +20,9 @@ import time
 from pathlib import Path
 from typing import Any
 
-from cherenkov.ai.interface import CachedInferenceClient, InferenceClient
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.settings import get_settings
+from cherenkov.substrate.interfaces import CachedInferenceClient, InferenceClient
 from cherenkov.substrate.provider_base import ProviderCapabilities, wrap_with_cache
 
 
@@ -39,7 +39,7 @@ class NemoClawProvider:
 
     def __init__(self, client: InferenceClient | None = None) -> None:
         if client is None:
-            from cherenkov.ai.nemoclaw_client import NemoClawInferenceClient
+            from cherenkov.substrate.providers.nemoclaw_client import NemoClawInferenceClient
 
             client = wrap_with_cache(NemoClawInferenceClient(), "nemoclaw")
         self.client = client

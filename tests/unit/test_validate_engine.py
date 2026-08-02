@@ -7,8 +7,6 @@ The --tests filter scopes the run without touching the fixtures.
 """
 from __future__ import annotations
 
-import pytest
-
 from cherenkov.execution.validate import ValidationEngine
 
 

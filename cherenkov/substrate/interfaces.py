@@ -8,9 +8,9 @@ import abc
 import time
 from typing import cast
 
-from cherenkov.ai.accounting import CostAccountant
-from cherenkov.ai.cache import ResponseCache
 from cherenkov.core.contracts import AccountingReport, CacheStats
+from cherenkov.substrate.accounting import CostAccountant
+from cherenkov.substrate.cache import ResponseCache
 
 
 class InferenceClient(abc.ABC):

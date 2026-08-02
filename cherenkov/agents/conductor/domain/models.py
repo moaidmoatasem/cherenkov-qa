@@ -58,3 +58,38 @@ class ConductorResult:
     aggregated_output: Any
     sub_results: list[SubAgentResult] = field(default_factory=list)
     total_tokens_used: int = 0
+
+
+class StackStrategy(str, Enum):
+    """Stack slicing strategies for multi-layer PR coordination."""
+
+    FUNCTIONAL = "functional"
+    REFACTOR_FIRST = "refactor_first"
+    RISK_ISOLATED = "risk_isolated"
+
+
+@dataclass
+class PRSubTask:
+    """A piece of work attached to a specific PR layer in a stack."""
+
+    layer_index: int
+    layer_name: str
+    branch_name: str
+    base_branch: str
+    instruction: str
+    target_paths: list[str]
+    sdd_budget: int = 25000
+    pr_number: int | None = None
+    task_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+
+
+@dataclass
+class StackedPRTask:
+    """Top-level task for coordinating a stack of dependent PRs."""
+
+    epic_issue_id: str
+    title: str
+    strategy: StackStrategy
+    layers: list[PRSubTask]
+    global_sdd_budget: int = 100000
+    stack_id: str = field(default_factory=lambda: f"stack_{uuid.uuid4().hex[:8]}")

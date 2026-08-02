@@ -13,9 +13,9 @@ import os
 import re
 import time
 
-from cherenkov.ai.interface import InferenceClient
-from cherenkov.ai.ollama_client import _try_json, strip_think
 from cherenkov.core.errors import ProviderJSONError, get_logger
+from cherenkov.substrate.interfaces import InferenceClient
+from cherenkov.substrate.providers.ollama_client import _try_json, strip_think
 
 _log = get_logger("ANTHROPIC_CLIENT")
 

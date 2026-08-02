@@ -7,14 +7,14 @@ Verifies the abstraction contract, concrete implementation, and mock-tested beha
 import unittest
 from unittest.mock import MagicMock, patch
 
-from cherenkov.ai.interface import InferenceClient
-from cherenkov.ai.ollama_client import (
+from cherenkov.core.errors import OllamaJSONError, ProviderJSONError
+from cherenkov.substrate.interfaces import InferenceClient
+from cherenkov.substrate.providers.ollama_client import (
     OllamaInferenceClient,
     complete_code,
     complete_json,
 )
-from cherenkov.ai.openai_client import OpenAIInferenceClient
-from cherenkov.core.errors import OllamaJSONError, ProviderJSONError
+from cherenkov.substrate.providers.openai_client import OpenAIInferenceClient
 
 
 class TestInferenceClient(unittest.TestCase):
@@ -171,8 +171,8 @@ class TestOpenAIInferenceClient(unittest.TestCase):
     @patch.object(OpenAIInferenceClient, "_chat_completion")
     def test_openai_client_get_client_factory(self, mock_chat):
         """Verify get_client() returns OpenAIInferenceClient when configured."""
-        from cherenkov.ai import get_client
         from cherenkov.core.settings import get_settings
+        from cherenkov.substrate.client_factory import get_client
 
         original = get_settings().PROVIDER
         try:
@@ -206,19 +206,19 @@ class TestClientMemoization(unittest.TestCase):
     """get_client() must reuse one client per provider so cache/accounting persist."""
 
     def setUp(self):
-        import cherenkov.ai as ai_mod
+        import cherenkov.substrate.client_factory as ai_mod
 
         ai_mod.reset_client()
 
     def tearDown(self):
-        import cherenkov.ai as ai_mod
+        import cherenkov.substrate.client_factory as ai_mod
 
         ai_mod.reset_client()
 
     def test_get_client_is_memoized_per_provider(self):
         """Repeated get_client() calls with the same provider return the SAME object."""
-        from cherenkov.ai import get_client
         from cherenkov.core.settings import get_settings
+        from cherenkov.substrate.client_factory import get_client
 
         original = get_settings().PROVIDER
         try:
@@ -235,8 +235,8 @@ class TestClientMemoization(unittest.TestCase):
 
     def test_provider_change_rebuilds(self):
         """Switching get_settings().PROVIDER yields a different client for the new provider."""
-        from cherenkov.ai import get_client
         from cherenkov.core.settings import get_settings
+        from cherenkov.substrate.client_factory import get_client
 
         original = get_settings().PROVIDER
         try:
@@ -252,9 +252,13 @@ class TestClientMemoization(unittest.TestCase):
 
     def test_set_and_reset_client(self):
         """set_client() injects; reset_client() clears so get_client() rebuilds."""
-        import cherenkov.ai as ai_mod
-        from cherenkov.ai import CachedInferenceClient, reset_client, set_client
+        import cherenkov.substrate.client_factory as ai_mod
         from cherenkov.core.settings import get_settings
+        from cherenkov.substrate.client_factory import (
+            CachedInferenceClient,
+            reset_client,
+            set_client,
+        )
 
         original = get_settings().PROVIDER
         try:

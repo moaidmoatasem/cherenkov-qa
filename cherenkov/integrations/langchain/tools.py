@@ -174,7 +174,7 @@ def explain_violation(violation_id: str, context: str = "") -> str:
     """
     _require_langchain()
     try:
-        from cherenkov.ai.rag_index import RAGIndex
+        from cherenkov.knowledge.rag_index import RAGIndex
         rag = RAGIndex()
         res = rag.query_similar_incidents(violation_id + " " + context)
         return f"Explanation for violation '{violation_id}':\n{res}"

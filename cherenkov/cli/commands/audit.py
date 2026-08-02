@@ -7,20 +7,16 @@ mutants derived from the OpenAPI spec.
 """
 from __future__ import annotations
 
-import json
 import logging
 import os
 import re
 import subprocess
 import sys
-import time
-from pathlib import Path
 
 import click
-import httpx
 
-from cherenkov.cli.commands.verify import _load_spec, _warn_unprobed
-from cherenkov.divergence.mutant_synth import synthesize_mutant_battery, explain_unmutatable
+from cherenkov.cli.commands.verify import _load_spec
+from cherenkov.divergence.mutant_synth import synthesize_mutant_battery
 from cherenkov.divergence.self_play import BrokenImplServer
 from cherenkov.verdict.traffic_capture import RecordingProxy
 
@@ -108,7 +104,7 @@ def audit_cmd(
             click.echo(f"[ERROR] Test suite failed against the live target! Output:\n{out}", err=True)
             click.echo("The test suite must pass the baseline to be audited.")
             sys.exit(1)
-        
+
         interactions = len(proxy.interactions)
         replay_map = proxy.replay_map()
         click.echo(f"    ✓ Suite passed baseline. Recorded {interactions} interactions.")
@@ -166,16 +162,16 @@ def audit_cmd(
             mutation = synthesize_mutant_battery(path_str, operation, schemas, base=base)
             if not mutation:
                 continue
-            
+
             mutated_path, battery = mutation
-            
+
             click.echo(f"  Testing {method.upper()} {path_str}")
-            
+
             # Check conforming first (sanity check)
             conf_status, conf_body = battery["conforming"]
             conf_map = dict(replay_map)
             conf_map[mutated_path] = (conf_status, conf_body)
-            
+
             with BrokenImplServer(port=mock_port, responses=conf_map) as mock:
                 passed, _ = _run_suite(test_cmd.split(), mock.url)
                 if not passed:
@@ -186,14 +182,14 @@ def audit_cmd(
             for m_name, (m_status, m_body) in battery.items():
                 if m_name == "conforming":
                     continue
-                
+
                 total_mutants += 1
                 m_map = dict(replay_map)
                 m_map[mutated_path] = (m_status, m_body)
-                
+
                 with BrokenImplServer(port=mock_port, responses=m_map) as mock:
                     passed, _ = _run_suite(test_cmd.split(), mock.url)
-                    
+
                     if not passed:
                         click.echo(f"    ✓ Killed mutant: {m_name}")
                         killed_mutants += 1
@@ -212,7 +208,7 @@ def audit_cmd(
     if total_mutants > 0:
         score = (killed_mutants / total_mutants) * 100
         color = "green" if score > 80 else "yellow" if score > 50 else "red"
-        click.echo(f"Mutation Score          : " + click.style(f"{score:.1f}%", fg=color, bold=True))
+        click.echo("Mutation Score          : " + click.style(f"{score:.1f}%", fg=color, bold=True))
         click.echo(f"Killed                  : {killed_mutants}")
         click.echo(f"Survived (Weaknesses)   : {survived_mutants}")
     else:

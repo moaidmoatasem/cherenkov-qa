@@ -154,7 +154,8 @@ class TestTemplateGenerator:
         case_type: str,
         expected_status: int,
     ) -> str:
-        from cherenkov.ai.template_generator import generate_test
+        from cherenkov.substrate.providers.template_generator import generate_test
+
         from cherenkov.core.contracts import Scenario
 
         sc = Scenario(

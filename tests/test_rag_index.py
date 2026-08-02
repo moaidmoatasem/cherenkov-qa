@@ -9,8 +9,8 @@ import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
-from cherenkov.ai.rag_index import RAGIndex
 from cherenkov.core.errors import get_logger
+from cherenkov.knowledge.rag_index import RAGIndex
 
 
 class TestRAGIndex(unittest.TestCase):

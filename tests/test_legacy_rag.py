@@ -7,7 +7,7 @@ Proves relational event schemas, SQLite indexing, and cosine similarity searches
 import os
 import sys
 
-from cherenkov.ai.rag_index import RAGIndex
+from cherenkov.knowledge.rag_index import RAGIndex
 
 
 def run_rag_smoke_tests():

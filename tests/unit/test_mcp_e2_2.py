@@ -168,9 +168,9 @@ class TestAutoHealCode:
             # hangs this unit test. The LLM-unavailable path is covered separately
             # by test_llm_unavailable_returns_stub_patch.
             with patch(
-                "cherenkov.ai.router.InferenceRouter.generate",
-                return_value="- assert r.status == 200\n+ assert r.status == 422",
-            ):
+                "cherenkov.substrate.router.SubstrateRouter.route",
+            ) as mock_route:
+                mock_route.return_value.content = "- assert r.status == 200\n+ assert r.status == 422"
                 result = _call("auto_heal_code", {"item_id": "item-abc"})
 
         data = json.loads(result["content"][0]["text"])
@@ -188,7 +188,7 @@ class TestAutoHealCode:
         with patch("cherenkov.mcp.handlers.HitlQueue") as MockQ:
             MockQ.return_value.get.return_value = fake_item
             with patch(
-                "cherenkov.ai.router.InferenceRouter.generate",
+                "cherenkov.substrate.router.SubstrateRouter.route",
                 side_effect=RuntimeError("no LLM"),
             ):
                 result = _call("auto_heal_code", {"item_id": "item-xyz"})

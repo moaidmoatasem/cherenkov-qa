@@ -1,6 +1,6 @@
 import unittest
 
-from cherenkov.ai.router import InferenceRouter
+from cherenkov.substrate.router import InferenceRouter
 
 
 class TestInferenceRouter(unittest.TestCase):

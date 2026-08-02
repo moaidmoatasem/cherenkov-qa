@@ -21,7 +21,7 @@ export const KnowledgeGraphExplorer: React.FC = () => {
     setError(null);
     try {
       const data = await queryKnowledge(query.trim());
-      setResults(data?.results || data || []);
+      setResults(data?.data || data?.results || []);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -37,7 +37,7 @@ export const KnowledgeGraphExplorer: React.FC = () => {
           <span>GraphRAG Second Brain Knowledge Explorer</span>
         </h2>
         <p className="text-xs text-text-muted mt-0.5">
-          Query the GraphRAG Second Brain knowledge mesh via <code className="font-mono">/api/v1/chat/knowledge/query</code>.
+          Query the GraphRAG Second Brain knowledge mesh via <code className="font-mono">/api/v1/knowledge/query</code>.
         </p>
       </div>
 

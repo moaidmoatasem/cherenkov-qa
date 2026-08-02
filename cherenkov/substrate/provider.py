@@ -4,11 +4,9 @@ import json
 import time
 from typing import Any
 
-from cherenkov.ai.interface import CachedInferenceClient, InferenceClient
-from cherenkov.ai.ollama_client import OllamaInferenceClient
-from cherenkov.ai.openai_client import OpenAIInferenceClient
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.settings import get_settings
+from cherenkov.substrate.interfaces import CachedInferenceClient, InferenceClient
 from cherenkov.substrate.provider_base import (
     ModelProvider,
     ProviderCapabilities,
@@ -17,6 +15,8 @@ from cherenkov.substrate.provider_base import (
 from cherenkov.substrate.provider_base import (
     wrap_with_cache as _wrap_with_cache,
 )
+from cherenkov.substrate.providers.ollama_client import OllamaInferenceClient
+from cherenkov.substrate.providers.openai_client import OpenAIInferenceClient
 from cherenkov.substrate.vlm_provider import VLMProvider
 
 __all__ = [
@@ -165,7 +165,9 @@ class GitHubModelsProvider:
 
     def __init__(self, client: InferenceClient | None = None) -> None:
         if client is None:
-            from cherenkov.ai.github_models_client import GitHubModelsInferenceClient
+            from cherenkov.substrate.providers.github_models_client import (
+                GitHubModelsInferenceClient,
+            )
 
             client = _wrap_with_cache(GitHubModelsInferenceClient(), "github")
         self.client = client
@@ -268,7 +270,7 @@ def get_vlm_provider(name: str | None = None) -> VLMProvider:
     elif provider_name == "openai":
         p = VLMProvider(OpenAIInferenceClient())
     elif provider_name == "nemoclaw":
-        from cherenkov.ai.nemoclaw_client import NemoClawInferenceClient
+        from cherenkov.substrate.providers.nemoclaw_client import NemoClawInferenceClient
 
         p = VLMProvider(NemoClawInferenceClient())
     else:

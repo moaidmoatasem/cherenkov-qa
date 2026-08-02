@@ -9,11 +9,11 @@ import time
 
 from pydantic import BaseModel, Field
 
-from cherenkov.ai.ollama_client import complete_json
-from cherenkov.ai.rag_index import RAGIndex
 from cherenkov.core.contracts import StageError, StageMeta, Status
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
+from cherenkov.knowledge.rag_index import RAGIndex
+from cherenkov.substrate.providers.ollama_client import complete_json
 
 
 class DiagnosticsOutput(BaseModel):

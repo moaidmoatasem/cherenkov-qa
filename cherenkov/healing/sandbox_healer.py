@@ -13,12 +13,12 @@ import time
 import uuid
 from pathlib import Path
 
-from cherenkov.ai.ollama_client import complete_code, strip_think
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 from cherenkov.healing.providers.base import SandboxProvider
 from cherenkov.healing.providers.docker_sandbox import DockerSandboxProvider
 from cherenkov.healing.providers.filesystem import FilesystemSandboxProvider
+from cherenkov.substrate.providers.ollama_client import complete_code, strip_think
 
 SYSTEM_PROMPT = """You are an expert QA automation engineer specializing in fixing failing Playwright TypeScript E2E API tests.
 Your goal is to repair the failing test so that it matches the OpenAPI contract constraints and passes successfully.

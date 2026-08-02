@@ -86,7 +86,7 @@ async def update_settings(body: dict, _auth=Depends(verify_api_key), _role=Depen
 
 @router.get("/api/v1/governance")
 async def get_governance():
-    from cherenkov.ai.accounting import CostAccountant
+    from cherenkov.substrate.accounting import CostAccountant
     accountant = CostAccountant()
     kpi = accountant.get_governance_kpis()
     fp_rate = kpi.get("false_positive_rate", 0.0)

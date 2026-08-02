@@ -63,8 +63,8 @@ class SyntheticDataGenerator:
     def _generate_with_llm(self, schema: dict[str, Any], field_path: str) -> Any:
         """Generate a value using Ollama for semantically realistic output."""
         try:
-            from cherenkov.ai import get_client
-            from cherenkov.ai.ollama_client import strip_think
+            from cherenkov.substrate.client_factory import get_client
+            from cherenkov.substrate.providers.ollama_client import strip_think
 
             client = get_client()
             schema_type = schema.get("type", "string")

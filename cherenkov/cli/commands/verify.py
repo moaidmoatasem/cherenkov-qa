@@ -175,7 +175,7 @@ def verify_cmd(
     known_identifiers: dict[str, list[str]] | None = None
     if identifiers:
         try:
-            with open(identifiers, "r", encoding="utf-8") as f:
+            with open(identifiers, encoding="utf-8") as f:
                 known_identifiers = json.load(f)
         except Exception as exc:
             click.echo(f"[ERROR] Could not load identifiers from {identifiers}: {exc}", err=True)

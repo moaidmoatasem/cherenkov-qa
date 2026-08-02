@@ -6,7 +6,7 @@ Proves dynamic RAG incident mapping and structured root-cause synthesis.
 
 import sys
 
-from cherenkov.ai.rag_index import RAGIndex
+from cherenkov.knowledge.rag_index import RAGIndex
 from cherenkov.stages.diagnostics_stage import DiagnosticsStage
 
 

@@ -563,11 +563,12 @@ export async function fetchChatMessages(sessionId: string): Promise<{ messages: 
   return res.json();
 }
 
-export async function queryKnowledge(query: string): Promise<any> {
-  const res = await fetch(`${API_BASE}/chat/knowledge/query`, {
-    method: 'POST',
-    headers: authHeaders({ 'Content-Type': 'application/json' }),
-    body: JSON.stringify({ query }),
+export async function queryKnowledge(query: string, source?: string, limit = 10): Promise<any> {
+  const params = new URLSearchParams({ q: query, limit: String(limit) });
+  if (source) params.set('source', source);
+  const res = await fetch(`${API_BASE}/knowledge/query?${params}`, {
+    method: 'GET',
+    headers: authHeaders(),
   });
   if (!res.ok) throw new Error(`Knowledge query failed: ${res.status}`);
   return res.json();

@@ -721,11 +721,16 @@ export async function setupApiMocks(page: any) {
   await page.route('**/api/v1/eject', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'success', path: '/out' }) });
   });
-  await page.route('**/api/v1/chat/knowledge/query*', async (route: any) => {
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
-      { id: 'k-1', source: 'reflector', confidence: 0.92, data: { text: 'Stopped re-surfacing known-noise findings on POST /user/login redirects after third occurrence.' }, metadata: { endpoint: 'POST /user/login', timestamp: '2026-06-07T10:00:00Z' } },
-      { id: 'k-2', source: 'idiom', confidence: 0.85, data: { text: 'Accrued senior testing idiom regarding cross-tenant resource verification.' }, metadata: { timestamp: '2026-06-06T14:30:00Z' } },
-    ]) });
+  await page.route('**/api/v1/knowledge/query*', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      data: [
+        { id: 'k-1', source: 'reflector', confidence: 0.92, data: { text: 'Stopped re-surfacing known-noise findings on POST /user/login redirects after third occurrence.' }, metadata: { endpoint: 'POST /user/login', timestamp: '2026-06-07T10:00:00Z' } },
+        { id: 'k-2', source: 'idiom', confidence: 0.85, data: { text: 'Accrued senior testing idiom regarding cross-tenant resource verification.' }, metadata: { timestamp: '2026-06-06T14:30:00Z' } },
+      ],
+      source: 'mock',
+      confidence: 0.9,
+      metadata: {},
+    }) });
   });
   await page.route('**/api/v1/chat/sessions', async (route: any) => {
     if (route.request().method() === 'POST') {

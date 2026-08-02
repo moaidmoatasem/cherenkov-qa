@@ -6,10 +6,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from cherenkov.ai.nemoclaw_client import NemoClawInferenceClient
 from cherenkov.core.contracts import ReasoningRequest
 from cherenkov.substrate.provider import ProviderCapabilities, get_provider
 from cherenkov.substrate.providers.nemoclaw import NemoClawProvider
+from cherenkov.substrate.providers.nemoclaw_client import NemoClawInferenceClient
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -51,7 +51,7 @@ class TestNemoClawInferenceClient:
         )
         assert "Authorization" not in client._headers()
 
-    @patch("cherenkov.ai.nemoclaw_client.requests.post")
+    @patch("cherenkov.substrate.providers.nemoclaw_client.requests.post")
     def test_complete_json_success(self, mock_post):
         mock_post.return_value = _mock_response('{"status": "ok"}')
         client = self._client()
@@ -62,7 +62,7 @@ class TestNemoClawInferenceClient:
         assert client._token_usage["prompt_tokens"] == 10
         assert client._token_usage["completion_tokens"] == 20
 
-    @patch("cherenkov.ai.nemoclaw_client.requests.post")
+    @patch("cherenkov.substrate.providers.nemoclaw_client.requests.post")
     def test_complete_json_uses_json_object_format(self, mock_post):
         mock_post.return_value = _mock_response('{"x": 1}')
         client = self._client()
@@ -70,7 +70,7 @@ class TestNemoClawInferenceClient:
         call_body = mock_post.call_args[1]["json"]
         assert call_body.get("response_format") == {"type": "json_object"}
 
-    @patch("cherenkov.ai.nemoclaw_client.requests.post")
+    @patch("cherenkov.substrate.providers.nemoclaw_client.requests.post")
     def test_complete_code_strips_fences(self, mock_post):
         mock_post.return_value = _mock_response("```typescript\nconst x = 1;\n```")
         client = self._client()
@@ -79,7 +79,7 @@ class TestNemoClawInferenceClient:
         )
         assert result == "const x = 1;"
 
-    @patch("cherenkov.ai.nemoclaw_client.requests.post")
+    @patch("cherenkov.substrate.providers.nemoclaw_client.requests.post")
     def test_complete_vision_sends_image(self, mock_post):
         mock_post.return_value = _mock_response("Two buttons differ in colour.")
         client = self._client()
@@ -94,13 +94,13 @@ class TestNemoClawInferenceClient:
         user_msg = call_body["messages"][1]["content"]
         assert any(part.get("type") == "image_url" for part in user_msg)
 
-    @patch("cherenkov.ai.nemoclaw_client.requests.get")
+    @patch("cherenkov.substrate.providers.nemoclaw_client.requests.get")
     def test_health_returns_true_on_200(self, mock_get):
         mock_get.return_value = MagicMock(status_code=200)
         client = self._client()
         assert client.health() is True
 
-    @patch("cherenkov.ai.nemoclaw_client.requests.get")
+    @patch("cherenkov.substrate.providers.nemoclaw_client.requests.get")
     def test_health_returns_false_on_connection_error(self, mock_get):
         import requests as req_lib
 
@@ -108,7 +108,7 @@ class TestNemoClawInferenceClient:
         client = self._client()
         assert client.health() is False
 
-    @patch("cherenkov.ai.nemoclaw_client.requests.post")
+    @patch("cherenkov.substrate.providers.nemoclaw_client.requests.post")
     def test_chat_returns_content(self, mock_post):
         mock_post.return_value = _mock_response("Hello from NemoClaw!")
         client = self._client()

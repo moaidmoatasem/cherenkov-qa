@@ -42,7 +42,7 @@ def _fake_ollama_response():
 
 @patch("cherenkov.cache.endpoint_cache.EndpointCache")
 @patch("cherenkov.execution.validate.ValidationEngine.validate_suite")
-@patch("cherenkov.ai.ollama_client._post_with_retry", return_value=_fake_ollama_response())
+@patch("cherenkov.substrate.providers.ollama_client._post_with_retry", return_value=_fake_ollama_response())
 def test_graphql_generate_integration(mock_post, mock_validate, mock_cache):
     mock_validate.return_value = {"status": "ok", "reports": [{"passed": True, "scenario_id": "test", "request_body": "req", "response_body": "res", "response_status": 200}]}
 

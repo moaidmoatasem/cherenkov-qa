@@ -1,31 +1,30 @@
 """
-CHERENKOV ai/bedrock_client.py — AWS Bedrock InferenceClient.
+CHERENKOV ai/huggingface_client.py — HuggingFace InferenceClient.
 """
 
 from __future__ import annotations
 
-import json
 import os
 import re
 import time
 
-from cherenkov.ai.interface import InferenceClient
-from cherenkov.ai.ollama_client import _try_json, strip_think
 from cherenkov.core.errors import ProviderJSONError, get_logger
+from cherenkov.substrate.interfaces import InferenceClient
+from cherenkov.substrate.providers.ollama_client import _try_json, strip_think
 
-_log = get_logger("BEDROCK_CLIENT")
+_log = get_logger("HUGGINGFACE_CLIENT")
 
 _RE_CODE_FENCE = re.compile(r"```(?:typescript|ts|python)?\s*([\s\S]+?)```")
 _RE_JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]+?)```")
 
-_DEFAULT_MODEL = os.getenv("CHERENKOV_BEDROCK_MODEL", "anthropic.claude-3-haiku-20240307-v1:0")
+_DEFAULT_MODEL = os.getenv("CHERENKOV_HF_MODEL", "meta-llama/Meta-Llama-3-8B-Instruct")
 
 
-class BedrockInferenceClient(InferenceClient):
-    """AWS Bedrock implementation of InferenceClient."""
+class HuggingFaceInferenceClient(InferenceClient):
+    """HuggingFace implementation of InferenceClient."""
 
     def __init__(self) -> None:
-        self.region = os.environ.get("AWS_REGION", "us-east-1")
+        self.token = os.environ.get("HF_TOKEN", "")
         self._token_usage: dict[str, int] = {
             "prompt_tokens": 0,
             "completion_tokens": 0,
@@ -37,13 +36,13 @@ class BedrockInferenceClient(InferenceClient):
         if self._client:
             return self._client
         try:
-            import boto3
+            from huggingface_hub import InferenceClient as HFClient
         except ImportError as exc:
             raise ImportError(
-                "boto3 package not installed. Run: pip install boto3"
+                "huggingface_hub package not installed. Run: pip install huggingface_hub"
             ) from exc
 
-        self._client = boto3.client("bedrock-runtime", region_name=self.region)
+        self._client = HFClient(token=self.token)
         return self._client
 
     def _complete(
@@ -57,40 +56,29 @@ class BedrockInferenceClient(InferenceClient):
         t0 = time.monotonic()
         client = self._get_client()
 
-        # Build payload assuming anthropic models are heavily used on Bedrock
-        # We target the standard Bedrock anthropic.claude-3 Converse API format if supported,
-        # but for simplicity we will use InvokeModel with anthropic payload.
-        body = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 4096,
-            "temperature": temperature,
-            "system": system_prompt,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [{"type": "text", "text": user_prompt}],
-                }
-            ],
-        }
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": user_prompt})
 
-        response = client.invoke_model(
-            modelId=model,
-            body=json.dumps(body),
-            accept="application/json",
-            contentType="application/json"
+        response = client.chat_completion(
+            model=model,
+            messages=messages,
+            max_tokens=4096,
+            temperature=temperature
         )
 
-        response_body = json.loads(response.get('body').read())
-        text = response_body.get('content')[0].get('text')
+        text = response.choices[0].message.content
 
-        input_tokens = response_body.get('usage', {}).get('input_tokens', 0)
-        output_tokens = response_body.get('usage', {}).get('output_tokens', 0)
+        # Approximate token usage if not provided natively by the endpoint
+        input_tokens = getattr(response.usage, "prompt_tokens", len(user_prompt) // 4)
+        output_tokens = getattr(response.usage, "completion_tokens", len(text) // 4)
 
         elapsed = int((time.monotonic() - t0) * 1000)
         self._token_usage["prompt_tokens"] += input_tokens
         self._token_usage["completion_tokens"] += output_tokens
         _log.info(
-            "bedrock completion",
+            "huggingface completion",
             model=model,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
@@ -143,5 +131,5 @@ class BedrockInferenceClient(InferenceClient):
                 return parsed
             self._token_usage["reprompts"] += 1
         raise ProviderJSONError(
-            f"Bedrock failed to return valid JSON after {max_reprompts + 1} attempts"
+            f"HuggingFace failed to return valid JSON after {max_reprompts + 1} attempts"
         )

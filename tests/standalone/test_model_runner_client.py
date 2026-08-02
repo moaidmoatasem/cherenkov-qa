@@ -8,8 +8,8 @@ from __future__ import annotations
 import unittest
 from unittest.mock import MagicMock, patch
 
-from cherenkov.ai.model_runner_client import ModelRunnerClient
-from cherenkov.ai.router import InferenceRouter
+from cherenkov.substrate.providers.model_runner_client import ModelRunnerClient
+from cherenkov.substrate.router import InferenceRouter
 
 
 class TestModelRunnerClient(unittest.TestCase):

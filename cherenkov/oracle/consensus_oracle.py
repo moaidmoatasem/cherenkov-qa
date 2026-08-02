@@ -167,8 +167,8 @@ class ConsensusOracle(Oracle):
         )
 
         try:
-            from cherenkov.ai import get_client
             from cherenkov.core.settings import get_settings
+            from cherenkov.substrate.client_factory import get_client
 
             client = get_client()
             # Slightly increasing temperature per pass to obtain independent samples

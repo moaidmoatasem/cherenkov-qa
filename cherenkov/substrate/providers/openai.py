@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from cherenkov.ai.interface import InferenceClient
-from cherenkov.ai.openai_client import OpenAIInferenceClient
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.settings import get_settings
-from cherenkov.substrate.provider import ProviderCapabilities
+from cherenkov.substrate.interfaces import InferenceClient
+from cherenkov.substrate.provider_base import ProviderCapabilities
+from cherenkov.substrate.providers.openai_client import OpenAIInferenceClient
 
 
 class OpenAIProvider:

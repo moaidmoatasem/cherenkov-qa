@@ -19,7 +19,7 @@ def _fake_ollama_resp():
 
 @patch.dict(os.environ, {"CHERENKOV_ENV": "development"})
 @patch("cherenkov.core.settings.CherenkovSettings.detect_ollama_device", return_value="cpu")
-@patch("cherenkov.ai.ollama_client._post_with_retry", return_value=_fake_ollama_resp())
+@patch("cherenkov.substrate.providers.ollama_client._post_with_retry", return_value=_fake_ollama_resp())
 def test_validation_mutation(mock_post, mock_detect):
     # We simulate a pipeline run that fails during REVIEW (GENERATE stage mocked above)
     engine = OrchestrationEngine(run_id="mut_val")

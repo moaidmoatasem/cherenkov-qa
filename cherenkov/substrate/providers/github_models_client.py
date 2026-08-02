@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import os
 
-from cherenkov.ai.openai_client import OpenAIInferenceClient
+from cherenkov.substrate.providers.openai_client import OpenAIInferenceClient
 
 
 class GitHubModelsInferenceClient(OpenAIInferenceClient):

@@ -3,9 +3,9 @@
 smoke_test_provider.py -- smoke test to verify ModelProvider SPI.
 """
 
-from cherenkov.ai.ollama_client import InferenceClient
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.substrate.provider import OllamaProvider
+from cherenkov.substrate.providers.ollama_client import InferenceClient
 
 
 class MockInferenceClient(InferenceClient):

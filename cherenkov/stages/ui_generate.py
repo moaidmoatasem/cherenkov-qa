@@ -7,11 +7,11 @@ from __future__ import annotations
 import json
 import time
 
-from cherenkov.ai.ollama_client import complete_code, strip_think
 from cherenkov.core.contracts import GenerateOutput, StageError, StageMeta, Status
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 from cherenkov.stages.ui_plan import UIScenario, UISpec
+from cherenkov.substrate.providers.ollama_client import complete_code, strip_think
 
 SYSTEM_PROMPT = """You are an expert QA automation engineer writing Playwright UI/E2E tests in TypeScript. You write ONE test per request.
 

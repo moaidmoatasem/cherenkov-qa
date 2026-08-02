@@ -7,10 +7,10 @@ from __future__ import annotations
 
 import os
 import shlex
-import subprocess
-import time
 import signal
+import subprocess
 import sys
+import time
 
 from cherenkov.hooks.domain.models import (
     FailMode,
@@ -69,7 +69,7 @@ class SubprocessHookExecutor:
                     start_new_session=True,
                     env={**_current_env(), **config.env},
                 )
-                
+
             stdout, stderr = proc.communicate(timeout=config.timeout)
             duration_ms = int((time.monotonic() - start) * 1000)
 

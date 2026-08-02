@@ -13,10 +13,10 @@ from typing import Protocol
 
 from pydantic import BaseModel
 
-from cherenkov.ai.cache import ResponseCache
-from cherenkov.ai.interface import CachedInferenceClient, InferenceClient
 from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
 from cherenkov.core.settings import get_settings
+from cherenkov.substrate.cache import ResponseCache
+from cherenkov.substrate.interfaces import CachedInferenceClient, InferenceClient
 
 
 class ProviderCapabilities(BaseModel):

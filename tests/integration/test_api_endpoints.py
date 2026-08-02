@@ -449,7 +449,7 @@ class TestDashboardEndpoints(unittest.TestCase):
         }
 
     def test_overview_200(self):
-        with patch("cherenkov.ai.accounting.CostAccountant") as MockCA, patch(
+        with patch("cherenkov.substrate.accounting.CostAccountant") as MockCA, patch(
             "cherenkov.core.feedback_store.FeedbackStore"
         ) as MockFS:
             MockCA.return_value.get_governance_kpis.return_value = self._mock_kpi()
@@ -482,7 +482,7 @@ class TestDashboardEndpoints(unittest.TestCase):
             total_cost=0.02,
             total_duration_ms=12000,
         )
-        with patch("cherenkov.ai.accounting.CostAccountant") as MockCA:
+        with patch("cherenkov.substrate.accounting.CostAccountant") as MockCA:
             MockCA.return_value.report = report
             MockCA.return_value.get_governance_kpis.return_value = self._mock_kpi()
             r = self.client.get("/api/v1/metrics")

@@ -77,8 +77,8 @@ from cherenkov.mcp.contracts import (
     VisualDiffBaselineInput,
 )
 from cherenkov.mcp.mesh_router import get_registry
-from cherenkov.mcp.tools.sentinel import SENTINEL_HANDLERS, SENTINEL_TOOL_DEFS
 from cherenkov.mcp.policy import PolicyEngine
+from cherenkov.mcp.tools.sentinel import SENTINEL_HANDLERS, SENTINEL_TOOL_DEFS
 from cherenkov.validate.gate import ValidationGate
 
 # ── Policy engine instance ─────────────────────────────────────────────────────
@@ -1914,7 +1914,7 @@ def _tool_query_rag(args: dict[str, Any]) -> MCPToolCallResult:
     query = args.get("query", "")
     _handler_log = logging.getLogger(__name__)
     try:
-        from cherenkov.ai.rag_index import RAGIndex
+        from cherenkov.knowledge.rag_index import RAGIndex
 
         rag = RAGIndex()
         res = rag.query_similar_incidents(query)
@@ -2480,9 +2480,10 @@ def _tool_auto_heal_code(args: dict[str, Any]) -> MCPToolCallResult:
 
         # Attempt LLM-assisted repair via the AI router
         try:
-            from cherenkov.ai.router import InferenceRouter
+            from cherenkov.substrate.router import SubstrateRouter
+            from cherenkov.core.contracts import ReasoningRequest
 
-            router = InferenceRouter()
+            router = SubstrateRouter()
             prompt = (
                 f"A CHERENKOV HITL validation item failed.\n"
                 f"Item ID: {item.id}\n"
@@ -2493,7 +2494,8 @@ def _tool_auto_heal_code(args: dict[str, Any]) -> MCPToolCallResult:
                 "failing assertion. Return only the patch — no explanation. "
                 "IMPORTANT: Suggest-only; the caller applies the patch."
             )
-            patch = router.generate(prompt)
+            req = ReasoningRequest(task=prompt, capability_tier="small")
+            patch = str(router.route(req).content)
         except Exception:
             patch = (
                 f"# Auto-heal unavailable (LLM/router error).\n"

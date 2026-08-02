@@ -11,8 +11,6 @@ from typing import Any
 
 import requests
 
-from cherenkov.ai import get_client
-from cherenkov.ai.ollama_client import strip_think
 from cherenkov.core.contracts import (
     GenerateOutput,
     Scenario,
@@ -25,6 +23,8 @@ from cherenkov.core.settings import get_settings
 from cherenkov.sources.accessibility.contracts import AccessibilityScenario
 from cherenkov.sources.graphql.contracts import GraphQLScenario
 from cherenkov.sources.grpc.contracts import gRPCScenario
+from cherenkov.substrate.client_factory import get_client
+from cherenkov.substrate.providers.ollama_client import strip_think
 
 
 def _is_plausibly_valid_ts(code: str) -> bool:
@@ -374,7 +374,7 @@ class GenerateStage:
                 error=last_error,
             )
             try:
-                from cherenkov.ai.template_generator import (
+                from cherenkov.substrate.providers.template_generator import (
                     generate_test as _gen_template,
                 )
 

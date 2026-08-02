@@ -332,7 +332,7 @@ def spec_hypotheses(
     if (method == "GET" or (is_mutation and allow_mutations)) and not _required_query_params(operation, spec):
         success = _success_code(operation)
         probe_path = _path_with_samples(endpoint, operation, spec, known_identifiers)
-        
+
         allow_happy = False
         if success is not None and probe_path is not None:
             if "{" not in endpoint:
