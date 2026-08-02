@@ -1,7 +1,7 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-08-02 (round 3: wiki env-var refs + tree hygiene + fresh verification)
-**HEAD:** `main` at `2e66658` (includes my wiki commit `156dba0`; parallel UI-revamp commit on top). **2064 passed, 2 failed** (pre-existing `test_verify_cmd.py` mock drift, tracked as #819).
+**Date:** 2026-08-02 (round 3 + lead verification)
+**HEAD:** `main` at `d9a161f`. **Certified green: 2064 passed, 2 failed** (pre-existing `test_verify_cmd.py` mock drift, tracked as #819). UI revamp `2e66658` build-verified (vite output matches committed dist hashes).
 **Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"`.
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
 
@@ -30,6 +30,17 @@ Docs-hygiene round — closes the last #831 finding and hardens the tree:
 | **Verification** | Full fast suite on current main: **2064 passed, 2 failed** (#819 pre-existing). `slow`/`integration`/`e2e` markers collect zero offline tests — they are service-gated. |
 
 **Shared-tree hazard (repeat incident, 2026-08-02):** the parallel UI-revamp agent (`2e66658` — "5-Workspace UI/UX Revamp", FastAPI wiring + SPA catch-all route) was editing the shared tree mid-session; a full-suite run during its edits showed **14 transient failures** in `tests/integration/test_api_endpoints.py` (404s on `/api/v1/health` etc.). They vanished once the agent committed — rerun gave 2064 passed. **Lesson: never trust a full-suite result while `.agents/*` or `git status` shows another agent's in-flight edits; verify `git status --short` and rerun before reporting failures.** The SPA catch-all `/{full_path:path}` (registered last, 404s on `api/*`) does not break API routes in isolation (38/38 API tests pass alone).
+
+## Lead verification pass (2026-08-02)
+
+Orchestrator sweep to certify "latest correct work":
+
+- **main is latest and correct**: local == `origin/main` == `d9a161f`; all round-1/2/3 work present (guardian CLI, 37 MCP tools, SAML/RBAC wiring, root shim removed, wiki env refs fixed). Round-1 PRs #820-824 merge commits verified in main history.
+- **Full suite re-certified**: 2064 passed / 2 failed (#819 pre-existing). `slow`/`integration`/`e2e` markers collect zero offline tests.
+- **UI revamp `2e66658` build-verified**: `vite build` output matches committed dist hashes (`index-ZhckOsq_.css`, `index-pVY_2juK.js`); no frontend regression.
+- **No open PRs** (duplicate #825 is closed; no release-please PR pending — `origin/release-please--branches--main` carries an orphaned `release 1.3.0` commit, not merged).
+- **Cleanup done**: local stale branches `docs/m0-complete-align` (superseded, M0 closed), `feat/qa-headless-locator-alignment` (superseded by revamp) deleted.
+- **BLOCKER — PAT expired/revoked mid-session**: `gh auth status` reports invalid token; `git push` fails ("Invalid username or token") — was valid at session start (pushes `156dba0`/`d9a161f` succeeded), died during the session. All remote ref deletion (`feat/track-810/811/812/814/815-*` — content verified merged) is blocked until the maintainer renews the PAT in `~/.config/gh/hosts.yml`. ~110 stale remote `claude/*` branches remain (parallel-agent artifacts) — do NOT bulk-delete without maintainer review.
 
 **Notes for next agents:**
 - **M1 prep is now unblocked**: session_a_zero_to_hero.md survives a cold run (verified). The last #831 finding (stale `docs/wiki/` env vars) was fixed in round 3 (`156dba0`) — `grep -rn CHERENKOV_LLM_PROVIDER docs/wiki` is clean.
