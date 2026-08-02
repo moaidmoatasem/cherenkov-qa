@@ -20,7 +20,63 @@
 
 ---
 
-## SESSION HANDOVER — 2026-07-24 (Headless QA user tests)
+## SESSION HANDOVER — 2026-08-02 (UI revamp test re-alignment)
+
+- **Context**: The legacy single-screen dashboard (Sidebar/TopBar + `#setup-screen`,
+  `#review-screen`, `#healing-screen`, `#eject-screen`, etc.) was removed in the
+  revamp commit `2e66658`; the app now renders the 5-workspace layout via
+  `NavigationBar` (`data-testid="nav-workspace-{id}"`) + `components/workspaces/**`.
+  All ~28 legacy specs and ~191 `#nav-item-*` locators referenced orphaned screens.
+- **What was done**:
+  1. `tests/qa/headless-qa-user.spec.ts` rewritten from 34 → **23 tests** across the
+     same 5 workflow groups (shard grep patterns preserved). All locators moved to
+     live testids (`nav-workspace-*`, `spec-ingest-panel`, `hitl-review-queue`,
+     `divergence-table`, `sse-chat-assistant`+`chat-input`/`chat-send-btn`,
+     `eject-suite-panel`+`btn-run-eject`, `governance-settings`+
+     `btn-save-governance-settings`, `release-readiness-card`, `backend-health-badge`).
+     Tests assert real-API effects (POST `/api/v1/review/approve`, POST `/api/v1/eject`,
+     PUT `/api/v1/settings`) rather than pre-seeded data. Only env-dependent data shape
+     is mocked (review/queue GET for the approve test) — everything else hits the real
+     backend. Tests for features removed in the revamp were **dropped**, not stubbed:
+     healing screen (3), persona selector (1), threads slider (1), compact toggle (1),
+     model-tier selector (1), legacy settings screen (1), legacy sidebar/topbar (3).
+  2. `playwright.config.ts`: added `testIgnore` to **archive** (not delete) the legacy
+     specs: `**/*_deep.spec.ts`, `a11y.spec.ts`, `dashboard_e2e.spec.ts`,
+     `sdd_cockpit.spec.ts`, and the non-CI qa suites
+     (`api-contract-integration`, `e2e-journeys`, `functional-suite`,
+     `nonfunctional-suite`, `settings_custom_journey`, `smoke-regression-exploratory`).
+     Active tests: `tests/e2e/*-workspace.spec.ts` (25) + `tests/qa/headless-qa-user.spec.ts` (23).
+  3. `tests/e2e/*-workspace.spec.ts`: fixed 3 pre-existing strict-mode violations
+     (`getByText('Verdict Grade'|'Run ID'|'Verdict'|'Maestro Mobile Pilot')` now use
+     `{ exact: true }`). `tests/api_mocks.ts`: added missing `**/api/v1/runs*` mock so
+     VerdictHistoryTable renders its table in the mock-backed suite.
+- **Verification (RAW EVIDENCE)**: `npx playwright test tests/e2e` → **25 passed**;
+  `npx playwright test tests/qa/headless-qa-user.spec.ts` → **23 passed** (backend on
+  port 8001, the vite proxy target). `npx playwright test --list` shows exactly 48 tests.
+- **CI port fix — APPLIED (owner-approved)**: `qa-headless.yml` was misaligned — it
+  started the backend on port **8000**, but the browser loads the app through the vite
+  dev server whose `/api/v1` proxy targets port **8001** (the documented API-mode port),
+  so the CI gate could not reach the backend. Fixed by running the backend on **8001**
+  in both workflow shards and pointing the suite's `API` constant + `waitForBackend`
+  at `http://127.0.0.1:8001`.
+- **Guard robustness fix**: `waitForBackend` previously used `http://localhost:8001`;
+  `localhost` can resolve to `::1` (IPv6) while the backend binds IPv4-only, causing a
+  false-negative skip of the 4 Backend Guard tests. Aligned on explicit `127.0.0.1`.
+- **Settings-panel flake hardening**: the three panel visibility assertions in
+  `settings workspace loads project, device and governance panels` now use a 15s
+  assertion timeout to ride out a transient dev-server reload observed once during a
+  full run (root cause: first-run/reload boot race; CI has `retries: 2`).
+- **Final-state verification (RAW EVIDENCE)**: a single contiguous local run of
+  `tests/qa/headless-qa-user.spec.ts` on the final code completed **23 passed (3.1m)**
+  (Backend Guard 4/4, Spec Setup 7/7, Divergence 2/2, Chat 4/4, Settings+Stress 6/6 —
+  including the 15s-hardened settings-panels test). Combined with the **25/25** e2e
+  result and `tsc --noEmit` exit 0, the full 48-test gate is green locally. (A prior
+  obstacle: the WSL2 VM repeatedly hard-crashed mid-run — uptime resets every ~4-10 min,
+  no OOM in `dmesg`, Hyper-V VmSwitch teardown events — which aborted earlier full-suite
+  attempts at 15-16/23 despite every individual test passing; the final successful run
+  landed in a longer-lived boot.)
+
+---
 
 - **Headless UI testing as real QA user** (PR #726, `14b0533+`): Created
   `cherenkov/web/ui/tests/qa/headless-qa-user.spec.ts` — 34 Playwright tests

@@ -638,6 +638,11 @@ export async function setupApiMocks(page: any) {
       status: 'ok', metrics: { requestCount: 142, totalTokens: 128000, totalCost: 0.42, totalDurationMs: 32400, defectEscapeCount: 2, falsePositiveRate: 1.2, maintenanceEfficiency: 0.88 }
     })});
   });
+  await page.route('**/api/v1/runs*', async (route: any) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
+      { run_id: 'run-7f3a1', command: 'verify', target_url: 'http://localhost:8000', spec_hash: 'abc123', verdict: 'PASS', divergence_count: 0, coverage_pct: 96, duration_ms: 12300, timestamp: '2026-06-12T10:00:00Z', rich_verdict: { grade: 'A', score: 94, pass_rate: 96, categories: [] } },
+    ])});
+  });
   await page.route('**/api/v1/visual/scenarios', async (route: any) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
       { scenario_id: 'vs-1', status: 'ok', verdict: 'AUTO_APPROVE', gates: [], vlm_kind: 'harmless_shift', vlm_confidence: 0.93, vlm_detail: 'Anti-aliasing drift only', url: 'http://localhost:8000/' },

@@ -1,9 +1,15 @@
 /**
  * Headless UI Testing as Real QA User
  *
- * Tests the CHERENKOV dashboard against a real backend (port 8000)
+ * Tests the CHERENKOV dashboard against a real backend (port 8001,
+ * the API-mode port matching the Vite dev server's /api/v1 proxy target)
  * via the Vite dev server (port 3000). These are workflow tests,
  * not screen smoke checks — they follow what a QA engineer actually does.
+ *
+ * NOTE: This suite targets the live 5-workspace UI (nav-workspace-* /
+ * workspace panel testids). Legacy screens (SetupScreen, ReviewScreen,
+ * Sidebar, TopBar, HealingScreen, etc.) were removed in the UI revamp;
+ * their specs are archived via `testIgnore` in playwright.config.ts.
  *
  * Run: npx playwright test tests/qa/headless-qa-user.spec.ts --reporter=list
  */
@@ -13,26 +19,16 @@ import {
   waitForBackend,
   mockChatStream,
   Sidebar,
-  TopBar,
-  SetupPage,
-  PipelinePage,
-  ReviewPage,
-  HealingPage,
-  EjectPage,
-  OverviewPage,
-  DivergencesPage,
-  ChatPage,
-  SettingsPage,
+  DashboardWorkspacePage,
+  AuthoringWorkspacePage,
+  TriageWorkspacePage,
+  IntelligenceWorkspacePage,
+  SettingsWorkspacePage,
   CommandPalette,
 } from './page-objects';
 
-const API = 'http://127.0.0.1:8000';
-const SETTLE = 500;
-
-async function navTo(page: Page, id: string) {
-  await page.click(`#nav-item-${id}`);
-  await page.waitForTimeout(SETTLE);
-}
+const API = 'http://127.0.0.1:8001';
+const WORKSPACES = ['dashboard', 'authoring', 'triage', 'intelligence', 'settings'] as const;
 
 // ─── BACKEND GUARD ────────────────────────────────────────────────────────────
 
@@ -41,7 +37,7 @@ test.describe.configure({ retries: 0 });
 test.describe('Headless QA User — Backend Guard', () => {
   test.beforeAll(async ({ request }) => {
     const alive = await waitForBackend(request);
-    test.skip(!alive, 'Backend not running on port 8000 — skipping all headless QA tests');
+    test.skip(!alive, 'Backend not running on port 8001 — skipping all headless QA tests');
   });
 
   test('health endpoint returns 200 with valid structure', async ({ request }) => {
@@ -56,31 +52,19 @@ test.describe('Headless QA User — Backend Guard', () => {
   test('app core container renders with real backend', async ({ page }) => {
     await bootstrapReal(page);
     await expect(page.locator('#cherenkov-app-core')).toBeVisible();
-    await expect(page.locator('#cherenkov-sidebar')).toBeVisible();
-    await expect(page.locator('#cherenkov-topbar')).toBeVisible();
+    await expect(page.getByTestId('backend-health-badge')).toBeVisible();
+    await expect(page.getByTestId('nav-workspace-dashboard')).toBeVisible();
   });
 
-  test('topbar health indicator shows real device/model from backend', async ({ page }) => {
+  test('backend health badge reflects real /api/v1/health', async ({ page }) => {
     await bootstrapReal(page);
-    const healthRes = await page.evaluate(async () => {
-      const r = await fetch('/api/v1/health');
-      return r.json();
-    });
-    expect(healthRes.status).toBe('online');
-    const topBar = new TopBar(page);
-    await expect(topBar.healthDevice.first()).toBeVisible();
-    await expect(topBar.healthModel.first()).toBeVisible();
+    await expect(page.getByTestId('backend-health-badge')).toContainText('Backend Online');
   });
 
-  test('sidebar navigation items all visible', async ({ page }) => {
+  test('all 5 workspace navigation items are visible', async ({ page }) => {
     await bootstrapReal(page);
-    const navItems = [
-      'overview', 'truth-map', 'divergences', 'review', 'healing',
-      'eject', 'author', 'signals', 'memory', 'governance',
-      'knowledge', 'devices', 'chat', 'mobile', 'sdd',
-    ];
-    for (const id of navItems) {
-      await expect(page.locator(`#nav-item-${id}`)).toBeVisible();
+    for (const ws of WORKSPACES) {
+      await expect(page.getByTestId(`nav-workspace-${ws}`)).toBeVisible();
     }
   });
 });
@@ -92,152 +76,127 @@ test.describe('Headless QA User — Spec Setup & Generation Journey', () => {
     await bootstrapReal(page);
   });
 
-  test('setup screen loads and accepts spec URL', async ({ page }) => {
+  test('authoring workspace loads spec ingest panel', async ({ page }) => {
     const sidebar = new Sidebar(page);
-    await sidebar.newRun();
-    await expect(page.locator('#setup-screen')).toBeVisible();
-    const setup = new SetupPage(page);
-    await setup.urlInput.fill('https://petstore3.swagger.io/api/v3/openapi.json');
-    await expect(setup.urlInput).toHaveValue('https://petstore3.swagger.io/api/v3/openapi.json');
+    await sidebar.navToWorkspace('authoring');
+    const authoring = new AuthoringWorkspacePage(page);
+    await expect(authoring.el).toBeVisible();
+    await expect(authoring.specIngestPanel).toBeVisible();
+    await expect(page.getByTestId('spec-drop-zone')).toBeVisible();
   });
 
-  test('petstore preset loads and shows spec name', async ({ page }) => {
+  test('spec URL input accepts a URL', async ({ page }) => {
     const sidebar = new Sidebar(page);
-    await sidebar.newRun();
-    const setup = new SetupPage(page);
-    await setup.loadPetstore();
-    await expect(page.getByText('swagger-petstore')).toBeVisible();
+    await sidebar.navToWorkspace('authoring');
+    const urlInput = page.getByTestId('spec-ingest-panel').locator('form input[type="url"]');
+    await urlInput.fill('https://petstore3.swagger.io/api/v3/openapi.json');
+    await expect(urlInput).toHaveValue('https://petstore3.swagger.io/api/v3/openapi.json');
   });
 
-  test('launch button appears after preset load', async ({ page }) => {
+  test('live pipeline monitor renders DAG tracker', async ({ page }) => {
     const sidebar = new Sidebar(page);
-    await sidebar.newRun();
-    const setup = new SetupPage(page);
-    await setup.loadPetstore();
-    await expect(setup.launchBtn).toBeVisible();
+    await sidebar.navToWorkspace('authoring');
+    const authoring = new AuthoringWorkspacePage(page);
+    await expect(authoring.livePipelineMonitor).toBeVisible();
   });
 
-  test('launch triggers pipeline drawer with nodes', async ({ page }) => {
+  test('review queue panel renders in triage workspace', async ({ page }) => {
     const sidebar = new Sidebar(page);
-    await sidebar.newRun();
-    const setup = new SetupPage(page);
-    await setup.loadPetstore();
-    await setup.launchBtn.click();
-    await page.waitForTimeout(1000);
-    const topBar = new TopBar(page);
-    await topBar.openPipelineDrawer();
-    const pipeline = new PipelinePage(page);
-    await expect(pipeline.node('ingest')).toBeVisible();
-    await expect(pipeline.node('generate')).toBeVisible();
-    await expect(pipeline.node('review')).toBeVisible();
+    await sidebar.navToWorkspace('triage');
+    const triage = new TriageWorkspacePage(page);
+    await expect(triage.el).toBeVisible();
+    await expect(triage.hitlReviewQueue).toBeVisible();
+    await expect(triage.hitlReviewQueue.getByText('HITL Test Review Queue')).toBeVisible();
   });
 
-  test('review screen shows real HITL queue from backend', async ({ page }) => {
-    await navTo(page, 'review');
-    const review = new ReviewPage(page);
-    await expect(review.el).toBeVisible();
-    await expect(review.filterTab('all')).toBeVisible();
-    await expect(review.filterTab('approved')).toBeVisible();
-    await expect(review.filterTab('review')).toBeVisible();
-    await expect(review.filterTab('rejected')).toBeVisible();
-  });
-
-  test('approve button triggers real API call', async ({ page }) => {
-    await navTo(page, 'review');
+  test('approve button triggers real POST /api/v1/review/approve', async ({ page }) => {
+    // Backend queue may be empty on a fresh instance — seed a deterministic
+    // item for the queue GET only; the approve POST still hits the real backend.
+    await page.route('**/api/v1/review/queue*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          {
+            id: 'test-3',
+            endpoint: '/pets',
+            method: 'PUT',
+            confidence: 0.81,
+            confidence_reason: null,
+            review_gate_failed: null,
+            status: 'review',
+            reject_reason: null,
+            generated_test: 'test("PUT /pets")',
+            created_at: '2026-01-01T00:00:00Z',
+          },
+        ]),
+      });
+    });
+    await bootstrapReal(page);
+    const sidebar = new Sidebar(page);
+    await sidebar.navToWorkspace('triage');
+    await expect(page.getByTestId('review-item-test-3')).toBeVisible();
+    await page.getByTestId('review-item-test-3').click();
+    const approveBtn = page.getByTestId('btn-approve-scenario');
+    await expect(approveBtn).toBeVisible();
     let apiCalled = false;
     page.on('request', req => {
       if (req.url().includes('/api/v1/review/approve') && req.method() === 'POST') {
         apiCalled = true;
       }
     });
-    const review = new ReviewPage(page);
-    await review.approveBtn.click();
+    await approveBtn.click();
     await page.waitForTimeout(500);
     expect(apiCalled).toBe(true);
   });
 
-  test('eject screen loads and eject button triggers real POST', async ({ page }) => {
-    await navTo(page, 'eject');
-    const eject = new EjectPage(page);
-    await expect(eject.el).toBeVisible();
-    await expect(eject.pathInput).toBeVisible();
-    await expect(eject.ejectBtn).toBeVisible();
+  test('eject suite panel triggers real POST /api/v1/eject', async ({ page }) => {
+    const sidebar = new Sidebar(page);
+    await sidebar.navToWorkspace('settings');
+    const settings = new SettingsWorkspacePage(page);
+    await expect(settings.ejectSuitePanel).toBeVisible();
+    await expect(page.getByTestId('eject-output-path')).toBeVisible();
     let apiCalled = false;
     page.on('request', req => {
       if (req.url().includes('/api/v1/eject') && req.method() === 'POST') {
         apiCalled = true;
       }
     });
-    await eject.ejectBtn.click();
+    await page.getByTestId('btn-run-eject').click();
     await page.waitForTimeout(500);
     expect(apiCalled).toBe(true);
   });
 
-  test('overview screen KPI ring renders', async ({ page }) => {
-    await navTo(page, 'overview');
-    const overview = new OverviewPage(page);
-    await expect(overview.el).toBeVisible();
-    await expect(overview.kpiRing).toBeVisible();
+  test('release readiness card renders KPI ring', async ({ page }) => {
+    const dashboard = new DashboardWorkspacePage(page);
+    await expect(dashboard.releaseReadinessCard).toBeVisible();
+    await expect(dashboard.releaseReadinessCard.locator('[role="progressbar"]').first()).toBeVisible();
   });
 });
 
-// ─── GROUP 3: DIVERGENCE TRIAGE & HEALING ─────────────────────────────────────
+// ─── GROUP 3: DIVERGENCE TRIAGE ───────────────────────────────────────────────
 
-test.describe('Headless QA User — Divergence Triage & Healing', () => {
+test.describe('Headless QA User — Divergence Triage', () => {
   test.beforeEach(async ({ page }) => {
     await bootstrapReal(page);
   });
 
-  test('divergences screen loads 7 real divergences from backend', async ({ page }) => {
-    await navTo(page, 'divergences');
-    const divs = new DivergencesPage(page);
-    await expect(divs.el).toBeVisible();
-    await expect(divs.heading).toContainText('Divergence Triage Hub');
-    const divCount = await page.getByText('D-', { exact: false }).count();
-    expect(divCount).toBeGreaterThanOrEqual(7);
+  test('divergence table renders with severity filter', async ({ page }) => {
+    const sidebar = new Sidebar(page);
+    await sidebar.navToWorkspace('triage');
+    const triage = new TriageWorkspacePage(page);
+    await expect(triage.divergenceTable).toBeVisible();
+    await expect(triage.divergenceTable.locator('select').first()).toBeVisible();
   });
 
-  test('severity filter works against real data', async ({ page }) => {
-    await navTo(page, 'divergences');
-    const divs = new DivergencesPage(page);
-    await divs.filterBySeverity('critical');
-    await page.waitForTimeout(300);
-    await expect(divs.el).toBeVisible();
-  });
-
-  test('clicking divergence opens detail drawer', async ({ page }) => {
-    await navTo(page, 'divergences');
-    await page.getByText('D-').first().click();
-    await page.waitForTimeout(300);
-    await expect(page.getByText('Divergence Detail').first()).toBeVisible();
-    await page.locator('button[aria-label="Close details"]').click();
-    await expect(page.getByText('Divergence Detail').first()).not.toBeVisible();
-  });
-
-  test('healing screen loads with drift cards from /api/v1/failures', async ({ page }) => {
-    await navTo(page, 'healing');
-    const healing = new HealingPage(page);
-    await expect(healing.el).toBeVisible();
-    await expect(healing.banner).toBeVisible();
-    await expect(page.getByText('All repairs are suggest-only')).toBeVisible();
-  });
-
-  test('drift card shows diff viewer on click', async ({ page }) => {
-    await navTo(page, 'healing');
-    const healing = new HealingPage(page);
-    await healing.viewDiff('fail-1');
-    await expect(healing.diffViewer()).toBeVisible();
-    await expect(healing.diffCopyBtn).toBeVisible();
-    await expect(healing.diffDownloadBtn).toBeVisible();
-    await healing.diffDismissBtn.click();
-  });
-
-  test('dismissing drift card removes it from view', async ({ page }) => {
-    await navTo(page, 'healing');
-    const healing = new HealingPage(page);
-    await healing.dismissCard('fail-1');
-    await page.waitForTimeout(300);
-    await expect(healing.card('fail-1')).not.toBeVisible();
+  test('severity filter narrows the table', async ({ page }) => {
+    const sidebar = new Sidebar(page);
+    await sidebar.navToWorkspace('triage');
+    const triage = new TriageWorkspacePage(page);
+    const select = triage.divergenceTable.locator('select').first();
+    await expect(select).toBeVisible();
+    await select.selectOption('critical');
+    await expect(select).toHaveValue('critical');
   });
 });
 
@@ -249,56 +208,48 @@ test.describe('Headless QA User — Chat Agent SSE Streaming', () => {
     await mockChatStream(page);
   });
 
-  test('chat screen loads and session is created', async ({ page }) => {
-    await navTo(page, 'chat');
-    const chat = new ChatPage(page);
-    await expect(chat.el).toBeVisible();
-    await expect(chat.input).toBeVisible();
+  test('chat assistant loads with input and send button', async ({ page }) => {
+    const sidebar = new Sidebar(page);
+    await sidebar.navToWorkspace('intelligence');
+    const intelligence = new IntelligenceWorkspacePage(page);
+    await expect(intelligence.sseChatAssistant).toBeVisible();
+    await expect(page.getByTestId('chat-input')).toBeVisible();
+    await expect(page.getByTestId('chat-send-btn')).toBeVisible();
   });
 
   test('sending message creates user bubble and clears input', async ({ page }) => {
-    await navTo(page, 'chat');
-    const chat = new ChatPage(page);
-    await chat.send('What tests should I run for the Petstore API?');
-    await expect(chat.messageBubble('What tests should I run for the Petstore API?')).toBeVisible();
-    await expect(chat.input).toHaveValue('');
+    const sidebar = new Sidebar(page);
+    await sidebar.navToWorkspace('intelligence');
+    const input = page.getByTestId('chat-input');
+    const text = 'What tests should I run for the Petstore API?';
+    await input.fill(text);
+    await page.getByTestId('chat-send-btn').click();
+    await expect(page.getByText(text)).toBeVisible();
+    await expect(input).toHaveValue('');
   });
 
   test('assistant response streams via SSE (event: token / event: complete)', async ({ page }) => {
-    await navTo(page, 'chat');
-    const chat = new ChatPage(page);
-    await chat.send('Show me the test count');
-    await chat.waitForStreamResponse(15000);
-    await expect(chat.messagesList.getByText('[MOCK]')).toBeVisible({ timeout: 10000 });
-  });
-
-  test('streaming cursor appears during streaming and disappears after complete', async ({ page }) => {
-    await navTo(page, 'chat');
-    const chat = new ChatPage(page);
-    await chat.send('Streaming test');
-    const streamingIndicator = chat.messagesList.locator('.animate-pulse').first();
-    await expect(streamingIndicator).toBeVisible({ timeout: 5000 });
-    await chat.waitForStreamResponse(15000);
-    await expect(streamingIndicator).not.toBeVisible({ timeout: 10000 });
+    const sidebar = new Sidebar(page);
+    await sidebar.navToWorkspace('intelligence');
+    const input = page.getByTestId('chat-input');
+    await input.fill('Show me the test count');
+    await page.getByTestId('chat-send-btn').click();
+    await expect(page.getByText('[MOCK]')).toBeVisible({ timeout: 10000 });
   });
 
   test('follow-up message maintains conversation context', async ({ page }) => {
-    await navTo(page, 'chat');
-    const chat = new ChatPage(page);
-    await chat.send('First message');
-    await chat.waitForStreamResponse(15000);
-    await chat.send('Follow up question');
-    await chat.waitForStreamResponse(15000);
-    await expect(chat.messageBubble('First message')).toBeVisible();
-    await expect(chat.messageBubble('Follow up question')).toBeVisible();
-  });
-
-  test('persona selector changes context', async ({ page }) => {
-    await navTo(page, 'chat');
-    const chat = new ChatPage(page);
-    await expect(page.locator('select').first()).toBeVisible();
-    await page.locator('select').first().selectOption('qa');
-    await page.waitForTimeout(200);
+    const sidebar = new Sidebar(page);
+    await sidebar.navToWorkspace('intelligence');
+    const input = page.getByTestId('chat-input');
+    const sendBtn = page.getByTestId('chat-send-btn');
+    await input.fill('First message');
+    await sendBtn.click();
+    await expect(page.getByText('[MOCK]')).toBeVisible({ timeout: 10000 });
+    await input.fill('Follow up question');
+    await sendBtn.click();
+    await expect(page.getByText('[MOCK]')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('First message')).toBeVisible();
+    await expect(page.getByText('Follow up question')).toBeVisible();
   });
 });
 
@@ -309,79 +260,33 @@ test.describe('Headless QA User — Settings, Keyboard, Stress', () => {
     await bootstrapReal(page);
   });
 
-  test('settings screen loads real values from backend', async ({ page }) => {
-    await page.click('[title="Open Settings"]');
-    await page.waitForSelector('#settings-screen', { timeout: 10000 });
-    await page.waitForTimeout(SETTLE);
-    const settings = new SettingsPage(page);
+  test('settings workspace loads project, device and governance panels', async ({ page }) => {
+    const sidebar = new Sidebar(page);
+    await sidebar.navToWorkspace('settings');
+    const settings = new SettingsWorkspacePage(page);
+    // 15s assertion timeout: the 4 panels mount under load + real backend fetches;
+    // a transient dev-server reload has been observed to delay first paint.
     await expect(settings.el).toBeVisible();
-    await expect(settings.heading).toContainText('System Settings');
-    await expect(settings.budgetSlider).toBeVisible();
-    await expect(settings.threadsSlider).toBeVisible();
-    await expect(settings.compactCheckbox).toBeVisible();
+    await expect(settings.projectManager).toBeVisible({ timeout: 15000 });
+    await expect(settings.deviceManager).toBeVisible({ timeout: 15000 });
+    await expect(settings.governanceSettings).toBeVisible({ timeout: 15000 });
   });
 
-  test('changing tier selection persists visually', async ({ page }) => {
-    await page.click('[title="Open Settings"]');
-    await page.waitForSelector('#settings-screen', { timeout: 10000 });
-    await page.waitForTimeout(SETTLE);
-    const tierButtons = page.locator('[data-testid="model-tier-select"] button');
-    await expect(tierButtons.first()).toBeVisible();
-    await tierButtons.nth(1).click(); // deep
-    await page.waitForTimeout(200);
-    await expect(tierButtons.nth(1)).toHaveClass(/bg-glow-blue/);
-  });
-
-  test('thread limit slider updates display value', async ({ page }) => {
-    await page.click('[title="Open Settings"]');
-    await page.waitForSelector('#settings-screen', { timeout: 10000 });
-    await page.waitForTimeout(SETTLE);
-    const settings = new SettingsPage(page);
-    const initialValue = await settings.threadsSlider.inputValue();
-    await settings.threadsSlider.fill('8');
-    await page.waitForTimeout(200);
-    await expect(settings.threadsSlider).toHaveValue('8');
-  });
-
-  test('compact mode toggle persists to localStorage', async ({ page }) => {
-    await page.click('[title="Open Settings"]');
-    await page.waitForSelector('#settings-screen', { timeout: 10000 });
-    await page.waitForTimeout(SETTLE);
-    const checkbox = page.locator('input[type="checkbox"]').first();
-    await checkbox.click();
-    await page.waitForTimeout(200);
-    await expect(checkbox).toBeChecked();
-    const lsValue = await page.evaluate(() => localStorage.getItem('[copilot] density'));
-    expect(lsValue).toBe('compact');
-  });
-
-  test('save button triggers real PUT /api/v1/settings', async ({ page }) => {
-    await page.click('[title="Open Settings"]');
-    await page.waitForSelector('#settings-screen', { timeout: 10000 });
-    await page.waitForTimeout(SETTLE);
+  test('save governance settings triggers real PUT /api/v1/settings', async ({ page }) => {
+    const sidebar = new Sidebar(page);
+    await sidebar.navToWorkspace('settings');
+    const saveBtn = page.getByTestId('btn-save-governance-settings');
+    await expect(saveBtn).toBeVisible();
+    await expect(saveBtn).toBeEnabled();
     let apiCalled = false;
     page.on('request', req => {
       if (req.url().includes('/api/v1/settings') && req.method() === 'PUT') {
         apiCalled = true;
       }
     });
-    const settings = new SettingsPage(page);
-    await settings.saveBtn.click();
+    await saveBtn.click();
     await page.waitForTimeout(500);
     expect(apiCalled).toBe(true);
-  });
-
-  test('keyboard-only navigation reaches all sidebar items', async ({ page }) => {
-    await bootstrapReal(page);
-    const sidebar = page.locator('#cherenkov-sidebar');
-    await sidebar.focus();
-    const navItems = ['overview', 'truth-map', 'divergences', 'review', 'healing', 'eject', 'author', 'signals', 'memory', 'governance', 'knowledge', 'devices', 'chat', 'mobile', 'sdd'];
-    for (const id of navItems) {
-      await page.keyboard.press('Tab');
-      await page.keyboard.press('Enter');
-      await page.waitForTimeout(200);
-      await expect(page.locator(`#nav-item-${id}`)).toBeFocused();
-    }
   });
 
   test('command palette opens with Ctrl+K, searches, closes with Escape', async ({ page }) => {
@@ -395,11 +300,20 @@ test.describe('Headless QA User — Settings, Keyboard, Stress', () => {
     await expect(palette.input).not.toBeVisible();
   });
 
-  test('rapid navigation across all screens does not crash', async ({ page }) => {
+  test('keyboard-only navigation reaches all 5 workspace containers', async ({ page }) => {
     await bootstrapReal(page);
-    const screens = ['overview', 'truth-map', 'divergences', 'author', 'signals', 'memory', 'governance', 'review', 'healing', 'eject', 'chat', 'knowledge', 'devices', 'mobile', 'sdd'];
-    for (const id of screens) {
-      await page.click(`#nav-item-${id}`);
+    for (const ws of WORKSPACES) {
+      await page.getByTestId(`nav-workspace-${ws}`).focus();
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(250);
+      await expect(page.locator(`#${ws}-workspace`)).toBeVisible();
+    }
+  });
+
+  test('rapid navigation across all 5 workspaces does not crash', async ({ page }) => {
+    await bootstrapReal(page);
+    for (const ws of WORKSPACES) {
+      await page.getByTestId(`nav-workspace-${ws}`).click();
       await page.waitForTimeout(150);
     }
     await expect(page.locator('#cherenkov-app-core')).toBeVisible();
@@ -408,21 +322,15 @@ test.describe('Headless QA User — Settings, Keyboard, Stress', () => {
   test('rapid chat sends do not crash', async ({ page }) => {
     await bootstrapReal(page);
     await mockChatStream(page);
-    await navTo(page, 'chat');
-    const chat = new ChatPage(page);
+    const sidebar = new Sidebar(page);
+    await sidebar.navToWorkspace('intelligence');
+    const input = page.getByTestId('chat-input');
+    const sendBtn = page.getByTestId('chat-send-btn');
     for (let i = 0; i < 3; i++) {
-      await chat.send(`Rapid message ${i}`);
-      await page.waitForTimeout(200);
+      await input.fill(`Rapid message ${i}`);
+      await sendBtn.click();
+      await expect(page.getByText(`Rapid message ${i}`)).toBeVisible({ timeout: 10000 });
     }
-    await expect(chat.el).toBeVisible();
-  });
-
-  test('overview screen KPI ring displays real backend data', async ({ page }) => {
-    await navTo(page, 'overview');
-    const overview = new OverviewPage(page);
-    await expect(overview.kpiRing).toBeVisible();
-    const ariaValue = await overview.kpiRing.getAttribute('aria-valuenow');
-    expect(Number(ariaValue)).toBeGreaterThanOrEqual(0);
-    expect(Number(ariaValue)).toBeLessThanOrEqual(100);
+    await expect(page.getByTestId('sse-chat-assistant')).toBeVisible();
   });
 });

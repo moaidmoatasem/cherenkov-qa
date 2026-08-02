@@ -2,7 +2,7 @@ import { Page, Locator, expect } from '@playwright/test';
 import { setupApiMocks } from '../api_mocks';
 
 const SETTLE = 400;
-const API = 'http://localhost:8000';
+const API = 'http://127.0.0.1:8001';
 
 export async function bootstrap(page: Page, overrides?: (page: Page) => Promise<void>) {
   page.on('pageerror', err => console.error(`[UNCAUGHT] ${err.message}`));

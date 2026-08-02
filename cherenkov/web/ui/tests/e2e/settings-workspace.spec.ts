@@ -39,7 +39,7 @@ test.describe('Settings Workspace E2E Suite', () => {
     await expect(dm).toBeVisible();
     await expect(dm.getByText('Hardware & VLM Device Diagnostics')).toBeVisible();
     await expect(dm.getByText('VLM Hardware Online')).toBeVisible();
-    await expect(dm.getByText('Maestro Mobile Pilot')).toBeVisible();
+    await expect(dm.getByText('Maestro Mobile Pilot', { exact: true })).toBeVisible();
   });
 
   test('EjectSuitePanel renders output path input and eject export button', async ({ page }) => {

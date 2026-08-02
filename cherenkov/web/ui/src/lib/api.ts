@@ -1,6 +1,6 @@
 /**
  * Cherenkov QA API Client Configuration
- * In development, Vite proxies /api/v1/* to http://127.0.0.1:8000/api/v1/*.
+ * In development, Vite proxies /api/v1/* to http://127.0.0.1:8001/api/v1/*.
  * In production builds, the static files and API are hosted under the same origin.
  */
 

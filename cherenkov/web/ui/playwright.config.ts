@@ -5,6 +5,22 @@ const ALL_VIEWPORTS = !!process.env.ALL_VIEWPORTS;
 export default defineConfig({
   testDir: './tests',
   testMatch: /.*\.spec\.ts/,
+  // Archived legacy specs: these target screens removed in the UI revamp
+  // (SetupScreen, ReviewScreen, HealingScreen, Sidebar, TopBar, ...). Files are
+  // kept in the tree for reference but are excluded from all runs. The live
+  // suites are tests/e2e/*-workspace.spec.ts and tests/qa/headless-qa-user.spec.ts.
+  testIgnore: [
+    '**/*_deep.spec.ts',
+    'tests/a11y.spec.ts',
+    'tests/dashboard_e2e.spec.ts',
+    'tests/sdd_cockpit.spec.ts',
+    'tests/qa/api-contract-integration.spec.ts',
+    'tests/qa/e2e-journeys.spec.ts',
+    'tests/qa/functional-suite.spec.ts',
+    'tests/qa/nonfunctional-suite.spec.ts',
+    'tests/qa/settings_custom_journey.spec.ts',
+    'tests/qa/smoke-regression-exploratory.spec.ts',
+  ],
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

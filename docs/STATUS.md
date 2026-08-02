@@ -54,7 +54,7 @@ CHERENKOV is an **API Integrity Auditor** that uses pure AST static analysis to 
 | B (VLM) | LocalAI / Ollama substrate | ✅ Built; MCP policy engine + Docker Model Runner adapter added |
 | C (Desktop) | Tauri 2 host | ✅ Complete | `cargo check` green, full debug binary builds |
 | D (Mobile) | Maestro / Appium | ✅ Built, unit-tested; runtime blocked on physical device |
-| E (Dashboard) | React UI | ✅ Built; all 9 screens shipped; missing `data-testid` coverage |
+| E (Dashboard) | React UI | ✅ Built; 5-workspace UI live; `data-testid` coverage complete; 25 workspace E2E tests + 23 headless QA tests green |
 | F (K8s) | Operator + CRDs | ✅ Complete (Phase 8) |
 
 ---

@@ -47,9 +47,9 @@ test.describe('Dashboard Workspace E2E Suite', () => {
     await expect(card).toBeVisible();
     await expect(card.getByText('Release Readiness Gate')).toBeVisible();
     await expect(card.locator('[role="progressbar"]').first()).toBeVisible();
-    await expect(card.getByText('Verdict Grade')).toBeVisible();
-    await expect(card.getByText('Open Divergences')).toBeVisible();
-    await expect(card.getByText('Pending HITL Queue')).toBeVisible();
+    await expect(card.getByText('Verdict Grade', { exact: true })).toBeVisible();
+    await expect(card.getByText('Open Divergences', { exact: true })).toBeVisible();
+    await expect(card.getByText('Pending HITL Queue', { exact: true })).toBeVisible();
   });
 
   test('VerdictHistoryTable renders run history headers and rows', async ({ page }) => {
@@ -57,8 +57,8 @@ test.describe('Dashboard Workspace E2E Suite', () => {
     await expect(tableCard).toBeVisible();
     await expect(tableCard.getByText('Verdict History & Run Records')).toBeVisible();
     await expect(tableCard.locator('table')).toBeVisible();
-    await expect(tableCard.getByText('Run ID')).toBeVisible();
-    await expect(tableCard.getByText('Verdict')).toBeVisible();
+    await expect(tableCard.getByText('Run ID', { exact: true })).toBeVisible();
+    await expect(tableCard.getByText('Verdict', { exact: true })).toBeVisible();
   });
 
   test('IntegrityHeatmap renders endpoint integrity risk cards with scores', async ({ page }) => {
