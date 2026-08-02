@@ -60,8 +60,10 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.teleport_cmd import teleport_cmd
     from cherenkov.cli.commands.validate import validate_cmd
     from cherenkov.cli.commands.verify import verify_cmd
+    from cherenkov.cli.groups import build_groups
     from cherenkov.synthetic.cmd import synthetic_cmd
 
+    cmd_map: dict[str, click.Command] = {}
     for cmd, name in [
         (audit_cmd, "audit"),
         (verify_cmd, "verify"),
@@ -105,6 +107,11 @@ def _register_commands() -> None:
         (guardian_cmd, "guardian"),
     ]:
         cli.add_command(cmd, name=name)
+        cmd_map[name] = cmd
+
+    # Register logical command groups (top-level aliases remain for backwards compat)
+    for group in build_groups(cmd_map):
+        cli.add_command(group)
 
 
 def main():
