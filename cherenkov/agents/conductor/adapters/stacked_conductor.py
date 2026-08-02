@@ -88,7 +88,7 @@ class StackedPRConductor:
             else:
                 layer.layer_name = f"{i+1:02d}-functional"
                 layer.branch_name = f"feat/{layer.layer_name}"
-                layer.base_branch = f"feat/{i:02d}-functional"
+                layer.base_branch = f"feat/{(i-1):02d}-functional"
 
     def _orchestrate_refactor_first(self, layers: list[PRSubTask]) -> None:
         """Interleave refactor and feature layers."""
