@@ -5,6 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0](https://github.com/moaidmoatasem/cherenkov-qa/compare/v1.2.0...v1.3.0) (2026-08-02)
+
+
+### Features
+
+* **cli:** add guardian start CLI entrypoint for Spec Guardian daemon ([#811](https://github.com/moaidmoatasem/cherenkov-qa/issues/811)) ([c5ca28a](https://github.com/moaidmoatasem/cherenkov-qa/commit/c5ca28a15365dcac08cdf25d44cd922bd8611da9))
+* **cli:** add guardian start CLI entrypoint for Spec Guardian daemon ([#811](https://github.com/moaidmoatasem/cherenkov-qa/issues/811)) ([#823](https://github.com/moaidmoatasem/cherenkov-qa/issues/823)) ([296d4d5](https://github.com/moaidmoatasem/cherenkov-qa/commit/296d4d505f74c07a4bebbc20dd3e28a8353bf7f3))
+* **cli:** give the Spec Guardian daemon a CLI entrypoint ([#811](https://github.com/moaidmoatasem/cherenkov-qa/issues/811)) ([4ac1f1e](https://github.com/moaidmoatasem/cherenkov-qa/commit/4ac1f1e1d151d20085f07de42c6a26067160f2d2))
+* **cli:** wire SAML/RBAC commands to real modules ([#810](https://github.com/moaidmoatasem/cherenkov-qa/issues/810)) ([352153d](https://github.com/moaidmoatasem/cherenkov-qa/commit/352153dcd9b21b6e36d530e5a3eaf86df448dcf8))
+* **cli:** wire SAML/RBAC commands to real modules ([#810](https://github.com/moaidmoatasem/cherenkov-qa/issues/810)) ([#824](https://github.com/moaidmoatasem/cherenkov-qa/issues/824)) ([f86d624](https://github.com/moaidmoatasem/cherenkov-qa/commit/f86d624b9370f6e8aeea9ddd70dc104cef5eff71))
+* **mcp:** expose check-suite/verify/generate as agent-invokable tools ([#812](https://github.com/moaidmoatasem/cherenkov-qa/issues/812)) ([c2b1bf2](https://github.com/moaidmoatasem/cherenkov-qa/commit/c2b1bf2730392c4f8b385a442ca33ad264a532f2))
+* **mcp:** expose check-suite/verify/generate as agent-invokable tools ([#812](https://github.com/moaidmoatasem/cherenkov-qa/issues/812)) ([#821](https://github.com/moaidmoatasem/cherenkov-qa/issues/821)) ([39d592d](https://github.com/moaidmoatasem/cherenkov-qa/commit/39d592d3e28b6dd76a78f9e156227c6c0850d4ae))
+* **mcp:** registry manifest + publish instructions, ready for submission ([#792](https://github.com/moaidmoatasem/cherenkov-qa/issues/792)) ([69b8540](https://github.com/moaidmoatasem/cherenkov-qa/commit/69b854025cb828284ef3298fec044386f0c23d5f))
+* **ui:** Complete 5-Workspace UI/UX Revamp, FastAPI Backend Wiring, and Playwright E2E Test Suite ([2e66658](https://github.com/moaidmoatasem/cherenkov-qa/commit/2e6665888d4a735f7a0dadb0be0e9bfdf1695de6))
+* **validate:** add --tests filter to scope runs ([#829](https://github.com/moaidmoatasem/cherenkov-qa/issues/829)) ([e35e3ba](https://github.com/moaidmoatasem/cherenkov-qa/commit/e35e3bae3c316e3b527061b995ea29d20bfbea4a))
+
+
+### Bug Fixes
+
+* fix:  ([ea555e7](https://github.com/moaidmoatasem/cherenkov-qa/commit/ea555e72485fec904e62b60a43d82adf4da732cd))
+* **core:** Resolve top 6 technical debt items identified in architecture review ([#832](https://github.com/moaidmoatasem/cherenkov-qa/issues/832)) ([00d277e](https://github.com/moaidmoatasem/cherenkov-qa/commit/00d277e876461f0f8dc27bd3712699c237422a2d))
+* **generate:** persist one distinct file per scenario ([#828](https://github.com/moaidmoatasem/cherenkov-qa/issues/828)) ([7c77fb4](https://github.com/moaidmoatasem/cherenkov-qa/commit/7c77fb4cf574b89eec40073b3c2d7afc4427444a))
+* **M1:** resolve friction bugs, tests, and ui automation ([6c7335b](https://github.com/moaidmoatasem/cherenkov-qa/commit/6c7335ba67cf162486f651d97f9c9c531c79f71a))
+* **sdd:** repair agent_sync MemSearch workspace_dir API mismatch ([c7b2008](https://github.com/moaidmoatasem/cherenkov-qa/commit/c7b20080ad000320253692c77241ee5ed645ed38))
+* **validate:** accept OpenAPI 3.0.x patch versions ([#829](https://github.com/moaidmoatasem/cherenkov-qa/issues/829)) ([fc48936](https://github.com/moaidmoatasem/cherenkov-qa/commit/fc48936e914aa35e897f07cfab59252140790f6c))
+
+
+### Documentation
+
+* add comprehensive architecture review report ([349d438](https://github.com/moaidmoatasem/cherenkov-qa/commit/349d43857e9b30e4b2112fa377c693c8f5b9fd07))
+* **cli:** document audit + record commands, update MCP config examples ([#814](https://github.com/moaidmoatasem/cherenkov-qa/issues/814)) ([ac6b977](https://github.com/moaidmoatasem/cherenkov-qa/commit/ac6b9777c9262ea1f8c363279ff46f3f16cb4ac7))
+* **getting-started:** document the `guardian` CLI command ([7a8a9a2](https://github.com/moaidmoatasem/cherenkov-qa/commit/7a8a9a26aabff47d8ddab918e213c14c29381c76))
+* **handover:** note [#811](https://github.com/moaidmoatasem/cherenkov-qa/issues/811) PR status ([02ef89b](https://github.com/moaidmoatasem/cherenkov-qa/commit/02ef89b02add2e4ad0242aae80d465332e084f4c))
+* lead verification pass — main certified, PAT expiry blocker recorded ([2483feb](https://github.com/moaidmoatasem/cherenkov-qa/commit/2483feb5ce724e9750a61f6620867079b29f1ceb))
+* **onboarding:** add prerequisites + tool install steps, fix cold-run blocker ([#826](https://github.com/moaidmoatasem/cherenkov-qa/issues/826), [#827](https://github.com/moaidmoatasem/cherenkov-qa/issues/827)) ([4fab3c1](https://github.com/moaidmoatasem/cherenkov-qa/commit/4fab3c11e8f07a5118db40779d78483b7128be39))
+* **onboarding:** align init visual with real cold-run output ([#826](https://github.com/moaidmoatasem/cherenkov-qa/issues/826)) ([8b13145](https://github.com/moaidmoatasem/cherenkov-qa/commit/8b131454bf4f2a348e3ce8694db7836e4ad5b83e))
+* **onboarding:** fix Act 4 transcript and scoping guidance ([#829](https://github.com/moaidmoatasem/cherenkov-qa/issues/829)) ([8c9c215](https://github.com/moaidmoatasem/cherenkov-qa/commit/8c9c215f4151e6d2e858d6772ef83dbc1c36d86e))
+* **onboarding:** fix stale refs in FAQ + init transcript ([#830](https://github.com/moaidmoatasem/cherenkov-qa/issues/830), [#831](https://github.com/moaidmoatasem/cherenkov-qa/issues/831)) ([e3b77a7](https://github.com/moaidmoatasem/cherenkov-qa/commit/e3b77a7c90a8c70640449abb79388ace138023aa))
+* reconcile phase 13/14 status with wired CLI ([#810](https://github.com/moaidmoatasem/cherenkov-qa/issues/810) [#811](https://github.com/moaidmoatasem/cherenkov-qa/issues/811) [#824](https://github.com/moaidmoatasem/cherenkov-qa/issues/824) [#823](https://github.com/moaidmoatasem/cherenkov-qa/issues/823)) ([307e9c4](https://github.com/moaidmoatasem/cherenkov-qa/commit/307e9c4b9a8a8e6a293db7a3c797ba04553b33f9))
+* reconcile release docs with v1.2.0 ([9f62a9a](https://github.com/moaidmoatasem/cherenkov-qa/commit/9f62a9a161960c0fdf215d76b28c89182379a11c))
+* **refactor:** map dual AI routing layers, propose consolidation ([#815](https://github.com/moaidmoatasem/cherenkov-qa/issues/815)) ([b23581f](https://github.com/moaidmoatasem/cherenkov-qa/commit/b23581fca06475e218d0b9759c786733e55871e7))
+* **refactor:** map dual AI routing layers, propose consolidation ([#815](https://github.com/moaidmoatasem/cherenkov-qa/issues/815)) ([#820](https://github.com/moaidmoatasem/cherenkov-qa/issues/820)) ([11a6c52](https://github.com/moaidmoatasem/cherenkov-qa/commit/11a6c524219fe4b3242fc10bcdaf89525a09c30f))
+* round-2 swarm result — friction fixes merged, M1 prep unblocked ([da97789](https://github.com/moaidmoatasem/cherenkov-qa/commit/da9778989560f786afb9d9828e460920e67bc6fa))
+* round-3 swarm result — wiki env-var refs fixed, tree hygiene, fresh verification ([d9a161f](https://github.com/moaidmoatasem/cherenkov-qa/commit/d9a161fad6c70faaffbc2891108d6874ec63dfba))
+* T-track swarm result — [#810](https://github.com/moaidmoatasem/cherenkov-qa/issues/810)-[#816](https://github.com/moaidmoatasem/cherenkov-qa/issues/816) done, friction logs filed ([#826](https://github.com/moaidmoatasem/cherenkov-qa/issues/826)-831), [#819](https://github.com/moaidmoatasem/cherenkov-qa/issues/819) tracked ([fe6f37b](https://github.com/moaidmoatasem/cherenkov-qa/commit/fe6f37b6164cca08a9c73f17464370b73a53bfbc))
+* **wiki:** replace stale env vars with real settings names ([156dba0](https://github.com/moaidmoatasem/cherenkov-qa/commit/156dba073d1823d28bf2edecaed0772eb685dd5d))
+
 ## [Unreleased]
 
 ### Added
