@@ -1,7 +1,7 @@
 # CHERENKOV -- Session Handover
 
-**Date:** 2026-08-01 (night — round 2: onboarding blockers + SDD fix)
-**HEAD:** `main` at `1df92b2`. Round 1 (T-track #810-816) merged; round 2 (friction fixes #826-831 + #792 manifest + SDD runtime) merged: **1849 passed, 2 failed** (pre-existing `test_verify_cmd.py` mock drift, tracked as #819).
+**Date:** 2026-08-02 (round 3: wiki env-var refs + tree hygiene + fresh verification)
+**HEAD:** `main` at `2e66658` (includes my wiki commit `156dba0`; parallel UI-revamp commit on top). **2064 passed, 2 failed** (pre-existing `test_verify_cmd.py` mock drift, tracked as #819).
 **Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"`.
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
 
@@ -19,8 +19,20 @@ Follow-up swarm on the #816 friction log + #792 + SDD runtime:
 | **#792** (MCP registry) | `manifest.json` (repo root, 890 lines: 37 tools with inputSchemas, auth, resources, 1.2.0); `mcp serve` initialize/tools-list smoke PASS; `docs/README-MCP-PUBLISH.md` rewrite with human checklist. **Submission still needs human** (Smithery login, marketplace account) | `feat/track-792-mcp-manifest` |
 | SDD runtime (agent_sync) | `scripts/agent_sync.py:40` `_memsearch_client()` uses `paths=[...]` (memsearch 0.4.x API) + graceful fallback; before/log/token/after/status all exit 0; 5 regression tests | `fix/sdd-runtime` |
 
+## Round 3 swarm result (2026-08-02)
+
+Docs-hygiene round — closes the last #831 finding and hardens the tree:
+
+| Item | Delivered |
+|---|---|
+| **Wiki stale env vars** (was the last open friction finding) | `docs/wiki/{FAQ,Configuration,Concepts,Security,CLI-Reference,Pipeline,Troubleshooting}.md` — `CHERENKOV_LLM_PROVIDER`/`CHERENKOV_LLM_MODEL`/`LOCALAI_URL`/`LOCALAI_BASE_URL` (NONE exist in `cherenkov/core/settings.py`) replaced with real names: `PROVIDER`, `GEN_MODEL`, `CHERENKOV_TIER_{SMALL,DEEP,VISION}_PROVIDER`, `CHERENKOV_FALLBACK_PROVIDER`+`CHERENKOV_FALLBACK_ENABLED`, `CHERENKOV_VLM_PROVIDER`/`CHERENKOV_VLM_LOCALAI_URL` (VLM tier only), `OLLAMA_URL`. The nonexistent `stub` LLM provider was dropped from FAQ/Configuration — the real no-LLM path is `generate --no-repair` (template fallback). Commit `156dba0`. |
+| **Branch hygiene** | 12 merged round-1/2 branches deleted (`feat/track-*`, `fix/track-*`, `fix/sdd-runtime`). |
+| **Verification** | Full fast suite on current main: **2064 passed, 2 failed** (#819 pre-existing). `slow`/`integration`/`e2e` markers collect zero offline tests — they are service-gated. |
+
+**Shared-tree hazard (repeat incident, 2026-08-02):** the parallel UI-revamp agent (`2e66658` — "5-Workspace UI/UX Revamp", FastAPI wiring + SPA catch-all route) was editing the shared tree mid-session; a full-suite run during its edits showed **14 transient failures** in `tests/integration/test_api_endpoints.py` (404s on `/api/v1/health` etc.). They vanished once the agent committed — rerun gave 2064 passed. **Lesson: never trust a full-suite result while `.agents/*` or `git status` shows another agent's in-flight edits; verify `git status --short` and rerun before reporting failures.** The SPA catch-all `/{full_path:path}` (registered last, 404s on `api/*`) does not break API routes in isolation (38/38 API tests pass alone).
+
 **Notes for next agents:**
-- **M1 prep is now unblocked**: session_a_zero_to_hero.md survives a cold run (verified). Remaining friction findings: `docs/wiki/` stale `CHERENKOV_LLM_PROVIDER`/`LOCALAI_BASE_URL` refs (FAQ.md:41,142,146; Configuration.md:79,185,194,215,302; Concepts.md:148; Security.md:49) — file an issue (PAT blocked issue-create).
+- **M1 prep is now unblocked**: session_a_zero_to_hero.md survives a cold run (verified). The last #831 finding (stale `docs/wiki/` env vars) was fixed in round 3 (`156dba0`) — `grep -rn CHERENKOV_LLM_PROVIDER docs/wiki` is clean.
 - Pre-existing test failures `test_verify_cmd.py::{test_no_divergences_exits_0,test_llm_flag_passed}` (mock drift vs E0.5i `known_identifiers`/`allow_mutations` kwargs) — tracked as **#819**, D7 means agents don't fix; needs SDET owner.
 - PAT (moaidmoatasem) has **repo write but NO issues/PR write scope** — can't create issues, comment, close PRs (duplicate #825 still open), or close issues. Maintainer action needed.
 - **Shared-tree hazard confirmed**: a parallel Claude agent (`claude/happy-noether-kt638y`) switched the shared tree mid-swarm; round-2 merges briefly landed on its branch then were redone on main. Check `git status`/`git branch` before and after any merge.
