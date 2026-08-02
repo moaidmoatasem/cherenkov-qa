@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowRight, Zap, CheckCircle2, AlertTriangle, Play, RefreshCw } from 'lucide-react';
-import { Card, PageHeader, KpiRing, Skeleton, EmptyState, MockBadge } from './ui';
+import { Card, PageHeader, KpiRing, Skeleton, EmptyState } from './ui';
 import { fetchDivergences, fetchReviewQueue, ReviewQueueItem, fetchMetricsData } from '../lib/api';
 import { Divergence } from '../types';
 import { useToast } from './ui/Toast';
@@ -293,8 +293,7 @@ export default function OverviewScreen({ onNewRun, onPilotRun, onNavigate }: Ove
 
       {/* Data source transparency footer */}
       <div className="flex items-center gap-2 text-[10px] font-mono text-[#7D8DA1]/60 border-t border-white/5 pt-3">
-        <MockBadge />
-        <span className="ml-2">KPI Ring readiness score is computed client-side. Signals and Truth Map screens require additional backend endpoints (Phase 4).</span>
+        <span>Release readiness metrics powered by live /api/v1/divergences, /api/v1/review/queue, and /api/v1/runs.</span>
       </div>
     </div>
   );

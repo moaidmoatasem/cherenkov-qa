@@ -5,9 +5,10 @@ interface PageHeaderProps {
   description?: string;
   primaryAction?: React.ReactNode | { label: string; onClick?: () => void; testId?: string };
   tabs?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
-export function PageHeader({ title, description, primaryAction, tabs }: PageHeaderProps) {
+export function PageHeader({ title, description, primaryAction, tabs, children }: PageHeaderProps) {
   let actionElement: React.ReactNode = null;
 
   if (primaryAction) {
@@ -40,9 +41,10 @@ export function PageHeader({ title, description, primaryAction, tabs }: PageHead
             </p>
           )}
         </div>
-        {actionElement && (
+        {(actionElement || children) && (
           <div className="flex items-center gap-3">
             {actionElement}
+            {children}
           </div>
         )}
       </div>

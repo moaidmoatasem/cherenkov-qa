@@ -174,7 +174,7 @@ export interface EndpointRichness {
   missingElements: string[];
 }
 
-export type StageId = 'ingest' | 'plan' | 'generate' | 'review' | 'visual' | 'perf';
+export type StageId = 'ingest' | 'plan' | 'generate' | 'review' | 'verify' | 'visual' | 'perf';
 
 export interface PipelineStage {
   id: StageId;

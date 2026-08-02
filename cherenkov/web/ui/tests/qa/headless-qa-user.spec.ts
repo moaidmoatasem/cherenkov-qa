@@ -26,6 +26,7 @@ import {
   CommandPalette,
 } from './page-objects';
 
+const API = 'http://127.0.0.1:8000';
 const SETTLE = 500;
 
 async function navTo(page: Page, id: string) {

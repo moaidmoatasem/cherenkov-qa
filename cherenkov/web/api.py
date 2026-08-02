@@ -79,10 +79,6 @@ from cherenkov.web.routes.conformance_routes import router as conformance_router
 
 app.include_router(conformance_router)
 
-from cherenkov.web.routes.static_routes import router as static_router
-
-app.include_router(static_router)
-
 from cherenkov.web.routes.data_routes import router as data_router
 
 app.include_router(data_router)
@@ -152,3 +148,9 @@ app.include_router(runs_router)
 from cherenkov.integrity.api import router as integrity_router
 
 app.include_router(integrity_router)
+
+# ── Static/SPA Fallback Route ──────────────────────────────────────────────────
+from cherenkov.web.routes.static_routes import router as static_router
+
+app.include_router(static_router)
+

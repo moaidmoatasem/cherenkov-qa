@@ -656,11 +656,11 @@ export default function ReviewScreen({ onUpdatePassRateAndCount, autonomy = 'Ass
                     {/* Gate 2: ast verification */}
                     <div className="p-3 rounded-xl border border-white/5 bg-white/5 space-y-1.5">
                       <div className="flex items-center gap-1.5">
-                        <CheckCircle className={`w-3.5 h-3.5 ${activeTest.gates.ast ? 'text-[#3FB950]' : 'text-[#D29922]'}`} />
-                        <span className="font-mono text-[10px] font-bold text-text-primary uppercase">AST validation</span>
+                        <CheckCircle className={`w-3.5 h-3.5 ${activeTest.gates.clientUsage ? 'text-[#3FB950]' : 'text-[#D29922]'}`} />
+                        <span className="font-mono text-[10px] font-bold text-text-primary uppercase">Client Usage validation</span>
                       </div>
                       <p className="text-[11px] text-[#7D8DA1]/85 leading-relaxed font-sans">
-                        {activeTest.gateReasons.ast || 'Syntax structure complies with ESM module imports and Playwright test callbacks.'}
+                        {activeTest.gateReasons.clientUsage || 'Syntax structure complies with ESM module imports and Playwright test callbacks.'}
                       </p>
                     </div>
 

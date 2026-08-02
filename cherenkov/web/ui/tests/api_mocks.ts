@@ -161,7 +161,7 @@ export const INITIAL_TESTS: TestItem[] = [
     method: 'POST',
     confidence: 0.98,
     verdict: 'approved',
-    gates: { syntax: true, structure: true, ast: true, novelty: true, dryRun: true, quality: true },
+    gates: { syntax: true, structure: true, clientUsage: true, novelty: true, dryRun: true, quality: true },
     gateReasons: {
       quality: 'All required parameters exist, assert statements robust and structured properly.'
     },
@@ -183,7 +183,7 @@ test('creates a pet successfully', async () => {
     method: 'GET',
     confidence: 0.94,
     verdict: 'approved',
-    gates: { syntax: true, structure: true, ast: true, novelty: true, dryRun: true, quality: true },
+    gates: { syntax: true, structure: true, clientUsage: true, novelty: true, dryRun: true, quality: true },
     gateReasons: {
       quality: 'Valid query param handling, path extraction matches OpenAPI specification.'
     },
@@ -205,7 +205,7 @@ test('fetches pet details by ID', async () => {
     method: 'PUT',
     confidence: 0.81,
     verdict: 'review',
-    gates: { syntax: true, structure: true, ast: true, novelty: true, dryRun: true, quality: false },
+    gates: { syntax: true, structure: true, clientUsage: true, novelty: true, dryRun: true, quality: false },
     gateReasons: {
       quality: 'quality 0.78 — assertion checks shape but not the updated pet\'s descriptive name.',
       novelty: 'Somewhat overlap with POST /pets, but updates logic is unique.'
@@ -233,9 +233,9 @@ test('updates pet name and state', async () => {
     method: 'DELETE',
     confidence: 0.45,
     verdict: 'review',
-    gates: { syntax: true, structure: true, ast: false, novelty: true, dryRun: false, quality: false },
+    gates: { syntax: true, structure: true, clientUsage: false, novelty: true, dryRun: false, quality: false },
     gateReasons: {
-      ast: 'Failed check: missing standard error catching block.',
+      clientUsage: 'Failed check: missing standard error catching block.',
       dryRun: 'Returns 400 instead of 404 on clean database rerun.',
       quality: 'No clean pre-setup sequencing order item created.'
     },
@@ -261,7 +261,7 @@ test('removes active store order', async () => {
     method: 'POST',
     confidence: 0.89,
     verdict: 'regenerating',
-    gates: { syntax: true, structure: true, ast: true, novelty: false, dryRun: true, quality: true },
+    gates: { syntax: true, structure: true, clientUsage: true, novelty: false, dryRun: true, quality: true },
     gateReasons: {
       novelty: 'Redundant code: very similar to coupon validator routine from checkout-v1 spec.'
     },

@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Network, AlertCircle, ArrowRight, Zap } from 'lucide-react';
-import { Card, PageHeader, ProvenanceChip, MockBadge, Skeleton } from './ui';
+import { Card, PageHeader, ProvenanceChip, Skeleton } from './ui';
 import { fetchTruthMapData, TruthMapNode, ProvenanceType } from '../lib/api';
 
 interface TruthMapScreenProps {
@@ -35,7 +35,6 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
   if (isLoading) {
     return (
       <div className="p-6 h-full overflow-hidden flex flex-col grid-bg bg-transparent relative z-10" id="truth-map-screen" data-testid="truth-map-screen">
-        <MockBadge />
         <PageHeader title="Endpoint Truth Graph" description="Unified claims graph mapping the alignment between OpenAPI specifications, server source code, and live HTTP database footprints." />
         <div className="flex-1 flex items-center justify-center">
           <Skeleton className="w-32 h-32 rounded-full" />
@@ -47,7 +46,6 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
   if (error) {
     return (
       <div className="p-6 h-full overflow-hidden flex flex-col grid-bg bg-transparent relative z-10" id="truth-map-screen" data-testid="truth-map-screen">
-        <MockBadge />
         <PageHeader title="Endpoint Truth Graph" description="Unified claims graph mapping the alignment between OpenAPI specifications, server source code, and live HTTP database footprints." />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-3">
@@ -65,7 +63,6 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
   if (!currentEndpoint) {
     return (
       <div className="p-6 h-full overflow-hidden flex flex-col grid-bg bg-transparent relative z-10" id="truth-map-screen" data-testid="truth-map-screen">
-        <MockBadge />
         <PageHeader title="Endpoint Truth Graph" description="Unified claims graph mapping the alignment between OpenAPI specifications, server source code, and live HTTP database footprints." />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-3">
@@ -83,7 +80,6 @@ export default function TruthMapScreen({ onNavigate }: TruthMapScreenProps) {
 
   return (
     <div className="p-6 h-full overflow-hidden flex flex-col justify-between grid-bg bg-transparent relative z-10" id="truth-map-screen" data-testid="truth-map-screen">
-      <MockBadge />
       <PageHeader
         title="Endpoint Truth Graph"
         description="Unified claims graph mapping the alignment between OpenAPI specifications, server source code, and live HTTP database footprints."

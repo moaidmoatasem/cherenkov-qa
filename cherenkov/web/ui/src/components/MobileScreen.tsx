@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Smartphone, Monitor, CheckCircle, XCircle, RotateCw, Play } from 'lucide-react';
-import { Card, PageHeader, MockBadge, EmptyState, Skeleton } from './ui';
+import { Card, PageHeader, EmptyState, Skeleton } from './ui';
 
 
 interface MobileDevice {
@@ -84,9 +84,6 @@ export default function MobileScreen() {
                     </button>
                   </div>
                 )}
-                <div className="absolute top-2 right-2">
-                  <MockBadge />
-                </div>
               </Card>
             ))}
       </div>

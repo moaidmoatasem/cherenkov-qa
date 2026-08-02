@@ -15,7 +15,8 @@ import {
   Activity,
   Unlock,
   Coins,
-  Zap
+  Zap,
+  Layers,
 } from 'lucide-react';
 import CherenkovLogo from './CherenkovLogo';
 import { fetchSettings, updateSettings, SystemSettings } from '../lib/api';

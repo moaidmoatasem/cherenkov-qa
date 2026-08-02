@@ -62,22 +62,41 @@ export async function mockChatStream(page: Page) {
 
 export class Sidebar {
   constructor(private page: Page) {}
-  get el() { return this.page.locator('#cherenkov-sidebar'); }
+  get el() { return this.page.locator('#cherenkov-sidebar, nav').first(); }
   async navTo(id: string) {
-    await this.page.click(`#nav-item-${id}`);
+    const wsLocator = this.page.locator(`[data-testid="nav-workspace-${id}"]`);
+    if (await wsLocator.count() > 0) {
+      await wsLocator.click();
+    } else {
+      await this.page.click(`#nav-item-${id}`);
+    }
     await this.page.waitForTimeout(SETTLE);
   }
-  async newRun() { await this.page.click('#btn-sidebar-new-run'); await this.page.waitForTimeout(SETTLE); }
-  get projectSelector() { return this.page.locator('#project-selector'); }
-  get tokenPool() { return this.page.getByText('LLM Token Pool'); }
-  get workspace() { return this.page.getByText('Active Workspace'); }
+  async navToWorkspace(ws: 'dashboard' | 'authoring' | 'triage' | 'intelligence' | 'settings') {
+    await this.page.locator(`[data-testid="nav-workspace-${ws}"]`).click();
+    await this.page.waitForTimeout(SETTLE);
+  }
+  async newRun() {
+    const btn = this.page.locator('[data-testid="nav-new-analysis-btn"], #btn-sidebar-new-run');
+    await btn.first().click();
+    await this.page.waitForTimeout(SETTLE);
+  }
+  get projectSelector() { return this.page.locator('#project-selector, [data-testid="project-selector-dropdown"]'); }
+  get tokenPool() { return this.page.getByText('LLM Token Pool').or(this.page.getByText('Tokens:')); }
+  get workspace() { return this.page.getByText('Active Workspace').or(this.page.getByText('Workspaces')); }
   async search(query: string) {
-    await this.page.fill('#workspace-search-input', query);
-    await this.page.waitForTimeout(200);
+    const searchInput = this.page.locator('#workspace-search-input');
+    if (await searchInput.count() > 0) {
+      await searchInput.fill(query);
+      await this.page.waitForTimeout(200);
+    }
   }
   async clearSearch() {
-    await this.page.fill('#workspace-search-input', '');
-    await this.page.waitForTimeout(200);
+    const searchInput = this.page.locator('#workspace-search-input');
+    if (await searchInput.count() > 0) {
+      await searchInput.fill('');
+      await this.page.waitForTimeout(200);
+    }
   }
 }
 
@@ -420,6 +439,49 @@ export class VisualRegressionPage {
     await this.page.locator(`#visual-scenario-${id} button:has-text("Reject")`).click();
     await this.page.waitForTimeout(300);
   }
+}
+
+// ── 5 Core Workspaces Page Object Models ──────────────────────────────────
+export class DashboardWorkspacePage {
+  constructor(private page: Page) {}
+  get el() { return this.page.locator('#dashboard-workspace'); }
+  get releaseReadinessCard() { return this.page.getByTestId('release-readiness-card'); }
+  get verdictHistoryTable() { return this.page.getByTestId('verdict-history-table'); }
+  get integrityHeatmap() { return this.page.getByTestId('integrity-heatmap'); }
+}
+
+export class AuthoringWorkspacePage {
+  constructor(private page: Page) {}
+  get el() { return this.page.locator('#authoring-workspace'); }
+  get specIngestPanel() { return this.page.getByTestId('spec-ingest-panel'); }
+  get doctorCheckWidget() { return this.page.getByTestId('doctor-check-widget'); }
+  get intentAuthoringPanel() { return this.page.getByTestId('intent-authoring-panel'); }
+  get livePipelineMonitor() { return this.page.getByTestId('live-pipeline-monitor'); }
+}
+
+export class TriageWorkspacePage {
+  constructor(private page: Page) {}
+  get el() { return this.page.locator('#triage-workspace'); }
+  get hitlReviewQueue() { return this.page.getByTestId('hitl-review-queue'); }
+  get divergenceTable() { return this.page.getByTestId('divergence-table'); }
+  get specVsRealityDiffViewer() { return this.page.getByTestId('spec-vs-reality-diff-viewer'); }
+}
+
+export class IntelligenceWorkspacePage {
+  constructor(private page: Page) {}
+  get el() { return this.page.locator('#intelligence-workspace'); }
+  get sseChatAssistant() { return this.page.getByTestId('sse-chat-assistant'); }
+  get knowledgeGraphExplorer() { return this.page.getByTestId('knowledge-graph-explorer'); }
+  get sddMemoryCockpit() { return this.page.getByTestId('sdd-memory-cockpit'); }
+}
+
+export class SettingsWorkspacePage {
+  constructor(private page: Page) {}
+  get el() { return this.page.locator('#settings-workspace'); }
+  get projectManager() { return this.page.getByTestId('project-manager'); }
+  get deviceManager() { return this.page.getByTestId('device-manager'); }
+  get ejectSuitePanel() { return this.page.getByTestId('eject-suite-panel'); }
+  get governanceSettings() { return this.page.getByTestId('governance-settings'); }
 }
 
 

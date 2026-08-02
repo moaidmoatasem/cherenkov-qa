@@ -624,6 +624,24 @@ test.describe('CHERENKOV QA Dashboard — Full Screen Regression Suite', () => {
     await expect(page.getByTestId('device-card-m1')).toBeVisible();
   });
 
+  // ── 29. 5-Workspace Direct Core Navigation ──────────────────────────────
+  test('5 Core Workspaces: direct switching via NavigationBar locators', async ({ page }) => {
+    await page.getByTestId('nav-workspace-dashboard').click();
+    await expect(page.locator('#dashboard-workspace')).toBeVisible();
+
+    await page.getByTestId('nav-workspace-authoring').click();
+    await expect(page.locator('#authoring-workspace')).toBeVisible();
+
+    await page.getByTestId('nav-workspace-triage').click();
+    await expect(page.locator('#triage-workspace')).toBeVisible();
+
+    await page.getByTestId('nav-workspace-intelligence').click();
+    await expect(page.locator('#intelligence-workspace')).toBeVisible();
+
+    await page.getByTestId('nav-workspace-settings').click();
+    await expect(page.locator('#settings-workspace')).toBeVisible();
+  });
+
 });
 
 // ── Error-Path E2E Suite (NE9) ─────────────────────────────────────────────

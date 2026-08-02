@@ -48,7 +48,7 @@ export function makeTestItem(overrides: Partial<TestItem> = {}): TestItem {
     method: 'GET',
     confidence: 0.9,
     verdict: 'approved',
-    gates: { syntax: true, structure: true, ast: true, novelty: true, dryRun: true, quality: true },
+    gates: { syntax: true, structure: true, clientUsage: true, novelty: true, dryRun: true, quality: true },
     gateReasons: {},
     code: `test('generated test ${_counter}', async () => { expect(true).toBe(true); });`,
     ...overrides,

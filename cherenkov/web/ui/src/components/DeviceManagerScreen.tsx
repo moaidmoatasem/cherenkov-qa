@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Cpu, Monitor, Wifi, WifiOff, CheckCircle, XCircle } from 'lucide-react';
-import { Card, PageHeader, MockBadge, EmptyState, Skeleton } from './ui';
+import { Card, PageHeader, EmptyState, Skeleton } from './ui';
 import { fetchDoctor, DoctorCheck } from '../lib/api';
 
 export default function DeviceManagerScreen() {
@@ -62,7 +62,6 @@ export default function DeviceManagerScreen() {
         title="Device & Provider Manager"
         description="VLM device detection, provider tiers, and runtime health checks."
       />
-      <MockBadge />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="flex flex-col p-6">

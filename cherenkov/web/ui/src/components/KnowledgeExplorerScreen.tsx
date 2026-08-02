@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Brain, Search, Database } from 'lucide-react';
-import { Card, PageHeader, MockBadge, EmptyState, Skeleton } from './ui';
+import { Card, PageHeader, EmptyState, Skeleton } from './ui';
 import { queryKnowledge } from '../lib/api';
 
 export default function KnowledgeExplorerScreen() {

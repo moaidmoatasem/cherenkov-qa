@@ -24,3 +24,18 @@ async def serve_assets(path: str):
     if os.path.exists(asset):
         return FileResponse(asset)
     raise HTTPException(status_code=404, detail="Asset not found")
+
+
+@router.get("/{full_path:path}")
+async def serve_spa_fallback(full_path: str):
+    if full_path.startswith("api/"):
+        raise HTTPException(status_code=404, detail="API endpoint not found")
+
+    file_path = os.path.join(_ui_dist, full_path)
+    if os.path.isfile(file_path):
+        return FileResponse(file_path)
+
+    index = os.path.join(_ui_dist, "index.html")
+    if os.path.exists(index):
+        return FileResponse(index)
+    return {"status": "UI not built. Run `npm run build` in cherenkov/web/ui/."}
