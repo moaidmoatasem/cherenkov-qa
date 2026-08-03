@@ -1,25 +1,18 @@
 {
   "session": {
-    "id": "sess_20260803074400_75e1eb",
+    "id": "sess_20260803173015_c4d546",
     "status": "closed",
-    "task": "verify_merge",
-    "started_at": "2026-08-03T07:44:00.108589+00:00",
-    "ended_at": "2026-08-03T08:01:20.638634+00:00",
-    "findings_count": 0,
+    "task": "validation",
+    "started_at": "2026-08-03T17:30:15.481477+00:00",
+    "ended_at": "2026-08-03T17:30:16.730981+00:00",
+    "findings_count": 1,
     "token_total": 0,
-    "summary": "UI validation work merged to main via PR #852 (4ca14ac9/df307edd). Verified merged main: 48/48 playwright real-backend tests pass, pytest exit 0, tsc exit 0, vite build ok. Fixed stale SSE tests (live substrate streams real tokens, not [MOCK]), eject-test fixture clobbering (unique output path + gitignore), logger json.dumps default=str, tsconfig include src. Parallel agents advanced main to 17059965 (#854-#856); AirLLM WIP left untouched.",
+    "summary": "Full 48-test gate GREEN on latest main a7b5a166: pytest 0, headless 23/23, e2e 25/25. Local synced to origin. Vite root fixed (ui dir). Ollama 7b OOM env issue worked around via 3b model.",
     "compacted": true,
-    "task_type": "verify_merge",
+    "task_type": "validation",
     "source": "cherenkov"
   },
   "previous_sessions": [
-    {
-      "id": "sess_20260801144819_bc0b43",
-      "task": "exploration",
-      "ended_at": null,
-      "summary": null,
-      "token_total": 0
-    },
     {
       "id": "sess_20260801144835_36a447",
       "task": "E0.5d_conformance_corpus",
@@ -82,7 +75,14 @@
       "ended_at": "2026-08-02T01:38:58.190145+00:00",
       "summary": "UI Revamp complete, backend routing fixed, git commit & push verified",
       "token_total": 0
+    },
+    {
+      "id": "sess_20260803074400_75e1eb",
+      "task": "verify_merge",
+      "ended_at": "2026-08-03T08:01:20.638634+00:00",
+      "summary": "UI validation work merged to main via PR #852 (4ca14ac9/df307edd). Verified merged main: 48/48 playwright real-backend tests pass, pytest exit 0, tsc exit 0, vite build ok. Fixed stale SSE tests (live substrate streams real tokens, not [MOCK]), eject-test fixture clobbering (unique output path + gitignore), logger json.dumps default=str, tsconfig include src. Parallel agents advanced main to 17059965 (#854-#856); AirLLM WIP left untouched.",
+      "token_total": 0
     }
   ],
-  "sessions_since_compact": 23
+  "sessions_since_compact": 24
 }
