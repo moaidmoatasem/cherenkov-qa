@@ -159,6 +159,47 @@ cherenkov generate --spec ./openapi.yaml --output-dir ./tests --no-repair
 
 ---
 
+#### `admin`
+Admin utilities: manage service accounts, rotate keys, and run admin-only maintenance tasks.
+
+```bash
+./bin/cherenkov admin --help
+./bin/cherenkov admin rotate-keys
+```
+
+---
+
+#### `model`
+Model management: download, list, and pin models used by CHERENKOV (Ollama/LocalAI integration).
+
+```bash
+./bin/cherenkov model --help
+./bin/cherenkov model list
+./bin/cherenkov model pin <model-name>
+```
+
+---
+
+#### `operate`
+Operational commands for runbook actions and long-running tasks (start/stop/health of agents).
+
+```bash
+./bin/cherenkov operate --help
+./bin/cherenkov operate start-agent --name skeptic
+```
+
+---
+
+#### `pipeline`
+Pipeline helpers: orchestrate CI/CD fragments, validate landing zones, and run canary checks.
+
+```bash
+./bin/cherenkov pipeline --help
+./bin/cherenkov pipeline validate --ci
+```
+
+---
+
 #### `self-test`
 Run a deterministic dry-run of the pipeline (mocking Ollama and the server).
 
