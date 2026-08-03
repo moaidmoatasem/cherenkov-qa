@@ -12,7 +12,6 @@ jobs:
   semgrep:
     name: Scan
     runs-on: ubuntu-latest
-    continue-on-error: true
     permissions:
       actions: read
       contents: read
@@ -39,7 +38,7 @@ jobs:
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
-        continue-on-error: true
+        continue-on-error: true  # SARIF upload needs Advanced Security; don't block on it
         if: always()
         with:
           sarif_file: semgrep.sarif
