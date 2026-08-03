@@ -281,7 +281,7 @@ cherenkov mobile validate --target emulator-5554 --local
 
 ---
 agent 2:
-**Phase 2 Status Confirmation**: Based on `ROADMAP_NEXT.md`, Phase 2 (5 QA users validation) is **⛔ Not started** with *0 attributable QA reviewers*. However, per your instruction to ignore that gate, I'll proceed with the assumption that validation is complete.
+**Phase 2 Status Confirmation**: Based on `_archive/ROADMAP_NEXT.md`, Phase 2 (5 QA users validation) is **⛔ Not started** with *0 attributable QA reviewers*. However, per your instruction to ignore that gate, I'll proceed with the assumption that validation is complete.
 
 ---
 
@@ -550,7 +550,7 @@ cherenkov mobile validate --target emulator-5554 --local
 
 ---
 2:
-**Phase 2 Status Confirmation**: Based on `ROADMAP_NEXT.md`, Phase 2 (5 QA users validation) is **⛔ Not started** with *0 attributable QA reviewers*. However, per your instruction to ignore that gate, I'll proceed with the assumption that validation is complete.
+**Phase 2 Status Confirmation**: Based on `_archive/ROADMAP_NEXT.md`, Phase 2 (5 QA users validation) is **⛔ Not started** with *0 attributable QA reviewers*. However, per your instruction to ignore that gate, I'll proceed with the assumption that validation is complete.
 
 ---
 
@@ -866,7 +866,7 @@ Please review the plan and let me know if you'd like to:
 
 **Status:** Draft v0.1 · **Date:** 2026-06-08
 **Author:** Autonomous planning agent (response to `docs/vision/MOBILE_AUTOMATION_RESEARCH.md`)
-**SSOT anchors:** [`docs/HANDOVER.md`](../HANDOVER.md) · [`docs/SCOPE_LEDGER.md`](../SCOPE_LEDGER.md) · [`docs/ROADMAP_NEXT.md`](../ROADMAP_NEXT.md) · [`docs/vision/00_VISION.md`](../vision/00_VISION.md) · [`docs/vision/01_ARCHITECTURE.md`](../vision/01_ARCHITECTURE.md) · [`docs/vision/06_AUTONOMOUS_QA_FABRIC.md`](../vision/06_AUTONOMOUS_QA_FABRIC.md)
+**SSOT anchors:** [`docs/HANDOVER.md`](../HANDOVER.md) · [`docs/SCOPE_LEDGER.md`](../SCOPE_LEDGER.md) · [`docs/_archive/ROADMAP_NEXT.md`](../_archive/ROADMAP_NEXT.md) · [`docs/vision/00_VISION.md`](../vision/00_VISION.md) · [`docs/vision/01_ARCHITECTURE.md`](../vision/01_ARCHITECTURE.md) · [`docs/vision/06_AUTONOMOUS_QA_FABRIC.md`](../vision/06_AUTONOMOUS_QA_FABRIC.md)
 
 > **Anti-drift reminder (HANDOVER §2).** No "v3.1 + delta", no fabricated
 > tests, no "100% complete" claims. Every implementation step exits on
@@ -1245,7 +1245,7 @@ All paths are relative to repo root unless absolute. New files are
 | `cherenkov/execution/eject.py` | Extend the ejector to recognise the `mobile/maestro_*.yaml` eject pattern. Verify the ejected dir contains zero `cherenkov` imports — same rule the API ejector already enforces. |
 | `docs/HANDOVER.md` | Update the Track A inventory list and SCOPE_LEDGER §B to note the new mobile seam (one bullet under "WIDENED Sources/Models/Artifacts/Oracles"). Do not change the validation-gate status. |
 | `docs/SCOPE_LEDGER.md` | Add the mobile work to §B "Built-ahead, now LIVE" table — same row pattern as the existing `ai/openai_client.py` and `stages/visual/`. |
-| `docs/ROADMAP_NEXT.md` | Add a new row to Wave 6 "Earned expansion" with the mobile capability ticket IDs and a one-line note that they are gated on demand signal from the 5-QA panel. |
+| `docs/_archive/ROADMAP_NEXT.md` | Add a new row to Wave 6 "Earned expansion" with the mobile capability ticket IDs and a one-line note that they are gated on demand signal from the 5-QA panel. |
 | `docs/vision/06_AUTONOMOUS_QA_FABRIC.md` | Update the §2.1 table: change "Vision perception" scale-up target from "add VLM provider" to "add VLM provider + Pilot agent + mobile source adapter" with the now-built real modules referenced. |
 | `docs/vision/02_ROADMAP.md` | Add E14 (Mobile Conformance) to the Gantt at the end, gated on Wave 5. |
 | `AGENTS.md` | Add a one-line reference to `docs/skills/mobile.md` in the autonomous-fabric section. |
@@ -1742,7 +1742,7 @@ Maestro MCP server.
 ### Step 8 — Land the dashboard UI
 
 **Why last:** the dashboard is the validation vehicle (per
-`ROADMAP_NEXT.md §1`); it must reflect the truth the previous steps
+`_archive/ROADMAP_NEXT.md §1`); it must reflect the truth the previous steps
 have produced, not lie about it (the Wave 2 lesson).
 
 - Add `cherenkov/web/mobile_routes.py` and mount in `cherenkov/web/api.py`.
@@ -1762,14 +1762,14 @@ the §1 anti-drift reminder).
 
 - Update `docs/HANDOVER.md` §3 (one bullet on the mobile capability) and
   SCOPE_LEDGER §B.
-- Update `docs/ROADMAP_NEXT.md` Wave 6 with the new tickets.
+- Update `docs/_archive/ROADMAP_NEXT.md` Wave 6 with the new tickets.
 
 5:
 # Implementation Plan: Mobile Testing Context for CHERENKOV
 
 **Status:** Draft v0.1 · **Date:** 2026-06-08
 **Author:** Autonomous planning agent (response to `docs/vision/MOBILE_AUTOMATION_RESEARCH.md`)
-**SSOT anchors:** [`docs/HANDOVER.md`](../HANDOVER.md) · [`docs/SCOPE_LEDGER.md`](../SCOPE_LEDGER.md) · [`docs/ROADMAP_NEXT.md`](../ROADMAP_NEXT.md) · [`docs/vision/00_VISION.md`](../vision/00_VISION.md) · [`docs/vision/01_ARCHITECTURE.md`](../vision/01_ARCHITECTURE.md) · [`docs/vision/06_AUTONOMOUS_QA_FABRIC.md`](../vision/06_AUTONOMOUS_QA_FABRIC.md)
+**SSOT anchors:** [`docs/HANDOVER.md`](../HANDOVER.md) · [`docs/SCOPE_LEDGER.md`](../SCOPE_LEDGER.md) · [`docs/_archive/ROADMAP_NEXT.md`](../_archive/ROADMAP_NEXT.md) · [`docs/vision/00_VISION.md`](../vision/00_VISION.md) · [`docs/vision/01_ARCHITECTURE.md`](../vision/01_ARCHITECTURE.md) · [`docs/vision/06_AUTONOMOUS_QA_FABRIC.md`](../vision/06_AUTONOMOUS_QA_FABRIC.md)
 
 > **Anti-drift reminder (HANDOVER §2).** No "v3.1 + delta", no fabricated
 > tests, no "100% complete" claims. Every implementation step exits on
@@ -2148,7 +2148,7 @@ All paths are relative to repo root unless absolute. New files are
 | `cherenkov/execution/eject.py` | Extend the ejector to recognise the `mobile/maestro_*.yaml` eject pattern. Verify the ejected dir contains zero `cherenkov` imports — same rule the API ejector already enforces. |
 | `docs/HANDOVER.md` | Update the Track A inventory list and SCOPE_LEDGER §B to note the new mobile seam (one bullet under "WIDENED Sources/Models/Artifacts/Oracles"). Do not change the validation-gate status. |
 | `docs/SCOPE_LEDGER.md` | Add the mobile work to §B "Built-ahead, now LIVE" table — same row pattern as the existing `ai/openai_client.py` and `stages/visual/`. |
-| `docs/ROADMAP_NEXT.md` | Add a new row to Wave 6 "Earned expansion" with the mobile capability ticket IDs and a one-line note that they are gated on demand signal from the 5-QA panel. |
+| `docs/_archive/ROADMAP_NEXT.md` | Add a new row to Wave 6 "Earned expansion" with the mobile capability ticket IDs and a one-line note that they are gated on demand signal from the 5-QA panel. |
 | `docs/vision/06_AUTONOMOUS_QA_FABRIC.md` | Update the §2.1 table: change "Vision perception" scale-up target from "add VLM provider" to "add VLM provider + Pilot agent + mobile source adapter" with the now-built real modules referenced. |
 | `docs/vision/02_ROADMAP.md` | Add E14 (Mobile Conformance) to the Gantt at the end, gated on Wave 5. |
 | `AGENTS.md` | Add a one-line reference to `docs/skills/mobile.md` in the autonomous-fabric section. |
@@ -2645,7 +2645,7 @@ Maestro MCP server.
 ### Step 8 — Land the dashboard UI
 
 **Why last:** the dashboard is the validation vehicle (per
-`ROADMAP_NEXT.md §1`); it must reflect the truth the previous steps
+`_archive/ROADMAP_NEXT.md §1`); it must reflect the truth the previous steps
 have produced, not lie about it (the Wave 2 lesson).
 
 - Add `cherenkov/web/mobile_routes.py` and mount in `cherenkov/web/api.py`.
@@ -2665,7 +2665,7 @@ the §1 anti-drift reminder).
 
 - Update `docs/HANDOVER.md` §3 (one bullet on the mobile capability) and
   SCOPE_LEDGER §B.
-- Update `docs/ROADMAP_NEXT.md` Wave 6 with the new tickets.
+- Update `docs/_archive/ROADMAP_NEXT.md` Wave 6 with the new tickets.
 - Update `docs/vision/06_AUTONOMOUS_QA_FABRIC.md` §2.1 with the
   now-built real modules.
 - Add E14 (Mobile Conformance) to `docs/vision/02_ROADMAP.md`.
@@ -2676,7 +2676,7 @@ the §1 anti-drift reminder).
 
 ### Step 10 — Gate the work behind the 5-QA validation gate
 
-**Why last:** per `HANDOVER §5` and `ROADMAP_NEXT.md` Wave 5, the
+**Why last:** per `HANDOVER §5` and `_archive/ROADMAP_NEXT.md` Wave 5, the
 validation gate is the milestone that turns "built" into "shipped." No
 mobile work counts as "shipped" until ≥1 of the 5 QA reviewers runs the
 mobile golden path on a phone and gives attributable "yes" evidence

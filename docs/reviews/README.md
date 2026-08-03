@@ -17,6 +17,6 @@ material errors. Read them through the project's honest baseline ([HANDOVER.md](
 ## How recommendations were triaged
 
 All actionable recommendations from the teammate reviews were triaged into
-[../ROADMAP_NEXT.md §9](../ROADMAP_NEXT.md). The rule applied: **anything predicated on the gate having
+[../_archive/ROADMAP_NEXT.md §9](../_archive/ROADMAP_NEXT.md). The rule applied: **anything predicated on the gate having
 passed (ship now, un-quarantine Track B/C, pricing/SaaS) is deferred until the real validation gate
 passes** (validation-first). Genuinely useful items were adopted as tickets or roadmap backlog.

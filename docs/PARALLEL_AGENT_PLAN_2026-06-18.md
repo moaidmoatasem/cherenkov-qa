@@ -109,10 +109,10 @@
 
 **Steps:**
 1. Archive these DEPRECATED files to `docs/_archive/` (keep them but move out of main flow):
-   - `docs/INTEGRATION_HANDOVER_REPORT.md` (FABRICATED banner already present)
-   - `docs/ROADMAP_RECONCILIATION.md` (DISPUTED)
-   - `docs/ROADMAP_NEXT.md` (SUPERSEDED by PHASE_PLAN.md)
-   - `docs/DEFERRED_VISION_ARCHIVE.md` (already archived)
+   - `docs/_archive/INTEGRATION_HANDOVER_REPORT.md` (FABRICATED banner already present)
+   - `docs/_archive/ROADMAP_RECONCILIATION.md` (DISPUTED)
+   - `docs/_archive/ROADMAP_NEXT.md` (SUPERSEDED by PHASE_PLAN.md)
+   - `docs/_archive/DEFERRED_VISION_ARCHIVE.md` (already archived)
 2. Add a clear "SUPERSEDED — see PHASE_PLAN.md" redirect header to each
 3. Consolidate overlapping FE dashboard docs:
    - Merge `FE_DASHBOARD_REGRESSION.md` into `FE_DASHBOARD_FULL_REGRESSION_TEST_SUITE.md`

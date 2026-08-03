@@ -181,7 +181,7 @@ For every cross-phase integration point:
 - All 6 ADRs exist in `docs/adr/`
 - All 4 strategy docs exist in `docs/`
 - CI/CD workflows exist in `.github/workflows/`
-- HANDOVER.md, SCOPE_LEDGER.md, ROADMAP_NEXT.md updated
+- HANDOVER.md, SCOPE_LEDGER.md, _archive/ROADMAP_NEXT.md updated
 - Gate status consistent across all 5 governing docs
 
 **Key Deliverables:**
@@ -473,7 +473,7 @@ For every cross-phase integration point:
 |---|------|--------|
 | 1 | `docs/HANDOVER.md` | Update §5 (project status with Phase -1 through 8), §6 (consolidated next steps), §7 (expand architecture for all new modules), §8 (update environment for Docker+LocalAI) |
 | 2 | `docs/SCOPE_LEDGER.md` | Add §D (new packages: knowledge/, chat/, sources/mobile/, substrate/providers/vlm.py, devices.py). Update §B for Phase 0a bug fixes. |
-| 3 | `docs/ROADMAP_NEXT.md` | Add Phase -1 (Planning), Phase 0a (Bug Fixes), Phase 0b (Foundations). Restructure Waves 2-5 into Phases 1-8. |
+| 3 | `docs/_archive/ROADMAP_NEXT.md` | Add Phase -1 (Planning), Phase 0a (Bug Fixes), Phase 0b (Foundations). Restructure Waves 2-5 into Phases 1-8. |
 | 4 | `docs/diagrams/DIAGRAMS.md` | Add 7 diagrams: Second Brain, Event Bus, Clean Architecture, Desktop Host, Chat Agent, Mobile Tiers, Updated System Context |
 | 5 | `docs/vision/01_ARCHITECTURE.md` | Add L0.5 (Knowledge), L1.5 (Chat Agent), L3.5 (Mobile) layers. Update system context for new capabilities. |
 | 6 | `docs/vision/09_WIRING_SCHEMA.md` | Add new seams: knowledge/v1, chat/v1, mobile/eject/v1, vlm/v1. Update dependency matrix. |

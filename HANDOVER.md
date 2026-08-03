@@ -84,7 +84,7 @@ Pick whichever of #809-#816 is unclaimed and matches your context window — the
 
 These apply any time the maintainer isn't actively in the loop, not just a specific date — treat them as durable, not a temporary posture.
 
-- **Verify before trusting.** This repo has a documented history of prior agent sessions fabricating completion claims (see `CHANGELOG.md`'s "Corrected" note under `[1.2.0]`, and the general norm in `CLAUDE.md`: don't trust `ROADMAP_RECONCILIATION.md`, memory files are hints not truth). Before claiming anything is "done," grep for the actual code and cite file:line. This applies to your own prior work too, not just other sessions'.
+- **Verify before trusting.** This repo has a documented history of prior agent sessions fabricating completion claims (see `CHANGELOG.md`'s "Corrected" note under `[1.2.0]`, and the general norm in `CLAUDE.md`: don't trust `docs/_archive/ROADMAP_RECONCILIATION.md`, memory files are hints not truth). Before claiming anything is "done," grep for the actual code and cite file:line. This applies to your own prior work too, not just other sessions'.
 - **One branch per concern, PR against `main`, draft by default.** Don't push directly to `main`. Check `git status` and recent `git log` before starting — this is a shared, volatile tree; other agents may be mid-edit.
 - **Stage specific files, never `git add -A`.**
 - **Never touch M1's actual pass/fail criteria.** It requires real external practitioners; there is no code change that satisfies it, no matter how much idle capacity is available. Prep work (like #816) is fine; simulating or approximating the milestone itself is not.
@@ -282,7 +282,7 @@ A complete onboarding and Knowledge Transfer package was produced for documentat
 | `PITCH_DECK.md` | 10-slide markdown pitch deck with talking points, visual cues, timestamps |
 | `PITCH_DECK.html` | Interactive HTML presentation (dark theme, glassmorphism, keyboard nav) |
 | `FAQ_OBJECTIONS.md` | 25+ Q&A across Technical, Trust/Compliance, and Business categories |
-| `VIDEO_RECORDING_GUIDE.md` | 9-chapter guide: Loom/OBS/asciinema setup, audio, publishing |
+| `onboarding/VIDEO_RECORDING_GUIDE.md` | 9-chapter guide: Loom/OBS/asciinema setup, audio, publishing |
 | `RECORDING_ASSETS/README.md` | Asset directory: naming conventions, recording instructions, manifest template |
 
 **Docs integration:** `docs/INDEX.md` updated with `📹 Onboarding & KT Sessions` section.

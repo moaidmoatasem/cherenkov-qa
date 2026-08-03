@@ -1,6 +1,6 @@
 # CHERENKOV — Horizon 3: Docker AI Platform Integration
 
-**Status:** Strategic proposal · **Date:** 2026-06-07 · **Parent:** Horizon V (ROADMAP_NEXT.md)
+**Status:** Strategic proposal · **Date:** 2026-06-07 · **Parent:** Horizon V (_archive/ROADMAP_NEXT.md)
 **Predecessor:** [`10_HORIZON_2.md`](10_HORIZON_2.md) (Adoption, Voice & Prove-in-the-Wild)
 **See also:** [`00_VISION.md`](00_VISION.md) (north-star), [`01_ARCHITECTURE.md`](01_ARCHITECTURE.md) (layers), [`07_MASTER_PLAN.md`](07_MASTER_PLAN.md) (E7-E13)
 

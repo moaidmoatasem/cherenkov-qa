@@ -545,7 +545,7 @@ Status:Approved / Ready to Merge. The document is robust, authoritative, and rea
 | Document | Role in this review |
 |---|---|
 | `docs/HANDOVER.md` | SSOT for project status (Track A built, gate unrun, 0/5 reviews) |
-| `docs/ROADMAP_NEXT.md` | Authoritative forward plan (Validation-First, Horizon V) |
+| `docs/_archive/ROADMAP_NEXT.md` | Authoritative forward plan (Validation-First, Horizon V) |
 | `docs/ROADMAP_PACKAGING.md` | **Contains the explicit "No Kubernetes" guardrail** (§0 + §3) |
 | `docs/SCOPE_LEDGER.md` | Honest map of live vs built-ahead code |
 | `docs/vision/12_DOCKER_AI_HORIZON.md` | Predecessor (Horizon 3 strategic) |
@@ -630,7 +630,7 @@ The operator's `onDivergence.createIssue` and `onDivergence.notifyWebhook` actio
 The doc's front-matter links to `ROADMAP_PACKAGING.md`, but not to:
 - `HANDOVER.md` (project status SSOT)
 - `SCOPE_LEDGER.md` (live vs built-ahead map)
-- `ROADMAP_NEXT.md` (authoritative forward plan, Phase 5 = the gate)
+- `_archive/ROADMAP_NEXT.md` (authoritative forward plan, Phase 5 = the gate)
 
 SSOT discipline gap. Add a "Related Documents" block (the format `00_VISION.md` uses at its tail).
 
@@ -713,7 +713,7 @@ Two different K8s patterns. The init container pattern in §3.1 (with the YAML b
 
 ### Recommended
 
-6. **M2** — add `HANDOVER.md`, `SCOPE_LEDGER.md`, `ROADMAP_NEXT.md` to the front-matter Related Documents.
+6. **M2** — add `HANDOVER.md`, `SCOPE_LEDGER.md`, `_archive/ROADMAP_NEXT.md` to the front-matter Related Documents.
 7. **M3** — drop or footnote the `--port 11434:11434@loadbalancer` in §5.1.
 8. **M4** — anchor the §16.1 "DONE" claim to a date/commit + the P-1/P-2/P-3 tickets.
 9. **M5** — split the `cherenkov` row into `cli` (Job) and `web` (Deployment).

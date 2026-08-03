@@ -119,7 +119,7 @@ All work MUST align with:
 | `docs/ROADMAP_AQE.md` | Gated future-work | G0 → Rung 1 → Rung 2 → Rung 3 |
 
 **DEPRECATED (do NOT cite):**
-- `docs/INTEGRATION_HANDOVER_REPORT.md` — FABRICATED
-- `docs/ROADMAP_RECONCILIATION.md` — disputed
-- `docs/DEFERRED_VISION_ARCHIVE.md` — archived
+- `docs/_archive/INTEGRATION_HANDOVER_REPORT.md` — FABRICATED
+- `docs/_archive/ROADMAP_RECONCILIATION.md` — disputed
+- `docs/_archive/DEFERRED_VISION_ARCHIVE.md` — archived
 - `docs/vision/README.md` — warns "DO NOT CITE AS CURRENT"

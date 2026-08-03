@@ -2,9 +2,9 @@
 
 **Created:** 2026-07-29 · **Revised:** 2026-07-29 (after a spec-shape investigation, below)
 **Status anchor:** [`HANDOVER.md`](../HANDOVER.md) (repo root) — this roadmap is derived from it, not the other way round.
-**Supersedes for forward planning:** `docs/ROADMAP_NEXT.md`, `docs/ROADMAP_AQE.md` (still the reference for what each rung *means*).
+**Supersedes for forward planning:** `docs/_archive/ROADMAP_NEXT.md`, `docs/ROADMAP_AQE.md` (still the reference for what each rung *means*).
 
-> `docs/ROADMAP_RECONCILIATION.md` contains fabricated gate results. Gate status here comes from `HANDOVER.md` plus evidence files only.
+> `docs/_archive/ROADMAP_RECONCILIATION.md` contains fabricated gate results. Gate status here comes from `HANDOVER.md` plus evidence files only.
 > `docs/PRODUCT_STRATEGY_ROADMAP.md` is a **hypothesis register**, not a plan. Its revenue and star figures ($1.8M ARR, 20k stars) are unvalidated ambition. They must not be cited as milestones.
 
 ---
@@ -210,7 +210,7 @@ Scope re-derived from M1/M3 friction logs before committing. Candidates:
 
 **Retention note:** an audit is a one-shot diagnostic — once you know, you know. If `audit` becomes the wedge, the daemon is what converts a one-time shock into a standing habit, and M5 may need to move earlier.
 
-**Deferred by decision, not neglect:** mobile execution, VLM expansion, everything in `docs/DEFERRED_VISION_ARCHIVE.md`.
+**Deferred by decision, not neglect:** mobile execution, VLM expansion, everything in `docs/_archive/DEFERRED_VISION_ARCHIVE.md`.
 
 ---
 
