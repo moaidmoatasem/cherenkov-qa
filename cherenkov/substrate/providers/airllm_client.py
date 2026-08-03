@@ -149,8 +149,8 @@ class AirLLMInferenceClient(InferenceClient):
 
         while attempt <= max_reprompts:
             t0 = time.monotonic()
-            model = self._load_model()
-            tokenized = self._tokenize(combined, model)
+            loaded_model = self._load_model()
+            tokenized = self._tokenize(combined, loaded_model)
             input_ids = tokenized["input_ids"]
 
             device_input = input_ids
@@ -162,17 +162,18 @@ class AirLLMInferenceClient(InferenceClient):
                 "use_cache": True,
                 "return_dict_in_generate": True,
             }
-            if hasattr(model, "generate"):
+            if hasattr(loaded_model, "generate"):
                 try:
                     import inspect
-                    sig = inspect.signature(model.generate)
+                    sig = inspect.signature(loaded_model.generate)
                     if "temperature" in sig.parameters:
                         gen_kwargs["temperature"] = temperature
                 except (ImportError, ValueError, TypeError):
                     pass
 
-            output = model.generate(device_input, **gen_kwargs)
-            raw = self._decode(output, model)
+            output = loaded_model.generate(device_input, **gen_kwargs)
+            raw = self._decode(output, loaded_model)
+            last_raw = raw
             dt_ms = int((time.monotonic() - t0) * 1000)
 
             self._token_usage["prompt_tokens"] = self._estimate_tokens(combined)
