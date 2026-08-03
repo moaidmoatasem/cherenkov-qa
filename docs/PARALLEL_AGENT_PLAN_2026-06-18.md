@@ -118,9 +118,9 @@
    - `FE_DASHBOARD_REGRESSION.md` (stale 122-line predecessor, mock-era expectations, zero refs) superseded by `FE_DASHBOARD_FULL_REGRESSION_TEST_SUITE.md` (the "Main test case document" per FE_TEST_SUMMARY) — deleted
    - `FE_DASHBOARD_PARITY_AUDIT.md` (completed audit of `track-b-c-deferred/`, which was re-integrated and deleted) — archived to `docs/_archive/` with a DO-NOT-CITE banner
 4. Remove `QA_AI_LANDSCAPE_2026.md` (v2_UPDATED supersedes it) — **SKIPPED: premise is factually wrong.** `QA_AI_LANDSCAPE_2026.md` (tier-based tool survey, 45 tools + comparison matrix) and `QA_AI_LANDSCAPE_2026_v2_UPDATED.md` (architecture-theme analysis) are disjoint documents; `QA_AUTOMATION_AI_STRATEGY.md` cites both as separate sources. v2 does NOT supersede v1; deleting v1 would lose unique content.
-5. Remove duplicate handover docs: keep only `HANDOVER.md` + this new consolidated handover
-6. Update `INDEX.md` to reflect all changes
-7. Commit on a feature branch
+ 5. Remove duplicate handover docs: keep only `HANDOVER.md` + this new consolidated handover — ✅ DONE/NA (2026-08-03): audited all 8 handover files (`HANDOVER.md` root session-handover 2026-08-02, `docs/HANDOVER.md` authoritative agent SSOT per AGENTS.md, `AGENT_HANDOVER_2026-06-17/18/18b`, `HANDOVER_SESSION_2026-06-18/19`, `HANDOVER_TO_CLAUDE_CODE`, `SESSION_HANDOVER_2026-06-16`) — **no duplicates.** All are distinct dated audit-trail docs; kept as-is per the DO NOT rule below.
+ 6. Update `INDEX.md` to reflect all changes: ✅ DONE (2026-08-03) — added `_archive/FE_DASHBOARD_PARITY_AUDIT.md` to the Archived list and `FE_DASHBOARD_FULL_REGRESSION_TEST_SUITE.md` to the QA table.
+ 7. Commit on a feature branch: ✅ DONE (2026-08-03) — `feat/docs-fe-dashboard-consolidation`, PR #857 squash-merged (`6ded9f6f`).
 
 **DO NOT:** Delete any handover docs — just add clear headers. Historical audit trails matter.
 
