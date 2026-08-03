@@ -4,6 +4,7 @@ import os
 import uuid
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 from typing import Any
 
 from cherenkov.core.contracts import (
@@ -364,12 +365,34 @@ class OrchestrationEngine:
         pipeline_success = all(scenario_results) if scenario_results else False
         return pipeline_success, scenario_results, all_durations, all_endpoints, passed_endpoints
 
+    def _load_generated_spec_files(self, label: str, limit: int) -> list[tuple[str, str]]:
+        """Collect generated Playwright spec files as (stem, code) pairs.
+
+        Single source for the output-directory glob + read loop shared by the
+        eval judge and the adversarial scan.
+        """
+        output_dir = Path(get_settings().OUTPUT_DIR)
+        if not output_dir.exists():
+            self._progress(f"  {label} [ SKIPPED ] output directory not found")
+            return []
+
+        test_files = list(output_dir.glob("*.spec.ts"))
+        if not test_files:
+            self._progress(f"  {label} [ SKIPPED ] no test files found")
+            return []
+
+        loaded: list[tuple[str, str]] = []
+        for test_file in test_files[:limit]:
+            try:
+                loaded.append((test_file.stem, test_file.read_text(encoding="utf-8")))
+            except Exception as e:
+                self.log.warning("failed to read test file", file=str(test_file), error=str(e))
+        return loaded
+
     def _run_post_generation_evals(self) -> None:
         if os.getenv("CHERENKOV_EVALS_ENABLED", "0") != "1":
             return
         try:
-            from pathlib import Path
-
             from cherenkov.evals.core import EvalSample
             from cherenkov.evals.runner import run_evals
             from cherenkov.evals.store import EvalStore
@@ -378,26 +401,12 @@ class OrchestrationEngine:
             self.log.info("running post-generation eval judge")
             self._progress("\n  EVALS   [ Running LLM-as-judge... ]")
 
-            output_dir = Path(get_settings().OUTPUT_DIR)
-            if not output_dir.exists():
-                self._progress("  EVALS   [ SKIPPED ] output directory not found")
-                return
-
-            test_files = list(output_dir.glob("*.spec.ts"))
-            if not test_files:
-                self._progress("  EVALS   [ SKIPPED ] no test files found")
-                return
-
             samples = []
-            for test_file in test_files[:10]:
-                try:
-                    code = test_file.read_text(encoding="utf-8")
-                    samples.append(EvalSample(
-                        scenario_id=test_file.stem, endpoint="unknown",
-                        method="GET", expected_status=200, test_code=code, spec_summary="",
-                    ))
-                except Exception as e:
-                    self.log.warning("failed to read test file", file=str(test_file), error=str(e))
+            for stem, code in self._load_generated_spec_files("EVALS", 10):
+                samples.append(EvalSample(
+                    scenario_id=stem, endpoint="unknown",
+                    method="GET", expected_status=200, test_code=code, spec_summary="",
+                ))
 
             if not samples:
                 self._progress("  EVALS   [ SKIPPED ] no test files found")
@@ -416,36 +425,21 @@ class OrchestrationEngine:
         if os.getenv("CHERENKOV_ADVERSARIAL_ENABLED", "0") != "1":
             return
         try:
-            from pathlib import Path
-
             from cherenkov.adversarial.runner import run_adversarial_tests, save_report
             from cherenkov.observability.llm_tracer import trace_event
 
             self.log.info("running post-generation adversarial scan")
             self._progress("\n  ADVERSARIAL [ Scanning for injection patterns... ]")
 
-            output_dir = Path(get_settings().OUTPUT_DIR)
-            if not output_dir.exists():
-                self._progress("  ADVERSARIAL [ SKIPPED ] output directory not found")
-                return
-
-            test_files = list(output_dir.glob("*.spec.ts"))
-            if not test_files:
-                self._progress("  ADVERSARIAL [ SKIPPED ] no test files found")
-                return
-
             test_codes = {}
-            for test_file in test_files[:20]:
-                try:
-                    test_codes[test_file.stem] = test_file.read_text(encoding="utf-8")
-                except Exception as e:
-                    self.log.warning("failed to read test file", file=str(test_file), error=str(e))
+            for stem, code in self._load_generated_spec_files("ADVERSARIAL", 20):
+                test_codes[stem] = code
 
             if not test_codes:
                 self._progress("  ADVERSARIAL [ SKIPPED ] no test files found")
                 return
 
-            report = run_adversarial_tests(test_codes, spec_path=str(output_dir))
+            report = run_adversarial_tests(test_codes, spec_path=str(Path(get_settings().OUTPUT_DIR)))
             output_path = save_report(report)
             trace_event("pipeline-adversarial", pass_rate=report.pass_rate(), critical=len(report.critical_findings()))
 

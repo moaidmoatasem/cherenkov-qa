@@ -1,7 +1,7 @@
 # CHERENKOV — Packaging & Distribution Epic ("Friction Kill: one-command run")
 
 **Date:** 2026-06-05 · **Status:** Agent-ready tickets. Subordinate to
-[ROADMAP_NEXT.md](ROADMAP_NEXT.md) (Validation-First, authoritative) and
+[_archive/ROADMAP_NEXT.md](_archive/ROADMAP_NEXT.md) (Validation-First, authoritative) and
 [HANDOVER.md](HANDOVER.md) (honest state). This epic implements **Phase 1 — Friction Kill**
 of the forward roadmap via containerized distribution. It is **not** a scaling project.
 
@@ -32,7 +32,7 @@ eject) into a `docker compose up`-grade experience, plus a no-GPU demo mode.
 (terminal log + `docker images` / `docker compose ps` output + a screen recording where a human
 path is involved). A summary is not a pass.
 
-**Sequencing.** P0 (golden path real-data wiring, [ROADMAP_NEXT.md](ROADMAP_NEXT.md) Phase 0) is a
+**Sequencing.** P0 (golden path real-data wiring, [_archive/ROADMAP_NEXT.md](_archive/ROADMAP_NEXT.md) Phase 0) is a
 hard prerequisite for the human-facing parts here. Tickets P-1/P-2/P-3 (the engine image, compose,
 demo mode) can start in parallel with Phase 0 since they package CLI surfaces that already exist.
 
@@ -151,7 +151,7 @@ Each ticket: scope, files, acceptance (raw-evidence), dependencies, out-of-scope
 
 **Out of scope.** New UI features. This packages the Phase-0-wired UI; it does not build new screens.
 
-**Blocker note.** Per [ROADMAP_NEXT.md §9a](ROADMAP_NEXT.md) there is untracked WIP for
+**Blocker note.** Per [_archive/ROADMAP_NEXT.md §9a](_archive/ROADMAP_NEXT.md) there is untracked WIP for
 `cherenkov/web/api.py` + `cherenkov/web/divergences.py`. Land that via its own reviewed PR before
 this ticket; do not vendor mock data into the image.
 
@@ -189,7 +189,7 @@ For future releases, we will expand distribution beyond local source checkouts a
   petstore drift in < 2 min, no model download. Screen recording from a clean Docker install.
 
 **Why this is gate-critical.** This is the artifact the 5 QA reviewers click through
-([ROADMAP_NEXT.md](ROADMAP_NEXT.md) Phase 2). It removes the GPU as a recruiting filter.
+([_archive/ROADMAP_NEXT.md](_archive/ROADMAP_NEXT.md) Phase 2). It removes the GPU as a recruiting filter.
 
 ---
 
@@ -209,7 +209,7 @@ For future releases, we will expand distribution beyond local source checkouts a
 - CI image-build job green on the PR; paste the run link.
 
 **Out of scope.** Publishing to a registry / Docker Hub (deferred — that's a launch concern, and
-launch is gated; see [ROADMAP_NEXT.md §9d](ROADMAP_NEXT.md)).
+launch is gated; see [_archive/ROADMAP_NEXT.md §9d](_archive/ROADMAP_NEXT.md)).
 
 ---
 

@@ -1,0 +1,182 @@
+"""Unit tests for the AirLLM substrate provider and inference client."""
+
+from __future__ import annotations
+
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from cherenkov.core.contracts import ReasoningRequest
+from cherenkov.substrate.provider import ProviderCapabilities, get_provider
+from cherenkov.substrate.providers.airllm import AirLLMProvider
+from cherenkov.substrate.providers.airllm_client import AirLLMInferenceClient
+
+
+# ---------------------------------------------------------------------------
+# AirLLMInferenceClient
+# ---------------------------------------------------------------------------
+
+
+class TestAirLLMInferenceClient:
+    def test_missing_package_raises_on_complete_code(self):
+        client = AirLLMInferenceClient()
+        with patch.dict("sys.modules", {"airllm": None}):
+            with pytest.raises(Exception, match="AirLLM is not installed"):
+                client.complete_code("sys", "user", "m")
+
+    def test_complete_code_returns_text(self):
+        client = AirLLMInferenceClient()
+        fake_model = MagicMock()
+        fake_model.generate.return_value = MagicMock(sequences=MagicMock(__getitem__=lambda self, i: MagicMock(tolist=lambda: [1, 2, 3])))
+        fake_model.tokenizer.decode.return_value = "const x = 1;"
+        with patch.object(client, "_load_model", return_value=fake_model):
+            result = client.complete_code("sys", "user", "Qwen2.5-Coder-32B")
+        assert result == "const x = 1;"
+
+    def test_complete_json_parses_json(self):
+        client = AirLLMInferenceClient()
+        fake_model = MagicMock()
+        fake_model.generate.return_value = MagicMock(sequences=MagicMock(__getitem__=lambda self, i: MagicMock(tolist=lambda: [1, 2, 3])))
+        fake_model.tokenizer.decode.return_value = '{"key": "value"}'
+        with patch.object(client, "_load_model", return_value=fake_model):
+            result = client.complete_json("sys", "user", "Qwen2.5-Coder-32B")
+        assert result == {"key": "value"}
+
+    def test_complete_json_reprompts_on_bad_output(self):
+        client = AirLLMInferenceClient()
+        fake_model = MagicMock()
+        fake_model.generate.return_value = MagicMock(sequences=MagicMock(__getitem__=lambda self, i: MagicMock(tolist=lambda: [1, 2, 3])))
+        fake_model.tokenizer.decode.return_value = "not json"
+        with patch.object(client, "_load_model", return_value=fake_model):
+            with pytest.raises(Exception):
+                client.complete_json("sys", "user", "Qwen2.5-Coder-32B", max_reprompts=1)
+
+    def test_complete_vision_raises_not_implemented(self):
+        client = AirLLMInferenceClient()
+        with pytest.raises(NotImplementedError):
+            client.complete_vision("sys", "user", "img", "m")
+
+    def test_chat_raises_not_implemented(self):
+        client = AirLLMInferenceClient()
+        with pytest.raises(NotImplementedError):
+            client.chat([{"role": "user", "content": "hi"}], "m")
+
+    def test_health_returns_false_when_airllm_missing(self):
+        client = AirLLMInferenceClient()
+        with patch.dict("sys.modules", {"airllm": None}):
+            assert client.health() is False
+
+
+# ---------------------------------------------------------------------------
+# AirLLMProvider
+# ---------------------------------------------------------------------------
+
+
+class TestAirLLMProvider:
+    def _provider(self) -> tuple[AirLLMProvider, MagicMock]:
+        mock_client = MagicMock(spec=AirLLMInferenceClient)
+        provider = AirLLMProvider(client=mock_client)
+        return provider, mock_client
+
+    def test_capabilities(self):
+        provider, _ = self._provider()
+        caps = provider.capabilities()
+        assert isinstance(caps, ProviderCapabilities)
+        assert caps.provider_name == "airllm"
+        assert caps.requires_egress is False
+        assert "small" in caps.capability_tiers
+        assert "deep" in caps.capability_tiers
+
+    def test_generate_small_tier_calls_complete_code(self):
+        provider, mock_client = self._provider()
+        mock_client.complete_code.return_value = "test('x', () => {});"
+        req = ReasoningRequest(task="write a test", capability_tier="small")
+        result = provider.generate(req)
+        mock_client.complete_code.assert_called_once()
+        assert result.provider == "airllm"
+        assert result.cost_usd == 0.0
+
+    def test_generate_deep_tier_calls_complete_code(self):
+        provider, mock_client = self._provider()
+        mock_client.complete_code.return_value = "code"
+        req = ReasoningRequest(task="plan", capability_tier="deep")
+        result = provider.generate(req)
+        mock_client.complete_code.assert_called_once()
+        assert result.provider == "airllm"
+
+    def test_generate_with_output_schema_calls_complete_json(self):
+        provider, mock_client = self._provider()
+        mock_client.complete_json.return_value = {"scenarios": []}
+        req = ReasoningRequest(
+            task="plan tests",
+            capability_tier="small",
+            output_schema={"type": "object", "properties": {"scenarios": {}}},
+        )
+        result = provider.generate(req)
+        mock_client.complete_json.assert_called_once()
+        assert result.content == {"scenarios": []}
+
+    def test_generate_records_latency(self):
+        provider, mock_client = self._provider()
+        mock_client.complete_code.return_value = "code"
+        req = ReasoningRequest(task="do stuff", capability_tier="small")
+        result = provider.generate(req)
+        assert result.latency_ms >= 0
+
+
+# ---------------------------------------------------------------------------
+# Provider registry
+# ---------------------------------------------------------------------------
+
+
+class TestAirLLMProviderRegistry:
+    def test_get_provider_airllm_returns_airllm_provider(self):
+        from cherenkov.substrate.provider import _PROVIDER_CACHE
+
+        _PROVIDER_CACHE.pop("airllm", None)
+        p = get_provider("airllm")
+        assert isinstance(p, AirLLMProvider)
+
+    def test_get_provider_airllm_cached(self):
+        from cherenkov.substrate.provider import _PROVIDER_CACHE
+
+        _PROVIDER_CACHE.pop("airllm", None)
+        p1 = get_provider("airllm")
+        p2 = get_provider("airllm")
+        assert p1 is p2
+
+
+# ---------------------------------------------------------------------------
+# Config / settings
+# ---------------------------------------------------------------------------
+
+
+class TestAirLLMConfig:
+    def test_settings_have_airllm_keys(self):
+        from cherenkov.core.settings import get_settings
+
+        assert hasattr(get_settings(), "AIRLLM_ENABLED")
+        assert hasattr(get_settings(), "AIRLLM_MODEL")
+        assert hasattr(get_settings(), "AIRLLM_COMPRESSION")
+        assert hasattr(get_settings(), "AIRLLM_LAYER_SHARDS_PATH")
+
+    def test_settings_defaults(self):
+        from cherenkov.core.settings import get_settings
+
+        assert get_settings().AIRLLM_ENABLED is False
+        assert get_settings().AIRLLM_MODEL == "Qwen2.5-Coder-32B"
+        assert get_settings().AIRLLM_COMPRESSION == "4bit"
+
+    def test_config_has_airllm_keys(self):
+        from cherenkov.core.config import Config
+
+        assert hasattr(Config, "AIRLLM_ENABLED")
+        assert hasattr(Config, "AIRLLM_MODEL")
+        assert hasattr(Config, "AIRLLM_COMPRESSION")
+        assert hasattr(Config, "AIRLLM_LAYER_SHARDS_PATH")
+
+    def test_accounting_has_airllm_cost(self):
+        from cherenkov.substrate.accounting import _COST_PER_TOKEN
+
+        assert "airllm" in _COST_PER_TOKEN
+        assert _COST_PER_TOKEN["airllm"] == 0.0

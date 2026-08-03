@@ -170,6 +170,7 @@ data/
 
 # Ejected test suites
 eject/
+eject-e2e-output/
 
 # Test run artifacts
 pytest_results.txt

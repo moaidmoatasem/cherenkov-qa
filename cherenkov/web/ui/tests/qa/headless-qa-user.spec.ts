@@ -156,6 +156,7 @@ test.describe('Headless QA User — Spec Setup & Generation Journey', () => {
     const settings = new SettingsWorkspacePage(page);
     await expect(settings.ejectSuitePanel).toBeVisible();
     await expect(page.getByTestId('eject-output-path')).toBeVisible();
+    await page.getByTestId('eject-output-path').fill('./eject-e2e-output');
     let apiCalled = false;
     page.on('request', req => {
       if (req.url().includes('/api/v1/eject') && req.method() === 'POST') {
@@ -234,7 +235,9 @@ test.describe('Headless QA User — Chat Agent SSE Streaming', () => {
     const input = page.getByTestId('chat-input');
     await input.fill('Show me the test count');
     await page.getByTestId('chat-send-btn').click();
-    await expect(page.getByText('[MOCK]')).toBeVisible({ timeout: 10000 });
+    // Real backend substrate is live: assert a streamed assistant bubble appears,
+    // not the offline "[MOCK]" fallback that only shows when no router is available.
+    await expect(page.getByTestId('chat-message-assistant').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('follow-up message maintains conversation context', async ({ page }) => {
@@ -244,10 +247,10 @@ test.describe('Headless QA User — Chat Agent SSE Streaming', () => {
     const sendBtn = page.getByTestId('chat-send-btn');
     await input.fill('First message');
     await sendBtn.click();
-    await expect(page.getByText('[MOCK]')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('chat-message-assistant').first()).toBeVisible({ timeout: 15000 });
     await input.fill('Follow up question');
     await sendBtn.click();
-    await expect(page.getByText('[MOCK]')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('chat-message-user')).toHaveCount(2, { timeout: 15000 });
     await expect(page.getByText('First message')).toBeVisible();
     await expect(page.getByText('Follow up question')).toBeVisible();
   });
@@ -277,7 +280,9 @@ test.describe('Headless QA User — Settings, Keyboard, Stress', () => {
     await sidebar.navToWorkspace('settings');
     const saveBtn = page.getByTestId('btn-save-governance-settings');
     await expect(saveBtn).toBeVisible();
-    await expect(saveBtn).toBeEnabled();
+    // Button starts disabled until fetchSettings() resolves; the suite docs note
+    // dev-server reload + real backend fetches can delay first paint up to 15s.
+    await expect(saveBtn).toBeEnabled({ timeout: 15000 });
     let apiCalled = false;
     page.on('request', req => {
       if (req.url().includes('/api/v1/settings') && req.method() === 'PUT') {

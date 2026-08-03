@@ -1,18 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { setupApiMocks } from '../api_mocks';
+import { bootstrapReal } from '../qa/page-objects';
 
 const SETTLE = 400;
 
 test.describe('Dashboard Workspace E2E Suite', () => {
   test.beforeEach(async ({ page }) => {
-    await setupApiMocks(page);
-    await page.goto('/');
-    await page.evaluate(() => {
-      localStorage.setItem('[copilot] tour_seen', 'true');
-      localStorage.setItem('[cherenkov] onboarding_seen', 'true');
-    });
-    await page.reload();
-    await page.waitForSelector('#cherenkov-app-core');
+    await bootstrapReal(page);
     await page.waitForTimeout(SETTLE);
   });
 

@@ -28,9 +28,12 @@ def get_client() -> InferenceClient:
     elif provider == "anthropic":
         from cherenkov.substrate.providers.anthropic_client import AnthropicInferenceClient
         raw_client = AnthropicInferenceClient()
+    elif provider == "airllm":
+        from cherenkov.substrate.providers.airllm_client import AirLLMInferenceClient
+        raw_client = AirLLMInferenceClient()
     else:
         raise ValueError(
-            f"Unknown provider '{provider}'. Expected 'ollama', 'openai', 'nemoclaw', or 'anthropic'."
+            f"Unknown provider '{provider}'. Expected 'ollama', 'openai', 'nemoclaw', 'anthropic', or 'airllm'."
         )
 
     _current_client = CachedInferenceClient(raw_client)
