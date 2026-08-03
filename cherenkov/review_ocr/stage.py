@@ -25,7 +25,7 @@ class ReviewStageOCR:
         self.rule_engine = OCRRuleEngine(repo_root=os.getcwd())
 
     def _get_ocr_binary(self) -> str:
-        which = os.environ.get("OCR_BINARY", "")
+        which = get_settings().OCR_BINARY or os.environ.get("OCR_BINARY", "")
         if which and os.path.isfile(which):
             return which
         for candidate in ["ocr", "opencodereview"]:
