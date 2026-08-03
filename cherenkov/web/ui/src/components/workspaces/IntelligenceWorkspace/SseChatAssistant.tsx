@@ -125,6 +125,7 @@ export const SseChatAssistant: React.FC = () => {
                     ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-500/30'
                     : 'bg-black/30 text-text-primary border border-white/10'
                 }`}
+                data-testid={m.role === 'assistant' ? 'chat-message-assistant' : 'chat-message-user'}
               >
                 <p className="whitespace-pre-wrap">{m.content || (isStreaming && idx === messages.length - 1 ? '...' : '')}</p>
               </div>
