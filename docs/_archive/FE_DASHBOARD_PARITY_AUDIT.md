@@ -1,3 +1,5 @@
+> # ⚠️ ARCHIVED - SUBJECT TREE (track-b-c-deferred/) WAS RE-INTEGRATED AND DELETED - DO NOT CITE AS CURRENT
+>
 # FE Dashboard Parity Audit — `track-b-c-deferred/dashboard/` vs `cherenkov/web/ui/`
 
 **Issue**: #249

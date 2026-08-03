@@ -114,10 +114,10 @@
    - `docs/_archive/ROADMAP_NEXT.md` (SUPERSEDED by PHASE_PLAN.md)
    - `docs/_archive/DEFERRED_VISION_ARCHIVE.md` (already archived)
 2. Add a clear "SUPERSEDED — see PHASE_PLAN.md" redirect header to each
-3. Consolidate overlapping FE dashboard docs:
-   - Merge `FE_DASHBOARD_REGRESSION.md` into `FE_DASHBOARD_FULL_REGRESSION_TEST_SUITE.md`
-   - Delete `FE_DASHBOARD_PARITY_AUDIT.md` (track-b-c-deferred was already re-integrated and deleted)
-4. Remove `QA_AI_LANDSCAPE_2026.md` (v2_UPDATED supersedes it)
+3. Consolidate overlapping FE dashboard docs: ✅ DONE (2026-08-03)
+   - `FE_DASHBOARD_REGRESSION.md` (stale 122-line predecessor, mock-era expectations, zero refs) superseded by `FE_DASHBOARD_FULL_REGRESSION_TEST_SUITE.md` (the "Main test case document" per FE_TEST_SUMMARY) — deleted
+   - `FE_DASHBOARD_PARITY_AUDIT.md` (completed audit of `track-b-c-deferred/`, which was re-integrated and deleted) — archived to `docs/_archive/` with a DO-NOT-CITE banner
+4. Remove `QA_AI_LANDSCAPE_2026.md` (v2_UPDATED supersedes it) — **SKIPPED: premise is factually wrong.** `QA_AI_LANDSCAPE_2026.md` (tier-based tool survey, 45 tools + comparison matrix) and `QA_AI_LANDSCAPE_2026_v2_UPDATED.md` (architecture-theme analysis) are disjoint documents; `QA_AUTOMATION_AI_STRATEGY.md` cites both as separate sources. v2 does NOT supersede v1; deleting v1 would lose unique content.
 5. Remove duplicate handover docs: keep only `HANDOVER.md` + this new consolidated handover
 6. Update `INDEX.md` to reflect all changes
 7. Commit on a feature branch
