@@ -508,6 +508,43 @@ class GenerateInput(BaseModel):
     )
 
 
+# ── Event bus tools (ADR-016 UnifiedEventBus wiring) ────────────────────────
+
+
+class EventBusListInput(BaseModel):
+    """Input for the event_bus_list MCP tool."""
+
+    category: str | None = Field(
+        default=None, description="Filter by event category (e.g. pipeline)."
+    )
+    limit: int = Field(default=50, ge=1, le=500)
+    after_id: str | None = Field(
+        default=None, description="Only fetch events with event_id greater than this."
+    )
+
+
+class EventBusGetInput(BaseModel):
+    """Input for the event_bus_get MCP tool."""
+
+    event_id: str = Field(min_length=1, max_length=64)
+
+
+class EventBusPublishInput(BaseModel):
+    """Input for the event_bus_publish MCP tool."""
+
+    name: str = Field(min_length=1, max_length=256)
+    category: str = Field(
+        default="pipeline",
+        description="Event category: pipeline | hitl | healing | knowledge | system.",
+    )
+    severity: str = Field(
+        default="info", description="info | warning | error."
+    )
+    payload: dict[str, Any] = Field(
+        default_factory=dict, description="Arbitrary event payload."
+    )
+
+
 # ── JSON-RPC error codes (MCP uses standard JSON-RPC + MCP extensions) ───────
 PARSE_ERROR = -32700
 INVALID_REQUEST = -32600

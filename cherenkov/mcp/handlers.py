@@ -39,6 +39,8 @@ from pydantic import ValidationError
 
 from cherenkov.chat.guard import get_guard
 from cherenkov.divergence.proof_run import run_proof
+from cherenkov.events import get_event_bus
+from cherenkov.events.bridge import to_cherenkov_event
 from cherenkov.hitl.store import HitlQueue
 from cherenkov.mcp.client import MCPClientError
 from cherenkov.mcp.contracts import (
@@ -48,6 +50,9 @@ from cherenkov.mcp.contracts import (
     ChatRunTestInput,
     CheckSuiteInput,
     ComplianceFindingsInput,
+    EventBusGetInput,
+    EventBusListInput,
+    EventBusPublishInput,
     ExplainFindingInput,
     ExportJiraInput,
     GenerateInput,
@@ -783,6 +788,71 @@ TOOLS: list[MCPTool] = [
             required=["name", "url", "tools"],
         ),
     ),
+    # ── Event bus tools (ADR-016 UnifiedEventBus wiring) ─────────────────────
+    MCPTool(
+        name="event_bus_list",
+        description="Fetch events from the UnifiedEventBus, optionally filtered "
+        "by category. Pipeline runs publish stage_start, stage_success, "
+        "test_generated, replan_trigger, and pipeline_complete events.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "category": MCPToolParam(
+                    type="string",
+                    description="Filter by event category (pipeline, hitl, healing, "
+                    "knowledge, system). Omit for all.",
+                ),
+                "limit": MCPToolParam(
+                    type="integer", description="Max events to return (default 50)."
+                ),
+                "after_id": MCPToolParam(
+                    type="string",
+                    description="Only fetch events whose event_id sorts after this id.",
+                ),
+            },
+            required=[],
+        ),
+    ),
+    MCPTool(
+        name="event_bus_get",
+        description="Fetch a single event from the UnifiedEventBus by event_id.",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "event_id": MCPToolParam(
+                    type="string", description="Event ID to fetch."
+                ),
+            },
+            required=["event_id"],
+        ),
+    ),
+    MCPTool(
+        name="event_bus_publish",
+        description="Publish a CHERENKOVEvent to the UnifiedEventBus for downstream "
+        "consumers (sinks, sources, subscribed handlers).",
+        inputSchema=MCPToolInputSchema(
+            properties={
+                "name": MCPToolParam(
+                    type="string", description="Event name, e.g. pipeline.start."
+                ),
+                "category": MCPToolParam(
+                    type="string",
+                    description="Event category: pipeline | hitl | healing | knowledge | system.",
+                ),
+                "severity": MCPToolParam(
+                    type="string", description="info | warning | error."
+                ),
+                "payload": MCPToolParam(
+                    type="object", description="Arbitrary JSON event payload."
+                ),
+            },
+            required=["name"],
+        ),
+    ),
+    MCPTool(
+        name="event_bus_stats",
+        description="Return UnifiedEventBus statistics (queue size, sink/source/"
+        "filter/handler counts, running state).",
+        inputSchema=MCPToolInputSchema(properties={}, required=[]),
+    ),
 ]
 
 # ── Sentinel tools (Pillar 2: IDE Integrity Feedback) ────────────────────────
@@ -1038,6 +1108,14 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
             return _tool_registry_list(arguments).model_dump()
         if name == "mcp_registry_publish":
             return _tool_registry_publish(arguments).model_dump()
+        if name == "event_bus_list":
+            return _tool_event_bus_list(arguments).model_dump()
+        if name == "event_bus_get":
+            return _tool_event_bus_get(arguments).model_dump()
+        if name == "event_bus_publish":
+            return _tool_event_bus_publish(arguments).model_dump()
+        if name == "event_bus_stats":
+            return _tool_event_bus_stats(arguments).model_dump()
         if name == "auto_heal_code":
             return _tool_auto_heal_code(arguments).model_dump()
         # ── Sentinel tools (Pillar 2 — IDE Integrity Feedback) ────────────────────
@@ -1789,6 +1867,60 @@ def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
     )
     return _ok_content({"status": "ok", "registration_id": reg_id})
 
+# ── Event bus tools (ADR-016 UnifiedEventBus wiring) ─────────────────────────
+
+def _tool_event_bus_list(args: dict[str, Any]) -> MCPToolCallResult:
+    """Fetch events from the UnifiedEventBus."""
+    inp = EventBusListInput.model_validate(args)
+    bus = get_event_bus()
+    events = bus.fetch_events(
+        after_id=inp.after_id, limit=inp.limit, category=inp.category
+    )
+    payload = {
+        "schema_version": "events/v1",
+        "ok": True,
+        "events": [e.to_dict() for e in events],
+        "total": len(events),
+    }
+    return _ok_content(payload)
+
+def _tool_event_bus_get(args: dict[str, Any]) -> MCPToolCallResult:
+    """Fetch a single event from the UnifiedEventBus by id."""
+    inp = EventBusGetInput.model_validate(args)
+    event = get_event_bus().get_event(inp.event_id)
+    if event is None:
+        return _err_content(f"Event not found: {inp.event_id}")
+    return _ok_content({"schema_version": "events/v1", "ok": True, "event": event.to_dict()})
+
+def _tool_event_bus_publish(args: dict[str, Any]) -> MCPToolCallResult:
+    """Publish a CHERENKOVEvent to the UnifiedEventBus."""
+    inp = EventBusPublishInput.model_validate(args)
+    event = to_cherenkov_event(inp.name, inp.payload, run_id="mcp")
+    event.category = _coerce_event_category(inp.category)
+    event.severity = _coerce_event_severity(inp.severity)
+    get_event_bus().publish(event)
+    return _ok_content({"schema_version": "events/v1", "ok": True, "event_id": event.event_id})
+
+def _tool_event_bus_stats(_args: dict[str, Any]) -> MCPToolCallResult:
+    """Return UnifiedEventBus statistics."""
+    return _ok_content({"schema_version": "events/v1", "ok": True, "stats": get_event_bus().get_stats()})
+
+def _coerce_event_category(value: str):
+    from cherenkov.core.events import EventCategory
+
+    try:
+        return EventCategory(value)
+    except ValueError:
+        return EventCategory.PIPELINE
+
+def _coerce_event_severity(value: str):
+    from cherenkov.core.events import EventSeverity
+
+    try:
+        return EventSeverity(value)
+    except ValueError:
+        return EventSeverity.INFO
+
 # ── Track B/C tools ───────────────────────────────────────────────────────────
 
 def _tool_visual_diff(args: dict[str, Any]) -> MCPToolCallResult:
@@ -2480,8 +2612,8 @@ def _tool_auto_heal_code(args: dict[str, Any]) -> MCPToolCallResult:
 
         # Attempt LLM-assisted repair via the AI router
         try:
-            from cherenkov.substrate.router import SubstrateRouter
             from cherenkov.core.contracts import ReasoningRequest
+            from cherenkov.substrate.router import SubstrateRouter
 
             router = SubstrateRouter()
             prompt = (
@@ -2550,6 +2682,10 @@ _TOOL_DISPATCH: dict[str, Callable[[dict[str, Any]], MCPToolCallResult]] = {
     "policy_reload": _tool_policy_reload,
     "mcp_registry_list": _tool_registry_list,
     "mcp_registry_publish": _tool_registry_publish,
+    "event_bus_list": _tool_event_bus_list,
+    "event_bus_get": _tool_event_bus_get,
+    "event_bus_publish": _tool_event_bus_publish,
+    "event_bus_stats": _tool_event_bus_stats,
     "auto_heal_code": _tool_auto_heal_code,
 }
 

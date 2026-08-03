@@ -24,6 +24,7 @@ from cherenkov.core.d2_controller import D2FeedbackController
 from cherenkov.core.errors import get_logger, set_events_file
 from cherenkov.core.settings import get_settings
 from cherenkov.core.stage_executor import CircuitBreaker, StageExecutor
+from cherenkov.events.bridge import publish as publish_event_bus
 from cherenkov.stages.generate import GenerateStage
 from cherenkov.stages.ingest import IngestStage
 from cherenkov.stages.plan import PlanStage
@@ -77,6 +78,7 @@ class OrchestrationEngine:
                 self.event_callback(event, data)
             except Exception as cb_err:
                 self.log.warning("event_callback_failed", error=str(cb_err))
+        publish_event_bus(event, data, run_id=self.run_id)
 
     # ── Stage 1: INGEST ────────────────────────────────────────────
     def run_ingest(
