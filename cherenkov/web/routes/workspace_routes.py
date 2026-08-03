@@ -61,6 +61,47 @@ _settings: dict = {
 
 _SETTINGS_PROTECTED_FIELDS = {"security": {"auth_secret", "egress_policy"}}
 
+_ENV_PATH = Path(os.getcwd()) / ".env"
+
+
+def _load_env() -> dict[str, str]:
+    if not _ENV_PATH.exists():
+        return {}
+    data: dict[str, str] = {}
+    for line in _ENV_PATH.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        data[key.strip()] = value.strip().strip('"').strip("'")
+    return data
+
+
+def _write_env_var(key: str, value: str) -> None:
+    env = _load_env()
+    env[key] = value
+    lines = [f'{k}="{v}"' for k, v in env.items()]
+    _ENV_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _persist_airllm_to_env(body: dict) -> None:
+    provider = body.get("model")
+    if provider:
+        _write_env_var("PROVIDER", provider)
+
+    airllm = body.get("airllm")
+    if isinstance(airllm, dict):
+        if "enabled" in airllm:
+            _write_env_var("CHERENKOV_AIRLLM_ENABLED", "true" if airllm["enabled"] else "false")
+        if "model" in airllm:
+            _write_env_var("CHERENKOV_AIRLLM_MODEL", str(airllm["model"]))
+        if "compression" in airllm:
+            _write_env_var("CHERENKOV_AIRLLM_COMPRESSION", str(airllm["compression"]))
+        if "layer_shards_path" in airllm:
+            _write_env_var("CHERENKOV_AIRLLM_LAYER_SHARDS_PATH", str(airllm["layer_shards_path"]))
+
 
 @router.get("/api/v1/settings")
 async def api_get_settings(_auth=Depends(verify_api_key)):
@@ -81,6 +122,8 @@ async def update_settings(body: dict, _auth=Depends(verify_api_key), _role=Depen
                 _settings[key][sub_key] = sub_val
         elif key in _settings and key not in _SETTINGS_PROTECTED_FIELDS:
             _settings[key] = val
+
+    _persist_airllm_to_env(body)
     return _settings
 
 

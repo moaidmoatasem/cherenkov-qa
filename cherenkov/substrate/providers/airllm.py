@@ -1,0 +1,91 @@
+"""
+CHERENKOV substrate/providers/airllm.py — AirLLM substrate provider.
+
+AirLLM runs massive open-source LLMs on consumer GPUs with limited VRAM
+via layer-wise inference.  All inference stays on device (requires_egress=False).
+
+Default model mapping:
+  small  → Qwen2.5-Coder-32B   (higher quality than 7B, still fits on 8-16GB VRAM with 4-bit)
+  deep   → Qwen2.5-Coder-32B   (same model; AirLLM is single-model, tier is handled by caller)
+  vision → (not supported)
+"""
+
+from __future__ import annotations
+
+import time
+
+from cherenkov.core.contracts import ReasoningRequest, ReasoningResult
+from cherenkov.core.settings import get_settings
+from cherenkov.substrate.interfaces import CachedInferenceClient, InferenceClient
+from cherenkov.substrate.provider_base import ProviderCapabilities, wrap_with_cache
+
+
+class AirLLMProvider:
+    """AirLLM substrate provider for massive-model layer-wise inference."""
+
+    provider_name: str = "airllm"
+    requires_egress: bool = False
+
+    def __init__(self, client: InferenceClient | None = None) -> None:
+        if client is None:
+            from cherenkov.substrate.providers.airllm_client import AirLLMInferenceClient
+            client = wrap_with_cache(AirLLMInferenceClient(), "airllm")
+        self.client = client
+
+    def _model_for_tier(self, tier: str) -> str:
+        return get_settings().AIRLLM_MODEL
+
+    def generate(self, request: ReasoningRequest) -> ReasoningResult:
+        model = self._model_for_tier(request.capability_tier)
+        system_prompt = "You are a logical QA AI assistant specializing in API conformance testing."
+        user_prompt = request.task
+
+        if request.output_schema:
+            user_prompt += (
+                f"\n\nPlease output JSON matching this schema: "
+                f"{request.output_schema}"
+            )
+
+        hits_before = (
+            self.client.cache_stats.hits
+            if isinstance(self.client, CachedInferenceClient)
+            else 0
+        )
+        t0 = time.monotonic()
+
+        if request.output_schema:
+            content: dict | str = self.client.complete_json(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                model=model,
+                run_id=request.task[:32] if request.task else None,
+            )
+        else:
+            content = self.client.complete_code(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                model=model,
+                run_id=request.task[:32] if request.task else None,
+            )
+
+        latency_ms = int((time.monotonic() - t0) * 1000)
+        cache_hit = (
+            isinstance(self.client, CachedInferenceClient)
+            and self.client.cache_stats.hits > hits_before
+        )
+
+        return ReasoningResult(
+            content=content,
+            provider=self.provider_name,
+            model=model,
+            cost_usd=0.0,
+            latency_ms=latency_ms,
+            cached=cache_hit,
+        )
+
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            capability_tiers=["small", "deep"],
+            requires_egress=False,
+            provider_name=self.provider_name,
+        )
