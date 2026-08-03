@@ -1,18 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { setupApiMocks } from '../api_mocks';
+import { bootstrapReal } from '../qa/page-objects';
 
 const SETTLE = 400;
 
 test.describe('Settings Workspace E2E Suite', () => {
   test.beforeEach(async ({ page }) => {
-    await setupApiMocks(page);
-    await page.goto('/settings');
-    await page.evaluate(() => {
-      localStorage.setItem('[copilot] tour_seen', 'true');
-      localStorage.setItem('[cherenkov] onboarding_seen', 'true');
-    });
-    await page.reload();
-    await page.waitForSelector('#cherenkov-app-core');
+    await bootstrapReal(page);
+    await page.getByTestId('nav-workspace-settings').click();
     await page.waitForTimeout(SETTLE);
   });
 
@@ -49,13 +43,18 @@ test.describe('Settings Workspace E2E Suite', () => {
 
     const pathInput = page.getByTestId('eject-output-path');
     await expect(pathInput).toBeVisible();
+    await pathInput.fill('./eject-e2e-output');
 
     const ejectBtn = page.getByTestId('btn-run-eject');
     await expect(ejectBtn).toBeVisible();
+    const ejectResponse = page.waitForResponse(
+      resp => resp.url().includes('/api/v1/eject') && resp.request().method() === 'POST' && resp.status() === 200,
+      { timeout: 15000 }
+    );
     await ejectBtn.click();
-    await page.waitForTimeout(300);
+    await ejectResponse;
 
-    await expect(eject.getByText('Eject successful!')).toBeVisible();
+    await expect(eject.getByText('Eject successful!')).toBeVisible({ timeout: 10000 });
   });
 
   test('GovernanceSettings renders compliance score, target URL, and save settings button', async ({ page }) => {

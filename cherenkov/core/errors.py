@@ -113,7 +113,7 @@ class StructuredLogger:
             "msg": msg,
             **fields,
         }
-        line = json.dumps(record)
+        line = json.dumps(record, default=str)
         if not LoggerConfig.suppress_stderr:
             print(line, file=sys.stderr)
         ef = _get_events_file()
