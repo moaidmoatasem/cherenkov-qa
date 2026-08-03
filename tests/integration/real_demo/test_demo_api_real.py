@@ -45,7 +45,7 @@ def test_health():
 
 def test_post_users_accepts_and_returns_id():
     email = f"test+{random.randint(1000,9999)}@example.com"
-    status, body = get_json("/users", method="POST", data={"email": email})
+    status, body = get_json("/users", method="POST", data={"email": email, "password": "Password123!"})
     assert status in (200,201), f"unexpected status {status}"
     assert isinstance(body, dict), "response must be JSON object"
     # Accept either 'id' or regression 'user_id'
