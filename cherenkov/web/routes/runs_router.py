@@ -1,6 +1,7 @@
 """Run history API — exposes RunStore data to the web UI."""
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 
@@ -44,7 +45,9 @@ async def list_runs(
     _: Role = Depends(require_role(Role.viewer)),
 ):
     store = get_run_store()
-    records = store.list(target_url=target_url, command=command, limit=limit)
+    records = await asyncio.to_thread(
+        store.list, target_url=target_url, command=command, limit=limit
+    )
     return [_record_to_dict(r) for r in records]
 
 
@@ -54,7 +57,7 @@ async def get_run(
     _: Role = Depends(require_role(Role.viewer)),
 ):
     store = get_run_store()
-    record = store.get(run_id)
+    record = await asyncio.to_thread(store.get, run_id)
     if not record:
         raise HTTPException(status_code=404, detail=f"Run {run_id!r} not found")
     return _record_to_dict(record)
