@@ -822,6 +822,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#command-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command Groups
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#core-conformance" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2462,6 +2473,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#command-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command Groups
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#core-conformance" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3083,7 +3105,7 @@
 
 
 <h1 id="cli-reference">CLI Reference<a class="headerlink" href="#cli-reference" title="Permanent link">&para;</a></h1>
-<p>The CHERENKOV CLI is the primary interface for the platform. It provides <strong>37 commands</strong> organized into functional groups.</p>
+<p>The CHERENKOV CLI is the primary interface for the platform. It provides <strong>40 commands</strong> organized into <strong>7 command groups</strong> (47 total registered names).</p>
 <h2 id="global-options">Global Options<a class="headerlink" href="#global-options" title="Permanent link">&para;</a></h2>
 <p>These flags apply to every command:</p>
 <table>
@@ -3118,10 +3140,57 @@
 </tbody>
 </table>
 <hr />
+<h2 id="command-groups">Command Groups<a class="headerlink" href="#command-groups" title="Permanent link">&para;</a></h2>
+<p>The CLI organizes its 40 top-level commands into 7 logical command groups for
+discoverability. Every command remains available at the top level for backwards
+compatibility, so <code>cherenkov validate</code> and <code>cherenkov pipeline validate</code> both
+work.</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Member commands</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pipeline</code></td>
+<td><code>validate</code>, <code>verify</code>, <code>audit</code>, <code>check-suite</code>, <code>check-stale</code>, <code>synthetic</code>, <code>generate</code>, <code>bench</code>, <code>eval</code>, <code>drift</code></td>
+</tr>
+<tr>
+<td><code>review</code></td>
+<td><code>hitl</code>, <code>review</code>, <code>ocr</code></td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td><code>visual</code>, <code>perf</code>, <code>mcp</code>, <code>examples</code></td>
+</tr>
+<tr>
+<td><code>operate</code></td>
+<td><code>daemon</code>, <code>dashboard</code>, <code>explore</code>, <code>map</code>, <code>author</code>, <code>record</code>, <code>tokens</code>, <code>governance</code>, <code>profile</code>, <code>teleport</code></td>
+</tr>
+<tr>
+<td><code>admin</code></td>
+<td><code>init</code>, <code>doctor</code>, <code>self-test</code>, <code>eject</code>, <code>completion</code>, <code>report</code>, <code>diff</code>, <code>demo</code></td>
+</tr>
+<tr>
+<td><code>enterprise</code></td>
+<td><code>enterprise</code>, <code>certify</code>, <code>playbook</code>, <code>guardian</code></td>
+</tr>
+<tr>
+<td><code>routine</code></td>
+<td><code>routine</code></td>
+</tr>
+</tbody>
+</table>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># List the commands inside a group</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>cherenkov<span class="w"> </span>pipeline<span class="w"> </span>--help
+</span></code></pre></div>
+<hr />
 <h2 id="core-conformance">Core Conformance<a class="headerlink" href="#core-conformance" title="Permanent link">&para;</a></h2>
 <h3 id="validate"><code>validate</code><a class="headerlink" href="#validate" title="Permanent link">&para;</a></h3>
 <p>Run conformance tests against a live server.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>cherenkov<span class="w"> </span>validate<span class="w"> </span>--spec<span class="w"> </span>&lt;file&gt;<span class="w"> </span>--target<span class="w"> </span>&lt;url&gt;
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>cherenkov<span class="w"> </span>validate<span class="w"> </span>--spec<span class="w"> </span>&lt;file&gt;<span class="w"> </span>--target<span class="w"> </span>&lt;url&gt;
 </span></code></pre></div>
 <p><strong>Flags:</strong></p>
 <table>
@@ -3227,25 +3296,25 @@
 </tbody>
 </table>
 <p><strong>Examples:</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Basic validation</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>cherenkov<span class="w"> </span>validate<span class="w"> </span>--spec<span class="w"> </span>petstore.yaml<span class="w"> </span>--target<span class="w"> </span>http://localhost:4010
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># CI mode — fail hard on drift, output reports</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>cherenkov<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>--spec<span class="w"> </span>petstore.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span>--target<span class="w"> </span>http://localhost:4010<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span>--fail-on-drift<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span>--output<span class="w"> </span>./reports
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># Read spec from stdin (for piping)</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>cat<span class="w"> </span>petstore.yaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>cherenkov<span class="w"> </span>validate<span class="w"> </span>--spec<span class="w"> </span>-<span class="w"> </span>--target<span class="w"> </span>http://localhost:4010
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1"># Machine-readable JSON output</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>cherenkov<span class="w"> </span>validate<span class="w"> </span>--spec<span class="w"> </span>api.yaml<span class="w"> </span>--target<span class="w"> </span>http://api.example.com<span class="w"> </span>--json
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Basic validation</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>cherenkov<span class="w"> </span>validate<span class="w"> </span>--spec<span class="w"> </span>petstore.yaml<span class="w"> </span>--target<span class="w"> </span>http://localhost:4010
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># CI mode — fail hard on drift, output reports</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>cherenkov<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span>--spec<span class="w"> </span>petstore.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span>--target<span class="w"> </span>http://localhost:4010<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span>--fail-on-drift<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span>--output<span class="w"> </span>./reports
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># Read spec from stdin (for piping)</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>cat<span class="w"> </span>petstore.yaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>cherenkov<span class="w"> </span>validate<span class="w"> </span>--spec<span class="w"> </span>-<span class="w"> </span>--target<span class="w"> </span>http://localhost:4010
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="c1"># Machine-readable JSON output</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>cherenkov<span class="w"> </span>validate<span class="w"> </span>--spec<span class="w"> </span>api.yaml<span class="w"> </span>--target<span class="w"> </span>http://api.example.com<span class="w"> </span>--json
 </span></code></pre></div>
 <h3 id="verify"><code>verify</code><a class="headerlink" href="#verify" title="Permanent link">&para;</a></h3>
 <p>Run the 6-gate integrity verification on a test suite.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>cherenkov<span class="w"> </span>verify<span class="w"> </span>--suite<span class="w"> </span>&lt;path&gt;
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>cherenkov<span class="w"> </span>verify<span class="w"> </span>--suite<span class="w"> </span>&lt;path&gt;
 </span></code></pre></div>
 <h3 id="check-suite"><code>check-suite</code><a class="headerlink" href="#check-suite" title="Permanent link">&para;</a></h3>
 <p>Quick integrity check against the REVIEW gate contract.</p>
@@ -3257,7 +3326,7 @@
 <h2 id="test-lifecycle">Test Lifecycle<a class="headerlink" href="#test-lifecycle" title="Permanent link">&para;</a></h2>
 <h3 id="generate"><code>generate</code><a class="headerlink" href="#generate" title="Permanent link">&para;</a></h3>
 <p>Generate Playwright tests from a spec without executing them.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>cherenkov<span class="w"> </span>generate<span class="w"> </span>--spec<span class="w"> </span>&lt;file&gt;
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>cherenkov<span class="w"> </span>generate<span class="w"> </span>--spec<span class="w"> </span>&lt;file&gt;
 </span></code></pre></div>
 <p><strong>Flags:</strong></p>
 <table>
@@ -3283,7 +3352,7 @@
 </table>
 <h3 id="eject"><code>eject</code><a class="headerlink" href="#eject" title="Permanent link">&para;</a></h3>
 <p>Strip all CHERENKOV imports and produce standalone Playwright tests.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>cherenkov<span class="w"> </span>eject<span class="w"> </span>--output<span class="w"> </span>&lt;dir&gt;
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>cherenkov<span class="w"> </span>eject<span class="w"> </span>--output<span class="w"> </span>&lt;dir&gt;
 </span></code></pre></div>
 <p><strong>Flags:</strong></p>
 <table>
@@ -3318,7 +3387,7 @@
 <h2 id="dashboard-visual">Dashboard &amp; Visual<a class="headerlink" href="#dashboard-visual" title="Permanent link">&para;</a></h2>
 <h3 id="dashboard"><code>dashboard</code><a class="headerlink" href="#dashboard" title="Permanent link">&para;</a></h3>
 <p>Launch the interactive React dashboard and MCP network conductor.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>cherenkov<span class="w"> </span>dashboard
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>cherenkov<span class="w"> </span>dashboard
 </span></code></pre></div>
 <p>Opens at <code>http://localhost:8000</code> by default. Contains 9 screens:</p>
 <ul>
@@ -3346,14 +3415,14 @@
 <h2 id="human-in-the-loop">Human-in-the-Loop<a class="headerlink" href="#human-in-the-loop" title="Permanent link">&para;</a></h2>
 <h3 id="hitl"><code>hitl</code><a class="headerlink" href="#hitl" title="Permanent link">&para;</a></h3>
 <p>Manage the Human-in-the-Loop review queue.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># List pending items</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>cherenkov<span class="w"> </span>hitl<span class="w"> </span>list
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Approve a verdict</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>cherenkov<span class="w"> </span>hitl<span class="w"> </span>approve<span class="w"> </span>&lt;item-id&gt;
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># Reject a verdict with reason</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>cherenkov<span class="w"> </span>hitl<span class="w"> </span>reject<span class="w"> </span>&lt;item-id&gt;<span class="w"> </span>--reason<span class="w"> </span><span class="s2">&quot;False positive&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># List pending items</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>cherenkov<span class="w"> </span>hitl<span class="w"> </span>list
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Approve a verdict</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>cherenkov<span class="w"> </span>hitl<span class="w"> </span>approve<span class="w"> </span>&lt;item-id&gt;
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># Reject a verdict with reason</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>cherenkov<span class="w"> </span>hitl<span class="w"> </span>reject<span class="w"> </span>&lt;item-id&gt;<span class="w"> </span>--reason<span class="w"> </span><span class="s2">&quot;False positive&quot;</span>
 </span></code></pre></div>
 <h3 id="review"><code>review</code><a class="headerlink" href="#review" title="Permanent link">&para;</a></h3>
 <p>Batch review interface for processing multiple HITL items.</p>
@@ -3361,11 +3430,11 @@
 <h2 id="mcp-integration">MCP &amp; Integration<a class="headerlink" href="#mcp-integration" title="Permanent link">&para;</a></h2>
 <h3 id="mcp"><code>mcp</code><a class="headerlink" href="#mcp" title="Permanent link">&para;</a></h3>
 <p>MCP ecosystem management commands.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># List registered MCP servers</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>cherenkov<span class="w"> </span>mcp<span class="w"> </span>list
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Publish an external MCP server to the mesh</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>cherenkov<span class="w"> </span>mcp<span class="w"> </span>publish<span class="w"> </span>--name<span class="w"> </span>&lt;name&gt;<span class="w"> </span>--url<span class="w"> </span>&lt;url&gt;
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># List registered MCP servers</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>cherenkov<span class="w"> </span>mcp<span class="w"> </span>list
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Publish an external MCP server to the mesh</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>cherenkov<span class="w"> </span>mcp<span class="w"> </span>publish<span class="w"> </span>--name<span class="w"> </span>&lt;name&gt;<span class="w"> </span>--url<span class="w"> </span>&lt;url&gt;
 </span></code></pre></div>
 <h3 id="completion"><code>completion</code><a class="headerlink" href="#completion" title="Permanent link">&para;</a></h3>
 <p>Generate shell completion scripts.</p>
@@ -3387,11 +3456,11 @@
 <p>Generate conformance certification reports.</p>
 <h3 id="enterprise"><code>enterprise</code><a class="headerlink" href="#enterprise" title="Permanent link">&para;</a></h3>
 <p>Organization-management commands (SSO, audit log, RBAC) — free and self-hosted, no paid tier required.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># View audit log</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>cherenkov<span class="w"> </span>enterprise<span class="w"> </span>audit-log
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Manage RBAC roles</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>cherenkov<span class="w"> </span>enterprise<span class="w"> </span>roles<span class="w"> </span>list
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># View audit log</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>cherenkov<span class="w"> </span>enterprise<span class="w"> </span>audit-log
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Manage RBAC roles</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>cherenkov<span class="w"> </span>enterprise<span class="w"> </span>roles<span class="w"> </span>list
 </span></code></pre></div>
 <hr />
 <h2 id="second-brain-knowledge">Second Brain &amp; Knowledge<a class="headerlink" href="#second-brain-knowledge" title="Permanent link">&para;</a></h2>
@@ -3403,22 +3472,22 @@
 <h2 id="remote-scheduling">Remote &amp; Scheduling<a class="headerlink" href="#remote-scheduling" title="Permanent link">&para;</a></h2>
 <h3 id="teleport"><code>teleport</code><a class="headerlink" href="#teleport" title="Permanent link">&para;</a></h3>
 <p>Cross-device session management.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Push current session to another device</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>cherenkov<span class="w"> </span>teleport<span class="w"> </span>push<span class="w"> </span>&lt;session-id&gt;
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Join a session from another device via token</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>cherenkov<span class="w"> </span>teleport<span class="w"> </span>pull<span class="w"> </span>&lt;token&gt;
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Push current session to another device</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>cherenkov<span class="w"> </span>teleport<span class="w"> </span>push<span class="w"> </span>&lt;session-id&gt;
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Join a session from another device via token</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>cherenkov<span class="w"> </span>teleport<span class="w"> </span>pull<span class="w"> </span>&lt;token&gt;
 </span></code></pre></div>
 <h3 id="routine"><code>routine</code><a class="headerlink" href="#routine" title="Permanent link">&para;</a></h3>
 <p>Manage autonomous background routines.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># List active routines</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>cherenkov<span class="w"> </span>routine<span class="w"> </span>list
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Start a scheduled routine</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>cherenkov<span class="w"> </span>routine<span class="w"> </span>start<span class="w"> </span>drift-check<span class="w"> </span>--schedule<span class="w"> </span><span class="s2">&quot;0 */6 * * *&quot;</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># Stop a routine</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>cherenkov<span class="w"> </span>routine<span class="w"> </span>stop<span class="w"> </span>&lt;routine-id&gt;
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># List active routines</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>cherenkov<span class="w"> </span>routine<span class="w"> </span>list
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># Start a scheduled routine</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>cherenkov<span class="w"> </span>routine<span class="w"> </span>start<span class="w"> </span>drift-check<span class="w"> </span>--schedule<span class="w"> </span><span class="s2">&quot;0 */6 * * *&quot;</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="c1"># Stop a routine</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>cherenkov<span class="w"> </span>routine<span class="w"> </span>stop<span class="w"> </span>&lt;routine-id&gt;
 </span></code></pre></div>
 <h3 id="check-stale"><code>check-stale</code><a class="headerlink" href="#check-stale" title="Permanent link">&para;</a></h3>
 <p>Check for stale conformance results and trigger re-runs.</p>
@@ -3426,12 +3495,12 @@
 <h2 id="diagnostics">Diagnostics<a class="headerlink" href="#diagnostics" title="Permanent link">&para;</a></h2>
 <h3 id="doctor"><code>doctor</code><a class="headerlink" href="#doctor" title="Permanent link">&para;</a></h3>
 <p>Diagnose environment issues.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>cherenkov<span class="w"> </span>doctor
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>cherenkov<span class="w"> </span>doctor
 </span></code></pre></div>
 <p>Checks: Python version, Node, Playwright, Ollama, Docker, models pulled, config validity.</p>
 <h3 id="examples"><code>examples</code><a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
 <p>Show a gallery of common one-liners.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>cherenkov<span class="w"> </span>examples
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>cherenkov<span class="w"> </span>examples
 </span></code></pre></div>
 <h3 id="demo"><code>demo</code><a class="headerlink" href="#demo" title="Permanent link">&para;</a></h3>
 <p>Run a demo conformance check against the built-in Petstore spec.</p>
@@ -3443,18 +3512,18 @@
 <div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">bash</label><label for="__tabbed_1_2">zsh</label><label for="__tabbed_1_3">fish</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">eval</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span><span class="nv">_CHERENKOV_COMPLETE</span><span class="o">=</span>bash_source<span class="w"> </span>cherenkov<span class="k">)</span><span class="s2">&quot;</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="c1"># Add to ~/.bashrc for persistence</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nb">eval</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span><span class="nv">_CHERENKOV_COMPLETE</span><span class="o">=</span>bash_source<span class="w"> </span>cherenkov<span class="k">)</span><span class="s2">&quot;</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="c1"># Add to ~/.bashrc for persistence</span>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nb">eval</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span><span class="nv">_CHERENKOV_COMPLETE</span><span class="o">=</span>zsh_source<span class="w"> </span>cherenkov<span class="k">)</span><span class="s2">&quot;</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="c1"># Add to ~/.zshrc for persistence</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nb">eval</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span><span class="nv">_CHERENKOV_COMPLETE</span><span class="o">=</span>zsh_source<span class="w"> </span>cherenkov<span class="k">)</span><span class="s2">&quot;</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="c1"># Add to ~/.zshrc for persistence</span>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nb">eval</span><span class="w"> </span><span class="o">(</span>env<span class="w"> </span><span class="nv">_CHERENKOV_COMPLETE</span><span class="o">=</span>fish_source<span class="w"> </span>cherenkov<span class="o">)</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="c1"># Add to ~/.config/fish/config.fish for persistence</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nb">eval</span><span class="w"> </span><span class="o">(</span>env<span class="w"> </span><span class="nv">_CHERENKOV_COMPLETE</span><span class="o">=</span>fish_source<span class="w"> </span>cherenkov<span class="o">)</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="c1"># Add to ~/.config/fish/config.fish for persistence</span>
 </span></code></pre></div>
 </div>
 </div>
@@ -3481,7 +3550,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 1, 2026 15:46:33 UTC"><span class="timeago" datetime="2026-08-01T15:46:33+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 1, 2026 15:46:33 UTC">2026-08-01</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 3, 2026 17:51:28 UTC"><span class="timeago" datetime="2026-08-03T17:51:28+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 3, 2026 17:51:28 UTC">2026-08-03</span>
   </span>
 
     
