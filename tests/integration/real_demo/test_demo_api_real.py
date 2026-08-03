@@ -2,7 +2,6 @@
 import json
 import urllib.request
 import urllib.error
-import pytest
 import random
 
 BASE = os.getenv("CHERENKOV_TEST_BASE_URL", "http://127.0.0.1:8000")
@@ -33,7 +32,7 @@ def get_json(path, method="GET", data=None, headers=None, timeout=5):
         raw = e.read().decode("utf-8") if hasattr(e, 'read') else ""
         try:
             parsed = json.loads(raw) if raw else None
-        except:
+        except (ValueError, json.JSONDecodeError):
             parsed = raw
         return e.code, parsed
 
