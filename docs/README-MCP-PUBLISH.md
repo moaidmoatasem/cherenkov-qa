@@ -12,7 +12,7 @@ by an agent.
 | `manifest.json` (repo root) | Single source of truth for registry metadata. Full 37-tool list with JSON inputSchemas, extracted programmatically from `cherenkov/mcp/handlers.py` `TOOLS` (37 tools, verified by `tools/list` smoke test). |
 | `mcp.json` (repo root) | Registry-style metadata in the `modelcontextprotocol.io/schema/mcp.json` shape (name, displayName, server command, capabilities, full tool list). |
 | `smithery.yaml` | Smithery config: `startCommand: cherenkov mcp serve`, configSchema (`targetUrl`, `specPath`). |
-| `pyproject.toml` | Package name `cherenkov-qa` v1.2.0, console script `cherenkov` → `cherenkov.cli.core:main`. |
+| `pyproject.toml` | Package name `cherenkov-qa` v1.3.0, console script `cherenkov` → `cherenkov.cli.core:main`. |
 | `docs/README-MCP-PUBLISH.md` | This document. |
 
 ## Pre-flight (single command, run by the human)
@@ -69,11 +69,11 @@ stdin/stdout). There is no TCP port to configure; clients spawn the process
 
 - The official registry track (<https://github.com/modelcontextprotocol/registry>)
   accepts submissions via PR to `servers.json`, usually after PyPI packaging and
-  a tagged GitHub release (`v1.2.0`). Do this after 1–2 succeed.
+  a tagged GitHub release (`v1.3.0`). Do this after 1–2 succeed.
 
 ## Human checklist
 
-- [ ] GitHub release tagged `v1.2.0` (matches `pyproject.toml` version).
+- [ ] GitHub release tagged `v1.3.0` (matches `pyproject.toml` version).
 - [ ] Optional: publish `cherenkov-qa` to PyPI (`python -m build && twine upload dist/*`)
       — required for `install_command: pip install cherenkov-qa` to resolve.
 - [ ] Docker image published (`cherenkov-mcp:latest`, see `Dockerfile.mcp`)

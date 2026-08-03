@@ -5,7 +5,7 @@ description: Complete reference for all CHERENKOV-QA CLI commands, flags, and op
 
 # CLI Reference
 
-The CHERENKOV CLI is the primary interface for the platform. It provides **37 commands** organized into functional groups.
+The CHERENKOV CLI is the primary interface for the platform. It provides **40 commands** organized into **7 command groups** (47 total registered names).
 
 ## Global Options
 
@@ -17,6 +17,30 @@ These flags apply to every command:
 | `--quiet` | `-q` | Suppress non-error standard output |
 | `--help` | `-h` | Show help for any command |
 | `--version` | | Show CHERENKOV version |
+
+---
+
+## Command Groups
+
+The CLI organizes its 40 top-level commands into 7 logical command groups for
+discoverability. Every command remains available at the top level for backwards
+compatibility, so `cherenkov validate` and `cherenkov pipeline validate` both
+work.
+
+| Group | Member commands |
+|-------|-----------------|
+| `pipeline` | `validate`, `verify`, `audit`, `check-suite`, `check-stale`, `synthetic`, `generate`, `bench`, `eval`, `drift` |
+| `review` | `hitl`, `review`, `ocr` |
+| `model` | `visual`, `perf`, `mcp`, `examples` |
+| `operate` | `daemon`, `dashboard`, `explore`, `map`, `author`, `record`, `tokens`, `governance`, `profile`, `teleport` |
+| `admin` | `init`, `doctor`, `self-test`, `eject`, `completion`, `report`, `diff`, `demo` |
+| `enterprise` | `enterprise`, `certify`, `playbook`, `guardian` |
+| `routine` | `routine` |
+
+```bash
+# List the commands inside a group
+cherenkov pipeline --help
+```
 
 ---
 

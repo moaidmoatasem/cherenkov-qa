@@ -3,7 +3,7 @@
 **The AI-Native API Conformance Testing Platform**
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-green.svg)](https://github.com/moaidmoatasem/cherenkov-qa/releases/tag/v1.2.0)
+[![Version: 1.3.0](https://img.shields.io/badge/Version-1.3.0-green.svg)](https://github.com/moaidmoatasem/cherenkov-qa/releases/tag/v1.3.0)
 
 Every API has an OpenAPI spec, but those specs silently drift from the real server implementations every day. Moreover, AI-generated tests often hallucinate expected outcomes or silently weaken assertions to force a "green" build.
 

@@ -70,6 +70,7 @@ If you only have 2 minutes, read **§ "What it does (30 seconds)"** in
 | Doc | What's in it |
 |-----|--------------|
 | [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) | Core architecture policy: device targets, startup health check |
+| [CLI_GROUPS.md](CLI_GROUPS.md) | CLI command-group reference (7 groups, 40 commands) |
 | [engineering/SYSTEM_DESIGN.md](engineering/SYSTEM_DESIGN.md) | System design, clean architecture per ADR-004 |
 | [engineering/ARCHITECTURE_PRINCIPLES.md](engineering/ARCHITECTURE_PRINCIPLES.md) | Non-negotiable engineering tenets |
 | [engineering/BEST_PRACTICES.md](engineering/BEST_PRACTICES.md) | Coding standards, testing, security |
@@ -175,6 +176,7 @@ docs/
 ├── STATUS.md            ← canonical status (one place, not duplicated)
 ├── GETTING_STARTED.md   ← new user entry point
 ├── CLI_DEMO.md          ← terminal walk-through
+├── CLI_GROUPS.md        ← CLI command-group reference
 ├── TESTING.md           ← testing policy
 ├── HANDOVER.md          ← agent + contributor handover (authoritative)
 ├── PHASE_PLAN.md        ← consolidated plan

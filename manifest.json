@@ -3,7 +3,7 @@
   "id": "cherenkov-core-mcp",
   "name": "cherenkov-qa",
   "displayName": "CHERENKOV QA MCP Server",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "AI-native API conformance testing — OpenAPI spec to Playwright tests, locally, privately, with zero vendor lock-in. Exposes HITL review, Validation Gate, drift detection, visual/perf testing, chat agents, and compliance tools over MCP.",
   "vendor": "CHERENKOV QA",
   "author": "moaidmoatasem",

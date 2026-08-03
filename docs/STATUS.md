@@ -1,5 +1,6 @@
-**Last updated:** 2026-07-05
+**Last updated:** 2026-08-03
 **Branch:** `main`
+**HEAD:** `3cfdbde1` (v1.3.0)
 
 ---
 
@@ -34,7 +35,7 @@ CHERENKOV is an **API Integrity Auditor** that uses pure AST static analysis to 
 | 13 | Enterprise Tier | ✅ Complete | SAML 2.0, RBAC, org management |
 | 14 | Spec Guardian | ✅ Complete | Conformance monitoring daemon |
 | 15 | Fine-Tuned Model | ✅ Complete | Data pipeline, dataset curation |
-| 16 | Platform & Marketplace | ✅ Complete | Webhooks, Analytics API, Plugin SDK |
+| 16 | Platform & Marketplace | 🔧 In progress | Epic #781 + 9 sub-issues open (marketplace, plugin SDK, federation) — not yet shipped |
 
 ---
 

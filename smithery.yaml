@@ -1,26 +1,18 @@
-# Smithery configuration for CHERENKOV QA MCP Server
-# Reference: https://smithery.ai/docs/config
-$schema: https://smithery.ai/schema/smithery.json
-name: cherenkov-qa
-version: 1.2.0
-description: AI-native API conformance testing framework with spec-driven test generation, drift detection, and HITL review over MCP.
-repository: https://github.com/moaidmoatasem/cherenkov-qa
-license: Apache-2.0
-startCommand:
-  type: stdio
-  config:
-    command: cherenkov
-    args:
-      - mcp
-      - serve
+$schema: "https://json.schemastore.org/smithery.json"
+# Smithery configuration for the CHERENKOV QA MCP Server.
+# Deploy config: Smithery builds and runs `cherenkov mcp serve`.
+# Declare targetUrl / specPath via configSchema when publishing.
+name: "@cherenkov/qa"
+displayName: "CHERENKOV QA MCP Server"
+description: "AI-native API conformance testing framework with spec-driven test generation, drift detection, and HITL review over MCP."
+version: "1.3.0"
+startCommand: "cherenkov mcp serve"
 configSchema:
   type: object
   properties:
     targetUrl:
       type: string
-      description: Target API URL to run conformance tests against
-      default: http://localhost:8000
+      description: "Base URL of the API to test"
     specPath:
       type: string
-      description: Path to OpenAPI specification file
-      default: openapi.yaml
+      description: "Path to the OpenAPI spec"

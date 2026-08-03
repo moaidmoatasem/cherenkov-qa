@@ -17,6 +17,7 @@ Playwright tests in under 5 minutes.
 
 1. [Prerequisites & Installation](#-prerequisites--installation)
 2. [CLI Commands & Usage](#-cli-commands--usage)
+   - [Command Groups](#command-groups)
    - [Track A Core](#track-a-core)
    - [Track B/C & Horizon 2](#track-bc--horizon-2)
 3. [Next steps](#next-steps)
@@ -68,6 +69,45 @@ To view all supported commands and options:
 ```bash
 ./bin/cherenkov --help
 ```
+
+---
+
+### Command Groups
+
+The CLI organizes its 40 top-level commands into 7 logical command groups for
+discoverability. Every command remains available at the top level for backwards
+compatibility, so `cherenkov validate` and `cherenkov pipeline validate` both
+work. See [CLI_GROUPS.md](CLI_GROUPS.md) for the full group reference.
+
+```bash
+# List the commands inside a group
+./bin/cherenkov pipeline --help
+```
+
+#### `pipeline`
+Core API conformance pipeline: `validate`, `verify`, `audit`, `check-suite`,
+`check-stale`, `synthetic`, `generate`, `bench`, `eval`, `drift`.
+
+#### `review`
+Human-in-the-loop review workflows: `hitl`, `review`, `ocr`.
+
+#### `model`
+Model / VLM substrate commands: `visual`, `perf`, `mcp`, `examples`.
+
+#### `operate`
+Long-running operations and observability: `daemon`, `dashboard`, `explore`,
+`map`, `author`, `record`, `tokens`, `governance`, `profile`, `teleport`.
+
+#### `admin`
+Setup, maintenance, and self-service: `init`, `doctor`, `self-test`, `eject`,
+`completion`, `report`, `diff`, `demo`.
+
+#### `enterprise`
+Enterprise integrations and certification: `enterprise`, `certify`, `playbook`,
+`guardian`.
+
+#### `routine`
+Scheduled routines: `routine`.
 
 ---
 

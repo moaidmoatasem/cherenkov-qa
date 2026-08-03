@@ -75,7 +75,7 @@ Dashboard available at `http://localhost:8000` after startup.
 ```bash
 # Check Python engine
 cherenkov --version
-# Expected: cherenkov 1.2.0
+# Expected: cherenkov 1.3.0
 
 # Check test framework
 cd stub && npx playwright --version

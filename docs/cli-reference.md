@@ -1,7 +1,8 @@
 # CHERENKOV CLI Reference
 
 Complete reference for the Click-based `cherenkov` CLI. This page is generated
-against the live command registry (`cherenkov/cli/core.py`) — **37 commands**.
+against the live command registry (`cherenkov/cli/core.py`) — **40 commands**
+organized into **7 command groups** (47 total registered names).
 
 > **Source of truth for flags:** run `cherenkov <command> --help`. This page
 > lists every command with its one-line purpose and the flags for the primary
@@ -65,6 +66,32 @@ Two flags are honored by most commands for machine/CI use:
 | [`routine`](#routine) | Manage automated scheduling routines. |
 | [`playbook`](#playbook) | Manage and run validation playbooks (auto-triggering skill rules). |
 | [`enterprise`](#enterprise) | Enterprise-tier commands: org management, SSO, audit logs, compliance. |
+| **Command groups** | |
+| [`pipeline`](#command-groups) | Core API conformance pipeline group. |
+| [`review`](#command-groups) | Human-in-the-loop review workflows group. |
+| [`model`](#command-groups) | Model / VLM substrate commands group. |
+| [`operate`](#command-groups) | Long-running operations and observability group. |
+| [`admin`](#command-groups) | Setup, maintenance, and self-service group. |
+| [`enterprise`](#command-groups) | Enterprise integrations and certification group. |
+| [`routine`](#command-groups) | Scheduled routines group. |
+
+---
+
+## Command groups
+
+The CLI organizes its 40 top-level commands into 7 logical command groups for
+discoverability. Every command remains available at the top level for backwards
+compatibility. See [CLI_GROUPS.md](CLI_GROUPS.md) for the full group reference.
+
+| Group | Member commands |
+|-------|-----------------|
+| `pipeline` | `validate`, `verify`, `audit`, `check-suite`, `check-stale`, `synthetic`, `generate`, `bench`, `eval`, `drift` |
+| `review` | `hitl`, `review`, `ocr` |
+| `model` | `visual`, `perf`, `mcp`, `examples` |
+| `operate` | `daemon`, `dashboard`, `explore`, `map`, `author`, `record`, `tokens`, `governance`, `profile`, `teleport` |
+| `admin` | `init`, `doctor`, `self-test`, `eject`, `completion`, `report`, `diff`, `demo` |
+| `enterprise` | `enterprise`, `certify`, `playbook`, `guardian` |
+| `routine` | `routine` |
 
 ---
 
