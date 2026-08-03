@@ -119,6 +119,7 @@ findings, and context to prevent AI amnesia.
 | [process/VALIDATION_EVIDENCE_LEDGER.md](process/VALIDATION_EVIDENCE_LEDGER.md) | Evidence ledger for validation |
 | [reports/CHERENKOV_QA_TEST_EXECUTION_REPORT.md](reports/CHERENKOV_QA_TEST_EXECUTION_REPORT.md) | Test execution report |
 | [reports/QA_TEST_REPORT.md](reports/QA_TEST_REPORT.md) | QA test report |
+| [FE_DASHBOARD_FULL_REGRESSION_TEST_SUITE.md](FE_DASHBOARD_FULL_REGRESSION_TEST_SUITE.md) | FE dashboard regression suite — main test case document |
 
 ---
 
@@ -138,6 +139,7 @@ traceability but are **superseded** by the documents listed above.
 - [_archive/ROADMAP_RECONCILIATION.md](_archive/ROADMAP_RECONCILIATION.md) — ⚠️ **DISPUTED.** Gate claim was fabricated.
 - [_archive/ROADMAP_NEXT.md](_archive/ROADMAP_NEXT.md) — Superseded by [PHASE_PLAN.md](PHASE_PLAN.md).
 - [_archive/DEFERRED_VISION_ARCHIVE.md](_archive/DEFERRED_VISION_ARCHIVE.md) — Earlier vision material. Superseded by [PHASE_PLAN.md](PHASE_PLAN.md).
+- [_archive/FE_DASHBOARD_PARITY_AUDIT.md](_archive/FE_DASHBOARD_PARITY_AUDIT.md) — ⚠️ **ARCHIVED.** Completed audit of `track-b-c-deferred/dashboard/` (tree re-integrated and deleted). For current FE test cases see [FE_DASHBOARD_FULL_REGRESSION_TEST_SUITE.md](FE_DASHBOARD_FULL_REGRESSION_TEST_SUITE.md).
 
 ### Process and reviews
 - [process/GITHUB_PM.md](process/GITHUB_PM.md) — GitHub project management
