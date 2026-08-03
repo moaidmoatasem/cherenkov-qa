@@ -11,6 +11,7 @@ from typing import Any
 
 import click
 
+from cherenkov.core.settings import get_settings
 from cherenkov.review_ocr.provider import OCRProviderManager
 from cherenkov.review_ocr.stage import ReviewStageOCR
 
@@ -23,7 +24,7 @@ def ocr_cmd() -> None:
 @ocr_cmd.command("status")
 def ocr_status() -> None:
     """Check OCR binary installation status."""
-    binary = os.environ.get("OCR_BINARY", "ocr")
+    binary = get_settings().OCR_BINARY or os.environ.get("OCR_BINARY", "ocr")
     try:
         result = subprocess.run([binary, "--version"], capture_output=True, text=True, timeout=5)
         if result.returncode == 0:
