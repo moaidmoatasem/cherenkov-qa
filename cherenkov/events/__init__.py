@@ -22,18 +22,19 @@ import asyncio
 import json
 import logging
 import threading
-import time
-import uuid
 from abc import ABC, abstractmethod
+from collections import deque
 from collections.abc import Callable
-from contextlib import contextmanager, suppress
-from dataclasses import dataclass, field
-from enum import Enum
+from contextlib import suppress
 from typing import Any
 
 from cherenkov.core.events import CHERENKOVEvent, EventCategory, EventSeverity
 
 logger = logging.getLogger(__name__)
+
+# Number of published events retained in memory for fetch_events/get_event
+# when no external EventSource has been registered.
+MAX_RETAINED_EVENTS = 2000
 
 # ─── Event System Abstractions ────────────────────────────────────────────────
 
@@ -142,7 +143,7 @@ class JsonEventSource(EventSource):
         """Fetch events from file."""
         events = []
         try:
-            with open(self.file_path, "r", encoding="utf-8") as f:
+            with open(self.file_path, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if not line:
@@ -210,12 +211,11 @@ class CompositeEventFilter(EventFilter):
                 if key not in event.payload or event.payload[key] != expected_value:
                     return False
 
-        if self.custom_filter and not self.custom_filter(event):
-            return False
+        return not (self.custom_filter and not self.custom_filter(event))
 
-        return True
-
-    def get_handler(self, event: CHERENKOVEvent) -> Callable[[CHERENKOVEvent], Any] | None:
+    def get_handler(
+        self, _event: CHERENKOVEvent
+    ) -> Callable[[CHERENKOVEvent], Any] | None:
         """Get handler for event (returns None for CompositeEventFilter)."""
         return None
 
@@ -241,6 +241,7 @@ class UnifiedEventBus:
         self._running = False
         self._dispatch_interval = dispatch_interval
         self._local = threading.local()
+        self._published: deque[CHERENKOVEvent] = deque(maxlen=MAX_RETAINED_EVENTS)
 
     # EventBus protocol (backwards compatibility)
 
@@ -367,6 +368,9 @@ class UnifiedEventBus:
                 except Exception:
                     logger.exception("event source failed for %s", event.name)
 
+            # Retain in-memory so fetch_events/get_event work without a source
+            self._published.append(event)
+
         except Exception:
             logger.exception("event dispatch error for %s", event.name)
 
@@ -375,15 +379,30 @@ class UnifiedEventBus:
     def fetch_events(
         self, after_id: str | None = None, limit: int = 100, category: str | None = None
     ) -> list[CHERENKOVEvent]:
-        """Fetch events from all sources."""
-        all_events = []
+        """Fetch events from in-memory retention, then from all sources."""
+        all_events: list[CHERENKOVEvent] = []
+        for event in self._published:
+            if after_id and event.event_id <= after_id:
+                continue
+            if category and event.category.value != category:
+                continue
+            all_events.append(event)
+            if len(all_events) >= limit:
+                break
+        seen_ids = {e.event_id for e in all_events}
         for source in self._sources:
             events = source.fetch_events(after_id, limit, category)
-            all_events.extend(events)
-        return all_events
+            for event in events:
+                if event.event_id not in seen_ids:
+                    all_events.append(event)
+                    seen_ids.add(event.event_id)
+        return all_events[:limit]
 
     def get_event(self, event_id: str) -> CHERENKOVEvent | None:
-        """Get event by ID from all sources."""
+        """Get event by ID from in-memory retention or sources."""
+        for event in self._published:
+            if event.event_id == event_id:
+                return event
         for source in self._sources:
             event = source.get_event(event_id)
             if event:
@@ -435,17 +454,24 @@ def subscribe_to_event(event_name: str, handler: Callable[[CHERENKOVEvent], Any]
     get_event_bus().subscribe(event_name, handler)
 
 
+_bus_control_task: asyncio.Task | None = None
+
+
 def start_event_bus() -> None:
     """Start the global event bus."""
+    global _bus_control_task
+
     import asyncio
 
     bus = get_event_bus()
-    asyncio.create_task(bus.start())
+    _bus_control_task = asyncio.create_task(bus.start())
 
 
 def stop_event_bus() -> None:
     """Stop the global event bus."""
+    global _bus_control_task
+
     import asyncio
 
     bus = get_event_bus()
-    asyncio.create_task(bus.stop())
+    _bus_control_task = asyncio.create_task(bus.stop())

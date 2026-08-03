@@ -1,0 +1,201 @@
+"""
+tests/unit/test_event_bus_wiring.py — ADR-016 UnifiedEventBus wiring.
+
+Covers:
+  - events/bridge.py: orchestrator event → CHERENKOVEvent mapping + publish
+  - core/orchestrator.py: _emit_event publishes to the bus (backwards-compat
+    callback preserved)
+  - mcp/handlers.py: event_bus_list / event_bus_get / event_bus_publish /
+    event_bus_stats tools
+"""
+
+from __future__ import annotations
+
+import json
+from unittest.mock import MagicMock, patch
+
+from cherenkov.core.events import CHERENKOVEvent, EventCategory, EventSeverity
+from cherenkov.events import UnifiedEventBus, set_event_bus
+from cherenkov.events.bridge import publish, to_cherenkov_event
+from cherenkov.mcp import handlers
+
+# ── helpers ───────────────────────────────────────────────────────────────────
+
+
+def _fresh_bus() -> UnifiedEventBus:
+    bus = UnifiedEventBus()
+    set_event_bus(bus)
+    return bus
+
+
+def _call(name: str, args: dict) -> dict:
+    with patch.object(handlers._policy, "is_tool_allowed", return_value=True), patch(
+        "cherenkov.mcp.handlers.get_guard"
+    ) as mock_guard:
+        mock_guard.return_value.check_tool_call.return_value = MagicMock(allowed=True)
+        return handlers.handle_tool_call({"name": name, "arguments": args})
+
+
+def _text(result: dict) -> dict:
+    return json.loads(result["content"][0]["text"])
+
+
+# ── bridge: orchestrator event → CHERENKOVEvent ─────────────────────────────
+
+
+def test_bridge_maps_stage_event_to_pipeline_category():
+    ev = to_cherenkov_event("stage_start", {"stage": "INGEST"}, run_id="r1")
+    assert ev.category == EventCategory.PIPELINE
+    assert ev.name == "stage_start"
+    assert ev.payload == {"stage": "INGEST"}
+    assert ev.correlation_id == "r1"
+    assert ev.source == "orchestrator"
+
+
+def test_bridge_defaults_unknown_name_to_pipeline():
+    ev = to_cherenkov_event("custom_event", {"a": 1})
+    assert ev.category == EventCategory.PIPELINE
+
+
+def test_bridge_marks_pipeline_failure_as_error_severity():
+    ev = to_cherenkov_event("pipeline_complete", {"success": False}, run_id="r2")
+    assert ev.severity == EventSeverity.ERROR
+
+
+def test_bridge_keeps_pipeline_success_info_severity():
+    ev = to_cherenkov_event("pipeline_complete", {"success": True}, run_id="r3")
+    assert ev.severity == EventSeverity.INFO
+
+
+def test_bridge_publish_delivers_to_subscribed_handler():
+    bus = _fresh_bus()
+    received = []
+    bus.subscribe("stage_success", lambda ev: received.append(ev))
+    publish("stage_success", {"stage": "PLAN"}, run_id="r4")
+    assert len(received) == 1
+    assert received[0].name == "stage_success"
+    assert received[0].correlation_id == "r4"
+
+
+def test_bridge_publish_never_raises_on_bus_failure():
+    _fresh_bus()
+    with patch("cherenkov.events.bridge.get_event_bus", side_effect=RuntimeError("boom")):
+        publish("stage_start", {})  # should not raise
+
+
+# ── orchestrator wiring ───────────────────────────────────────────────────────
+
+
+class TestOrchestratorEventBusWiring:
+    def _make(self, cb=None):
+        with patch("os.makedirs"), patch("builtins.open", MagicMock()), patch(
+            "cherenkov.core.orchestrator.set_events_file"
+        ):
+            from cherenkov.core.orchestrator import OrchestrationEngine
+
+            orch = OrchestrationEngine(run_id="bus-test", event_callback=cb)
+            orch._events_file = MagicMock()
+            return orch
+
+    def test_emit_event_publishes_to_bus_and_callback(self):
+        bus = _fresh_bus()
+        bus_events = []
+        bus.subscribe("*", lambda ev: bus_events.append(ev))
+
+        cb_events = []
+        orch = self._make(cb=lambda e, d: cb_events.append((e, d)))
+        orch._emit_event("stage_start", {"stage": "INGEST"})
+
+        assert cb_events == [("stage_start", {"stage": "INGEST"})]
+        assert any(e.name == "stage_start" and e.correlation_id == "bus-test" for e in bus_events)
+
+    def test_emit_event_publishes_even_when_callback_fails(self):
+        bus = _fresh_bus()
+        bus_events = []
+        bus.subscribe("*", lambda ev: bus_events.append(ev))
+
+        def bad_cb(e, d):
+            raise RuntimeError("callback exploded")
+
+        orch = self._make(cb=bad_cb)
+        orch._emit_event("pipeline_complete", {"success": False})
+
+        assert any(e.name == "pipeline_complete" for e in bus_events)
+
+    def test_emit_event_no_callback_still_publishes(self):
+        bus = _fresh_bus()
+        bus_events = []
+        bus.subscribe("*", lambda ev: bus_events.append(ev))
+
+        orch = self._make(cb=None)
+        orch._emit_event("test_generated", {"endpoint": "/users"})
+
+        assert any(e.name == "test_generated" for e in bus_events)
+
+
+# ── MCP tools ─────────────────────────────────────────────────────────────────
+
+
+def test_mcp_event_bus_publish_then_list():
+    _fresh_bus()
+    result = _call(
+        "event_bus_publish",
+        {"name": "pipeline.start", "category": "pipeline", "payload": {"run_id": "m1"}},
+    )
+    payload = _text(result)
+    assert payload["ok"] is True
+    assert payload["event_id"]
+
+    listed = _text(_call("event_bus_list", {"category": "pipeline"}))
+    assert listed["total"] >= 1
+    assert any(e["name"] == "pipeline.start" for e in listed["events"])
+
+
+def test_mcp_event_bus_list_filters_by_category():
+    bus = _fresh_bus()
+    publish("stage_start", {"stage": "INGEST"}, run_id="m2")
+    bus.publish(
+        CHERENKOVEvent(
+            category=EventCategory.HITL, name="hitl.approved", payload={"item_id": "x"}
+        )
+    )
+
+    pipeline_events = _text(_call("event_bus_list", {"category": "pipeline"}))
+    assert any(e["name"] == "stage_start" for e in pipeline_events["events"])
+    assert all(e["category"] == "pipeline" for e in pipeline_events["events"])
+
+    hitl_events = _text(_call("event_bus_list", {"category": "hitl"}))
+    assert any(e["name"] == "hitl.approved" for e in hitl_events["events"])
+
+
+def test_mcp_event_bus_get_returns_event():
+    _fresh_bus()
+    pub = _text(_call("event_bus_publish", {"name": "system.health", "payload": {"status": "ok"}}))
+    event_id = pub["event_id"]
+
+    got = _text(_call("event_bus_get", {"event_id": event_id}))
+    assert got["ok"] is True
+    assert got["event"]["event_id"] == event_id
+    assert got["event"]["name"] == "system.health"
+
+
+def test_mcp_event_bus_get_missing_returns_error():
+    _fresh_bus()
+    result = _call("event_bus_get", {"event_id": "does-not-exist"})
+    assert result["isError"] is True
+    assert "not found" in _text(result)["error"].lower()
+
+
+def test_mcp_event_bus_stats_returns_dict():
+    _fresh_bus()
+    payload = _text(_call("event_bus_stats", {}))
+    assert payload["ok"] is True
+    assert "stats" in payload
+    assert "running" in payload["stats"]
+    assert "handlers_count" in payload["stats"]
+
+
+def test_mcp_event_bus_publish_invalid_input_returns_error():
+    _fresh_bus()
+    result = _call("event_bus_publish", {"name": ""})
+    assert result["isError"] is True
