@@ -1,7 +1,7 @@
 # CHERENKOV — Master Development Plan & Roadmap (definitive)
 
 > [!WARNING]
-> **This document is deprecated.** For the single source of truth on active roadmap progress, completed milestones, and upcoming tasks, please refer to the unified [ROADMAP_RECONCILIATION.md](../ROADMAP_RECONCILIATION.md).
+> **This document is deprecated.** For the single source of truth on active roadmap progress, completed milestones, and upcoming tasks, please refer to the unified [_archive/ROADMAP_RECONCILIATION.md](../_archive/ROADMAP_RECONCILIATION.md).
 
 > **Execution status & open GitHub backlog:** [`08_DELIVERY_PLAN.md`](08_DELIVERY_PLAN.md) is the across-the-board plan of record (verified code state, Validation-Gate-first sequencing, the live issue backlog). This file remains the strategic rationale for E7→E13.
 

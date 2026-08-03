@@ -212,7 +212,7 @@ a tool that generates Playwright TypeScript.
 
 ## 4. Roadmap Update
 
-The existing `docs/ROADMAP_NEXT.md` is correct and well-reasoned. This assessment **confirms and
+The existing `docs/_archive/ROADMAP_NEXT.md` is correct and well-reasoned. This assessment **confirms and
 sharpens** its priorities. No new phases are added — the existing 4 phases are right.
 
 ### Confirmed Priority Order

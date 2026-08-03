@@ -32,6 +32,6 @@ Memory files are hints — they may be stale. Git state is truth.
 
 ## What NOT to do
 
-- Do not read `ROADMAP_RECONCILIATION.md` as truth (it contained fabricated gate results)
+- Do not read `docs/_archive/ROADMAP_RECONCILIATION.md` as truth (it contained fabricated gate results)
 - Do not commit without checking that no parallel agent is mid-edit (volatile shared tree)
 - Do not use `git add -A` — stage specific files only

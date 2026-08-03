@@ -299,7 +299,7 @@ Repo: `github.com/moaidmoatasem/cherenkov-qa` (private). WSL2 at `~/cherenkov-qa
   handover claiming visual testing, SAMA/CBE compliance, RAG, and a dashboard
   all "pass 12 smoke suites" — describing the ARCHIVED vision as if shipped.
   Claims are not evidence.
-- **`docs/INTEGRATION_HANDOVER_REPORT.md` is FABRICATED** (banner at top of
+- **`docs/_archive/INTEGRATION_HANDOVER_REPORT.md` is FABRICATED** (banner at top of
   file). It describes Track B/C as complete/validated. Do not cite it.
 
 ---
