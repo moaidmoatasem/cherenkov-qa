@@ -373,7 +373,7 @@ Current design **requires GPU** (RTX 5060, 8GB VRAM) for acceptable performance.
 
 **Build the desktop app, but only AFTER the web dashboard passes the validation gate.**
 
-The desktop packaging is the **easiest part** of this equation. The hard part is making the workflow **real and frictionless**—which the current roadmap (ROADMAP_NEXT.md) already addresses. Desktop is the natural next step once Phase 2 (5 QA users) is achieved.
+The desktop packaging is the **easiest part** of this equation. The hard part is making the workflow **real and frictionless**—which the current roadmap (_archive/ROADMAP_NEXT.md) already addresses. Desktop is the natural next step once Phase 2 (5 QA users) is achieved.
 
 **Priority order:**
 1. ✅ Fix mock data, wire real API (Phase 0-1)

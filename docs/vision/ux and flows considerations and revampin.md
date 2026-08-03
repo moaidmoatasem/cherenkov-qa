@@ -36,7 +36,7 @@ The application follows a modern dark-themed React/Vite dashboard approach with:
    - Rejection reason modal (feeds learning loop)
 5. **EjectScreen** - Export generated tests to standalone Playwright
 
-**Missing UX Elements (per ROADMAP_NEXT.md):**
+**Missing UX Elements (per _archive/ROADMAP_NEXT.md):**
 - Honest error/loading states (silent `catch(console.warn)` instead of toasts - #222)
 - "Initialize Pilot Run" not wired to `POST /api/v1/run` (#223)
 - 10/17 flagship screens still show mock data without badges (#224/#239)
@@ -189,7 +189,7 @@ Ejected folder is 100% standard and runs standalone.
 
 ## Recommendations for Revamping
 
-### Priority Areas Per ROADMAP_NEXT.md (Wave 2 & 3)
+### Priority Areas Per _archive/ROADMAP_NEXT.md (Wave 2 & 3)
 
 | Ticket | Issue | Current State | Recommendation |
 |--------|-------|---------------|----------------|
@@ -768,7 +768,7 @@ agent 3:
 
 ## CHERENKOV UX / Workflow / Flow Revamp — Comprehensive Plan
 
-**Authority:** `docs/HANDOVER.md` (status) · `docs/SCOPE_LEDGER.md` (scope) · `docs/ROADMAP_NEXT.md` (forward). All work lands on **feature branches** (AGENTS.md), with **raw evidence** per claim, and the four invariants preserved: **D7 (never auto-edit tests)**, **anti-lock-in (eject still works)**, **suggest-only (healing is advisory)**, **spec-derived (status from spec, not hardcoded)**.
+**Authority:** `docs/HANDOVER.md` (status) · `docs/SCOPE_LEDGER.md` (scope) · `docs/_archive/ROADMAP_NEXT.md` (forward). All work lands on **feature branches** (AGENTS.md), with **raw evidence** per claim, and the four invariants preserved: **D7 (never auto-edit tests)**, **anti-lock-in (eject still works)**, **suggest-only (healing is advisory)**, **spec-derived (status from spec, not hardcoded)**.
 
 ---
 
@@ -801,7 +801,7 @@ Contents:
   8. Onboarding: `install → doctor → init → first run → first finding`
   9. CI / business: `commit → CI run → report → PR comment → triage`
 - **§C. Per-surface gap analysis** — current behaviour vs intended behaviour, scored by impact (P0/P1/P2). Cites the specific line in code or doc.
-- **§D. Cross-cutting issues** — terminology drift (e.g. "review" means the verb, the dashboard, and the verdict), error-envelope inconsistency, output-schema drift between CLI text and JSON, mock-data leakage (the 10/17 screens from `ROADMAP_NEXT.md §0`), autonomy-ladder visibility, sovereign-mode coverage, accessibility, reduced-motion, etc.
+- **§D. Cross-cutting issues** — terminology drift (e.g. "review" means the verb, the dashboard, and the verdict), error-envelope inconsistency, output-schema drift between CLI text and JSON, mock-data leakage (the 10/17 screens from `_archive/ROADMAP_NEXT.md §0`), autonomy-ladder visibility, sovereign-mode coverage, accessibility, reduced-motion, etc.
 - **§E. Evidence appendix** — every claim in the audit is anchored to a terminal run, a screenshot ref, a file path, or a `git grep` line. No narrative-only claims.
 
 ### Phase 2 — REVAMP PROPOSALS (1 PR, design only)
@@ -842,7 +842,7 @@ I'm covering all of these, with no silent exclusions:
 | **Capability layers** | `cherenkov/stages/{visual,perf}/`, `cherenkov/copilot/`, `cherenkov/governance/`, `cherenkov/federation/`, `cherenkov/openclaw/`, `cherenkov/rag/`, `cherenkov/divergence/`, `cherenkov/reflector/`, `cherenkov/sdet/`, `cherenkov/oracle/`, `cherenkov/continuity/`, `cherenkov/substrate/`, `cherenkov/compliance/`, `cherenkov/security/` | command surface, output format, persona fit, eject safety |
 | **Output formats** | every `print_*_report` in `cherenkov.py`; every JSON envelope; every WebSocket event; the `events.jsonl` per-run log; the `report.json`; the `hitl.db`; the visual/perf baselines | schema, field naming, units, version, completeness, error path |
 | **Business flows** | CI workflow `.github/workflows/ci.yml`, the daemon, the federation protocol, the PR-diff action, the Jira exporter, the Snyk bridge | sequence, evidence chain, who-sees-what, audit trail |
-| **Docs surface** | `docs/GETTING_STARTED.md`, `docs/CLI_DEMO.md`, `docs/QA_DEMO_KIT.md`, `docs/HANDOVER.md`, `docs/SCOPE_LEDGER.md`, `docs/ROADMAP_NEXT.md`, `docs/dashboard/FE_*.md`, `docs/diagrams/DIAGRAMS.md`, the skill cards in `skills/` | terminology, story coherence, golden-path coverage |
+| **Docs surface** | `docs/GETTING_STARTED.md`, `docs/CLI_DEMO.md`, `docs/QA_DEMO_KIT.md`, `docs/HANDOVER.md`, `docs/SCOPE_LEDGER.md`, `docs/_archive/ROADMAP_NEXT.md`, `docs/dashboard/FE_*.md`, `docs/diagrams/DIAGRAMS.md`, the skill cards in `skills/` | terminology, story coherence, golden-path coverage |
 | **Skills & agent memory** | `skills/*.md`, `agent_memory/` | per the AGENTS.md Horizon 2 fabric — D7-aware instructions |
 
 ---
