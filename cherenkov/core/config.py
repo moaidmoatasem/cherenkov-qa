@@ -156,7 +156,13 @@ class Config:
     )
     VLM_LOCALAI_MODEL: str = os.getenv("CHERENKOV_VLM_LOCALAI_MODEL", "llava")
 
-    # ── Phase 0b: Redis / Event Bus ──────────────────────────────────────
+    AIRLLM_ENABLED: bool = os.getenv("CHERENKOV_AIRLLM_ENABLED", "false").lower() in (
+        "1", "true", "yes"
+    )
+    AIRLLM_MODEL: str = os.getenv("CHERENKOV_AIRLLM_MODEL", "Qwen2.5-Coder-32B")
+    AIRLLM_COMPRESSION: str = os.getenv("CHERENKOV_AIRLLM_COMPRESSION", "4bit")
+    AIRLLM_LAYER_SHARDS_PATH: str = os.getenv("CHERENKOV_AIRLLM_LAYER_SHARDS_PATH", "")
+
     REDIS_ENABLED: bool = os.getenv("CHERENKOV_REDIS_ENABLED", "false").lower() in (
         "1",
         "true",
@@ -295,6 +301,10 @@ class Config:
             "VLM_DEFAULT_PROVIDER": cls.VLM_DEFAULT_PROVIDER,
             "VLM_LOCALAI_URL": cls.VLM_LOCALAI_URL,
             "VLM_LOCALAI_MODEL": cls.VLM_LOCALAI_MODEL,
+            "AIRLLM_ENABLED": cls.AIRLLM_ENABLED,
+            "AIRLLM_MODEL": cls.AIRLLM_MODEL,
+            "AIRLLM_COMPRESSION": cls.AIRLLM_COMPRESSION,
+            "AIRLLM_LAYER_SHARDS_PATH": cls.AIRLLM_LAYER_SHARDS_PATH,
             "REDIS_ENABLED": cls.REDIS_ENABLED,
             "REDIS_URL": cls.REDIS_URL,
             "DEVICE_REGISTRATION_ENABLED": cls.DEVICE_REGISTRATION_ENABLED,

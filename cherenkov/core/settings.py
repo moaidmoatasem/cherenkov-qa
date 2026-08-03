@@ -100,6 +100,11 @@ class CherenkovSettings(BaseSettings):
     VLM_LOCALAI_URL: str = Field(default='http://localhost:8080', validation_alias='CHERENKOV_VLM_LOCALAI_URL')
     VLM_LOCALAI_MODEL: str = Field(default='llava', validation_alias='CHERENKOV_VLM_LOCALAI_MODEL')
 
+    AIRLLM_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_AIRLLM_ENABLED')
+    AIRLLM_MODEL: str = Field(default='Qwen2.5-Coder-32B', validation_alias='CHERENKOV_AIRLLM_MODEL')
+    AIRLLM_COMPRESSION: str = Field(default='4bit', validation_alias='CHERENKOV_AIRLLM_COMPRESSION')
+    AIRLLM_LAYER_SHARDS_PATH: str = Field(default='', validation_alias='CHERENKOV_AIRLLM_LAYER_SHARDS_PATH')
+
     REDIS_ENABLED: bool = Field(default=False, validation_alias='CHERENKOV_REDIS_ENABLED')
     REDIS_URL: str = Field(default='redis://localhost:6379/0', validation_alias='CHERENKOV_REDIS_URL')
 
@@ -248,3 +253,9 @@ def get_settings() -> CherenkovSettings:
             if _settings_instance is None:
                 _settings_instance = CherenkovSettings()
     return _settings_instance
+
+
+def reset_settings() -> None:
+    global _settings_instance
+    with _settings_lock:
+        _settings_instance = None

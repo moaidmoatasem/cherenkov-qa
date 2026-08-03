@@ -248,9 +248,13 @@ def get_provider(name: str) -> OllamaProvider | OpenAIProvider | GitHubModelsPro
         from cherenkov.substrate.providers.nemoclaw import NemoClawProvider
 
         p = NemoClawProvider()  # type: ignore[assignment]
+    elif name == "airllm":
+        from cherenkov.substrate.providers.airllm import AirLLMProvider
+
+        p = AirLLMProvider()  # type: ignore[assignment]
     else:
         raise ValueError(
-            f"Unknown provider '{name}'. Expected 'ollama', 'openai', 'github', 'anthropic', or 'nemoclaw'."
+            f"Unknown provider '{name}'. Expected 'ollama', 'openai', 'github', 'anthropic', 'nemoclaw', or 'airllm'."
         )
     _PROVIDER_CACHE[name] = p
     return p

@@ -18,6 +18,7 @@ _COST_PER_TOKEN = {
     "ollama": 0.0,
     "openai": 0.000015,
     "anthropic": 0.00003,
+    "airllm": 0.0,
 }
 
 

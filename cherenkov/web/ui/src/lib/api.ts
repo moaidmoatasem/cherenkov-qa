@@ -386,6 +386,8 @@ export interface SystemSettings {
   engine: { model_tier: string; enable_demo_mode: boolean; execution_budget: number; workers: number };
   security: { egress_policy: string; auth_secret?: string };
   ui: { density: string; reduced_motion: boolean };
+  model?: string;
+  airllm?: { enabled: boolean; model: string; compression: string; layer_shards_path?: string };
 }
 
 export async function fetchSettings(): Promise<SystemSettings> {

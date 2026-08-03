@@ -36,6 +36,10 @@ export default function SettingsScreen() {
   const [budget, setBudget] = useState(15.00);
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable');
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [airllmEnabled, setAirllmEnabled] = useState(false);
+  const [airllmModel, setAirllmModel] = useState('Qwen2.5-Coder-32B');
+  const [airllmCompression, setAirllmCompression] = useState('4bit');
+  const [airllmShardsPath, setAirllmShardsPath] = useState('');
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -52,6 +56,14 @@ export default function SettingsScreen() {
       setApiSecret(data.security.auth_secret || '');
       setDensity(data.ui.density as any);
       setReducedMotion(data.ui.reduced_motion);
+      setModel((data as any).model || 'ollama');
+      const airllm = (data as any).airllm;
+      if (airllm) {
+        setAirllmEnabled(!!airllm.enabled);
+        setAirllmModel(airllm.model || 'Qwen2.5-Coder-32B');
+        setAirllmCompression(airllm.compression || '4bit');
+        setAirllmShardsPath(airllm.layer_shards_path || '');
+      }
       setIsLoading(false);
     }).catch(err => {
       toast(`Failed to load settings: ${(err as Error).message}`, 'error');
@@ -77,6 +89,13 @@ export default function SettingsScreen() {
         ui: {
           density,
           reduced_motion: reducedMotion
+        },
+        model,
+        airllm: {
+          enabled: airllmEnabled,
+          model: airllmModel,
+          compression: airllmCompression,
+          layer_shards_path: airllmShardsPath
         }
       });
       localStorage.setItem('[copilot] density', density);
@@ -137,6 +156,80 @@ export default function SettingsScreen() {
                     {p}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* AirLLM Heavy Mode Section */}
+            {airllmEnabled && (
+              <div className="space-y-4 pt-4 border-t border-yellow-500/30">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-yellow-400 bg-yellow-500/10 px-2 py-1 rounded uppercase tracking-wider">Experimental</span>
+                  <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-yellow-400" />
+                    <span>AirLLM Heavy Mode</span>
+                  </h2>
+                </div>
+                <p className="text-[10px] text-yellow-400/80 font-mono leading-relaxed">
+                  Layer-wise inference for 32B+ models on consumer GPUs. Expect 30–120s per endpoint. For batch/overnight use only.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-[#7D8DA1] uppercase font-semibold">Model</label>
+                    <select
+                      value={airllmModel}
+                      onChange={(e) => setAirllmModel(e.target.value)}
+                      className="w-full bg-black/30 text-text-primary p-2 rounded-xl border border-white/10 focus:outline-none focus:border-glow-blue text-xs font-mono"
+                    >
+                      <option value="Qwen2.5-Coder-32B">Qwen2.5-Coder-32B</option>
+                      <option value="DeepSeek-Coder-33B">DeepSeek-Coder-33B</option>
+                      <option value="Llama-3-70B">Llama-3-70B</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-[#7D8DA1] uppercase font-semibold">Compression</label>
+                    <select
+                      value={airllmCompression}
+                      onChange={(e) => setAirllmCompression(e.target.value)}
+                      className="w-full bg-black/30 text-text-primary p-2 rounded-xl border border-white/10 focus:outline-none focus:border-glow-blue text-xs font-mono"
+                    >
+                      <option value="4bit">4-bit (3x faster)</option>
+                      <option value="8bit">8-bit (balanced)</option>
+                      <option value="none">Full precision</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] text-[#7D8DA1] uppercase font-semibold">Layer Shards Cache Path (optional)</label>
+                  <input
+                    type="text"
+                    value={airllmShardsPath}
+                    onChange={(e) => setAirllmShardsPath(e.target.value)}
+                    placeholder="Leave empty for default"
+                    className="w-full bg-black/30 text-text-primary p-2 rounded-xl border border-white/10 focus:outline-none focus:border-glow-blue text-xs font-mono"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* AirLLM Enable Toggle */}
+            <div className="space-y-4 pt-4 border-t border-white/5">
+              <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
+                <Layers className="w-4 h-4 text-glow-blue" />
+                <span>AirLLM Heavy Mode</span>
+              </h2>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-black/25 border border-white/5">
+                <div>
+                  <span className="text-[#E6EDF3] text-xs font-mono">Enable AirLLM for Deep Tier</span>
+                  <p className="text-[9px] text-[#7D8DA1] mt-1">Runs massive models (32B+) via layer-wise inference. Requires pip install airllm.</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={airllmEnabled}
+                  onChange={(e) => setAirllmEnabled(e.target.checked)}
+                  className="w-4 h-4 accent-glow-bright"
+                />
               </div>
             </div>
 
