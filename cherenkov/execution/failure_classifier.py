@@ -1,0 +1,98 @@
+"""
+CHERENKOV execution/failure_classifier.py — post-execution failure triage.
+
+Ships the first bucket of #880: when an already-accepted test fails at
+runtime, decide whether it's a PRODUCT_BUG by correlating the failing
+endpoint against spec-conformance divergences CHERENKOV already computed
+(`cherenkov/web/divergences.py`). TEST_FRAGILITY and ENVIRONMENT require
+runtime trace parsing that doesn't exist yet — those cases fall through to
+UNKNOWN rather than being guessed at.
+"""
+
+from __future__ import annotations
+
+from enum import Enum
+
+from pydantic import BaseModel
+
+
+class FailureCategory(str, Enum):
+    PRODUCT_BUG = "product_bug"
+    TEST_FRAGILITY = "test_fragility"
+    ENVIRONMENT = "environment"
+    UNKNOWN = "unknown"
+
+
+class ClassifiedFailure(BaseModel):
+    """Result of classifying one runtime test failure."""
+
+    category: FailureCategory
+    endpoint: str
+    method: str
+    confidence: float | None = None
+    divergence_id: str | None = None
+    expected: str | None = None
+    actual: str | None = None
+    repro: str | None = None
+    reason: str
+
+
+def _normalize(method: str, endpoint: str) -> str:
+    return f"{method.strip().upper()} {endpoint.strip()}"
+
+
+def _corpus_key(divergence: dict) -> str | None:
+    ep_str = divergence.get("endpoint", "")
+    parts = ep_str.split(" ", 1)
+    if len(parts) != 2:
+        return None
+    method, path = parts
+    return _normalize(method, path)
+
+
+def classify_failure(
+    endpoint: str,
+    method: str,
+    divergences: list[dict] | None = None,
+) -> ClassifiedFailure:
+    """Classify a runtime test failure for a given endpoint/method.
+
+    `divergences` defaults to the live divergence corpus
+    (`cherenkov.web.divergences.list_divergences()`) — a caller can pass an
+    explicit list (e.g. reports from a specific `verify`/`audit` run) to
+    scope the correlation instead of using whatever the dashboard currently
+    holds.
+    """
+    if divergences is None:
+        from cherenkov.web.divergences import list_divergences
+
+        divergences = list_divergences()
+
+    key = _normalize(method, endpoint)
+    for d in divergences:
+        if _corpus_key(d) == key:
+            return ClassifiedFailure(
+                category=FailureCategory.PRODUCT_BUG,
+                endpoint=endpoint,
+                method=method.strip().upper(),
+                confidence=d.get("confidence"),
+                divergence_id=d.get("id"),
+                expected=d.get("claimA"),
+                actual=d.get("claimB"),
+                repro=d.get("reproSteps"),
+                reason=(
+                    "endpoint has a proven spec-conformance divergence "
+                    f"({d.get('id')}) — the server, not the test, is wrong"
+                ),
+            )
+
+    return ClassifiedFailure(
+        category=FailureCategory.UNKNOWN,
+        endpoint=endpoint,
+        method=method.strip().upper(),
+        reason=(
+            "no correlating spec divergence found for this endpoint — "
+            "distinguishing TEST_FRAGILITY from ENVIRONMENT needs runtime "
+            "trace parsing, which is not built yet (see issue #880)"
+        ),
+    )
