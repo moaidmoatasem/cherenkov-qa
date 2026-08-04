@@ -1,8 +1,6 @@
-version: "3.9"
-
 services:
   local-ai:
-    image: localai/localai:latest-aicpu
+    image: localai/localai:latest-cpu
     ports:
       - "8080:8080"
     environment:
