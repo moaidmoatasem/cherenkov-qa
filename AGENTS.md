@@ -1,8 +1,8 @@
 ## Agent Operating Rules — CHERENKOV QA
 
-**SSOT is `docs/` (v3.1 + delta).** There is NO "v3.1 + delta" — if cited, stop and re-read `docs/`. All tracks are open (see Track Status).
+**SSOT is `docs/`.** There is no "v3.1 + delta" or any other version label — if such a term is cited, stop and re-read `docs/`. All tracks are open (see Track Status).
 
-**Authoritative handover:** [docs/HANDOVER.md](docs/HANDOVER.md).
+**Authoritative handover:** [HANDOVER.md](HANDOVER.md) (repo root).
 
 ### Workflow Rules
 

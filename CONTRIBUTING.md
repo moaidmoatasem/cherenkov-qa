@@ -1,6 +1,6 @@
 # Contributing to CHERENKOV (humans & agents)
 
-This project is built by both people and autonomous agents. The same rules apply to both. **Read [`docs/HANDOVER.md`](docs/HANDOVER.md) first** — it is the single source of truth for what is real. If anything here contradicts it, the handover wins.
+This project is built by both people and autonomous agents. The same rules apply to both. **Read [`HANDOVER.md`](HANDOVER.md) first** (repo root) — it is the single source of truth for what is real. If anything here contradicts it, the handover wins.
 
 By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 
@@ -8,7 +8,7 @@ By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## 1. The five non-negotiables (anti-drift)
 
-1. **SSOT = `docs/` (v3.1 + delta).** There is no v4/v6/"v3.1 + delta." If you cite a term not in `docs/`, stop and re-anchor.
+1. **SSOT = `docs/`.** There is no v4/v6/"v3.1 + delta." If you cite a term not in `docs/`, stop and re-anchor.
 2. **Show RAW EVIDENCE, never a summary.** "Tests pass" is a claim; the terminal output is evidence. PRs without evidence are not reviewable.
 3. **All tracks are open.** The Track A validation gate passed on 2026-06-08. `track-b-c-deferred/` has been **fully re-integrated and deleted** — all code lives in the live tree. See [`AGENTS.md`](AGENTS.md) for the current track status.
 4. **Design invariants are law** (§4).
@@ -75,7 +75,7 @@ State is tracked on the GitHub Project board via `status:` labels — see [`docs
 
 ## 7. Handover protocol (so the next agent isn't lost)
 
-- The authoritative state lives in [`docs/HANDOVER.md`](docs/HANDOVER.md). Update it when reality changes — never let it drift.
+- The authoritative state lives in the repo-root [`HANDOVER.md`](HANDOVER.md). Update it when reality changes — never let it drift.
 - When you finish a chunk, leave: what changed, the evidence, what's next, and any new dependency — in the PR and (if it changes project state) in the handover.
 - Never write a triumphant "100% complete" handover. Describe exactly what is proven and what is not.
 - Treat [`AGENTS.md`](AGENTS.md) as the short operating card; this file is the long form.

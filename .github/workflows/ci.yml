@@ -66,6 +66,20 @@ jobs:
       - name: Run polish smoke test
         run: PYTHONPATH=. python3 tests/smoke/smoke_test_polish.py
 
+  version-consistency:
+    name: Version Consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run version consistency checker
+        run: python3 scripts/ci_version_check.py
+
   certification-gate:
     name: E12 Certification Gate (C11)
     runs-on: ubuntu-latest
