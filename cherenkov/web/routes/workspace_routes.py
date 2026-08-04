@@ -9,6 +9,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from cherenkov.core.settings import get_settings, reset_settings
 from cherenkov.web.auth.deps import require_role
 from cherenkov.web.auth.models import Role
 from cherenkov.web.routes.deps import verify_api_key
@@ -105,26 +106,69 @@ def _persist_airllm_to_env(body: dict) -> None:
 
 @router.get("/api/v1/settings")
 async def api_get_settings(_auth=Depends(verify_api_key)):
-    redacted = {k: (dict(v) if isinstance(v, dict) else v) for k, v in _settings.items()}
-    if "auth_secret" in redacted.get("security", {}):
-        redacted["security"]["auth_secret"] = "***" if redacted["security"]["auth_secret"] else ""
-    return redacted
+    """Return real settings from CherenkovSettings, not mock data."""
+    settings = get_settings()
+    # Reset singleton to force reload from .env on next fetch
+    reset_settings()
+    
+    return {
+        "model": settings.PROVIDER,
+        "engine": {
+            "model_tier": "deep" if settings.TIER_DEEP_MODEL else "small",
+            "enable_demo_mode": False,
+            "execution_budget": 100,
+            "workers": 4,
+        },
+        "security": {
+            "egress_policy": settings.EGRESS,
+            "auth_secret": "***" if settings.JWT_SECRET else "",
+        },
+        "ui": {
+            "density": "comfortable",
+            "reduced_motion": False,
+        },
+        "airllm": {
+            "enabled": settings.AIRLLM_ENABLED,
+            "model": settings.AIRLLM_MODEL,
+            "compression": settings.AIRLLM_COMPRESSION,
+            "layer_shards_path": settings.AIRLLM_LAYER_SHARDS_PATH,
+        },
+    }
 
 
 @router.put("/api/v1/settings")
 async def update_settings(body: dict, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.admin))):
-    for key, val in body.items():
-        if key in _settings and isinstance(val, dict):
-            protected = _SETTINGS_PROTECTED_FIELDS.get(key, set())
-            for sub_key, sub_val in val.items():
-                if sub_key in protected:
-                    continue
-                _settings[key][sub_key] = sub_val
-        elif key in _settings and key not in _SETTINGS_PROTECTED_FIELDS:
-            _settings[key] = val
-
+    """Persist settings to .env file and return updated configuration."""
     _persist_airllm_to_env(body)
-    return _settings
+    
+    # Force reload on next GET
+    reset_settings()
+    
+    # Return the updated settings
+    settings = get_settings()
+    return {
+        "model": body.get("model", settings.PROVIDER),
+        "engine": body.get("engine", {
+            "model_tier": "deep",
+            "enable_demo_mode": False,
+            "execution_budget": 100,
+            "workers": 4,
+        }),
+        "security": {
+            "egress_policy": settings.EGRESS,
+            "auth_secret": "***",
+        },
+        "ui": {
+            "density": "comfortable",
+            "reduced_motion": False,
+        },
+        "airllm": body.get("airllm", {
+            "enabled": settings.AIRLLM_ENABLED,
+            "model": settings.AIRLLM_MODEL,
+            "compression": settings.AIRLLM_COMPRESSION,
+            "layer_shards_path": settings.AIRLLM_LAYER_SHARDS_PATH,
+        }),
+    }
 
 
 @router.get("/api/v1/governance")
