@@ -1,6 +1,7 @@
-"""GitHub Webhook Consumer (CC-3)."""
+"""GitHub Webhook Consumer (CC-3) with PR coverage comments (#766)."""
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import hmac
 import logging
@@ -47,6 +48,8 @@ async def handle_github_event(
     safe_event = (x_github_event or "").replace("\n", "").replace("\r", "")
     _log.info("Received GitHub webhook event: %s", safe_event)
 
+    result: dict[str, Any] = {"status": "ok"}
+
     # Forward relevant events to the CHERENKOV event bus
     if x_github_event == "pull_request":
         action = str(payload.get("action") or "").replace("\n", "").replace("\r", "")
@@ -56,4 +59,46 @@ async def handle_github_event(
         # Here we would normally publish to `AsyncQueueEventBus`
         # bus.publish(CHERENKOVEvent(category="webhook", name="github.pr", data=payload))
 
-    return {"status": "ok"}
+        # Phase 14 #766: post a spec coverage comment to the PR on relevant
+        # actions (opened, synchronize, reopened, ready_for_review).
+        from cherenkov.web.pr_comments import should_comment
+
+        if isinstance(pr_number, int) and should_comment(action):
+            repo = payload.get("repository", {}).get("full_name", "")
+            if repo and _get_github_token_safely():
+                asyncio.create_task(
+                    _post_coverage_comment(repo, pr_number, safe_pr)
+                )
+                result["coverage_comment"] = "queued"
+            else:
+                _log.info(
+                    "Skipping PR coverage comment for %s: no repo or token",
+                    safe_pr,
+                )
+        else:
+            _log.debug("PR %s action %s does not trigger a coverage comment", safe_pr, action)
+
+    return result
+
+
+def _get_github_token_safely() -> str:
+    try:
+        from cherenkov.core.settings import get_settings
+        return get_settings().GITHUB_TOKEN
+    except Exception:  # pragma: no cover - defensive
+        return ""
+
+
+async def _post_coverage_comment(repo: str, pr_number: int, safe_pr: str) -> None:
+    """Best-effort background task: post a coverage map comment to a PR.
+
+    Never raises — a failed comment must not surface as a 500 to GitHub's
+    webhook delivery, which would mark the hook as failing in the UI.
+    """
+    try:
+        from cherenkov.web.pr_comments import post_coverage_comment
+
+        response = await asyncio.to_thread(post_coverage_comment, repo, pr_number)
+        _log.info("Posted coverage comment on PR %s: %s", safe_pr, response.get("html_url", "(no url)"))
+    except Exception:  # pragma: no cover - best-effort telemetry
+        _log.warning("Failed to post coverage comment on PR %s", safe_pr, exc_info=True)
