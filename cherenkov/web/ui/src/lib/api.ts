@@ -807,3 +807,33 @@ export async function fetchRun(runId: string): Promise<RunRecord | null> {
   if (!res.ok) return null;
   return res.json();
 }
+
+export interface CertificateVerifyResult {
+  valid: boolean;
+  cert_id: string;
+  version: string;
+  run_id: string;
+  issued_at: string;
+  verdict: 'PASS' | 'WARN' | 'FAIL';
+  subject: { base_url: string; spec_hash: string | null };
+  summary: { total: number; high: number; medium: number; low: number; critical: number };
+  fingerprint: string;
+  signed: boolean;
+}
+
+/**
+ * Verifies a Cherenkov certificate's SHA-256 fingerprint (and signature, if present).
+ * `certificate` is the raw JSON produced by `cherenkov certify`.
+ */
+export async function verifyCertificate(certificate: object): Promise<CertificateVerifyResult> {
+  const res = await fetch(`${API_BASE}/certificates/verify`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ certificate }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Certificate verification failed: ${res.status}`);
+  }
+  return res.json();
+}
