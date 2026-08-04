@@ -55,8 +55,8 @@ test.describe('Authoring Workspace E2E Suite', () => {
     const monitor = page.getByTestId('live-pipeline-monitor');
     await expect(monitor).toBeVisible();
     await expect(monitor.getByText('Live Pipeline Monitor')).toBeVisible();
-    await expect(monitor.getByText('Analysis')).toBeVisible();
-    await expect(monitor.getByText('Design & Generation')).toBeVisible();
+    await expect(monitor.getByText('Analysis', { exact: true })).toBeVisible();
+    await expect(monitor.getByText('Design & Generation', { exact: true })).toBeVisible();
     await expect(monitor.getByText('Live Event Log')).toBeVisible();
   });
 });
