@@ -61,6 +61,12 @@ The checks below are the contract between a PR and `main`. Unless a check is exp
 | **CLI Help + Docs Gate** (`ci.yml` polish-invariant) | CLI help text and docs stay in sync |
 | **CodeQL Security Analysis** (`ci.yml` codeql-analysis) | Static security analysis |
 
+The table above is **enforced as GitHub rulesets-as-code** since 2026-08-04:
+
+- `.github/rulesets/main-protection.json` — `refs/heads/main`: PR required (1 approval, CODEOWNERS review, stale-dismissal, thread resolution, squash/rebase), linear history, no force-push, no deletion, the 4 required checks above with **strict up-to-date** (`strict_required_status_checks_policy: true`). Admins may bypass in emergencies.
+- `.github/rulesets/release-protection.json` — `refs/heads/release/**`: same review model without the linear-history and status-check requirements.
+- Apply/refresh with `scripts/apply-rulesets.sh` (needs a PAT with `administration:write`); keep the JSON and GitHub in sync — the JSON is the source of truth.
+
 ### PR gates
 
 | Gate | What it verifies |
