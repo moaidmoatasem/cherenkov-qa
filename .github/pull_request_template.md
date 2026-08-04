@@ -50,6 +50,6 @@ Closes #
 **Quality**
 - [ ] No secrets or API keys committed
 - [ ] CodeQL scan clean
-- [ ] `docs/HANDOVER.md` updated if project state changed
+- [ ] root `HANDOVER.md` updated if project state changed
 
 <!-- AI agent? Add co-author trailer to your commit message. -->

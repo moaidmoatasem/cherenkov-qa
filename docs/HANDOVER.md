@@ -1,9 +1,10 @@
-# CHERENKOV — Agent Handover (authoritative, honest state)
+# CHERENKOV — Agent Handover (historical archive)
 
-> Paste this to Claude Code / any agent as the first message. It is the
-> single source of truth for what this project IS, what is REAL, what is
-> NOT, and what to do next. If anything in the repo contradicts this doc,
-> this doc wins — then reconcile.
+> **Authoritative handover is the repo-root [`HANDOVER.md`](../HANDOVER.md).**
+> It is the single source of truth for what this project IS, what is REAL,
+> what is NOT, and what to do next. If anything in this file contradicts the
+> root `HANDOVER.md`, the **root wins** — then reconcile. This file is retained
+> as a historical archive of session notes.
 
 ---
 
@@ -360,8 +361,8 @@ to [docs/STATUS.md](STATUS.md) instead.
 
 ## 5. The ACTUAL project status
 
-> **Canonical status lives in [docs/STATUS.md](STATUS.md).** This file does
-> not duplicate it; if the two disagree, [STATUS.md](STATUS.md) wins.
+> **Canonical status lives in the repo-root [`HANDOVER.md`](../HANDOVER.md).** This file does
+> not duplicate it; if the two disagree, the root wins.
 
 **Summary:**
 - Track A code: **built** and core invariants proven.

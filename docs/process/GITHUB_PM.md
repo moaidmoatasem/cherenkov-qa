@@ -1,6 +1,6 @@
 # CHERENKOV — Project Management, ALM & GitHub Way-of-Work
 
-**Authority:** subordinate to [`docs/HANDOVER.md`](../HANDOVER.md) and [`AGENTS.md`](../../AGENTS.md). If this doc contradicts the handover, the handover wins.
+**Authority:** subordinate to the repo-root [`HANDOVER.md`](../../HANDOVER.md) and [`AGENTS.md`](../../AGENTS.md). If this doc contradicts the handover, the handover wins.
 **Purpose:** one place for how work is tracked, reviewed, and shipped through GitHub — milestones, labels, tickets, branch rules, ALM cadence, and the architecture/design standards every contributor (human or agent) follows.
 
 ---

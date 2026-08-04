@@ -14,7 +14,7 @@ Perform docs site integration for onboarding and execute end-to-end verification
 - CODE_ONLY network mode: no external HTTP/network access.
 - Minimal change principle.
 - No dummy/facade implementations or cheating.
-- Authoritative handover: docs/HANDOVER.md.
+- Authoritative handover: root HANDOVER.md.
 - Invariant D7: Never auto-edit test code.
 - Sync Driven Development (SDD) rules: agent_sync before/during/after.
 
