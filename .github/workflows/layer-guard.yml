@@ -48,7 +48,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          CHANGED_FILES="${{ steps.changes.outputs.changed_files }}"
+          export CHANGED_FILES="${{ steps.changes.outputs.changed_files }}"
           CORE_LAYERS="${{ env.CORE_LAYERS }}"
           INFRA_LAYERS="${{ env.INFRA_LAYERS }}"
           python3 - <<'PYEOF'
