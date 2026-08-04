@@ -15,7 +15,7 @@
 |---|---|---|
 | Gate **G0** | **3/4** — E0.1, E0.2, E0.4 done; **E0.3 open** | `docs/evidence/`, `demos/catch-the-ai-cheating/`, `NORTH_STAR.md` §8 |
 | Rungs 1 / 2 / 3 | **15/15 code-complete** | Tool, Platform, Protocol all shipped |
-| Test suites | **1746 passed, 1 skipped, 0 failed** | `tests/unit` + `tests/integration`, verified this session |
+| Test suites | **2138 passed, 2 failed, 6 skipped** at HEAD `530468a1` (8:30, HANDOVER baseline filter) | 2 failures are network-only `tests/integration/real_demo/` (no live demo server; not `integration`-marked); 6 skipped are service-gated. Prior "1746 passed" stale — suite grew |
 | Mypy gate | **FAILING — 7 errors in 3 files** | `cherenkov/ai/{openai,nemoclaw}_client.py`, `substrate/providers/localai.py` |
 | Distribution | **Not shipped** — not on PyPI, not in MCP registries | `dist/cherenkov-1.0.0.whl` built, unpublished |
 | External users | **Zero** | — |

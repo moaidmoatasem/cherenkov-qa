@@ -5,9 +5,17 @@
 /docs/HANDOVER.md       @moaidmoatasem
 /AGENTS.md              @moaidmoatasem
 /CONTRIBUTING.md        @moaidmoatasem
+/cherenkov/             @moaidmoatasem
 /cherenkov/core/        @moaidmoatasem
 /cherenkov/substrate/   @moaidmoatasem
+/cherenkov/enterprise/  @moaidmoatasem
+/cherenkov/mcp/         @moaidmoatasem
 /.github/               @moaidmoatasem
+
+# Agent-facing surfaces — owned alongside the core
+/skills/                @moaidmoatasem
+/pocs/                  @moaidmoatasem
+/agent_memory/          @moaidmoatasem
 
 # Security-sensitive paths — mandatory review
 /SECURITY.md                                    @moaidmoatasem
