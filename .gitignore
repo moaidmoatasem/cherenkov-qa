@@ -1,207 +1,44 @@
-# python
+```
+# Python
 __pycache__/
 *.pyc
-.venv/
+*.pyo
+*.pyd
 *.egg-info/
-
-# secrets
+.Python
+venv/
+.venv/
 .env
+.env.local
 .env.*
-!.env.example
 
-# node
+# Node.js
 node_modules/
-vscode/out/
-vscode/*.vsix
-
-# generated / local
-.cherenkov/
-*.log
-data/*.db
-hitl.db
-stub/stripe-types.ts
-# ignore generated test run artefacts, but allow committed fixtures
-stub/generated_tests/test-results/
-stub/generated_tests/*.trace.zip
-target/.venv/
-
-# generated project config (from `cherenkov init`)
-cherenkov.toml
-
-# local harness / editor config — but track the shared SessionStart hook
-.claude/*
-!.claude/settings.json
-!.claude/hooks/
-.claude/settings.local.json
-
-
-# (track-b-c-deferred/ was re-integrated and deleted)
-
-# temporary / adhoc
-scratch/
-fetch_issues.py
-simple_test.py
-
-# big specs (keep these out of git — they're huge)
-stripe_spec.json
-stub/results.json
-stub/test-results/
-stub/node_modules/
-*.trace.zip
-packaging/build/
-packaging/dist/
-k3d
-
-# docs-site — MkDocs build artifacts (never commit these)
-docs-site/site/
-# Auto-generated CLI reference (re-generated on every docs build)
-docs-site/docs/cli/_generated_reference.md
-# docs _archive backups (not needed in git, already in archive dir)
-docs/_archive/
-
-scripts/k8s-run
-
-# k3d binary — download via scripts/install-tools.sh
-scripts/k3d
-# k8s-run binary — build via make k8s-run-build
-scripts/k8s-run
-
-# coverage artifacts
-.coverage
-.coverage.*
-coverage.xml
-
-# PR body drafts
-.github/pr-body*
-
-# one-time migration scripts
-migrate_tests.py
-
-# local project docs (not part of the codebase)
-ORIGINAL_REQUEST.md
-PROJECT.md
-issue*.json
-
-# IDE/Editor directories
-.kilo/
-.vscode/settings.json
-.vscode/launch.json
-.vscode/tasks.json
-.zed/
-
-# K8s test manifests
-k8s/conformancecheck-mobile-test.yaml
-
-# Generated test files
-stub/generated_tests/k6_perf.js
-# Pipeline-generated test artifacts (written by GENERATE/REVIEW stages at
-# runtime, named METHOD_endpoint_mutation.spec.ts). The demo/golden fixtures
-# are tracked, so gitignore (which never affects tracked files) can safely
-# blanket-ignore all .spec.ts files here without untracking them.
-stub/generated_tests/*.spec.ts
-
-# temp artifacts
-nul
-
-# Tauri desktop build artifacts
-desktop/src-tauri/target/
-desktop/src-tauri/gen/
-desktop/src-tauri/binaries/
-
-# Playwright artifacts
-cherenkov/web/ui/test-results/
-test-results/
-# Debug scripts
-_debug_*.py
-_verify_*.py
-_ui_audit.py
-_ui_audit.spec.ts
-.agentrr/
-policy.yaml
-sponsio.yaml
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Build artifacts
-operator/k8s-run
-operator/k8s-run-static
-operator/manager
-
-# Generated visual-regression artifacts (VisualDiffEngine owns these)
-stub/generated_tests/visual_regression_baseline_ui.spec.ts
-stub/generated_tests/*-snapshots/
-stub/generated_tests/visual_cli_*.spec.ts
-
-# local artifacts that must never be committed
-*.err
-*.exe
-kubeconfig*.yaml
-
-# Eject flow output directories (generated at runtime)
-stub/audit_exported/
-stub/exported_tests/
-run_e2e.py
-
-# PyInstaller root build/dist
-build/
 dist/
+build/
+*.min.js
+*.min.css
 
-# Prebuilt review dashboard is committed on purpose so `cherenkov review`
-# works without a separate `npm install && npm run build` step (#622).
-!cherenkov/web/ui/dist/
-!cherenkov/web/ui/dist/**
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# vscode test framework
-vscode-cherenkov/.vscode-test/
-vscode/.vscode-test/
+# Logs
+*.log
 
-# Qwen Code agent artifacts (auto-generated memory, session state)
-.qwen/memory/
-.qwen/arena.yml
-.qwen/arena.yml.lock
-.mypy_cache/
+# Coverage
+.coverage
+coverage/
+htmlcov/
 
-# Agent review cache
-.opencodereview/
-
-# SDD agent session data
-agent_memory/
-
-# Runtime data
-data/
-
-# Ejected test suites
-eject/
-eject-e2e-output/
-
-# Test run artifacts
-pytest_results.txt
-tests/__init__.py
-tests/_*_results*.txt
-tests/_*_results.log
-
-# Generated Playwright tests (API-spec-generated / MCP-verify / petstore / visual-regression)
-playwright-suite/tests/*petstore*.spec.ts
-playwright-suite/tests/mcp_verify_*.spec.ts
-playwright-suite/tests/visual_regression_baseline_ui.spec.ts
-
-# Generated conformance tests from API spec (HTTP-verb-prefixed — generated at runtime)
-playwright-suite/tests/delete_*.spec.ts
-playwright-suite/tests/get_*.spec.ts
-playwright-suite/tests/patch_*.spec.ts
-playwright-suite/tests/post_*.spec.ts
-
-# Ad-hoc/debug scripts
-__test_review.py
-
-# Generated run artifacts — never commit (R0 truth alignment)
-/audit.json
-/test-junit.xml
-/test-sarif.json
-/soc2_report*.json
-/pr.json
-/issues.txt
-
-# Untracked triage
-playwright-suite/
-bench/escaped_defect/
-svgs_dump.json
-cherenkov-security-landing.png
+# OS
+.DS_Store
+Thumbs.db
+```
