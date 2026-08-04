@@ -1,25 +1,18 @@
 {
   "session": {
-    "id": "sess_20260803173015_c4d546",
+    "id": "sess_20260804012214_f54efc",
     "status": "closed",
-    "task": "validation",
-    "started_at": "2026-08-03T17:30:15.481477+00:00",
-    "ended_at": "2026-08-03T17:30:16.730981+00:00",
+    "task": "p0-ci-hygiene",
+    "started_at": "2026-08-04T01:22:14.372605+00:00",
+    "ended_at": "2026-08-04T01:22:51.011595+00:00",
     "findings_count": 1,
     "token_total": 0,
-    "summary": "Full 48-test gate GREEN on latest main a7b5a166: pytest 0, headless 23/23, e2e 25/25. Local synced to origin. Vite root fixed (ui dir). Ollama 7b OOM env issue worked around via 3b model.",
+    "summary": "Executed full P0 CI-hygiene plan: 7 PRs committed on feature branches. PR-1 layer-guard.yml rewritten (context/path/scope/auth/JS fixes + test). PR-2 continue-on-error audit (23 gates hard-failed, 7 advisory retained). PR-3 mypy gate green (9 errors/3 files). PR-4/5 authored WAYS_OF_WORKING + AGENT_COLLABORATION_PROTOCOL. PR-6 SSOT/version hygiene + version-consistency CI gate + HANDOVER root-wins. PR-7 baseline re-cert 2138/2/6.",
     "compacted": true,
-    "task_type": "validation",
+    "task_type": "p0-ci-hygiene",
     "source": "cherenkov"
   },
   "previous_sessions": [
-    {
-      "id": "sess_20260801144835_36a447",
-      "task": "E0.5d_conformance_corpus",
-      "ended_at": "2026-08-01T14:53:50.069514+00:00",
-      "summary": "Explorer 1 completed read-only exploration for Phase M0 - E0.5d: analyzed cherenkov verify CLI, verified 10 real OpenAPI 3.x spec URLs, documented SDD protocol, and provided execution strategy in handoff.md",
-      "token_total": 0
-    },
     {
       "id": "sess_20260801145438_5dce7e",
       "task": "E0.5d_conformance_corpus_remediation",
@@ -82,7 +75,14 @@
       "ended_at": "2026-08-03T08:01:20.638634+00:00",
       "summary": "UI validation work merged to main via PR #852 (4ca14ac9/df307edd). Verified merged main: 48/48 playwright real-backend tests pass, pytest exit 0, tsc exit 0, vite build ok. Fixed stale SSE tests (live substrate streams real tokens, not [MOCK]), eject-test fixture clobbering (unique output path + gitignore), logger json.dumps default=str, tsconfig include src. Parallel agents advanced main to 17059965 (#854-#856); AirLLM WIP left untouched.",
       "token_total": 0
+    },
+    {
+      "id": "sess_20260803173015_c4d546",
+      "task": "validation",
+      "ended_at": "2026-08-03T17:30:16.730981+00:00",
+      "summary": "Full 48-test gate GREEN on latest main a7b5a166: pytest 0, headless 23/23, e2e 25/25. Local synced to origin. Vite root fixed (ui dir). Ollama 7b OOM env issue worked around via 3b model.",
+      "token_total": 0
     }
   ],
-  "sessions_since_compact": 24
+  "sessions_since_compact": 25
 }

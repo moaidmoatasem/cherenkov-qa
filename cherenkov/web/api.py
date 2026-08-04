@@ -79,6 +79,10 @@ from cherenkov.web.routes.conformance_routes import router as conformance_router
 
 app.include_router(conformance_router)
 
+from cherenkov.web.routes.coverage_routes import router as coverage_router
+
+app.include_router(coverage_router)
+
 from cherenkov.web.routes.data_routes import router as data_router
 
 app.include_router(data_router)

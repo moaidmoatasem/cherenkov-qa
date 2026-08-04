@@ -67,37 +67,22 @@ def main():
     # 4. Verify documentation coverage check FAILS on undocumented commands
     print("Testing CI Docs Drift Checker (Fail Case)...")
 
-    # Backup cherenkov.py
-    src_py = "cherenkov.py"
-    backup_py = "cherenkov.py.bak"
+    # Backup cherenkov/cli/core.py
+    src_py = os.path.join("cherenkov", "cli", "core.py")
+    backup_py = os.path.join("cherenkov", "cli", "core.py.bak")
     shutil.copy2(src_py, backup_py)
 
     try:
-        # Inject an undocumented mock subcommand into get_parser()
+        # Inject an undocumented mock subcommand into core.py
         with open(src_py, encoding="utf-8") as f:
-            lines = f.readlines()
+            content = f.read()
 
-        # Find where eject subparser is defined and inject mockcmd there
-        injection_index = -1
-        for idx, line in enumerate(lines):
-            if "eject_parser = subparsers.add_parser(" in line:
-                injection_index = idx
-                break
-
-        assert (
-            injection_index != -1
-        ), "Failed to find injection target inside cherenkov.py"
-
-        # Inject undocumented choice parser
-        lines.insert(
-            injection_index,
-            '    mock_parser = subparsers.add_parser("mockcmd", help="Mock Undocumented Command")\n',
-        )
-
+        # Inject an undocumented choice at the bottom of core.py
+        mock_code = "\n\n@cli.command(name='mockcmd')\ndef mockcmd():\n    pass\n"
         with open(src_py, "w", encoding="utf-8") as f:
-            f.writelines(lines)
+            f.write(content + mock_code)
 
-        print("Injected undocumented choice 'mockcmd' into cherenkov.py.")
+        print("Injected undocumented choice 'mockcmd' into cherenkov/cli/core.py.")
 
         # Re-run docs checker and expect it to fail (code 1)
         fail_proc = subprocess.run(
@@ -120,11 +105,11 @@ def main():
         )
 
     finally:
-        # Restore backup cherenkov.py
+        # Restore backup cherenkov/cli/core.py
         if os.path.exists(backup_py):
             shutil.copy2(backup_py, src_py)
             os.remove(backup_py)
-            print("Restored cherenkov.py cleanly.")
+            print("Restored cherenkov/cli/core.py cleanly.")
 
     print("\n=======================================================")
     print("  ALL PHASE 10 POLISH & DOCS TESTS PASSED SUCCESSFULLY!")
