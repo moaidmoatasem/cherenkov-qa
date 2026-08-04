@@ -16,7 +16,7 @@
 | Gate **G0** | **3/4** — E0.1, E0.2, E0.4 done; **E0.3 open** | `docs/evidence/`, `demos/catch-the-ai-cheating/`, `NORTH_STAR.md` §8 |
 | Rungs 1 / 2 / 3 | **15/15 code-complete** | Tool, Platform, Protocol all shipped |
 | Test suites | **2138 passed, 2 failed, 6 skipped** at HEAD `530468a1` (8:30, HANDOVER baseline filter) | 2 failures are network-only `tests/integration/real_demo/` (no live demo server; not `integration`-marked); 6 skipped are service-gated. Prior "1746 passed" stale — suite grew |
-| Mypy gate | **FAILING — 7 errors in 3 files** | `cherenkov/ai/{openai,nemoclaw}_client.py`, `substrate/providers/localai.py` |
+| Mypy gate | **GREEN at HEAD 530468a1** — exact CI command (`mypy cherenkov/ --ignore-missing-imports --no-strict-optional --exclude 'cherenkov/web/ui' --exclude 'cherenkov/desktop'`) returns `Success: no issues found in 550 source files` | Fixed 2026-08-04 (9 errors in 3 files: `adapters/storage/sqlite.py` port-contract mismatch, `substrate/providers/airllm_client.py` Logger kwargs + shadowed `model` param, `mcp/handlers.py` probed_endpoints tuple typing); prior cited files `cherenkov/ai/{openai,nemoclaw}_client.py` no longer exist (moved to `cherenkov/substrate/providers/`) |
 | Distribution | **Not shipped** — not on PyPI, not in MCP registries | `dist/cherenkov-1.0.0.whl` built, unpublished |
 | External users | **Zero** | — |
 
@@ -220,7 +220,7 @@ Scope re-derived from M1/M3 friction logs before committing. Candidates:
 |---|---|---|
 | **T1** | [x] Retire root `cherenkov.py` | **DONE 2026-08-01** (#814, PR #821) — all 8 consumers migrated to `python -m cherenkov` consumer-by-consumer (13 commits), root shim deleted. |
 | **T2** | Record onboarding assets | #816 prep done 2026-08-01: cold run initially failed — 6 friction issues (#826-831) filed and **all fixed same day** (prereq/install steps, init/generate/validate transcript alignment, FAQ stale refs). Cold run now **verified green** end-to-end (`init` exits 0). The milestone itself (M1) still needs real external practitioners (window 08-12 → 08-26). |
-| **T3** | [x] **Mypy gate is failing on main** | Fixed! Confirmed that the 7 errors in `ai/openai_client.py`, `ai/nemoclaw_client.py`, and `substrate/providers/localai.py` are fully resolved on the latest tree. |
+| **T3** | [x] **Mypy gate is failing on main** | **FIXED 2026-08-04** — exact CI mypy command now returns `Success: no issues found in 550 source files`. Fixed 9 errors in 3 files (`adapters/storage/sqlite.py`, `substrate/providers/airllm_client.py`, `mcp/handlers.py`); prior cited paths `ai/openai_client.py`, `ai/nemoclaw_client.py` were stale (moved to `cherenkov/substrate/providers/`). |
 | **T4** | [x] Working-tree hygiene | Shared tree, concurrent agents. Stage specific files; never `git add -A` |
 | **T5** | [x] Untracked-file triage | `playwright-suite/`, `bench/escaped_defect/`, `svgs_dump.json`, `cherenkov-security-landing.png` — successfully triaged and added to `.gitignore`. |
 | **T6** | [x] Git remote carries a plaintext PAT | `.git/config` URL successfully scrubbed; credentials rotated. |
