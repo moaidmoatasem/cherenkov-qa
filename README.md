@@ -64,6 +64,14 @@ Your tests will run perfectly with `playwright test`, completely detached from C
 ### 5. 100% Private (Local LLM First)
 By default, CHERENKOV uses `qwen2.5-coder:7b` running locally via Ollama. Your proprietary API specs never leave your laptop. (Cloud models like OpenAI are supported as opt-in).
 
+For a one-command local AI stack (LocalAI + Redis + CHERENKOV), use the bundled compose file:
+
+```bash
+docker compose -f docker-compose.ai.yml up -d
+```
+
+This brings up LocalAI (VLM) on `http://localhost:8080` and Redis on `6379`. See [`docs/wiki/Deployment.md`](docs/wiki/Deployment.md) for the full setup guide.
+
 ---
 
 ## How it's different, honestly
