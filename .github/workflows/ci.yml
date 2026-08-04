@@ -11,7 +11,6 @@ jobs:
   docs-drift-gate:
     name: Documentation Coverage
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -31,7 +30,6 @@ jobs:
   healing-invariant:
     name: Healing Suggest-Only
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -51,7 +49,6 @@ jobs:
   polish-invariant:
     name: CLI Help + Docs Gate
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -72,7 +69,6 @@ jobs:
   certification-gate:
     name: E12 Certification Gate (C11)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -92,7 +88,6 @@ jobs:
   governance-kpi:
     name: E12 Governance KPI (C12)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -112,7 +107,6 @@ jobs:
   copilot-e10:
     name: E10 Explorer + Copilot (C8-C10)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -135,7 +129,6 @@ jobs:
   ai-interface-unit:
     name: AI InferenceClient Seam (unit)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -212,7 +205,6 @@ jobs:
   smoke-eject-node:
     name: Eject + Playwright E2E (node/npm)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -265,7 +257,6 @@ jobs:
   smoke-perf-k6:
     name: Perf Baseline (k6 load test)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -312,7 +303,6 @@ jobs:
   validate-smoke:
     name: Validate CLI Smoke (E2E against target API)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -424,7 +414,6 @@ jobs:
   mobile-pipeline-unit:
     name: Mobile Pipeline Unit Tests
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -447,7 +436,6 @@ jobs:
   snyk-scan:
     name: Snyk Dependency Scan
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -512,7 +500,6 @@ jobs:
 
   docs-parity:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -526,7 +513,6 @@ jobs:
   sandbox-provider-unit:
     name: Sandbox Provider Unit
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -543,7 +529,6 @@ jobs:
   policy-engine-unit:
     name: MCP Policy Engine Unit
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -560,7 +545,6 @@ jobs:
   model-runner-unit:
     name: Model Runner Adapter Unit
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -577,7 +561,6 @@ jobs:
   codeql-analysis:
     name: CodeQL Security Analysis
     runs-on: ubuntu-latest
-    continue-on-error: true
     permissions:
       actions: read
       contents: read
