@@ -105,3 +105,30 @@ def test_core_only_pr_is_clean():
     infra_hit = any(core_file.startswith(p) for p in INFRA_LAYERS)
     assert core_hit
     assert not infra_hit
+
+
+def test_changed_files_is_exported_to_python():
+    """The validation step must export CHANGED_FILES so the Python body can read it.
+
+    Regression: the step assigned ``CHANGED_FILES=...`` without ``export``, so
+    ``os.environ["CHANGED_FILES"]`` raised ``KeyError`` and the gate failed on
+    every PR ("KeyError: 'CHANGED_FILES'" in CI).
+    """
+    text = WORKFLOW.read_text(encoding="utf-8")
+    assert "export CHANGED_FILES=" in text, (
+        "layer-guard validation step must export CHANGED_FILES for the "
+        "inline Python (os.environ) to see it"
+    )
+
+
+def test_python_body_reads_env_not_shell_args():
+    """The inline Python must source its inputs from os.environ (exported).
+
+    Guards against a future rewrite that hardcodes paths or shells out, which
+    would silently decouple the gate from the PR diff.
+    """
+    text = WORKFLOW.read_text(encoding="utf-8")
+    for var in ("CHANGED_FILES", "CORE_LAYERS", "INFRA_LAYERS"):
+        assert f'os.environ["{var}"]' in text, (
+            f"layer-guard Python body must read {var} from os.environ"
+        )

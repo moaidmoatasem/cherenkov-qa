@@ -95,7 +95,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          cd web/ui && npm ci
+          cd cherenkov/web/ui && npm ci
 
       - name: Run unit tests
         run: |
