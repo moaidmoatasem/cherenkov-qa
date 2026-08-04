@@ -34,31 +34,31 @@ export const WORKSPACE_NAV_ITEMS: WorkspaceNavItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
-    description: 'Release Readiness & Run Grades',
+    description: 'Is your API release-ready?',
     icon: LayoutDashboard,
   },
   {
     id: 'authoring',
-    label: 'Authoring',
-    description: 'OpenAPI Spec & Intent Studio',
+    label: 'Generate Tests',
+    description: 'Turn a spec into a test suite',
     icon: Sparkles,
   },
   {
     id: 'triage',
     label: 'Triage',
-    description: 'HITL Review & Divergence Gate',
+    description: 'Confirm what the AI flagged',
     icon: CheckSquare,
   },
   {
     id: 'intelligence',
-    label: 'Intelligence',
-    description: 'GraphRAG Second Brain & SDD',
+    label: 'Knowledge',
+    description: "What Cherenkov's learned about your API",
     icon: Brain,
   },
   {
     id: 'settings',
     label: 'Settings',
-    description: 'Hardware, VLM & Governance',
+    description: 'Providers, hardware & access',
     icon: Settings,
   },
 ];
@@ -125,8 +125,8 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
 
       {/* Footer Branding Info */}
       <div className="pt-4 border-t border-border-subtle text-[10px] font-mono text-text-muted flex items-center justify-between">
-        <span>Clean Architecture v3.1</span>
-        <span className="text-cyan-400 font-semibold">SDD Active</span>
+        <span>Cherenkov QA</span>
+        <span className="text-cyan-400 font-semibold">Open Source</span>
       </div>
     </nav>
   );

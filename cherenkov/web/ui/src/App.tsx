@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './components/LoginPage';
 import AppHeader from './components/layout/AppHeader';
 import NavigationBar, { WorkspaceId } from './components/layout/NavigationBar';
+import JourneyStepper from './components/layout/JourneyStepper';
 import DashboardWorkspace from './components/workspaces/DashboardWorkspace';
 import AuthoringWorkspace from './components/workspaces/AuthoringWorkspace';
 import TriageWorkspace from './components/workspaces/TriageWorkspace';
@@ -73,11 +74,11 @@ function InnerApp() {
   );
 
   const workspaceTitles: Record<WorkspaceId, { title: string; subtitle: string }> = {
-    dashboard: { title: 'Dashboard Workspace', subtitle: 'Release Readiness Overview & Verdict History' },
-    authoring: { title: 'Authoring Workspace', subtitle: 'OpenAPI Spec Ingestion & Natural Language Intent Studio' },
-    triage: { title: 'Triage Workspace', subtitle: 'HITL Test Review Queue & Divergence Resolution' },
-    intelligence: { title: 'Intelligence Workspace', subtitle: 'GraphRAG Second Brain & SDD Memory Budget Cockpit' },
-    settings: { title: 'Settings Workspace', subtitle: 'Hardware, VLM Devices & System Governance' },
+    dashboard: { title: 'Dashboard', subtitle: 'Is your API release-ready?' },
+    authoring: { title: 'Generate Tests', subtitle: 'Turn a spec into a test suite' },
+    triage: { title: 'Triage', subtitle: 'Confirm what the AI flagged' },
+    intelligence: { title: 'Knowledge', subtitle: "What Cherenkov's learned about your API" },
+    settings: { title: 'Settings', subtitle: 'Providers, hardware & access' },
   };
 
   // Backend liveness — single source of truth for offline state
@@ -204,7 +205,7 @@ function InnerApp() {
           )}
 
           {showTour && !showOnboarding && (
-            <GuidedTour onClose={handleCloseTour} onNavigate={(tab) => handleSelectWorkspace('dashboard')} />
+            <GuidedTour onClose={handleCloseTour} onNavigate={handleSelectWorkspace} />
           )}
 
           {!online && <OfflineOverlay checking={checking} onRetry={refresh} lastCheckedAt={lastCheckedAt} />}
@@ -220,7 +221,14 @@ function InnerApp() {
             online={online}
           />
 
-          {/* 2. Main Layout Body with NavigationBar & 5 Workspaces */}
+          {/* 2. Journey Stepper -- always-visible "where am I in the loop" rail */}
+          <JourneyStepper
+            activeWorkspace={activeWorkspace}
+            onSelectWorkspace={handleSelectWorkspace}
+            pendingReviewCount={reviewPendingCount}
+          />
+
+          {/* 3. Main Layout Body with NavigationBar & 5 Workspaces */}
           <div className="flex-1 flex overflow-hidden">
             <NavigationBar
               activeWorkspace={activeWorkspace}

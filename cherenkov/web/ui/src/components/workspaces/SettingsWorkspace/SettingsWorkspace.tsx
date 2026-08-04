@@ -14,8 +14,8 @@ export const SettingsWorkspace: React.FC = () => {
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="settings-workspace">
       <PageHeader
-        title="Settings Workspace"
-        description="Project management, VLM & hardware devices, plain Playwright eject export, and system governance parameters."
+        title="Settings"
+        description="Projects, hardware & model providers, exporting your tests, and access control."
       />
 
       {/* 1. Project Management */}

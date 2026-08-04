@@ -13,8 +13,8 @@ export const IntelligenceWorkspace: React.FC = () => {
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="intelligence-workspace">
       <PageHeader
-        title="Intelligence Workspace"
-        description="GraphRAG Second Brain AI, SSE streaming chat copilot, and SDD memory token budget manager."
+        title="Knowledge"
+        description="What Cherenkov has learned about your API, plus a chat assistant to ask it questions."
       />
 
       {/* 1. SSE Streamed AI Chat Copilot */}
