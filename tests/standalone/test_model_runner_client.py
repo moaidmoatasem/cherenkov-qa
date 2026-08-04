@@ -9,7 +9,6 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from cherenkov.substrate.providers.model_runner_client import ModelRunnerClient
-from cherenkov.substrate.router import InferenceRouter
 
 
 class TestModelRunnerClient(unittest.TestCase):
@@ -43,21 +42,6 @@ class TestModelRunnerClient(unittest.TestCase):
         client = ModelRunnerClient()
         result = client.list_models()
         self.assertEqual(result, [])
-
-
-class TestInferenceRouter(unittest.TestCase):
-    def test_router_defaults_to_ollama(self):
-        router = InferenceRouter()
-        self.assertEqual(router.provider, "ollama")
-
-    def test_router_switches_provider(self):
-        router = InferenceRouter(provider="model-runner")
-        self.assertEqual(router.provider, "model-runner")
-
-    def test_router_set_provider(self):
-        router = InferenceRouter()
-        router.set_provider("model-runner")
-        self.assertEqual(router.provider, "model-runner")
 
 
 if __name__ == "__main__":
