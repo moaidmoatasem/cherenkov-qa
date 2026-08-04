@@ -1,0 +1,42 @@
+from __future__ import annotations
+
+import os
+
+os.environ.setdefault("CHERENKOV_ENV", "development")
+
+from fastapi.testclient import TestClient
+
+from cherenkov.web.api import app
+
+client = TestClient(app, raise_server_exceptions=False)
+
+
+def test_classify_failure_matches_known_divergence():
+    r = client.post(
+        "/api/v1/divergences/classify-failure",
+        json={"endpoint": "/pet/findByStatus", "method": "GET"},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["category"] == "product_bug"
+    assert body["divergence_id"] == "D-01"
+
+
+def test_classify_failure_unknown_endpoint():
+    r = client.post(
+        "/api/v1/divergences/classify-failure",
+        json={"endpoint": "/does/not/exist", "method": "GET"},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["category"] == "unknown"
+    assert body["divergence_id"] is None
+
+
+def test_classify_failure_defaults_method_to_get():
+    r = client.post(
+        "/api/v1/divergences/classify-failure",
+        json={"endpoint": "/pet/findByStatus"},
+    )
+    assert r.status_code == 200
+    assert r.json()["method"] == "GET"
