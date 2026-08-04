@@ -15,6 +15,7 @@ import AuthoringWorkspace from './components/workspaces/AuthoringWorkspace';
 import TriageWorkspace from './components/workspaces/TriageWorkspace';
 import IntelligenceWorkspace from './components/workspaces/IntelligenceWorkspace';
 import SettingsWorkspace from './components/workspaces/SettingsWorkspace';
+import MobilePilotScreen from './components/MobilePilotScreen';
 import CommandPalette from './components/CommandPalette';
 import GlobalShortcuts from './components/GlobalShortcuts';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -60,7 +61,10 @@ function InnerApp() {
     if (p === 'intelligence' || ['chat', 'knowledge', 'sdd', 'memory'].includes(p)) {
       return 'intelligence';
     }
-    if (p === 'settings' || ['projects', 'devices', 'mobile', 'eject', 'governance', 'ui-kit'].includes(p)) {
+    if (p === 'mobile') {
+      return 'mobile';
+    }
+    if (p === 'settings' || ['projects', 'devices', 'eject', 'governance', 'ui-kit'].includes(p)) {
       return 'settings';
     }
     return 'dashboard';
@@ -79,6 +83,7 @@ function InnerApp() {
     triage: { title: 'Triage', subtitle: 'Confirm what the AI flagged' },
     intelligence: { title: 'Knowledge', subtitle: "What Cherenkov's learned about your API" },
     settings: { title: 'Settings', subtitle: 'Providers, hardware & access' },
+    mobile: { title: 'Mobile', subtitle: 'Run & monitor a Maestro device pilot' },
   };
 
   // Backend liveness — single source of truth for offline state
@@ -183,7 +188,9 @@ function InnerApp() {
           {/* Command Palette */}
           <CommandPalette
             onNavigate={(tab) => {
-              if (tab === 'projects' || tab === 'settings' || tab === 'devices' || tab === 'eject' || tab === 'governance') {
+              if (tab === 'mobile') {
+                handleSelectWorkspace('mobile');
+              } else if (tab === 'projects' || tab === 'settings' || tab === 'devices' || tab === 'eject' || tab === 'governance') {
                 handleSelectWorkspace('settings');
               } else if (tab === 'setup' || tab === 'pipeline' || tab === 'author' || tab === 'explore') {
                 handleSelectWorkspace('authoring');
@@ -245,6 +252,7 @@ function InnerApp() {
               {activeWorkspace === 'triage' && <TriageWorkspace />}
               {activeWorkspace === 'intelligence' && <IntelligenceWorkspace />}
               {activeWorkspace === 'settings' && <SettingsWorkspace />}
+              {activeWorkspace === 'mobile' && <MobilePilotScreen />}
             </main>
           </div>
         </div>

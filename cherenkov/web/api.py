@@ -6,11 +6,14 @@ from __future__ import annotations
 
 from fastapi import (
     FastAPI,
+    WebSocket,
+    WebSocketDisconnect,
 )
 from fastapi.middleware.cors import CORSMiddleware
 
 from cherenkov.web.routes.deps import (
     lifespan,
+    manager,
 )
 
 app = FastAPI(
@@ -19,6 +22,22 @@ app = FastAPI(
     description="Localhost-first dashboard server for API conformance testing.",
     lifespan=lifespan,
 )
+
+
+@app.websocket("/ws/live")
+async def ws_live(websocket: WebSocket):
+    """Live pipeline event stream. The broadcaster (ConnectionManager in
+    deps.py) and every emitter (orchestrator._emit_event via
+    ops_routes.ws_event_callback) already existed; this endpoint was the
+    missing piece connecting client sockets to that broadcaster."""
+    await manager.connect(websocket)
+    try:
+        while True:
+            # The client doesn't send anything meaningful on this channel;
+            # this just keeps the connection open until it disconnects.
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        await manager.disconnect(websocket)
 
 # ── Phase 1: Knowledge Mesh API ─────────────────────────────────────────────────
 from cherenkov.knowledge.api.routes import router as knowledge_router
