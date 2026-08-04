@@ -3,6 +3,9 @@
 **Date:** 2026-08-02 (round 3 + lead verification)
 **HEAD:** `main` at `d9a161f`. **Certified green: 2064 passed, 2 failed** (pre-existing `test_verify_cmd.py` mock drift, tracked as #819). UI revamp `2e66658` build-verified (vite output matches committed dist hashes).
 **Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"`.
+
+> **Re-certified 2026-08-04 at `main` `530468a1`:** **2138 passed, 2 failed, 6 skipped** (8:30, HANDOVER filter). The 2 failures are the network-only `tests/integration/real_demo/test_demo_api_real.py` tests (added in #854; not `integration`-marked so the filter doesn't exclude them; they need a live demo server via `CHERENKOV_TEST_BASE_URL`). The prior `#819 test_verify_cmd.py` drift is **fixed** — it no longer fails. 6 skipped are service-gated (`slow`/`integration`/`e2e`/`k8s`/`ollama`/`mobile`). Prior handover counts (2064/2076/1746) were stale against the grown suite.
+
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
 
 ## Round 2 swarm result (2026-08-01 night)
