@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
+from cherenkov.execution.failure_classifier import classify_failure
 from cherenkov.web import divergences as divergence_store
 from cherenkov.web.routes.deps import verify_api_key
 
@@ -15,9 +16,20 @@ class DivergenceActionPayload(BaseModel):
     reason: str | None = None
 
 
+class ClassifyFailurePayload(BaseModel):
+    endpoint: str
+    method: str = "GET"
+
+
 @router.get("/api/v1/divergences")
 async def list_divergences():
     return divergence_store.list_divergences()
+
+
+@router.post("/api/v1/divergences/classify-failure")
+async def classify_failure_route(payload: ClassifyFailurePayload):
+    result = classify_failure(payload.endpoint, payload.method)
+    return result.model_dump()
 
 
 @router.post("/api/v1/divergences/act")
