@@ -91,6 +91,10 @@ from cherenkov.web.routes.divergence_routes import router as divergence_router
 
 app.include_router(divergence_router)
 
+from cherenkov.web.routes.certificate_routes import router as certificate_router
+
+app.include_router(certificate_router)
+
 from cherenkov.web.routes.mobile_routes import router as mobile_router
 
 app.include_router(mobile_router)
