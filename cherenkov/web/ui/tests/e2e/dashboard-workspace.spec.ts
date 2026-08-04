@@ -32,7 +32,7 @@ test.describe('Dashboard Workspace E2E Suite', () => {
     await page.getByTestId('nav-workspace-dashboard').click();
     await page.waitForTimeout(SETTLE);
     await expect(page.locator('#dashboard-workspace')).toBeVisible();
-    await expect(page.locator('#dashboard-workspace').getByRole('heading', { name: 'Dashboard Workspace' })).toBeVisible();
+    await expect(page.locator('#dashboard-workspace').getByRole('heading', { name: 'Dashboard', level: 1 })).toBeVisible();
   });
 
   test('ReleaseReadinessCard renders KPI score ring, verdict grade, and queue counts', async ({ page }) => {
