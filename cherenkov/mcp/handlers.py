@@ -1644,7 +1644,12 @@ def _tool_verify(args: dict[str, Any]) -> MCPToolCallResult:
             from cherenkov.divergence.coverage import compute_coverage
             from cherenkov.divergence.health import compute_health_score
 
-            probed_endpoints = [tuple(r.endpoint.split(" ", 1)) if r.endpoint and " " in r.endpoint else (r.endpoint or "", "") for r in reports]
+            probed_endpoints = [
+                (parts[0], parts[1])
+                if (parts := r.endpoint.split(" ", 1)) and len(parts) == 2
+                else (r.endpoint or "", "")
+                for r in reports
+            ]
             cov = compute_coverage(spec_dict, reports, probed_endpoints=probed_endpoints)
             if inp.coverage_report:
                 report["coverage"] = {

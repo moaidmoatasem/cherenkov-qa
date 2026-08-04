@@ -233,14 +233,10 @@ class SQLiteStorageAdapter(StoragePort):
         return self.insert(table, data)
 
     def query_by_id(
-        self,
-        table: str,
-        row_id: str,
-        id_column: str = "id",
-        columns: list[str] | None = None,
+        self, table: str, row_id: str, columns: list[str] | None = None
     ) -> dict[str, Any] | None:
         """Query by primary key (soft-deleted excluded)."""
-        q = StorageQuery(filters=[QueryFilter(column=id_column, operator="=", value=row_id)])
+        q = StorageQuery(filters=[QueryFilter(column="id", operator="=", value=row_id)])
         return self.query_one(table, q, columns)
 
     def soft_delete(self, table: str, row_id: str, id_column: str = "id") -> int:
