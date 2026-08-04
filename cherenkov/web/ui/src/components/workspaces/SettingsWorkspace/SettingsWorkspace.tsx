@@ -5,6 +5,7 @@
 
 import React from 'react';
 import ProjectManager from './ProjectManager';
+import ModelProviderSettings from './ModelProviderSettings';
 import DeviceManager from './DeviceManager';
 import EjectSuitePanel from './EjectSuitePanel';
 import GovernanceSettings from './GovernanceSettings';
@@ -21,7 +22,10 @@ export const SettingsWorkspace: React.FC = () => {
       {/* 1. Project Management */}
       <ProjectManager />
 
-      {/* 2. Hardware & VLM Device Diagnostics */}
+      {/* 2. AI Model Provider & AirLLM */}
+      <ModelProviderSettings />
+
+      {/* 3. Hardware & VLM Device Diagnostics */}
       <DeviceManager />
 
       {/* 3. Plain Playwright Suite Eject Exporter */}
