@@ -4,9 +4,9 @@
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { ShieldCheck, ShieldAlert, ShieldX, Activity } from 'lucide-react';
-import { fetchSignals, fetchMetricsData, fetchTruthMapData } from '../../../lib/api';
-import { Card, Skeleton } from '../../ui';
+import { ShieldCheck, ShieldAlert, ShieldX, Activity, ShieldQuestion } from 'lucide-react';
+import { fetchTruthMapData, fetchDivergences } from '../../../lib/api';
+import { Card, Skeleton, EmptyState } from '../../ui';
 
 export interface EndpointIntegrity {
   id: string;
@@ -15,6 +15,17 @@ export interface EndpointIntegrity {
   integrityScore: number;
   driftCount: number;
 }
+
+// Severity -> points deducted from a 98-point baseline. Mirrors the same
+// severity vocabulary the backend divergence corpus uses (see
+// cherenkov/web/divergences.py), so this reads real audit findings rather
+// than a hardcoded score.
+const SEVERITY_PENALTY: Record<string, number> = {
+  critical: 55,
+  high: 35,
+  medium: 18,
+  low: 8,
+};
 
 export const IntegrityHeatmap: React.FC<{ endpoints?: EndpointIntegrity[] }> = ({ endpoints: initialEndpoints }) => {
   const [endpoints, setEndpoints] = useState<EndpointIntegrity[]>(initialEndpoints || []);
@@ -30,36 +41,36 @@ export const IntegrityHeatmap: React.FC<{ endpoints?: EndpointIntegrity[] }> = (
     const loadLiveIntegrity = async () => {
       try {
         setIsLoading(true);
-        const [truthMap, signals] = await Promise.all([
+        const [truthMap, divergences] = await Promise.all([
           fetchTruthMapData().catch(() => []),
-          fetchSignals().catch(() => ({ coverage: [] })),
+          fetchDivergences().catch(() => []),
         ]);
 
-        if (truthMap && truthMap.length > 0) {
-          const mapped: EndpointIntegrity[] = truthMap.map((node, i) => {
-            const [method, ...pathParts] = node.endpoint.split(' ');
-            const path = pathParts.join(' ') || node.endpoint;
-            const integrityScore = node.hasDivergence ? 55 : 95;
-            return {
-              id: `ep-${i}`,
-              method: method || 'GET',
-              path: path || node.endpoint,
-              integrityScore,
-              driftCount: node.hasDivergence ? 2 : 0,
-            };
-          });
-          setEndpoints(mapped);
-        } else {
-          // Default live endpoints sample
-          setEndpoints([
-            { id: 'ep-1', method: 'GET', path: '/api/v1/overview', integrityScore: 98, driftCount: 0 },
-            { id: 'ep-2', method: 'GET', path: '/api/v1/runs', integrityScore: 92, driftCount: 0 },
-            { id: 'ep-3', method: 'POST', path: '/api/v1/run', integrityScore: 88, driftCount: 1 },
-            { id: 'ep-4', method: 'GET', path: '/api/v1/divergences', integrityScore: 70, driftCount: 3 },
-            { id: 'ep-5', method: 'POST', path: '/api/v1/review/approve', integrityScore: 95, driftCount: 0 },
-            { id: 'ep-6', method: 'POST', path: '/api/v1/chat/sessions', integrityScore: 91, driftCount: 0 },
-          ]);
-        }
+        // Only count divergences that are still an open finding -- a
+        // rejected/false-positive divergence shouldn't drag the score down.
+        const activeDivergences = (divergences || []).filter((d) => d.status !== 'rejected');
+
+        const knownEndpoints = new Set<string>([
+          ...(truthMap || []).map((n) => n.endpoint),
+          ...activeDivergences.map((d) => d.endpoint),
+        ]);
+
+        const mapped: EndpointIntegrity[] = Array.from(knownEndpoints).map((endpoint, i) => {
+          const [method, ...pathParts] = endpoint.split(' ');
+          const path = pathParts.join(' ') || endpoint;
+          const matches = activeDivergences.filter((d) => d.endpoint === endpoint);
+          const penalty = matches.reduce((sum, d) => sum + (SEVERITY_PENALTY[d.severity] || 10), 0);
+          const integrityScore = Math.max(5, 98 - penalty);
+          return {
+            id: `ep-${i}`,
+            method: method || 'GET',
+            path,
+            integrityScore,
+            driftCount: matches.length,
+          };
+        });
+
+        setEndpoints(mapped);
       } catch {
         setEndpoints([]);
       } finally {
@@ -118,6 +129,12 @@ export const IntegrityHeatmap: React.FC<{ endpoints?: EndpointIntegrity[] }> = (
           <Skeleton className="h-24 rounded-lg" />
           <Skeleton className="h-24 rounded-lg" />
         </div>
+      ) : sortedEndpoints.length === 0 ? (
+        <EmptyState
+          icon={ShieldQuestion}
+          title="No integrity signal yet"
+          description="Run a generation and validate against your API to see per-endpoint drift and risk here."
+        />
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {sortedEndpoints.map((ep) => (
