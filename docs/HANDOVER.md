@@ -16,7 +16,7 @@
   - CLI wired properly to `cherenkov/enterprise/saml.py` and `cherenkov/enterprise/rbac.py` placeholders.
 - **MCP Stubs Completed (Issues 441, 447)**: Verified that all MCP handlers (`run_conformance_check`, `get_last_report`, `list_drift_findings`, `get_tightening_suggestions`, `explain_finding`, `run_k6_perf`, and compliance exports) are implemented in `cherenkov/mcp/handlers.py` and registered in `_TOOL_DISPATCH`.
 - **UI/UX Revamp & Automation**: An end-to-end rewrite of the dashboard into a modern 5-Workspace architecture (`Dashboard`, `Authoring`, `Triage`, `Intelligence`, `Settings`). 22 live FastAPI endpoints wired. Legacy mocks dropped. The `teamwork_preview` subagent fully implemented 33 Playwright E2E tests validating the workflows, pushing everything to `origin/main`.
-- **Integrity Status**: Full test suite passes completely (2076 passed). Production build succeeds with 0 tsc errors.
+- **Integrity Status**: Full test suite passes completely (2076 passed) — *superseded 2026-08-04: re-certified 2138 passed / 2 failed (network-only real_demo) / 6 skipped at `530468a1`, see root [`HANDOVER.md`](../HANDOVER.md)*. Production build succeeds with 0 tsc errors.
 
 ---
 
@@ -391,7 +391,7 @@ design invariants, read [docs/STATUS.md](STATUS.md).
 1. **[docs/STATUS.md](STATUS.md)** — canonical state of every phase and track.
 2. **[docs/PHASE_PLAN.md](PHASE_PLAN.md)** — the consolidated Phase -1 → 8
    plan, parallel tracks, dependencies, and all ~105 GitHub issues (#277–#391).
-3. **[docs/HANDOVER.md](HANDOVER.md)** — this file.
+3. **[root `HANDOVER.md`](../HANDOVER.md)** — the canonical status anchor.
 4. The relevant [ADR](adr/) before touching a module.
 5. [engineering/BEST_PRACTICES.md](engineering/BEST_PRACTICES.md) before writing code.
 
