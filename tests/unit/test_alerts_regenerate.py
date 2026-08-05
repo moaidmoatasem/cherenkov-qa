@@ -1,0 +1,307 @@
+"""Unit tests for Phase 14 alert policies (#768) + auto-regenerate mode (#769)."""
+from __future__ import annotations
+
+import os
+
+os.environ.setdefault("CHERENKOV_ENV", "development")
+
+from unittest.mock import patch
+
+import pytest
+from fastapi.testclient import TestClient
+
+from cherenkov.adapters.notifiers.registry import NotifierRegistry
+from cherenkov.core.events import CHERENKOVEvent, EventCategory
+from cherenkov.persistence.run_store import RunRecord
+from cherenkov.web import alerts as alerts_mod
+from cherenkov.web import coverage_map
+from cherenkov.web import regenerate as regen_mod
+from cherenkov.web.api import app
+
+
+# ── Shared fakes ──────────────────────────────────────────────────────────────
+
+
+class _FakeStore:
+    """Minimal stand-in for RunStore returning a fixed record list."""
+
+    def __init__(self, records):
+        self._records = records
+
+    def list(self, target_url=None, command=None, limit=50):
+        return self._records[:limit]
+
+
+def _run(
+    coverage_pct,
+    verdict="PASS",
+    divergence_count=0,
+    timestamp="2026-08-01T00:00:00Z",
+    target_url="https://example.test",
+):
+    return RunRecord(
+        run_id=f"run-{coverage_pct}-{timestamp}",
+        command="verify",
+        target_url=target_url,
+        coverage_pct=coverage_pct,
+        verdict=verdict,
+        divergence_count=divergence_count,
+        timestamp=timestamp,
+    )
+
+
+@pytest.fixture
+def _patched_store():
+    from cherenkov.persistence import run_store as rs_module
+
+    def _inner(records):
+        store = _FakeStore(records)
+        return patch.object(rs_module, "get_run_store", return_value=store)
+
+    return _inner
+
+
+# ── TestAlertEngine ───────────────────────────────────────────────────────────
+
+
+class _RecordingNotifier:
+    """Stub notifier that records emitted events."""
+
+    name = "recorder"
+
+    def __init__(self):
+        self.events: list[CHERENKOVEvent] = []
+
+    def send(self, report):  # noqa: D401
+        return True
+
+    def notify_event(self, event: CHERENKOVEvent) -> None:
+        self.events.append(event)
+
+
+class TestAlertEngine:
+    def test_no_breach_no_alert(self, _patched_store):
+        store = _FakeStore([_run(100.0, verdict="PASS", divergence_count=0)])
+        eng = alerts_mod.AlertEngine(notifiers=[], now=1700000000.0)
+        res = eng.evaluate("https://example.test", store=store)
+        assert res.alerted is False
+        assert res.detail == "no policy breach"
+
+    def test_breach_emits_event_to_registered_notifiers(self, _patched_store):
+        store = _FakeStore(
+            [
+                _run(100.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+                _run(40.0, verdict="FAIL", divergence_count=5, timestamp="2026-08-02T00:00:00Z"),
+            ]
+        )
+        notifier = _RecordingNotifier()
+        eng = alerts_mod.AlertEngine(notifiers=[notifier], now=1700000000.0)
+        res = eng.evaluate("https://example.test", store=store)
+        assert res.alerted is True
+        assert notifier.events[0].name == "conformance.drift"
+        assert notifier.events[0].category == EventCategory.SYSTEM
+        assert res.notified["recorder"] is True
+
+    def test_cooldown_suppresses_repeat(self, _patched_store):
+        store = _FakeStore(
+            [
+                _run(100.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+                _run(40.0, verdict="FAIL", divergence_count=5, timestamp="2026-08-02T00:00:00Z"),
+            ]
+        )
+        notifier = _RecordingNotifier()
+        policy = alerts_mod.AlertPolicy(cooldown_seconds=600.0)
+        eng = alerts_mod.AlertEngine(
+            notifiers=[notifier], now=1700000000.0
+        )
+        first = eng.evaluate("https://example.test", policy, store=store)
+        second = eng.evaluate("https://example.test", policy, store=store)
+        assert first.alerted is True
+        assert second.alerted is False
+        assert "cooldown" in second.detail
+
+    def test_min_divergences_threshold(self, _patched_store):
+        # One divergence below the threshold → no alert.
+        store = _FakeStore([_run(100.0, verdict="FAIL", divergence_count=2)])
+        eng = alerts_mod.AlertEngine(notifiers=[], now=1700000000.0)
+        policy = alerts_mod.AlertPolicy(min_divergences=5)
+        res = eng.evaluate("https://example.test", policy, store=store)
+        assert res.alerted is False
+
+
+# ── TestAutoRegenerateMode ───────────────────────────────────────────────────
+
+
+class TestAutoRegenerateMode:
+    @staticmethod
+    def _regen_calls(target_url):
+        """Build a mode whose regenerate_fn records calls instead of running."""
+        calls = []
+
+        def fn(tu):
+            calls.append(tu)
+            return {"ran": True, "target": tu}
+
+        mode = regen_mod.AutoRegenerateMode(
+            regenerate_fn=fn, notifiers=[], now=1700000000.0
+        )
+        mode._calls = calls
+        return mode, calls
+
+    def test_no_breach_no_trigger(self, _patched_store):
+        store = _FakeStore([_run(100.0, verdict="PASS", divergence_count=0)])
+        mode, _ = self._regen_calls("https://example.test")
+        d = mode.evaluate("https://example.test", store=store)
+        assert d.trigger is False
+        assert d.executed is False
+
+    def test_breach_triggers_regenerate(self, _patched_store):
+        store = _FakeStore(
+            [
+                _run(80.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+                _run(40.0, verdict="FAIL", divergence_count=3, timestamp="2026-08-02T00:00:00Z"),
+            ]
+        )
+        mode, calls = self._regen_calls("https://example.test")
+        d = mode.evaluate("https://example.test", store=store)
+        assert d.trigger is True
+        assert d.executed is True
+        assert calls == ["https://example.test"]
+
+    def test_cooldown_blocks_second_trigger(self, _patched_store):
+        store = _FakeStore(
+            [
+                _run(80.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+                _run(40.0, verdict="FAIL", divergence_count=3, timestamp="2026-08-02T00:00:00Z"),
+            ]
+        )
+        policy = regen_mod.RegenPolicy(cooldown_seconds=600.0)
+        mode, calls = self._regen_calls("https://example.test")
+        mode.evaluate("https://example.test", policy, store=store)
+        second = mode.evaluate("https://example.test", policy, store=store)
+        assert second.trigger is False
+        assert len(calls) == 1
+
+    def test_max_regenerations_cap(self, _patched_store):
+        store = _FakeStore(
+            [
+                _run(40.0, verdict="FAIL", divergence_count=3),
+            ]
+        )
+        policy = regen_mod.RegenPolicy(cooldown_seconds=0.0, max_regenerations=0)
+        mode, calls = self._regen_calls("https://example.test")
+        d = mode.evaluate("https://example.test", policy, store=store)
+        # A regression exists but cap reached → suppressed.
+        assert d.trigger is False
+        assert "max_regenerations" in d.reason
+
+    def test_emits_pipeline_event(self, _patched_store):
+        store = _FakeStore(
+            [
+                _run(80.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+                _run(40.0, verdict="FAIL", divergence_count=3, timestamp="2026-08-02T00:00:00Z"),
+            ]
+        )
+        mode, _ = self._regen_calls("https://example.test")
+        d = mode.evaluate("https://example.test", store=store)
+        assert d.event is not None
+        assert d.event.name == "regenerate.scheduled"
+        assert d.event.category == EventCategory.PIPELINE
+
+
+# ── Route tests ──────────────────────────────────────────────────────────────
+
+
+class _PatchRunStore:
+    """Patch run_store.get_run_store to return a fixed FakeStore."""
+
+    def __init__(self, records):
+        self._fake = _FakeStore(records)
+
+    def __enter__(self):
+        from cherenkov.persistence import run_store as rs_module
+
+        self._cm = patch.object(rs_module, "get_run_store", return_value=self._fake)
+        self._cm.__enter__()
+        return self
+
+    def __exit__(self, *a):
+        self._cm.__exit__(*a)
+
+
+class TestAlertRoutes:
+    def test_get_alert_policy(self):
+        client = TestClient(app, raise_server_exceptions=False)
+        r = client.get("/api/v1/alerts/policy")
+        assert r.status_code == 200
+        body = r.json()
+        assert "min_divergences" in body
+        assert "verdict_severity" in body
+
+    def test_evaluate_alert_breach(self):
+        with _PatchRunStore(
+            [
+                _run(80.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+                _run(40.0, verdict="FAIL", divergence_count=3, timestamp="2026-08-02T00:00:00Z"),
+            ]
+        ):
+            client = TestClient(app, raise_server_exceptions=False)
+            r = client.post(
+                "/api/v1/alerts/evaluate", params={"target_url": "https://example.test"}
+            )
+            assert r.status_code == 200
+            body = r.json()
+            assert body["alerted"] is True
+            assert "conformance.drift" in (body.get("event") or {}).get("name", "")
+
+
+class TestRegenerateRoutes:
+    def test_get_regen_policy(self):
+        client = TestClient(app, raise_server_exceptions=False)
+        r = client.get("/api/v1/regenerate/policy")
+        assert r.status_code == 200
+        body = r.json()
+        assert "trigger_on" in body
+        assert "max_regenerations" in body
+
+    def test_evaluate_regenerate_trigger(self):
+        with _PatchRunStore(
+            [
+                _run(80.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+                _run(40.0, verdict="FAIL", divergence_count=3, timestamp="2026-08-02T00:00:00Z"),
+            ]
+        ):
+            client = TestClient(app, raise_server_exceptions=False)
+            r = client.post(
+                "/api/v1/regenerate/evaluate", params={"target_url": "https://example.test"}
+            )
+            assert r.status_code == 200
+            body = r.json()
+            assert body["trigger"] is True
+            assert body["executed"] is True
+
+    def test_evaluate_regenerate_no_breach(self):
+        with _PatchRunStore([_run(100.0, verdict="PASS", divergence_count=0)]):
+            client = TestClient(app, raise_server_exceptions=False)
+            r = client.post(
+                "/api/v1/regenerate/evaluate", params={"target_url": "https://example.test"}
+            )
+            assert r.status_code == 200
+            assert r.json()["trigger"] is False
+
+    def test_trigger_regenerate_manual(self):
+        """POST /api/v1/regenerate/ (manual trigger) forces a regenerate cycle."""
+        with _PatchRunStore(
+            [
+                _run(100.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+            ]
+        ):
+            client = TestClient(app, raise_server_exceptions=False)
+            r = client.post(
+                "/api/v1/regenerate/",
+                params={"target_url": "https://example.test", "reason": "manual"},
+            )
+            assert r.status_code == 200
+            body = r.json()
+            assert body["target_url"] == "https://example.test"
+            assert "executed" in body
