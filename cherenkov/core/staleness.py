@@ -33,6 +33,10 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
+from cherenkov.core.errors import get_logger
+
+_log = get_logger("STALENESS")
+
 _MANIFEST_PATH = Path(".cherenkov/test_manifest.json")
 
 
@@ -52,7 +56,12 @@ def _file_sha256(path: str | Path) -> str:
     try:
         data = Path(path).read_bytes()
         return hashlib.sha256(data).hexdigest()
-    except OSError:
+    except OSError as exc:
+        _log.warning(
+            "cannot hash file for staleness check — treating it as changed",
+            path=str(path),
+            error=f"{type(exc).__name__}: {exc}",
+        )
         return ""
 
 
@@ -66,7 +75,12 @@ class StalenessManifest:
         if self._path.exists():
             try:
                 return json.loads(self._path.read_text(encoding="utf-8"))
-            except Exception:
+            except (OSError, ValueError) as exc:
+                _log.warning(
+                    "staleness manifest unreadable — treating it as empty",
+                    path=str(self._path),
+                    error=f"{type(exc).__name__}: {exc}",
+                )
                 return {}
         return {}
 

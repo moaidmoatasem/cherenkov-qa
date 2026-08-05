@@ -5,6 +5,7 @@ template variable substitution, and environment injection.
 """
 from __future__ import annotations
 
+import logging
 import os
 import shlex
 import signal
@@ -20,6 +21,8 @@ from cherenkov.hooks.domain.models import (
     HookResult,
     HookStatus,
 )
+
+_log = logging.getLogger(__name__)
 
 
 class SubprocessHookExecutor:
@@ -99,8 +102,12 @@ class SubprocessHookExecutor:
             if sys.platform != "win32":
                 try:
                     os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-                except Exception:
-                    pass
+                except OSError:
+                    _log.warning(
+                        "could not terminate hook process group for pid %s",
+                        proc.pid,
+                        exc_info=True,
+                    )
             proc.kill()
             stdout, stderr = proc.communicate()
             duration_ms = int((time.monotonic() - start) * 1000)

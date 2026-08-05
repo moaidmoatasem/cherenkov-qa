@@ -357,7 +357,12 @@ class Reflector:
                 )
                 self._reinforce_idiom(h)
                 count += 1
-            except Exception:
+            except Exception as exc:
+                self.log.warning(
+                    "skipping verdict that could not reinforce an idiom",
+                    hypothesis_id=v.hypothesis_id,
+                    error=f"{type(exc).__name__}: {exc}",
+                )
                 continue
         self.log.info(
             "learn_from_history complete",

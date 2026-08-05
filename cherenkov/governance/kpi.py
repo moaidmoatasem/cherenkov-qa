@@ -260,7 +260,8 @@ class GovernanceCollector:
                 }
                 for r in rows
             ]
-        except Exception:
+        except Exception as e:
+            self.log.error("could not read governance KPI history", error=str(e))
             return []
 
     def get_trend(self, metric: str = "health_score", limit: int = 10) -> list[float]:
