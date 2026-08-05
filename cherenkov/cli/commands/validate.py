@@ -248,6 +248,8 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
             sid = r.get("scenario_id", "?")
             err = f"  {r.get('error', '')[:120]}" if not r.get("passed", False) else ""
             click.echo(click.style(f"  {icon}  {sid}{err}", fg=color))
+            for suggestion in r.get("suggestions", []):
+                click.echo(f"    consider -> {suggestion}")
 
     click.echo(click.style(
         f"\nResults: {_passed}/{_total} passed  [{results.get('status', 'done').upper()}]",
