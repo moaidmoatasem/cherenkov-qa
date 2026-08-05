@@ -14,6 +14,7 @@ Examples:
   # CI gate (exit 1 if FAIL):
   cherenkov certify --url http://localhost:8080 --fail-on-fail --output cert.json
 """
+
 from __future__ import annotations
 
 import json
@@ -21,8 +22,8 @@ import sys
 from pathlib import Path
 
 import click
-import requests
 
+from cherenkov.cli.loaders import load_spec
 from cherenkov.core.certificate import compliance_profile, issue_certificate, load_certificate
 from cherenkov.divergence.coverage import compute_coverage
 from cherenkov.divergence.proof_run import PETSTORE_BASE_URL, run_proof
@@ -32,39 +33,57 @@ _VERDICT_COLOUR = {"PASS": "green", "WARN": "yellow", "FAIL": "red"}
 
 @click.command("certify")
 @click.option(
-    "--url", "-u", default=None,
+    "--url",
+    "-u",
+    default=None,
     help="Base URL of the live server.  Defaults to public Petstore demo.",
 )
 @click.option(
-    "--spec", "-s", default=None,
+    "--spec",
+    "-s",
+    default=None,
     help="Path or URL to the OpenAPI spec JSON/YAML.  Omit for built-in Petstore spec.",
 )
 @click.option(
-    "--llm/--offline", default=False,
+    "--llm/--offline",
+    default=False,
     help="Use the LLM Skeptic (requires Ollama).  Default: offline.",
 )
 @click.option(
-    "--output", "-o", default=None,
+    "--output",
+    "-o",
+    default=None,
     help="Write the JSON certificate to this file.",
 )
 @click.option(
-    "--signing-key", default=None, envvar="CHERENKOV_CERT_KEY",
+    "--signing-key",
+    default=None,
+    envvar="CHERENKOV_CERT_KEY",
     help="Hex-encoded 32-byte signing key.  Also read from CHERENKOV_CERT_KEY env var.",
 )
 @click.option(
-    "--fail-on-fail", is_flag=True, default=False,
+    "--fail-on-fail",
+    is_flag=True,
+    default=False,
     help="Exit with code 1 if the certificate verdict is FAIL (CI gate mode).",
 )
 @click.option(
-    "--verify", "verify_file", default=None,
+    "--verify",
+    "verify_file",
+    default=None,
     help="Verify an existing certificate file rather than running a new proof.",
 )
 @click.option(
-    "--compliance", is_flag=True, default=False,
+    "--compliance",
+    is_flag=True,
+    default=False,
     help="Print the compliance evidence mapping (EU AI Act / SOC 2 / ISO 25010) after issuing.",
 )
 @click.option(
-    "--coverage-report", "coverage_report", is_flag=True, default=False,
+    "--coverage-report",
+    "coverage_report",
+    is_flag=True,
+    default=False,
     help="Print a spec coverage-gap report showing which endpoints were probed (requires --spec).",
 )
 def certify_cmd(
@@ -109,7 +128,7 @@ def certify_cmd(
 
     spec_dict: dict | None = None
     if spec is not None:
-        spec_dict = _load_spec(spec)
+        spec_dict = load_spec(spec)
         if spec_dict is None:
             sys.exit(2)
 
@@ -123,15 +142,16 @@ def certify_cmd(
 
     click.echo("\nCHERENKOV certify")
     if using_demo:
-        click.echo(click.style(
-            "  (demo mode — no --url given, probing public Petstore)", fg="yellow"
-        ))
+        click.echo(
+            click.style("  (demo mode — no --url given, probing public Petstore)", fg="yellow")
+        )
     click.echo(f"  Target  : {effective_url}")
     click.echo(f"  Spec    : {spec or 'built-in Petstore demo'}")
     click.echo(f"  Mode    : {'LLM Skeptic' if llm else 'offline (no LLM required)'}")
     click.echo("")
 
     from cherenkov.cli.commands.verify import _assert_reachable
+
     _assert_reachable(effective_url)
 
     probed_endpoints: list[tuple[str, str]] = []
@@ -166,13 +186,12 @@ def certify_cmd(
             )
         else:
             from cherenkov.cli.commands.verify import _print_coverage
+
             cov = compute_coverage(spec_dict, reports, probed_endpoints=probed_endpoints)
             _print_coverage(cov)
 
     if output:
-        Path(output).write_text(
-            json.dumps(cert.model_dump(), indent=2, default=str)
-        )
+        Path(output).write_text(json.dumps(cert.model_dump(), indent=2, default=str))
         click.echo(f"\nCertificate written to {output}")
 
     if fail_on_fail and cert.verdict == "FAIL":
@@ -180,6 +199,7 @@ def certify_cmd(
 
 
 # ── helpers ────────────────────────────────────────────────────────────────────
+
 
 def _print_certificate(cert) -> None:
     width = 68
@@ -192,10 +212,12 @@ def _print_certificate(cert) -> None:
     click.echo(f"  ID        : {cert.cert_id}")
     click.echo(f"  Issued    : {cert.issued_at}")
     click.echo(f"  Subject   : {cert.subject.base_url}")
-    click.echo(f"  Divergences: {cert.summary.total}"
-               f"  (HIGH={cert.summary.high}"
-               f"  MEDIUM={cert.summary.medium}"
-               f"  LOW={cert.summary.low})")
+    click.echo(
+        f"  Divergences: {cert.summary.total}"
+        f"  (HIGH={cert.summary.high}"
+        f"  MEDIUM={cert.summary.medium}"
+        f"  LOW={cert.summary.low})"
+    )
     fp_short = cert.fingerprint[:16] + "..." if len(cert.fingerprint) > 16 else cert.fingerprint
     click.echo(f"  Fingerprint: {fp_short}")
     if cert.signature:
@@ -245,33 +267,11 @@ def _verify_cert_file(path: str, signing_key: str | None) -> None:
     click.echo(f"  Verdict     : {click.style(cert.verdict, fg=verdict_colour, bold=True)}")
     click.echo(f"  Issued      : {cert.issued_at}")
     click.echo(f"  Subject     : {cert.subject.base_url}")
-    integrity = click.style("VALID", fg="green", bold=True) if valid else click.style("TAMPERED", fg="red", bold=True)
+    integrity = (
+        click.style("VALID", fg="green", bold=True)
+        if valid
+        else click.style("TAMPERED", fg="red", bold=True)
+    )
     click.echo(f"  Integrity   : {integrity}")
     if not valid:
         sys.exit(3)
-
-
-def _load_spec(spec_path: str) -> dict | None:
-    if spec_path.startswith("http://") or spec_path.startswith("https://"):
-        try:
-            resp = requests.get(spec_path, timeout=15)
-            resp.raise_for_status()
-            raw = resp.content
-        except Exception as exc:
-            click.echo(f"[ERROR] Could not fetch spec: {exc}", err=True)
-            return None
-    else:
-        p = Path(spec_path)
-        if not p.exists():
-            click.echo(f"[ERROR] Spec file not found: {spec_path}", err=True)
-            return None
-        raw = p.read_bytes()
-
-    try:
-        if spec_path.endswith((".yaml", ".yml")):
-            import yaml
-            return yaml.safe_load(raw)
-        return json.loads(raw)
-    except Exception as exc:
-        click.echo(f"[ERROR] Could not parse spec: {exc}", err=True)
-        return None

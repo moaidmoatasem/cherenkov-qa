@@ -4,6 +4,10 @@ from typing import Any
 
 import requests
 
+from cherenkov.core.errors import get_logger
+
+_log = get_logger("WEBHOOK_DISPATCHER")
+
 
 # Domain
 @dataclass
@@ -24,6 +28,7 @@ class HttpWebhookDispatcher(WebhookDispatcherPort):
         self.max_retries = max_retries
 
     def dispatch(self, event: WebhookEvent) -> bool:
+        last_error = "no attempt made"
         for attempt in range(self.max_retries):
             try:
                 response = requests.post(
@@ -33,6 +38,22 @@ class HttpWebhookDispatcher(WebhookDispatcherPort):
                 )
                 if response.status_code in (200, 201, 202, 204):
                     return True
-            except requests.RequestException:
-                pass
+                last_error = f"HTTP {response.status_code}"
+            except requests.RequestException as exc:
+                last_error = f"{type(exc).__name__}: {exc}"
+            _log.warning(
+                "webhook delivery attempt failed",
+                url=self.target_url,
+                event_type=event.event_type,
+                attempt=attempt + 1,
+                max_retries=self.max_retries,
+                error=last_error,
+            )
+        _log.error(
+            "webhook delivery failed after all retries",
+            url=self.target_url,
+            event_type=event.event_type,
+            attempts=self.max_retries,
+            error=last_error,
+        )
         return False

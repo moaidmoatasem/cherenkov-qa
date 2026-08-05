@@ -9,7 +9,10 @@ import os
 import xml.etree.ElementTree as ET
 from collections.abc import Iterator
 
+from cherenkov.core.errors import get_logger
 from cherenkov.sources.accessibility.contracts import AccessibilityScenario, PageTarget
+
+_log = get_logger("A11Y_SOURCE")
 
 
 class AccessibilitySourceAdapter:
@@ -20,6 +23,7 @@ class AccessibilitySourceAdapter:
 
     def iter_scenarios(self) -> Iterator[AccessibilityScenario]:
         if not os.path.exists(self.source_path):
+            _log.warning("accessibility source not found", path=self.source_path)
             return
 
         if self.source_path.endswith(".xml"):
@@ -55,8 +59,12 @@ class AccessibilitySourceAdapter:
                     scenario_id=scenario_id,
                     page_target=PageTarget(url=url, description=f"Audit {url}"),
                 )
-        except ET.ParseError:
-            pass
+        except ET.ParseError as exc:
+            _log.error(
+                "sitemap is not valid XML — no accessibility scenarios produced",
+                path=self.source_path,
+                error=str(exc),
+            )
 
     def _parse_urls_txt(self) -> Iterator[AccessibilityScenario]:
         with open(self.source_path, encoding="utf-8") as f:

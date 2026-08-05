@@ -1,0 +1,242 @@
+"""
+CHERENKOV substrate/providers/openai_compat.py — base for /v1/chat/completions APIs.
+
+OpenAI, NemoClaw's OpenShell runtime and anything else speaking the same wire
+format share one request shape, one usage-accounting block and one JSON retry
+ladder. Subclasses set `base_url`/`api_key`/`timeout` and route HTTP through
+`_post`/`_get` so each provider module keeps its own `requests` seam.
+"""
+
+from __future__ import annotations
+
+import time
+from typing import Any
+
+import requests
+
+from cherenkov.core.errors import ProviderJSONError, get_logger
+from cherenkov.substrate.interfaces import InferenceClient
+from cherenkov.substrate.text_utils import json_repair, strip_fences, strip_think, try_json
+
+
+def _vision_messages(system_prompt: str, user_prompt: str, image_data: str) -> list[dict]:
+    return [
+        {"role": "system", "content": system_prompt},
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": user_prompt},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/png;base64,{image_data}"},
+                },
+            ],
+        },
+    ]
+
+
+class OpenAICompatibleClient(InferenceClient):
+    """InferenceClient for any OpenAI-compatible /chat/completions endpoint."""
+
+    provider_label: str = "OpenAI"
+    log_name: str = "openai"
+    #: Reasoning models emit <think> blocks that must not reach the caller.
+    strips_reasoning: bool = False
+
+    base_url: str = ""
+    api_key: str = ""
+    timeout: int = 300
+
+    def __init__(self) -> None:
+        self._token_usage: dict[str, int] = {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "reprompts": 0,
+        }
+
+    # ── transport seam ────────────────────────────────────────────────────────
+
+    def _post(self, url: str, *, headers: dict, json: dict, timeout: int) -> Any:
+        return requests.post(url, headers=headers, json=json, timeout=timeout)
+
+    def _get(self, url: str, *, headers: dict, timeout: int) -> Any:
+        return requests.get(url, headers=headers, timeout=timeout)
+
+    def _headers(self) -> dict[str, str]:
+        headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+        return headers
+
+    def _reset_usage(self) -> None:
+        self._token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reprompts": 0}
+
+    def _request_content(self, body: dict) -> str:
+        """POST a chat-completions body, record token usage, return the content."""
+        resp = self._post(
+            f"{self.base_url}/chat/completions",
+            headers=self._headers(),
+            json=body,
+            timeout=self.timeout,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        usage = data.get("usage", {})
+        self._token_usage["prompt_tokens"] = usage.get("prompt_tokens", 0)
+        self._token_usage["completion_tokens"] = usage.get("completion_tokens", 0)
+        return data["choices"][0]["message"]["content"]
+
+    def _chat_completion(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        model: str,
+        *,
+        temperature: float = 0.1,
+        response_format: dict | None = None,
+    ) -> str:
+        body: dict = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "temperature": temperature,
+        }
+        if response_format:
+            body["response_format"] = response_format
+        return self._request_content(body)
+
+    def _clean(self, text: str) -> str:
+        return strip_think(text) if self.strips_reasoning else text
+
+    # ── InferenceClient ───────────────────────────────────────────────────────
+
+    def complete_json(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        model: str,
+        *,
+        max_reprompts: int = 2,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> dict:
+        log = get_logger(self.log_name, run_id)
+        attempt = 0
+        last_raw = ""
+        self._reset_usage()
+
+        while attempt <= max_reprompts:
+            t0 = time.monotonic()
+            try:
+                last_raw = self._chat_completion(
+                    system_prompt=system_prompt,
+                    user_prompt=user_prompt,
+                    model=model,
+                    temperature=temperature,
+                    response_format={"type": "json_object"},
+                )
+            except requests.RequestException as exc:
+                attempt += 1
+                if attempt > max_reprompts:
+                    raise ProviderJSONError(
+                        f"{self.provider_label} request failed "
+                        f"after {max_reprompts} retries: {exc}"
+                    ) from exc
+                continue
+
+            dt_ms = int((time.monotonic() - t0) * 1000)
+            cleaned = self._clean(last_raw)
+            parsed = try_json(cleaned) or json_repair(cleaned)
+            if parsed is not None:
+                log.info("json ok", model=model, attempt=attempt, duration_ms=dt_ms)
+                return parsed
+
+            attempt += 1
+            self._token_usage["reprompts"] = attempt
+            log.warning(
+                "json invalid, reprompting",
+                model=model,
+                attempt=attempt,
+                duration_ms=dt_ms,
+            )
+
+        raise ProviderJSONError(
+            f"{model} did not return valid JSON after {max_reprompts} reprompts. "
+            f"Last 200 chars: {last_raw[:200]!r}"
+        )
+
+    def complete_code(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        model: str,
+        *,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> str:
+        log = get_logger(self.log_name, run_id)
+        t0 = time.monotonic()
+        self._reset_usage()
+
+        text = self._chat_completion(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            model=model,
+            temperature=temperature,
+        ).strip()
+        text = strip_fences(self._clean(text))
+        log.info("code ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
+        return text
+
+    def complete_vision(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        image_data: str,
+        model: str,
+        *,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> str:
+        """Vision request: send the image as a base64 data URI."""
+        log = get_logger(f"{self.log_name}-vision", run_id)
+        t0 = time.monotonic()
+        self._reset_usage()
+
+        text = self._request_content(
+            {
+                "model": model,
+                "messages": _vision_messages(system_prompt, user_prompt, image_data),
+                "temperature": temperature,
+            }
+        ).strip()
+        log.info("vision ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
+        return text
+
+    def chat(
+        self,
+        messages: list[dict],
+        model: str,
+        *,
+        temperature: float = 0.1,
+        run_id: str | None = None,
+    ) -> str:
+        log = get_logger(f"{self.log_name}-chat", run_id)
+        t0 = time.monotonic()
+        self._reset_usage()
+
+        text = self._request_content(
+            {"model": model, "messages": messages, "temperature": temperature}
+        ).strip()
+        log.info("chat ok", model=model, duration_ms=int((time.monotonic() - t0) * 1000))
+        return text
+
+    def health(self) -> bool:
+        """Return True if the endpoint is reachable."""
+        try:
+            resp = self._get(f"{self.base_url}/models", headers=self._headers(), timeout=5)
+            return resp.status_code == 200
+        except requests.RequestException:
+            return False

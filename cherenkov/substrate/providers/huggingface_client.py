@@ -5,31 +5,25 @@ CHERENKOV ai/huggingface_client.py — HuggingFace InferenceClient.
 from __future__ import annotations
 
 import os
-import re
 import time
 
-from cherenkov.core.errors import ProviderJSONError, get_logger
-from cherenkov.substrate.interfaces import InferenceClient
-from cherenkov.substrate.providers.ollama_client import _try_json, strip_think
+from cherenkov.core.errors import get_logger
+from cherenkov.substrate.providers.fenced_client import FencedCompletionClient
 
 _log = get_logger("HUGGINGFACE_CLIENT")
-
-_RE_CODE_FENCE = re.compile(r"```(?:typescript|ts|python)?\s*([\s\S]+?)```")
-_RE_JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]+?)```")
 
 _DEFAULT_MODEL = os.getenv("CHERENKOV_HF_MODEL", "meta-llama/Meta-Llama-3-8B-Instruct")
 
 
-class HuggingFaceInferenceClient(InferenceClient):
+class HuggingFaceInferenceClient(FencedCompletionClient):
     """HuggingFace implementation of InferenceClient."""
 
+    provider_label = "HuggingFace"
+    default_model = _DEFAULT_MODEL
+
     def __init__(self) -> None:
+        super().__init__()
         self.token = os.environ.get("HF_TOKEN", "")
-        self._token_usage: dict[str, int] = {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "reprompts": 0,
-        }
         self._client = None
 
     def _get_client(self):
@@ -62,10 +56,7 @@ class HuggingFaceInferenceClient(InferenceClient):
         messages.append({"role": "user", "content": user_prompt})
 
         response = client.chat_completion(
-            model=model,
-            messages=messages,
-            max_tokens=4096,
-            temperature=temperature
+            model=model, messages=messages, max_tokens=4096, temperature=temperature
         )
 
         text = response.choices[0].message.content
@@ -85,51 +76,3 @@ class HuggingFaceInferenceClient(InferenceClient):
             latency_ms=elapsed,
         )
         return text
-
-    def complete_code(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        model: str,
-        *,
-        temperature: float = 0.1,
-        run_id: str | None = None,  # noqa: ARG002
-    ) -> str:
-        model = model or _DEFAULT_MODEL
-        raw = self._complete(system_prompt, user_prompt, model, temperature=temperature)
-        code = strip_think(raw)
-        fenced = _RE_CODE_FENCE.search(code)
-        if fenced:
-            code = fenced.group(1).strip()
-        return code
-
-    def complete_json(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        model: str,
-        *,
-        max_reprompts: int = 2,
-        temperature: float = 0.1,
-        run_id: str | None = None,  # noqa: ARG002
-    ) -> dict:
-        model = model or _DEFAULT_MODEL
-        for _attempt in range(max_reprompts + 1):
-            raw = self._complete(
-                system_prompt, user_prompt, model, temperature=temperature
-            )
-            text = strip_think(raw)
-            fenced = _RE_JSON_FENCE.search(text)
-            if fenced:
-                text = fenced.group(1).strip()
-            else:
-                start = next((i for i, c in enumerate(text) if c in "{["), None)
-                if start is not None:
-                    text = text[start:]
-            parsed = _try_json(text)
-            if parsed is not None:
-                return parsed
-            self._token_usage["reprompts"] += 1
-        raise ProviderJSONError(
-            f"HuggingFace failed to return valid JSON after {max_reprompts + 1} attempts"
-        )

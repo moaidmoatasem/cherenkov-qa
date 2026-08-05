@@ -134,7 +134,11 @@ class TraceReader:
                                                         body_content = base64.b64decode(
                                                             body_data
                                                         ).decode("utf-8")
-                                                    except Exception:
+                                                    except (ValueError, UnicodeDecodeError) as _exc:
+                                                        self.log.debug(
+                                                            "response body is not base64/utf-8; using raw value",
+                                                            error=str(_exc),
+                                                        )
                                                         body_content = body_data
 
                                         # Parse body shape
@@ -144,8 +148,11 @@ class TraceReader:
                                                 body_json = json.loads(body_content)
                                                 if isinstance(body_json, dict):
                                                     body_keys = list(body_json)
-                                            except json.JSONDecodeError:
-                                                pass
+                                            except json.JSONDecodeError as _exc:
+                                                self.log.debug(
+                                                    "response body is not JSON; body_keys left empty",
+                                                    error=str(_exc),
+                                                )
 
                                         self.log.info(
                                             "extracted http call from trace",
@@ -160,7 +167,11 @@ class TraceReader:
                                             "body_raw": body_content,
                                             "request_body_raw": req_body_raw,
                                         }
-                            except Exception:
+                            except Exception as _exc:
+                                self.log.warning(
+                                    "skipping unparseable trace entry",
+                                    error=f"{type(_exc).__name__}: {_exc}",
+                                )
                                 continue
         except Exception as e:
             self.log.error("failed programmatically parsing trace.zip", error=str(e))

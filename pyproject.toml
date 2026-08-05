@@ -133,6 +133,21 @@ select = [
 ]
 ignore = ["E501", "SIM108", "RUF012"]
 
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's dependency-injection markers are function calls in argument
+# defaults by design; B008 does not apply to them.
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Header",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Body",
+    "fastapi.Form",
+    "fastapi.File",
+    "fastapi.Security",
+    "cherenkov.web.auth.deps.require_role",
+]
+
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["T20", "ARG", "N"]
 "cherenkov/cli/**" = ["T20"]

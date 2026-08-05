@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import logging
 import os
 import secrets
 import sqlite3
@@ -10,6 +11,8 @@ import threading
 from pathlib import Path
 
 from cherenkov.web.auth.models import Role, User, UserInDB
+
+_log = logging.getLogger(__name__)
 
 _DEFAULT_DB = Path.home() / ".cherenkov" / "auth.db"
 _PBKDF2_ITERS = 260_000
@@ -30,9 +33,11 @@ def _verify_password(password: str, stored: str) -> bool:
     try:
         _, algo, iters, salt, dk_hex = stored.split(":")
         dk = hashlib.pbkdf2_hmac(algo, password.encode(), salt.encode(), int(iters))
-        return hmac.compare_digest(dk.hex(), dk_hex)
-    except Exception:
+    except (ValueError, TypeError):
+        # Malformed or legacy hash record — never a valid credential.
+        _log.error("stored password hash is malformed; rejecting login", exc_info=True)
         return False
+    return hmac.compare_digest(dk.hex(), dk_hex)
 
 
 class UserStore:

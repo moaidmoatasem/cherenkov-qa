@@ -11,7 +11,7 @@ from cherenkov.core.compat import npx as _npx
 from cherenkov.core.compat import subprocess_env as _subprocess_env
 from cherenkov.core.settings import get_settings
 from cherenkov.substrate.client_factory import get_client
-from cherenkov.substrate.providers.ollama_client import strip_think
+from cherenkov.substrate.text_utils import strip_think
 
 MINI_SPEC = {
     "path": "/self-test",
