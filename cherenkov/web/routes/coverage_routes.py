@@ -53,3 +53,11 @@ async def get_conformance_trend(limit: int = Query(default=60, ge=1, le=500)):
 async def get_conformance_summary():
     """Return aggregate conformance counts (pass/warn/fail) + latest run."""
     return coverage_service.conformance_summary()
+
+
+@router.get(
+    "/regressions", operation_id="get_regressions"
+)
+async def get_regressions(limit: int = Query(default=200, ge=2, le=1000)):
+    """Return detected conformance regressions across consecutive runs (#766/771)."""
+    return {"regressions": coverage_service.detect_regressions(limit=limit)}

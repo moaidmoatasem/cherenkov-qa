@@ -24,11 +24,11 @@ class _FakeStore:
         return self._records[:limit]
 
 
-def _run(coverage_pct, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"):
+def _run(coverage_pct, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z", target_url="https://example.test"):
     return RunRecord(
-        run_id=f"run-{coverage_pct}",
+        run_id=f"run-{coverage_pct}-{timestamp}",
         command="verify",
-        target_url="https://example.test",
+        target_url=target_url,
         coverage_pct=coverage_pct,
         verdict=verdict,
         divergence_count=divergence_count,
@@ -190,3 +190,116 @@ class TestConformanceRoutes:
         assert body["latestVerdict"] == "FAIL"
         assert body["latestDivergenceCount"] == 5
         assert len(body["trend"]) == 3
+
+    def test_conformance_trend_includes_target_url(self, _patched_store):
+        out = coverage_map.conformance_trend()
+        assert all("target_url" in p for p in out)
+
+
+class TestDetectRegressions:
+    def test_empty_store_no_regressions(self):
+        store = _FakeStore([])
+        assert coverage_map.detect_regressions(store=store, limit=50) == []
+
+    def test_single_run_no_regressions(self):
+        store = _FakeStore(
+            [_run(80.0, verdict="PASS", divergence_count=0, timestamp="2026-08-03T00:00:00Z")]
+        )
+        assert coverage_map.detect_regressions(store=store, limit=50) == []
+
+    def test_verdict_downgrade_detected(self):
+        store = _FakeStore(
+            [
+                _run(80.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+                _run(80.0, verdict="FAIL", divergence_count=0, timestamp="2026-08-02T00:00:00Z"),
+            ]
+        )
+        regs = coverage_map.detect_regressions(store=store, limit=50)
+        kinds = [r["kind"] for r in regs]
+        assert "verdict_downgrade" in kinds
+        vd = next(r for r in regs if r["kind"] == "verdict_downgrade")
+        assert "PASS -> FAIL" in vd["detail"]
+
+    def test_coverage_regression_detected(self):
+        store = _FakeStore(
+            [
+                _run(100.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+                _run(40.0, verdict="PASS", divergence_count=0, timestamp="2026-08-02T00:00:00Z"),
+            ]
+        )
+        regs = coverage_map.detect_regressions(store=store, limit=50)
+        kinds = [r["kind"] for r in regs]
+        assert "coverage_regression" in kinds
+        cr = next(r for r in regs if r["kind"] == "coverage_regression")
+        assert "100.0%" in cr["detail"]
+
+    def test_divergence_spike_detected(self):
+        store = _FakeStore(
+            [
+                _run(80.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+                _run(80.0, verdict="WARN", divergence_count=3, timestamp="2026-08-02T00:00:00Z"),
+            ]
+        )
+        regs = coverage_map.detect_regressions(store=store, limit=50)
+        kinds = [r["kind"] for r in regs]
+        assert "divergence_spike" in kinds
+
+    def test_no_regression_when_improving(self):
+        store = _FakeStore(
+            [
+                _run(40.0, verdict="DIVERGENT", divergence_count=5, timestamp="2026-08-01T00:00:00Z"),
+                _run(90.0, verdict="PASS", divergence_count=0, timestamp="2026-08-02T00:00:00Z"),
+            ]
+        )
+        assert coverage_map.detect_regressions(store=store, limit=50) == []
+
+    def test_multiple_regressions_recorded(self):
+        store = _FakeStore(
+            [
+                _run(90.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+                _run(40.0, verdict="FAIL", divergence_count=4, timestamp="2026-08-02T00:00:00Z"),
+            ]
+        )
+        regs = coverage_map.detect_regressions(store=store, limit=50)
+        kinds = {r["kind"] for r in regs}
+        assert kinds == {"verdict_downgrade", "coverage_regression", "divergence_spike"}
+
+    def test_grouped_by_target_url(self):
+        """Regressions compared only within the same target_url."""
+        store = _FakeStore(
+            [
+                _run(90.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z", target_url="http://a.test"),
+                _run(40.0, verdict="FAIL", divergence_count=4, timestamp="2026-08-02T00:00:00Z", target_url="http://b.test"),
+            ]
+        )
+        # different targets → no comparison → no regressions
+        assert coverage_map.detect_regressions(store=store, limit=50) == []
+
+
+class TestRegressionsRoute:
+    @pytest.fixture
+    def _reg_store(self):
+        return _FakeStore(
+            [
+                _run(80.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+                _run(40.0, verdict="FAIL", divergence_count=3, timestamp="2026-08-02T00:00:00Z"),
+            ]
+        )
+
+    @pytest.fixture
+    def _patched(self, _reg_store):
+        from cherenkov.persistence import run_store as rs_module
+        with patch.object(rs_module, "_store", None):
+            with patch.object(rs_module, "get_run_store", return_value=_reg_store):
+                yield
+
+    def test_regressions_endpoint(self, _patched):
+        client = TestClient(app, raise_server_exceptions=False)
+        r = client.get("/api/v1/coverage/regressions")
+        assert r.status_code == 200
+        body = r.json()
+        assert "regressions" in body
+        kinds = {reg["kind"] for reg in body["regressions"]}
+        assert "verdict_downgrade" in kinds
+        assert "coverage_regression" in kinds
+        assert "divergence_spike" in kinds

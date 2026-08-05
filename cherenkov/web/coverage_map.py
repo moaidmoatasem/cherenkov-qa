@@ -215,6 +215,7 @@ def conformance_trend(store=None, limit: int = 60) -> list[dict[str, Any]]:
             "verdict": (r.verdict or "").upper(),
             "divergence_count": r.divergence_count,
             "coverage_pct": r.coverage_pct,
+            "target_url": r.target_url,
         }
         for r in records
     ]
@@ -245,3 +246,97 @@ def conformance_summary(store=None) -> dict[str, Any]:
         "latestCoveragePct": latest["coverage_pct"] if latest else None,
         "trend": trend[-20:],
     }
+
+
+# ── Phase 14 #771: Regression detection ──────────────────────────────────────
+
+# Ordered best → worst for comparing consecutive runs. Mirrors the
+# OverallVerdict semantics (models.py): CERTIFIED/PASS best, DIVERGENT worst.
+_VERDICT_RANK: dict[str, int] = {
+    "PASS": 0,
+    "CERTIFIED": 0,
+    "SUSPECT": 1,
+    "WARN": 2,
+    "DIVERGENT": 2,
+    "FAIL": 3,
+    "INCONCLUSIVE": 3,
+}
+
+
+def _verdict_rank(verdict: str) -> int:
+    return _VERDICT_RANK.get((verdict or "").upper(), 1)
+
+
+def detect_regressions(store=None, limit: int = 200) -> list[dict[str, Any]]:
+    """Detect conformance regressions across consecutive runs (#771).
+
+    Walks the run history (oldest → newest) and flags three regression kinds:
+      * `verdict_downgrade` — a run whose verdict is strictly worse than the
+        previous run's for the same target.
+      * `coverage_regression` — coverage_pct dropped versus the prior run.
+      * `divergence_spike` — divergence_count rose versus the prior run.
+
+    Each returned entry is spec-derived (verdict + divergence counts come from
+    persisted RunStore records, not hardcoded). The list is ordered by timestamp
+    (most recent first).
+    """
+    trend = conformance_trend(store=store, limit=limit)
+
+    # Group consecutive runs by target so a verdict downgrade is only compared
+    # against the *same* service under test.
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for p in trend:
+        target = p.get("target_url", "unknown")
+        groups.setdefault(target, []).append(p)
+
+    regressions: list[dict[str, Any]] = []
+    for target, points in groups.items():
+        points.sort(key=lambda p: p["timestamp"])
+        for prev, cur in zip(points, points[1:]):
+            base = {
+                "target_url": target,
+                "prev_timestamp": prev["timestamp"],
+                "cur_timestamp": cur["timestamp"],
+            }
+            prev_verdict = (prev["verdict"] or "").upper()
+            cur_verdict = (cur["verdict"] or "").upper()
+
+            if _verdict_rank(cur_verdict) > _verdict_rank(prev_verdict):
+                regressions.append(
+                    {
+                        **base,
+                        "kind": "verdict_downgrade",
+                        "detail": f"{prev_verdict} -> {cur_verdict}",
+                    }
+                )
+
+            if (
+                cur.get("coverage_pct") is not None
+                and prev.get("coverage_pct") is not None
+                and cur["coverage_pct"] < prev["coverage_pct"]
+            ):
+                regressions.append(
+                    {
+                        **base,
+                        "kind": "coverage_regression",
+                        "detail": (
+                            f"{prev['coverage_pct']:.1f}% -> "
+                            f"{cur['coverage_pct']:.1f}%"
+                        ),
+                    }
+                )
+
+            if cur["divergence_count"] > prev["divergence_count"]:
+                regressions.append(
+                    {
+                        **base,
+                        "kind": "divergence_spike",
+                        "detail": (
+                            f"{prev['divergence_count']} -> "
+                            f"{cur['divergence_count']}"
+                        ),
+                    }
+                )
+
+    regressions.reverse()
+    return regressions
