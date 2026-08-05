@@ -33,7 +33,7 @@ def run_review_server() -> int:
 
     from cherenkov.web.api import app
 
-    print("\nCHERENKOV review dashboard starting on http://0.0.0.0:8000")
+    print("\nCHERENKOV review dashboard starting on http://127.0.0.1:8000")
     print("Hit Ctrl+C to stop.\n")
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
     return 0
