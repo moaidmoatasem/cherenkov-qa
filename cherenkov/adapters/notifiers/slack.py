@@ -105,7 +105,12 @@ class SlackNotifier:
                         data = json.loads(resp_body)
                         return data.get("ok", False)
                     except json.JSONDecodeError:
+                        _log.warning(
+                            "Slack returned a non-JSON body for a 200 response",
+                            body=resp_body[:200],
+                        )
                         return True
+                _log.error("Slack rejected the message", status=response.status)
                 return False
         except Exception as exc:
             _log.error("Failed to send Slack message", error=str(exc))
@@ -127,8 +132,12 @@ class SlackNotifier:
         )
         try:
             with urllib.request.urlopen(req, timeout=10) as response:
-                return response.status == 200
-        except Exception:
+                if response.status != 200:
+                    _log.error("Slack rejected the thread reply", status=response.status)
+                    return False
+                return True
+        except Exception as exc:
+            _log.error("Failed to send Slack thread reply", error=str(exc))
             return False
 
     def send(self, report: dict[str, Any]) -> bool:
