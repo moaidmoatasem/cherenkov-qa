@@ -1,0 +1,210 @@
+"""Tests for cherenkov/copilot/triage.py — bug | flaky | env | intended buckets."""
+
+from __future__ import annotations
+
+import pytest
+
+from cherenkov.copilot.triage import Triage, render_triage
+from cherenkov.core.contracts import TriageCategory, TriageResult
+from cherenkov.healing.diagnose import DiagnosisResult, FailureClass
+
+
+class FakeReflector:
+    def __init__(self, idioms=None, error: Exception | None = None):
+        self._idioms = idioms or []
+        self._error = error
+        self.queried: list[str] = []
+
+    def idioms_for(self, endpoint: str):
+        self.queried.append(endpoint)
+        if self._error is not None:
+            raise self._error
+        return self._idioms
+
+
+class _Idiom:
+    def __init__(self, pattern: str):
+        self.pattern = pattern
+
+
+# ── mapping ────────────────────────────────────────────────────────────────────
+
+
+class TestTriageMapping:
+    @pytest.mark.parametrize(
+        ("failure_class", "category"),
+        [
+            (FailureClass.AUTH_EXPIRY, TriageCategory.ENV),
+            (FailureClass.STATE_SEQUENCE, TriageCategory.ENV),
+            (FailureClass.FLAKY_SUCCESS, TriageCategory.FLAKY),
+            (FailureClass.CONTRACT_DRIFT, TriageCategory.BUG),
+            (FailureClass.DETERMINISTIC_FAILURE, TriageCategory.BUG),
+            (FailureClass.GENERIC_FAILURE, TriageCategory.BUG),
+        ],
+    )
+    def test_each_failure_class_maps_to_a_category(self, failure_class, category):
+        result = Triage().triage("s1", failure_class)
+        assert result.category == category
+        assert result.failure_class == failure_class.value
+        assert result.suggested_action
+
+    def test_accepts_the_raw_string_value(self):
+        assert Triage().triage("s1", "AUTH_EXPIRY").category == TriageCategory.ENV
+
+    def test_unknown_failure_class_gets_the_low_confidence_default(self):
+        result = Triage().triage("s1", "SOMETHING_NEW")
+        assert result.category == TriageCategory.BUG
+        assert result.confidence == 0.3
+        assert result.suggested_action == "Review the failure manually."
+
+    def test_deterministic_failure_outranks_generic_in_confidence(self):
+        deterministic = Triage().triage("s1", FailureClass.DETERMINISTIC_FAILURE)
+        generic = Triage().triage("s1", FailureClass.GENERIC_FAILURE)
+        assert deterministic.confidence > generic.confidence
+
+    def test_detail_becomes_the_rationale(self):
+        result = Triage().triage("s1", FailureClass.GENERIC_FAILURE, detail="assert 500 == 200")
+        assert result.rationale == "assert 500 == 200"
+
+    def test_rationale_defaults_to_the_diagnosis(self):
+        assert (
+            Triage().triage("s1", FailureClass.AUTH_EXPIRY).rationale == "Diagnosed as AUTH_EXPIRY."
+        )
+
+    def test_evidence_is_carried_through(self):
+        result = Triage().triage("s1", FailureClass.AUTH_EXPIRY, evidence="401 Unauthorized")
+        assert result.evidence == "401 Unauthorized"
+
+
+# ── retry signal ───────────────────────────────────────────────────────────────
+
+
+class TestRetriedPass:
+    def test_pass_on_retry_forces_flaky(self):
+        result = Triage().triage("s1", FailureClass.DETERMINISTIC_FAILURE, retried_pass=True)
+        assert result.category == TriageCategory.FLAKY
+        assert result.confidence == 0.95
+        assert result.failure_class == FailureClass.DETERMINISTIC_FAILURE.value
+
+    def test_failing_retry_does_not_change_the_mapping(self):
+        result = Triage().triage("s1", FailureClass.AUTH_EXPIRY, retried_pass=False)
+        assert result.category == TriageCategory.ENV
+
+    def test_retried_pass_skips_reflector_refinement(self):
+        reflector = FakeReflector(idioms=[_Idiom("intended drift")])
+        Triage(reflector=reflector).triage(
+            "s1", FailureClass.CONTRACT_DRIFT, endpoint="GET /pets", retried_pass=True
+        )
+        assert reflector.queried == []
+
+
+# ── reflector refinement ───────────────────────────────────────────────────────
+
+
+class TestReflectorRefinement:
+    def test_prior_accepted_drift_reclassifies_bug_as_intended(self):
+        reflector = FakeReflector(idioms=[_Idiom("drift accepted as INTENDED by owner")])
+        result = Triage(reflector=reflector).triage(
+            "s1", FailureClass.CONTRACT_DRIFT, endpoint="GET /pets"
+        )
+        assert result.category == TriageCategory.INTENDED
+        assert result.confidence <= 0.6
+        assert "Reflector" in result.rationale
+        assert reflector.queried == ["GET /pets"]
+
+    def test_unrelated_idioms_leave_the_category_alone(self):
+        reflector = FakeReflector(idioms=[_Idiom("slow endpoint")])
+        result = Triage(reflector=reflector).triage(
+            "s1", FailureClass.CONTRACT_DRIFT, endpoint="GET /pets"
+        )
+        assert result.category == TriageCategory.BUG
+
+    def test_non_bug_categories_are_never_refined(self):
+        reflector = FakeReflector(idioms=[_Idiom("intended")])
+        result = Triage(reflector=reflector).triage(
+            "s1", FailureClass.AUTH_EXPIRY, endpoint="GET /pets"
+        )
+        assert result.category == TriageCategory.ENV
+
+    def test_no_endpoint_means_no_reflector_lookup(self):
+        reflector = FakeReflector(idioms=[_Idiom("intended")])
+        result = Triage(reflector=reflector).triage("s1", FailureClass.CONTRACT_DRIFT)
+        assert result.category == TriageCategory.BUG
+        assert reflector.queried == []
+
+    def test_empty_idioms_change_nothing(self):
+        result = Triage(reflector=FakeReflector(idioms=[])).triage(
+            "s1", FailureClass.CONTRACT_DRIFT, endpoint="GET /pets"
+        )
+        assert result.category == TriageCategory.BUG
+
+    def test_a_raising_reflector_never_breaks_triage(self):
+        reflector = FakeReflector(error=RuntimeError("store offline"))
+        result = Triage(reflector=reflector).triage(
+            "s1", FailureClass.CONTRACT_DRIFT, endpoint="GET /pets"
+        )
+        assert result.category == TriageCategory.BUG
+
+    def test_store_without_idioms_for_is_tolerated(self):
+        result = Triage(reflector=object()).triage(
+            "s1", FailureClass.CONTRACT_DRIFT, endpoint="GET /pets"
+        )
+        assert result.category == TriageCategory.BUG
+
+
+# ── from_diagnosis ─────────────────────────────────────────────────────────────
+
+
+class TestFromDiagnosis:
+    def test_reuses_the_pipeline_diagnosis(self):
+        diagnosis = DiagnosisResult(FailureClass.AUTH_EXPIRY, detail="token expired")
+        result = Triage().from_diagnosis("s1", diagnosis, evidence="401")
+        assert result.category == TriageCategory.ENV
+        assert result.rationale == "token expired"
+        assert result.evidence == "401"
+
+    def test_object_without_a_failure_class_degrades_to_generic(self):
+        result = Triage().from_diagnosis("s1", object())
+        assert result.failure_class == FailureClass.GENERIC_FAILURE.value
+        assert result.category == TriageCategory.BUG
+
+    def test_retried_pass_is_forwarded(self):
+        diagnosis = DiagnosisResult(FailureClass.DETERMINISTIC_FAILURE, detail="always fails")
+        result = Triage().from_diagnosis("s1", diagnosis, retried_pass=True)
+        assert result.category == TriageCategory.FLAKY
+
+
+# ── render_triage ──────────────────────────────────────────────────────────────
+
+
+class TestRenderTriage:
+    def test_empty_input_says_so(self):
+        assert render_triage([]) == "Triage: no failures to classify."
+
+    def test_groups_by_category_in_priority_order(self):
+        results = [
+            TriageResult(scenario_id="env-1", category=TriageCategory.ENV),
+            TriageResult(scenario_id="bug-1", category=TriageCategory.BUG),
+            TriageResult(scenario_id="flaky-1", category=TriageCategory.FLAKY),
+        ]
+        out = render_triage(results)
+        assert out.index("BUG (1)") < out.index("FLAKY (1)") < out.index("ENV (1)")
+        assert "INTENDED" not in out
+
+    def test_renders_confidence_and_action_per_item(self):
+        result = TriageResult(
+            scenario_id="s1",
+            category=TriageCategory.BUG,
+            confidence=0.755,
+            rationale="always fails",
+            suggested_action="file it",
+        )
+        out = render_triage([result])
+        assert "- s1  (conf=0.76)  always fails" in out
+        assert "-> file it" in out
+
+    def test_counts_multiple_items_in_one_category(self):
+        results = [
+            TriageResult(scenario_id=f"s{i}", category=TriageCategory.FLAKY) for i in range(3)
+        ]
+        assert "FLAKY (3):" in render_triage(results)

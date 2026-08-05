@@ -1,0 +1,258 @@
+"""Tests for cherenkov/copilot/intent.py — NL intent → ejectable Playwright test."""
+
+from __future__ import annotations
+
+import json
+
+import pytest
+
+from cherenkov.copilot.intent import SUPPORTED_ACTIONS, IntentAuthor
+from cherenkov.core.contracts import IntentSpec, IntentStep, ReasoningResult, Status
+
+
+class FakeRouter:
+    """Stand-in for SubstrateRouter: returns canned content or raises."""
+
+    def __init__(self, content=None, error: Exception | None = None):
+        self.content = content
+        self.error = error
+        self.requests: list = []
+
+    def route(self, request):
+        self.requests.append(request)
+        if self.error is not None:
+            raise self.error
+        return ReasoningResult(content=self.content, provider="fake", model="fake-1")
+
+
+def _author(content=None, error: Exception | None = None) -> IntentAuthor:
+    return IntentAuthor(router=FakeRouter(content=content, error=error), run_id="test-run")
+
+
+_SPEC_CONTENT = {
+    "title": "Guest checkout with discount",
+    "kind": "ui",
+    "target_url": "https://shop.example",
+    "data_hints": {"discount_code": "SAVE10"},
+    "steps": [
+        {"action": "navigate", "value": "https://shop.example/cart"},
+        {"action": "fill", "target": "the Email field", "value": "a@b.com"},
+        {"action": "click", "target": "the 'Checkout' button"},
+        {"action": "expect", "value": "Order confirmed"},
+    ],
+}
+
+
+# ── parse ──────────────────────────────────────────────────────────────────────
+
+
+class TestParse:
+    def test_parses_a_dict_response(self):
+        spec = _author(_SPEC_CONTENT).parse("check guest checkout")
+        assert isinstance(spec, IntentSpec)
+        assert spec.title == "Guest checkout with discount"
+        assert spec.target_url == "https://shop.example"
+        assert spec.data_hints == {"discount_code": "SAVE10"}
+        assert [s.action for s in spec.steps] == ["navigate", "fill", "click", "expect"]
+        assert spec.status == Status.OK
+
+    def test_parses_a_json_string_response(self):
+        spec = _author(json.dumps(_SPEC_CONTENT)).parse("check guest checkout")
+        assert len(spec.steps) == 4
+
+    def test_prompt_carries_the_intent_and_base_url(self):
+        router = FakeRouter(content=_SPEC_CONTENT)
+        IntentAuthor(router=router).parse("check guest checkout", "https://shop.example")
+        (request,) = router.requests
+        assert request.capability_tier == "deep"
+        assert "check guest checkout" in request.task
+        assert "Base URL: https://shop.example" in request.task
+
+    def test_target_url_argument_is_used_when_model_omits_it(self):
+        content = {"title": "t", "steps": [{"action": "click", "target": "Go"}]}
+        spec = _author(content).parse("do it", "https://fallback.example")
+        assert spec.target_url == "https://fallback.example"
+
+    def test_title_is_derived_from_intent_when_missing(self):
+        content = {"steps": [{"action": "click", "target": "Go"}]}
+        spec = _author(content).parse("check the cart page.")
+        assert spec.title == "Check the cart page"
+
+    def test_unknown_kind_falls_back_to_ui(self):
+        content = {"title": "t", "kind": "carrier-pigeon", "steps": [{"action": "click"}]}
+        assert _author(content).parse("x").kind == "ui"
+
+    def test_api_kind_is_preserved(self):
+        content = {"title": "t", "kind": "api", "steps": [{"action": "request", "value": "/pets"}]}
+        assert _author(content).parse("x").kind == "api"
+
+    def test_steps_without_an_action_are_dropped(self):
+        content = {
+            "title": "t",
+            "steps": [{"action": "click", "target": "Go"}, {"target": "x"}, "nope"],
+        }
+        assert len(_author(content).parse("x").steps) == 1
+
+
+# ── fallback ───────────────────────────────────────────────────────────────────
+
+
+class TestFallback:
+    @pytest.mark.parametrize(
+        "content",
+        [
+            "not json at all",
+            ["a", "list"],
+            {"title": "t", "steps": []},
+            {"title": "t"},
+        ],
+    )
+    def test_unusable_model_output_falls_back(self, content):
+        spec = _author(content).parse("check guest checkout", "https://shop.example")
+        assert spec.status == Status.DEGRADED
+        assert [s.action for s in spec.steps] == ["navigate", "expect"]
+        assert spec.steps[0].value == "https://shop.example"
+
+    def test_router_failure_falls_back(self):
+        spec = _author(error=RuntimeError("no model")).parse("check guest checkout")
+        assert spec.status == Status.DEGRADED
+        assert spec.steps[0].value == "/"
+
+    def test_fallback_spec_is_still_renderable(self):
+        author = _author(error=RuntimeError("offline"))
+        code = author.to_playwright(author.parse("check guest checkout"))
+        assert 'await page.goto("/");' in code
+
+    def test_empty_intent_gets_a_placeholder_title(self):
+        assert _author(error=RuntimeError("offline")).parse("   ").title == "Untitled intent"
+
+
+# ── locators ───────────────────────────────────────────────────────────────────
+
+
+class TestLocator:
+    @pytest.mark.parametrize(
+        ("target", "expected"),
+        [
+            ("the 'Checkout' button", 'page.getByRole("button", { name: "\'Checkout\'" })'),
+            ("the Pricing link", 'page.getByRole("link", { name: "Pricing" })'),
+            ("the Email field", 'page.getByLabel("Email")'),
+            ("the password input", 'page.getByLabel("Password")'),
+            ("the Terms checkbox", 'page.getByRole("checkbox", { name: "Terms" })'),
+            ("Welcome back", 'page.getByText("Welcome back")'),
+            ("", 'page.getByText("")'),
+        ],
+    )
+    def test_role_is_inferred_from_the_description(self, target, expected):
+        assert IntentAuthor._locator(target) == expected
+
+    def test_no_css_or_xpath_is_ever_emitted(self):
+        locator = IntentAuthor._locator("#submit-btn")
+        assert locator.startswith("page.getBy")
+
+
+# ── rendering ──────────────────────────────────────────────────────────────────
+
+
+class TestToPlaywright:
+    def test_emits_standard_selector_free_playwright(self):
+        author = _author(_SPEC_CONTENT)
+        code = author.to_playwright(author.parse("check guest checkout"))
+        assert code.startswith('import { test, expect } from "@playwright/test";')
+        assert 'test("Guest checkout with discount", async ({ page, request }) => {' in code
+        assert 'await page.goto("https://shop.example/cart");' in code
+        assert 'await page.getByLabel("Email").fill("a@b.com");' in code
+        assert 'await expect(page.getByText("Order confirmed")).toBeVisible();' in code
+        assert code.endswith("});\n")
+        # ejects clean: CHERENKOV is only ever mentioned in comments
+        body = [ln for ln in code.splitlines() if not ln.strip().startswith("//")]
+        assert not any("cherenkov" in ln.lower() for ln in body)
+
+    def test_navigate_without_a_value_uses_the_base_url(self):
+        author = _author()
+        spec = IntentSpec(
+            id="1",
+            raw_intent="x",
+            title="T",
+            target_url="https://base.example",
+            steps=[IntentStep(action="navigate")],
+        )
+        assert 'await page.goto("https://base.example");' in author.to_playwright(spec)
+
+    def test_expect_without_a_value_asserts_the_url(self):
+        author = _author()
+        spec = IntentSpec(id="1", raw_intent="x", title="T", steps=[IntentStep(action="expect")])
+        assert "await expect(page).toHaveURL(/.*/);" in author.to_playwright(spec)
+
+    def test_request_step_uses_the_method_from_the_note(self):
+        author = _author()
+        spec = IntentSpec(
+            id="1",
+            raw_intent="x",
+            title="T",
+            steps=[IntentStep(action="request", value="/pets", note="POST")],
+        )
+        code = author.to_playwright(spec)
+        assert 'const resp = await request.post("/pets");' in code
+        assert "expect(resp.status()).toBeLessThan(400);" in code
+
+    def test_unknown_request_method_defaults_to_get(self):
+        author = _author()
+        spec = IntentSpec(
+            id="1",
+            raw_intent="x",
+            title="T",
+            steps=[IntentStep(action="request", target="/pets", note="teleport")],
+        )
+        assert 'const resp = await request.get("/pets");' in author.to_playwright(spec)
+
+    def test_actions_are_case_insensitive(self):
+        author = _author()
+        spec = IntentSpec(
+            id="1", raw_intent="x", title="T", steps=[IntentStep(action="CLICK", target="Go")]
+        )
+        assert ".click();" in author.to_playwright(spec)
+
+    def test_unsupported_action_is_surfaced_not_buried(self):
+        author = _author()
+        spec = IntentSpec(
+            id="1",
+            raw_intent="x",
+            title="T",
+            steps=[IntentStep(action="hover", target="menu", note="needs hover support")],
+        )
+        code = author.to_playwright(spec)
+        assert "// UNSUPPORTED: action 'hover'" in code
+        assert "needs hover support" in code
+        assert "// Supported actions: " + ", ".join(SUPPORTED_ACTIONS) in code
+        assert author._unsupported_actions == ["hover"]
+
+
+# ── round-trip ─────────────────────────────────────────────────────────────────
+
+
+class TestAuthor:
+    def test_writes_a_slugged_spec_file(self, tmp_path):
+        author = _author(_SPEC_CONTENT)
+        spec, path = author.author("check guest checkout", tmp_path / "generated")
+        assert path == tmp_path / "generated" / "guest_checkout_with_discount.spec.ts"
+        assert path.read_text(encoding="utf-8") == author.to_playwright(spec)
+
+    def test_creates_missing_output_directories(self, tmp_path):
+        _, path = _author(_SPEC_CONTENT).author("x", tmp_path / "a" / "b")
+        assert path.parent.is_dir()
+
+    def test_accepts_a_string_output_dir(self, tmp_path):
+        _, path = _author(_SPEC_CONTENT).author("x", str(tmp_path))
+        assert path.exists()
+
+    @pytest.mark.parametrize(
+        ("title", "expected"),
+        [
+            ("Guest checkout!", "guest_checkout"),
+            ("  Spaces  everywhere  ", "spaces_everywhere"),
+            ("!!!", "intent_test"),
+        ],
+    )
+    def test_slug_is_filesystem_safe(self, title, expected):
+        assert IntentAuthor._slug(title) == expected
