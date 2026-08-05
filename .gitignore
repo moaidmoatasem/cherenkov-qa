@@ -1,33 +1,43 @@
-```
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.egg-info/
+.Python
 
 # Dependencies
 node_modules/
+venv/
+.venv/
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Node.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Build artifacts
 dist/
 build/
 target/
+*.min.js
+*.min.css
 
 # Web UI build
 cherenkov/web/ui/dist/
 
-# Logs
-*.log
-
-# Environment
-.env
-.env.local
-*.env.*
-
 # Editors
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# Logs
+*.log
 
 # Coverage
 .coverage
@@ -41,4 +51,3 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
-```
