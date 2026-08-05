@@ -1,0 +1,54 @@
+"""Regression tests for errors that used to be swallowed silently."""
+
+from __future__ import annotations
+
+import json
+
+from cherenkov.core import flags as flags_mod
+from cherenkov.core.contracts import GateResult
+from cherenkov.stages.review import ReviewStage
+
+
+def _stderr_records(capsys) -> list[dict]:
+    captured = capsys.readouterr().err
+    records = []
+    for line in captured.splitlines():
+        try:
+            records.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return records
+
+
+def test_flags_file_corruption_is_logged(tmp_path, monkeypatch, capsys):
+    bad = tmp_path / "flags.json"
+    bad.write_text("{not json", encoding="utf-8")
+    monkeypatch.setattr(flags_mod, "_FLAGS_FILE_PATH", bad)
+
+    assert flags_mod._load_file() == {}
+    assert any(r["level"] == "WARN" for r in _stderr_records(capsys))
+
+
+def test_consensus_gate_error_is_skipped_not_counted_as_pass(monkeypatch):
+    """An oracle crash must not inflate the quality score with a free pass."""
+    stage = ReviewStage.__new__(ReviewStage)
+    stage.run_id = "test-run"
+    stage.log = __import__("cherenkov.core.errors", fromlist=["get_logger"]).get_logger("TEST")
+
+    class _Settings:
+        CONSENSUS_ORACLE_ENABLED = True
+        CONSENSUS_ORACLE_PASSES = 1
+
+    monkeypatch.setattr("cherenkov.stages.review.get_settings", lambda: _Settings())
+    monkeypatch.setattr(
+        "cherenkov.oracle.consensus_oracle.ConsensusOracle.__init__",
+        lambda *_a, **_k: (_ for _ in ()).throw(RuntimeError("oracle unavailable")),
+    )
+
+    gates = [GateResult(gate=f"g{i}", passed=True) for i in range(4)]
+    stage._gate_consensus(generate=object(), code="", spec_path="spec.yaml", gates=gates)
+
+    consensus = gates[-1]
+    assert consensus.gate == "consensus-oracle"
+    assert consensus.skipped is True
+    assert stage._compute_quality_score([GateResult(gate="x", passed=False), consensus]) == 0.0

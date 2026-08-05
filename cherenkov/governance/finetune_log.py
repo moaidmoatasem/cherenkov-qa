@@ -96,7 +96,8 @@ class FinetuneLogger:
             return records
         except FileNotFoundError:
             return []
-        except Exception:
+        except (OSError, ValueError):
+            _log.error("finetune log unreadable: %s", self.log_path, exc_info=True)
             return []
 
     def stats(self) -> dict[str, Any]:

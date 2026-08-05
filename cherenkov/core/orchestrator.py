@@ -493,8 +493,8 @@ class OrchestrationEngine:
             from cherenkov.observability.llm_tracer import trace_event
             trace_event("pipeline-complete", run_id=self.run_id, success=pipeline_success,
                         duration_ms=total_duration, scenarios_passed=successes, scenarios_total=total)
-        except Exception:
-            pass
+        except Exception as e:
+            self.log.warning("pipeline-complete trace event failed", error=str(e))
 
         try:
             from cherenkov.governance.gen_metrics import GenMetricsStore, RunGenMetrics
@@ -551,8 +551,8 @@ class OrchestrationEngine:
         try:
             from cherenkov.observability.llm_tracer import trace_event
             trace_event("pipeline-start", run_id=self.run_id, spec_path=spec_path)
-        except Exception:
-            pass
+        except Exception as e:
+            self.log.warning("pipeline-start trace event failed", error=str(e))
 
         self._progress(f"\n================ CHERENKOV PIPELINE RUN [{self.run_id}] ================")
         self._progress("  INGEST  [ Waiting... ]")

@@ -96,7 +96,7 @@ class RunBudget:
                 if cap != _NO_CAP and cap > 0:
                     self.warn_fraction = warn_val / cap
             except ValueError:
-                pass
+                _log.warning("Invalid %s value %r — ignoring", _ENV_WARN, env_warn)
 
     def _effective_cap(self) -> float:
         if not self.cap_usd:

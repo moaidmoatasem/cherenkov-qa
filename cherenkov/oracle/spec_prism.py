@@ -15,6 +15,8 @@ from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 from cherenkov.oracle.interface import Oracle, OracleResult
 
+_log = get_logger("oracle-spec-prism")
+
 
 class SpecPrismOracle(Oracle):
     """Oracle that evaluates claims by replaying them against a Prism mock server.
@@ -46,6 +48,10 @@ class SpecPrismOracle(Oracle):
         except jsonschema.ValidationError as e:
             return False, 0.95, f"Body schema violation: {e.message}"
         except Exception as e:
+            _log.warning(
+                "response body validation crashed — treating the body as unverified",
+                error=f"{type(e).__name__}: {e}",
+            )
             return True, 0.3, f"Body validation error: {e}"
 
     def _validate_response_headers(

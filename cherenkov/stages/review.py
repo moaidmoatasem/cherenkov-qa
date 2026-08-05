@@ -485,6 +485,7 @@ class ReviewStage:
         if not static_passed:
             return
         passed = True
+        skipped = False
         detail = "Consensus oracle skipped (not enabled or static gates failed)."
         try:
             from cherenkov.core.contracts import Claim, Provenance, ProvenanceType
@@ -516,9 +517,12 @@ class ReviewStage:
             )
         except Exception as exc:
             passed = True
+            skipped = True
             detail = f"Consensus oracle skipped (error): {exc}"
             self.log.warning("consensus gate error (skipped)", error=str(exc))
-        gates.append(GateResult(gate="consensus-oracle", passed=passed, detail=detail))
+        gates.append(
+            GateResult(gate="consensus-oracle", passed=passed, detail=detail, skipped=skipped)
+        )
 
     def _compute_quality_score(self, gates: list[GateResult]) -> float:
         scored_gates = [g for g in gates if not g.skipped]
