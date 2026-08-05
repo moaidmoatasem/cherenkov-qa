@@ -213,6 +213,81 @@ class TestValidateCmdGraphQL:
 
 
 # ---------------------------------------------------------------------------
+# Tightening suggestions (--verbose)
+# ---------------------------------------------------------------------------
+
+class TestValidateVerboseTighteningSuggestions:
+    """Regression (#891): ValidationEngine.validate_suite() already computes
+    per-scenario tightening suggestions via TighteningAnalyzer, but
+    validate_cmd's --verbose loop never echoed them to stdout — so
+    "consider -> ..." could never appear no matter how a run was scoped."""
+
+    def test_suggestions_printed_for_passed_scenario(self, runner, tmp_path):
+        schema = tmp_path / "schema.graphql"
+        schema.write_text(GQL_CONTENT)
+
+        mock_results = {
+            "status": "success",
+            "reports": [
+                {
+                    "scenario_id": "demo_tighten",
+                    "passed": True,
+                    "error": "",
+                    "suggestions": [
+                        "expect(data.email).toBe('test@example.com')",
+                        "expect(data.email).toBe(body.email)",
+                    ],
+                },
+            ],
+        }
+
+        with (
+            patch("cherenkov.cli.commands.validate.ValidationEngine") as MockEngine,
+            patch("cherenkov.stages.generate.GenerateStage.run"),
+        ):
+            MockEngine.return_value.validate_suite.return_value = mock_results
+            result = runner.invoke(validate_cmd, [
+                "--target", "http://localhost:4000",
+                "--source", "graphql",
+                "--spec", str(schema),
+                "--verbose",
+            ])
+
+        assert "consider -> expect(data.email).toBe('test@example.com')" in result.output
+        assert "consider -> expect(data.email).toBe(body.email)" in result.output
+
+    def test_no_suggestions_line_without_verbose(self, runner, tmp_path):
+        schema = tmp_path / "schema.graphql"
+        schema.write_text(GQL_CONTENT)
+
+        mock_results = {
+            "status": "success",
+            "reports": [
+                {
+                    "scenario_id": "demo_tighten",
+                    "passed": True,
+                    "error": "",
+                    "suggestions": ["expect(data.email).toBe('test@example.com')"],
+                },
+            ],
+        }
+
+        with (
+            patch("cherenkov.cli.commands.validate.ValidationEngine") as MockEngine,
+            patch("cherenkov.stages.generate.GenerateStage.run"),
+        ):
+            MockEngine.return_value.validate_suite.return_value = mock_results
+            result = runner.invoke(validate_cmd, [
+                "--target", "http://localhost:4000",
+                "--source", "graphql",
+                "--spec", str(schema),
+            ])
+
+        # Verbose-gated, same as the PASS/FAIL scenario lines themselves.
+        assert "consider ->" not in result.output
+
+
+# ---------------------------------------------------------------------------
 # Summary output (source-agnostic)
 # ---------------------------------------------------------------------------
 
