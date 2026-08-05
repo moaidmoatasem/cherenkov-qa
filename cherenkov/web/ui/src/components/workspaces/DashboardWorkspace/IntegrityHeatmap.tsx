@@ -5,8 +5,9 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { ShieldCheck, ShieldAlert, ShieldX, Activity } from 'lucide-react';
-import { fetchSignals, fetchMetricsData, fetchTruthMapData } from '../../../lib/api';
+import { fetchSignals, fetchMetricsData, fetchTruthMapData, fetchDivergences } from '../../../lib/api';
 import { Card, Skeleton } from '../../ui';
+import type { Divergence } from '../../../types';
 
 export interface EndpointIntegrity {
   id: string;
@@ -14,6 +15,7 @@ export interface EndpointIntegrity {
   method: string;
   integrityScore: number;
   driftCount: number;
+  severity?: Divergence['severity'];
 }
 
 export const IntegrityHeatmap: React.FC<{ endpoints?: EndpointIntegrity[] }> = ({ endpoints: initialEndpoints }) => {
@@ -30,35 +32,64 @@ export const IntegrityHeatmap: React.FC<{ endpoints?: EndpointIntegrity[] }> = (
     const loadLiveIntegrity = async () => {
       try {
         setIsLoading(true);
-        const [truthMap, signals] = await Promise.all([
-          fetchTruthMapData().catch(() => []),
-          fetchSignals().catch(() => ({ coverage: [] })),
-        ]);
+        const divergences = await fetchDivergences().catch(() => [] as Divergence[]);
 
-        if (truthMap && truthMap.length > 0) {
-          const mapped: EndpointIntegrity[] = truthMap.map((node, i) => {
-            const [method, ...pathParts] = node.endpoint.split(' ');
-            const path = pathParts.join(' ') || node.endpoint;
-            const integrityScore = node.hasDivergence ? 55 : 95;
+        if (divergences && divergences.length > 0) {
+          // Group divergences by endpoint and compute real integrity scores from severity
+          const endpointMap = new Map<string, { method: string; path: string; severities: Divergence['severity'][] }>();
+          
+          for (const div of divergences) {
+            const [method, ...pathParts] = div.endpoint.split(' ');
+            const path = pathParts.join(' ') || div.endpoint;
+            const key = `${method}:${path}`;
+            
+            if (!endpointMap.has(key)) {
+              endpointMap.set(key, { method, path, severities: [] });
+            }
+            endpointMap.get(key)!.severities.push(div.severity);
+          }
+
+          // Compute integrity score based on severity deductions
+          const SEVERITY_DEDUCTION: Record<Divergence['severity'], number> = {
+            critical: 57,
+            high: 37,
+            medium: 20,
+            low: 10,
+            info: 5,
+          };
+
+          const mapped: EndpointIntegrity[] = Array.from(endpointMap.values()).map((ep, i) => {
+            const totalDeduction = ep.severities.reduce((sum, sev) => sum + SEVERITY_DEDUCTION[sev], 0);
+            const integrityScore = Math.max(0, 100 - totalDeduction);
             return {
               id: `ep-${i}`,
-              method: method || 'GET',
-              path: path || node.endpoint,
+              method: ep.method,
+              path: ep.path,
               integrityScore,
-              driftCount: node.hasDivergence ? 2 : 0,
+              driftCount: ep.severities.length,
+              severity: ep.severities[0],
             };
           });
           setEndpoints(mapped);
         } else {
-          // Default live endpoints sample
-          setEndpoints([
-            { id: 'ep-1', method: 'GET', path: '/api/v1/overview', integrityScore: 98, driftCount: 0 },
-            { id: 'ep-2', method: 'GET', path: '/api/v1/runs', integrityScore: 92, driftCount: 0 },
-            { id: 'ep-3', method: 'POST', path: '/api/v1/run', integrityScore: 88, driftCount: 1 },
-            { id: 'ep-4', method: 'GET', path: '/api/v1/divergences', integrityScore: 70, driftCount: 3 },
-            { id: 'ep-5', method: 'POST', path: '/api/v1/review/approve', integrityScore: 95, driftCount: 0 },
-            { id: 'ep-6', method: 'POST', path: '/api/v1/chat/sessions', integrityScore: 91, driftCount: 0 },
-          ]);
+          // No divergences = all endpoints at 100% integrity
+          const truthMap = await fetchTruthMapData().catch(() => []);
+          if (truthMap && truthMap.length > 0) {
+            const mapped: EndpointIntegrity[] = truthMap.map((node, i) => {
+              const [method, ...pathParts] = node.endpoint.split(' ');
+              const path = pathParts.join(' ') || node.endpoint;
+              return {
+                id: `ep-${i}`,
+                method: method || 'GET',
+                path: path || node.endpoint,
+                integrityScore: 100,
+                driftCount: 0,
+              };
+            });
+            setEndpoints(mapped);
+          } else {
+            setEndpoints([]);
+          }
         }
       } catch {
         setEndpoints([]);
