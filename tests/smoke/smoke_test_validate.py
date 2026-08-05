@@ -144,24 +144,29 @@ def main():
     print("Calculating pre-run hash of generated_tests...")
     pre_hash = _get_tests_hash()
 
-    # 4. Execute cherenkov_validate.py against target API
+    # 4. Execute cherenkov validate against target API, scoped to the two
+    # purpose-built fixtures (demo_tighten.spec.ts / password_too_short.spec.ts)
+    # instead of the default scope — every file in stub/generated_tests is a
+    # shipped demo/golden fixture, so an unfiltered run is intentionally
+    # empty (see cherenkov/execution/validate.py's _fixtures exclusion).
+    # A single --tests filter can only match one substring, so this runs
+    # twice: once for the tightening-suggestion assertions, once for the
+    # conformance-drift assertion.
     print("Executing validation subcommand CLI against target API...")
     try:
         val_proc = subprocess.run(
-            ["./bin/cherenkov", "validate", "--target", base_url],
+            ["./bin/cherenkov", "validate", "--target", base_url, "--tests", "demo_tighten"],
             env={**os.environ, "PYTHONPATH": "."},
             capture_output=True,
             text=True,
             check=True,
         )
         stdout = val_proc.stdout
-        _stderr = val_proc.stderr
 
-        print("\n--- CLI TIGHTENING REPORT OUTPUT ---")
+        print("\n--- CLI TIGHTENING REPORT OUTPUT (demo_tighten) ---")
         print(stdout)
         print("------------------------------------\n")
 
-        # 4. Assert report details
         assert (
             "consider -> expect(data.email).toBe('test@example.com')" in stdout
         ), "Missing suggested string value assertion!"
@@ -173,14 +178,31 @@ def main():
         )
 
         assert (
-            "password_too_short [FAILED]" in stdout
+            "zero test files were auto-modified by validation" in stdout
+        ), "Suggest-only trust constraint violated (test files were modified)!"
+
+        val_proc_drift = subprocess.run(
+            ["./bin/cherenkov", "validate", "--target", base_url, "--tests", "password_too_short"],
+            env={**os.environ, "PYTHONPATH": "."},
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        drift_stdout = val_proc_drift.stdout
+
+        print("\n--- CLI TIGHTENING REPORT OUTPUT (password_too_short) ---")
+        print(drift_stdout)
+        print("------------------------------------\n")
+
+        assert (
+            "password_too_short [FAILED]" in drift_stdout
         ), "Failed to capture password_too_short spec conformance drift!"
         print(
             "[OK] Successfully verified spec-to-implementation conformance failure (RED) report."
         )
 
         assert (
-            "zero test files were auto-modified by validation" in stdout
+            "zero test files were auto-modified by validation" in drift_stdout
         ), "Suggest-only trust constraint violated (test files were modified)!"
 
         post_hash = _get_tests_hash()
