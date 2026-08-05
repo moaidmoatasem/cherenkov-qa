@@ -54,3 +54,20 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local runtime state / test-run artifacts (regenerated on demand, never committed)
+.cherenkov/
+data/
+eject-e2e-output/
+cherenkov/web/ui/test-results/
+
+# Generated test output. `stub/generated_tests/` is a generated directory
+# (CLAUDE.md: do not hand-edit), but the demo_/golden_ corpus below IS tracked
+# on purpose -- it's the catch-the-AI-cheating fixture set the demo and the
+# audit gate depend on. Ignore everything else the generator writes there so a
+# local `cherenkov generate` run doesn't dirty the tree.
+stub/generated_tests/*
+!stub/generated_tests/demo_*.spec.ts
+!stub/generated_tests/golden_*.spec.ts
+!stub/generated_tests/password_too_short.spec.ts
+!stub/generated_tests/_scores.json

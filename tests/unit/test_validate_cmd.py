@@ -396,6 +396,90 @@ class TestValidateCmdTestsFilter:
         assert engine.validate_suite.call_args.kwargs["tests_filter"] is None
 
 
+class TestValidateSuggestedTightening:
+    """Regression (#891): the engine computes tightening suggestions via
+    TighteningAnalyzer, but validate_cmd never echoed them to stdout —
+    breaking the documented report format (docs/CLI_DEMO.md) and the
+    smoke test that greps for "consider -> ..." lines."""
+
+    def test_suggestions_are_printed(self, runner, tmp_path):
+        schema = tmp_path / "schema.graphql"
+        schema.write_text(GQL_CONTENT)
+
+        mock_results = {
+            "status": "success",
+            "reports": [
+                {
+                    "scenario_id": "happy_path",
+                    "passed": True,
+                    "error": "",
+                    "suggestions": [
+                        "expect(data.email).toBe('test@example.com')",
+                        "expect(data.email).toBe(body.email)",
+                    ],
+                },
+            ],
+        }
+
+        with (
+            patch("cherenkov.cli.commands.validate.ValidationEngine") as MockEngine,
+            patch("cherenkov.stages.generate.GenerateStage.run"),
+        ):
+            MockEngine.return_value.validate_suite.return_value = mock_results
+            result = runner.invoke(validate_cmd, [
+                "--target", "http://localhost:4000",
+                "--source", "graphql",
+                "--spec", str(schema),
+                "--verbose",
+            ])
+
+        assert "consider -> expect(data.email).toBe('test@example.com')" in result.output
+        assert "consider -> expect(data.email).toBe(body.email)" in result.output
+
+    def test_failed_scenario_status_line_has_no_suggestions(self, runner, tmp_path):
+        schema = tmp_path / "schema.graphql"
+        schema.write_text(GQL_CONTENT)
+
+        mock_results = {
+            "status": "success",
+            "reports": [
+                {"scenario_id": "password_too_short", "passed": False, "error": "boom"},
+            ],
+        }
+
+        with (
+            patch("cherenkov.cli.commands.validate.ValidationEngine") as MockEngine,
+            patch("cherenkov.stages.generate.GenerateStage.run"),
+        ):
+            MockEngine.return_value.validate_suite.return_value = mock_results
+            result = runner.invoke(validate_cmd, [
+                "--target", "http://localhost:4000",
+                "--source", "graphql",
+                "--spec", str(schema),
+            ])
+
+        assert "Suggested Assertion Tightening" not in result.output
+
+    def test_git_status_verification_line_printed(self, runner, tmp_path):
+        schema = tmp_path / "schema.graphql"
+        schema.write_text(GQL_CONTENT)
+
+        with (
+            patch("cherenkov.cli.commands.validate.ValidationEngine") as MockEngine,
+            patch("cherenkov.stages.generate.GenerateStage.run"),
+            patch("cherenkov.cli.commands.validate.subprocess.run") as mock_run,
+        ):
+            mock_run.return_value = MagicMock(returncode=0, stdout="")
+            MockEngine.return_value = _patch_engine()
+            result = runner.invoke(validate_cmd, [
+                "--target", "http://localhost:4000",
+                "--source", "graphql",
+                "--spec", str(schema),
+            ])
+
+        assert "zero test files were auto-modified by validation" in result.output
+
+
 class TestFindingsReport:
     """Regression: severity was passed as a raw string ("high") where DivergenceFinding
     requires the Severity enum — mypy-blocking (arg-type) and would also have raised a

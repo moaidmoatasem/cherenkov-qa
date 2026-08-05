@@ -9,7 +9,6 @@ import ModelProviderSettings from './ModelProviderSettings';
 import DeviceManager from './DeviceManager';
 import EjectSuitePanel from './EjectSuitePanel';
 import GovernanceSettings from './GovernanceSettings';
-import ModelProviderSettings from './ModelProviderSettings';
 import { PageHeader } from '../../ui/PageHeader';
 
 export const SettingsWorkspace: React.FC = () => {

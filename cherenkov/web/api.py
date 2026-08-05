@@ -180,6 +180,16 @@ from cherenkov.integrity.api import router as integrity_router
 
 app.include_router(integrity_router)
 
+# ── Phase 14: alert policies + auto-regenerate (registered before the SPA
+# fallback so GET /api/v1/{alerts,regenerate} routes are matched first) ──────
+from cherenkov.web.routes.alerts_routes import router as alerts_router
+
+app.include_router(alerts_router)
+
+from cherenkov.web.routes.regenerate_routes import router as regenerate_router
+
+app.include_router(regenerate_router)
+
 # ── Static/SPA Fallback Route ──────────────────────────────────────────────────
 from cherenkov.web.routes.static_routes import router as static_router
 

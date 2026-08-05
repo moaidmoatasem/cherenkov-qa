@@ -6,6 +6,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { ShieldCheck, ShieldAlert, ShieldX, Activity, ShieldQuestion } from 'lucide-react';
 import { fetchTruthMapData, fetchDivergences } from '../../../lib/api';
+import type { Divergence } from '../../../types';
 import { Card, Skeleton, EmptyState } from '../../ui';
 
 export interface EndpointIntegrity {
