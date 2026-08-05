@@ -5,16 +5,18 @@
 
 import React, { useEffect, useState } from 'react';
 import { Activity, BarChart3, TrendingUp, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
-import { Card, Button } from '../../ui';
+import { Card } from '../../ui';
 import { CoverageTrendChart } from '../../ui/CoverageTrendChart';
 import type { CoverageMap, CoverageEndpoint } from '../../../lib/api';
 import { getCoverageMap, getCoverageTrend } from '../../../lib/api';
 
 type Status = 'idle' | 'loading' | 'done' | 'error';
 
+// `value` (not `coverage_pct`) so this stays structurally compatible with
+// CoverageTrendChart's own TrendPoint, which is what it is passed to.
 interface TrendPoint {
   timestamp: string;
-  coverage_pct: number;
+  value: number;
   verdict?: string;
   divergence_count?: number;
 }
