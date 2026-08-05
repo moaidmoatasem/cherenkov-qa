@@ -16,8 +16,8 @@ export const TriageWorkspace: React.FC = () => {
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="triage-workspace">
       <PageHeader
-        title="Triage & Healing Workspace"
-        description="HITL test approval queue, risk-scored divergence triage table, and side-by-side spec vs reality payload diffs."
+        title="Triage"
+        description="Review what the AI flagged, compare spec vs. real API behavior, and approve or reject before anything lands in your suite."
       />
 
       {/* 1. HITL Test Approval Review Queue */}

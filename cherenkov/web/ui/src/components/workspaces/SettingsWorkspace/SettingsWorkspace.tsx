@@ -5,6 +5,7 @@
 
 import React from 'react';
 import ProjectManager from './ProjectManager';
+import ModelProviderSettings from './ModelProviderSettings';
 import DeviceManager from './DeviceManager';
 import EjectSuitePanel from './EjectSuitePanel';
 import GovernanceSettings from './GovernanceSettings';
@@ -15,8 +16,8 @@ export const SettingsWorkspace: React.FC = () => {
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="settings-workspace">
       <PageHeader
-        title="Settings Workspace"
-        description="Project management, VLM & hardware devices, LLM provider configuration, plain Playwright eject export, and system governance parameters."
+        title="Settings"
+        description="Projects, hardware & model providers, exporting your tests, and access control."
       />
 
       {/* 1. LLM Provider & Model Configuration */}
@@ -24,6 +25,9 @@ export const SettingsWorkspace: React.FC = () => {
 
       {/* 2. Project Management */}
       <ProjectManager />
+
+      {/* 2. AI Model Provider & AirLLM */}
+      <ModelProviderSettings />
 
       {/* 3. Hardware & VLM Device Diagnostics */}
       <DeviceManager />

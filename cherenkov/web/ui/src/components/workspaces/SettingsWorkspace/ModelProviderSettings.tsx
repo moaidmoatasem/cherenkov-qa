@@ -3,300 +3,187 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
-import { Cpu, Zap, Layers, CheckCircle2, Save, AlertCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { Card, Skeleton } from '../../ui';
-import { fetchSettings, updateSettings, SystemSettings } from '../../../lib/api';
 import { useToast } from '../../ui/Toast';
+import { fetchSettings, updateSettings, SystemSettings } from '../../../lib/api';
+import { Cpu, Layers, Save } from 'lucide-react';
 
-interface ProviderOption {
-  id: string;
-  name: string;
-  isLocal: boolean;
-  models: string[];
-}
+// Mirrors the providers actually wired in cherenkov/substrate/providers/.
+const PROVIDERS = ['openai', 'anthropic', 'azure', 'bedrock', 'ollama', 'localai', 'nemoclaw', 'vlm'] as const;
 
-const PROVIDERS: ProviderOption[] = [
-  { id: 'ollama', name: 'Ollama (Local)', isLocal: true, models: ['qwen2.5-coder:7b', 'deepseek-r1:8b', 'qwen2.5-vl:7b', 'llama3.2:3b'] },
-  { id: 'openai', name: 'OpenAI', isLocal: false, models: ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo'] },
-  { id: 'anthropic', name: 'Anthropic', isLocal: false, models: ['claude-3-5-sonnet', 'claude-3-opus', 'claude-3-haiku'] },
-  { id: 'azure', name: 'Azure OpenAI', isLocal: false, models: ['gpt-4o', 'gpt-4-turbo'] },
-  { id: 'bedrock', name: 'AWS Bedrock', isLocal: false, models: ['anthropic.claude-3-5-sonnet', 'meta.llama3-70b-instruct'] },
-  { id: 'localai', name: 'LocalAI', isLocal: true, models: ['llava', 'qwen2.5-coder:7b'] },
-  { id: 'nemoclaw', name: 'NemoClaw', isLocal: true, models: ['nemotron-nano-4b', 'nemotron-super-49b', 'nemotron-vlm-4b'] },
-  { id: 'vlm', name: 'VLM Provider', isLocal: false, models: ['llava', 'bakllava'] },
-];
+const LOCAL_PROVIDERS = new Set(['ollama', 'localai', 'vlm']);
 
 export const ModelProviderSettings: React.FC = () => {
+  const { toast } = useToast();
   const [settings, setSettings] = useState<SystemSettings | null>(null);
-  const [selectedProvider, setSelectedProvider] = useState('ollama');
-  const [selectedModel, setSelectedModel] = useState('qwen2.5-coder:7b');
-  const [modelTier, setModelTier] = useState<'small' | 'deep' | 'vision'>('deep');
+  const [provider, setProvider] = useState('ollama');
+  const [tier, setTier] = useState('local');
   const [airllmEnabled, setAirllmEnabled] = useState(false);
   const [airllmModel, setAirllmModel] = useState('Qwen2.5-Coder-32B');
   const [airllmCompression, setAirllmCompression] = useState('4bit');
-  const [airllmShardsPath, setAirllmShardsPath] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  const loadSettings = async () => {
-    try {
-      setIsLoading(true);
-      const data = await fetchSettings().catch(() => null);
-      if (data) {
-        setSettings(data);
-        const provider = (data as any).model || 'ollama';
-        setSelectedProvider(provider);
-        
-        const airllm = (data as any).airllm;
-        if (airllm) {
-          setAirllmEnabled(!!airllm.enabled);
-          setAirllmModel(airllm.model || 'Qwen2.5-Coder-32B');
-          setAirllmCompression(airllm.compression || '4bit');
-          setAirllmShardsPath(airllm.layer_shards_path || '');
-        }
-        
-        const tier = data.engine?.model_tier || 'deep';
-        setModelTier(tier as any);
-        
-        // Set default model based on provider
-        const providerOpt = PROVIDERS.find(p => p.id === provider);
-        if (providerOpt && providerOpt.models.length > 0) {
-          setSelectedModel(providerOpt.models[0]);
-        }
-      }
-    } catch (err) {
-      toast(`Failed to load settings: ${(err as Error).message}`, 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   useEffect(() => {
-    loadSettings();
+    fetchSettings()
+      .then((data) => {
+        setSettings(data);
+        setProvider(data.model || 'ollama');
+        setTier(data.engine?.model_tier || 'local');
+        if (data.airllm) {
+          setAirllmEnabled(!!data.airllm.enabled);
+          setAirllmModel(data.airllm.model || 'Qwen2.5-Coder-32B');
+          setAirllmCompression(data.airllm.compression || '4bit');
+        }
+      })
+      .catch(() => setSettings(null))
+      .finally(() => setIsLoading(false));
   }, []);
 
   const handleSave = async () => {
     if (!settings) return;
     setIsSaving(true);
-    setMessage(null);
     try {
       await updateSettings({
         ...settings,
-        model: selectedProvider,
-        engine: {
-          ...settings.engine,
-          model_tier: modelTier,
-        },
+        engine: { ...settings.engine, model_tier: tier },
+        model: provider,
         airllm: {
           enabled: airllmEnabled,
           model: airllmModel,
           compression: airllmCompression,
-          layer_shards_path: airllmShardsPath,
+          layer_shards_path: settings.airllm?.layer_shards_path || '',
         },
       });
-      setMessage('Model provider settings updated successfully!');
-      setTimeout(() => setMessage(null), 3000);
-    } catch (err) {
-      const msg = (err as Error).message;
-      setMessage(msg);
-      toast(msg, 'error');
+      toast('Model provider settings saved', 'success');
+    } catch (e) {
+      toast(`Save failed: ${(e as Error).message}`, 'danger');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const currentProvider = PROVIDERS.find(p => p.id === selectedProvider);
-
   return (
-    <Card className="p-6 space-y-4 font-mono text-xs" data-testid="model-provider-settings">
-      <div className="flex items-center justify-between">
+    <Card className="p-6 space-y-5" data-testid="model-provider-settings">
+      <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-text-muted flex items-center gap-2">
+          <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
             <Cpu className="w-4 h-4 text-cyan-400" />
-            <span>LLM Provider & Model Configuration</span>
+            <span>Model Provider</span>
           </h2>
-          <p className="text-xs text-text-muted mt-0.5 font-sans">
-            Select your preferred LLM provider, model tier, and advanced AirLLM options.
+          <p className="text-xs text-text-muted mt-0.5">
+            Which AI writes your tests. Local providers keep everything on your machine; hosted ones call out.
           </p>
         </div>
         <button
           onClick={handleSave}
           disabled={isSaving || !settings}
-          className="px-4 py-2 bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 rounded-lg font-bold flex items-center gap-1 hover:bg-cyan-500/30 transition cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-semibold hover:bg-cyan-500/20 transition disabled:opacity-40 cursor-pointer"
           data-testid="btn-save-model-provider"
         >
-          <Save className="w-4 h-4" />
-          <span>{isSaving ? 'Saving...' : 'Save Settings'}</span>
+          <Save className="w-3.5 h-3.5" />
+          {isSaving ? 'Saving...' : 'Save'}
         </button>
       </div>
 
       {isLoading ? (
-        <Skeleton className="h-48 w-full rounded-xl" />
-      ) : !settings ? (
-        <div className="p-3 text-rose-400">Failed to load model provider settings.</div>
+        <Skeleton className="h-32 w-full rounded-xl" />
       ) : (
-        <div className="space-y-4">
-          {/* Provider Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {PROVIDERS.map((provider) => (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs font-mono" data-testid="provider-select">
+            {PROVIDERS.map((p) => (
               <button
-                key={provider.id}
-                onClick={() => {
-                  setSelectedProvider(provider.id);
-                  if (provider.models.length > 0) {
-                    setSelectedModel(provider.models[0]);
-                  }
-                }}
-                className={`p-3 rounded-xl border text-left transition-all ${
-                  selectedProvider === provider.id
-                    ? 'bg-cyan-500/20 border-cyan-500/40 ring-2 ring-cyan-500/30'
-                    : 'bg-black/20 border-white/10 hover:border-white/20'
+                key={p}
+                onClick={() => setProvider(p)}
+                className={`py-2 px-3 rounded-xl border transition cursor-pointer uppercase relative ${
+                  provider === p
+                    ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400 font-bold'
+                    : 'bg-black/25 border-white/5 text-text-muted hover:text-text-primary'
                 }`}
-                data-testid={`provider-${provider.id}`}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-text-primary">{provider.name}</span>
-                  {provider.isLocal ? (
-                    <Zap className="w-3 h-3 text-emerald-400" title="Local provider" />
-                  ) : (
-                    <Layers className="w-3 h-3 text-blue-400" title="Cloud provider" />
-                  )}
-                </div>
-                <p className="text-[10px] text-text-muted">
-                  {provider.models.length} model{provider.models.length !== 1 ? 's' : ''} available
-                </p>
+                {p}
+                {LOCAL_PROVIDERS.has(p) && (
+                  <span className="absolute top-1 right-1.5 text-[8px] text-emerald-400" title="Runs locally">
+                    ●
+                  </span>
+                )}
               </button>
             ))}
           </div>
+          <p className="text-[10px] text-text-muted font-mono">
+            <span className="text-emerald-400">●</span> runs locally — nothing leaves your machine
+          </p>
 
-          {/* Model Selection */}
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase text-text-muted">Selected Model</label>
-            <select
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-              className="w-full bg-bg-base text-text-primary p-2.5 rounded-lg border border-white/10"
-              data-testid="model-select"
-            >
-              {currentProvider?.models.map((model) => (
-                <option key={model} value={model}>{model}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Model Tier */}
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase text-text-muted">Model Tier (Task Routing)</label>
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { id: 'small', label: 'Small (Fast)', desc: 'Local, quick tasks' },
-                { id: 'deep', label: 'Deep (Reasoning)', desc: 'Complex analysis' },
-                { id: 'vision', label: 'Vision (VLM)', desc: 'Visual UI testing' },
-              ].map((tier) => (
+          <div className="space-y-2 pt-4 border-t border-white/5">
+            <label className="text-[10px] font-mono uppercase text-text-muted">Model Tier</label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs font-mono" data-testid="model-tier-select">
+              {['local', 'small', 'deep', 'vision'].map((t) => (
                 <button
-                  key={tier.id}
-                  onClick={() => setModelTier(tier.id as any)}
-                  className={`p-3 rounded-xl border text-left transition-all ${
-                    modelTier === tier.id
-                      ? 'bg-cyan-500/20 border-cyan-500/40 ring-2 ring-cyan-500/30'
-                      : 'bg-black/20 border-white/10 hover:border-white/20'
+                  key={t}
+                  onClick={() => setTier(t)}
+                  className={`py-2 px-3 rounded-xl border transition cursor-pointer uppercase ${
+                    tier === t
+                      ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400 font-bold'
+                      : 'bg-black/25 border-white/5 text-text-muted hover:text-text-primary'
                   }`}
-                  data-testid={`tier-${tier.id}`}
                 >
-                  <p className="font-semibold text-text-primary">{tier.label}</p>
-                  <p className="text-[10px] text-text-muted">{tier.desc}</p>
+                  {t}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* AirLLM Heavy Mode Toggle */}
-          <div className="p-4 rounded-xl bg-black/20 border border-white/10 space-y-3">
-            <div className="flex items-center justify-between">
+          <div className="space-y-3 pt-4 border-t border-white/5">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-black/25 border border-white/5">
               <div className="flex items-center gap-2">
-                <Zap className={`w-4 h-4 ${airllmEnabled ? 'text-yellow-400' : 'text-text-muted'}`} />
-                <span className="font-semibold text-text-primary">AirLLM Heavy Mode</span>
+                <Layers className="w-4 h-4 text-amber-400" />
+                <div>
+                  <span className="text-text-primary text-xs font-mono">AirLLM Heavy Mode</span>
+                  <p className="text-[9px] text-text-muted mt-0.5">
+                    Runs 32B+ models via layer-wise inference on consumer GPUs. Slow (30-120s/endpoint) — batch use only.
+                  </p>
+                </div>
               </div>
-              <button
-                onClick={() => setAirllmEnabled(!airllmEnabled)}
-                className={`w-12 h-6 rounded-full transition-colors relative ${
-                  airllmEnabled ? 'bg-cyan-500' : 'bg-white/10'
-                }`}
-                data-testid="airllm-toggle"
-              >
-                <div
-                  className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
-                    airllmEnabled ? 'left-7' : 'left-1'
-                  }`}
-                />
-              </button>
+              <input
+                type="checkbox"
+                checked={airllmEnabled}
+                onChange={(e) => setAirllmEnabled(e.target.checked)}
+                className="w-4 h-4 accent-cyan-400 shrink-0"
+                data-testid="toggle-airllm"
+              />
             </div>
 
             {airllmEnabled && (
-              <div className="space-y-3 pl-6 border-l-2 border-white/10">
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase text-text-muted">AirLLM Model</label>
-                  <input
-                    type="text"
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] text-text-muted uppercase font-semibold">Model</label>
+                  <select
                     value={airllmModel}
                     onChange={(e) => setAirllmModel(e.target.value)}
-                    className="w-full bg-bg-base text-text-primary p-2 rounded-lg border border-white/10"
-                    placeholder="Qwen2.5-Coder-32B"
-                    data-testid="airllm-model"
-                  />
+                    className="w-full bg-black/30 text-text-primary p-2 rounded-xl border border-white/10 focus:outline-none focus:border-cyan-400 text-xs font-mono"
+                  >
+                    <option value="Qwen2.5-Coder-32B">Qwen2.5-Coder-32B</option>
+                    <option value="DeepSeek-Coder-33B">DeepSeek-Coder-33B</option>
+                    <option value="Llama-3-70B">Llama-3-70B</option>
+                  </select>
                 </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase text-text-muted">Compression Level</label>
+                <div className="space-y-1">
+                  <label className="text-[9px] text-text-muted uppercase font-semibold">Compression</label>
                   <select
                     value={airllmCompression}
                     onChange={(e) => setAirllmCompression(e.target.value)}
-                    className="w-full bg-bg-base text-text-primary p-2 rounded-lg border border-white/10"
-                    data-testid="airllm-compression"
+                    className="w-full bg-black/30 text-text-primary p-2 rounded-xl border border-white/10 focus:outline-none focus:border-cyan-400 text-xs font-mono"
                   >
-                    <option value="4bit">4-bit (Maximum compression)</option>
-                    <option value="8bit">8-bit (Balanced)</option>
-                    <option value="none">None (Full precision)</option>
+                    <option value="4bit">4-bit (3x faster)</option>
+                    <option value="8bit">8-bit (balanced)</option>
+                    <option value="none">Full precision</option>
                   </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase text-text-muted">Layer Shards Path (Optional)</label>
-                  <input
-                    type="text"
-                    value={airllmShardsPath}
-                    onChange={(e) => setAirllmShardsPath(e.target.value)}
-                    className="w-full bg-bg-base text-text-primary p-2 rounded-lg border border-white/10"
-                    placeholder="~/.cherenkov/shards"
-                    data-testid="airllm-shards"
-                  />
-                </div>
-
-                <div className="flex items-start gap-2 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                  <AlertCircle className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
-                  <p className="text-[10px] text-yellow-400">
-                    AirLLM enables running large models (32B+) on consumer GPUs with layer-wise inference. 
-                    Requires additional setup and disk space for model shards.
-                  </p>
                 </div>
               </div>
             )}
           </div>
-
-          {message && (
-            <div className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
-              message.includes('success') 
-                ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400' 
-                : 'bg-rose-500/10 border border-rose-500/30 text-rose-400'
-            }`}>
-              <CheckCircle2 className="w-4 h-4" />
-              <span>{message}</span>
-            </div>
-          )}
-        </div>
+        </>
       )}
     </Card>
   );

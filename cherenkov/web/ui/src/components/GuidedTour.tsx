@@ -1,38 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, X, Compass, CheckCircle } from 'lucide-react';
+import { WorkspaceId } from './layout/NavigationBar';
 
 interface TourStep {
   title: string;
   description: string;
-  tabId: string;
+  tabId: WorkspaceId;
 }
 
+// Mirrors the real QA loop -- no scripting knowledge assumed. If you're
+// moving from manual testing to automation, this is the whole workflow.
 const TOUR_STEPS: TourStep[] = [
   {
-    title: '1. Setup & Ingestion',
-    description: 'Upload your OpenAPI specification to begin. Cherenkov parses and scores endpoint coverage quality automatically.',
-    tabId: 'setup'
+    title: '1. Generate',
+    description: "Drop in your OpenAPI spec. Cherenkov's AI reads every endpoint and writes a full test suite for you -- no scripting required to get started.",
+    tabId: 'authoring',
   },
   {
-    title: '2. Live Generation Pipeline',
-    description: 'Watch the models synthesize Playwright specs in real time. Cost & token telemetry is tracked closely.',
-    tabId: 'pipeline'
+    title: '2. Validate',
+    description: 'Run the generated tests against your real API. Cherenkov checks every response against the spec, so you see actual drift, not just pass/fail.',
+    tabId: 'dashboard',
   },
   {
-    title: '3. Human-In-The-Loop Review',
-    description: 'Reject low-confidence tests, ask AI to explain failures, and manually edit code before approving it into the test suite.',
-    tabId: 'review'
+    title: '3. Triage',
+    description: "Anything the AI wasn't fully confident about lands here for a quick human call. You approve, edit, or reject -- nothing changes without you.",
+    tabId: 'triage',
   },
   {
-    title: '4. Export & Eject',
-    description: 'Zero vendor lock-in! Download the fully compliant Playwright configuration and integrate it into your CI/CD.',
-    tabId: 'eject'
-  }
+    title: '4. Knowledge',
+    description: 'Cherenkov remembers what it learns about your API across runs, so every generation and review gets sharper over time.',
+    tabId: 'intelligence',
+  },
 ];
 
 interface GuidedTourProps {
   onClose: () => void;
-  onNavigate: (tabId: string) => void;
+  onNavigate: (tabId: WorkspaceId) => void;
 }
 
 export default function GuidedTour({ onClose, onNavigate }: GuidedTourProps) {
@@ -53,7 +56,7 @@ export default function GuidedTour({ onClose, onNavigate }: GuidedTourProps) {
       onNavigate(TOUR_STEPS[nextStep].tabId);
     } else {
       onClose();
-      onNavigate('overview');
+      onNavigate('authoring');
     }
   };
 

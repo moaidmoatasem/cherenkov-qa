@@ -12,7 +12,7 @@ test.describe('Triage Workspace E2E Suite', () => {
 
   test('Triage workspace container renders heading and subcomponents', async ({ page }) => {
     await expect(page.locator('#triage-workspace')).toBeVisible();
-    await expect(page.getByText('Triage & Healing Workspace')).toBeVisible();
+    await expect(page.locator('#triage-workspace').getByRole('heading', { name: 'Triage', level: 1 })).toBeVisible();
   });
 
   test('HitlReviewQueue renders queue display, test details, and code viewer', async ({ page }) => {

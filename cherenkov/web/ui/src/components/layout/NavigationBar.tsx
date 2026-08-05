@@ -11,9 +11,10 @@ import {
   Brain,
   Settings,
   PlusCircle,
+  Smartphone,
 } from 'lucide-react';
 
-export type WorkspaceId = 'dashboard' | 'authoring' | 'triage' | 'intelligence' | 'settings';
+export type WorkspaceId = 'dashboard' | 'authoring' | 'triage' | 'intelligence' | 'settings' | 'mobile';
 
 export interface NavigationBarProps {
   activeWorkspace: WorkspaceId;
@@ -34,32 +35,46 @@ export const WORKSPACE_NAV_ITEMS: WorkspaceNavItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
-    description: 'Release Readiness & Run Grades',
+    description: 'Is your API release-ready?',
     icon: LayoutDashboard,
   },
   {
     id: 'authoring',
-    label: 'Authoring',
-    description: 'OpenAPI Spec & Intent Studio',
+    label: 'Generate Tests',
+    description: 'Turn a spec into a test suite',
     icon: Sparkles,
   },
   {
     id: 'triage',
     label: 'Triage',
-    description: 'HITL Review & Divergence Gate',
+    description: 'Confirm what the AI flagged',
     icon: CheckSquare,
   },
   {
     id: 'intelligence',
-    label: 'Intelligence',
-    description: 'GraphRAG Second Brain & SDD',
+    label: 'Knowledge',
+    description: "What Cherenkov's learned about your API",
     icon: Brain,
   },
   {
     id: 'settings',
     label: 'Settings',
-    description: 'Hardware, VLM & Governance',
+    description: 'Providers, hardware & access',
     icon: Settings,
+  },
+];
+
+// Real, working capability that isn't part of the certified spec-conformance
+// loop above (Generate -> Validate -> Triage -> Knowledge) -- kept visually
+// distinct rather than folded silently into Settings. Deliberately not a peer
+// of the core loop: it's an honest, minimal surface (device pilot status +
+// run), not a claim of parity with a dedicated mobile-testing platform.
+export const OTHER_SURFACES_NAV_ITEMS: WorkspaceNavItem[] = [
+  {
+    id: 'mobile',
+    label: 'Mobile',
+    description: 'Run & monitor a Maestro device pilot',
+    icon: Smartphone,
   },
 ];
 
@@ -69,6 +84,38 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
   pendingReviewCount = 0,
   onNewRun,
 }) => {
+  const renderNavItem = (item: WorkspaceNavItem) => {
+    const Icon = item.icon;
+    const isActive = activeWorkspace === item.id;
+    const badgeCount = item.id === 'triage' ? pendingReviewCount : item.badge;
+
+    return (
+      <button
+        key={item.id}
+        onClick={() => onSelectWorkspace(item.id)}
+        className={`w-full flex items-start gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer text-left ${
+          isActive
+            ? 'bg-cyan-500/15 border border-cyan-500/40 text-cyan-400 shadow-glow-sm'
+            : 'border border-transparent text-text-muted hover:text-text-primary hover:bg-white/5'
+        }`}
+        data-testid={`nav-workspace-${item.id}`}
+      >
+        <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${isActive ? 'text-cyan-400' : 'text-text-muted'}`} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs font-bold tracking-wide">{item.label}</span>
+            {badgeCount !== undefined && badgeCount > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                {badgeCount}
+              </span>
+            )}
+          </div>
+          <p className="text-[10px] text-text-muted/80 truncate mt-0.5">{item.description}</p>
+        </div>
+      </button>
+    );
+  };
+
   return (
     <nav className="w-64 bg-bg-surface/90 border-r border-border-subtle flex flex-col justify-between p-4 shrink-0 select-none z-10">
       <div className="space-y-6">
@@ -89,44 +136,22 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
           <p className="px-3 text-[10px] font-mono uppercase tracking-wider text-text-muted mb-2">
             Workspaces
           </p>
-          {WORKSPACE_NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeWorkspace === item.id;
-            const badgeCount = item.id === 'triage' ? pendingReviewCount : item.badge;
+          {WORKSPACE_NAV_ITEMS.map(renderNavItem)}
+        </div>
 
-            return (
-              <button
-                key={item.id}
-                onClick={() => onSelectWorkspace(item.id)}
-                className={`w-full flex items-start gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer text-left ${
-                  isActive
-                    ? 'bg-cyan-500/15 border border-cyan-500/40 text-cyan-400 shadow-glow-sm'
-                    : 'border border-transparent text-text-muted hover:text-text-primary hover:bg-white/5'
-                }`}
-                data-testid={`nav-workspace-${item.id}`}
-              >
-                <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${isActive ? 'text-cyan-400' : 'text-text-muted'}`} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold tracking-wide">{item.label}</span>
-                    {badgeCount !== undefined && badgeCount > 0 && (
-                      <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                        {badgeCount}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[10px] text-text-muted/80 truncate mt-0.5">{item.description}</p>
-                </div>
-              </button>
-            );
-          })}
+        {/* Real, working capability outside the certified spec-conformance loop */}
+        <div className="space-y-1">
+          <p className="px-3 text-[10px] font-mono uppercase tracking-wider text-text-muted mb-2">
+            Other Test Surfaces
+          </p>
+          {OTHER_SURFACES_NAV_ITEMS.map(renderNavItem)}
         </div>
       </div>
 
       {/* Footer Branding Info */}
       <div className="pt-4 border-t border-border-subtle text-[10px] font-mono text-text-muted flex items-center justify-between">
-        <span>Clean Architecture v3.1</span>
-        <span className="text-cyan-400 font-semibold">SDD Active</span>
+        <span>Cherenkov QA</span>
+        <span className="text-cyan-400 font-semibold">Open Source</span>
       </div>
     </nav>
   );

@@ -24,8 +24,8 @@ export const AuthoringWorkspace: React.FC = () => {
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="authoring-workspace">
       <PageHeader
-        title="Authoring Workspace"
-        description="OpenAPI spec ingestion, richness doctor checks, intent-driven test creation, and pipeline execution."
+        title="Generate Tests"
+        description="Bring an OpenAPI spec, or describe a test in plain English, and get a generated test suite."
       />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

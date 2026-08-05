@@ -13,7 +13,7 @@ test.describe('Intelligence Workspace E2E Suite', () => {
 
   test('Intelligence workspace container renders heading and subcomponents', async ({ page }) => {
     await expect(page.locator('#intelligence-workspace')).toBeVisible();
-    await expect(page.locator('#intelligence-workspace').getByRole('heading', { name: 'Intelligence Workspace' })).toBeVisible();
+    await expect(page.locator('#intelligence-workspace').getByRole('heading', { name: 'Knowledge', level: 1 })).toBeVisible();
   });
 
   test('SseChatAssistant creates chat session and sends user message', async ({ page }) => {
