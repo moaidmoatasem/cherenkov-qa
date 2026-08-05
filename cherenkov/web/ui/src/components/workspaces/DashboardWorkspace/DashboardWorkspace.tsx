@@ -23,8 +23,8 @@ export const DashboardWorkspace: React.FC<DashboardWorkspaceProps> = ({
   return (
     <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="dashboard-workspace">
       <PageHeader
-        title="Dashboard Workspace"
-        description="Release readiness overview, verdict history, and spec coverage integrity heatmap."
+        title="Dashboard"
+        description="Is your API release-ready? Readiness score, run history, and coverage at a glance."
       />
 
       {/* 1. Release Readiness Gate KPI */}

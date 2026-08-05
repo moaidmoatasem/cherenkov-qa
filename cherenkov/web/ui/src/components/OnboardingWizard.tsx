@@ -1,7 +1,31 @@
 import React, { useState, useEffect } from 'react';
+import { Sparkles, LayoutDashboard, CheckSquare, Brain } from 'lucide-react';
 import { Card } from './ui';
 import { fetchHealth } from '../lib/api';
 import { invokeDesktop, HardwareInfo } from '../lib/tauri';
+
+const WORKFLOW_STAGES = [
+  {
+    icon: Sparkles,
+    title: 'Generate',
+    body: "Bring an OpenAPI spec. Cherenkov's AI writes the test suite for you -- no scripting needed to get your first run.",
+  },
+  {
+    icon: LayoutDashboard,
+    title: 'Validate',
+    body: 'Run those tests against your real API. You get an honest pass/fail against the spec, not a guess.',
+  },
+  {
+    icon: CheckSquare,
+    title: 'Triage',
+    body: "Anything the AI wasn't sure about waits for you here. Nothing is changed without a human saying yes.",
+  },
+  {
+    icon: Brain,
+    title: 'Knowledge',
+    body: 'Cherenkov remembers what it learns about your API, so the next run is sharper than the last.',
+  },
+];
 
 interface OnboardingWizardProps {
   onComplete: () => void;
@@ -57,7 +81,7 @@ export default function OnboardingWizard({ onComplete, onEnableDemo }: Onboardin
 
   const handleDemo = () => {
     onEnableDemo();
-    onComplete();
+    handleNext();
   };
 
   return (
@@ -113,10 +137,43 @@ export default function OnboardingWizard({ onComplete, onEnableDemo }: Onboardin
         )}
 
         {step === 3 && (
+          <div className="space-y-6">
+            <div className="text-center space-y-1">
+              <h2 className="text-2xl font-display font-semibold text-text-primary">Your new workflow</h2>
+              <p className="text-[#7D8DA1] text-sm">
+                Coming from manual testing? This is the whole loop -- start to finish, no automation background required.
+              </p>
+            </div>
+            <div className="space-y-3">
+              {WORKFLOW_STAGES.map((stage, idx) => {
+                const Icon = stage.icon;
+                return (
+                  <div key={stage.title} className="flex items-start gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                    <div className="w-7 h-7 rounded-full bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0 text-xs font-bold">
+                      {idx + 1}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 text-text-primary font-semibold text-sm">
+                        <Icon className="w-3.5 h-3.5 text-cyan-400" />
+                        {stage.title}
+                      </div>
+                      <p className="text-xs text-[#7D8DA1] mt-0.5 leading-relaxed">{stage.body}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <button onClick={handleNext} className="w-full py-3 bg-glow-blue text-slate-950 font-bold rounded-xl uppercase tracking-wider hover:bg-opacity-90 transition">
+              Got it
+            </button>
+          </div>
+        )}
+
+        {step === 4 && (
           <div className="space-y-6 text-center">
             <h2 className="text-2xl font-display font-semibold text-text-primary">You're all set!</h2>
             <p className="text-[#7D8DA1] text-sm leading-relaxed">
-              CHERENKOV is ready. You can now drag and drop an OpenAPI spec to generate tests, or explore the dashboard.
+              CHERENKOV is ready. Drag and drop an OpenAPI spec on the Generate Tests screen to get your first suite.
             </p>
             <button onClick={onComplete} className="w-full py-3 bg-glow-blue text-slate-950 font-bold rounded-xl uppercase tracking-wider hover:bg-opacity-90 transition">
               Enter Dashboard

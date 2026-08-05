@@ -12,7 +12,7 @@ test.describe('Authoring Workspace E2E Suite', () => {
 
   test('Authoring workspace container renders heading and subcomponents', async ({ page }) => {
     await expect(page.locator('#authoring-workspace')).toBeVisible();
-    await expect(page.locator('#authoring-workspace').getByRole('heading', { name: 'Authoring Workspace' })).toBeVisible();
+    await expect(page.locator('#authoring-workspace').getByRole('heading', { name: 'Generate Tests' })).toBeVisible();
   });
 
   test('SpecIngestPanel renders drag & drop zone, repo selector, and URL form', async ({ page }) => {
@@ -54,9 +54,9 @@ test.describe('Authoring Workspace E2E Suite', () => {
   test('LivePipelineMonitor renders DAG stage tracker nodes and execution log console', async ({ page }) => {
     const monitor = page.getByTestId('live-pipeline-monitor');
     await expect(monitor).toBeVisible();
-    await expect(monitor.getByText('Live Pipeline Execution Monitor & DAG')).toBeVisible();
-    await expect(monitor.getByText('OpenAPI Spec Ingestion')).toBeVisible();
-    await expect(monitor.getByText('LLM Playwright Test Generation')).toBeVisible();
-    await expect(monitor.getByText('Execution Log Output')).toBeVisible();
+    await expect(monitor.getByText('Live Pipeline Monitor')).toBeVisible();
+    await expect(monitor.getByText('Analysis', { exact: true })).toBeVisible();
+    await expect(monitor.getByText('Design & Generation', { exact: true })).toBeVisible();
+    await expect(monitor.getByText('Live Event Log')).toBeVisible();
   });
 });

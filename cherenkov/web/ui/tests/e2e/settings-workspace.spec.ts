@@ -12,7 +12,7 @@ test.describe('Settings Workspace E2E Suite', () => {
 
   test('Settings workspace container renders heading and subcomponents', async ({ page }) => {
     await expect(page.locator('#settings-workspace')).toBeVisible();
-    await expect(page.locator('#settings-workspace').getByRole('heading', { name: 'Settings Workspace' })).toBeVisible();
+    await expect(page.locator('#settings-workspace').getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
   });
 
   test('ProjectManager renders active projects and create project toggle', async ({ page }) => {
