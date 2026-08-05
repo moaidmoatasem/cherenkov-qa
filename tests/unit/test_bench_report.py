@@ -95,6 +95,11 @@ class TestVerdictStr:
 
 
 class TestPrintReportRich:
+    @pytest.fixture(autouse=True)
+    def _requires_rich(self):
+        if not report_module._RICH:
+            pytest.skip("rich is an optional dependency and is not installed")
+
     def test_includes_spec_gates_and_summary(self, capsys):
         print_report(_bench_report())
         out = capsys.readouterr().out
