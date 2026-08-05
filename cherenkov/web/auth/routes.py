@@ -1,8 +1,11 @@
 """Auth API routes: token, me, user management (admin)."""
+
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+import hmac
+
+from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, field_validator
 
 from cherenkov.web.auth import jwt as _jwt
@@ -11,6 +14,21 @@ from cherenkov.web.auth.models import Role, TokenResponse, User
 from cherenkov.web.auth.store import get_user_store
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
+
+_optional_bearer = HTTPBearer(auto_error=False)
+
+
+async def _optional_current_user(
+    creds: HTTPAuthorizationCredentials | None = Depends(_optional_bearer),
+) -> User | None:
+    """Resolve the caller, returning None instead of 401 when unauthenticated.
+
+    The bootstrap path of `create_user` has to be reachable before any user (and
+    therefore any token) exists, which `get_current_user` would reject outright.
+    """
+    if not creds:
+        return None
+    return await get_current_user(creds)
 
 
 class CreateUserRequest(BaseModel):
@@ -45,6 +63,7 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
             headers={"WWW-Authenticate": "Bearer"},
         )
     from cherenkov.core.settings import get_settings
+
     expire_hours = get_settings().JWT_EXPIRE_HOURS
     token = _jwt.encode({"sub": user.username, "role": user.role.value}, expire_hours=expire_hours)
     return TokenResponse(
@@ -61,25 +80,33 @@ async def me(current_user: User | None = Depends(get_current_user)):
     return current_user
 
 
-@router.post("/users", response_model=User, status_code=201, summary="Create a user (admin or bootstrap)")
+@router.post(
+    "/users", response_model=User, status_code=201, summary="Create a user (admin or bootstrap)"
+)
 async def create_user(
     body: CreateUserRequest,
-    current_user: User | None = Depends(get_current_user),
+    current_user: User | None = Depends(_optional_current_user),
+    x_bootstrap_key: str | None = Header(None),
 ):
     store = get_user_store()
     # Bootstrap path: if no users exist, allow creation with CHERENKOV_BOOTSTRAP_KEY
     if store.count() == 0:
         from cherenkov.core.settings import get_settings
+
         bk = get_settings().BOOTSTRAP_KEY
         if not bk:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="No users exist and CHERENKOV_BOOTSTRAP_KEY is not set. "
-                       "Set it to create the first admin user.",
+                "Set it to create the first admin user.",
             )
-        # Caller must include bootstrap key as password of a sentinel user
-        # Actually: caller POSTs normally but must present the bootstrap key
-        # via X-Bootstrap-Key header — checked below.  We allow no JWT here.
+        # No JWT exists yet, so the bootstrap key presented in X-Bootstrap-Key
+        # is the only credential gating creation of the first (admin) user.
+        if not x_bootstrap_key or not hmac.compare_digest(x_bootstrap_key, bk):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid or missing X-Bootstrap-Key header",
+            )
     else:
         # Require admin role for subsequent user creation
         if current_user is None or not (current_user.role >= Role.admin):

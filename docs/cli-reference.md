@@ -240,7 +240,7 @@ cherenkov review --port 8000 --demo
 
 | Flag | Default | Description |
 |---|---|---|
-| `--host` | `0.0.0.0` | Host to bind. |
+| `--host` | `127.0.0.1` | Host to bind. Use `0.0.0.0` only with `CHERENKOV_AUTH_ENABLED=true`. |
 | `--port, -p` | `8000` | Port to bind. |
 | `--demo` | off | Load demo fixture data into the HITL queue on startup. |
 
