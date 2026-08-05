@@ -2,5 +2,6 @@ export * from './ProjectManager';
 export * from './DeviceManager';
 export * from './EjectSuitePanel';
 export * from './GovernanceSettings';
+export * from './ModelProviderSettings';
 export * from './SettingsWorkspace';
 export { default } from './SettingsWorkspace';
