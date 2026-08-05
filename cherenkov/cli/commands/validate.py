@@ -3,6 +3,7 @@ from __future__ import annotations
 import glob
 import json
 import os
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -258,6 +259,43 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
         for r in _reports:
             if not r.get("passed", False):
                 click.echo(f"  FAIL  {r.get('scenario_id', '?')}  {r.get('error', '')[:120]}")
+
+    # Per-scenario tightening suggestions (suggest-only, never auto-applied).
+    # The engine already computes these via TighteningAnalyzer, but nothing
+    # echoed them to stdout — restoring the documented report format
+    # (docs/CLI_DEMO.md).
+    for r in _reports:
+        sid = r.get("scenario_id", "?")
+        status_word = "PASSED" if r.get("passed", False) else "FAILED"
+        click.echo(f"\nScenario: {sid} [{status_word}]")
+        suggestions = r.get("suggestions") or []
+        if suggestions:
+            click.echo("  Suggested Assertion Tightening (Suggest-only):")
+            for s in suggestions:
+                click.echo(f"  consider -> {s}")
+
+    if _reports:
+        repo_root = Path(__file__).parent.parent.parent.parent
+        tests_dir = repo_root / "stub" / "generated_tests"
+        git_check = subprocess.run(
+            ["git", "status", "--porcelain", "--", str(tests_dir)],
+            capture_output=True,
+            text=True,
+            cwd=str(repo_root),
+        )
+        if git_check.returncode == 0:
+            if git_check.stdout.strip():
+                click.echo(click.style(
+                    "\nWarning: stub/generated_tests has uncommitted changes "
+                    "after validation — suggest-only constraint may have been violated.",
+                    fg="yellow",
+                ))
+            else:
+                click.echo(click.style(
+                    "\nGit status is clean — zero test files were auto-modified "
+                    "by validation. Suggest-only constraint honored.",
+                    fg="green",
+                ))
 
     if format == "sarif":
         from cherenkov.execution.emitters.sarif import SARIFEmitter
