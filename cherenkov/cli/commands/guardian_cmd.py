@@ -12,25 +12,13 @@ CLI entrypoint for the Spec Guardian daemon (issue #811).
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 from typing import Any
 
 import click
-import yaml
 
-
-def _load_spec(spec_path: str) -> dict[str, Any]:
-    """Load an OpenAPI spec from YAML or JSON."""
-    p = Path(spec_path)
-    if not p.exists():
-        click.echo(click.style(f"[ERROR] spec not found: {spec_path}", fg="red"), err=True)
-        sys.exit(1)
-    text = p.read_text(encoding="utf-8")
-    if p.suffix in (".yaml", ".yml"):
-        return yaml.safe_load(text)
-    return json.loads(text)
+from cherenkov.cli.loaders import load_yaml_or_json
 
 
 def _default_endpoints(spec_path: str) -> list[dict[str, Any]]:
@@ -40,7 +28,7 @@ def _default_endpoints(spec_path: str) -> list[dict[str, Any]]:
     safe guessable value, and non-GET methods would mutate the target on
     every poll cycle.
     """
-    spec = _load_spec(spec_path)
+    spec = load_yaml_or_json(spec_path, "spec")
     endpoints: list[dict[str, Any]] = []
     for path, item in (spec.get("paths") or {}).items():
         if "{" in path or not isinstance(item, dict):
@@ -80,20 +68,31 @@ def guardian_cmd() -> None:
 @click.option("--spec", required=True, help="Path to the OpenAPI spec (YAML or JSON).")
 @click.option("--base-url", required=True, help="Base URL of the live API to monitor.")
 @click.option(
-    "--interval", "-i", type=int, default=60, show_default=True,
+    "--interval",
+    "-i",
+    type=int,
+    default=60,
+    show_default=True,
     help="Seconds between check cycles.",
 )
 @click.option(
-    "--endpoint", "raw_endpoints", multiple=True,
+    "--endpoint",
+    "raw_endpoints",
+    multiple=True,
     help="METHOD:PATH to check (repeatable). Default: every concrete GET "
-         "path in the spec (no {param} placeholders).",
+    "path in the spec (no {param} placeholders).",
 )
 @click.option(
-    "--max-loops", "-n", type=int, default=0,
+    "--max-loops",
+    "-n",
+    type=int,
+    default=0,
     help="Stop after N check cycles (0 = run until interrupted).",
 )
 @click.option(
-    "--db", "db_path", default=None,
+    "--db",
+    "db_path",
+    default=None,
     help="SQLite drift database path [default: .cherenkov/drift.db].",
 )
 def guardian_start_cmd(
@@ -123,7 +122,7 @@ def guardian_start_cmd(
         click.echo(
             click.style("[ERROR] ", fg="red", bold=True)
             + "No endpoints to monitor: the spec has no concrete GET paths "
-              "and none were given via --endpoint.",
+            "and none were given via --endpoint.",
             err=True,
         )
         sys.exit(1)

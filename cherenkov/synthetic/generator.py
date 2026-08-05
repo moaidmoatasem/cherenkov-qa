@@ -64,7 +64,7 @@ class SyntheticDataGenerator:
         """Generate a value using Ollama for semantically realistic output."""
         try:
             from cherenkov.substrate.client_factory import get_client
-            from cherenkov.substrate.providers.ollama_client import strip_think
+            from cherenkov.substrate.text_utils import strip_think
 
             client = get_client()
             schema_type = schema.get("type", "string")
@@ -251,5 +251,6 @@ def _load_spec(spec_path: str) -> dict[str, Any]:
     content = path.read_text(encoding="utf-8")
     if path.suffix in (".yaml", ".yml"):
         import yaml
+
         return yaml.safe_load(content)
     return json.loads(content)
