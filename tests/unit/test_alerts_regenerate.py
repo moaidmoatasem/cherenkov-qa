@@ -5,12 +5,11 @@ import os
 
 os.environ.setdefault("CHERENKOV_ENV", "development")
 
+import pytest  # noqa: E402
 from unittest.mock import patch
 
-import pytest
 from fastapi.testclient import TestClient
 
-from cherenkov.adapters.notifiers.registry import NotifierRegistry
 from cherenkov.core.events import CHERENKOVEvent, EventCategory
 from cherenkov.persistence.run_store import RunRecord
 from cherenkov.web import alerts as alerts_mod
@@ -111,9 +110,7 @@ class TestAlertEngine:
         )
         notifier = _RecordingNotifier()
         policy = alerts_mod.AlertPolicy(cooldown_seconds=600.0)
-        eng = alerts_mod.AlertEngine(
-            notifiers=[notifier], now=1700000000.0
-        )
+        eng = alerts_mod.AlertEngine(notifiers=[notifier], now=1700000000.0)
         first = eng.evaluate("https://example.test", policy, store=store)
         second = eng.evaluate("https://example.test", policy, store=store)
         assert first.alerted is True
@@ -145,7 +142,6 @@ class TestAutoRegenerateMode:
         mode = regen_mod.AutoRegenerateMode(
             regenerate_fn=fn, notifiers=[], now=1700000000.0
         )
-        mode._calls = calls
         return mode, calls
 
     def test_no_breach_no_trigger(self, _patched_store):
