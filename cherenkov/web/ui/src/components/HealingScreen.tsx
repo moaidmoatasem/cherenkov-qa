@@ -69,15 +69,15 @@ export default function HealingScreen({ onSuggestResolveCount }: HealingScreenPr
       case 'CONTRACT_DRIFT':
         return 'bg-glow-blue/10 text-glow-bright border-glow-blue/30';
       case 'AUTH_EXPIRY':
-        return 'bg-[#D29922]/10 text-[#D29922] border-[#D29922]/35';
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/35';
       case 'STATE_SEQUENCING':
-        return 'bg-[#3FB950]/10 text-[#3FB950] border-[#3FB950]/35';
+        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/35';
       case 'NETWORK_FLAKY':
-        return 'bg-gray-brand/20 text-[#7D8DA1] border-[#233044]';
+        return 'bg-gray-brand/20 text-text-muted border-slate-800';
       case 'ASSERTION_DRIFT':
-        return 'bg-[#F85149]/15 text-[#F85149] border-[#F85149]/40';
+        return 'bg-rose-500/15 text-rose-400 border-rose-500/40';
       default:
-        return 'bg-[#7D8DA1]/10 text-[#7D8DA1] border-none';
+        return 'bg-slate-500/10 text-slate-400 border-none';
     }
   };
 

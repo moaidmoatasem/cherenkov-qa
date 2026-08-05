@@ -9,6 +9,7 @@ import ModelProviderSettings from './ModelProviderSettings';
 import DeviceManager from './DeviceManager';
 import EjectSuitePanel from './EjectSuitePanel';
 import GovernanceSettings from './GovernanceSettings';
+import ModelProviderSettings from './ModelProviderSettings';
 import { PageHeader } from '../../ui/PageHeader';
 
 export const SettingsWorkspace: React.FC = () => {
@@ -19,7 +20,10 @@ export const SettingsWorkspace: React.FC = () => {
         description="Projects, hardware & model providers, exporting your tests, and access control."
       />
 
-      {/* 1. Project Management */}
+      {/* 1. LLM Provider & Model Configuration */}
+      <ModelProviderSettings />
+
+      {/* 2. Project Management */}
       <ProjectManager />
 
       {/* 2. AI Model Provider & AirLLM */}
@@ -28,10 +32,10 @@ export const SettingsWorkspace: React.FC = () => {
       {/* 3. Hardware & VLM Device Diagnostics */}
       <DeviceManager />
 
-      {/* 3. Plain Playwright Suite Eject Exporter */}
+      {/* 4. Plain Playwright Suite Eject Exporter */}
       <EjectSuitePanel />
 
-      {/* 4. Governance & System Settings */}
+      {/* 5. Governance & System Settings */}
       <GovernanceSettings />
     </div>
   );

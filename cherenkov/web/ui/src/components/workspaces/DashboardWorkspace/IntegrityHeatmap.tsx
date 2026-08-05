@@ -14,6 +14,7 @@ export interface EndpointIntegrity {
   method: string;
   integrityScore: number;
   driftCount: number;
+  severity?: Divergence['severity'];
 }
 
 // Severity -> points deducted from a 98-point baseline. Mirrors the same

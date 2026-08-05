@@ -102,6 +102,10 @@ from cherenkov.web.routes.coverage_routes import router as coverage_router
 
 app.include_router(coverage_router)
 
+from cherenkov.web.routes.perf_routes import router as perf_router
+
+app.include_router(perf_router)
+
 from cherenkov.web.routes.data_routes import router as data_router
 
 app.include_router(data_router)
