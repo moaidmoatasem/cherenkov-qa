@@ -11,9 +11,7 @@ Enforces the decisions that took the whole spec arc to settle:
 
 from __future__ import annotations
 
-import json
 import random
-import re
 import time
 
 import requests
@@ -21,9 +19,7 @@ import requests
 from cherenkov.core.errors import OllamaJSONError, get_logger
 from cherenkov.core.settings import get_settings
 from cherenkov.substrate.interfaces import InferenceClient
-
-_RE_FENCE_START = re.compile(r"^```[a-z]*\n?")
-_RE_FENCE_END = re.compile(r"\n?```$")
+from cherenkov.substrate.text_utils import json_repair, strip_fences, try_json
 
 
 def _post_with_retry(
@@ -96,31 +92,6 @@ class OllamaClient(InferenceClient):
         )
 
 
-_THINK = re.compile(r"<think\b[^>]*>.*?</think>", re.DOTALL)
-
-
-def strip_think(text: str) -> str:
-    """Remove deepseek <think> blocks. Malformed/unclosed -> return as-is + caller
-    logs a warning. We do NOT try to rescue half-open reasoning (Delta)."""
-    return _THINK.sub("", text).strip()
-
-
-def _try_json(text: str) -> dict | None:
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        return None
-
-
-def _json_repair(raw: str) -> dict | None:
-    """Extract the last valid JSON object from a string (last is usually the real response)."""
-    # Find all {...} blocks and return the last one (most likely the real response)
-    matches = list(re.finditer(r"\{[^{}]*(?:\{[^{}]*\}[^{}]*)?\}", raw, re.DOTALL))
-    if matches:
-        return _try_json(matches[-1].group(0))
-    return None
-
-
 class OllamaInferenceClient(InferenceClient):
     """Ollama-specific implementation of the InferenceClient interface."""
 
@@ -175,7 +146,7 @@ class OllamaInferenceClient(InferenceClient):
             self._token_usage["prompt_tokens"] = body.get("prompt_eval_count", 0)
             self._token_usage["completion_tokens"] = body.get("eval_count", 0)
 
-            parsed = _try_json(last_raw) or _json_repair(last_raw)
+            parsed = try_json(last_raw) or json_repair(last_raw)
             if parsed is not None:
                 log.info("json ok", model=model, attempt=attempt, duration_ms=dt_ms)
                 return parsed
@@ -228,9 +199,7 @@ class OllamaInferenceClient(InferenceClient):
             text = body.get("response", "").strip()
             self._token_usage["prompt_tokens"] = body.get("prompt_eval_count", 0)
             self._token_usage["completion_tokens"] = body.get("eval_count", 0)
-            text = _RE_FENCE_START.sub("", text)
-            text = _RE_FENCE_END.sub("", text)
-            text = text.strip()
+            text = strip_fences(text)
             log.info(
                 "code ok",
                 model=model,
@@ -241,9 +210,7 @@ class OllamaInferenceClient(InferenceClient):
                 return text
             attempt += 1
             self._token_usage["reprompts"] = attempt
-            log.warning(
-                "empty code response, reprompting", model=model, attempt=attempt
-            )
+            log.warning("empty code response, reprompting", model=model, attempt=attempt)
         return text
 
     def complete_vision(

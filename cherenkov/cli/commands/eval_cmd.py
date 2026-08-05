@@ -15,40 +15,10 @@ from pathlib import Path
 
 import click
 
-
-def _load_json(path: str, label: str) -> dict:
-    p = Path(path)
-    if not p.exists():
-        click.echo(click.style(f"[ERROR] {label} not found: {path}", fg="red"), err=True)
-        sys.exit(1)
-    try:
-        return json.loads(p.read_text())
-    except json.JSONDecodeError as e:
-        click.echo(click.style(f"[ERROR] {label} is not valid JSON: {e}", fg="red"), err=True)
-        sys.exit(1)
-
-
-def _load_yaml_or_json(path: str, label: str) -> dict:
-    p = Path(path)
-    if not p.exists():
-        click.echo(click.style(f"[ERROR] {label} not found: {path}", fg="red"), err=True)
-        sys.exit(1)
-    text = p.read_text()
-    if path.endswith((".yaml", ".yml")):
-        try:
-            import yaml
-            return yaml.safe_load(text)
-        except Exception as e:
-            click.echo(click.style(f"[ERROR] {label} YAML parse error: {e}", fg="red"), err=True)
-            sys.exit(1)
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError as e:
-        click.echo(click.style(f"[ERROR] {label} JSON parse error: {e}", fg="red"), err=True)
-        sys.exit(1)
-
+from cherenkov.cli.loaders import load_json, load_yaml_or_json
 
 # ── `cherenkov eval` group ─────────────────────────────────────────────────────
+
 
 @click.group("eval")
 def eval_cmd():
@@ -78,14 +48,23 @@ def eval_cmd():
 
 # ── `cherenkov eval grade` ─────────────────────────────────────────────────────
 
+
 @eval_cmd.command("grade")
-@click.option("--spec",  required=True, help="Path to OpenAPI spec (YAML or JSON).")
+@click.option("--spec", required=True, help="Path to OpenAPI spec (YAML or JSON).")
 @click.option("--suite", required=True, help="Path to suite manifest JSON.")
-@click.option("--output", "-o", default=None,
-              help="Write grade report JSON to this file [default: grade-<timestamp>.json].")
+@click.option(
+    "--output",
+    "-o",
+    default=None,
+    help="Write grade report JSON to this file [default: grade-<timestamp>.json].",
+)
 @click.option("--json", "as_json", is_flag=True, default=False, help="Output JSON.")
-@click.option("--fail-on", type=click.Choice(["F", "D", "C", "B", "A"]), default=None,
-              help="Exit 1 if overall grade is at or below this threshold.")
+@click.option(
+    "--fail-on",
+    type=click.Choice(["F", "D", "C", "B", "A"]),
+    default=None,
+    help="Exit 1 if overall grade is at or below this threshold.",
+)
 def grade_cmd(spec, suite, output, as_json, fail_on):
     """Score test suite quality against the OpenAPI spec.
 
@@ -98,8 +77,8 @@ def grade_cmd(spec, suite, output, as_json, fail_on):
     """
     from cherenkov.eval.grader import SuiteGrader
 
-    spec_dict  = _load_yaml_or_json(spec, "spec")
-    suite_dict = _load_json(suite, "suite")
+    spec_dict = load_yaml_or_json(spec, "spec")
+    suite_dict = load_json(suite, "suite")
 
     grader = SuiteGrader(spec_dict)
     report = grader.grade(suite_dict)
@@ -120,7 +99,11 @@ def grade_cmd(spec, suite, output, as_json, fail_on):
 
 def _print_grade_report(report) -> None:
     grade_color = {
-        "A": "green", "B": "green", "C": "yellow", "D": "yellow", "F": "red",
+        "A": "green",
+        "B": "green",
+        "C": "yellow",
+        "D": "yellow",
+        "F": "red",
     }.get(report.grade, "white")
 
     click.echo()
@@ -130,17 +113,31 @@ def _print_grade_report(report) -> None:
         + click.style(report.grade, fg=grade_color, bold=True)
         + f"  (score {report.overall_score:.3f})"
     )
-    click.echo(f"  coverage   : {report.coverage:.1%}  ({report.suite_op_count}/{report.spec_op_count} ops)")
+    click.echo(
+        f"  coverage   : {report.coverage:.1%}  ({report.suite_op_count}/{report.spec_op_count} ops)"
+    )
     click.echo(f"  density    : {report.overall_assertion_density:.1f} assertions/test")
-    click.echo(f"  meaningful : {report.overall_meaningful_ratio:.1%} of assertions pass quality check")
+    click.echo(
+        f"  meaningful : {report.overall_meaningful_ratio:.1%} of assertions pass quality check"
+    )
     click.echo()
 
     if report.operations:
-        click.echo(click.style(f"  {'OPERATION':<32} {'GRADE':>5} {'SCORE':>6} {'DENSITY':>8} {'CONFORM':>8}", bold=True))
+        click.echo(
+            click.style(
+                f"  {'OPERATION':<32} {'GRADE':>5} {'SCORE':>6} {'DENSITY':>8} {'CONFORM':>8}",
+                bold=True,
+            )
+        )
         click.echo("  " + "─" * 65)
         for op in report.operations:
-            color = {"A": "green", "B": "green", "C": "yellow", "D": "yellow", "F": "red"}.get(op.grade, "white")
-            conform_str = click.style("✔" if op.schema_conformance >= 1.0 else "✘", fg="green" if op.schema_conformance >= 1.0 else "red")
+            color = {"A": "green", "B": "green", "C": "yellow", "D": "yellow", "F": "red"}.get(
+                op.grade, "white"
+            )
+            conform_str = click.style(
+                "✔" if op.schema_conformance >= 1.0 else "✘",
+                fg="green" if op.schema_conformance >= 1.0 else "red",
+            )
             click.echo(
                 f"  {op.operation_id[:32]:<32} "
                 + click.style(f"{op.grade:>5}", fg=color)
@@ -151,17 +148,19 @@ def _print_grade_report(report) -> None:
 
 # ── `cherenkov eval run` ───────────────────────────────────────────────────────
 
+
 @eval_cmd.command("run")
 @click.option("--suite", required=True, help="Path to suite manifest JSON.")
-@click.option("--spec",  default=None, help="Path to OpenAPI spec (for spec/suite hashing).")
-@click.option("--target", default=None,
-              help="Base URL of the API under test [default: dry-run mode].")
-@click.option("--output", "-o", default=None,
-              help="Output JSONL file [default: eval-run-<timestamp>.jsonl].")
+@click.option("--spec", default=None, help="Path to OpenAPI spec (for spec/suite hashing).")
+@click.option(
+    "--target", default=None, help="Base URL of the API under test [default: dry-run mode]."
+)
+@click.option(
+    "--output", "-o", default=None, help="Output JSONL file [default: eval-run-<timestamp>.jsonl]."
+)
 @click.option("--timeout", default=10.0, show_default=True, help="Per-request timeout (seconds).")
 @click.option("--json", "as_json", is_flag=True, default=False, help="Output JSON summary.")
-@click.option("--fail-on-failure", is_flag=True, default=False,
-              help="Exit 1 if any test fails.")
+@click.option("--fail-on-failure", is_flag=True, default=False, help="Exit 1 if any test fails.")
 def run_cmd(suite, spec, target, output, timeout, as_json, fail_on_failure):
     """Execute suite against a live API and emit a JSONL trace.
 
@@ -176,10 +175,11 @@ def run_cmd(suite, spec, target, output, timeout, as_json, fail_on_failure):
     from cherenkov.drift.snapshot import suite_manifest_hash
     from cherenkov.eval.runner import EvalRunner
 
-    suite_dict = _load_json(suite, "suite")
-    spec_dict  = _load_yaml_or_json(spec, "spec") if spec else {}
+    suite_dict = load_json(suite, "suite")
+    spec_dict = load_yaml_or_json(spec, "spec") if spec else {}
 
     from datetime import datetime, timezone
+
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     out_path = Path(output) if output else Path(f"eval-run-{ts}.jsonl")
 
@@ -193,13 +193,18 @@ def run_cmd(suite, spec, target, output, timeout, as_json, fail_on_failure):
     trace.to_jsonl(out_path)
 
     if as_json:
-        click.echo(json.dumps({
-            "total": trace.total,
-            "passed": trace.passed,
-            "failed": trace.failed,
-            "pass_rate": round(trace.pass_rate, 4),
-            "output": str(out_path),
-        }, indent=2))
+        click.echo(
+            json.dumps(
+                {
+                    "total": trace.total,
+                    "passed": trace.passed,
+                    "failed": trace.failed,
+                    "pass_rate": round(trace.pass_rate, 4),
+                    "output": str(out_path),
+                },
+                indent=2,
+            )
+        )
     else:
         _print_run_summary(trace, out_path, target)
 
@@ -209,7 +214,9 @@ def run_cmd(suite, spec, target, output, timeout, as_json, fail_on_failure):
 
 def _print_run_summary(trace, out_path: Path, target: str | None) -> None:
     mode = target or "dry-run"
-    pass_color = "green" if trace.pass_rate >= 0.9 else ("yellow" if trace.pass_rate >= 0.6 else "red")
+    pass_color = (
+        "green" if trace.pass_rate >= 0.9 else ("yellow" if trace.pass_rate >= 0.6 else "red")
+    )
 
     click.echo()
     click.echo(click.style("── Eval Run Summary ──────────────────────────────────", bold=True))
@@ -217,7 +224,9 @@ def _print_run_summary(trace, out_path: Path, target: str | None) -> None:
     click.echo(f"  tests      : {trace.total}")
     click.echo(
         "  pass rate  : "
-        + click.style(f"{trace.pass_rate:.1%}  ({trace.passed}/{trace.total})", fg=pass_color, bold=True)
+        + click.style(
+            f"{trace.pass_rate:.1%}  ({trace.passed}/{trace.total})", fg=pass_color, bold=True
+        )
     )
     click.echo(f"  trace      : {out_path}")
     click.echo()
@@ -238,12 +247,17 @@ def _print_run_summary(trace, out_path: Path, target: str | None) -> None:
 
 # ── `cherenkov eval compare` ──────────────────────────────────────────────────
 
+
 @eval_cmd.command("compare")
 @click.option("--before", required=True, help="Path to baseline grade JSON (before).")
-@click.option("--after",  required=True, help="Path to new grade JSON (after).")
+@click.option("--after", required=True, help="Path to new grade JSON (after).")
 @click.option("--json", "as_json", is_flag=True, default=False, help="Output JSON.")
-@click.option("--fail-on-regression", is_flag=True, default=False,
-              help="Exit 1 if any operation regressed in grade.")
+@click.option(
+    "--fail-on-regression",
+    is_flag=True,
+    default=False,
+    help="Exit 1 if any operation regressed in grade.",
+)
 def compare_cmd(before, after, as_json, fail_on_regression):
     """Compare two grade reports to detect regressions and improvements.
 
@@ -255,7 +269,7 @@ def compare_cmd(before, after, as_json, fail_on_regression):
     from cherenkov.eval.grader import GradeReport
 
     before_report = GradeReport.load(Path(before))
-    after_report  = GradeReport.load(Path(after))
+    after_report = GradeReport.load(Path(after))
     cmp = compare_grades(before_report, after_report)
 
     if as_json:
@@ -285,13 +299,17 @@ def _print_compare_report(cmp) -> None:
     if cmp.improved:
         click.echo(click.style(f"  Improved ({len(cmp.improved)}):", fg="green", bold=True))
         for d in cmp.improved:
-            click.echo(f"    ✔  {d.operation_id:<30} {d.before_grade} → {d.after_grade}  (Δ{d.delta_score:+.3f})")
+            click.echo(
+                f"    ✔  {d.operation_id:<30} {d.before_grade} → {d.after_grade}  (Δ{d.delta_score:+.3f})"
+            )
         click.echo()
 
     if cmp.regressed:
         click.echo(click.style(f"  Regressed ({len(cmp.regressed)}):", fg="red", bold=True))
         for d in cmp.regressed:
-            click.echo(f"    ✘  {d.operation_id:<30} {d.before_grade} → {d.after_grade}  (Δ{d.delta_score:+.3f})")
+            click.echo(
+                f"    ✘  {d.operation_id:<30} {d.before_grade} → {d.after_grade}  (Δ{d.delta_score:+.3f})"
+            )
         click.echo()
 
     if cmp.added:
@@ -309,13 +327,17 @@ def _print_compare_report(cmp) -> None:
     if not cmp.has_regressions:
         click.echo(click.style("  ✔  No regressions detected.", fg="green"))
     else:
-        click.echo(click.style(
-            "  ✖  Regressions detected — review failing operations above.",
-            fg="red", bold=True,
-        ))
+        click.echo(
+            click.style(
+                "  ✖  Regressions detected — review failing operations above.",
+                fg="red",
+                bold=True,
+            )
+        )
 
 
 # ── `cherenkov eval optimize` ─────────────────────────────────────────────────
+
 
 @eval_cmd.command("optimize")
 @click.option("--grade", "grade_path", required=True, help="Path to grade report JSON.")
@@ -344,14 +366,17 @@ def optimize_cmd(grade_path, as_json):
 
 def _print_optimize_suggestion(suggestion) -> None:
     grade_color = {
-        "A": "green", "B": "green", "C": "yellow", "D": "yellow", "F": "red",
+        "A": "green",
+        "B": "green",
+        "C": "yellow",
+        "D": "yellow",
+        "F": "red",
     }.get(suggestion.current_grade, "white")
 
     click.echo()
     click.echo(click.style("── Eval Optimize ─────────────────────────────────────", bold=True))
     click.echo(
-        "  current grade : "
-        + click.style(suggestion.current_grade, fg=grade_color, bold=True)
+        "  current grade : " + click.style(suggestion.current_grade, fg=grade_color, bold=True)
     )
     click.echo()
     click.echo(click.style("  Suggestions:", bold=True))
@@ -374,21 +399,39 @@ def _print_optimize_suggestion(suggestion) -> None:
 
 # ── `cherenkov eval generate` ─────────────────────────────────────────────────
 
+
 @eval_cmd.command("generate")
 @click.option("--spec", required=True, help="Path to OpenAPI spec (YAML or JSON).")
-@click.option("--output", "-o", default=None,
-              help="Write suite JSON to this file [default: suite-<timestamp>.json].")
-@click.option("--personas", default="all",
-              help=(
-                  "Comma-separated persona names or 'all'. "
-                  "Available: HappyPath, ErrorPath, SecurityProber, SchemaPedant, BoundarySeeker"
-              ))
-@click.option("--no-enrich", "no_enrich", is_flag=True, default=False,
-              help="Skip the assertion-enrichment polish pass.")
-@click.option("--no-grade", "no_grade", is_flag=True, default=False,
-              help="Skip grading after generation.")
-@click.option("--sequential", is_flag=True, default=False,
-              help="Run personas sequentially instead of in parallel.")
+@click.option(
+    "--output",
+    "-o",
+    default=None,
+    help="Write suite JSON to this file [default: suite-<timestamp>.json].",
+)
+@click.option(
+    "--personas",
+    default="all",
+    help=(
+        "Comma-separated persona names or 'all'. "
+        "Available: HappyPath, ErrorPath, SecurityProber, SchemaPedant, BoundarySeeker"
+    ),
+)
+@click.option(
+    "--no-enrich",
+    "no_enrich",
+    is_flag=True,
+    default=False,
+    help="Skip the assertion-enrichment polish pass.",
+)
+@click.option(
+    "--no-grade", "no_grade", is_flag=True, default=False, help="Skip grading after generation."
+)
+@click.option(
+    "--sequential",
+    is_flag=True,
+    default=False,
+    help="Run personas sequentially instead of in parallel.",
+)
 @click.option("--json", "as_json", is_flag=True, default=False, help="Output JSON summary.")
 def generate_cmd(spec, output, personas, no_enrich, no_grade, sequential, as_json):
     """Generate a multi-persona test suite from an OpenAPI spec.
@@ -412,7 +455,7 @@ def generate_cmd(spec, output, personas, no_enrich, no_grade, sequential, as_jso
     from cherenkov.synthetic.personas import DEFAULT_PERSONAS, PERSONA_BY_NAME
     from cherenkov.synthetic.suite_engine import SuiteEngine
 
-    spec_dict = _load_yaml_or_json(spec, "spec")
+    spec_dict = load_yaml_or_json(spec, "spec")
 
     if personas.lower() == "all":
         selected = list(DEFAULT_PERSONAS)
@@ -421,12 +464,8 @@ def generate_cmd(spec, output, personas, no_enrich, no_grade, sequential, as_jso
         for name in [n.strip() for n in personas.split(",")]:
             p = PERSONA_BY_NAME.get(name)
             if p is None:
-                click.echo(
-                    click.style(f"[ERROR] Unknown persona: {name!r}", fg="red"), err=True
-                )
-                click.echo(
-                    f"  Available: {', '.join(PERSONA_BY_NAME)}", err=True
-                )
+                click.echo(click.style(f"[ERROR] Unknown persona: {name!r}", fg="red"), err=True)
+                click.echo(f"  Available: {', '.join(PERSONA_BY_NAME)}", err=True)
                 sys.exit(1)
             selected.append(p)
 
@@ -454,7 +493,9 @@ def _print_generate_result(result, out_path: Path, personas) -> None:
     grade_str = ""
     if result.grade_report is not None:
         g = result.grade_report.grade
-        color = {"A": "green", "B": "green", "C": "yellow", "D": "yellow", "F": "red"}.get(g, "white")
+        color = {"A": "green", "B": "green", "C": "yellow", "D": "yellow", "F": "red"}.get(
+            g, "white"
+        )
         grade_str = "  grade      : " + click.style(g, fg=color, bold=True) + "\n"
 
     click.echo()
@@ -469,9 +510,7 @@ def _print_generate_result(result, out_path: Path, personas) -> None:
     click.echo()
 
     if result.persona_runs:
-        click.echo(click.style(
-            f"  {'PERSONA':<20} {'OPS':>4} {'TESTS':>6} {'MS':>6}", bold=True
-        ))
+        click.echo(click.style(f"  {'PERSONA':<20} {'OPS':>4} {'TESTS':>6} {'MS':>6}", bold=True))
         click.echo("  " + "─" * 40)
         for r in sorted(result.persona_runs, key=lambda x: x.persona_name):
             click.echo(
@@ -482,15 +521,25 @@ def _print_generate_result(result, out_path: Path, personas) -> None:
 
 # ── `cherenkov eval refine` ───────────────────────────────────────────────────
 
+
 @eval_cmd.command("refine")
-@click.option("--spec",  required=True, help="Path to OpenAPI spec (YAML or JSON).")
+@click.option("--spec", required=True, help="Path to OpenAPI spec (YAML or JSON).")
 @click.option("--suite", required=True, help="Path to existing suite JSON.")
-@click.option("--grade", "grade_path", required=True,
-              help="Path to grade report JSON (output of `eval grade`).")
-@click.option("--output", "-o", default=None,
-              help="Write refined suite to this file [default: overwrites --suite].")
-@click.option("--no-grade", "no_grade", is_flag=True, default=False,
-              help="Skip re-grading after refinement.")
+@click.option(
+    "--grade",
+    "grade_path",
+    required=True,
+    help="Path to grade report JSON (output of `eval grade`).",
+)
+@click.option(
+    "--output",
+    "-o",
+    default=None,
+    help="Write refined suite to this file [default: overwrites --suite].",
+)
+@click.option(
+    "--no-grade", "no_grade", is_flag=True, default=False, help="Skip re-grading after refinement."
+)
 @click.option("--json", "as_json", is_flag=True, default=False, help="Output JSON summary.")
 def refine_cmd(spec, suite, grade_path, output, no_grade, as_json):
     """Targeted second-pass generation that improves weak operations.
@@ -510,8 +559,8 @@ def refine_cmd(spec, suite, grade_path, output, no_grade, as_json):
     from cherenkov.eval.grader import GradeReport
     from cherenkov.synthetic.refiner import refine_suite
 
-    spec_dict  = _load_yaml_or_json(spec, "spec")
-    suite_dict = _load_json(suite, "suite")
+    spec_dict = load_yaml_or_json(spec, "spec")
+    suite_dict = load_json(suite, "suite")
     grade_report = GradeReport.load(Path(grade_path))
 
     result = refine_suite(
@@ -536,27 +585,25 @@ def _print_refine_result(result, out_path: Path) -> None:
     )
     click.echo()
     click.echo(click.style("── Eval Refine ───────────────────────────────────────", bold=True))
-    click.echo(
-        "  original grade : "
-        + click.style(result.original_grade, fg=orig_color, bold=True)
-    )
+    click.echo("  original grade : " + click.style(result.original_grade, fg=orig_color, bold=True))
 
     if result.new_grade_report is not None:
         new_g = result.new_grade_report.grade
         new_color = {"A": "green", "B": "green", "C": "yellow", "D": "yellow", "F": "red"}.get(
             new_g, "white"
         )
-        click.echo(
-            "  new grade      : "
-            + click.style(new_g, fg=new_color, bold=True)
-        )
+        click.echo("  new grade      : " + click.style(new_g, fg=new_color, bold=True))
 
-    click.echo(f"  ops targeted   : {len(result.ops_targeted)}  ({', '.join(result.ops_targeted) or 'none'})")
+    click.echo(
+        f"  ops targeted   : {len(result.ops_targeted)}  ({', '.join(result.ops_targeted) or 'none'})"
+    )
     click.echo(f"  tests added    : {result.tests_added}")
     click.echo(f"  duration       : {result.duration_ms}ms")
     click.echo(f"  output         : {out_path}")
 
     if not result.ops_targeted:
         click.echo()
-        click.echo(click.style("  Suite is already strong — no targeted refinement needed.", fg="green"))
+        click.echo(
+            click.style("  Suite is already strong — no targeted refinement needed.", fg="green")
+        )
     click.echo()

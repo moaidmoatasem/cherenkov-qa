@@ -11,7 +11,8 @@ from cherenkov.core.contracts import GenerateOutput, StageError, StageMeta, Stat
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 from cherenkov.stages.ui_plan import UIScenario, UISpec
-from cherenkov.substrate.providers.ollama_client import complete_code, strip_think
+from cherenkov.substrate.providers.ollama_client import complete_code
+from cherenkov.substrate.text_utils import strip_think
 
 SYSTEM_PROMPT = """You are an expert QA automation engineer writing Playwright UI/E2E tests in TypeScript. You write ONE test per request.
 
@@ -90,9 +91,7 @@ class UIGenerateStage:
                             lines[i] = line.replace("test", "test, expect")
                         else:
                             # Fallback if somehow braces are not matching standard shape
-                            lines[i] = (
-                                "import { test, expect } from '@playwright/test';"
-                            )
+                            lines[i] = "import { test, expect } from '@playwright/test';"
                 code = "\n".join(lines)
 
         except Exception as e:
