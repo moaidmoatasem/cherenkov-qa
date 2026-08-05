@@ -144,26 +144,33 @@ def main():
     print("Calculating pre-run hash of generated_tests...")
     pre_hash = _get_tests_hash()
 
-    # 4. Execute cherenkov validate against target API, scoped to the two
-    # purpose-built fixtures (demo_tighten.spec.ts / password_too_short.spec.ts)
-    # instead of the default scope — every file in stub/generated_tests is a
-    # shipped demo/golden fixture, so an unfiltered run is intentionally
-    # empty (see cherenkov/execution/validate.py's _fixtures exclusion).
-    # A single --tests filter can only match one substring, so this runs
-    # twice: once for the tightening-suggestion assertions, once for the
-    # conformance-drift assertion.
+    # 4. Execute cherenkov validate against the target API.
+    # The default (no --tests) scope deliberately excludes every demo_/golden_/
+    # password_too_short fixture (see cherenkov/execution/validate.py) so the
+    # catch-the-AI-cheating demo corpus doesn't get treated as tightening-suggestion
+    # input. Today everything under stub/generated_tests IS one of those fixtures,
+    # so an unscoped run always yields "0/0 passed [EMPTY]" — scope each assertion
+    # to the specific fixture it's about via an explicit --tests filter instead.
     print("Executing validation subcommand CLI against target API...")
     try:
-        val_proc = subprocess.run(
-            ["./bin/cherenkov", "validate", "--target", base_url, "--tests", "demo_tighten"],
+        tighten_proc = subprocess.run(
+            [
+                "./bin/cherenkov",
+                "validate",
+                "--target",
+                base_url,
+                "--tests",
+                "demo_tighten.spec.ts",
+                "--verbose",
+            ],
             env={**os.environ, "PYTHONPATH": "."},
             capture_output=True,
             text=True,
             check=True,
         )
-        stdout = val_proc.stdout
+        stdout = tighten_proc.stdout
 
-        print("\n--- CLI TIGHTENING REPORT OUTPUT (demo_tighten) ---")
+        print("\n--- CLI TIGHTENING REPORT OUTPUT ---")
         print(stdout)
         print("------------------------------------\n")
 
@@ -177,40 +184,42 @@ def main():
             "[OK] Successfully verified value tightening suggestions for /users POST happy_path endpoint."
         )
 
-        assert (
-            "zero test files were auto-modified by validation" in stdout
-        ), "Suggest-only trust constraint violated (test files were modified)!"
-
-        val_proc_drift = subprocess.run(
-            ["./bin/cherenkov", "validate", "--target", base_url, "--tests", "password_too_short"],
+        drift_proc = subprocess.run(
+            [
+                "./bin/cherenkov",
+                "validate",
+                "--target",
+                base_url,
+                "--tests",
+                "password_too_short.spec.ts",
+                "--verbose",
+            ],
             env={**os.environ, "PYTHONPATH": "."},
             capture_output=True,
             text=True,
             check=True,
         )
-        drift_stdout = val_proc_drift.stdout
+        drift_stdout = drift_proc.stdout
 
-        print("\n--- CLI TIGHTENING REPORT OUTPUT (password_too_short) ---")
+        print("\n--- CLI CONFORMANCE DRIFT REPORT OUTPUT ---")
         print(drift_stdout)
-        print("------------------------------------\n")
+        print("--------------------------------------------\n")
 
         assert (
-            "password_too_short [FAILED]" in drift_stdout
+            "FAIL  password_too_short" in drift_stdout
         ), "Failed to capture password_too_short spec conformance drift!"
         print(
             "[OK] Successfully verified spec-to-implementation conformance failure (RED) report."
         )
 
-        assert (
-            "zero test files were auto-modified by validation" in drift_stdout
-        ), "Suggest-only trust constraint violated (test files were modified)!"
-
+        # Suggest-only trust constraint (D7): validate never writes to
+        # stub/generated_tests. Verified directly via hash, not a CLI claim.
         post_hash = _get_tests_hash()
         assert (
             pre_hash == post_hash
         ), f"Hash-guard regression: test files were modified on disk! Pre: {pre_hash}, Post: {post_hash}"
         print(
-            "[OK] Successfully verified suggest-only sandbox constraint assertion (no files modified, hashes match)."
+            "[OK] Successfully verified suggest-only sandbox constraint (no files modified, hashes match)."
         )
 
     except subprocess.CalledProcessError as e:

@@ -249,6 +249,8 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
             sid = r.get("scenario_id", "?")
             err = f"  {r.get('error', '')[:120]}" if not r.get("passed", False) else ""
             click.echo(click.style(f"  {icon}  {sid}{err}", fg=color))
+            for suggestion in r.get("suggestions", []):
+                click.echo(f"    consider -> {suggestion}")
 
     click.echo(click.style(
         f"\nResults: {_passed}/{_total} passed  [{results.get('status', 'done').upper()}]",
@@ -260,19 +262,9 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
             if not r.get("passed", False):
                 click.echo(f"  FAIL  {r.get('scenario_id', '?')}  {r.get('error', '')[:120]}")
 
-    # Per-scenario tightening suggestions (suggest-only, never auto-applied).
-    # The engine already computes these via TighteningAnalyzer, but nothing
-    # echoed them to stdout — restoring the documented report format
-    # (docs/CLI_DEMO.md).
-    for r in _reports:
-        sid = r.get("scenario_id", "?")
-        status_word = "PASSED" if r.get("passed", False) else "FAILED"
-        click.echo(f"\nScenario: {sid} [{status_word}]")
-        suggestions = r.get("suggestions") or []
-        if suggestions:
-            click.echo("  Suggested Assertion Tightening (Suggest-only):")
-            for s in suggestions:
-                click.echo(f"  consider -> {s}")
+    # Per-scenario tightening suggestions (suggest-only, never auto-applied)
+    # are printed only under --verbose (see the verbose block above), keeping
+    # the default output terse per the CLI design.
 
     if _reports:
         repo_root = Path(__file__).parent.parent.parent.parent

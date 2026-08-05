@@ -221,40 +221,35 @@ class TestDashboardCommand(unittest.TestCase):
 
 
 class TestCLIIntegration(unittest.TestCase):
-    """Test CLI integration of new commands."""
+    """Test CLI integration of new commands.
+
+    The root `cherenkov.py` argparse shim was retired (#814) in favor of the
+    Click-based CLI in `cherenkov/cli/core.py`, which has no `get_parser()`
+    and isn't introspectable the same way — these tests exercise the current
+    CLI directly via `click.testing.CliRunner`.
+    """
+
+    def setUp(self):
+        from click.testing import CliRunner
+
+        from cherenkov.cli.core import _register_commands, cli
+
+        _register_commands()
+        self.cli = cli
+        self.runner = CliRunner()
 
     def test_init_subcommand_in_help(self):
-        import importlib.util
-
-        spec = importlib.util.spec_from_file_location("cherenkov_cli", "cherenkov.py")
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        parser = mod.get_parser()
-        help_text = parser.format_help()
-        self.assertIn("init", help_text)
-        self.assertIn("doctor", help_text)
-        self.assertIn("dashboard", help_text)
+        result = self.runner.invoke(self.cli, ["--help"])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("init", result.output)
+        self.assertIn("doctor", result.output)
+        self.assertIn("dashboard", result.output)
 
     def test_init_help_contains_profile(self):
-        import importlib.util
-
-        spec = importlib.util.spec_from_file_location("cherenkov_cli", "cherenkov.py")
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        parser = mod.get_parser()
-        init_parser = None
-        for action in parser._actions:
-            if (
-                hasattr(action, "choices")
-                and action.choices
-                and "init" in action.choices
-            ):
-                init_parser = action.choices["init"]
-                break
-        self.assertIsNotNone(init_parser)
-        help_text = init_parser.format_help()
-        self.assertIn("--profile", help_text)
-        self.assertIn("--force", help_text)
+        result = self.runner.invoke(self.cli, ["init", "--help"])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("--profile", result.output)
+        self.assertIn("--force", result.output)
 
 
 if __name__ == "__main__":
