@@ -1,4 +1,4 @@
-"""CHERENKOKV web/pr_comments.py — Spec coverage PR-comment integration (#766).
+"""CHERENKOV web/pr_comments.py — Spec coverage PR-comment integration (#766).
 
 On pull_request events (opened / ready_for_review / synchronize) the GitHub
 webhook consumer computes a spec coverage report from the live divergence

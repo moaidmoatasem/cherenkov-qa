@@ -182,3 +182,66 @@ class CoverageSummary:
             tested_endpoints=m["testedCount"],
             total_endpoints=m["totalEndpoints"],
         )
+
+
+@dataclass
+class ConformancePoint:
+    """One run's conformance snapshot for the continuous trend (#767)."""
+
+    timestamp: str
+    verdict: str
+    divergence_count: int
+    coverage_pct: float | None
+
+
+def conformance_trend(store=None, limit: int = 60) -> list[dict[str, Any]]:
+    """Return a continuous conformance trend over persisted run history (#767).
+
+    Unlike `coverage_trend` (which focuses on the coverage-pct headline),
+    this surfaces each run's verdict + divergence count so the dashboard can
+    visualise whether the service is drifting toward or away from the spec,
+    not just how much surface was probed.
+
+    Verdict strings are normalised to the RunStore contract (PASS/WARN/FAIL)
+    and points are ordered oldest → newest. No runs recorded yet → empty list.
+    """
+    from cherenkov.persistence.run_store import get_run_store
+
+    run_store = store or get_run_store()
+    records = run_store.list(limit=limit)
+    points = [
+        {
+            "timestamp": r.timestamp,
+            "verdict": (r.verdict or "").upper(),
+            "divergence_count": r.divergence_count,
+            "coverage_pct": r.coverage_pct,
+        }
+        for r in records
+    ]
+    points.sort(key=lambda p: p["timestamp"])
+    return points
+
+
+def conformance_summary(store=None) -> dict[str, Any]:
+    """Aggregate the trend into headline numbers for status display.
+
+    Returns pass/warn/fail run counts across the recorded history, plus the
+    most recent run's verdict and divergence count (or None if no runs exist).
+    """
+    trend = conformance_trend(store=store, limit=500)
+    counts = {"PASS": 0, "WARN": 0, "FAIL": 0}
+    for p in trend:
+        verdict = p["verdict"]
+        if verdict in counts:
+            counts[verdict] += 1
+    latest = trend[-1] if trend else None
+    return {
+        "totalRuns": len(trend),
+        "passCount": counts["PASS"],
+        "warnCount": counts["WARN"],
+        "failCount": counts["FAIL"],
+        "latestVerdict": latest["verdict"] if latest else None,
+        "latestDivergenceCount": latest["divergence_count"] if latest else None,
+        "latestCoveragePct": latest["coverage_pct"] if latest else None,
+        "trend": trend[-20:],
+    }
