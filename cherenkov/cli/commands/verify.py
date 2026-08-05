@@ -13,6 +13,7 @@ without an Ollama setup.
   - Traffic Capture   (golden fixtures from real traffic)
   - Spec Coverage     (endpoint gap analysis)
 """
+
 from __future__ import annotations
 
 import json
@@ -24,15 +25,15 @@ from typing import Any, cast
 
 import click
 import httpx
-import requests
 
-from cherenkov.divergence.proof_run import run_proof
-
-_log = logging.getLogger(__name__)
+from cherenkov.cli.loaders import load_spec
 from cherenkov.divergence.coverage import CoverageReport, compute_coverage
 from cherenkov.divergence.health import HealthScore, compute_health_score
+from cherenkov.divergence.proof_run import run_proof
 from cherenkov.persistence.run_store import RunRecord, get_run_store
 from cherenkov.persistence.run_store import spec_hash as _spec_hash
+
+_log = logging.getLogger(__name__)
 
 
 @click.command("verify")
@@ -168,7 +169,7 @@ def verify_cmd(
     """
     spec_dict: dict | None = None
     if spec is not None:
-        spec_dict = _load_spec(spec)
+        spec_dict = load_spec(spec)
         if spec_dict is None:
             sys.exit(2)
 
@@ -190,7 +191,13 @@ def verify_cmd(
         click.echo("  Engine  : multi-agent (rich verdict)")
     click.echo("")
 
-    _warn_unprobed(spec_dict, max_probes=max_probes, use_llm=llm, known_identifiers=known_identifiers, allow_mutations=allow_mutations)
+    _warn_unprobed(
+        spec_dict,
+        max_probes=max_probes,
+        use_llm=llm,
+        known_identifiers=known_identifiers,
+        allow_mutations=allow_mutations,
+    )
 
     _assert_reachable(url)
 
@@ -235,7 +242,15 @@ def verify_cmd(
             _write_rich_json(rich, reports, output, spec_dict=spec_dict)
             click.echo(f"\nReport written to {output}")
 
-        _persist_run(url, spec_dict, rich.overall.value, len(reports), rich.coverage_pct, duration_ms, rich=rich)
+        _persist_run(
+            url,
+            spec_dict,
+            rich.overall.value,
+            len(reports),
+            rich.coverage_pct,
+            duration_ms,
+            rich=rich,
+        )
 
         if fail_on_divergence and reports:
             sys.exit(1)
@@ -289,6 +304,7 @@ def verify_cmd(
 
 # ── rich verdict runner ────────────────────────────────────────────────────────
 
+
 def _run_rich_verdict(
     url: str,
     spec_dict: dict | None,
@@ -341,6 +357,7 @@ def _run_rich_verdict(
 
 # ── helpers ────────────────────────────────────────────────────────────────────
 
+
 def _persist_run(
     url: str,
     spec_dict: dict | None,
@@ -360,7 +377,9 @@ def _persist_run(
         record = RunRecord(
             command="verify",
             target_url=url,
-            spec_hash=_spec_hash(json.dumps(spec_dict, sort_keys=True).encode()) if spec_dict else "",
+            spec_hash=_spec_hash(json.dumps(spec_dict, sort_keys=True).encode())
+            if spec_dict
+            else "",
             verdict=cast(Any, verdict_str),
             divergence_count=divergence_count,
             coverage_pct=coverage_pct,
@@ -394,7 +413,10 @@ def _assert_reachable(url: str) -> None:
 
 
 def _warn_unprobed(
-    spec_dict: dict | None, max_probes: int, use_llm: bool, limit: int = 10,
+    spec_dict: dict | None,
+    max_probes: int,
+    use_llm: bool,
+    limit: int = 10,
     known_identifiers: dict[str, list[str]] | None = None,
     allow_mutations: bool = False,
 ) -> None:
@@ -413,8 +435,11 @@ def _warn_unprobed(
     from cherenkov.divergence.probe_planner import unprobed_endpoints
 
     missing = unprobed_endpoints(
-        spec_dict, max_probes=max_probes, include_bare=use_llm,
-        known_identifiers=known_identifiers, allow_mutations=allow_mutations
+        spec_dict,
+        max_probes=max_probes,
+        include_bare=use_llm,
+        known_identifiers=known_identifiers,
+        allow_mutations=allow_mutations,
     )
     if not missing:
         return
@@ -425,45 +450,21 @@ def _warn_unprobed(
     if len(missing) > limit:
         click.echo(f"         ... and {len(missing) - limit} more", err=True)
     click.echo(
-        "         These contribute no divergences, so a clean result does not "
-        "cover them.",
+        "         These contribute no divergences, so a clean result does not " "cover them.",
         err=True,
     )
     click.echo("", err=True)
 
 
-def _load_spec(spec_path: str) -> dict | None:
-    """Load an OpenAPI spec from a local file path or HTTP URL."""
-    if spec_path.startswith("http://") or spec_path.startswith("https://"):
-        try:
-            resp = requests.get(spec_path, timeout=15)
-            resp.raise_for_status()
-            raw = resp.content
-        except Exception as exc:
-            click.echo(f"[ERROR] Could not fetch spec from {spec_path}: {exc}", err=True)
-            return None
-    else:
-        p = Path(spec_path)
-        if not p.exists():
-            click.echo(f"[ERROR] Spec file not found: {spec_path}", err=True)
-            return None
-        raw = p.read_bytes()
-
-    try:
-        if spec_path.endswith((".yaml", ".yml")):
-            import yaml  # type: ignore[import]
-            return yaml.safe_load(raw)
-        return json.loads(raw)
-    except Exception as exc:
-        click.echo(f"[ERROR] Could not parse spec: {exc}", err=True)
-        return None
-
-
 _SEVERITY_COLOUR = {
-    "HIGH": "red", "high": "red",
-    "MEDIUM": "yellow", "medium": "yellow",
-    "LOW": "cyan", "low": "cyan",
-    "CRITICAL": "red", "critical": "red",
+    "HIGH": "red",
+    "high": "red",
+    "MEDIUM": "yellow",
+    "medium": "yellow",
+    "LOW": "cyan",
+    "low": "cyan",
+    "CRITICAL": "red",
+    "critical": "red",
 }
 
 
@@ -582,4 +583,3 @@ def _print_health(health: HealthScore) -> None:
     for d in health.deductions:
         click.echo(f"    {d}")
     click.echo("─" * width + "\n")
-

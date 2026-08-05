@@ -132,7 +132,8 @@ class StatsStore:
                 (limit,),
             )
             return [dict(r) for r in cursor.fetchall()]
-        except Exception:
+        except Exception as e:
+            logger.error("failed to read recent pipeline runs", exc_info=e)
             return []
 
     def get_run_summary(self) -> dict:
@@ -145,7 +146,8 @@ class StatsStore:
                 "SELECT COUNT(*) as c FROM pipeline_runs WHERE success = 1"
             ).fetchone()["c"]
             return {"total_runs": total, "successful_runs": passed}
-        except Exception:
+        except Exception as e:
+            logger.error("failed to read pipeline run summary", exc_info=e)
             return {"total_runs": 0, "successful_runs": 0}
 
     def close(self) -> None:

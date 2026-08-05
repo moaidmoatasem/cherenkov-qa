@@ -30,6 +30,10 @@ import os
 import threading
 from pathlib import Path
 
+from cherenkov.core.errors import get_logger
+
+_log = get_logger("FLAGS")
+
 _LOCK = threading.RLock()
 
 # ── compiled-in defaults ────────────────────────────────────────────────────
@@ -65,7 +69,12 @@ def _load_file() -> dict[str, bool]:
     try:
         raw = json.loads(_FLAGS_FILE_PATH.read_text(encoding="utf-8"))
         return {k.upper(): bool(v) for k, v in raw.items() if isinstance(v, bool)}
-    except Exception:
+    except (OSError, ValueError, AttributeError) as exc:
+        _log.warning(
+            "flags file unreadable — falling back to compiled-in defaults",
+            path=str(_FLAGS_FILE_PATH),
+            error=f"{type(exc).__name__}: {exc}",
+        )
         return {}
 
 

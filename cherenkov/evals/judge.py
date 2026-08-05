@@ -13,7 +13,7 @@ from cherenkov.evals.core import (
     EvalStatus,
 )
 from cherenkov.substrate.client_factory import get_client
-from cherenkov.substrate.providers.ollama_client import strip_think
+from cherenkov.substrate.text_utils import strip_think
 
 _JUDGE_SYSTEM_PROMPT = """You are a CHERENKOV test quality judge. Evaluate Playwright API tests generated from OpenAPI specs.
 

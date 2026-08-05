@@ -7,7 +7,19 @@ from fastapi.responses import FileResponse
 
 router = APIRouter(tags=["static"])
 
-_ui_dist = os.path.join(os.path.dirname(__file__), "..", "ui", "dist")
+_ui_dist = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "ui", "dist"))
+
+
+def _resolve_within_dist(*parts: str) -> str | None:
+    """Resolve a client-supplied path inside the built UI directory.
+
+    Returns the real path, or None when it escapes `_ui_dist` (``..``
+    segments, absolute paths, symlinks pointing outside).
+    """
+    candidate = os.path.realpath(os.path.join(_ui_dist, *parts))
+    if candidate != _ui_dist and not candidate.startswith(_ui_dist + os.sep):
+        return None
+    return candidate
 
 
 @router.get("/")
@@ -20,8 +32,8 @@ async def serve_index():
 
 @router.get("/assets/{path:path}")
 async def serve_assets(path: str):
-    asset = os.path.join(_ui_dist, "assets", path)
-    if os.path.exists(asset):
+    asset = _resolve_within_dist("assets", path)
+    if asset and os.path.isfile(asset):
         return FileResponse(asset)
     raise HTTPException(status_code=404, detail="Asset not found")
 
@@ -31,8 +43,8 @@ async def serve_spa_fallback(full_path: str):
     if full_path.startswith("api/"):
         raise HTTPException(status_code=404, detail="API endpoint not found")
 
-    file_path = os.path.join(_ui_dist, full_path)
-    if os.path.isfile(file_path):
+    file_path = _resolve_within_dist(full_path)
+    if file_path and os.path.isfile(file_path):
         return FileResponse(file_path)
 
     index = os.path.join(_ui_dist, "index.html")

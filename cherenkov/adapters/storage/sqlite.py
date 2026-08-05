@@ -12,6 +12,7 @@ the JSON document via ``json_extract(data, '$.<key>')``.
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 import threading
 import uuid
@@ -26,6 +27,8 @@ from cherenkov.ports.storage import (
     StoragePort,
     StorageQuery,
 )
+
+_log = logging.getLogger(__name__)
 
 _JSON_COLUMN = "data"
 _BOOKKEEPING_COLUMNS = {"id", "rowid", "created_at", "updated_at", "deleted_at", "version"}
@@ -193,7 +196,7 @@ class SQLiteStorageAdapter(StoragePort):
         order = self._build_order_by(query.order_by, query.order_desc)
         sql = f"SELECT {select} FROM {qual}{where}{order} LIMIT ? OFFSET ?"
         conn = self._connect()
-        rows = conn.execute(sql, params + [query.limit, query.offset]).fetchall()
+        rows = conn.execute(sql, [*params, query.limit, query.offset]).fetchall()
         return [self._row_to_dict(row) for row in rows]
 
     def query_one(
@@ -227,7 +230,7 @@ class SQLiteStorageAdapter(StoragePort):
             return cur.rowcount
 
     def insert_one(
-        self, table: str, data: dict[str, Any], id_column: str = "id"
+        self, table: str, data: dict[str, Any], id_column: str = "id"  # noqa: ARG002
     ) -> str:
         """Insert single row, return id."""
         return self.insert(table, data)
@@ -342,7 +345,7 @@ class SQLiteStorageAdapter(StoragePort):
     def _row_to_dict(row: sqlite3.Row) -> dict[str, Any]:
         """Convert a SQLite row to a dict, unpacking the JSON document."""
         result: dict[str, Any] = {}
-        for key in row.keys():
+        for key in row.keys():  # noqa: SIM118 - sqlite3.Row is not a Mapping
             value = row[key]
             if isinstance(value, (bytes, bytearray)):
                 continue
@@ -353,7 +356,11 @@ class SQLiteStorageAdapter(StoragePort):
                         result.update(parsed)
                         continue
                 except json.JSONDecodeError:
-                    pass
+                    _log.warning(
+                        "row %s column holds invalid JSON; returning it as a raw string",
+                        _JSON_COLUMN,
+                        exc_info=True,
+                    )
             elif isinstance(value, datetime):
                 value = value.isoformat()
             result[key] = value

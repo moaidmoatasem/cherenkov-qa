@@ -8,7 +8,10 @@ import os
 import urllib.request
 from typing import Any
 
+from cherenkov.core.errors import get_logger
 from cherenkov.core.events import CHERENKOVEvent
+
+_log = get_logger("TEAMS_NOTIFIER")
 
 
 class TeamsNotifier:
@@ -22,6 +25,7 @@ class TeamsNotifier:
     def send_report(self, report: dict[str, Any]) -> bool:
         """Formats and sends a DivergenceReport to Teams."""
         if not self.webhook_url:
+            _log.info("CHERENKOV_TEAMS_WEBHOOK_URL not set; skipping Teams notification.")
             return False
 
         failed_count = sum(1 for i in report.get("items", []) if str(i.get("status", "")).upper() in ["FAIL", "DRIFT"])
@@ -78,8 +82,12 @@ class TeamsNotifier:
 
         try:
             with urllib.request.urlopen(req, timeout=10) as response:
-                return response.status == 200
-        except Exception:
+                if response.status != 200:
+                    _log.error("Teams rejected the notification", status=response.status)
+                    return False
+                return True
+        except Exception as exc:
+            _log.error("Failed to send Teams notification", error=str(exc))
             return False
 
     def send(self, report: dict[str, Any]) -> bool:

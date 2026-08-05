@@ -1,0 +1,61 @@
+"""Regression tests for swallowed errors in adapter, web and webhook layers."""
+
+from __future__ import annotations
+
+import json
+
+import pytest
+
+from cherenkov.web.auth.store import _hash_password, _verify_password
+from cherenkov.webhooks.dispatcher import HttpWebhookDispatcher, WebhookEvent
+
+
+def _stderr_records(capsys) -> list[dict]:
+    captured = capsys.readouterr().err
+    records = []
+    for line in captured.splitlines():
+        try:
+            records.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return records
+
+
+def test_webhook_dispatch_logs_every_failed_attempt(monkeypatch, capsys):
+    import requests
+
+    def _boom(*_args, **_kwargs):
+        raise requests.RequestException("connection refused")
+
+    monkeypatch.setattr(requests, "post", _boom)
+
+    dispatcher = HttpWebhookDispatcher("http://dummy.url", max_retries=2)
+    assert dispatcher.dispatch(WebhookEvent("run_complete", {})) is False
+
+    records = _stderr_records(capsys)
+    assert sum(1 for r in records if r["level"] == "WARN") == 2
+    errors = [r for r in records if r["level"] == "ERROR"]
+    assert len(errors) == 1
+    assert "connection refused" in errors[0]["error"]
+
+
+def test_webhook_dispatch_reports_rejecting_status_code(monkeypatch, capsys):
+    import requests
+
+    class _Resp:
+        status_code = 500
+
+    monkeypatch.setattr(requests, "post", lambda *_a, **_k: _Resp())
+
+    dispatcher = HttpWebhookDispatcher("http://dummy.url", max_retries=1)
+    assert dispatcher.dispatch(WebhookEvent("run_complete", {})) is False
+    assert any(r.get("error") == "HTTP 500" for r in _stderr_records(capsys))
+
+
+@pytest.mark.parametrize("stored", ["", "garbage", "pbkdf2:sha256:notanint:aa:bb"])
+def test_verify_password_rejects_malformed_hash(stored):
+    assert _verify_password("hunter2", stored) is False
+
+
+def test_verify_password_accepts_matching_hash():
+    assert _verify_password("hunter2", _hash_password("hunter2")) is True

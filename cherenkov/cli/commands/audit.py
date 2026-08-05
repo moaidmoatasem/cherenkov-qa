@@ -5,6 +5,7 @@ Baseline-Free Oracle audit command. Evaluates the quality of an existing test su
 by running it against a target (to record expected behavior) and then against
 mutants derived from the OpenAPI spec.
 """
+
 from __future__ import annotations
 
 import logging
@@ -15,7 +16,7 @@ import sys
 
 import click
 
-from cherenkov.cli.commands.verify import _load_spec
+from cherenkov.cli.loaders import load_spec
 from cherenkov.divergence.mutant_synth import synthesize_mutant_battery
 from cherenkov.divergence.self_play import BrokenImplServer
 from cherenkov.verdict.traffic_capture import RecordingProxy
@@ -92,7 +93,7 @@ def audit_cmd(
     click.echo(f"  Test Cmd : {test_cmd}")
     click.echo("")
 
-    spec_dict = _load_spec(spec)
+    spec_dict = load_spec(spec)
     if spec_dict is None:
         sys.exit(2)
 
@@ -101,7 +102,9 @@ def audit_cmd(
     with RecordingProxy(port=proxy_port, target=target) as proxy:
         passed, out = _run_suite(test_cmd.split(), proxy.url)
         if not passed:
-            click.echo(f"[ERROR] Test suite failed against the live target! Output:\n{out}", err=True)
+            click.echo(
+                f"[ERROR] Test suite failed against the live target! Output:\n{out}", err=True
+            )
             click.echo("The test suite must pass the baseline to be audited.")
             sys.exit(1)
 
@@ -116,8 +119,8 @@ def audit_cmd(
     # Extract known identifiers from recorded traffic
     known_identifiers: dict[str, list[str]] = {}
     paths = spec_dict.get("paths", {})
-    for recorded_path in replay_map.keys():
-        for path_str in paths.keys():
+    for recorded_path in replay_map:
+        for path_str in paths:
             if "{" not in path_str:
                 continue
             # convert /users/{id} to ^/users/(?P<id>[^/]+)$
@@ -149,7 +152,10 @@ def audit_cmd(
             # We don't have a perfect OpenAPI path to concrete path matcher here,
             # but mutant_synth generates a concrete path itself.
             from cherenkov.divergence.probe_planner import _path_with_samples
-            concrete = _path_with_samples(path_str, operation, {"components": {"schemas": schemas}}, known_identifiers)
+
+            concrete = _path_with_samples(
+                path_str, operation, {"components": {"schemas": schemas}}, known_identifiers
+            )
             if not concrete:
                 # unmutatable
                 continue
@@ -175,7 +181,9 @@ def audit_cmd(
             with BrokenImplServer(port=mock_port, responses=conf_map) as mock:
                 passed, _ = _run_suite(test_cmd.split(), mock.url)
                 if not passed:
-                    click.echo("    ✗ FAILED conforming control (test is brittle to expected values). Skipping mutants.")
+                    click.echo(
+                        "    ✗ FAILED conforming control (test is brittle to expected values). Skipping mutants."
+                    )
                     continue
 
             # Check mutants
@@ -194,13 +202,19 @@ def audit_cmd(
                         click.echo(f"    ✓ Killed mutant: {m_name}")
                         killed_mutants += 1
                     else:
-                        click.echo(click.style(f"    ✗ SURVIVED mutant: {m_name} (vacuous assertion)", fg="red"))
+                        click.echo(
+                            click.style(
+                                f"    ✗ SURVIVED mutant: {m_name} (vacuous assertion)", fg="red"
+                            )
+                        )
                         survived_mutants += 1
-                        results.append({
-                            "endpoint": f"{method.upper()} {path_str}",
-                            "mutant": m_name,
-                            "survived": True
-                        })
+                        results.append(
+                            {
+                                "endpoint": f"{method.upper()} {path_str}",
+                                "mutant": m_name,
+                                "survived": True,
+                            }
+                        )
 
     click.echo("\n" + "=" * 50)
     click.echo("Audit Summary:")

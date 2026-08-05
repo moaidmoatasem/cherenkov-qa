@@ -18,7 +18,8 @@ from cherenkov.core.settings import get_settings
 from cherenkov.healing.providers.base import SandboxProvider
 from cherenkov.healing.providers.docker_sandbox import DockerSandboxProvider
 from cherenkov.healing.providers.filesystem import FilesystemSandboxProvider
-from cherenkov.substrate.providers.ollama_client import complete_code, strip_think
+from cherenkov.substrate.providers.ollama_client import complete_code
+from cherenkov.substrate.text_utils import strip_think
 
 SYSTEM_PROMPT = """You are an expert QA automation engineer specializing in fixing failing Playwright TypeScript E2E API tests.
 Your goal is to repair the failing test so that it matches the OpenAPI contract constraints and passes successfully.
@@ -60,12 +61,8 @@ class SandboxHealer:
 
     def replicate_workspace(self, scenario_id: str) -> str:
         """Delegates to the active sandbox provider."""
-        self.log.info(
-            "replicating workspace via provider", provider=type(self.provider).__name__
-        )
-        return self.provider.replicate_workspace(
-            f"{self.run_id}_{scenario_id}", self.stub_dir
-        )
+        self.log.info("replicating workspace via provider", provider=type(self.provider).__name__)
+        return self.provider.replicate_workspace(f"{self.run_id}_{scenario_id}", self.stub_dir)
 
     def execute_playwright_sandbox(
         self, sandbox_dir: str, spec_filename: str, api_url: str
@@ -83,9 +80,7 @@ class SandboxHealer:
             "stderr": result.stderr,
         }
 
-    def generate_unified_diff(
-        self, original_code: str, healed_code: str, filename: str
-    ) -> str:
+    def generate_unified_diff(self, original_code: str, healed_code: str, filename: str) -> str:
         orig_lines = original_code.splitlines(keepends=True)
         heal_lines = healed_code.splitlines(keepends=True)
 
@@ -113,9 +108,7 @@ class SandboxHealer:
             attempts=max_attempts,
         )
 
-        original_file_path = os.path.join(
-            self.stub_dir, "generated_tests", original_test_filename
-        )
+        original_file_path = os.path.join(self.stub_dir, "generated_tests", original_test_filename)
         if not os.path.exists(original_file_path):
             error_msg = f"Original spec file {original_test_filename} not found."
             self.log.error(error_msg)
@@ -152,9 +145,7 @@ class SandboxHealer:
                 )
                 proposed_code = strip_think(proposed_raw)
 
-                self.provider.write_file(
-                    sandbox_dir, spec_workspace_path, proposed_code
-                )
+                self.provider.write_file(sandbox_dir, spec_workspace_path, proposed_code)
 
                 self.log.info("verifying proposed code in sandbox...")
                 run_res = self.execute_playwright_sandbox(
@@ -190,16 +181,12 @@ class SandboxHealer:
                         "message": f"Test successfully healed in sandbox on attempt {attempt}!",
                     }
 
-                self.log.warning(
-                    "proposed repair failed to pass in sandbox", attempt=attempt
-                )
+                self.log.warning("proposed repair failed to pass in sandbox", attempt=attempt)
                 current_code = proposed_code
                 current_failure = run_res["stderr"] or run_res["stdout"]
 
             except Exception as e:
-                self.log.error(
-                    "sandbox repair cycle error", attempt=attempt, error=str(e)
-                )
+                self.log.error("sandbox repair cycle error", attempt=attempt, error=str(e))
                 current_failure = f"Sandbox execution threw exception: {e}"
 
         self.provider.destroy_workspace(sandbox_dir)

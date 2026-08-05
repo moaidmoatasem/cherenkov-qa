@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import sqlite3
 import time
 
 from fastapi import APIRouter
+
+_log = logging.getLogger(__name__)
 
 router = APIRouter(tags=["data"])
 
@@ -44,6 +47,7 @@ async def get_truth_map():
     try:
         idioms = store.get_idioms(limit=50)
     except Exception:
+        _log.error("failed to load idioms for truth map", exc_info=True)
         idioms = []
     return [
         {
@@ -88,7 +92,8 @@ async def get_failures():
                 (reject_val, escaped_val),
             )
             return [dict(r) for r in cursor.fetchall()]
-        except Exception:
+        except sqlite3.Error:
+            _log.error("failed to query recent failures from %s", store.db_path, exc_info=True)
             return []
         finally:
             conn.close()
@@ -122,6 +127,7 @@ async def get_memory():
     try:
         raw_idioms = store.get_idioms(limit=50)
     except Exception:
+        _log.error("failed to load idioms for memory view", exc_info=True)
         raw_idioms = []
 
     idioms = [
@@ -161,7 +167,8 @@ async def get_signals():
                 "SELECT endpoint, duration_ms, timestamp FROM verdicts ORDER BY timestamp DESC LIMIT 20"
             )
             return [dict(r) for r in cursor.fetchall()]
-        except Exception:
+        except sqlite3.Error:
+            _log.error("failed to query performance signals from %s", store.db_path, exc_info=True)
             return []
         finally:
             conn.close()

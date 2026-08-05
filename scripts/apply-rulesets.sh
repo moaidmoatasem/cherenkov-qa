@@ -45,20 +45,33 @@ if [[ ${#files[@]} -eq 0 ]]; then
   exit 0
 fi
 
+# Snapshot current rulesets (name -> id) once for idempotent upsert.
+existing_json=$(curl -sSf -H "$auth_header" -H "Accept: application/vnd.github+json" "$API" 2>/dev/null || echo '[]')
+
 for file in "${files[@]}"; do
   name=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['name'])" "$file")
   echo "Applying: ${file} (\"${name}\")..."
-  response=$(curl -sSf -X POST \
+  existing_id=$(echo "$existing_json" | python3 -c "import json,sys; rows=json.load(sys.stdin); m={r['name']:str(r['id']) for r in rows}; print(m.get(sys.argv[1],''))" "$name")
+  if [[ -n "$existing_id" ]]; then
+    echo "  \"${name}\" already exists (id=${existing_id}) — updating..."
+    endpoint="${API}/${existing_id}"
+    verb="PUT"
+  else
+    echo "  \"${name}\" does not exist yet — creating."
+    endpoint="$API"
+    verb="POST"
+  fi
+  response=$(curl -sSf -X "$verb" \
     -H "$auth_header" \
     -H "Accept: application/vnd.github+json" \
     -H "Content-Type: application/json" \
-    "$API" \
+    "$endpoint" \
     --data-binary "@${file}") || {
       echo "  FAILED — see curl error above" >&2
       exit 1
     }
   id=$(echo "$response" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
-  echo "  Created ruleset id=${id}"
+  echo "  Upserted ruleset id=${id}"
 done
 
 echo "Done."

@@ -1,0 +1,182 @@
+"""Tests for cherenkov/federation/cross_check.py — cross-service contract checks."""
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from typing import Any
+
+from cherenkov.core.contracts import DivergenceClass, Severity
+from cherenkov.core.truth_model import Claim, GraphNode, NodeType, Provenance
+from cherenkov.federation.cross_check import (
+    _invariant_conflict,
+    _response_props,
+    cross_service_check,
+)
+from cherenkov.federation.protocol import TruthFragment
+
+
+def _provenance() -> Provenance:
+    return Provenance(
+        source_id="s",
+        source_type="openapi_spec",
+        source_location="spec.json",
+        extracted_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+    )
+
+
+def _claim(predicate: str, value: Any) -> Claim:
+    return Claim(predicate=predicate, value=value, provenance=_provenance())
+
+
+def _endpoint(
+    method: str = "GET",
+    path: str = "/pets",
+    properties: dict | None = None,
+    claims: list[Claim] | None = None,
+) -> GraphNode:
+    props = {"method": method, "path": path}
+    props.update(properties or {})
+    return GraphNode(
+        id=f"{method}-{path}",
+        type=NodeType.ENDPOINT,
+        label=f"{method} {path}",
+        properties=props,
+        claims=claims or [],
+    )
+
+
+def _fragment(service_id: str, nodes: list[GraphNode]) -> TruthFragment:
+    return TruthFragment(service_id=service_id, produced_at="2026-01-01T00:00:00Z", nodes=nodes)
+
+
+# ── _response_props ────────────────────────────────────────────────────────────
+
+
+class TestResponseProps:
+    def test_only_response_prefixed_properties_are_kept(self):
+        node = _endpoint(properties={"response_200": "Pet", "auth": "bearer"})
+        assert _response_props(node) == {"response_200": "Pet"}
+
+    def test_prefix_match_is_case_insensitive(self):
+        node = _endpoint(properties={"Response_200": "Pet"})
+        assert _response_props(node) == {"Response_200": "Pet"}
+
+    def test_no_response_properties_yields_empty(self):
+        assert _response_props(_endpoint()) == {}
+
+
+# ── missing endpoints ──────────────────────────────────────────────────────────
+
+
+class TestMissingEndpoint:
+    def test_endpoint_absent_from_b_is_critical(self):
+        a = _fragment("a", [_endpoint("GET", "/pets")])
+        b = _fragment("b", [])
+        (report,) = cross_service_check(a, b)
+        assert report.id == "div-missing"
+        assert report.severity == Severity.CRITICAL
+        assert report.divergence_class == DivergenceClass.D5_SPEC_PROD
+        assert report.endpoint == "GET /pets"
+        assert report.scope == "cross"
+
+    def test_check_is_directional(self):
+        a = _fragment("a", [])
+        b = _fragment("b", [_endpoint("GET", "/pets")])
+        assert cross_service_check(a, b) == []
+
+    def test_nodes_without_a_method_are_ignored(self):
+        node = GraphNode(id="s1", type=NodeType.SHAPE, label="Pet", properties={"path": "/pets"})
+        assert cross_service_check(_fragment("a", [node]), _fragment("b", [])) == []
+
+    def test_identical_fragments_produce_no_divergence(self):
+        nodes = [_endpoint("GET", "/pets"), _endpoint("POST", "/pets")]
+        assert cross_service_check(_fragment("a", nodes), _fragment("b", nodes)) == []
+
+
+# ── schema drift ───────────────────────────────────────────────────────────────
+
+
+class TestSchemaDrift:
+    def test_differing_response_shapes_are_high_severity(self):
+        a = _fragment("a", [_endpoint(properties={"response_200": "Pet"})])
+        b = _fragment("b", [_endpoint(properties={"response_200": "PetV2"})])
+        (report,) = cross_service_check(a, b)
+        assert report.id == "div-schema-GET--pets"
+        assert report.severity == Severity.HIGH
+        assert report.evidence.diff == "response_200:Pet!=PetV2"
+        assert report.metadata.stage == "cross_check"
+
+    def test_diff_lists_every_differing_key_in_sorted_order(self):
+        a = _fragment("a", [_endpoint(properties={"response_200": "Pet", "response_404": "Err"})])
+        b = _fragment("b", [_endpoint(properties={"response_200": "PetV2"})])
+        (report,) = cross_service_check(a, b)
+        assert report.evidence.diff == "response_200:Pet!=PetV2; response_404:Err!=None"
+
+    def test_matching_response_shapes_are_clean(self):
+        a = _fragment("a", [_endpoint(properties={"response_200": "Pet"})])
+        b = _fragment("b", [_endpoint(properties={"response_200": "Pet"})])
+        assert cross_service_check(a, b) == []
+
+    def test_one_sided_response_props_are_not_drift(self):
+        a = _fragment("a", [_endpoint(properties={"response_200": "Pet"})])
+        b = _fragment("b", [_endpoint()])
+        assert cross_service_check(a, b) == []
+
+
+# ── invariant conflicts ────────────────────────────────────────────────────────
+
+
+class TestInvariantConflict:
+    def test_contradicting_shared_claim_is_critical(self):
+        a = _fragment("a", [_endpoint(claims=[_claim("returns_status", 200)])])
+        b = _fragment("b", [_endpoint(claims=[_claim("returns_status", 500)])])
+        (report,) = cross_service_check(a, b)
+        assert report.id == "div-invariant-GET--pets-returns_status"
+        assert report.severity == Severity.CRITICAL
+        assert report.claim_a == "returns_status=200"
+        assert report.claim_b == "returns_status=500"
+
+    def test_agreeing_claims_are_clean(self):
+        claims = [_claim("returns_status", 200)]
+        a = _fragment("a", [_endpoint(claims=claims)])
+        b = _fragment("b", [_endpoint(claims=claims)])
+        assert cross_service_check(a, b) == []
+
+    def test_unshared_predicates_are_ignored(self):
+        a = _fragment("a", [_endpoint(claims=[_claim("returns_status", 200)])])
+        b = _fragment("b", [_endpoint(claims=[_claim("requires_auth", True)])])
+        assert cross_service_check(a, b) == []
+
+    def test_only_the_first_conflicting_predicate_is_reported(self):
+        node_a = _endpoint(claims=[_claim("a_pred", 1), _claim("z_pred", 1)])
+        node_b = _endpoint(claims=[_claim("a_pred", 2), _claim("z_pred", 2)])
+        report = _invariant_conflict(node_a, node_b, None, "GET", "/pets")
+        assert report is not None
+        assert report.claim_a == "a_pred=1"
+
+
+# ── combined ───────────────────────────────────────────────────────────────────
+
+
+class TestCombined:
+    def test_drift_and_conflict_are_both_reported_for_one_endpoint(self):
+        a = _fragment(
+            "a",
+            [_endpoint(properties={"response_200": "Pet"}, claims=[_claim("returns_status", 200)])],
+        )
+        b = _fragment(
+            "b",
+            [
+                _endpoint(
+                    properties={"response_200": "PetV2"}, claims=[_claim("returns_status", 500)]
+                )
+            ],
+        )
+        reports = cross_service_check(a, b)
+        assert [r.severity for r in reports] == [Severity.HIGH, Severity.CRITICAL]
+
+    def test_every_endpoint_in_a_is_checked(self):
+        a = _fragment("a", [_endpoint("GET", "/pets"), _endpoint("POST", "/pets")])
+        b = _fragment("b", [_endpoint("GET", "/pets")])
+        reports = cross_service_check(a, b)
+        assert [r.endpoint for r in reports] == ["POST /pets"]

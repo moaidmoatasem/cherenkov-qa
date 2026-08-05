@@ -47,7 +47,7 @@ jobs:
 
       - name: Start backend
         run: |
-          python -m cherenkov review --port 8001 &
+          python -m cherenkov review review --port 8001 &
           sleep 10
           curl -f http://localhost:8001/api/v1/health
 
@@ -104,7 +104,7 @@ jobs:
 
       - name: Start backend
         run: |
-          python -m cherenkov review --port 8001 &
+          python -m cherenkov review review --port 8001 &
           sleep 10
           curl -f http://localhost:8001/api/v1/health
 

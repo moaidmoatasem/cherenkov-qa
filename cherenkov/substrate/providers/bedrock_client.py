@@ -6,31 +6,25 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import time
 
-from cherenkov.core.errors import ProviderJSONError, get_logger
-from cherenkov.substrate.interfaces import InferenceClient
-from cherenkov.substrate.providers.ollama_client import _try_json, strip_think
+from cherenkov.core.errors import get_logger
+from cherenkov.substrate.providers.fenced_client import FencedCompletionClient
 
 _log = get_logger("BEDROCK_CLIENT")
-
-_RE_CODE_FENCE = re.compile(r"```(?:typescript|ts|python)?\s*([\s\S]+?)```")
-_RE_JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]+?)```")
 
 _DEFAULT_MODEL = os.getenv("CHERENKOV_BEDROCK_MODEL", "anthropic.claude-3-haiku-20240307-v1:0")
 
 
-class BedrockInferenceClient(InferenceClient):
+class BedrockInferenceClient(FencedCompletionClient):
     """AWS Bedrock implementation of InferenceClient."""
 
+    provider_label = "Bedrock"
+    default_model = _DEFAULT_MODEL
+
     def __init__(self) -> None:
+        super().__init__()
         self.region = os.environ.get("AWS_REGION", "us-east-1")
-        self._token_usage: dict[str, int] = {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "reprompts": 0,
-        }
         self._client = None
 
     def _get_client(self):
@@ -39,9 +33,7 @@ class BedrockInferenceClient(InferenceClient):
         try:
             import boto3
         except ImportError as exc:
-            raise ImportError(
-                "boto3 package not installed. Run: pip install boto3"
-            ) from exc
+            raise ImportError("boto3 package not installed. Run: pip install boto3") from exc
 
         self._client = boto3.client("bedrock-runtime", region_name=self.region)
         return self._client
@@ -77,14 +69,14 @@ class BedrockInferenceClient(InferenceClient):
             modelId=model,
             body=json.dumps(body),
             accept="application/json",
-            contentType="application/json"
+            contentType="application/json",
         )
 
-        response_body = json.loads(response.get('body').read())
-        text = response_body.get('content')[0].get('text')
+        response_body = json.loads(response.get("body").read())
+        text = response_body.get("content")[0].get("text")
 
-        input_tokens = response_body.get('usage', {}).get('input_tokens', 0)
-        output_tokens = response_body.get('usage', {}).get('output_tokens', 0)
+        input_tokens = response_body.get("usage", {}).get("input_tokens", 0)
+        output_tokens = response_body.get("usage", {}).get("output_tokens", 0)
 
         elapsed = int((time.monotonic() - t0) * 1000)
         self._token_usage["prompt_tokens"] += input_tokens
@@ -97,51 +89,3 @@ class BedrockInferenceClient(InferenceClient):
             latency_ms=elapsed,
         )
         return text
-
-    def complete_code(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        model: str,
-        *,
-        temperature: float = 0.1,
-        run_id: str | None = None,  # noqa: ARG002
-    ) -> str:
-        model = model or _DEFAULT_MODEL
-        raw = self._complete(system_prompt, user_prompt, model, temperature=temperature)
-        code = strip_think(raw)
-        fenced = _RE_CODE_FENCE.search(code)
-        if fenced:
-            code = fenced.group(1).strip()
-        return code
-
-    def complete_json(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        model: str,
-        *,
-        max_reprompts: int = 2,
-        temperature: float = 0.1,
-        run_id: str | None = None,  # noqa: ARG002
-    ) -> dict:
-        model = model or _DEFAULT_MODEL
-        for _attempt in range(max_reprompts + 1):
-            raw = self._complete(
-                system_prompt, user_prompt, model, temperature=temperature
-            )
-            text = strip_think(raw)
-            fenced = _RE_JSON_FENCE.search(text)
-            if fenced:
-                text = fenced.group(1).strip()
-            else:
-                start = next((i for i, c in enumerate(text) if c in "{["), None)
-                if start is not None:
-                    text = text[start:]
-            parsed = _try_json(text)
-            if parsed is not None:
-                return parsed
-            self._token_usage["reprompts"] += 1
-        raise ProviderJSONError(
-            f"Bedrock failed to return valid JSON after {max_reprompts + 1} attempts"
-        )

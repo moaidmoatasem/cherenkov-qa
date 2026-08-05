@@ -10,22 +10,17 @@ Used when PROVIDER=anthropic is set.
 from __future__ import annotations
 
 import os
-import re
 import time
 
-from cherenkov.core.errors import ProviderJSONError, get_logger
-from cherenkov.substrate.interfaces import InferenceClient
-from cherenkov.substrate.providers.ollama_client import _try_json, strip_think
+from cherenkov.core.errors import get_logger
+from cherenkov.substrate.providers.fenced_client import FencedCompletionClient
 
 _log = get_logger("ANTHROPIC_CLIENT")
-
-_RE_CODE_FENCE = re.compile(r"```(?:typescript|ts)?\s*([\s\S]+?)```")
-_RE_JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]+?)```")
 
 _DEFAULT_MODEL = os.getenv("CHERENKOV_ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 
 
-class AnthropicInferenceClient(InferenceClient):
+class AnthropicInferenceClient(FencedCompletionClient):
     """Anthropic Claude implementation of InferenceClient.
 
     Auth priority:
@@ -33,14 +28,13 @@ class AnthropicInferenceClient(InferenceClient):
       2. ANTHROPIC_API_KEY      → x-api-key header (standard SDK key)
     """
 
+    provider_label = "Anthropic"
+    default_model = _DEFAULT_MODEL
+
     def __init__(self) -> None:
+        super().__init__()
         self.bearer_token = os.environ.get("ANTHROPIC_BEARER_TOKEN", "")
         self.api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-        self._token_usage: dict[str, int] = {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "reprompts": 0,
-        }
 
     def _get_client(self):
         try:
@@ -115,51 +109,3 @@ class AnthropicInferenceClient(InferenceClient):
             latency_ms=elapsed,
         )
         return text
-
-    def complete_code(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        model: str,
-        *,
-        temperature: float = 0.1,
-        run_id: str | None = None,  # noqa: ARG002
-    ) -> str:
-        raw = self._complete(system_prompt, user_prompt, model, temperature=temperature)
-        code = strip_think(raw)
-        # Strip markdown fences if present
-        fenced = _RE_CODE_FENCE.search(code)
-        if fenced:
-            code = fenced.group(1).strip()
-        return code
-
-    def complete_json(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        model: str,
-        *,
-        max_reprompts: int = 2,
-        temperature: float = 0.1,
-        run_id: str | None = None,  # noqa: ARG002
-    ) -> dict:
-        for _attempt in range(max_reprompts + 1):
-            raw = self._complete(
-                system_prompt, user_prompt, model, temperature=temperature
-            )
-            text = strip_think(raw)
-            # Extract JSON
-            fenced = _RE_JSON_FENCE.search(text)
-            if fenced:
-                text = fenced.group(1).strip()
-            else:
-                start = next((i for i, c in enumerate(text) if c in "{["), None)
-                if start is not None:
-                    text = text[start:]
-            parsed = _try_json(text)
-            if parsed is not None:
-                return parsed
-            self._token_usage["reprompts"] += 1
-        raise ProviderJSONError(
-            f"Anthropic failed to return valid JSON after {max_reprompts + 1} attempts"
-        )

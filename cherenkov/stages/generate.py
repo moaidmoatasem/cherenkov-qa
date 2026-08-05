@@ -24,7 +24,7 @@ from cherenkov.sources.accessibility.contracts import AccessibilityScenario
 from cherenkov.sources.graphql.contracts import GraphQLScenario
 from cherenkov.sources.grpc.contracts import gRPCScenario
 from cherenkov.substrate.client_factory import get_client
-from cherenkov.substrate.providers.ollama_client import strip_think
+from cherenkov.substrate.text_utils import strip_think
 
 
 def _is_plausibly_valid_ts(code: str) -> bool:
@@ -62,6 +62,7 @@ def _sanitize_prompt_input(text: str, max_len: int = 500) -> str:
     sanitized = sanitized.encode("ascii", errors="ignore").decode()[:max_len]
     return sanitized.strip()
 
+
 def _load_system_prompt() -> str:
     """Loads the tuned generator system prompt committed to prompts/generator_system.txt.
 
@@ -82,13 +83,16 @@ def _load_system_prompt() -> str:
             "Reinstall cherenkov-qa or set CHERENKOV_GENERATOR_PROMPT to a valid file."
         ) from e
 
+
 _system_prompt_cache: str | None = None
+
 
 def _get_system_prompt() -> str:
     global _system_prompt_cache
     if _system_prompt_cache is None:
         _system_prompt_cache = _load_system_prompt()
     return _system_prompt_cache
+
 
 def __getattr__(name: str) -> str:
     # Lazy module attribute (PEP 562): keeps `from ... import SYSTEM_PROMPT`
@@ -97,6 +101,7 @@ def __getattr__(name: str) -> str:
     if name == "SYSTEM_PROMPT":
         return _get_system_prompt()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 class GenerateStage:
     """Invokes local LLM qwen2.5-coder to write compile-ready Playwright TypeScript tests."""
@@ -118,7 +123,9 @@ class GenerateStage:
     ) -> str:
         """Constructs a recency-anchored prompt payload, placing strict openapi-fetch rules at the absolute end to override model semantic bias."""
         enrichment = f"\n\n{spec_rules_block}" if spec_rules_block else ""
-        strategies = f"\n\nKnown patterns from past runs:\n{strategies_block}" if strategies_block else ""
+        strategies = (
+            f"\n\nKnown patterns from past runs:\n{strategies_block}" if strategies_block else ""
+        )
         return (
             "ENDPOINT SLICE (the only schema you need):\n"
             + json.dumps(
@@ -200,9 +207,7 @@ class GenerateStage:
 
             env = jinja2.Environment(
                 loader=jinja2.FileSystemLoader(
-                    os.path.abspath(
-                        os.path.join(os.path.dirname(__file__), "../../prompts")
-                    )
+                    os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))
                 )
             )
             template = env.get_template("graphql_test.j2")
@@ -217,13 +222,18 @@ class GenerateStage:
             if not isinstance(scenario, gRPCScenario):
                 raise TypeError("source_type 'grpc' requires a gRPCScenario")
             import jinja2
-            env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))))
+
+            env = jinja2.Environment(
+                loader=jinja2.FileSystemLoader(
+                    os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))
+                )
+            )
             template = env.get_template("grpc_test.j2")
             user_prompt = template.render(
                 service=scenario.service,
                 rpc_name=scenario.rpc_name,
                 input_message=scenario.input_message,
-                proto_content=scenario.proto_content
+                proto_content=scenario.proto_content,
             )
         elif source_type == "accessibility":
             if not isinstance(scenario, AccessibilityScenario):
@@ -232,9 +242,7 @@ class GenerateStage:
 
             env = jinja2.Environment(
                 loader=jinja2.FileSystemLoader(
-                    os.path.abspath(
-                        os.path.join(os.path.dirname(__file__), "../../prompts")
-                    )
+                    os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))
                 )
             )
             template = env.get_template("accessibility_test.j2")
@@ -272,9 +280,7 @@ class GenerateStage:
                 if not rules.is_empty():
                     spec_rules_block = rules.render_prompt_block()
             except Exception as enrich_err:
-                self.log.warning(
-                    "spec enrichment failed (non-fatal)", error=str(enrich_err)
-                )
+                self.log.warning("spec enrichment failed (non-fatal)", error=str(enrich_err))
 
             user_prompt = self._build_user_prompt(
                 path=path,
@@ -386,9 +392,7 @@ class GenerateStage:
                     scenario=scenario,
                     instruction=instruction,
                 )
-                self.log.info(
-                    "template generator produced fallback code", chars=len(code)
-                )
+                self.log.info("template generator produced fallback code", chars=len(code))
             except Exception as tmpl_err:
                 self.log.error("template generator also failed", error=str(tmpl_err))
                 return GenerateOutput(
@@ -405,9 +409,7 @@ class GenerateStage:
                 test_code="",
                 status=Status.FAILED,
                 errors=[
-                    StageError(
-                        code="GENERATE_EMPTY", detail="Generator produced empty output"
-                    )
+                    StageError(code="GENERATE_EMPTY", detail="Generator produced empty output")
                 ],
                 metadata=StageMeta(stage="GENERATE", duration_ms=0),
             )
@@ -421,7 +423,9 @@ class GenerateStage:
         return GenerateOutput(
             scenario_id=mutation_id,
             test_code=code,
-            imports=["@playwright/test"] if source_type in ("graphql", "grpc") else ["@playwright/test", "../client"],
+            imports=["@playwright/test"]
+            if source_type in ("graphql", "grpc")
+            else ["@playwright/test", "../client"],
             status=Status.OK,
             metadata=StageMeta(stage="GENERATE", duration_ms=dt),
             endpoint=path,
