@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-smoke_test_review_non_demo.py — verifies cherenkov.py review boots without --demo flag.
+smoke_test_review_non_demo.py — verifies the review dashboard boots without --demo flag.
 """
 
 import os
@@ -13,7 +13,7 @@ import requests
 def main():
     print("Starting review dashboard in non-demo mode...")
     proc = subprocess.Popen(
-        ["python3", "cherenkov.py", "review", "--port", "8005"],
+        ["./bin/cherenkov", "review", "review", "--port", "8005"],
         env={**os.environ, "PYTHONPATH": "."},
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
