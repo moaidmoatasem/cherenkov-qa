@@ -148,3 +148,45 @@ class TestCoverageRoutes:
         body = r.json()
         for key in ("coveragePct", "openIssueCount", "testedCount", "totalEndpoints"):
             assert key in body
+
+
+class TestConformanceRoutes:
+    @pytest.fixture
+    def _conv_store(self):
+        return _FakeStore(
+            [
+                _run(60.0, verdict="PASS", divergence_count=0, timestamp="2026-08-01T00:00:00Z"),
+                _run(50.0, verdict="WARN", divergence_count=2, timestamp="2026-08-02T00:00:00Z"),
+                _run(40.0, verdict="FAIL", divergence_count=5, timestamp="2026-08-03T00:00:00Z"),
+            ]
+        )
+
+    @pytest.fixture
+    def _patched_store(self, _conv_store):
+        from cherenkov.persistence import run_store as rs_module
+        with patch.object(rs_module, "_store", None):
+            with patch.object(rs_module, "get_run_store", return_value=_conv_store):
+                yield
+
+    def test_conformance_trend_endpoint(self, _patched_store):
+        client = TestClient(app, raise_server_exceptions=False)
+        r = client.get("/api/v1/coverage/conformance-trend")
+        assert r.status_code == 200
+        body = r.json()
+        assert "points" in body
+        assert len(body["points"]) == 3
+        assert body["points"][0]["verdict"] == "PASS"
+        assert body["points"][2]["verdict"] == "FAIL"
+
+    def test_conformance_summary_endpoint(self, _patched_store):
+        client = TestClient(app, raise_server_exceptions=False)
+        r = client.get("/api/v1/coverage/conformance-summary")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["passCount"] == 1
+        assert body["warnCount"] == 1
+        assert body["failCount"] == 1
+        assert body["totalRuns"] == 3
+        assert body["latestVerdict"] == "FAIL"
+        assert body["latestDivergenceCount"] == 5
+        assert len(body["trend"]) == 3
