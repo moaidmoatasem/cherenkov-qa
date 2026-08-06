@@ -170,15 +170,13 @@ docker run --rm \
 
 ## MCP Server Deployment
 
-CHERENKOV includes a Model Context Protocol server for IDE and agent integration.
+CHERENKOV includes a Model Context Protocol server for IDE and agent integration. It speaks **JSON-RPC 2.0 over stdio** — the MCP client spawns the process; there is no HTTP port to expose.
 
 ```bash
-# Start MCP server via Docker
-docker build -f Dockerfile.mcp -t cherenkov-mcp .
-docker run -p 3001:3001 cherenkov-mcp
-
-# Or directly
-PYTHONPATH=. python -m cherenkov.mcp.server
+# Run the MCP server directly (stdio transport)
+cherenkov mcp serve
+# Equivalent module form:
+PYTHONPATH=. python -m cherenkov mcp serve
 ```
 
 **Configure in your IDE (Claude Code, Cursor, etc.):**
@@ -188,7 +186,8 @@ PYTHONPATH=. python -m cherenkov.mcp.server
 {
   "mcpServers": {
     "cherenkov": {
-      "url": "http://localhost:3001/mcp",
+      "command": "cherenkov",
+      "args": ["mcp", "serve"],
       "description": "CHERENKOV QA — API conformance testing"
     }
   }

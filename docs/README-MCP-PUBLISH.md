@@ -9,7 +9,7 @@ by an agent.
 
 | Artifact | Purpose |
 |---|---|
-| `manifest.json` (repo root) | Single source of truth for registry metadata. Full 37-tool list with JSON inputSchemas, extracted programmatically from `cherenkov/mcp/handlers.py` `TOOLS` (37 tools, verified by `tools/list` smoke test). |
+| `manifest.json` (repo root) | Single source of truth for registry metadata. Full 41-tool list with JSON inputSchemas, extracted programmatically from `cherenkov/mcp/handlers.py` `TOOLS` (41 tools, verified by `tools/list` smoke test). |
 | `mcp.json` (repo root) | Registry-style metadata in the `modelcontextprotocol.io/schema/mcp.json` shape (name, displayName, server command, capabilities, full tool list). |
 | `smithery.yaml` | Smithery config: `startCommand: cherenkov mcp serve`, configSchema (`targetUrl`, `specPath`). |
 | `pyproject.toml` | Package name `cherenkov-qa` v1.3.0, console script `cherenkov` → `cherenkov.cli.core:main`. |
@@ -24,7 +24,7 @@ printf '%s\n' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
   | cherenkov mcp serve
 # Expect: initialize result with serverInfo.name=cherenkov, capabilities.tools,
-# and tools/list returning exactly 37 tools.
+# and tools/list returning exactly 41 tools.
 
 # 2. Re-verify the manifest matches the live tool list after any future change:
 python - <<'EOF'
@@ -98,7 +98,7 @@ stdin/stdout). There is no TCP port to configure; clients spawn the process
 
 - `cherenkov: command not found` → install package or use
   `python -m cherenkov mcp serve`.
-- `tools/list` returns fewer than 37 → tool catalogue drift; re-run the
+- `tools/list` returns fewer than 41 → tool catalogue drift; re-run the
   validation snippet above and regenerate `manifest.json` from `handlers.TOOLS`.
 - Registry rejects `manifest.json` → some registries want a flat
   `{id, name, description, version, repository_url, install_command}` envelope;

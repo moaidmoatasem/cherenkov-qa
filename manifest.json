@@ -818,6 +818,81 @@
       }
     },
     {
+      "name": "event_bus_list",
+      "description": "Fetch events from the UnifiedEventBus, optionally filtered by category. Pipeline runs publish stage_start, stage_success, test_generated, replan_trigger, and pipeline_complete events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "description": "Filter by event category (pipeline, hitl, healing, knowledge, system). Omit for all."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max events to return (default 50)."
+          },
+          "after_id": {
+            "type": "string",
+            "description": "Only fetch events whose event_id sorts after this id."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "event_bus_get",
+      "description": "Fetch a single event from the UnifiedEventBus by event_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "description": "Event ID to fetch."
+          }
+        },
+        "required": [
+          "event_id"
+        ]
+      }
+    },
+    {
+      "name": "event_bus_publish",
+      "description": "Publish a CHERENKOVEvent to the UnifiedEventBus for downstream consumers (sinks, sources, subscribed handlers).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Event name, e.g. pipeline.start."
+          },
+          "category": {
+            "type": "string",
+            "description": "Event category: pipeline | hitl | healing | knowledge | system."
+          },
+          "severity": {
+            "type": "string",
+            "description": "info | warning | error."
+          },
+          "payload": {
+            "type": "object",
+            "description": "Arbitrary JSON event payload."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "event_bus_stats",
+      "description": "Return UnifiedEventBus statistics (queue size, sink/source/filter/handler counts, running state).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
       "name": "cherenkov/audit-test-file",
       "description": "Audit a test file for integrity issues: weakened assertions, tautological checks, spec mismatches, and AI test-cheating patterns. Returns a verdict (PASS/WEAK/FAIL), an integrity score, specific issues with line numbers, and a SHA-256 certificate if the score is >= 0.90. Call this before committing AI-generated test code.",
       "inputSchema": {
