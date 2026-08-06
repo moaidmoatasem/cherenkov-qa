@@ -32,7 +32,7 @@ hide:
   <div class="hero-terminal-dot g"></div>
 </div>
 <div class="hero-terminal-body">
-<span class="cmd">cherenkov</span> <span class="arg">validate</span> --spec petstore.yaml --target http://localhost:8000
+<span class="cmd">cherenkov</span> <span class="arg">validate</span> --spec petstore.yaml --target http://localhost:4010
 <span class="comment"># 🚀 Generating Playwright tests via qwen2.5-coder...</span>
 <span class="comment"># ⚡ Executing 24 conformance scenarios...</span>
 <span class="out">✅ GET  /pets             200 — Conformant</span>
@@ -85,18 +85,13 @@ hide:
 
 ## Quick Start
 
-=== "pip (Python)"
+=== "Install from source (Python)"
 
     ```bash
-    pip install cherenkov-qa
+    git clone https://github.com/moaidmoatasem/cherenkov-qa.git
+    cd cherenkov-qa
+    pip install -e .
     cherenkov validate --spec your-api.yaml --target http://localhost:8000
-    ```
-
-=== "npx (Node)"
-
-    ```bash
-    npx cherenkov-cli init
-    npx cherenkov-cli validate --spec your-api.yaml --target http://localhost:8000
     ```
 
 === "Docker"
@@ -108,9 +103,9 @@ hide:
 
 ---
 
-## Trusted By
+## Validated Against
 
-CHERENKOV has been rigorously validated against complex, real-world APIs:
+CHERENKOV has been tested against complex, real-world APIs:
 
 | API | Divergences Found |
 |-----|------------------|

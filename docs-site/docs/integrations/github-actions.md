@@ -1,11 +1,14 @@
 ---
 title: GitHub Actions Integration
-description: Use the CHERENKOV-QA GitHub Actions marketplace action for automated API conformance in CI.
+description: Use the CHERENKOV-QA GitHub Actions workflow template for automated API conformance in CI.
 ---
 
 # GitHub Actions Integration
 
-CHERENKOV-QA publishes a GitHub Actions marketplace action: `cherenkov-qa/action@v1`.
+CHERENKOV-QA provides a reusable GitHub Actions workflow template in the repository's `.github/workflows/` directory. This is **not** a published GitHub Marketplace action -- copy the workflow into your own repository to use it.
+
+!!! warning "Not a Marketplace action"
+    The `cherenkov-qa/action@v1` reference below is a template available in the CHERENKOV-QA repo's `.github/workflows/` directory. Copy it into your project's `.github/workflows/` and adjust paths as needed. A published Marketplace action is planned for a future release.
 
 ---
 

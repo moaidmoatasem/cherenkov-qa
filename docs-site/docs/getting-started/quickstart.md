@@ -103,7 +103,7 @@ Summary: 3/4 passed · 1 divergence · Exit code: 1
 
 ## Step 5 — Explore in the Dashboard
 
-Launch the interactive 9-screen React dashboard to explore findings, use the chat agent, or navigate the knowledge graph:
+Launch the interactive React dashboard to explore findings across 5 workspaces (Overview, Author & Generate, Triage, Coverage & Intelligence, Settings):
 
 ```bash
 cherenkov dashboard

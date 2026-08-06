@@ -29,9 +29,10 @@ CHERENKOV-QA is fully open source (Apache 2.0) and designed to run at **$0/month
 The minimum viable setup. Good for evaluating CHERENKOV before committing to Ollama.
 
 ```bash
-pip install cherenkov-qa
+git clone https://github.com/moaidmoatasem/cherenkov-qa.git && cd cherenkov-qa
+pip install -e .
 
-# Uses a lightweight fallback model or requires OPENAI_API_KEY
+# Uses template fallback (no LLM needed) or set OPENAI_API_KEY for cloud
 cherenkov validate --spec api.yaml --target http://localhost:8000
 ```
 

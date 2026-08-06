@@ -133,29 +133,50 @@ nav:
       - getting-started/index.md
       - Installation: getting-started/installation.md
       - Quickstart: getting-started/quickstart.md
+      - Configuration: getting-started/configuration.md
       - Cost Tiers: getting-started/cost-tiers.md
-  - CLI Reference:
-      - Commands: cli/reference.md
-      - Shell Completions: cli/completions.md
   - Guides:
+      - guides/index.md
       - API Conformance Testing: guides/api-conformance.md
+      - Check Suite (Integrity Audit): guides/check-suite.md
+      - Test Generation & Repair: guides/test-generation.md
+      - Dashboard & UI: guides/dashboard.md
+      - Human-in-the-Loop (HITL): guides/hitl.md
+      - Certificates & Compliance: guides/certificates.md
+      - Continuous Monitoring: guides/continuous-monitoring.md
       - OpenAPI Spec Integration: guides/openapi-spec.md
       - Local LLM Setup: guides/local-llm.md
       - Eject to Vanilla Playwright: guides/eject.md
-      - CI/CD Integration: guides/ci-cd.md
+      - Docker Deployment: guides/docker.md
       - K8s Operator: guides/k8s-operator.md
       - Security Testing (OWASP): guides/security.md
+  - CLI Reference:
+      - Commands: cli/reference.md
+      - Shell Completions: cli/completions.md
   - Integrations:
-      - VS Code Extension: integrations/vscode.md
+      - CI/CD Integration: guides/ci-cd.md
       - GitHub Actions: integrations/github-actions.md
-      - Slack & Teams: integrations/notifications.md
+      - VS Code Extension: integrations/vscode.md
       - MCP Ecosystem: integrations/mcp.md
+      - Slack & Teams: integrations/notifications.md
+      - LangChain: integrations/langchain.md
   - Architecture:
       - System Design: architecture/system-design.md
       - Clean Architecture: architecture/clean-architecture.md
       - AI Pipeline: architecture/ai-pipeline.md
+      - Module Reference: architecture/module-reference.md
       - Second Brain: architecture/second-brain.md
       - Diagrams: architecture/diagrams.md
+  - For Your Role:
+      - roles/index.md
+      - Developer: roles/developer.md
+      - QA Engineer: roles/qa-engineer.md
+      - DevOps & SRE: roles/devops.md
+      - Team Lead & Manager: roles/team-lead.md
+  - Troubleshooting:
+      - troubleshooting/index.md
+      - FAQ: troubleshooting/faq.md
+      - Common Issues: troubleshooting/common-issues.md
   - Changelog:
       - Latest: changelog.md
       - v1.3.0: releases/v1.3.0.md

@@ -58,7 +58,9 @@ And then runs it against your live server — catching drift between spec and re
 | LocalAI/Ollama tier routing | ✅ Complete |
 | GraphRAG second brain | ✅ Complete |
 | Chat agent with SSE streaming | ✅ Complete |
-| React dashboard (9 screens) | ✅ Complete |
+| `check-suite` integrity checking | ✅ Complete |
+| `verify --health-score` A-F grading | ✅ Complete |
+| React dashboard (5 workspaces) | ✅ Complete |
 | K8s `ConformanceCheck` CRD + Go operator | ✅ Complete |
 | Tauri 2 desktop app | ✅ Compiles |
 | Mobile testing (Maestro/Appium) | ⏸ Needs device |
