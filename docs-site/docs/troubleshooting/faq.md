@@ -13,7 +13,7 @@ They solve different problems.
 
 **Schemathesis** is a property-based API fuzzer. It generates random inputs based on your schema and looks for crashes, 500 errors, and schema violations. It answers: "Can I break this API with unexpected inputs?"
 
-**CHERENKOV** is a conformance testing platform. It generates structured Playwright tests from your spec, runs them against your API, and reports where the implementation diverges from the contract. It also audits your *existing* test suite for weakened or hallucinated assertions.
+**CHERENKOV** is an open Quality Intelligence Platform whose shipped core is API conformance testing and test-suite integrity auditing. It generates structured Playwright tests from your spec, runs them against your API, and reports where the implementation diverges from the contract. It also audits your *existing* test suite for weakened or hallucinated assertions.
 
 CHERENKOV answers: "Does this API do what the spec says it does?" and "Do our tests actually test what the spec requires?"
 

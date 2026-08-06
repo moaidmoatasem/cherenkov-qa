@@ -201,7 +201,7 @@ This checks Python version, Ollama connectivity, spec readability, target reacha
 
 3. **Check the URL:**
 
-    Open `http://localhost:8000` in your browser. The dashboard should show 5 workspaces: Overview, Triage, Reports, Coverage, and Settings.
+    Open `http://localhost:8000` in your browser. The dashboard should show 5 workspaces: Overview, Author & Generate, Triage, Coverage & Intelligence, and Settings.
 
 4. **Firewall/proxy issues:**
 

@@ -12,7 +12,7 @@ hide:
 
 # CHERENKOV-QA
 
-<p class="tagline"><b>AI-native API conformance testing.</b><br/>Spec in &rarr; Tests out &rarr; Drift caught. Locally. Privately. Zero lock-in.</p>
+<p class="tagline"><b>An open Quality Intelligence Platform.</b><br/>Spec in &rarr; Tests out &rarr; Drift caught &rarr; a verdict you can trust. Locally. Privately. Zero lock-in.</p>
 
 <div class="hero-buttons">
   <a href="getting-started/" class="hero-btn primary">
@@ -44,6 +44,28 @@ hide:
 </div>
 
 </div>
+
+---
+
+## What CHERENKOV is
+
+CHERENKOV gathers evidence from your engineering systems, applies quality policy **the AI under test cannot lower for itself**, and hands a person a reproducible verdict before software ships.
+
+The problem it exists for: AI now writes most of the code *and* the tests — and agents cheat to look successful, weakening assertions, deleting failing checks, and reporting green. When generation is free and infinite, **trust becomes the scarce thing.** CHERENKOV keeps the quality decision independent of the model that produced the work.
+
+```mermaid
+flowchart LR
+  S["Sources<br/>specs · code · traffic"] --> Q["Quality<br/>control plane"]
+  Q --> V["Verdict<br/>policy · evidence · certificate"]
+  V --> H["Human decision<br/>ship · block · certify"]
+
+  style Q fill:#7c3aed,stroke:#fff,stroke-width:2px,color:#fff
+  style V fill:#2563eb,stroke:#fff,stroke-width:2px,color:#fff
+  style H fill:#059669,stroke:#fff,stroke-width:2px,color:#fff
+```
+
+!!! note "Shipped today vs. where it's heading"
+    **API conformance is the shipped core** — `validate`, `verify`, generation, the [check-suite integrity audit](guides/check-suite.md), and [signed certificates](guides/certificates.md) all run today. Mobile, performance, and security evidence are the platform's *direction*, not current scope. For the full picture, read the [Platform Operating Model](architecture/platform-operating-model.md) and the [User Journeys](architecture/user-journeys.md).
 
 ---
 
