@@ -1,0 +1,24 @@
+[
+  {
+    "uses_openapi_fetch_client": true,
+    "no_forbidden_http": true,
+    "asserts_specific_status": true,
+    "asserts_body_shape": true,
+    "would_fail_on_wrong_output": true,
+    "compiles_likely": true,
+    "meaningful": true,
+    "_name": "POST_users",
+    "_seconds": 2.8
+  },
+  {
+    "uses_openapi_fetch_client": true,
+    "no_forbidden_http": true,
+    "asserts_specific_status": true,
+    "asserts_body_shape": true,
+    "would_fail_on_wrong_output": true,
+    "compiles_likely": true,
+    "meaningful": true,
+    "_name": "GET_health",
+    "_seconds": 1.6
+  }
+]
