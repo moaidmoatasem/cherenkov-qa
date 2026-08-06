@@ -455,12 +455,12 @@ bash scripts/setup_oi.sh
 
 ```bash
 # Run manually to see the full error
-PYTHONPATH=/path/to/cherenkov-qa python3 /path/to/cherenkov-qa/cherenkov.py mcp serve
+cd /path/to/cherenkov-qa && python3 -m cherenkov mcp serve
 ```
 
 Common causes:
 - **`ModuleNotFoundError`** — run `pip install -r requirements.txt` in the repo directory
-- **`Address already in use`** — another cherenkov MCP process is running; kill it with `pkill -f "cherenkov.py mcp serve"`
+- **`Address already in use`** — another cherenkov MCP process is running; kill it with `pkill -f "cherenkov mcp serve"`
 - **`spec_path must be within working directory`** — check that `cwd` in the MCP config is the absolute path to the repo root
 
 ### Tool blocked by policy

@@ -10,7 +10,7 @@ CHERENKOV is built in three layers: a **CLI** on the outside, a **domain** in th
 
 ```mermaid
 graph TB
-    subgraph CLI ["🖥️  CLI Layer  (cherenkov.py)"]
+    subgraph CLI ["🖥️  CLI Layer  (cherenkov/cli/ · python -m cherenkov)"]
         direction LR
         VALIDATE[validate]
         EJECT[eject]
@@ -63,10 +63,11 @@ graph TB
 ```
 cherenkov-qa/
 │
-├── cherenkov.py              ← Main CLI (all commands live here)
-├── bin/cherenkov             ← Shell wrapper (invokes cherenkov.py)
+├── bin/cherenkov             ← Shell wrapper (runs `cherenkov/cli/core.py`)
 │
 ├── cherenkov/                ← Main Python package
+│   ├── __main__.py           ← `python -m cherenkov` entry point
+│   ├── cli/                  ← Click CLI — all commands live here
 │   ├── core/                 ← Orchestrator · contracts · config · errors
 │   ├── stages/               ← ingest → plan → generate → review → validate
 │   ├── execution/            ← validate · eject · playwright_invoke · trace

@@ -362,7 +362,7 @@ Add to `claude_desktop_config.json → mcpServers`:
 {
   "cherenkov": {
     "command": "python3",
-    "args": ["/path/to/cherenkov-qa/cherenkov.py", "mcp", "serve"],
+    "args": ["-m", "cherenkov", "mcp", "serve"],
     "cwd": "/path/to/cherenkov-qa"
   }
 }
@@ -377,7 +377,7 @@ Add to `~/.openinterpreter/mcp.json`:
   "mcpServers": {
     "cherenkov": {
       "command": "python3",
-      "args": ["/path/to/cherenkov-qa/cherenkov.py", "mcp", "serve"],
+      "args": ["-m", "cherenkov", "mcp", "serve"],
       "cwd": "/path/to/cherenkov-qa",
       "env": {
         "MCP_PROFILE": "full-dev"
@@ -398,7 +398,7 @@ Add to `.cursor/mcp.json` (or VS Code's MCP settings):
   "mcpServers": {
     "cherenkov": {
       "command": "python3",
-      "args": ["cherenkov.py", "mcp", "serve"],
+      "args": ["-m", "cherenkov", "mcp", "serve"],
       "cwd": "/path/to/cherenkov-qa"
     }
   }
