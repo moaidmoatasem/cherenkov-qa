@@ -333,7 +333,7 @@ Governance policy management for API conformance standards.
 Generate conformance certification reports.
 
 ```bash
-cherenkov certify --spec <file> --target <url>
+cherenkov certify --spec <file> --url <url>
 ```
 
 **Flags:**
@@ -341,10 +341,10 @@ cherenkov certify --spec <file> --target <url>
 | Flag | Required | Description |
 |------|----------|-------------|
 | `--spec FILE` | Yes | Path to OpenAPI spec |
-| `--target URL` | Yes | Base URL of the server under test |
+| `--url URL` | Yes | Base URL of the live server under test (alias `-u`) |
 | `--coverage-report` | No | Include endpoint coverage breakdown in the report |
-| `--compliance STANDARD` | No | Check against a compliance standard (e.g., `sama-ccsf`, `cbe-fincsf`) |
-| `--verify` | No | Run full verification probes before certification |
+| `--compliance STANDARD` | No | Print the compliance evidence mapping (e.g. `sama-ccsf`, `cbe-fincsf`) |
+| `--verify` | No | Verify an existing certificate file rather than running a new one |
 | `--output DIR` | No | Output directory for the certification report |
 
 ### `guardian`
@@ -361,8 +361,10 @@ cherenkov guardian start --spec <spec> --base-url <url>
 |------|----------|-------------|
 | `--spec FILE` | Yes | Path to OpenAPI spec |
 | `--base-url URL` | Yes | Base URL of the server to monitor |
-| `--interval SECONDS` | No | Polling interval in seconds (default: 300) |
-| `--fail-on-drift` | No | Exit with code `1` on detected drift |
+| `--interval SECONDS` | No | Polling interval in seconds (alias `-i`, default: 300) |
+| `--endpoint METHOD:PATH` | No | Specific endpoint to monitor (repeatable) |
+| `--max-loops N` | No | Stop after N check cycles (alias `-n`, 0 = run until interrupted) |
+| `--db PATH` | No | SQLite drift database path (default: `.cherenkov/drift.db`) |
 
 **Examples:**
 
