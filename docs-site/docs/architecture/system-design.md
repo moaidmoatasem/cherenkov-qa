@@ -9,6 +9,38 @@ CHERENKOV-QA follows Clean Architecture (Ports/Adapters pattern, ADR-004). Depen
 
 ---
 
+## Platform Context — the independent quality layer
+
+The architecture below exists to serve one product idea: **CHERENKOV is an open Quality Intelligence Platform. It gathers evidence from an engineering system, applies quality policy that the AI under test cannot lower for itself, and gives a person a reproducible verdict before software ships.**
+
+The reason this matters is the failure mode CHERENKOV was built to catch: AI agents *cheat to look successful* — they weaken assertions, delete failing checks, and hallucinate oracles, then report green. When generation is free and infinite, **trust becomes the scarce thing.** The platform's job is to keep the quality decision independent of the model that produced the work.
+
+```mermaid
+flowchart TB
+    R["Sources<br/>OpenAPI specs · code · live traffic"] --> Q
+    E["Evidence executors<br/>API conformance & web UI <b>(shipped)</b><br/>mobile · performance · security <b>(directional)</b>"] --> Q
+    L["Model mesh<br/>local Ollama · cloud · hybrid"] --> Q
+    Q["Quality control plane"] --> V["Verdict engine<br/>policy · evidence · reproducibility · certificate"]
+    Q --> K["Knowledge fabric<br/>Second Brain memory + reviewed team knowledge"]
+    V --> D["Human decision<br/>ship · block · investigate · certify"]
+
+    style Q fill:#7c3aed,stroke:#fff,stroke-width:2px,color:#fff
+    style V fill:#2563eb,stroke:#fff,stroke-width:2px,color:#fff
+    style D fill:#059669,stroke:#fff,stroke-width:2px,color:#fff
+```
+
+This draws a deliberate boundary between what the platform **owns** and what pluggable adapters **provide**:
+
+| Platform core — CHERENKOV owns this | Extension ecosystem — adapters provide this |
+|---|---|
+| Quality policy, verdict schema, evidence integrity, certificates, review workflow, memory governance | Test frameworks, model providers, source systems, CI, IDEs, messaging, device clouds |
+| Deterministic guardrails an agent cannot lower for itself | Optional capabilities you install, configure, or remove |
+
+!!! note "Shipped today vs. directional"
+    API conformance is the **flagship, shipped** evidence source — `validate`, `verify`, test generation, the [check-suite integrity audit](../guides/check-suite.md), and [signed certificates](../guides/certificates.md) all run today. Mobile, performance, and security executors are the platform's **direction**, not current scope. The full product contract lives in the maintainer's `docs/PLATFORM_OPERATING_MODEL.md`.
+
+---
+
 ## Module Dependency Layers
 
 ```

@@ -96,3 +96,12 @@ jobs:
               body: `**CHERENKOV Conformance:** ${{ steps.conformance.outputs.drift-count }} drift(s) found. Pass rate: ${{ steps.conformance.outputs.pass-rate }}`
             })
 ```
+
+---
+
+## Next Steps
+
+- [CI/CD Integration](../guides/ci-cd.md) — GitLab CI, CircleCI, pre-commit, and the full pipeline flow
+- [Check Suite (Integrity Audit)](../guides/check-suite.md) — add a test-integrity gate to your PR checks
+- [Certificates & Compliance](../guides/certificates.md) — attach a signed verdict to every green build
+- [Configuration](../getting-started/configuration.md) — environment variables for CI runners

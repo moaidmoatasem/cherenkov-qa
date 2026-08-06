@@ -5,7 +5,9 @@ description: What CHERENKOV-QA is, what it does, and which entry point is right 
 
 # Getting Started
 
-Welcome to CHERENKOV-QA. Pick the path that matches your goal:
+Welcome to CHERENKOV-QA. At its core, CHERENKOV keeps your quality decision **independent of the AI that wrote the code** — it generates tests from your spec, checks that nobody quietly weakened them, and gives you a reproducible verdict before you ship. API conformance testing is where that starts, and where these guides begin. (For the bigger picture, see [Platform Context](../architecture/system-design.md#platform-context-the-independent-quality-layer).)
+
+Pick the path that matches your goal:
 
 | Goal | Go to |
 |------|-------|
