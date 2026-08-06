@@ -93,5 +93,5 @@ paths:
 cherenkov doctor
 
 # Generate tests only (no execution) to see what CHERENKOV extracts
-cherenkov generate --spec api.yaml --output ./tests
+cherenkov generate --spec api.yaml --output-dir ./tests
 ```
