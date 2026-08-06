@@ -211,6 +211,16 @@ def divergence_ids() -> set:
     return {d["id"] for d in _DIVERGENCE_CORPUS}
 
 
+def _safe_for_log(value: str, limit: int = 120) -> str:
+    """Strip newlines from a request-supplied value before it reaches a log.
+
+    `divergence_id` arrives from the /act payload. It is validated against
+    `divergence_ids()` before we get here, but sanitising anyway keeps forged
+    log lines impossible regardless of how this is called later.
+    """
+    return str(value).replace("\r", "").replace("\n", "")[:limit]
+
+
 def apply_action(divergence_id: str, action: str) -> str:
     if divergence_id not in divergence_ids():
         raise KeyError(divergence_id)
@@ -225,7 +235,9 @@ def apply_action(divergence_id: str, action: str) -> str:
 
         get_divergence_store().set_status(divergence_id, new_status)
     except Exception:
-        _log.debug("triage status persist failed for %s", divergence_id, exc_info=True)
+        _log.debug(
+            "triage status persist failed for %s", _safe_for_log(divergence_id), exc_info=True
+        )
 
     _STATUS_OVERRIDES[divergence_id] = new_status
     return new_status

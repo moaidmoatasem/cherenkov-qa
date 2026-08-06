@@ -133,7 +133,7 @@ class TestApiMapping:
     def test_short_class_handles_every_divergence_class(self):
         from cherenkov.web.divergences import _short_class
 
-        for cls in DivergenceClass:
+        for cls in DivergenceClass.__members__.values():
             assert _short_class(cls.value) in {"D1", "D2", "D3", "D4", "D5"}
 
     def test_short_class_falls_back_on_junk(self):
@@ -200,6 +200,15 @@ class TestActions:
         assert mod.apply_action("run-a:DIV-1", "reject") == "rejected"
         # Survives process restart, unlike the in-memory override.
         assert store.list_for_run("run-a")[0].status == "rejected"
+
+    def test_log_sanitiser_strips_newlines(self):
+        """A forged id must not be able to inject extra log lines."""
+        from cherenkov.web.divergences import _safe_for_log
+
+        assert _safe_for_log("ok-id") == "ok-id"
+        assert _safe_for_log("id\nINFO: forged entry") == "idINFO: forged entry"
+        assert _safe_for_log("id\r\nfoo") == "idfoo"
+        assert len(_safe_for_log("x" * 500)) == 120
 
     def test_unknown_id_still_raises_keyerror(self, monkeypatch):
         from cherenkov.web import divergences as mod
