@@ -526,6 +526,23 @@ jobs:
       - name: Check CLI Flag Docs Parity
         run: python3 scripts/check_cli_flags.py
 
+  mcp-manifest-drift:
+    name: MCP registry ↔ handlers.TOOLS (no drift)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run manifest/mcp.json ↔ TOOLS drift test
+        run: pytest tests/unit/test_manifest_matches_tools.py -q
+      - name: Regenerator agrees the manifests are current
+        run: python scripts/gen_manifest.py --check
+
   sandbox-provider-unit:
     name: Sandbox Provider Unit
     runs-on: ubuntu-latest
