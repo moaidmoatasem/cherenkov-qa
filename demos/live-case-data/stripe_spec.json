@@ -1,0 +1,25 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Stripe API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/v1/charges": {
+      "post": {
+        "summary": "Create a charge",
+        "parameters": [
+          { "name": "amount", "in": "query", "required": true, "schema": { "type": "integer" } },
+          { "name": "currency", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "source", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "description", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}

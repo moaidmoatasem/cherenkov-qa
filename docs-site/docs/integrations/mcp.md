@@ -4,7 +4,7 @@ title: MCP Ecosystem
 
 # MCP Ecosystem
 
-CHERENKOV ships a full **Model Context Protocol (MCP)** server with **31 tools** and **6 resources**.
+CHERENKOV ships a full **Model Context Protocol (MCP)** server with **37 tools** and **6 resources**.
 
 ## MCP Server
 
@@ -14,7 +14,7 @@ cherenkov dashboard
 # MCP endpoint: http://localhost:8000/mcp
 ```
 
-## Available Tools (31)
+## Available Tools (37)
 
 ### HITL Queue
 
@@ -85,6 +85,17 @@ cherenkov dashboard
 | `policy_reload` | Reload cherenkov-policy.json without restarting |
 | `mcp_registry_list` | List all MCP servers registered in the mesh registry |
 | `mcp_registry_publish` | Register an external MCP server with the mesh registry |
+
+### Pipeline (Agent-Invokable)
+
+| Tool | Description |
+|------|-------------|
+| `run_check_suite` | Run a check-suite integrity check on a candidate test suite against its spec |
+| `run_verify` | Run spec-derived probe planning and verification against a live server |
+| `run_generate` | Generate Playwright tests from an OpenAPI spec via the local LLM |
+| `get_health_score` | Return an A-F health grade for the API under test |
+| `get_coverage_report` | Return endpoint-level coverage data from the last verification run |
+| `run_guardian_scan` | Trigger a single Guardian scan against a live server |
 
 ### Healing
 

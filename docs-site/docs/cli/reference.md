@@ -103,15 +103,53 @@ cherenkov validate --spec api.yaml --target http://api.example.com --json
 
 ### `verify`
 
-Run the 6-gate integrity verification on a test suite.
+Run spec-derived probe planning and integrity verification against a live server.
 
 ```bash
-cherenkov verify --suite <path>
+cherenkov verify --url <url> --spec <file>
+```
+
+**Flags:**
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--url URL` | Yes | Base URL of the server under test |
+| `--spec FILE` | Yes | Path to OpenAPI spec |
+| `--health-score` | No | Print an A-F health grade for the API |
+| `--coverage-report` | No | Generate an endpoint coverage report |
+| `--max-probes N` | No | Maximum number of probes to run (default: unlimited) |
+| `--json` | No | Output results as JSON to stdout |
+
+**Examples:**
+
+```bash
+# Basic verify with health score
+cherenkov verify --url http://localhost:8000 --spec api.yaml --health-score
+
+# Verify with coverage and capped probe count
+cherenkov verify --url http://localhost:8000 --spec api.yaml \
+  --coverage-report --max-probes 50
+
+# CI-friendly JSON output
+cherenkov verify --url http://localhost:8000 --spec api.yaml --health-score --json
 ```
 
 ### `check-suite`
 
-Quick integrity check against the REVIEW gate contract.
+Run an integrity check against the REVIEW gate contract for a candidate test suite.
+
+```bash
+cherenkov check-suite --candidate <path> --spec <file>
+```
+
+**Flags:**
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--candidate PATH` | Yes | Path to the candidate test suite to check |
+| `--spec FILE` | Yes | Path to the OpenAPI spec the suite was generated from |
+| `--fail-on-finding` | No | Exit with code `1` if any finding is detected |
+| `--json` | No | Output results as JSON to stdout |
 
 ### `diff`
 
@@ -139,6 +177,8 @@ cherenkov generate --spec <file>
 |------|----------|-------------|
 | `--spec FILE` | Yes | Path to OpenAPI spec |
 | `--output DIR` | No | Output directory (default: `./tests`) |
+| `--repair` / `--no-repair` | No | Enable or disable automatic repair of failing generated tests (default: `--repair`) |
+| `--max-attempts N` | No | Maximum LLM generation attempts per endpoint (default: 3) |
 
 ### `eject`
 
@@ -185,17 +225,13 @@ Launch the interactive React dashboard and MCP network conductor.
 cherenkov dashboard
 ```
 
-Opens at `http://localhost:8000` by default. Contains 9 screens:
+Opens at `http://localhost:8000` by default. Contains 5 workspaces:
 
-- **Overview** — release readiness
-- **Divergences** — severity-sorted findings
-- **Explore** — endpoint browser
-- **Author** — intent-driven test creation
-- **Review Queue** — HITL approve/reject
-- **Knowledge Explorer** — GraphRAG second brain
-- **Device Manager** — connected device status
-- **Chat Panel** — conversational QA agent
-- **Health** — system health widget
+- **Overview** (DashboardWorkspace) — release readiness, health, and recent runs
+- **Author & Generate** (AuthoringWorkspace) — intent-driven test creation and generation
+- **Triage** (TriageWorkspace) — severity-sorted findings and HITL review
+- **Coverage & Intelligence** (IntelligenceWorkspace) — endpoint coverage, GraphRAG knowledge explorer
+- **Settings** (SettingsWorkspace) — configuration, device management, system health
 
 ### `map`
 
@@ -291,6 +327,48 @@ Governance policy management for API conformance standards.
 ### `certify`
 
 Generate conformance certification reports.
+
+```bash
+cherenkov certify --spec <file> --target <url>
+```
+
+**Flags:**
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--spec FILE` | Yes | Path to OpenAPI spec |
+| `--target URL` | Yes | Base URL of the server under test |
+| `--coverage-report` | No | Include endpoint coverage breakdown in the report |
+| `--compliance STANDARD` | No | Check against a compliance standard (e.g., `sama-ccsf`, `cbe-fincsf`) |
+| `--verify` | No | Run full verification probes before certification |
+| `--output DIR` | No | Output directory for the certification report |
+
+### `guardian`
+
+Start the Guardian daemon for continuous spec-drift monitoring.
+
+```bash
+cherenkov guardian start --spec <spec> --base-url <url>
+```
+
+**Flags:**
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--spec FILE` | Yes | Path to OpenAPI spec |
+| `--base-url URL` | Yes | Base URL of the server to monitor |
+| `--interval SECONDS` | No | Polling interval in seconds (default: 300) |
+| `--fail-on-drift` | No | Exit with code `1` on detected drift |
+
+**Examples:**
+
+```bash
+# Start guardian with 5-minute polling
+cherenkov guardian start --spec api.yaml --base-url http://localhost:8000
+
+# Custom interval (every 60 seconds)
+cherenkov guardian start --spec api.yaml --base-url http://localhost:8000 --interval 60
+```
 
 ### `enterprise`
 

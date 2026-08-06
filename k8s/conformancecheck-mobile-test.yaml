@@ -1,0 +1,33 @@
+apiVersion: validation.cherenkov.io/v1alpha1
+kind: ConformanceCheck
+metadata:
+  name: petstore-mobile-visual
+  namespace: cherenkov
+spec:
+  targetRef:
+    apiVersion: v1
+    kind: Service
+    name: prism
+    namespace: cherenkov
+    port: 4010
+  specRef: petstore-spec
+  llmConcurrency: 2
+  deviceTargets:
+    - platform: ios
+      osVersion: "17.0"
+      deviceName: "iPhone 15"
+      viewportSize:
+        width: 390
+        height: 844
+    - platform: android
+      osVersion: "14.0"
+      deviceName: "Pixel 8"
+      viewportSize:
+        width: 412
+        height: 915
+  visualConfig:
+    enabled: true
+    vlmProvider: ollama
+    threshold: 0.95
+    screenshotOnFail: true
+    diffMethod: vlm

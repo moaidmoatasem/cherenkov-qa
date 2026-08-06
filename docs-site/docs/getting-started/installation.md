@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Install CHERENKOV-QA via pip, npx, or Docker. Prerequisites and environment setup.
+description: Install CHERENKOV-QA from source. Prerequisites and environment setup.
 ---
 
 # Installation
@@ -16,7 +16,9 @@ description: Install CHERENKOV-QA via pip, npx, or Docker. Prerequisites and env
 
 ---
 
-## 1. Clone and Set Up
+## 1. Clone and Install from Source
+
+CHERENKOV-QA is not published on PyPI. Install directly from the repository:
 
 ```bash
 git clone https://github.com/moaidmoatasem/cherenkov-qa.git
@@ -27,8 +29,8 @@ python3 -m venv .venv
 source .venv/bin/activate          # Linux/macOS
 # .venv\Scripts\activate           # Windows
 
-# Install Python dependencies
-pip install -r requirements.txt
+# Install from source (editable mode for development)
+pip install -e .
 
 # Install Node/Playwright in the test stub folder
 cd stub
