@@ -115,7 +115,7 @@ cherenkov generate --spec openapi.yaml
 cherenkov generate --spec openapi.yaml --no-repair
 
 # Generate and place in a specific directory
-cherenkov generate --spec openapi.yaml --output ./tests/conformance
+cherenkov generate --spec openapi.yaml --output-dir ./tests/conformance
 ```
 
 Generated tests are standard Playwright — you can read them, edit them, run them with `npx playwright test`.
