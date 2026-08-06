@@ -1,10 +1,23 @@
 from __future__ import annotations
 
 import os
+import tempfile
+from pathlib import Path
 
 import pytest
 
 os.environ.setdefault("CHERENKOV_RATE_LIMIT_ENABLED", "false")
+
+# Never write to the developer's real ~/.cherenkov/runs.db during a test run.
+# RunStore and DivergenceStore both resolve CHERENKOV_RUNS_DB at first use, so
+# pointing it at a per-session temp dir keeps run records — and the divergence
+# findings now persisted alongside them (#903) — out of the user's home. Before
+# findings were stored this leaked only harmless scalars; now it would leak
+# whole findings that /api/v1/divergences reads back.
+os.environ.setdefault(
+    "CHERENKOV_RUNS_DB",
+    str(Path(tempfile.mkdtemp(prefix="cherenkov-tests-")) / "runs.db"),
+)
 
 
 def _ollama_reachable() -> bool:

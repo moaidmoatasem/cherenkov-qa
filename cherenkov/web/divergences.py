@@ -1,19 +1,27 @@
 """
 CHERENKOV web/divergences.py — Divergence corpus + action store.
 
-Backend source of truth for the dashboard Divergences screen. The React client
-calls GET /api/v1/divergences and POST /api/v1/divergences/act.
+Backend for the dashboard Divergences screen. The React client calls
+GET /api/v1/divergences and POST /api/v1/divergences/act.
 
-The corpus shape mirrors the frontend `Divergence` interface
-field-for-field (camelCase) so the client can render it without translation.
-Status overrides from /act are held in-process; this is a localhost-first
-dashboard, so an in-memory store is sufficient.
+Real findings come from `cherenkov.persistence.divergence_store`, written by
+`verify`/`certify` runs. `_DIVERGENCE_CORPUS` below is demo seed data, served
+only when no run has produced findings yet — a fresh install has nothing real
+to show, and honest placeholder data beats an empty screen. Once findings
+exist, they win (#903).
+
+Both shapes mirror the frontend `Divergence` interface field-for-field
+(camelCase) so the client renders either without translation.
 """
 
 from __future__ import annotations
 
+import json
+import logging
 from datetime import datetime, timezone
 from typing import Any
+
+_log = logging.getLogger(__name__)
 
 _DIVERGENCE_CORPUS: list[dict] = [
     {
@@ -111,7 +119,81 @@ _ACTION_STATUS = {
 _STATUS_OVERRIDES: dict[str, str] = {}
 
 
+_CLASS_PREFIXES = ("D1", "D2", "D3", "D4", "D5")
+
+
+def _short_class(divergence_class: str) -> str:
+    """"D1_spec_code" -> "D1", matching the frontend's narrow union type."""
+    head = (divergence_class or "").split("_", 1)[0].upper()
+    return head if head in _CLASS_PREFIXES else "D1"
+
+
+def _format_evidence(evidence: dict) -> str:
+    """Render DivergenceEvidence as the text block the client displays."""
+    if not evidence:
+        return ""
+    lines = []
+    for label, key in (
+        ("Request", "request_summary"),
+        ("Expected", "response_expected"),
+        ("Actual", "response_actual"),
+        ("Diff", "diff"),
+    ):
+        value = evidence.get(key)
+        if value in (None, ""):
+            continue
+        if not isinstance(value, str):
+            value = json.dumps(value, indent=2, default=str)
+        lines.append(f"{label}: {value}")
+    return "\n".join(lines)
+
+
+def _record_to_api(record: Any) -> dict:
+    """Map a stored FindingRecord onto the frontend `Divergence` shape."""
+    try:
+        evidence = json.loads(record.evidence_json or "{}")
+    except (TypeError, ValueError):
+        evidence = {}
+    try:
+        repro_steps = json.loads(record.repro_steps_json or "[]")
+    except (TypeError, ValueError):
+        repro_steps = []
+
+    return {
+        "id": record.finding_key,
+        "divergenceClass": _short_class(record.divergence_class),
+        "endpoint": record.endpoint,
+        "severity": record.severity or "medium",
+        "status": _STATUS_OVERRIDES.get(record.finding_key, record.status or "reproduced"),
+        "claimA": record.claim_a,
+        "claimB": record.claim_b,
+        "evidence": _format_evidence(evidence if isinstance(evidence, dict) else {}),
+        "reproSteps": "\n".join(str(s) for s in repro_steps) if repro_steps else "",
+    }
+
+
+def _stored_divergences() -> list[dict]:
+    """Real findings from the most recent run, or [] if nothing is stored yet."""
+    try:
+        from cherenkov.persistence.divergence_store import get_divergence_store
+
+        records = get_divergence_store().list_latest()
+    except Exception:
+        _log.debug("divergence store read failed; falling back to corpus", exc_info=True)
+        return []
+    return [_record_to_api(r) for r in records]
+
+
 def list_divergences() -> list[dict]:
+    """Real persisted findings when a run has produced any; demo corpus otherwise.
+
+    The corpus is seed data for a fresh install that has never run `verify` —
+    not a substitute for real results. As soon as findings exist they win (#903).
+    """
+    stored = _stored_divergences()
+    if stored:
+        return stored
+
     out = []
     for d in _DIVERGENCE_CORPUS:
         item = dict(d)
@@ -122,6 +204,10 @@ def list_divergences() -> list[dict]:
 
 
 def divergence_ids() -> set:
+    """Ids currently addressable by /act — stored findings, else the corpus."""
+    stored = _stored_divergences()
+    if stored:
+        return {d["id"] for d in stored}
     return {d["id"] for d in _DIVERGENCE_CORPUS}
 
 
@@ -131,6 +217,16 @@ def apply_action(divergence_id: str, action: str) -> str:
     if action not in _ACTION_STATUS:
         raise ValueError(action)
     new_status = _ACTION_STATUS[action]
+
+    # Persist triage for real findings; corpus entries stay in-process, since
+    # they are demo data with no row to update.
+    try:
+        from cherenkov.persistence.divergence_store import get_divergence_store
+
+        get_divergence_store().set_status(divergence_id, new_status)
+    except Exception:
+        _log.debug("triage status persist failed for %s", divergence_id, exc_info=True)
+
     _STATUS_OVERRIDES[divergence_id] = new_status
     return new_status
 
