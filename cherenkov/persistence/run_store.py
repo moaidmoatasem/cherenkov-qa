@@ -6,6 +6,7 @@ This is the foundation for `cherenkov report --diff` and trend analysis.
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import sqlite3
 import threading
@@ -19,10 +20,13 @@ _DEFAULT_DB = Path.home() / ".cherenkov" / "runs.db"
 _BUSY_TIMEOUT_S = 10.0
 
 
+RunStatus = Literal["running", "complete", "failed", "aborted"]
+
+
 @dataclass
 class RunRecord:
     run_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    command: str = ""                     # "verify" | "validate" | "certify"
+    command: str = ""                     # "verify" | "validate" | "certify" | "pipeline"
     target_url: str = ""
     spec_hash: str = ""                   # SHA-256 of spec bytes, "" if no spec
     verdict: Literal["PASS", "WARN", "FAIL", ""] = ""
@@ -31,6 +35,12 @@ class RunRecord:
     duration_ms: int = 0
     timestamp: str = field(default_factory=lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     meta_json: str = "{}"                 # arbitrary extra fields as JSON string
+    # A run is written once at launch with status="running" and updated on
+    # completion, so an in-flight run is addressable over HTTP rather than
+    # existing only as a WebSocket broadcast a client may have missed.
+    status: RunStatus = "complete"
+    journey_id: str = ""                  # "" for runs not driven by a journey
+    step_state_json: str = "{}"           # {step_id: {"status": ..., "duration_ms": ...}}
 
 
 def _db_path() -> Path:
@@ -64,9 +74,23 @@ class RunStore:
                     coverage_pct    REAL,
                     duration_ms     INTEGER NOT NULL DEFAULT 0,
                     timestamp       TEXT NOT NULL,
-                    meta_json       TEXT NOT NULL DEFAULT '{}'
+                    meta_json       TEXT NOT NULL DEFAULT '{}',
+                    status          TEXT NOT NULL DEFAULT 'complete',
+                    journey_id      TEXT NOT NULL DEFAULT '',
+                    step_state_json TEXT NOT NULL DEFAULT '{}'
                 )
             """)
+            # Databases created before journey support predate the last three
+            # columns. Adding them with a DEFAULT backfills existing rows as
+            # completed non-journey runs, which is what they are.
+            existing = {r["name"] for r in conn.execute("PRAGMA table_info(runs)")}
+            for column, ddl in (
+                ("status", "TEXT NOT NULL DEFAULT 'complete'"),
+                ("journey_id", "TEXT NOT NULL DEFAULT ''"),
+                ("step_state_json", "TEXT NOT NULL DEFAULT '{}'"),
+            ):
+                if column not in existing:
+                    conn.execute(f"ALTER TABLE runs ADD COLUMN {column} {ddl}")
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_runs_timestamp ON runs(timestamp)"
             )
@@ -81,18 +105,41 @@ class RunStore:
                 """
                 INSERT OR REPLACE INTO runs
                   (run_id, command, target_url, spec_hash, verdict,
-                   divergence_count, coverage_pct, duration_ms, timestamp, meta_json)
-                VALUES (?,?,?,?,?,?,?,?,?,?)
+                   divergence_count, coverage_pct, duration_ms, timestamp, meta_json,
+                   status, journey_id, step_state_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
                 """,
                 (
                     record.run_id, record.command, record.target_url,
                     record.spec_hash, record.verdict, record.divergence_count,
                     record.coverage_pct, record.duration_ms, record.timestamp,
-                    record.meta_json,
+                    record.meta_json, record.status, record.journey_id,
+                    record.step_state_json,
                 ),
             )
             conn.commit()
         return record
+
+    def update_status(
+        self,
+        run_id: str,
+        status: RunStatus,
+        step_state: dict[str, Any] | None = None,
+    ) -> None:
+        """Patch a live run's status without rewriting the whole record.
+
+        Used while a pipeline is in flight, where the terminal fields
+        (verdict, coverage, duration) are not yet known.
+        """
+        sets = ["status=?"]
+        params: list[Any] = [status]
+        if step_state is not None:
+            sets.append("step_state_json=?")
+            params.append(json.dumps(step_state))
+        params.append(run_id)
+        with self._lock, self._connect() as conn:
+            conn.execute(f"UPDATE runs SET {', '.join(sets)} WHERE run_id=?", params)
+            conn.commit()
 
     def get(self, run_id: str) -> RunRecord | None:
         with self._lock, self._connect() as conn:
@@ -104,6 +151,8 @@ class RunStore:
         target_url: str | None = None,
         command: str | None = None,
         limit: int = 50,
+        status: RunStatus | None = None,
+        journey_id: str | None = None,
     ) -> list[RunRecord]:
         clauses: list[str] = []
         params: list[Any] = []
@@ -113,6 +162,12 @@ class RunStore:
         if command:
             clauses.append("command=?")
             params.append(command)
+        if status:
+            clauses.append("status=?")
+            params.append(status)
+        if journey_id:
+            clauses.append("journey_id=?")
+            params.append(journey_id)
         where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
         params.append(limit)
         with self._lock, self._connect() as conn:
@@ -157,6 +212,9 @@ def _row_to_record(row: sqlite3.Row) -> RunRecord:
         duration_ms=row["duration_ms"],
         timestamp=row["timestamp"],
         meta_json=row["meta_json"],
+        status=row["status"],
+        journey_id=row["journey_id"],
+        step_state_json=row["step_state_json"],
     )
 
 
