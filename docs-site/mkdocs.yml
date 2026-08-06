@@ -161,6 +161,7 @@ nav:
       - Slack & Teams: integrations/notifications.md
       - LangChain: integrations/langchain.md
   - Architecture:
+      - architecture/index.md
       - System Design: architecture/system-design.md
       - Clean Architecture: architecture/clean-architecture.md
       - AI Pipeline: architecture/ai-pipeline.md
