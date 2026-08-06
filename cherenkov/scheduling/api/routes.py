@@ -1,4 +1,11 @@
-"""API routes for Scheduling and Routines."""
+"""API routes for Scheduling and Routines.
+
+SINGLE PROCESS ONLY. The scheduler below is a module-global APScheduler started
+by this router's lifespan, so every replica runs its own copy of every routine:
+N replicas means each routine fires N times, and scheduled work dies with the
+process. Distributing this needs a shared job store or a leader election; until
+then, run exactly one replica if routines matter.
+"""
 from __future__ import annotations
 
 from contextlib import asynccontextmanager

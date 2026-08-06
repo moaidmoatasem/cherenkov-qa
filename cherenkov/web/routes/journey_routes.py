@@ -11,7 +11,6 @@ import asyncio
 import json
 import logging
 import os
-import threading
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -21,7 +20,6 @@ from cherenkov.journeys import get_journey_registry, rollup_status
 from cherenkov.persistence.run_store import get_run_store
 from cherenkov.web.auth.deps import require_role
 from cherenkov.web.auth.models import Role
-from cherenkov.web.routes.deps import ws_event_callback
 
 _log = logging.getLogger(__name__)
 
@@ -193,17 +191,6 @@ async def get_journey_chains(
     return {"spec_path": spec_path, "chains": chains}
 
 
-def _run_journey_thread(journey_id: str, spec_path: str, run_id: str) -> None:
-    from cherenkov.core.orchestrator import OrchestrationEngine
-    try:
-        engine = OrchestrationEngine(run_id=run_id, event_callback=ws_event_callback)
-        engine.journey_id = journey_id
-        engine.run_pipeline(spec_path)
-    except Exception as e:  # pragma: no cover - defensive, mirrors ops_routes
-        _log.exception("journey run failed")
-        ws_event_callback("pipeline_error", {"detail": str(e)})
-
-
 @router.post("/{journey_id}/runs", operation_id="start_journey_run")
 async def start_journey_run(
     journey_id: str,
@@ -217,13 +204,13 @@ async def start_journey_run(
     from cherenkov.core.settings import reset_settings
     reset_settings()
 
+    # Goes through the JourneyRunner port rather than spawning a thread here,
+    # so a queue- or operator-backed runner can replace it without changing
+    # this route.
+    from cherenkov.journeys.runner import get_journey_runner
+
     run_id = str(uuid.uuid4())[:8]
-    threading.Thread(
-        target=_run_journey_thread,
-        args=(journey_id, payload.spec_path, run_id),
-        name=f"journey-{run_id}",
-        daemon=True,
-    ).start()
+    get_journey_runner().start(journey_id, payload.spec_path, run_id)
     # The run record is written by the engine at start, so this id is
     # immediately resolvable via GET /api/v1/journeys/runs/{run_id}.
     return {"run_id": run_id, "journey_id": journey_id, "status": "launched"}

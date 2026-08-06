@@ -10,6 +10,32 @@
 
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
 
+## Journeys are now a first-class resource (2026-08-06, branch `claude/user-journeys-revamp-cud0wc`)
+
+A workflow is now one declarative YAML description that the engine executes and the dashboard renders, replacing a hardcoded call sequence in the orchestrator and four hardcoded arrays in the UI. **Two decisions here diverge from the roadmap's stated posture and are recorded deliberately, not silently:**
+
+- **Chained CRUD journeys were pulled forward of Gate G0.** `docs/QA_ASSESSMENT_2026_06.md:235` files them under "Phase 3 — earned expansion (post-gate only)", and `docs/vision/SPIKE_CHAINED_JOURNEYS.md` is a quarantined spike. This work was scoped and approved by the maintainer on 2026-08-06 ahead of that gate. The design here is fresh, not taken from the spike.
+- **It ships before M1 opens (08-12).** The onboarding transcripts were cold-run verified against the *previous* IA. Anyone preparing M1 must re-verify `docs/onboarding/sessions/session_a_zero_to_hero.md` against the shipped dashboard before practitioners walk it.
+
+**What changed, verified in code:**
+
+| Area | Before | Now |
+|---|---|---|
+| Run identity | `POST /api/v1/run` returned a `run_id` that was never persisted; only the CLI wrote a `RunRecord`, so `/api/v1/runs` and all six `/api/v1/coverage/*` trend endpoints were blind to dashboard-triggered runs | The engine writes a record at start and on every terminal path. `RunRecord` gains `status`/`journey_id`/`step_state_json` with a guarded `ALTER TABLE` migration that backfills old rows as completed non-journey runs |
+| Pipeline | `_run_pipeline_inner` was a fixed call sequence with per-stage abort checks copy-pasted | A loop over `journey.auto_steps()`. The default journey's auto steps are exactly `ingest → plan → scenarios`, so behaviour is unchanged |
+| Journey config | — | `cherenkov/journeys/`, YAML discovery mirroring `PlaybookRegistry` (`builtins/` + `.cherenkov/journeys/` override) |
+| Chains | Every scenario was depth-1; the engine could not express "create, then read what you created" | `crud_detect` finds CRUD families (petstore → pet/order/user); `ChainExecutor` runs them with guaranteed reverse-order teardown; generated Playwright stays vanilla per the eject invariant |
+| Stepper | `isPast = idx < activeIndex` — standing on Triage lit steps 1–2 as done with no run | Real per-step state from the run; nothing reads complete without one |
+| Design tokens | `bg-bg-surface`, `border-border-subtle`, `text-text-secondary`, `shadow-glow-sm` used 30× and defined nowhere, so those surfaces rendered transparent | Defined in `index.css`; built CSS now emits real rules |
+
+**New endpoints:** `GET /api/v1/journeys`, `/{id}`, `/{id}/chains`, `/runs/{run_id}`, `POST /{id}/runs`, and `GET /api/v1/runs/{run_id}/events` (replays the on-disk event log for a client that missed the WebSocket).
+
+**Safety properties worth not regressing:** a mutating chain refuses to run without `--allow-mutations`; teardown runs on success, failure and exception, and reports rather than swallows failures; manual steps (triage, knowledge) are never marked complete by the engine.
+
+**Deleted:** ~7,800 lines of orphaned UI screens plus `src/routes.tsx`, all verified unreachable. `tests/qa/e2e-journeys.spec.ts` was rewritten against the new IA and **removed from `testIgnore`** — it had been excluded from every run and asserted nothing.
+
+**Known limits, stated rather than papered over:** the rate limiter and APScheduler are per-process, so N replicas means N× the rate and N× the routine firings (now documented in those modules). The `JourneyRunner` port exists so a queue- or operator-backed runner can replace the in-process thread runner without touching the routes; only the thread implementation ships.
+
 ## GitHub project management — reconciled 2026-08-05
 
 The tracker had drifted badly from the roadmap: **19 milestones, every one of them 100% complete but still open, and all 44 open issues unmilestoned.** The milestone picker was therefore useless for planning and every open issue was invisible to milestone-based filtering. Reconciled as follows — the GitHub milestones now mirror `docs/ROADMAP_2026H2.md` 1:1, so the tracker and the roadmap can no longer silently diverge.

@@ -8,14 +8,15 @@ export default defineConfig({
   // Archived legacy specs: these target screens removed in the UI revamp
   // (SetupScreen, ReviewScreen, HealingScreen, Sidebar, TopBar, ...). Files are
   // kept in the tree for reference but are excluded from all runs. The live
-  // suites are tests/e2e/*-workspace.spec.ts and tests/qa/headless-qa-user.spec.ts.
+  // suites are tests/e2e/*-workspace.spec.ts, tests/qa/headless-qa-user.spec.ts
+  // and tests/qa/e2e-journeys.spec.ts (rewritten against the journey-driven IA
+  // and no longer archived).
   testIgnore: [
     '**/*_deep.spec.ts',
     'tests/a11y.spec.ts',
     'tests/dashboard_e2e.spec.ts',
     'tests/sdd_cockpit.spec.ts',
     'tests/qa/api-contract-integration.spec.ts',
-    'tests/qa/e2e-journeys.spec.ts',
     'tests/qa/functional-suite.spec.ts',
     'tests/qa/nonfunctional-suite.spec.ts',
     'tests/qa/settings_custom_journey.spec.ts',
