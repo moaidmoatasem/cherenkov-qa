@@ -1,5 +1,6 @@
 ---
 title: MCP Ecosystem
+description: CHERENKOV ships a Model Context Protocol server with 37 tools and 6 resources — drive conformance, generation, and certification from any MCP client.
 ---
 
 # MCP Ecosystem
@@ -130,3 +131,12 @@ Add to your MCP client config:
 ```
 
 See [cherenkov-mcp.yaml](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/cherenkov-mcp.yaml) for the full MCP manifest.
+
+---
+
+## Next Steps
+
+- [LangChain Integration](langchain.md) — wrap CHERENKOV as a LangChain tool for agent frameworks
+- [CLI Reference](../cli/reference.md) — every command the MCP tools map onto
+- [Check Suite (Integrity Audit)](../guides/check-suite.md) — the integrity checks agents call before reporting green
+- [Certificates & Compliance](../guides/certificates.md) — issue an independent verdict from any MCP client

@@ -9,6 +9,29 @@ CHERENKOV is designed to run as a CI gate. When spec drift is detected, it exits
 
 ---
 
+## Pipeline Flow
+
+The same shape works in any CI system: install, start the target, validate, then optionally certify. Drift or a failing certificate stops the merge.
+
+```mermaid
+flowchart LR
+    A[PR opened] --> B[Install CHERENKOV]
+    B --> C[Start API / mock]
+    C --> D["cherenkov validate<br/>--fail-on-drift"]
+    D -->|Exit 0| E[Checks pass]
+    D -->|Exit 1| F[Pipeline fails]
+
+    E --> G["cherenkov certify<br/>--fail-on-fail"]
+    G -->|PASS / WARN| H[Merge allowed]
+    G -->|FAIL| F
+
+    style D fill:#7c3aed,stroke:#fff,stroke-width:2px,color:#fff
+    style F fill:#dc2626,stroke:#fff,stroke-width:2px,color:#fff
+    style H fill:#059669,stroke:#fff,stroke-width:2px,color:#fff
+```
+
+---
+
 ## GitHub Actions
 
 ### Basic Conformance Check
@@ -195,3 +218,12 @@ This turns spec drift into a PR review comment, not just a CI failure.
 
 !!! info "PyPI publish planned"
     CHERENKOV-QA is not yet published on PyPI. The `pip install cherenkov-qa` shorthand is gated behind upcoming milestones (M1/M2). For now, install from the Git repository as shown in the examples above.
+
+---
+
+## Next Steps
+
+- [GitHub Actions](../integrations/github-actions.md) — deeper GitHub-specific setup and PR comments
+- [Check Suite (Integrity Audit)](check-suite.md) — catch weakened assertions before they merge
+- [Certificates & Compliance](certificates.md) — turn a green pipeline into a signed verdict
+- [Docker & Deployment](docker.md) — run the same checks from a container in CI
