@@ -136,6 +136,63 @@ async def get_journey(
     return _journey_to_dict(_require_journey(journey_id))
 
 
+def _detect_chains(spec_path: str) -> list[dict]:
+    import json as _json
+
+    from cherenkov.journeys.crud_detect import detect_crud_chains
+
+    with open(spec_path, encoding="utf-8") as fh:
+        spec = _json.load(fh)
+    return [
+        {
+            "id": c.id,
+            "label": c.label,
+            "resource": c.resource,
+            "mutating": c.mutating,
+            "detected_by": c.detected_by,
+            "confidence": c.confidence,
+            "steps": [
+                {
+                    "id": s.id,
+                    "method": s.method,
+                    "endpoint": s.endpoint,
+                    "expected_status": s.expected_status,
+                    "creates_resource": s.creates_resource,
+                    "captures": [
+                        {"name": b.name, "pointer": b.pointer} for b in s.captures
+                    ],
+                    "uses": s.uses,
+                }
+                for s in c.steps
+            ],
+        }
+        for c in detect_crud_chains(spec)
+    ]
+
+
+@router.get("/{journey_id}/chains", operation_id="get_journey_chains")
+async def get_journey_chains(
+    journey_id: str,
+    spec_path: str,
+    _: Role = Depends(require_role(Role.viewer)),
+):
+    """CRUD chains detected in a spec, most confident first.
+
+    Reported rather than run: every chain here writes to the target, so
+    starting one is a separate, explicit act.
+    """
+    _require_journey(journey_id)
+    if not os.path.isfile(spec_path):
+        raise HTTPException(status_code=404, detail="Spec file path not found.")
+    try:
+        chains = await asyncio.to_thread(_detect_chains, spec_path)
+    except (OSError, json.JSONDecodeError) as e:
+        raise HTTPException(
+            status_code=400, detail=f"Could not read spec: {e}"
+        ) from None
+    return {"spec_path": spec_path, "chains": chains}
+
+
 def _run_journey_thread(journey_id: str, spec_path: str, run_id: str) -> None:
     from cherenkov.core.orchestrator import OrchestrationEngine
     try:

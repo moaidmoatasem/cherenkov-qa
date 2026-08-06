@@ -127,8 +127,59 @@ class Scenario(BaseModel):
     expected_status: int
 
 
+# ── PLAN: chained journeys ────────────────────────────────────────────────
+# A flat Scenario probes one endpoint in isolation, which is why the engine can
+# fan them out in parallel. Some things are only reachable in sequence: you
+# cannot GET /pet/{petId} honestly without a petId that exists.
+#
+# The rejected way to get one is to infer a plausible value from the schema --
+# that manufactures spurious divergences, because a 404 for an id nobody created
+# says nothing about conformance. A chain infers nothing: it creates a real
+# resource, reads the real id out of the real response, and uses that. The
+# identifier is evidence the server produced, not a guess.
+
+
+class StepBinding(BaseModel):
+    """Capture a value from a step's response for later steps to use."""
+
+    name: str                                  # variable name, e.g. "petId"
+    source: str = "response_body"              # response_body | response_header | status
+    pointer: str = ""                          # JSON pointer (body) or header name
+
+
+class ChainStep(BaseModel):
+    id: str
+    endpoint: str                              # templated spec path, "/pet/{petId}"
+    method: str
+    case_type: str = "happy_path"
+    expected_status: int = 200
+    mutation_id: str | None = None             # SELECTED from the menu, never invented
+    captures: list[StepBinding] = Field(default_factory=list)
+    # Parameter name -> "${var}" reference to something an earlier step captured.
+    uses: dict[str, str] = Field(default_factory=dict)
+    # Marks the step that creates the resource the teardown must remove.
+    creates_resource: bool = False
+
+
+class JourneyScenario(BaseModel):
+    id: str
+    label: str
+    resource: str                              # the CRUD entity, e.g. "pet"
+    steps: list[ChainStep]
+    # A chain that writes to the target. Gated behind explicit opt-in, because
+    # running it changes someone else's data.
+    mutating: bool = True
+    # How the chain was found: "links" (the spec said so) > "path_family" >
+    # "schema_ref". Carried so a reviewer can weigh the evidence.
+    detected_by: str = "path_family"
+    confidence: float = 0.0
+
+
 class PlanOutput(BaseModel):
     scenarios: list[Scenario]
+    # Additive: the flat scenario list is untouched, so nothing that consumes
+    # PlanOutput today changes behaviour.
+    journeys: list[JourneyScenario] = Field(default_factory=list)
     status: Status = Status.OK
     errors: list[StageError] = Field(default_factory=list)
     metadata: StageMeta
