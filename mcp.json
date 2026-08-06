@@ -162,6 +162,22 @@
       "description": "Register an external MCP server with the mesh registry."
     },
     {
+      "name": "event_bus_list",
+      "description": "Fetch events from the UnifiedEventBus, optionally filtered by category. Pipeline runs publish stage_start, stage_success, test_generated, replan_trigger, and pipeline_complete events."
+    },
+    {
+      "name": "event_bus_get",
+      "description": "Fetch a single event from the UnifiedEventBus by event_id."
+    },
+    {
+      "name": "event_bus_publish",
+      "description": "Publish a CHERENKOVEvent to the UnifiedEventBus for downstream consumers (sinks, sources, subscribed handlers)."
+    },
+    {
+      "name": "event_bus_stats",
+      "description": "Return UnifiedEventBus statistics (queue size, sink/source/filter/handler counts, running state)."
+    },
+    {
       "name": "cherenkov/audit-test-file",
       "description": "Audit a test file for integrity issues: weakened assertions, tautological checks, spec mismatches, and AI test-cheating patterns. Returns a verdict (PASS/WEAK/FAIL), an integrity score, specific issues with line numbers, and a SHA-256 certificate if the score is >= 0.90. Call this before committing AI-generated test code."
     },
