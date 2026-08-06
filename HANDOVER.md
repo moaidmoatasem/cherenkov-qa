@@ -583,3 +583,34 @@ The onboarding package deliberately does **not** duplicate spec content from `do
 4. Link recorded assets from `sessions/session_a_zero_to_hero.md` etc.
 5. Run the E0.3 gate: 3 practitioners complete Session A unaided
 
+---
+
+## Platform Direction Handover — read before extending CHERENKOV
+
+**Status:** The platform-direction documents (`docs/PLATFORM_OPERATING_MODEL.md`, `docs/USER_JOURNEYS.md`) are merged to `main` via [#908](https://github.com/moaidmoatasem/cherenkov-qa/pull/908). They describe the intended architecture — not a claim that every integration or workflow is already shipped. `docs/ROADMAP_2026H2.md` remains authoritative for what may actually be built next.
+
+### The architectural decision
+
+CHERENKOV is an **open Quality Intelligence Platform**, not a product bound to one test runner or model provider. It has one small, independent core: quality policy, evidence provenance, reproducible verdicts, review, certificates, and governed memory. Test frameworks, source types, models, and delivery systems are replaceable adapters around that core.
+
+Read, in order:
+
+1. `docs/PLATFORM_OPERATING_MODEL.md` — core versus adapter boundaries, versioned extension contracts, model neutrality, and memory governance.
+2. `docs/USER_JOURNEYS.md` — the five primary user journeys: repository onboarding, agent verification, cross-surface release investigation, shared learning, and enterprise governance.
+3. `docs/ROADMAP_2026H2.md` — delivery sequencing and the current surface-freeze constraints. This remains authoritative for what may be built next.
+
+### Non-negotiable rules for future work
+
+- **One verdict, many tools.** Playwright, Maestro, Appium, Cypress, Selenium, k6, JMeter, Postman, and future tools are evidence executors; none redefines a verdict.
+- **Models are workers, not authorities.** Local, cloud, and hybrid routing is allowed only under declared egress, cost, privacy, and provenance policy. Deterministic checks and human review remain the trust floor.
+- **Humans steer.** Agents may explore, generate, execute, summarize, and propose. They must not lower their own gates, silently alter tests, certify their own work, or make un-delegated release decisions.
+- **Memory has ownership.** Private agent observations do not become shared team truth without provenance, scope, review, confidence, and retention rules.
+- **Do not make a connector for its own sake.** A proposed integration must strengthen a defined quality decision and retain native evidence; it must not fabricate passing results.
+- **Do not create a competing roadmap.** The operating model explains architecture; `docs/ROADMAP_2026H2.md` and this handover control sequencing and shipped-state claims.
+
+### Applying this direction
+
+1. Use the five journeys to evaluate every future MCP, CI, test-runner, connector, or model-provider proposal before implementation.
+2. When adding a capability, place it against the core-versus-extension boundary in `docs/PLATFORM_OPERATING_MODEL.md` and `docs/engineering/SYSTEM_DESIGN.md` before writing code.
+3. Keep shipped-state claims in `docs/ROADMAP_2026H2.md`; this section governs architecture, not delivery status.
+
