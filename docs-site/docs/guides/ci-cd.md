@@ -34,7 +34,9 @@ jobs:
           python-version: "3.12"
 
       - name: Install CHERENKOV
-        run: pip install cherenkov-qa
+        run: |
+          git clone https://github.com/moaidmoatasem/cherenkov-qa.git /tmp/cherenkov-qa
+          pip install /tmp/cherenkov-qa
 
       - name: Start API server
         run: |
@@ -88,7 +90,8 @@ api-conformance:
   stage: test
   image: python:3.12
   before_script:
-    - pip install cherenkov-qa
+    - git clone https://github.com/moaidmoatasem/cherenkov-qa.git /tmp/cherenkov-qa
+    - pip install /tmp/cherenkov-qa
   script:
     - cherenkov validate
         --spec api/openapi.yaml
@@ -118,7 +121,9 @@ jobs:
       - checkout
       - run:
           name: Install CHERENKOV
-          command: pip install cherenkov-qa
+          command: |
+            git clone https://github.com/moaidmoatasem/cherenkov-qa.git /tmp/cherenkov-qa
+            pip install /tmp/cherenkov-qa
       - run:
           name: Run conformance
           command: |
@@ -187,3 +192,6 @@ cherenkov validate (CI gate)
 ```
 
 This turns spec drift into a PR review comment, not just a CI failure.
+
+!!! info "PyPI publish planned"
+    CHERENKOV-QA is not yet published on PyPI. The `pip install cherenkov-qa` shorthand is gated behind upcoming milestones (M1/M2). For now, install from the Git repository as shown in the examples above.
