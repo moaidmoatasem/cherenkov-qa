@@ -1,0 +1,3 @@
+Final cleanup for EPIC #244. Removes duplicate modules and fixes smoke tests.
+
+Closes #244, #245, #246, #247, #248, #250, #252.

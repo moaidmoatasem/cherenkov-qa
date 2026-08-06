@@ -1,4 +1,4 @@
-# Python
+﻿# Python
 __pycache__/
 *.pyc
 *.pyo
@@ -61,13 +61,47 @@ data/
 eject-e2e-output/
 cherenkov/web/ui/test-results/
 
-# Generated test output. `stub/generated_tests/` is a generated directory
+# Generated test output. stub/generated_tests/ is a generated directory
 # (CLAUDE.md: do not hand-edit), but the demo_/golden_ corpus below IS tracked
 # on purpose -- it's the catch-the-AI-cheating fixture set the demo and the
 # audit gate depend on. Ignore everything else the generator writes there so a
-# local `cherenkov generate` run doesn't dirty the tree.
+# local cherenkov generate run doesn't dirty the tree.
 stub/generated_tests/*
 !stub/generated_tests/demo_*.spec.ts
 !stub/generated_tests/golden_*.spec.ts
 !stub/generated_tests/password_too_short.spec.ts
 !stub/generated_tests/_scores.json
+
+# AI agent tool state (runtime, not source)
+.agents/
+.claude/
+.codex/
+.freebuff/
+.kilo/
+.opencodereview/
+.zed/
+
+# Databases (runtime state)
+*.db
+
+# Agent sync runtime
+agent_memory/sync/
+
+# Scratch / one-off files at root
+__test_review.py
+simple_test.py
+issue.json
+issue244.json
+issues.txt
+fetch_issues.py
+
+# Build outputs (excluded going forward)
+desktop/src-tauri/binaries/
+desktop/src-tauri/gen/
+docs-site/site/
+test-results/
+stub/test-results/
+eject/pet-store-qa-suite/test-results/
+test_pypi_venv/
+cherenkov.egg-info/
+flight-project/
