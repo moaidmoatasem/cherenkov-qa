@@ -30,6 +30,7 @@ from cherenkov.cli.loaders import load_spec
 from cherenkov.divergence.coverage import CoverageReport, compute_coverage
 from cherenkov.divergence.health import HealthScore, compute_health_score
 from cherenkov.divergence.proof_run import run_proof
+from cherenkov.persistence.divergence_store import get_divergence_store
 from cherenkov.persistence.run_store import RunRecord, get_run_store
 from cherenkov.persistence.run_store import spec_hash as _spec_hash
 
@@ -250,6 +251,7 @@ def verify_cmd(
             rich.coverage_pct,
             duration_ms,
             rich=rich,
+            reports=reports,
         )
 
         if fail_on_divergence and reports:
@@ -296,7 +298,15 @@ def verify_cmd(
             _write_json(reports, output)
             click.echo(f"\nReport written to {output}")
 
-        _persist_run(url, spec_dict, "FAIL" if reports else "PASS", len(reports), None, duration_ms)
+        _persist_run(
+            url,
+            spec_dict,
+            "FAIL" if reports else "PASS",
+            len(reports),
+            None,
+            duration_ms,
+            reports=reports,
+        )
 
         if fail_on_divergence and reports:
             sys.exit(1)
@@ -366,6 +376,7 @@ def _persist_run(
     coverage_pct: float | None,
     duration_ms: int,
     rich: object | None = None,
+    reports: list | None = None,
 ) -> None:
     try:
         meta: dict = {}
@@ -390,6 +401,17 @@ def _persist_run(
         click.echo(f"  Run ID: {saved.run_id}", err=True)
     except Exception:
         _log.debug("run record persist failed (non-critical)", exc_info=True)
+        return
+
+    # Persist the findings themselves, not just the count (#903). Without this
+    # the endpoint/severity/claims/evidence are printed and dropped, leaving
+    # /api/v1/divergences nothing real to serve.
+    if reports:
+        try:
+            written = get_divergence_store().save_reports(saved.run_id, reports)
+            _log.debug("persisted %d divergence findings for run %s", written, saved.run_id)
+        except Exception:
+            _log.debug("divergence findings persist failed (non-critical)", exc_info=True)
 
 
 def _assert_reachable(url: str) -> None:
