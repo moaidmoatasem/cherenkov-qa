@@ -33,7 +33,7 @@ your other servers.
   "mcpServers": {
     "cherenkov": {
       "command": "python3",
-      "args": ["/absolute/path/to/cherenkov-qa/cherenkov.py", "mcp", "serve"],
+      "args": ["-m", "cherenkov", "mcp", "serve"],
       "cwd": "/absolute/path/to/cherenkov-qa",
       "env": {
         "MCP_PROFILE": "full-dev"
@@ -49,7 +49,7 @@ your other servers.
 
 ```bash
 # Start the MCP server manually to confirm it starts cleanly
-PYTHONPATH=/path/to/cherenkov-qa python3 /path/to/cherenkov-qa/cherenkov.py mcp serve
+cd /path/to/cherenkov-qa && python3 -m cherenkov mcp serve
 # Should print: CHERENKOV MCP server ready (stdio)
 # Ctrl-C to exit
 ```
@@ -173,6 +173,6 @@ interpreter
 | `ModuleNotFoundError` on server start | Run `pip install -r requirements.txt` in the repo directory |
 | `spec_path must be within working directory` | Ensure `cwd` in the MCP config points to the repo root |
 | `Tool blocked by policy` | Check `MCP_PROFILE` — switch to `full-dev` |
-| Server exits immediately | Run `python3 cherenkov.py mcp serve` manually to see the error |
+| Server exits immediately | Run `python3 -m cherenkov mcp serve` manually to see the error |
 
 For more help: [Troubleshooting](../wiki/Troubleshooting.md) · [GitHub Issues](https://github.com/moaidmoatasem/cherenkov-qa/issues)

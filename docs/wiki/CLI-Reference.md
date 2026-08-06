@@ -9,7 +9,7 @@ Every command, flag, and option for the `cherenkov` CLI.
 ```bash
 ./bin/cherenkov <command> [options]
 # or
-PYTHONPATH=. python cherenkov.py <command> [options]
+python -m cherenkov <command> [options]
 ```
 
 ---
