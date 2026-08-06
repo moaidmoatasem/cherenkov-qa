@@ -210,6 +210,8 @@ Scope re-derived from M1/M3 friction logs before committing. Candidates:
 
 **Retention note:** an audit is a one-shot diagnostic — once you know, you know. If `audit` becomes the wedge, the daemon is what converts a one-time shock into a standing habit, and M5 may need to move earlier.
 
+**Landed early, ahead of this window (2026-08-06):** the journey engine — declarative workflows the engine runs and the dashboard renders from one definition — plus chained CRUD journeys and durable per-run step state. Chained journeys were previously filed as post-gate expansion (`docs/QA_ASSESSMENT_2026_06.md:235`); pulling them forward was a maintainer decision, recorded in `HANDOVER.md`, which remains the anchor if this file and it disagree. Two M5 candidates above are partly served by it: run history now includes dashboard-triggered runs (they were never persisted before), and per-step state is recorded rather than being per-run only. Neither checkbox is ticked here — M5's scope is still to be re-derived from the M1/M3 friction logs.
+
 **Deferred by decision, not neglect:** mobile execution, VLM expansion, everything in `docs/_archive/DEFERRED_VISION_ARCHIVE.md`.
 
 ---

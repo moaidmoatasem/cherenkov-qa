@@ -63,6 +63,13 @@ class OrchestrationEngine:
         self.executor = StageExecutor(self.breaker, self.log)
         self.last_ingest: IngestOutput | None = None
         self.event_callback = event_callback
+        self.journey_id = ""
+        # Per-step progress, mirrored into the RunRecord so an in-flight run is
+        # readable over HTTP and not only via the WebSocket broadcast.
+        self._step_state: dict[str, dict] = {}
+        self._run_persisted = False
+        # Carries stage outputs between journey steps.
+        self._journey_state: dict = {}
 
     def close(self):
         set_events_file(None)
@@ -80,6 +87,77 @@ class OrchestrationEngine:
             except Exception as cb_err:
                 self.log.warning("event_callback_failed", error=str(cb_err))
         publish_event_bus(event, data, run_id=self.run_id)
+
+    # ── Durable run record ────────────────────────────────────────
+    # Before this existed, a web-triggered run's id could not be looked up
+    # afterwards: only the CLI verify/validate/certify paths wrote a
+    # RunRecord, so GET /api/v1/runs and every /coverage/* trend endpoint
+    # were blind to anything the dashboard started.
+
+    def _set_step(
+        self, step_id: str, status: str, duration_ms: int | None = None
+    ) -> None:
+        """Record a step transition and mirror it to the run record."""
+        entry: dict = {"status": status}
+        if duration_ms is not None:
+            entry["duration_ms"] = duration_ms
+        self._step_state[step_id] = entry
+        self._emit_event("step_state", {"step": step_id, **entry})
+        if self._run_persisted:
+            try:
+                from cherenkov.persistence.run_store import RunStore
+                RunStore().update_status(self.run_id, "running", self._step_state)
+            except Exception as e:
+                self.log.warning("run_step_persist_failed", error=str(e))
+
+    def _persist_run_start(self, spec_path: str) -> None:
+        try:
+            from cherenkov.persistence.run_store import RunRecord, RunStore, spec_hash
+            digest = ""
+            try:
+                with open(spec_path, "rb") as fh:
+                    digest = spec_hash(fh.read())
+            except OSError:
+                pass  # a missing spec is INGEST's failure to report, not ours
+            RunStore().save(RunRecord(
+                run_id=self.run_id,
+                command="pipeline",
+                target_url=get_settings().API_URL,
+                spec_hash=digest,
+                status="running",
+                journey_id=self.journey_id,
+            ))
+            self._run_persisted = True
+        except Exception as e:
+            self.log.warning("run_start_persist_failed", error=str(e))
+
+    def _persist_run_end(
+        self,
+        status: str,
+        verdict: str = "",
+        divergence_count: int = 0,
+        coverage_pct: float | None = None,
+        duration_ms: int = 0,
+    ) -> None:
+        if not self._run_persisted:
+            return
+        try:
+            import json as _json
+
+            from cherenkov.persistence.run_store import RunStore
+            store = RunStore()
+            existing = store.get(self.run_id)
+            if existing is None:
+                return
+            existing.status = status  # type: ignore[assignment]
+            existing.verdict = verdict  # type: ignore[assignment]
+            existing.divergence_count = divergence_count
+            existing.coverage_pct = coverage_pct
+            existing.duration_ms = duration_ms
+            existing.step_state_json = _json.dumps(self._step_state)
+            store.save(existing)
+        except Exception as e:
+            self.log.warning("run_end_persist_failed", error=str(e))
 
     # ── Stage 1: INGEST ────────────────────────────────────────────
     def run_ingest(
@@ -526,6 +604,21 @@ class OrchestrationEngine:
         except Exception as e:
             self.log.error("stats_persist_failed", error=str(e), run_id=getattr(self, "run_id", "unknown"))
 
+        # Endpoint coverage is what this pipeline can honestly report: the
+        # share of endpoints that had at least one scenario pass. It is not a
+        # conformance verdict -- that comes from verify/certify.
+        coverage_pct = (
+            round(100.0 * len(passed_endpoints) / len(all_endpoints), 2)
+            if all_endpoints else None
+        )
+        self._persist_run_end(
+            "complete" if pipeline_success else "failed",
+            verdict="PASS" if pipeline_success else "FAIL",
+            divergence_count=total - successes,
+            coverage_pct=coverage_pct,
+            duration_ms=total_duration,
+        )
+
     # ── E2E Orchestration ─────────────────────────────────────────
     def run_pipeline(
         self,
@@ -546,6 +639,11 @@ class OrchestrationEngine:
             _assert_not_production()
 
         self.breaker.reset()
+        # Resolved before the run record is written so the record carries the
+        # journey it actually ran.
+        journey = self._journey()
+        auto_steps = journey.auto_steps()
+        self._persist_run_start(spec_path)
         get_settings().detect_ollama_device(self.run_id)
 
         try:
@@ -555,54 +653,101 @@ class OrchestrationEngine:
             self.log.warning("pipeline-start trace event failed", error=str(e))
 
         self._progress(f"\n================ CHERENKOV PIPELINE RUN [{self.run_id}] ================")
-        self._progress("  INGEST  [ Waiting... ]")
-        self._progress("  PLAN    [ Waiting... ]")
-        self._progress("  GENERATE[ Waiting... ]")
-        self._progress("  REVIEW  [ Waiting... ]")
+        for step in auto_steps:
+            self._progress(f"  {step.id.upper():<8}[ Waiting... ]")
         self._progress("========================================================\n")
 
-        ingest = self._run_ingest_stage(spec_path, simulate_fail_stage)
+        for step in auto_steps:
+            self._set_step(step.id, "running")
+            outcome = self._run_journey_step(step, spec_path, simulate_fail_stage)
+            self._set_step(step.id, outcome.status, outcome.duration_ms)
 
-        if self.breaker.tripped:
-            self.log.error("pipeline aborted", reason="circuit breaker tripped")
-            self._progress(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
-            self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
-            return False
+            if self.breaker.tripped:
+                self._mark_remaining(auto_steps, step, "blocked")
+                self.log.error("pipeline aborted", reason="circuit breaker tripped")
+                self._progress(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
+                self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
+                self._persist_run_end("aborted", verdict="FAIL")
+                return False
 
-        # A FAILED ingest (e.g. missing/unreadable spec) yields zero endpoints,
-        # which would otherwise flow into _run_scenarios_phase and vacuously pass
-        # (0 scenarios -> success). Honor the stage's own FAILED status instead.
-        if getattr(ingest, "status", None) == Status.FAILED:
-            self.log.error("pipeline aborted", reason="ingest stage failed")
-            self._progress("\n  ABORTED: INGEST failed — no valid spec to test.\n")
-            self._emit_event("pipeline_complete", {"success": False, "reason": "INGEST failed"})
-            return False
+            if not outcome.ok and not step.optional:
+                self._mark_remaining(auto_steps, step, "blocked")
+                self.log.error("pipeline aborted", reason=f"{step.id} step failed")
+                self._progress(f"\n  ABORTED: {outcome.reason}\n")
+                self._emit_event(
+                    "pipeline_complete", {"success": False, "reason": outcome.reason}
+                )
+                self._persist_run_end("failed", verdict="FAIL")
+                return False
 
-        plan = self._run_plan_stage(ingest, simulate_fail_stage)
-
-        if self.breaker.tripped:
-            self.log.error("pipeline aborted", reason="circuit breaker tripped")
-            self._progress(f"\n  ABORTED: Circuit breaker tripped ({self.breaker.error_count} failures).\n")
-            self._emit_event("pipeline_complete", {"success": False, "reason": "Circuit breaker tripped"})
-            return False
-
-        if getattr(plan, "status", None) == Status.FAILED:
-            self.log.error("pipeline aborted", reason="plan stage failed")
-            self._progress("\n  ABORTED: PLAN failed — no scenarios to run.\n")
-            self._emit_event("pipeline_complete", {"success": False, "reason": "PLAN failed"})
-            return False
-
-        pipeline_success, scenario_results, all_durations, all_endpoints, passed_endpoints = \
-            self._run_scenarios_phase(plan, spec_path, simulate_fail_stage)
-
-        all_durations.insert(0, ingest.metadata.duration_ms)
-        all_durations.insert(1, plan.metadata.duration_ms)
+        state = self._journey_state
+        pipeline_success = state.get("pipeline_success", False)
+        all_durations = state.get("all_durations", [])
+        ingest, plan = state.get("ingest"), state.get("plan")
+        if ingest is not None:
+            all_durations.insert(0, ingest.metadata.duration_ms)
+        if plan is not None:
+            all_durations.insert(1, plan.metadata.duration_ms)
 
         self._run_post_generation_evals()
         self._run_adversarial_scan()
-        self._report_and_persist(pipeline_success, scenario_results, all_durations, all_endpoints, passed_endpoints)
+        self._report_and_persist(
+            pipeline_success,
+            state.get("scenario_results", []),
+            all_durations,
+            state.get("all_endpoints", set()),
+            state.get("passed_endpoints", set()),
+        )
 
         return pipeline_success
+
+    # ── Journey plumbing ──────────────────────────────────────────
+    def _journey(self):
+        """The journey this run executes; the default reproduces the sequence
+        the pipeline ran before journeys existed."""
+        from cherenkov.journeys import get_journey_registry
+
+        registry = get_journey_registry()
+        journey = (
+            registry.get(self.journey_id) if self.journey_id else registry.default()
+        )
+        if journey is None:
+            raise RuntimeError(
+                f"No journey definition available (requested {self.journey_id!r})"
+            )
+        self.journey_id = journey.id
+        return journey
+
+    def _run_journey_step(self, step, spec_path: str, simulate_fail_stage: str | None):
+        from cherenkov.journeys.steps import StepContext, StepOutcome, get_step_registry
+
+        handler = get_step_registry().get(step.kind)
+        if handler is None:
+            # An unknown kind is a journey-authoring error. Optional steps skip;
+            # required ones abort rather than silently doing nothing.
+            reason = f"No handler registered for step kind {step.kind!r}"
+            self.log.error("unknown_step_kind", step=step.id, kind=step.kind)
+            return StepOutcome("skipped" if step.optional else "failed", reason=reason)
+
+        ctx = StepContext(
+            engine=self,
+            step=step,
+            spec_path=spec_path,
+            state=self._journey_state,
+            simulate_fail_stage=simulate_fail_stage,
+        )
+        return handler(ctx)
+
+    def _mark_remaining(self, steps, failed_step, status: str) -> None:
+        """Steps after an abort never ran -- say so rather than leaving them
+        looking un-started, which reads as 'still to come'."""
+        seen_failed = False
+        for step in steps:
+            if step.id == failed_step.id:
+                seen_failed = True
+                continue
+            if seen_failed:
+                self._set_step(step.id, status)
 
     # ── Optional: VISUAL Stage ─────────────────────────────────────
     def run_visual_stage(

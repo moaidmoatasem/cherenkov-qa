@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Terminal, Compass, Zap, FolderGit2, X } from 'lucide-react';
 import { Project } from '../types';
+import {
+  SURFACE_CHROME,
+  SURFACE_TITLES,
+  useNavSurfaces,
+  OTHER_SURFACES,
+} from '../journey/config';
 
 interface CommandPaletteProps {
   onNavigate: (tabId: string) => void;
@@ -16,6 +22,10 @@ interface PaletteItem {
   category: 'NAVIGATION' | 'ACTIONS' | 'WORKSPACES';
   icon: React.ComponentType<any>;
   action: () => void;
+  /** Extra search terms: the surface id and its legacy route aliases, so
+   *  typing "author" or "divergences" still finds the workspace that
+   *  absorbed those screens. The placeholder below promises exactly that. */
+  keywords?: string[];
 }
 
 export default function CommandPalette({
@@ -54,25 +64,27 @@ export default function CommandPalette({
     }
   }, [isOpen]);
 
-  // Command registry
+  const loopSurfaces = useNavSurfaces();
+  const navSurfaces = [...loopSurfaces, ...OTHER_SURFACES];
+
+  // Command registry. Navigation entries come from the journey plus the
+  // non-loop surfaces, so the palette cannot go on offering screens that no
+  // longer exist -- it previously listed eleven, most of them deleted.
   const items: PaletteItem[] = [
-    // NAVIGATION
-    { id: 'overview', title: 'Go to Overview', subtitle: 'View release readiness score & learnings', category: 'NAVIGATION', icon: Compass, action: () => onNavigate('overview') },
-    { id: 'truth-map', title: 'Go to Truth Map', subtitle: 'View spec-to-traffic claims graph', category: 'NAVIGATION', icon: Compass, action: () => onNavigate('truth-map') },
-    { id: 'divergences', title: 'Go to Divergences', subtitle: 'Triage active system deviations', category: 'NAVIGATION', icon: Zap, action: () => onNavigate('divergences') },
-    { id: 'explore', title: 'Go to Explore Screen', subtitle: 'Autonomous second pair of eyes explorer', category: 'NAVIGATION', icon: Search, action: () => onNavigate('explore') },
-    { id: 'author', title: 'Go to Author by Intent', subtitle: 'Interactive plain-English QA Copilot', category: 'NAVIGATION', icon: Terminal, action: () => onNavigate('author') },
-    { id: 'review', title: 'Go to Review Queue', subtitle: 'Approve or edit generated tests', category: 'NAVIGATION', icon: Compass, action: () => onNavigate('review') },
-    { id: 'signals', title: 'Go to Signals', subtitle: 'Performance, Visual, and Coverage logs', category: 'NAVIGATION', icon: Compass, action: () => onNavigate('signals') },
-    { id: 'healing', title: 'Go to Healing', subtitle: 'API drift repair suggestions', category: 'NAVIGATION', icon: Compass, action: () => onNavigate('healing') },
-    { id: 'eject', title: 'Go to Eject Suite', icon: Compass, subtitle: 'Export standalone Playwright tests', category: 'NAVIGATION', action: () => onNavigate('eject') },
-    { id: 'governance', title: 'Go to Governance', subtitle: 'Certification audit and traceability', category: 'NAVIGATION', icon: Compass, action: () => onNavigate('governance') },
-    { id: 'memory', title: 'Go to Memory & Pairing', subtitle: 'Reflector senior team idioms', category: 'NAVIGATION', icon: Compass, action: () => onNavigate('memory') },
+    ...navSurfaces.map((surface) => ({
+      id: surface,
+      title: `Go to ${SURFACE_TITLES[surface].title}`,
+      subtitle: SURFACE_TITLES[surface].subtitle,
+      category: 'NAVIGATION' as const,
+      icon: SURFACE_CHROME[surface].icon,
+      action: () => onNavigate(surface),
+      keywords: [surface, ...SURFACE_CHROME[surface].aliases],
+    })),
 
     // ACTIONS
     { id: 'action-new-run', title: 'New Run Setup', subtitle: 'Launch spec parser setup wizard', category: 'ACTIONS', icon: Terminal, action: () => { onNewRun(); } },
-    { id: 'action-author-test', title: 'Author a test...', subtitle: 'Type plain intent to generate Playwright test', category: 'ACTIONS', icon: Terminal, action: () => { onNavigate('author'); } },
-    { id: 'action-open-divergences', title: 'Open Divergences list', subtitle: 'Inspect active drifts and errors', category: 'ACTIONS', icon: Zap, action: () => { onNavigate('divergences'); } },
+    { id: 'action-author-test', title: 'Author a test...', subtitle: 'Type plain intent to generate Playwright test', category: 'ACTIONS', icon: Terminal, action: () => { onNavigate('authoring'); } },
+    { id: 'action-open-divergences', title: 'Open Divergences list', subtitle: 'Inspect active drifts and errors', category: 'ACTIONS', icon: Zap, action: () => { onNavigate('triage'); } },
 
     // WORKSPACES
     ...projects.map((p) => ({
@@ -86,11 +98,15 @@ export default function CommandPalette({
   ];
 
   // Filtering
-  const filtered = items.filter((item) =>
-    item.title.toLowerCase().includes(search.toLowerCase()) ||
-    item.subtitle.toLowerCase().includes(search.toLowerCase()) ||
-    item.category.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = items.filter((item) => {
+    const q = search.toLowerCase();
+    return (
+      item.title.toLowerCase().includes(q) ||
+      item.subtitle.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q) ||
+      (item.keywords ?? []).some((k) => k.toLowerCase().includes(q))
+    );
+  });
 
   // List Keyboard Controls
   const handleKeyDown = (e: React.KeyboardEvent) => {

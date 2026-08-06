@@ -190,6 +190,12 @@ from cherenkov.web.routes.regenerate_routes import router as regenerate_router
 
 app.include_router(regenerate_router)
 
+# ── Journeys: workflow definitions + live per-step run state. Registered
+# before the SPA fallback so /api/v1/journeys/* is matched first ─────────────
+from cherenkov.web.routes.journey_routes import router as journey_router
+
+app.include_router(journey_router)
+
 # ── Static/SPA Fallback Route ──────────────────────────────────────────────────
 from cherenkov.web.routes.static_routes import router as static_router
 

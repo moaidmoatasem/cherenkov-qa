@@ -4,6 +4,12 @@ cherenkov/web/middleware/rate_limit.py — Token-bucket rate limiter.
 Per-client (IP) rate limiting enforced at the ASGI middleware layer.
 No external dependencies — uses stdlib threading + time.
 
+SINGLE PROCESS ONLY. The buckets live in this process's memory, so N replicas
+behind a load balancer permit roughly N times the configured rate, and a
+restart resets every bucket. This is a real limit, not an oversight: enforcing
+a shared rate needs shared state (Redis or the ingress). Do not present the
+configured RPS as a guarantee in a horizontally-scaled deployment.
+
 Configuration (env vars):
     CHERENKOV_RATE_LIMIT_RPS  — max requests per second per client (default 10)
     CHERENKOV_RATE_LIMIT_BURST — burst capacity (default 20)

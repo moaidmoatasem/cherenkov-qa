@@ -4,17 +4,16 @@
  */
 
 import React from 'react';
+import { PlusCircle } from 'lucide-react';
 import {
-  LayoutDashboard,
-  Sparkles,
-  CheckSquare,
-  Brain,
-  Settings,
-  PlusCircle,
-  Smartphone,
-} from 'lucide-react';
+  OTHER_SURFACES,
+  SURFACE_CHROME,
+  SURFACE_TITLES,
+  useNavSurfaces,
+} from '../../journey/config';
+import type { WorkspaceId } from '../../journey/types';
 
-export type WorkspaceId = 'dashboard' | 'authoring' | 'triage' | 'intelligence' | 'settings' | 'mobile';
+export type { WorkspaceId };
 
 export interface NavigationBarProps {
   activeWorkspace: WorkspaceId;
@@ -31,52 +30,14 @@ export interface WorkspaceNavItem {
   badge?: number;
 }
 
-export const WORKSPACE_NAV_ITEMS: WorkspaceNavItem[] = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    description: 'Is your API release-ready?',
-    icon: LayoutDashboard,
-  },
-  {
-    id: 'authoring',
-    label: 'Generate Tests',
-    description: 'Turn a spec into a test suite',
-    icon: Sparkles,
-  },
-  {
-    id: 'triage',
-    label: 'Triage',
-    description: 'Confirm what the AI flagged',
-    icon: CheckSquare,
-  },
-  {
-    id: 'intelligence',
-    label: 'Knowledge',
-    description: "What Cherenkov's learned about your API",
-    icon: Brain,
-  },
-  {
-    id: 'settings',
-    label: 'Settings',
-    description: 'Providers, hardware & access',
-    icon: Settings,
-  },
-];
-
-// Real, working capability that isn't part of the certified spec-conformance
-// loop above (Generate -> Validate -> Triage -> Knowledge) -- kept visually
-// distinct rather than folded silently into Settings. Deliberately not a peer
-// of the core loop: it's an honest, minimal surface (device pilot status +
-// run), not a claim of parity with a dedicated mobile-testing platform.
-export const OTHER_SURFACES_NAV_ITEMS: WorkspaceNavItem[] = [
-  {
-    id: 'mobile',
-    label: 'Mobile',
-    description: 'Run & monitor a Maestro device pilot',
-    icon: Smartphone,
-  },
-];
+function navItem(id: WorkspaceId): WorkspaceNavItem {
+  return {
+    id,
+    label: SURFACE_TITLES[id].title,
+    description: SURFACE_TITLES[id].subtitle,
+    icon: SURFACE_CHROME[id].icon,
+  };
+}
 
 export const NavigationBar: React.FC<NavigationBarProps> = ({
   activeWorkspace,
@@ -84,6 +45,10 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
   pendingReviewCount = 0,
   onNewRun,
 }) => {
+  // Order follows the journey the backend runs, so the nav cannot drift from
+  // the loop the way a second hardcoded list did.
+  const navSurfaces = useNavSurfaces();
+
   const renderNavItem = (item: WorkspaceNavItem) => {
     const Icon = item.icon;
     const isActive = activeWorkspace === item.id;
@@ -131,20 +96,24 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
           </button>
         )}
 
-        {/* 5 Core Logical Workspaces Navigation Items */}
+        {/* The conformance loop, in journey order, plus Settings */}
         <div className="space-y-1">
           <p className="px-3 text-[10px] font-mono uppercase tracking-wider text-text-muted mb-2">
             Workspaces
           </p>
-          {WORKSPACE_NAV_ITEMS.map(renderNavItem)}
+          {navSurfaces.map((id) => renderNavItem(navItem(id)))}
         </div>
 
-        {/* Real, working capability outside the certified spec-conformance loop */}
+        {/* Real, working capability that isn't part of the certified
+            spec-conformance loop above -- kept visually distinct rather than
+            folded silently into Settings, and deliberately not a peer of the
+            loop: an honest, minimal surface, not a claim of parity with a
+            dedicated mobile-testing platform. */}
         <div className="space-y-1">
           <p className="px-3 text-[10px] font-mono uppercase tracking-wider text-text-muted mb-2">
             Other Test Surfaces
           </p>
-          {OTHER_SURFACES_NAV_ITEMS.map(renderNavItem)}
+          {OTHER_SURFACES.map((id) => renderNavItem(navItem(id)))}
         </div>
       </div>
 

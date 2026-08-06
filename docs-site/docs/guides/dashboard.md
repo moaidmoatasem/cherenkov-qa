@@ -24,33 +24,40 @@ Open [http://localhost:8000](http://localhost:8000) in your browser. The dashboa
 
 ## Workspaces
 
-The dashboard is organized into five workspaces, each focused on a distinct part of the conformance workflow.
+The dashboard shows the conformance loop plus Settings, and one surface that sits outside the loop.
+
+The loop is not hardcoded in the UI. It is served by `GET /api/v1/journeys` from the journey definition the engine actually runs (`cherenkov/journeys/builtins/api-conformance.yaml`), so the navigation, the journey stepper and the command palette cannot drift from the workflow the pipeline executes.
 
 ```mermaid
 flowchart LR
-    subgraph Dashboard
-        direction TB
-        A["Overview\n(DashboardWorkspace)"]
-        B["Author & Generate\n(AuthoringWorkspace)"]
-        C["Triage\n(TriageWorkspace)"]
-        D["Coverage & Intelligence\n(IntelligenceWorkspace)"]
-        E["Settings\n(SettingsWorkspace)"]
+    subgraph Loop["Conformance loop (from the journey definition)"]
+        direction LR
+        B["1 Generate\n(AuthoringWorkspace)"]
+        A["2 Validate\n(DashboardWorkspace)"]
+        C["3 Triage\n(TriageWorkspace)"]
+        D["4 Knowledge\n(IntelligenceWorkspace)"]
+        B --> A --> C --> D
     end
 
-    A -->|"View health"| F[Release Decision]
-    B -->|"Generate"| G[Test Suite]
-    C -->|"Approve/Reject"| H[HITL Queue]
-    D -->|"Analyze"| I[Coverage Map]
-    E -->|"Configure"| J[Providers & Flags]
+    E["Settings\n(SettingsWorkspace)"]
+    M["Mobile\n(other test surfaces)"]
 
-    style A fill:#7c3aed,stroke:#fff,stroke-width:2px,color:#fff
+    style B fill:#7c3aed,stroke:#fff,stroke-width:2px,color:#fff
     style C fill:#db2777,stroke:#fff,stroke-width:2px,color:#fff
     style D fill:#059669,stroke:#fff,stroke-width:2px,color:#fff
 ```
 
+**Mobile** is a real, working device-pilot surface. It is deliberately not a peer of the loop above and is grouped separately as "Other Test Surfaces".
+
+### The journey stepper
+
+The rail under the header shows where a run has actually got to, driven by per-step state from `GET /api/v1/journeys/runs/{run_id}`. With no active run every stage reads *not started* — it reports progress, not which page you are on.
+
+Generate covers three engine steps (ingest, plan, and the per-scenario generate/review fan-out) rolled into one stage. Validate, Triage and Knowledge are **manual** steps: the engine never marks them complete, because a pipeline finishing is not evidence that a person reviewed anything. A stage shows complete only when every step inside it does, so a green stage can never hide a failed step.
+
 ---
 
-### 1. Overview (DashboardWorkspace)
+### Dashboard — stage 2, Validate (DashboardWorkspace)
 
 **Your release readiness at a glance.**
 
@@ -63,7 +70,7 @@ Use this workspace to answer the question: "Can we ship this?"
 
 ---
 
-### 2. Author & Generate (AuthoringWorkspace)
+### Generate Tests — stage 1 (AuthoringWorkspace)
 
 **Create tests from intent, not boilerplate.**
 
@@ -76,7 +83,7 @@ This workspace wraps the same pipeline as `cherenkov generate`, but with a visua
 
 ---
 
-### 3. Triage (TriageWorkspace)
+### Triage — stage 3 (TriageWorkspace)
 
 **A Kanban board for findings that need human judgment.**
 
@@ -90,7 +97,7 @@ This is the visual counterpart to `cherenkov hitl list` and `cherenkov hitl appr
 
 ---
 
-### 4. Coverage & Intelligence (IntelligenceWorkspace)
+### Knowledge — stage 4 (IntelligenceWorkspace)
 
 **Understand what your tests actually cover.**
 
@@ -101,7 +108,7 @@ This is the visual counterpart to `cherenkov hitl list` and `cherenkov hitl appr
 
 ---
 
-### 5. Settings (SettingsWorkspace)
+### Settings (SettingsWorkspace)
 
 **Configure CHERENKOV without editing files.**
 

@@ -4,7 +4,15 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './components/LoginPage';
 import AppHeader from './components/layout/AppHeader';
@@ -27,6 +35,12 @@ import { Project } from './types';
 import { fetchProjects, fetchMetricsData, fetchReviewQueue, runPipeline } from './lib/api';
 import { useHealth } from './lib/useHealth';
 import { listenDesktop } from './lib/tauri';
+import {
+  JourneyProvider,
+  SURFACE_CHROME,
+  SURFACE_TITLES,
+  surfaceFromPath,
+} from './journey/config';
 
 function InnerApp() {
   const { authRequired, loading: authLoading, user, logout } = useAuth();
@@ -46,29 +60,10 @@ function InnerApp() {
     });
   }, []);
 
-  // Map route path to WorkspaceId
-  const activeWorkspace: WorkspaceId = useMemo(() => {
-    const p = location.pathname.replace(/^[/]+/, '');
-    if (!p || p === 'index.html' || p === 'dashboard' || ['overview', 'verdict', 'truth-map', 'signals', 'coverage'].includes(p)) {
-      return 'dashboard';
-    }
-    if (p === 'authoring' || ['author', 'setup', 'pipeline', 'explore'].includes(p)) {
-      return 'authoring';
-    }
-    if (p === 'triage' || ['review', 'divergences', 'healing', 'spec-vs-reality'].includes(p)) {
-      return 'triage';
-    }
-    if (p === 'intelligence' || ['chat', 'knowledge', 'sdd', 'memory'].includes(p)) {
-      return 'intelligence';
-    }
-    if (p === 'mobile') {
-      return 'mobile';
-    }
-    if (p === 'settings' || ['projects', 'devices', 'eject', 'governance', 'ui-kit'].includes(p)) {
-      return 'settings';
-    }
-    return 'dashboard';
-  }, [location.pathname]);
+  const activeWorkspace: WorkspaceId = useMemo(
+    () => surfaceFromPath(location.pathname),
+    [location.pathname]
+  );
 
   const handleSelectWorkspace = useCallback(
     (ws: WorkspaceId) => {
@@ -77,14 +72,13 @@ function InnerApp() {
     [navigate]
   );
 
-  const workspaceTitles: Record<WorkspaceId, { title: string; subtitle: string }> = {
-    dashboard: { title: 'Dashboard', subtitle: 'Is your API release-ready?' },
-    authoring: { title: 'Generate Tests', subtitle: 'Turn a spec into a test suite' },
-    triage: { title: 'Triage', subtitle: 'Confirm what the AI flagged' },
-    intelligence: { title: 'Knowledge', subtitle: "What Cherenkov's learned about your API" },
-    settings: { title: 'Settings', subtitle: 'Providers, hardware & access' },
-    mobile: { title: 'Mobile', subtitle: 'Run & monitor a Maestro device pilot' },
-  };
+  // The run the journey stepper reflects. Held here rather than inside
+  // AuthoringWorkspace so it survives navigating away from the page that
+  // started it -- the whole point of a rail that is always visible. Seeded
+  // from ?run= so a run stays visible across a reload and can be linked to.
+  const [activeRunId, setActiveRunId] = useState<string | null>(
+    () => new URLSearchParams(window.location.search).get('run')
+  );
 
   // Backend liveness — single source of truth for offline state
   const { online, checking, refresh, lastCheckedAt } = useHealth();
@@ -187,21 +181,9 @@ function InnerApp() {
 
           {/* Command Palette */}
           <CommandPalette
-            onNavigate={(tab) => {
-              if (tab === 'mobile') {
-                handleSelectWorkspace('mobile');
-              } else if (tab === 'projects' || tab === 'settings' || tab === 'devices' || tab === 'eject' || tab === 'governance') {
-                handleSelectWorkspace('settings');
-              } else if (tab === 'setup' || tab === 'pipeline' || tab === 'author' || tab === 'explore') {
-                handleSelectWorkspace('authoring');
-              } else if (tab === 'review' || tab === 'divergences' || tab === 'healing' || tab === 'spec-vs-reality') {
-                handleSelectWorkspace('triage');
-              } else if (tab === 'chat' || tab === 'knowledge' || tab === 'sdd' || tab === 'memory') {
-                handleSelectWorkspace('intelligence');
-              } else {
-                handleSelectWorkspace('dashboard');
-              }
-            }}
+            // The palette emits surface ids now; surfaceFromPath still accepts
+            // the legacy names so an old bookmark or muscle memory resolves.
+            onNavigate={(tab) => handleSelectWorkspace(surfaceFromPath(tab))}
             onNewRun={() => handleSelectWorkspace('authoring')}
             projects={projects}
             onSelectProject={(id) => setSelectedProjectId(id)}
@@ -219,8 +201,8 @@ function InnerApp() {
 
           {/* 1. App Header */}
           <AppHeader
-            activeWorkspaceTitle={workspaceTitles[activeWorkspace].title}
-            activeWorkspaceSubtitle={workspaceTitles[activeWorkspace].subtitle}
+            activeWorkspaceTitle={SURFACE_TITLES[activeWorkspace].title}
+            activeWorkspaceSubtitle={SURFACE_TITLES[activeWorkspace].subtitle}
             selectedProjectId={selectedProjectId}
             onSelectProject={(id) => setSelectedProjectId(id)}
             tokenUsagePercent={tokenUsagePercent}
@@ -228,11 +210,13 @@ function InnerApp() {
             online={online}
           />
 
-          {/* 2. Journey Stepper -- always-visible "where am I in the loop" rail */}
+          {/* 2. Journey Stepper -- always-visible "where am I in the loop" rail.
+              Its progress comes from the active run, not from the current page. */}
           <JourneyStepper
             activeWorkspace={activeWorkspace}
             onSelectWorkspace={handleSelectWorkspace}
             pendingReviewCount={reviewPendingCount}
+            activeRunId={activeRunId}
           />
 
           {/* 3. Main Layout Body with NavigationBar & 5 Workspaces */}
@@ -245,14 +229,35 @@ function InnerApp() {
             />
 
             <main className="flex-1 overflow-hidden h-full">
-              {activeWorkspace === 'dashboard' && (
-                <DashboardWorkspace onNavigateToTriage={() => handleSelectWorkspace('triage')} />
-              )}
-              {activeWorkspace === 'authoring' && <AuthoringWorkspace />}
-              {activeWorkspace === 'triage' && <TriageWorkspace />}
-              {activeWorkspace === 'intelligence' && <IntelligenceWorkspace />}
-              {activeWorkspace === 'settings' && <SettingsWorkspace />}
-              {activeWorkspace === 'mobile' && <MobilePilotScreen />}
+              <Routes>
+                <Route
+                  path="/dashboard"
+                  element={
+                    <DashboardWorkspace
+                      onNavigateToTriage={() => handleSelectWorkspace('triage')}
+                    />
+                  }
+                />
+                <Route
+                  path="/authoring"
+                  element={<AuthoringWorkspace onRunStarted={setActiveRunId} />}
+                />
+                <Route path="/triage" element={<TriageWorkspace />} />
+                <Route path="/intelligence" element={<IntelligenceWorkspace />} />
+                <Route path="/settings" element={<SettingsWorkspace />} />
+                <Route path="/mobile" element={<MobilePilotScreen />} />
+                {/* Legacy deep links keep working instead of 404ing. */}
+                {(Object.keys(SURFACE_CHROME) as WorkspaceId[]).flatMap((surface) =>
+                  SURFACE_CHROME[surface].aliases.map((alias) => (
+                    <Route
+                      key={alias}
+                      path={`/${alias}`}
+                      element={<Navigate to={`/${surface}`} replace />}
+                    />
+                  ))
+                )}
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
             </main>
           </div>
         </div>
@@ -261,12 +266,29 @@ function InnerApp() {
   );
 }
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      // A session that has expired should send the user to the login page, not
+      // be retried three times per panel.
+      retry: (failureCount, error) =>
+        !/Session expired/.test((error as Error).message) && failureCount < 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <InnerApp />
-      </AuthProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <JourneyProvider>
+            <InnerApp />
+          </JourneyProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }

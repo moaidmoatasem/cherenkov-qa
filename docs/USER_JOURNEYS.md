@@ -70,6 +70,15 @@ These journeys make the product legible from a user's point of view. A capabilit
 
 **Success:** Governance increases trust and reuse without becoming vendor lock-in or a centralized testing bottleneck.
 
+## How these relate to journeys in the product
+
+The five journeys above are personas — how a person's work unfolds. Since 2026-08-06 the word also names a concrete resource: a `JourneyDefinition` (`cherenkov/journeys/`) is a declarative workflow that the engine executes and the dashboard renders from a single definition, served by `GET /api/v1/journeys`. The shipped default, `api-conformance`, is the Generate → Validate → Triage → Knowledge loop.
+
+Two distinctions matter when reading either sense:
+
+- **Auto vs manual steps.** The engine runs the `auto` steps. `manual` steps — triage, knowledge — are a person's work, and the engine never marks them complete. This is the acceptance rule below ("no integration fabricates a passing result") expressed in the data model.
+- **Chained journeys** are a third thing again: a multi-step API test that creates a resource and then uses the identifier the server actually returned. They exist because a depth-1 probe cannot honestly reach an item endpoint, and because inferring an identifier instead would manufacture divergences that say nothing about conformance.
+
 ## Journey-wide acceptance rules
 
 - Every verdict names its scope, evidence, tool versions, policy, and limitations.

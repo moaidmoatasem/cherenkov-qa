@@ -57,11 +57,30 @@ class PlanStage:
                     )
                 )
 
+        # Chained journeys are planned alongside the flat scenarios, not
+        # instead of them: a depth-1 probe and a CRUD lifecycle answer
+        # different questions. Detection failing must not fail planning.
+        journeys = []
+        try:
+            from cherenkov.journeys.crud_detect import (
+                detect_crud_chains,
+                spec_from_endpoints,
+            )
+            journeys = detect_crud_chains(spec_from_endpoints(ingest.endpoints))
+        except Exception as e:
+            self.log.warning("crud chain detection failed", error=str(e))
+
         dt = int((time.monotonic() - t0) * 1000)
-        self.log.info("stage success", scenarios_count=len(scenarios), duration_ms=dt)
+        self.log.info(
+            "stage success",
+            scenarios_count=len(scenarios),
+            journeys_count=len(journeys),
+            duration_ms=dt,
+        )
 
         return PlanOutput(
             scenarios=scenarios,
+            journeys=journeys,
             status=Status.OK,
             metadata=StageMeta(stage="PLAN", duration_ms=dt),
         )

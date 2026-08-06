@@ -1,0 +1,216 @@
+"""Journey API — the dashboard's single source of truth for the workflow.
+
+The UI used to hardcode its own copy of the loop in four separate arrays, none
+of which any backend fact could contradict. These endpoints serve the journey
+definitions the engine actually runs, plus live per-step state for a run, so
+the stepper reports what happened rather than what it assumes.
+"""
+from __future__ import annotations
+
+import asyncio
+import json
+import logging
+import os
+import uuid
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+
+from cherenkov.journeys import get_journey_registry, rollup_status
+from cherenkov.persistence.run_store import get_run_store
+from cherenkov.web.auth.deps import require_role
+from cherenkov.web.auth.models import Role
+
+_log = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/api/v1/journeys", tags=["journeys"])
+
+
+class StartJourneyPayload(BaseModel):
+    spec_path: str
+
+
+def _journey_to_dict(journey) -> dict:
+    return {
+        "id": journey.id,
+        "version": journey.version,
+        "label": journey.label,
+        "description": journey.description,
+        "steps": [
+            {
+                "id": s.id,
+                "kind": s.kind,
+                "label": s.label,
+                "blurb": s.blurb,
+                "surface": s.surface,
+                "execution": s.execution,
+                "requires": s.requires,
+                "optional": s.optional,
+            }
+            for s in journey.execution_order()
+        ],
+        "stages": journey.stages(),
+    }
+
+
+def _require_journey(journey_id: str):
+    journey = get_journey_registry().get(journey_id)
+    if journey is None:
+        raise HTTPException(status_code=404, detail=f"Journey {journey_id!r} not found")
+    return journey
+
+
+@router.get("", operation_id="list_journeys")
+async def list_journeys(_: Role = Depends(require_role(Role.viewer))):
+    registry = get_journey_registry()
+    default = registry.default()
+    return {
+        "default": default.id if default else None,
+        "journeys": [_journey_to_dict(j) for j in registry.journeys],
+    }
+
+
+# Declared before /{journey_id} so "runs" is not captured as a journey id.
+@router.get("/runs/{run_id}", operation_id="get_journey_run")
+async def get_journey_run(
+    run_id: str,
+    _: Role = Depends(require_role(Role.viewer)),
+):
+    """Per-step state for a run, live or finished.
+
+    This is the polling fallback the WebSocket-only design lacked: a client
+    that connected late still gets an accurate picture.
+    """
+    record = await asyncio.to_thread(get_run_store().get, run_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail=f"Run {run_id!r} not found")
+
+    try:
+        step_state = json.loads(record.step_state_json or "{}")
+    except json.JSONDecodeError:
+        _log.debug("could not parse step_state_json for run %s", run_id)
+        step_state = {}
+
+    journey = get_journey_registry().get(record.journey_id) if record.journey_id else None
+    steps: list[dict] = []
+    stages: list[dict] = []
+
+    if journey is not None:
+        for step in journey.execution_order():
+            entry = step_state.get(step.id, {})
+            steps.append({
+                "id": step.id,
+                "label": step.label,
+                "surface": step.surface,
+                "execution": step.execution,
+                # A manual step is never claimed complete by the engine; absent
+                # state means not started, not "done".
+                "status": entry.get("status", "not_started"),
+                "duration_ms": entry.get("duration_ms"),
+            })
+        by_id = {s["id"]: s for s in steps}
+        for stage in journey.stages():
+            member_status = [by_id[i]["status"] for i in stage["step_ids"] if i in by_id]
+            stages.append({**stage, "status": rollup_status(member_status)})
+
+    return {
+        "run_id": record.run_id,
+        "journey_id": record.journey_id,
+        "status": record.status,
+        "verdict": record.verdict,
+        "target_url": record.target_url,
+        "timestamp": record.timestamp,
+        "duration_ms": record.duration_ms,
+        "steps": steps,
+        "stages": stages,
+    }
+
+
+@router.get("/{journey_id}", operation_id="get_journey")
+async def get_journey(
+    journey_id: str,
+    _: Role = Depends(require_role(Role.viewer)),
+):
+    return _journey_to_dict(_require_journey(journey_id))
+
+
+def _detect_chains(spec_path: str) -> list[dict]:
+    import json as _json
+
+    from cherenkov.journeys.crud_detect import detect_crud_chains
+
+    with open(spec_path, encoding="utf-8") as fh:
+        spec = _json.load(fh)
+    return [
+        {
+            "id": c.id,
+            "label": c.label,
+            "resource": c.resource,
+            "mutating": c.mutating,
+            "detected_by": c.detected_by,
+            "confidence": c.confidence,
+            "steps": [
+                {
+                    "id": s.id,
+                    "method": s.method,
+                    "endpoint": s.endpoint,
+                    "expected_status": s.expected_status,
+                    "creates_resource": s.creates_resource,
+                    "captures": [
+                        {"name": b.name, "pointer": b.pointer} for b in s.captures
+                    ],
+                    "uses": s.uses,
+                }
+                for s in c.steps
+            ],
+        }
+        for c in detect_crud_chains(spec)
+    ]
+
+
+@router.get("/{journey_id}/chains", operation_id="get_journey_chains")
+async def get_journey_chains(
+    journey_id: str,
+    spec_path: str,
+    _: Role = Depends(require_role(Role.viewer)),
+):
+    """CRUD chains detected in a spec, most confident first.
+
+    Reported rather than run: every chain here writes to the target, so
+    starting one is a separate, explicit act.
+    """
+    _require_journey(journey_id)
+    if not os.path.isfile(spec_path):
+        raise HTTPException(status_code=404, detail="Spec file path not found.")
+    try:
+        chains = await asyncio.to_thread(_detect_chains, spec_path)
+    except (OSError, json.JSONDecodeError) as e:
+        raise HTTPException(
+            status_code=400, detail=f"Could not read spec: {e}"
+        ) from None
+    return {"spec_path": spec_path, "chains": chains}
+
+
+@router.post("/{journey_id}/runs", operation_id="start_journey_run")
+async def start_journey_run(
+    journey_id: str,
+    payload: StartJourneyPayload,
+    _: Role = Depends(require_role(Role.reviewer)),
+):
+    _require_journey(journey_id)
+    if not os.path.exists(payload.spec_path):
+        raise HTTPException(status_code=404, detail="Spec file path not found.")
+
+    from cherenkov.core.settings import reset_settings
+    reset_settings()
+
+    # Goes through the JourneyRunner port rather than spawning a thread here,
+    # so a queue- or operator-backed runner can replace it without changing
+    # this route.
+    from cherenkov.journeys.runner import get_journey_runner
+
+    run_id = str(uuid.uuid4())[:8]
+    get_journey_runner().start(journey_id, payload.spec_path, run_id)
+    # The run record is written by the engine at start, so this id is
+    # immediately resolvable via GET /api/v1/journeys/runs/{run_id}.
+    return {"run_id": run_id, "journey_id": journey_id, "status": "launched"}

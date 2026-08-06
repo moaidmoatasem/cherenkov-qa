@@ -1,0 +1,137 @@
+"""Tests for the journey API.
+
+The dashboard reads its whole workflow shape from these endpoints, so the
+contract they serve is what stops the UI from re-growing its own hardcoded
+copy of the loop.
+"""
+from __future__ import annotations
+
+import os
+import tempfile
+
+os.environ.setdefault("CHERENKOV_ENV", "development")
+os.environ.setdefault(
+    "CHERENKOV_RUNS_DB", os.path.join(tempfile.mkdtemp(), "journey_routes_runs.db")
+)
+
+import pytest
+from fastapi.testclient import TestClient
+
+from cherenkov.persistence.run_store import RunRecord, get_run_store
+from cherenkov.web.api import app
+
+
+@pytest.fixture
+def client() -> TestClient:
+    return TestClient(app)
+
+
+# ── Definitions ──────────────────────────────────────────────────────────
+
+def test_list_journeys_serves_the_default(client: TestClient):
+    body = client.get("/api/v1/journeys").json()
+
+    assert body["default"] == "api-conformance"
+    assert any(j["id"] == "api-conformance" for j in body["journeys"])
+
+
+def test_journey_exposes_stages_for_the_stepper(client: TestClient):
+    body = client.get("/api/v1/journeys/api-conformance").json()
+
+    assert [s["label"] for s in body["stages"]] == [
+        "Generate", "Validate", "Triage", "Knowledge",
+    ]
+    assert [s["step"] for s in body["stages"]] == [1, 2, 3, 4]
+
+
+def test_journey_marks_which_steps_the_engine_runs(client: TestClient):
+    body = client.get("/api/v1/journeys/api-conformance").json()
+    execution = {s["id"]: s["execution"] for s in body["steps"]}
+
+    assert execution["ingest"] == "auto"
+    # Triage is a person's job. If the engine could mark it complete the
+    # stepper would be claiming a human reviewed something they did not.
+    assert execution["triage"] == "manual"
+
+
+def test_unknown_journey_404s(client: TestClient):
+    assert client.get("/api/v1/journeys/does-not-exist").status_code == 404
+
+
+def test_runs_path_is_not_captured_as_a_journey_id(client: TestClient):
+    """Route ordering regression: /journeys/runs/{id} must win over
+    /journeys/{journey_id}."""
+    response = client.get("/api/v1/journeys/runs/definitely-not-a-run")
+
+    assert response.status_code == 404
+    # "Run not found", not "Journey not found" -- proves which route matched.
+    assert "Run" in response.json()["error"]["message"]
+
+
+# ── Run state ────────────────────────────────────────────────────────────
+
+def test_run_state_reports_real_step_status(client: TestClient):
+    get_run_store().save(RunRecord(
+        run_id="jr1", command="pipeline", journey_id="api-conformance",
+        status="running",
+        step_state_json='{"ingest": {"status": "complete", "duration_ms": 40}, '
+                        '"plan": {"status": "running"}}',
+    ))
+
+    body = client.get("/api/v1/journeys/runs/jr1").json()
+    steps = {s["id"]: s for s in body["steps"]}
+
+    assert body["status"] == "running"
+    assert steps["ingest"]["status"] == "complete"
+    assert steps["ingest"]["duration_ms"] == 40
+    assert steps["plan"]["status"] == "running"
+    # Never reached yet -- and absence must read as not started, not complete.
+    assert steps["scenarios"]["status"] == "not_started"
+    assert steps["triage"]["status"] == "not_started"
+
+
+def test_stage_rollup_never_shows_complete_over_an_unfinished_step(client: TestClient):
+    get_run_store().save(RunRecord(
+        run_id="jr2", command="pipeline", journey_id="api-conformance",
+        status="running",
+        step_state_json='{"ingest": {"status": "complete"}, "plan": {"status": "running"}}',
+    ))
+
+    body = client.get("/api/v1/journeys/runs/jr2").json()
+    generate = next(s for s in body["stages"] if s["surface"] == "authoring")
+
+    assert generate["status"] == "running"
+
+
+def test_stage_rollup_surfaces_a_failure(client: TestClient):
+    get_run_store().save(RunRecord(
+        run_id="jr3", command="pipeline", journey_id="api-conformance",
+        status="failed",
+        step_state_json='{"ingest": {"status": "failed"}, "plan": {"status": "blocked"}, '
+                        '"scenarios": {"status": "blocked"}}',
+    ))
+
+    body = client.get("/api/v1/journeys/runs/jr3").json()
+    generate = next(s for s in body["stages"] if s["surface"] == "authoring")
+
+    assert generate["status"] == "failed"
+
+
+def test_start_run_rejects_a_missing_spec(client: TestClient):
+    response = client.post(
+        "/api/v1/journeys/api-conformance/runs",
+        json={"spec_path": "/nonexistent/spec.json"},
+    )
+
+    assert response.status_code == 404
+
+
+def test_start_run_rejects_an_unknown_journey(client: TestClient, tmp_path):
+    spec = tmp_path / "spec.json"
+    spec.write_text("{}")
+
+    response = client.post(
+        "/api/v1/journeys/nope/runs", json={"spec_path": str(spec)}
+    )
+
+    assert response.status_code == 404
