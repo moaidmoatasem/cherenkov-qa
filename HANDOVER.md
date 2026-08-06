@@ -6,6 +6,8 @@
 
 > **Re-certified 2026-08-04 at `main` `530468a1`:** **2138 passed, 2 failed, 6 skipped** (8:30, HANDOVER filter). The 2 failures are the network-only `tests/integration/real_demo/test_demo_api_real.py` tests (added in #854; not `integration`-marked so the filter doesn't exclude them; they need a live demo server via `CHERENKOV_TEST_BASE_URL`). The prior `#819 test_verify_cmd.py` drift is **fixed** — it no longer fails. 6 skipped are service-gated (`slow`/`integration`/`e2e`/`k8s`/`ollama`/`mobile`). Prior handover counts (2064/2076/1746) were stale against the grown suite.
 
+> **Superseded 2026-08-06 (`1ae65df`, PR #909, closes #906):** those 2 `real_demo` failures are **fixed** and are no longer expected. `tests/integration/real_demo/test_demo_api_real.py` now carries `pytest.mark.integration` (so the HANDOVER filter above *does* deselect it) and skips at runtime when nothing answers at `CHERENKOV_TEST_BASE_URL`. The CI **"Test coverage"** job (`pytest tests/`, no marker filter) had been red on *every* push and PR because of these two; it passed on #909. **Treat a `real_demo` failure as a real regression now, not as the known-good baseline** — and note the expected local count drops by 2 (they are deselected, not run) under the filter on line 5.
+
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
 
 ## GitHub project management — reconciled 2026-08-05
