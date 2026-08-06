@@ -523,6 +523,8 @@ jobs:
         run: pip install -r requirements.txt
       - name: Check CLI Docs Parity
         run: python3 scripts/check_cli_docs.py
+      - name: Check CLI Flag Docs Parity
+        run: python3 scripts/check_cli_flags.py
 
   mcp-manifest-drift:
     name: MCP registry ↔ handlers.TOOLS (no drift)
