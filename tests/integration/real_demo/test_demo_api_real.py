@@ -1,13 +1,47 @@
-﻿import os
-import json
-import urllib.request
-import urllib.error
+﻿import json
+import os
 import random
+import urllib.error
+import urllib.request
+from functools import lru_cache
+
+import pytest
 
 BASE = os.getenv("CHERENKOV_TEST_BASE_URL", "http://127.0.0.1:8000")
 
+# These tests probe a *live* demo server over real HTTP; they are not runnable
+# offline. Marked `integration` so the documented dev filter
+# (-m "not ... and not integration ...") deselects them, and additionally
+# skipped at runtime when nothing is listening, so a CI job with no marker
+# filter degrades to "skipped" instead of hard-failing. See #906.
+pytestmark = pytest.mark.integration
+
+
 def _url(path):
     return BASE.rstrip("/") + path
+
+
+@lru_cache(maxsize=1)
+def _server_reachable() -> bool:
+    """True if anything answers at BASE. Any HTTP response counts as reachable;
+    only connection-level failures mean "no server" — same rule as
+    `cherenkov/cli/commands/verify.py`'s reachability preflight."""
+    try:
+        urllib.request.urlopen(_url("/health"), timeout=2).close()
+    except urllib.error.HTTPError:
+        return True
+    except (urllib.error.URLError, OSError):
+        return False
+    return True
+
+
+@pytest.fixture(autouse=True)
+def _require_live_demo_server():
+    if not _server_reachable():
+        pytest.skip(
+            f"no live demo server at {BASE} — start one and/or set "
+            "CHERENKOV_TEST_BASE_URL to run these tests"
+        )
 
 def get_json(path, method="GET", data=None, headers=None, timeout=5):
     req = urllib.request.Request(_url(path), method=method)
