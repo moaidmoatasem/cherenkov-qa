@@ -52,7 +52,37 @@ def test_wrong_method_on_known_endpoint_does_not_match():
     assert result.category == FailureCategory.UNKNOWN
 
 
-def test_defaults_to_live_divergence_corpus_when_none_passed():
+def test_defaults_to_demo_corpus_when_no_findings_are_stored(monkeypatch):
+    """Fresh install: nothing persisted, so the demo corpus is what's live.
+
+    Since #903 the default source is real persisted findings, and the corpus is
+    only the fallback — so pin the empty-store condition rather than depending
+    on whether an earlier test in the session happened to run `verify`.
+    """
+    from cherenkov.web import divergences as div_mod
+
+    monkeypatch.setattr(div_mod, "_stored_divergences", lambda: [])
     result = classify_failure("/pet/findByStatus", "GET")
     assert result.category == FailureCategory.PRODUCT_BUG
     assert result.divergence_id == "D-01"
+
+
+def test_defaults_to_real_findings_when_they_exist(monkeypatch):
+    """Once a real run has produced findings, those supersede the demo corpus."""
+    from cherenkov.web import divergences as div_mod
+
+    monkeypatch.setattr(
+        div_mod,
+        "_stored_divergences",
+        lambda: [{
+            "id": "run-a:DIV-9", "divergenceClass": "D1", "endpoint": "POST /users",
+            "severity": "high", "status": "reproduced", "claimA": "spec says 422",
+            "claimB": "server returns 400", "evidence": "e", "reproSteps": "s",
+        }],
+    )
+    # The Petstore demo endpoint is no longer known...
+    assert classify_failure("/pet/findByStatus", "GET").category == FailureCategory.UNKNOWN
+    # ...but the real one is.
+    real = classify_failure("/users", "POST")
+    assert real.category == FailureCategory.PRODUCT_BUG
+    assert real.divergence_id == "run-a:DIV-9"

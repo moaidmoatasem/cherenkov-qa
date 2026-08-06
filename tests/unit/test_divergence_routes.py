@@ -11,7 +11,12 @@ from cherenkov.web.api import app
 client = TestClient(app, raise_server_exceptions=False)
 
 
-def test_classify_failure_matches_known_divergence():
+def test_classify_failure_matches_known_divergence(monkeypatch):
+    # Pin the fresh-install condition: since #903 real persisted findings take
+    # precedence over the demo corpus this case asserts against.
+    from cherenkov.web import divergences as div_mod
+
+    monkeypatch.setattr(div_mod, "_stored_divergences", lambda: [])
     r = client.post(
         "/api/v1/divergences/classify-failure",
         json={"endpoint": "/pet/findByStatus", "method": "GET"},
