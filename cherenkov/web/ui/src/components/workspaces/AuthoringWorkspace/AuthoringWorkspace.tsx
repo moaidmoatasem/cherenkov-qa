@@ -8,10 +8,19 @@ import SpecIngestPanel from './SpecIngestPanel';
 import DoctorCheckWidget from './DoctorCheckWidget';
 import IntentAuthoringPanel from './IntentAuthoringPanel';
 import LivePipelineMonitor from './LivePipelineMonitor';
+import DetectedChainsPanel from './DetectedChainsPanel';
 import { PageHeader } from '../../ui/PageHeader';
 import { EndpointRichness } from '../../../types';
 
-export const AuthoringWorkspace: React.FC = () => {
+export interface AuthoringWorkspaceProps {
+  /** Lifts the run id to the shell so the journey stepper keeps tracking it
+   *  after the user navigates away from this page. */
+  onRunStarted?: (runId: string) => void;
+}
+
+export const AuthoringWorkspace: React.FC<AuthoringWorkspaceProps> = ({
+  onRunStarted,
+}) => {
   const [activeSpecPath, setActiveSpecPath] = useState<string>('');
   const [activeEndpoints, setActiveEndpoints] = useState<EndpointRichness[]>([]);
   const [activeRunId, setActiveRunId] = useState<string | undefined>(undefined);
@@ -19,6 +28,11 @@ export const AuthoringWorkspace: React.FC = () => {
   const handleSpecIngested = (path: string, endpoints: EndpointRichness[]) => {
     setActiveSpecPath(path);
     setActiveEndpoints(endpoints);
+  };
+
+  const handlePipelineStarted = (runId: string) => {
+    setActiveRunId(runId);
+    onRunStarted?.(runId);
   };
 
   return (
@@ -39,10 +53,13 @@ export const AuthoringWorkspace: React.FC = () => {
       {/* 3. Intent-Driven Test Authoring */}
       <IntentAuthoringPanel
         specPath={activeSpecPath}
-        onPipelineStarted={(runId) => setActiveRunId(runId)}
+        onPipelineStarted={handlePipelineStarted}
       />
 
-      {/* 4. Live Pipeline DAG & Log Monitor */}
+      {/* 4. Detected multi-step CRUD chains for the ingested spec */}
+      <DetectedChainsPanel specPath={activeSpecPath} />
+
+      {/* 5. Live Pipeline DAG & Log Monitor */}
       <LivePipelineMonitor runId={activeRunId} />
     </div>
   );

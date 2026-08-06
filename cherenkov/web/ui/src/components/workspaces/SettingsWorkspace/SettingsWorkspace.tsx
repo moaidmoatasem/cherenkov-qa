@@ -19,13 +19,10 @@ export const SettingsWorkspace: React.FC = () => {
         description="Projects, hardware & model providers, exporting your tests, and access control."
       />
 
-      {/* 1. LLM Provider & Model Configuration */}
-      <ModelProviderSettings />
-
-      {/* 2. Project Management */}
+      {/* 1. Project Management */}
       <ProjectManager />
 
-      {/* 2. AI Model Provider & AirLLM */}
+      {/* 2. LLM provider, model tiers & AirLLM */}
       <ModelProviderSettings />
 
       {/* 3. Hardware & VLM Device Diagnostics */}

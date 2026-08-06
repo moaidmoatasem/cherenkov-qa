@@ -6,6 +6,13 @@
   --color-bg-panel: rgba(0, 0, 0, 0.25);
   --color-bg-elevated: rgba(255, 255, 255, 0.05);
   --color-border-custom: rgba(255, 255, 255, 0.1);
+
+  /* The app shell (header, journey stepper, nav) referenced these in 30 class
+     names while they were never defined, so Tailwind emitted nothing for them:
+     those surfaces rendered transparent and their borders were invisible. */
+  --color-bg-surface: rgba(255, 255, 255, 0.03);
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-text-secondary: #cbd5e1;
   --color-glow-blue: #22d3ee;
   --color-glow-bright: #22d3ee;
   --color-gray-brand: #475569;
@@ -44,6 +51,8 @@
   --font-sans: "Inter", system-ui, sans-serif;
   --font-display: "Poppins", "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
+
+  --shadow-glow-sm: 0 0 12px rgba(34, 211, 238, 0.18);
 
   --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
   --animate-beam-flow: beam-flow 1.5s linear infinite;

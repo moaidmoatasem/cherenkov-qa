@@ -897,3 +897,64 @@ export async function runPerfTest(targetUrl?: string): Promise<PerfMetric> {
   if (!res.ok) throw new Error(`Failed to run performance test: ${res.status}`);
   return res.json();
 }
+
+// ── Journeys ───────────────────────────────────────────────────────────────
+// The dashboard reads its workflow shape from the backend rather than keeping
+// its own copy of it. See src/journey/config.tsx.
+
+import type {
+  JourneyCatalogue, JourneyDefinition, JourneyRunState, DetectedChain,
+} from '../journey/types';
+
+/**
+ * Shared request helper. Every call above repeats this by hand, which is how
+ * several of them ended up without an Authorization header; new code goes
+ * through here instead.
+ */
+async function apiGet<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, { headers: authHeaders() });
+  if (res.status === 401) {
+    // Nothing cleared the stale token before, so an expired session showed up
+    // as an unexplained failure on every panel instead of a login prompt.
+    localStorage.removeItem(TOKEN_KEY);
+    throw new Error('Session expired. Please sign in again.');
+  }
+  if (!res.ok) throw new Error(`${path} failed: ${res.status}`);
+  return res.json();
+}
+
+export function fetchJourneys(): Promise<JourneyCatalogue> {
+  return apiGet<JourneyCatalogue>('/journeys');
+}
+
+export function fetchJourney(journeyId: string): Promise<JourneyDefinition> {
+  return apiGet<JourneyDefinition>(`/journeys/${encodeURIComponent(journeyId)}`);
+}
+
+export function fetchJourneyRun(runId: string): Promise<JourneyRunState> {
+  return apiGet<JourneyRunState>(`/journeys/runs/${encodeURIComponent(runId)}`);
+}
+
+export function fetchDetectedChains(
+  journeyId: string,
+  specPath: string
+): Promise<{ spec_path: string; chains: DetectedChain[] }> {
+  const query = new URLSearchParams({ spec_path: specPath });
+  return apiGet(`/journeys/${encodeURIComponent(journeyId)}/chains?${query}`);
+}
+
+export async function startJourneyRun(
+  journeyId: string,
+  specPath: string
+): Promise<{ run_id: string; journey_id: string; status: string }> {
+  const res = await fetch(
+    `${API_BASE}/journeys/${encodeURIComponent(journeyId)}/runs`,
+    {
+      method: 'POST',
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ spec_path: specPath }),
+    }
+  );
+  if (!res.ok) throw new Error(`Failed to start journey run: ${res.status}`);
+  return res.json();
+}
