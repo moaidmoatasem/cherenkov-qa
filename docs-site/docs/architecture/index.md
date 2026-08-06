@@ -15,6 +15,8 @@ If you read one page, read [System Design](system-design.md) — it frames the w
 
 | Page | What it covers | Read it when |
 |------|----------------|--------------|
+| [Platform Operating Model](platform-operating-model.md) | The product contract: one quality truth, open adapter contracts, model-neutral operation, governed memory | You want the "why" and the boundary before the "how" |
+| [User Journeys](user-journeys.md) | Five end-to-end flows: QA onboarding, agent verification, cross-surface release, incident learning, governance | You want to see the platform from a user's seat |
 | [System Design](system-design.md) | Module layers, dependency graph, and the platform boundary (core vs. adapters) | You want the big picture first |
 | [Clean Architecture (ADR-004)](clean-architecture.md) | The Ports/Adapters decision and the strict inward-dependency rule | You're adding a module and need to know where it goes |
 | [AI Pipeline](ai-pipeline.md) | LLM-powered generation, the 6-gate review, and divergence detection | You want to understand how tests are produced and audited |

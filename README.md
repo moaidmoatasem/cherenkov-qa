@@ -1,6 +1,6 @@
 # ☢️ CHERENKOV-QA
 
-**The AI-Native API Conformance Testing Platform**
+**An open Quality Intelligence Platform — API conformance is the shipped core.**
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Version: 1.3.0](https://img.shields.io/badge/Version-1.3.0-green.svg)](https://github.com/moaidmoatasem/cherenkov-qa/releases/tag/v1.3.0)
@@ -8,6 +8,8 @@
 Every API has an OpenAPI spec, but those specs silently drift from the real server implementations every day. Moreover, AI-generated tests often hallucinate expected outcomes or silently weaken assertions to force a "green" build.
 
 **CHERENKOV-QA** is an **API Integrity Auditor**. It checks whether your test suite actually enforces your OpenAPI contract, detecting Weakened, Deleted, and Hallucinated assertions with no LLM involved — then provides a spec-derived local LLM engine to generate conformant Playwright tests.
+
+> **The through-line:** CHERENKOV keeps the quality verdict **independent of the AI that produced the work** — policy the agent under test cannot lower for itself. API conformance and test-suite integrity auditing ship today; mobile, performance, and security evidence are the platform's direction. See the [Platform Operating Model](docs/PLATFORM_OPERATING_MODEL.md) and [User Journeys](docs/USER_JOURNEYS.md).
 
 For **Python** suites the audit is genuine AST analysis: `check-suite` parses with `ast.parse` and decides WEAKENED by comparing comparison-operator node types, so `== 200` → `in (200, 201)` is caught structurally rather than textually. For **TypeScript** suites it is regex-based pattern matching, which is weaker — see [Detection depth by language](#detection-depth-by-language).
 

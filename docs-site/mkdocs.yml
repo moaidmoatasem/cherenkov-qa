@@ -162,6 +162,8 @@ nav:
       - LangChain: integrations/langchain.md
   - Architecture:
       - architecture/index.md
+      - Platform Operating Model: architecture/platform-operating-model.md
+      - User Journeys: architecture/user-journeys.md
       - System Design: architecture/system-design.md
       - Clean Architecture: architecture/clean-architecture.md
       - AI Pipeline: architecture/ai-pipeline.md

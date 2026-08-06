@@ -37,7 +37,7 @@ This draws a deliberate boundary between what the platform **owns** and what plu
 | Deterministic guardrails an agent cannot lower for itself | Optional capabilities you install, configure, or remove |
 
 !!! note "Shipped today vs. directional"
-    API conformance is the **flagship, shipped** evidence source — `validate`, `verify`, test generation, the [check-suite integrity audit](../guides/check-suite.md), and [signed certificates](../guides/certificates.md) all run today. Mobile, performance, and security executors are the platform's **direction**, not current scope. The full product contract lives in the maintainer's `docs/PLATFORM_OPERATING_MODEL.md`.
+    API conformance is the **flagship, shipped** evidence source — `validate`, `verify`, test generation, the [check-suite integrity audit](../guides/check-suite.md), and [signed certificates](../guides/certificates.md) all run today. Mobile, performance, and security executors are the platform's **direction**, not current scope. The full product contract lives in the [Platform Operating Model](platform-operating-model.md), and the [User Journeys](user-journeys.md) show how it feels in practice.
 
 ---
 
