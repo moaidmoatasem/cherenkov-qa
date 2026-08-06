@@ -1,0 +1,62 @@
+# The default journey. Its three `auto` steps are exactly the sequence
+# OrchestrationEngine ran before journeys existed (ingest -> plan -> per-scenario
+# generate/review fan-out), so running this journey and running the old
+# hardcoded pipeline are the same thing. Behaviour changes here are visible as
+# diffs in this file rather than buried in a call sequence.
+#
+# The `manual` steps are not run by the engine. They are the parts of the loop a
+# person does (triage) or that accrue in the background (knowledge), and they
+# are listed so the dashboard can draw the whole loop from one source instead of
+# a second hardcoded array.
+id: api-conformance
+version: 1
+label: API conformance loop
+description: >-
+  Turn an OpenAPI spec into a test suite, run it against the real API,
+  review what was flagged, and keep what was learned.
+
+steps:
+  - id: ingest
+    kind: stage.ingest
+    label: Generate
+    blurb: Bring a spec, get a test suite
+    surface: authoring
+    execution: auto
+
+  - id: plan
+    kind: stage.plan
+    label: Plan scenarios
+    surface: authoring
+    execution: auto
+    requires: [ingest]
+
+  - id: scenarios
+    kind: stage.scenarios
+    label: Generate and review tests
+    surface: authoring
+    execution: auto
+    requires: [plan]
+
+  - id: validate
+    kind: exec.validate
+    label: Validate
+    blurb: Run it against the real API
+    surface: dashboard
+    execution: manual
+    requires: [scenarios]
+
+  - id: triage
+    kind: human.triage
+    label: Triage
+    blurb: Review what was flagged
+    surface: triage
+    execution: manual
+    requires: [validate]
+
+  - id: knowledge
+    kind: knowledge.learn
+    label: Knowledge
+    blurb: See what Cherenkov learned
+    surface: intelligence
+    execution: manual
+    requires: [triage]

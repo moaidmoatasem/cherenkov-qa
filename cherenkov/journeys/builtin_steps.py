@@ -1,0 +1,60 @@
+"""Handlers for the step kinds the default journey uses.
+
+Each one adapts an existing orchestrator stage helper to the step protocol.
+They add no behaviour of their own -- that is what makes the default journey
+equivalent to the call sequence it replaced.
+"""
+from __future__ import annotations
+
+from cherenkov.core.contracts import Status
+from cherenkov.journeys.steps import StepContext, StepOutcome, register_step
+
+
+@register_step("stage.ingest")
+def ingest_step(ctx: StepContext) -> StepOutcome:
+    ingest = ctx.engine._run_ingest_stage(ctx.spec_path, ctx.simulate_fail_stage)
+    ctx.state["ingest"] = ingest
+    duration = ingest.metadata.duration_ms
+
+    # A FAILED ingest yields zero endpoints, which would otherwise flow into the
+    # scenarios step and vacuously pass (0 scenarios -> success). Honour the
+    # stage's own status instead.
+    if getattr(ingest, "status", None) == Status.FAILED:
+        return StepOutcome("failed", duration, "INGEST failed — no valid spec to test.")
+    return StepOutcome("complete", duration, data={"endpoints": len(ingest.endpoints)})
+
+
+@register_step("stage.plan")
+def plan_step(ctx: StepContext) -> StepOutcome:
+    plan = ctx.engine._run_plan_stage(ctx.state["ingest"], ctx.simulate_fail_stage)
+    ctx.state["plan"] = plan
+    duration = plan.metadata.duration_ms
+
+    if getattr(plan, "status", None) == Status.FAILED:
+        return StepOutcome("failed", duration, "PLAN failed — no scenarios to run.")
+    return StepOutcome("complete", duration, data={"scenarios": len(plan.scenarios)})
+
+
+@register_step("stage.scenarios")
+def scenarios_step(ctx: StepContext) -> StepOutcome:
+    success, results, durations, all_endpoints, passed_endpoints = (
+        ctx.engine._run_scenarios_phase(
+            ctx.state["plan"], ctx.spec_path, ctx.simulate_fail_stage
+        )
+    )
+    ctx.state.update(
+        pipeline_success=success,
+        scenario_results=results,
+        all_durations=durations,
+        all_endpoints=all_endpoints,
+        passed_endpoints=passed_endpoints,
+    )
+    # The step ran to completion even when scenarios failed their gate; the
+    # pass/fail of the run itself is the run's verdict, not the step's status.
+    # Reporting it as a step failure here would abort a pipeline that has
+    # always been allowed to finish and report.
+    return StepOutcome(
+        "complete",
+        sum(durations),
+        data={"success": success, "passed": sum(1 for r in results if r), "total": len(results)},
+    )

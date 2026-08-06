@@ -1,0 +1,154 @@
+"""Journey contracts — the declarative shape of a CHERENKOV workflow.
+
+A journey is the single description of a workflow that both the engine and the
+dashboard read. The engine executes the steps whose ``execution`` is ``auto``;
+the UI groups every step by ``surface`` to draw the stepper. Before this, the
+two were unrelated: the pipeline was a hardcoded call sequence in the
+orchestrator, and the UI's loop was a hardcoded four-element array that no
+backend fact ever touched.
+
+Keeping both readings in one file is the point. A step that the engine runs and
+a stage the user sees are the same object viewed from two ends, so they cannot
+drift apart the way a duplicated list does.
+"""
+from __future__ import annotations
+
+from typing import Literal
+
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+# Where a step shows up in the dashboard. These are the existing workspace ids
+# -- a journey describes the surfaces we already ship, it does not invent new
+# ones.
+Surface = Literal["authoring", "dashboard", "triage", "intelligence", "settings", "mobile"]
+
+# "auto"   -- the engine runs it, via a handler registered in the step registry
+# "manual" -- a person does it (triage) or it accrues in the background
+#             (knowledge). The engine never marks these complete on its own;
+#             claiming otherwise is how a stepper starts lying.
+Execution = Literal["auto", "manual"]
+
+StepStatus = Literal["not_started", "running", "complete", "failed", "blocked", "skipped"]
+
+
+class JourneyStep(BaseModel):
+    id: str
+    kind: str                       # dispatch key into the step registry
+    label: str
+    blurb: str = ""
+    surface: Surface
+    execution: Execution = "auto"
+    requires: list[str] = Field(default_factory=list)
+    optional: bool = False          # failure degrades the run, does not abort it
+    config: dict = Field(default_factory=dict)
+
+
+class JourneyDefinition(BaseModel):
+    id: str
+    version: int = 1
+    label: str
+    description: str = ""
+    steps: list[JourneyStep]
+
+    @field_validator("steps")
+    @classmethod
+    def _steps_not_empty(cls, steps: list[JourneyStep]) -> list[JourneyStep]:
+        if not steps:
+            raise ValueError("a journey needs at least one step")
+        return steps
+
+    @model_validator(mode="after")
+    def _validate_graph(self) -> JourneyDefinition:
+        seen: set[str] = set()
+        for step in self.steps:
+            if step.id in seen:
+                raise ValueError(f"duplicate step id {step.id!r}")
+            seen.add(step.id)
+        for step in self.steps:
+            for dep in step.requires:
+                if dep not in seen:
+                    raise ValueError(
+                        f"step {step.id!r} requires unknown step {dep!r}"
+                    )
+                if dep == step.id:
+                    raise ValueError(f"step {step.id!r} requires itself")
+        self.execution_order()  # raises on a cycle
+        return self
+
+    # ── Engine view ──────────────────────────────────────────────────────
+
+    def execution_order(self) -> list[JourneyStep]:
+        """Steps in dependency order (Kahn), declaration order breaking ties.
+
+        Declaration order is the tie-breaker rather than anything cleverer so
+        that a journey file reads top-to-bottom the way it runs.
+        """
+        by_id = {s.id: s for s in self.steps}
+        pending = {s.id: set(s.requires) for s in self.steps}
+        ordered: list[JourneyStep] = []
+
+        while pending:
+            ready = [s.id for s in self.steps if s.id in pending and not pending[s.id]]
+            if not ready:
+                raise ValueError(
+                    f"cycle in journey {self.id!r} among steps {sorted(pending)}"
+                )
+            for step_id in ready:
+                ordered.append(by_id[step_id])
+                del pending[step_id]
+            for remaining in pending.values():
+                remaining.difference_update(ready)
+        return ordered
+
+    def auto_steps(self) -> list[JourneyStep]:
+        """The steps the engine actually runs, in order."""
+        return [s for s in self.execution_order() if s.execution == "auto"]
+
+    def step(self, step_id: str) -> JourneyStep | None:
+        return next((s for s in self.steps if s.id == step_id), None)
+
+    # ── UI view ──────────────────────────────────────────────────────────
+
+    def stages(self) -> list[dict]:
+        """Roll steps up into the user-facing stages, in first-appearance order.
+
+        Several engine steps (ingest, plan, scenarios) are one thing to a
+        user -- "Generate" -- so the stepper renders surfaces, not steps.
+        """
+        stages: list[dict] = []
+        index: dict[str, dict] = {}
+        for step in self.execution_order():
+            stage = index.get(step.surface)
+            if stage is None:
+                stage = {
+                    "surface": step.surface,
+                    "step": len(stages) + 1,
+                    "label": step.label,
+                    "blurb": step.blurb,
+                    "step_ids": [],
+                }
+                index[step.surface] = stage
+                stages.append(stage)
+            stage["step_ids"].append(step.id)
+        return stages
+
+
+def rollup_status(statuses: list[StepStatus]) -> StepStatus:
+    """Collapse a stage's step statuses into one.
+
+    Deliberately pessimistic: a stage is only ``complete`` when every step in
+    it is, so the stepper cannot show a green stage over a failed step.
+    """
+    if not statuses:
+        return "not_started"
+    if any(s == "failed" for s in statuses):
+        return "failed"
+    if any(s == "running" for s in statuses):
+        return "running"
+    if all(s in ("complete", "skipped") for s in statuses):
+        return "complete"
+    if any(s in ("complete", "skipped") for s in statuses):
+        return "running"  # partially done is in-flight, never "complete"
+    if all(s == "blocked" for s in statuses):
+        return "blocked"
+    return "not_started"

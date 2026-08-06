@@ -1,0 +1,170 @@
+"""Tests for the journey engine.
+
+The load-bearing claim is the equivalence one: the default journey's auto steps
+are exactly the sequence the orchestrator ran before journeys existed. If that
+breaks, every pipeline in the product quietly changes shape.
+"""
+from __future__ import annotations
+
+import os
+
+os.environ.setdefault("CHERENKOV_ENV", "development")
+
+import pytest
+from pydantic import ValidationError
+
+from cherenkov.journeys import (
+    DEFAULT_JOURNEY_ID,
+    JourneyDefinition,
+    JourneyRegistry,
+    get_journey_registry,
+    rollup_status,
+)
+from cherenkov.journeys.steps import get_step_registry
+
+
+def _journey(**overrides) -> dict:
+    base = {
+        "id": "t",
+        "label": "T",
+        "steps": [
+            {"id": "a", "kind": "stage.ingest", "label": "A", "surface": "authoring"},
+            {"id": "b", "kind": "stage.plan", "label": "B", "surface": "authoring",
+             "requires": ["a"]},
+        ],
+    }
+    base.update(overrides)
+    return base
+
+
+# ── The equivalence guarantee ────────────────────────────────────────────
+
+def test_default_journey_runs_exactly_the_legacy_pipeline_sequence():
+    journey = get_journey_registry().default()
+
+    assert journey.id == DEFAULT_JOURNEY_ID
+    # ingest -> plan -> per-scenario generate/review fan-out. Nothing else runs
+    # automatically; validate/triage/knowledge are manual.
+    assert [s.id for s in journey.auto_steps()] == ["ingest", "plan", "scenarios"]
+
+
+def test_default_journey_stages_match_the_shipped_ui_loop():
+    stages = get_journey_registry().default().stages()
+
+    assert [s["label"] for s in stages] == ["Generate", "Validate", "Triage", "Knowledge"]
+    assert [s["surface"] for s in stages] == [
+        "authoring", "dashboard", "triage", "intelligence",
+    ]
+    # Generate is three engine steps rolled into one user-facing stage.
+    assert stages[0]["step_ids"] == ["ingest", "plan", "scenarios"]
+
+
+def test_every_auto_step_kind_has_a_registered_handler():
+    """A journey that references an unimplemented kind is an authoring error we
+    want to catch here, not at run time."""
+    registry = get_step_registry()
+    for journey in get_journey_registry().journeys:
+        for step in journey.auto_steps():
+            assert registry.get(step.kind) is not None, (
+                f"{journey.id}: no handler for {step.kind!r}"
+            )
+
+
+# ── Graph validation ─────────────────────────────────────────────────────
+
+def test_duplicate_step_ids_rejected():
+    with pytest.raises(ValidationError, match="duplicate step id"):
+        JourneyDefinition.model_validate(_journey(steps=[
+            {"id": "a", "kind": "k", "label": "A", "surface": "authoring"},
+            {"id": "a", "kind": "k", "label": "A2", "surface": "authoring"},
+        ]))
+
+
+def test_unknown_dependency_rejected():
+    with pytest.raises(ValidationError, match="unknown step"):
+        JourneyDefinition.model_validate(_journey(steps=[
+            {"id": "a", "kind": "k", "label": "A", "surface": "authoring",
+             "requires": ["ghost"]},
+        ]))
+
+
+def test_cycle_rejected():
+    with pytest.raises(ValidationError, match="cycle"):
+        JourneyDefinition.model_validate(_journey(steps=[
+            {"id": "a", "kind": "k", "label": "A", "surface": "authoring", "requires": ["b"]},
+            {"id": "b", "kind": "k", "label": "B", "surface": "authoring", "requires": ["a"]},
+        ]))
+
+
+def test_empty_journey_rejected():
+    with pytest.raises(ValidationError):
+        JourneyDefinition.model_validate(_journey(steps=[]))
+
+
+def test_execution_order_respects_dependencies_over_declaration_order():
+    journey = JourneyDefinition.model_validate(_journey(steps=[
+        {"id": "last", "kind": "k", "label": "L", "surface": "authoring",
+         "requires": ["first"]},
+        {"id": "first", "kind": "k", "label": "F", "surface": "authoring"},
+    ]))
+
+    assert [s.id for s in journey.execution_order()] == ["first", "last"]
+
+
+# ── YAML discovery ───────────────────────────────────────────────────────
+
+def test_project_local_journey_overrides_builtin(tmp_path):
+    builtin = tmp_path / "builtin"
+    local = tmp_path / "local"
+    builtin.mkdir()
+    local.mkdir()
+    (builtin / "j.yaml").write_text(
+        "id: shared\nlabel: From builtin\nsteps:\n"
+        "  - {id: a, kind: stage.ingest, label: A, surface: authoring}\n"
+    )
+    (local / "j.yaml").write_text(
+        "id: shared\nlabel: From project\nsteps:\n"
+        "  - {id: a, kind: stage.ingest, label: A, surface: authoring}\n"
+    )
+
+    registry = JourneyRegistry(search_dirs=[builtin, local])
+
+    assert registry.get("shared").label == "From project"
+
+
+def test_malformed_journey_is_skipped_not_fatal(tmp_path):
+    """One bad user file must not take the engine down -- the builtin is still
+    there and the rest of the directory still loads."""
+    d = tmp_path / "j"
+    d.mkdir()
+    (d / "broken.yaml").write_text("id: broken\nlabel: B\nsteps: [{id: x}]\n")
+    (d / "good.yaml").write_text(
+        "id: good\nlabel: G\nsteps:\n"
+        "  - {id: a, kind: stage.ingest, label: A, surface: authoring}\n"
+    )
+
+    registry = JourneyRegistry(search_dirs=[d])
+
+    assert registry.get("broken") is None
+    assert registry.get("good") is not None
+
+
+def test_missing_directory_is_not_an_error(tmp_path):
+    assert JourneyRegistry(search_dirs=[tmp_path / "nope"]).journeys == []
+
+
+# ── Stage rollup ─────────────────────────────────────────────────────────
+
+@pytest.mark.parametrize("statuses,expected", [
+    ([], "not_started"),
+    (["not_started", "not_started"], "not_started"),
+    (["complete", "complete"], "complete"),
+    (["complete", "skipped"], "complete"),
+    (["complete", "running"], "running"),
+    (["complete", "not_started"], "running"),   # partial is never "complete"
+    (["complete", "failed"], "failed"),         # a failure dominates
+    (["running", "failed"], "failed"),
+    (["blocked", "blocked"], "blocked"),
+])
+def test_rollup_status(statuses, expected):
+    assert rollup_status(statuses) == expected
