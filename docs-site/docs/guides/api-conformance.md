@@ -79,7 +79,7 @@ Summary: 3/4 passed · 1 drift · Exit: 1
 
 ```bash
 # Generate only — don't run
-cherenkov generate --spec api.yaml --output ./tests
+cherenkov generate --spec api.yaml --output-dir ./tests
 
 # Review generated tests
 ls ./tests/

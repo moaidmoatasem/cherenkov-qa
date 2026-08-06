@@ -118,7 +118,9 @@ cherenkov verify --url <url> --spec <file>
 | `--health-score` | No | Print an A-F health grade for the API |
 | `--coverage-report` | No | Generate an endpoint coverage report |
 | `--max-probes N` | No | Maximum number of probes to run (default: unlimited) |
-| `--json` | No | Output results as JSON to stdout |
+| `--fail-on-divergence` | No | Exit with code `1` if any divergences are found |
+| `--output FILE` / `-o` | No | Write the divergence report to this file |
+| `--format [json\|text]` | No | Report format for `--output` (default: `json`) |
 
 **Examples:**
 
@@ -130,8 +132,9 @@ cherenkov verify --url http://localhost:8000 --spec api.yaml --health-score
 cherenkov verify --url http://localhost:8000 --spec api.yaml \
   --coverage-report --max-probes 50
 
-# CI-friendly JSON output
-cherenkov verify --url http://localhost:8000 --spec api.yaml --health-score --json
+# CI-friendly: fail the build on drift and write a JSON report
+cherenkov verify --url http://localhost:8000 --spec api.yaml \
+  --fail-on-divergence --output report.json --format json
 ```
 
 ### `check-suite`
@@ -146,10 +149,11 @@ cherenkov check-suite --candidate <path> --spec <file>
 
 | Flag | Required | Description |
 |------|----------|-------------|
-| `--candidate PATH` | Yes | Path to the candidate test suite to check |
-| `--spec FILE` | Yes | Path to the OpenAPI spec the suite was generated from |
+| `--candidate PATH` / `-c` | Yes | Path to the candidate test suite to check |
+| `--spec FILE` / `-s` | Yes | Path to the OpenAPI spec the suite was generated from |
+| `--baseline PATH` / `-b` | No | Path to a known-honest baseline suite to compare against |
 | `--fail-on-finding` | No | Exit with code `1` if any finding is detected |
-| `--json` | No | Output results as JSON to stdout |
+| `--output FILE` / `-o` | No | Write the JSON findings report to this file |
 
 ### `diff`
 
@@ -176,9 +180,9 @@ cherenkov generate --spec <file>
 | Flag | Required | Description |
 |------|----------|-------------|
 | `--spec FILE` | Yes | Path to OpenAPI spec |
-| `--output DIR` | No | Output directory (default: `./tests`) |
-| `--repair` / `--no-repair` | No | Enable or disable automatic repair of failing generated tests (default: `--repair`) |
-| `--max-attempts N` | No | Maximum LLM generation attempts per endpoint (default: 3) |
+| `--output-dir DIR` | No | Directory to write generated tests (default: `stub/generated_tests`) |
+| `--repair` / `--no-repair` | No | Enable or disable the generate→review→repair loop (default: `--repair`) |
+| `--max-attempts N` | No | Maximum LLM generation attempts per endpoint (default: 3, range 1-10) |
 
 ### `eject`
 
