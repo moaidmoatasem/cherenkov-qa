@@ -44,7 +44,7 @@ graph TB
     end
 
     subgraph INTERFACES ["🎨  User Interfaces"]
-        WEB[React Dashboard\n9 screens · Vite + TypeScript]
+        WEB[React Dashboard\n5 workspaces · Vite + TypeScript]
         MCP_S[MCP Server\nIDE & agent integration]
         CHAT_I[Chat Agent\nSSE streaming]
     end
