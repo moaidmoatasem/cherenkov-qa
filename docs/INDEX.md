@@ -78,6 +78,11 @@ If you only have 2 minutes, read **§ "What it does (30 seconds)"** in
 | [adr/](adr/) | Architecture Decision Records (why we chose what we chose) |
 | [HANDOVER.md](HANDOVER.md) | Authoritative state for agents and contributors |
 
+### Product and platform clarity
+
+- [PLATFORM_OPERATING_MODEL.md](PLATFORM_OPERATING_MODEL.md) — the Quality Intelligence Platform core, extension contracts, model neutrality, and memory governance
+- [USER_JOURNEYS.md](USER_JOURNEYS.md) — end-to-end QA, agent, team, and governance journeys
+
 ### Subsystem references
 
 - [LOGGING.md](LOGGING.md) — structured logging policy

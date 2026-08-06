@@ -10,6 +10,22 @@
 
 CHERENKOV-QA is an API conformance testing platform that generates Playwright tests from OpenAPI specs and validates them against real servers. The system follows Clean Architecture (Ports/Adapters) and is designed for extensibility, testability, and anti-lock-in.
 
+The long-term architecture is deliberately broader than any one runner or model provider: CHERENKOV is a **Quality Intelligence Platform** whose small core produces independent, reproducible quality verdicts. Test frameworks, source types, models, and delivery surfaces are adapters around that core. See [PLATFORM_OPERATING_MODEL.md](../PLATFORM_OPERATING_MODEL.md) for product boundaries, governance, and integration standards, and [USER_JOURNEYS.md](../USER_JOURNEYS.md) for the intended end-to-end experience.
+
+## Platform core and extension ecosystem
+
+The platform core owns quality policy, provenance, verdicts, review, certificates, and memory governance. Extensions supply evidence or expose outcomes; they must never quietly redefine the verdict.
+
+| Extension seam | Role | Current and intended examples |
+|---|---|---|
+| Evidence source | Describes a system and the claims to verify | OpenAPI, GraphQL, gRPC, code, requirements, traffic |
+| Executor | Runs a planned scenario and retains its native artifact | Playwright, Maestro, Appium; future Cypress, Selenium, k6, JMeter, Postman/Newman |
+| Oracle | Assesses evidence against declared truth | Spec conformance, assertion integrity, visual, performance, accessibility, security |
+| Model provider | Supplies optional generation or reasoning under policy | LocalAI, Ollama, GitHub Models; future local and hosted providers |
+| Connector | Moves context or verdicts between systems | MCP, CLI, dashboard, CI, GitHub; future IDE, ticketing, collaboration, and observability adapters |
+
+All seams should be versioned and declare permissions, network-egress behavior, data retention, cost, and known limitations. This keeps the system local-first and vendor-neutral while permitting hybrid deployments.
+
 ---
 
 ## System Context
