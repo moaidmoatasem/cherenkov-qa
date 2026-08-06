@@ -299,8 +299,11 @@ test.describe('Headless QA User — Settings, Keyboard, Stress', () => {
     const palette = new CommandPalette(page);
     await palette.open();
     await expect(palette.input).toBeVisible();
+    // "Author by Intent" was a screen that no longer exists; the Generate
+    // Tests workspace absorbed it. Searching its old name must still find the
+    // workspace -- the palette matches surface aliases, not just labels.
     await palette.search('author');
-    await expect(page.getByText('Go to Author by Intent')).toBeVisible();
+    await expect(page.getByText('Go to Generate Tests')).toBeVisible();
     await palette.close();
     await expect(palette.input).not.toBeVisible();
   });

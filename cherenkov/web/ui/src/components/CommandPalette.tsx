@@ -22,6 +22,10 @@ interface PaletteItem {
   category: 'NAVIGATION' | 'ACTIONS' | 'WORKSPACES';
   icon: React.ComponentType<any>;
   action: () => void;
+  /** Extra search terms: the surface id and its legacy route aliases, so
+   *  typing "author" or "divergences" still finds the workspace that
+   *  absorbed those screens. The placeholder below promises exactly that. */
+  keywords?: string[];
 }
 
 export default function CommandPalette({
@@ -74,6 +78,7 @@ export default function CommandPalette({
       category: 'NAVIGATION' as const,
       icon: SURFACE_CHROME[surface].icon,
       action: () => onNavigate(surface),
+      keywords: [surface, ...SURFACE_CHROME[surface].aliases],
     })),
 
     // ACTIONS
@@ -93,11 +98,15 @@ export default function CommandPalette({
   ];
 
   // Filtering
-  const filtered = items.filter((item) =>
-    item.title.toLowerCase().includes(search.toLowerCase()) ||
-    item.subtitle.toLowerCase().includes(search.toLowerCase()) ||
-    item.category.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = items.filter((item) => {
+    const q = search.toLowerCase();
+    return (
+      item.title.toLowerCase().includes(q) ||
+      item.subtitle.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q) ||
+      (item.keywords ?? []).some((k) => k.toLowerCase().includes(q))
+    );
+  });
 
   // List Keyboard Controls
   const handleKeyDown = (e: React.KeyboardEvent) => {
