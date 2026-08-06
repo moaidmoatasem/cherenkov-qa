@@ -28,7 +28,7 @@ npm install -g @cherenkov-qa/mcp-server
 
 - Node.js 18+
 - Python 3.10+
-- CHERENKOV Python package installed (`pip install cherenkov-qa`) or run from a clone of the repo
+- CHERENKOV Python package installed from a clone of the repo (`git clone … && pip install -e .`) — not yet published to PyPI
 
 ## Tools
 

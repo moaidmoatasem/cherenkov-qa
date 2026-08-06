@@ -85,7 +85,7 @@ This brings up LocalAI (VLM) on `http://localhost:8080` and Redis on `6379`. See
 ## 🛠️ Features
 - **6-Gate Review Pipeline**: Tests are syntax-checked, AST-validated, type-checked, and mock-tested before ever hitting a real server.
 - **OWASP Mutation Engine**: Automatically injects DAST (Dynamic Application Security Testing) payloads to test edge-cases.
-- **Visual Dashboard**: Explore conformance maps and test results via the built-in React UI (`npx cherenkov dashboard`).
+- **Visual Dashboard**: Explore conformance maps and test results across five workspaces in the built-in React UI (`cherenkov dashboard`).
 - **K8s Native Operator**: Deploy the `ConformanceCheck` CRD to run CHERENKOV natively in your Kubernetes CI/CD pipelines.
 
 ---
@@ -94,6 +94,7 @@ This brings up LocalAI (VLM) on `http://localhost:8080` and Redis on `6379`. See
 - [Getting Started Guide](https://moaidmoatasem.github.io/cherenkov-qa/latest/getting-started/)
 - [CLI Reference](https://moaidmoatasem.github.io/cherenkov-qa/latest/cli/reference/)
 - [Architecture & Design Decisions](https://moaidmoatasem.github.io/cherenkov-qa/latest/architecture/)
+- [Platform Direction](https://moaidmoatasem.github.io/cherenkov-qa/latest/architecture/system-design/#platform-context-the-independent-quality-layer) — where CHERENKOV is heading as an open Quality Intelligence Platform, with API conformance as the shipped core
 - [Onboarding & Demo Recordings](./docs/recordings/) — 8 Loom scripts with live evidence for developers, QA, managers, and DevOps
 
 ---

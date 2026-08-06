@@ -222,19 +222,15 @@ Opens the React dashboard in your browser for a visual view of test results.
 ./bin/cherenkov validate --target http://localhost:8000 --web
 ```
 
-The dashboard has 9 screens:
+The dashboard is organized into 5 workspaces:
 
-| Screen | Shows |
-|--------|-------|
-| Run History | All past validation runs |
-| Test Explorer | Browse generated test files |
-| Spec Viewer | Your OpenAPI spec with annotations |
-| Healing Queue | Pending fix suggestions |
-| Knowledge Graph | Second brain visualization |
-| Mobile Dashboard | Mobile test results |
-| Chat Interface | AI chat agent |
-| Settings | Configuration |
-| Governance | KPI and certification status |
+| Workspace | Shows |
+|-----------|-------|
+| Overview | Run history, health score, and live conformance status |
+| Author & Generate | Spec viewer, test generation, and generated test files |
+| Triage | Divergences, healing queue, and pending fix suggestions |
+| Coverage & Intelligence | Coverage maps, the Second Brain knowledge graph, and governance KPIs |
+| Settings | Configuration, providers, and integrations |
 
 ---
 
