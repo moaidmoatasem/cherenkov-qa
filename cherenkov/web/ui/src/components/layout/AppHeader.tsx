@@ -6,8 +6,9 @@
 import React, { useEffect, useState } from 'react';
 import CherenkovLogo from '../CherenkovLogo';
 import { Project } from '../../types';
-import { fetchProjects, fetchMetricsData, checkBackendHealth } from '../../lib/api';
-import { ChevronDown, RefreshCw, Cpu, Activity } from 'lucide-react';
+import { fetchProjects, fetchMetricsData, checkBackendHealth, fetchSettings, SystemSettings } from '../../lib/api';
+import { ChevronDown, RefreshCw, Cpu, Activity, Shield, Zap, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface AppHeaderProps {
   activeWorkspaceTitle: string;
@@ -29,9 +30,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   online = true,
 }) => {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [isHealthChecking, setIsHealthChecking] = useState(false);
   const [isHealthOnline, setIsHealthOnline] = useState<boolean>(online);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsHealthOnline(online);
@@ -45,6 +48,15 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       .catch(() => {
         setProjects([]);
       });
+
+    const pollSettings = () => {
+      fetchSettings()
+        .then((data) => setSettings(data))
+        .catch(() => {});
+    };
+    pollSettings();
+    const id = setInterval(pollSettings, 15000);
+    return () => clearInterval(id);
   }, [selectedProjectId]);
 
   const handleManualHealthCheck = async () => {
@@ -133,12 +145,22 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           )}
         </div>
 
-        {/* SDD Token Budget Indicator */}
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-base border border-border-subtle text-xs font-mono">
-          <Cpu className="w-3.5 h-3.5 text-glow-bright" />
-          <span className="text-text-muted">Tokens:</span>
-          <span className="text-glow-bright font-semibold">{tokenUsagePercent}%</span>
-          <span className="text-text-muted text-[10px]">(${totalSpentEstimated.toFixed(2)})</span>
+        {/* Settings Parity Group */}
+        <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-bg-base border border-border-subtle text-xs font-mono cursor-pointer hover:border-cyan-500/50 transition group" onClick={() => navigate('/settings')}>
+          <div className="flex items-center gap-1.5 border-r border-border-subtle pr-3">
+            <Cpu className="w-3.5 h-3.5 text-cyan-400 group-hover:text-cyan-300" />
+            <span className="text-text-primary capitalize">{settings?.model || 'ollama'}</span>
+            <span className="text-text-muted text-[10px]">(${totalSpentEstimated.toFixed(2)})</span>
+          </div>
+          <div className="flex items-center gap-1.5 border-r border-border-subtle pr-3">
+            <Shield className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-text-primary capitalize">{settings?.security?.egress_policy?.replace('none font-mono', 'sovereign') || 'sovereign'}</span>
+          </div>
+          <div className="flex items-center gap-1.5 border-r border-border-subtle pr-3">
+            <Zap className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-text-primary capitalize">{settings?.copilot?.autonomy || 'assisted'}</span>
+          </div>
+          <Settings className="w-3.5 h-3.5 text-text-muted group-hover:text-cyan-400 transition" />
         </div>
 
         {/* Backend Health Badge */}

@@ -8,7 +8,7 @@ import { Activity, BarChart3, TrendingUp, AlertTriangle, CheckCircle, Clock } fr
 import { Card } from '../../ui';
 import { CoverageTrendChart } from '../../ui/CoverageTrendChart';
 import type { CoverageMap, CoverageEndpoint } from '../../../lib/api';
-import { getCoverageMap, getCoverageTrend } from '../../../lib/api';
+import { getCoverageMap, getCoverageTrend, fetchSignals } from '../../../lib/api';
 
 type Status = 'idle' | 'loading' | 'done' | 'error';
 
@@ -46,9 +46,10 @@ export const CoverageAndPerfScreen: React.FC = () => {
     setCoverageStatus('loading');
     setError(null);
     try {
-      const [mapRes, trendRes] = await Promise.all([
+      const [mapRes, trendRes, signalsRes] = await Promise.all([
         getCoverageMap(),
         getCoverageTrend(60),
+        fetchSignals().catch(() => ({ performance: [], visual: [], coverage: [] })),
       ]);
       setCoverageMap(mapRes);
       setTrendPoints(
@@ -59,6 +60,9 @@ export const CoverageAndPerfScreen: React.FC = () => {
           divergence_count: p.divergence_count,
         }))
       );
+      if (signalsRes && signalsRes.performance) {
+        setPerfMetrics(signalsRes.performance);
+      }
       setCoverageStatus('done');
     } catch (err) {
       setError((err as Error).message);

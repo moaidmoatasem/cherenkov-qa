@@ -15,7 +15,7 @@
 A workflow is now one declarative YAML description that the engine executes and the dashboard renders, replacing a hardcoded call sequence in the orchestrator and four hardcoded arrays in the UI. **Two decisions here diverge from the roadmap's stated posture and are recorded deliberately, not silently:**
 
 - **Chained CRUD journeys were pulled forward of Gate G0.** `docs/QA_ASSESSMENT_2026_06.md:235` files them under "Phase 3 — earned expansion (post-gate only)", and `docs/vision/SPIKE_CHAINED_JOURNEYS.md` is a quarantined spike. This work was scoped and approved by the maintainer on 2026-08-06 ahead of that gate. The design here is fresh, not taken from the spike.
-- **It ships before M1 opens (08-12).** The onboarding transcripts were cold-run verified against the *previous* IA. Anyone preparing M1 must re-verify `docs/onboarding/sessions/session_a_zero_to_hero.md` against the shipped dashboard before practitioners walk it.
+- **It ships before M1 opens (08-12).** The onboarding transcripts were cold-run verified against the *previous* IA. Anyone preparing M1 must re-verify `docs/onboarding/sessions/session_b_live_case.md` against the shipped dashboard before practitioners walk it. (Note: Session A is entirely CLI-based).
 
 **What changed, verified in code:**
 

@@ -139,6 +139,73 @@ export const GovernanceSettings: React.FC = () => {
             </div>
           </div>
 
+          {/* Copilot Autonomy & Substrate Budgets */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase text-text-muted">Copilot Autonomy</label>
+              <select
+                value={settings.copilot?.autonomy || 'assisted'}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    copilot: { ...settings.copilot, autonomy: e.target.value },
+                  })
+                }
+                className="w-full bg-bg-base text-cyan-400 p-2.5 rounded-lg border border-white/10"
+              >
+                <option value="assisted">Assisted</option>
+                <option value="autonomous">Autonomous</option>
+                <option value="supervisor">Supervisor</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase text-text-muted">Max Cost USD / Run</label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                value={settings.substrate?.budgets?.max_cost_usd_per_run ?? 0.0}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    substrate: {
+                      ...settings.substrate,
+                      budgets: {
+                        ...(settings.substrate?.budgets || { max_latency_ms: 120000 }),
+                        max_cost_usd_per_run: parseFloat(e.target.value) || 0,
+                      },
+                    },
+                  })
+                }
+                className="w-full bg-bg-base text-text-primary p-2.5 rounded-lg border border-white/10"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase text-text-muted">Max Latency (ms)</label>
+              <input
+                type="number"
+                step="1000"
+                min="0"
+                value={settings.substrate?.budgets?.max_latency_ms ?? 120000}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    substrate: {
+                      ...settings.substrate,
+                      budgets: {
+                        ...(settings.substrate?.budgets || { max_cost_usd_per_run: 0.0 }),
+                        max_latency_ms: parseInt(e.target.value, 10) || 0,
+                      },
+                    },
+                  })
+                }
+                className="w-full bg-bg-base text-text-primary p-2.5 rounded-lg border border-white/10"
+              />
+            </div>
+          </div>
+
           {message && (
             <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl text-xs flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" />

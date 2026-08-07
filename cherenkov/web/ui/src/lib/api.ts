@@ -411,6 +411,9 @@ export interface SystemSettings {
   security?: { egress_policy: string };
   airllm?: { enabled: boolean; model: string; compression: string; layer_shards_path?: string };
   vlm?: { provider: string; model: string; ocr_enabled?: boolean };
+  ui?: { density: string; motion: string };
+  copilot?: { autonomy: string };
+  substrate?: { budgets: { max_cost_usd_per_run: number; max_latency_ms: number } };
 }
 
 export async function fetchSettings(): Promise<SystemSettings> {
