@@ -5,14 +5,16 @@
 
 import React, { useEffect, useState } from 'react';
 import { Card, Skeleton, KpiRing } from '../../ui';
-import { fetchSddStatus, fetchSddTokens, triggerSddCompact } from '../../../lib/api';
+import { fetchSddStatus, fetchSddTokens, triggerSddCompact, fetchMemory } from '../../../lib/api';
 import { SddStatusResponse, SddTokenData } from '../../../types';
-import { Cpu, RefreshCw, Layers } from 'lucide-react';
+import { Cpu, RefreshCw, Layers, Waves } from 'lucide-react';
 
 export const SddMemoryCockpit: React.FC = () => {
   const [status, setStatus] = useState<SddStatusResponse | null>(null);
   const [tokens, setTokens] = useState<SddTokenData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // J3: memory-decay strip is backed by real /api/v1/memory decay scores.
+  const [decay, setDecay] = useState<{ total: number; fading: number }>({ total: 0, fading: 0 });
 
   const loadSddData = async () => {
     try {
@@ -23,6 +25,15 @@ export const SddMemoryCockpit: React.FC = () => {
       ]);
       setStatus(sData);
       setTokens(tData);
+      const mem = await fetchMemory().catch(() => ({ idioms: [] as any[] }));
+      const idioms = (mem as any).idioms || [];
+      const fading = idioms.filter((i: any) => {
+        const d = String(i.decay || 'ACTIVE');
+        if (d === 'ACTIVE') return false;
+        const n = parseFloat(d);
+        return Number.isFinite(n) && n < 50;
+      }).length;
+      setDecay({ total: idioms.length, fading });
     } catch {
       setStatus(null);
       setTokens(null);
@@ -101,6 +112,33 @@ export const SddMemoryCockpit: React.FC = () => {
               {status?.session?.status === 'open' ? 'ACTIVE' : 'READY'}
             </p>
             <p className="text-[10px] text-text-muted">SDD Protocol v3.1</p>
+          </div>
+        </div>
+      )}
+
+      {/* J3: Memory Decay Strip -- surfaced from /api/v1/memory decay scores.
+          Suggest-only, per D7: it never auto-promotes or auto-compacts. */}
+      {!isLoading && decay.total > 0 && (
+        <div
+          className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-xl border ${
+            decay.fading > 0
+              ? 'bg-amber-500/10 border-amber-500/30'
+              : 'bg-emerald-500/5 border-emerald-500/20'
+          }`}
+          data-testid="memory-decay-strip"
+        >
+          <Waves className={`w-4 h-4 shrink-0 ${decay.fading > 0 ? 'text-amber-400' : 'text-emerald-400'}`} />
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-mono text-text-primary">
+              {decay.fading > 0
+                ? `${decay.fading} of ${decay.total} stored patterns are fading below 50% decay score.`
+                : `All ${decay.total} stored patterns are healthy.`}
+            </p>
+            <p className="text-[10px] text-text-muted mt-0.5">
+              {decay.fading > 0
+                ? 'Consider promoting faded patterns before running Compact Memory so they are not distilled away.'
+                : 'No action required. Run Compact Memory when the token budget climbs past 80%.'}
+            </p>
           </div>
         </div>
       )}

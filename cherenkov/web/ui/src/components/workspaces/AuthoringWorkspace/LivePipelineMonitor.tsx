@@ -5,7 +5,18 @@
 
 import React, { useEffect, useState } from 'react';
 import { Card } from '../../ui';
-import { Terminal, CheckCircle2, Clock, RefreshCw, XCircle, Wifi, WifiOff } from 'lucide-react';
+import {
+  Terminal,
+  CheckCircle2,
+  Clock,
+  RefreshCw,
+  XCircle,
+  Wifi,
+  WifiOff,
+  ChevronDown,
+  ChevronRight,
+  FileCode2,
+} from 'lucide-react';
 import { useLiveEvents } from '../../../hooks/useLiveEvents';
 
 export interface LivePipelineMonitorProps {
@@ -20,6 +31,14 @@ interface PipelineStageItem {
   name: string;
   status: StageStatus;
   duration: string;
+}
+
+/** Real test_generated payload (orchestrator.py _emit_event). */
+interface GeneratedTestEvidence {
+  endpoint: string;
+  method: string;
+  agent: string;
+  code: string;
 }
 
 // Mirrors the real orchestrator stages (cherenkov/core/orchestrator.py
@@ -37,12 +56,19 @@ export const LivePipelineMonitor: React.FC<LivePipelineMonitorProps> = ({ runId,
   const [stages, setStages] = useState<PipelineStageItem[]>(IDLE_STAGES);
   const [logs, setLogs] = useState<string[]>([]);
   const [started, setStarted] = useState(false);
+  // J1: real evidence captured from test_generated events (method/endpoint/
+  // agent/code). No request/response or screenshots are fabricated here --
+  // the orchestrator simply does not emit them in this payload.
+  const [evidence, setEvidence] = useState<GeneratedTestEvidence[]>([]);
+  const [expandedEvidence, setExpandedEvidence] = useState<number | null>(null);
 
   // A new run started -- drop any stale state from the previous one.
   useEffect(() => {
     if (!runId) return;
     setStages(IDLE_STAGES);
     setLogs([`[RUN] Started ${runId}`]);
+    setEvidence([]);
+    setExpandedEvidence(null);
     setStarted(true);
   }, [runId]);
 
@@ -71,6 +97,15 @@ export const LivePipelineMonitor: React.FC<LivePipelineMonitorProps> = ({ runId,
         break;
       case 'test_generated':
         setLogs((l) => [...l, `[GENERATE] ${payload.method} ${payload.endpoint} -> test written`]);
+        setEvidence((prev) => [
+          ...prev,
+          {
+            endpoint: payload.endpoint,
+            method: payload.method,
+            agent: payload.agent,
+            code: payload.code,
+          },
+        ]);
         break;
       case 'replan_trigger':
         setLogs((l) => [...l, `[PLAN] Re-planning ${payload.endpoint} (${payload.case_type}) after a dry-run failure`]);
@@ -151,6 +186,69 @@ export const LivePipelineMonitor: React.FC<LivePipelineMonitorProps> = ({ runId,
           </div>
         ))}
       </div>
+
+      {/* J1: Live Preview -- skeleton rows during the planning phase, before
+          the generated tests land. Rendered only while a stage is running so
+          the placeholders never outlive the work they stand for. */}
+      {stages.some((s) => s.status === 'running') && (
+        <div className="space-y-2" data-testid="live-preview-skeletons">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-text-muted">
+            Live Preview — planning generated tests
+          </p>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 p-3 rounded-xl border border-white/5 bg-black/20 animate-pulse"
+            >
+              <div className="w-16 h-3 rounded bg-white/10" />
+              <div className="flex-1 h-3 rounded bg-white/10" />
+              <div className="w-24 h-3 rounded bg-white/10" />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* J1: Evidence Disclosure -- inline request/response-grade evidence from
+          the real test_generated payload (method, endpoint, generating agent,
+          generated code). Screenshots are not fabricated when absent. */}
+      {evidence.length > 0 && (
+        <div className="space-y-2" data-testid="pipeline-evidence">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-text-muted">
+            Evidence — generated tests ({evidence.length})
+          </p>
+          {evidence.map((ev, idx) => {
+            const isExpanded = expandedEvidence === idx;
+            return (
+              <div key={idx} className="rounded-xl border border-white/10 bg-black/30 overflow-hidden">
+                <button
+                  onClick={() => setExpandedEvidence(isExpanded ? null : idx)}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-white/5 transition"
+                  data-testid={`evidence-row-${idx}`}
+                  aria-expanded={isExpanded}
+                >
+                  {isExpanded ? (
+                    <ChevronDown className="w-3.5 h-3.5 text-cyan-400" />
+                  ) : (
+                    <ChevronRight className="w-3.5 h-3.5 text-text-muted" />
+                  )}
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+                    {ev.method}
+                  </span>
+                  <span className="text-xs font-mono text-text-primary truncate">{ev.endpoint}</span>
+                  <span className="ml-auto text-[10px] font-mono text-text-muted hidden sm:inline">
+                    {ev.agent}
+                  </span>
+                </button>
+                {isExpanded && (
+                  <pre className="px-3 pb-3 text-[10px] font-mono text-emerald-300/90 overflow-x-auto max-h-64">
+                    {ev.code || '// generated code not provided in event payload'}
+                  </pre>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Terminal Log Console */}
       <div className="bg-black/60 border border-white/10 rounded-xl p-4 font-mono text-xs text-emerald-400 space-y-1 max-h-48 overflow-y-auto">

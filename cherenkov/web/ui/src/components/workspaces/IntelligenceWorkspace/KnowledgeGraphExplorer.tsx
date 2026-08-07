@@ -4,15 +4,28 @@
  */
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, Skeleton, EmptyState } from '../../ui';
 import { queryKnowledge } from '../../../lib/api';
-import { Brain, Search, Database } from 'lucide-react';
+import { Brain, Search, Database, FilePenLine } from 'lucide-react';
 
 export const KnowledgeGraphExplorer: React.FC = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  // J3: turn a knowledge node into a natural-language authoring intent and
+  // deep-link into the Authoring workspace, which pre-fills its prompt.
+  const authorPattern = (item: any) => {
+    const raw =
+      typeof item.data === 'string'
+        ? item.data
+        : item.data?.text || item.text || item.content || item.source || '';
+    const firstSentence = raw.split(/[.?!]\s/)[0]?.slice(0, 140) || raw.slice(0, 140);
+    return `Author a check derived from knowledge: ${firstSentence}`.slice(0, 220);
+  };
 
   const handleQuery = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +102,16 @@ export const KnowledgeGraphExplorer: React.FC = () => {
               <p className="text-text-primary text-xs leading-relaxed">
                 {typeof item.data === 'string' ? item.data : item.text || item.content || JSON.stringify(item)}
               </p>
+              <div className="pt-2">
+                <button
+                  onClick={() => navigate(`/authoring?intent=${encodeURIComponent(authorPattern(item))}`)}
+                  className="px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-[10px] font-mono font-bold flex items-center gap-1.5 transition cursor-pointer"
+                  data-testid="btn-author-this-check"
+                >
+                  <FilePenLine className="w-3 h-3" />
+                  Author this check
+                </button>
+              </div>
             </div>
           ))}
         </div>

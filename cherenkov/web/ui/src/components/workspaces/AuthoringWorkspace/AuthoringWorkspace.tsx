@@ -10,6 +10,7 @@ import IntentAuthoringPanel from './IntentAuthoringPanel';
 import LivePipelineMonitor from './LivePipelineMonitor';
 import DetectedChainsPanel from './DetectedChainsPanel';
 import ExplorePanel from './ExplorePanel';
+import VisionFallbackBanner from './VisionFallbackBanner';
 import { PageHeader } from '../../ui/PageHeader';
 import { EndpointRichness } from '../../../types';
 
@@ -56,6 +57,9 @@ export const AuthoringWorkspace: React.FC<AuthoringWorkspaceProps> = ({
         specPath={activeSpecPath}
         onPipelineStarted={handlePipelineStarted}
       />
+
+      {/* 3b. Vision fallback availability (J1) */}
+      <VisionFallbackBanner />
 
       {/* 4. Live Surface Explorer — crawl a running service for anomalies */}
       <ExplorePanel />

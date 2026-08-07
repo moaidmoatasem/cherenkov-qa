@@ -8,7 +8,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, Skeleton, SeverityPill, useToast } from '../../ui';
 import { fetchDivergences, actOnDivergence } from '../../../lib/api';
 import { Divergence } from '../../../types';
-import { SplitSquareHorizontal, CheckCircle2, XCircle, Code2, Play, RefreshCw } from 'lucide-react';
+import { SplitSquareHorizontal, CheckCircle2, XCircle, Code2, Play, RefreshCw, ChevronDown, ChevronRight, FileCode2 } from 'lucide-react';
 
 interface SpecVsRealityDiffViewerProps {
   divergenceId?: string;
@@ -18,6 +18,9 @@ export const SpecVsRealityDiffViewer: React.FC<SpecVsRealityDiffViewerProps> = (
   const [selectedId, setSelectedId] = useState<string | null>(divergenceId || null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  // J2: evidence/repro are long strings; render them only when the disclosure
+  // is opened instead of paying layout cost for every selection.
+  const [showEvidence, setShowEvidence] = useState(false);
 
   const { data: divergences = [], isLoading, isFetching, error, refetch } = useQuery<Divergence[]>({
     queryKey: ['divergences'],
@@ -111,13 +114,46 @@ export const SpecVsRealityDiffViewer: React.FC<SpecVsRealityDiffViewerProps> = (
             </div>
           </div>
 
-          {/* Evidence Footer */}
-          <div className="p-3 rounded-xl bg-black/20 border border-white/5 flex items-center justify-between text-xs">
-            <div className="max-w-[70%]">
-              <span className="text-text-muted font-bold">Evidence: </span>
-              <span className="text-text-primary">{selectedDiv.evidence}</span>
-            </div>
-            <div className="flex gap-2">
+          {/* Evidence Footer -- collapsed until the user asks for it. */}
+          <div className="rounded-xl bg-black/20 border border-white/5">
+            <button
+              onClick={() => setShowEvidence((s) => !s)}
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-white/5 transition"
+              aria-expanded={showEvidence}
+              data-testid="evidence-disclosure"
+            >
+              {showEvidence ? (
+                <ChevronDown className="w-3.5 h-3.5 text-cyan-400" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-text-muted" />
+              )}
+              <FileCode2 className="w-3.5 h-3.5 text-text-muted" />
+              <span className="text-xs font-mono text-text-muted">
+                Repro steps & capture evidence for {selectedDiv.id}
+              </span>
+              <span className="ml-auto text-[10px] font-mono text-text-muted">
+                {showEvidence ? 'hide' : 'reveal'}
+              </span>
+            </button>
+            {showEvidence && (
+              <div className="px-3 pb-3 space-y-3" data-testid="evidence-body">
+                <div>
+                  <span className="text-text-muted text-[10px] font-mono uppercase tracking-wider">Evidence</span>
+                  <pre className="mt-1 p-3 bg-black/40 rounded-lg text-text-primary text-[11px] whitespace-pre-wrap leading-relaxed border border-white/5">
+                    {selectedDiv.evidence}
+                  </pre>
+                </div>
+                {selectedDiv.reproSteps && (
+                  <div>
+                    <span className="text-text-muted text-[10px] font-mono uppercase tracking-wider">Repro Steps</span>
+                    <pre className="mt-1 p-3 bg-black/40 rounded-lg text-emerald-300 text-[11px] whitespace-pre-wrap leading-relaxed border border-white/5">
+                      {selectedDiv.reproSteps}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="flex items-center justify-end gap-2 px-3 pb-3">
               <button
                 onClick={() => handleAction(selectedDiv.id, 'mark_intended')}
                 className="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold"

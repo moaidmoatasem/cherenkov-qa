@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card } from '../../ui';
 import { runPipeline, RunPipelineResponse } from '../../../lib/api';
 import { Sparkles, Play, Terminal } from 'lucide-react';
@@ -24,6 +25,17 @@ export const IntentAuthoringPanel: React.FC<IntentAuthoringPanelProps> = ({
   const [currentTargetUrl, setCurrentTargetUrl] = useState(targetUrl);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // J3: deep-link prefill. e.g. /authoring?intent=<pattern> from the
+  // Knowledge Explorer "Author this check" CTA.
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const fromIntent = searchParams.get('intent');
+    if (fromIntent) {
+      setIntent(fromIntent);
+      setError(null);
+    }
+  }, [searchParams]);
 
   const handleRunIntent = async (e: React.FormEvent) => {
     e.preventDefault();
