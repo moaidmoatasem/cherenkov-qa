@@ -72,7 +72,7 @@ def _install_skills() -> dict[str, object]:
             "fallback": f"npx skills add {SKILL_REPO}",
         }
     try:
-        proc = subprocess.run(  # noqa: S603 - fixed argv, no shell
+        proc = subprocess.run(
             ["npx", "-y", "skills", "add", SKILL_REPO],
             capture_output=True,
             text=True,

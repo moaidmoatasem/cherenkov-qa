@@ -45,8 +45,8 @@ TOPICS: dict[str, Topic] = {
             "cherenkov check-stale --spec openapi.yaml --json",
         ],
         "notes": [
-            "The repair loop is gated on the meaningful-assertion check: a test that "
-            "cannot fail a synthesized spec regression does not pass the gate.",
+            "The repair loop is gated on the meaningful-assertion check.",
+            "A test that cannot fail a synthesized spec regression does not pass.",
             "One file per scenario. Filenames derive from the endpoint, not the mutation id.",
             "`check-stale` tells you whether committed tests still match the spec.",
         ],
@@ -59,10 +59,9 @@ TOPICS: dict[str, Topic] = {
             "cherenkov verify --spec openapi.yaml --url URL --health-score",
         ],
         "notes": [
-            "Needs a reachable target: verify aborts with exit 2 on connection failure "
-            "rather than reporting an outage as a clean run.",
-            "Coverage counts endpoints actually probed, so a clean target does not read "
-            "as untested.",
+            "Needs a reachable target: exits 2 on connection failure.",
+            "An outage is never reported as a clean run.",
+            "Coverage counts endpoints actually probed, so a clean target is not untested.",
             "An endpoint whose path parameters cannot be filled is reported, not skipped silently.",
         ],
     },
@@ -70,14 +69,13 @@ TOPICS: dict[str, Topic] = {
         "summary": "Catch a test suite that passes without proving anything.",
         "commands": [
             "cherenkov check-suite --candidate tests/suite.py --baseline known_good.py",
-            "cherenkov check-suite --candidate tests/suite.py --baseline known_good.py --fail-on-finding",
+            "cherenkov check-suite -c tests/suite.py -b known_good.py --fail-on-finding",
             "cherenkov audit --target URL --spec openapi.yaml --test-cmd \"pytest tests/\"",
         ],
         "notes": [
-            "Detects WEAKENED, DELETED and HALLUCINATED assertions — the three ways an "
-            "AI-written suite goes green while the system is broken.",
-            "This is the check no other test tool runs. If you only wire one gate into "
-            "CI, wire this one.",
+            "Detects WEAKENED, DELETED and HALLUCINATED assertions.",
+            "Those are the three ways an AI-written suite goes green on a broken system.",
+            "This is the check no other test tool runs. Wire this one into CI first.",
             "`--fail-on-finding` is the CI mode; the default reports without failing.",
         ],
     },
@@ -89,10 +87,10 @@ TOPICS: dict[str, Topic] = {
             "cherenkov certify --spec openapi.yaml --url URL --compliance",
         ],
         "notes": [
-            "The certificate format is an open spec (docs/specs/CHERENKOV_CERTIFICATE.md), "
-            "not a proprietary artifact.",
-            "`--compliance` maps the result onto ISO/IEC 42001, the OWASP AI Testing Guide "
-            "and the OWASP LLM Top 10.",
+            "The format is an open spec: docs/specs/CHERENKOV_CERTIFICATE.md.",
+            "It is not a proprietary artifact.",
+            "`--compliance` maps onto ISO/IEC 42001 and the OWASP AI Testing Guide.",
+            "It also covers the OWASP Top 10 for LLM Applications.",
             "certify reuses a single probe sweep; it does not re-probe per report flag.",
         ],
     },
@@ -103,8 +101,8 @@ TOPICS: dict[str, Topic] = {
             "cd standalone && npm install && npx playwright test",
         ],
         "notes": [
-            "This is a supported exit, not a packaging step. Zero lock-in is an invariant: "
-            "ejected output contains no `cherenkov` import and runs on vanilla Playwright.",
+            "A supported exit, not a packaging step. Zero lock-in is an invariant.",
+            "Ejected output has no `cherenkov` import and runs on vanilla Playwright.",
             "Eject before you decide whether to keep using CHERENKOV, not after.",
         ],
     },
@@ -118,8 +116,8 @@ TOPICS: dict[str, Topic] = {
         "notes": [
             "A journey is one YAML file the engine executes and the dashboard renders.",
             "A mutating chain refuses to run without --allow-mutations.",
-            "Teardown runs on success, failure and exception, and reports failures rather "
-            "than swallowing them.",
+            "Teardown runs on success, failure and exception.",
+            "Teardown failures are reported, never swallowed.",
         ],
     },
     "mcp": {
@@ -130,23 +128,21 @@ TOPICS: dict[str, Topic] = {
             "cherenkov agent init",
         ],
         "notes": [
-            "The tool list in manifest.json is generated from handlers.TOOLS; regenerate "
-            "with scripts/gen_manifest.py rather than editing it by hand.",
-            "`agent init` is the faster path for a coding agent: it installs the skills "
-            "and writes a discovery block into AGENTS.md.",
+            "manifest.json is generated from handlers.TOOLS — never edit it by hand.",
+            "Regenerate with scripts/gen_manifest.py.",
+            "`agent init` is the faster path: it installs the skills and writes AGENTS.md.",
         ],
     },
     "ci": {
         "summary": "Run CHERENKOV as a gate in a pipeline.",
         "commands": [
             "cherenkov validate --target URL --spec openapi.yaml --fail-on-drift --quiet",
-            "cherenkov check-suite --candidate tests/suite.py --baseline known_good.py --fail-on-finding",
+            "cherenkov check-suite -c tests/suite.py -b known_good.py --fail-on-finding",
             "cherenkov validate --target URL --spec openapi.yaml --json",
         ],
         "notes": [
             "A GitHub Action ships in action.yml.",
-            "Use --json for anything a script or agent has to read; exit codes are stable, "
-            "human text is not.",
+            "Use --json for anything a script reads. Exit codes are stable; text is not.",
             "Prefer --fail-on-drift / --fail-on-finding over parsing stdout to decide pass/fail.",
         ],
     },
@@ -158,12 +154,10 @@ TOPICS: dict[str, Topic] = {
             "cherenkov docs --json",
         ],
         "notes": [
-            "Run once per repository. It installs the public skills and writes a "
-            "CHERENKOV block into AGENTS.md, so an agent with no prior context can "
-            "find the tool.",
+            "Run once per repository. Installs the skills and writes a CHERENKOV block.",
+            "That block is how an agent with no prior context finds the tool.",
             "It is idempotent: re-running replaces the block rather than appending.",
-            "Nothing is sent anywhere. Both steps are local file operations plus an "
-            "optional `npx skills add`.",
+            "Nothing is sent anywhere: local file writes plus an optional `npx skills add`.",
         ],
     },
 }

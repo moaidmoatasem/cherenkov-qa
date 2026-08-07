@@ -23,7 +23,6 @@ from cherenkov.cli.commands.agent_cmd import (
 )
 from cherenkov.cli.commands.docs_cmd import TOPICS, docs_cmd
 
-
 # --------------------------------------------------------------------------- #
 # AGENTS.md block
 # --------------------------------------------------------------------------- #
@@ -136,6 +135,20 @@ def test_docs_json_carries_every_topic_with_a_stable_shape():
         assert set(entry) == {"topic", "summary", "commands", "notes"}
         assert entry["commands"], f"{entry['topic']} lists no commands"
         assert entry["notes"], f"{entry['topic']} carries no notes — the notes are the point"
+
+
+def test_no_note_is_a_silently_merged_pair():
+    """CodeQL flagged implicit string concatenation across these lists, and it was
+    right about the risk: `notes` is a list of strings, so a dropped comma merges
+    two entries into one without any syntax error. The flag guard below only reads
+    `commands`, so nothing else here would notice. A merged pair is far longer than
+    any single note and shows up as two sentences welded together."""
+    for topic, entry in TOPICS.items():
+        for note in entry["notes"]:
+            assert len(note) <= 100, (
+                f"{topic}: note is {len(note)} chars — a dropped comma may have "
+                f"merged two entries: {note!r}"
+            )
 
 
 @pytest.mark.parametrize("name", sorted(TOPICS))
