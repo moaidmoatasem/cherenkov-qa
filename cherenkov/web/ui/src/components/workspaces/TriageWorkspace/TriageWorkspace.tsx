@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import HitlReviewQueue from './HitlReviewQueue';
 import DivergenceTable from './DivergenceTable';
 import SpecVsRealityDiffViewer from './SpecVsRealityDiffViewer';
+import HealingSuggestionsPanel from './HealingSuggestionsPanel';
 import { PageHeader } from '../../ui/PageHeader';
 import { Divergence } from '../../../types';
 
@@ -28,6 +29,9 @@ export const TriageWorkspace: React.FC = () => {
 
       {/* 3. Spec vs Reality Payload Diff Viewer */}
       <SpecVsRealityDiffViewer divergenceId={selectedDivergence?.id} />
+
+      {/* 4. Suggest-Only Healing */}
+      <HealingSuggestionsPanel />
     </div>
   );
 };

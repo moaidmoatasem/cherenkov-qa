@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Card, Skeleton, EmptyState } from '../../ui';
+import React, { useState, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Card, Skeleton, EmptyState, useToast } from '../../ui';
 import { fetchDivergences, actOnDivergence } from '../../../lib/api';
 import { Divergence } from '../../../types';
 import { Zap, AlertTriangle, CheckCircle2, XCircle, ShieldAlert, RefreshCw } from 'lucide-react';
@@ -14,34 +15,23 @@ interface DivergenceTableProps {
 }
 
 export const DivergenceTable: React.FC<DivergenceTableProps> = ({ onSelectDivergence }) => {
-  const [divergences, setDivergences] = useState<Divergence[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [severityFilter, setSeverityFilter] = useState<string>('all');
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  const loadDivergences = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await fetchDivergences();
-      setDivergences(data || []);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadDivergences();
-  }, []);
+  const { data: divergences = [], isLoading, isFetching, error, refetch } = useQuery<Divergence[]>({
+    queryKey: ['divergences'],
+    queryFn: fetchDivergences,
+  });
 
   const handleAction = async (divergenceId: string, action: 'close_with_test' | 'mark_intended' | 'reject') => {
     try {
       await actOnDivergence(divergenceId, action);
-      setDivergences((prev) => prev.filter((d) => d.id !== divergenceId));
+      const label = action === 'mark_intended' ? 'marked as intended' : 'closed with test';
+      toast(`Divergence ${divergenceId} ${label}`, 'success');
+      queryClient.invalidateQueries({ queryKey: ['divergences'] });
     } catch (err) {
-      setError((err as Error).message);
+      toast(`Action failed: ${(err as Error).message}`, 'danger');
     }
   };
 
@@ -75,11 +65,11 @@ export const DivergenceTable: React.FC<DivergenceTableProps> = ({ onSelectDiverg
             <option value="low">Low</option>
           </select>
           <button
-            onClick={loadDivergences}
+            onClick={() => refetch()}
             className="p-1.5 rounded-lg border border-border-subtle hover:border-border-strong text-text-muted hover:text-text-primary transition"
             title="Refresh Divergences"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
@@ -92,7 +82,7 @@ export const DivergenceTable: React.FC<DivergenceTableProps> = ({ onSelectDiverg
         </div>
       ) : error ? (
         <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-400">
-          Failed to load divergences: {error}
+          Failed to load divergences: {(error as Error)?.message}
         </div>
       ) : filteredDivergences.length === 0 ? (
         <EmptyState

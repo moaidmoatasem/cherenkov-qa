@@ -1,0 +1,116 @@
+from __future__ import annotations
+
+import os
+import sqlite3
+
+os.environ.setdefault("CHERENKOV_ENV", "development")
+
+from fastapi.testclient import TestClient
+
+from cherenkov.web.api import app
+
+client = TestClient(app, raise_server_exceptions=False)
+
+
+def _insert_verdict(db_path: str, verdict_id: str, failure_class: str, endpoint: str, detail: str) -> None:
+    conn = sqlite3.connect(db_path)
+    try:
+        conn.execute(
+            "INSERT INTO verdicts (id, hypothesis_id, outcome, endpoint, failure_class, "
+            "source, detail, timestamp, schema_version) "
+            "VALUES (?, ?, ?, ?, ?, 'test', ?, ?, 1)",
+            (verdict_id, "hyp-1", "REJECTED", endpoint, failure_class, detail, 1_700_000_000),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _fake_store(db_path: str):
+    from cherenkov.reflector.store import VerdictStore
+
+    class _FakeVerdictStore(VerdictStore):
+        def __init__(self, db_path: str | None = None, run_id: str | None = None):
+            super().__init__(db_path=db_path or _fake_store.db_path, run_id=run_id)
+
+    _fake_store.db_path = db_path
+    return _FakeVerdictStore
+
+
+def _make_store(monkeypatch, tmp_path, verdict_id, failure_class, endpoint="/pets", detail="401 on refresh"):
+    from cherenkov.reflector import store as store_mod
+
+    db_path = str(tmp_path / "verdicts.db")
+    VerdictStore = _fake_store(db_path)
+    store = VerdictStore(db_path=db_path)
+    _insert_verdict(db_path, verdict_id, failure_class, endpoint, detail)
+    monkeypatch.setattr(store_mod, "VerdictStore", VerdictStore)
+    return store
+
+
+def test_auth_expiry_suggestion_uses_the_auth_healer(monkeypatch, tmp_path):
+    _make_store(monkeypatch, tmp_path, "v-auth-1", "AUTH_EXPIRY")
+    r = client.post("/api/v1/healing/suggestions", json={"verdict_id": "v-auth-1"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["healer"] == "AuthExpiryHealer"
+    assert body["endpoint"] == "/pets"
+    assert "[HEALING SUGGESTION] - AUTHENTICATION EXPIRY" in body["suggestion"]
+    assert body["healed"] is False
+
+
+def test_contract_drift_suggestion_is_suggest_only_and_honest(monkeypatch, tmp_path):
+    _make_store(
+        monkeypatch,
+        tmp_path,
+        "v-drift-1",
+        "CONTRACT_DRIFT",
+        endpoint="/pets",
+        detail="added required field 'owner'",
+    )
+    r = client.post("/api/v1/healing/suggestions", json={"verdict_id": "v-drift-1"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["healer"] == "ContractDriftHealer"
+    assert body["failure_class"] == "CONTRACT_DRIFT"
+    assert body["healed"] is False
+    assert body["note"]
+    assert "never auto-applied" in body["suggestion"]
+
+
+def test_unknown_failure_class_falls_back_to_generic_guidance(monkeypatch, tmp_path):
+    _make_store(monkeypatch, tmp_path, "v-other-1", "NETWORK_FLAKY", detail="timeout after 30s")
+    r = client.post("/api/v1/healing/suggestions", json={"verdict_id": "v-other-1"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["healer"] == "GenericHealer"
+    assert body["healed"] is False
+    assert "REVIEW FAILURE" in body["suggestion"]
+
+
+def test_unknown_verdict_404s(monkeypatch, tmp_path):
+    _make_store(monkeypatch, tmp_path, "v-known", "AUTH_EXPIRY")
+    r = client.post("/api/v1/healing/suggestions", json={"verdict_id": "does-not-exist"})
+    assert r.status_code == 404
+
+
+def test_healing_never_reports_an_apply_it_did_not_do(monkeypatch, tmp_path):
+    db_path = str(tmp_path / "verdicts.db")
+    from cherenkov.reflector import store as store_mod
+
+    VerdictStore = _fake_store(db_path)
+    VerdictStore(db_path=db_path)
+    _insert_verdict(db_path, "v-apply-1", "AUTH_EXPIRY", "/secure", "401")
+    monkeypatch.setattr(store_mod, "VerdictStore", VerdictStore)
+
+    r = client.post("/api/v1/healing/suggestions", json={"verdict_id": "v-apply-1"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["healed"] is False
+
+    conn = sqlite3.connect(db_path)
+    try:
+        row = conn.execute("SELECT detail FROM verdicts WHERE id='v-apply-1'").fetchone()
+    finally:
+        conn.close()
+    assert row is not None and row[0] == "401"

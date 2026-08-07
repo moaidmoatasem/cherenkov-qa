@@ -372,6 +372,30 @@ export async function actOnDivergence(
   }
 }
 
+export interface HealingSuggestion {
+  verdict_id: string;
+  endpoint: string;
+  failure_class: string;
+  diagnosis: string;
+  healer: string;
+  suggestion: string;
+  healed: boolean;
+  note?: string;
+}
+
+export async function fetchHealingSuggestion(verdictId: string): Promise<HealingSuggestion> {
+  const res = await fetch(`${API_BASE}/healing/suggestions`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ verdict_id: verdictId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to generate healing suggestion: ${res.status}`);
+  }
+  return res.json();
+}
+
 export async function fetchReviewQueue(status?: string): Promise<ReviewQueueItem[]> {
   const params = status ? `?status=${encodeURIComponent(status)}` : '';
   const res = await fetch(`${API_BASE}/review/queue${params}`);

@@ -4,7 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Card, Skeleton, SeverityPill } from '../../ui';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Card, Skeleton, SeverityPill, useToast } from '../../ui';
 import { fetchDivergences, actOnDivergence } from '../../../lib/api';
 import { Divergence } from '../../../types';
 import { SplitSquareHorizontal, CheckCircle2, XCircle, Code2, Play, RefreshCw } from 'lucide-react';
@@ -14,39 +15,31 @@ interface SpecVsRealityDiffViewerProps {
 }
 
 export const SpecVsRealityDiffViewer: React.FC<SpecVsRealityDiffViewerProps> = ({ divergenceId }) => {
-  const [divergences, setDivergences] = useState<Divergence[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(divergenceId || null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  const loadData = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await fetchDivergences();
-      setDivergences(data || []);
-      if (data && data.length > 0 && !selectedId) {
-        setSelectedId(data[0].id);
-      }
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: divergences = [], isLoading, isFetching, error, refetch } = useQuery<Divergence[]>({
+    queryKey: ['divergences'],
+    queryFn: fetchDivergences,
+  });
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (divergenceId) {
+      setSelectedId(divergenceId);
+    }
+  }, [divergenceId]);
 
   const selectedDiv = divergences.find((d) => d.id === selectedId) || divergences[0];
 
   const handleAction = async (id: string, action: 'close_with_test' | 'mark_intended' | 'reject') => {
     try {
       await actOnDivergence(id, action);
-      setDivergences((prev) => prev.filter((d) => d.id !== id));
+      const label = action === 'mark_intended' ? 'marked as intended' : 'closed with test';
+      toast(`Divergence ${id} ${label}`, 'success');
+      queryClient.invalidateQueries({ queryKey: ['divergences'] });
     } catch (err) {
-      setError((err as Error).message);
+      toast(`Action failed: ${(err as Error).message}`, 'danger');
     }
   };
 
@@ -63,11 +56,11 @@ export const SpecVsRealityDiffViewer: React.FC<SpecVsRealityDiffViewerProps> = (
           </p>
         </div>
         <button
-          onClick={loadData}
+          onClick={() => refetch()}
           className="p-1.5 rounded-lg border border-border-subtle hover:border-border-strong text-text-muted hover:text-text-primary transition"
           title="Refresh Diffs"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
@@ -75,7 +68,7 @@ export const SpecVsRealityDiffViewer: React.FC<SpecVsRealityDiffViewerProps> = (
         <Skeleton className="h-64 w-full rounded-xl" />
       ) : error ? (
         <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-400">
-          Failed to load diffs: {error}
+          Failed to load diffs: {(error as Error)?.message}
         </div>
       ) : !selectedDiv ? (
         <div className="p-6 text-center text-xs text-text-muted font-mono">
