@@ -246,13 +246,13 @@ HITL item: ck_1bc8ef7a-39c1-4b10-a9fa-80e98ffb191a
 **[Action: Type review web launch command.]**
 
 ```bash
-./bin/cherenkov review --web --demo
+./bin/cherenkov review --demo
 ```
 
-**[Visual: Switch view to browser displaying the Horizon V Review UI dashboard showing the approved item in the history and interactive metrics.]**
+**[Visual: Switch view to browser displaying the CHERENKOV Dashboard, specifically focusing on the Triage (Kanban) workspace showing divergence claims and evidence.]**
 
 **Presenter:**
-"This brings up our pre-built web dashboard. Non-technical QA engineers can review pending tests, look at payload diffs, and classify anomalies visually."
+"This brings up our pre-built web dashboard. QA engineers can manage their work across the 5-hub workspace, author test journeys, triage divergence claims in the Kanban view, and inspect evidence payloads."
 
 ---
 

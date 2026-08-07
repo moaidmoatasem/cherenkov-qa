@@ -92,6 +92,19 @@ def _settings_payload(settings) -> dict:
             "model": settings.VLM_LOCALAI_MODEL,
             "ocr_enabled": settings.OCR_ENABLED,
         },
+        "ui": {
+            "density": settings.UI_DENSITY,
+            "motion": settings.UI_MOTION,
+        },
+        "copilot": {
+            "autonomy": settings.COPILOT_AUTONOMY,
+        },
+        "substrate": {
+            "budgets": {
+                "max_cost_usd_per_run": settings.SUBSTRATE_MAX_COST_USD_PER_RUN,
+                "max_latency_ms": settings.SUBSTRATE_MAX_LATENCY_MS,
+            }
+        }
     }
 
 
@@ -118,6 +131,27 @@ def _persist_settings_to_env(body: dict) -> None:
             _write_env_var("CHERENKOV_AIRLLM_COMPRESSION", str(airllm["compression"]))
         if "layer_shards_path" in airllm:
             _write_env_var("CHERENKOV_AIRLLM_LAYER_SHARDS_PATH", str(airllm["layer_shards_path"]))
+
+    ui = body.get("ui")
+    if isinstance(ui, dict):
+        if "density" in ui:
+            _write_env_var("CHERENKOV_UI_DENSITY", str(ui["density"]))
+        if "motion" in ui:
+            _write_env_var("CHERENKOV_UI_MOTION", str(ui["motion"]))
+
+    copilot = body.get("copilot")
+    if isinstance(copilot, dict):
+        if "autonomy" in copilot:
+            _write_env_var("CHERENKOV_COPILOT_AUTONOMY", str(copilot["autonomy"]))
+
+    substrate = body.get("substrate")
+    if isinstance(substrate, dict):
+        budgets = substrate.get("budgets")
+        if isinstance(budgets, dict):
+            if "max_cost_usd_per_run" in budgets:
+                _write_env_var("CHERENKOV_SUBSTRATE_MAX_COST_USD_PER_RUN", str(budgets["max_cost_usd_per_run"]))
+            if "max_latency_ms" in budgets:
+                _write_env_var("CHERENKOV_SUBSTRATE_MAX_LATENCY_MS", str(budgets["max_latency_ms"]))
 
 
 @router.get("/api/v1/settings")
@@ -155,6 +189,26 @@ async def update_settings(body: dict, _auth=Depends(verify_api_key), _role=Depen
         for key in ("enabled", "model", "compression", "layer_shards_path"):
             if key in airllm:
                 payload["airllm"][key] = airllm[key]
+
+    ui = body.get("ui")
+    if isinstance(ui, dict):
+        for key in ("density", "motion"):
+            if key in ui:
+                payload["ui"][key] = str(ui[key])
+
+    copilot = body.get("copilot")
+    if isinstance(copilot, dict):
+        if "autonomy" in copilot:
+            payload["copilot"]["autonomy"] = str(copilot["autonomy"])
+
+    substrate = body.get("substrate")
+    if isinstance(substrate, dict):
+        budgets = substrate.get("budgets")
+        if isinstance(budgets, dict):
+            if "max_cost_usd_per_run" in budgets:
+                payload["substrate"]["budgets"]["max_cost_usd_per_run"] = float(budgets["max_cost_usd_per_run"])
+            if "max_latency_ms" in budgets:
+                payload["substrate"]["budgets"]["max_latency_ms"] = int(budgets["max_latency_ms"])
     return payload
 
 

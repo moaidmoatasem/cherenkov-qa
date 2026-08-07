@@ -6,13 +6,13 @@ import time
 
 import requests
 from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
+from pydantic_settings import BaseSettings, SettingsConfigDict, PydanticBaseSettingsSource
+from typing import Any
 from cherenkov.core.errors import get_logger
 
 
 class CherenkovSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')
+    model_config = SettingsConfigDict(env_file=('.env', '.env.test'), env_file_encoding='utf-8', extra='ignore')
 
     PROVIDER: str = Field(default='ollama', validation_alias='PROVIDER')
     OLLAMA_URL: str = Field(default='http://localhost:11434/api/generate', validation_alias='OLLAMA_URL')
@@ -56,6 +56,12 @@ class CherenkovSettings(BaseSettings):
 
     CORPUS_OPT_IN: bool = Field(default=False, validation_alias='CHERENKOV_CORPUS_OPT_IN')
     CORPUS_PATH: str = Field(default=os.path.expanduser('~/.cherenkov/corpus.jsonl'), validation_alias='CHERENKOV_CORPUS_PATH')
+
+    UI_DENSITY: str = Field(default='comfortable', validation_alias='CHERENKOV_UI_DENSITY')
+    UI_MOTION: str = Field(default='system', validation_alias='CHERENKOV_UI_MOTION')
+
+    SUBSTRATE_MAX_COST_USD_PER_RUN: float = Field(default=0.0, validation_alias='CHERENKOV_SUBSTRATE_MAX_COST_USD_PER_RUN')
+    SUBSTRATE_MAX_LATENCY_MS: int = Field(default=120000, validation_alias='CHERENKOV_SUBSTRATE_MAX_LATENCY_MS')
 
     COPILOT_AUTONOMY: str = Field(default='assisted', validation_alias='CHERENKOV_COPILOT_AUTONOMY')
     EXPLORER_SLOW_MS: int = Field(default=2000, validation_alias='CHERENKOV_EXPLORER_SLOW_MS')
@@ -128,6 +134,57 @@ class CherenkovSettings(BaseSettings):
     OTEL_ENVIRONMENT: str = Field(default='production', validation_alias='CHERENKOV_OTEL_ENVIRONMENT')
 
     OUTPUT_DIR: str = Field(default='output', validation_alias='CHERENKOV_OUTPUT_DIR')
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        class TomlSource(PydanticBaseSettingsSource):
+            def get_field_value(self, field, field_name: str) -> tuple[Any, str, bool]:
+                return None, "", False
+            def __call__(self) -> dict[str, Any]:
+                try:
+                    import tomllib
+                    with open('cherenkov.toml', 'rb') as f:
+                        toml_data = tomllib.load(f)
+                except Exception:
+                    return {}
+                mapped = {}
+                sub = toml_data.get('substrate', {})
+                if 'egress' in sub: mapped['EGRESS'] = sub['egress']
+                tiers = sub.get('tiers', {})
+                if 'small' in tiers:
+                    if 'provider' in tiers['small']: mapped['TIER_SMALL_PROVIDER'] = tiers['small']['provider']
+                    if 'model' in tiers['small']: mapped['TIER_SMALL_MODEL'] = tiers['small']['model']
+                if 'deep' in tiers:
+                    if 'provider' in tiers['deep']: mapped['TIER_DEEP_PROVIDER'] = tiers['deep']['provider']
+                    if 'model' in tiers['deep']: mapped['TIER_DEEP_MODEL'] = tiers['deep']['model']
+                if 'vision' in tiers:
+                    if 'provider' in tiers['vision']: mapped['TIER_VISION_PROVIDER'] = tiers['vision']['provider']
+                    if 'model' in tiers['vision']: mapped['TIER_VISION_MODEL'] = tiers['vision']['model']
+                budgets = sub.get('budgets', {})
+                if 'max_cost_usd_per_run' in budgets: mapped['SUBSTRATE_MAX_COST_USD_PER_RUN'] = budgets['max_cost_usd_per_run']
+                if 'max_latency_ms' in budgets: mapped['SUBSTRATE_MAX_LATENCY_MS'] = budgets['max_latency_ms']
+                copilot = toml_data.get('copilot', {})
+                if 'autonomy' in copilot: mapped['COPILOT_AUTONOMY'] = copilot['autonomy']
+                if 'mentor_enabled' in copilot: mapped['COPILOT_MENTOR_ENABLED'] = copilot['mentor_enabled']
+                cert = toml_data.get('certification', {})
+                if 'gold_set_path' in cert: mapped['CERTIFICATION_GOLD_SET_PATH'] = cert['gold_set_path']
+                if 'min_faithfulness' in cert: mapped['CERTIFICATION_MIN_FAITHFULNESS'] = cert['min_faithfulness']
+                return mapped
+
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            TomlSource(settings_cls),
+            file_secret_settings,
+        )
 
     @property
     def TIERS(self) -> dict[str, dict[str, str]]:  # noqa: N802

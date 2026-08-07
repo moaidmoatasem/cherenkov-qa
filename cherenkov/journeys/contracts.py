@@ -43,9 +43,15 @@ class JourneyStep(BaseModel):
     config: dict = Field(default_factory=dict)
 
 
+import warnings
+
 class JourneyDefinition(BaseModel):
     id: str
     version: int = 1
+    
+    def __init__(self, **data):
+        warnings.warn("JourneyDefinition is deprecated in favor of the visual Flow Builder.", DeprecationWarning, stacklevel=2)
+        super().__init__(**data)
     label: str
     description: str = ""
     steps: list[JourneyStep]

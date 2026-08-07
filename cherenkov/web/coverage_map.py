@@ -62,24 +62,66 @@ def build_coverage_map(store=None) -> dict[str, Any]:
         ],
       }
     """
+    from cherenkov.persistence.run_store import get_run_store, spec_hash
+    from cherenkov.core.config_loader import load_effective_config
+    from cherenkov.cli.loaders import load_spec
+    from cherenkov.divergence.coverage import _extract_endpoints
+    import json
+
     findings = divergence_store.list_divergences()
 
+    run_store = store or get_run_store()
+    
+    target_hash = ""
+    records = run_store.list(limit=1)
+    if records:
+        target_hash = records[0].spec_hash
+
+    spec_dict = None
+    if target_hash:
+        cfg = load_effective_config()
+        for path in cfg.get("sources.openapi", []):
+            candidate = load_spec(path)
+            if candidate:
+                h = spec_hash(json.dumps(candidate, sort_keys=True).encode())
+                if h == target_hash:
+                    spec_dict = candidate
+                    break
+
+    endpoints_from_spec = []
+    if spec_dict:
+        endpoints_from_spec = _extract_endpoints(spec_dict)
+
     per_endpoint: dict[str, dict[str, Any]] = {}
+    
+    # Pre-populate all endpoints from the spec as untested
+    for method, path, _ in endpoints_from_spec:
+        key = f"{method.upper()} {path}"
+        per_endpoint[key] = {
+            "method": method.upper(),
+            "path": path,
+            "tested": False,
+            "divergence_count": 0,
+            "active_severity": None,
+        }
+
     for f in findings:
         endpoint = f.get("endpoint", "")
         if not endpoint:
             continue
         method, path = _parse_endpoint(endpoint)
-        key = f"{method} {path}"
+        key = f"{method.upper()} {path}"
         entry = per_endpoint.setdefault(
             key,
             {
-                "method": method,
+                "method": method.upper(),
                 "path": path,
+                "tested": False,
                 "divergence_count": 0,
                 "active_severity": None,
             },
         )
+        entry["tested"] = True
         entry["divergence_count"] += 1
         severity = f.get("severity")
         status = f.get("status", "")
@@ -97,7 +139,7 @@ def build_coverage_map(store=None) -> dict[str, Any]:
         {
             "method": e["method"],
             "path": e["path"],
-            "tested": True,
+            "tested": e["tested"],
             "divergenceCount": e["divergence_count"],
             "activeSeverity": e["active_severity"],
         }
