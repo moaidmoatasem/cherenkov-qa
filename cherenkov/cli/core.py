@@ -23,12 +23,14 @@ def _register_commands() -> None:
         review_cmd,
         visual_cmd,
     )
+    from cherenkov.cli.commands.agent_cmd import agent_cmd
     from cherenkov.cli.commands.audit import audit_cmd
     from cherenkov.cli.commands.bench import bench_cmd
     from cherenkov.cli.commands.certify import certify_cmd
     from cherenkov.cli.commands.check_stale import check_stale_cmd
     from cherenkov.cli.commands.check_suite import check_suite_cmd
     from cherenkov.cli.commands.demo_cmd import demo_cmd
+    from cherenkov.cli.commands.docs_cmd import docs_cmd
     from cherenkov.cli.commands.drift_cmd import drift_cmd
     from cherenkov.cli.commands.enterprise import enterprise_cmd
     from cherenkov.cli.commands.epoch import (
@@ -101,6 +103,8 @@ def _register_commands() -> None:
         (demo_cmd, "demo"),
         (eval_cmd, "eval"),
         (examples_cmd, "examples"),
+        (docs_cmd, "docs"),
+        (agent_cmd, "agent"),
         (routine_cmd, "routine"),
         (teleport_cmd, "teleport"),
         (enterprise_cmd, "enterprise"),

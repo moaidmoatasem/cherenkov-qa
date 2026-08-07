@@ -10,6 +10,18 @@
 
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
 
+## Agent-discoverability surface shipped (2026-08-07) — Phase A of the TesterArmy teardown
+
+`docs/reviews/TESTERARMY_TEARDOWN_2026-08.md` §6 Phase A is **delivered**, except A3 which is partial. This is M2 work ("installable by a stranger") and it was the one axis where a pre-1.0 competitor was ahead of us.
+
+| Item | State | What shipped |
+|---|---|---|
+| **A1** `cherenkov agent init` | **done** | Installs the public skills (`npx skills add moaidmoatasem/cherenkov-qa`) and writes an idempotent `<!-- CHERENKOV:START -->` block into the host repo's `AGENTS.md`. `--path`, `--skip-skills`, `--skip-agents-md`, `--json`. A missing or failing `npx` degrades to a printed fallback — **discovery must not hinge on Node being installed**, because the AGENTS.md half is the half that matters |
+| **A2** `cherenkov docs [<topic>]` | **done** | 10 topics, each `{topic, summary, commands, notes}`. `--json` for the lot or one topic; unknown topic exits non-zero listing the real ones |
+| **A3** `--json` on the machine-facing commands | **partial — `check-suite` only** | `check-suite --json` puts `{candidate, findings, clean}` on stdout and composes with `--fail-on-finding`. **`verify`, `certify`, `audit` still have no stdout JSON** — `verify`/`certify` can already serialize to a *file* via `--output`, so the remaining work is splitting the builders from the writers and suppressing the human output, which is a real refactor and deserves its own PR rather than being bolted onto this one |
+
+**The trap this work walked into, recorded because the next agent will hit it too:** the first draft of the `docs` topics cited **19 flags that do not exist** (`verify --target`, `check-suite --tests`, `generate --output`, …) — written from what the flags *ought* to be rather than what they are. A docs surface built for agents that lies is worse than no docs: the agent burns a turn on a usage error and cannot tell a typo from version skew. `tests/unit/test_agent_and_docs_cmds.py::test_documented_commands_and_flags_all_exist` now resolves every documented invocation against the live Click tree (including `secondary_opts`, so `--no-repair` resolves). It was verified non-vacuous by injecting a fake flag and watching it fail. **Do not add a docs topic without running that test.**
+
 ## CI green-up (2026-08-07) — five red gates, two of which had never run
 
 `main` at `4fa3af9` (#928) was red on five checks. Four are fixed here; the fifth is an owner action. Two of them were not *failing* checks at all — they were checks that **had never executed**, which is the more dangerous shape: a gate that reports red for an infrastructure reason gets read as noise, and the thing it was supposed to guard goes unguarded.
