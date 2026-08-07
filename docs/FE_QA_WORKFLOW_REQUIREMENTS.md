@@ -576,18 +576,24 @@ const withFallback = async<T>(apiCall: () => Promise<T>, mockData: T): Promise<T
 
 ## 19. Defect Mapping (FE_RECOMMENDATIONS.md → Requirements)
 
-| Def in FE_RECOMMENDATIONS | Req Section | Fix Description | Priority |
-|--------------------------|-------------|---------------|----------|
-| D-1 `ReviewScreen` setState in render | - | Move parent updates to `useEffect` | MUST (correctness) |
-| D-2 `EjectScreen` false success | FE-R01, §6.1 | Honor backend error, show honest state | MUST (integrity) |
-| D-3 `actOnDivergence` swallows errors | J2-C | Add rollback + toast on failure | MUST (integrity) |
-| D-4 `AuthorScreen` mock replay | J1-B | Wire to real `runPipeline()` + step preview | MUST (flagship) |
-| D-5 `HealingScreen` no-op apply | - | Wire to `validateSuite()` stub | SHOULD |
-| D-6 TopBar telemetry fiction | - | Label as "Demo" or back with `/cost` | MUST (honesty) |
-| D-7 `SetupScreen` raw 400 logs | - | Use toast path, `console.debug` | SHOULD |
-| D-9 `OfflineOverlay` retry path | §16 | Ensure `refresh` re-runs `fetchHealth` | MUST (UX) |
-| N-1 Breadcrumbs | - | Add `Breadcrumbs` primitive below TopBar | SHOULD |
-| N-4 Recent items in ⌘K | - | Extend `CommandPalette` with localStorage history | SHOULD |
+> **Status (2026-08):** all rows below are **resolved in the live tree** — the
+> flat 19-screen app was re-architected into five workspaces
+> (branch `claude/user-journeys-revamp-cud0wc`), which removed the offending
+> screens or replaced them with honest implementations. Raw evidence is in
+> [`docs/dashboard/FE_RECOMMENDATIONS.md`](dashboard/FE_RECOMMENDATIONS.md) §7.
+
+| Def in FE_RECOMMENDATIONS | Req Section | Fix Description | Priority | Status |
+|--------------------------|-------------|---------------|----------|--------|
+| D-1 `ReviewScreen` setState in render | - | Move parent updates to `useEffect` | MUST (correctness) | ✅ screen deleted (HITL = `HitlReviewQueue`) |
+| D-2 `EjectScreen` false success | FE-R01, §6.1 | Honor backend error, show honest state | MUST (integrity) | ✅ `EjectSuitePanel` (Phase 5) |
+| D-3 `actOnDivergence` swallows errors | J2-C | Add rollback + toast on failure | MUST (integrity) | ✅ `DivergenceTable.tsx:136-145` |
+| D-4 `AuthorScreen` mock replay | J1-B | Wire to real `runPipeline()` + step preview | MUST (flagship) | ✅ `IntentAuthoringPanel` |
+| D-5 `HealingScreen` no-op apply | - | Wire to `validateSuite()` stub | SHOULD | ✅ removed (D7 suggest-only) |
+| D-6 TopBar telemetry fiction | - | Label as "Demo" or back with `/cost` | MUST (honesty) | ✅ `fetchMetricsData` → `/metrics` |
+| D-7 `SetupScreen` raw 400 logs | - | Use toast path, `console.debug` | SHOULD | ✅ `SpecIngestPanel` toast path |
+| D-9 `OfflineOverlay` retry path | §16 | Ensure `refresh` re-runs `fetchHealth` | MUST (UX) | ✅ `useHealth.ts` `refreshCount` |
+| N-1 Breadcrumbs | - | Add `Breadcrumbs` primitive below TopBar | SHOULD | ✅ Phase 3 |
+| N-4 Recent items in ⌘K | - | Extend `CommandPalette` with localStorage history | SHOULD | ✅ Phase 3 (`recentWorkspaces`) |
 
 ---
 

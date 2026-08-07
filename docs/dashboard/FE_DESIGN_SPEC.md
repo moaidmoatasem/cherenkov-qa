@@ -117,6 +117,12 @@ Junior opens *Memory & Pairing* → picks a context (e.g. "new list endpoint") �
 8. **Provenance everywhere** — `[spec|code|traffic|db]` chips on any claim/finding/test → trust at a glance.
 9. **Run drawer** — any long run is backgroundable and resumable.
 
+> **Implementation status (branch `claude/user-journeys-revamp-cud0wc`):** items 1-3
+> (⌘K, autonomy ladder, keyboard map), 7 (density toggle) and 8 (provenance) are
+> shipped. Density + the reduced-motion override (§5 rule 4) are exposed as the
+> "Accessibility & Display" Settings panel (`A11ySettings.tsx`, commit `c30f8618`)
+> and every modal/drawer now runs a real focus trap (`useFocusTrap.ts`).
+
 ---
 
 ## 10. Figma handoff — frames to create (when on an edit/Full seat)

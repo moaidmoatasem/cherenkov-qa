@@ -67,3 +67,42 @@ These routes expand capabilities safely without altering existing paths:
 - **Progressive Loading & Streaming:** Ensure perceived speed (FMP < 1s) and stream step rows as they execute rather than waiting for full completion.
 - **Offline & Cost UX:** Deploy an amber offline banner, handle inference timeouts gracefully, and implement explicit blast-radius cost confirmations before expensive generative tasks.
 - **WCAG AA Compliance:** Ensure contrast minimums (cyan-on-dark), rigorous focus management inside modals/drawers, and accurate heading hierarchies across the app.
+
+---
+
+## 7. Implementation Status (workspace revamp — branch `claude/user-journeys-revamp-cud0wc`)
+
+The dashboard has since been re-architected from the flat 19-screen app this report
+was written against into **five workspaces** (Dashboard, Authoring, Triage,
+Intelligence, Settings). Every item above was verified against the live tree in
+August 2026; findings are code refs, not claims.
+
+**§1 Defects & Honesty (D-1…D-10):**
+| Def | Status | Raw evidence |
+|---|---|---|
+| D-1 `ReviewScreen` setState-in-render | ✅ resolved | `ReviewScreen` no longer exists; HITL is `HitlReviewQueue` (`TriageWorkspace/HitlReviewQueue.tsx`) |
+| D-2 `EjectScreen` false success | ✅ resolved | `EjectSuitePanel.tsx` reports backend error via toast; Phase 5 e2e verifies honest success/failure |
+| D-3 `actOnDivergence` swallows errors | ✅ resolved | `TriageWorkspace/DivergenceTable.tsx:136-145` — `try/catch` → `toast(..., 'danger')` rollback + invalidation |
+| D-4 `AuthorScreen` mock replay | ✅ resolved | `IntentAuthoringPanel.tsx` drives `runPipeline()`; `live-pipeline-monitor` streams steps |
+| D-5 `HealingScreen` no-op apply | ✅ resolved | Healing screen removed; D7 suggest-only healing retained (reports/suggestions only, never auto-applies) |
+| D-6 TopBar telemetry fiction | ✅ resolved | `AppHeader.tsx` token/cost come from `fetchMetricsData()` → `GET /metrics` |
+| D-7 `SetupScreen` raw 400 logs | ✅ resolved | `SetupScreen` gone; `SpecIngestPanel.tsx` surfaces errors via toast |
+| D-8 hardcoded `PORT 3000` | ✅ resolved | `Sidebar.tsx` status string removed from live tree (grep: no `PORT 3000` / `VITE_PORT` in `src/`) |
+| D-9 `OfflineOverlay` retry | ✅ resolved | `useHealth.ts` `refresh()` bumps `refreshCount`, re-running the probe and updating `lastCheckedAt` |
+| D-10 `Notifications` bell fake text | ✅ resolved | Bell removed from live tree (no `Notifications` UI in `src/`) |
+
+**§2 Navigation / IA (N-1…N-8):** all resolved — `Breadcrumbs` primitive, ⌘K
+recents (`CommandPalette` `recentWorkspaces`, N-4), keyboard-map overlay (N-6),
+workspace-switcher honesty title (N-8), routing metadata in `journey/config.tsx`
+(N-7). Commit `46b022a8` (Phase 3).
+
+**§3 Journeys (J1-J3):** all resolved — intent authoring + vision fallback
+banner + react-window virtualization + spec-vs-reality diff viewer + knowledge
+"Author this check" CTA + decay strip. Commit `2bd248d2` (Phase 4).
+
+**§6 Global UX / Motion / A11y / Density:** resolved in Phase 7 (`c30f8618`) —
+`A11ySettings.tsx` (motion override `system|reduce|full` + density
+`comfortable|compact`, both persisted), `useFocusTrap.ts` real focus management
+in Drawer/CommandPalette/KeyboardMapOverlay, global `prefers-reduced-motion` +
+`html[data-motion="reduce"]` CSS guards. Covered by `tests/e2e/ux-preferences.spec.ts`
+(5 tests) and `tests/a11y.spec.ts` (axe).
