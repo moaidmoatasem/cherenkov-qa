@@ -50,18 +50,6 @@ class NewProjectPayload(BaseModel):
     repo_type: str = 'new'
     repo_path: str = ''
 
-_settings: dict = {
-    "target": {"url": "http://localhost:8000", "auth_header": ""},
-    "engine": {
-        "model_tier": "local", "enable_demo_mode": False,
-        "execution_budget": 100, "workers": 4,
-    },
-    "security": {"egress_policy": "strict", "auth_secret": ""},
-    "ui": {"density": "comfortable", "reduced_motion": False},
-}
-
-_SETTINGS_PROTECTED_FIELDS = {"security": {"auth_secret", "egress_policy"}}
-
 _ENV_PATH = Path(os.getcwd()) / ".env"
 
 
@@ -87,10 +75,38 @@ def _write_env_var(key: str, value: str) -> None:
     _ENV_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def _persist_airllm_to_env(body: dict) -> None:
+def _settings_payload(settings) -> dict:
+    """Truthful settings snapshot — every value maps to a real CherenkovSettings field."""
+    return {
+        "model": settings.PROVIDER,
+        "target": {"url": settings.API_URL},
+        "security": {"egress_policy": settings.EGRESS},
+        "airllm": {
+            "enabled": settings.AIRLLM_ENABLED,
+            "model": settings.AIRLLM_MODEL,
+            "compression": settings.AIRLLM_COMPRESSION,
+            "layer_shards_path": settings.AIRLLM_LAYER_SHARDS_PATH,
+        },
+        "vlm": {
+            "provider": settings.VLM_DEFAULT_PROVIDER,
+            "model": settings.VLM_LOCALAI_MODEL,
+            "ocr_enabled": settings.OCR_ENABLED,
+        },
+    }
+
+
+def _persist_settings_to_env(body: dict) -> None:
     provider = body.get("model")
     if provider:
         _write_env_var("PROVIDER", provider)
+
+    target = body.get("target")
+    if isinstance(target, dict) and target.get("url"):
+        _write_env_var("API_URL", str(target["url"]))
+
+    security = body.get("security")
+    if isinstance(security, dict) and security.get("egress_policy"):
+        _write_env_var("CHERENKOV_EGRESS", str(security["egress_policy"]))
 
     airllm = body.get("airllm")
     if isinstance(airllm, dict):
@@ -108,67 +124,38 @@ def _persist_airllm_to_env(body: dict) -> None:
 async def api_get_settings(_auth=Depends(verify_api_key)):
     """Return real settings from CherenkovSettings, not mock data."""
     settings = get_settings()
-    # Reset singleton to force reload from .env on next fetch
+    payload = _settings_payload(settings)
+    # Force reload from .env on the next fetch so external edits take effect.
     reset_settings()
-    
-    return {
-        "model": settings.PROVIDER,
-        "engine": {
-            "model_tier": "deep" if settings.TIER_DEEP_MODEL else "small",
-            "enable_demo_mode": False,
-            "execution_budget": 100,
-            "workers": 4,
-        },
-        "security": {
-            "egress_policy": settings.EGRESS,
-            "auth_secret": "***" if settings.JWT_SECRET else "",
-        },
-        "ui": {
-            "density": "comfortable",
-            "reduced_motion": False,
-        },
-        "airllm": {
-            "enabled": settings.AIRLLM_ENABLED,
-            "model": settings.AIRLLM_MODEL,
-            "compression": settings.AIRLLM_COMPRESSION,
-            "layer_shards_path": settings.AIRLLM_LAYER_SHARDS_PATH,
-        },
-    }
+    return payload
 
 
 @router.put("/api/v1/settings")
 async def update_settings(body: dict, _auth=Depends(verify_api_key), _role=Depends(require_role(Role.admin))):
-    """Persist settings to .env file and return updated configuration."""
-    _persist_airllm_to_env(body)
-    
+    """Persist the supported settings to .env and return the updated configuration."""
+    _persist_settings_to_env(body)
+
     # Force reload on next GET
     reset_settings()
-    
-    # Return the updated settings
+
+    # Return the updated settings, reflecting what was just accepted.
     settings = get_settings()
-    return {
-        "model": body.get("model", settings.PROVIDER),
-        "engine": body.get("engine", {
-            "model_tier": "deep",
-            "enable_demo_mode": False,
-            "execution_budget": 100,
-            "workers": 4,
-        }),
-        "security": {
-            "egress_policy": settings.EGRESS,
-            "auth_secret": "***",
-        },
-        "ui": {
-            "density": "comfortable",
-            "reduced_motion": False,
-        },
-        "airllm": body.get("airllm", {
-            "enabled": settings.AIRLLM_ENABLED,
-            "model": settings.AIRLLM_MODEL,
-            "compression": settings.AIRLLM_COMPRESSION,
-            "layer_shards_path": settings.AIRLLM_LAYER_SHARDS_PATH,
-        }),
-    }
+    payload = _settings_payload(settings)
+
+    if body.get("model"):
+        payload["model"] = str(body["model"])
+    target = body.get("target")
+    if isinstance(target, dict) and target.get("url"):
+        payload["target"] = {"url": str(target["url"])}
+    security = body.get("security")
+    if isinstance(security, dict) and security.get("egress_policy"):
+        payload["security"] = {"egress_policy": str(security["egress_policy"])}
+    airllm = body.get("airllm")
+    if isinstance(airllm, dict):
+        for key in ("enabled", "model", "compression", "layer_shards_path"):
+            if key in airllm:
+                payload["airllm"][key] = airllm[key]
+    return payload
 
 
 @router.get("/api/v1/governance")

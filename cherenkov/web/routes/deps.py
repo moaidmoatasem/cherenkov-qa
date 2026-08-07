@@ -148,4 +148,11 @@ def ws_event_callback(type_: str, payload: dict):
 async def lifespan(_app: FastAPI):
     global main_loop
     main_loop = asyncio.get_running_loop()
+    # Warm the doctor cache in the background so the first settings-workspace
+    # visit doesn't pay a cold npx/docker subprocess cost on the request path.
+    try:
+        from cherenkov.web.routes.health_routes import warm_doctor_cache
+        warm_doctor_cache()
+    except Exception:
+        pass
     yield

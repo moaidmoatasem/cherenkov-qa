@@ -18,7 +18,6 @@ export const ModelProviderSettings: React.FC = () => {
   const { toast } = useToast();
   const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [provider, setProvider] = useState('ollama');
-  const [tier, setTier] = useState('local');
   const [airllmEnabled, setAirllmEnabled] = useState(false);
   const [airllmModel, setAirllmModel] = useState('Qwen2.5-Coder-32B');
   const [airllmCompression, setAirllmCompression] = useState('4bit');
@@ -30,7 +29,6 @@ export const ModelProviderSettings: React.FC = () => {
       .then((data) => {
         setSettings(data);
         setProvider(data.model || 'ollama');
-        setTier(data.engine?.model_tier || 'local');
         if (data.airllm) {
           setAirllmEnabled(!!data.airllm.enabled);
           setAirllmModel(data.airllm.model || 'Qwen2.5-Coder-32B');
@@ -47,7 +45,6 @@ export const ModelProviderSettings: React.FC = () => {
     try {
       await updateSettings({
         ...settings,
-        engine: { ...settings.engine, model_tier: tier },
         model: provider,
         airllm: {
           enabled: airllmEnabled,
@@ -114,25 +111,6 @@ export const ModelProviderSettings: React.FC = () => {
           <p className="text-[10px] text-text-muted font-mono">
             <span className="text-emerald-400">●</span> runs locally — nothing leaves your machine
           </p>
-
-          <div className="space-y-2 pt-4 border-t border-white/5">
-            <label className="text-[10px] font-mono uppercase text-text-muted">Model Tier</label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs font-mono" data-testid="model-tier-select">
-              {['local', 'small', 'deep', 'vision'].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTier(t)}
-                  className={`py-2 px-3 rounded-xl border transition cursor-pointer uppercase ${
-                    tier === t
-                      ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400 font-bold'
-                      : 'bg-black/25 border-white/5 text-text-muted hover:text-text-primary'
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
 
           <div className="space-y-3 pt-4 border-t border-white/5">
             <div className="flex items-center justify-between p-3 rounded-xl bg-black/25 border border-white/5">

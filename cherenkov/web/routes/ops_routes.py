@@ -161,7 +161,7 @@ async def eject_test_suite(payload: EjectPayload, _auth=Depends(verify_api_key),
         safe_path = _validate_output_path(payload.output_path)
         from cherenkov.execution.eject import EjectorEngine
         engine = EjectorEngine("api_eject")
-        success = engine.eject_suite(safe_path)
+        success = await asyncio.to_thread(engine.eject_suite, safe_path)
         if not success:
             raise HTTPException(status_code=500, detail="Ejection failed.")
         files = []

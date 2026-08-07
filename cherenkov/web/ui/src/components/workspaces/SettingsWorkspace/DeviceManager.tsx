@@ -5,25 +5,28 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, Skeleton } from '../../ui';
-import { fetchHealth, fetchDoctor, fetchMobilePilotStatus, startMobilePilot, DoctorCheck, PilotStatus } from '../../../lib/api';
+import { fetchHealth, fetchDoctor, fetchSettings, fetchMobilePilotStatus, startMobilePilot, DoctorCheck, PilotStatus } from '../../../lib/api';
 import { Cpu, Monitor, Wifi, WifiOff, CheckCircle2, XCircle, Smartphone, Play, RefreshCw } from 'lucide-react';
 
 export const DeviceManager: React.FC = () => {
   const [doctorChecks, setDoctorChecks] = useState<DoctorCheck[]>([]);
   const [isReady, setIsReady] = useState(false);
   const [pilotStatus, setPilotStatus] = useState<PilotStatus | null>(null);
+  const [vlm, setVlm] = useState<{ provider?: string; model?: string; ocr_enabled?: boolean } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadDeviceStatus = async () => {
     try {
       setIsLoading(true);
-      const [docData, pilotData] = await Promise.all([
+      const [docData, pilotData, settings] = await Promise.all([
         fetchDoctor().catch(() => ({ checks: [], ready: false })),
         fetchMobilePilotStatus().catch(() => null),
+        fetchSettings().catch(() => null),
       ]);
       setDoctorChecks(docData.checks || []);
       setIsReady(docData.ready);
       setPilotStatus(pilotData);
+      setVlm(settings?.vlm ?? null);
     } catch {
       setDoctorChecks([]);
       setIsReady(false);
@@ -80,9 +83,13 @@ export const DeviceManager: React.FC = () => {
           </div>
 
           <div className="p-4 rounded-xl bg-black/20 border border-white/5 flex flex-col justify-between font-mono text-xs">
-            <p className="text-[10px] text-text-muted uppercase">VLM Model Routing Tier</p>
-            <p className="text-base font-bold text-cyan-400">LocalAI (Qwen2-VL / MiniGPT-4)</p>
-            <p className="text-[10px] text-text-muted">Zero external API dependencies</p>
+            <p className="text-[10px] text-text-muted uppercase">VLM Model Routing</p>
+            <p className="text-base font-bold text-cyan-400">
+              {vlm ? `${vlm.provider} (${vlm.model})` : 'not configured'}
+            </p>
+            <p className="text-[10px] text-text-muted">
+              OCR {vlm?.ocr_enabled ? 'enabled' : 'disabled'}
+            </p>
           </div>
 
           <div className="p-4 rounded-xl bg-black/20 border border-white/5 flex items-center justify-between font-mono text-xs">

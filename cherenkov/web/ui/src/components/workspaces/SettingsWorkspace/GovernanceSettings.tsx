@@ -126,21 +126,16 @@ export const GovernanceSettings: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] uppercase text-text-muted">Model Tier</label>
-              <select
-                value={settings.engine?.model_tier || 'deep'}
-                onChange={(e) =>
-                  setSettings({
-                    ...settings,
-                    engine: { ...settings.engine, model_tier: e.target.value },
-                  })
-                }
+              <label className="text-[10px] uppercase text-text-muted">Active Model Provider</label>
+              <div
                 className="w-full bg-bg-base text-cyan-400 p-2.5 rounded-lg border border-white/10"
+                data-testid="setting-model-provider"
               >
-                <option value="small">Small (Fast / Local)</option>
-                <option value="deep">Deep (Rich reasoning)</option>
-                <option value="vision">Vision (VLM Visual UI)</option>
-              </select>
+                {settings.model || 'unset'}
+              </div>
+              <p className="text-[10px] text-text-muted">
+                Read from <code className="font-mono">PROVIDER</code> — managed in the Model Provider panel.
+              </p>
             </div>
           </div>
 

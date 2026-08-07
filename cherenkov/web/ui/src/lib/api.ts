@@ -406,12 +406,11 @@ export async function fetchReviewQueue(status?: string): Promise<ReviewQueueItem
 }
 
 export interface SystemSettings {
-  target: { url: string; auth_header?: string };
-  engine: { model_tier: string; enable_demo_mode: boolean; execution_budget: number; workers: number };
-  security: { egress_policy: string; auth_secret?: string };
-  ui: { density: string; reduced_motion: boolean };
   model?: string;
+  target?: { url: string };
+  security?: { egress_policy: string };
   airllm?: { enabled: boolean; model: string; compression: string; layer_shards_path?: string };
+  vlm?: { provider: string; model: string; ocr_enabled?: boolean };
 }
 
 export async function fetchSettings(): Promise<SystemSettings> {

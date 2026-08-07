@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import os
+import threading
 
 from fastapi import APIRouter, Depends
 
+from cherenkov.core.settings import get_settings
 from cherenkov.web.auth.deps import require_role
 from cherenkov.web.auth.models import Role
 from cherenkov.web.routes.deps import manager
@@ -55,10 +57,59 @@ async def health_check():
     }
 
 
+_DOCTOR_CACHE: dict = {}
+_DOCTOR_CACHE_LOCK = threading.Lock()
+_DOCTOR_CACHE_TTL_S = 60.0
+
+
+def _cached_doctor() -> dict:
+    import time
+    now = time.monotonic()
+    with _DOCTOR_CACHE_LOCK:
+        hit = _DOCTOR_CACHE.get("payload")
+        if hit and now - _DOCTOR_CACHE["ts"] < _DOCTOR_CACHE_TTL_S:
+            return hit
+        device = get_settings().detect_ollama_device()
+        payload = _run_doctor_checks(device)
+        _DOCTOR_CACHE["payload"] = payload
+        _DOCTOR_CACHE["ts"] = now
+        return payload
+
+
+def warm_doctor_cache() -> None:
+    """Warm the doctor cache off the critical path (called at server startup).
+
+    Cold subprocess/Docker/npx checks can take ~10s; running them once in the
+    background means the first settings-workspace visit is already served from
+    cache instead of stalling the first DeviceManager mount.
+    """
+    def _warm() -> None:
+        try:
+            _cached_doctor()
+        except Exception:
+            pass
+
+    threading.Thread(target=_warm, name="doctor-cache-warm", daemon=True).start()
+
+
 @router.get("/api/v1/doctor")
 async def run_doctor_api(_role=Depends(require_role(Role.admin))):
+    """Run doctor checks without blocking the event loop.
+
+    Every check is synchronous subprocess/Docker I/O, so it runs in a worker
+    thread with a hard timeout so a slow check can never freeze the whole API.
+    Results are cached briefly so repeated UI mounts are instant.
+    """
+    try:
+        result = await asyncio.wait_for(asyncio.to_thread(_cached_doctor), timeout=10.0)
+    except asyncio.TimeoutError:
+        return {"checks": [], "ready": False, "timed_out": True}
+    return result
+
+
+def _run_doctor_checks(device: str) -> dict:
+    """Synchronous doctor body — safe to run in a thread executor."""
     from cherenkov.core.config_loader import load_effective_config
-    from cherenkov.core.settings import get_settings
     from cherenkov.stages.doctor_cmd import (
         check_egress_blocked,
         check_node,
@@ -90,7 +141,6 @@ async def run_doctor_api(_role=Depends(require_role(Role.admin))):
     egress_ok, egress_det = check_egress_blocked(cfg)
     checks.append({"id": "egress-policy", "name": "Egress Policy", "status": "passed" if egress_ok else "failed", "message": egress_det})
 
-    device = get_settings().detect_ollama_device()
     is_gpu = device == "GPU"
     checks.append({"id": "device", "name": "Device", "status": "passed" if is_gpu else "failed", "message": device + " (GPU recommended)"})
 
