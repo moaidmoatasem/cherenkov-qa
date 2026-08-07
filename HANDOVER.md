@@ -10,6 +10,25 @@
 
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
 
+## `action.yml` LLM inputs were inert (2026-08-07) — found by the Phase D comparison
+
+The teardown's Phase D was meant to be a 30-minute read of `action.yml` against a competitor's PR-run flag list. It found something else first, and worse.
+
+**The shipped GitHub Action's `llm-provider` and `llm-model` inputs did nothing.** `action.yml` exported them as `CHERENKOV_LLM_PROVIDER` / `CHERENKOV_LLM_MODEL`, and **those names exist nowhere in the package** — the real aliases are `PROVIDER` and `GEN_MODEL` (`cherenkov/core/settings.py:17,20`). Measured, not inferred:
+
+```
+CHERENKOV_LLM_PROVIDER=openai CHERENKOV_LLM_MODEL=gpt-4o-mini →  PROVIDER=ollama   GEN_MODEL=qwen2.5-coder:7b
+PROVIDER=openai              GEN_MODEL=gpt-4o-mini            →  PROVIDER=openai   GEN_MODEL=gpt-4o-mini
+```
+
+So a CI user setting `llm-provider: openai` — **also the input's documented default** — silently ran against Ollama at its default URL, which does not exist on a GitHub runner. The failure mode is a no-op, not an error: the run reports success having used defaults nobody chose.
+
+This is the **same drift the round-3 sweep already fixed once**. `156dba0` replaced these exact names throughout `docs/wiki/` because they matched nothing in `settings.py`; that sweep reached the docs and never reached `action.yml`. Same shape as #726's doctor fix landing in the web onboarding wizard but not the CLI's own `doctor`.
+
+Fixed, and guarded by `tests/unit/test_action_env_names.py`: every env var `action.yml` sets must resolve to a real settings alias, plus an explicit regression check on the two dead names. Verified non-vacuous — against the pre-fix file it fails three times, naming both variables.
+
+**Phase D's original question is still unanswered.** The comparison against per-PR run metadata (`--pr-number`, `--commit-sha`, head/base branch, dynamic preview URLs) has not been done; this bug interrupted it. Pick it up from `docs/reviews/TESTERARMY_TEARDOWN_2026-08.md` §5.8.
+
 ## Agent-discoverability surface shipped (2026-08-07) — Phase A of the TesterArmy teardown
 
 `docs/reviews/TESTERARMY_TEARDOWN_2026-08.md` §6 Phase A is **delivered**, except A3 which is partial. This is M2 work ("installable by a stranger") and it was the one axis where a pre-1.0 competitor was ahead of us.
