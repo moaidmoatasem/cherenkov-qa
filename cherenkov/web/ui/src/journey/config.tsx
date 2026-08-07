@@ -26,6 +26,7 @@ import {
   Smartphone,
 } from 'lucide-react';
 import { fetchJourneys } from '../lib/api';
+import { FALLBACK_STAGES } from './fallback';
 import type { JourneyCatalogue, JourneyDefinition, WorkspaceId } from './types';
 
 export interface SurfaceChrome {
@@ -85,10 +86,12 @@ export const SURFACE_TITLES: Record<WorkspaceId, { title: string; subtitle: stri
 };
 
 /**
- * Used until the backend answers, and if it cannot be reached at all. It
- * mirrors the shipped builtin journey so the shell renders the same loop
- * offline as online -- a fallback that disagreed with the server would be
- * worse than none.
+ * Used until the backend answers, and if it cannot be reached at all. The
+ * stage data comes from ./fallback.ts -- a shared, dependency-free module the
+ * parity spec pins to the shipped builtin journey (see
+ * tests/qa/fallback-journey-parity.spec.ts) so the shell renders the same loop
+ * offline as online -- a fallback that disagreed with the server would be worse
+ * than none.
  */
 export const FALLBACK_JOURNEY: JourneyDefinition = {
   id: 'api-conformance',
@@ -96,36 +99,13 @@ export const FALLBACK_JOURNEY: JourneyDefinition = {
   label: 'API conformance loop',
   description: '',
   steps: [],
-  stages: [
-    {
-      surface: 'authoring',
-      step: 1,
-      label: 'Generate',
-      blurb: 'Bring a spec, get a test suite',
-      step_ids: [],
-    },
-    {
-      surface: 'dashboard',
-      step: 2,
-      label: 'Validate',
-      blurb: 'Run it against the real API',
-      step_ids: [],
-    },
-    {
-      surface: 'triage',
-      step: 3,
-      label: 'Triage',
-      blurb: 'Review what was flagged',
-      step_ids: [],
-    },
-    {
-      surface: 'intelligence',
-      step: 4,
-      label: 'Knowledge',
-      blurb: 'See what Cherenkov learned',
-      step_ids: [],
-    },
-  ],
+  stages: FALLBACK_STAGES.map((stage, i) => ({
+    surface: stage.surface,
+    step: i + 1,
+    label: stage.label,
+    blurb: stage.blurb,
+    step_ids: [],
+  })),
 };
 
 interface JourneyContextValue {
