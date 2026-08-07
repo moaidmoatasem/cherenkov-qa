@@ -6,6 +6,7 @@ import click
 
 
 @click.group(invoke_without_command=True)
+@click.version_option(package_name="cherenkov-qa", prog_name="cherenkov")
 @click.pass_context
 def cli(ctx):
     """CHERENKOV E2E Suite Command Line Interface"""

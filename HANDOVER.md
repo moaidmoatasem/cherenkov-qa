@@ -10,6 +10,24 @@
 
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
 
+## CI green-up (2026-08-07) — five red gates, two of which had never run
+
+`main` at `4fa3af9` (#928) was red on five checks. Four are fixed here; the fifth is an owner action. Two of them were not *failing* checks at all — they were checks that **had never executed**, which is the more dangerous shape: a gate that reports red for an infrastructure reason gets read as noise, and the thing it was supposed to guard goes unguarded.
+
+| Check | Root cause | Fix |
+|---|---|---|
+| `MCP registry ↔ handlers.TOOLS` | `scripts/gen_manifest.py` imports `cherenkov.mcp.handlers`, but run as a plain script `sys.path[0]` is `scripts/`, not the repo root. The sibling drift *test* passes because pytest inserts rootdir itself — so the regenerator check **has never once run**. The manifests were in fact current | `sys.path` insert in `gen_manifest.py`; verified from a foreign cwd |
+| `test-install (3.12)` | `clean-vm-install.yml` (new in #928) runs `cherenkov --version`; the CLI had no such option. `docs-site/docs/cli/reference.md` has listed `--version` as a global option all along — **the docs were right and the code was missing it** | `@click.version_option(package_name="cherenkov-qa")` in `cli/core.py`; prints `cherenkov, version 1.3.0` |
+| `unit-tests` / `Test coverage` | #928 added a real `ui` block (`UI_DENSITY`/`UI_MOTION`, `settings.py:60-61`, persisted to `CHERENKOV_UI_*`) to the settings payload. `test_settings_routes.py` asserted `"ui" not in payload` under its no-fabricated-fields contract | The field is **backed**, so the test was stale, not the route. Assertion now proves `ui` mirrors the real settings exactly; added `test_get_reflects_real_ui_settings` + `test_put_persists_ui_density_and_motion` for the env round-trip so "backed" is proven rather than assumed |
+| `Type check (mypy)` | 1 error, not the 7 recorded on 2026-07-31 below — that count is stale. `runs_router.list_runs` passed `str \| None` into a `RunStatus` literal | Query param typed as `RunStatus`, so an unknown status 422s at the boundary instead of silently matching no rows. **mypy now: `Success: no issues found in 579 source files`** |
+| `Build Tauri Desktop App` | Unchanged — still the missing `TAURI_SIGNING_PRIVATE_KEY`. **Owner action** | not touched |
+
+**Also found and fixed while checking the other red workflows:** `.github/workflows/spec-drift.yml` was **invalid YAML** — four `python3 -c "` programs sat at column 0 inside `run: |` blocks, which terminates the literal scalar. GitHub could not parse the file, so it scheduled **zero jobs** and surfaced the run under its raw file path instead of its name. Spec-drift detection has therefore not run at all. Fixed by indenting the embedded programs to the block base, and guarded by `tests/unit/test_workflow_yaml_valid.py`, which parses every workflow and `ast.parse`s every embedded program (67 assertions). Nothing else in CI can catch this class: a workflow that cannot be parsed cannot run the check that would have caught it.
+
+**Still red on `main`, not addressed here:** `Publish to Docker Hub` and `release-please` (both credential/permission gated — owner actions), and `supply-chain.yml`, which also reports a zero-job startup failure but parses cleanly locally with no duplicate keys — **undiagnosed, do not assume it is the same bug as spec-drift**.
+
+**Verification:** full `pytest tests/` (no marker filter — the exact `Test coverage` invocation) = **2494 passed, 16 skipped, 0 failed** (2510 collected, exit 0). `ci_docs_check.py`, `check_cli_docs.py`, `check_cli_flags.py` all pass. Note `tests/unit/test_mcp_auth.py` still needs a system `cffi` present to collect (`pip install cffi`) — the container gap recorded on 2026-07-29, not a code defect.
+
 ## Journeys are now a first-class resource (2026-08-06, branch `claude/user-journeys-revamp-cud0wc`)
 
 A workflow is now one declarative YAML description that the engine executes and the dashboard renders, replacing a hardcoded call sequence in the orchestrator and four hardcoded arrays in the UI. **Two decisions here diverge from the roadmap's stated posture and are recorded deliberately, not silently:**

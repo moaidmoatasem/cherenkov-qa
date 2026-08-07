@@ -55,6 +55,25 @@ def test_get_reflects_real_airllm_and_vlm_settings(fresh_settings, monkeypatch):
     assert payload["vlm"]["ocr_enabled"] is True
 
 
+def test_get_reflects_real_ui_settings(fresh_settings, monkeypatch):
+    monkeypatch.setenv("CHERENKOV_UI_DENSITY", "compact")
+    monkeypatch.setenv("CHERENKOV_UI_MOTION", "reduced")
+    payload = _get()
+    assert payload["ui"] == {"density": "compact", "motion": "reduced"}
+
+
+def test_put_persists_ui_density_and_motion(fresh_settings, monkeypatch):
+    written: list[tuple[str, str]] = []
+    monkeypatch.setattr(wr, "_write_env_var", lambda k, v: written.append((k, v)))
+
+    resp = _put({"ui": {"density": "compact", "motion": "reduced"}})
+
+    assert resp.status_code == 200
+    assert ("CHERENKOV_UI_DENSITY", "compact") in written
+    assert ("CHERENKOV_UI_MOTION", "reduced") in written
+    assert resp.json()["ui"] == {"density": "compact", "motion": "reduced"}
+
+
 def test_get_never_fabricates_unbacked_fields(fresh_settings):
     payload = _get()
     for fake in (
@@ -63,7 +82,15 @@ def test_get_never_fabricates_unbacked_fields(fresh_settings):
     ):
         assert fake not in payload, f"GET /settings fabricated unbacked field: {fake}"
     assert "engine" not in payload
-    assert "ui" not in payload
+    # `ui` is not a fabricated field: it is backed by real settings
+    # (UI_DENSITY / UI_MOTION, cherenkov/core/settings.py:60-61). The contract is
+    # that it mirrors them exactly and carries no extra keys — see
+    # test_get_reflects_real_ui_settings for the env round-trip.
+    current = settings_mod.get_settings()
+    assert payload["ui"] == {
+        "density": current.UI_DENSITY,
+        "motion": current.UI_MOTION,
+    }
 
 
 def test_put_persists_target_url_egress_provider_and_airllm(fresh_settings, monkeypatch):
@@ -103,4 +130,10 @@ def test_put_returns_truthful_updated_payload(fresh_settings, monkeypatch):
     assert body["target"] == {"url": "https://prod.example.com"}
     assert body["security"] == {"egress_policy": "external"}
     assert "engine" not in body
-    assert "ui" not in body
+    # The PUT body carried no `ui`, so the echo must report the stored settings
+    # rather than inventing a value for a field the caller never set.
+    current = settings_mod.get_settings()
+    assert body["ui"] == {
+        "density": current.UI_DENSITY,
+        "motion": current.UI_MOTION,
+    }

@@ -24,6 +24,13 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
+# Run as a plain script, sys.path[0] is scripts/, not the repo root, so the
+# `cherenkov` import below fails on a bare checkout. pytest masks this by
+# inserting rootdir itself, which is why the sibling drift test passes while
+# this script does not.
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 MANIFEST_PATH = REPO_ROOT / "manifest.json"
 MCP_JSON_PATH = REPO_ROOT / "mcp.json"
 

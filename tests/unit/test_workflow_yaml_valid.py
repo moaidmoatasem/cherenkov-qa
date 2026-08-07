@@ -1,0 +1,66 @@
+"""Every GitHub Actions workflow must parse, and every Python program embedded
+in a `run:` block must still compile once YAML has stripped the block indent.
+
+This exists because `spec-drift.yml` shipped for months with un-indented Python
+inside a `run: |` literal block. That makes the *whole file* unparseable, so
+GitHub never scheduled a single job for it — the workflow shows up as a failed
+run with zero jobs and a raw file path where its name should be, which reads
+like infrastructure noise rather than a broken gate. Nothing else in CI can
+catch that, since a workflow that cannot be parsed cannot run the check that
+would have caught it.
+"""
+
+from __future__ import annotations
+
+import ast
+import re
+from pathlib import Path
+
+import pytest
+import yaml
+
+WORKFLOW_DIR = Path(__file__).resolve().parents[2] / ".github" / "workflows"
+
+# `python3 -c "` opens a block that runs to a line starting with the closing quote.
+_EMBEDDED_PYTHON = re.compile(r'python3? -c "\n(.*?)\n\s*"', re.DOTALL)
+
+
+def _workflow_files() -> list[Path]:
+    return sorted(WORKFLOW_DIR.glob("*.yml")) + sorted(WORKFLOW_DIR.glob("*.yaml"))
+
+
+def test_workflow_directory_is_not_empty():
+    assert _workflow_files(), f"no workflow files found under {WORKFLOW_DIR}"
+
+
+@pytest.mark.parametrize("path", _workflow_files(), ids=lambda p: p.name)
+def test_workflow_parses_as_yaml(path: Path):
+    try:
+        loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:  # pragma: no cover - message is the point
+        pytest.fail(f"{path.name} is not valid YAML, so GitHub cannot run it:\n{exc}")
+    assert isinstance(loaded, dict), f"{path.name} did not parse to a mapping"
+    assert "jobs" in loaded, f"{path.name} declares no jobs"
+
+
+@pytest.mark.parametrize("path", _workflow_files(), ids=lambda p: p.name)
+def test_embedded_python_compiles(path: Path):
+    """Guards the indentation contract, not the logic.
+
+    A `run: |` block strips exactly its own indentation from every line. Python
+    indented past that keeps the extra spaces and dies with IndentationError;
+    Python indented less than that breaks the YAML. Both failures are invisible
+    until the workflow actually runs, and the second one stops it running at all.
+    """
+    loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
+    for job_name, job in (loaded.get("jobs") or {}).items():
+        for step in job.get("steps") or []:
+            run = step.get("run")
+            if not isinstance(run, str):
+                continue
+            for code in _EMBEDDED_PYTHON.findall(run):
+                where = f"{path.name}::{job_name}::{step.get('name', '<unnamed step>')}"
+                try:
+                    ast.parse(code)
+                except SyntaxError as exc:
+                    pytest.fail(f"embedded python in {where} does not compile: {exc}")
