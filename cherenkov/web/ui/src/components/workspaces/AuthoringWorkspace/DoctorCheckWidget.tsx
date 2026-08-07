@@ -53,12 +53,7 @@ export const DoctorCheckWidget: React.FC = () => {
         </button>
       </div>
 
-      {isLoading ? (
-        <div className="space-y-2">
-          <Skeleton className="h-10 w-full rounded-lg" />
-          <Skeleton className="h-10 w-full rounded-lg" />
-        </div>
-      ) : error ? (
+      {error ? (
         <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-400">
           Doctor check failed: {error}
         </div>
@@ -66,15 +61,21 @@ export const DoctorCheckWidget: React.FC = () => {
         <div className="space-y-3">
           <div
             className={`p-3 rounded-xl border flex items-center justify-between text-xs font-mono font-bold ${
-              ready
+              ready && !isLoading
                 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                 : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
             }`}
           >
             <span>ENGINE READINESS STATUS:</span>
-            <span>{ready ? 'READY TO GENERATE' : 'CHECKS REQUIRED'}</span>
+            <span>{isLoading ? 'CHECKING...' : ready ? 'READY TO GENERATE' : 'CHECKS REQUIRED'}</span>
           </div>
 
+          {isLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {checks.map((chk) => (
               <div
@@ -95,6 +96,7 @@ export const DoctorCheckWidget: React.FC = () => {
               </div>
             ))}
           </div>
+          )}
         </div>
       )}
     </Card>

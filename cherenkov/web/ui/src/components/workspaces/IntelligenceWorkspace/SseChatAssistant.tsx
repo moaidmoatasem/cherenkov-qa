@@ -38,7 +38,18 @@ export const SseChatAssistant: React.FC = () => {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!sessionId || !input.trim() || isStreaming) return;
+    if (!input.trim() || isStreaming) return;
+    let sid = sessionId;
+    if (!sid) {
+      try {
+        const data = await createChatSession('qa_assistant');
+        setSessionId(data.session_id);
+        sid = data.session_id;
+      } catch (err) {
+        setError('Failed to initialize AI Chat session.');
+        return;
+      }
+    }
     const userText = input.trim();
     setInput('');
     setError(null);
@@ -51,7 +62,7 @@ export const SseChatAssistant: React.FC = () => {
 
     try {
       await streamChatMessage(
-        sessionId,
+        sid,
         userText,
         (token) => {
           setMessages((prev) => {

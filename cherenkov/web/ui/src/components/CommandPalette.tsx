@@ -60,10 +60,11 @@ export default function CommandPalette({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
-  // Focus input when opened
+  // Reset state when opened. Initial focus is handled by the focus trap below
+  // (synchronously, on the first focusable element). A delayed re-focus here
+  // used to race with Tab navigation and steal focus back ~50ms after open.
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 50);
       setSearch('');
       setSelectedIndex(0);
     }
