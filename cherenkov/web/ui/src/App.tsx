@@ -31,6 +31,7 @@ import OnboardingWizard from './components/OnboardingWizard';
 import { Project } from './types';
 import { fetchProjects, fetchMetricsData, fetchReviewQueue, runPipeline } from './lib/api';
 import { useHealth } from './lib/useHealth';
+import { useDensity } from './lib/useDensity';
 import { listenDesktop } from './lib/tauri';
 import {
   JourneyProvider,
@@ -59,6 +60,9 @@ function InnerApp() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Applies the persisted Comfortable/Compact density to <html> on load.
+  useDensity();
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);

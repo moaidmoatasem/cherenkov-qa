@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Keyboard, X } from 'lucide-react';
 import { SHORTCUTS } from '../journey/config';
+import { useFocusTrap } from '../lib/useFocusTrap';
 
 export interface KeyboardMapOverlayProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ export interface KeyboardMapOverlayProps {
  * that does nothing.
  */
 export function KeyboardMapOverlay({ isOpen, onClose }: KeyboardMapOverlayProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -26,6 +29,10 @@ export function KeyboardMapOverlay({ isOpen, onClose }: KeyboardMapOverlayProps)
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
+
+  // Real focus trap: cycles Tab/Shift+Tab inside the overlay and returns
+  // focus to the element that opened it when it closes.
+  useFocusTrap(panelRef, isOpen);
 
   if (!isOpen) return null;
 
@@ -40,7 +47,7 @@ export function KeyboardMapOverlay({ isOpen, onClose }: KeyboardMapOverlayProps)
       aria-modal="true"
       aria-labelledby="keyboard-map-title"
     >
-      <div className="w-full max-w-md bg-bg-base border border-border-custom rounded-2xl shadow-2xl overflow-hidden cherenkov-glow">
+      <div ref={panelRef} className="w-full max-w-md bg-bg-base border border-border-custom rounded-2xl shadow-2xl overflow-hidden cherenkov-glow">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border-custom bg-bg-panel">
           <h2 id="keyboard-map-title" className="text-sm font-bold font-mono text-text-primary flex items-center gap-2">
             <Keyboard className="w-4 h-4 text-cyan-400" />

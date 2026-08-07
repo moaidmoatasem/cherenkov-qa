@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Terminal, Compass, Zap, FolderGit2, X, Clock } from 'lucide-react';
 import { Project } from '../types';
+import { useFocusTrap } from '../lib/useFocusTrap';
 import {
   SURFACE_CHROME,
   SURFACE_TITLES,
@@ -67,6 +68,10 @@ export default function CommandPalette({
       setSelectedIndex(0);
     }
   }, [isOpen]);
+
+  // Real focus trap: cycles Tab/Shift+Tab inside the palette and returns
+  // focus to the element that opened it when it closes.
+  useFocusTrap(containerRef, isOpen);
 
   const loopSurfaces = useNavSurfaces();
   const navSurfaces = [...loopSurfaces, ...OTHER_SURFACES];
@@ -163,6 +168,10 @@ export default function CommandPalette({
         ref={containerRef}
         className="w-full max-w-2xl bg-bg-base border border-border-custom rounded-2xl shadow-2xl flex flex-col max-h-[70vh] overflow-hidden cherenkov-glow"
         onKeyDown={handleKeyDown}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Command palette"
+        data-testid="command-palette"
       >
         {/* Search header */}
         <div className="flex items-center gap-3 px-4 border-b border-border-custom bg-bg-panel py-3.5">

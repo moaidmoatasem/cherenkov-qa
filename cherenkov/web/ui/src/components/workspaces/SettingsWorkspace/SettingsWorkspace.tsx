@@ -9,6 +9,7 @@ import ModelProviderSettings from './ModelProviderSettings';
 import DeviceManager from './DeviceManager';
 import EjectSuitePanel from './EjectSuitePanel';
 import GovernanceSettings from './GovernanceSettings';
+import A11ySettings from './A11ySettings';
 import { PageHeader } from '../../ui/PageHeader';
 
 export const SettingsWorkspace: React.FC = () => {
@@ -33,6 +34,9 @@ export const SettingsWorkspace: React.FC = () => {
 
       {/* 5. Governance & System Settings */}
       <GovernanceSettings />
+
+      {/* 6. Accessibility & Display */}
+      <A11ySettings />
     </div>
   );
 };

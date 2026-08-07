@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { useReducedMotion } from '../../lib/useReducedMotion';
+import { useFocusTrap } from '../../lib/useFocusTrap';
 
 interface DrawerProps {
   isOpen: boolean;
@@ -30,17 +31,9 @@ export function Drawer({ isOpen, onClose, title, children, size = 'md' }: Drawer
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Focus trap
-  useEffect(() => {
-    if (isOpen && drawerRef.current) {
-      const focusableElements = drawerRef.current.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusableElements.length > 0) {
-        (focusableElements[0] as HTMLElement).focus();
-      }
-    }
-  }, [isOpen]);
+  // Real focus trap: cycles Tab/Shift+Tab inside the drawer and returns
+  // focus to the element that opened it when it closes.
+  useFocusTrap(drawerRef, isOpen);
 
   if (!isOpen) return null;
 
