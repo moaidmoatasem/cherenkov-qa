@@ -7,6 +7,7 @@ import React from 'react';
 import ReleaseReadinessCard from './ReleaseReadinessCard';
 import VerdictHistoryTable from './VerdictHistoryTable';
 import IntegrityHeatmap from './IntegrityHeatmap';
+import CoverageAndPerfScreen from './CoverageAndPerfScreen';
 import CertificateVerification from './CertificateVerification';
 import { PageHeader } from '../../ui/PageHeader';
 import { RunRecord } from '../../../lib/api';
@@ -36,7 +37,10 @@ export const DashboardWorkspace: React.FC<DashboardWorkspaceProps> = ({
       {/* 3. Spec Coverage & Risk Signals Heatmap */}
       <IntegrityHeatmap />
 
-      {/* 4. Certificate Verification */}
+      {/* 4. Coverage Map, Trend & Performance Baselines */}
+      <CoverageAndPerfScreen />
+
+      {/* 5. Certificate Verification */}
       <CertificateVerification />
     </div>
   );

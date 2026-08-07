@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, Suspense, lazy } from 'react';
 import {
   BrowserRouter,
   Navigate,
@@ -18,11 +18,6 @@ import LoginPage from './components/LoginPage';
 import AppHeader from './components/layout/AppHeader';
 import NavigationBar, { WorkspaceId } from './components/layout/NavigationBar';
 import JourneyStepper from './components/layout/JourneyStepper';
-import DashboardWorkspace from './components/workspaces/DashboardWorkspace';
-import AuthoringWorkspace from './components/workspaces/AuthoringWorkspace';
-import TriageWorkspace from './components/workspaces/TriageWorkspace';
-import IntelligenceWorkspace from './components/workspaces/IntelligenceWorkspace';
-import SettingsWorkspace from './components/workspaces/SettingsWorkspace';
 import MobilePilotScreen from './components/MobilePilotScreen';
 import CommandPalette from './components/CommandPalette';
 import GlobalShortcuts from './components/GlobalShortcuts';
@@ -41,6 +36,20 @@ import {
   SURFACE_TITLES,
   surfaceFromPath,
 } from './journey/config';
+
+// Workspaces are the app's heavy chunks (tables, charts, chat). Split each on
+// its own boundary so the first paint loads only the shell + one workspace.
+const DashboardWorkspace = lazy(() => import('./components/workspaces/DashboardWorkspace'));
+const AuthoringWorkspace = lazy(() => import('./components/workspaces/AuthoringWorkspace'));
+const TriageWorkspace = lazy(() => import('./components/workspaces/TriageWorkspace'));
+const IntelligenceWorkspace = lazy(() => import('./components/workspaces/IntelligenceWorkspace'));
+const SettingsWorkspace = lazy(() => import('./components/workspaces/SettingsWorkspace'));
+
+const WorkspaceFallback = () => (
+  <div className="h-full flex items-center justify-center bg-bg-base text-text-muted text-sm font-mono animate-pulse" role="status">
+    Loading workspace...
+  </div>
+);
 
 function InnerApp() {
   const { authRequired, loading: authLoading, user, logout } = useAuth();
@@ -229,35 +238,37 @@ function InnerApp() {
             />
 
             <main className="flex-1 overflow-hidden h-full">
-              <Routes>
-                <Route
-                  path="/dashboard"
-                  element={
-                    <DashboardWorkspace
-                      onNavigateToTriage={() => handleSelectWorkspace('triage')}
-                    />
-                  }
-                />
-                <Route
-                  path="/authoring"
-                  element={<AuthoringWorkspace onRunStarted={setActiveRunId} />}
-                />
-                <Route path="/triage" element={<TriageWorkspace />} />
-                <Route path="/intelligence" element={<IntelligenceWorkspace />} />
-                <Route path="/settings" element={<SettingsWorkspace />} />
-                <Route path="/mobile" element={<MobilePilotScreen />} />
-                {/* Legacy deep links keep working instead of 404ing. */}
-                {(Object.keys(SURFACE_CHROME) as WorkspaceId[]).flatMap((surface) =>
-                  SURFACE_CHROME[surface].aliases.map((alias) => (
-                    <Route
-                      key={alias}
-                      path={`/${alias}`}
-                      element={<Navigate to={`/${surface}`} replace />}
-                    />
-                  ))
-                )}
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
+              <Suspense fallback={<WorkspaceFallback />}>
+                <Routes>
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <DashboardWorkspace
+                        onNavigateToTriage={() => handleSelectWorkspace('triage')}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/authoring"
+                    element={<AuthoringWorkspace onRunStarted={setActiveRunId} />}
+                  />
+                  <Route path="/triage" element={<TriageWorkspace />} />
+                  <Route path="/intelligence" element={<IntelligenceWorkspace />} />
+                  <Route path="/settings" element={<SettingsWorkspace />} />
+                  <Route path="/mobile" element={<MobilePilotScreen />} />
+                  {/* Legacy deep links keep working instead of 404ing. */}
+                  {(Object.keys(SURFACE_CHROME) as WorkspaceId[]).flatMap((surface) =>
+                    SURFACE_CHROME[surface].aliases.map((alias) => (
+                      <Route
+                        key={alias}
+                        path={`/${alias}`}
+                        element={<Navigate to={`/${surface}`} replace />}
+                      />
+                    ))
+                  )}
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
+              </Suspense>
             </main>
           </div>
         </div>
