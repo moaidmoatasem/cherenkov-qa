@@ -60,7 +60,14 @@ async function probeAuthRequired(): Promise<boolean> {
   try {
     // Doctor is admin-only; if auth is off, it returns 200. If auth is on, it
     // returns 401 without a token.  Health is public so can't be used for this.
-    const res = await fetch('/api/v1/doctor');
+    // The probe is time-boxed: with auth OFF the doctor check itself can run
+    // for seconds (cold worker, 10s hard timeout), and the whole shell waits on
+    // this gate. Auth-on always answers 401 fast (the auth dependency runs
+    // before the doctor check), so the timeout only ever affects the
+    // auth-off case, where the result is "not required" regardless.
+    const res = await fetch('/api/v1/doctor', {
+      signal: AbortSignal.timeout(4000),
+    });
     return res.status === 401;
   } catch {
     return false;
