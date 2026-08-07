@@ -93,6 +93,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-base border border-border-subtle hover:border-border-strong text-xs font-mono transition text-text-primary"
             data-testid="project-selector-dropdown"
+            title="Workspace selection is cosmetic in this build: it highlights a project here but does not filter backend data, which is global until project-scoped APIs ship."
           >
             <span className="text-text-muted">Project:</span>
             <span className="font-semibold text-cyan-400 max-w-[140px] truncate">
@@ -125,6 +126,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                   </button>
                 ))
               )}
+              <p className="px-3 py-2 mt-1 border-t border-border-subtle text-[10px] text-text-muted leading-relaxed">
+                Selection is local to this session. Backend results are global; project-scoped data is not wired yet.
+              </p>
             </div>
           )}
         </div>

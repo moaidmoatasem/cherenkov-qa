@@ -12,9 +12,11 @@ import { Zap, AlertTriangle, CheckCircle2, XCircle, ShieldAlert, RefreshCw } fro
 
 interface DivergenceTableProps {
   onSelectDivergence?: (divergence: Divergence) => void;
+  /** Row to emphasize when deep-linked via ?divergence=<id> (N-3). */
+  highlightId?: string;
 }
 
-export const DivergenceTable: React.FC<DivergenceTableProps> = ({ onSelectDivergence }) => {
+export const DivergenceTable: React.FC<DivergenceTableProps> = ({ onSelectDivergence, highlightId }) => {
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -104,52 +106,61 @@ export const DivergenceTable: React.FC<DivergenceTableProps> = ({ onSelectDiverg
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {filteredDivergences.map((div) => (
-                <tr
-                  key={div.id}
-                  onClick={() => onSelectDivergence && onSelectDivergence(div)}
-                  className="hover:bg-white/5 transition cursor-pointer"
-                  data-testid={`divergence-row-${div.id}`}
-                >
-                  <td className="py-2.5 px-3 font-bold text-cyan-400">{div.divergenceClass}</td>
-                  <td className="py-2.5 px-3 font-semibold text-text-primary">{div.endpoint}</td>
-                  <td className="py-2.5 px-3">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                        div.severity === 'critical' || div.severity === 'high'
-                          ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                          : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                      }`}
-                    >
-                      {div.severity}
-                    </span>
-                  </td>
-                  <td className="py-2.5 px-3 text-text-muted max-w-[200px] truncate">{div.claimA}</td>
-                  <td className="py-2.5 px-3 text-rose-300 max-w-[200px] truncate">{div.claimB}</td>
-                  <td className="py-2.5 px-3 text-right space-x-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAction(div.id, 'mark_intended');
-                      }}
-                      className="px-2 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px]"
-                      title="Mark as intended change"
-                    >
-                      Intended
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAction(div.id, 'close_with_test');
-                      }}
-                      className="px-2 py-1 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-[10px]"
-                      title="Close & update test"
-                    >
-                      Fix Test
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {filteredDivergences.map((div) => {
+                const isHighlighted = highlightId != null && div.id === highlightId;
+                return (
+                  <tr
+                    key={div.id}
+                    ref={isHighlighted ? (el) => el?.scrollIntoView({ block: 'nearest' }) : undefined}
+                    onClick={() => onSelectDivergence && onSelectDivergence(div)}
+                    className={`transition cursor-pointer ${
+                      isHighlighted
+                        ? 'bg-cyan-500/10 ring-1 ring-cyan-500/40 hover:bg-cyan-500/15'
+                        : 'hover:bg-white/5'
+                    }`}
+                    data-testid={`divergence-row-${div.id}`}
+                    data-highlighted={isHighlighted || undefined}
+                  >
+                    <td className="py-2.5 px-3 font-bold text-cyan-400">{div.divergenceClass}</td>
+                    <td className="py-2.5 px-3 font-semibold text-text-primary">{div.endpoint}</td>
+                    <td className="py-2.5 px-3">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          div.severity === 'critical' || div.severity === 'high'
+                            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                            : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                        }`}
+                      >
+                        {div.severity}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3 text-text-muted max-w-[200px] truncate">{div.claimA}</td>
+                    <td className="py-2.5 px-3 text-rose-300 max-w-[200px] truncate">{div.claimB}</td>
+                    <td className="py-2.5 px-3 text-right space-x-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAction(div.id, 'mark_intended');
+                        }}
+                        className="px-2 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px]"
+                        title="Mark as intended change"
+                      >
+                        Intended
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAction(div.id, 'close_with_test');
+                        }}
+                        className="px-2 py-1 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-[10px]"
+                        title="Close & update test"
+                      >
+                        Fix Test
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

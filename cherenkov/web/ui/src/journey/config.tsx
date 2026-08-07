@@ -32,24 +32,37 @@ export interface SurfaceChrome {
   icon: React.ComponentType<{ className?: string }>;
   /** Legacy paths kept working as redirects so old links do not 404. */
   aliases: string[];
+  /** The g-prefix chord that jumps straight to this surface (N-7 routing metadata). */
+  shortcut?: string;
 }
 
 export const SURFACE_CHROME: Record<WorkspaceId, SurfaceChrome> = {
   dashboard: {
     icon: LayoutDashboard,
     aliases: ['overview', 'verdict', 'truth-map', 'signals', 'coverage'],
+    shortcut: 'g d',
   },
-  authoring: { icon: Sparkles, aliases: ['author', 'setup', 'pipeline', 'explore'] },
+  authoring: {
+    icon: Sparkles,
+    aliases: ['author', 'setup', 'pipeline', 'explore'],
+    shortcut: 'g a',
+  },
   triage: {
     icon: CheckSquare,
     aliases: ['review', 'divergences', 'healing', 'spec-vs-reality'],
+    shortcut: 'g t',
   },
-  intelligence: { icon: Brain, aliases: ['chat', 'knowledge', 'sdd', 'memory'] },
+  intelligence: {
+    icon: Brain,
+    aliases: ['chat', 'knowledge', 'sdd', 'memory'],
+    shortcut: 'g m',
+  },
   settings: {
     icon: Settings,
     aliases: ['projects', 'devices', 'eject', 'governance', 'ui-kit'],
+    shortcut: 'g s',
   },
-  mobile: { icon: Smartphone, aliases: [] },
+  mobile: { icon: Smartphone, aliases: [], shortcut: 'g b' },
 };
 
 /**
@@ -178,3 +191,29 @@ export function surfaceFromPath(pathname: string): WorkspaceId {
   }
   return 'dashboard';
 }
+
+/**
+ * The single source of truth for the keyboard map overlay (N-6) and the help
+ * screen. Only shortcuts that GlobalShortcuts actually implements are listed
+ * here -- an entry that does nothing would be a lie.
+ */
+export const SHORTCUTS: { keys: string; label: string }[] = [
+  { keys: '⌘K / Ctrl+K', label: 'Open command palette' },
+  { keys: '⌘N / Ctrl+N', label: 'Start a new analysis run' },
+  ...(Object.keys(SURFACE_CHROME) as WorkspaceId[]).map((id) => ({
+    keys: SURFACE_CHROME[id].shortcut ?? '',
+    label: `Go to ${SURFACE_TITLES[id].title}`,
+  })),
+  { keys: '?', label: 'Toggle keyboard help' },
+  { keys: 'Esc', label: 'Close overlays and drawers' },
+];
+
+/** The g-prefix chord map: "g" then the first letter jumps to a surface. */
+export const GO_TO_SHORTCUTS: Record<string, WorkspaceId> = {
+  d: 'dashboard',
+  a: 'authoring',
+  t: 'triage',
+  m: 'intelligence',
+  s: 'settings',
+  b: 'mobile',
+};

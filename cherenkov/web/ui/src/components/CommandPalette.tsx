@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Terminal, Compass, Zap, FolderGit2, X } from 'lucide-react';
+import { Search, Terminal, Compass, Zap, FolderGit2, X, Clock } from 'lucide-react';
 import { Project } from '../types';
 import {
   SURFACE_CHROME,
@@ -7,19 +7,22 @@ import {
   useNavSurfaces,
   OTHER_SURFACES,
 } from '../journey/config';
+import type { WorkspaceId } from '../journey/types';
 
 interface CommandPaletteProps {
   onNavigate: (tabId: string) => void;
   onNewRun: () => void;
   projects: Project[];
   onSelectProject: (id: string) => void;
+  /** Most-recently-visited surfaces, newest first (N-4). */
+  recentWorkspaces?: WorkspaceId[];
 }
 
 interface PaletteItem {
   id: string;
   title: string;
   subtitle: string;
-  category: 'NAVIGATION' | 'ACTIONS' | 'WORKSPACES';
+  category: 'NAVIGATION' | 'ACTIONS' | 'WORKSPACES' | 'RECENT';
   icon: React.ComponentType<any>;
   action: () => void;
   /** Extra search terms: the surface id and its legacy route aliases, so
@@ -32,7 +35,8 @@ export default function CommandPalette({
   onNavigate,
   onNewRun,
   projects,
-  onSelectProject
+  onSelectProject,
+  recentWorkspaces = []
 }: CommandPaletteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -85,6 +89,22 @@ export default function CommandPalette({
     { id: 'action-new-run', title: 'New Run Setup', subtitle: 'Launch spec parser setup wizard', category: 'ACTIONS', icon: Terminal, action: () => { onNewRun(); } },
     { id: 'action-author-test', title: 'Author a test...', subtitle: 'Type plain intent to generate Playwright test', category: 'ACTIONS', icon: Terminal, action: () => { onNavigate('authoring'); } },
     { id: 'action-open-divergences', title: 'Open Divergences list', subtitle: 'Inspect active drifts and errors', category: 'ACTIONS', icon: Zap, action: () => { onNavigate('triage'); } },
+
+    // RECENT -- only shown while the search box is empty (N-4)
+    ...(search === '' && recentWorkspaces.length > 0
+      ? recentWorkspaces
+          .filter((ws) => navSurfaces.includes(ws))
+          .slice(0, 4)
+          .map((ws) => ({
+            id: `recent-${ws}`,
+            title: `Go to ${SURFACE_TITLES[ws].title}`,
+            subtitle: 'Recently visited',
+            category: 'RECENT' as const,
+            icon: Clock,
+            action: () => onNavigate(ws),
+            keywords: [ws, ...SURFACE_CHROME[ws].aliases],
+          }))
+      : []),
 
     // WORKSPACES
     ...projects.map((p) => ({
