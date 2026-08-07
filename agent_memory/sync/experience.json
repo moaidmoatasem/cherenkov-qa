@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "last_updated": "2026-08-04T01:22:51.036014+00:00",
-  "experience_count": 11,
-  "sessions_contributing": 24,
+  "last_updated": "2026-08-06T00:06:16.731616+00:00",
+  "experience_count": 12,
+  "sessions_contributing": 25,
   "experiences": [
     {
       "id": "exp_seed_001",
@@ -153,6 +153,19 @@
         "ui_remediation"
       ],
       "session_id": "sess_20260802013724_ca849e"
+    },
+    {
+      "id": "exp_sess_20260806000536_c6b32f_ad78",
+      "timestamp": "2026-08-06T00:06:16.731616+00:00",
+      "task": "documentation",
+      "action": "decision Linked the platform operating model and user journeys from the documentation index and positioned them as the adapter boundary in system design.",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "documentation"
+      ],
+      "session_id": "sess_20260806000536_c6b32f"
     }
   ],
   "pattern_index": {
@@ -194,6 +207,9 @@
     ],
     "ui_remediation": [
       "exp_sess_20260802013724_ca849e_769f"
+    ],
+    "documentation": [
+      "exp_sess_20260806000536_c6b32f_ad78"
     ]
   }
 }

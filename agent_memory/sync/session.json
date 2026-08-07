@@ -1,25 +1,18 @@
 {
   "session": {
-    "id": "sess_20260804012214_f54efc",
+    "id": "sess_20260806000536_c6b32f",
     "status": "closed",
-    "task": "p0-ci-hygiene",
-    "started_at": "2026-08-04T01:22:14.372605+00:00",
-    "ended_at": "2026-08-04T01:22:51.011595+00:00",
+    "task": "documentation",
+    "started_at": "2026-08-06T00:05:36.528761+00:00",
+    "ended_at": "2026-08-06T00:06:16.677576+00:00",
     "findings_count": 1,
     "token_total": 0,
-    "summary": "Executed full P0 CI-hygiene plan: 7 PRs committed on feature branches. PR-1 layer-guard.yml rewritten (context/path/scope/auth/JS fixes + test). PR-2 continue-on-error audit (23 gates hard-failed, 7 advisory retained). PR-3 mypy gate green (9 errors/3 files). PR-4/5 authored WAYS_OF_WORKING + AGENT_COLLABORATION_PROTOCOL. PR-6 SSOT/version hygiene + version-consistency CI gate + HANDOVER root-wins. PR-7 baseline re-cert 2138/2/6.",
+    "summary": "Updated docs index and system design to make the platform operating model and user journeys discoverable and architecturally explicit; validated, committed, and pushed to PR #908.",
     "compacted": true,
-    "task_type": "p0-ci-hygiene",
+    "task_type": "documentation",
     "source": "cherenkov"
   },
   "previous_sessions": [
-    {
-      "id": "sess_20260801145438_5dce7e",
-      "task": "E0.5d_conformance_corpus_remediation",
-      "ended_at": null,
-      "summary": null,
-      "token_total": 0
-    },
     {
       "id": "sess_20260801205653_afe1db",
       "task": "docs_fix_826",
@@ -82,7 +75,14 @@
       "ended_at": "2026-08-03T17:30:16.730981+00:00",
       "summary": "Full 48-test gate GREEN on latest main a7b5a166: pytest 0, headless 23/23, e2e 25/25. Local synced to origin. Vite root fixed (ui dir). Ollama 7b OOM env issue worked around via 3b model.",
       "token_total": 0
+    },
+    {
+      "id": "sess_20260804012214_f54efc",
+      "task": "p0-ci-hygiene",
+      "ended_at": "2026-08-04T01:22:51.011595+00:00",
+      "summary": "Executed full P0 CI-hygiene plan: 7 PRs committed on feature branches. PR-1 layer-guard.yml rewritten (context/path/scope/auth/JS fixes + test). PR-2 continue-on-error audit (23 gates hard-failed, 7 advisory retained). PR-3 mypy gate green (9 errors/3 files). PR-4/5 authored WAYS_OF_WORKING + AGENT_COLLABORATION_PROTOCOL. PR-6 SSOT/version hygiene + version-consistency CI gate + HANDOVER root-wins. PR-7 baseline re-cert 2138/2/6.",
+      "token_total": 0
     }
   ],
-  "sessions_since_compact": 25
+  "sessions_since_compact": 26
 }
