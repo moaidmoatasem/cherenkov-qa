@@ -140,7 +140,7 @@ USER INTENT (Natural Language)
 
 **Concrete features:**
 - `cherenkov author "Test the complete user registration and login flow"` → generates multi-step stateful API tests
-- `cherenkov author --from-prd requirements.md` → parses PRD/user stories, maps to API endpoints, generates integrity-verified suites
+- `cherenkov author requirements.md` → parses PRD/user stories, maps to API endpoints, generates integrity-verified suites
 - Intent-to-spec mapping with human confirmation: "I found 4 endpoints matching your intent. Confirm?"
 
 ---
@@ -271,7 +271,7 @@ CHERENKOV INTEGRITY API (REST / MCP / GitHub Action)
 
 | Rung | Role | CHERENKOV Surface | Skill Level | Time |
 |:---:|------|-------------------|:-----------:|:----:|
-| 1 | **Observer** | `cherenkov validate --url <api>` → see pass/fail in plain English | Zero code | Day 1 |
+| 1 | **Observer** | `cherenkov validate <api>` → see pass/fail in plain English | Zero code | Day 1 |
 | 2 | **Author** | `cherenkov author "test the login flow"` → natural language test creation | Natural language | Week 1 |
 | 3 | **Reviewer** | Visual dashboard: review HITL cards, approve/reject suggestions | Point-and-click | Month 1 |
 | 4 | **Engineer** | `cherenkov eject` → read/modify vanilla Playwright TypeScript | Basic TypeScript | Month 3 |
@@ -380,7 +380,7 @@ CHERENKOV INTEGRITY API (REST / MCP / GitHub Action)
 |:----:|-------------|:------:|
 | 13-14 | `cherenkov author` v1: natural language → single-endpoint test generation | P1 |
 | 13-14 | Spec-optional discovery agent: given URL, crawl and infer API surface | P3 |
-| 15-16 | `cherenkov author --from-prd` v1: parse markdown PRD → map to endpoints | P1 |
+| 15-16 | `cherenkov author` v1: parse markdown PRD → map to endpoints | P1 |
 | 15-16 | Discovery → draft spec generation → human confirmation flow | P3 |
 | 17-18 | Multi-step stateful flow authoring: "Register → Login → Update → Delete" | P1 |
 | 17-18 | RecordingProxy integration: capture real traffic → enrich discovered spec | P3 |
@@ -529,10 +529,10 @@ Should we pursue formal integration partnerships with Schemathesis (complementar
 pip install cherenkov-qa && cherenkov validate --target https://petstore.swagger.io --spec petstore.yaml
 
 # Horizon 1 validation
-code --install-extension cherenkov.cherenkov-integrity && cherenkov mcp sentinel --test
+code --install-extension cherenkov.cherenkov-integrity && cherenkov mcp
 
 # Horizon 2 validation
-cherenkov author "Test the user registration and login flow" --spec api.yaml --dry-run
+cherenkov author "Test the user registration and login flow" --target api.yaml 
 
 # Horizon 3 validation
 curl -X POST https://api.cherenkov.dev/v1/audit -d @test.spec.ts -H "X-Spec: api.yaml"

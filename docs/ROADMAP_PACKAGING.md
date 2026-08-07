@@ -140,7 +140,7 @@ Each ticket: scope, files, acceptance (raw-evidence), dependencies, out-of-scope
 
 **Scope.** Make `cherenkov review` serve a **prebuilt** dashboard from inside the container:
 - Build the React/Vite UI in a Dockerfile stage; copy the static `dist/` into the engine image.
-- `cherenkov review --web` launches the FastAPI app (`cherenkov/web/api.py`, real `HitlQueue`) and
+- `cherenkov dashboard` launches the FastAPI app (`cherenkov/web/api.py`, real `HitlQueue`) and
   serves `dist/` — no Node, no `npm install` at user runtime.
 - Expose the port in compose; print the URL on startup.
 
@@ -164,7 +164,7 @@ this ticket; do not vendor mock data into the image.
 **Scope.** A `demo` compose profile that needs **no GPU and no model pull**:
 - Ship a cached, pre-generated run against the bundled petstore (tests + a real `validate` findings
   set incl. the 422-vs-400 drift) as fixture data baked into the image.
-- `cherenkov review --web --demo` loads that fixture into the real `HitlQueue` and serves the UI.
+- `cherenkov dashboard` loads that fixture into the real `HitlQueue` and serves the UI.
 - Clearly badge the UI as "Demo data" so it's never mistaken for a live run (anti-drift).
 
 ---

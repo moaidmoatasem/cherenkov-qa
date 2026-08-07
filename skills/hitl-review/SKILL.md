@@ -47,7 +47,7 @@ All subcommands support `--json` for `hitl/v1` envelope output.
 ### Web UI Operations (`cherenkov/web/api.py`)
 
 ```bash
-./bin/cherenkov review --web --port 8000 --demo
+./bin/cherenkov dashboard
 ```
 
 Opens a browser-based review dashboard with:

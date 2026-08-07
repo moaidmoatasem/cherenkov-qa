@@ -31,7 +31,7 @@ We'd love for you to try it on your API today (`npx cherenkov init`) and let us 
 - **Thumbnail (600x600)**: GIF of CLI `cherenkov validate` running in terminal.
 - **Gallery Image 1 (1270x760)**: Visual diagram of Spec -> LLM -> Playwright loop.
 - **Gallery Image 2 (1270x760)**: Screenshot of the React Dashboard showing drift.
-- **Gallery Image 3 (1270x760)**: Code diff showing `cherenkov heal` suggesting a fix.
+- **Gallery Image 3 (1270x760)**: Code diff showing `cherenkov generate` suggesting a fix.
 - **Video**: 2-minute Loom walkthrough embedded via YouTube.
 
 ## Launch Day Checklist

@@ -43,6 +43,6 @@ Launch the web UI to inspect the divergence.
 
 ```bash
 # Launch review dashboard in demo mode
-python cherenkov.py review --web --demo
+python cherenkov.py dashboard
 ```
 *Expected Output*: A FastAPI server starts on port 8000. Navigating to `http://localhost:8000` shows the prebuilt frontend with demo findings loaded into the HITL queue.

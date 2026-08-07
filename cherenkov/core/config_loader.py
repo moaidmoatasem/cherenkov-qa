@@ -11,6 +11,14 @@ Resolution order (lowest → highest precedence):
 
 from __future__ import annotations
 
+import warnings
+
+warnings.warn(
+    "cherenkov.core.config_loader is deprecated. Use cherenkov.core.settings.CherenkovSettings instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
 import os
 from pathlib import Path
 from typing import Any

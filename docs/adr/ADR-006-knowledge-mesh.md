@@ -90,7 +90,7 @@ class KnowledgeResult:
 
 **CLI:**
 ```bash
-cherenkov knowledge query "auth timeout" --format json
+cherenkov explore "auth timeout"  json
 ```
 
 **API:**
@@ -200,7 +200,7 @@ Use federated query engine (Presto, Trino) to query across stores.
 - Bridge HITL → Reflector via events (ticket #333)
 - Bridge Feedback → RAG (ticket #334)
 - Bridge agent_memory → RAG (ticket #335)
-- Create knowledge query CLI (ticket #336)
+- Create explore CLI (ticket #336)
 - Truth Model persistence (ticket #337)
 
 ## References

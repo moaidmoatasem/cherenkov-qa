@@ -191,7 +191,7 @@ flowchart TB
   Adapters --> Stores
   Bridges --> KB
 
-  CLI[cherenkov knowledge query] --> KB
+  CLI[cherenkov explore] --> KB
   API[/api/v1/knowledge/query] --> KB
   Chat[Chat Agent] --> KB
 ```
@@ -422,7 +422,7 @@ sequenceDiagram
   participant CA as Certificate Authority (local key)
   participant Reg as Certificate Registry
 
-  Dev->>CK: cherenkov certify --tier deep
+  Dev->>CK: cherenkov certify --llm deep
   CK->>VG: run full validation suite
   VG-->>CK: ValidationReport (pass_rate, evidence_dir)
   CK->>SG: evaluate_claims(spec, report)

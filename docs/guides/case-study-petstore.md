@@ -14,7 +14,7 @@ Here is what we found.
 
 Command executed:
 ```bash
-cherenkov run --spec petstore.json --target http://localhost:3000
+cherenkov verify --spec petstore.json --target http://localhost:3000
 ```
 
 ## Bug 1: The "Required Field" Lie

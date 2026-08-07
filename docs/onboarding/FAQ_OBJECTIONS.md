@@ -106,7 +106,7 @@ Install CHERENKOV from source: clone the repository (or mirror it to your intern
 
 **Short answer:** Every HITL decision is append-only, timestamped, and author-attributed in `hitl_audit.jsonl`.
 
-Each entry in `hitl_audit.jsonl` records: the item ID, the original artefact (test stub + error), all LLM repair attempts with their outputs, the human action (`approve`/`reject`/`edit`), the editor's identity (from `git config user.email` or `CHERENKOV_AUDIT_USER` env var), and an ISO 8601 timestamp. The file is append-only by design; CHERENKOV never rewrites or deletes audit entries. For SOC2 Type II, this log provides evidence that AI-generated test changes were reviewed by a named human before being applied. For GDPR Article 22 (automated decision-making), the HITL audit demonstrates that test logic decisions are not made solely by AI. The audit log can be exported to JSON, shipped to a SIEM, or committed to a compliance repository. A `cherenkov audit export --format csv` command is planned for Phase 4.
+Each entry in `hitl_audit.jsonl` records: the item ID, the original artefact (test stub + error), all LLM repair attempts with their outputs, the human action (`approve`/`reject`/`edit`), the editor's identity (from `git config user.email` or `CHERENKOV_AUDIT_USER` env var), and an ISO 8601 timestamp. The file is append-only by design; CHERENKOV never rewrites or deletes audit entries. For SOC2 Type II, this log provides evidence that AI-generated test changes were reviewed by a named human before being applied. For GDPR Article 22 (automated decision-making), the HITL audit demonstrates that test logic decisions are not made solely by AI. The audit log can be exported to JSON, shipped to a SIEM, or committed to a compliance repository. A `cherenkov audit csv` command is planned for Phase 4.
 
 ---
 
@@ -120,7 +120,7 @@ The D7 invariant (Design Invariant 7) states: *"Validate and healing produce rep
 
 ### 14. How does the `eject` command work, and what files are produced?
 
-**Short answer:** `cherenkov eject --out ejected/` produces a directory of standalone pytest files, a `requirements.txt`, and a `README.md`. No CHERENKOV imports remain.
+**Short answer:** `cherenkov eject --output ejected/` produces a directory of standalone pytest files, a `requirements.txt`, and a `README.md`. No CHERENKOV imports remain.
 
 The eject command iterates all test files in the CHERENKOV project, strips the `from cherenkov.sdet import *` imports and CHERENKOV-specific fixtures, replaces them with equivalent `requests` and `pytest` code, and writes the result to `ejected/`. The produced files are: one `.py` test file per original test, `requirements.txt` (containing only `requests` and `pytest`), `conftest.py` (with any shared fixtures that were portable), and `README.md` (with run instructions). The ejected suite is validated by running `pytest ejected/ --collect-only` during the eject command itself — if collection fails, CHERENKOV reports it rather than silently producing broken files. The pet-store ejected suite is used as a CI regression test: `tests/eject/petstore_suite/` runs 37/37 green on every PR to prove the eject command remains functional.
 
@@ -214,7 +214,7 @@ Currently, support is community-driven: file a GitHub Issue for bugs, use GitHub
 
 **Short answer:** Nothing bad. Your tests are yours, and the eject command produces a fully independent suite.
 
-This is the purpose of the `eject` command and the anti-lock-in design invariant. At any time, run `cherenkov eject --out ejected/` to produce a directory of standard `pytest`/`requests` files with zero CHERENKOV imports. These files run with `pytest ejected/` and depend only on `pytest` and `requests` — two of the most stable Python packages in existence. The ejected suite is validated as part of CHERENKOV's own CI (37/37 pet-store tests pass). Your OpenAPI spec is your source of truth; if you ever need to regenerate tests, you can use any other spec-to-test tool (Schemathesis, Dredd, etc.) from the same spec. CHERENKOV's certificate format is documented as an open spec (`docs/specs/CHERENKOV_CERTIFICATE.md` v1.0 STABLE), so certificates remain readable without CHERENKOV tooling. In short: the tool is designed so that your investment survives the tool's existence.
+This is the purpose of the `eject` command and the anti-lock-in design invariant. At any time, run `cherenkov eject --output ejected/` to produce a directory of standard `pytest`/`requests` files with zero CHERENKOV imports. These files run with `pytest ejected/` and depend only on `pytest` and `requests` — two of the most stable Python packages in existence. The ejected suite is validated as part of CHERENKOV's own CI (37/37 pet-store tests pass). Your OpenAPI spec is your source of truth; if you ever need to regenerate tests, you can use any other spec-to-test tool (Schemathesis, Dredd, etc.) from the same spec. CHERENKOV's certificate format is documented as an open spec (`docs/specs/CHERENKOV_CERTIFICATE.md` v1.0 STABLE), so certificates remain readable without CHERENKOV tooling. In short: the tool is designed so that your investment survives the tool's existence.
 
 ---
 

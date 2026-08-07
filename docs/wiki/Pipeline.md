@@ -277,7 +277,7 @@ The ejected files have:
 Healing never modifies your tests. It only suggests.
 
 ```bash
-./bin/cherenkov heal --report .cherenkov/report.json
+./bin/cherenkov generate --output-dir .cherenkov/report.json
 ```
 
 The healer reads the report, classifies each failure, and writes a human-readable suggestion file:

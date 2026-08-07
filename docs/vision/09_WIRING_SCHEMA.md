@@ -105,7 +105,7 @@ class KnowledgeResult:
     metadata: dict[str, Any]
 ```
 
-**Consumers:** Chat agent (`query_verdicts`, `explain_divergence`), Dashboard (`/api/v1/knowledge/query`), CLI (`cherenkov knowledge query`)
+**Consumers:** Chat agent (`query_verdicts`, `explain_divergence`), Dashboard (`/api/v1/knowledge/query`), CLI (`cherenkov explore`)
 
 **Adapters:** `SQLiteKnowledgeRepository` (default), `RedisKnowledgeRepository` (upgrade with vector search)
 

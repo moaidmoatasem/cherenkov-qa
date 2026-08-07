@@ -81,7 +81,7 @@ The core CHERENKOV Track A API conformance engine is highly functional and clean
 ### Phase 10 — Week 17 — EJECT + Harden
 * **Status:** `STRUCTURAL DIFFERENCE / WORKS`
 * **Raw Evidence & Code References:**
-  - **Works:** Ejects a standalone, zero-dependency Playwright TypeScript suite containing a clean `client.ts`, standard `playwright.config.ts`, `package.json`, and `tsconfig.json`. (Verified eject runs green in isolated environments).
+  - **Works:** Ejects a standalone, zero-dependency Playwright TypeScript suite containing a clean `client.ts`, standard `playwright.config.ts`, `package.json`, and `tsconfig.json`. (Verified ejects green in isolated environments).
   - **Structural Difference:** Implemented in [cherenkov/execution/eject.py](file:///wsl.localhost/Ubuntu-24.04/home/moaid/cherenkov-qa/cherenkov/execution/eject.py) instead of `eject/exporter.py` to keep internal module boundaries cohesive.
 
 ### Phase 11 — Weeks 18-19 — Dashboard (defer-first)

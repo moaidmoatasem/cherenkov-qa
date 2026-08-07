@@ -491,7 +491,7 @@ Add Docker Offload to the `live-llm-generate` job:
         with:
           docker-config: ${{ secrets.DOCKER_CONFIG }}
       - run: docker compose --profile full up -d
-      - run: ./bin/cherenkov generate --target ${{ secrets.TARGET_URL }}
+      - run: ./bin/cherenkov generate --spec ${{ secrets.TARGET_URL }}
 ```
 
 ### D5 — Tests
@@ -557,7 +557,7 @@ services:
   explorer-agent:
     profiles: ["agents"]
     build: .
-    command: python -m cherenkov explore --daemon
+    command: python -m cherenkov explore
     environment:
       - OLLAMA_HOST=http://ollama:11434
     depends_on:
@@ -566,7 +566,7 @@ services:
   healer-agent:
     profiles: ["agents"]
     build: .
-    command: python -m cherenkov heal --daemon --provider docker
+    command: python -m cherenkov generate docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
@@ -575,7 +575,7 @@ services:
   daemon-agent:
     profiles: ["agents"]
     build: .
-    command: python -m cherenkov daemon --watch
+    command: python -m cherenkov daemon
     depends_on:
       - ollama
 ```
@@ -588,7 +588,7 @@ services:
 #!/usr/bin/env bash
 # Start the full CHERENKOV agent fabric
 docker compose --profile agents up -d
-docker compose exec daemon-agent cherenkov daemon --watch
+docker compose exec daemon-agent cherenkov daemon
 ```
 
 ---

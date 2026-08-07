@@ -67,7 +67,7 @@ flowchart TD
 cherenkov hitl list|show|approve|reject|classify|explain
 cherenkov validate --target <url>
 cherenkov eject --output <dir>
-cherenkov review --web  # Launches dashboard
+cherenkov dashboard  # Launches dashboard
 ```
 
 **Web Workflow (Secondary):**
@@ -407,30 +407,30 @@ Revamp the entire CHERENKOV-QA system including user experience, user workflows,
 
 **Journey 1: First-Time User (0 → Running Tests in 5 minutes)**
 ```
-1. cherenkov init --interactive
+1. cherenkov init
    - Guided setup with questions
    - Auto-detects OpenAPI spec
    - Validates environment
    - Generates sample config
 
-2. cherenkov api validate
+2. cherenkov validate
    - Runs full pipeline
    - Shows tightening report
    - Suggests next steps
 
-3. cherenkov api eject --output my_tests/
+3. cherenkov eject --output my_tests/
    - Exports standalone tests
    - Confirms zero lock-in
 ```
 
 **Journey 2: Daily API Development**
 ```
-1. cherenkov api validate --watch
+1. cherenkov validate
    - Watches spec and code
    - Auto-reruns on changes
    - Streams results
 
-2. cherenkov api validate --target staging
+2. cherenkov validate --target staging
    - Runs against staging
    - Compares with prod baseline
 
@@ -449,7 +449,7 @@ Revamp the entire CHERENKOV-QA system including user experience, user workflows,
    - Crawls live surface
    - Surfaces anomalies
 
-3. cherenkov certify --tier deep
+3. cherenkov certify --llm deep
    - Validates model tier
    - Checks RAG triad
 ```
@@ -458,10 +458,10 @@ Revamp the entire CHERENKOV-QA system including user experience, user workflows,
 
 ```bash
 # Common shortcuts
-cherenkov validate      # alias: cherenkov api validate
-cherenkov test         # alias: cherenkov api validate --target default
-cherenkov init         # alias: cherenkov system init --interactive
-cherenkov dashboard    # alias: cherenkov review --web
+cherenkov validate      # alias: cherenkov validate
+cherenkov validate         # alias: cherenkov validate --target default
+cherenkov init         # alias: cherenkov system init
+cherenkov dashboard    # alias: cherenkov dashboard
 ```
 
 ### 2.3 Progressive Disclosure
@@ -694,7 +694,7 @@ Each stage emits:
    cherenkov report list
    cherenkov report show <id>
    cherenkov report compare <id1> <id2>
-   cherenkov report export <id> --format html
+   cherenkov report <id> --format html
    ```
 
 **Files to Modify:**
@@ -855,7 +855,7 @@ I'm covering all of these, with no silent exclusions:
 - Replace mock-data screens with real data (Wave 2 #224/#239) and add explicit `MOCK DATA` badges where the wire isn't ready.
 - Wire the `Initialize Pilot Run` button to `POST /api/v1/run` (Wave 2 #223).
 - Add toasts (Wave 2 #222), empty/error/loading states (Wave 3 #240), guided tour, ⌘K palette, autonomy-ladder persistence.
-- Make the CLI "one-line" (single `cherenkov run --spec spec.json --target http://api`) and have the multi-step golden path as a recipe on top of it.
+- Make the CLI "one-line" (single `cherenkov verify --spec spec.json --target http://api`) and have the multi-step golden path as a recipe on top of it.
 - Tighten the report printers (`print_tightening_report`, `print_visual_report`, `print_perf_report`) into a single structured printer with a `--json` flag.
 - Add a `cherenkov status` command (single source of truth: doctor + run state + queue depth + last finding).
 - Add `cherenkov onboard` (init + doctor + first run with a bundled petstore) as the single entry point.
