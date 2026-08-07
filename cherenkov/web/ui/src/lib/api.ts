@@ -982,3 +982,51 @@ export async function startJourneyRun(
   if (!res.ok) throw new Error(`Failed to start journey run: ${res.status}`);
   return res.json();
 }
+
+export interface ExploreFindingDto {
+  id: string;
+  kind: 'server_error' | 'client_error' | 'js_error' | 'visual_break' | 'slow_response' | 'unreachable';
+  url: string;
+  method: string;
+  status: number | null;
+  latency_ms: number;
+  detail: string;
+  evidence: string;
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+}
+
+export interface ExploreFlow {
+  type: 'link' | 'form' | 'nav_item';
+  url: string;
+  path: string;
+  method: string;
+  label: string;
+}
+
+export interface ExploreResponse {
+  base_url: string;
+  method: string;
+  probed: number;
+  discovered: ExploreFlow[];
+  discover_note: string;
+  findings: ExploreFindingDto[];
+}
+
+export async function runExplore(payload: {
+  base_url: string;
+  paths: string[];
+  method?: string;
+  slow_ms?: number;
+  discover?: boolean;
+}): Promise<ExploreResponse> {
+  const res = await fetch(`${API_BASE}/explore`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to run exploration: ${res.status}`);
+  }
+  return res.json();
+}

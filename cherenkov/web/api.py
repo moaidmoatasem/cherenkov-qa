@@ -194,6 +194,10 @@ from cherenkov.web.routes.healing_routes import router as healing_router
 
 app.include_router(healing_router)
 
+from cherenkov.web.routes.explore_routes import router as explore_router
+
+app.include_router(explore_router)
+
 # ── Journeys: workflow definitions + live per-step run state. Registered
 # before the SPA fallback so /api/v1/journeys/* is matched first ─────────────
 from cherenkov.web.routes.journey_routes import router as journey_router

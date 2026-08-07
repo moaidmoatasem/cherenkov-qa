@@ -1,0 +1,106 @@
+from __future__ import annotations
+
+import os
+
+os.environ.setdefault("CHERENKOV_ENV", "development")
+
+from fastapi.testclient import TestClient
+
+from cherenkov.core.contracts import ExplorerFinding, ExplorerFindingKind, Severity
+from cherenkov.web.api import app
+
+client = TestClient(app, raise_server_exceptions=False)
+
+
+def _fake_finding(url: str, kind: ExplorerFindingKind = ExplorerFindingKind.SERVER_ERROR) -> ExplorerFinding:
+    return ExplorerFinding(
+        id="f-1",
+        kind=kind,
+        url=url,
+        method="GET",
+        status=500,
+        latency_ms=40,
+        detail="Server returned 500.",
+        evidence="<html>",
+        severity=Severity.CRITICAL,
+    )
+
+
+class _FakeExplorer:
+    def __init__(self, base_url: str, slow_ms: int = 2000):
+        self.base_url = base_url
+        self.slow_ms = slow_ms
+
+    def crawl(self, paths, method):
+        return [_fake_finding(f"{self.base_url}{p}") for p in paths]
+
+    def discover_flows(self, root_url, max_links):
+        return [{"type": "link", "url": f"{root_url}/about", "path": "/about", "method": "GET", "label": ""}]
+
+
+def _patch_explorer(monkeypatch, factory=_FakeExplorer):
+    monkeypatch.setattr("cherenkov.web.routes.explore_routes.Explorer", factory)
+
+
+def test_explore_returns_crawled_findings(monkeypatch):
+    _patch_explorer(monkeypatch)
+    r = client.post(
+        "/api/v1/explore",
+        json={"base_url": "http://localhost:8000", "paths": ["/", "/pets"]},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["probed"] == 2
+    assert len(body["findings"]) == 2
+    assert body["findings"][0]["url"] == "http://localhost:8000/"
+    assert body["findings"][0]["kind"] == "server_error"
+
+
+def test_explore_returns_discovered_flows_when_requested(monkeypatch):
+    _patch_explorer(monkeypatch)
+    r = client.post(
+        "/api/v1/explore",
+        json={"base_url": "http://localhost:8000", "paths": ["/"], "discover": True},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["discovered"] == [
+        {"type": "link", "url": "http://localhost:8000/about", "path": "/about", "method": "GET", "label": ""}
+    ]
+    assert body["discover_note"] == ""
+
+
+def test_explore_notes_when_discovery_finds_nothing(monkeypatch):
+    class _EmptyDiscover(_FakeExplorer):
+        def discover_flows(self, root_url, max_links):
+            return []
+
+    _patch_explorer(monkeypatch, _EmptyDiscover)
+    r = client.post(
+        "/api/v1/explore",
+        json={"base_url": "http://localhost:8000", "paths": ["/"], "discover": True},
+    )
+    assert r.status_code == 200
+    assert r.json()["discover_note"] != ""
+
+
+def test_explore_requires_at_least_one_path(monkeypatch):
+    _patch_explorer(monkeypatch)
+    r = client.post("/api/v1/explore", json={"base_url": "http://localhost:8000", "paths": []})
+    assert r.status_code == 422
+
+
+def test_explore_rejects_non_http_scheme(monkeypatch):
+    _patch_explorer(monkeypatch)
+    r = client.post(
+        "/api/v1/explore",
+        json={"base_url": "file:///etc/passwd", "paths": ["/"]},
+    )
+    assert r.status_code == 422
+
+
+def test_explore_caps_path_count(monkeypatch):
+    _patch_explorer(monkeypatch)
+    many = [f"/p{i}" for i in range(101)]
+    r = client.post("/api/v1/explore", json={"base_url": "http://localhost:8000", "paths": many})
+    assert r.status_code == 422

@@ -9,6 +9,7 @@ import DoctorCheckWidget from './DoctorCheckWidget';
 import IntentAuthoringPanel from './IntentAuthoringPanel';
 import LivePipelineMonitor from './LivePipelineMonitor';
 import DetectedChainsPanel from './DetectedChainsPanel';
+import ExplorePanel from './ExplorePanel';
 import { PageHeader } from '../../ui/PageHeader';
 import { EndpointRichness } from '../../../types';
 
@@ -56,10 +57,13 @@ export const AuthoringWorkspace: React.FC<AuthoringWorkspaceProps> = ({
         onPipelineStarted={handlePipelineStarted}
       />
 
-      {/* 4. Detected multi-step CRUD chains for the ingested spec */}
+      {/* 4. Live Surface Explorer — crawl a running service for anomalies */}
+      <ExplorePanel />
+
+      {/* 5. Detected multi-step CRUD chains for the ingested spec */}
       <DetectedChainsPanel specPath={activeSpecPath} />
 
-      {/* 5. Live Pipeline DAG & Log Monitor */}
+      {/* 6. Live Pipeline DAG & Log Monitor */}
       <LivePipelineMonitor runId={activeRunId} />
     </div>
   );
