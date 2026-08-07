@@ -190,6 +190,32 @@ def verify_cmd(
     click.echo(f"  Mode    : {mode_label}")
     if rich_verdict:
         click.echo("  Engine  : multi-agent (rich verdict)")
+
+    if spec_dict and allow_mutations:
+        from cherenkov.journeys.crud_detect import detect_crud_chains
+        from cherenkov.journeys.executor import ChainExecutor, harvest_identifiers
+
+        chains = detect_crud_chains(spec_dict)
+        if chains:
+            click.echo(f"  Chains  : Detected {len(chains)} CRUD chain(s) for identifier harvesting")
+            executor = ChainExecutor(base_url=url, allow_mutations=allow_mutations)
+            results = []
+            for chain in chains:
+                try:
+                    res = executor.run(chain)
+                    results.append(res)
+                except Exception as exc:
+                    click.echo(f"    [WARN] Chain {chain.id} failed: {exc}", err=True)
+
+            harvested = harvest_identifiers(results)
+            if harvested:
+                if known_identifiers is None:
+                    known_identifiers = {}
+                for k, v in harvested.items():
+                    known_identifiers.setdefault(k, []).extend(v)
+                count = sum(len(v) for v in harvested.values())
+                click.echo(f"  Harvest : Secured {count} live identifier(s) for verification")
+
     click.echo("")
 
     _warn_unprobed(

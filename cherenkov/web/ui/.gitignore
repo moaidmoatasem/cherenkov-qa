@@ -1,6 +1,7 @@
 node_modules/
 build/
 # dist/ is committed on purpose — it's the prebuilt UI `cherenkov review` serves (#622)
+!dist/
 coverage/
 .DS_Store
 *.log

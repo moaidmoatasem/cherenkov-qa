@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card } from '../../ui';
 import { useDensity, setDensity, type Density } from '../../../lib/useDensity';
-import { Accessibility, Gauge } from 'lucide-react';
+import { fetchSettings, updateSettings, SystemSettings } from '../../../lib/api';
+import { Accessibility, Gauge, Save, CheckCircle2 } from 'lucide-react';
 
 type MotionPref = 'system' | 'reduce' | 'no-preference';
 
@@ -39,22 +40,59 @@ function setMotion(pref: MotionPref): void {
 
 export const A11ySettings: React.FC = () => {
   const density = useDensity();
-  const [motion, setMotionPref] = React.useState<MotionPref>(readMotion);
+  const [motion, setMotionPref] = useState<MotionPref>(readMotion);
+  const [settings, setSettings] = useState<SystemSettings | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchSettings().then((data) => {
+      setSettings(data);
+      if (data.ui) {
+        if (data.ui.density) setDensity(data.ui.density as Density);
+        if (data.ui.motion) {
+          setMotionPref(data.ui.motion as MotionPref);
+          setMotion(data.ui.motion as MotionPref);
+        }
+      }
+    }).catch(() => null);
+  }, []);
 
   // Re-apply the persisted motion override to <html> on load so the CSS guard
   // is in effect even before this panel is visited.
-  React.useEffect(() => {
+  useEffect(() => {
     document.documentElement.dataset.motion =
       readMotion() === 'reduce' ? 'reduce' : 'full';
   }, []);
 
   const chooseDensity = (next: Density) => {
     setDensity(next);
+    if (settings) {
+      setSettings({ ...settings, ui: { ...settings.ui, density: next, motion: settings.ui?.motion || motion } });
+    }
   };
 
   const chooseMotion = (next: MotionPref) => {
     setMotionPref(next);
     setMotion(next);
+    if (settings) {
+      setSettings({ ...settings, ui: { ...settings.ui, motion: next, density: settings.ui?.density || density } });
+    }
+  };
+
+  const handleSave = async () => {
+    if (!settings) return;
+    setIsSaving(true);
+    setMessage(null);
+    try {
+      await updateSettings(settings);
+      setMessage('A11y settings updated successfully!');
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      setMessage((err as Error).message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const motionOptions: { value: MotionPref; label: string; hint: string; testid: string }[] = [
@@ -85,14 +123,25 @@ export const A11ySettings: React.FC = () => {
 
   return (
     <Card className="p-6 space-y-4 font-mono text-xs" data-testid="a11y-settings">
-      <div>
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-text-muted flex items-center gap-2">
-          <Accessibility className="w-4 h-4 text-cyan-400" />
-          <span>Accessibility & Display</span>
-        </h2>
-        <p className="text-xs text-text-muted mt-0.5 font-sans">
-          Motion and density preferences are local to this browser and persist across sessions.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-text-muted flex items-center gap-2">
+            <Accessibility className="w-4 h-4 text-cyan-400" />
+            <span>Accessibility & Display</span>
+          </h2>
+          <p className="text-xs text-text-muted mt-0.5 font-sans">
+            Motion and density preferences are synced with the server.
+          </p>
+        </div>
+        <button
+          onClick={handleSave}
+          disabled={isSaving || !settings}
+          className="px-4 py-2 bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 rounded-lg font-bold flex items-center gap-1 hover:bg-cyan-500/30 transition cursor-pointer"
+          data-testid="btn-save-a11y-settings"
+        >
+          <Save className="w-4 h-4" />
+          <span>{isSaving ? 'Saving...' : 'Save Settings'}</span>
+        </button>
       </div>
 
       {/* Motion preference */}
@@ -160,6 +209,13 @@ export const A11ySettings: React.FC = () => {
           ))}
         </div>
       </fieldset>
+
+      {message && (
+        <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4" />
+          <span>{message}</span>
+        </div>
+      )}
     </Card>
   );
 };

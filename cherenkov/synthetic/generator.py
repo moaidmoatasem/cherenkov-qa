@@ -89,10 +89,13 @@ class SyntheticDataGenerator:
                     prompt_parts.append(f"Pattern: {pattern}")
             prompt_parts.append("Respond with ONLY the value, no explanation.")
 
+            from cherenkov.agents.routing import get_model_for_task
+            model_name = get_model_for_task("small")
+
             raw = client.complete_code(
                 system_prompt="You generate realistic test data values. Return ONLY the value.",
                 user_prompt="\n".join(prompt_parts),
-                model="qwen2.5-coder:7b",
+                model=model_name,
                 temperature=0.7,
                 run_id="synthetic-llm",
             )

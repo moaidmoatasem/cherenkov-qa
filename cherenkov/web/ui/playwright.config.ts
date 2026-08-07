@@ -12,8 +12,6 @@ export default defineConfig({
   // and tests/qa/e2e-journeys.spec.ts (rewritten against the journey-driven IA
   // and no longer archived).
   testIgnore: [
-    '**/*_deep.spec.ts',
-    'tests/a11y.spec.ts',
     'tests/dashboard_e2e.spec.ts',
     'tests/sdd_cockpit.spec.ts',
     'tests/qa/api-contract-integration.spec.ts',
