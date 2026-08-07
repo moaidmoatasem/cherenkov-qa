@@ -4,6 +4,16 @@ This folder archives reviews produced by other agents. They contain useful signa
 material errors. Read them through the project's honest baseline ([HANDOVER.md](../HANDOVER.md),
 [SCOPE_LEDGER.md](../SCOPE_LEDGER.md)) — not the other way around.
 
+## Current
+
+- `TESTERARMY_TEARDOWN_2026-08.md` — competitive teardown of TesterArmy (`testerarmy@0.9.0`)
+  plus a phased plan for the gaps it exposes. **Caveat on method:** the docs site was
+  egress-blocked from the session that wrote it, so the product was reconstructed from the
+  published npm artifact and the public CLI repo, not from vendor documentation — §1 states
+  exactly what was and wasn't reachable. CHERENKOV-side claims are grep-verified against the
+  tree at `de2974a` and cited inline. Its plan (§6) maps onto existing milestones; it does
+  **not** supersede [ROADMAP_2026H2.md](../ROADMAP_2026H2.md) or [HANDOVER.md](../../HANDOVER.md).
+
 ## Archived
 
 - `2026-06-04_mistral_comprehensive_review.md` — broad technical+business review. **Caveat: treat its
