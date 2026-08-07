@@ -250,7 +250,7 @@ python3 cherenkov.py hitl show 1
 python3 cherenkov.py hitl approve 1
 
 # Reject item #2 with a reason
-python3 cherenkov.py hitl reject 2 --reason "Status code mismatch needs triage"
+python3 -m cherenkov hitl reject 2 --reason "Status code mismatch needs triage"
 ```
 
 **Expected behaviour:**
