@@ -121,6 +121,12 @@ cherenkov verify --url <url> --spec <file>
 | `--fail-on-divergence` | No | Exit with code `1` if any divergences are found |
 | `--output FILE` / `-o` | No | Write the divergence report to this file |
 | `--format [json\|text]` | No | Report format for `--output` (default: `json`) |
+| `--json` | No | Emit the report on **stdout**; progress text moves to stderr |
+
+`--output` writes a file; `--json` writes the same document to stdout, so an
+agent or script needs no temp file. Both come from one builder, so they cannot
+drift. `--json` composes with `--fail-on-divergence`: the document is emitted
+before the non-zero exit, so a failing CI gate still tells you why.
 
 **Examples:**
 
