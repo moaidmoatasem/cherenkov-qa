@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 __pycache__/
 *.pyc
 *.pyo
@@ -22,13 +22,13 @@ yarn-error.log*
 
 # Build artifacts
 dist/
+!cherenkov/web/ui/dist/
 build/
 target/
 *.min.js
 *.min.css
 
 # Web UI build
-cherenkov/web/ui/dist/
 
 # Editors
 .vscode/

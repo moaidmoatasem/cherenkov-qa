@@ -93,7 +93,7 @@ Reasons: the assets already exist (React/Vite dashboard + FastAPI), real QA user
 type, and it demos far better in the validation gate. TUI stays as the agent/CI interface (`hitl`).
 
 Principles:
-- **No build step for the user.** Ship prebuilt `dist/`; `cherenkov review --web` launches API + serves it. `npm` only for FE *developers*.
+- **No build step for the user.** Ship prebuilt `dist/`; `cherenkov dashboard` launches API + serves it. `npm` only for FE *developers*.
 - **One screen that matters:** the **Findings queue** — each card shows endpoint+method, the failing gate, confidence + plain-language reason, the generated test, and big Approve / Reject / Classify buttons + a "Why was this flagged?" (AI explanation, Tier-3, already built).
 - **Honest states:** empty ("no findings — run validate"), loading, error (API down, target unreachable), and a 60-second guided first-run.
 - **Capture rejection reasons** ("intended change", "too noisy", "wrong assertion") — this is both UX and the seed of the learning loop (§6).
@@ -126,7 +126,7 @@ Docker Compose AI, error handling, migration, logging, security.
 ### Phase 1 — Second Brain *(Weeks 3-5, complete)*
 Build knowledge mesh that powers all subsequent phases. KnowledgeRepository, GraphRAG,
 event bridges (HITL → Reflector, Feedback → RAG, agent_memory → RAG).
-**Exit:** `cherenkov knowledge query "auth timeout"` returns real results, Truth Model persists.
+**Exit:** `cherenkov explore "auth timeout"` returns real results, Truth Model persists.
 **Issues:** #328-#337 (10 issues) · **Merged PR #395**
 
 ### Phase 2 — VLM + LocalAI *(Weeks 3-4, parallel with Phase 1, complete)*

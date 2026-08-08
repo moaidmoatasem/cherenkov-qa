@@ -330,7 +330,7 @@ All paths are relative to repo root unless absolute. New files are
 | `cherenkov/stages/mobile_plan.py` | `MobilePlanStage` — pure-deterministic (no LLM) mapping of `MobileSlice` → `MobileScenario` set; same role as existing `stages/plan.py` | 120 |
 | `cherenkov/stages/mobile_generate.py` | `MobileGenerateStage` — emits **Maestro YAML** (default) and optional Appium TS, by analogy to `stages/ui_generate.py`. Uses the Substrate Router via the new VLM provider for hints only. | 240 |
 | `cherenkov/stages/mobile_review.py` | `MobileReviewStage` — runs the ejected Maestro YAML in a sandbox and feeds `MobileReport` into the existing REVIEW pipeline; tsc-only for the Appium variant | 110 |
-| `cherenkov/stages/mobile_cmd.py` | CLI surface: `cherenkov mobile init`, `cherenkov mobile run --intent "..."`, `cherenkov mobile eject --output <dir>` | 100 |
+| `cherenkov/stages/mobile_cmd.py` | CLI surface: `cherenkov eject init`, `cherenkov eject "..."`, `cherenkov eject --output <dir>` | 100 |
 | `cherenkov/oracle/visual_oracle_vlm.py` | `SemanticVisualOracle` — VLM-backed pass/fail, *never* sole oracle; pairs with the existing pixel-diff oracle in `oracle/visual_oracle.py` | 180 |
 | `cherenkov/execution/maestro_runner.py` | `MaestroRunner` — wraps the `maestro` CLI (or a Maestro MCP server) for action execution; anti-lock-in: writes plain YAML, runs outside CHERENKOV | 160 |
 | `cherenkov/execution/appium_runner.py` | `AppiumRunner` — alternative runtime, used when an app cannot be re-authored as Maestro YAML (e.g. third-party apps with locked-down flows) | 200 |
@@ -550,7 +550,7 @@ async def approve_trace(payload: dict) -> dict: ...     # POST /api/v1/mobile/tr
 | `HealingDiagnose.classify(error)` | `cherenkov/healing/diagnose.py` | Wrap, don't modify — `MobileFailureClassifier` adds new classes; existing `FailureClass` is unchanged. |
 | `HitlQueue.classify(item_id, classification)` | `cherenkov/hitl/store.py` | Extend the `classification` field allowed values with `mobile_bug | mobile_flaky | mobile_env` (additive). |
 | `cherenkov.mcp.handlers.handle_tool_call` | `cherenkov/mcp/handlers.py` | Add 4 new tool cases. The existing trust model ("MCP peers are untrusted") and `PolicyEngine.is_tool_allowed` gate are **not** relaxed. |
-| `EjectorEngine.eject_suite(output_path)` | `cherenkov/execution/eject.py` | Detect `mobile/` subdirs in the source tests; emit a separate `mobile_eject_format` flag in the output; the **zero `cherenkov` imports** invariant becomes "the mobile eject dir has zero `cherenkov` imports, period" — verified by the existing grep step. |
+| `EjectorEngine.eject_suite(output_path)` | `cherenkov/execution/eject.py` | Detect `mobile/` subdirs in the source tests; emit a separate `mobile_eject_format` flag in the output; the **zero `cherenkov` imports** invariant becomes "the eject dir has zero `cherenkov` imports, period" — verified by the existing grep step. |
 | `cherenkov.py` (top-level CLI) | `cherenkov.py` | Add `mobile` subcommand (init, run, eject, trace-list). No changes to any existing subcommand. |
 | `get_parser()` | `cherenkov.py` | Add the mobile subparsers. |
 | `RAGIndex.add_incident(...)` | `cherenkov/ai/rag_index.py` | **No change.** Add a sibling `mobile_add_trace(trace)` that calls the existing `add_incident` per failure observation. |
@@ -634,7 +634,7 @@ adopt mobile to use CHERENKOV.
 
 | Tool | Version | Purpose | Optional? | When required |
 |---|---|---|---|---|
-| `maestro` CLI | `>=1.30` | Ejectable mobile flow runtime; 2MB binary footprint, MCP-native | No | Required for `cherenkov mobile eject` and Pilot's execution path on Android |
+| `maestro` CLI | `>=1.30` | Ejectable mobile flow runtime; 2MB binary footprint, MCP-native | No | Required for `cherenkov eject` and Pilot's execution path on Android |
 | `adb` (Android Debug Bridge) | `>=34.0` | Android device control; used by `MaestroRunner` for install/launch/capture | No | Required only when running mobile on Android |
 | `xcrun simctl` (macOS only) | bundled with Xcode | iOS simulator control | No | Required only when running mobile on iOS |
 | `aapt` (Android Asset Packaging Tool) | bundled with `adb` | Extract app package + version from APK | No | Required only when ingesting `.apk` specs |
@@ -795,7 +795,7 @@ calibrate VLM cost/latency in isolation.
 - Create `cherenkov/substrate/vlm_provider.py` (ABC + Ollama + OpenAI).
 - Add `vlm` to the provider registry in `cherenkov/substrate/provider.py`.
 - Add `VLM_TIER` and `MOBILE_EJECT_FORMAT` to `cherenkov/core/config.py`.
-- Add a CLI subcommand `cherenkov doctor --vlm` (fail-soft).
+- Add a CLI subcommand `cherenkov doctor` (fail-soft).
 - **Kill-criterion:** `pytest tests/unit/test_vlm_provider.py` green; on a
   host with Ollama + `qwen2.5-vl:7b`, a sample `VLMRequest` returns a
   structured `VLMResult` in <10s on a 1280×720 PNG; with `EGRESS=none` the
@@ -978,8 +978,8 @@ calibration knob.
    with Appium as the fallback for third-party apps. The opposite is
    also defensible if your audience is already Appium-fluent.
 
-3. **Should `cherenkov mobile eject` be a top-level subcommand, or
-   nested under `cherenkov eject --format=maestro`?** The plan picks
+3. **Should `cherenkov eject` be a top-level subcommand, or
+   nested under `cherenkov eject --output=maestro`?** The plan picks
    the top-level subcommand (clearer UX, more CLI surface). Nested is
    a one-line change if you prefer it.
 

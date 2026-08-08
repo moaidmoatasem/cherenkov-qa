@@ -34,7 +34,7 @@ You can install CHERENKOV via our zero-install script or globally via pip/npm:
 
 ```bash
 # Zero-install bootstrap (recommended)
-npx cherenkov init --spec api.yaml --target http://localhost:8080
+npx cherenkov init api.yaml 
 
 # Or via pip
 pip install cherenkov
@@ -51,7 +51,7 @@ dredd api.yaml http://localhost:8080 --hookfiles=hooks.js
 
 **New CHERENKOV Command:**
 ```bash
-cherenkov run --spec api.yaml --target http://localhost:8080
+cherenkov verify --spec api.yaml --target http://localhost:8080
 ```
 
 ## Step 4: Say Goodbye to Manual Hooks

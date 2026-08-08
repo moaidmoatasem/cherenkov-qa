@@ -58,7 +58,7 @@ export const DashboardWorkspace: React.FC<DashboardWorkspaceProps> = ({
   ];
 
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-6 grid-bg bg-transparent relative z-10" id="dashboard-workspace">
+    <div className="ds-flex-col ds-gap-lg" style={{ padding: 'var(--spacing-xl)', height: '100%', overflowY: 'auto', background: 'transparent', position: 'relative', zIndex: 10 }} id="dashboard-workspace">
       <PageHeader
         title="Dashboard"
         description="Is your API release-ready? Readiness score, run history, and coverage at a glance."
@@ -75,9 +75,9 @@ export const DashboardWorkspace: React.FC<DashboardWorkspaceProps> = ({
       />
 
       {activeTab === 'overview' && (
-        <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="ds-flex-col ds-gap-lg" style={{ animation: 'ds-pulse 0.3s ease-out forwards' }}>
           {/* 0. Section Landing Links (N-2) */}
-          <div className="flex flex-wrap gap-3" data-testid="dashboard-quick-links">
+          <div className="ds-flex-row ds-gap-md" style={{ flexWrap: 'wrap' }} data-testid="dashboard-quick-links">
             {quickLinks.map((link) => {
               const Icon = link.icon;
               return (
@@ -86,18 +86,15 @@ export const DashboardWorkspace: React.FC<DashboardWorkspaceProps> = ({
                   onClick={() => onNavigate && onNavigate(link.to)}
                   disabled={link.disabled}
                   data-testid={`quick-link-${link.id}`}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border text-left transition ${
-                    link.disabled
-                      ? 'border-border-subtle bg-bg-surface/40 text-text-muted/50 cursor-not-allowed'
-                      : 'border-border-subtle bg-bg-surface/70 hover:border-cyan-500/40 hover:bg-cyan-500/5 text-text-primary cursor-pointer'
-                  }`}
+                  className={`ds-button ds-glass-panel ds-flex-row ds-gap-sm ${link.disabled ? 'ds-disabled' : 'ds-button-primary'}`}
+                  style={{ opacity: link.disabled ? 0.5 : 1, textAlign: 'left', padding: '12px 16px' }}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 ${link.disabled ? 'text-text-muted/50' : 'text-cyan-400'}`} />
-                  <span className="min-w-0">
-                    <span className="block text-xs font-mono font-semibold">{link.label}</span>
-                    <span className="block text-[10px] text-text-muted truncate max-w-[16rem]">{link.detail}</span>
+                  <Icon style={{ width: '16px', height: '16px', flexShrink: 0, color: link.disabled ? 'var(--text-muted)' : 'var(--primary)' }} />
+                  <span style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                    <span className="ds-title" style={{ fontSize: '13px' }}>{link.label}</span>
+                    <span className="ds-subtitle" style={{ maxWidth: '256px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{link.detail}</span>
                   </span>
-                  <CornerDownRight className="w-3 h-3 text-text-muted/50 shrink-0" />
+                  <CornerDownRight style={{ width: '12px', height: '12px', color: 'var(--text-muted)', flexShrink: 0 }} />
                 </button>
               );
             })}
@@ -115,7 +112,7 @@ export const DashboardWorkspace: React.FC<DashboardWorkspaceProps> = ({
       )}
 
       {activeTab === 'signals' && (
-        <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="ds-flex-col ds-gap-lg" style={{ animation: 'ds-pulse 0.3s ease-out forwards' }}>
           {/* 3. Spec Coverage & Risk Signals Heatmap */}
           <IntegrityHeatmap />
 

@@ -4,7 +4,7 @@
 **Date:** 2026-06-05
 **Audience:** QA validation user (manual, business-level — no code knowledge required)
 **System under test:** CHERENKOV "Forensic QA Protocol" dashboard — `cherenkov/web/ui` (canonical Track A UI)
-**Backend:** FastAPI `cherenkov.py review --port 8000` · **Frontend:** Vite dev :3000 · **LLM:** Ollama `qwen2.5-coder:7b`
+**Backend:** FastAPI `python3 -m cherenkov review review --port 8000` · **Frontend:** Vite dev :3000 · **LLM:** Ollama `qwen2.5-coder:7b`
 
 ---
 
@@ -481,7 +481,7 @@ Each test case is written so a QA user can run it by **clicking the UI** and com
 
 | ID | Guard | Expected after fix |
 |----|-------|--------------------|
-| RG-1 | `cherenkov.py review` (no `--demo`) boots | No `NameError: os` (fixed: `import os`) — backend starts in non-demo mode |
+| RG-1 | `python3 -m cherenkov review review` (no `--demo`) boots | No `NameError: os` (fixed: `import os`) — backend starts in non-demo mode |
 | RG-2 | `validate` must not auto-edit test files | `smoke_test_validate.py` passes; git clean; **currently FAILS** (mutates `stub/generated_tests/*.spec.ts`) — **open defect** |
 | RG-3 | Divergence detail-drawer opens | `text=D-` rows visible after filtering; **deferred-tree E2E currently FAILS** |
 | RG-4 | HYBRID silent failures (Review/Healing) | Backend failure surfaces to user (currently swallowed by `.catch(console.warn)`) |

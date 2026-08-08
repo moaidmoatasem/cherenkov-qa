@@ -127,7 +127,7 @@ Status:
 
 ### 2.13 Certify Command
 ```bash
-Command: ./bin/cherenkov certify --tier small --rag-report
+Command: ./bin/cherenkov certify --llm small --rag-report
 Expected: Run certification gate
 Status:
 ```

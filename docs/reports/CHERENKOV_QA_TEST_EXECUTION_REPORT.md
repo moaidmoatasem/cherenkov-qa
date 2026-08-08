@@ -223,7 +223,7 @@ Status: ⚠️ PARTIAL (command exists and parses)
 
 #### Test: `certify` command
 ```bash
-Command: python3 cherenkov.py certify --tier small --rag-report
+Command: python3 cherenkov.py certify --llm small --rag-report
 Result: Not tested (requires models)
 Status: ⏭️ SKIPPED
 ```
@@ -239,9 +239,9 @@ Issue: Windows console doesn't support some Unicode characters
 Workaround: Use UTF-8 console or redirect to file
 ```
 
-#### Test: `profile set` command
+#### Test: `profile` command
 ```bash
-Command: python3 cherenkov.py profile set --level augmented
+Command: python3 cherenkov.py profile --level augmented
 Result: Not tested
 Status: ⏭️ SKIPPED
 ```

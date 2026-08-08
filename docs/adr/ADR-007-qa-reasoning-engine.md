@@ -124,5 +124,5 @@ follow-up phases).
    (`cherenkov/oracle`, vision doc 17) for executable visual cases.
 2. Wire `live_app` charters to the autonomous explorer
    (`cherenkov/divergence/explorer.py`).
-3. CLI surface: `cherenkov reason --artifact <path|url> [--stage <s>] [--maturity <m>]`.
+3. CLI surface: `cherenkov eval --output <path|url> [--stage <s>] [--maturity <m>]`.
 4. Dashboard screen for the QA plan + risk register.

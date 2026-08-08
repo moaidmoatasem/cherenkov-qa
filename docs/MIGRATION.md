@@ -136,7 +136,7 @@ class MigrationRunner:
 1. **Before any migration**: snapshot affected .db files to `.cherenkov/backups/{date}_{version}_pre_migration/`
 2. **Run `up()`**: Verify with assertion queries
 3. **If `up()` fails**: restore from snapshot, log error, exit
-4. **If user wants to rollback**: `cherenkov db rollback --version <vN>` runs `down()`
+4. **If user wants to rollback**: `cherenkov init <vN>` runs `down()`
 5. **Rollback is user-initiated** (CLI only). Never auto-rollback
 
 ---
@@ -262,7 +262,7 @@ migration = Migration(
 3. **Backup before migration** (copy .db file)
 4. **If migration fails, app exits with clear error message**
 5. **`cherenkov db migrate` runs all pending migrations**
-6. **`cherenkov db rollback --version v1` rolls back to v1**
+6. **`cherenkov init v1` rolls back to v1**
 
 ---
 
@@ -277,7 +277,7 @@ Applies all pending migrations. Creates backup before each migration.
 
 ### Rollback
 ```bash
-cherenkov db rollback --version 1
+cherenkov init 1
 ```
 
 Rolls back to version 1. Runs `down()` for each migration in reverse order.

@@ -242,7 +242,7 @@ pre-commit run --all-files
 
 ## Getting Help
 
-- **Question about the codebase?** — Try `./bin/cherenkov chat` or open a discussion
+- **Question about the codebase?** — Try `./bin/cherenkov dashboard` or open a discussion
 - **Stuck on a bug?** — Paste the full error in the issue; don't paraphrase
 - **Unsure if something is in scope?** — Read [HANDOVER.md](../HANDOVER.md) or open an issue to discuss first
 - **Found a security issue?** — See [Security](Security.md) — do not open a public issue

@@ -19,7 +19,7 @@ This meta-skill helps you (or an AI agent) find the right CHERENKOV skill for a 
 | Audit test suite quality (6 gates) | `check-suite` | `cherenkov check-suite` |
 | Issue a signed conformance certificate | `certify` | `cherenkov certify` |
 | Review uncertain tests with a human | `hitl-review` | `cherenkov hitl list` |
-| Self-heal failing tests (suggest-only) | `self-healing` | `cherenkov heal` |
+| Self-heal failing tests (suggest-only) | `self-healing` | `cherenkov generate` |
 | Export ejected tests to a standalone repo | `eject-standalone` | `cherenkov eject` |
 | Set up CHERENKOV MCP server | `mcp-integration` | `cherenkov mcp serve` |
 | Drive CHERENKOV from Open Interpreter | `open-interpreter` | `bash scripts/setup_oi.sh` |

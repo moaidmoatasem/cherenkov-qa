@@ -74,44 +74,44 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   const currentProject = projects.find((p) => p.id === selectedProjectId);
 
   return (
-    <header className="h-16 px-6 border-b border-border-subtle bg-bg-surface/80 backdrop-blur-md flex items-center justify-between z-20 shrink-0 select-none">
+    <header className="ds-header">
       {/* Brand & Active Workspace Context */}
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-3">
-          <CherenkovLogo className="w-7 h-7 text-cyan-400" />
-          <div className="flex flex-col">
-            <span className="font-mono text-sm font-bold tracking-wider text-text-primary flex items-center gap-1.5">
-              CHERENKOV <span className="text-cyan-400 text-xs font-semibold px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20">QA</span>
+      <div className="ds-flex-row ds-gap-lg">
+        <div className="ds-flex-row ds-gap-sm">
+          <CherenkovLogo className="w-7 h-7" style={{ color: 'var(--primary)' }} />
+          <div className="ds-flex-col">
+            <span className="ds-title ds-text-gradient ds-flex-row ds-gap-sm">
+              CHERENKOV <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: 'rgba(14, 165, 233, 0.1)', border: '1px solid rgba(14, 165, 233, 0.2)' }}>QA</span>
             </span>
           </div>
         </div>
 
-        <div className="h-6 w-px bg-border-subtle" />
+        <div style={{ width: '1px', height: '24px', background: 'var(--border-glass)' }} />
 
         {/* Workspace Title */}
         <div>
-          <h1 className="text-sm font-semibold font-mono text-text-primary flex items-center gap-2">
+          <h1 className="ds-title ds-flex-row ds-gap-sm">
             {activeWorkspaceTitle}
           </h1>
-          <p className="text-[11px] text-text-muted">{activeWorkspaceSubtitle}</p>
+          <p className="ds-subtitle">{activeWorkspaceSubtitle}</p>
         </div>
       </div>
 
       {/* Center/Right Status Controls */}
-      <div className="flex items-center gap-4">
+      <div className="ds-flex-row ds-gap-md">
         {/* Active Project Dropdown Selector */}
         <div className="relative">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-base border border-border-subtle hover:border-border-strong text-xs font-mono transition text-text-primary"
+            className="ds-button ds-glass-panel"
             data-testid="project-selector-dropdown"
             title="Workspace selection is cosmetic in this build: it highlights a project here but does not filter backend data, which is global until project-scoped APIs ship."
           >
-            <span className="text-text-muted">Project:</span>
-            <span className="font-semibold text-cyan-400 max-w-[140px] truncate">
+            <span style={{ color: 'var(--text-muted)' }}>Project:</span>
+            <span className="ds-text-gradient" style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {currentProject ? currentProject.name : 'Select Project'}
             </span>
-            <ChevronDown className="w-3.5 h-3.5 text-text-muted" />
+            <ChevronDown className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
           </button>
 
           {isDropdownOpen && (

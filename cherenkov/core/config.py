@@ -4,6 +4,14 @@ CHERENKOV core/config.py — structured configuration and environment loading.
 
 from __future__ import annotations
 
+import warnings
+
+warnings.warn(
+    "cherenkov.core.config is deprecated. Use cherenkov.core.settings.CherenkovSettings instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
 # Load .env file if present (python-dotenv optional dependency)
 try:
     from dotenv import load_dotenv as _load_dotenv

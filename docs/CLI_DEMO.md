@@ -174,7 +174,7 @@ HITL queue â all (1 item(s))
 This terminal recording shows starting the local web review interface to triage HITL queue items via the browser instead of the terminal.
 
 ```ansi
- [1;36m$ ./bin/cherenkov review --web --demo [0m
+ [1;36m$ ./bin/cherenkov dashboard [0m
 
 ================================================================================
 đ CHERENKOV HORIZON V REVIEW SERVER

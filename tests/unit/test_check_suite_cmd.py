@@ -194,3 +194,35 @@ class TestCheckSuiteCmd:
         data = json.loads(out.read_text())
         assert "findings" in data
         assert len(data["findings"]) > 0
+
+    def test_json_flag_puts_a_parseable_document_on_stdout(self) -> None:
+        """An agent wiring this into CI should not need a temp file, and must not
+        have to strip a banner off the front of stdout to parse the result."""
+        runner = CliRunner()
+        result = runner.invoke(
+            check_suite_cmd,
+            ["-c", str(WEAKENED), "-b", str(GOOD), "-s", str(SPEC), "--json"],
+        )
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        assert payload["clean"] is False
+        assert payload["findings"]
+        assert payload["candidate"] == str(WEAKENED)
+
+    def test_json_flag_reports_clean_on_an_honest_suite(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(
+            check_suite_cmd, ["-c", str(GOOD), "-b", str(GOOD), "-s", str(SPEC), "--json"]
+        )
+        payload = json.loads(result.output)
+        assert payload["clean"] is True
+        assert payload["findings"] == []
+
+    def test_json_flag_still_gates_with_fail_on_finding(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(
+            check_suite_cmd,
+            ["-c", str(WEAKENED), "-b", str(GOOD), "-s", str(SPEC), "--json", "--fail-on-finding"],
+        )
+        assert result.exit_code == 1
+        assert json.loads(result.output)["clean"] is False, "the document must survive the gate"

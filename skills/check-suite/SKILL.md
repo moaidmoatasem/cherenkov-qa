@@ -25,13 +25,13 @@ Run `cherenkov check-suite` to audit an existing (or freshly generated) Playwrig
 cherenkov check-suite
 
 # Audit a specific directory
-cherenkov check-suite --dir my_tests/
+cherenkov check-suite --baseline my_tests/
 
 # JSON output for CI
-cherenkov check-suite --json
+cherenkov check-suite --output
 
 # Only report failures
-cherenkov check-suite --fail-only
+cherenkov check-suite --fail-on-finding
 ```
 
 ### Gates evaluated
@@ -73,7 +73,7 @@ Suggestions written to .cherenkov/check-suite-report.json
 ```yaml
 # .github/workflows/pr.yml (fragment)
 - name: Check test suite quality
-  run: cherenkov check-suite --json --fail-only
+  run: cherenkov check-suite --output --fail-only
   # exits 1 if any file scores < 0.7
 ```
 

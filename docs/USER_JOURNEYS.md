@@ -66,7 +66,7 @@ These journeys make the product legible from a user's point of view. A capabilit
 2. Teams choose compatible adapters for their context: local models or cloud models; Playwright or Cypress; k6 or another performance executor.
 3. CI and MCP integrations enforce the same policy and publish portable results such as JSON, JUnit, or SARIF.
 4. The leader sees adoption, recurring risks, and coverage gaps without treating dashboard counts as proof.
-5. Teams can eject generated artifacts and replace adapters without losing the historical verdict record.
+5. Teams can generated artifacts and replace adapters without losing the historical verdict record.
 
 **Success:** Governance increases trust and reuse without becoming vendor lock-in or a centralized testing bottleneck.
 

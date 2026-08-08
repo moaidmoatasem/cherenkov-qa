@@ -76,7 +76,7 @@ To view all supported commands and options:
 
 The CLI organizes its 40 top-level commands into 7 logical command groups for
 discoverability. Every command remains available at the top level for backwards
-compatibility, so `cherenkov validate` and `cherenkov pipeline validate` both
+compatibility, so `cherenkov validate` and `cherenkov pipeline` both
 work. See [CLI_GROUPS.md](CLI_GROUPS.md) for the full group reference.
 
 ```bash
@@ -225,7 +225,7 @@ Operational commands for runbook actions and long-running tasks (start/stop/heal
 
 ```bash
 ./bin/cherenkov operate --help
-./bin/cherenkov operate start-agent --name skeptic
+./bin/cherenkov operate skeptic
 ```
 
 ---
@@ -235,7 +235,7 @@ Pipeline helpers: orchestrate CI/CD fragments, validate landing zones, and run c
 
 ```bash
 ./bin/cherenkov pipeline --help
-./bin/cherenkov pipeline validate --ci
+./bin/cherenkov pipeline
 ```
 
 ---
@@ -715,7 +715,7 @@ Certifies a capability tier against the gold set using RAG-Triad metrics.
 ./bin/cherenkov certify
 
 # Certify a specific tier with per-item RAG-Triad detail
-./bin/cherenkov certify --tier deep --rag-report
+./bin/cherenkov certify --llm deep --rag-report
 ```
 
 | Flag | Default | Description |
@@ -733,7 +733,7 @@ Shows or sets the autonomy level the pipeline operates at.
 ./bin/cherenkov profile
 
 # Set the autonomy level
-./bin/cherenkov profile set --level augmented
+./bin/cherenkov profile --level augmented
 ```
 
 | Flag | Default | Description |
@@ -1020,6 +1020,48 @@ cherenkov examples
 
 ---
 
+#### `docs`
+Show CLI documentation for a topic, as text or JSON. `--json` returns
+`{summary, commands, notes}` per topic, so an agent or script can read the docs
+without scraping help output.
+
+```bash
+# List every topic
+cherenkov docs
+
+# One topic, human-readable
+cherenkov docs check-suite
+
+# Everything, structured
+cherenkov docs --json
+```
+
+---
+
+#### `agent`
+Make CHERENKOV discoverable to a coding agent working in this repository.
+`agent init` installs the public skills (`npx skills add moaidmoatasem/cherenkov-qa`)
+and writes a delimited `<!-- CHERENKOV:START -->` block into `AGENTS.md`.
+
+Run it once per repository. It is idempotent — re-running refreshes the block in
+place rather than appending — and it never fails on a missing `npx`: the skills
+install degrades to a printed instruction, because the AGENTS.md block is the
+half that matters for discovery. Both steps are local; nothing is uploaded.
+
+```bash
+# The whole thing
+cherenkov agent init
+
+# Structured result, for a script or agent
+cherenkov agent init --json
+
+# Either half on its own
+cherenkov agent init --skip-skills
+cherenkov agent init --skip-agents-md
+```
+
+---
+
 #### `synthetic`
 Generate synthetic test data payloads from an OpenAPI spec.
 
@@ -1092,7 +1134,7 @@ Manage recurring scheduled validation routines.
 cherenkov routine list
 
 # Create a new routine
-cherenkov routine create --name health-check --trigger cron --value "0 * * * *" --target cherenkov.scheduling.templates.health:run
+cherenkov routine --name health-check --trigger cron --value "0 * * * *" --target cherenkov.scheduling.templates.health:run
 
 # Toggle a routine on/off
 cherenkov routine toggle <routine_id> true

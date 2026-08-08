@@ -282,6 +282,10 @@ network/console capture tools.
 
 ## 6. The plan
 
+> **Status, 2026-08-07:** Phase A is **shipped** (A1 and A2 complete; A3 partial — `check-suite`
+> only). Phase B–D are **not started**. `HANDOVER.md` carries the current state and wins over this
+> section if the two disagree — this doc is a point-in-time review, not a live tracker.
+
 Sequenced by dependency, mapped to existing milestones. Nothing here opens new scope; §6.4
 is explicitly the "don't" list.
 

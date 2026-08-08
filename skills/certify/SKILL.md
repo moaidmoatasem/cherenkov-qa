@@ -26,10 +26,10 @@ Run `cherenkov certify` to issue a cryptographically signed conformance certific
 cherenkov certify
 
 # Certify with explicit target URL (runs verify first)
-cherenkov certify --target https://api.example.com
+cherenkov certify --url https://api.example.com
 
 # Deep tier with RAG-Triad quality metrics
-cherenkov certify --tier deep --rag-report
+cherenkov certify --llm deep --rag-report
 
 # Compliance profile (adds MENA / SOC 2 metadata)
 cherenkov certify --compliance mena
@@ -66,7 +66,7 @@ Issued certificates follow the open `CHERENKOV_CERTIFICATE` spec v1.0 (`docs/spe
 ### Verify a certificate
 
 ```bash
-cherenkov certify verify --cert .cherenkov/certificate.json
+cherenkov certify --verify --cert .cherenkov/certificate.json
 ```
 
 Returns: `VALID` / `TAMPERED` / `EXPIRED`.
@@ -76,7 +76,7 @@ Returns: `VALID` / `TAMPERED` / `EXPIRED`.
 ```yaml
 # .github/workflows/certify-gate.yml (fragment)
 - name: Issue conformance certificate
-  run: cherenkov certify --tier deep --output .cherenkov/certificate.json
+  run: cherenkov certify --llm deep --output .cherenkov/certificate.json
 - name: Fail if not CONFORMANT
   run: |
     verdict=$(jq -r .verdict .cherenkov/certificate.json)

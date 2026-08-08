@@ -64,7 +64,7 @@ Week 0 gate passes. This is The One Absolute Rule.
 - `cli/progress.py`: live per-stage progress (spinner + elapsed + current item).
 
 **DONE**
-- [ ] `cherenkov generate api --spec petstore.yaml` runs the full stubbed DAG
+- [ ] `cherenkov generate --spec petstore.yaml` runs the full stubbed DAG
       and prints a clean progress view, no crashes.
 - [ ] Feeding a deliberately malformed stage output triggers the retry ladder,
       then the fallback, and logs it — pipeline still completes.

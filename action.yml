@@ -73,8 +73,13 @@ runs:
       shell: bash
       env:
         OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
-        CHERENKOV_LLM_PROVIDER: ${{ inputs.llm-provider }}
-        CHERENKOV_LLM_MODEL: ${{ inputs.llm-model }}
+        # These are the names cherenkov/core/settings.py actually reads.
+        # CHERENKOV_LLM_PROVIDER / CHERENKOV_LLM_MODEL do not exist anywhere in
+        # the package: setting them was a silent no-op, so `llm-provider: openai`
+        # still ran against the Ollama default. Guarded by
+        # tests/unit/test_action_env_names.py.
+        PROVIDER: ${{ inputs.llm-provider }}
+        GEN_MODEL: ${{ inputs.llm-model }}
       run: |
         set +e
         OUTPUT_FILE="${{ inputs.output-path }}"

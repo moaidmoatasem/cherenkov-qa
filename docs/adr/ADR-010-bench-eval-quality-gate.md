@@ -79,7 +79,7 @@ correct pattern.
 
 **Ship benchmark numbers in the README now**  
 Cannot publish numbers until the bench command runs against a representative
-corpus with a real LLM. The README will be updated once `cherenkov bench --generate`
+corpus with a real LLM. The README will be updated once `cherenkov bench`
 is implemented and numbers are collected.
 
 ## Consequences
@@ -88,5 +88,5 @@ is implemented and numbers are collected.
 - `tests/evals/test_review_integrity.py` runs in CI via pytest discovery
 - `bench/fixtures/` is a new top-level directory alongside `stub/` and `demos/`
 - `pyproject.toml` gains `bench` and `dev` optional dependency groups
-- **Next step:** implement `cherenkov bench --generate` (Ollama-backed full
+- **Next step:** implement `cherenkov bench` (Ollama-backed full
   pipeline mode) and publish compile/pass/mutation/flakiness numbers in README
