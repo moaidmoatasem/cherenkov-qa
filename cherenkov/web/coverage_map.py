@@ -167,9 +167,9 @@ def build_coverage_map(store=None) -> dict[str, Any]:
     }
 
 
-def _latest_coverage_pct(store=None) -> float:
+def _latest_coverage_pct(store=None) -> float | None:
     """Return the coverage_pct of the most recent run with a recorded value,
-    else the corpus-derived figure (tested/total)."""
+    else None."""
     from cherenkov.persistence.run_store import get_run_store
 
     run_store = store or get_run_store()
@@ -177,9 +177,7 @@ def _latest_coverage_pct(store=None) -> float:
     if records and records[0].coverage_pct is not None:
         return round(records[0].coverage_pct, 1)
 
-    findings = divergence_store.list_divergences()
-    total = len({(f.get("endpoint") or "").upper() for f in findings})
-    return round((total / max(total, 1)) * 100.0, 1) if total else 100.0
+    return None
 
 
 def coverage_trend(store=None, limit: int = 60) -> list[dict[str, Any]]:
@@ -211,7 +209,7 @@ def coverage_trend(store=None, limit: int = 60) -> list[dict[str, Any]]:
 class CoverageSummary:
     """Lightweight aggregate for quick status display."""
 
-    coverage_pct: float
+    coverage_pct: float | None
     open_issues: int
     tested_endpoints: int
     total_endpoints: int

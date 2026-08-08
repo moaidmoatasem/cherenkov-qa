@@ -72,7 +72,7 @@ source .venv/bin/activate     # Linux / macOS
 pip install -e ".[dev]"
 
 # 4. Verify the CLI is reachable
-python3 cherenkov.py --help
+python3 -m cherenkov --help
 ```
 
 > **Tip:** The target API has its own venv inside `target/`. Set it up once with:
@@ -241,16 +241,16 @@ After all smokes pass, demonstrate the HITL CLI interactively.
 
 ```bash
 # List pending human-review items
-python3 cherenkov.py hitl list
+python3 -m cherenkov hitl list
 
 # Show details of item #1
-python3 cherenkov.py hitl show 1
+python3 -m cherenkov hitl show 1
 
 # Approve item #1
-python3 cherenkov.py hitl approve 1
+python3 -m cherenkov hitl approve 1
 
 # Reject item #2 with a reason
-python3 cherenkov.py hitl reject 2 --reason "Status code mismatch needs triage"
+python3 -m cherenkov hitl reject 2 --reason "Status code mismatch needs triage"
 ```
 
 **Expected behaviour:**

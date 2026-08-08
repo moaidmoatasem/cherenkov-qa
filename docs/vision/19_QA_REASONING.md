@@ -121,7 +121,7 @@ cherenkov/reasoning/
 |------|------------|--------|
 | 1 | Domain + strategy + heuristic adapter + scenario bridge + unit tests | ✅ this branch |
 | 2 | `OllamaReasoner` adapter (complete_json, fallback to heuristic) | next |
-| 3 | CLI: `cherenkov reason --artifact <path|url> --stage <s> --maturity <m>` | next |
+| 3 | CLI: `cherenkov eval --output <path|url> --stage <s> --maturity <m>` | next |
 | 4 | Figma artifact → VLM visual oracle execution | follow-up |
 | 5 | Live-app charters → autonomous explorer execution | follow-up |
 | 6 | Dashboard: QA plan + risk register screen | follow-up |

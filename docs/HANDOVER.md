@@ -589,10 +589,10 @@ docker compose -f docker-compose.ai.yml up -d
 cherenkov validate --spec petstore.yaml --target http://localhost:8000
 
 # Query knowledge
-cherenkov knowledge query "auth timeout" --format json
+cherenkov explore "auth timeout"  json
 
 # Start chat agent
-cherenkov chat --session-id abc123
+cherenkov dashboard abc123
 ```
 
 See [PHASE_PLAN.md](PHASE_PLAN.md) for full environment setup.

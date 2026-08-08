@@ -22,16 +22,16 @@ Run `cherenkov verify` against a target server to execute the generated test sui
 
 ```bash
 # Against local server
-cherenkov verify --target http://localhost:8000
+cherenkov verify --url http://localhost:8000
 
 # Against staging, JSON output
-cherenkov verify --target https://staging.api.example.com --output json
+cherenkov verify --url https://staging.api.example.com --output json
 
 # Fail-fast on first divergence
-cherenkov verify --target http://localhost:8000 --fail-fast
+cherenkov verify --url http://localhost:8000 --fail-fast
 
 # Filter to a single tag
-cherenkov verify --target http://localhost:8000 --tag smoke
+cherenkov verify --url http://localhost:8000 --tag smoke
 ```
 
 ### What it does
@@ -64,7 +64,7 @@ cherenkov verify --output junit   # JUnit XML for CI systems
 ```yaml
 # .github/workflows/verify.yml (fragment)
 - name: Verify API conformance
-  run: cherenkov verify --target ${{ env.API_URL }} --output junit
+  run: cherenkov verify --url ${{ env.API_URL }} --output junit
 - uses: actions/upload-artifact@v4
   with:
     name: cherenkov-report

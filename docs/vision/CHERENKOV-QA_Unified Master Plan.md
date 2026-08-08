@@ -145,9 +145,9 @@ To: **AI-native QA platform** that:
 |---|---|---|---|
 | **Redis Stack** | `redis/redis-stack-server` | Vector search, pub/sub, session cache, JSON docs | Multi-agent coordination, enhanced second brain |
 | **Docker MCP Gateway** | `docker/mcp-gateway` | Unified external agent access, auth, tool discovery | When exposing CHERENKOV to external agents (Claude, Copilot) |
-| **Android Emulator** | Android SDK + ADB | Mobile testing on Android | `cherenkov mobile init` optional setup |
+| **Android Emulator** | Android SDK + ADB | Mobile testing on Android | `cherenkov eject init` optional setup |
 | **iOS Simulator** | Xcode + simctl | Mobile testing on iOS | macOS only, optional |
-| **Maestro CLI** | `maestro` | Ejectable mobile test runtime | `cherenkov mobile init` optional setup |
+| **Maestro CLI** | `maestro` | Ejectable mobile test runtime | `cherenkov eject init` optional setup |
 | **Appium** | `appium-python-client` | Alternative mobile runtime for locked-down apps | Optional, pip install cherenkov-qa[mobile] |
 | **Docker Compose AI** | `docker-compose.ai.yml` | One-command stack: LocalAI + Redis + CHERENKOV | `docker compose -f docker-compose.ai.yml up` |
 
@@ -514,7 +514,7 @@ User opens ChatPanel (sidebar or full ChatScreen)
 ### 5.5 Mobile Testing Flow (NEW)
 
 ```
-User: cherenkov mobile run --intent "guest checkout" --target emulator-5554
+User: cherenkov eject "guest checkout" 
 │
 ├─ Setup: Device Manager → select target → verify ADB/Maestro → confirm VLM
 ├─ Ingest: MobileSourceAdapter.ingest(.apk/.har/.maestro) → MobileIngestOutput
@@ -575,7 +575,7 @@ Any agent → KnowledgeRepository.query("Why does POST /users return 201?", doma
 | Index feedback into RAG | Human feedback is searchable |
 | Create `knowledge/bridges.py` | All 5 bridges (HITL→Reflector, Feedback→RAG, Memory→RAG, Verdict→RAG, Truth→SQLite) |
 | Create `adapters/sqlite_memory.py` (ConversationMemory) | Create session, add messages, retrieve context, persist across restarts |
-| Add CLI command: `cherenkov knowledge query` | Returns KnowledgeResult in JSON/text/pretty format |
+| Add CLI command: `cherenkov explore` | Returns KnowledgeResult in JSON/text/pretty format |
 
 ### Phase 2: Substrate VLM + LocalAI Integration (Weeks 3-4, parallel with Phase 1)
 
@@ -588,7 +588,7 @@ Any agent → KnowledgeRepository.query("Why does POST /users return 201?", doma
 | Add `/healthz` endpoint to `web/api.py` | `GET /healthz` returns `{status, vlm_tier, localai_available, redis_available}` |
 | Extend `packaging/launcher.py` | NDJSON events, `CHERENKOV_NO_BROWSER=1`, signal handlers |
 | Create `adapters/localai_inference.py` | LocalAI InferenceClient with streaming support |
-| Add `cherenkov doctor --vlm` / `--localai` | Shows VLM tier, LocalAI status, model availability |
+| Add `cherenkov doctor` / `--localai` | Shows VLM tier, LocalAI status, model availability |
 
 ### Phase 3: Desktop Host + Setup Wizard (Weeks 5-8)
 
@@ -610,7 +610,7 @@ Any agent → KnowledgeRepository.query("Why does POST /users return 201?", doma
 | Create `chat/agent.py` (QAChatAgent) | Multi-turn conversation with context window management |
 | Create `chat/tools.py` | Agent can call `query_verdicts`, `query_idioms`, `explain_divergence`, `run_test` |
 | Create `chat/streaming.py` + FastAPI SSE | Tokens stream to desktop app in real time |
-| Add MCP knowledge query tools | `query_verdicts`, `query_idioms`, `query_truth_model` exposed via MCP |
+| Add MCP explore tools | `query_verdicts`, `query_idioms`, `query_truth_model` exposed via MCP |
 | Create `web/chat_routes.py` | 4 endpoints: sessions, messages, stream, history |
 | Create `ChatPanel.tsx` component | Chat renders in sidebar, shows streaming tokens |
 | Create `ChatScreen.tsx` full-screen view | Chat with knowledge links, navigable to other screens |
@@ -693,12 +693,12 @@ Any agent → KnowledgeRepository.query("Why does POST /users return 201?", doma
 
 ```bash
 cherenkov validate          # Track A pipeline
-cherenkov init             # Project setup (extended with --vlm, --device, --mobile)
-cherenkov doctor            # Health checks (extended with --vlm, --localai, --mobile)
+cherenkov init             # Project setup (extended with )
+cherenkov doctor            # Health checks (extended with )
 cherenkov review           # Start dashboard
 cherenkov hitl list/show/approve/reject/classify/explain
-cherenkov eject            # Eject test suite (extended with --format)
-cherenkov visual           # Visual regression (extended with --device)
+cherenkov eject            # Eject test suite (extended with )
+cherenkov visual           # Visual regression (extended with )
 cherenkov perf             # Performance baseline
 cherenkov map              # Truth model
 cherenkov daemon            # Continuous watch
@@ -715,12 +715,12 @@ cherenkov mcp serve         # MCP server
 ### New Commands
 
 ```bash
-cherenkov mobile init      # Set up mobile testing (detect ADB, install Maestro, pull model)
-cherenkov mobile run       # Run Pilot agent on device target
-cherenkov mobile eject     # Eject mobile test suite (Maestro/Appium/All)
-cherenkov mobile trace-list  # List Pilot traces
-cherenkov chat             # Interactive chat with QA agent
-cherenkov knowledge query  # Query second brain
+cherenkov eject init      # Set up mobile testing (detect ADB, install Maestro, pull model)
+cherenkov eject       # Run Pilot agent on device target
+cherenkov eject     # Eject mobile test suite (Maestro/Appium/All)
+cherenkov eject trace-list  # List Pilot traces
+cherenkov dashboard             # Interactive chat with QA agent
+cherenkov explore  # Query second brain
 cherenkov knowledge idioms # List top idioms for endpoint
 cherenkov status           # Single source of truth (doctor + run state + queue + last finding)
 cherenkov onboard          # Zero-config first-run (init + doctor + first run with petstore)

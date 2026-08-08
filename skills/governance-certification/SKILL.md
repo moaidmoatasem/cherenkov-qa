@@ -44,7 +44,7 @@ KPIs tracked:
 ./bin/cherenkov certify
 
 # Certify deep tier with RAG-Triad detail
-./bin/cherenkov certify --tier deep --rag-report
+./bin/cherenkov certify --llm deep --rag-report
 ```
 
 Valid tiers: `small`, `deep`, `vision`.

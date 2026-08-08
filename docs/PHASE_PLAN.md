@@ -259,7 +259,7 @@ For every cross-phase integration point:
 **Kill Criteria:**
 - `pytest tests/unit/test_knowledge_repository.py` passes
 - `pytest tests/contracts/` passes for both SQLite and Redis adapters
-- `cherenkov knowledge query "auth timeout"` returns real results
+- `cherenkov explore "auth timeout"` returns real results
 - Truth Model survives app restart
 
 **Key Deliverables:**
@@ -283,7 +283,7 @@ For every cross-phase integration point:
 - Tauri 2 prototype opens on Windows + macOS + Linux
 - LocalAI VLM request returns result in <10s on 1280×720 PNG
 - Router selects correct provider for each device class
-- `cherenkov doctor --vlm --localai` shows tier recommendation
+- `cherenkov doctor --desktop` shows tier recommendation
 - GitHub Models cloud inference routing works in CI with valid `github` egress policy.
 
 **Key Deliverables:**

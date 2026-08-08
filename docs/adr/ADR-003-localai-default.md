@@ -165,7 +165,7 @@ Use LocalAI for VLM, Ollama for text generation.
 - Test LocalAI Docker integration (ticket #341)
 - Add `/healthz` endpoint (ticket #342)
 - Extend `launcher.py` with NDJSON events (ticket #343)
-- Add `cherenkov doctor --vlm --localai` (ticket #344)
+- Add `cherenkov doctor --desktop` (ticket #344)
 
 ### Phase 0b: Docker Compose AI (1 week)
 - Create `docker-compose.ai.yml` (ticket #317)

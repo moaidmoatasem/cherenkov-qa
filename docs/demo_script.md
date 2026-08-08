@@ -13,7 +13,7 @@
 
 **Visual:** Terminal open. An OpenAPI YAML file is shown quickly.
 **Subtitle:** "Your OpenAPI spec says one thing. Does your server agree?"
-**Action:** User types `npx cherenkov init --spec petstore.yaml --target http://localhost:8080`
+**Action:** User types `npx cherenkov init petstore.yaml `
 **Narration/Subtitle:** "CHERENKOV reads your spec and generates typed Playwright tests locally using an LLM. Zero vendor lock-in. Zero cloud data sharing."
 
 ## 0:10 - 0:30 (Generation & 6-Gate Review)

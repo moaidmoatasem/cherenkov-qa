@@ -34,7 +34,7 @@ CHERENKOV will parse the Postman collection, extract the saved request parameter
 Once the tests are generated, verify them against your live server:
 
 ```bash
-cherenkov run --target http://localhost:8080
+cherenkov verify --url http://localhost:8080
 ```
 
 If you ever decide to stop using CHERENKOV, you can eject the tests completely:

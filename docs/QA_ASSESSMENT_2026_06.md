@@ -219,7 +219,7 @@ sharpens** its priorities. No new phases are added — the existing 4 phases are
 
 **Phase 0 — Wire the review loop (1 week)**
 The single action with the highest leverage: wire `cherenkov/web/api.py` to real `HitlQueue` +
-real validate findings, and add `cherenkov review --web` to launch it. This turns the dashboard
+real validate findings, and add `cherenkov dashboard` to launch it. This turns the dashboard
 from mock-wired dead code into the validation vehicle. Exit: screen-recorded golden path.
 
 **Phase 1 — Kill first-run friction (1–2 weeks)**
