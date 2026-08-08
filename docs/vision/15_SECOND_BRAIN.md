@@ -13,7 +13,7 @@ The Second Brain is CHERENKOV's knowledge mesh — a unified query interface ove
 - **Unified search**: `query("auth timeout")` searches across all stores
 - **GraphRAG**: Multi-domain retrieval with semantic search
 - **Event bridges**: HITL → Reflector, Feedback → RAG, agent_memory → RAG
-- **CLI/API access**: `cherenkov knowledge query` and `/api/v1/knowledge/query`
+- **CLI/API access**: `cherenkov explore` and `/api/v1/knowledge/query`
 
 ---
 

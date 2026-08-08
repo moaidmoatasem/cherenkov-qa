@@ -341,9 +341,9 @@ Update README.md when adding new features:
 ## New Features
 
 ### Second Brain (Phase 1)
-- Unified knowledge query across all stores
+- Unified explore across all stores
 - GraphRAG for multi-domain retrieval
-- CLI: `cherenkov knowledge query "auth timeout"`
+- CLI: `cherenkov explore "auth timeout"`
 ```
 
 ---

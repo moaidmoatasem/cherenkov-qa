@@ -2,7 +2,7 @@
 
 The CHERENKOV CLI organizes its **40 top-level commands** into **7 logical command
 groups** for discoverability. Every command remains registered at the top level for
-backwards compatibility, so `cherenkov validate` and `cherenkov pipeline validate`
+backwards compatibility, so `cherenkov validate` and `cherenkov pipeline`
 both work identically.
 
 This page is the canonical reference for the command groups. The group layout is
@@ -34,7 +34,7 @@ Core API conformance pipeline: `validate`, `verify`, `audit`, `check-suite`,
 cherenkov pipeline --help
 
 # Run a command through the group (equivalent to the top-level form)
-cherenkov pipeline validate --target http://localhost:8000
+cherenkov pipeline --target http://localhost:8000
 ```
 
 ## `review`
@@ -82,7 +82,7 @@ Enterprise integrations and certification: `enterprise`, `certify`, `playbook`,
 
 ```bash
 cherenkov enterprise --help
-cherenkov enterprise certify --tier deep
+cherenkov enterprise certify --llm deep
 ```
 
 ## `routine`

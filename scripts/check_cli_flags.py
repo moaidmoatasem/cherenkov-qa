@@ -120,6 +120,8 @@ def main() -> int:
     real = _real_flags_by_command(cli)
     errors = []
     checked = 0
+    
+    # 1. Check reference.md Flags tables
     for command, flags in _iter_doc_flags(content):
         if not flags:
             continue
@@ -139,12 +141,37 @@ def main() -> int:
                     f"[{command}] documented flag `{flag}` does not exist in CLI "
                     f"(has: {sorted(real_opts) if real_opts else 'none'})"
                 )
+
+    # 2. Check all other .md files for inline `cherenkov <cmd> --flag` uses
+    import glob
+    md_files = glob.glob(os.path.join(_REPO_ROOT, "docs", "**", "*.md"), recursive=True) + \
+               glob.glob(os.path.join(_REPO_ROOT, "skills", "**", "*.md"), recursive=True)
+    
+    inline_re = re.compile(r"(?:python\s+cherenkov\.py|cherenkov|\./bin/cherenkov)\s+([a-z][\w-]*(?:\s+[a-z][\w-]*)?)\s+.*?(--[a-z][\w-]+)")
+    for md_file in md_files:
+        with open(md_file, encoding="utf-8", errors="ignore") as f:
+            for line_no, line in enumerate(f, 1):
+                for match in inline_re.finditer(line):
+                    command, flag = match.groups()
+                    if flag in _HELP_FLAGS:
+                        continue
+                    real_opts = real.get(command, set())
+                    if command not in real:
+                        errors.append(
+                            f"{os.path.relpath(md_file, _REPO_ROOT)}:{line_no} uses command '{command}' which doesn't exist."
+                        )
+                    elif flag not in real_opts:
+                        errors.append(
+                            f"{os.path.relpath(md_file, _REPO_ROOT)}:{line_no} uses flag '{flag}' on command '{command}' but it doesn't exist "
+                            f"(has: {sorted(real_opts) if real_opts else 'none'})"
+                        )
+                        checked += 1
     print(f"Checked {checked} documented flags across the CLI reference.")
     if errors:
         print(f"\n[FAIL] {len(errors)} flag drift issue(s):")
         for e in errors:
             print(f"  * {e}")
-        print(f"\nFix {_REFERENCE_PATH} so every documented flag is a real Click option.")
+        print(f"\nFix the markdown files so every documented flag is a real Click option.")
         return 1
     print("[PASS] every documented CLI flag exists on the real Click command.")
     return 0

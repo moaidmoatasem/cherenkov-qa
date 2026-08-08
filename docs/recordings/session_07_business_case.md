@@ -26,7 +26,7 @@ cd /home/moaid/cherenkov-qa
 source .venv/bin/activate
 
 # Launch dashboard in demo mode (no server needed)
-cherenkov review --web --demo &
+cherenkov dashboard &
 sleep 2
 
 # Launch governance panel in another terminal

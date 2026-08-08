@@ -18,8 +18,10 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sys
 import time
+import uuid
 from pathlib import Path
 from typing import Any, cast
 
@@ -119,9 +121,10 @@ _log = logging.getLogger(__name__)
 )
 @click.option(
     "--identifiers",
-    type=click.Path(exists=True),
+    is_flag=False,
+    flag_value="LATEST",
     default=None,
-    help="JSON file mapping path parameters to known valid values.",
+    help="JSON file mapping path parameters to known valid values. If passed as a flag without a value, reads from the latest run directory.",
 )
 @click.option(
     "--allow-mutations",
@@ -176,12 +179,27 @@ def verify_cmd(
 
     known_identifiers: dict[str, list[str]] | None = None
     if identifiers:
-        try:
-            with open(identifiers, encoding="utf-8") as f:
-                known_identifiers = json.load(f)
-        except Exception as exc:
-            click.echo(f"[ERROR] Could not load identifiers from {identifiers}: {exc}", err=True)
+        if identifiers == "LATEST":
+            from cherenkov.stages.report_cmd import get_latest_run_dir
+            latest = get_latest_run_dir()
+            identifiers_path = os.path.join(latest, "identifiers.json") if latest else None
+        else:
+            identifiers_path = identifiers
+
+        if identifiers_path and os.path.exists(identifiers_path):
+            try:
+                with open(identifiers_path, encoding="utf-8") as f:
+                    known_identifiers = json.load(f)
+            except Exception as exc:
+                click.echo(f"[ERROR] Could not load identifiers from {identifiers_path}: {exc}", err=True)
+                sys.exit(2)
+        elif identifiers != "LATEST":
+            click.echo(f"[ERROR] Identifiers file not found: {identifiers}", err=True)
             sys.exit(2)
+
+    run_id = str(uuid.uuid4())
+    run_dir = os.path.abspath(f".cherenkov/runs/{run_id}")
+    os.makedirs(run_dir, exist_ok=True)
 
     mode_label = "LLM Skeptic" if llm else "offline (no LLM required)"
     click.echo("\nCHERENKOV verify")
@@ -209,6 +227,9 @@ def verify_cmd(
 
             harvested = harvest_identifiers(results)
             if harvested:
+                with open(os.path.join(run_dir, "identifiers.json"), "w", encoding="utf-8") as f:
+                    json.dump(harvested, f, indent=2)
+
                 if known_identifiers is None:
                     known_identifiers = {}
                 for k, v in harvested.items():
@@ -278,6 +299,7 @@ def verify_cmd(
             duration_ms,
             rich=rich,
             reports=reports,
+            run_id=run_id,
         )
 
         if fail_on_divergence and reports:
@@ -332,6 +354,7 @@ def verify_cmd(
             None,
             duration_ms,
             reports=reports,
+            run_id=run_id,
         )
 
         if fail_on_divergence and reports:
@@ -403,6 +426,7 @@ def _persist_run(
     duration_ms: int,
     rich: object | None = None,
     reports: list | None = None,
+    run_id: str | None = None,
 ) -> None:
     try:
         meta: dict = {}
@@ -411,18 +435,21 @@ def _persist_run(
                 meta["rich_verdict"] = rich.model_dump() if hasattr(rich, "model_dump") else {}  # type: ignore[union-attr]
             except Exception:
                 _log.debug("rich verdict serialization failed", exc_info=True)
-        record = RunRecord(
-            command="verify",
-            target_url=url,
-            spec_hash=_spec_hash(json.dumps(spec_dict, sort_keys=True).encode())
-            if spec_dict
-            else "",
-            verdict=cast(Any, verdict_str),
-            divergence_count=divergence_count,
-            coverage_pct=coverage_pct,
-            duration_ms=duration_ms,
-            meta_json=json.dumps(meta, default=str),
-        )
+        
+        record_kwargs = {
+            "command": "verify",
+            "target_url": url,
+            "spec_hash": _spec_hash(json.dumps(spec_dict, sort_keys=True).encode()) if spec_dict else "",
+            "verdict": cast(Any, verdict_str),
+            "divergence_count": divergence_count,
+            "coverage_pct": coverage_pct,
+            "duration_ms": duration_ms,
+            "meta_json": json.dumps(meta, default=str),
+        }
+        if run_id:
+            record_kwargs["run_id"] = run_id
+            
+        record = RunRecord(**record_kwargs)
         saved = get_run_store().save(record)
         click.echo(f"  Run ID: {saved.run_id}", err=True)
     except Exception:

@@ -6,7 +6,7 @@ Companion to [`00_VISION.md`](00_VISION.md). This is the contract that keeps the
 
 ## 1. The two promises
 
-1. **Zero-config works.** `cherenkov init && cherenkov run` produces value with no file editing.
+1. **Zero-config works.** `cherenkov init && cherenkov verify` produces value with no file editing.
 2. **Everything is overridable.** Anything the defaults chose, you can override in `cherenkov.toml`, per-profile, or per-invocation flag — without touching code.
 
 ```mermaid

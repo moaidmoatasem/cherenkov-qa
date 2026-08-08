@@ -105,7 +105,7 @@ Tightening suggestions for happy_path:
 CHERENKOV never modifies your test files. Your working tree stays clean after every run. This is design invariant D7, enforced by `smoke_test_healing.py` in CI:
 
 ```
-smoke_test_healing: verifies git status is clean after cherenkov heal runs
+smoke_test_healing: verifies git status is clean after cherenkov generate runs
 ```
 
 The reason: auto-edited test code creates hidden coupling between the tool and your codebase. Suggestions let you decide what to accept, reject, or adapt.

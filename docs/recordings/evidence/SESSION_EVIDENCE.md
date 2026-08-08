@@ -289,6 +289,6 @@ Validate against staging:   cherenkov validate --target https://api.staging.exam
 Strict CI mode:             cherenkov validate --target http://localhost:8080 --spec openapi.yaml --fail-on-drift --quiet
 JSON output for JQ:         cherenkov validate --target http://localhost:8080 --spec openapi.yaml --json
 Generate tests:             cherenkov generate --spec openapi.yaml --output tests/
-Launch dashboard:           cherenkov dashboard --port 3000
+Launch dashboard:           cherenkov dashboard 3000
 Push session state:         cherenkov teleport push my_session_123
 ```

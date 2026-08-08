@@ -181,7 +181,7 @@ HITL queue — all (1 item(s))
 
 **Command:**
 ```bash
-cherenkov review --web --demo
+cherenkov dashboard
 ```
 
 *Expected:*

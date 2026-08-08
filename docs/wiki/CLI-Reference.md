@@ -157,7 +157,7 @@ Zero CHERENKOV imports. Standard Playwright. Runs forever.
 Reads a validation report and generates human-readable fix suggestions for each failure.
 
 ```bash
-./bin/cherenkov heal --report <file> [options]
+./bin/cherenkov generate --output-dir <file> [options]
 ```
 
 ### Options
@@ -173,13 +173,13 @@ Reads a validation report and generates human-readable fix suggestions for each 
 
 ```bash
 # Heal failures from the last validate run
-./bin/cherenkov heal
+./bin/cherenkov generate
 
 # Heal from a specific report
-./bin/cherenkov heal --report ./reports/2026-06-09.json
+./bin/cherenkov generate --output-dir ./reports/2026-06-09.json
 
 # Heal with verbose reasoning
-./bin/cherenkov heal --verbose
+./bin/cherenkov generate
 ```
 
 ### What Healing Produces
@@ -200,7 +200,7 @@ Reads a validation report and generates human-readable fix suggestions for each 
 Opens the React dashboard in your browser for a visual view of test results.
 
 ```bash
-./bin/cherenkov review --web [options]
+./bin/cherenkov dashboard [options]
 ```
 
 ### Options
@@ -213,10 +213,10 @@ Opens the React dashboard in your browser for a visual view of test results.
 
 ```bash
 # Open dashboard on port 3000
-./bin/cherenkov review --web
+./bin/cherenkov dashboard
 
 # Different port
-./bin/cherenkov review --web --port 4000
+./bin/cherenkov dashboard
 
 # Also accessible after validate
 ./bin/cherenkov validate --target http://localhost:8000 --web
@@ -252,10 +252,10 @@ Interactively explore your OpenAPI spec, inspect schemas, and preview what tests
 
 ```bash
 # Interactive explorer
-./bin/cherenkov explore --spec ./api.yaml
+./bin/cherenkov explore ./api.yaml
 
 # Ask a specific question
-./bin/cherenkov explore --spec ./api.yaml --query "What endpoints require auth?"
+./bin/cherenkov explore ./api.yaml What endpoints require auth?"
 
 # Explore a live API's spec
 ./bin/cherenkov explore --target http://localhost:8000
@@ -268,7 +268,7 @@ Interactively explore your OpenAPI spec, inspect schemas, and preview what tests
 Conversational interface for asking questions about your spec, test results, and codebase.
 
 ```bash
-./bin/cherenkov chat [options]
+./bin/cherenkov dashboard [options]
 ```
 
 ### Options
@@ -281,7 +281,7 @@ Conversational interface for asking questions about your spec, test results, and
 
 ```bash
 # Start a chat session
-./bin/cherenkov chat
+./bin/cherenkov dashboard
 
 # Example questions the agent can answer:
 # > "Why did password_too_short fail?"

@@ -252,7 +252,7 @@ export CHERENKOV_SKIP_PRISM=true
 export GEN_MODEL=qwen2.5-coder:14b
 
 # 2. Check if the spec has unusual patterns
-./bin/cherenkov explore --spec ./openapi.yaml
+./bin/cherenkov explore ./openapi.yaml
 
 # 3. Run in verbose mode to see the prompts
 ./bin/cherenkov validate --verbose --target http://localhost:8000
@@ -275,7 +275,7 @@ This is a **conformance bug in your server**, not in CHERENKOV. Your OpenAPI spe
 Fix options:
 1. Fix the server to return 422 for validation errors
 2. Update the spec to say 400 instead of 422
-3. Run `./bin/cherenkov heal` to get a more detailed suggestion
+3. Run `./bin/cherenkov generate` to get a more detailed suggestion
 
 ### All tests fail — "connection refused"
 
@@ -323,7 +323,7 @@ node --version  # needs 20+
 cd cherenkov/web/ui && npm install && cd ../../..
 
 # Retry
-./bin/cherenkov review --web
+./bin/cherenkov dashboard
 ```
 
 ### Dashboard shows no data
@@ -332,7 +332,7 @@ The dashboard reads from `.cherenkov/report.json`. Run `validate` first:
 
 ```bash
 ./bin/cherenkov validate --target http://localhost:8000
-./bin/cherenkov review --web
+./bin/cherenkov dashboard
 ```
 
 ---

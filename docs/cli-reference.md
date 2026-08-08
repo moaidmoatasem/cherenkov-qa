@@ -29,7 +29,7 @@ Two flags are honored by most commands for machine/CI use:
 | [`check-suite`](#check-suite) | Catch AI cheating in a test suite — detect WEAKENED, DELETED, or HALLUCINATED assertions. |
 | [`certify`](#certify) | Issue a signed verification certificate for a live API. |
 | [`generate`](#generate) | Generate Playwright E2E tests from an OpenAPI specification. |
-| [`report`](#report) | Summarise and diff cherenkov run reports. |
+| [`report`](#report) | Summarise and diff cherenkov verify reports. |
 | [`diff`](#diff) | Compare two OpenAPI specs for breaking changes. |
 | [`drift`](#drift) | Detect and report drift between spec, suite, and live API. |
 | [`check-stale`](#check-stale) | Check whether generated tests are stale relative to the spec. |
@@ -174,7 +174,7 @@ cherenkov generate --spec ./openapi.yaml
 | `--max-attempts` | `3` | Repair attempts (1–10). |
 
 ### `report`
-Summarise and diff cherenkov run reports. `-o` JSON output, `-d` diff against a
+Summarise and diff cherenkov verify reports. `-o` JSON output, `-d` diff against a
 baseline, `--run` / `--list` for RunStore mode.
 
 ### `diff`

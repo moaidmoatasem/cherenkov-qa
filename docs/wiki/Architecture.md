@@ -18,7 +18,7 @@ graph TB
         CHAT[chat]
         DAEMON[daemon]
         DOCTOR[doctor]
-        REVIEW_WEB[review --web]
+        REVIEW_WEB[dashboard]
     end
 
     subgraph ORCH ["⚙️  Orchestration  (cherenkov/core/)"]
