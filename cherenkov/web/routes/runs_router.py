@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 _log = logging.getLogger(__name__)
 
-from cherenkov.persistence.run_store import get_run_store
+from cherenkov.persistence.run_store import RunStatus, get_run_store
 from cherenkov.web.auth.deps import require_role
 from cherenkov.web.auth.models import Role
 
@@ -76,7 +76,9 @@ async def list_runs(
     target_url: str | None = Query(default=None),
     command: str | None = Query(default=None),
     limit: int = Query(default=20, ge=1, le=200),
-    status: str | None = Query(default=None),
+    # Typed as the store's own literal so an unknown status is rejected at the
+    # boundary with a 422 instead of silently matching no rows.
+    status: RunStatus | None = Query(default=None),
     journey_id: str | None = Query(default=None),
     _: Role = Depends(require_role(Role.viewer)),
 ):
