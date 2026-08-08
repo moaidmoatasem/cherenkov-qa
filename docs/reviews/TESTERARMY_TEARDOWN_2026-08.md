@@ -317,7 +317,7 @@ A1 is invisible.
 |---|---|---|
 | C1 | Named environments on the journeys model (§5.5): `cherenkov ... --env staging` resolving through `cherenkov.toml`, with a resolution error that lists available names. | Round-trips through both CLI and `POST /api/v1/journeys/{id}/runs`. |
 | C2 | Credential references (§5.6): a `credentials` block keyed by id, referenced as `--credential <id>`, never echoed in logs or reports. | `grep` the run log for the secret after an authenticated run → no hit. |
-| C3 | Surface the Knowledge store to the CLI (§5.7) — `cherenkov knowledge list/add`, `--json`. | An agent can read prior findings without opening the dashboard. |
+| C3 | Surface the Knowledge store to the CLI (§5.7) — a `knowledge` command with `list` / `add` subcommands and JSON output. | An agent can read prior findings without opening the dashboard. |
 
 C1 and C2 should be validated against the #816 friction log rather than designed in the
 abstract — if practitioners don't hit the pain, they don't earn the complexity.

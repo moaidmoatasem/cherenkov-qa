@@ -10,6 +10,24 @@
 
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
 
+## `verify --json` (2026-08-08) — A3 continued, and a red gate on `main`
+
+**A3 is no longer partial for the command that matters.** `cherenkov verify --json` puts the report on stdout and moves the human render to stderr. `--output` (file) and `--json` (stdout) now come from **one builder** (`_build_json` / `_build_rich_json`), so the two representations cannot drift; a test asserts they are byte-identical.
+
+The load-bearing detail is the `finally`: `--fail-on-divergence` raises `SystemExit` from *inside* the `redirect_stdout`, so without it the exact flag combination CI uses would emit nothing. Verified live against a divergent local server — exit 1, full document on stdout, 48 diagnostic lines on stderr.
+
+`verify_cmd` is now a thin wrapper over `_verify_impl`; the body is unchanged apart from two `doc_sink` assignments. Existing patches on `cherenkov.cli.commands.verify.run_proof` still work — all 75 verify/coverage/certificate tests pass untouched.
+
+**Still open on A3:** `certify` and `audit` have no stdout JSON. `certify` already has a file serializer, so it is the same shape of change; `audit` streams progress as it probes and needs more thought.
+
+**A trap worth knowing about (`result.output` is not stdout):** under Click 8.4 `CliRunner`, `result.output` is the **combined** stream. A test asserting `"banner" not in result.output` passes even when the banner *is* corrupting the document. Assert on `result.stdout`. Four of the new tests were silently wrong until this was caught.
+
+### `main` was red on `check_cli_flags.py`
+
+Independent of the above, and **not caused by it**: #933 extended `scripts/check_cli_flags.py` to scan every markdown file under `docs/` and `skills/` for inline `cherenkov <cmd> --flag` usages. That new scan meets `docs/reviews/TESTERARMY_TEARDOWN_2026-08.md`, whose Phase C table describes *proposed* commands (`cherenkov knowledge list/add`) that deliberately do not exist. Reproduced on clean `origin/main` at `e6b1fc3`, so this is a live red gate, not a regression from this branch.
+
+Fixed by rewording the proposal so it does not read as an invocation — the gate is right to be strict, and the review doc was the thing at fault. **Note for future review/proposal docs: describe commands that do not exist yet in prose, never as a runnable-looking invocation**, or this gate will fail on `main` again.
+
 ## `action.yml` LLM inputs were inert (2026-08-07) — found by the Phase D comparison
 
 The teardown's Phase D was meant to be a 30-minute read of `action.yml` against a competitor's PR-run flag list. It found something else first, and worse.

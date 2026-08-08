@@ -190,3 +190,79 @@ class TestReachabilityPreflight:
                 )
         assert result.exit_code == 0
         run_proof.assert_called_once()
+
+
+class TestVerifyJsonStdout:
+    """`--json` exists so an agent can read a verdict without scraping the render.
+
+    That only holds if stdout is a document and nothing else: the human output is
+    diagnostic and still worth keeping, but it belongs on stderr. The hard case is
+    `--fail-on-divergence`, which raises SystemExit from inside the redirect — the
+    document has to survive that, or the flag combination CI actually uses is the
+    one that returns nothing.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _skip_reachability(self):
+        with patch("cherenkov.cli.commands.verify._assert_reachable"):
+            yield
+
+    def test_stdout_is_a_document_and_nothing_else(self) -> None:
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.verify.run_proof", return_value=[_make_report()]):
+            result = runner.invoke(
+                verify_cmd, ["--url", "http://localhost:9999", "--simple", "--json"]
+            )
+        assert result.exit_code == 0
+        payload = json.loads(result.stdout)
+        assert isinstance(payload, list)
+        assert payload[0]["endpoint"] == "POST /pet"
+
+    def test_human_render_moves_to_stderr(self) -> None:
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.verify.run_proof", return_value=[]):
+            result = runner.invoke(
+                verify_cmd, ["--url", "http://localhost:9999", "--simple", "--json"]
+            )
+        assert "CHERENKOV verify" in result.stderr, "diagnostics must not be discarded"
+        # NB: result.output is the *combined* stream in Click 8.4 — asserting on it
+        # here would pass even if the render were corrupting the document.
+        assert "CHERENKOV verify" not in result.stdout, "…and must not corrupt the document"
+        json.loads(result.stdout)
+
+    def test_document_survives_fail_on_divergence(self) -> None:
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.verify.run_proof", return_value=[_make_report()]):
+            result = runner.invoke(
+                verify_cmd,
+                [
+                    "--url", "http://localhost:9999", "--simple",
+                    "--json", "--fail-on-divergence",
+                ],
+            )
+        assert result.exit_code == 1, "the gate must still fail the build"
+        payload = json.loads(result.stdout)
+        assert len(payload) == 1, "and the caller must still get the reason"
+
+    def test_without_the_flag_stdout_is_unchanged(self) -> None:
+        runner = CliRunner()
+        with patch("cherenkov.cli.commands.verify.run_proof", return_value=[]):
+            result = runner.invoke(verify_cmd, ["--url", "http://localhost:9999", "--simple"])
+        assert result.exit_code == 0
+        assert "CHERENKOV verify" in result.stdout, "default behaviour must not regress"
+
+    def test_stdout_document_matches_what_output_writes(self, tmp_path: Path) -> None:
+        """The two paths must not drift: same builder, same bytes."""
+        out = tmp_path / "report.json"
+        runner = CliRunner()
+        reports = [_make_report()]
+        with patch("cherenkov.cli.commands.verify.run_proof", return_value=reports):
+            result = runner.invoke(
+                verify_cmd,
+                [
+                    "--url", "http://localhost:9999", "--simple",
+                    "--json", "--output", str(out),
+                ],
+            )
+        assert result.exit_code == 0
+        assert json.loads(result.stdout) == json.loads(out.read_text())

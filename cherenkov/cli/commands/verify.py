@@ -16,6 +16,8 @@ without an Ollama setup.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import logging
 import os
@@ -132,7 +134,56 @@ _log = logging.getLogger(__name__)
     default=False,
     help="Allow planning of happy-path probes for POST/PUT/DELETE.",
 )
-def verify_cmd(
+@click.option(
+    "--json",
+    "as_json",
+    is_flag=True,
+    default=False,
+    help="Emit the report as JSON on stdout. Progress text moves to stderr.",
+)
+def verify_cmd(as_json: bool, **kwargs) -> None:
+    """Verify a live API against its OpenAPI spec -- find spec<->implementation divergences.
+
+    Runs in offline mode by default (no LLM, no Ollama required).  Pass --llm
+    to engage the full Skeptic agent for richer hypothesis generation.
+
+    By default, the full multi-agent verdict engine runs all 5 dimensions in
+    parallel.  Use --simple to fall back to the legacy single-probe summary.
+
+    \b
+    Examples:
+      # Zero-config demo against the public Petstore:
+      cherenkov verify --url https://petstore3.swagger.io/api/v3
+
+      # CI gate: fail if divergences are found:
+      cherenkov verify --url http://localhost:8080 --spec ./openapi.json --fail-on-divergence
+
+      # Machine-readable: document on stdout, progress on stderr:
+      cherenkov verify --url http://localhost:8080 --spec ./openapi.json --json
+    """
+    if not as_json:
+        _verify_impl(**kwargs, doc_sink=None)
+        return
+
+    # --json owns stdout. The human render still happens -- it is diagnostic, and
+    # discarding it would make a failed run unreadable -- but it goes to stderr so
+    # the caller can parse stdout without stripping a banner. The finally block
+    # is load-bearing: --fail-on-divergence raises SystemExit from inside the
+    # redirect, and both the diagnostics and the document must survive that.
+    sink: dict = {}
+    buffer = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buffer):
+            _verify_impl(**kwargs, doc_sink=sink)
+    finally:
+        captured = buffer.getvalue()
+        if captured:
+            click.echo(captured, err=True, nl=False)
+        if "doc" in sink:
+            click.echo(json.dumps(sink["doc"], indent=2, default=str))
+
+
+def _verify_impl(
     url: str,
     spec: str | None,
     llm: bool,
@@ -148,6 +199,7 @@ def verify_cmd(
     max_probes: int,
     identifiers: str | None,
     allow_mutations: bool,
+    doc_sink: dict | None,
 ) -> None:
     """Verify a live API against its OpenAPI spec -- find spec<->implementation divergences.
 
@@ -290,6 +342,9 @@ def verify_cmd(
             _write_rich_json(rich, reports, output, spec_dict=spec_dict)
             click.echo(f"\nReport written to {output}")
 
+        if doc_sink is not None:
+            doc_sink["doc"] = _build_rich_json(rich, reports, spec_dict)
+
         _persist_run(
             url,
             spec_dict,
@@ -345,6 +400,9 @@ def verify_cmd(
         if output:
             _write_json(reports, output)
             click.echo(f"\nReport written to {output}")
+
+        if doc_sink is not None:
+            doc_sink["doc"] = _build_json(reports)
 
         _persist_run(
             url,
@@ -435,7 +493,7 @@ def _persist_run(
                 meta["rich_verdict"] = rich.model_dump() if hasattr(rich, "model_dump") else {}  # type: ignore[union-attr]
             except Exception:
                 _log.debug("rich verdict serialization failed", exc_info=True)
-        
+
         record_kwargs = {
             "command": "verify",
             "target_url": url,
@@ -448,7 +506,7 @@ def _persist_run(
         }
         if run_id:
             record_kwargs["run_id"] = run_id
-            
+
         record = RunRecord(**record_kwargs)
         saved = get_run_store().save(record)
         click.echo(f"  Run ID: {saved.run_id}", err=True)
@@ -584,34 +642,36 @@ def _print_summary(reports: list) -> None:
     click.echo("")
 
 
-def _write_json(reports: list, path: str) -> None:
-    data = []
-    for r in reports:
-        try:
-            data.append(r.model_dump() if hasattr(r, "model_dump") else vars(r))
-        except Exception:
-            data.append(str(r))
-    Path(path).write_text(json.dumps(data, indent=2, default=str))
-
-
-def _write_rich_json(rich: object, reports: list, path: str, spec_dict: dict | None = None) -> None:
-    data: dict = {}
+def _serialise(report: object) -> object:
     try:
-        data["rich_verdict"] = rich.model_dump() if hasattr(rich, "model_dump") else vars(rich)  # type: ignore[union-attr]
+        return report.model_dump() if hasattr(report, "model_dump") else vars(report)
     except Exception:
-        data["rich_verdict"] = str(rich)
-    data["divergences"] = []
-    for r in reports:
-        try:
-            data["divergences"].append(r.model_dump() if hasattr(r, "model_dump") else vars(r))
-        except Exception:
-            data["divergences"].append(str(r))
+        return str(report)
+
+
+def _build_json(reports: list) -> list:
+    """The simple-mode document. Split from the writer so --json can emit to
+    stdout exactly what --output writes to a file."""
+    return [_serialise(r) for r in reports]
+
+
+def _build_rich_json(rich: object, reports: list, spec_dict: dict | None = None) -> dict:
+    """The rich-verdict document. Same split, same reason."""
+    data: dict = {"rich_verdict": _serialise(rich), "divergences": [_serialise(r) for r in reports]}
     total = len(spec_dict.get("paths", {})) if spec_dict else max(1, len(reports))
     passed = max(0, total - len(reports))
     data["total"] = total
     data["passed"] = passed
     data["pass_rate"] = passed / total if total > 0 else 1.0
-    Path(path).write_text(json.dumps(data, indent=2, default=str))
+    return data
+
+
+def _write_json(reports: list, path: str) -> None:
+    Path(path).write_text(json.dumps(_build_json(reports), indent=2, default=str))
+
+
+def _write_rich_json(rich: object, reports: list, path: str, spec_dict: dict | None = None) -> None:
+    Path(path).write_text(json.dumps(_build_rich_json(rich, reports, spec_dict), indent=2, default=str))
 
 
 def _print_coverage(cov: CoverageReport) -> None:
