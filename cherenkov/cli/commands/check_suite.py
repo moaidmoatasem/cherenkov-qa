@@ -218,12 +218,20 @@ def check_integrity(
     default=False,
     help="Exit with code 1 if any integrity violations are found (CI gate mode).",
 )
+@click.option(
+    "--json",
+    "as_json",
+    is_flag=True,
+    default=False,
+    help="Emit the findings as JSON on stdout instead of the human report.",
+)
 def check_suite_cmd(
     candidate: str,
     baseline: str | None,
     spec: str | None,
     output: str | None,
     fail_on_finding: bool,
+    as_json: bool,
 ) -> None:
     """Catch AI cheating in a test suite — detect WEAKENED, DELETED, or HALLUCINATED assertions.
 
@@ -293,11 +301,19 @@ def check_suite_cmd(
             )
         findings = check_integrity(spec_path, baseline_code, candidate_code)
 
-    _print_findings(cand_path.name, findings)
+    payload = {"candidate": candidate, "findings": findings, "clean": not findings}
+
+    # --json owns stdout: a caller parsing this must not have to strip a banner.
+    # Warnings above already went to stderr, so they do not corrupt the document.
+    if as_json:
+        click.echo(json.dumps(payload, indent=2))
+    else:
+        _print_findings(cand_path.name, findings)
 
     if output:
-        Path(output).write_text(json.dumps({"candidate": candidate, "findings": findings}, indent=2))
-        click.echo(f"\nFindings written to {output}")
+        Path(output).write_text(json.dumps(payload, indent=2))
+        if not as_json:
+            click.echo(f"\nFindings written to {output}")
 
     if fail_on_finding and findings:
         sys.exit(1)

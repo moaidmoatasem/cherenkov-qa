@@ -5,7 +5,7 @@ description: Complete reference for all CHERENKOV-QA CLI commands, flags, and op
 
 # CLI Reference
 
-The CHERENKOV CLI is the primary interface for the platform. It provides **40 commands** organized into **7 command groups** (47 total registered names).
+The CHERENKOV CLI is the primary interface for the platform. It provides **42 commands** organized into **7 command groups** (46 total registered names, measured from the Click tree).
 
 ## Global Options
 
@@ -154,6 +154,11 @@ cherenkov check-suite --candidate <path> --spec <file>
 | `--baseline PATH` / `-b` | No | Path to a known-honest baseline suite to compare against |
 | `--fail-on-finding` | No | Exit with code `1` if any finding is detected |
 | `--output FILE` / `-o` | No | Write the JSON findings report to this file |
+| `--json` | No | Emit `{candidate, findings, clean}` on stdout instead of the human report |
+
+`--json` owns stdout, so the document is parseable without stripping a banner —
+warnings go to stderr. It composes with `--fail-on-finding`: the JSON is still
+emitted before the non-zero exit.
 
 ### `diff`
 
@@ -295,6 +300,54 @@ cherenkov mcp list
 # Publish an external MCP server to the mesh
 cherenkov mcp publish --name <name> --url <url>
 ```
+
+### `agent`
+
+Make CHERENKOV discoverable to a coding agent working in this repository.
+
+`agent init` does two things: installs the public skills via
+`npx skills add moaidmoatasem/cherenkov-qa`, and writes a delimited
+`<!-- CHERENKOV:START -->` block into the repository's `AGENTS.md`. Run it once
+per repository — it is idempotent, replacing the block in place rather than
+appending, and a missing `npx` degrades to a printed instruction instead of a
+failure. Both steps are local; nothing is uploaded.
+
+```bash
+# The whole thing
+cherenkov agent init
+
+# Structured result for a script or agent
+cherenkov agent init --json
+
+# Either half on its own
+cherenkov agent init --skip-skills
+cherenkov agent init --skip-agents-md
+
+# Write into a different repository root
+cherenkov agent init --path ../other-repo
+```
+
+### `docs`
+
+CLI documentation as data. Prints a topic's summary, commands and notes; with
+`--json`, returns `{topic, summary, commands, notes}` so an agent can read the
+docs without scraping help text.
+
+```bash
+# List every topic
+cherenkov docs
+
+# One topic
+cherenkov docs check-suite
+
+# Everything, structured
+cherenkov docs --json
+
+# One topic, structured
+cherenkov docs verify --json
+```
+
+An unknown topic exits non-zero and lists the real ones.
 
 ### `completion`
 
