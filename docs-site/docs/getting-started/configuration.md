@@ -151,8 +151,8 @@ CHERENKOV routes LLM calls to different models based on task complexity. Each ti
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CHERENKOV_BUDGET_USD_CAP` | `0.0` | Maximum USD spend per run. `0` = local models only |
-| `CHERENKOV_BUDGET_WARN_THRESHOLD` | — | Warn when spend exceeds this fraction of the cap (0.0-1.0) |
+| `CHERENKOV_BUDGET_USD` | `0.0` | Maximum USD spend per run. `0` = local models only |
+| `CHERENKOV_BUDGET_WARN_USD` | — | Warn when spend exceeds this threshold (in USD) |
 
 ### Output
 
@@ -221,7 +221,7 @@ Override any tier independently:
 # Use GPT-4o for deep reasoning, keep everything else local
 export CHERENKOV_TIER_DEEP_PROVIDER=openai
 export CHERENKOV_TIER_DEEP_MODEL=gpt-4o
-export CHERENKOV_BUDGET_USD_CAP=5.0  # allow cloud spend
+export CHERENKOV_BUDGET_USD=5.0  # allow cloud spend
 export CHERENKOV_EGRESS=any          # allow outbound HTTPS
 ```
 
@@ -237,7 +237,7 @@ PROVIDER=ollama
 GEN_MODEL=qwen2.5-coder:7b
 OLLAMA_URL=http://ollama:11434/api/generate
 CHERENKOV_EGRESS=internal
-CHERENKOV_BUDGET_USD_CAP=0.0
+CHERENKOV_BUDGET_USD=0.0
 CHERENKOV_MEANINGFUL_ASSERTION_GATE=true
 CHERENKOV_OUTPUT_DIR=./reports
 ```
