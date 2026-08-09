@@ -1161,6 +1161,32 @@ cherenkov teleport status <session_id>
 
 ---
 
+#### `plugins`
+Manage and inspect CHERENKOV plugins loaded via entry points.
+
+```bash
+# List all loaded plugins
+cherenkov plugins list
+```
+
+---
+
+#### `template`
+Manage and install test templates from the marketplace.
+
+```bash
+# Search the marketplace for available templates
+cherenkov template search
+
+# List templates installed locally
+cherenkov template list
+
+# Install a template by id
+cherenkov template install <template_id>
+```
+
+---
+
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client.
 

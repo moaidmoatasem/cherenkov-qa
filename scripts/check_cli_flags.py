@@ -144,9 +144,23 @@ def main() -> int:
 
     # 2. Check all other .md files for inline `cherenkov <cmd> --flag` uses
     import glob
-    md_files = glob.glob(os.path.join(_REPO_ROOT, "docs", "**", "*.md"), recursive=True) + \
-               glob.glob(os.path.join(_REPO_ROOT, "skills", "**", "*.md"), recursive=True)
-    
+    # Archived/planning/vision docs are point-in-time records: they may cite
+    # commands or flags that never shipped or were later renamed. Excluding
+    # them keeps the gate scoped to docs that read as current, runnable
+    # instructions.
+    _EXCLUDED_DIRS = ("_archive", "vision", "plans")
+    _md_files = (
+        glob.glob(os.path.join(_REPO_ROOT, "docs", "**", "*.md"), recursive=True)
+        + glob.glob(os.path.join(_REPO_ROOT, "skills", "**", "*.md"), recursive=True)
+    )
+    md_files = [
+        f
+        for f in _md_files
+        if not any(
+            os.sep + d + os.sep in os.path.relpath(f, _REPO_ROOT) for d in _EXCLUDED_DIRS
+        )
+    ]
+
     inline_re = re.compile(r"(?:python\s+cherenkov\.py|cherenkov|\./bin/cherenkov)\s+([a-z][\w-]*(?:\s+[a-z][\w-]*)?)\s+.*?(--[a-z][\w-]+)")
     for md_file in md_files:
         with open(md_file, encoding="utf-8", errors="ignore") as f:
