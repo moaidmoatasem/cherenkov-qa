@@ -23,6 +23,7 @@ class User(BaseModel):
     username: str
     role: Role
     disabled: bool = False
+    organization_id: str = "default"
 
 
 class TokenResponse(BaseModel):
@@ -30,6 +31,7 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
     expires_in: int
     role: Role
+    organization_id: str = "default"
 
 
 class UserInDB(User):

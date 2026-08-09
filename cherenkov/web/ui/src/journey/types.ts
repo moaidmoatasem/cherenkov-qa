@@ -9,7 +9,8 @@ export type WorkspaceId =
   | 'triage'
   | 'intelligence'
   | 'settings'
-  | 'mobile';
+  | 'mobile'
+  | 'enterprise';
 
 export type StepStatus =
   | 'not_started'

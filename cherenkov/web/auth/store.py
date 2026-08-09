@@ -59,24 +59,32 @@ class UserStore:
                     username        TEXT PRIMARY KEY,
                     hashed_password TEXT NOT NULL,
                     role            TEXT NOT NULL DEFAULT 'viewer',
-                    disabled        INTEGER NOT NULL DEFAULT 0
+                    disabled        INTEGER NOT NULL DEFAULT 0,
+                    organization_id TEXT NOT NULL DEFAULT 'default'
                 )
             """)
+            try:
+                conn.execute("ALTER TABLE users ADD COLUMN organization_id TEXT NOT NULL DEFAULT 'default'")
+            except sqlite3.OperationalError:
+                pass
+            conn.commit()
             conn.commit()
 
     def count(self) -> int:
         with self._lock, self._connect() as conn:
             return conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
 
-    def create(self, username: str, password: str, role: Role = Role.viewer) -> User:
+    def create(
+        self, username: str, password: str, role: Role = Role.viewer, organization_id: str = "default"
+    ) -> User:
         hashed = _hash_password(password)
         with self._lock, self._connect() as conn:
             conn.execute(
-                "INSERT INTO users (username, hashed_password, role) VALUES (?, ?, ?)",
-                (username, hashed, role.value),
+                "INSERT INTO users (username, hashed_password, role, organization_id) VALUES (?, ?, ?, ?)",
+                (username, hashed, role.value, organization_id),
             )
             conn.commit()
-        return User(username=username, role=role)
+        return User(username=username, role=role, organization_id=organization_id)
 
     def get(self, username: str) -> UserInDB | None:
         with self._lock, self._connect() as conn:
@@ -90,6 +98,7 @@ class UserStore:
             hashed_password=row["hashed_password"],
             role=Role(row["role"]),
             disabled=bool(row["disabled"]),
+            organization_id=row["organization_id"],
         )
 
     def authenticate(self, username: str, password: str) -> User | None:
@@ -98,12 +107,12 @@ class UserStore:
             return None
         if not _verify_password(password, user.hashed_password):
             return None
-        return User(username=user.username, role=user.role)
+        return User(username=user.username, role=user.role, organization_id=user.organization_id)
 
     def list_users(self) -> list[User]:
         with self._lock, self._connect() as conn:
-            rows = conn.execute("SELECT username, role, disabled FROM users").fetchall()
-        return [User(username=r["username"], role=Role(r["role"]), disabled=bool(r["disabled"])) for r in rows]
+            rows = conn.execute("SELECT username, role, disabled, organization_id FROM users").fetchall()
+        return [User(username=r["username"], role=Role(r["role"]), disabled=bool(r["disabled"]), organization_id=r["organization_id"]) for r in rows]
 
     def set_disabled(self, username: str, disabled: bool) -> bool:
         with self._lock, self._connect() as conn:

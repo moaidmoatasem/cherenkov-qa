@@ -24,6 +24,7 @@ import {
   Brain,
   Settings,
   Smartphone,
+  Building2,
 } from 'lucide-react';
 import { fetchJourneys } from '../lib/api';
 import { FALLBACK_STAGES } from './fallback';
@@ -64,6 +65,7 @@ export const SURFACE_CHROME: Record<WorkspaceId, SurfaceChrome> = {
     shortcut: 'g s',
   },
   mobile: { icon: Smartphone, aliases: [], shortcut: 'g b' },
+  enterprise: { icon: Building2, aliases: ['org', 'gdpr', 'soc2'], shortcut: 'g e' },
 };
 
 /**
@@ -71,7 +73,7 @@ export const SURFACE_CHROME: Record<WorkspaceId, SurfaceChrome> = {
  * the journey definition on purpose: Mobile is a real, working capability, not
  * a step on the way to a verdict.
  */
-export const OTHER_SURFACES: WorkspaceId[] = ['mobile'];
+export const OTHER_SURFACES: WorkspaceId[] = ['mobile', 'enterprise'];
 
 export const SURFACE_TITLES: Record<WorkspaceId, { title: string; subtitle: string }> = {
   dashboard: { title: 'Dashboard', subtitle: 'Is your API release-ready?' },
@@ -83,6 +85,7 @@ export const SURFACE_TITLES: Record<WorkspaceId, { title: string; subtitle: stri
   },
   settings: { title: 'Settings', subtitle: 'Providers, hardware & access' },
   mobile: { title: 'Mobile', subtitle: 'Run & monitor a Maestro device pilot' },
+  enterprise: { title: 'Enterprise', subtitle: 'SLA, GDPR, SOC 2, and Organization' },
 };
 
 /**

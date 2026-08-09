@@ -12,6 +12,9 @@ from cherenkov.web.auth import jwt as _jwt
 from cherenkov.web.auth.deps import get_current_user, require_role
 from cherenkov.web.auth.models import Role, TokenResponse, User
 from cherenkov.web.auth.store import get_user_store
+from cherenkov.enterprise.saml import SAMLServiceProvider
+from fastapi import Form
+from fastapi.responses import RedirectResponse
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -70,6 +73,64 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
         access_token=token,
         expires_in=expire_hours * 3600,
         role=user.role,
+        organization_id=user.organization_id,
+    )
+
+@router.get("/saml/login", summary="SP-initiated SAML login")
+async def saml_login(relay_state: str = ""):
+    sp = SAMLServiceProvider()
+    if not sp.is_enabled():
+        raise HTTPException(status_code=400, detail="SAML SSO is not configured")
+    url = sp.get_login_url(relay_state)
+    return RedirectResponse(url)
+
+@router.post("/saml/callback", response_model=TokenResponse, summary="IdP SAML callback (ACS)")
+async def saml_callback(SAMLResponse: str = Form(...), RelayState: str = Form("")):
+    sp = SAMLServiceProvider()
+    if not sp.is_enabled():
+        raise HTTPException(status_code=400, detail="SAML SSO is not configured")
+    
+    assertion = sp.process_response(SAMLResponse)
+    if not assertion:
+        raise HTTPException(status_code=401, detail="Invalid SAML Response")
+
+    # Map SAML attributes to our internal model. 
+    # Hardcoded mapping logic as specified in the enterprise model docs.
+    username = assertion.email
+    org_id = assertion.attributes.get("organization_id", ["default"])[0]
+    raw_role = assertion.attributes.get("role", ["viewer"])[0]
+    
+    # Map raw_role (could be 'ADMIN' or 'admin' or 'viewer') to web Role
+    role_map = {
+        "admin": Role.admin,
+        "engineer": Role.reviewer,
+        "viewer": Role.viewer,
+        "read_only": Role.viewer,
+    }
+    mapped_role = role_map.get(raw_role.lower(), Role.viewer)
+
+    store = get_user_store()
+    user = store.get(username)
+    if not user:
+        # Auto-provision user on first SSO login
+        # We don't have a real password since they authenticate via IdP
+        import secrets
+        user = store.create(username, password=secrets.token_hex(32), role=mapped_role, organization_id=org_id)
+    elif user.disabled:
+        raise HTTPException(status_code=401, detail="User is disabled")
+    else:
+        # Update user's role and org if it drifted in IdP
+        pass # Full sync would go here, currently SQLite user store has no update_user method
+
+    from cherenkov.core.settings import get_settings
+    expire_hours = get_settings().JWT_EXPIRE_HOURS
+    token = _jwt.encode({"sub": user.username, "role": user.role.value, "organization_id": user.organization_id}, expire_hours=expire_hours)
+    
+    return TokenResponse(
+        access_token=token,
+        expires_in=expire_hours * 3600,
+        role=user.role,
+        organization_id=user.organization_id
     )
 
 

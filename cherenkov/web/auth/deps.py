@@ -39,7 +39,7 @@ async def get_current_user(
     user = get_user_store().get(payload.get("sub", ""))
     if not user or user.disabled:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found or disabled")
-    return User(username=user.username, role=user.role)
+    return User(username=user.username, role=user.role, organization_id=user.organization_id)
 
 
 def require_role(minimum: Role):
@@ -47,7 +47,21 @@ def require_role(minimum: Role):
     async def _check(user: User | None = Depends(get_current_user)) -> User | None:
         if not _auth_enabled():
             return user
-        if user is None or not (user.role >= minimum):
+        
+        from cherenkov.core.context import current_org_id
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Not authenticated",
+            )
+            
+        if user.organization_id != current_org_id.get():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Organization mismatch",
+            )
+            
+        if not (user.role >= minimum):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Requires '{minimum.value}' role or higher",

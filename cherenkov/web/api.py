@@ -10,6 +10,10 @@ from fastapi import (
     WebSocketDisconnect,
 )
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.requests import Request
+
+from cherenkov.core.context import current_org_id
+from cherenkov.web.auth import jwt as _jwt
 
 from cherenkov.web.routes.deps import (
     lifespan,
@@ -22,6 +26,25 @@ app = FastAPI(
     description="Localhost-first dashboard server for API conformance testing.",
     lifespan=lifespan,
 )
+
+@app.middleware("http")
+async def extract_org_id_middleware(request: Request, call_next):
+    org_id = "default"
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header[7:]
+        try:
+            payload = _jwt.decode(token)
+            org_id = payload.get("organization_id", "default")
+        except ValueError:
+            pass
+
+    token_ctx = current_org_id.set(org_id)
+    try:
+        response = await call_next(request)
+        return response
+    finally:
+        current_org_id.reset(token_ctx)
 
 
 @app.websocket("/ws/live")
@@ -149,8 +172,10 @@ from cherenkov.web.routes.ops_routes import router as ops_router
 app.include_router(ops_router)
 
 from cherenkov.web.routes.agents import router as agents_router
+from cherenkov.web.routes.enterprise_routes import router as enterprise_router
 
 app.include_router(agents_router)
+app.include_router(enterprise_router)
 
 from cherenkov.web.middleware.security import add_security_middleware
 

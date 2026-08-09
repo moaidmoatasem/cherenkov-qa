@@ -48,6 +48,7 @@ const AuthoringWorkspace = lazy(() => import('./components/workspaces/AuthoringW
 const TriageWorkspace = lazy(() => import('./components/workspaces/TriageWorkspace'));
 const IntelligenceWorkspace = lazy(() => import('./components/workspaces/IntelligenceWorkspace'));
 const SettingsWorkspace = lazy(() => import('./components/workspaces/SettingsWorkspace'));
+const EnterpriseWorkspace = lazy(() => import('./components/workspaces/EnterpriseWorkspace/EnterpriseWorkspace'));
 
 const WorkspaceFallback = () => (
   <div className="h-full flex items-center justify-center bg-bg-base text-text-muted text-sm font-mono animate-pulse" role="status">
@@ -317,6 +318,7 @@ function InnerApp() {
                   />
                   <Route path="/intelligence" element={<IntelligenceWorkspace />} />
                   <Route path="/settings" element={<SettingsWorkspace />} />
+                  <Route path="/enterprise" element={<EnterpriseWorkspace />} />
                   <Route path="/mobile" element={<MobilePilotScreen />} />
                   {/* Legacy deep links keep working instead of 404ing. */}
                   {(Object.keys(SURFACE_CHROME) as WorkspaceId[]).flatMap((surface) =>

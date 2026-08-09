@@ -27,11 +27,12 @@ from cherenkov.ports.storage import (
     StoragePort,
     StorageQuery,
 )
+from cherenkov.core.context import current_org_id
 
 _log = logging.getLogger(__name__)
 
 _JSON_COLUMN = "data"
-_BOOKKEEPING_COLUMNS = {"id", "rowid", "created_at", "updated_at", "deleted_at", "version"}
+_BOOKKEEPING_COLUMNS = {"id", "rowid", "created_at", "updated_at", "deleted_at", "version", "org_id"}
 
 
 def _col_expr(column: str) -> str:
@@ -125,10 +126,15 @@ class SQLiteStorageAdapter(StoragePort):
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
                 deleted_at TEXT,
-                version INTEGER NOT NULL DEFAULT 1
+                version INTEGER NOT NULL DEFAULT 1,
+                org_id TEXT NOT NULL DEFAULT 'default'
             )
             """
         )
+        try:
+            conn.execute(f"ALTER TABLE {entries} ADD COLUMN org_id TEXT NOT NULL DEFAULT 'default'")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
         conn.execute(
             f"CREATE INDEX IF NOT EXISTS idx_{self.namespace}_created_at "
             f"ON {entries} (created_at DESC)"
@@ -145,9 +151,9 @@ class SQLiteStorageAdapter(StoragePort):
         qual = self._qualify_table(table)
         with self.transaction():
             self._connect().execute(
-                f"INSERT INTO {qual} (id, data, created_at, updated_at, deleted_at, version) "
-                "VALUES (?, ?, ?, ?, NULL, 1)",
-                (row_id, payload, now, now),
+                f"INSERT INTO {qual} (id, data, created_at, updated_at, deleted_at, version, org_id) "
+                "VALUES (?, ?, ?, ?, NULL, 1, ?)",
+                (row_id, payload, now, now, data.get("org_id", "default")),
             )
         return row_id
 
@@ -177,9 +183,11 @@ class SQLiteStorageAdapter(StoragePort):
                 return existing["id"]
             row_id = str(data.get("id") or uuid.uuid4().hex)
             conn.execute(
-                f"INSERT INTO {qual} (id, data, created_at, updated_at, deleted_at, version) "
-                "VALUES (?, ?, ?, ?, NULL, 1)",
-                (row_id, payload, now, now),
+                f"INSERT INTO {qual} (id, data, created_at, updated_at, deleted_at, version, org_id) "
+                f"VALUES (?, ?, ?, ?, NULL, 1, ?) "
+                f"ON CONFLICT(id) DO UPDATE SET "
+                f"data=excluded.data, updated_at=excluded.updated_at, version=version+1, org_id=excluded.org_id",
+                (row_id, payload, now, now, data.get("org_id", "default")),
             )
             return row_id
 
@@ -281,6 +289,12 @@ class SQLiteStorageAdapter(StoragePort):
             params.append(f.value)
         if not_deleted:
             clauses.append("deleted_at IS NULL")
+        
+        # Enforce multi-tenant isolation
+        org_id = current_org_id.get()
+        clauses.append("org_id = ?")
+        params.append(org_id)
+
         if not clauses:
             return "", []
         return " WHERE " + " AND ".join(clauses), params
