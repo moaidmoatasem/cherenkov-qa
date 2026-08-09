@@ -57,6 +57,7 @@ def _project_root() -> Path:
 ROOT = _project_root()
 SYNC_DIR = ROOT / "agent_memory" / "sync"
 FINDINGS_DIR = SYNC_DIR / "findings"
+MARKDOWN_DIR = SYNC_DIR / ".memsearch" / "memory"
 CONTEXT_FILE = SYNC_DIR / "context.json"
 TOKENS_FILE = SYNC_DIR / "tokens.json"
 SESSION_FILE = SYNC_DIR / "session.json"
@@ -138,6 +139,10 @@ def cmd_before(task_type: str, budget: int | None = None, source: str = "cherenk
 
     _write_json(SESSION_FILE, session)
 
+    MARKDOWN_DIR.mkdir(parents=True, exist_ok=True)
+    md_file = MARKDOWN_DIR / f"{session_id}.md"
+    md_content = f"# Session: {session_id}\n**Task:** {task_type}\n**Source:** {source}\n**Started At:** {now}\n\n## Context Loaded\n"
+
     # Init token tracker for this session
     tokens = _read_json(TOKENS_FILE)
     if not tokens.get("budget"):
@@ -186,6 +191,12 @@ def cmd_before(task_type: str, budget: int | None = None, source: str = "cherenk
 
         loaded = [s for s in snippets if s["key"] in keys_to_load]
         total_est = sum(s["tokens_estimate"] for s in loaded)
+
+    for s in loaded:
+        md_content += f"- **{s['key']}**: {s['content'][:120]}...\n"
+    md_content += "\n## Findings\n"
+    with open(md_file, "w", encoding="utf-8") as f:
+        f.write(md_content)
 
     print(f"[SDD] Session started: {session_id}")
     print(f"   Task type: {task_type}")
@@ -288,9 +299,22 @@ def cmd_after(summary: str):
     exp["pattern_index"] = pidx
     _write_json(EXPERIENCE_FILE, exp)
 
+    md_file = MARKDOWN_DIR / f"{sid}.md"
+    if md_file.exists():
+        with open(md_file, "a", encoding="utf-8") as f:
+            f.write(f"\n## Summary\n{summary}\n\n**Token Total:** {total}\n**Ended At:** {_timestamp()}\n")
+
     ms = _memsearch_client()
     if ms is not None:
-        ms.add_memory(f"Session {sid} Summary", summary, metadata={"task_type": tt, "token_total": total})
+        if md_file.exists():
+            full_content = md_file.read_text(encoding="utf-8")
+            ms.add_memory(f"Session {sid} Transcript", full_content, metadata={"task_type": tt, "token_total": total, "session_id": sid})
+            print(f"   [SDD] Full session transcript archived to MemSearch semantic layer.")
+        else:
+            ms.add_memory(f"Session {sid} Summary", summary, metadata={"task_type": tt, "token_total": total})
+
+    # Trigger background skill distillation
+    _distill_skills(sid, tt, findings, summary)
 
     # ── CC-1: auto-collect into SQLite memory store ───────────────────
     _memory_collect(sid, tt, findings)
@@ -303,6 +327,37 @@ def cmd_after(summary: str):
     print(f"   Pitfalls noted: {pitfall_count}")
     print(f"   Total experience records: {exp['experience_count']}")
 
+
+def _distill_skills(session_id: str, task_type: str, findings: list, summary: str) -> None:
+    """Phase 9: Background skill distillation to extract procedural knowledge."""
+    skills_dir = ROOT / "skills" / "distilled"
+    skills_dir.mkdir(parents=True, exist_ok=True)
+    
+    important_findings = [f for f in findings if f.get("type") in ("decision", "pitfall", "context")]
+    if not important_findings and not summary:
+        return
+        
+    safe_task = task_type.replace("/", "_").replace(" ", "_")
+    skill_file = skills_dir / f"distilled_{safe_task}.md"
+    
+    content = f"---\nname: distilled_{safe_task}\ndescription: Auto-distilled from session {session_id}\n---\n\n"
+    content += f"# Distilled Knowledge for {task_type}\n\n"
+    content += f"## Latest Summary ({_timestamp()})\n{summary}\n\n"
+    
+    if important_findings:
+        content += "## Key Procedural Insights\n"
+        for f in important_findings:
+            content += f"- **{f['type'].upper()}**: {f['message']}\n"
+            
+    if skill_file.exists():
+        existing = skill_file.read_text(encoding="utf-8")
+        if "## Key Procedural Insights" in existing:
+            content = existing + "\n" + "\n".join([f"- **{f['type'].upper()}**: {f['message']}" for f in important_findings])
+            
+    with open(skill_file, "w", encoding="utf-8") as f:
+        f.write(content)
+        
+    print(f"   [skill_distillation] Background distillation completed to skills/distilled/distilled_{safe_task}.md")
 
 
 def _memory_collect(session_id: str, task_type: str, findings: list) -> None:
@@ -447,6 +502,11 @@ def cmd_log(log_type: str, message: str):
     # Update session count
     session["session"]["findings_count"] = len(findings_data["findings"])
     _write_json(SESSION_FILE, session)
+    
+    md_file = MARKDOWN_DIR / f"{sid}.md"
+    if md_file.exists():
+        with open(md_file, "a", encoding="utf-8") as f:
+            f.write(f"- **{log_type.upper()}** [{_timestamp()}]: {message}\n")
 
     print(f"Logged [{log_type}]: {message[:120]}")
 

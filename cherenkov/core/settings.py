@@ -57,6 +57,8 @@ class CherenkovSettings(BaseSettings):
     CORPUS_OPT_IN: bool = Field(default=False, validation_alias='CHERENKOV_CORPUS_OPT_IN')
     CORPUS_PATH: str = Field(default=os.path.expanduser('~/.cherenkov/corpus.jsonl'), validation_alias='CHERENKOV_CORPUS_PATH')
 
+    ENABLE_TELEMETRY: bool = Field(default=False, validation_alias='CHERENKOV_ENABLE_TELEMETRY')
+
     UI_DENSITY: str = Field(default='comfortable', validation_alias='CHERENKOV_UI_DENSITY')
     UI_MOTION: str = Field(default='system', validation_alias='CHERENKOV_UI_MOTION')
 

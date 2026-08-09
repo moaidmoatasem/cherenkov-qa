@@ -1,5 +1,16 @@
 """Plugin SDK base classes for CHERENKOV-QA."""
 
+class PluginPort:
+    """Base interface for a CHERENKOV plugin."""
+    @property
+    def name(self) -> str:
+        raise NotImplementedError
+    
+    @property
+    def version(self) -> str:
+        raise NotImplementedError
+
+
 class CustomSourceAdapter:
     """Base class for custom source adapters."""
     def __init__(self, source: str):
