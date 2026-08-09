@@ -525,6 +525,8 @@ jobs:
         run: python3 scripts/check_cli_docs.py
       - name: Check CLI Flag Docs Parity
         run: python3 scripts/check_cli_flags.py
+      - name: Verify Onboarding Transcripts
+        run: python3 scripts/verify_onboarding_transcripts.py --session all
 
   mcp-manifest-drift:
     name: MCP registry ↔ handlers.TOOLS (no drift)
