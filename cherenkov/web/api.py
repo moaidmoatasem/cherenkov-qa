@@ -214,6 +214,11 @@ from cherenkov.web.routes.perf_routes import router as perf_router
 
 app.include_router(perf_router)
 
+# ── Spec Guardian (#764/#765/#772): drift events + trend from SpecGuardianDaemon ─
+from cherenkov.web.routes.guardian_routes import router as guardian_router
+
+app.include_router(guardian_router)
+
 # ── Static/SPA Fallback Route ──────────────────────────────────────────────────
 from cherenkov.web.routes.static_routes import router as static_router
 

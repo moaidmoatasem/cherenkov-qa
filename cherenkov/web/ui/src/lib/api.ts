@@ -903,6 +903,50 @@ export async function runPerfTest(targetUrl?: string): Promise<PerfMetric & { ex
   return res.json();
 }
 
+// ── Spec Guardian (#764/#765/#772) ────────────────────────────────────────
+export interface DriftEvent {
+  drift_type: string;
+  severity: 'info' | 'warning' | 'critical';
+  endpoint: string;
+  method: string;
+  field_path?: string | null;
+  expected: unknown;
+  actual: unknown;
+  message: string;
+  timestamp: string;
+}
+
+export interface GuardianTrend {
+  hours: number;
+  total_events: number;
+  critical_events: number;
+  warning_events: number;
+  by_type: Record<string, number>;
+}
+
+export interface GuardianStatus {
+  latest_report: Record<string, unknown> | null;
+  trend_24h: GuardianTrend;
+}
+
+export async function getGuardianStatus(): Promise<GuardianStatus> {
+  const res = await fetch(`${API_BASE}/guardian/status`, { headers: authHeaders() });
+  if (!res.ok) return { latest_report: null, trend_24h: { hours: 24, total_events: 0, critical_events: 0, warning_events: 0, by_type: {} } };
+  return res.json();
+}
+
+export async function listGuardianEvents(limit = 50): Promise<DriftEvent[]> {
+  const res = await fetch(`${API_BASE}/guardian/events?limit=${limit}`, { headers: authHeaders() });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getGuardianTrend(hours = 24): Promise<GuardianTrend> {
+  const res = await fetch(`${API_BASE}/guardian/trend?hours=${hours}`, { headers: authHeaders() });
+  if (!res.ok) return { hours, total_events: 0, critical_events: 0, warning_events: 0, by_type: {} };
+  return res.json();
+}
+
 export interface CertificateVerifyResult {
   valid: boolean;
   cert_id: string;

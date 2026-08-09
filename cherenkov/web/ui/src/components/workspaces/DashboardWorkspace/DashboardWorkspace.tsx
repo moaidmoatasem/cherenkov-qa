@@ -10,6 +10,7 @@ import IntegrityHeatmap from './IntegrityHeatmap';
 import CoverageAndPerfScreen from './CoverageAndPerfScreen';
 import CertificateVerification from './CertificateVerification';
 import TestSurfacesPanel from './TestSurfacesPanel';
+import SpecGuardianWidget from './SpecGuardianWidget';
 import { PageHeader } from '../../ui/PageHeader';
 import { Tabs } from '../../ui/Tabs';
 import { RunRecord } from '../../../lib/api';
@@ -122,6 +123,9 @@ export const DashboardWorkspace: React.FC<DashboardWorkspaceProps> = ({
 
           {/* 5. Web UI Probe + k6 Performance — secondary surfaces (#882) */}
           <TestSurfacesPanel />
+
+          {/* 6. Spec Guardian drift monitor (#764/#765) */}
+          <SpecGuardianWidget />
         </div>
       )}
     </div>
