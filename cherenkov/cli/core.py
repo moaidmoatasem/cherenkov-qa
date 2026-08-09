@@ -79,6 +79,7 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.teleport_cmd import teleport_cmd
     from cherenkov.cli.commands.validate import validate_cmd
     from cherenkov.cli.commands.verify import verify_cmd
+    from cherenkov.cli.commands.plugins_cmd import plugins_cmd
     from cherenkov.cli.groups import build_groups
     from cherenkov.synthetic.cmd import synthetic_cmd
 
@@ -126,6 +127,7 @@ def _register_commands() -> None:
         (enterprise_cmd, "enterprise"),
         (playbook_cmd, "playbook"),
         (guardian_cmd, "guardian"),
+        (plugins_cmd, "plugins"),
     ]:
         cli.add_command(cmd, name=name)
         cmd_map[name] = cmd

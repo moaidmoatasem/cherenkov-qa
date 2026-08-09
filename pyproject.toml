@@ -85,6 +85,9 @@ include = ["cherenkov*"]
 [project.scripts]
 cherenkov = "cherenkov.cli.core:main"
 
+[project.entry-points."cherenkov.plugin"]
+hipaa = "cherenkov.plugins.builtin.hipaa_compliance"
+
 [tool.pytest.ini_options]
 addopts = "-q --tb=short"
 testpaths = ["tests"]
