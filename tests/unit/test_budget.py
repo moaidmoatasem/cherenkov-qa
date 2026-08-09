@@ -75,6 +75,44 @@ class TestWarnThreshold(unittest.TestCase):
         self.assertEqual(len(warned), 1)
 
 
+class TestEnvWiring(unittest.TestCase):
+    """Lock the public env-var contract documented in configuration.md so the
+    docs can't claim names that aren't wired. See #921 — the docs used to claim
+    ``CHERENKOV_BUDGET_USD_CAP`` / ``_BUDGET_WARN_THRESHOLD`` while the code reads
+    ``CHERENKOV_BUDGET_USD`` / ``CHERENKOV_BUDGET_WARN_USD``."""
+
+    def setUp(self):
+        self._cap = os.environ.pop("CHERENKOV_BUDGET_USD", None)
+        self._warn = os.environ.pop("CHERENKOV_BUDGET_WARN_USD", None)
+
+    def tearDown(self):
+        for name, val in (
+            ("CHERENKOV_BUDGET_USD", self._cap),
+            ("CHERENKOV_BUDGET_WARN_USD", self._warn),
+        ):
+            if val is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = val
+
+    def test_budget_usd_env_overrides_cap(self):
+        os.environ["CHERENKOV_BUDGET_USD"] = "5.0"
+        self.assertEqual(RunBudget(cap_usd=None).cap_usd, 5.0)
+        self.assertEqual(RunBudget(cap_usd=99.0).cap_usd, 5.0)
+
+    def test_budget_warn_usd_env_sets_absolute_threshold(self):
+        os.environ["CHERENKOV_BUDGET_USD"] = "10.0"
+        os.environ["CHERENKOV_BUDGET_WARN_USD"] = "8.0"  # 80% of cap
+        b = RunBudget()
+        self.assertAlmostEqual(b.cap_usd, 10.0)
+        # warn_fraction is recomputed from the absolute warn value divided by cap.
+        self.assertAlmostEqual(b.warn_fraction, 0.8)
+        warned = []
+        b.on_warn = lambda s, c: warned.append((s, c))
+        b.charge(cost_usd=8.01)  # crosses the absolute USD threshold
+        self.assertEqual(len(warned), 1)
+
+
 class TestSummary(unittest.TestCase):
     def test_summary_structure(self):
         b = RunBudget(cap_usd=1.0)
