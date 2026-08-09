@@ -351,6 +351,27 @@ class OrchestrationEngine:
         ok = review is not None and review.status == Status.OK
         gen_ms = generate.metadata.duration_ms if generate else 0
         rev_ms = review.metadata.duration_ms if review else 0
+        
+        # Phase 15: Fine-Tuning Data Pipeline Telemetry
+        if get_settings().ENABLE_TELEMETRY and generate and review:
+            try:
+                from cherenkov.training.collector import DataCollector
+                import json
+                collector = DataCollector()
+                
+                # Try to extract the snippet from the spec if available, otherwise just use the JSON representation
+                spec_slice = json.dumps(current_scenario.to_dict()) if hasattr(current_scenario, "to_dict") else str(current_scenario)
+                
+                collector.record(
+                    spec_slice=spec_slice,
+                    test_code=generate.test_code,
+                    verdict=review.verdict.value,
+                    endpoint=f"{current_scenario.method.upper()} {current_scenario.endpoint}",
+                    duration_ms=gen_ms + rev_ms
+                )
+            except Exception as e:
+                self.log.warning("telemetry_record_failed", error=str(e))
+
         return ok, gen_ms, rev_ms
 
     # ── Pipeline stage helpers ─────────────────────────────────────

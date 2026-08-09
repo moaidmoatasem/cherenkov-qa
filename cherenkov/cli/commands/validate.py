@@ -104,7 +104,17 @@ def _findings_report(results: dict):
 @click.option("--json", "json_out", is_flag=True, help="Output purely JSON to stdout")
 @click.option("--quiet", "-q", is_flag=True, help="Suppress non-error output; print only the final status line")
 @click.option("--verbose", "-v", is_flag=True, help="Print each gate result, retry attempt, and all scenario outcomes")
-def validate_cmd(target, source, format, workers, no_html, no_cache, spec, output, tests_filter, fail_on_drift, json_summary, json_out, quiet, verbose):  # noqa: ARG001
+@click.option("--pr-number", help="Pull request number")
+@click.option("--pr-title", help="Pull request title")
+@click.option("--pr-description", help="Pull request description")
+@click.option("--commit-sha", help="Commit SHA")
+@click.option("--head-branch", help="Head branch name")
+@click.option("--base-branch", help="Base branch name")
+@click.option("--deeplink", help="Dynamic preview environment URL")
+@click.option("--artifact-url", help="Build artifact URL")
+@click.option("--artifact-filename", help="Build artifact filename")
+def validate_cmd(target, source, format, workers, no_html, no_cache, spec, output, tests_filter, fail_on_drift, json_summary, json_out, quiet, verbose,
+                 pr_number, pr_title, pr_description, commit_sha, head_branch, base_branch, deeplink, artifact_url, artifact_filename):  # noqa: ARG001
     """Validate E2E test suite against a real server"""
     from cherenkov.core.errors import ExitCode
 
@@ -329,6 +339,20 @@ def validate_cmd(target, source, format, workers, no_html, no_cache, spec, outpu
             "drift_detected": bool(violations),
             "status": results.get("status", "unknown"),
         }
+        # Include PR ergonomics if present
+        pr_metadata = {}
+        if pr_number: pr_metadata["pr_number"] = pr_number
+        if pr_title: pr_metadata["pr_title"] = pr_title
+        if pr_description: pr_metadata["pr_description"] = pr_description
+        if commit_sha: pr_metadata["commit_sha"] = commit_sha
+        if head_branch: pr_metadata["head_branch"] = head_branch
+        if base_branch: pr_metadata["base_branch"] = base_branch
+        if deeplink: pr_metadata["deeplink"] = deeplink
+        if artifact_url: pr_metadata["artifact_url"] = artifact_url
+        if artifact_filename: pr_metadata["artifact_filename"] = artifact_filename
+        
+        if pr_metadata:
+            summary["pr_metadata"] = pr_metadata
         with open(json_summary, "w", encoding="utf-8") as f:
             json.dump(summary, f, indent=2)
 

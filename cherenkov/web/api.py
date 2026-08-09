@@ -172,10 +172,19 @@ from cherenkov.web.routes.ops_routes import router as ops_router
 app.include_router(ops_router)
 
 from cherenkov.web.routes.agents import router as agents_router
-from cherenkov.web.routes.enterprise_routes import router as enterprise_router
+try:
+    from cherenkov.web.routes.enterprise_routes import router as enterprise_router
+    app.include_router(enterprise_router)
+except ImportError:
+    pass
+
+try:
+    from cherenkov.web.routes.public_api_routes import router as public_api_router
+    app.include_router(public_api_router)
+except ImportError:
+    pass
 
 app.include_router(agents_router)
-app.include_router(enterprise_router)
 
 from cherenkov.web.middleware.security import add_security_middleware
 
