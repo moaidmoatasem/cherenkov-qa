@@ -5,7 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Card, Skeleton, EmptyState } from '../../ui';
-import { fetchRuns, RunRecord } from '../../../lib/api';
+import { fetchRuns, RunRecord, updateRunClassification } from '../../../lib/api';
 import { History, CheckCircle2, XCircle, Clock, ExternalLink, RefreshCw } from 'lucide-react';
 
 interface VerdictHistoryTableProps {
@@ -34,6 +34,17 @@ export const VerdictHistoryTable: React.FC<VerdictHistoryTableProps> = ({ target
   useEffect(() => {
     loadRuns();
   }, [targetUrl]);
+
+  const handleClassificationChange = async (e: React.ChangeEvent<HTMLSelectElement>, runId: string) => {
+    e.stopPropagation();
+    const newClass = e.target.value;
+    try {
+      await updateRunClassification(runId, newClass);
+      await loadRuns();
+    } catch (err) {
+      console.error('Failed to update classification', err);
+    }
+  };
 
   return (
     <Card className="p-6 space-y-4" data-testid="verdict-history-table">
@@ -77,6 +88,7 @@ export const VerdictHistoryTable: React.FC<VerdictHistoryTableProps> = ({ target
               <tr className="border-b border-white/10 text-text-muted uppercase text-[10px]">
                 <th className="py-2.5 px-3">Run ID</th>
                 <th className="py-2.5 px-3">Verdict</th>
+                <th className="py-2.5 px-3">Classification</th>
                 <th className="py-2.5 px-3">Target URL</th>
                 <th className="py-2.5 px-3">Divergences</th>
                 <th className="py-2.5 px-3">Coverage</th>
@@ -110,6 +122,23 @@ export const VerdictHistoryTable: React.FC<VerdictHistoryTableProps> = ({ target
                       )}
                       {run.rich_verdict?.grade ? `Grade ${run.rich_verdict.grade}` : run.verdict || 'RUNNING'}
                     </span>
+                  </td>
+                  <td className="py-2.5 px-3">
+                    {(run.verdict === 'FAIL' || (run.rich_verdict && run.rich_verdict.grade !== 'A' && run.rich_verdict.grade !== 'B')) ? (
+                      <select
+                        value={run.failure_classification || ''}
+                        onChange={(e) => handleClassificationChange(e, run.run_id)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-bg-base border border-border-subtle rounded px-2 py-1 text-[10px] text-text-primary focus:outline-none focus:border-cyan-500 transition-colors"
+                      >
+                        <option value="">Unclassified</option>
+                        <option value="product_bug">Product Bug</option>
+                        <option value="test_fragility">Test Fragility</option>
+                        <option value="flake">Flake</option>
+                      </select>
+                    ) : (
+                      <span className="text-text-muted text-[10px] italic">-</span>
+                    )}
                   </td>
                   <td className="py-2.5 px-3 text-text-primary max-w-[200px] truncate">
                     {run.target_url || 'http://localhost:8000'}

@@ -41,6 +41,7 @@ class RunRecord:
     status: RunStatus = "complete"
     journey_id: str = ""                  # "" for runs not driven by a journey
     step_state_json: str = "{}"           # {step_id: {"status": ..., "duration_ms": ...}}
+    failure_classification: Literal["product_bug", "test_fragility", "flake", ""] = ""
 
 
 def _db_path() -> Path:
@@ -77,17 +78,18 @@ class RunStore:
                     meta_json       TEXT NOT NULL DEFAULT '{}',
                     status          TEXT NOT NULL DEFAULT 'complete',
                     journey_id      TEXT NOT NULL DEFAULT '',
-                    step_state_json TEXT NOT NULL DEFAULT '{}'
+                    step_state_json TEXT NOT NULL DEFAULT '{}',
+                    failure_classification TEXT NOT NULL DEFAULT ''
                 )
             """)
-            # Databases created before journey support predate the last three
-            # columns. Adding them with a DEFAULT backfills existing rows as
-            # completed non-journey runs, which is what they are.
+            # Databases created before journey support predate the last four
+            # columns. Adding them with a DEFAULT backfills existing rows.
             existing = {r["name"] for r in conn.execute("PRAGMA table_info(runs)")}
             for column, ddl in (
                 ("status", "TEXT NOT NULL DEFAULT 'complete'"),
                 ("journey_id", "TEXT NOT NULL DEFAULT ''"),
                 ("step_state_json", "TEXT NOT NULL DEFAULT '{}'"),
+                ("failure_classification", "TEXT NOT NULL DEFAULT ''"),
             ):
                 if column not in existing:
                     conn.execute(f"ALTER TABLE runs ADD COLUMN {column} {ddl}")
@@ -199,6 +201,16 @@ class RunStore:
             "timestamp_b": b.timestamp,
         }
 
+    def update_classification(self, run_id: str, classification: str) -> bool:
+        """Update the failure classification for a run."""
+        with self._lock, self._connect() as conn:
+            cur = conn.execute(
+                "UPDATE runs SET failure_classification=? WHERE run_id=?",
+                (classification, run_id),
+            )
+            conn.commit()
+            return cur.rowcount > 0
+
 
 def _row_to_record(row: sqlite3.Row) -> RunRecord:
     return RunRecord(
@@ -215,6 +227,7 @@ def _row_to_record(row: sqlite3.Row) -> RunRecord:
         status=row["status"],
         journey_id=row["journey_id"],
         step_state_json=row["step_state_json"],
+        failure_classification=row["failure_classification"]
     )
 
 

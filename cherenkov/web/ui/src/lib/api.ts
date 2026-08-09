@@ -818,6 +818,7 @@ export interface RunRecord {
   duration_ms: number;
   timestamp: string;
   rich_verdict?: RichVerdictData;
+  failure_classification?: 'product_bug' | 'test_fragility' | 'flake' | '';
 }
 
 export async function fetchRuns(targetUrl?: string, limit = 20): Promise<RunRecord[]> {
@@ -832,6 +833,15 @@ export async function fetchRun(runId: string): Promise<RunRecord | null> {
   const res = await fetch(`${API_BASE}/runs/${encodeURIComponent(runId)}`, { headers: authHeaders() });
   if (!res.ok) return null;
   return res.json();
+}
+
+export async function updateRunClassification(runId: string, classification: string): Promise<boolean> {
+  const res = await fetch(`${API_BASE}/runs/${encodeURIComponent(runId)}/classification`, {
+    method: 'PATCH',
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ classification })
+  });
+  return res.ok;
 }
 
 export interface CertificateVerifyResult {

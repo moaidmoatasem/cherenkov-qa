@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 
 _log = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ def _record_to_dict(record) -> dict:
         "timestamp": record.timestamp,
         "status": record.status,
         "journey_id": record.journey_id,
+        "failure_classification": record.failure_classification,
     }
     try:
         d["step_state"] = json.loads(record.step_state_json or "{}")
@@ -98,8 +100,30 @@ async def get_run(
     store = get_run_store()
     record = await asyncio.to_thread(store.get, run_id)
     if not record:
-        raise HTTPException(status_code=404, detail=f"Run {run_id!r} not found")
+        raise HTTPException(status_code=404, detail="Run not found")
     return _record_to_dict(record)
+
+
+class ClassificationUpdate(BaseModel):
+    classification: str
+
+
+@router.patch("/{run_id}/classification", operation_id="update_run_classification")
+async def update_run_classification(
+    run_id: str,
+    payload: ClassificationUpdate,
+    _: Role = Depends(require_role(Role.reviewer)),
+):
+    if payload.classification not in ["product_bug", "test_fragility", "flake", ""]:
+        raise HTTPException(status_code=422, detail="Invalid classification")
+    
+    store = get_run_store()
+    success = await asyncio.to_thread(
+        store.update_classification, run_id, payload.classification
+    )
+    if not success:
+        raise HTTPException(status_code=404, detail="Run not found")
+    return {"status": "updated"}
 
 
 @router.get("/{run_id}/events", operation_id="get_run_events")
