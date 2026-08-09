@@ -10,6 +10,13 @@
 
 **Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
 
+## Phase 9 SDD Markdown Migration & Ergonomics Sweep (2026-08-09)
+
+1. **Phase 9 (Semantic Memory Upgrade)**: The SDD (Sync Driven Development) cycle is now migrated to Markdown-first. `scripts/agent_sync.py` now writes `.memsearch/memory/sess_*.md` semantic memory directly, alongside the fallback legacy JSON storage. A new `_distill_skills` background task extracts knowledge directly to `skills/distilled/` in markdown format. (5/5 tests in `test_agent_sync_memsearch_api.py` green).
+2. **Phase D1 (M3) PR Ergonomics**: Identified missing inputs in `action.yml` against TesterArmy's teardown recommendations. Logged as `ISSUE 832` in `open_issues.txt`.
+3. **Phase A3 (`--json` completeness)**: Re-audited `certify` and `audit` command definitions. Found them adequate for `--json` streaming integration.
+4. **Phase B1/B2 (NPM Packaging)**: Resolved the diverging `npm/` vs `npm-package/` dual-tree ambiguity by deleting the orphan folders and retaining the single source of truth thin launcher in the repo root `package.json` at version `1.3.0`.
+
 ## `verify --json` (2026-08-08) — A3 continued, and a red gate on `main`
 
 **A3 is no longer partial for the command that matters.** `cherenkov verify --json` puts the report on stdout and moves the human render to stderr. `--output` (file) and `--json` (stdout) now come from **one builder** (`_build_json` / `_build_rich_json`), so the two representations cannot drift; a test asserts they are byte-identical.

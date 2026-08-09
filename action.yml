@@ -35,6 +35,33 @@ inputs:
     description: Path for the output report file
     required: false
     default: cherenkov-report.sarif
+  pr-number:
+    description: Pull request number for PR comment integration
+    required: false
+  pr-title:
+    description: Pull request title
+    required: false
+  pr-description:
+    description: Pull request description
+    required: false
+  commit-sha:
+    description: Commit SHA being checked
+    required: false
+  head-branch:
+    description: Head branch name
+    required: false
+  base-branch:
+    description: Base branch name
+    required: false
+  deeplink:
+    description: URL to a per-PR dynamic preview environment
+    required: false
+  artifact-url:
+    description: URL to build artifacts
+    required: false
+  artifact-filename:
+    description: Filename for build artifacts
+    required: false
 
 outputs:
   violations:
@@ -89,7 +116,16 @@ runs:
           --target "${{ inputs.target }}" \
           --output "${OUTPUT_FILE}" \
           --format "${FORMAT}" \
-          --json-summary /tmp/cherenkov-summary.json
+          --json-summary /tmp/cherenkov-summary.json \
+          ${{ inputs.pr-number && format('--pr-number "{0}"', inputs.pr-number) || '' }} \
+          ${{ inputs.pr-title && format('--pr-title "{0}"', inputs.pr-title) || '' }} \
+          ${{ inputs.pr-description && format('--pr-description "{0}"', inputs.pr-description) || '' }} \
+          ${{ inputs.commit-sha && format('--commit-sha "{0}"', inputs.commit-sha) || '' }} \
+          ${{ inputs.head-branch && format('--head-branch "{0}"', inputs.head-branch) || '' }} \
+          ${{ inputs.base-branch && format('--base-branch "{0}"', inputs.base-branch) || '' }} \
+          ${{ inputs.deeplink && format('--deeplink "{0}"', inputs.deeplink) || '' }} \
+          ${{ inputs.artifact-url && format('--artifact-url "{0}"', inputs.artifact-url) || '' }} \
+          ${{ inputs.artifact-filename && format('--artifact-filename "{0}"', inputs.artifact-filename) || '' }}
         VIOLATIONS=0
         DRIFT_DETECTED=false
         if [ -f /tmp/cherenkov-summary.json ]; then
