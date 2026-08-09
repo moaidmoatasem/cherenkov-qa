@@ -11,10 +11,15 @@ class TestTrainingPipeline(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp()
         self.db_path = os.path.join(self.tmpdir, "test_telemetry.db")
-        self.collector = DataCollector(db_path=self.db_path)
+        from cherenkov.ports.storage import StorageConfig
+        from cherenkov.adapters.storage.sqlite import SQLiteStorageAdapter
+        from pathlib import Path
+        config = StorageConfig(db_path=Path(self.db_path), namespace="telemetry")
+        storage = SQLiteStorageAdapter(config)
+        self.collector = DataCollector(storage=storage)
 
     def tearDown(self):
-        self.collector.close()
+        pass
 
     # ---- DataCollector tests ----
 
