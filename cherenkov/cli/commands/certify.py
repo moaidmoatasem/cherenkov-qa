@@ -86,6 +86,12 @@ _VERDICT_COLOUR = {"PASS": "green", "WARN": "yellow", "FAIL": "red"}
     default=False,
     help="Print a spec coverage-gap report showing which endpoints were probed (requires --spec).",
 )
+@click.option(
+    "--json",
+    "as_json",
+    is_flag=True,
+    help="Emit structured JSON instead of text.",
+)
 def certify_cmd(
     url: str | None,
     spec: str | None,
@@ -96,6 +102,7 @@ def certify_cmd(
     verify_file: str | None,
     compliance: bool,
     coverage_report: bool,
+    as_json: bool,
 ) -> None:
     """Issue a signed verification certificate for a live API.
 
@@ -140,15 +147,16 @@ def certify_cmd(
             click.echo("[ERROR] --signing-key must be a hex string.", err=True)
             sys.exit(2)
 
-    click.echo("\nCHERENKOV certify")
-    if using_demo:
-        click.echo(
-            click.style("  (demo mode — no --url given, probing public Petstore)", fg="yellow")
-        )
-    click.echo(f"  Target  : {effective_url}")
-    click.echo(f"  Spec    : {spec or 'built-in Petstore demo'}")
-    click.echo(f"  Mode    : {'LLM Skeptic' if llm else 'offline (no LLM required)'}")
-    click.echo("")
+    if not as_json:
+        click.echo("\nCHERENKOV certify")
+        if using_demo:
+            click.echo(
+                click.style("  (demo mode — no --url given, probing public Petstore)", fg="yellow")
+            )
+        click.echo(f"  Target  : {effective_url}")
+        click.echo(f"  Spec    : {spec or 'built-in Petstore demo'}")
+        click.echo(f"  Mode    : {'LLM Skeptic' if llm else 'offline (no LLM required)'}")
+        click.echo("")
 
     from cherenkov.cli.commands.verify import _assert_reachable
 
@@ -163,7 +171,10 @@ def certify_cmd(
             probed_endpoints=probed_endpoints,
         )
     except Exception as exc:
-        click.echo(f"\n[ERROR] Proof run failed: {exc}", err=True)
+        if as_json:
+            click.echo(json.dumps({"error": f"Proof run failed: {exc}"}))
+        else:
+            click.echo(f"\n[ERROR] Proof run failed: {exc}", err=True)
         sys.exit(2)
 
     cert = issue_certificate(
@@ -173,26 +184,30 @@ def certify_cmd(
         signing_key=key_bytes,
     )
 
-    _print_certificate(cert)
+    if as_json:
+        click.echo(json.dumps(cert.model_dump(), indent=2, default=str))
+    else:
+        _print_certificate(cert)
 
-    if compliance:
-        _print_compliance(cert)
+        if compliance:
+            _print_compliance(cert)
 
-    if coverage_report:
-        if spec_dict is None:
-            click.echo(
-                "[WARN] --coverage-report requires --spec; skipping coverage output.",
-                err=True,
-            )
-        else:
-            from cherenkov.cli.commands.verify import _print_coverage
+        if coverage_report:
+            if spec_dict is None:
+                click.echo(
+                    "[WARN] --coverage-report requires --spec; skipping coverage output.",
+                    err=True,
+                )
+            else:
+                from cherenkov.cli.commands.verify import _print_coverage
 
-            cov = compute_coverage(spec_dict, reports, probed_endpoints=probed_endpoints)
-            _print_coverage(cov)
+                cov = compute_coverage(spec_dict, reports, probed_endpoints=probed_endpoints)
+                _print_coverage(cov)
 
     if output:
         Path(output).write_text(json.dumps(cert.model_dump(), indent=2, default=str))
-        click.echo(f"\nCertificate written to {output}")
+        if not as_json:
+            click.echo(f"\nCertificate written to {output}")
 
     if fail_on_fail and cert.verdict == "FAIL":
         sys.exit(1)

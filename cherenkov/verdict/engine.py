@@ -61,6 +61,7 @@ class VerdictEngine:
         max_probes: int = 40,
         known_identifiers: dict[str, list[str]] | None = None,
         allow_mutations: bool = False,
+        headers: dict[str, str] | None = None,
     ) -> None:
         self.base_url = base_url
         self.spec = spec
@@ -75,6 +76,7 @@ class VerdictEngine:
         self.max_probes = max_probes
         self.known_identifiers = known_identifiers
         self.allow_mutations = allow_mutations
+        self.headers = headers
         self.divergence_reports: list[DivergenceReport] = []
 
     def run(self) -> RichVerdict:
@@ -179,6 +181,7 @@ class VerdictEngine:
                 probed_endpoints=probed_endpoints,
                 known_identifiers=self.known_identifiers,
                 allow_mutations=self.allow_mutations,
+                headers=self.headers,
             )
         except Exception as exc:
             return (
@@ -271,7 +274,7 @@ class VerdictEngine:
 
         t0 = time.monotonic()
         try:
-            oracle = MutationOracle(base_url=self.base_url, timeout=self.timeout)
+            oracle = MutationOracle(base_url=self.base_url, timeout=self.timeout, headers=self.headers)
             report = oracle.run()
             score = report.score
         except Exception as exc:
@@ -364,7 +367,7 @@ class VerdictEngine:
 
         t0 = time.monotonic()
         try:
-            capture = TrafficCapture(base_url=self.base_url, timeout=self.timeout)
+            capture = TrafficCapture(base_url=self.base_url, timeout=self.timeout, headers=self.headers)
             hypotheses = []
             if self.spec is not None and self.spec is not PETSTORE_SPEC_SUBSET:
                 from cherenkov.divergence.probe_planner import plan_probes, spec_hypotheses

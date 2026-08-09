@@ -204,6 +204,16 @@ from cherenkov.web.routes.journey_routes import router as journey_router
 
 app.include_router(journey_router)
 
+# ── Web UI Probe (#882): real Playwright-backed JS/image/exception detection ──
+from cherenkov.web.routes.ui_probe_routes import router as ui_probe_router
+
+app.include_router(ui_probe_router)
+
+# ── Performance / k6 (#882): load-test baseline and anomaly detection ─────────
+from cherenkov.web.routes.perf_routes import router as perf_router
+
+app.include_router(perf_router)
+
 # ── Static/SPA Fallback Route ──────────────────────────────────────────────────
 from cherenkov.web.routes.static_routes import router as static_router
 

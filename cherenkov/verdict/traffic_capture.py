@@ -83,8 +83,8 @@ class CapturingWitnessAgent(WitnessAgent):
     to write golden fixtures to disk.
     """
 
-    def __init__(self, base_url: str, timeout: float = 10.0) -> None:
-        super().__init__(base_url=base_url, timeout=timeout)
+    def __init__(self, base_url: str, timeout: float = 10.0, headers: dict[str, str] | None = None) -> None:
+        super().__init__(base_url=base_url, timeout=timeout, headers=headers)
         self.interactions: list[CapturedInteraction] = []
 
     def reproduce(self, hypothesis: DivergenceHypothesis) -> ReproductionResult:
@@ -154,9 +154,9 @@ class TrafficCapture:
         print(f"{report.golden_count} golden fixtures written to {report.fixture_path}")
     """
 
-    def __init__(self, base_url: str, timeout: float = 10.0) -> None:
+    def __init__(self, base_url: str, timeout: float = 10.0, headers: dict[str, str] | None = None) -> None:
         self.base_url = base_url
-        self.agent = CapturingWitnessAgent(base_url=base_url, timeout=timeout)
+        self.agent = CapturingWitnessAgent(base_url=base_url, timeout=timeout, headers=headers)
 
     def run(
         self,

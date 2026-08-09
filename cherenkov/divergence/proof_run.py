@@ -292,6 +292,7 @@ def run_proof(
     probed_endpoints: list[tuple[str, str]] | None = None,
     known_identifiers: dict[str, list[str]] | None = None,
     allow_mutations: bool = False,
+    headers: dict[str, str] | None = None,
 ) -> list[DivergenceReport]:
     """
     Run the Skeptic → Witness loop against *base_url*.
@@ -320,7 +321,7 @@ def run_proof(
         spec = PETSTORE_SPEC_SUBSET
 
     skeptic = SkepticAgent(reflector=reflector) if use_llm else None
-    witness = WitnessAgent(base_url=base_url)
+    witness = WitnessAgent(base_url=base_url, headers=headers)
 
     reports: list[DivergenceReport] = []
     t0_ms = int(time.monotonic() * 1000)

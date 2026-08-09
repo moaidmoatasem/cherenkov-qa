@@ -73,12 +73,19 @@ def _run_suite(test_cmd: list[str], url: str) -> tuple[bool, str]:
     default=9101,
     help="Port for the mutant mock server (default 9101).",
 )
+@click.option(
+    "--json",
+    "as_json",
+    is_flag=True,
+    help="Emit structured JSON instead of text.",
+)
 def audit_cmd(
     target: str,
     spec: str,
     test_cmd: str,
     proxy_port: int,
     mock_port: int,
+    as_json: bool,
 ) -> None:
     """Audit a test suite for meaningful assertions.
 
@@ -87,33 +94,44 @@ def audit_cmd(
       2. Generating spec-derived mutants (status, value, missing, enum).
       3. Replaying the test suite against the mutants.
     """
-    click.echo("\nCHERENKOV audit (Baseline-Free Oracle)")
-    click.echo(f"  Target   : {target}")
-    click.echo(f"  Spec     : {spec}")
-    click.echo(f"  Test Cmd : {test_cmd}")
-    click.echo("")
+    if not as_json:
+        click.echo("\nCHERENKOV audit (Baseline-Free Oracle)")
+        click.echo(f"  Target   : {target}")
+        click.echo(f"  Spec     : {spec}")
+        click.echo(f"  Test Cmd : {test_cmd}")
+        click.echo("")
 
     spec_dict = load_spec(spec)
     if spec_dict is None:
         sys.exit(2)
 
     # 1. Record Baseline
-    click.echo(f"[*] Recording baseline against live target ({target})...")
+    if not as_json:
+        click.echo(f"[*] Recording baseline against live target ({target})...")
     with RecordingProxy(port=proxy_port, target=target) as proxy:
         passed, out = _run_suite(test_cmd.split(), proxy.url)
         if not passed:
-            click.echo(
-                f"[ERROR] Test suite failed against the live target! Output:\n{out}", err=True
-            )
-            click.echo("The test suite must pass the baseline to be audited.")
+            if as_json:
+                import json as json_lib
+                click.echo(json_lib.dumps({"error": "Test suite failed against the live target", "output": out}))
+            else:
+                click.echo(
+                    f"[ERROR] Test suite failed against the live target! Output:\n{out}", err=True
+                )
+                click.echo("The test suite must pass the baseline to be audited.")
             sys.exit(1)
 
         interactions = len(proxy.interactions)
         replay_map = proxy.replay_map()
-        click.echo(f"    ✓ Suite passed baseline. Recorded {interactions} interactions.")
+        if not as_json:
+            click.echo(f"    ✓ Suite passed baseline. Recorded {interactions} interactions.")
 
     if not replay_map:
-        click.echo("[ERROR] No traffic was recorded. Is the test suite using API_URL?")
+        if as_json:
+            import json as json_lib
+            click.echo(json_lib.dumps({"error": "No traffic was recorded. Is the test suite using API_URL?"}))
+        else:
+            click.echo("[ERROR] No traffic was recorded. Is the test suite using API_URL?")
         sys.exit(1)
 
     # Extract known identifiers from recorded traffic
@@ -131,7 +149,8 @@ def audit_cmd(
                     known_identifiers.setdefault(k, []).append(v)
 
     # 2. Iterate endpoints and mutate
-    click.echo("\n[*] Generating and testing mutants...")
+    if not as_json:
+        click.echo("\n[*] Generating and testing mutants...")
     schemas = spec_dict.get("components", {}).get("schemas", {})
 
     total_mutants = 0
@@ -171,7 +190,8 @@ def audit_cmd(
 
             mutated_path, battery = mutation
 
-            click.echo(f"  Testing {method.upper()} {path_str}")
+            if not as_json:
+                click.echo(f"  Testing {method.upper()} {path_str}")
 
             # Check conforming first (sanity check)
             conf_status, conf_body = battery["conforming"]
@@ -181,9 +201,10 @@ def audit_cmd(
             with BrokenImplServer(port=mock_port, responses=conf_map) as mock:
                 passed, _ = _run_suite(test_cmd.split(), mock.url)
                 if not passed:
-                    click.echo(
-                        "    ✗ FAILED conforming control (test is brittle to expected values). Skipping mutants."
-                    )
+                    if not as_json:
+                        click.echo(
+                            "    ✗ FAILED conforming control (test is brittle to expected values). Skipping mutants."
+                        )
                     continue
 
             # Check mutants
@@ -199,14 +220,16 @@ def audit_cmd(
                     passed, _ = _run_suite(test_cmd.split(), mock.url)
 
                     if not passed:
-                        click.echo(f"    ✓ Killed mutant: {m_name}")
+                        if not as_json:
+                            click.echo(f"    ✓ Killed mutant: {m_name}")
                         killed_mutants += 1
                     else:
-                        click.echo(
-                            click.style(
-                                f"    ✗ SURVIVED mutant: {m_name} (vacuous assertion)", fg="red"
+                        if not as_json:
+                            click.echo(
+                                click.style(
+                                    f"    ✗ SURVIVED mutant: {m_name} (vacuous assertion)", fg="red"
+                                )
                             )
-                        )
                         survived_mutants += 1
                         results.append(
                             {
@@ -216,17 +239,29 @@ def audit_cmd(
                             }
                         )
 
-    click.echo("\n" + "=" * 50)
-    click.echo("Audit Summary:")
-    click.echo(f"Total Mutants Evaluated : {total_mutants}")
-    if total_mutants > 0:
-        score = (killed_mutants / total_mutants) * 100
-        color = "green" if score > 80 else "yellow" if score > 50 else "red"
-        click.echo("Mutation Score          : " + click.style(f"{score:.1f}%", fg=color, bold=True))
-        click.echo(f"Killed                  : {killed_mutants}")
-        click.echo(f"Survived (Weaknesses)   : {survived_mutants}")
+    score = (killed_mutants / total_mutants) * 100 if total_mutants > 0 else 0
+
+    if as_json:
+        import json as json_lib
+        payload = {
+            "total_mutants": total_mutants,
+            "killed_mutants": killed_mutants,
+            "survived_mutants": survived_mutants,
+            "mutation_score": score,
+            "survived_details": results
+        }
+        click.echo(json_lib.dumps(payload, indent=2))
     else:
-        click.echo("No mutants evaluated (no endpoints hit or spec missing schemas).")
+        click.echo("\n" + "=" * 50)
+        click.echo("Audit Summary:")
+        click.echo(f"Total Mutants Evaluated : {total_mutants}")
+        if total_mutants > 0:
+            color = "green" if score > 80 else "yellow" if score > 50 else "red"
+            click.echo("Mutation Score          : " + click.style(f"{score:.1f}%", fg=color, bold=True))
+            click.echo(f"Killed                  : {killed_mutants}")
+            click.echo(f"Survived (Weaknesses)   : {survived_mutants}")
+        else:
+            click.echo("No mutants evaluated (no endpoints hit or spec missing schemas).")
 
     if survived_mutants > 0:
         sys.exit(1)

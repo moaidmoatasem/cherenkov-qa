@@ -9,6 +9,7 @@ import VerdictHistoryTable from './VerdictHistoryTable';
 import IntegrityHeatmap from './IntegrityHeatmap';
 import CoverageAndPerfScreen from './CoverageAndPerfScreen';
 import CertificateVerification from './CertificateVerification';
+import TestSurfacesPanel from './TestSurfacesPanel';
 import { PageHeader } from '../../ui/PageHeader';
 import { Tabs } from '../../ui/Tabs';
 import { RunRecord } from '../../../lib/api';
@@ -118,6 +119,9 @@ export const DashboardWorkspace: React.FC<DashboardWorkspaceProps> = ({
 
           {/* 4. Coverage Map, Trend & Performance Baselines */}
           <CoverageAndPerfScreen />
+
+          {/* 5. Web UI Probe + k6 Performance — secondary surfaces (#882) */}
+          <TestSurfacesPanel />
         </div>
       )}
     </div>

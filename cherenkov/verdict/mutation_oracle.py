@@ -74,9 +74,9 @@ class MutationOracle:
         print(f"Mutation score: {report.score:.0%}")
     """
 
-    def __init__(self, base_url: str, timeout: float = 10.0) -> None:
+    def __init__(self, base_url: str, timeout: float = 10.0, headers: dict[str, str] | None = None) -> None:
         self.base_url = base_url
-        self.witness = WitnessAgent(base_url=base_url, timeout=timeout)
+        self.witness = WitnessAgent(base_url=base_url, timeout=timeout, headers=headers)
 
     def run(self) -> MutationOracleReport:
         mutations = self._build_mutations()

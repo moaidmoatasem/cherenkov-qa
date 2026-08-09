@@ -53,10 +53,13 @@ behavioral_diff_on_pr = false
 
 [copilot]
 # Manual-QA pillar (E10). Autonomy ladder grows in E13.
-autonomy = "assisted"         # assisted | augmented | agentic | predictive
+autonomy = "agentic"         # assisted | augmented | agentic | predictive
 mentor_enabled = true         # E13: Mentor surfaces senior idioms to juniors
 
 [certification]
 # E12: Model Certification + Governance
 gold_set_path = ".cherenkov/gold_set.json"
 min_faithfulness = 0.8
+
+[credentials.test-auth]
+headers = { Authorization = "Bearer test-token" }

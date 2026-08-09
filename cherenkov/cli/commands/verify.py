@@ -46,8 +46,20 @@ _log = logging.getLogger(__name__)
     "--url",
     "--base-url",
     "-u",
-    required=True,
+    required=False,
     help="Base URL of the live server to probe (e.g. https://petstore3.swagger.io/api/v3)",
+)
+@click.option(
+    "--env",
+    "-e",
+    default=None,
+    help="Name of the environment to probe (resolves from cherenkov.toml environments section).",
+)
+@click.option(
+    "--credential",
+    "-c",
+    default=None,
+    help="Name of the credential to use for the probe (resolves from cherenkov.toml credentials section).",
 )
 @click.option(
     "--spec",
@@ -141,7 +153,7 @@ _log = logging.getLogger(__name__)
     default=False,
     help="Emit the report as JSON on stdout. Progress text moves to stderr.",
 )
-def verify_cmd(as_json: bool, **kwargs) -> None:
+def verify_cmd(as_json: bool, env: str | None = None, credential: str | None = None, **kwargs) -> None:
     """Verify a live API against its OpenAPI spec -- find spec<->implementation divergences.
 
     Runs in offline mode by default (no LLM, no Ollama required).  Pass --llm
@@ -155,12 +167,41 @@ def verify_cmd(as_json: bool, **kwargs) -> None:
       # Zero-config demo against the public Petstore:
       cherenkov verify --url https://petstore3.swagger.io/api/v3
 
+      # Use a named environment and credential from cherenkov.toml:
+      cherenkov verify --env staging --credential staging-auth
+
       # CI gate: fail if divergences are found:
       cherenkov verify --url http://localhost:8080 --spec ./openapi.json --fail-on-divergence
 
       # Machine-readable: document on stdout, progress on stderr:
       cherenkov verify --url http://localhost:8080 --spec ./openapi.json --json
     """
+    from cherenkov.core.settings import get_settings
+    settings = get_settings()
+
+    url = kwargs.get("url")
+    if not url and not env:
+        click.echo("[ERROR] Must specify either --url or --env", err=True)
+        sys.exit(2)
+        
+    if not url and env:
+        if env not in settings.ENVIRONMENTS:
+            click.echo(f"[ERROR] Environment '{env}' not found in cherenkov.toml [environments]", err=True)
+            sys.exit(2)
+        kwargs["url"] = settings.ENVIRONMENTS[env]
+
+    headers = None
+    if credential:
+        if credential not in settings.CREDENTIALS:
+            click.echo(f"[ERROR] Credential '{credential}' not found in cherenkov.toml [credentials]", err=True)
+            sys.exit(2)
+        cred_data = settings.CREDENTIALS[credential]
+        if isinstance(cred_data, dict):
+            headers = cred_data.get("headers", {})
+        else:
+            headers = {"Authorization": str(cred_data)}
+    kwargs["headers"] = headers
+
     if not as_json:
         _verify_impl(**kwargs, doc_sink=None)
         return
@@ -200,6 +241,7 @@ def _verify_impl(
     identifiers: str | None,
     allow_mutations: bool,
     doc_sink: dict | None,
+    headers: dict[str, str] | None = None,
 ) -> None:
     """Verify a live API against its OpenAPI spec -- find spec<->implementation divergences.
 
@@ -315,6 +357,7 @@ def _verify_impl(
             max_probes=max_probes,
             known_identifiers=known_identifiers,
             allow_mutations=allow_mutations,
+            headers=headers,
         )
         duration_ms = int((time.monotonic() - t_start) * 1000)
 
@@ -372,6 +415,7 @@ def _verify_impl(
                 probed_endpoints=probed_endpoints,
                 known_identifiers=known_identifiers,
                 allow_mutations=allow_mutations,
+                headers=headers,
             )
         except Exception as exc:
             click.echo(f"\n[ERROR] Probe failed: {exc}", err=True)
@@ -433,6 +477,7 @@ def _run_rich_verdict(
     max_probes: int = 40,
     known_identifiers: dict[str, list[str]] | None = None,
     allow_mutations: bool = False,
+    headers: dict[str, str] | None = None,
 ) -> tuple:
     from cherenkov.divergence.coverage import compute_coverage
     from cherenkov.verdict.engine import VerdictEngine
@@ -449,6 +494,7 @@ def _run_rich_verdict(
         max_probes=max_probes,
         known_identifiers=known_identifiers,
         allow_mutations=allow_mutations,
+        headers=headers,
     )
     try:
         rich = engine.run()

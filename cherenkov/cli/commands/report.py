@@ -111,6 +111,10 @@ _GRADE_ORDER = {"A": 5, "B": 4, "C": 3, "D": 2, "F": 1}
     "--fail-on-new", is_flag=True, default=False,
     help="Exit with code 1 if any new divergences appear vs --diff baseline (CI gate).",
 )
+@click.option(
+    "--json", "as_json", is_flag=True, default=False,
+    help="Emit JSON output (alias for --format json).",
+)
 def report_cmd(
     input_file: str | None,
     run_id: str | None,
@@ -119,6 +123,7 @@ def report_cmd(
     fmt: str | None,
     output: str | None,
     fail_on_new: bool,
+    as_json: bool,
 ) -> None:
     """Summarise and diff cherenkov run reports.
 
@@ -137,6 +142,9 @@ def report_cmd(
       1 — new divergences found (only with --fail-on-new)
       2 — file read/parse error or run not found
     """
+    if as_json:
+        fmt = "json"
+
     if list_runs:
         text = _handle_list(fmt or "text")
         _emit(text, output)

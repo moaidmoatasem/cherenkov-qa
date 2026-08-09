@@ -5,8 +5,24 @@ import sys
 import click
 
 
+def _get_version() -> str:
+    try:
+        from importlib.metadata import version, PackageNotFoundError
+        try:
+            return version("cherenkov-qa")
+        except PackageNotFoundError:
+            pass
+        try:
+            return version("cherenkov")
+        except PackageNotFoundError:
+            pass
+    except ImportError:
+        pass
+    return "dev"
+
+
 @click.group(invoke_without_command=True)
-@click.version_option(package_name="cherenkov-qa", prog_name="cherenkov")
+@click.version_option(version=_get_version(), prog_name="cherenkov")
 @click.pass_context
 def cli(ctx):
     """CHERENKOV E2E Suite Command Line Interface"""

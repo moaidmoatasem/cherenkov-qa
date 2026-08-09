@@ -844,6 +844,65 @@ export async function updateRunClassification(runId: string, classification: str
   return res.ok;
 }
 
+// ── Web UI Probe (#882) ────────────────────────────────────────────────────
+export interface UIProbeStatusResult {
+  available: boolean;
+  backend: string;
+  reason?: string;
+  install_hint?: string;
+}
+
+export interface UIProbeRun {
+  target_url: string;
+  paths_probed: string[];
+  status: 'clean' | 'issues_found';
+  total_findings: number;
+  issue_count: number;
+  findings: Array<{ url: string; kind: string; message: string; detail: string }>;
+}
+
+export async function getUiProbeStatus(): Promise<UIProbeStatusResult> {
+  const res = await fetch(`${API_BASE}/ui-probe/status`, { headers: authHeaders() });
+  if (!res.ok) return { available: false, backend: 'playwright', reason: 'API error' };
+  return res.json();
+}
+
+export async function runUiProbe(targetUrl: string, paths: string[] = ['/']): Promise<UIProbeRun> {
+  const res = await fetch(`${API_BASE}/ui-probe/run`, {
+    method: 'POST',
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ target_url: targetUrl, paths }),
+  });
+  if (!res.ok) throw new Error(`UI Probe failed: ${res.status}`);
+  return res.json();
+}
+
+// ── Performance / k6 (#882) ───────────────────────────────────────────────
+export interface PerfMetric {
+  endpoint: string;
+  method: string;
+  latency_ms: number;
+  status: string;
+  baseline_mean?: number | null;
+  message?: string;
+}
+
+export async function getPerfMetrics(): Promise<PerfMetric[]> {
+  const res = await fetch(`${API_BASE}/perf/metrics`, { headers: authHeaders() });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function runPerfTest(targetUrl?: string): Promise<PerfMetric & { exit_code?: number }> {
+  const params = targetUrl ? `?target_url=${encodeURIComponent(targetUrl)}` : '';
+  const res = await fetch(`${API_BASE}/perf/run${params}`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(`Perf test failed: ${res.status}`);
+  return res.json();
+}
+
 export interface CertificateVerifyResult {
   valid: boolean;
   cert_id: string;

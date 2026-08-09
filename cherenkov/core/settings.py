@@ -135,6 +135,9 @@ class CherenkovSettings(BaseSettings):
 
     OUTPUT_DIR: str = Field(default='output', validation_alias='CHERENKOV_OUTPUT_DIR')
 
+    ENVIRONMENTS: dict[str, Any] = Field(default_factory=dict, validation_alias='CHERENKOV_ENVIRONMENTS')
+    CREDENTIALS: dict[str, Any] = Field(default_factory=dict, validation_alias='CHERENKOV_CREDENTIALS')
+
     @classmethod
     def settings_customise_sources(
         cls,
@@ -145,38 +148,54 @@ class CherenkovSettings(BaseSettings):
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         class TomlSource(PydanticBaseSettingsSource):
-            def get_field_value(self, field, field_name: str) -> tuple[Any, str, bool]:
-                return None, "", False
-            def __call__(self) -> dict[str, Any]:
+            def __init__(self, settings_cls):
+                super().__init__(settings_cls)
+                self.mapped = {}
                 try:
                     import tomllib
                     with open('cherenkov.toml', 'rb') as f:
                         toml_data = tomllib.load(f)
                 except Exception:
-                    return {}
-                mapped = {}
+                    return
                 sub = toml_data.get('substrate', {})
-                if 'egress' in sub: mapped['EGRESS'] = sub['egress']
+                if 'egress' in sub: self.mapped['EGRESS'] = sub['egress']
                 tiers = sub.get('tiers', {})
                 if 'small' in tiers:
-                    if 'provider' in tiers['small']: mapped['TIER_SMALL_PROVIDER'] = tiers['small']['provider']
-                    if 'model' in tiers['small']: mapped['TIER_SMALL_MODEL'] = tiers['small']['model']
+                    if 'provider' in tiers['small']: self.mapped['TIER_SMALL_PROVIDER'] = tiers['small']['provider']
+                    if 'model' in tiers['small']: self.mapped['TIER_SMALL_MODEL'] = tiers['small']['model']
                 if 'deep' in tiers:
-                    if 'provider' in tiers['deep']: mapped['TIER_DEEP_PROVIDER'] = tiers['deep']['provider']
-                    if 'model' in tiers['deep']: mapped['TIER_DEEP_MODEL'] = tiers['deep']['model']
+                    if 'provider' in tiers['deep']: self.mapped['TIER_DEEP_PROVIDER'] = tiers['deep']['provider']
+                    if 'model' in tiers['deep']: self.mapped['TIER_DEEP_MODEL'] = tiers['deep']['model']
                 if 'vision' in tiers:
-                    if 'provider' in tiers['vision']: mapped['TIER_VISION_PROVIDER'] = tiers['vision']['provider']
-                    if 'model' in tiers['vision']: mapped['TIER_VISION_MODEL'] = tiers['vision']['model']
+                    if 'provider' in tiers['vision']: self.mapped['TIER_VISION_PROVIDER'] = tiers['vision']['provider']
+                    if 'model' in tiers['vision']: self.mapped['TIER_VISION_MODEL'] = tiers['vision']['model']
                 budgets = sub.get('budgets', {})
-                if 'max_cost_usd_per_run' in budgets: mapped['SUBSTRATE_MAX_COST_USD_PER_RUN'] = budgets['max_cost_usd_per_run']
-                if 'max_latency_ms' in budgets: mapped['SUBSTRATE_MAX_LATENCY_MS'] = budgets['max_latency_ms']
+                if 'max_cost_usd_per_run' in budgets: self.mapped['SUBSTRATE_MAX_COST_USD_PER_RUN'] = budgets['max_cost_usd_per_run']
+                if 'max_latency_ms' in budgets: self.mapped['SUBSTRATE_MAX_LATENCY_MS'] = budgets['max_latency_ms']
                 copilot = toml_data.get('copilot', {})
-                if 'autonomy' in copilot: mapped['COPILOT_AUTONOMY'] = copilot['autonomy']
-                if 'mentor_enabled' in copilot: mapped['COPILOT_MENTOR_ENABLED'] = copilot['mentor_enabled']
+                if 'autonomy' in copilot: self.mapped['COPILOT_AUTONOMY'] = copilot['autonomy']
+                if 'mentor_enabled' in copilot: self.mapped['COPILOT_MENTOR_ENABLED'] = copilot['mentor_enabled']
                 cert = toml_data.get('certification', {})
-                if 'gold_set_path' in cert: mapped['CERTIFICATION_GOLD_SET_PATH'] = cert['gold_set_path']
-                if 'min_faithfulness' in cert: mapped['CERTIFICATION_MIN_FAITHFULNESS'] = cert['min_faithfulness']
-                return mapped
+                if 'gold_set_path' in cert: self.mapped['CERTIFICATION_GOLD_SET_PATH'] = cert['gold_set_path']
+                if 'min_faithfulness' in cert: self.mapped['CERTIFICATION_MIN_FAITHFULNESS'] = cert['min_faithfulness']
+                
+                env = toml_data.get('environments', {})
+                if env: self.mapped['ENVIRONMENTS'] = env
+                
+                cred = toml_data.get('credentials', {})
+                if cred: self.mapped['CREDENTIALS'] = cred
+
+            def get_field_value(self, field, field_name: str) -> tuple[Any, str, bool]:
+                val = self.mapped.get(field_name.upper())
+                if val is not None:
+                    return val, field_name, False
+                return None, "", False
+
+            def prepare_field_value(self, field_name: str, field, value: Any, value_is_complex: bool) -> Any:
+                return value
+
+            def __call__(self) -> dict[str, Any]:
+                return self.mapped
 
         return (
             init_settings,
@@ -198,6 +217,20 @@ class CherenkovSettings(BaseSettings):
                 "model": self.TIER_DEEP_MODEL,
             },
         }
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        if not self.CREDENTIALS or not self.ENVIRONMENTS:
+            try:
+                import tomllib
+                with open('cherenkov.toml', 'rb') as f:
+                    toml_data = tomllib.load(f)
+                if not self.CREDENTIALS and 'credentials' in toml_data:
+                    self.CREDENTIALS = toml_data['credentials']
+                if not self.ENVIRONMENTS and 'environments' in toml_data:
+                    self.ENVIRONMENTS = toml_data['environments']
+            except Exception:
+                pass
 
     def validate(self):
         # Pydantic validates on instantiation, so this is mostly a no-op,

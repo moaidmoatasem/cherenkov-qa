@@ -37,9 +37,10 @@ class WitnessAgent:
     # persistently throttling target cannot hang the run.
     _MAX_RETRIES_429 = 4
 
-    def __init__(self, base_url: str, timeout: float = 10.0) -> None:
+    def __init__(self, base_url: str, timeout: float = 10.0, headers: dict[str, str] | None = None) -> None:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        self.headers = headers
 
     def reproduce(self, hypothesis: DivergenceHypothesis) -> ReproductionResult:
         """
@@ -86,12 +87,16 @@ class WitnessAgent:
 
     @staticmethod
     def _send(
-        client: httpx.Client, method: str, url: str, payload: dict | None
+        client: httpx.Client, method: str, url: str, payload: dict | None, headers: dict[str, str] | None = None
     ) -> httpx.Response:
+        req_headers = headers.copy() if headers else {}
         if method in ("POST", "PUT", "PATCH") and payload is not None:
+            req_headers["Content-Type"] = "application/json"
             return getattr(client, method.lower())(
-                url, json=payload, headers={"Content-Type": "application/json"}
+                url, json=payload, headers=req_headers
             )
+        if req_headers:
+            return getattr(client, method.lower())(url, headers=req_headers)
         return getattr(client, method.lower())(url)
 
     def _execute(self, hypothesis: DivergenceHypothesis) -> DivergenceEvidence:
@@ -100,7 +105,7 @@ class WitnessAgent:
 
         t0 = time.monotonic()
         with httpx.Client(timeout=self.timeout, follow_redirects=True) as client:
-            resp = self._send(client, method, url, payload)
+            resp = self._send(client, method, url, payload, headers=self.headers)
             attempts = 0
             while resp.status_code == 429 and attempts < self._MAX_RETRIES_429:
                 attempts += 1
@@ -108,7 +113,7 @@ class WitnessAgent:
                 if delay is None:
                     delay = min(2.0, 0.5 * (2 ** (attempts - 1)))
                 time.sleep(delay)
-                resp = self._send(client, method, url, payload)
+                resp = self._send(client, method, url, payload, headers=self.headers)
         latency_ms = int((time.monotonic() - t0) * 1000)
 
         try:
