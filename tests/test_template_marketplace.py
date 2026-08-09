@@ -1,0 +1,51 @@
+import pytest
+from cherenkov.marketplace.templates import TemplateRegistry, MarketplaceTemplate
+import os
+import shutil
+from pathlib import Path
+
+def test_discover_templates():
+    registry = TemplateRegistry()
+    templates = registry.discover_templates()
+    assert len(templates) == 3
+    assert any(t.id == "hipaa-suite" for t in templates)
+
+def test_get_template_info():
+    registry = TemplateRegistry()
+    template = registry.get_template_info("pci-dss")
+    assert template is not None
+    assert template.name == "PCI-DSS Suite"
+    
+    missing = registry.get_template_info("unknown-template")
+    assert missing is None
+
+def test_install_template(tmp_path):
+    registry = TemplateRegistry()
+    dest_dir = tmp_path / ".cherenkov" / "templates"
+    
+    success = registry.install_template("owasp-top10", dest_dir=str(dest_dir))
+    assert success is True
+    
+    template_dir = dest_dir / "owasp-top10"
+    assert template_dir.exists()
+    
+    suite_file = template_dir / "suite.yaml"
+    assert suite_file.exists()
+    
+    content = suite_file.read_text()
+    assert "OWASP Top 10 API Security" in content
+
+def test_list_installed_templates(tmp_path):
+    registry = TemplateRegistry()
+    dest_dir = tmp_path / ".cherenkov" / "templates"
+    
+    # Should be empty initially
+    assert registry.list_installed_templates(dest_dir=str(dest_dir)) == []
+    
+    # Install one
+    registry.install_template("hipaa-suite", dest_dir=str(dest_dir))
+    
+    # Should list it
+    installed = registry.list_installed_templates(dest_dir=str(dest_dir))
+    assert len(installed) == 1
+    assert "hipaa-suite" in installed
