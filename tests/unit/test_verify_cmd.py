@@ -72,6 +72,7 @@ class TestVerifyCmd:
             probed_endpoints=[],
             known_identifiers=None,
             allow_mutations=False,
+            headers=None,
         )
 
     def test_divergences_printed(self) -> None:
