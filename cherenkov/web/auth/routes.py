@@ -76,31 +76,83 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
         organization_id=user.organization_id,
     )
 
+from cherenkov.adapters.identity.saml import SamlIdentityProvider
+from fastapi.requests import Request
+from fastapi.responses import HTMLResponse
+
+def get_saml_provider():
+    from cherenkov.core.settings import get_settings
+    settings = get_settings()
+    config = {
+        "strict": True,
+        "debug": True,
+        "sp": {
+            "entityId": settings.SAML_SP_ENTITY_ID,
+            "assertionConsumerService": {
+                "url": f"{settings.API_URL}/api/v1/auth/saml/callback",
+                "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+            },
+            "NameIDFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
+        },
+        "idp": {
+            "entityId": settings.SAML_IDP_METADATA_URL,
+            "singleSignOnService": {
+                "url": settings.SAML_IDP_METADATA_URL,
+                "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+            }
+        }
+    }
+    return SamlIdentityProvider(config)
+
+
 @router.get("/saml/login", summary="SP-initiated SAML login")
-async def saml_login(relay_state: str = ""):
-    sp = SAMLServiceProvider()
-    if not sp.is_enabled():
+async def saml_login(request: Request, relay_state: str = ""):
+    from cherenkov.core.settings import get_settings
+    if not getattr(get_settings(), "SAML_ENABLED", False):
         raise HTTPException(status_code=400, detail="SAML SSO is not configured")
-    url = sp.get_login_url(relay_state)
+        
+    sp = get_saml_provider()
+    
+    req_data = {
+        'is_https': request.url.scheme == 'https',
+        'host': request.headers.get('host', request.url.hostname),
+        'port': str(request.url.port) if request.url.port else ('443' if request.url.scheme == 'https' else '80'),
+        'path': request.url.path,
+        'query_params': dict(request.query_params),
+    }
+    
+    url = sp.get_login_url(req_data)
+    if relay_state:
+        # OneLogin python3-saml handles ReturnTo logic via query params
+        pass 
     return RedirectResponse(url)
 
 @router.post("/saml/callback", response_model=TokenResponse, summary="IdP SAML callback (ACS)")
-async def saml_callback(SAMLResponse: str = Form(...), RelayState: str = Form("")):
-    sp = SAMLServiceProvider()
-    if not sp.is_enabled():
+async def saml_callback(request: Request, SAMLResponse: str = Form(...), RelayState: str = Form("")):
+    from cherenkov.core.settings import get_settings
+    if not getattr(get_settings(), "SAML_ENABLED", False):
         raise HTTPException(status_code=400, detail="SAML SSO is not configured")
     
-    assertion = sp.process_response(SAMLResponse)
-    if not assertion:
-        raise HTTPException(status_code=401, detail="Invalid SAML Response")
-
-    # Map SAML attributes to our internal model. 
-    # Hardcoded mapping logic as specified in the enterprise model docs.
-    username = assertion.email
-    org_id = assertion.attributes.get("organization_id", ["default"])[0]
-    raw_role = assertion.attributes.get("role", ["viewer"])[0]
+    sp = get_saml_provider()
     
-    # Map raw_role (could be 'ADMIN' or 'admin' or 'viewer') to web Role
+    req_data = {
+        'is_https': request.url.scheme == 'https',
+        'host': request.headers.get('host', request.url.hostname),
+        'port': str(request.url.port) if request.url.port else ('443' if request.url.scheme == 'https' else '80'),
+        'path': request.url.path,
+        'form_data': {'SAMLResponse': SAMLResponse, 'RelayState': RelayState},
+    }
+    
+    try:
+        user_info = sp.authenticate(req_data)
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Invalid SAML Response: {str(e)}")
+
+    username = user_info.get("email")
+    org_id = user_info.get("organization_id", "default")
+    roles = user_info.get("roles", ["viewer"])
+    raw_role = roles[0] if roles else "viewer"
+    
     role_map = {
         "admin": Role.admin,
         "engineer": Role.reviewer,
@@ -112,17 +164,11 @@ async def saml_callback(SAMLResponse: str = Form(...), RelayState: str = Form(""
     store = get_user_store()
     user = store.get(username)
     if not user:
-        # Auto-provision user on first SSO login
-        # We don't have a real password since they authenticate via IdP
         import secrets
         user = store.create(username, password=secrets.token_hex(32), role=mapped_role, organization_id=org_id)
     elif user.disabled:
         raise HTTPException(status_code=401, detail="User is disabled")
-    else:
-        # Update user's role and org if it drifted in IdP
-        pass # Full sync would go here, currently SQLite user store has no update_user method
 
-    from cherenkov.core.settings import get_settings
     expire_hours = get_settings().JWT_EXPIRE_HOURS
     token = _jwt.encode({"sub": user.username, "role": user.role.value, "organization_id": user.organization_id}, expire_hours=expire_hours)
     
@@ -132,6 +178,19 @@ async def saml_callback(SAMLResponse: str = Form(...), RelayState: str = Form(""
         role=user.role,
         organization_id=user.organization_id
     )
+
+@router.get("/saml/metadata", summary="SAML SP Metadata", response_class=HTMLResponse)
+async def saml_metadata():
+    from cherenkov.core.settings import get_settings
+    if not getattr(get_settings(), "SAML_ENABLED", False):
+        raise HTTPException(status_code=400, detail="SAML SSO is not configured")
+        
+    sp = get_saml_provider()
+    try:
+        metadata = sp.build_metadata()
+        return HTMLResponse(content=metadata, media_type="application/xml")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/me", response_model=User, summary="Return the current authenticated user")

@@ -221,6 +221,13 @@ class Config:
     OTEL_SERVICE_NAME: str = os.getenv("CHERENKOV_OTEL_SERVICE_NAME", "cherenkov")
     OTEL_ENVIRONMENT: str = os.getenv("CHERENKOV_OTEL_ENVIRONMENT", "production")
 
+    # ── Phase 13: Enterprise Tier (SAML SSO) ──────────────────────────────
+    SAML_ENABLED: bool = os.getenv("CHERENKOV_SAML_ENABLED", "false").lower() in (
+        "1", "true", "yes"
+    )
+    SAML_IDP_METADATA_URL: str = os.getenv("CHERENKOV_SAML_IDP_METADATA_URL", "")
+    SAML_SP_ENTITY_ID: str = os.getenv("CHERENKOV_SAML_SP_ENTITY_ID", "cherenkov-qa")
+
     @classmethod
     def validate(cls) -> None:
         """Validate all config values are within acceptable bounds. Raises ValueError on violation."""
@@ -325,6 +332,9 @@ class Config:
             "CHAT_WS_PORT": cls.CHAT_WS_PORT,
             "MONITORING_ENABLED": cls.MONITORING_ENABLED,
             "METRICS_PORT": cls.METRICS_PORT,
+            "SAML_ENABLED": cls.SAML_ENABLED,
+            "SAML_IDP_METADATA_URL": cls.SAML_IDP_METADATA_URL,
+            "SAML_SP_ENTITY_ID": cls.SAML_SP_ENTITY_ID,
         }
 
 
