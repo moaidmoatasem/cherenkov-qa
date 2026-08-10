@@ -81,6 +81,7 @@ def _register_commands() -> None:
         self_test_cmd,
     )
     from cherenkov.cli.commands.teleport_cmd import teleport_cmd
+    from cherenkov.cli.commands.train_cmd import train_cmd
     from cherenkov.cli.commands.validate import validate_cmd
     from cherenkov.cli.commands.verify import verify_cmd
     from cherenkov.cli.commands.federation_cmd import federation_cmd
@@ -136,6 +137,7 @@ def _register_commands() -> None:
         (playbook_cmd, "playbook"),
         (guardian_cmd, "guardian"),
         (template_cmd, "template"),
+        (train_cmd, "train"),
     ]:
         cli.add_command(cmd, name=name)
         cmd_map[name] = cmd
