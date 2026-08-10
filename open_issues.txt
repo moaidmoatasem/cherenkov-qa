@@ -1,14 +1,4 @@
 
---- ISSUE 815 ---
-Title: Consolidate dual AI routing layers (ai/ + substrate/)
-Body:
-Tech-debt track T7 in `docs/ROADMAP_2026H2.md`.
-
-Two provider-routing layers currently coexist: `cherenkov/ai/` (e.g. `openai_client.py`, `nemoclaw_client.py`) and `cherenkov/substrate/providers/`. This is real debt (duplicated retry/timeout/error-handling logic, two places to add a new provider) but is *not* a milestone blocker — do not let this expand into a rewrite.
-
-Scope for a first pass: map every call site of both layers (`grep -rn "from cherenkov.ai\|from cherenkov.substrate"`), identify which one is actually the "current" path vs. legacy, and propose (as a PR description, not necessarily executed in one PR) a consolidation plan. If the two layers serve genuinely different purposes (e.g. one is local-model-only, the other cloud), document that distinction explicitly in a module docstring instead of merging — don't force a merge that doesn't make architectural sense.
-
-========================================
 --- ISSUE 814 ---
 Title: Retire root cherenkov.py (migration, not a delete)
 Body:
