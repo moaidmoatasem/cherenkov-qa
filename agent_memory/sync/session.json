@@ -1,14 +1,14 @@
 {
   "session": {
     "id": "sess_20260810105822_dfba61",
-    "status": "open",
+    "status": "closed",
     "task": "Consolidate dual AI routing layers (Issue 815)",
     "started_at": "2026-08-10T10:58:22.776355+00:00",
-    "ended_at": null,
-    "findings_count": 0,
+    "ended_at": "2026-08-10T11:00:44.439584+00:00",
+    "findings_count": 1,
     "token_total": 0,
-    "summary": null,
-    "compacted": false,
+    "summary": "Closed Issue 815 as obsolete in open_issues.txt",
+    "compacted": true,
     "task_type": "Consolidate dual AI routing layers (Issue 815)",
     "source": "cherenkov"
   },

@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "last_updated": "2026-08-10T10:54:51.052278+00:00",
-  "experience_count": 13,
-  "sessions_contributing": 27,
+  "last_updated": "2026-08-10T11:00:44.481644+00:00",
+  "experience_count": 14,
+  "sessions_contributing": 28,
   "experiences": [
     {
       "id": "exp_seed_001",
@@ -179,6 +179,19 @@
         "GitHub Actions Integration"
       ],
       "session_id": "sess_20260809003726_9cbc02"
+    },
+    {
+      "id": "exp_sess_20260810105822_dfba61_47fb",
+      "timestamp": "2026-08-10T11:00:44.481644+00:00",
+      "task": "Consolidate dual AI routing layers (Issue 815)",
+      "action": "decision Closed Issue 815 as obsolete since ai/ is already consolidated into substrate/",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "Consolidate dual AI routing layers (Issue 815)"
+      ],
+      "session_id": "sess_20260810105822_dfba61"
     }
   ],
   "pattern_index": {
@@ -226,6 +239,9 @@
     ],
     "GitHub Actions Integration": [
       "exp_sess_20260809003726_9cbc02_8957"
+    ],
+    "Consolidate dual AI routing layers (Issue 815)": [
+      "exp_sess_20260810105822_dfba61_47fb"
     ]
   }
 }
