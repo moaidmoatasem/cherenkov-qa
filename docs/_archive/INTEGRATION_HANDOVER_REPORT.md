@@ -9,7 +9,7 @@
 >
 > The `track-b-c-deferred/` directory referenced below was fully
 > re-integrated into the live tree and **deleted** (see
-> [AGENTS.md](../../../AGENTS.md)). The links in this file are broken.
+> [AGENTS.md](../../../../AGENTS.md)). The links in this file are broken.
 >
 > **Authoritative sources:**
 > - [docs/STATUS.md](../STATUS.md) — current state of every phase

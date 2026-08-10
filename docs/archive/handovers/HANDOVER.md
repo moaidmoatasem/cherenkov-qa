@@ -1,6 +1,6 @@
 # CHERENKOV — Agent Handover (historical archive)
 
-> **Authoritative handover is the repo-root [`HANDOVER.md`](../../../../../HANDOVER.md).**
+> **Authoritative handover is the repo-root [`HANDOVER.md`](../../../../../../../HANDOVER.md).**
 > It is the single source of truth for what this project IS, what is REAL,
 > what is NOT, and what to do next. If anything in this file contradicts the
 > root `HANDOVER.md`, the **root wins** — then reconcile. This file is retained
@@ -17,7 +17,7 @@
   - CLI wired properly to `cherenkov/enterprise/saml.py` and `cherenkov/enterprise/rbac.py` placeholders.
 - **MCP Stubs Completed (Issues 441, 447)**: Verified that all MCP handlers (`run_conformance_check`, `get_last_report`, `list_drift_findings`, `get_tightening_suggestions`, `explain_finding`, `run_k6_perf`, and compliance exports) are implemented in `cherenkov/mcp/handlers.py` and registered in `_TOOL_DISPATCH`.
 - **UI/UX Revamp & Automation**: An end-to-end rewrite of the dashboard into a modern 5-Workspace architecture (`Dashboard`, `Authoring`, `Triage`, `Intelligence`, `Settings`). 22 live FastAPI endpoints wired. Legacy mocks dropped. The `teamwork_preview` subagent fully implemented 33 Playwright E2E tests validating the workflows, pushing everything to `origin/main`.
-- **Integrity Status**: Full test suite passes completely (2076 passed) — *superseded 2026-08-04: re-certified 2138 passed / 2 failed (network-only real_demo) / 6 skipped at `530468a1`, see root [`HANDOVER.md`](../../../../../HANDOVER.md)*. Production build succeeds with 0 tsc errors.
+- **Integrity Status**: Full test suite passes completely (2076 passed) — *superseded 2026-08-04: re-certified 2138 passed / 2 failed (network-only real_demo) / 6 skipped at `530468a1`, see root [`HANDOVER.md`](../../../../../../../HANDOVER.md)*. Production build succeeds with 0 tsc errors.
 
 ---
 
@@ -343,7 +343,7 @@ Track A smoke tests (the legitimate ones):
 These modules were originally added under a separate `track-b-c-deferred/`
 directory and quarantined. That directory has since been **fully
 re-integrated into the live tree and deleted** (see
-[AGENTS.md](../../../../../AGENTS.md)). All code now lives under `cherenkov/` and the
+[AGENTS.md](../../../../../../../AGENTS.md)). All code now lives under `cherenkov/` and the
 relevant subfolders.
 
 **Current state of those modules:**
@@ -361,14 +361,14 @@ to [docs/STATUS.md](../../STATUS.md) instead.
 
 ## 5. The ACTUAL project status
 
-> **Canonical status lives in the repo-root [`HANDOVER.md`](../../../../../HANDOVER.md).** This file does
+> **Canonical status lives in the repo-root [`HANDOVER.md`](../../../../../../../HANDOVER.md).** This file does
 > not duplicate it; if the two disagree, the root wins.
 
 **Summary:**
 - Track A code: **built** and core invariants proven.
 - Track A 5-QA user-validation gate: **passed per owner decision on 2026-06-08.**
 - Track B/C + Horizon 2: **built, unit-tested, re-integrated** into the live tree
-  (`track-b-c-deferred/` was deleted; see [AGENTS.md](../../../../../AGENTS.md)).
+  (`track-b-c-deferred/` was deleted; see [AGENTS.md](../../../../../../../AGENTS.md)).
 - Active tracks: A (core), B (VLM), C (desktop), D (mobile), E (dashboard), F (K8s).
 - All phases 0–8 complete. Next: Phases 9–16 (market launch, CI/CD, VS Code, enterprise).
   Phase 3 (Desktop) and Phase 5–6 (Mobile) have tools installed; blocked on `libwebkit2gtk-4.1-dev` and physical ADB device respectively.
@@ -392,7 +392,7 @@ design invariants, read [docs/STATUS.md](../../STATUS.md).
 1. **[docs/STATUS.md](../../STATUS.md)** — canonical state of every phase and track.
 2. **[docs/PHASE_PLAN.md](../../PHASE_PLAN.md)** — the consolidated Phase -1 → 8
    plan, parallel tracks, dependencies, and all ~105 GitHub issues (#277–#391).
-3. **[root `HANDOVER.md`](../../../../../HANDOVER.md)** — the canonical status anchor.
+3. **[root `HANDOVER.md`](../../../../../../../HANDOVER.md)** — the canonical status anchor.
 4. The relevant [ADR](../../adr/) before touching a module.
 5. [engineering/BEST_PRACTICES.md](../../engineering/BEST_PRACTICES.md) before writing code.
 

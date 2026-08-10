@@ -1201,7 +1201,7 @@ class MiniGPTCherenkovTrainer:
 ### Appendix A: References
 
 **Internal CHERENKOV:**
-- [AGENTS.md](../../../AGENTS.md) - Agent operating rules (AUTHORITATIVE)
+- [AGENTS.md](../../../../AGENTS.md) - Agent operating rules (AUTHORITATIVE)
 - [docs/HANDOVER.md](../../HANDOVER.md) - Handover report
 - [docs/vision/00_VISION.md](../vision/00_VISION.md) - Reality Engine vision
 - [docs/vision/01_ARCHITECTURE.md](../vision/01_ARCHITECTURE.md) - Core architecture
@@ -1262,9 +1262,9 @@ python -m cherenkov.substrate.vlm_provider --download-minigpt
 ## 📞 Support
 
 For questions about this report:
-- Check [AGENTS.md](../../../AGENTS.md) for authoritative state
+- Check [AGENTS.md](../../../../AGENTS.md) for authoritative state
 - See [docs/vision/07_MASTER_PLAN.md](../vision/07_MASTER_PLAN.md) for roadmap
-- Review [CONTRIBUTING.md](../../../CONTRIBUTING.md) for contribution guidelines
+- Review [CONTRIBUTING.md](../../../../CONTRIBUTING.md) for contribution guidelines
 
 ---
 
