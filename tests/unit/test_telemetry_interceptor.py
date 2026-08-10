@@ -104,6 +104,6 @@ class TestTelemetryInterceptor(unittest.TestCase):
         
         kwargs = mock_collector.record.call_args.kwargs
         self.assertEqual(kwargs['test_code'], "test('GET /users', () => {});")
-        self.assertEqual(kwargs['verdict'], "PASS")
+        self.assertEqual(kwargs['verdict'], "auto_approve")
         self.assertEqual(kwargs['endpoint'], "GET /users")
         self.assertEqual(kwargs['duration_ms'], 150)
