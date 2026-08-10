@@ -1,25 +1,18 @@
 {
   "session": {
-    "id": "sess_20260810105822_dfba61",
-    "status": "closed",
-    "task": "Consolidate dual AI routing layers (Issue 815)",
-    "started_at": "2026-08-10T10:58:22.776355+00:00",
-    "ended_at": "2026-08-10T11:00:44.439584+00:00",
-    "findings_count": 1,
+    "id": "sess_20260810110114_146e5e",
+    "status": "open",
+    "task": "Retire root cherenkov.py (Issue 814)",
+    "started_at": "2026-08-10T11:01:14.353808+00:00",
+    "ended_at": null,
+    "findings_count": 0,
     "token_total": 0,
-    "summary": "Closed Issue 815 as obsolete in open_issues.txt",
-    "compacted": true,
-    "task_type": "Consolidate dual AI routing layers (Issue 815)",
+    "summary": null,
+    "compacted": false,
+    "task_type": "Retire root cherenkov.py (Issue 814)",
     "source": "cherenkov"
   },
   "previous_sessions": [
-    {
-      "id": "sess_20260802012546_9bbede",
-      "task": "ui_revamp",
-      "ended_at": "2026-08-02T01:30:09.459899+00:00",
-      "summary": "M2 & M3 UI Revamp, 5 Workspaces, and API wiring complete",
-      "token_total": 0
-    },
     {
       "id": "sess_20260802013052_d17a3e",
       "task": "ui_e2e",
@@ -82,7 +75,14 @@
       "ended_at": "2026-08-10T10:54:50.984758+00:00",
       "summary": "Checked for unresolved conflicts on PR 945, found it was already aligned and pushed in previous steps",
       "token_total": 0
+    },
+    {
+      "id": "sess_20260810105822_dfba61",
+      "task": "Consolidate dual AI routing layers (Issue 815)",
+      "ended_at": "2026-08-10T11:00:44.439584+00:00",
+      "summary": "Closed Issue 815 as obsolete in open_issues.txt",
+      "token_total": 0
     }
   ],
-  "sessions_since_compact": 29
+  "sessions_since_compact": 30
 }
