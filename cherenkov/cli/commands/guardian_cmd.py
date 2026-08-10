@@ -61,6 +61,12 @@ def guardian_cmd() -> None:
         # Watch one endpoint every 10s, store history elsewhere
         cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8080 \\
             --endpoint "GET:/health" --interval 10 --db .cherenkov/guardian.db
+
+        # Query current drift status from the store
+        cherenkov guardian status
+
+        # See 24-hour trend breakdown
+        cherenkov guardian trend --hours 48
     """
 
 
@@ -104,6 +110,12 @@ def guardian_cmd() -> None:
 @click.option("--deeplink", help="Dynamic preview environment URL")
 @click.option("--artifact-url", help="Build artifact URL")
 @click.option("--artifact-filename", help="Build artifact filename")
+@click.option(
+    "--watch-spec",
+    is_flag=True,
+    default=False,
+    help="Hot-reload the spec file when it changes on disk (no restart needed).",
+)
 def guardian_start_cmd(
     spec: str,
     base_url: str,
@@ -120,6 +132,7 @@ def guardian_start_cmd(
     deeplink: str | None,
     artifact_url: str | None,
     artifact_filename: str | None,
+    watch_spec: bool,
 ) -> None:
     """Start the Spec Guardian daemon.
 
@@ -163,6 +176,7 @@ def guardian_start_cmd(
         endpoints=endpoints,
         db_path=Path(db_path) if db_path else None,
         pr_metadata=pr_metadata if pr_metadata else None,
+        watch_spec=watch_spec,
     )
 
     click.echo(
@@ -183,3 +197,88 @@ def guardian_start_cmd(
         daemon.start()
     except KeyboardInterrupt:
         daemon.stop()
+
+
+# ── status ──────────────────────────────────────────────────────────────────
+
+@guardian_cmd.command("status")
+@click.option(
+    "--db",
+    "db_path",
+    default=None,
+    help="SQLite drift database path [default: .cherenkov/drift.db].",
+)
+@click.option("--json", "as_json", is_flag=True, default=False, help="Output as JSON.")
+def guardian_status_cmd(db_path: str | None, as_json: bool) -> None:
+    """Show the latest drift report from the drift store."""
+    import json as _json
+
+    from cherenkov.spec_guardian.store import DRIFT_DB, DriftStore
+
+    store = DriftStore(Path(db_path) if db_path else DRIFT_DB)
+    report = store.latest_report()
+
+    if report is None:
+        click.echo(click.style("[GUARDIAN] ", fg="cyan", bold=True) + "No drift reports found.")
+        return
+
+    if as_json:
+        click.echo(_json.dumps(report.to_dict(), indent=2))
+        return
+
+    drift_color = "green" if report.drift_rate == 0.0 else ("red" if report.critical_count else "yellow")
+    click.echo(click.style("[GUARDIAN] Latest Report", fg="cyan", bold=True))
+    click.echo(f"  spec       : {report.spec_path}")
+    click.echo(f"  window     : {report.start_time.strftime('%Y-%m-%d %H:%M:%S')} → {report.end_time.strftime('%H:%M:%S')} UTC")
+    click.echo(f"  checks     : {report.total_checks} total / {report.compliant_checks} compliant")
+    click.echo(f"  drift rate : {click.style(f'{report.drift_rate:.1%}', fg=drift_color, bold=True)}")
+    click.echo(f"  critical   : {report.critical_count}")
+    click.echo(f"  warnings   : {report.warning_count}")
+    if report.events:
+        click.echo("  recent events:")
+        for ev in report.events[-5:]:
+            sev_color = "red" if ev.severity.value == "critical" else "yellow"
+            click.echo(
+                f"    [{click.style(ev.severity.value.upper(), fg=sev_color)}] "
+                f"{ev.method} {ev.endpoint} — {ev.message}"
+            )
+
+
+# ── trend ───────────────────────────────────────────────────────────────────
+
+@guardian_cmd.command("trend")
+@click.option(
+    "--hours",
+    type=int,
+    default=24,
+    show_default=True,
+    help="Look-back window in hours.",
+)
+@click.option(
+    "--db",
+    "db_path",
+    default=None,
+    help="SQLite drift database path [default: .cherenkov/drift.db].",
+)
+@click.option("--json", "as_json", is_flag=True, default=False, help="Output as JSON.")
+def guardian_trend_cmd(hours: int, db_path: str | None, as_json: bool) -> None:
+    """Show drift event trend statistics for the last N hours."""
+    import json as _json
+
+    from cherenkov.spec_guardian.store import DRIFT_DB, DriftStore
+
+    store = DriftStore(Path(db_path) if db_path else DRIFT_DB)
+    trend = store.drift_trend(hours=hours)
+
+    if as_json:
+        click.echo(_json.dumps(trend, indent=2))
+        return
+
+    click.echo(click.style(f"[GUARDIAN] Drift trend (last {hours}h)", fg="cyan", bold=True))
+    click.echo(f"  total events   : {trend['total_events']}")
+    click.echo(f"  critical events: {click.style(str(trend['critical_events']), fg='red' if trend['critical_events'] else 'green')}")
+    click.echo(f"  warning events : {trend['warning_events']}")
+    if trend["by_type"]:
+        click.echo("  by type:")
+        for drift_type, count in sorted(trend["by_type"].items(), key=lambda x: -x[1]):
+            click.echo(f"    {drift_type:<25} {count}")

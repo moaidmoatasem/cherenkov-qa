@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import signal
 import time
 from datetime import datetime, timezone
@@ -35,6 +36,7 @@ class SpecGuardianDaemon:
         endpoints: list[dict[str, Any]] | None = None,
         db_path: Path | None = None,
         pr_metadata: dict[str, Any] | None = None,
+        watch_spec: bool = False,
     ):
         """Initialize the daemon.
 
@@ -45,6 +47,7 @@ class SpecGuardianDaemon:
             endpoints: List of endpoints to check, each with method and optional params
             db_path: Path to SQLite database (default: .cherenkov/drift.db)
             pr_metadata: Optional PR metadata for PR comment integration
+            watch_spec: If True, reload the spec whenever the file changes on disk
         """
         self.spec_path = spec_path
         self.base_url = base_url.rstrip("/")
@@ -58,6 +61,8 @@ class SpecGuardianDaemon:
         self.compliant_checks = 0
         self.all_events: list[DriftEvent] = []
         self.pr_metadata = pr_metadata or {}
+        self.watch_spec = watch_spec
+        self._spec_mtime: float = self._current_mtime()
 
         # Playbooks: reusable validation strategies that fire automatically
         self._playbook_registry = PlaybookRegistry()
@@ -86,6 +91,8 @@ class SpecGuardianDaemon:
 
         while self.running:
             try:
+                if self.watch_spec:
+                    self._maybe_reload_spec()
                 self._run_check_cycle()
                 time.sleep(self.check_interval)
             except Exception:
@@ -96,6 +103,29 @@ class SpecGuardianDaemon:
         """Stop the monitoring daemon."""
         self.running = False
         logger.info("Spec Guardian daemon stopping")
+
+    def _current_mtime(self) -> float:
+        """Return the spec file's modification time, or 0.0 if unreadable."""
+        try:
+            return os.path.getmtime(self.spec_path)
+        except OSError:
+            return 0.0
+
+    def _maybe_reload_spec(self) -> None:
+        """Reload the SpecDriftDetector if the spec file has changed on disk."""
+        mtime = self._current_mtime()
+        if mtime != self._spec_mtime:
+            try:
+                self.detector = SpecDriftDetector(self.spec_path)
+                self._spec_mtime = mtime
+                logger.info(
+                    "[GUARDIAN] spec reloaded after file change: %s", self.spec_path
+                )
+            except Exception:
+                logger.exception(
+                    "[GUARDIAN] failed to reload spec %s — keeping previous version",
+                    self.spec_path,
+                )
 
     def _signal_handler(self, signum: int, _frame: Any) -> None:
         """Handle shutdown signals."""
