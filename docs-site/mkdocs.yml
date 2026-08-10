@@ -162,7 +162,12 @@ nav:
       - Module Reference: architecture/module-reference.md
       - Second Brain: architecture/second-brain.md
       - Diagrams: architecture/diagrams.md
-      - For Your Role: roles/index.md
+      - For Your Role:
+          - roles/index.md
+          - Developer: roles/developer.md
+          - QA Engineer: roles/qa-engineer.md
+          - DevOps & SRE: roles/devops.md
+          - Team Lead & Manager: roles/team-lead.md
       - Contributing: contributing.md
   - Ecosystem & Integrations:
       - CI/CD Integration: guides/ci-cd.md

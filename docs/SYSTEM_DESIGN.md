@@ -4,7 +4,7 @@
 
 This document serves as the high-level system design and architectural mapping for the Cherenkov QA engine. It aligns with the "Clean Architecture" (Ports & Adapters) principles detailed in `docs/adr/ADR-004-clean-architecture.md`.
 
-## 1. High-Level Architecture (The Reality Engine)
+## 1. High-Level Architecture (The Reasoning Engine)
 Cherenkov operates as an autonomous, localized, high-fidelity API conformance generator. The platform is designed strictly to avoid lock-in (D7 Invariant: Suggest-Only, ejective tests). 
 
 The flow spans across multiple isolated layers:

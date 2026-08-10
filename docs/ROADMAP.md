@@ -20,7 +20,7 @@ This document serves as the unified source of truth for the Cherenkov QA product
 ### Horizon 3: Platform Dominance (Months 9-30)
 - **Phase 14 — Spec Guardian**: Active daemon monitoring spec-to-server drift in real-time.
 - **Phase 15 — Fine-Tuned Model**: Release a custom SLM (Small Language Model) hyper-optimized for QA generation and validation.
-- **Phase 16 — Platform & Marketplace**: Open the MCP mesh for third-party integrations, custom evaluators, and public test templates.
+- **Phase 16 — Platform & Marketplace**: Open the MCP Ecosystem for third-party integrations, custom evaluators, and public test templates.
 
 ## 3. Integration Strategy
 Our goal is to integrate into 25 external systems across 5 tiers:
