@@ -183,7 +183,13 @@ async def saml_callback(SAMLResponse: str = Form(...), RelayState: str = Form(""
         raise HTTPException(status_code=401, detail="User is disabled")
     else:
         # Update user's role and org if it drifted in IdP
-        pass # Full sync would go here, currently SQLite user store has no update_user method
+        # Sync role and organization if they differ from IdP attributes
+        if user.role != mapped_role or user.organization_id != org_id:
+            store.update_user(username, role=mapped_role, organization_id=org_id)
+            # Refresh the user record after update
+            refreshed = store.get(username)
+            if refreshed:
+                user = refreshed
 
     from cherenkov.core.settings import get_settings
     expire_hours = get_settings().JWT_EXPIRE_HOURS

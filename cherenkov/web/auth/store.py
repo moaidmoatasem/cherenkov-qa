@@ -178,6 +178,30 @@ class UserStore:
         return cur.rowcount > 0
 
 
+    def update_user(self, username: str, role: Role | None = None, organization_id: str | None = None) -> bool:
+        """Update user's role and/or organization_id. Returns True if updated, False otherwise.
+
+        Args:
+            username: Target username.
+            role: New Role to set (optional).
+            organization_id: New organization ID to set (optional).
+        """
+        if role is None and organization_id is None:
+            return False
+        with self._lock, self._connect() as conn:
+            fields = []
+            params = []
+            if role is not None:
+                fields.append("role = ?")
+                params.append(role.value)
+            if organization_id is not None:
+                fields.append("organization_id = ?")
+                params.append(organization_id)
+            params.append(username)
+            sql = f"UPDATE users SET {', '.join(fields)} WHERE username = ?"
+            cur = conn.execute(sql, tuple(params))
+            conn.commit()
+            return cur.rowcount > 0
 _store: UserStore | None = None
 _store_lock = threading.Lock()
 
