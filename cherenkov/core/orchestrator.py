@@ -33,6 +33,13 @@ from cherenkov.stages.review import ReviewStage
 from cherenkov.substrate.client_factory import get_accounting_report, get_cache_stats
 
 
+# Expose DataCollector at module level for test patching
+try:
+    from cherenkov.training.collector import DataCollector  # noqa: F401
+except Exception:  # pragma: no cover
+    DataCollector = None  # placeholder for tests
+
+
 def _assert_not_production() -> None:
     if os.getenv("CHERENKOV_ENV", "production") == "production":
         raise RuntimeError(
@@ -353,9 +360,8 @@ class OrchestrationEngine:
         rev_ms = review.metadata.duration_ms if review else 0
         
         # Phase 15: Fine-Tuning Data Pipeline Telemetry
-        if get_settings().ENABLE_TELEMETRY and generate and review:
+        if get_settings().ENABLE_TELEMETRY and generate and review and DataCollector is not None:
             try:
-                from cherenkov.training.collector import DataCollector
                 import json
                 collector = DataCollector()
                 
@@ -814,3 +820,9 @@ class OrchestrationEngine:
         )
 
 # Backward-compatible re-exports
+
+class TestOrchestrator(OrchestrationEngine):
+    """Thin wrapper used by unit tests to expose the orchestration engine."""
+    def __init__(self, run_id: str | None = None, error_threshold: int = 2, event_callback: Callable[[str, dict], None] | None = None):
+        super().__init__(run_id=run_id, error_threshold=error_threshold, event_callback=event_callback)
+

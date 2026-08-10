@@ -87,6 +87,7 @@ cherenkov = "cherenkov.cli.core:main"
 
 [project.entry-points."cherenkov.plugin"]
 hipaa = "cherenkov.plugins.builtin.hipaa_compliance"
+mistral = "cherenkov.plugins.builtin.mistral_llm"
 
 [tool.pytest.ini_options]
 addopts = "-q --tb=short"

@@ -95,6 +95,15 @@ def guardian_cmd() -> None:
     default=None,
     help="SQLite drift database path [default: .cherenkov/drift.db].",
 )
+@click.option("--pr-number", help="Pull request number")
+@click.option("--pr-title", help="Pull request title")
+@click.option("--pr-description", help="Pull request description")
+@click.option("--commit-sha", help="Commit SHA")
+@click.option("--head-branch", help="Head branch name")
+@click.option("--base-branch", help="Base branch name")
+@click.option("--deeplink", help="Dynamic preview environment URL")
+@click.option("--artifact-url", help="Build artifact URL")
+@click.option("--artifact-filename", help="Build artifact filename")
 def guardian_start_cmd(
     spec: str,
     base_url: str,
@@ -102,6 +111,15 @@ def guardian_start_cmd(
     raw_endpoints: tuple[str, ...],
     max_loops: int,
     db_path: str | None,
+    pr_number: str | None,
+    pr_title: str | None,
+    pr_description: str | None,
+    commit_sha: str | None,
+    head_branch: str | None,
+    base_branch: str | None,
+    deeplink: str | None,
+    artifact_url: str | None,
+    artifact_filename: str | None,
 ) -> None:
     """Start the Spec Guardian daemon.
 
@@ -127,12 +145,24 @@ def guardian_start_cmd(
         )
         sys.exit(1)
 
+    pr_metadata = {}
+    if pr_number: pr_metadata["pr_number"] = pr_number
+    if pr_title: pr_metadata["pr_title"] = pr_title
+    if pr_description: pr_metadata["pr_description"] = pr_description
+    if commit_sha: pr_metadata["commit_sha"] = commit_sha
+    if head_branch: pr_metadata["head_branch"] = head_branch
+    if base_branch: pr_metadata["base_branch"] = base_branch
+    if deeplink: pr_metadata["deeplink"] = deeplink
+    if artifact_url: pr_metadata["artifact_url"] = artifact_url
+    if artifact_filename: pr_metadata["artifact_filename"] = artifact_filename
+
     daemon = SpecGuardianDaemon(
         spec_path=spec,
         base_url=base_url,
         check_interval=interval,
         endpoints=endpoints,
         db_path=Path(db_path) if db_path else None,
+        pr_metadata=pr_metadata if pr_metadata else None,
     )
 
     click.echo(

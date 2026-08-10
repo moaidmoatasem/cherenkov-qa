@@ -1,0 +1,35 @@
+import unittest
+from unittest.mock import patch, MagicMock
+
+from cherenkov.plugins.manager import PluginManager
+
+
+class TestPluginDiscovery(unittest.TestCase):
+    @patch('importlib.metadata.entry_points')
+    def test_plugin_loading_and_hook_registration(self, mock_entry_points):
+        # Create a mock plugin module with a mock hook function
+        mock_plugin = MagicMock()
+        mock_hook = MagicMock()
+        mock_plugin.on_report_ready = mock_hook
+
+        # Create a mock entry point
+        mock_ep = MagicMock()
+        mock_ep.name = 'test_plugin'
+        mock_ep.load.return_value = mock_plugin
+
+        # Mock the entry points to return our mock entry point
+        mock_entry_points.return_value = [mock_ep]
+
+        # Initialize the manager
+        manager = PluginManager(entry_point_group="cherenkov.test.plugin")
+        
+        # Verify the plugin was loaded
+        self.assertIn('test_plugin', manager.plugins)
+        self.assertEqual(manager.list_plugins(), ['test_plugin'])
+        
+        # Verify the hook was registered
+        self.assertEqual(len(manager.hooks['on_report_ready']), 1)
+        
+        # Dispatch the hook and verify it was called
+        manager.dispatch('on_report_ready', "test_report_data")
+        mock_hook.assert_called_once_with("test_report_data")

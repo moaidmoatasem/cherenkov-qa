@@ -1187,6 +1187,44 @@ cherenkov template install <template_id>
 
 ---
 
+#### `federation`
+Manage federation with remote CHERENKOV instances.
+
+```bash
+# Store a remote federation endpoint
+cherenkov federation join
+
+# Push a JSON payload to the remote mesh under a topic
+cherenkov federation push <topic> <payload>
+
+# Query the remote mesh for a topic and display results
+cherenkov federation query <topic>
+```
+
+---
+
+#### `testerarmy`
+TesterArmy-inspired command group.
+
+```bash
+# Retrieve documentation for a topic (JSON if requested)
+cherenkov testerarmy docs <topic> --json
+
+# List environments
+cherenkov testerarmy environments
+
+# List projects
+cherenkov testerarmy projects
+
+# List runs
+cherenkov testerarmy runs
+
+# List tests
+cherenkov testerarmy tests
+```
+
+---
+
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client.
 

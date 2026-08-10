@@ -1,0 +1,33 @@
+name: Docs Link Checker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.md'
+  pull_request:
+    paths:
+      - '**.md'
+  schedule:
+    - cron: '0 0 * * 0' # Run weekly on Sundays at midnight
+
+jobs:
+  check-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --base . --verbose --no-progress './**/*.md' './**/*.html'
+          fail: true
+
+      - name: Create Issue From File
+        if: env.lychee_exit_code != 0 && github.event_name == 'schedule'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: Link Checker Report
+          content-filepath: ./lychee/out.md
+          labels: report, automated issue
