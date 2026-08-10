@@ -7,7 +7,7 @@ from cherenkov.core.settings import get_settings
 
 router = APIRouter(prefix="/api/v1/public", tags=["Public API"])
 
-api_key_header = APIKeyHeader(name="X-API-Key")
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
 def verify_api_key(api_key: str = Security(api_key_header)) -> str:

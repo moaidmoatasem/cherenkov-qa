@@ -11,9 +11,19 @@ TELEMETRY_DB_PATH = Path.home() / ".cherenkov" / "training" / "telemetry.db"
 
 
 class DataCollector:
-    def __init__(self, storage: StoragePort | None = None):
+    def __init__(self, storage: StoragePort | None = None, db_path: str | Path | None = None):
+        """Initialize the DataCollector.
+
+        Args:
+            storage: Optional explicit StoragePort implementation.
+            db_path: Backward‑compatible path to the telemetry SQLite DB. If provided and
+                ``storage`` is ``None``, a :class:`SQLiteStorageAdapter` will be created
+                using this path. If ``db_path`` is ``None`` the default ``TELEMETRY_DB_PATH``
+                is used.
+        """
         if storage is None:
-            config = StorageConfig(db_path=TELEMETRY_DB_PATH, namespace="telemetry")
+            resolved_path = Path(db_path) if db_path is not None else TELEMETRY_DB_PATH
+            config = StorageConfig(db_path=resolved_path, namespace="telemetry")
             storage = SQLiteStorageAdapter(config)
         self._storage = storage
 

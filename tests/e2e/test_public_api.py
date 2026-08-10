@@ -1,0 +1,56 @@
+from fastapi.testclient import TestClient
+
+from cherenkov.web.api import app
+from cherenkov.core.settings import get_settings
+
+
+client = TestClient(app)
+
+def test_public_api_generate_requires_auth():
+    response = client.post("/api/v1/public/generate", json={
+        "spec_content": "openapi: 3.0.0",
+        "endpoint": "/users",
+        "method": "get"
+    })
+    assert response.status_code in (401, 403)
+    data = response.json()
+    msg = data.get("detail") or data.get("error", {}).get("message", "")
+    assert "Invalid or missing API Key" in msg or "Not authenticated" in msg
+
+
+def test_public_api_generate_success():
+    expected_key = get_settings().BOOTSTRAP_KEY or get_settings().DB_KEY
+    if not expected_key:
+        return # Skip if no key configured
+
+    response = client.post("/api/v1/public/generate", 
+        headers={"X-API-Key": expected_key},
+        json={
+            "spec_content": "openapi: 3.0.0",
+            "endpoint": "/users",
+            "method": "get"
+        }
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "success"
+    assert "test_code" in data
+    assert "test('GET /users'" in data["test_code"]
+
+
+def test_public_api_validate_success():
+    expected_key = get_settings().BOOTSTRAP_KEY or get_settings().DB_KEY
+    if not expected_key:
+        return
+
+    response = client.post("/api/v1/public/validate", 
+        headers={"X-API-Key": expected_key},
+        json={
+            "spec_content": "openapi: 3.0.0",
+            "target_url": "http://localhost:8080"
+        }
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "success"
+    assert data["verdict"] == "PASS"

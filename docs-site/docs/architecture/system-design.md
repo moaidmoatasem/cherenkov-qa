@@ -43,27 +43,22 @@ This draws a deliberate boundary between what the platform **owns** and what plu
 
 ## Module Dependency Layers
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  INTERFACES (web/, mcp/, chat/, copilot/)                   │
-├─────────────────────────────────────────────────────────────┤
-│  EXTENDED CAPABILITIES                                       │
-│  governance/ · federation/ · divergence/ · compliance/      │
-│  continuity/ · openclaw/ · sdet/ · rag/                     │
-├─────────────────────────────────────────────────────────────┤
-│  DOMAIN SERVICES                                            │
-│  healing/ · coverage/ · reflector/ · hitl/ · truth/         │
-│  knowledge/ · oracle/ · sources/ · validate/                │
-├─────────────────────────────────────────────────────────────┤
-│  PIPELINE STAGES                                            │
-│  stages/ · execution/                                       │
-├─────────────────────────────────────────────────────────────┤
-│  INFRASTRUCTURE                                             │
-│  ai/ · substrate/ · security/ · ports/ · dashboard/        │
-├─────────────────────────────────────────────────────────────┤
-│  CORE (no upstream deps)                                    │
-│  core/contracts.py · core/config.py · core/orchestrator.py │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    A[INTERFACES<br/>web/, mcp/, chat/, copilot/]
+    B[EXTENDED CAPABILITIES<br/>governance/, federation/, divergence/, compliance/, continuity/, openclaw/, sdet/, rag/]
+    C[DOMAIN SERVICES<br/>healing/, coverage/, reflector/, hitl/, truth/, knowledge/, oracle/, sources/, validate/]
+    D[PIPELINE STAGES<br/>stages/, execution/]
+    E[INFRASTRUCTURE<br/>ai/, substrate/, security/, ports/, dashboard/]
+    F[CORE - no upstream deps<br/>core/]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+
+    style F fill:#2563eb,stroke:#fff,color:#fff
 ```
 
 ---
@@ -110,23 +105,32 @@ This draws a deliberate boundary between what the platform **owns** and what plu
 
 ## System Context
 
-```
-┌─────────────────────────────────────┐
-│  CHERENKOV-QA                       │
-│  - API conformance testing          │
-│  - Mobile testing (Maestro/Appium)  │
-│  - Chat agents (tool-calling)       │
-│  - Second Brain (knowledge mesh)    │
-│  - Desktop host (Tauri 2)           │
-└──────────────┬──────────────────────┘
-               │
-               ├─→ OpenAPI specs (input)
-               ├─→ Target APIs (validation)
-               ├─→ LocalAI/Ollama (LLM)
-               ├─→ Redis (optional, vector search)
-               ├─→ Docker (optional, LocalAI)
-               ├─→ Maestro/Appium (mobile testing)
-               └─→ Playwright (test execution)
+```mermaid
+flowchart LR
+    subgraph CHERENKOV["CHERENKOV-QA"]
+        direction TB
+        A[API conformance testing]
+        B[Mobile testing]
+        C[Chat agents]
+        D[Second Brain]
+        E[Desktop host]
+    end
+
+    F[OpenAPI specs]
+    G[Target APIs]
+    H[LocalAI/Ollama]
+    I[Redis]
+    J[Docker]
+    K[Maestro/Appium]
+    L[Playwright]
+
+    CHERENKOV -->|Input| F
+    CHERENKOV -->|Validation| G
+    CHERENKOV -->|LLM| H
+    CHERENKOV -->|Vector Search| I
+    CHERENKOV -->|LocalAI| J
+    CHERENKOV -->|Mobile| K
+    CHERENKOV -->|Execution| L
 ```
 
 ---
