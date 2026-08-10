@@ -1,17 +1,55 @@
 ---
-title: Quickstart
-description: Run your first CHERENKOV-QA conformance test against a real API in under 5 minutes.
+title: Unified Quick Start
+description: Install CHERENKOV-QA, set up your local LLM, and run your first conformance test against a real API in under 5 minutes.
 ---
 
-# Quickstart
+# 🚀 Unified Quick Start
 
-Run CHERENKOV against the Petstore API — the canonical OpenAPI example — in under 5 minutes.
+This guide will take you from a blank terminal to a fully running CHERENKOV-QA environment that autonomously tests an API against its OpenAPI specification.
 
 ---
 
-## The Testing Lifecycle
+## 🏗️ 1. Installation
 
-Before diving in, here is a visual overview of what CHERENKOV does autonomously:
+CHERENKOV runs entirely on your machine. You need **Python 3.10+**, **Node.js 18+**, and **Ollama**.
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/moaidmoatasem/cherenkov-qa.git
+cd cherenkov-qa
+
+# 2. Setup Python environment and install
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+
+# 3. Install Playwright test dependencies
+cd stub
+npm install
+npx playwright install
+cd ..
+```
+
+---
+
+## 🧠 2. Spin Up Local AI
+
+CHERENKOV uses a local LLM by default. No cloud APIs, no data leaves your machine.
+
+```bash
+# Pull the required models (runs fine on CPU!)
+ollama pull qwen2.5-coder:7b     # For code generation
+ollama pull deepseek-r1:8b       # For reasoning and planning
+```
+
+!!! tip "Hardware Requirements"
+    Both models run on CPU and require about 8-10GB of RAM total. GPU acceleration (NVIDIA/AMD/Apple Silicon) is automatically detected and will dramatically speed up generation.
+
+---
+
+## ⚙️ 3. The Testing Lifecycle
+
+Here is what happens when you run a test:
 
 ```mermaid
 flowchart LR
@@ -28,64 +66,28 @@ flowchart LR
 
 ---
 
-## Step 1 — Get a Spec
+## 🚀 4. Run Your First Test!
 
-Download the Petstore OpenAPI spec:
+We'll test the canonical Petstore API. First, start a mock server in a new terminal:
 
 ```bash
 curl -o petstore.yaml https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/examples/v3.0/petstore.yaml
-```
-
-Or point to your own local specification:
-
-```bash
-export SPEC=./my-api.yaml
-```
-
----
-
-## Step 2 — Start a Target Server
-
-You need a running server that implements the spec. For the Petstore example, we can use Prism to spin up a mock server instantly:
-
-```bash
 npx @stoplight/prism-cli mock petstore.yaml --port 4010
 ```
 
-Or simply point to your own real development server:
-
-```bash
-export TARGET=http://localhost:8000
-```
-
----
-
-## Step 3 — Run CHERENKOV
-
-Now, run the core conformance check. CHERENKOV will ingest the spec, plan the scenarios, and execute tests against the target.
+Now, in your original terminal, tell CHERENKOV to validate the API against the spec:
 
 ```bash
 cherenkov validate \
-  --spec petstore.yaml \ # (1)!
-  --target http://localhost:4010 # (2)!
+  --spec petstore.yaml \
+  --target http://localhost:4010
 ```
-
-1.  Path to the OpenAPI specification you want to test against.
-2.  The live target server URL where your API is currently running.
-
----
-
-## Step 4 — Read the Report
 
 The terminal will stream real-time results and summarize drift:
 
 ```text
 CHERENKOV Conformance Report
 ════════════════════════════
-Spec:   petstore.yaml
-Target: http://localhost:4010
-Run:    2026-06-29T00:00:00Z
-
 ✅ GET  /pets             200 — Conformant
 ✅ POST /pets             201 — Conformant
 ❌ GET  /pets/{petId}     Expected: 200, Got: 404 — DRIFT DETECTED
@@ -94,16 +96,11 @@ Run:    2026-06-29T00:00:00Z
 Summary: 3/4 passed · 1 divergence · Exit code: 1
 ```
 
-!!! tip "Exit code semantics"
-    - `0` — all tests pass, no drift.
-    - `1` — drift detected (spec violation found).
-    - `2` — validation errors (config, spec parse failures).
-
 ---
 
-## Step 5 — Explore in the Dashboard
+## 📊 5. Explore in the Dashboard (Optional)
 
-Launch the interactive React dashboard to explore findings across 5 workspaces (Overview, Author & Generate, Triage, Coverage & Intelligence, Settings):
+Want a visual breakdown of the divergences? Launch the interactive React dashboard:
 
 ```bash
 cherenkov dashboard
@@ -113,26 +110,8 @@ Open your browser to `http://localhost:8000`.
 
 ---
 
-## Step 6 — Eject to Vanilla Playwright (Optional)
+## 🎯 Next Steps
 
-We guarantee zero vendor lock-in. When you're ready to own your tests outright:
-
-```bash
-cherenkov eject --output ./ejected-tests
-```
-
-This removes all CHERENKOV imports and produces pure Playwright tests:
-
-```bash
-cd ejected-tests
-npm install
-npx playwright test
-```
-
----
-
-## Next Steps
-
-- [Full CLI reference →](../cli/reference.md)
-- [Set up CI/CD integration →](../guides/ci-cd.md)
-- [Configure local LLM →](../guides/local-llm.md)
+- **No Lock-in**: Want to own your generated tests? Run `cherenkov eject --output ./ejected-tests`.
+- [Explore the CLI Reference →](../cli/reference.md)
+- [Read the Architecture Guidelines →](../architecture/system-design.md)
