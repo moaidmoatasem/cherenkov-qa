@@ -4,6 +4,9 @@ import sys
 
 import click
 
+# Import the plugins command group for registration
+from cherenkov.cli.commands.plugins_cmd import plugins_cmd
+from cherenkov.cli.commands.testerarmy import testerarmy
 
 def _get_version() -> str:
     try:
@@ -40,6 +43,7 @@ def _register_commands() -> None:
         visual_cmd,
     )
     from cherenkov.cli.commands.agent_cmd import agent_cmd
+    from cherenkov.cli.commands.plugins_cmd import plugins_cmd
     from cherenkov.cli.commands.audit import audit_cmd
     from cherenkov.cli.commands.bench import bench_cmd
     from cherenkov.cli.commands.certify import certify_cmd
@@ -77,9 +81,10 @@ def _register_commands() -> None:
         self_test_cmd,
     )
     from cherenkov.cli.commands.teleport_cmd import teleport_cmd
+    from cherenkov.cli.commands.train_cmd import train_cmd
     from cherenkov.cli.commands.validate import validate_cmd
     from cherenkov.cli.commands.verify import verify_cmd
-    from cherenkov.cli.commands.plugins_cmd import plugins_cmd
+    from cherenkov.cli.commands.federation_cmd import federation_cmd
     from cherenkov.cli.commands.template_cmd import template_cmd
     from cherenkov.cli.groups import build_groups
     from cherenkov.synthetic.cmd import synthetic_cmd
@@ -123,13 +128,16 @@ def _register_commands() -> None:
         (examples_cmd, "examples"),
         (docs_cmd, "docs"),
         (agent_cmd, "agent"),
+        (plugins_cmd, "plugins"),
+        (testerarmy, "testerarmy"),
         (routine_cmd, "routine"),
+        (federation_cmd, "federation"),
         (teleport_cmd, "teleport"),
         (enterprise_cmd, "enterprise"),
         (playbook_cmd, "playbook"),
         (guardian_cmd, "guardian"),
-        (plugins_cmd, "plugins"),
         (template_cmd, "template"),
+        (train_cmd, "train"),
     ]:
         cli.add_command(cmd, name=name)
         cmd_map[name] = cmd

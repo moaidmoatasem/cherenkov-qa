@@ -1,0 +1,229 @@
+"""tests/unit/test_training_phase15.py — Phase 15 fine-tuning pipeline unit tests.
+
+Tests cover:
+  - DryRunBackend: train/save/evaluate contract (no ML deps required)
+  - TrainingRunner: full lifecycle with DryRunBackend
+  - TrainingRunner: error path (empty dataset)
+  - RunResult.to_dict() serialisation
+  - get_backend() factory
+  - CLI: 'cherenkov train run' dry-run, 'cherenkov train status', 'cherenkov train export'
+"""
+
+from __future__ import annotations
+
+import json
+import tempfile
+from pathlib import Path
+from unittest.mock import MagicMock
+
+import pytest
+
+from cherenkov.training.backends import DryRunBackend, get_backend
+from cherenkov.training.dataset import TrainingDataset
+from cherenkov.training.runner import RunResult, TrainingRunner
+from cherenkov.training.trainer import TrainerConfig
+
+
+# ─── helpers ─────────────────────────────────────────────────────────────────
+
+def _make_dataset(n: int = 10) -> TrainingDataset:
+    records = [
+        {
+            "spec_slice": f"GET /items/{i}",
+            "test_code": f"assert response.status_code == 200  # {i}",
+            "verdict": "PASS",
+        }
+        for i in range(n)
+    ]
+    return TrainingDataset(records)
+
+
+def _make_jsonl(tmp_path: Path, n: int = 5) -> Path:
+    p = tmp_path / "data.jsonl"
+    records = [
+        {
+            "spec_slice": f"GET /things/{i}",
+            "test_code": f"assert True  # {i}",
+            "verdict": "PASS",
+        }
+        for i in range(n)
+    ]
+    with open(p, "w") as f:
+        for r in records:
+            f.write(json.dumps(r) + "\n")
+    return p
+
+
+# ─── DryRunBackend ────────────────────────────────────────────────────────────
+
+class TestDryRunBackend:
+    def test_train_returns_dict_with_mode(self, tmp_path: Path) -> None:
+        backend = DryRunBackend()
+        dataset = _make_dataset(8)
+        config = TrainerConfig()
+        metrics = backend.train(dataset, config, tmp_path / "model")
+        assert metrics["mode"] == "dry_run"
+        assert metrics["dataset_size"] == 8
+
+    def test_save_writes_manifest_not_simulated_weights(self, tmp_path: Path) -> None:
+        backend = DryRunBackend()
+        dataset = _make_dataset()
+        config = TrainerConfig()
+        output_dir = tmp_path / "model"
+        backend.train(dataset, config, output_dir)
+        backend.save(output_dir)
+
+        manifest_path = output_dir / "training_run.json"
+        assert manifest_path.exists(), "training_run.json should be written"
+
+        manifest = json.loads(manifest_path.read_text())
+        assert manifest["backend"] == "dry_run"
+        # Must NOT contain old simulation marker
+        assert "SIMULATED_LORA_WEIGHTS" not in manifest_path.read_text()
+
+    def test_save_writes_readme_adapter_card(self, tmp_path: Path) -> None:
+        backend = DryRunBackend()
+        backend.train(_make_dataset(), TrainerConfig(), tmp_path / "model")
+        backend.save(tmp_path / "model")
+        assert (tmp_path / "model" / "README.md").exists()
+
+    def test_evaluate_returns_dry_run_mode(self) -> None:
+        backend = DryRunBackend()
+        backend.train(_make_dataset(), TrainerConfig(), Path(tempfile.mkdtemp()))
+        metrics = backend.evaluate(_make_dataset(3))
+        assert metrics["mode"] == "dry_run"
+        assert metrics["total_examples"] == 3
+
+
+# ─── get_backend factory ──────────────────────────────────────────────────────
+
+class TestGetBackend:
+    def test_dry_run_name(self) -> None:
+        b = get_backend("dry_run")
+        assert isinstance(b, DryRunBackend)
+
+    def test_unknown_name_raises(self) -> None:
+        with pytest.raises(ValueError, match="Unknown training backend"):
+            get_backend("banana")
+
+
+# ─── TrainingRunner ───────────────────────────────────────────────────────────
+
+class TestTrainingRunner:
+    def test_full_lifecycle_returns_ok(self, tmp_path: Path) -> None:
+        cfg = TrainerConfig(output_dir=str(tmp_path / "model"))
+        runner = TrainingRunner(backend="dry_run", config=cfg, test_split=0.2)
+        result = runner.run(_make_dataset(20))
+
+        assert result.status == "ok"
+        assert result.backend == "dry_run"
+        assert result.train_metrics["mode"] == "dry_run"
+        assert result.finished_at is not None
+
+    def test_empty_dataset_returns_error(self, tmp_path: Path) -> None:
+        cfg = TrainerConfig(output_dir=str(tmp_path / "model"))
+        runner = TrainingRunner(backend="dry_run", config=cfg)
+        result = runner.run(TrainingDataset([]))
+
+        assert result.status == "error"
+        assert "empty" in (result.error or "").lower()
+
+    def test_eval_metrics_populated(self, tmp_path: Path) -> None:
+        cfg = TrainerConfig(output_dir=str(tmp_path / "model"))
+        runner = TrainingRunner(backend="dry_run", config=cfg, test_split=0.2)
+        result = runner.run(_make_dataset(20))
+
+        assert result.eval_metrics
+        assert result.eval_metrics["mode"] == "dry_run"
+
+    def test_to_dict_is_serialisable(self, tmp_path: Path) -> None:
+        cfg = TrainerConfig(output_dir=str(tmp_path / "model"))
+        runner = TrainingRunner(backend="dry_run", config=cfg)
+        result = runner.run(_make_dataset(10))
+        d = result.to_dict()
+        assert isinstance(d, dict)
+        json.dumps(d)  # must not raise
+
+    def test_backend_error_surfaces_in_result(self, tmp_path: Path) -> None:
+        broken = MagicMock()
+        broken.train.side_effect = RuntimeError("disk full")
+        cfg = TrainerConfig(output_dir=str(tmp_path / "model"))
+        runner = TrainingRunner(backend=broken, config=cfg)
+        runner.backend_name = "mock"
+        result = runner.run(_make_dataset(5))
+
+        assert result.status == "error"
+        assert "disk full" in (result.error or "")
+
+
+# ─── CLI smoke tests ──────────────────────────────────────────────────────────
+
+class TestTrainCLI:
+    def test_train_run_dry_run(self, tmp_path: Path) -> None:
+        from click.testing import CliRunner
+
+        from cherenkov.cli.commands.train_cmd import train_run_cmd
+
+        jsonl = _make_jsonl(tmp_path, n=10)
+        runner = CliRunner()
+        result = runner.invoke(
+            train_run_cmd,
+            [
+                "--data", str(jsonl),
+                "--backend", "dry_run",
+                "--output", str(tmp_path / "model"),
+                "--epochs", "1",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        assert "ok" in result.output.lower() or "dry" in result.output.lower()
+
+    def test_train_run_json_output(self, tmp_path: Path) -> None:
+        from click.testing import CliRunner
+
+        from cherenkov.cli.commands.train_cmd import train_run_cmd
+
+        jsonl = _make_jsonl(tmp_path, n=5)
+        runner = CliRunner()
+        result = runner.invoke(
+            train_run_cmd,
+            [
+                "--data", str(jsonl),
+                "--backend", "dry_run",
+                "--output", str(tmp_path / "model"),
+                "--json",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        data = json.loads(result.output)
+        assert data["status"] == "ok"
+        assert data["backend"] == "dry_run"
+
+    def test_train_status_no_manifest(self, tmp_path: Path) -> None:
+        from click.testing import CliRunner
+
+        from cherenkov.cli.commands.train_cmd import train_status_cmd
+
+        runner = CliRunner()
+        result = runner.invoke(
+            train_status_cmd,
+            ["--output", str(tmp_path / "model"), "--json"],
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["manifest_exists"] is False
+
+    def test_train_export_empty_db(self, tmp_path: Path) -> None:
+        """Export should exit 1 when there are no telemetry records."""
+        from click.testing import CliRunner
+        from unittest.mock import patch
+
+        from cherenkov.cli.commands.train_cmd import train_export_cmd
+
+        runner = CliRunner()
+        with patch("cherenkov.training.collector.DataCollector.count", return_value=0):
+            result = runner.invoke(
+                train_export_cmd,
+                ["--out", str(tmp_path / "out.jsonl")],
+            )
+        assert result.exit_code == 1

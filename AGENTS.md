@@ -138,3 +138,23 @@ As of Phase 5, CHERENKOV federates generation and coding tasks to **Qwen Code**.
 - CHERENKOV retains control over the D7 invariant (testing/validation).
 - Qwen Code uses `.qwen/skills/` and `.qwen/memory/` synchronized with CHERENKOV.
 - Cross-agent communication runs over MCP. Do not duplicate generation logic in CHERENKOV; instead, call the `run_qwen_code_agent` MCP tool.
+
+# TESTERARMY:START
+
+## TesterArmy CLI Discoverability
+
+This block registers the `testerarmy` command group with the CHERENKOV CLI and provides documentation links.
+
+- **Command Group**: `testerarmy`
+- **Skill**: `skills/testerarmy_insp`
+- **Documentation**: `docs/cli/testerarmy.md`
+- **Entry Point**: Imported in `cherenkov/cli/__init__.py`
+
+Developers can invoke the CLI using:
+```
+chernekov testerarmy --help
+```
+
+The skill package includes the full command implementation located at `skills/testerarmy_insp/commands/testerarmy.py`.
+
+# TESTERARMY:END

@@ -16,8 +16,8 @@ Migration status (see agent_memory/findings_2026-08-01_dual_ai_routing_layers.md
   on substrate/vlm_provider.VLMProvider; the router resolves VLM through the
   old-style vlm_provider module, never through this one.
 
-All provider modules here wrap the transport clients owned by cherenkov.ai;
-this package is an orchestration adapter layer, not a replacement for ai/.
+All provider modules here wrap the transport clients (*_client.py files) located alongside them.
+This package serves as an orchestration adapter layer bridging transport clients to the CHERENKOV reasoning domain.
 """
 
 from cherenkov.substrate.providers.nemoclaw import NemoClawProvider
