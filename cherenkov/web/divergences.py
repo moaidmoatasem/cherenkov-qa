@@ -189,6 +189,9 @@ def list_divergences() -> list[dict]:
 
     The corpus is seed data for a fresh install that has never run `verify` —
     not a substitute for real results. As soon as findings exist they win (#903).
+
+    Returns:
+        List of divergence dictionaries matching frontend expected structure.
     """
     stored = _stored_divergences()
     if stored:
@@ -204,7 +207,11 @@ def list_divergences() -> list[dict]:
 
 
 def divergence_ids() -> set:
-    """Ids currently addressable by /act — stored findings, else the corpus."""
+    """Ids currently addressable by /act — stored findings, else the corpus.
+
+    Returns:
+        Set of valid divergence ID strings.
+    """
     stored = _stored_divergences()
     if stored:
         return {d["id"] for d in stored}
@@ -222,6 +229,19 @@ def _safe_for_log(value: str, limit: int = 120) -> str:
 
 
 def apply_action(divergence_id: str, action: str) -> str:
+    """Apply a triage action to a target divergence record.
+
+    Args:
+        divergence_id: Unique identifier of divergence finding.
+        action: Action type ('close_with_test', 'mark_intended', 'reject').
+
+    Returns:
+        Updated status string.
+
+    Raises:
+        KeyError: If divergence_id is not found in corpus.
+        ValueError: If action is unrecognized.
+    """
     if divergence_id not in divergence_ids():
         raise KeyError(divergence_id)
     if action not in _ACTION_STATUS:
@@ -244,22 +264,55 @@ def apply_action(divergence_id: str, action: str) -> str:
 
 
 class DivergenceFindingNamespace:
+    """Attribute-accessible object wrapper for a divergence finding."""
+
     def __init__(self, **kwargs):
+        """Initialize namespace from keyword arguments.
+
+        Args:
+            **kwargs: Dynamic attributes for the finding namespace.
+        """
         self.__dict__.update(kwargs)
 
     def __getattr__(self, name: str) -> Any:
+        """Dynamic attribute accessor.
+
+        Args:
+            name: Attribute name string.
+
+        Returns:
+            Attribute value if present.
+
+        Raises:
+            AttributeError: If attribute is missing.
+        """
         try:
             return self.__dict__[name]
         except KeyError as exc:
             raise AttributeError(name) from exc
 
-    def dict(self):
+    def dict(self) -> dict[str, Any]:
+        """Convert namespace back to dictionary.
+
+        Returns:
+            Dictionary of finding attributes.
+        """
         return {k: v for k, v in self.__dict__.items() if k != "dict"}
 
 
 def get_divergences(
     severity: str | None = None, endpoint: str | None = None, limit: int = 20
 ) -> list[DivergenceFindingNamespace]:
+    """Retrieve filtered list of divergence finding namespaces.
+
+    Args:
+        severity: Optional severity filter string ('high', 'medium', etc.).
+        endpoint: Optional endpoint path substring filter.
+        limit: Maximum number of findings to return.
+
+    Returns:
+        List of DivergenceFindingNamespace objects.
+    """
     res = list_divergences()
     if severity:
         res = [d for d in res if d.get("severity") == severity]
@@ -291,6 +344,14 @@ def get_divergences(
 
 
 def get_finding_by_id(finding_id: str) -> DivergenceFindingNamespace | None:
+    """Find a specific divergence finding by ID.
+
+    Args:
+        finding_id: Finding ID string.
+
+    Returns:
+        DivergenceFindingNamespace if found, or None.
+    """
     for f in get_divergences(limit=100):
         if f.id == finding_id:
             return f
@@ -298,7 +359,16 @@ def get_finding_by_id(finding_id: str) -> DivergenceFindingNamespace | None:
 
 
 class _ConformanceStatusNamespace:
+    """Container for conformance status metrics."""
+
     def __init__(self, drift_count: int, endpoints_tested: int, run_at: datetime):
+        """Initialize conformance status snapshot.
+
+        Args:
+            drift_count: Count of active drift findings.
+            endpoints_tested: Count of unique tested endpoints.
+            run_at: Datetime snapshot timestamp.
+        """
         self.drift_count = drift_count
         self.endpoints_tested = endpoints_tested
         self.run_at = run_at
@@ -308,7 +378,14 @@ def get_latest_status(_service: str) -> _ConformanceStatusNamespace | None:
     """Return the latest conformance status for a service, derived from the
     divergence corpus. `service` is currently unused for filtering (the
     corpus is not yet partitioned by target service) but is accepted to
-    match the dashboard's per-service status contract."""
+    match the dashboard's per-service status contract.
+
+    Args:
+        _service: Target service identifier string.
+
+    Returns:
+        _ConformanceStatusNamespace instance containing latest status snapshot.
+    """
     divs = list_divergences()
     active = [d for d in divs if d.get("status") not in ("rejected", "live")]
     endpoints_tested = len({d.get("endpoint") for d in divs})
@@ -321,7 +398,14 @@ def get_latest_status(_service: str) -> _ConformanceStatusNamespace | None:
 
 def get_latest_report(service: str) -> dict:
     """Return the latest conformance report for a service, derived from the
-    divergence corpus."""
+    divergence corpus.
+
+    Args:
+        service: Target service identifier string.
+
+    Returns:
+        Dictionary report payload containing service, divergences list, and timestamp.
+    """
     divs = list_divergences()
     return {
         "service": service,

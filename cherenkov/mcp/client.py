@@ -31,9 +31,25 @@ class MCPClient:
 
     Instantiate per-call or cache a single instance per server URL.
     All methods are synchronous (blocking httpx calls).
+
+    Attributes:
+        _base_url (str): Base HTTP URL of the remote MCP server.
+        _timeout (float): Request timeout limit in seconds.
     """
 
     def __init__(self, base_url: str, timeout: float = _TIMEOUT) -> None:
+        """Initialize MCPClient with target server URL and timeout.
+
+        Args:
+            base_url (str): Target MCP server HTTP/HTTPS URL.
+            timeout (float): Request timeout in seconds. Defaults to 30.0.
+
+        Returns:
+            None
+
+        Raises:
+            MCPClientError: If base_url does not start with http:// or https://.
+        """
         if not base_url.startswith(("http://", "https://")):
             raise MCPClientError(f"MCPClient only supports http/https URLs; got: {base_url!r}")
         self._base_url = base_url.rstrip("/")
@@ -42,7 +58,18 @@ class MCPClient:
     # ── JSON-RPC helpers ───────────────────────────────────────────────────────
 
     def _rpc(self, method: str, params: dict[str, Any]) -> Any:
-        """Send a JSON-RPC 2.0 request and return the result field."""
+        """Send a JSON-RPC 2.0 request and return the result field.
+
+        Args:
+            method (str): JSON-RPC method name to invoke.
+            params (dict[str, Any]): Dictionary of method parameters.
+
+        Returns:
+            Any: The 'result' payload from the JSON-RPC response object.
+
+        Raises:
+            MCPClientError: On transport timeout, HTTP status error, JSON decode failure, or RPC error.
+        """
         payload = {
             "jsonrpc": "2.0",
             "id": str(uuid.uuid4()),
@@ -81,17 +108,46 @@ class MCPClient:
     # ── Public API ─────────────────────────────────────────────────────────────
 
     def call_tool(self, tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
-        """Call a tool on the remote server and return its result dict."""
+        """Call a tool on the remote server and return its result dict.
+
+        Args:
+            tool_name (str): Name of the remote tool to execute.
+            arguments (dict[str, Any]): Dictionary of arguments for the tool call.
+
+        Returns:
+            dict[str, Any]: Result dictionary returned by the tool execution.
+
+        Raises:
+            MCPClientError: If the remote RPC call fails.
+        """
         result = self._rpc("tools/call", {"name": tool_name, "arguments": arguments})
         if result is None:
             return {"content": [], "isError": False}
         return result
 
     def list_tools(self) -> list[dict[str, Any]]:
-        """Fetch the tool catalogue from the remote server."""
+        """Fetch the tool catalogue from the remote server.
+
+        Returns:
+            list[dict[str, Any]]: List of tool definition dictionaries.
+
+        Raises:
+            MCPClientError: If the remote RPC call fails.
+        """
         result = self._rpc("tools/list", {}) or {}
         return result.get("tools", [])
 
     def read_resource(self, uri: str) -> dict[str, Any]:
-        """Read a resource from the remote server by URI."""
+        """Read a resource from the remote server by URI.
+
+        Args:
+            uri (str): Resource URI string to fetch.
+
+        Returns:
+            dict[str, Any]: Dictionary containing resource contents or metadata.
+
+        Raises:
+            MCPClientError: If the remote RPC call fails.
+        """
         return self._rpc("resources/read", {"uri": uri}) or {}
+

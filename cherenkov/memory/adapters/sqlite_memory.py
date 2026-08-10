@@ -88,19 +88,43 @@ CREATE TABLE IF NOT EXISTS memory_patterns (
 
 
 def _fingerprint(text: str) -> str:
-    """Normalize + hash text for deduplication."""
+    """Normalize and hash text string for deduplication.
+
+    Args:
+        text (str): The input raw text to hash.
+
+    Returns:
+        str: First 16 characters of SHA-256 hash of normalized text.
+    """
     normalized = " ".join(text.lower().split())
     return hashlib.sha256(normalized.encode()).hexdigest()[:16]
 
 
 def _now() -> str:
+    """Return current UTC timestamp in ISO 8601 string format.
+
+    Returns:
+        str: ISO formatted UTC datetime string.
+    """
     return datetime.now(tz=timezone.utc).isoformat()
 
 
 class SQLiteMemoryRepository:
-    """Default MemoryRepository adapter backed by SQLite FTS5 (ADR-011)."""
+    """Default MemoryRepository adapter backed by SQLite FTS5 (ADR-011).
+
+    Attributes:
+        _db_path (Path): Path to SQLite database file.
+    """
 
     def __init__(self, db_path: Path) -> None:
+        """Initialize SQLiteMemoryRepository and ensure database schema is created.
+
+        Args:
+            db_path (Path): Path to the SQLite database file.
+
+        Returns:
+            None
+        """
         self._db_path = db_path
         db_path.parent.mkdir(parents=True, exist_ok=True)
         with self._connect() as conn:
@@ -108,6 +132,14 @@ class SQLiteMemoryRepository:
 
     @contextmanager
     def _connect(self) -> Generator[sqlite3.Connection, None, None]:
+        """Yield an active SQLite connection with WAL mode and row factory enabled.
+
+        Yields:
+            sqlite3.Connection: Database connection instance.
+
+        Raises:
+            Exception: Re-raises any database exception encountered during execution after rollback.
+        """
         conn = sqlite3.connect(self._db_path, check_same_thread=False)
         conn.row_factory = sqlite3.Row
         try:
@@ -122,6 +154,14 @@ class SQLiteMemoryRepository:
     # ── MemoryRepository protocol ─────────────────────────────────────
 
     def save_entry(self, entry: MemoryEntry) -> None:
+        """Persist a single MemoryEntry to SQLite database.
+
+        Args:
+            entry (MemoryEntry): Memory entry object to persist.
+
+        Returns:
+            None
+        """
         with self._connect() as conn:
             conn.execute(
                 """
@@ -145,6 +185,14 @@ class SQLiteMemoryRepository:
             )
 
     def search(self, query: MemoryQuery) -> list[MemoryEntry]:
+        """Execute full-text search over memory entries.
+
+        Args:
+            query (MemoryQuery): Search parameters and filtering criteria.
+
+        Returns:
+            list[MemoryEntry]: List of matching memory entries.
+        """
         with self._connect() as conn:
             clauses: list[str] = []
             params: list = []
@@ -185,6 +233,11 @@ class SQLiteMemoryRepository:
         return [self._row_to_entry(r) for r in rows]
 
     def get_promoted(self) -> list[MemoryPattern]:
+        """Return all auto-promoted memory patterns.
+
+        Returns:
+            list[MemoryPattern]: List of patterns marked as auto-loaded.
+        """
         with self._connect() as conn:
             rows = conn.execute(
                 "SELECT * FROM memory_patterns WHERE is_auto_loaded = 1 ORDER BY session_count DESC"
@@ -192,6 +245,14 @@ class SQLiteMemoryRepository:
         return [self._row_to_pattern(r) for r in rows]
 
     def upsert_pattern(self, pattern: MemoryPattern) -> None:
+        """Insert or update a MemoryPattern in the database.
+
+        Args:
+            pattern (MemoryPattern): Pattern to insert or update.
+
+        Returns:
+            None
+        """
         with self._connect() as conn:
             existing = conn.execute(
                 "SELECT * FROM memory_patterns WHERE fingerprint = ?",
@@ -241,6 +302,14 @@ class SQLiteMemoryRepository:
                 )
 
     def promote_pattern(self, fingerprint: str) -> None:
+        """Mark a memory pattern as auto-loaded.
+
+        Args:
+            fingerprint (str): Unique fingerprint hash of pattern to promote.
+
+        Returns:
+            None
+        """
         with self._connect() as conn:
             conn.execute(
                 "UPDATE memory_patterns SET is_auto_loaded = 1, updated_at = ? WHERE fingerprint = ?",
@@ -248,6 +317,14 @@ class SQLiteMemoryRepository:
             )
 
     def get_pattern(self, fingerprint: str) -> MemoryPattern | None:
+        """Fetch a single pattern by fingerprint.
+
+        Args:
+            fingerprint (str): Unique fingerprint hash of the pattern.
+
+        Returns:
+            MemoryPattern | None: The pattern if found, else None.
+        """
         with self._connect() as conn:
             row = conn.execute(
                 "SELECT * FROM memory_patterns WHERE fingerprint = ?", (fingerprint,)
@@ -255,6 +332,14 @@ class SQLiteMemoryRepository:
         return self._row_to_pattern(row) if row else None
 
     def list_patterns(self, limit: int = 50) -> list[MemoryPattern]:
+        """List patterns ordered by session_count descending.
+
+        Args:
+            limit (int): Maximum number of patterns to return. Defaults to 50.
+
+        Returns:
+            list[MemoryPattern]: List of retrieved patterns.
+        """
         with self._connect() as conn:
             rows = conn.execute(
                 "SELECT * FROM memory_patterns ORDER BY session_count DESC LIMIT ?",
@@ -263,7 +348,14 @@ class SQLiteMemoryRepository:
         return [self._row_to_pattern(r) for r in rows]
 
     def apply_promotion_rules(self, rule: PromotionRule) -> list[str]:
-        """Promote all patterns that meet the PromotionRule threshold."""
+        """Promote all patterns that meet the PromotionRule threshold.
+
+        Args:
+            rule (PromotionRule): Rule defining promotion thresholds.
+
+        Returns:
+            list[str]: Fingerprints of patterns promoted in this call.
+        """
         promoted: list[str] = []
         with self._connect() as conn:
             candidates = conn.execute(
@@ -287,6 +379,14 @@ class SQLiteMemoryRepository:
 
     @staticmethod
     def _row_to_entry(row: sqlite3.Row) -> MemoryEntry:
+        """Convert a database row to a MemoryEntry domain object.
+
+        Args:
+            row (sqlite3.Row): SQLite row object from memory_entries query.
+
+        Returns:
+            MemoryEntry: Constructed MemoryEntry domain object.
+        """
         return MemoryEntry(
             id=row["id"],
             session_id=row["session_id"],
@@ -304,6 +404,14 @@ class SQLiteMemoryRepository:
 
     @staticmethod
     def _row_to_pattern(row: sqlite3.Row) -> MemoryPattern:
+        """Convert a database row to a MemoryPattern domain object.
+
+        Args:
+            row (sqlite3.Row): SQLite row object from memory_patterns query.
+
+        Returns:
+            MemoryPattern: Constructed MemoryPattern domain object.
+        """
         return MemoryPattern(
             fingerprint=row["fingerprint"],
             content=row["content"],
@@ -316,6 +424,14 @@ class SQLiteMemoryRepository:
 
 
 def get_default_repository(project_root: Path) -> SQLiteMemoryRepository:
-    """Factory — returns the default SQLite-backed repository."""
+    """Factory — returns the default SQLite-backed repository.
+
+    Args:
+        project_root (Path): Root path of the project workspace.
+
+    Returns:
+        SQLiteMemoryRepository: Instantiated default repository connected to SQLite DB.
+    """
     db_path = project_root / "agent_memory" / "cherenkov_memory.db"
     return SQLiteMemoryRepository(db_path)
+

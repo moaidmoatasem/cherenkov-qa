@@ -21,7 +21,15 @@ JWT_ALGORITHM = "HS256"
 
 
 def generate_mcp_token(client_id: str, expiration_seconds: int = 3600) -> str:
-    """Generate a JWT token for an MCP client."""
+    """Generate a JWT token for an MCP client.
+
+    Args:
+        client_id (str): Identifier of the client requesting token.
+        expiration_seconds (int): Token lifetime duration in seconds. Defaults to 3600.
+
+    Returns:
+        str: Encoded JWT token string.
+    """
     now = int(time.time())
     payload = {
         "sub": client_id,
@@ -33,7 +41,14 @@ def generate_mcp_token(client_id: str, expiration_seconds: int = 3600) -> str:
 
 
 def verify_mcp_token(token: str) -> dict[str, Any] | None:
-    """Verify a JWT token. Returns the payload if valid, None otherwise."""
+    """Verify a JWT token and decode its payload.
+
+    Args:
+        token (str): The JWT token string to verify.
+
+    Returns:
+        dict[str, Any] | None: Decoded payload dictionary if valid, or None if invalid/expired.
+    """
     try:
         return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
     except jwt.PyJWTError:
@@ -41,9 +56,23 @@ def verify_mcp_token(token: str) -> dict[str, Any] | None:
 
 
 class MCPAuthMiddleware:
-    """Middleware to validate API keys or JWT tokens on MCP requests."""
+    """Middleware to validate API keys or JWT tokens on MCP requests.
 
-    def __init__(self, require_auth: bool = False, valid_api_keys: set[str] | None = None):
+    Attributes:
+        require_auth (bool): Whether authentication is strictly required.
+        valid_api_keys (set[str]): Set of valid API keys for comparison.
+    """
+
+    def __init__(self, require_auth: bool = False, valid_api_keys: set[str] | None = None) -> None:
+        """Initialize MCPAuthMiddleware.
+
+        Args:
+            require_auth (bool): Whether authentication is required. Defaults to False.
+            valid_api_keys (set[str] | None): Optional set of authorized API keys. Defaults to None.
+
+        Returns:
+            None
+        """
         self.require_auth = require_auth
         self.valid_api_keys = valid_api_keys or set()
         if require_auth and not _ENV_JWT_SECRET:
@@ -55,7 +84,15 @@ class MCPAuthMiddleware:
             )
 
     def authenticate(self, token: str | None, api_key: str | None = None) -> bool:
-        """Authenticate a request using either an API key or a JWT."""
+        """Authenticate a request using either an API key or a JWT.
+
+        Args:
+            token (str | None): Optional bearer JWT token string.
+            api_key (str | None): Optional API key string.
+
+        Returns:
+            bool: True if authentication succeeds or is not required; False otherwise.
+        """
         if not self.require_auth:
             return True
 
@@ -68,3 +105,4 @@ class MCPAuthMiddleware:
                 return True
 
         return False
+

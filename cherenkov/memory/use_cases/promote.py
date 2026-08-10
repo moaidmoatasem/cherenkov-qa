@@ -16,12 +16,13 @@ def run_promotion(
     future ``agent_sync before`` context load.
 
     Args:
-        repo: MemoryRepository instance.
-        rule: PromotionRule to apply (default: 3 sessions).
+        repo (MemoryRepository): MemoryRepository instance to operate on.
+        rule (PromotionRule | None): PromotionRule to apply. Defaults to default PromotionRule (3 sessions).
 
     Returns:
-        List of fingerprints promoted in this call.
+        list[str]: List of fingerprints promoted in this execution call.
     """
     if rule is None:
         rule = PromotionRule()
     return repo.apply_promotion_rules(rule)
+

@@ -47,20 +47,24 @@ def build_coverage_map(store=None) -> dict[str, Any]:
     persisted run in RunStore when one exists; otherwise it falls back to the
     corpus-derived value (100% only when every corpus endpoint was probed).
 
-    Returns a dict matching the frontend's expected shape:
-      {
-        "totalEndpoints": int,
-        "testedCount": int,
-        "untestedCount": int,
-        "coveragePct": float,       # 0.0-100.0
-        "openIssueCount": int,
-        "endpoints": [
+    Args:
+        store: Optional custom RunStore instance.
+
+    Returns:
+        Dict matching the frontend's expected shape:
           {
-            "method": str, "path": str, "tested": bool,
-            "divergenceCount": int, "activeSeverity": str | None,
+            "totalEndpoints": int,
+            "testedCount": int,
+            "untestedCount": int,
+            "coveragePct": float,       # 0.0-100.0
+            "openIssueCount": int,
+            "endpoints": [
+              {
+                "method": str, "path": str, "tested": bool,
+                "divergenceCount": int, "activeSeverity": str | None,
+              }
+            ],
           }
-        ],
-      }
     """
     from cherenkov.persistence.run_store import get_run_store, spec_hash
     from cherenkov.core.config_loader import load_effective_config
@@ -186,6 +190,13 @@ def coverage_trend(store=None, limit: int = 60) -> list[dict[str, Any]]:
     Reuses the persisted RunStore so the trend reflects *real* measured
     coverage across verify/validate/certify runs, not a synthetic corpus.
     When no runs exist yet, returns an empty list.
+
+    Args:
+        store: Optional custom RunStore instance.
+        limit: Maximum number of historical run records to analyze.
+
+    Returns:
+        List of coverage trend data dictionaries.
     """
     from cherenkov.persistence.run_store import get_run_store
 
@@ -216,6 +227,14 @@ class CoverageSummary:
 
     @classmethod
     def from_map(cls, m: dict[str, Any]) -> "CoverageSummary":
+        """Construct CoverageSummary from build_coverage_map dict output.
+
+        Args:
+            m: Dictionary output of build_coverage_map.
+
+        Returns:
+            CoverageSummary instance.
+        """
         return cls(
             coverage_pct=m["coveragePct"],
             open_issues=m["openIssueCount"],
@@ -244,6 +263,13 @@ def conformance_trend(store=None, limit: int = 60) -> list[dict[str, Any]]:
 
     Verdict strings are normalised to the RunStore contract (PASS/WARN/FAIL)
     and points are ordered oldest → newest. No runs recorded yet → empty list.
+
+    Args:
+        store: Optional custom RunStore instance.
+        limit: Maximum number of run history records to retrieve.
+
+    Returns:
+        List of conformance trend data dictionaries.
     """
     from cherenkov.persistence.run_store import get_run_store
 
@@ -268,6 +294,12 @@ def conformance_summary(store=None) -> dict[str, Any]:
 
     Returns pass/warn/fail run counts across the recorded history, plus the
     most recent run's verdict and divergence count (or None if no runs exist).
+
+    Args:
+        store: Optional custom RunStore instance.
+
+    Returns:
+        Dictionary summarizing total runs, pass/warn/fail breakdown, and latest verdict.
     """
     trend = conformance_trend(store=store, limit=500)
     counts = {"PASS": 0, "WARN": 0, "FAIL": 0}
@@ -319,7 +351,74 @@ def detect_regressions(store=None, limit: int = 200) -> list[dict[str, Any]]:
     Each returned entry is spec-derived (verdict + divergence counts come from
     persisted RunStore records, not hardcoded). The list is ordered by timestamp
     (most recent first).
+
+    Args:
+        store: Optional custom RunStore instance.
+        limit: Maximum number of history records to evaluate.
+
+    Returns:
+        List of detected regression event dictionaries.
     """
+    trend = conformance_trend(store=store, limit=limit)
+
+    # Group consecutive runs by target so a verdict downgrade is only compared
+    # against the *same* service under test.
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for p in trend:
+        target = p.get("target_url", "unknown")
+        groups.setdefault(target, []).append(p)
+
+    regressions: list[dict[str, Any]] = []
+    for target, points in groups.items():
+        points.sort(key=lambda p: p["timestamp"])
+        for prev, cur in zip(points, points[1:]):
+            base = {
+                "target_url": target,
+                "prev_timestamp": prev["timestamp"],
+                "cur_timestamp": cur["timestamp"],
+            }
+            prev_verdict = (prev["verdict"] or "").upper()
+            cur_verdict = (cur["verdict"] or "").upper()
+
+            if _verdict_rank(cur_verdict) > _verdict_rank(prev_verdict):
+                regressions.append(
+                    {
+                        **base,
+                        "kind": "verdict_downgrade",
+                        "detail": f"{prev_verdict} -> {cur_verdict}",
+                    }
+                )
+
+            if (
+                cur.get("coverage_pct") is not None
+                and prev.get("coverage_pct") is not None
+                and cur["coverage_pct"] < prev["coverage_pct"]
+            ):
+                regressions.append(
+                    {
+                        **base,
+                        "kind": "coverage_regression",
+                        "detail": (
+                            f"{prev['coverage_pct']:.1f}% -> "
+                            f"{cur['coverage_pct']:.1f}%"
+                        ),
+                    }
+                )
+
+            if cur["divergence_count"] > prev["divergence_count"]:
+                regressions.append(
+                    {
+                        **base,
+                        "kind": "divergence_spike",
+                        "detail": (
+                            f"{prev['divergence_count']} -> "
+                            f"{cur['divergence_count']}"
+                        ),
+                    }
+                )
+
+    regressions.reverse()
+    return regressions
     trend = conformance_trend(store=store, limit=limit)
 
     # Group consecutive runs by target so a verdict downgrade is only compared

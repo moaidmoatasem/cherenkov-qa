@@ -21,17 +21,19 @@ _VALID_EVENTS: frozenset[str] = frozenset(e.value for e in HookEvent)
 class HookRegistry:
     """Load and validate hook configurations from a cherenkov.toml config dict.
 
-    Usage::
-
-        from cherenkov.core.config_loader import load_config
-        from cherenkov.hooks.registry import HookRegistry
-
-        config = load_config()
-        registry = HookRegistry.from_config(config.raw.get("hooks", {}))
-        hooks = registry.get(HookEvent.POST_VALIDATE)
+    Attributes:
+        _configs (dict[HookEvent, list[HookConfig]]): Internal mapping of events to hook lists.
     """
 
     def __init__(self, configs: dict[HookEvent, list[HookConfig]]) -> None:
+        """Initialize HookRegistry with event-to-hook mapping.
+
+        Args:
+            configs (dict[HookEvent, list[HookConfig]]): Mapping of HookEvent to lists of HookConfig.
+
+        Returns:
+            None
+        """
         self._configs = configs
 
     @classmethod
@@ -39,10 +41,10 @@ class HookRegistry:
         """Parse the ``[hooks.*]`` TOML section into HookConfig objects.
 
         Args:
-            hooks_section: The raw dict from ``config["hooks"]``.
+            hooks_section (dict[str, Any]): The raw dict from ``config["hooks"]``.
 
         Returns:
-            Populated HookRegistry.
+            HookRegistry: Populated HookRegistry instance.
 
         Raises:
             ValueError: If an unknown hook event name is found in the config.
@@ -94,22 +96,49 @@ class HookRegistry:
 
     @classmethod
     def empty(cls) -> HookRegistry:
-        """Return an empty registry (no hooks configured)."""
+        """Return an empty registry (no hooks configured).
+
+        Returns:
+            HookRegistry: An unpopulated HookRegistry instance.
+        """
         return cls({})
 
     def get(self, event: HookEvent) -> list[HookConfig]:
-        """Return all HookConfig objects registered for the given event."""
+        """Return all HookConfig objects registered for the given event.
+
+        Args:
+            event (HookEvent): The hook event to look up.
+
+        Returns:
+            list[HookConfig]: List of configured hooks for the event.
+        """
         return self._configs.get(event, [])
 
     def has(self, event: HookEvent) -> bool:
-        """True if at least one hook is configured for the event."""
+        """Check if at least one hook is configured for the event.
+
+        Args:
+            event (HookEvent): The hook event to check.
+
+        Returns:
+            bool: True if at least one hook is registered, False otherwise.
+        """
         return bool(self._configs.get(event))
 
     def all_events(self) -> list[HookEvent]:
-        """Return all events that have at least one hook registered."""
+        """Return all events that have at least one hook registered.
+
+        Returns:
+            list[HookEvent]: List of hook events with active configurations.
+        """
         return list(self._configs)
 
     def __repr__(self) -> str:
+        """Return developer string representation of the registry.
+
+        Returns:
+            str: String representation summarizing event counts.
+        """
         summary = {e.value: len(cfgs) for e, cfgs in self._configs.items()}
         return f"HookRegistry({summary})"
 
@@ -118,12 +147,10 @@ def load_registry_from_project(project_root: Path | None = None) -> HookRegistry
     """Convenience factory: load HookRegistry from the project's cherenkov.toml.
 
     Args:
-        project_root: Optional path to project root. When provided, the config
-            loader searches for cherenkov.toml starting from this directory.
-            Defaults to CWD auto-detection.
+        project_root (Path | None): Optional path to project root. Defaults to None (CWD auto-detection).
 
-    Falls back to an empty registry if no hooks are configured or the config
-    cannot be loaded (graceful degradation for environments without cherenkov.toml).
+    Returns:
+        HookRegistry: Loaded HookRegistry instance or empty registry on failure.
     """
     try:
         from cherenkov.core.config_loader import LayeredConfig
@@ -146,3 +173,4 @@ def load_registry_from_project(project_root: Path | None = None) -> HookRegistry
     except Exception as exc:
         _log.debug("Could not load hook registry: %s", exc)
         return HookRegistry.empty()
+

@@ -1,4 +1,7 @@
-"""Hooks module — public API."""
+"""Lifecycle hooks subsystem public API exports.
+
+Provides domain models and failure modes for lifecycle hook event execution.
+"""
 from cherenkov.hooks.domain.models import (
     FailMode,
     HookAbortError,

@@ -1,3 +1,7 @@
+"""
+cherenkov/core/devices.py — Hardware and environment capability detection.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -10,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 class DeviceClass(str, Enum):
+    """Device class classification enumeration (desktop, server, mobile, etc.)."""
+
     DESKTOP = "desktop"
     TABLET = "tablet"
     MOBILE = "mobile"
@@ -18,12 +24,16 @@ class DeviceClass(str, Enum):
 
 
 class VLMTier(str, Enum):
+    """VLM execution tier enumeration (none, local, cloud)."""
+
     NONE = "none"
     LOCAL = "local"
     CLOUD = "cloud"
 
 
 class DeviceInfo:
+    """Hardware and execution environment capability detector."""
+
     device_class: DeviceClass
     vlm_tier: VLMTier
     has_gpu: bool
@@ -36,6 +46,7 @@ class DeviceInfo:
     memory_gb: float
 
     def __init__(self):
+        """Initialize DeviceInfo by probing system capabilities."""
         self.device_class = self._detect_device_class()
         self.vlm_tier = self._detect_vlm_tier()
         self.has_gpu = self._check_gpu()
@@ -100,6 +111,11 @@ class DeviceInfo:
             return 0.0
 
     def to_dict(self) -> dict:
+        """Convert device information fields into a dictionary.
+
+        Returns:
+            dict: Dictionary representation of detected system resources and capabilities.
+        """
         return {
             "device_class": self.device_class.value,
             "vlm_tier": self.vlm_tier.value,
@@ -112,3 +128,4 @@ class DeviceInfo:
             "cpu_count": self.cpu_count,
             "memory_gb": round(self.memory_gb, 1),
         }
+

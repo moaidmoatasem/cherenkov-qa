@@ -3,9 +3,9 @@
 
 Filename and content are artifacts of a multi-agent UX brainstorm. The
 dashboard design was subsequently captured in
-[../../docs/dashboard/FE_DESIGN_SPEC.md](../../dashboard/FE_DESIGN_SPEC.md)
+[../../docs/dashboard/FE_DESIGN_SPEC.md](../dashboard/FE_DESIGN_SPEC.md)
 and the 9 dashboard screens are tracked under Phase 7 of
-[../../docs/PHASE_PLAN.md](../../PHASE_PLAN.md).
+[../../docs/PHASE_PLAN.md](../PHASE_PLAN.md).
 -->
 
 ux and flows considerations and revamping:

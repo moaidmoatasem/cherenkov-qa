@@ -87,7 +87,7 @@ Or, on macOS with QuickTime: File → New Screen Recording → select window →
 ffmpeg -i RECORDING_ASSETS/mp4/session_a_zero_to_hero.mp4 \
   -vf "fps=15,scale=960:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" \
   -loop 0 \
-  RECORDING_ASSETS/gif/cherenkov_green_pass.gif
+  gif/cherenkov_green_pass.gif
 ```
 
 ### Playing Back asciinema Casts
@@ -142,10 +142,10 @@ Once assets exist, embed them in session guides and the pitch deck using:
 <asciinema-player src="RECORDING_ASSETS/casts/session_a_zero_to_hero.cast" cols="220" rows="50"></asciinema-player>
 
 <!-- Animated GIF (GitHub README / Markdown) -->
-![CHERENKOV green pass demo](RECORDING_ASSETS/gif/cherenkov_green_pass.gif)
+![CHERENKOV green pass demo](gif/cherenkov_green_pass.gif)
 
 <!-- Linked thumbnail to video -->
-[![Session A Thumbnail](RECORDING_ASSETS/thumbnails/session_a_thumb.png)](RECORDING_ASSETS/mp4/session_a_zero_to_hero.mp4)
+[![Session A Thumbnail](thumbnails/session_a_thumb.png)](RECORDING_ASSETS/mp4/session_a_zero_to_hero.mp4)
 ```
 
 ---

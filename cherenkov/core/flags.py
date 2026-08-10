@@ -91,6 +91,12 @@ def flag(name: str) -> bool:
 
     Resolution order: env var > runtime override > flags file > compiled default.
     Unknown flags return False (safe default) rather than raising.
+
+    Args:
+        name (str): Upper-snake-case feature flag name.
+
+    Returns:
+        bool: Resolved boolean value for the flag.
     """
     name = name.upper()
     with _LOCK:
@@ -113,18 +119,35 @@ def flag(name: str) -> bool:
 
 
 def set_flag(name: str, value: bool) -> None:
-    """Override a flag at runtime. Primarily for tests."""
+    """Override a flag at runtime. Primarily for tests.
+
+    Args:
+        name (str): Feature flag name string.
+        value (bool): Override value to set.
+
+    Returns:
+        None
+    """
     with _LOCK:
         _OVERRIDES[name.upper()] = value
 
 
 def reset_flags() -> None:
-    """Clear all runtime overrides. Call in test teardown."""
+    """Clear all runtime overrides. Call in test teardown.
+
+    Returns:
+        None
+    """
     with _LOCK:
         _OVERRIDES.clear()
 
 
 def all_flags() -> dict[str, bool]:
-    """Return resolved values for all compiled-in flags (useful for /debug endpoint)."""
+    """Return resolved values for all compiled-in flags (useful for /debug endpoint).
+
+    Returns:
+        dict[str, bool]: Dictionary mapping all compiled-in flag names to resolved boolean values.
+    """
     with _LOCK:
         return {name: flag(name) for name in _DEFAULTS}
+

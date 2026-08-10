@@ -60,12 +60,26 @@ class _Bucket:
     __slots__ = ("_lock", "last_refill", "tokens")
 
     def __init__(self, capacity: float) -> None:
+        """Initialize token bucket with maximum burst capacity.
+
+        Args:
+            capacity: Initial and maximum number of tokens in bucket.
+        """
         self.tokens: float = capacity
         self.last_refill: float = time.monotonic()
         self._lock = threading.Lock()
 
     def consume(self, rps: float, burst: float, cost: float = 1.0) -> tuple[bool, float]:
-        """Try to consume `cost` tokens. Returns (allowed, retry_after_seconds)."""
+        """Try to consume `cost` tokens from the bucket.
+
+        Args:
+            rps: Tokens refilled per second rate.
+            burst: Maximum bucket token capacity.
+            cost: Number of tokens requested for consumption.
+
+        Returns:
+            Tuple of (allowed: bool, retry_after_seconds: float).
+        """
         now = time.monotonic()
         with self._lock:
             elapsed = now - self.last_refill
@@ -85,6 +99,14 @@ class RateLimitMiddleware:
     """ASGI middleware that enforces per-IP token-bucket rate limits."""
 
     def __init__(self, app: ASGIApp, rps: float = _RPS, burst: float = _BURST, enabled: bool = _ENABLED) -> None:
+        """Initialize RateLimitMiddleware with application and rate limit settings.
+
+        Args:
+            app: Downstream ASGI application callable.
+            rps: Allowed requests per second per client IP.
+            burst: Burst capacity allowed per client IP.
+            enabled: Boolean flag to enable or disable rate limiting.
+        """
         self._app = app
         self._rps = rps
         self._burst = burst
@@ -104,6 +126,13 @@ class RateLimitMiddleware:
         return client[0] if client else "unknown"
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Process ASGI scope, enforcing rate limits for HTTP requests.
+
+        Args:
+            scope: ASGI scope dictionary.
+            receive: ASGI receive callable.
+            send: ASGI send callable.
+        """
         if not self._enabled or scope["type"] != "http":
             await self._app(scope, receive, send)
             return

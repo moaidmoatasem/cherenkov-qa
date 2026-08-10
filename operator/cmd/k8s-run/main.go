@@ -1,3 +1,4 @@
+// Package main implements the k8s-run CLI tool for executing ConformanceChecks against Kubernetes clusters.
 package main
 
 import (
@@ -29,6 +30,7 @@ func init() {
 	_ = validationv1alpha1.AddToScheme(scheme)
 }
 
+// RunOptions holds CLI flags for running a ConformanceCheck execution.
 type RunOptions struct {
 	Spec      string
 	Target    string

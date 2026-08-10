@@ -473,7 +473,7 @@ For long-term embedding and SEO:
 
 **Option A — Animated GIF (recommended for small clips):**
 ```markdown
-![CHERENKOV Zero to Hero](docs/recordings/session_a.gif)
+![CHERENKOV Zero to Hero](../recordings/session_a.gif)
 ```
 
 **Option B — YouTube thumbnail linking to video:**

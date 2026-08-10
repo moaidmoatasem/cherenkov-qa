@@ -1,3 +1,4 @@
+// Package controllers contains Kubernetes controller reconcilers for CHERENKOV custom resources.
 package controllers
 
 import (

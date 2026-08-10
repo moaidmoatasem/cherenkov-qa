@@ -35,6 +35,7 @@ class DeviceRegistry:
     """
 
     def __init__(self) -> None:
+        """Initialize empty DeviceRegistry instance."""
         self._lock = threading.Lock()
         self._devices: dict[str, DeviceInfo] = {}
         self._sessions: dict[str, MobileSession] = {}
@@ -43,14 +44,32 @@ class DeviceRegistry:
     # ── Device management ────────────────────────────────────────────────────
 
     def register_device(self, device: DeviceInfo) -> None:
+        """Register a new device in the registry.
+
+        Args:
+            device: DeviceInfo object describing the target device.
+        """
         with self._lock:
             self._devices[device.device_id] = device
 
     def list_devices(self) -> list[DeviceInfo]:
+        """List all currently registered devices.
+
+        Returns:
+            List of DeviceInfo instances.
+        """
         with self._lock:
             return list(self._devices.values())
 
     def get_device(self, device_id: str) -> DeviceInfo | None:
+        """Retrieve registered device metadata by ID.
+
+        Args:
+            device_id: Unique identifier string of the device.
+
+        Returns:
+            DeviceInfo instance if found, or None.
+        """
         with self._lock:
             return self._devices.get(device_id)
 
@@ -63,6 +82,14 @@ class DeviceRegistry:
         app_activity: str = "",
     ) -> MobileSession:
         """Claim a device for exclusive use and return a new session.
+
+        Args:
+            device_id: Target device identifier to claim.
+            app_package: Optional target application package name.
+            app_activity: Optional target activity name.
+
+        Returns:
+            New claimed MobileSession instance.
 
         Raises:
             DeviceNotFoundError: device_id not registered.
@@ -88,16 +115,36 @@ class DeviceRegistry:
             return session
 
     def get_session(self, session_id: str) -> MobileSession | None:
+        """Retrieve an active or historic mobile session by ID.
+
+        Args:
+            session_id: Unique session UUID string.
+
+        Returns:
+            MobileSession instance if found, or None.
+        """
         with self._lock:
             return self._sessions.get(session_id)
 
     def list_sessions(self) -> list[MobileSession]:
+        """List all active and closed mobile sessions.
+
+        Returns:
+            List of MobileSession instances.
+        """
         with self._lock:
             return list(self._sessions.values())
 
     def update_session_status(
         self, session_id: str, status: MobileSessionStatus, error: str = ""
     ) -> None:
+        """Update status and optional error message for a session.
+
+        Args:
+            session_id: Target session UUID string.
+            status: Target MobileSessionStatus value.
+            error: Optional error detail message string.
+        """
         with self._lock:
             session = self._sessions.get(session_id)
             if session:
@@ -106,13 +153,23 @@ class DeviceRegistry:
                     session.error = error
 
     def append_step(self, session_id: str, step: dict) -> None:
+        """Append an executed step log entry to a session.
+
+        Args:
+            session_id: Target session UUID string.
+            step: Step data dictionary describing the executed action.
+        """
         with self._lock:
             session = self._sessions.get(session_id)
             if session:
                 session.steps.append(step)
 
     def release(self, session_id: str) -> None:
-        """Release the device claim and mark the session closed."""
+        """Release the device claim and mark the session closed.
+
+        Args:
+            session_id: Target session UUID string to release.
+        """
         with self._lock:
             session = self._sessions.get(session_id)
             if not session:
@@ -122,6 +179,14 @@ class DeviceRegistry:
             self._device_to_session.pop(device_id, None)
 
     def session_for_device(self, device_id: str) -> MobileSession | None:
+        """Find the active session currently claiming a device.
+
+        Args:
+            device_id: Target device identifier.
+
+        Returns:
+            Active MobileSession instance claiming the device, or None.
+        """
         with self._lock:
             sid = self._device_to_session.get(device_id)
             return self._sessions.get(sid) if sid else None
@@ -142,4 +207,9 @@ _registry.register_device(
 )
 
 def get_registry() -> DeviceRegistry:
+    """Get the global DeviceRegistry singleton instance.
+
+    Returns:
+        The module-level DeviceRegistry instance.
+    """
     return _registry

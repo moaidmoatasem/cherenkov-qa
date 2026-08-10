@@ -3,8 +3,8 @@
 
 This is the "locked" output of a multi-agent debate, not a maintained
 spec. The K8s plan has since been reorganized under the consolidated
-Phase 8 of [../../docs/PHASE_PLAN.md](../../PHASE_PLAN.md). Use
-[../../docs/STATUS.md](../../STATUS.md) for the current state.
+Phase 8 of [../../docs/PHASE_PLAN.md](../PHASE_PLAN.md). Use
+[../../docs/STATUS.md](../STATUS.md) for the current state.
 -->
 
 ## Phase 0 Plan — Final Locked

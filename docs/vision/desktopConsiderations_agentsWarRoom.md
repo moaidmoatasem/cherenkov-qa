@@ -3,7 +3,7 @@
 
 Filename and content are artifacts of a multi-agent "war room" session.
 This is not a maintained spec. For the live desktop-host plan see
-[../../docs/PHASE_PLAN.md](../../PHASE_PLAN.md) (Phase 3) and
+[../../docs/PHASE_PLAN.md](../PHASE_PLAN.md) (Phase 3) and
 [../vision/18_DESKTOP_HOST.md](../vision/18_DESKTOP_HOST.md).
 -->
 
@@ -728,7 +728,7 @@ class LauncherEvent:
 - `desktop/tests/smoke_desktop.py` — headless sidecar test (see §7).
 - `desktop/tests/manual_window_checklist.md` — human checklist for the real native window.
 - `docs/DESKTOP_APP.md` — end-user doc: install, log location, how to enable real Ollama mode, how to file a bug.
-- `docs/engineering/DESKTOP_BUILD.md` — dev doc: toolchain, build matrix, icon regen, code-signing TODO.
+- `docs/engineering/DESKTOP_BUILD.md` — dev doc: toolchain, build matrix, icon regen, code-signing instructions (Windows Authenticode / Apple Developer ID).
 
 **Modified (minimal, additive)**
 - `packaging/launcher.py` — emit NDJSON `READY`/`LOG`/`ERROR`; honor `CHERENKOV_NO_BROWSER=1`; trap `SIGTERM`/`SIGBREAK`; wait for `/healthz` instead of blind `time.sleep(2)`.

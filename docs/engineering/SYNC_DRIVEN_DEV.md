@@ -258,5 +258,5 @@ Long-term vision: The sync layer enables agents that:
 ---
 
 *See [agent_memory/sync/MANIFEST.md](../../agent_memory/sync/MANIFEST.md) for the sync runtime files.*
-*See [skills/sync-driven-dev.md](../../skills/sync-driven-dev.md) for the agent skill file.*
+*See [skills/sync-driven-dev.md](../../skills/sync-driven-dev/SKILL.md) for the agent skill file.*
 *See [scripts/agent_sync.py](../../scripts/agent_sync.py) for the CLI tool.*

@@ -1,3 +1,4 @@
+// Package main is the entrypoint for the CHERENKOV Kubernetes operator manager process.
 package main
 
 import (

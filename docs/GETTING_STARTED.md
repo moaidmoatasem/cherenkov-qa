@@ -1238,7 +1238,7 @@ Running `eject` strips all CHERENKOV-specific trace monkey-patching and hooks cl
 - **Want the project state and roadmap?** → [STATUS.md](STATUS.md) and [PHASE_PLAN.md](PHASE_PLAN.md).
 - **Want the bigger picture?** → [INDEX.md](INDEX.md) maps the whole docs tree.
 - **Lost or hitting an issue?** Search [wiki/FAQ.md](wiki/FAQ.md) or open an issue.
-- **Agent or contributor?** Read [HANDOVER.md](HANDOVER.md) and [AGENTS.md](../AGENTS.md) **before** any work.
+- **Agent or contributor?** Read [HANDOVER.md](../HANDOVER.md) and [AGENTS.md](../AGENTS.md) **before** any work.
 
 ---
 

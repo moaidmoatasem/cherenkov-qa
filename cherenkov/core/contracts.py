@@ -27,7 +27,18 @@ MIGRATIONS: dict[tuple[int, int], object] = {}
 
 
 def load_versioned(cls, data: dict) -> object:
-    """Load a versioned Pydantic model, applying any registered migrations."""
+    """Load a versioned Pydantic model, applying any registered migrations.
+
+    Args:
+        cls (type): Target model class.
+        data (dict): Dictionary representation of model data.
+
+    Returns:
+        object: Instantiated and migrated Pydantic model instance.
+
+    Raises:
+        MigrationError: If no migration path exists for stored schema version.
+    """
     stored_version = data.get("schema_version", 1)
     current_version = getattr(cls, "SCHEMA_VERSION", 1)
     if stored_version != current_version:
@@ -47,12 +58,16 @@ def load_versioned(cls, data: dict) -> object:
 
 
 class Status(str, Enum):
+    """Status enumeration indicating execution outcome (OK, DEGRADED, FAILED)."""
+
     OK = "ok"
     DEGRADED = "degraded"  # produced output, but with caveats (e.g. thin spec)
     FAILED = "failed"
 
 
 class StageMeta(BaseModel):
+    """Stage execution metadata capturing timing, token usage, model, and run identity."""
+
     stage: str
     model: str | None = None
     tokens: int = 0
@@ -62,6 +77,8 @@ class StageMeta(BaseModel):
 
 
 class StageError(BaseModel):
+    """Machine-readable stage error container with code and human detail."""
+
     code: str  # machine-readable, e.g. "INVALID_JSON", "REF_DEPTH"
     detail: str  # human-readable
     where: str | None = None  # endpoint / scenario id, if applicable
@@ -69,6 +86,8 @@ class StageError(BaseModel):
 
 # ── SUBSTRATE ─────────────────────────────────────────────────────────────
 class ReasoningRequest(BaseModel):
+    """Substrate reasoning request parameters."""
+
     task: str
     output_schema: dict | None = None
     capability_tier: str
@@ -78,6 +97,8 @@ class ReasoningRequest(BaseModel):
 
 
 class ReasoningResult(BaseModel):
+    """Substrate reasoning invocation outcome."""
+
     content: str | dict
     provider: str
     model: str
@@ -99,6 +120,8 @@ class Mutation(BaseModel):
 
 
 class EndpointSlice(BaseModel):
+    """Extracted OpenAPI endpoint slice containing path, operation, and mutations."""
+
     path: str
     method: str  # "GET" | "POST" | ...
     operation: dict  # the OpenAPI operation object
@@ -110,6 +133,8 @@ class EndpointSlice(BaseModel):
 
 
 class IngestOutput(BaseModel):
+    """Output contract emitted by IngestStage."""
+
     endpoints: list[EndpointSlice]
     client_stub_path: str  # openapi-fetch client (Delta D1)
     status: Status = Status.OK
@@ -117,8 +142,11 @@ class IngestOutput(BaseModel):
     metadata: StageMeta
 
 
+
 # ── PLAN ──────────────────────────────────────────────────────────────────
 class Scenario(BaseModel):
+    """Single test scenario definition selected during planning."""
+
     endpoint: str
     method: str
     case_type: str
@@ -148,6 +176,8 @@ class StepBinding(BaseModel):
 
 
 class ChainStep(BaseModel):
+    """Step definition within a chained journey scenario."""
+
     id: str
     endpoint: str                              # templated spec path, "/pet/{petId}"
     method: str
@@ -162,6 +192,8 @@ class ChainStep(BaseModel):
 
 
 class JourneyScenario(BaseModel):
+    """Sequenced multi-step journey scenario definition."""
+
     id: str
     label: str
     resource: str                              # the CRUD entity, e.g. "pet"
@@ -176,6 +208,8 @@ class JourneyScenario(BaseModel):
 
 
 class PlanOutput(BaseModel):
+    """Output contract emitted by PlanStage."""
+
     scenarios: list[Scenario]
     # Additive: the flat scenario list is untouched, so nothing that consumes
     # PlanOutput today changes behaviour.
@@ -187,6 +221,8 @@ class PlanOutput(BaseModel):
 
 # ── GENERATE ──────────────────────────────────────────────────────────────
 class GenerateOutput(BaseModel):
+    """Output contract emitted by GenerateStage."""
+
     model_config = {"protected_namespaces": ()}
 
     scenario_id: str
@@ -203,6 +239,8 @@ class GenerateOutput(BaseModel):
 
 # ── REVIEW ────────────────────────────────────────────────────────────────
 class GateResult(BaseModel):
+    """Outcome of a single review gate check."""
+
     gate: str  # "syntax" | "structure" | "ast" | ...
     passed: bool
     detail: str = ""
@@ -210,12 +248,16 @@ class GateResult(BaseModel):
 
 
 class Verdict(str, Enum):
+    """Review verdict enumeration for test generation."""
+
     AUTO_APPROVE = "auto_approve"
     HITL = "hitl"  # → the human review queue (the HITL feature)
     REGENERATE = "regenerate"
 
 
 class ReviewOutput(BaseModel):
+    """Output contract emitted by ReviewStage."""
+
     scenario_id: str
     gates: list[GateResult]
     quality_score: float
@@ -223,6 +265,7 @@ class ReviewOutput(BaseModel):
     status: Status = Status.OK
     errors: list[StageError] = Field(default_factory=list)
     metadata: StageMeta
+
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -338,6 +381,8 @@ class DivergenceClass(str, Enum):
 
 
 class Severity(str, Enum):
+    """Severity level classification (LOW, MEDIUM, HIGH, CRITICAL)."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -377,6 +422,7 @@ class ReproductionResult(BaseModel):
 
 class DivergenceFinding(BaseModel):
     """Legacy finding for older interfaces."""
+
     violation_type: str
     endpoint: str
     http_method: str
@@ -388,10 +434,9 @@ class DivergenceFinding(BaseModel):
     remediation: str
 
 
-
 class DivergenceReport(BaseModel):
-    """
-    Sealed artifact for a confirmed divergence.
+    """Sealed artifact for a confirmed divergence.
+
     Contract: {claim_a, claim_b, evidence, repro_steps, severity} — typed, serialisable.
     """
 
@@ -410,7 +455,11 @@ class DivergenceReport(BaseModel):
     findings: list[DivergenceFinding] = Field(default_factory=list)
 
     def render(self) -> str:
-        """Human-readable summary."""
+        """Human-readable summary.
+
+        Returns:
+            str: Multi-line formatted summary string of the divergence report.
+        """
         lines = [
             f"[{self.severity.upper()}] {self.divergence_class.value}"
             f" — {self.endpoint or 'unknown endpoint'}",
@@ -470,6 +519,8 @@ class AccountingReport(BaseModel):
 
 
 class VerdictOutcome(str, Enum):
+    """Reflector decision outcome enumeration (accept, reject, escaped_defect)."""
+
     ACCEPT = "accept"
     REJECT = "reject"
     ESCAPED_DEFECT = "escaped_defect"
@@ -492,6 +543,7 @@ class VerdictRecord(BaseModel):
 
 class Idiom(BaseModel):
     """Per-system pattern that keeps being confirmed by verdicts.
+
     Decay score falls toward 0 over time; re-confirmation resets it.
     """
 
@@ -517,6 +569,8 @@ class ReflectorConfig(BaseModel):
 
 
 class ProvenanceType(str, Enum):
+    """Source type classification for provenance (spec, code, traffic, db)."""
+
     SPEC = "spec"
     CODE = "code"
     TRAFFIC = "traffic"
@@ -524,12 +578,16 @@ class ProvenanceType(str, Enum):
 
 
 class Provenance(BaseModel):
+    """Provenance tracking container for evidence origins."""
+
     source_type: ProvenanceType
     source_uri: str
     details: dict = Field(default_factory=dict)
 
 
 class Claim(BaseModel):
+    """Structured claim asserted by a source."""
+
     id: str
     category: str  # e.g., "endpoint" | "request" | "response" | "mutation"
     subject: str  # e.g., "POST /users" | "POST /users -> body -> email"
@@ -633,7 +691,11 @@ class RiskDigest(BaseModel):
     status: Status = Status.OK
 
     def render(self) -> str:
-        """Human-readable digest, highest risk first."""
+        """Human-readable digest, highest risk first.
+
+        Returns:
+            str: Multi-line formatted risk digest.
+        """
         if not self.items:
             return f"Second pair of eyes - {self.target}: nothing notable surfaced."
         lines = [f"Second pair of eyes - {self.target} ({len(self.items)} item(s)):"]
@@ -671,15 +733,21 @@ class TriageResult(BaseModel):
 
 # ── CERTIFICATION (E13) ────────────────────────────────────────────────────
 class GoldSetItem(BaseModel):
+    """Individual benchmark prompt-expectation item for certification."""
+
     prompt: str
     expected_contains: list[str] = Field(default_factory=list)
 
 
 class GoldSet(BaseModel):
+    """Collection of benchmark items for certification."""
+
     items: list[GoldSetItem] = Field(default_factory=list)
 
 
 class CertResult(BaseModel):
+    """Certification test outcome report."""
+
     certified: bool
     faithfulness_score: float
     detail: str = ""
@@ -731,21 +799,46 @@ class CoverageReport(BaseModel):
 
     @property
     def total(self) -> int:
+        """Total number of tracked coverage items.
+
+        Returns:
+            int: Item count.
+        """
         return len(self.items)
 
     @property
     def covered(self) -> int:
+        """Number of items in COVERED state.
+
+        Returns:
+            int: Covered item count.
+        """
         return sum(1 for i in self.items if i.state == CoverageItemState.COVERED)
 
     @property
     def coverage(self) -> float:
+        """Fraction of total items covered (0.0 to 1.0).
+
+        Returns:
+            float: Ratio of covered items.
+        """
         return self.covered / self.total if self.total else 0.0
 
     @property
     def threshold_met(self) -> bool:
+        """Check if coverage meets or exceeds configured threshold.
+
+        Returns:
+            bool: True if coverage >= threshold, False otherwise.
+        """
         return self.coverage >= self.threshold
 
     def render(self) -> str:
+        """Human-readable coverage report output string.
+
+        Returns:
+            str: Multi-line formatted summary.
+        """
         lines = [
             f"Coverage SDET - {self.target}: "
             f"{self.covered}/{self.total} covered "
@@ -759,3 +852,4 @@ class CoverageReport(BaseModel):
                 + (f" — {item.detail}" if item.detail else "")
             )
         return "\n".join(lines)
+

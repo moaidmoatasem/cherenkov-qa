@@ -43,14 +43,35 @@ class JsonRpcResponse(BaseModel):
     error: JsonRpcError | None = None
 
     def to_success(self, id: int | str | None, result: Any) -> JsonRpcResponse:
+        """Construct a successful JsonRpcResponse instance.
+
+        Args:
+            id (int | str | None): Request identifier.
+            result (Any): Successful result payload.
+
+        Returns:
+            JsonRpcResponse: Response instance configured with result.
+        """
         return JsonRpcResponse(id=id, result=result)
 
     def to_error(
         self, id: int | str | None, code: int, message: str, data: Any = None
     ) -> JsonRpcResponse:
+        """Construct an error JsonRpcResponse instance.
+
+        Args:
+            id (int | str | None): Request identifier.
+            code (int): JSON-RPC error code integer.
+            message (str): Human-readable error message.
+            data (Any): Optional additional diagnostic data. Defaults to None.
+
+        Returns:
+            JsonRpcResponse: Response instance configured with error details.
+        """
         return JsonRpcResponse(
             id=id, error=JsonRpcError(code=code, message=message, data=data)
         )
+
 
 
 # ── MCP capability advertisement ─────────────────────────────────────────────

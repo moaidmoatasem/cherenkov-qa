@@ -28,7 +28,18 @@ def _is_public(path: str) -> bool:
 
 
 class JWTAuthMiddleware(BaseHTTPMiddleware):
+    """Global HTTP middleware enforcing JWT authentication on non-public endpoints."""
+
     async def dispatch(self, request: Request, call_next):
+        """Intercept request and validate Bearer token for protected endpoints.
+
+        Args:
+            request: Starlette/FastAPI Request instance.
+            call_next: Next request handler in middleware chain.
+
+        Returns:
+            Response object from downstream handler or 401 JSONResponse.
+        """
         from cherenkov.core.settings import get_settings
 
         if not get_settings().AUTH_ENABLED or _is_public(request.url.path):

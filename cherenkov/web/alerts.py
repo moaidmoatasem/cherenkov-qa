@@ -72,6 +72,12 @@ class AlertEngine:
         notifiers: Iterable[NotifierPort] | None = None,
         now: float | None = None,
     ) -> None:
+        """Initialize AlertEngine with optional notifiers and clock override.
+
+        Args:
+            notifiers: Optional iterable of NotifierPort adapter instances.
+            now: Optional fixed timestamp for deterministic testing.
+        """
         self._notifiers: dict[str, NotifierPort] = {n.name: n for n in (notifiers or [])}
         # In-process cooldown tracking keyed by target_url. Sufficient for a
         # localhost-first engine; production would persist this in a TTL store.
@@ -81,9 +87,19 @@ class AlertEngine:
     # ── port registration ───────────────────────────────────────────────────
 
     def register(self, notifier: NotifierPort) -> None:
+        """Register a notification delivery port adapter.
+
+        Args:
+            notifier: NotifierPort instance to add to engine.
+        """
         self._notifiers[notifier.name] = notifier
 
     def list_notifiers(self) -> list[str]:
+        """List registered notifier names.
+
+        Returns:
+            List of registered notifier name strings.
+        """
         return list(self._notifiers)
 
     # ── policy evaluation ───────────────────────────────────────────────────
@@ -100,6 +116,14 @@ class AlertEngine:
 
         Does **not** raise on notifier failure: delivery is best-effort and the
         per-notifier outcome is recorded in `AlertResult.notified`.
+
+        Args:
+            target_url: Target API base URL string.
+            policy: Optional AlertPolicy threshold configuration.
+            store: Optional custom RunStore instance.
+
+        Returns:
+            AlertResult detailing evaluation decision and notification status.
         """
         policy = policy or AlertPolicy()
 

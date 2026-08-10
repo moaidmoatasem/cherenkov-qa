@@ -1,7 +1,7 @@
 # CHERENKOV User Journeys
 
 **Status:** Product journeys and acceptance intent. Not a claim that every step is shipped today.
-**Related:** [PLATFORM_OPERATING_MODEL.md](PLATFORM_OPERATING_MODEL.md), [NORTH_STAR.md](NORTH_STAR.md), [ROADMAP_2026H2.md](ROADMAP_2026H2.md)
+**Related:** [PLATFORM_OPERATING_MODEL.md](PLATFORM_OPERATING_MODEL.md), [NORTH_STAR.md](NORTH_STAR.md), [PRODUCT_STRATEGY_ROADMAP.md](PRODUCT_STRATEGY_ROADMAP.md)
 
 ## Purpose
 

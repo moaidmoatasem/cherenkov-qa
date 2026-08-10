@@ -92,4 +92,35 @@ With the new UI, introduce completely new UI automation tests to verify function
 - [ ] New UI automation tests are introduced alongside the new UI.
 - [ ] The new UI automation tests execute successfully and verify the core end-to-end workflows.
 
+## Follow-up — 2026-08-10T16:59:22Z
+
+# Teamwork Project Prompt — Draft
+
+> Status: Launched
+> Goal: Craft prompt → get user approval → delegate to teamwork_preview
+
+Ensure 100% documentation coverage across the entire Cherenkov QA repository, starting from the root and traversing all nested directories.
+
+Working directory: `z:\home\moaid\cherenkov-qa`
+Integrity mode: development
+
+## Requirements
+
+### R1. Source Code Documentation
+Ensure every public function, class, and module across the codebase (including Python and Go) has descriptive docstrings or comments explaining its purpose, arguments, and return values.
+
+### R2. User-Facing Documentation
+Ensure all Markdown files in the `docs/` folder (and all nested folders) are complete, accurate, and free of "TODO" or placeholder text. 
+
+### R3. Programmatic Verification
+Create automated scripts to objectively measure documentation coverage. For example, use tools like `pydocstyle` for Python code and markdown link checkers for the `docs/` directory. The scripts must strictly fail if coverage is below 100%.
+
+## Acceptance Criteria
+
+### Verification & Completeness
+- [ ] A programmatic verification script for source code docstrings runs and exits with code 0 (100% coverage).
+- [ ] A programmatic verification script for Markdown files (checking for broken links, missing references, or empty files) runs and exits with code 0.
+- [ ] `grep -ri "TODO\|TBD\|\[\]" docs/` returns no results, proving all placeholders are resolved.
+
+
 

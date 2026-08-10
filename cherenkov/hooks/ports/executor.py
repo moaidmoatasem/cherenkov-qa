@@ -16,5 +16,16 @@ class HookExecutor(Protocol):
         Must NOT raise on hook failure when ``config.fail_mode == FailMode.WARN``.
         MUST raise ``HookAbortError`` when ``config.fail_mode == FailMode.ABORT``
         and the command exits non-zero or times out.
+
+        Args:
+            config (HookConfig): Hook configuration object detailing run command, timeout, and fail mode.
+            context (HookContext): Runtime context containing template variables to substitute into command.
+
+        Returns:
+            HookResult: Result containing status, exit code, stdout, stderr, and execution duration.
+
+        Raises:
+            HookAbortError: If config.fail_mode is ABORT and command fails or times out.
         """
         ...
+

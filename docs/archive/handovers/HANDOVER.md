@@ -1,6 +1,6 @@
 # CHERENKOV — Agent Handover (historical archive)
 
-> **Authoritative handover is the repo-root [`HANDOVER.md`](../HANDOVER.md).**
+> **Authoritative handover is the repo-root [`HANDOVER.md`](../../../../../HANDOVER.md).**
 > It is the single source of truth for what this project IS, what is REAL,
 > what is NOT, and what to do next. If anything in this file contradicts the
 > root `HANDOVER.md`, the **root wins** — then reconcile. This file is retained
@@ -17,7 +17,7 @@
   - CLI wired properly to `cherenkov/enterprise/saml.py` and `cherenkov/enterprise/rbac.py` placeholders.
 - **MCP Stubs Completed (Issues 441, 447)**: Verified that all MCP handlers (`run_conformance_check`, `get_last_report`, `list_drift_findings`, `get_tightening_suggestions`, `explain_finding`, `run_k6_perf`, and compliance exports) are implemented in `cherenkov/mcp/handlers.py` and registered in `_TOOL_DISPATCH`.
 - **UI/UX Revamp & Automation**: An end-to-end rewrite of the dashboard into a modern 5-Workspace architecture (`Dashboard`, `Authoring`, `Triage`, `Intelligence`, `Settings`). 22 live FastAPI endpoints wired. Legacy mocks dropped. The `teamwork_preview` subagent fully implemented 33 Playwright E2E tests validating the workflows, pushing everything to `origin/main`.
-- **Integrity Status**: Full test suite passes completely (2076 passed) — *superseded 2026-08-04: re-certified 2138 passed / 2 failed (network-only real_demo) / 6 skipped at `530468a1`, see root [`HANDOVER.md`](../HANDOVER.md)*. Production build succeeds with 0 tsc errors.
+- **Integrity Status**: Full test suite passes completely (2076 passed) — *superseded 2026-08-04: re-certified 2138 passed / 2 failed (network-only real_demo) / 6 skipped at `530468a1`, see root [`HANDOVER.md`](../../../../../HANDOVER.md)*. Production build succeeds with 0 tsc errors.
 
 ---
 
@@ -336,65 +336,65 @@ Track A smoke tests (the legitimate ones):
 
 ## 4. Status of Track B/C and Horizon 2 (~1,080 LOC, re-integrated into the live tree)
 
-> **⚠️ Superseded by [docs/STATUS.md](STATUS.md).** This section is kept for
+> **⚠️ Superseded by [docs/STATUS.md](../../STATUS.md).** This section is kept for
 > historical context. For the **current** status of every track and phase,
-> read [docs/STATUS.md](STATUS.md) — that file is the single source of truth.
+> read [docs/STATUS.md](../../STATUS.md) — that file is the single source of truth.
 
 These modules were originally added under a separate `track-b-c-deferred/`
 directory and quarantined. That directory has since been **fully
 re-integrated into the live tree and deleted** (see
-[AGENTS.md](../AGENTS.md)). All code now lives under `cherenkov/` and the
+[AGENTS.md](../../../../../AGENTS.md)). All code now lives under `cherenkov/` and the
 relevant subfolders.
 
 **Current state of those modules:**
 - Built, unit-tested, and re-integrated into the live tree.
 - Rely on the Track A core pipeline; do not replace it.
 - The 5-QA user-validation gate has been **passed per owner decision on
-  2026-06-08** (see [docs/STATUS.md](STATUS.md) → "Phase status" and "Tracks"
+  2026-06-08** (see [docs/STATUS.md](../../STATUS.md) → "Phase status" and "Tracks"
   tables for the canonical state).
 
 If you encounter references to `track-b-c-deferred/` elsewhere in the repo
 (README, vision/, ROADMAP_*.md, etc.), treat them as **stale** and link
-to [docs/STATUS.md](STATUS.md) instead.
+to [docs/STATUS.md](../../STATUS.md) instead.
 
 ---
 
 ## 5. The ACTUAL project status
 
-> **Canonical status lives in the repo-root [`HANDOVER.md`](../HANDOVER.md).** This file does
+> **Canonical status lives in the repo-root [`HANDOVER.md`](../../../../../HANDOVER.md).** This file does
 > not duplicate it; if the two disagree, the root wins.
 
 **Summary:**
 - Track A code: **built** and core invariants proven.
 - Track A 5-QA user-validation gate: **passed per owner decision on 2026-06-08.**
 - Track B/C + Horizon 2: **built, unit-tested, re-integrated** into the live tree
-  (`track-b-c-deferred/` was deleted; see [AGENTS.md](../AGENTS.md)).
+  (`track-b-c-deferred/` was deleted; see [AGENTS.md](../../../../../AGENTS.md)).
 - Active tracks: A (core), B (VLM), C (desktop), D (mobile), E (dashboard), F (K8s).
 - All phases 0–8 complete. Next: Phases 9–16 (market launch, CI/CD, VS Code, enterprise).
   Phase 3 (Desktop) and Phase 5–6 (Mobile) have tools installed; blocked on `libwebkit2gtk-4.1-dev` and physical ADB device respectively.
 - The consolidated Phase -1 → 8 plan with tickets, parallel tracks, and
-  agent guidance lives in [docs/PHASE_PLAN.md](PHASE_PLAN.md).
+  agent guidance lives in [docs/PHASE_PLAN.md](../../PHASE_PLAN.md).
 - All tickets (#277–#391) are tracked in GitHub.
 
 For the full per-phase status table, the per-track state, and the
-design invariants, read [docs/STATUS.md](STATUS.md).
+design invariants, read [docs/STATUS.md](../../STATUS.md).
 
 ---
 
 ## 6. What to do next (priority order)
 
 > The per-phase status table and per-track state live in
-> [docs/STATUS.md](STATUS.md). This section lists what to read first and
+> [docs/STATUS.md](../../STATUS.md). This section lists what to read first and
 > where to focus next; it does not duplicate the status table.
 
 ### 6.1 — Read first
 
-1. **[docs/STATUS.md](STATUS.md)** — canonical state of every phase and track.
-2. **[docs/PHASE_PLAN.md](PHASE_PLAN.md)** — the consolidated Phase -1 → 8
+1. **[docs/STATUS.md](../../STATUS.md)** — canonical state of every phase and track.
+2. **[docs/PHASE_PLAN.md](../../PHASE_PLAN.md)** — the consolidated Phase -1 → 8
    plan, parallel tracks, dependencies, and all ~105 GitHub issues (#277–#391).
-3. **[root `HANDOVER.md`](../HANDOVER.md)** — the canonical status anchor.
-4. The relevant [ADR](adr/) before touching a module.
-5. [engineering/BEST_PRACTICES.md](engineering/BEST_PRACTICES.md) before writing code.
+3. **[root `HANDOVER.md`](../../../../../HANDOVER.md)** — the canonical status anchor.
+4. The relevant [ADR](../../adr/) before touching a module.
+5. [engineering/BEST_PRACTICES.md](../../engineering/BEST_PRACTICES.md) before writing code.
 
 **The plan in one sentence:** 10 phases (Phase -1 through Phase 8), 6 parallel
 tracks (A core, B VLM, C desktop, D mobile, E dashboard, F K8s), ~105 GitHub
@@ -412,13 +412,13 @@ The next priorities lie in the extended roadmap (Phases 9-16):
 See `docs/PRODUCT_STRATEGY_ROADMAP.md` and `docs/INTEGRATION_STRATEGY.md` for full details.
 
 ### 6.3 — THE REAL FINISH LINE (owner task, not an agent)
-Recruit 5 QA people. Run the demo from [QA_DEMO_KIT.md](QA_DEMO_KIT.md).
-Count yeses. [QA_OUTREACH_TEMPLATES.md](QA_OUTREACH_TEMPLATES.md) exists to
+Recruit 5 QA people. Run the demo from [QA_DEMO_KIT.md](../../QA_DEMO_KIT.md).
+Count yeses. [QA_OUTREACH_TEMPLATES.md](../../QA_OUTREACH_TEMPLATES.md) exists to
 help with recruiting. **Note:** The validation gate has passed per owner decision
 (2026-06-08), but evidence collection continues for attributable QA reviews.
 
 For recorded onboarding sessions (Loom scripts, live evidence, recording setup):
-→ [docs/recordings/](recordings/) — 8 sessions covering developers, QA, managers, DevOps.
+→ [docs/recordings/](../../recordings/) — 8 sessions covering developers, QA, managers, DevOps.
 
 ### 6.4 — AFTER PHASE 8 — open-source release
 Once Phase 8 is complete (K8s + Cloud + Validation Gate), prepare for open-source release:
@@ -444,8 +444,8 @@ After Phase 8, the extended product roadmap executes across 8 additional phases 
 
 Alongside these phases, a **25-integration delivery plan** covers Slack, Teams, Jira, Xray, Zephyr, OTEL, ArgoCD, Backstage, and more across 6 sprints.
 
-- Full roadmap → **[docs/PRODUCT_STRATEGY_ROADMAP.md](PRODUCT_STRATEGY_ROADMAP.md)**
-- Integration plan → **[docs/INTEGRATION_STRATEGY.md](INTEGRATION_STRATEGY.md)**
+- Full roadmap → **[docs/PRODUCT_STRATEGY_ROADMAP.md](../../PRODUCT_STRATEGY_ROADMAP.md)**
+- Integration plan → **[docs/INTEGRATION_STRATEGY.md](../../INTEGRATION_STRATEGY.md)**
 
 ---
 
@@ -520,7 +520,7 @@ The consolidated plan extends the core architecture with 5 new capabilities:
 
 ### Clean Architecture (Ports/Adapters)
 
-All new modules follow Clean Architecture (see [ADR-004](adr/ADR-004-clean-architecture.md)):
+All new modules follow Clean Architecture (see [ADR-004](../../adr/ADR-004-clean-architecture.md)):
 
 ```
 cherenkov/{module}/
@@ -542,7 +542,7 @@ cherenkov/{module}/
 | Mobile Sources | Adapter | Factory | Maestro → Appium → Pixel Diff |
 | Event Bus | Observer | Fan-out | asyncio.Queue → Redis Streams |
 
-See [PHASE_PLAN.md](PHASE_PLAN.md) for full architecture details.
+See [PHASE_PLAN.md](../../PHASE_PLAN.md) for full architecture details.
 
 ## 8. Environment
 
@@ -595,4 +595,4 @@ cherenkov explore "auth timeout"  json
 cherenkov dashboard abc123
 ```
 
-See [PHASE_PLAN.md](PHASE_PLAN.md) for full environment setup.
+See [PHASE_PLAN.md](../../PHASE_PLAN.md) for full environment setup.

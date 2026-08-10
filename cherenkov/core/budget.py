@@ -41,6 +41,13 @@ class BudgetExceededError(Exception):
     """Raised when an inference request would exceed the run budget."""
 
     def __init__(self, spent: float, cap: float, requested: float) -> None:
+        """Initialize BudgetExceededError.
+
+        Args:
+            spent (float): Amount already spent in USD.
+            cap (float): Maximum cap allowed in USD.
+            requested (float): Amount requested for upcoming inference in USD.
+        """
         self.spent = spent
         self.cap = cap
         self.requested = requested
@@ -105,19 +112,39 @@ class RunBudget:
 
     @property
     def spent(self) -> float:
+        """Return total USD spent in this budget session.
+
+        Returns:
+            float: Total USD spent.
+        """
         with self._lock:
             return self._spent
 
     @property
     def remaining(self) -> float:
+        """Return remaining USD balance available in this budget session.
+
+        Returns:
+            float: Remaining USD balance.
+        """
         cap = self._effective_cap()
         with self._lock:
             return max(0.0, cap - self._spent)
+
 
     def pre_check(self, estimated_cost_usd: float) -> None:
         """Raise BudgetExceededError if *estimated_cost_usd* would breach the cap.
 
         Call before dispatching an inference request.
+
+        Args:
+            estimated_cost_usd (float): Estimated USD cost of the upcoming request.
+
+        Returns:
+            None
+
+        Raises:
+            BudgetExceededError: If spent + estimated_cost_usd > cap.
         """
         cap = self._effective_cap()
         if cap == _NO_CAP:
@@ -143,13 +170,16 @@ class RunBudget:
         """Record actual post-request cost.
 
         Args:
-            cost_usd: Actual USD charged for this inference request.
-            tokens: Total tokens consumed (prompt + completion).
-            model: Model identifier string.
-            provider: Provider name (openai, anthropic, ollama, …).
-            cache_hit: Whether the response was served from provider cache.
-            org_id: Organisation identifier for cost attribution (enterprise).
-            run_id: Run/session identifier for per-run breakdown.
+            cost_usd (float): Actual USD charged for this inference request.
+            tokens (int, optional): Total tokens consumed. Defaults to 0.
+            model (str, optional): Model identifier string. Defaults to "unknown".
+            provider (str, optional): Provider name. Defaults to "unknown".
+            cache_hit (bool, optional): Served from cache. Defaults to False.
+            org_id (str, optional): Organisation identifier. Defaults to "default".
+            run_id (str, optional): Run/session identifier. Defaults to "".
+
+        Returns:
+            None
         """
         cap = self._effective_cap()
         with self._lock:
@@ -180,7 +210,11 @@ class RunBudget:
                 self.on_warn(spent, cap)
 
     def summary(self) -> dict:
-        """Return a structured cost summary for reports / observability."""
+        """Return a structured cost summary for reports / observability.
+
+        Returns:
+            dict: Structured dictionary containing accumulated spent USD, cap, token breakdown, and request stats.
+        """
         with self._lock:
             cap = self._effective_cap()
             records = list(self._records)
@@ -218,7 +252,11 @@ class RunBudget:
         }
 
     def reset(self) -> None:
-        """Reset accumulated spend (useful for test isolation)."""
+        """Reset accumulated spend (useful for test isolation).
+
+        Returns:
+            None
+        """
         with self._lock:
             self._spent = 0.0
             self._records.clear()
@@ -229,7 +267,11 @@ _default_budget: RunBudget | None = None
 _budget_lock = threading.Lock()
 
 def get_run_budget() -> RunBudget:
-    """Return the process-wide RunBudget, creating it from env vars if needed."""
+    """Return the process-wide RunBudget, creating it from env vars if needed.
+
+    Returns:
+        RunBudget: Process-wide singleton budget instance.
+    """
     global _default_budget
     with _budget_lock:
         if _default_budget is None:
@@ -237,7 +279,11 @@ def get_run_budget() -> RunBudget:
         return _default_budget
 
 def reset_run_budget() -> None:
-    """Reset the process-wide RunBudget (call at the start of each CLI run)."""
+    """Reset the process-wide RunBudget (call at the start of each CLI run).
+
+    Returns:
+        None
+    """
     global _default_budget
     with _budget_lock:
         _default_budget = RunBudget()

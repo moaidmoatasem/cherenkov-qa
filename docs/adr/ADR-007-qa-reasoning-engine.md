@@ -77,7 +77,7 @@ mode. Examples of the variation rules (full matrix in
 `review`, `assess_risks`, `design_cases`. Two adapters:
 
 - **HeuristicReasoner** — deterministic, zero-I/O. Pattern-based
-  analysis (requirement extraction, ambiguity markers, TODO/TBD
+  analysis (requirement extraction, ambiguity markers, pending placeholder
   density, missing error responses in specs). Always available; this
   is the L0/demo tier and the unit-test substrate.
 - **OllamaReasoner** — wraps the existing

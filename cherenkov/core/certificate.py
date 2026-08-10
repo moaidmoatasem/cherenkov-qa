@@ -20,11 +20,15 @@ from pydantic import BaseModel, Field
 # ── sub-models ─────────────────────────────────────────────────────────────────
 
 class CertSubject(BaseModel):
+    """Subject details for a verification certificate, containing the target base URL and spec hash."""
+
     base_url: str
     spec_hash: str | None = None  # SHA-256 of the raw spec bytes, if available
 
 
 class CertSummary(BaseModel):
+    """Summary metrics of findings classified by severity level."""
+
     total: int = 0
     high: int = 0
     medium: int = 0
@@ -33,6 +37,8 @@ class CertSummary(BaseModel):
 
 
 class VerificationCertificate(BaseModel):
+    """Verifiable trust certificate artifact produced after a verification run."""
+
     cert_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     version: str = "1.0"
     issued_at: str = Field(
@@ -48,18 +54,33 @@ class VerificationCertificate(BaseModel):
     signature: str = ""  # HMAC-SHA256(fingerprint, key) — empty when no key
 
     def _body_for_fingerprint(self) -> str:
-        """Canonical JSON of the cert body, excluding fingerprint + signature."""
+        """Canonical JSON of the cert body, excluding fingerprint + signature.
+
+        Returns:
+            str: Serialized JSON representation of certificate body without cryptographic fields.
+        """
         d = self.model_dump()
         d.pop("fingerprint", None)
         d.pop("signature", None)
         return json.dumps(d, sort_keys=True, default=str)
 
     def compute_fingerprint(self) -> str:
-        """Return the SHA-256 hex of the canonical cert body."""
+        """Return the SHA-256 hex of the canonical cert body.
+
+        Returns:
+            str: 64-character SHA-256 hexadecimal hash string.
+        """
         return hashlib.sha256(self._body_for_fingerprint().encode()).hexdigest()
 
     def seal(self, signing_key: bytes | None = None) -> VerificationCertificate:
-        """Finalise: compute fingerprint, optionally add HMAC signature."""
+        """Finalise: compute fingerprint, optionally add HMAC signature.
+
+        Args:
+            signing_key (bytes | None, optional): Secret bytes for HMAC-SHA256 signature. Defaults to None.
+
+        Returns:
+            VerificationCertificate: The sealed self certificate object.
+        """
         self.fingerprint = self.compute_fingerprint()
         if signing_key:
             self.signature = hmac.new(
@@ -73,6 +94,12 @@ class VerificationCertificate(BaseModel):
         An unsigned cert (empty signature) passes fingerprint-only verification
         regardless of whether a signing_key is supplied.  Signature checking
         only activates when both a key AND a non-empty signature are present.
+
+        Args:
+            signing_key (bytes | None, optional): Secret bytes to verify HMAC signature. Defaults to None.
+
+        Returns:
+            bool: True if fingerprint and optional signature match, False otherwise.
         """
         expected_fp = self.compute_fingerprint()
         if self.fingerprint != expected_fp:
@@ -99,7 +126,18 @@ def issue_certificate(
     run_id: str | None = None,
     signing_key: bytes | None = None,
 ) -> VerificationCertificate:
-    """Create and seal a VerificationCertificate from a list of DivergenceReports."""
+    """Create and seal a VerificationCertificate from a list of DivergenceReports.
+
+    Args:
+        reports (list): List of divergence reports collected during execution.
+        base_url (str): Target base URL string.
+        spec (dict | None, optional): Raw OpenAPI spec dictionary. Defaults to None.
+        run_id (str | None, optional): Unique run identifier. Defaults to None.
+        signing_key (bytes | None, optional): Secret key for HMAC signature. Defaults to None.
+
+    Returns:
+        VerificationCertificate: Sealed verification certificate object.
+    """
     summary = CertSummary(total=len(reports))
     for r in reports:
         sev = _severity_value(getattr(r, "severity", "MEDIUM"))
@@ -142,13 +180,22 @@ def issue_certificate(
 
 
 def load_certificate(data: dict) -> VerificationCertificate:
-    """Deserialise a cert from a dict (parsed JSON)."""
+    """Deserialise a cert from a dict (parsed JSON).
+
+    Args:
+        data (dict): Dictionary representation of a VerificationCertificate.
+
+    Returns:
+        VerificationCertificate: Deserialized certificate object.
+    """
     return VerificationCertificate.model_validate(data)
 
 
 # ── E3.5: compliance profile ───────────────────────────────────────────────────
 
 class ComplianceEvidence(BaseModel):
+    """Compliance evidence mapping container for regulatory frameworks."""
+
     framework: str
     provision: str
     title: str
@@ -163,6 +210,12 @@ def compliance_profile(cert: VerificationCertificate) -> list[ComplianceEvidence
     Maps certificate fields to specific provisions in EU AI Act, SOC 2, and
     ISO/IEC 25010:2023.  See docs/compliance/CERT_COMPLIANCE_MAPPING.md for
     the authoritative prose version.
+
+    Args:
+        cert (VerificationCertificate): Target certificate to evaluate for compliance.
+
+    Returns:
+        list[ComplianceEvidence]: List of satisfied compliance evidence items.
     """
     items: list[ComplianceEvidence] = [
         # ── EU AI Act ────────────────────────────────────────────────────────

@@ -1,3 +1,7 @@
+"""
+cherenkov/core/d2_controller.py — Feedback controller for D2 dynamic planning loop.
+"""
+
 from __future__ import annotations
 
 from cherenkov.core.contracts import IngestOutput, Scenario
@@ -7,30 +11,68 @@ class D2FeedbackController:
     """Tracks per-endpoint and per-case-type replan state for the D2 Planner Feedback loop."""
 
     def __init__(self, last_ingest: IngestOutput | None = None):
+        """Initialize D2FeedbackController.
+
+        Args:
+            last_ingest (IngestOutput | None, optional): Last ingest output containing endpoint slices. Defaults to None.
+        """
         self.last_ingest = last_ingest
         self.replans_per_endpoint: dict[str, int] = {}
         self.fails_per_case_type: dict[tuple, int] = {}
 
     def reset(self, last_ingest: IngestOutput | None = None) -> None:
+        """Reset state tracking counters and optionally update last_ingest.
+
+        Args:
+            last_ingest (IngestOutput | None, optional): New ingest output object. Defaults to None.
+
+        Returns:
+            None
+        """
         self.replans_per_endpoint.clear()
         self.fails_per_case_type.clear()
         if last_ingest is not None:
             self.last_ingest = last_ingest
 
     def should_retry(self, endpoint: str, case_type: str) -> bool:
-        """Check if the D2 circuit breaker allows another replan attempt."""
+        """Check if the D2 circuit breaker allows another replan attempt.
+
+        Args:
+            endpoint (str): Target endpoint path string.
+            case_type (str): Mutation case type identifier.
+
+        Returns:
+            bool: True if replan is allowed within bounds, False otherwise.
+        """
         if self.fails_per_case_type.get((endpoint, case_type), 0) >= 2:
             return False
         return self.replans_per_endpoint.get(endpoint, 0) < 3
 
     def record_failure(self, endpoint: str, case_type: str) -> None:
+        """Record a failure for the specified endpoint and case_type.
+
+        Args:
+            endpoint (str): Target endpoint path string.
+            case_type (str): Mutation case type identifier.
+
+        Returns:
+            None
+        """
         self.replans_per_endpoint[endpoint] = self.replans_per_endpoint.get(endpoint, 0) + 1
         self.fails_per_case_type[(endpoint, case_type)] = self.fails_per_case_type.get((endpoint, case_type), 0) + 1
 
     def get_next_mutation(
         self, current_scenario: Scenario, case_type: str
     ) -> Scenario | None:
-        """Select the next untried mutation from the endpoint's mutation menu."""
+        """Select the next untried mutation from the endpoint's mutation menu.
+
+        Args:
+            current_scenario (Scenario): Current failing scenario.
+            case_type (str): Target case type to mutate.
+
+        Returns:
+            Scenario | None: Next scenario mutation if available, or None.
+        """
         if not self.last_ingest:
             return None
         endpoint = current_scenario.endpoint
@@ -54,3 +96,4 @@ class D2FeedbackController:
                     expected_status=mut.expected_status,
                 )
         return None
+

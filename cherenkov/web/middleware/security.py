@@ -1,3 +1,4 @@
+"""Security middleware components (Rate limiting, Input validation, Security headers)."""
 from __future__ import annotations
 
 import logging
@@ -14,18 +15,36 @@ logger = logging.getLogger(__name__)
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
+    """Sliding-window HTTP rate limit middleware."""
+
     def __init__(
         self,
         app: FastAPI,
         max_requests: int = int(os.getenv("CHERENKOV_MAX_REQUESTS", "100")),
         window_seconds: int = 60,
     ):
+        """Initialize sliding-window rate limit middleware.
+
+        Args:
+            app: FastAPI application instance.
+            max_requests: Maximum allowed requests within window_seconds.
+            window_seconds: Time window duration in seconds.
+        """
         super().__init__(app)
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self._requests: dict[str, list[float]] = defaultdict(list)
 
     async def dispatch(self, request: Request, call_next):
+        """Track and enforce request limits per client IP address.
+
+        Args:
+            request: FastAPI/Starlette Request object.
+            call_next: Downstream handler callable.
+
+        Returns:
+            Response object or 429 JSONResponse.
+        """
         client_ip = request.client.host if request.client else "unknown"
         now = time.monotonic()
         window_start = now - self.window_seconds
@@ -45,7 +64,18 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
 
 class InputValidationMiddleware(BaseHTTPMiddleware):
+    """Middleware for validating JSON request bodies on mutating HTTP methods."""
+
     async def dispatch(self, request: Request, call_next):
+        """Validate JSON format for POST, PUT, and PATCH requests.
+
+        Args:
+            request: Request object.
+            call_next: Downstream handler callable.
+
+        Returns:
+            Response object or 400 Bad Request JSONResponse.
+        """
         content_type = request.headers.get("content-type", "")
         if request.method in ("POST", "PUT", "PATCH") and "application/json" in content_type:
                 try:
@@ -64,6 +94,8 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Middleware injecting security headers and cache control instructions."""
+
     _SECURITY_HEADERS: ClassVar[dict[str, str]] = {
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "DENY",
@@ -97,6 +129,15 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     }
 
     async def dispatch(self, request: Request, call_next):
+        """Inject security headers into outgoing response.
+
+        Args:
+            request: Request object.
+            call_next: Downstream handler callable.
+
+        Returns:
+            Response object with attached security and cache headers.
+        """
         response = await call_next(request)
         for header, value in self._SECURITY_HEADERS.items():
             response.headers[header] = value
@@ -137,5 +178,8 @@ def add_security_middleware(app: FastAPI) -> None:
     `api.py` is the single registration point. The sliding-window
     implementation below is retained for direct use but is no longer wired by
     default. See `docs/evidence/e0.6_claim_verification.md`.
+
+    Args:
+        app: Target FastAPI application to configure.
     """
     app.add_middleware(InputValidationMiddleware)

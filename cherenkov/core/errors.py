@@ -18,6 +18,8 @@ from enum import IntEnum
 
 # ── exit codes (CC-6) ────────────────────────────────────────────────────────
 class ExitCode(IntEnum):
+    """CLI execution exit code enumeration."""
+
     SUCCESS = 0
     GENERAL_ERROR = 1
     VALIDATION_ERROR = 2
@@ -81,12 +83,21 @@ class CertificationError(CherenkovError):
 
 
 class LoggerConfig:
+    """Global configuration settings for StructuredLogger."""
+
     suppress_stderr = False
     events_file = None  # module-level fallback; prefer per-thread via set_events_file()
 
 
 def set_events_file(f) -> None:
-    """Bind an events file to the current thread (safe for concurrent pipeline runs)."""
+    """Bind an events file to the current thread (safe for concurrent pipeline runs).
+
+    Args:
+        f (file-like): Text IO stream object for event logging.
+
+    Returns:
+        None
+    """
     _tl.events_file = f
 
 
@@ -100,6 +111,13 @@ class StructuredLogger:
     optionally a file). No print() in library code."""
 
     def __init__(self, stage: str, run_id: str | None = None, file=None):
+        """Initialize StructuredLogger.
+
+        Args:
+            stage (str): Pipeline stage name.
+            run_id (str | None, optional): Pipeline run correlation ID. Defaults to None.
+            file (file-like, optional): Additional output file handle. Defaults to None.
+        """
         self.stage = stage
         self.run_id = run_id
         self._file = file
@@ -125,17 +143,64 @@ class StructuredLogger:
             self._file.flush()
 
     def debug(self, msg: str, **f):
+        """Log a DEBUG level message.
+
+        Args:
+            msg (str): Message string.
+            **f: Arbitrary key-value fields to include in JSON record.
+
+        Returns:
+            None
+        """
         self._emit("DEBUG", msg, **f)
 
     def info(self, msg: str, **f):
+        """Log an INFO level message.
+
+        Args:
+            msg (str): Message string.
+            **f: Arbitrary key-value fields to include in JSON record.
+
+        Returns:
+            None
+        """
         self._emit("INFO", msg, **f)
 
     def warning(self, msg: str, **f):
+        """Log a WARNING level message.
+
+        Args:
+            msg (str): Message string.
+            **f: Arbitrary key-value fields to include in JSON record.
+
+        Returns:
+            None
+        """
         self._emit("WARN", msg, **f)
 
     def error(self, msg: str, **f):
+        """Log an ERROR level message.
+
+        Args:
+            msg (str): Message string.
+            **f: Arbitrary key-value fields to include in JSON record.
+
+        Returns:
+            None
+        """
         self._emit("ERROR", msg, **f)
 
 
 def get_logger(stage: str, run_id: str | None = None, file=None) -> StructuredLogger:
+    """Instantiate a StructuredLogger for the specified stage and run.
+
+    Args:
+        stage (str): Pipeline stage name.
+        run_id (str | None, optional): Run correlation ID. Defaults to None.
+        file (file-like, optional): Output file stream. Defaults to None.
+
+    Returns:
+        StructuredLogger: Configured logger instance.
+    """
     return StructuredLogger(stage, run_id, file)
+

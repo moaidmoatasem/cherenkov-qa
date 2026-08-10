@@ -8,11 +8,16 @@ import (
 type ConformancePhase string
 
 const (
+	// PhasePending indicates the check has been submitted but not yet scheduled.
 	PhasePending ConformancePhase = "Pending"
+	// PhaseRunning indicates the check is actively executing.
 	PhaseRunning ConformancePhase = "Running"
-	PhasePass    ConformancePhase = "Pass"
-	PhaseFail    ConformancePhase = "Fail"
-	PhaseError   ConformancePhase = "Error"
+	// PhasePass indicates all conformance tests passed successfully.
+	PhasePass ConformancePhase = "Pass"
+	// PhaseFail indicates one or more conformance tests failed.
+	PhaseFail ConformancePhase = "Fail"
+	// PhaseError indicates an unrecoverable operational error occurred during execution.
+	PhaseError ConformancePhase = "Error"
 )
 
 // Gate defines a specific conformance gate to validate.
@@ -112,11 +117,11 @@ type ConformanceCheckStatus struct {
 	Results []TestResult `json:"results,omitempty"`
 }
 
+// ConformanceCheck is the Schema for the conformancechecks API.
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase"
 // +kubebuilder:printcolumn:name="LastRun",type="date",JSONPath=".status.lastRun"
-
 type ConformanceCheck struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -124,8 +129,8 @@ type ConformanceCheck struct {
 	Status            ConformanceCheckStatus `json:"status,omitempty"`
 }
 
+// ConformanceCheckList contains a list of ConformanceCheck resources.
 // +kubebuilder:object:root=true
-
 type ConformanceCheckList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

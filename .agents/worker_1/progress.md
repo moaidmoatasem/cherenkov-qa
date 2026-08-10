@@ -1,12 +1,16 @@
-# Progress Log — Worker 1
+# Progress Log — Worker 1 (teamwork_preview_worker)
 
-Last visited: 2026-08-01T17:48:20Z
+Last visited: 2026-08-10T20:06:30Z
 
-- [x] SDD Initialization: `python scripts/agent_sync.py before --task "E0.5d_conformance_corpus"`
-- [ ] Milestone 1: Download ≥10 real-world OpenAPI specs into `specs/corpus/`
-- [ ] Milestone 2: Execute verification engine script (`scripts/run_conformance_corpus.py`), analyze probe & drop stats
-- [ ] Milestone 3: Generate marketing artifact (`docs/marketing/E0.5d_conformance_corpus.md`)
-- [ ] Testing & Verification: Run pytest suite
-- [ ] Git Commit & Push: Commit and push changes, document raw evidence
-- [ ] SDD Finalization: `python scripts/agent_sync.py after --summary "..."`
-- [ ] Handoff Report & Notification
+## Status Overview
+- [x] Initialized DISPATCH.md and BRIEFING.md
+- [x] Ran SDD protocol before-step (`python scripts/agent_sync.py before`)
+- [x] Reviewed technical design report (`explorer_3/verification_tooling_survey.md`)
+- [x] Implemented `scripts/check_docstrings.py` (Python AST + Go comment parser, 0 external dependencies)
+- [x] Implemented `scripts/check_docs_markdown.py` (Markdown scanner for 0-byte empty files, placeholders `TODO/TBD/[]`, broken relative links, and GitHub heading anchor slugs)
+- [x] Handled UTF-8 terminal encoding and Windows console stdout safety
+- [x] Created unit tests in `tests/standalone/test_verification_scripts.py` (4 unit tests passing)
+- [x] Verified execution using PowerShell syntax `;` (`python scripts/check_docstrings.py --json ; python scripts/check_docs_markdown.py --json`)
+- [x] Committed and pushed changes to git (`commit 88f04131` pushed to `origin/main`)
+- [x] Ran SDD protocol after-step (`python scripts/agent_sync.py after`)
+- [x] Created `handoff.md`

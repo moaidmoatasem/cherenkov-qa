@@ -93,6 +93,17 @@ _policy = PolicyEngine()
 # ── Input validation helpers ───────────────────────────────────────────────────
 
 def _validate_spec_path(path: str) -> str:
+    """Validate that the provided spec_path is within the working directory and has a valid spec extension.
+
+    Args:
+        path (str): The file path string to validate.
+
+    Returns:
+        str: Absolute resolved path string.
+
+    Raises:
+        ValueError: If path escapes the working directory or does not end with .yaml, .yml, or .json.
+    """
     resolved = os.path.realpath(os.path.abspath(path))
     cwd = os.path.realpath(os.path.abspath("."))
     if not resolved.startswith(cwd):
@@ -100,6 +111,7 @@ def _validate_spec_path(path: str) -> str:
     if not resolved.endswith((".yaml", ".yml", ".json")):
         raise ValueError("spec_path must be a .yaml, .yml, or .json file")
     return resolved
+
 
 def _resolve_within_cwd(path: str, must_exist: bool = True) -> Path | str:
     """Resolve a caller-supplied path inside the working directory.
@@ -899,21 +911,54 @@ TOOLS.extend([
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
 def _queue() -> HitlQueue:
+    """Return an instantiated HitlQueue store instance.
+
+    Returns:
+        HitlQueue: Instantiated HITL queue object.
+    """
     return HitlQueue()
 
+
 def _ok_content(payload: Any) -> MCPToolCallResult:
+    """Wrap a payload into a successful MCPToolCallResult object.
+
+    Args:
+        payload (Any): Result payload to JSON-serialize.
+
+    Returns:
+        MCPToolCallResult: Successful MCPToolCallResult with text content.
+    """
     return MCPToolCallResult(
         content=[MCPContent(text=json.dumps(payload, default=str))],
         isError=False,
     )
 
+
 def _err_content(message: str) -> MCPToolCallResult:
+    """Wrap an error message into an error MCPToolCallResult object.
+
+    Args:
+        message (str): Diagnostic error message string.
+
+    Returns:
+        MCPToolCallResult: Error MCPToolCallResult with error message.
+    """
     return MCPToolCallResult(
         content=[MCPContent(text=json.dumps({"error": message}))],
         isError=True,
     )
 
+
 def _resource_content(uri: str, payload: Any) -> MCPResourceReadResult:
+    """Wrap a payload into an MCPResourceReadResult object.
+
+    Args:
+        uri (str): Resource URI string.
+        payload (Any): Payload to JSON-serialize.
+
+    Returns:
+        MCPResourceReadResult: Constructed resource read result object.
+    """
     return MCPResourceReadResult(
         contents=[
             MCPResourceContent(
@@ -927,9 +972,29 @@ def _resource_content(uri: str, payload: Any) -> MCPResourceReadResult:
 # ── Resource handlers ─────────────────────────────────────────────────────────
 
 def handle_resources_list(_params: dict[str, Any]) -> dict[str, Any]:
+    """Handle resources/list requests by returning the available resource catalogue.
+
+    Args:
+        _params (dict[str, Any]): Request parameters (unused).
+
+    Returns:
+        dict[str, Any]: Serialized list of available MCP resources.
+    """
     return MCPResourceListResult(resources=RESOURCES).model_dump()
 
+
 def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
+    """Handle resources/read requests for specified resource URI.
+
+    Args:
+        params (dict[str, Any]): Request parameters containing 'uri'.
+
+    Returns:
+        dict[str, Any]: Serialized resource content dictionary.
+
+    Raises:
+        ValueError: If URI is missing or unknown.
+    """
     uri: str = params.get("uri", "")
 
     if uri == "cherenkov://hitl/pending":
@@ -1044,10 +1109,27 @@ def handle_resource_read(params: dict[str, Any]) -> dict[str, Any]:
 # ── Tool call handlers ────────────────────────────────────────────────────────
 
 def handle_tools_list(_params: dict[str, Any]) -> dict[str, Any]:
+    """Handle tools/list requests by returning the registered tool catalogue.
+
+    Args:
+        _params (dict[str, Any]): Request parameters (unused).
+
+    Returns:
+        dict[str, Any]: Serialized list of available MCP tools.
+    """
     return MCPToolListResult(tools=TOOLS).model_dump()
 
+
 def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
-    """Route a tools/call request to the correct handler with policy enforcement."""
+    """Route a tools/call request to the correct handler with policy enforcement.
+
+    Args:
+        params (dict[str, Any]): Request parameters containing 'name' and 'arguments'.
+
+    Returns:
+        dict[str, Any]: Tool call result serialized dictionary.
+    """
+
     name: str = params.get("name", "")
     arguments: dict[str, Any] = params.get("arguments", {}) or {}
     server_name: str = params.get("server", "cherenkov")
@@ -1177,6 +1259,14 @@ def handle_tool_call(params: dict[str, Any]) -> dict[str, Any]:
 # ── Individual tools ──────────────────────────────────────────────────────────
 
 def _tool_hitl_list(args: dict[str, Any]) -> MCPToolCallResult:
+    """List HITL queue items matching criteria.
+
+    Args:
+        args (dict[str, Any]): Dictionary of arguments matching HitlListInput.
+
+    Returns:
+        MCPToolCallResult: Result containing hitl/v1 list payload.
+    """
     inp = HitlListInput.model_validate(args)
     q = _queue()
     items = q.list(status=inp.status)
@@ -1189,13 +1279,31 @@ def _tool_hitl_list(args: dict[str, Any]) -> MCPToolCallResult:
     }
     return _ok_content(payload)
 
+
 def _tool_hitl_approve(args: dict[str, Any]) -> MCPToolCallResult:
+    """Approve a pending HITL queue item.
+
+    Args:
+        args (dict[str, Any]): Dictionary of arguments matching HitlApproveInput.
+
+    Returns:
+        MCPToolCallResult: Result containing hitl/v1 approval payload.
+    """
     inp = HitlApproveInput.model_validate(args)
     q = _queue()
     env = q.approve(item_id=inp.item_id, actor=inp.actor, source="mcp")
     return _ok_content(env.model_dump())
 
+
 def _tool_hitl_reject(args: dict[str, Any]) -> MCPToolCallResult:
+    """Reject a pending HITL queue item.
+
+    Args:
+        args (dict[str, Any]): Dictionary of arguments matching HitlRejectInput.
+
+    Returns:
+        MCPToolCallResult: Result containing hitl/v1 rejection payload.
+    """
     inp = HitlRejectInput.model_validate(args)
     q = _queue()
     env = q.reject(
@@ -1203,16 +1311,21 @@ def _tool_hitl_reject(args: dict[str, Any]) -> MCPToolCallResult:
     )
     return _ok_content(env.model_dump())
 
+
 def _tool_verify_suite(args: dict[str, Any]) -> MCPToolCallResult:
     """Verify the integrity of a test suite via the 6-gate REVIEW stage.
 
     Returns a VerificationReport (verify/v1) flagging weakened assertions,
     deleted checks, or hallucinated oracles. Suggest-only — never auto-applies.
 
-    This is the headline integrity tool from MCP_VERIFICATION_SERVER.md §4.1.
-    It is the machine-facing twin of the catch-the-AI-cheating demo.
+    Args:
+        args (dict[str, Any]): Arguments matching VerifySuiteInput.
+
+    Returns:
+        MCPToolCallResult: Result containing verify/v1 VerificationReport payload.
     """
     inp = VerifySuiteInput.model_validate(args)
+
 
     # ── Load test code ────────────────────────────────────────────────────────
     if inp.suite_inline:
@@ -1383,11 +1496,15 @@ def _tool_verify_system(args: dict[str, Any]) -> MCPToolCallResult:
 
     Wraps the Skeptic→Witness divergence engine (cherenkov verify CLI).
     Offline mode by default — no LLM or Ollama required.
-    Returns a VerificationReport (verify/v1) with each divergence, its
-    severity, and a curl-repro command.  This is the system-facing MCP twin
-    of `cherenkov verify` (E2.1 / MCP_VERIFICATION_SERVER.md §4.2).
+
+    Args:
+        args (dict[str, Any]): Arguments matching VerifySystemInput.
+
+    Returns:
+        MCPToolCallResult: Result containing verify/v1 VerificationReport payload.
     """
     inp = VerifySystemInput.model_validate(args)
+
 
     # ── Load spec (optional) ──────────────────────────────────────────────────
     spec_dict: dict | None = None
@@ -1480,9 +1597,15 @@ def _tool_check_suite(args: dict[str, Any]) -> MCPToolCallResult:
     Machine-facing twin of `cherenkov check-suite` (E2.5). Detects the three
     canonical "AI cheating" patterns against a baseline + spec:
       WEAKENED, DELETED, HALLUCINATED.
-    Fast static analysis — no execution, no server, no LLM. D7: suggest-only.
+
+    Args:
+        args (dict[str, Any]): Arguments matching CheckSuiteInput.
+
+    Returns:
+        MCPToolCallResult: Result containing check-suite/v1 payload.
     """
     inp = CheckSuiteInput.model_validate(args)
+
 
     # ── Resolve candidate code (path xor inline) ─────────────────────────────
     if inp.candidate_path:
@@ -1564,8 +1687,15 @@ def _tool_verify(args: dict[str, Any]) -> MCPToolCallResult:
     Machine-facing twin of `cherenkov verify` (E1.1). Runs the
     Skeptic→Witness divergence engine in offline mode by default, optionally
     extending the report with spec-coverage and health-score sections.
+
+    Args:
+        args (dict[str, Any]): Arguments matching VerifyInput.
+
+    Returns:
+        MCPToolCallResult: Result containing verify/v1 VerificationReport payload.
     """
     inp = VerifyInput.model_validate(args)
+
 
     # ── Load spec (optional) ──────────────────────────────────────────────────
     spec_dict: dict | None = None
@@ -1716,8 +1846,15 @@ def _tool_generate(args: dict[str, Any]) -> MCPToolCallResult:
     Generate(→Review→Repair). Returns test code inline by default; pass
     output_dir to write files to disk. D7: only writes to the caller's
     explicitly requested output_dir.
+
+    Args:
+        args (dict[str, Any]): Arguments matching GenerateInput.
+
+    Returns:
+        MCPToolCallResult: Result containing generate/v1 payload.
     """
     inp = GenerateInput.model_validate(args)
+
 
     spec_resolved = _resolve_within_cwd(inp.spec_path, must_exist=True)
     if isinstance(spec_resolved, str):
@@ -1830,11 +1967,17 @@ def _tool_generate(args: dict[str, Any]) -> MCPToolCallResult:
         return _err_content(f"generate error: {exc}")
 
 def _tool_validate_gate(args: dict[str, Any]) -> MCPToolCallResult:
-    """
-    Runs ValidationGate in report-only mode.
+    """Runs ValidationGate in report-only mode.
+
     Supports optional provider param for sandbox backend selection.
     Suggest-only: returns a report dict; never auto-commits or auto-applies.
     D7: does not touch any test file.
+
+    Args:
+        args (dict[str, Any]): Arguments matching ValidateRunGateInput.
+
+    Returns:
+        MCPToolCallResult: Result containing ValidationReport payload.
     """
     try:
         inp = ValidateRunGateInput.model_validate(args)
@@ -1850,23 +1993,55 @@ def _tool_validate_gate(args: dict[str, Any]) -> MCPToolCallResult:
 # ── Policy tools ──────────────────────────────────────────────────────────────
 
 def _tool_policy_list(_args: dict[str, Any]) -> MCPToolCallResult:
-    """Return current policy rules for all profiles."""
+    """Return current policy rules for all profiles.
+
+    Args:
+        _args (dict[str, Any]): Request arguments (unused).
+
+    Returns:
+        MCPToolCallResult: Result containing current policy dictionary.
+    """
     return _ok_content(_policy.list_policy())
 
+
 def _tool_policy_reload(_args: dict[str, Any]) -> MCPToolCallResult:
-    """Reload policy from cherenkov-policy.json."""
+    """Reload policy from cherenkov-policy.json.
+
+    Args:
+        _args (dict[str, Any]): Request arguments (unused).
+
+    Returns:
+        MCPToolCallResult: Result containing reload status and updated policy.
+    """
     _policy.reload()
     return _ok_content({"status": "reloaded", "policy": _policy.list_policy()})
 
+
 def _tool_registry_list(_args: dict[str, Any]) -> MCPToolCallResult:
-    """List registered MCP servers in the mesh registry."""
+    """List registered MCP servers in the mesh registry.
+
+    Args:
+        _args (dict[str, Any]): Request arguments (unused).
+
+    Returns:
+        MCPToolCallResult: Result containing list of registered servers.
+    """
     from cherenkov.mcp.mesh_router import get_registry
 
     servers = get_registry().list_servers()
     return _ok_content({"servers": servers})
 
+
 def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
-    """Register an external MCP server with the mesh registry."""
+    """Register an external MCP server with the mesh registry.
+
+    Args:
+        args (dict[str, Any]): Dictionary containing name, url, tools, resources, and optional version.
+
+    Returns:
+        MCPToolCallResult: Result containing status and registration_id.
+    """
+
     from cherenkov.mcp.mesh_router import get_registry
 
     inp = args
@@ -1907,7 +2082,14 @@ def _tool_registry_publish(args: dict[str, Any]) -> MCPToolCallResult:
 # ── Event bus tools (ADR-016 UnifiedEventBus wiring) ─────────────────────────
 
 def _tool_event_bus_list(args: dict[str, Any]) -> MCPToolCallResult:
-    """Fetch events from the UnifiedEventBus."""
+    """Fetch events from the UnifiedEventBus.
+
+    Args:
+        args (dict[str, Any]): Arguments matching EventBusListInput.
+
+    Returns:
+        MCPToolCallResult: Result containing events list.
+    """
     inp = EventBusListInput.model_validate(args)
     bus = get_event_bus()
     events = bus.fetch_events(
@@ -1921,16 +2103,32 @@ def _tool_event_bus_list(args: dict[str, Any]) -> MCPToolCallResult:
     }
     return _ok_content(payload)
 
+
 def _tool_event_bus_get(args: dict[str, Any]) -> MCPToolCallResult:
-    """Fetch a single event from the UnifiedEventBus by id."""
+    """Fetch a single event from the UnifiedEventBus by id.
+
+    Args:
+        args (dict[str, Any]): Arguments matching EventBusGetInput.
+
+    Returns:
+        MCPToolCallResult: Result containing requested event details.
+    """
     inp = EventBusGetInput.model_validate(args)
     event = get_event_bus().get_event(inp.event_id)
     if event is None:
         return _err_content(f"Event not found: {inp.event_id}")
     return _ok_content({"schema_version": "events/v1", "ok": True, "event": event.to_dict()})
 
+
 def _tool_event_bus_publish(args: dict[str, Any]) -> MCPToolCallResult:
-    """Publish a CHERENKOVEvent to the UnifiedEventBus."""
+    """Publish a CHERENKOVEvent to the UnifiedEventBus.
+
+    Args:
+        args (dict[str, Any]): Arguments matching EventBusPublishInput.
+
+    Returns:
+        MCPToolCallResult: Result containing created event_id.
+    """
     inp = EventBusPublishInput.model_validate(args)
     event = to_cherenkov_event(inp.name, inp.payload, run_id="mcp")
     event.category = _coerce_event_category(inp.category)
@@ -1938,11 +2136,28 @@ def _tool_event_bus_publish(args: dict[str, Any]) -> MCPToolCallResult:
     get_event_bus().publish(event)
     return _ok_content({"schema_version": "events/v1", "ok": True, "event_id": event.event_id})
 
+
 def _tool_event_bus_stats(_args: dict[str, Any]) -> MCPToolCallResult:
-    """Return UnifiedEventBus statistics."""
+    """Return UnifiedEventBus statistics.
+
+    Args:
+        _args (dict[str, Any]): Request arguments (unused).
+
+    Returns:
+        MCPToolCallResult: Result containing event bus stats payload.
+    """
     return _ok_content({"schema_version": "events/v1", "ok": True, "stats": get_event_bus().get_stats()})
 
+
 def _coerce_event_category(value: str):
+    """Coerce string into EventCategory enum, defaulting to PIPELINE.
+
+    Args:
+        value (str): Category string.
+
+    Returns:
+        EventCategory: Matching EventCategory enum value.
+    """
     from cherenkov.core.events import EventCategory
 
     try:
@@ -1950,7 +2165,16 @@ def _coerce_event_category(value: str):
     except ValueError:
         return EventCategory.PIPELINE
 
+
 def _coerce_event_severity(value: str):
+    """Coerce string into EventSeverity enum, defaulting to INFO.
+
+    Args:
+        value (str): Severity string.
+
+    Returns:
+        EventSeverity: Matching EventSeverity enum value.
+    """
     from cherenkov.core.events import EventSeverity
 
     try:
@@ -1958,9 +2182,18 @@ def _coerce_event_severity(value: str):
     except ValueError:
         return EventSeverity.INFO
 
+
 # ── Track B/C tools ───────────────────────────────────────────────────────────
 
 def _tool_visual_diff(args: dict[str, Any]) -> MCPToolCallResult:
+    """Run visual snapshot regression and UI matching checks.
+
+    Args:
+        args (dict[str, Any]): Arguments containing optional target_url string.
+
+    Returns:
+        MCPToolCallResult: Result containing visual validation report payload.
+    """
     target_url = args.get("target_url")
     try:
         from cherenkov.execution.visual_diff import VisualDiffEngine
@@ -1970,6 +2203,7 @@ def _tool_visual_diff(args: dict[str, Any]) -> MCPToolCallResult:
         return _ok_content(report)
     except Exception as exc:
         return _err_content(f"VisualDiff error: {exc}")
+
 
 def _tool_visual_diff_enhanced(args: dict[str, Any]) -> MCPToolCallResult:
     """Enhanced visual diff tool with baseline management, configurable thresholds, and report output."""
@@ -2483,7 +2717,11 @@ def _tool_chat_run_test(args: dict[str, Any]) -> MCPToolCallResult:
 # ── Evidence helpers ──────────────────────────────────────────────────────────
 
 def _get_latest_validation_report() -> dict[str, Any]:
-    """Return the most recent ValidationReport from evidence/, or a stub."""
+    """Return the most recent ValidationReport from evidence/, or a stub dictionary.
+
+    Returns:
+        dict[str, Any]: Most recent report JSON dictionary or stub report dictionary.
+    """
     evidence_dir = os.path.join(os.getcwd(), ".cherenkov", "evidence")
     pattern = os.path.join(evidence_dir, "*.json")
     files = sorted(glob.glob(pattern), reverse=True)
@@ -2495,6 +2733,7 @@ def _get_latest_validation_report() -> dict[str, Any]:
         "result": "no_evidence",
         "summary": "No validation evidence found. Run: cherenkov validate --target <url>",
     }
+
 
 # ── Issue #441: Conformance tools ─────────────────────────────────────────────
 
@@ -2727,8 +2966,11 @@ _TOOL_DISPATCH: dict[str, Callable[[dict[str, Any]], MCPToolCallResult]] = {
 }
 
 def _get_evidence_listing() -> dict[str, Any]:
-    """Return a directory listing of .cherenkov/evidence/."""
+    """Return a directory listing dictionary of .cherenkov/evidence/.
 
+    Returns:
+        dict[str, Any]: Dictionary containing evidence_dir path and list of evidence filenames.
+    """
     evidence_dir = os.path.join(os.getcwd(), ".cherenkov", "evidence")
     if not os.path.isdir(evidence_dir):
         return {
@@ -2738,3 +2980,4 @@ def _get_evidence_listing() -> dict[str, Any]:
         }
     files = sorted(os.listdir(evidence_dir))
     return {"evidence_dir": evidence_dir, "files": files, "count": len(files)}
+

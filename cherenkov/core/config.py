@@ -223,7 +223,14 @@ class Config:
 
     @classmethod
     def validate(cls) -> None:
-        """Validate all config values are within acceptable bounds. Raises ValueError on violation."""
+        """Validate all config values are within acceptable bounds.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If validation checks fail.
+        """
         errors = []
 
         # Timeout bounds
@@ -267,7 +274,13 @@ class Config:
 
     @classmethod
     def to_dict(cls) -> dict[str, str | int | float | bool]:
+        """Convert key configuration properties into a dictionary mapping.
+
+        Returns:
+            dict[str, str | int | float | bool]: Dictionary of active configuration parameters.
+        """
         return {
+
             "PROVIDER": cls.PROVIDER,
             "OLLAMA_URL": cls.OLLAMA_URL,
             "OLLAMA_TIMEOUT": cls.OLLAMA_TIMEOUT,

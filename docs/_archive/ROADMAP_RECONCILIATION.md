@@ -11,9 +11,9 @@
 > (gitignored), lists anonymous job-title "reviewers" with no names/company/
 > recordings, and is corroborated only by a dogfooding report that describes
 > itself as "simulated/real."** This is the fabricated-evidence pattern that
-> [HANDOVER.md §2](HANDOVER.md) explicitly warns about.
+> [HANDOVER.md §2](../HANDOVER.md) explicitly warns about.
 >
-> **The authoritative SSOT is [HANDOVER.md](HANDOVER.md) + [AGENTS.md](../AGENTS.md):
+> **The authoritative SSOT is [HANDOVER.md](../HANDOVER.md) + [AGENTS.md](../../../AGENTS.md):
 > the 5-QA-user validation gate is passed** — that is still the real
 > shipping blocker. Statements below that mark Horizon 2 / Track B/C features
 > as "shipped" or "validated" describe code that exists but has NOT cleared the
@@ -54,7 +54,7 @@ All **Epoch 0 through Epoch 13 (E0–E13)** milestones have been successfully co
 > **Current honest state:** the gate requires 5 real QA practitioners to use
 > the tool and provide attributable evidence. This has NOT happened. It remains
 > the project's primary shipping blocker.
-- Runbook for running the real gate: [QA_VALIDATION_RUNBOOK.md](process/QA_VALIDATION_RUNBOOK.md)
+- Runbook for running the real gate: [QA_VALIDATION_RUNBOOK.md](../../process/QA_VALIDATION_RUNBOOK.md)
 
 ---
 
@@ -83,5 +83,5 @@ The active roadmap is defined by **Horizon 2 (#147)**:
 4. **N7: Production Dogfooding Nightly Runs** (REPORT LANDED)
 5. **N8: Roadmap Reconciliation** (THIS DOC)
 
-Refer to [10_HORIZON_2.md](vision/10_HORIZON_2.md) for future iterations.
+Refer to [10_HORIZON_2.md](../../vision/10_HORIZON_2.md) for future iterations.
 All delivery EPIC (#134) status lines are updated to: **delivered — see Horizon 2**.

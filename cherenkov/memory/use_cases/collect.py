@@ -31,13 +31,13 @@ def collect_from_findings(
     and upserts them into the pattern store.
 
     Args:
-        session_id: The current SDD session ID.
-        task_type: The task type string from ``agent_sync before``.
-        findings: Raw list of finding dicts from the session JSON files.
-        repo: MemoryRepository instance to write to.
+        session_id (str): The current SDD session ID.
+        task_type (str): The task type string from ``agent_sync before``.
+        findings (list[dict]): Raw list of finding dicts from the session JSON files.
+        repo (MemoryRepository): MemoryRepository instance to write to.
 
     Returns:
-        List of MemoryEntry objects that were saved.
+        list[MemoryEntry]: List of MemoryEntry objects that were saved.
     """
     saved: list[MemoryEntry] = []
     now = datetime.now(tz=timezone.utc)
@@ -74,7 +74,16 @@ def _extract_pattern(
     session_id: str,
     task_type: str,
 ) -> MemoryPattern:
-    """Derive a MemoryPattern from a finding entry."""
+    """Derive a candidate MemoryPattern from a finding entry.
+
+    Args:
+        entry (MemoryEntry): The memory entry from which to derive the pattern.
+        session_id (str): Session ID where the pattern was discovered.
+        task_type (str): Task category for the pattern.
+
+    Returns:
+        MemoryPattern: The constructed candidate MemoryPattern object.
+    """
     # Normalize: strip file paths, session IDs, timestamps
     cleaned = _RE_SESSION_ID.sub("<session>", entry.content)
     cleaned = _RE_TIMESTAMP.sub("<ts>", cleaned)
@@ -91,3 +100,4 @@ def _extract_pattern(
         session_count=1,
         task_types=[task_type],
     )
+

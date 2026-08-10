@@ -14,6 +14,17 @@ LOCAL_TOOLS_DIR = Path.home() / ".cherenkov" / "marketplace" / "tools"
 
 @dataclass
 class MarketplaceTool:
+    """Represents a tool package entry in the MCP Marketplace.
+
+    Attributes:
+        id (str): Unique tool identifier.
+        name (str): Display name of the tool.
+        description (str): Functional summary description.
+        version (str): Semantic version string.
+        repository_url (str): Source code repository URL.
+        install_command (str): Shell installation command string.
+    """
+
     id: str
     name: str
     description: str
@@ -22,10 +33,23 @@ class MarketplaceTool:
     install_command: str
 
     def to_dict(self) -> dict[str, str]:
+        """Convert MarketplaceTool instance to dictionary format.
+
+        Returns:
+            dict[str, str]: Dictionary of tool attributes.
+        """
         return asdict(self)
 
     @classmethod
     def from_dict(cls, data: dict) -> MarketplaceTool:
+        """Instantiate MarketplaceTool from a dictionary.
+
+        Args:
+            data (dict): Dictionary containing tool properties.
+
+        Returns:
+            MarketplaceTool: Constructed MarketplaceTool object.
+        """
         return cls(
             id=data["id"],
             name=data["name"],
@@ -37,19 +61,37 @@ class MarketplaceTool:
 
 
 class MarketplaceRegistry:
-    """Client for discovering, fetching, and publishing tools from the MCP Marketplace."""
+    """Client for discovering, fetching, and publishing tools from the MCP Marketplace.
+
+    Attributes:
+        base_url (str): Remote marketplace API endpoint URL.
+        local_dir (Path): Local filesystem directory for tool manifests.
+    """
 
     def __init__(
         self,
         base_url: str = DEFAULT_MARKETPLACE_URL,
         local_dir: Path | None = None,
-    ):
+    ) -> None:
+        """Initialize MarketplaceRegistry.
+
+        Args:
+            base_url (str): Base marketplace API URL. Defaults to DEFAULT_MARKETPLACE_URL.
+            local_dir (Path | None): Local directory path for caching tool manifests. Defaults to None.
+
+        Returns:
+            None
+        """
         self.base_url = base_url
         self.local_dir = local_dir or LOCAL_TOOLS_DIR
         self.local_dir.mkdir(parents=True, exist_ok=True)
 
     def discover_tools(self) -> list[MarketplaceTool]:
-        """Fetch a list of available tools from local store and remote/stub."""
+        """Fetch a list of available tools from local store and remote/stub.
+
+        Returns:
+            list[MarketplaceTool]: Combined list of discovered marketplace tools.
+        """
         tools = self._load_local_tools()
         stubs = self._stub_tools()
 
@@ -61,7 +103,14 @@ class MarketplaceRegistry:
         return tools
 
     def get_tool_info(self, tool_id: str) -> MarketplaceTool | None:
-        """Fetch detailed information for a specific tool."""
+        """Fetch detailed information for a specific tool.
+
+        Args:
+            tool_id (str): Unique tool identifier.
+
+        Returns:
+            MarketplaceTool | None: Matching MarketplaceTool if found, else None.
+        """
         tools = self.discover_tools()
         for t in tools:
             if t.id == tool_id:
@@ -69,7 +118,14 @@ class MarketplaceRegistry:
         return None
 
     def publish_tool(self, tool: MarketplaceTool) -> bool:
-        """Publish a new tool to the marketplace registry (and save locally)."""
+        """Publish a new tool to the marketplace registry (and save locally).
+
+        Args:
+            tool (MarketplaceTool): MarketplaceTool object to publish.
+
+        Returns:
+            bool: True if publication succeeded; False otherwise.
+        """
         try:
             _log.info("Publishing tool %s to %s", tool.id, self.base_url)
             target_dir = self.local_dir / tool.id
@@ -84,6 +140,11 @@ class MarketplaceRegistry:
             return False
 
     def _load_local_tools(self) -> list[MarketplaceTool]:
+        """Load locally stored marketplace tools from local directory.
+
+        Returns:
+            list[MarketplaceTool]: List of tools loaded from disk.
+        """
         tools = []
         if not self.local_dir.exists():
             return tools
@@ -101,6 +162,11 @@ class MarketplaceRegistry:
         return tools
 
     def _stub_tools(self) -> list[MarketplaceTool]:
+        """Return pre-defined stub MarketplaceTool instances.
+
+        Returns:
+            list[MarketplaceTool]: List of default built-in stub tools.
+        """
         return [
             MarketplaceTool(
                 id="slack-notifier",
@@ -127,3 +193,4 @@ class MarketplaceRegistry:
                 install_command="pip install cherenkov-mcp-jira",
             ),
         ]
+

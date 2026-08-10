@@ -1,3 +1,4 @@
+"""FastAPI dependency for extracting organization context from JWT claims."""
 from typing import Annotated
 
 from fastapi import Depends
@@ -12,7 +13,14 @@ log = get_logger(__name__)
 def get_current_org(
     creds: HTTPAuthorizationCredentials | None = Depends(_bearer)
 ) -> str:
-    """Extract organization_id from JWT claims."""
+    """Extract organization_id from JWT claims.
+
+    Args:
+        creds: HTTPAuthorizationCredentials object extracted from Bearer header.
+
+    Returns:
+        Organization ID string (defaults to 'default' if unauthenticated or missing).
+    """
     if not _auth_enabled() or not creds:
         return "default"
     

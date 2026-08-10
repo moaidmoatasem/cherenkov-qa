@@ -26,7 +26,14 @@ def _get_github_token() -> str:
 
 
 def format_coverage_comment(coverage: dict[str, Any]) -> str:
-    """Render a spec coverage map as a concise GitHub markdown comment."""
+    """Render a spec coverage map as a concise GitHub markdown comment.
+
+    Args:
+        coverage: Coverage map dictionary from build_coverage_map.
+
+    Returns:
+        Formatted markdown comment string.
+    """
     pct = coverage.get("coveragePct", 0.0)
     tested = coverage.get("testedCount", 0)
     total = coverage.get("totalEndpoints", 0)
@@ -77,7 +84,11 @@ def format_coverage_comment(coverage: dict[str, Any]) -> str:
 
 
 def build_comment_body() -> str:
-    """Compute the coverage map and format it as a PR comment body."""
+    """Compute the coverage map and format it as a PR comment body.
+
+    Returns:
+        Formatted PR comment markdown string.
+    """
     summary = coverage_service.build_coverage_map()
     return format_coverage_comment(summary)
 
@@ -89,13 +100,28 @@ class GitHubClient:
     """
 
     def __init__(self, token: str | None = None, base_url: str = _GITHUB_API):
+        """Initialize GitHubClient with personal token and base API URL.
+
+        Args:
+            token: Optional GitHub Personal Access Token string.
+            base_url: Base GitHub API URL string.
+        """
         self._token = token or _get_github_token()
         self._base_url = base_url.rstrip("/")
 
     def post_pr_comment(self, repo: str, pr_number: int, body: str) -> dict[str, Any]:
         """Post (or update) a comment on a pull request.
 
-        Returns the GitHub API response JSON. Raises a runtime error on failure.
+        Args:
+            repo: Target repository full name (e.g. 'org/repo').
+            pr_number: Pull request issue number integer.
+            body: Comment markdown text body.
+
+        Returns:
+            GitHub API response JSON dictionary.
+
+        Raises:
+            RuntimeError: If GITHUB_TOKEN is missing or HTTP request fails.
         """
         import requests
 
@@ -114,12 +140,27 @@ class GitHubClient:
 
 
 def post_coverage_comment(repo: str, pr_number: int) -> dict[str, Any]:
-    """Convenience: compute the coverage map + post a formatted comment."""
+    """Convenience: compute the coverage map + post a formatted comment.
+
+    Args:
+        repo: Repository identifier string.
+        pr_number: Pull request number.
+
+    Returns:
+        GitHub API response dictionary.
+    """
     client = GitHubClient()
     body = build_comment_body()
     return client.post_pr_comment(repo, pr_number, body)
 
 
 def should_comment(action: str) -> bool:
-    """Whether a given pull_request action should trigger a coverage comment."""
+    """Whether a given pull_request action should trigger a coverage comment.
+
+    Args:
+        action: GitHub pull_request event action string.
+
+    Returns:
+        True if action should trigger comment posting, False otherwise.
+    """
     return action in {"opened", "ready_for_review", "synchronize", "reopened"}

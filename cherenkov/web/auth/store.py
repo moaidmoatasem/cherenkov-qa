@@ -41,7 +41,14 @@ def _verify_password(password: str, stored: str) -> bool:
 
 
 class UserStore:
+    """SQLite-backed user storage manager handling user credentials, roles, and status."""
+
     def __init__(self, db_path: Path | None = None):
+        """Initialize UserStore instance with optional custom database path.
+
+        Args:
+            db_path: Optional Path object to SQLite database file.
+        """
         self._path = db_path or _db_path()
         self._lock = threading.Lock()
         self._init_db()
@@ -71,12 +78,28 @@ class UserStore:
             conn.commit()
 
     def count(self) -> int:
+        """Count total registered users.
+
+        Returns:
+            Total count integer of users in database.
+        """
         with self._lock, self._connect() as conn:
             return conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
 
     def create(
         self, username: str, password: str, role: Role = Role.viewer, organization_id: str = "default"
     ) -> User:
+        """Create a new user record.
+
+        Args:
+            username: Unique username string.
+            password: Raw plaintext password string.
+            role: Target Role enum member.
+            organization_id: Target organization ID string.
+
+        Returns:
+            Created User domain object.
+        """
         hashed = _hash_password(password)
         with self._lock, self._connect() as conn:
             conn.execute(
@@ -87,6 +110,14 @@ class UserStore:
         return User(username=username, role=role, organization_id=organization_id)
 
     def get(self, username: str) -> UserInDB | None:
+        """Retrieve user record including password hash.
+
+        Args:
+            username: Target username string.
+
+        Returns:
+            UserInDB instance if found, or None.
+        """
         with self._lock, self._connect() as conn:
             row = conn.execute(
                 "SELECT * FROM users WHERE username = ?", (username,)
@@ -102,6 +133,15 @@ class UserStore:
         )
 
     def authenticate(self, username: str, password: str) -> User | None:
+        """Authenticate user credentials against stored hash.
+
+        Args:
+            username: Target username string.
+            password: Input password string to verify.
+
+        Returns:
+            User object if credentials valid and user enabled, or None.
+        """
         user = self.get(username)
         if not user or user.disabled:
             return None
@@ -110,11 +150,25 @@ class UserStore:
         return User(username=user.username, role=user.role, organization_id=user.organization_id)
 
     def list_users(self) -> list[User]:
+        """List all users without password hashes.
+
+        Returns:
+            List of User objects.
+        """
         with self._lock, self._connect() as conn:
             rows = conn.execute("SELECT username, role, disabled, organization_id FROM users").fetchall()
         return [User(username=r["username"], role=Role(r["role"]), disabled=bool(r["disabled"]), organization_id=r["organization_id"]) for r in rows]
 
     def set_disabled(self, username: str, disabled: bool) -> bool:
+        """Set user disabled flag.
+
+        Args:
+            username: Target username string.
+            disabled: Boolean indicating disabled state.
+
+        Returns:
+            True if user record updated, False if user not found.
+        """
         with self._lock, self._connect() as conn:
             cur = conn.execute(
                 "UPDATE users SET disabled = ? WHERE username = ?",
@@ -129,6 +183,11 @@ _store_lock = threading.Lock()
 
 
 def get_user_store() -> UserStore:
+    """Get the global UserStore singleton instance.
+
+    Returns:
+        The module-level UserStore instance.
+    """
     global _store
     if _store is None:
         with _store_lock:

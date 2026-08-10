@@ -1,3 +1,4 @@
+"""Health monitoring and metrics API endpoints."""
 from __future__ import annotations
 
 import json
@@ -16,12 +17,21 @@ router = APIRouter()
 
 @router.get("/health")
 async def health():
-    """Minimal liveness probe — always 200 while the process is up."""
+    """Minimal liveness probe — always 200 while the process is up.
+
+    Returns:
+        JSON Response indicating ok status.
+    """
     return Response(content='{"status":"ok"}', status_code=200, media_type="application/json")
 
 
 @router.get("/healthz")
 async def healthz():
+    """Detailed healthz readiness probe.
+
+    Returns:
+        JSON Response indicating system health status level and checks.
+    """
     degradation = get_degradation()
     status_code = (
         200 if degradation.health.level.value in ("healthy", "degraded") else 503
@@ -42,6 +52,11 @@ async def healthz():
 
 @router.get("/metrics")
 async def metrics():
+    """Prometheus-formatted metrics endpoint.
+
+    Returns:
+        Text response containing Prometheus gauge and counter metrics.
+    """
     degradation = get_degradation()
     h = degradation.health
     lines = [
@@ -65,9 +80,22 @@ async def metrics():
 
 @router.get("/api/v1/health/detail")
 async def health_detail():
+    """Detailed health check breakdown API.
+
+    Returns:
+        Dictionary of health subsystem check details.
+    """
     degradation = get_degradation()
     return degradation.health.to_dict()
 
 
 def json_dumps(data: dict[str, Any]) -> str:
+    """Serialize dictionary payload to JSON string.
+
+    Args:
+        data: Dictionary payload to serialize.
+
+    Returns:
+        JSON string representation.
+    """
     return json.dumps(data)

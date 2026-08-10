@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class RejectionReason:
+    """Standard enumeration of rejection reason codes for feedback processing."""
+
     INTENDED_CHANGE = "intended_change"
     TOO_NOISY = "too_noisy"
     WRONG_ASSERTION = "wrong_assertion"
@@ -24,11 +26,18 @@ class RejectionReason:
 
     @classmethod
     def choices(cls) -> list[str]:
+        """Return list of valid rejection reason strings.
+
+        Returns:
+            list[str]: List of valid choice strings.
+        """
         return [cls.INTENDED_CHANGE, cls.TOO_NOISY, cls.WRONG_ASSERTION, cls.ENV_ISSUE, cls.OTHER]
 
 
 @dataclass
 class FeedbackEntry:
+    """Feedback entry record for an approved or rejected HITL item."""
+
     hitl_item_id: str
     action: str  # "reject" or "approve"
     reason: str | None = None
@@ -36,7 +45,14 @@ class FeedbackEntry:
 
 
 class FeedbackStore:
+    """JSON-backed persistent store for HITL user feedback entries."""
+
     def __init__(self, store_path: str | Path = ".cherenkov/feedback.json"):
+        """Initialize FeedbackStore.
+
+        Args:
+            store_path (str | Path, optional): Path to JSON feedback storage file. Defaults to ".cherenkov/feedback.json".
+        """
         self.store_path = Path(store_path)
         self.store_path.parent.mkdir(parents=True, exist_ok=True)
         if not self.store_path.exists():
@@ -44,6 +60,14 @@ class FeedbackStore:
                 json.dump([], f)
 
     def record_feedback(self, entry: FeedbackEntry) -> None:
+        """Record a new feedback entry to disk.
+
+        Args:
+            entry (FeedbackEntry): Feedback entry data object.
+
+        Returns:
+            None
+        """
         try:
             with open(self.store_path, encoding="utf-8") as f:
                 data = json.load(f)
@@ -60,6 +84,11 @@ class FeedbackStore:
             logger.error("Failed to record feedback: %s", e)
 
     def get_all(self) -> list[FeedbackEntry]:
+        """Retrieve all recorded feedback entries.
+
+        Returns:
+            list[FeedbackEntry]: List of feedback entry instances.
+        """
         try:
             if not self.store_path.exists():
                 return []
@@ -69,3 +98,4 @@ class FeedbackStore:
         except Exception as e:
             logger.error("Failed to read feedback store: %s", e)
             return []
+

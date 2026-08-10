@@ -1,24 +1,24 @@
-# Orchestrator Progress
+# Orchestrator Progress — Documentation Coverage Mission
 
 ## Current Status
-Last visited: 2026-08-02T10:23:25Z
+Last visited: 2026-08-10T20:06:40Z
 
 ## Iteration Status
 Current iteration: 2 / 32
 
 ## Checklist
-- [x] Initialized workspace state (`ORIGINAL_REQUEST.md`, `BRIEFING.md`, `progress.md`)
-- [x] Schedule heartbeat cron (task-9)
-- [x] Dispatch 5 parallel Explorer subagents for Subsystem Audits
-  - [x] Track 1: Core CLI & Engine & Clean Architecture (Conv: 7d192a39) — COMPLETED
-  - [x] Track 2: Second Brain & Memory Subsystem (Conv: b88dea28) — COMPLETED
-  - [x] Track 3: MCP Server & Hooks Subsystem (Conv: 3fd98973) — COMPLETED
-  - [x] Track 4: Conductor, Agents & VLM Subsystem (Conv: 6a205ad7) — COMPLETED
-  - [x] Track 5: Desktop Host & Dashboard UI Subsystem (Conv: cec5932f) — COMPLETED
-- [x] Aggregate Explorer audit reports
-- [x] Dispatch Worker subagent (`d5eab424`) to produce `comprehensive_architecture_review.md` — COMPLETED
-- [x] Dispatch Reviewer (`a6d71d82`) & Forensic Auditor (`94c23d73`) subagents for verification — AUDIT VETO (2 symbol discrepancies)
-- [x] Dispatch Remediation Worker (`73a47341`) to fix symbol discrepancies — COMPLETED
-- [/] Dispatch fresh Forensic Auditor (`1e520c5d`) to re-verify deliverable
-- [ ] Verify audit deliverable against criteria
-- [ ] Write `handoff.md` and complete task
+- [x] Initialized workspace state (`DISPATCH.md`, `ORIGINAL_REQUEST.md`, `BRIEFING.md`, `progress.md`)
+- [x] Schedule heartbeat cron (task-31)
+- [x] M1: Dispatch 3 parallel Explorers for initial survey
+  - [x] Explorer 1: Python source code docstring inventory (Conv: 90999a96) — COMPLETED
+  - [x] Explorer 2: Go source code docstring inventory & `docs/` Markdown placeholder/link inventory (Conv: 944c53b1) — COMPLETED
+  - [x] Explorer 3: Verification script & tooling infrastructure assessment (Conv: f1d1c7ef) — COMPLETED
+- [x] Aggregate Explorer reports into `PROJECT.md`
+- [x] M4: Automated verification scripts (`check_docstrings.py`, `check_docs_markdown.py`) (Conv: 73dfbef2) — COMPLETED (Commit 88f04131)
+- [/] M3: User-Facing `docs/` Markdown resolution (Conv: 4a31cf8d) — IN_PROGRESS
+- [/] M2: Source code docstrings remediation (Python & Go)
+  - [/] Python Group A (Conv: 235517f9) — IN_PROGRESS
+  - [/] Python Group B (Conv: 1ec1e23f) — IN_PROGRESS
+  - [/] Python Group C (Conv: 359659f8) — IN_PROGRESS
+- [ ] M5: Review, Challenge, Forensic Integrity Audit & Git Commit/Push Proof of Work
+- [ ] Write `handoff.md` and claim victory

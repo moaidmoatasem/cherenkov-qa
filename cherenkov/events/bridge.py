@@ -38,7 +38,16 @@ _ERROR_NAMES: frozenset[str] = frozenset({"pipeline_complete"})
 def to_cherenkov_event(
     name: str, data: dict[str, Any], *, run_id: str = ""
 ) -> CHERENKOVEvent:
-    """Map an orchestrator (name, data) event to a CHERENKOVEvent."""
+    """Map an orchestrator (name, data) event to a CHERENKOVEvent.
+
+    Args:
+        name (str): Orchestrator event name (e.g. stage_start, pipeline_complete).
+        data (dict[str, Any]): Event payload data dictionary.
+        run_id (str, optional): Correlation ID for the pipeline run. Defaults to "".
+
+    Returns:
+        CHERENKOVEvent: Constructed domain event ready for bus publishing.
+    """
     category = _ORCHESTRATOR_EVENT_CATEGORY.get(name, EventCategory.PIPELINE)
     payload = dict(data or {})
     success = payload.get("success", True)
@@ -62,6 +71,14 @@ def publish(name: str, data: dict[str, Any], *, run_id: str = "") -> None:
 
     Never raises — bus failures are logged at DEBUG so pipeline runs are
     not affected by telemetry problems.
+
+    Args:
+        name (str): Orchestrator event name.
+        data (dict[str, Any]): Event payload data dictionary.
+        run_id (str, optional): Correlation ID for the pipeline run. Defaults to "".
+
+    Returns:
+        None
     """
     try:
         get_event_bus().publish(to_cherenkov_event(name, data, run_id=run_id))

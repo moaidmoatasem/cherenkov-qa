@@ -10,9 +10,9 @@
 
 **Date:** 2026-06-08 (consolidated plan) · **Status:** Authoritative for *what's next* (supersedes the disputed
 [ROADMAP_RECONCILIATION.md](ROADMAP_RECONCILIATION.md) for forward planning). Pairs with
-[HANDOVER.md](HANDOVER.md) (status), [SCOPE_LEDGER.md](SCOPE_LEDGER.md) (scope),
-[PHASE_PLAN.md](PHASE_PLAN.md) (consolidated plan), and
-[process/VALIDATION_EVIDENCE_LEDGER.md](process/VALIDATION_EVIDENCE_LEDGER.md) (the gate).
+[HANDOVER.md](../HANDOVER.md) (status), [SCOPE_LEDGER.md](../SCOPE_LEDGER.md) (scope),
+[PHASE_PLAN.md](../PHASE_PLAN.md) (consolidated plan), and
+[../../process/VALIDATION_EVIDENCE_LEDGER.md](../../process/VALIDATION_EVIDENCE_LEDGER.md) (the gate).
 
 ---
 
@@ -22,8 +22,8 @@ Where we actually stand against the phases below. Anchored to closed GitHub issu
 
 | Phase | State | Evidence |
 |-------|-------|----------|
-| **Phase -1 — Planning & Preparation** | ✅ **Complete** | All 6 ADRs written (#290-#295), all strategy docs created (#296-#300), all CI/CD workflows defined (#301-#303). See [PHASE_PLAN.md](PHASE_PLAN.md). |
-| **Phase 0a — P0 Bug Fixes** | ✅ **Complete** | All 8 P0 bugs documented in issues #304-#312. See [PHASE_PLAN.md](PHASE_PLAN.md). |
+| **Phase -1 — Planning & Preparation** | ✅ **Complete** | All 6 ADRs written (#290-#295), all strategy docs created (#296-#300), all CI/CD workflows defined (#301-#303). See [PHASE_PLAN.md](../PHASE_PLAN.md). |
+| **Phase 0a — P0 Bug Fixes** | ✅ **Complete** | All 8 P0 bugs documented in issues #304-#312. See [PHASE_PLAN.md](../PHASE_PLAN.md). |
 | **Phase 0b — Foundations** | ✅ **Complete** | Ports, events, devices, config, Docker Compose AI. Merged PR #393, #394. 66 assertions across 10 modules. |
 | **Phase 1 — Second Brain** | ✅ **Complete** | Knowledge mesh, GraphRAG, event bridges. Merged PR #395. 20 files, 38 tests. |
 | **Phase 2 — VLM + LocalAI** | ✅ **Complete** | LocalAI adapter, tier-aware routing, doctor CLI. Merged PR #396. 6 files, 29 tests. |
@@ -35,17 +35,17 @@ Where we actually stand against the phases below. Anchored to closed GitHub issu
 | **Phase 8 — K8s + Cloud + Gate** | 🔶 **In Progress** | SECURITY.md added (#404). Remaining: #386-#388 (needs k3d), #390 (gate), #391 (docs). |
 
 **Headline:** The consolidated plan (Phase -1 through Phase 8) is the authoritative roadmap.
-All phases are tracked in GitHub issues (#277-#391). See [PHASE_PLAN.md](PHASE_PLAN.md) for
+All phases are tracked in GitHub issues (#277-#391). See [PHASE_PLAN.md](../PHASE_PLAN.md) for
 detailed tickets, integration plans, parallel track layout, and agent guidance.
 
 **Validation gate:** PASSED per owner decision (2026-06-08). Evidence collection continues for
-attributable QA reviews. See [HANDOVER.md §5](HANDOVER.md) for details.
+attributable QA reviews. See [HANDOVER.md §5](../HANDOVER.md) for details.
 
 ---
 
 ## 1. Strategy in one paragraph
 
-The consolidated plan (see [PHASE_PLAN.md](PHASE_PLAN.md)) extends CHERENKOV with 5 new
+The consolidated plan (see [PHASE_PLAN.md](../PHASE_PLAN.md)) extends CHERENKOV with 5 new
 capabilities: Second Brain (knowledge mesh), VLM + LocalAI (tier-aware routing), Desktop Host
 (Tauri 2, hardware detection), Chat Agents (tool-calling), and Mobile Testing (Maestro/Appium).
 All new modules follow Clean Architecture (Ports/Adapters) per ADR-004. The plan covers 10 phases
@@ -103,7 +103,7 @@ Principles:
 
 ## 4. Roadmap phases (Consolidated Plan)
 
-The consolidated plan covers 10 phases (Phase -1 through Phase 8). See [PHASE_PLAN.md](PHASE_PLAN.md)
+The consolidated plan covers 10 phases (Phase -1 through Phase 8). See [PHASE_PLAN.md](../PHASE_PLAN.md)
 for detailed tickets, integration plans, parallel track layout, and agent guidance.
 
 ### Phase -1 — Planning & Preparation *(Days 1-2, complete)*
@@ -259,9 +259,9 @@ complete a phase, re-verify with raw evidence, then start the next.
 | #326 | Add unit tests for `cherenkov/core/` | P0 | 🔶 |
 | #327 | Add unit tests for `cherenkov/substrate/` | P1 | 🔶 |
 
-### Phase 1-8 — See [PHASE_PLAN.md](PHASE_PLAN.md)
+### Phase 1-8 — See [PHASE_PLAN.md](../PHASE_PLAN.md)
 
-All Phase 1-8 tickets are documented in [PHASE_PLAN.md](PHASE_PLAN.md) with detailed acceptance
+All Phase 1-8 tickets are documented in [PHASE_PLAN.md](../PHASE_PLAN.md) with detailed acceptance
 criteria, file references, D7 checks, and kill criteria. GitHub issues #328-#391 track all tickets.
 
 **Parallel Tracks:**
@@ -272,13 +272,13 @@ criteria, file references, D7 checks, and kill criteria. GitHub issues #328-#391
 - Track E (Dashboard): Phase 7 (after Phase 4 and Phase 6)
 - Track F (K8s): Phase 8 (after Phase 7)
 
-See [PHASE_PLAN.md](PHASE_PLAN.md) for full parallel track layout and integration plan.
+See [PHASE_PLAN.md](../PHASE_PLAN.md) for full parallel track layout and integration plan.
 
 ---
 
 ## 9. Triaged backlog from teammate-agent reviews (2026-06-05)
 
-Three teammate-agent reviews were assessed (archived in [reviews/](reviews/README.md)). Strong
+Three teammate-agent reviews were assessed (archived in [reviews/](../../reviews/README.md)). Strong
 corroboration: one independently recommended a **lightweight local HITL triage UI** — exactly the
 golden-path FE in §2/§3. Triage rule: **validation-first** — adopt what makes the golden path real,
 frictionless, or credible; defer anything that assumes the (still-unpassed) gate.

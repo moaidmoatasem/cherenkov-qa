@@ -27,11 +27,14 @@ from cherenkov.core.errors import CherenkovError
 
 
 class ConfigError(CherenkovError):
+    """Exception raised when configuration parsing or validation fails."""
+
     code = "CONFIG_ERROR"
 
 
 # ── Known key schema ─────────────────────────────────────────────────────
 # Keys the system understands. Unknown keys in cherenkov.toml → explicit error.
+
 
 KNOWN_KEYS: set[str] = {
     "profile",
@@ -227,16 +230,28 @@ class LayeredConfig:
     """
 
     def __init__(self):
+        """Initialize empty LayeredConfig instance."""
         self._store: ConfigStore = {}
         self._errors: list[str] = []
 
     def load_defaults(self):
-        """Layer 1: built-in defaults."""
+        """Layer 1: built-in defaults.
+
+        Returns:
+            None
+        """
         for k, v in BUILTIN_DEFAULTS.items():
             self._set(k, v, "built-in defaults")
 
     def load_profile(self, profile: str | None = None):
-        """Layer 2: profile defaults (if profile is set)."""
+        """Layer 2: profile defaults (if profile is set).
+
+        Args:
+            profile (str | None, optional): Target profile identifier. Defaults to None.
+
+        Returns:
+            None
+        """
         if profile is None or profile not in PROFILE_DEFAULTS:
             return
         for k, v in PROFILE_DEFAULTS[profile].items():
@@ -245,7 +260,11 @@ class LayeredConfig:
     def load_toml(self, path: str | Path | None = None) -> bool:
         """Layer 3: cherenkov.toml.
 
-        Returns True if a config file was loaded.
+        Args:
+            path (str | Path | None, optional): Explicit TOML file path. Defaults to None.
+
+        Returns:
+            bool: True if a config file was loaded, False otherwise.
         """
         if path is None:
             path = self._find_toml()
@@ -283,6 +302,9 @@ class LayeredConfig:
           CHERENKOV_PROFILE               -> profile
           CHERENKOV_MODE                  -> continuity.mode
           CHERENKOV_EGRESS                -> substrate.egress
+
+        Returns:
+            None
         """
         env_map = {
             "CHERENKOV_EGRESS": "substrate.egress",
@@ -301,7 +323,15 @@ class LayeredConfig:
                 self._set(config_key, val, f"env:{env_var}")
 
     def load_cli_override(self, key: str, value: Any):
-        """Layer 5: single CLI flag override."""
+        """Layer 5: single CLI flag override.
+
+        Args:
+            key (str): Target configuration key string.
+            value (Any): Override value.
+
+        Returns:
+            None
+        """
         if key in KNOWN_KEYS:
             self._set(key, value, "cli flag")
         else:
@@ -313,27 +343,60 @@ class LayeredConfig:
         self._store[key].append((source, value))
 
     def get(self, key: str, default: Any = None) -> Any:
-        """Get the highest-precedence value for key."""
+        """Get the highest-precedence value for key.
+
+        Args:
+            key (str): Target configuration key.
+            default (Any, optional): Default value to return if key is absent. Defaults to None.
+
+        Returns:
+            Any: Configured value with highest precedence, or default.
+        """
         if key not in self._store or not self._store[key]:
             return default
         return self._store[key][-1][1]
 
     def get_with_provenance(self, key: str) -> list[EnvValue]:
-        """Get all (source, value) pairs for key, in order low→high precedence."""
+        """Get all (source, value) pairs for key, in order low→high precedence.
+
+        Args:
+            key (str): Target configuration key.
+
+        Returns:
+            list[EnvValue]: List of (source_layer, value) tuples.
+        """
         return self._store.get(key, [])
 
     def all_keys(self) -> set[str]:
+        """Return all keys defined across all loaded configuration layers.
+
+        Returns:
+            set[str]: Set of key names present in store.
+        """
         return set(self._store)
 
     def errors(self) -> list[str]:
+        """Return accumulated configuration parsing or validation errors.
+
+        Returns:
+            list[str]: List of error strings.
+        """
         return self._errors
 
     def to_dict(self) -> dict[str, Any]:
-        """Return the effective (highest-precedence) config as a flat dict."""
+        """Return the effective (highest-precedence) config as a flat dict.
+
+        Returns:
+            dict[str, Any]: Flat key-value dictionary of effective config.
+        """
         return {k: self.get(k) for k in self._store}
 
     def to_nested_dict(self) -> dict[str, Any]:
-        """Return the effective config as a nested dict."""
+        """Return the effective config as a nested dict.
+
+        Returns:
+            dict[str, Any]: Nested dictionary structure of effective config.
+        """
         return _unflatten(self.to_dict())
 
     def _find_toml(self) -> str | None:
@@ -366,7 +429,8 @@ class LayeredConfig:
     def autodetect_profile(self) -> str:
         """Determine the best profile heuristically.
 
-        Returns the profile name (always one of the 4 known profiles).
+        Returns:
+            str: Profile name (always one of the 4 known profiles).
         """
         explicit = self.get("profile")
         if explicit and explicit in PROFILE_DEFAULTS:
@@ -378,6 +442,9 @@ class LayeredConfig:
 
         Searches for common OpenAPI spec filenames.
         Returns paths with forward slashes for cross-platform consistency.
+
+        Returns:
+            list[str]: List of detected relative spec file paths.
         """
         cwd = Path.cwd()
         patterns = [
@@ -407,7 +474,16 @@ def load_effective_config(
     toml_path: str | Path | None = None,
     cli_overrides: dict[str, Any] | None = None,
 ) -> LayeredConfig:
-    """Convenience: load all layers and return the resolved config."""
+    """Convenience: load all layers and return the resolved config.
+
+    Args:
+        profile (str | None, optional): Target profile name. Defaults to None.
+        toml_path (str | Path | None, optional): Custom path to TOML file. Defaults to None.
+        cli_overrides (dict[str, Any] | None, optional): Dictionary of CLI overrides. Defaults to None.
+
+    Returns:
+        LayeredConfig: Resolved layered configuration instance.
+    """
     cfg = LayeredConfig()
     cfg.load_defaults()
 
@@ -427,3 +503,4 @@ def load_effective_config(
             cfg.load_cli_override(k, v)
 
     return cfg
+

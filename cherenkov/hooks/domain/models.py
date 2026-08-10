@@ -44,13 +44,12 @@ class HookStatus(str, Enum):
 class HookConfig:
     """Configuration for a single hook, loaded from cherenkov.toml.
 
-    Example TOML::
-
-        [hooks.post_validate]
-        run = "python scripts/notify_slack.py {report_path}"
-        timeout = 30
-        fail_mode = "warn"
-        env = { SLACK_CHANNEL = "#qa-alerts" }
+    Attributes:
+        event (HookEvent): Named hook event trigger point.
+        run (str): Shell command template string to execute.
+        timeout (int): Maximum execution timeout in seconds. Defaults to 30.
+        fail_mode (FailMode): Action to take on failure (WARN or ABORT). Defaults to FailMode.WARN.
+        env (dict[str, str]): Extra environment variables to pass to hook process.
     """
 
     event: HookEvent
@@ -59,17 +58,18 @@ class HookConfig:
     fail_mode: FailMode = FailMode.WARN
     env: dict[str, str] = field(default_factory=dict)
 
-    # Template variables injected by CHERENKOV at fire time:
-    #   {report_path}  — path to latest report JSON
-    #   {output_dir}   — eject output directory
-    #   {verdict}      — review verdict string
-    #   {endpoint}     — current endpoint
-    #   {spec_path}    — path to OpenAPI spec
-
 
 @dataclass
 class HookContext:
-    """Runtime context injected into hook command templates."""
+    """Runtime context injected into hook command templates.
+
+    Attributes:
+        report_path (str): Path to latest report JSON file. Defaults to "".
+        output_dir (str): Eject output directory path. Defaults to "".
+        verdict (str): Review verdict string. Defaults to "".
+        endpoint (str): Current endpoint being tested. Defaults to "".
+        spec_path (str): Path to OpenAPI specification file. Defaults to "".
+    """
 
     report_path: str = ""
     output_dir: str = ""
@@ -78,6 +78,11 @@ class HookContext:
     spec_path: str = ""
 
     def as_template_vars(self) -> dict[str, str]:
+        """Convert runtime context parameters into a template substitution dictionary.
+
+        Returns:
+            dict[str, str]: Dictionary mapping context field names to string values.
+        """
         return {
             "report_path": self.report_path,
             "output_dir": self.output_dir,
@@ -89,7 +94,19 @@ class HookContext:
 
 @dataclass
 class HookResult:
-    """Result of executing a single hook."""
+    """Result of executing a single hook.
+
+    Attributes:
+        event (HookEvent): Hook event trigger point.
+        status (HookStatus): Execution outcome status enum.
+        command (str): Rendered command string executed.
+        exit_code (int | None): Subprocess exit code, or None if timed out/failed.
+        stdout (str): Captured standard output. Defaults to "".
+        stderr (str): Captured standard error. Defaults to "".
+        duration_ms (int): Execution duration in milliseconds. Defaults to 0.
+        error_message (str): Diagnostic error message if failed. Defaults to "".
+        executed_at (datetime): UTC timestamp when hook was executed.
+    """
 
     event: HookEvent
     status: HookStatus
@@ -103,6 +120,11 @@ class HookResult:
 
     @property
     def success(self) -> bool:
+        """Check if the hook execution status was successful.
+
+        Returns:
+            bool: True if status is HookStatus.SUCCESS, False otherwise.
+        """
         return self.status == HookStatus.SUCCESS
 
 
@@ -110,9 +132,19 @@ class HookAbortError(Exception):
     """Raised when a hook with fail_mode=abort exits non-zero."""
 
     def __init__(self, event: HookEvent, result: HookResult) -> None:
+        """Initialize HookAbortError with the failed event and result object.
+
+        Args:
+            event (HookEvent): The hook event that triggered the abort.
+            result (HookResult): Execution result details for the failed hook.
+
+        Returns:
+            None
+        """
         self.event = event
         self.result = result
         super().__init__(
             f"Hook {event.value!r} aborted pipeline: exit_code={result.exit_code} "
             f"stderr={result.stderr!r}"
         )
+

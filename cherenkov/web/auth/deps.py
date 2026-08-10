@@ -19,7 +19,17 @@ def _auth_enabled() -> bool:
 async def get_current_user(
     creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
 ) -> User | None:
-    """Return the authenticated User, or None if auth is disabled."""
+    """Return the authenticated User, or None if auth is disabled.
+
+    Args:
+        creds: HTTPAuthorizationCredentials object extracted from Bearer header.
+
+    Returns:
+        User object representing current authenticated user, or None if auth is disabled.
+
+    Raises:
+        HTTPException: 401 Unauthorized if token is missing, invalid, or user is disabled.
+    """
     if not _auth_enabled():
         return None
     if not creds:
@@ -43,7 +53,14 @@ async def get_current_user(
 
 
 def require_role(minimum: Role):
-    """Dependency factory — raises 403 if the caller's role is below `minimum`."""
+    """Dependency factory — raises 403 if the caller's role is below `minimum`.
+
+    Args:
+        minimum: Minimum required Role enum level.
+
+    Returns:
+        FastAPI async dependency function verifying user role and organization.
+    """
     async def _check(user: User | None = Depends(get_current_user)) -> User | None:
         if not _auth_enabled():
             return user

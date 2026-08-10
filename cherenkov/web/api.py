@@ -29,6 +29,15 @@ app = FastAPI(
 
 @app.middleware("http")
 async def extract_org_id_middleware(request: Request, call_next):
+    """Extract organization ID from authorization token and attach to request context.
+
+    Args:
+        request: Starlette/FastAPI Request object.
+        call_next: Downstream request handler.
+
+    Returns:
+        Response object returned from downstream middleware/route.
+    """
     org_id = "default"
     auth_header = request.headers.get("Authorization")
     if auth_header and auth_header.startswith("Bearer "):
@@ -52,7 +61,11 @@ async def ws_live(websocket: WebSocket):
     """Live pipeline event stream. The broadcaster (ConnectionManager in
     deps.py) and every emitter (orchestrator._emit_event via
     ops_routes.ws_event_callback) already existed; this endpoint was the
-    missing piece connecting client sockets to that broadcaster."""
+    missing piece connecting client sockets to that broadcaster.
+
+    Args:
+        websocket: Starlette WebSocket client connection instance.
+    """
     await manager.connect(websocket)
     try:
         while True:

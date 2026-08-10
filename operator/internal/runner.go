@@ -1,3 +1,4 @@
+// Package internal provides job execution and scheduling mechanisms for the CHERENKOV operator.
 package internal
 
 import (
@@ -14,14 +15,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// JobRunner manages the creation and deletion of Kubernetes validation Jobs for ConformanceCheck resources.
 type JobRunner struct {
 	client client.Client
 }
 
+// NewJobRunner creates a new JobRunner instance with the provided controller-runtime client.
 func NewJobRunner(c client.Client) *JobRunner {
 	return &JobRunner{client: c}
 }
 
+// CreateValidateJob constructs and submits a Kubernetes batch Job for validating a target service.
 func (r *JobRunner) CreateValidateJob(
 	ctx context.Context,
 	name, namespace, targetService string,
@@ -125,6 +129,7 @@ func (r *JobRunner) CreateValidateJob(
 	return r.client.Create(ctx, job)
 }
 
+// DeleteValidateJob deletes the Kubernetes batch Job associated with a ConformanceCheck.
 func (r *JobRunner) DeleteValidateJob(ctx context.Context, name, namespace string) error {
 	job := &batchv1.Job{}
 	err := r.client.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("validate-%s", name), Namespace: namespace}, job)

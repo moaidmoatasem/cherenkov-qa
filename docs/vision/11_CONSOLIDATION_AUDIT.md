@@ -43,7 +43,7 @@ named, not buried. Per `AGENTS.md`: raw evidence, never claims.
 | Finding | Evidence | Ticket |
 |---|---|---|
 | **Perf LLM metrics are simulated** — TTFT/ITL/cost are `hash()`-derived, not measured. C3/#118 was hollow. | `stages/perf/perf_stage.py:271-278` ("return simulated values to demonstrate the concept") | **#157** (P1) |
-| **Copilot drops unsupported NL-intent actions into `// TODO`** in generated artifacts (silent coverage loss). | `copilot/intent.py:212` | **#158** (P2) |
+| **Copilot drops unsupported NL-intent actions into stub comments** in generated artifacts (silent coverage loss). | `copilot/intent.py:212` | **#158** (P2) |
 | **Stale `develop` branch** (0 ahead / 57 behind) + 59 root test files. | `git rev-list`, repo root | **#159** (hygiene) |
 
 These are **true-up** items: the feature was claimed done, the substance needs finishing or honest down-scoping. None block the green base.

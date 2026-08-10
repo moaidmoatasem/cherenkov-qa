@@ -31,7 +31,18 @@ class SubprocessHookExecutor:
     def execute(self, config: HookConfig, context: HookContext) -> HookResult:
         """Run config.run as a shell command, returning a HookResult.
 
-        Raises HookAbortError if fail_mode=abort and command fails.
+        Renders template variables into the command, launches a subprocess,
+        monitors timeout, and handles failure according to config.fail_mode.
+
+        Args:
+            config (HookConfig): Hook configuration specifying event, command, timeout, and fail mode.
+            context (HookContext): Runtime context specifying values for template substitution.
+
+        Returns:
+            HookResult: Result containing status, exit code, stdout, stderr, and execution duration.
+
+        Raises:
+            HookAbortError: If fail_mode is FailMode.ABORT and hook command fails or times out.
         """
         # Render template variables into the command string.
         # shlex.quote() prevents shell metacharacters in substituted values
@@ -124,7 +135,18 @@ class SubprocessHookExecutor:
 
     @staticmethod
     def _handle_failure(config: HookConfig, result: HookResult) -> HookResult:
-        """Apply fail_mode policy to a non-success result."""
+        """Apply fail_mode policy to a non-success result.
+
+        Args:
+            config (HookConfig): Hook configuration specifying fail mode.
+            result (HookResult): Result of the failed hook execution.
+
+        Returns:
+            HookResult: The result object if fail_mode is FailMode.WARN.
+
+        Raises:
+            HookAbortError: If config.fail_mode is FailMode.ABORT.
+        """
         if config.fail_mode == FailMode.ABORT:
             raise HookAbortError(config.event, result)
         # FailMode.WARN — return the result; caller logs the warning
@@ -132,5 +154,10 @@ class SubprocessHookExecutor:
 
 
 def _current_env() -> dict[str, str]:
-    """Return a copy of the current process environment."""
+    """Return a copy of the current process environment variables.
+
+    Returns:
+        dict[str, str]: Copy of os.environ as a key-value dictionary.
+    """
     return dict(os.environ)
+

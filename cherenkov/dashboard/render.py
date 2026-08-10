@@ -24,6 +24,12 @@ def render_truth_model(model: TruthModel | None = None) -> str:
     """Render the Truth Model claim graph.
 
     If no model is provided, renders mock data.
+
+    Args:
+        model: Optional TruthModel instance containing claim graph data.
+
+    Returns:
+        Formatted ASCII string representation of the claim graph.
     """
     if model is None:
         return _render_mock_truth_model()
@@ -52,6 +58,12 @@ def render_divergences(reports: list[DivergenceReport] | None = None) -> str:
     """Render divergence reports.
 
     If no reports are provided, renders mock data.
+
+    Args:
+        reports: Optional list of DivergenceReport instances to render.
+
+    Returns:
+        Formatted string listing active divergence reports.
     """
     if reports is None:
         return _render_mock_divergences()
@@ -75,7 +87,15 @@ def render_divergences(reports: list[DivergenceReport] | None = None) -> str:
 def render_dashboard(
     model: TruthModel | None = None, reports: list[DivergenceReport] | None = None
 ) -> str:
-    """Render the full dashboard: Truth Model + divergences."""
+    """Render the full dashboard: Truth Model + divergences.
+
+    Args:
+        model: Optional TruthModel instance containing endpoint claim graphs.
+        reports: Optional list of active DivergenceReport objects.
+
+    Returns:
+        Complete formatted CLI dashboard view string.
+    """
     parts = [
         "+" + "=" * 78 + "+",
         "|  CHERENKOV DASHBOARD -- Truth Model + Live Divergences         |",
@@ -110,7 +130,8 @@ def render_dashboard(
 def run_dashboard() -> int:
     """Execute the dashboard command.
 
-    Returns exit code (0 = success).
+    Returns:
+        Exit code integer (0 for success).
     """
     from cherenkov.governance.kpi import GovernanceCollector
 

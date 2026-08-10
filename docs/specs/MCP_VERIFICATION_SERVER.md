@@ -1,7 +1,7 @@
 # Spec — CHERENKOV MCP Verification Server
 
-> **Status:** DRAFT (design-ready, build-gated on G0). Owner: TBD.
-> **Why:** the highest-leverage interoperability bet — make CHERENKOV the *verify* step every coding agent reaches for before claiming "done." See [../NORTH_STAR.md](../NORTH_STAR.md) §6, [../ROADMAP_AQE.md](../ROADMAP_AQE.md) E2.1.
+> **Status:** DRAFT (design-ready, build-gated on G0). Owner: CHERENKOV Core Engineering Team (#340).
+> **Why:** the highest-leverage interoperability bet — make CHERENKOV the *verify* step every coding agent reaches for before claiming "done." See [../NORTH_STAR.md](../NORTH_STAR.md) §6, [../PRODUCT_STRATEGY_ROADMAP.md](../PRODUCT_STRATEGY_ROADMAP.md) E2.1.
 > **Date:** 2026-06-16
 
 ## 1. Goal

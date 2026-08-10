@@ -1,3 +1,5 @@
+"""Authentication package for CHERENKOV web API including JWT, roles, and dependencies."""
+
 from cherenkov.web.auth.deps import get_current_user, require_role
 from cherenkov.web.auth.models import Role, TokenResponse, User
 

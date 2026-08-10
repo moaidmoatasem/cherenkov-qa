@@ -14,17 +14,20 @@ from typing import Any
 
 
 class PlatformName(str, Enum):
+    """Supported mobile platforms (Android, iOS)."""
     ANDROID = "android"
     IOS = "ios"
 
 
 class DeviceKind(str, Enum):
+    """Mobile device categories (emulator, simulator, real device)."""
     EMULATOR = "emulator"
     SIMULATOR = "simulator"
     REAL = "real"
 
 
 class DeviceState(str, Enum):
+    """Status state of a mobile device connected to host."""
     ONLINE = "online"
     OFFLINE = "offline"
     BOOTING = "booting"
@@ -33,6 +36,7 @@ class DeviceState(str, Enum):
 
 
 class MobileSessionStatus(str, Enum):
+    """Lifecycle states of a mobile automation test session."""
     IDLE = "idle"
     CLAIMED = "claimed"
     RUNNING = "running"
@@ -52,6 +56,7 @@ class MobileLocatorStrategy(str, Enum):
 
 @dataclass
 class DeviceInfo:
+    """Metadata describing a mobile device target."""
     device_id: str
     platform: PlatformName
     kind: DeviceKind
@@ -61,6 +66,11 @@ class DeviceInfo:
     api_level: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """Convert DeviceInfo instance to a serializable dictionary.
+
+        Returns:
+            Dictionary containing device attribute key-value pairs.
+        """
         return {
             "device_id": self.device_id,
             "platform": self.platform.value,
@@ -74,6 +84,7 @@ class DeviceInfo:
 
 @dataclass
 class MobileSession:
+    """Active test session bound to a specific mobile device."""
     session_id: str
     device: DeviceInfo
     status: MobileSessionStatus = MobileSessionStatus.IDLE
@@ -84,6 +95,11 @@ class MobileSession:
     error: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """Convert MobileSession instance to a serializable dictionary.
+
+        Returns:
+            Dictionary containing session state, steps, and device information.
+        """
         return {
             "session_id": self.session_id,
             "device": self.device.to_dict(),

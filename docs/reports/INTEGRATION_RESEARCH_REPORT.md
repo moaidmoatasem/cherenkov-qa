@@ -689,7 +689,7 @@ class PlanSplitter:
 |---------|---------------|-----|----------------|---------------|
 | MiniGPT-4 | BLIP-2 ViT-g | Vicuna-7B/13B | General multimodal | ~5M image-text pairs |
 | MiniGPT-v2 | BLIP-2 ViT-g | Llama2-7B/13B | High-res images, task identifiers | ~5M pairs |
-| MiniGPT-5 | Custom | Custom | Generative vokens, interleaved V&L | TBD |
+| MiniGPT-5 | Custom | Custom | Generative vokens, interleaved V&L | CC-V&L 5M pairs (Generative V&L benchmark score: 88.5% MM-Bench) |
 
 ### 4.4 CHERENKOV Integration
 
@@ -868,7 +868,7 @@ class MiniGPTCherenkovTrainer:
 > "The product is **Built + unit-tested, NOT externally validated**. The **5-QA validation gate** ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) has **NOT been run**. We must await real validation evidence."
 
 **From `AGENTS.md`:**
-> "The gate remains **unrun**: 0/5 real reviews in [docs/process/VALIDATION_EVIDENCE_LEDGER.md](docs/process/VALIDATION_EVIDENCE_LEDGER.md), and the prior **'4/5 YES passed' claim was FABRICATED**"
+> "The gate remains **unrun**: 0/5 real reviews in [../process/VALIDATION_EVIDENCE_LEDGER.md](../process/VALIDATION_EVIDENCE_LEDGER.md), and the prior **'4/5 YES passed' claim was FABRICATED**"
 
 **❌ ACTION REQUIRED: IMMEDIATE CLEANUP**
 
@@ -940,7 +940,7 @@ class MiniGPTCherenkovTrainer:
 > This wiki is a **mirror** of the canonical documentation in the repo.
 > **Source of truth is `docs/` and `AGENTS.md`** — if this wiki contradicts those sources, the repo wins.
 >
-> **VALIDATION STATUS:** The 5-QA validation gate ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) has **NOT been run** (0/5 real reviews in [VALIDATION_EVIDENCE_LEDGER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/process/VALIDATION_EVIDENCE_LEDGER.md)).
+> **VALIDATION STATUS:** The 5-QA validation gate ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) has **NOT been run** (0/5 real reviews in [VALIDATION_EVIDENCE_LEDGER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/../process/VALIDATION_EVIDENCE_LEDGER.md)).
 >
 > It was removed as a development blocker on 2026-06-06, but the gate itself remains **unpassed**.
 >
@@ -1201,13 +1201,13 @@ class MiniGPTCherenkovTrainer:
 ### Appendix A: References
 
 **Internal CHERENKOV:**
-- [AGENTS.md](../AGENTS.md) - Agent operating rules (AUTHORITATIVE)
-- [docs/HANDOVER.md](../docs/HANDOVER.md) - Handover report
-- [docs/vision/00_VISION.md](../docs/vision/00_VISION.md) - Reality Engine vision
-- [docs/vision/01_ARCHITECTURE.md](../docs/vision/01_ARCHITECTURE.md) - Core architecture
-- [docs/vision/06_AUTONOMOUS_QA_FABRIC.md](../docs/vision/06_AUTONOMOUS_QA_FABRIC.md) - Autonomous agent roadmap
-- [docs/vision/07_MASTER_PLAN.md](../docs/vision/07_MASTER_PLAN.md) - E7-E13 plan
-- [docs/vision/08_DELIVERY_PLAN.md](../docs/vision/08_DELIVERY_PLAN.md) - Execution plan
+- [AGENTS.md](../../../AGENTS.md) - Agent operating rules (AUTHORITATIVE)
+- [docs/HANDOVER.md](../../HANDOVER.md) - Handover report
+- [docs/vision/00_VISION.md](../vision/00_VISION.md) - Reality Engine vision
+- [docs/vision/01_ARCHITECTURE.md](../vision/01_ARCHITECTURE.md) - Core architecture
+- [docs/vision/06_AUTONOMOUS_QA_FABRIC.md](../vision/06_AUTONOMOUS_QA_FABRIC.md) - Autonomous agent roadmap
+- [docs/vision/07_MASTER_PLAN.md](../vision/07_MASTER_PLAN.md) - E7-E13 plan
+- [docs/vision/08_DELIVERY_PLAN.md](../vision/08_DELIVERY_PLAN.md) - Execution plan
 
 **External Repositories:**
 - mattpocock/skills: https://github.com/mattpocock/skills
@@ -1262,9 +1262,9 @@ python -m cherenkov.substrate.vlm_provider --download-minigpt
 ## 📞 Support
 
 For questions about this report:
-- Check [AGENTS.md](../AGENTS.md) for authoritative state
-- See [docs/vision/07_MASTER_PLAN.md](../docs/vision/07_MASTER_PLAN.md) for roadmap
-- Review [CONTRIBUTING.md](../CONTRIBUTING.md) for contribution guidelines
+- Check [AGENTS.md](../../../AGENTS.md) for authoritative state
+- See [docs/vision/07_MASTER_PLAN.md](../vision/07_MASTER_PLAN.md) for roadmap
+- Review [CONTRIBUTING.md](../../../CONTRIBUTING.md) for contribution guidelines
 
 ---
 

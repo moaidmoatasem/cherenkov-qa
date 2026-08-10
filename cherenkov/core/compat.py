@@ -47,6 +47,9 @@ def npx() -> str:
     In WSL, the Windows-side npx (under /mnt/c/...) must be skipped — it
     invokes cmd.exe which cannot handle UNC paths.  We probe nvm fallback
     directories first.
+
+    Returns:
+        str: Path or command string for npx executable.
     """
     if sys.platform == "win32":
         found = shutil.which("npx")
@@ -56,7 +59,11 @@ def npx() -> str:
 
 
 def node() -> str:
-    """Return the node executable, with nvm fallback for detached WSL processes."""
+    """Return the node executable, with nvm fallback for detached WSL processes.
+
+    Returns:
+        str: Path or command string for node executable.
+    """
     if sys.platform == "win32":
         found = shutil.which("node")
         return found if found else "node"
@@ -70,6 +77,9 @@ def subprocess_env() -> dict:
     npx/tsc scripts use #!/usr/bin/env node — they fail if node isn't on PATH
     even when the script itself was found via _find_posix_bin().  This ensures
     the child process can resolve node.
+
+    Returns:
+        dict: Environment variable dictionary with updated PATH.
     """
     env = os.environ.copy()
     node_bin = _find_posix_bin("node")

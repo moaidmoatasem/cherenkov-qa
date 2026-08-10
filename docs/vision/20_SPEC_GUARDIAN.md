@@ -1,7 +1,7 @@
 # Vision 20: Spec Guardian Daemon
 
 **Status:** Proposed (Horizon 3)
-**Epic:** TBD (Phase 14)
+**Epic:** #415 (Phase 14 Spec Guardian)
 **Related ADR:** [ADR-009](../adr/ADR-009-spec-guardian-daemon.md)
 
 ## 1. The Core Concept

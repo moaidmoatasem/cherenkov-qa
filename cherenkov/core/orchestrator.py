@@ -1,3 +1,7 @@
+"""
+cherenkov/core/orchestrator.py — Central E2E pipeline orchestration engine.
+"""
+
 from __future__ import annotations
 
 import os
@@ -56,6 +60,14 @@ class OrchestrationEngine:
         error_threshold: int = 2,
         event_callback: Callable[[str, dict], None] | None = None,
     ):
+        """Initialize OrchestrationEngine.
+
+        Args:
+            run_id (str | None, optional): Unique run identifier. Defaults to None.
+            error_threshold (int, optional): Circuit breaker failure threshold. Defaults to 2.
+            event_callback (Callable[[str, dict], None] | None, optional): Custom event callback function. Defaults to None.
+        """
+
         self.run_id = run_id or str(uuid.uuid4())[:8]
 
         run_dir = os.path.abspath(f".cherenkov/runs/{self.run_id}")
@@ -79,6 +91,11 @@ class OrchestrationEngine:
         self._journey_state: dict = {}
 
     def close(self):
+        """Close log event file handlers and clean up resources.
+
+        Returns:
+            None
+        """
         set_events_file(None)
         if self._events_file and not self._events_file.closed:
             self._events_file.close()
@@ -170,6 +187,15 @@ class OrchestrationEngine:
     def run_ingest(
         self, spec_path: str, simulate_malformed: bool = False
     ) -> IngestOutput:
+        """Run the INGEST stage to parse OpenAPI specs into EndpointSlices.
+
+        Args:
+            spec_path (str): Target OpenAPI spec file path.
+            simulate_malformed (bool, optional): Simulate malformed output for testing. Defaults to False.
+
+        Returns:
+            IngestOutput: Ingest stage result containing endpoint slices.
+        """
         self.log.info("stage run", stage="INGEST", spec_path=spec_path)
         if simulate_malformed:
             _assert_not_production()
@@ -182,6 +208,15 @@ class OrchestrationEngine:
     def run_plan(
         self, ingest: IngestOutput, simulate_malformed: bool = False
     ) -> PlanOutput:
+        """Run the PLAN stage to select test scenarios from ingested endpoint slices.
+
+        Args:
+            ingest (IngestOutput): Output from INGEST stage.
+            simulate_malformed (bool, optional): Simulate malformed output for testing. Defaults to False.
+
+        Returns:
+            PlanOutput: Plan stage result containing planned scenarios.
+        """
         self.log.info("stage run", stage="PLAN", endpoints_count=len(ingest.endpoints))
         if simulate_malformed:
             _assert_not_production()
@@ -192,6 +227,15 @@ class OrchestrationEngine:
     def run_generate(
         self, scenario: Scenario, simulate_malformed: bool = False
     ) -> GenerateOutput:
+        """Run the GENERATE stage to synthesize Playwright test code for a scenario.
+
+        Args:
+            scenario (Scenario): Target scenario to generate test code for.
+            simulate_malformed (bool, optional): Simulate malformed output for testing. Defaults to False.
+
+        Returns:
+            GenerateOutput: Generate stage output containing synthesized code.
+        """
         self.log.info("stage run", stage="GENERATE", scenario_id=scenario.mutation_id)
         if simulate_malformed:
             _assert_not_production()
@@ -229,6 +273,16 @@ class OrchestrationEngine:
     def run_review(
         self, generate: GenerateOutput, spec_path: str, simulate_malformed: bool = False
     ) -> ReviewOutput:
+        """Run the REVIEW stage to evaluate generated test code against quality gates.
+
+        Args:
+            generate (GenerateOutput): Output from GENERATE stage.
+            spec_path (str): Path to OpenAPI specification file.
+            simulate_malformed (bool, optional): Simulate malformed output for testing. Defaults to False.
+
+        Returns:
+            ReviewOutput: Review stage result containing quality score and verdict.
+        """
         self.log.info("stage run", stage="REVIEW", scenario_id=generate.scenario_id)
         if simulate_malformed:
             _assert_not_production()
@@ -237,6 +291,7 @@ class OrchestrationEngine:
                 "gates": [], "quality_score": 0.0,
             }  # type: ignore
         return ReviewStage(self.run_id).run(generate, spec_path)
+
 
     # ── Backward-compat: delegate to StageExecutor ────────────────
     def _execute_stage_with_retry(

@@ -94,6 +94,13 @@ class AutoRegenerateMode:
         notifiers: list[NotifierPort] | None = None,
         now: float | None = None,
     ) -> None:
+        """Initialize AutoRegenerateMode instance.
+
+        Args:
+            regenerate_fn: Optional callable for executing regeneration logic.
+            notifiers: Optional list of NotifierPort instances for event fanout.
+            now: Optional fixed timestamp for deterministic testing.
+        """
         self._regenerate_fn: RegenerateFn = regenerate_fn or _default_regenerate
         self._notifiers: dict[str, NotifierPort] = {n.name: n for n in (notifiers or [])}
         self._regen_counts: dict[str, int] = {}
@@ -101,9 +108,19 @@ class AutoRegenerateMode:
         self._now = now
 
     def register(self, notifier: NotifierPort) -> None:
+        """Register a notification delivery port adapter.
+
+        Args:
+            notifier: NotifierPort instance to add.
+        """
         self._notifiers[notifier.name] = notifier
 
     def list_notifiers(self) -> list[str]:
+        """List names of registered notifiers.
+
+        Returns:
+            List of notifier name strings.
+        """
         return list(self._notifiers)
 
     def evaluate(
@@ -117,6 +134,14 @@ class AutoRegenerateMode:
 
         Returns a `RegenDecision` describing whether to fire, why, and (when
         `trigger=True`) whether the cycle actually executed.
+
+        Args:
+            target_url: Target API base URL string.
+            policy: Optional RegenPolicy trigger rules.
+            store: Optional custom RunStore instance.
+
+        Returns:
+            RegenDecision object summarizing trigger evaluation and outcome.
         """
         policy = policy or RegenPolicy()
         now = self._now if self._now is not None else _utc_now()

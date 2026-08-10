@@ -42,6 +42,15 @@ def _b64url_decode(s: str) -> bytes:
 
 
 def encode(payload: dict, expire_hours: int = 8) -> str:
+    """Encode payload into an HS256 signed JWT string.
+
+    Args:
+        payload: Claims dictionary to include in JWT body.
+        expire_hours: Number of hours until token expiration.
+
+    Returns:
+        Encoded and signed JWT string.
+    """
     header = _b64url(json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
     payload = {**payload, "iat": int(time.time()), "exp": int(time.time()) + expire_hours * 3600}
     body = _b64url(json.dumps(payload).encode())
@@ -51,7 +60,17 @@ def encode(payload: dict, expire_hours: int = 8) -> str:
 
 
 def decode(token: str) -> dict:
-    """Decode and verify. Raises ValueError on any failure."""
+    """Decode and verify an HS256 JWT string.
+
+    Args:
+        token: Signed JWT string to decode and verify.
+
+    Returns:
+        Decoded payload dictionary.
+
+    Raises:
+        ValueError: If token is malformed, signature invalid, or token expired.
+    """
     try:
         header, body, sig = token.split(".")
     except ValueError:

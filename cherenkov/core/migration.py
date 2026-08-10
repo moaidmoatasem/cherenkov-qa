@@ -1,3 +1,7 @@
+"""
+cherenkov/core/migration.py — Database schema migration runner.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -10,11 +14,20 @@ _SCHEMA_TABLE = "_schema_version"
 
 
 class SchemaMigration:
+    """Manages SQLite schema version tracking and step-wise SQL migrations."""
+
     db_path: str
     current_version: int
     target_version: int
 
     def __init__(self, db_path: str, current_version: int = 1, target_version: int = 1):
+        """Initialize SchemaMigration.
+
+        Args:
+            db_path (str): SQLite database file path.
+            current_version (int, optional): Initial expected schema version. Defaults to 1.
+            target_version (int, optional): Desired schema version. Defaults to 1.
+        """
         self.db_path = db_path
         self.current_version = current_version
         self.target_version = target_version
@@ -36,6 +49,11 @@ class SchemaMigration:
             return 0
 
     def get_applied_version(self) -> int:
+        """Fetch the current highest applied schema version from database.
+
+        Returns:
+            int: Applied version number.
+        """
         conn = sqlite3.connect(self.db_path, timeout=10.0)
         try:
             return self._applied_version(conn)
@@ -43,9 +61,22 @@ class SchemaMigration:
             conn.close()
 
     def needs_migration(self) -> bool:
+        """Check whether the applied version is less than the target version.
+
+        Returns:
+            bool: True if migration is required, False otherwise.
+        """
         return self.get_applied_version() < self.target_version
 
     def apply(self, migrations: list[tuple[int, str]]) -> bool:
+        """Apply pending migrations up to target_version.
+
+        Args:
+            migrations (list[tuple[int, str]]): List of (version, sql_script) tuples.
+
+        Returns:
+            bool: True if migration succeeded, False on error.
+        """
         conn = sqlite3.connect(self.db_path, timeout=10.0)
         try:
             applied = self._applied_version(conn)
@@ -67,6 +98,14 @@ class SchemaMigration:
             conn.close()
 
     def rollback(self, migrations: list[tuple[int, str]]) -> bool:
+        """Rollback applied migrations down to current_version.
+
+        Args:
+            migrations (list[tuple[int, str]]): List of (version, sql_script) tuples.
+
+        Returns:
+            bool: True if rollback succeeded, False on error.
+        """
         conn = sqlite3.connect(self.db_path, timeout=10.0)
         try:
             applied = self._applied_version(conn)
@@ -82,3 +121,4 @@ class SchemaMigration:
             return False
         finally:
             conn.close()
+

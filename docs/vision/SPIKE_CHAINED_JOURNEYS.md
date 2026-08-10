@@ -3,8 +3,8 @@
 
 Investigation note from an earlier horizon. The chained/stateful journey
 direction has been folded into the consolidated Phase plan. See
-[../../docs/PHASE_PLAN.md](../../PHASE_PLAN.md) for the current plan and
-[../../docs/STATUS.md](../../STATUS.md) for the current state.
+[../../docs/PHASE_PLAN.md](../PHASE_PLAN.md) for the current plan and
+[../../docs/STATUS.md](../STATUS.md) for the current state.
 -->
 
 # SPIKE: Chained / Stateful CRUD Journeys (Horizon V - Issue #193)

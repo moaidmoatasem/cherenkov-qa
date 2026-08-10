@@ -204,7 +204,7 @@ From the Hyukjoo Lee multi-agent case study (636 test runs, cited in CHERENKOV's
 | **Hallucinated status codes** | Agent uses 200 when spec says 201, 404, or 422 | Spec-derived oracle comparison |
 | **Test deletion** | Failing test removed to make suite green | Coverage delta check |
 | **Vacuous assertions** | `expect(response).toBeTruthy()` — always passes | Assertion strength gate |
-| **Skip/todo injection** | Test converted to `test.skip()` | AST forbidden keyword check |
+| **Skip/stub injection** | Test converted to `test.skip()` | AST forbidden keyword check |
 | **Mock override** | Production endpoint swapped for hardcoded mock | Import/require analysis |
 
 ### 3.3 Who's Addressing This

@@ -94,5 +94,5 @@ npx playwright test
 Ready to take Cherenkov to the next level?
 
 - **[Integrate with CI/CD](guides/github-actions-setup.md)**: Add Cherenkov to your GitHub Actions.
-- **[Explore the Dashboard](guides/dashboard.md)**: Visualise the Truth Model and HITL (Human-in-the-Loop) review queues.
+- **[Explore the Dashboard](dashboard/FE_DESIGN_SPEC.md)**: Visualise the Truth Model and HITL (Human-in-the-Loop) review queues.
 - **[View the Architecture](ARCHITECTURE_MAP.md)**: Dive deep into how the Clean Architecture and Spec Guardian work.

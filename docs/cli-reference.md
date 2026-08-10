@@ -345,5 +345,5 @@ Enterprise-tier commands: org management, SSO, audit logs, compliance.
 ## See also
 
 - [GETTING_STARTED.md](GETTING_STARTED.md) — worked walkthroughs for every command (CI-parity-checked).
-- [API_REFERENCE.md](API_REFERENCE.md) — REST API served by `cherenkov review` / `dashboard`.
+- [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) — REST API served by `cherenkov review` / `dashboard`.
 - [config_cookbook.md](config_cookbook.md) — environment variables and configuration.

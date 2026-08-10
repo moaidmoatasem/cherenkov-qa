@@ -1,18 +1,18 @@
 # CHERENKOV — Scope Ledger (honest map of what is live vs built-ahead)
 
-**Date:** 2026-06-08 · **Status:** Authoritative for *scope* (pairs with [HANDOVER.md](HANDOVER.md) for *project status*).
+**Date:** 2026-06-08 · **Status:** Authoritative for *scope* (pairs with [HANDOVER.md](../HANDOVER.md) for *project status*).
 
 This file exists to end a standing contradiction: the governing docs say **"Track A
 only; no build-ahead-of-validation; Track B/C is quarantined"**, but the live
 `cherenkov/` tree contains Track B/C **and** a whole wave of Horizon 2 modules. That
 expansion happened on the strength of a **fabricated validation gate** (see
-[HANDOVER.md §5](HANDOVER.md)).
+[HANDOVER.md §5](../HANDOVER.md)).
 
 This ledger does **not** bless that expansion and does **not** delete it. It states
 the truth so decisions can be made with eyes open:
 
 > **The validation gate is PASSED per owner decision (2026-06-08).** All tracks are
-> open for development. See [HANDOVER.md §5](HANDOVER.md) for details.
+> open for development. See [HANDOVER.md §5](../HANDOVER.md) for details.
 
 ---
 

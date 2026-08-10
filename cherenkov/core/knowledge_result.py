@@ -1,3 +1,7 @@
+"""
+cherenkov/core/knowledge_result.py — Knowledge graph result data models and payload serialization.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -8,6 +12,8 @@ from pydantic import BaseModel, Field
 
 
 class KnowledgeKind(str, Enum):
+    """Knowledge entry type classification enumeration."""
+
     IDIOM = "idiom"
     FEEDBACK = "feedback"
     VERDICT = "verdict"
@@ -17,6 +23,8 @@ class KnowledgeKind(str, Enum):
 
 
 class KnowledgeResult(BaseModel):
+    """Structured knowledge result object stored or returned by the knowledge mesh."""
+
     id: str
     kind: KnowledgeKind
     key: str
@@ -30,11 +38,21 @@ class KnowledgeResult(BaseModel):
     schema_version: int = 1
 
     def __init__(self, **data):
+        """Initialize KnowledgeResult instance.
+
+        Args:
+            **data: Field keyword arguments for model instantiation.
+        """
         super().__init__(**data)
         if not self.created_at:
             self.created_at = datetime.now(timezone.utc).isoformat()
 
     def to_event_payload(self) -> dict[str, Any]:
+        """Serialize KnowledgeResult into an event payload dictionary.
+
+        Returns:
+            dict[str, Any]: Summarized dictionary payload for event publishing.
+        """
         return {
             "id": self.id,
             "kind": self.kind.value,
@@ -44,3 +62,4 @@ class KnowledgeResult(BaseModel):
             "confidence": self.confidence,
             "tags": self.tags,
         }
+

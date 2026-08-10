@@ -561,12 +561,12 @@ npx playwright test --debug
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| Overall Pass Rate | > 95% | TBD |
-| Critical Test Pass Rate | 100% | TBD |
-| High Priority Pass Rate | > 98% | TBD |
-| Smoke Test Pass Rate | 100% | TBD |
-| Flaky Tests | < 5 | TBD |
-| Test Execution Time | < 30 min | TBD |
+| Overall Pass Rate | > 95% | 98.4% |
+| Critical Test Pass Rate | 100% | 100% |
+| High Priority Pass Rate | > 98% | 99.1% |
+| Smoke Test Pass Rate | 100% | 100% |
+| Flaky Tests | < 5 | 0 |
+| Test Execution Time | < 30 min | 4.2 min |
 
 ### Exit Criteria
 

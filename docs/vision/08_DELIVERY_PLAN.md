@@ -14,7 +14,7 @@ This doc is the bridge between the *why* ([`00_VISION`](00_VISION.md)), the *wha
 
 ## 0. The one rule that orders everything
 
-> **The Validation Gate eats first.** Track A (OpenAPI → Playwright conformance) must pass a real **5-QA validation gate** before E9–E13 frontier work or any external voice layer (OpenClaw, dashboard authoring) is allowed to consume it. Surfaces past the gate are labelled `do-not-extend-until-gate` and `blocked:validation-gate`. See [`HANDOVER.md`](../HANDOVER.md) and [`AGENTS.md`](../../AGENTS.md).
+> **The Validation Gate eats first.** Track A (OpenAPI → Playwright conformance) must pass a real **5-QA validation gate** before E9–E13 frontier work or any external voice layer (OpenClaw, dashboard authoring) is allowed to consume it. Surfaces past the gate are labelled `do-not-extend-until-gate` and `blocked:validation-gate`. See [`HANDOVER.md`](../../../HANDOVER.md) and [`AGENTS.md`](../../AGENTS.md).
 
 Everything below is sequenced against that gate, not against epoch numbers.
 

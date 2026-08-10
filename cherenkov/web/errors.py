@@ -32,6 +32,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
 class ErrorCode(str, enum.Enum):
+    """Machine-readable API error code enum."""
     # ── Input / validation ───────────────────────────────────────────────────
     INVALID_REQUEST = "INVALID_REQUEST"         # malformed request body / params
     MISSING_FIELD = "MISSING_FIELD"             # required field absent
@@ -95,6 +96,14 @@ class APIError(Exception):
         detail: Any = None,
         status_code: int | None = None,
     ) -> None:
+        """Initialize API error exception instance.
+
+        Args:
+            code: Machine-readable ErrorCode enum value.
+            message: Optional human-readable message string.
+            detail: Optional additional detail context object.
+            status_code: Optional explicit HTTP status code override.
+        """
         self.code = code
         self.message = message or code.value.replace("_", " ").title()
         self.detail = detail
@@ -102,6 +111,11 @@ class APIError(Exception):
         super().__init__(self.message)
 
     def to_response(self) -> JSONResponse:
+        """Convert APIError exception to structured JSONResponse.
+
+        Returns:
+            JSONResponse formatted with error code, message, and detail.
+        """
         body: dict[str, Any] = {"error": {"code": self.code.value, "message": self.message}}
         if self.detail is not None:
             body["error"]["detail"] = self.detail
@@ -114,7 +128,17 @@ def api_error(
     detail: Any = None,
     status_code: int | None = None,
 ) -> APIError:
-    """Convenience factory — raise the returned exception in route handlers."""
+    """Convenience factory — raise the returned exception in route handlers.
+
+    Args:
+        code: Machine-readable ErrorCode enum value.
+        message: Optional human-readable message string.
+        detail: Optional additional detail context.
+        status_code: Optional explicit HTTP status code.
+
+    Returns:
+        Configured APIError instance ready to be raised.
+    """
     return APIError(code=code, message=message, detail=detail, status_code=status_code)
 
 
@@ -135,7 +159,11 @@ def _json_safe(value: Any) -> Any:
 
 
 def install_error_handlers(app: FastAPI) -> None:
-    """Register global exception handlers on the FastAPI app."""
+    """Register global exception handlers on the FastAPI app.
+
+    Args:
+        app: Target FastAPI application instance to configure.
+    """
 
     @app.exception_handler(APIError)
     async def _api_error_handler(_request: Request, exc: APIError) -> JSONResponse:

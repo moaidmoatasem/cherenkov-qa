@@ -70,8 +70,16 @@ def _timestamp() -> str:
 # ── Session Endpoints ──────────────────────────────────────────────────
 
 
+# ── Session Endpoints ──────────────────────────────────────────────────
+
+
 @router.get("/api/v1/sdd/status")
 async def get_sdd_status():
+    """Retrieve aggregate SDD system status and active session summary.
+
+    Returns:
+        Dictionary containing current session status, token metrics, and experience counts.
+    """
     session, tokens, exp = await asyncio.gather(
         asyncio.to_thread(_read_json, SYNC_DIR / "session.json"),
         asyncio.to_thread(_read_json, SYNC_DIR / "tokens.json"),
@@ -95,6 +103,15 @@ async def list_sessions(
     limit: int = Query(50, ge=1, le=200),
     task_type: str | None = None,
 ):
+    """List recent SDD sessions with optional task type filter.
+
+    Args:
+        limit: Maximum number of session records to return.
+        task_type: Optional task category filter string.
+
+    Returns:
+        List of session dictionary payloads.
+    """
     session = await asyncio.to_thread(_read_json, SYNC_DIR / "session.json")
     prev = session.get("previous_sessions", [])
     current = session.get("session", {})
@@ -124,6 +141,17 @@ async def list_sessions(
 
 @router.get("/api/v1/sdd/sessions/{session_id}")
 async def get_session_detail(session_id: str):
+    """Retrieve detailed session state and recorded findings.
+
+    Args:
+        session_id: Target session identifier string.
+
+    Returns:
+        Dictionary containing session metadata and recorded findings.
+
+    Raises:
+        HTTPException: 400 if session_id format invalid, or 404 if session not found.
+    """
     session_id = _validate_session_id(session_id)
     session = await asyncio.to_thread(_read_json, SYNC_DIR / "session.json")
     s = session.get("session", {})
@@ -157,6 +185,11 @@ async def get_session_detail(session_id: str):
 
 @router.get("/api/v1/sdd/tokens")
 async def get_token_data():
+    """Retrieve current session token consumption and historical totals.
+
+    Returns:
+        SddTokenData model payload dictionary.
+    """
     raw = await asyncio.to_thread(_read_json, SYNC_DIR / "tokens.json")
     cur = raw.get("current_session", {})
     hist = raw.get("historical", {})
@@ -187,6 +220,11 @@ async def get_token_data():
 
 @router.get("/api/v1/sdd/tokens/history")
 async def get_token_history():
+    """Retrieve historical token statistics by task type.
+
+    Returns:
+        Dictionary of historical token usage metrics.
+    """
     tokens = await asyncio.to_thread(_read_json, SYNC_DIR / "tokens.json")
     return tokens.get("historical", {})
 
@@ -201,6 +239,17 @@ async def list_experience(
     sort: str | None = None,
     limit: int = Query(50, ge=1, le=200),
 ):
+    """Search and list stored SDD experience records.
+
+    Args:
+        pattern: Optional pattern query substring filter.
+        outcome: Optional outcome filter string ('success' / 'failure').
+        sort: Optional sort field ('cost' or 'date').
+        limit: Maximum number of records to return.
+
+    Returns:
+        List of matching experience record dictionaries.
+    """
     raw = await asyncio.to_thread(_read_json, SYNC_DIR / "experience.json")
     results = list(raw.get("experiences", []))
     if pattern:
@@ -222,6 +271,17 @@ async def list_experience(
 
 @router.get("/api/v1/sdd/experience/{exp_id}")
 async def get_experience_detail(exp_id: str):
+    """Retrieve specific SDD experience details by ID.
+
+    Args:
+        exp_id: Unique experience identifier string.
+
+    Returns:
+        Experience record dictionary payload.
+
+    Raises:
+        HTTPException: 404 Not Found if experience_id missing.
+    """
     raw = await asyncio.to_thread(_read_json, SYNC_DIR / "experience.json")
     for r in raw.get("experiences", []):
         if r.get("id") == exp_id:
@@ -234,6 +294,11 @@ async def get_experience_detail(exp_id: str):
 
 @router.get("/api/v1/sdd/context")
 async def get_context():
+    """Retrieve pre-computed SDD context snippets and task mappings.
+
+    Returns:
+        SddContextData payload dictionary.
+    """
     raw = await asyncio.to_thread(_read_json, SYNC_DIR / "context.json")
     snippets = [ContextSnippet(**s) for s in raw.get("snippets", [])]
     return SddContextData(
@@ -249,6 +314,15 @@ async def get_context():
 
 @router.post("/api/v1/sdd/compact")
 async def trigger_compact(force: bool = False, _auth=Depends(verify_write_access)):
+    """Trigger memory compaction operation.
+
+    Args:
+        force: Boolean indicating whether to force compaction regardless of session count.
+        _auth: Write access verification dependency.
+
+    Returns:
+        CompactResult payload summarizing compaction metrics.
+    """
     context, session = await asyncio.gather(
         asyncio.to_thread(_read_json, SYNC_DIR / "context.json"),
         asyncio.to_thread(_read_json, SYNC_DIR / "session.json"),
@@ -283,6 +357,11 @@ async def trigger_compact(force: bool = False, _auth=Depends(verify_write_access
 
 @router.get("/api/v1/sdd/graph/status")
 async def get_graph_status():
+    """Retrieve knowledge mesh graph status and node/edge metrics.
+
+    Returns:
+        GraphStatus payload dictionary.
+    """
     exp, session = await asyncio.gather(
         asyncio.to_thread(_read_json, SYNC_DIR / "experience.json"),
         asyncio.to_thread(_read_json, SYNC_DIR / "session.json"),
@@ -297,6 +376,11 @@ async def get_graph_status():
 
 @router.get("/api/v1/sdd/graph/export")
 async def export_graph():
+    """Export knowledge graph nodes and edges payload.
+
+    Returns:
+        GraphData payload dictionary.
+    """
     exp = await asyncio.to_thread(_read_json, SYNC_DIR / "experience.json")
     nodes: list[GraphNode] = []
     edges: list[GraphEdge] = []
@@ -329,6 +413,11 @@ async def export_graph():
 
 @router.get("/api/v1/sdd/graph/patterns")
 async def get_pattern_insights():
+    """Retrieve pattern frequency and success rate insights.
+
+    Returns:
+        List of PatternInsight dictionaries.
+    """
     exp = await asyncio.to_thread(_read_json, SYNC_DIR / "experience.json")
     pattern_map: dict[str, dict[str, Any]] = {}
     for e in exp.get("experiences", []):
@@ -391,6 +480,11 @@ def _scan_wiki_tree() -> list[dict]:
 
 @router.get("/api/v1/sdd/wiki/tree")
 async def get_wiki_tree():
+    """List agent memory wiki markdown files.
+
+    Returns:
+        List of WikiEntry dictionary payloads.
+    """
     return await asyncio.to_thread(_scan_wiki_tree)
 
 
@@ -416,6 +510,17 @@ def _read_wiki_file(path: str) -> dict[str, Any]:
 
 @router.get("/api/v1/sdd/wiki/{path:path}")
 async def get_wiki_file(path: str):
+    """Retrieve content of specific agent memory wiki markdown file.
+
+    Args:
+        path: Relative path string to wiki markdown file.
+
+    Returns:
+        Dictionary containing file content, path, size, and timestamp.
+
+    Raises:
+        HTTPException: 403 if path traversal attempted, 404 if file missing.
+    """
     try:
         return await asyncio.to_thread(_read_wiki_file, path)
     except FileNotFoundError:
@@ -443,6 +548,15 @@ async def list_findings(
     session_id: str | None = None,
     limit: int = Query(100, ge=1, le=500),
 ):
+    """List recorded SDD findings across sessions or for specific session.
+
+    Args:
+        session_id: Optional session identifier filter string.
+        limit: Maximum number of findings to return.
+
+    Returns:
+        List of finding log dictionaries.
+    """
     if session_id:
         fpath = FINDINGS_DIR / f"{session_id}.json"
         data = await asyncio.to_thread(_read_json, fpath)

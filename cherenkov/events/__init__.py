@@ -43,12 +43,23 @@ class EventSink(ABC):
 
     @abstractmethod
     def emit(self, event: CHERENKOVEvent) -> None:
-        """Process an event."""
+        """Process an event.
+
+        Args:
+            event (CHERENKOVEvent): Event object to emit.
+
+        Returns:
+            None
+        """
         pass
 
     @abstractmethod
     def close(self) -> None:
-        """Clean up resources."""
+        """Clean up resources.
+
+        Returns:
+            None
+        """
         pass
 
 
@@ -59,12 +70,28 @@ class EventSource(ABC):
     def fetch_events(
         self, after_id: str | None = None, limit: int = 100, category: str | None = None
     ) -> list[CHERENKOVEvent]:
-        """Retrieve events from source."""
+        """Retrieve events from source.
+
+        Args:
+            after_id (str | None, optional): Event ID after which to fetch events. Defaults to None.
+            limit (int, optional): Maximum number of events to fetch. Defaults to 100.
+            category (str | None, optional): Category filter string. Defaults to None.
+
+        Returns:
+            list[CHERENKOVEvent]: List of fetched events matching criteria.
+        """
         pass
 
     @abstractmethod
     def get_event(self, event_id: str) -> CHERENKOVEvent | None:
-        """Get a specific event by ID."""
+        """Get a specific event by ID.
+
+        Args:
+            event_id (str): Unique event identifier.
+
+        Returns:
+            CHERENKOVEvent | None: Event matching event_id, or None if not found.
+        """
         pass
 
 
@@ -73,12 +100,26 @@ class EventFilter(ABC):
 
     @abstractmethod
     def should_handle(self, event: CHERENKOVEvent) -> bool:
-        """Check if filter matches event."""
+        """Check if filter matches event.
+
+        Args:
+            event (CHERENKOVEvent): Event to check.
+
+        Returns:
+            bool: True if filter matches event, False otherwise.
+        """
         pass
 
     @abstractmethod
     def get_handler(self, event: CHERENKOVEvent) -> Callable[[CHERENKOVEvent], Any] | None:
-        """Get handler for event."""
+        """Get handler for event.
+
+        Args:
+            event (CHERENKOVEvent): Event object to get handler for.
+
+        Returns:
+            Callable[[CHERENKOVEvent], Any] | None: Callable handler for event, or None.
+        """
         pass
 
 
@@ -88,10 +129,22 @@ class LogEventSink(EventSink):
     """Event sink that logs to structured logger."""
 
     def __init__(self, logger_name: str = "event_bus"):
+        """Initialize log event sink.
+
+        Args:
+            logger_name (str, optional): Name of logger instance. Defaults to "event_bus".
+        """
         self.logger = logging.getLogger(logger_name)
 
     def emit(self, event: CHERENKOVEvent) -> None:
-        """Log event with structured format."""
+        """Log event with structured format.
+
+        Args:
+            event (CHERENKOVEvent): Event to write to structured logger.
+
+        Returns:
+            None
+        """
         self.logger.info(
             "Event: %s/%s - %s - %s",
             event.category.value,
@@ -101,7 +154,11 @@ class LogEventSink(EventSink):
         )
 
     def close(self) -> None:
-        """Close sink - nothing to clean up for logging."""
+        """Close sink - nothing to clean up for logging.
+
+        Returns:
+            None
+        """
         pass
 
 
@@ -109,6 +166,11 @@ class FileEventSink(EventSink):
     """Event sink that writes to JSONL file."""
 
     def __init__(self, file_path: str):
+        """Initialize file event sink.
+
+        Args:
+            file_path (str): Target path for JSONL output file.
+        """
         self.file_path = file_path
         self._ensure_directory()
 
@@ -118,7 +180,14 @@ class FileEventSink(EventSink):
         os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
 
     def emit(self, event: CHERENKOVEvent) -> None:
-        """Write event to JSONL file."""
+        """Write event to JSONL file.
+
+        Args:
+            event (CHERENKOVEvent): Event to append to file.
+
+        Returns:
+            None
+        """
         try:
             with open(self.file_path, "a", encoding="utf-8") as f:
                 json.dump(event.to_dict(), f)
@@ -127,7 +196,11 @@ class FileEventSink(EventSink):
             logger.error("Failed to write event to file %s: %s", self.file_path, e)
 
     def close(self) -> None:
-        """Close sink - nothing to clean up."""
+        """Close sink - nothing to clean up.
+
+        Returns:
+            None
+        """
         pass
 
 
@@ -135,12 +208,26 @@ class JsonEventSource(EventSource):
     """Event source that reads from JSONL file."""
 
     def __init__(self, file_path: str):
+        """Initialize JSON event source.
+
+        Args:
+            file_path (str): Path to JSONL event file.
+        """
         self.file_path = file_path
 
     def fetch_events(
         self, after_id: str | None = None, limit: int = 100, category: str | None = None
     ) -> list[CHERENKOVEvent]:
-        """Fetch events from file."""
+        """Fetch events from file.
+
+        Args:
+            after_id (str | None, optional): Event ID filter boundary. Defaults to None.
+            limit (int, optional): Maximum number of events to fetch. Defaults to 100.
+            category (str | None, optional): Category filter string. Defaults to None.
+
+        Returns:
+            list[CHERENKOVEvent]: List of events read from JSONL file.
+        """
         events = []
         try:
             with open(self.file_path, encoding="utf-8") as f:
@@ -170,7 +257,14 @@ class JsonEventSource(EventSource):
         return events
 
     def get_event(self, event_id: str) -> CHERENKOVEvent | None:
-        """Get specific event by ID."""
+        """Get specific event by ID.
+
+        Args:
+            event_id (str): Unique event ID.
+
+        Returns:
+            CHERENKOVEvent | None: Event matching event_id, or None if not found.
+        """
         events = self.fetch_events()
         for event in events:
             if event.event_id == event_id:
@@ -189,6 +283,15 @@ class CompositeEventFilter(EventFilter):
         payload_contains: dict[str, Any] | None = None,
         custom_filter: Callable[[CHERENKOVEvent], bool] | None = None,
     ):
+        """Initialize composite event filter.
+
+        Args:
+            category_filter (Callable | None, optional): Category predicate. Defaults to None.
+            name_pattern (str | None, optional): Name substring pattern. Defaults to None.
+            severity_filter (Callable | None, optional): Severity predicate. Defaults to None.
+            payload_contains (dict | None, optional): Key-value payload matching dict. Defaults to None.
+            custom_filter (Callable | None, optional): Custom predicate function. Defaults to None.
+        """
         self.category_filter = category_filter
         self.name_pattern = name_pattern
         self.severity_filter = severity_filter
@@ -196,7 +299,14 @@ class CompositeEventFilter(EventFilter):
         self.custom_filter = custom_filter
 
     def should_handle(self, event: CHERENKOVEvent) -> bool:
-        """Check if event matches all filters."""
+        """Check if event matches all filters.
+
+        Args:
+            event (CHERENKOVEvent): Event to evaluate.
+
+        Returns:
+            bool: True if event matches all filter conditions, False otherwise.
+        """
         if self.category_filter and not self.category_filter(event.category):
             return False
 
@@ -216,7 +326,14 @@ class CompositeEventFilter(EventFilter):
     def get_handler(
         self, _event: CHERENKOVEvent
     ) -> Callable[[CHERENKOVEvent], Any] | None:
-        """Get handler for event (returns None for CompositeEventFilter)."""
+        """Get handler for event (returns None for CompositeEventFilter).
+
+        Args:
+            _event (CHERENKOVEvent): Event object.
+
+        Returns:
+            Callable[[CHERENKOVEvent], Any] | None: Always returns None for composite filter.
+        """
         return None
 
 
@@ -231,6 +348,13 @@ class UnifiedEventBus:
         max_queue_size: int = 500,
         dispatch_interval: float = 1.0,
     ):
+        """Initialize unified event bus.
+
+        Args:
+            name (str, optional): Name identifier for bus. Defaults to "unified_bus".
+            max_queue_size (int, optional): Maximum capacity of internal queue. Defaults to 500.
+            dispatch_interval (float, optional): Poll interval in seconds for dispatch loop. Defaults to 1.0.
+        """
         self.name = name
         self._queue: asyncio.Queue[CHERENKOVEvent] = asyncio.Queue(maxsize=max_queue_size)
         self._filters: list[EventFilter] = []
@@ -246,7 +370,14 @@ class UnifiedEventBus:
     # EventBus protocol (backwards compatibility)
 
     def publish(self, event: CHERENKOVEvent) -> None:
-        """Publish event to bus."""
+        """Publish event to bus.
+
+        Args:
+            event (CHERENKOVEvent): Event to publish.
+
+        Returns:
+            None
+        """
         try:
             loop = asyncio.get_running_loop()
         except RuntimeError:
@@ -266,13 +397,29 @@ class UnifiedEventBus:
     def subscribe(
         self, event_name: str, handler: Callable[[CHERENKOVEvent], Any]
     ) -> None:
-        """Subscribe to event by name."""
+        """Subscribe to event by name.
+
+        Args:
+            event_name (str): Target event name or wildcard '*'.
+            handler (Callable[[CHERENKOVEvent], Any]): Callback function to invoke.
+
+        Returns:
+            None
+        """
         self._handlers.setdefault(event_name, []).append(handler)
 
     def unsubscribe(
         self, event_name: str, handler: Callable[[CHERENKOVEvent], Any]
     ) -> None:
-        """Unsubscribe from event by name."""
+        """Unsubscribe from event by name.
+
+        Args:
+            event_name (str): Target event name.
+            handler (Callable[[CHERENKOVEvent], Any]): Callback function to remove.
+
+        Returns:
+            None
+        """
         handlers = self._handlers.get(event_name, [])
         if handler in handlers:
             handlers.remove(handler)
@@ -280,27 +427,56 @@ class UnifiedEventBus:
     # Event system extensions
 
     def add_sink(self, sink: EventSink) -> None:
-        """Add event sink."""
+        """Add event sink.
+
+        Args:
+            sink (EventSink): EventSink instance to register.
+
+        Returns:
+            None
+        """
         self._sinks.append(sink)
 
     def add_source(self, source: EventSource) -> None:
-        """Add event source."""
+        """Add event source.
+
+        Args:
+            source (EventSource): EventSource instance to register.
+
+        Returns:
+            None
+        """
         self._sources.append(source)
 
     def add_filter(self, filter: EventFilter) -> None:
-        """Add event filter."""
+        """Add event filter.
+
+        Args:
+            filter (EventFilter): EventFilter instance to register.
+
+        Returns:
+            None
+        """
         self._filters.append(filter)
 
     # Lifecycle
 
     async def start(self) -> None:
-        """Start event bus dispatch loop."""
+        """Start event bus dispatch loop.
+
+        Returns:
+            None
+        """
         if not self._running:
             self._running = True
             self._start(asyncio.get_running_loop())
 
     async def stop(self) -> None:
-        """Stop event bus dispatch."""
+        """Stop event bus dispatch.
+
+        Returns:
+            None
+        """
         self._running = False
         if self._task is not None:
             self._task.cancel()
@@ -309,7 +485,11 @@ class UnifiedEventBus:
             self._task = None
 
     def close(self) -> None:
-        """Close all sinks and sources."""
+        """Close all sinks and sources.
+
+        Returns:
+            None
+        """
         for sink in self._sinks:
             sink.close()
 
@@ -379,7 +559,16 @@ class UnifiedEventBus:
     def fetch_events(
         self, after_id: str | None = None, limit: int = 100, category: str | None = None
     ) -> list[CHERENKOVEvent]:
-        """Fetch events from in-memory retention, then from all sources."""
+        """Fetch events from in-memory retention, then from all sources.
+
+        Args:
+            after_id (str | None, optional): Event ID filter boundary. Defaults to None.
+            limit (int, optional): Maximum number of events to fetch. Defaults to 100.
+            category (str | None, optional): Category filter string. Defaults to None.
+
+        Returns:
+            list[CHERENKOVEvent]: Combined list of matching events.
+        """
         all_events: list[CHERENKOVEvent] = []
         for event in self._published:
             if after_id and event.event_id <= after_id:
@@ -399,7 +588,14 @@ class UnifiedEventBus:
         return all_events[:limit]
 
     def get_event(self, event_id: str) -> CHERENKOVEvent | None:
-        """Get event by ID from in-memory retention or sources."""
+        """Get event by ID from in-memory retention or sources.
+
+        Args:
+            event_id (str): Unique event ID to locate.
+
+        Returns:
+            CHERENKOVEvent | None: Matching event object, or None if not found.
+        """
         for event in self._published:
             if event.event_id == event_id:
                 return event
@@ -410,7 +606,11 @@ class UnifiedEventBus:
         return None
 
     def get_stats(self) -> dict[str, Any]:
-        """Get event bus statistics."""
+        """Get event bus statistics.
+
+        Returns:
+            dict[str, Any]: Dictionary containing event bus performance metrics.
+        """
         return {
             "name": self.name,
             "queue_size": self._queue.qsize(),
@@ -428,7 +628,11 @@ _global_bus: UnifiedEventBus | None = None
 
 
 def get_event_bus() -> UnifiedEventBus:
-    """Get or create the global event bus instance."""
+    """Get or create the global event bus instance.
+
+    Returns:
+        UnifiedEventBus: Global event bus singleton instance.
+    """
     global _global_bus
     if _global_bus is None:
         _global_bus = UnifiedEventBus()
@@ -436,7 +640,14 @@ def get_event_bus() -> UnifiedEventBus:
 
 
 def set_event_bus(bus: UnifiedEventBus) -> None:
-    """Set the global event bus instance."""
+    """Set the global event bus instance.
+
+    Args:
+        bus (UnifiedEventBus): Global event bus instance to set.
+
+    Returns:
+        None
+    """
     global _global_bus
     _global_bus = bus
 
@@ -445,12 +656,27 @@ def set_event_bus(bus: UnifiedEventBus) -> None:
 
 
 def publish_event(event: CHERENKOVEvent) -> None:
-    """Backwards compatible event publish function."""
+    """Backwards compatible event publish function.
+
+    Args:
+        event (CHERENKOVEvent): Event to publish to global bus.
+
+    Returns:
+        None
+    """
     get_event_bus().publish(event)
 
 
 def subscribe_to_event(event_name: str, handler: Callable[[CHERENKOVEvent], Any]) -> None:
-    """Backwards compatible event subscribe function."""
+    """Backwards compatible event subscribe function.
+
+    Args:
+        event_name (str): Event name to subscribe to.
+        handler (Callable[[CHERENKOVEvent], Any]): Callback function.
+
+    Returns:
+        None
+    """
     get_event_bus().subscribe(event_name, handler)
 
 
@@ -458,7 +684,11 @@ _bus_control_task: asyncio.Task | None = None
 
 
 def start_event_bus() -> None:
-    """Start the global event bus."""
+    """Start the global event bus.
+
+    Returns:
+        None
+    """
     global _bus_control_task
 
     import asyncio
@@ -468,7 +698,11 @@ def start_event_bus() -> None:
 
 
 def stop_event_bus() -> None:
-    """Stop the global event bus."""
+    """Stop the global event bus.
+
+    Returns:
+        None
+    """
     global _bus_control_task
 
     import asyncio

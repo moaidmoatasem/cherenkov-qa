@@ -1,33 +1,37 @@
-# BRIEFING — 2026-08-01T17:54:00Z
+# BRIEFING — 2026-08-10T20:02:15Z
 
 ## Mission
-Investigate and produce evidence-backed findings and remediation plan for E0.5d Spec-Shape Conformance Corpus.
+Survey all Go source code files and all Markdown files in `docs/` (and subdirectories): catalog Go packages/types/functions/doc comments, identify TODO/TBD/[] placeholders in `docs/`, scan for broken links, and list files requiring documentation fixes.
 
 ## 🔒 My Identity
 - Archetype: Explorer
-- Roles: Lead Explorer / Forensic Analyst
-- Working directory: Z:\home\moaid\cherenkov-qa\.agents\explorer_2
-- Original parent: f67bdd03-5797-4dc9-9c80-3304ae56efe6
-- Milestone: M0 - E0.5d
+- Roles: Explorer 2 (Go & Docs Survey)
+- Working directory: z:\home\moaid\cherenkov-qa\.agents\explorer_2
+- Original parent: 777f9ac6-32d5-4707-9ef4-f40269cf9473
+- Milestone: M1 - Repository Survey
 
 ## 🔒 Key Constraints
-- Read-only investigation — do NOT implement production changes directly (write reports/plans to .agents/explorer_2/)
-- Ensure PowerShell syntax for any terminal execution
-- Ensure math invariants: Total Operations = Planned Probes + Dropped Endpoints across all HTTP methods (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS)
-- Zero silent drops, zero fabricated metrics
+- Read-only investigation — do NOT implement production code changes directly (write reports/plans to .agents/explorer_2/)
+- Ensure PowerShell syntax for terminal execution (`;` instead of `&&`)
+- Follow 5-component handoff protocol
+- Write survey report to `z:\home\moaid\cherenkov-qa\.agents\explorer_2\docs_and_go_survey.md`
 
 ## Current Parent
-- Conversation ID: f67bdd03-5797-4dc9-9c80-3304ae56efe6
-- Updated: 2026-08-01T17:54:00Z
+- Conversation ID: 777f9ac6-32d5-4707-9ef4-f40269cf9473
+- Updated: 2026-08-10T20:02:15Z
 
 ## Investigation State
-- **Explored paths**: None yet
-- **Key findings**: TBD
-- **Unexplored areas**: cherenkov/verify/engine.py, demos/conformance_corpus/, specs/corpus/, HTTP method handling, 10 OpenAPI 3.x URLs
+- **Explored paths**: `operator/` (all 9 Go files), `docs/` (all 142 Markdown files).
+- **Key findings**: Cataloged 11 public Go symbols lacking doc comments, 5 Go packages lacking package docs, 12 active TBD/TODO placeholders in Markdown files, 60 active broken relative links in docs/.
+- **Unexplored areas**: None.
 
 ## Key Decisions Made
-- Initiated forensic investigation into math invariant failure, local corpus storage, production script location, and report pathing.
+- Survey complete. Detailed report written to `docs_and_go_survey.md` and 5-component handoff report written to `handoff.md`.
 
 ## Artifact Index
-- ORIGINAL_REQUEST.md — Original mission statement
+- DISPATCH.md — Incoming task requirements
 - BRIEFING.md — Working memory index
+- progress.md — Liveness heartbeat
+- scan_links.py — Python script for relative link verification
+- docs_and_go_survey.md — Detailed survey report
+- handoff.md — 5-component handoff report

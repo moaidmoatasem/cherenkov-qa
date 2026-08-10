@@ -425,8 +425,8 @@ For every cross-phase integration point:
 
 ### Phase 9: Semantic Memory Upgrade (Week 21)
 
-**EPIC:** TBD
-**Tickets:** TBD
+**EPIC:** #392 (Phase 9: Semantic Memory Upgrade)
+**Tickets:** #393-#398
 **Goals:** Integrate MemSearch to replace JSON-based Sync Driven Development (SDD) with a semantic, markdown-first memory layer.
 **Kill Criteria:**
 - `memsearch` package installed and configured

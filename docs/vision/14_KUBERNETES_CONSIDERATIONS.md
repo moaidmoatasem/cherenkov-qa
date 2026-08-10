@@ -3,7 +3,7 @@
 **Status:** Strategic analysis + implementation blueprint · **Date:** 2026-06-07
 **Parent:** [`00_VISION.md`](00_VISION.md) (north-star), [`12_DOCKER_AI_HORIZON.md`](12_DOCKER_AI_HORIZON.md) (Docker integration)
 **Predecessor:** [`13_DOCKER_AI_IMPLEMENTATION_PLAN.md`](13_DOCKER_AI_IMPLEMENTATION_PLAN.md) (Phases B-E)
-**See also:** [`docs/ROADMAP_PACKAGING.md`](../ROADMAP_PACKAGING.md) (deferral trigger)
+**See also:** [`docs/ROADMAP_PACKAGING.md`](../PHASE_PLAN.md) (deferral trigger)
 
 ---
 
