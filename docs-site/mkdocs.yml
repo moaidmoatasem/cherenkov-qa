@@ -129,13 +129,15 @@ markdown_extensions:
 # ── Navigation ────────────────────────────────────────────────────────────────
 nav:
   - Home: index.md
-  - Getting Started:
+  - User Guides:
       - getting-started/index.md
+      - Unified Quick Start: getting-started/quickstart.md
       - Installation: getting-started/installation.md
-      - Quickstart: getting-started/quickstart.md
       - Configuration: getting-started/configuration.md
       - Cost Tiers: getting-started/cost-tiers.md
-  - Guides:
+      - CLI Reference: cli/reference.md
+      - Shell Completions: cli/completions.md
+  - QA & Testing:
       - guides/index.md
       - API Conformance Testing: guides/api-conformance.md
       - Check Suite (Integrity Audit): guides/check-suite.md
@@ -145,23 +147,13 @@ nav:
       - Certificates & Compliance: guides/certificates.md
       - Continuous Monitoring: guides/continuous-monitoring.md
       - OpenAPI Spec Integration: guides/openapi-spec.md
-      - Local LLM Setup: guides/local-llm.md
       - Eject to Vanilla Playwright: guides/eject.md
       - Docker Deployment: guides/docker.md
       - K8s Operator: guides/k8s-operator.md
       - Security Testing (OWASP): guides/security.md
-  - CLI Reference:
-      - Commands: cli/reference.md
-      - Shell Completions: cli/completions.md
-  - Integrations:
-      - CI/CD Integration: guides/ci-cd.md
-      - GitHub Actions: integrations/github-actions.md
-      - VS Code Extension: integrations/vscode.md
-      - MCP Ecosystem: integrations/mcp.md
-      - Slack & Teams: integrations/notifications.md
-      - LangChain: integrations/langchain.md
-  - Architecture:
+  - Developer Guides:
       - architecture/index.md
+      - Local LLM Setup: guides/local-llm.md
       - Platform Operating Model: architecture/platform-operating-model.md
       - User Journeys: architecture/user-journeys.md
       - System Design: architecture/system-design.md
@@ -170,12 +162,15 @@ nav:
       - Module Reference: architecture/module-reference.md
       - Second Brain: architecture/second-brain.md
       - Diagrams: architecture/diagrams.md
-  - For Your Role:
-      - roles/index.md
-      - Developer: roles/developer.md
-      - QA Engineer: roles/qa-engineer.md
-      - DevOps & SRE: roles/devops.md
-      - Team Lead & Manager: roles/team-lead.md
+      - For Your Role: roles/index.md
+      - Contributing: contributing.md
+  - Ecosystem & Integrations:
+      - CI/CD Integration: guides/ci-cd.md
+      - GitHub Actions: integrations/github-actions.md
+      - VS Code Extension: integrations/vscode.md
+      - MCP Ecosystem: integrations/mcp.md
+      - Slack & Teams: integrations/notifications.md
+      - LangChain: integrations/langchain.md
   - Troubleshooting:
       - troubleshooting/index.md
       - FAQ: troubleshooting/faq.md
@@ -188,4 +183,3 @@ nav:
       - v1.1.1: releases/v1.1.1.md
       - v1.1.0: releases/v1.1.0.md
       - v1.0.0: releases/v1.0.0.md
-  - Contributing: contributing.md

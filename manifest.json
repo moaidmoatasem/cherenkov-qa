@@ -960,6 +960,116 @@
           "issue_type"
         ]
       }
+    },
+    {
+      "name": "cherenkov/check-suite",
+      "description": "Run the cherenkov check-suite static analysis to detect weakened, deleted, or hallucinated tests.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "candidate_path": {
+            "type": "string",
+            "description": "Filesystem path to the candidate test suite (.py or .ts). Must be within the working directory."
+          },
+          "candidate_inline": {
+            "type": "string",
+            "description": "Raw test code to check inline (use when the file hasn't been written to disk yet)."
+          },
+          "baseline_path": {
+            "type": "string",
+            "description": "Filesystem path to the known-honest baseline suite. Required for WEAKENED and DELETED detection."
+          },
+          "baseline_inline": {
+            "type": "string",
+            "description": "Raw baseline test code inline."
+          },
+          "spec_path": {
+            "type": "string",
+            "description": "Path to the OpenAPI spec (YAML/JSON). Required for HALLUCINATED detection on Python suites."
+          },
+          "fail_on_finding": {
+            "type": "boolean",
+            "description": "If true, report verdict 'fail' when any integrity violation is found (CI gate mode)."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "cherenkov/verify",
+      "description": "Probe a live server against its OpenAPI spec to find divergences.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "base_url": {
+            "type": "string",
+            "description": "Base URL of the live server to probe (e.g. https://petstore3.swagger.io/api/v3)."
+          },
+          "spec_source": {
+            "type": "string",
+            "description": "Path or URL to the OpenAPI spec JSON/YAML. Omit to use the built-in Petstore demo spec."
+          },
+          "use_llm": {
+            "type": "boolean",
+            "description": "If true, use the LLM Skeptic for hypothesis generation (requires Ollama). Default: offline mode (no LLM required)."
+          },
+          "max_probes": {
+            "type": "integer",
+            "description": "Maximum spec-derived endpoint probes per run (requires --spec)."
+          },
+          "allow_mutations": {
+            "type": "boolean",
+            "description": "Allow planning of happy-path probes for POST/PUT/DELETE."
+          },
+          "identifiers": {
+            "type": "string",
+            "description": "JSON file path or inline JSON object mapping path parameters to known valid values."
+          },
+          "coverage_report": {
+            "type": "boolean",
+            "description": "Include a spec coverage-gap report in the result (requires spec_source)."
+          },
+          "health_score": {
+            "type": "boolean",
+            "description": "Include an A-F health grade in the result (requires spec_source)."
+          },
+          "run_id": {
+            "type": "string",
+            "description": "Optional run identifier for correlation."
+          }
+        },
+        "required": [
+          "base_url"
+        ]
+      }
+    },
+    {
+      "name": "cherenkov/generate",
+      "description": "Generate Playwright E2E tests from an OpenAPI specification.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "spec_path": {
+            "type": "string",
+            "description": "Path to the OpenAPI spec (JSON/YAML) to generate tests for. Must be within the working directory."
+          },
+          "output_dir": {
+            "type": "string",
+            "description": "Directory to write generated Playwright test files to. Omit to return generated test code inline (default)."
+          },
+          "repair": {
+            "type": "boolean",
+            "description": "Run the generate→review→repair loop. Default: on."
+          },
+          "max_attempts": {
+            "type": "integer",
+            "description": "Maximum repair attempts per scenario (only used with repair)."
+          }
+        },
+        "required": [
+          "spec_path"
+        ]
+      }
     }
   ]
 }
