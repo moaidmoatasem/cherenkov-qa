@@ -1,19 +1,5 @@
 
---- ISSUE 809 ---
-Title: Release hygiene: publish v1.2.0 GitHub Release, resolve malformed v.1.1.1 tag, clean up orphan docs version
-Body:
-Follow-up from #807 (merged) and `docs/ROADMAP_2026H2.md` M2's "Tag hygiene first" bullet.
 
-**Fixed already (#807):** `.release-please-manifest.json` and `package.json` now read `1.2.0`, matching `pyproject.toml` and the `v1.2.0` git tag.
-
-**Still open:**
-1. **No GitHub Release exists for the `v1.2.0` tag.** `docs-deploy.yml` only runs `mike deploy --update-aliases <ver> latest` on `release: published`, so the live docs site's `/latest/` alias is still pointing at old (pre-1.2.0) content. Needs: publish a GitHub Release for `v1.2.0` (this triggers the workflow automatically), or manually run from `docs-site/`: `mike deploy --push --update-aliases 1.2 latest && mike set-default --push latest`.
-2. **The `v1.1.1` release is tagged `v.1.1.1`** (stray dot) — inconsistent with every other tag (`v1.0.0`, `v1.1.0`, `v1.2.0`). This is what silently broke `docs-deploy.yml`'s `cut -d. -f1,2` version-extraction step in the first place. Deleting/retagging a *published* release tag is a judgment call (rewrites a historical reference) — flag for a human decision rather than doing it unilaterally.
-3. **Orphan `1.1.1` version directory on `gh-pages`** (`git ls-tree -d --name-only origin/gh-pages` → `1.0`, `1.1`, `1.1.1`, `dev`) — doesn't match the major.minor scheme every other version uses. Once (1) is resolved, `mike delete 1.1.1 --push` from `docs-site/` cleans this up.
-
-Going forward, cut releases through `release-please` (manifest is now correctly seeded) rather than hand-tagging, to avoid a repeat.
-
-========================================
 --- ISSUE 792 ---
 Title: Integration: Publish MCP server to official registry
 Body:
