@@ -3,7 +3,7 @@
 This document serves as the unified source of truth for the Cherenkov QA product strategy, market roadmap, and technical implementation plan. It consolidates previous roadmaps into a single, cohesive vision.
 
 ## 1. Where We Stand
-- **Phases -1 through 8 are Complete**: The core engine, CLI, desktop host (Tauri), chat agents, and dashboard are built.
+- **Phases -1 through 16 are Complete**: Core engine, CLI, desktop host (Tauri), chat agents, dashboard, SAML 2.0 SSO (Phase 13), Spec Guardian hot-reload & trend CLI (Phase 14), Fine-Tuned SLM pipeline (Phase 15), and Platform & Marketplace (Phase 16) are built and validated.
 - **Technical Moat**: Spec-driven generation, local-first LLM design, strict D7 validation invariants, and isolated sandboxing.
 
 ## 2. The Execution Plan (Phases 9 - 16)
