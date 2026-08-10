@@ -28,3 +28,9 @@ class CustomHealer:
     """Base class for custom healers."""
     def analyze_failure(self, failure: dict):
         raise NotImplementedError("Plugins must implement analyze_failure")
+
+class CustomLLMProvider:
+    """Base class for custom LLM providers."""
+    async def generate(self, prompt: str, **kwargs) -> str:
+        raise NotImplementedError("Plugins must implement generate")
+

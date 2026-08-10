@@ -1,2 +1,5 @@
+[cherenkov.plugin]
+hipaa = cherenkov.plugins.builtin.hipaa_compliance
+
 [console_scripts]
 cherenkov = cherenkov.cli.core:main
