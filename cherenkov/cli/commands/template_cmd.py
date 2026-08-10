@@ -1,7 +1,8 @@
 """cherenkov/cli/commands/template_cmd.py — `cherenkov template` command."""
 
+from pathlib import Path
 import click
-from cherenkov.marketplace.templates import TemplateRegistry
+from cherenkov.marketplace.templates import MarketplaceTemplate, TemplateRegistry
 
 
 @click.group("template")
@@ -51,3 +52,36 @@ def template_install_cmd(template_id: str) -> None:
         click.echo(click.style(f"\nSuccessfully installed template '{template_id}'", fg="green"))
     else:
         click.echo(click.style(f"\nFailed to install template '{template_id}'", fg="red"), err=True)
+
+
+@template_cmd.command("publish")
+@click.option("--id", "template_id", required=True, help="Unique identifier for the template.")
+@click.option("--name", required=True, help="Human readable name.")
+@click.option("--description", default="", help="Description of the template.")
+@click.option("--version", default="1.0.0", help="Template version.")
+@click.option("--tags", default="", help="Comma separated tags.")
+@click.option("--file", "file_path", default=None, help="Path to custom suite.yaml template file.")
+def template_publish_cmd(
+    template_id: str,
+    name: str,
+    description: str,
+    version: str,
+    tags: str,
+    file_path: str | None,
+) -> None:
+    """Publish a custom test template to the marketplace."""
+    registry = TemplateRegistry()
+    tag_list = [t.strip() for t in tags.split(",") if t.strip()]
+    template = MarketplaceTemplate(
+        id=template_id,
+        name=name,
+        description=description,
+        version=version,
+        tags=tag_list,
+        download_url=f"local://{template_id}",
+    )
+    success = registry.publish_template(template, file_path=file_path)
+    if success:
+        click.echo(click.style(f"Successfully published template '{template_id}'", fg="green"))
+    else:
+        click.echo(click.style(f"Failed to publish template '{template_id}'", fg="red"), err=True)
