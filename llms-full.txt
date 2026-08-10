@@ -1,0 +1,59 @@
+# CHERENKOV QA — Consolidated Agent Knowledge Digest (llms-full.txt)
+
+This document provides a single-file, token-efficient, plain-markdown reference for LLMs, Cursor, Claude, and GitHub Copilot to understand Cherenkov QA's core architecture, CLI, and operational invariants.
+
+---
+
+## 1. System Overview
+
+Cherenkov QA is an open-core Autonomous Quality Engineering (AQE) fabric. It sits between software generation models and production reality, enforcing spec-driven validation invariants.
+
+### Key Capabilities:
+- **Spec-Driven Generation**: Tests are derived strictly from OpenAPI 3.1, GraphQL, gRPC, and AsyncAPI specifications.
+- **D7 Invariants**: Never auto-edit test code without explicit human confirmation; suggest-only healing; specs dictate expected status codes.
+- **Spec Guardian (Phase 14)**: Continuous drift detection daemon with hot-reloading spec modification checks and 24h trend analytics.
+- **Fine-Tuned SLM (Phase 15)**: Integrated training pipeline (`cherenkov train`) with `DryRunBackend` and `HuggingFaceBackend` (PEFT/LoRA).
+- **Platform & Marketplace (Phase 16)**: Local and remote tool/template registries (`~/.cherenkov/marketplace/`).
+
+---
+
+## 2. Core CLI Commands
+
+```bash
+# Validate live API against OpenAPI spec
+cherenkov validate --spec openapi.yaml --target http://localhost:8080
+
+# Spec Guardian drift detection daemon
+cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8080 --watch-spec
+cherenkov guardian status
+cherenkov guardian trend --hours 24
+
+# Fine-Tuning SLM Pipeline
+cherenkov train export --out telemetry.jsonl
+cherenkov train run --data telemetry.jsonl --backend dry_run
+cherenkov train status
+
+# Test Template Marketplace
+cherenkov template search
+cherenkov template list
+cherenkov template publish --id my-template --name "My Template" --tags "security,custom"
+```
+
+---
+
+## 3. Architecture & Clean Architecture Ports
+
+- `cherenkov/domain/ports/`: Domain interfaces (`StoragePort`, `IdentityProvider`, `TelemetryPort`).
+- `cherenkov/adapters/`: Concrete implementations (`SQLiteStorageAdapter`, `SamlIdentityProvider`).
+- `cherenkov/core/`: Orchestration engine, settings, and CLI loaders.
+- `cherenkov/spec_guardian/`: Drift detector, SQLite store, and watching daemon.
+- `cherenkov/training/`: Dataset collector, backends (`DryRunBackend`, `HuggingFaceBackend`), and runner.
+- `cherenkov/marketplace/`: Test template & MCP tool registries.
+
+---
+
+## 4. Non-Negotiable Invariants (D7)
+
+1. **Suggest-Only Healing**: Self-healing suggestions MUST NEVER automatically mutate or rewrite existing test code files on disk without explicit human confirmation.
+2. **Spec Authority**: Status codes and expected response schemas MUST come from the specification, not hardcoded assumptions or LLM guesses.
+3. **PowerShell Compatibility**: Interactive commands run in Windows environment must use PowerShell syntax `;` rather than bash `&&`.

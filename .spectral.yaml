@@ -1,0 +1,11 @@
+# Spectral API Governance Ruleset for CHERENKOV QA
+extends: ["spectral:oas", "spectral:asyncapi"]
+
+rules:
+  operation-operationId: error
+  operation-tags: warn
+  operation-description: warn
+  info-contact: hint
+  no-eval-in-markdown: error
+  path-declarations-must-exist: error
+  openapi-tags-alphabetical: off

@@ -1,0 +1,36 @@
+name: Docs & API Governance
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docs-lint:
+    name: Lint Documentation & Schemas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate Markdown Files Exist
+        run: |
+          test -f README.md || (echo "README.md missing" && exit 1)
+          test -f AGENTS.md || (echo "AGENTS.md missing" && exit 1)
+          test -f llms.txt || (echo "llms.txt missing" && exit 1)
+          test -f llms-full.txt || (echo "llms-full.txt missing" && exit 1)
+          test -f docs/INDEX.md || (echo "docs/INDEX.md missing" && exit 1)
+          echo "All essential documentation files present."
+
+      - name: Install dependencies & run pytest documentation tests
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pytest tests/unit/test_marketplace_phase16.py tests/unit/test_spec_guardian.py -v

@@ -1,0 +1,28 @@
+# CHERENKOV QA — Agent Context Index (llms.txt)
+
+> Autonomous Quality Engineering (AQE) fabric & spec-driven testing engine for REST, GraphQL, gRPC, and AsyncAPI services.
+
+## Overview
+- [Master Roadmap](docs/ROADMAP.md): Project status across Phases -1 through 16.
+- [System Architecture](docs/SYSTEM_DESIGN.md): High-level architectural patterns and component boundaries.
+- [D7 Invariants](AGENTS.md#design-invariants-deltas): Core validation rules and non-negotiable invariants.
+
+## Getting Started & Tutorials
+- [Quick Start Guide](docs/GETTING_STARTED.md): Step-by-step setup, installation, and first test run.
+- [Petstore Walkthrough](QUICKSTART_PETSTORE.md): Live example with Petstore OpenAPI spec.
+
+## How-To Guides
+- [SAML 2.0 / SSO Configuration](docs/guides/saml_sso.md): Enterprise identity provider setup.
+- [Spec Guardian Setup](docs/guides/spec_guardian.md): Hot-reloading drift detection daemon.
+- [SLM Fine-Tuning](docs/guides/slm_training.md): Local telemetry collection and LoRA model training.
+- [CI/CD Integration](ci/README.md): GitHub Actions, GitLab CI, and Jenkins library setup.
+
+## Reference
+- [CLI Command Reference](docs/cli-reference.md): Full CLI flag and subcommand breakdown.
+- [API Architecture Map](docs/ARCHITECTURE_MAP.md): Internal ports, adapters, and domain boundaries.
+- [Error Codes & Handling](docs/ERROR_HANDLING.md): Standardized error codes and exception hierarchy.
+
+## Explanations & Vision
+- [10-Year Vision (AQE)](docs/VISION_AQE_2026.md): The transition to Autonomous Quality Fabric.
+- [Sync Driven Development (SDD)](docs/engineering/SYNC_DRIVEN_DEV.md): Token-efficient agent memory protocol.
+- [Architecture Decision Records](docs/adr/INDEX.md): Index of MADR architectural decisions.

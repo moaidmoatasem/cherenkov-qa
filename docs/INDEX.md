@@ -1,219 +1,60 @@
-# CHERENKOV — Documentation Index
+# CHERENKOV QA — Documentation Index
 
-Welcome. This is the **single entry point** for everything in the CHERENKOV
-docs tree. Pick the path that matches who you are.
-
-> **Status check first?** → [STATUS.md](STATUS.md) — the one place that says
-> what's done, what's blocked, and what's next.
-
-> **What we're doing next (forward plan):** [ROADMAP_2026H2.md](ROADMAP_2026H2.md) —
-> milestones M1–M5 with exit criteria, derived from the root `HANDOVER.md` anchor.
-
-> **Where we're going (strategy):** [NORTH_STAR.md](NORTH_STAR.md) (the world-class
-> 10-year product) · [VISION_AQE_2026.md](VISION_AQE_2026.md) (why — the market) ·
-> [ROADMAP_AQE.md](ROADMAP_AQE.md) (phased epics/tickets) ·
-> [EXECUTION_PLAN.md](EXECUTION_PLAN.md) (gate discipline). Specs:
-> [specs/MCP_VERIFICATION_SERVER.md](specs/MCP_VERIFICATION_SERVER.md),
-> [specs/CHERENKOV_CERTIFICATE.md](specs/CHERENKOV_CERTIFICATE.md). Demo:
-> [demos/CATCH_THE_AI_CHEATING.md](demos/CATCH_THE_AI_CHEATING.md).
+Welcome to the Cherenkov QA documentation hub. Content is organized according to the **Diátaxis Framework** into four distinct quadrants based on user intent.
 
 ---
-
-## 🚀 If you're new here
-
-| Step | Doc | What it gives you |
-|:----:|-----|-------------------|
-| 1 | [GETTING_STARTED.md](GETTING_STARTED.md) | Install + first test in 5 minutes |
-| 2 | [CLI_DEMO.md](CLI_DEMO.md) | Terminal walk-through of the full flow |
-| 3 | [TESTING.md](TESTING.md) | How the test pipeline works under the hood |
-
-If you only have 2 minutes, read **§ "What it does (30 seconds)"** in
-[../README.md](../README.md) and run the Quick Start in
-[GETTING_STARTED.md](GETTING_STARTED.md#-prerequisites--installation).
-
----
-
-## 📹 Onboarding & KT Sessions
-
-> All sessions use **real caught bugs** — no fabricated examples. Full package lives at [`docs/onboarding/`](onboarding/).
-
-### Session Scripts
-
-| Session | Audience | Duration | Script |
-|---------|----------|----------|--------|
-| **A — Zero to Hero** | Developers / Engineers | 10 min | [session_a_zero_to_hero.md](onboarding/sessions/session_a_zero_to_hero.md) |
-| **B — Live Case: Real API** | QA Leads / SDETs | 15 min | [session_b_live_case.md](onboarding/sessions/session_b_live_case.md) |
-| **C — Pitch Companion** | Executives / Stakeholders | 5 min | [session_c_pitch_companion.md](onboarding/sessions/session_c_pitch_companion.md) |
-
-### Demo Harness & Cast Scripts
-
-- [run_demo.sh](onboarding/run_demo.sh) — 3-phase green→red conformance harness, Docker health checks, ANSI output, zero zombie processes
-- [casts/cast_session_a.sh](onboarding/casts/cast_session_a.sh) — asciinema-ready: Zero to Hero (8 steps, sleep delays, echo banners)
-- [casts/cast_session_b.sh](onboarding/casts/cast_session_b.sh) — asciinema-ready: HITL queue + repair loop + eject
-
-### Pitch Deck & FAQ
-
-- [PITCH_DECK.html](onboarding/PITCH_DECK.html) — interactive 10-slide HTML (dark theme, glassmorphism, keyboard nav `←→`, speaker notes `N`, fullscreen `F`)
-- [PITCH_DECK.md](onboarding/PITCH_DECK.md) — markdown outline with per-slide talking points, visual descriptions, demo timestamps
-- [FAQ_OBJECTIONS.md](onboarding/FAQ_OBJECTIONS.md) — 25+ Q&A across Technical, Trust/Compliance, and Business categories
-
-### Recording Guide
-
-- [VIDEO_RECORDING_GUIDE.md](onboarding/VIDEO_RECORDING_GUIDE.md) — 9-chapter guide: Loom/OBS/asciinema setup, pre-flight checklist, per-session walkthrough, audio quality, publishing
-- [RECORDING_ASSETS/README.md](onboarding/RECORDING_ASSETS/README.md) — naming conventions, recording commands, asset manifest template
-
-> **Also see:** [`docs/recordings/`](recordings/) — 8 extended session scripts (Loom-format), evidence log, and recorded output.
-
-
-## 🛠️ If you're building on CHERENKOV
-
-| Doc | What's in it |
-|-----|--------------|
-| [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) | Core architecture policy: device targets, startup health check |
-| [CLI_GROUPS.md](CLI_GROUPS.md) | CLI command-group reference (7 groups, 40 commands) |
-| [engineering/SYSTEM_DESIGN.md](engineering/SYSTEM_DESIGN.md) | System design, clean architecture per ADR-004 |
-| [engineering/ARCHITECTURE_PRINCIPLES.md](engineering/ARCHITECTURE_PRINCIPLES.md) | Non-negotiable engineering tenets |
-| [engineering/BEST_PRACTICES.md](engineering/BEST_PRACTICES.md) | Coding standards, testing, security |
-| [PHASE_PLAN.md](PHASE_PLAN.md) | Consolidated Phase -1 → 8 plan, all tracks, all tickets |
-| [adr/](adr/) | Architecture Decision Records (why we chose what we chose) |
-| [HANDOVER.md](HANDOVER.md) | Authoritative state for agents and contributors |
-
-### Product and platform clarity
-
-- [PLATFORM_OPERATING_MODEL.md](PLATFORM_OPERATING_MODEL.md) — the Quality Intelligence Platform core, extension contracts, model neutrality, and memory governance
-- [USER_JOURNEYS.md](USER_JOURNEYS.md) — end-to-end QA, agent, team, and governance journeys
-
-### Subsystem references
-
-- [LOGGING.md](LOGGING.md) — structured logging policy
-- [ERROR_HANDLING.md](ERROR_HANDLING.md) — error model + graceful degradation
-- [config_cookbook.md](config_cookbook.md) — config knobs and recipes
-- [MIGRATION.md](MIGRATION.md) / [MIGRATION_INVENTORY.md](MIGRATION_INVENTORY.md) — schema and data migrations
-- [ASSUMPTIONS.md](ASSUMPTIONS.md) — explicit non-goals and assumptions
-- [vision/19_QA_REASONING.md](vision/19_QA_REASONING.md) — QA Reasoning Engine: artifact-adaptive QA workflows ([ADR-007](adr/ADR-007-qa-reasoning-engine.md))
-
----
-
-## 🤖 If you're an agent
-
-**Read in this order:**
-
-1. [../AGENTS.md](../AGENTS.md) — operating rules, deltas, track status (DO NOT SKIP)
-2. [STATUS.md](STATUS.md) — current state of every phase
-3. [HANDOVER.md](HANDOVER.md) — what is real, what is fabricated, what to do next
-4. [PHASE_PLAN.md](PHASE_PLAN.md) — full plan with tickets
-5. The relevant ADR in [adr/](adr/) before you touch a module
-6. [engineering/BEST_PRACTICES.md](engineering/BEST_PRACTICES.md) before you write code
-
-**Skills (autonomous workflows):** [../skills/](../skills/) — read the
-stack-specific markdown before executing complex tasks.
-
-**Agent memory:** [../agent_memory/](../agent_memory/) — document your state,
-findings, and context to prevent AI amnesia.
-
----
-
-## 🧪 If you're QA
-
-| Doc | What's in it |
-|-----|--------------|
-| [qa/TEST_PLAN.md](qa/TEST_PLAN.md) | Test plan |
-| [qa/BUSINESS_REGRESSION_SUITE.md](qa/BUSINESS_REGRESSION_SUITE.md) | Business regression suite |
-| [process/QA_VALIDATION_RUNBOOK.md](process/QA_VALIDATION_RUNBOOK.md) | Validation runbook for the 5-QA gate |
-| [QA_DEMO_KIT.md](QA_DEMO_KIT.md) | Demo script |
-| [QA_OUTREACH_TEMPLATES.md](QA_OUTREACH_TEMPLATES.md) | Templates for recruiting QA reviewers |
-| [process/VALIDATION_EVIDENCE_LEDGER.md](process/VALIDATION_EVIDENCE_LEDGER.md) | Evidence ledger for validation |
-| [reports/CHERENKOV_QA_TEST_EXECUTION_REPORT.md](reports/CHERENKOV_QA_TEST_EXECUTION_REPORT.md) | Test execution report |
-| [reports/QA_TEST_REPORT.md](reports/QA_TEST_REPORT.md) | QA test report |
-| [FE_DASHBOARD_FULL_REGRESSION_TEST_SUITE.md](FE_DASHBOARD_FULL_REGRESSION_TEST_SUITE.md) | FE dashboard regression suite — main test case document |
-
----
-
-## 🗂️ Reference and history
-
-These exist for context. Most readers don't need them.
-
-- [SCOPE_LEDGER.md](SCOPE_LEDGER.md) — honest scope map
-- [GAP_REPORT.md](GAP_REPORT.md) — known gaps
-
-### 🗑️ Archived (do not cite as current)
-
-These documents have been moved to `_archive/`. They are kept for historical
-traceability but are **superseded** by the documents listed above.
-
-- [_archive/INTEGRATION_HANDOVER_REPORT.md](_archive/INTEGRATION_HANDOVER_REPORT.md) — ⚠️ **FABRICATED.** Do not cite.
-- [_archive/ROADMAP_RECONCILIATION.md](_archive/ROADMAP_RECONCILIATION.md) — ⚠️ **DISPUTED.** Gate claim was fabricated.
-- [_archive/ROADMAP_NEXT.md](_archive/ROADMAP_NEXT.md) — Superseded by [PHASE_PLAN.md](PHASE_PLAN.md).
-- [_archive/DEFERRED_VISION_ARCHIVE.md](_archive/DEFERRED_VISION_ARCHIVE.md) — Earlier vision material. Superseded by [PHASE_PLAN.md](PHASE_PLAN.md).
-- [_archive/FE_DASHBOARD_PARITY_AUDIT.md](_archive/FE_DASHBOARD_PARITY_AUDIT.md) — ⚠️ **ARCHIVED.** Completed audit of `track-b-c-deferred/dashboard/` (tree re-integrated and deleted). For current FE test cases see [FE_DASHBOARD_FULL_REGRESSION_TEST_SUITE.md](FE_DASHBOARD_FULL_REGRESSION_TEST_SUITE.md).
-
-### Process and reviews
-- [process/GITHUB_PM.md](process/GITHUB_PM.md) — GitHub project management
-- [process/evidence/](process/evidence/) — collected validation evidence
-- [proof_run/](proof_run/) — proof-run logs
-- [reviews/](reviews/) — external and internal reviews
-
-### Spikes and federation
-- [spikes/](spikes/) — investigation notes
-- [federation/](federation/) — federation model and corpus
-- [federation/corpus.md](federation/corpus.md), [federation/specialist-model.md](federation/specialist-model.md)
-
-### Plans
-- [plans/](plans/) — phase context briefs
-
-### Vision
-- [vision/](vision/) — earlier vision docs. Many are stale; for current
-   direction use [PHASE_PLAN.md](PHASE_PLAN.md).
-
-### Dashboard, engineering, wiki
-- [dashboard/](dashboard/) — frontend design + audit docs
-- [engineering/](engineering/) — architecture, system design, best practices
-- [wiki/](wiki/) — lightweight wiki (FAQ, Way of Work, Roadmap)
-
-### Diagrams
-- [diagrams/DIAGRAMS.md](diagrams/DIAGRAMS.md) — 17 Mermaid diagrams: system context, Track A pipeline, divergence loop, reflector loop, FE user journey, lifecycle state machine, git/PR flow, release flow, second brain, event bus, clean architecture, desktop IPC, chat agent, mobile tiers, extended system context, **validation gate flow (new)**, **certificate issuance flow (new)**
-
----
-
-## How this index is organized
 
 ```
-docs/
-├── INDEX.md             ← you are here
-├── STATUS.md            ← canonical status (one place, not duplicated)
-├── GETTING_STARTED.md   ← new user entry point
-├── CLI_DEMO.md          ← terminal walk-through
-├── CLI_GROUPS.md        ← CLI command-group reference
-├── TESTING.md           ← testing policy
-├── HANDOVER.md          ← agent + contributor handover (authoritative)
-├── PHASE_PLAN.md        ← consolidated plan
-├── TECHNICAL_DESIGN.md  ← core arch policy
-├── _archive/            ← DEPRECATED/FABRICATED docs (do not cite)
-├── adr/                 ← architecture decision records
-├── engineering/         ← system design, principles, best practices
-├── dashboard/           ← frontend design + audit
-├── diagrams/            ← system diagrams
-├── federation/          ← federation model
-├── plans/               ← phase context briefs
-├── process/             ← GitHub PM, validation, evidence
-├── proof_run/           ← proof-run logs
-├── qa/                  ← test plan, regression suite
-├── reviews/             ← external + internal reviews
-├── spikes/              ← investigation notes
-├── vision/              ← earlier vision (most is stale)
-├── recordings/          ← Loom recording scripts + live evidence
-└── wiki/                ← lightweight wiki
+                       PRACTICAL
+                           │
+       Tutorials           │         How-To Guides
+    (Learning-oriented)    │       (Task-oriented)
+                           │
+  ─────────────────────────┼─────────────────────────
+                           │
+      Explanations         │         Reference
+  (Understanding-oriented) │   (Information-oriented)
+                           │
+                       THEORETICAL
 ```
 
 ---
 
-## Doc conventions
+## 1. 🎓 Tutorials (Learning-Oriented)
+*Step-by-step, linear guides designed to help new users build confidence and run their first tests.*
 
-- **Markdown only.** One H1 per file. H2 for sections, H3 for subsections.
-- **Tables over prose** for status, flags, options, decisions.
-- **Code blocks for commands**, with the actual command a copy-paste away.
-- **Link, don't restate.** Prefer linking to a single SSOT over duplicating
-  content across files.
-- **Date every status block** so readers know how fresh it is.
-- **Show evidence.** Per [AGENTS.md](../AGENTS.md) rule 2, claims are not
-  evidence. State the file, the line, the command, or the test result.
+- [Getting Started Guide](file:///z:/home/moaid/cherenkov-qa/docs/GETTING_STARTED.md): Install Cherenkov QA and execute your first local validation.
+- [Petstore Walkthrough](file:///z:/home/moaid/cherenkov-qa/QUICKSTART_PETSTORE.md): Interactive 5-minute tutorial running against a sample OpenAPI 3.1 Petstore API.
+- [Knowledge Transfer Onboarding Script](file:///z:/home/moaid/cherenkov-qa/docs/KT_ONBOARDING_SCRIPT.md): Complete walkthrough script for new team members.
+
+---
+
+## 2. 🛠️ How-To Guides (Task-Oriented)
+*Problem-solving recipes for specific, real-world tasks.*
+
+- [Spec Guardian Drift Monitoring](file:///z:/home/moaid/cherenkov-qa/docs/guides/spec_guardian.md): Set up the continuous drift detection daemon with hot-reloading spec watching.
+- [SAML 2.0 / SSO Integration](file:///z:/home/moaid/cherenkov-qa/docs/guides/saml_sso.md): Configure Enterprise SAML 2.0 identity providers and role mapping.
+- [SLM Model Fine-Tuning](file:///z:/home/moaid/cherenkov-qa/docs/guides/slm_training.md): Collect local telemetry and fine-tune custom QA models via `cherenkov train`.
+- [Template & MCP Tool Publishing](file:///z:/home/moaid/cherenkov-qa/docs/README-MCP-PUBLISH.md): Package and publish custom test templates to local/remote registries.
+- [CI/CD Native Pipeline Setup](file:///z:/home/moaid/cherenkov-qa/ci/README.md): Integrate Cherenkov into GitHub Actions, GitLab CI, and Jenkins.
+
+---
+
+## 3. 📋 Reference (Information-Oriented)
+*Exhaustive, structured technical descriptions for rapid lookup.*
+
+- [CLI Command Reference](file:///z:/home/moaid/cherenkov-qa/docs/cli-reference.md): Complete list of commands, options, and flags.
+- [Architecture & Map](file:///z:/home/moaid/cherenkov-qa/docs/ARCHITECTURE_MAP.md): Detailed inventory of domain ports, adapters, and core orchestrators.
+- [Error Handling Reference](file:///z:/home/moaid/cherenkov-qa/docs/ERROR_HANDLING.md): Standardized error codes, exceptions, and exit codes.
+- [Master Roadmap](file:///z:/home/moaid/cherenkov-qa/docs/ROADMAP.md): Tracking status for Phases -1 through 16.
+- [Architecture Decision Records (ADRs)](file:///z:/home/moaid/cherenkov-qa/docs/adr/INDEX.md): Formal log of design choices.
+
+---
+
+## 4. 💡 Explanations (Understanding-Oriented)
+*High-level discussions on design philosophy, trade-offs, and vision.*
+
+- [System Design Document](file:///z:/home/moaid/cherenkov-qa/docs/SYSTEM_DESIGN.md): Technical architecture and modular decomposition.
+- [D7 Validation Invariants](file:///z:/home/moaid/cherenkov-qa/AGENTS.md): Core non-negotiable rules governing test generation and self-healing.
+- [Sync Driven Development (SDD)](file:///z:/home/moaid/cherenkov-qa/docs/engineering/SYNC_DRIVEN_DEV.md): Deep dive into token-efficient agent memory protocols.
+- [Autonomous Quality Fabric (AQE 2026 Vision)](file:///z:/home/moaid/cherenkov-qa/docs/VISION_AQE_2026.md): The 10-year vision for AI quality governance.
