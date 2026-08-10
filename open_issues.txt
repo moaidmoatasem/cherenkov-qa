@@ -1,19 +1,4 @@
---- ISSUE 832 ---
-Title: Missing PR ergonomics flags in action.yml (M3)
-Body:
-Per `docs/reviews/TESTERARMY_TEARDOWN_2026-08.md` Phase D1, `action.yml` is missing PR ergonomics inputs needed for M3's PR-comment integration:
-- `pr-number`
-- `pr-title`
-- `pr-description`
-- `commit-sha`
-- `head-branch`
-- `base-branch`
-- `deeplink` (for per-PR dynamic preview environments)
-- `artifact-url` / `artifact-filename` (for build artifacts)
 
-Scope: add these inputs to `action.yml` and wire them into the CLI/daemon to achieve parity with the TesterArmy teardown recommendations.
-
-========================================
 --- ISSUE 831 ---
 Title: Friction: FAQ_OBJECTIONS.md — stale refs: validate-spec cmd, docs/ci/ path, dist/*.whl, CHERENKOV_LLM_PROVIDER/LOCALAI_BASE_URL env vars
 Body:
