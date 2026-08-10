@@ -1,25 +1,18 @@
 {
   "session": {
-    "id": "sess_20260810110114_146e5e",
-    "status": "open",
-    "task": "Retire root cherenkov.py (Issue 814)",
-    "started_at": "2026-08-10T11:01:14.353808+00:00",
-    "ended_at": null,
+    "id": "sess_20260810110145_c6d60a",
+    "status": "closed",
+    "task": "Deepen MCP tool surface (Issue 812)",
+    "started_at": "2026-08-10T11:01:45.105337+00:00",
+    "ended_at": "2026-08-10T11:03:48.839115+00:00",
     "findings_count": 0,
     "token_total": 0,
-    "summary": null,
-    "compacted": false,
-    "task_type": "Retire root cherenkov.py (Issue 814)",
+    "summary": "Implemented Issue 812 (MCP tool surface and Registry Publish). Added server.json and publish_tool in registry.py, and removed the issue from open_issues.txt.",
+    "compacted": true,
+    "task_type": "Deepen MCP tool surface (Issue 812)",
     "source": "cherenkov"
   },
   "previous_sessions": [
-    {
-      "id": "sess_20260802013052_d17a3e",
-      "task": "ui_e2e",
-      "ended_at": "2026-08-02T01:33:56.854902+00:00",
-      "summary": "M4 Playwright E2E UI automation test suite complete",
-      "token_total": 0
-    },
     {
       "id": "sess_20260802013451_a9c45b",
       "task": "audit",
@@ -82,7 +75,14 @@
       "ended_at": "2026-08-10T11:00:44.439584+00:00",
       "summary": "Closed Issue 815 as obsolete in open_issues.txt",
       "token_total": 0
+    },
+    {
+      "id": "sess_20260810110114_146e5e",
+      "task": "Retire root cherenkov.py (Issue 814)",
+      "ended_at": "2026-08-10T11:01:35.979979+00:00",
+      "summary": "Skipped Issue 814 as it was removed from the open_issues file",
+      "token_total": 0
     }
   ],
-  "sessions_since_compact": 30
+  "sessions_since_compact": 31
 }
