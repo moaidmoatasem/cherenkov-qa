@@ -862,9 +862,12 @@ TOOLS.extend([
         name=t["name"],
         description=t["description"],
         inputSchema=MCPToolInputSchema(
-            type=t["inputSchema"]["type"],
+            type=t["inputSchema"].get("type", "object"),
             properties={
-                k: MCPToolParam(**{kk: vv for kk, vv in v.items() if kk in MCPToolParam.model_fields})
+                k: MCPToolParam(
+                    type=v.get("type") or (v.get("anyOf", [{}])[0].get("type", "string") if "anyOf" in v else "string"),
+                    description=v.get("description", "")
+                )
                 for k, v in t["inputSchema"]["properties"].items()
             },
             required=t["inputSchema"].get("required", []),
@@ -881,7 +884,10 @@ TOOLS.extend([
         inputSchema=MCPToolInputSchema(
             type=t["inputSchema"].get("type", "object"),
             properties={
-                k: MCPToolParam(**{kk: vv for kk, vv in v.items() if kk in MCPToolParam.model_fields})
+                k: MCPToolParam(
+                    type=v.get("type") or (v.get("anyOf", [{}])[0].get("type", "string") if "anyOf" in v else "string"),
+                    description=v.get("description", "")
+                )
                 for k, v in (t["inputSchema"].get("properties") or {}).items()
             },
             required=t["inputSchema"].get("required", []),
