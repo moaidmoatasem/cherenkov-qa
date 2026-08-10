@@ -1,0 +1,60 @@
+site_name: Cherenkov QA
+site_description: Autonomous Quality Fabric
+site_author: TesterArmy
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - toc.integrate
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+
+nav:
+  - Home: INDEX.md
+  - Tutorials:
+      - Getting Started: GETTING_STARTED.md
+      - Petstore Quickstart: QUICKSTART_PETSTORE.md
+  - How-To Guides:
+      - Spec Guardian: guides/spec_guardian.md
+      - SAML SSO: guides/saml_sso.md
+      - SLM Training: guides/slm_training.md
+  - Reference:
+      - Architecture Map: ARCHITECTURE_MAP.md
+      - CLI Reference: cli-reference.md
+      - Error Handling: ERROR_HANDLING.md
+  - Explanation:
+      - System Design: SYSTEM_DESIGN.md
+      - Master Roadmap: ROADMAP.md
+      - Clean Architecture: adr/ADR-004-clean-architecture.md
