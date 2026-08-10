@@ -188,6 +188,18 @@
     {
       "name": "cherenkov/suggest-spec-fix",
       "description": "Given an integrity issue found in a test file, suggest a spec-anchored fix. Returns the corrected assertion line and a plain-English explanation of why the original is problematic and how the fix resolves it."
+    },
+    {
+      "name": "cherenkov/check-suite",
+      "description": "Run the cherenkov check-suite static analysis to detect weakened, deleted, or hallucinated tests."
+    },
+    {
+      "name": "cherenkov/verify",
+      "description": "Probe a live server against its OpenAPI spec to find divergences."
+    },
+    {
+      "name": "cherenkov/generate",
+      "description": "Generate Playwright E2E tests from an OpenAPI specification."
     }
   ]
 }

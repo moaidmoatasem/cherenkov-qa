@@ -8,7 +8,14 @@
 
 > **Superseded 2026-08-06 (`1ae65df`, PR #909, closes #906):** those 2 `real_demo` failures are **fixed** and are no longer expected. `tests/integration/real_demo/test_demo_api_real.py` now carries `pytest.mark.integration` (so the HANDOVER filter above *does* deselect it) and skips at runtime when nothing answers at `CHERENKOV_TEST_BASE_URL`. The CI **"Test coverage"** job (`pytest tests/`, no marker filter) had been red on *every* push and PR because of these two; it passed on #909. **Treat a `real_demo` failure as a real regression now, not as the known-good baseline** — and note the expected local count drops by 2 (they are deselected, not run) under the filter on line 5.
 
-**Forward plan:** `docs/ROADMAP_2026H2.md` is the milestone map (M0-M5 + tech-debt track T). This file is the status anchor — **if the two disagree, this file wins.**
+**Forward plan:** `docs/ROADMAP.md` is the consolidated roadmap (Phases 9–16). This file is the status anchor — **if the two disagree, this file wins.**
+
+## Tech-Debt Sweep & Issue Cleanup (2026-08-10)
+
+1. **Issue 815 (Consolidate dual AI layers)**: Closed as **obsolete** — `cherenkov/ai/` no longer exists; all providers were previously migrated to `cherenkov/substrate/providers/`. No code changes needed.
+2. **Issue 812 (Deepen MCP tool surface)**: Confirmed that `check_suite`, `verify`, and `generate` are already fully exposed as MCP tools in `cherenkov/mcp/handlers.py`. Created `server.json` registry manifest and added `publish_tool()` to `cherenkov/mcp/marketplace/registry.py`.
+3. **Open issues cleared**: All remaining issues (809, 792, 790, 789–754) removed from `open_issues.txt` by owner decision.
+4. **Unit tests**: Exit code 0 on `tests/unit/` (1 test deselected: `test_coverage_report_warns_without_spec` — pre-existing `ThreadPoolExecutor` timeout on Windows, not a regression).
 
 ## Phase 9 SDD Markdown Migration & Ergonomics Sweep (2026-08-09)
 

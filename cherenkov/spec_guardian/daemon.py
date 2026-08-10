@@ -34,6 +34,7 @@ class SpecGuardianDaemon:
         check_interval: int = 60,
         endpoints: list[dict[str, Any]] | None = None,
         db_path: Path | None = None,
+        pr_metadata: dict[str, Any] | None = None,
     ):
         """Initialize the daemon.
 
@@ -43,6 +44,7 @@ class SpecGuardianDaemon:
             check_interval: Seconds between checks (default: 60)
             endpoints: List of endpoints to check, each with method and optional params
             db_path: Path to SQLite database (default: .cherenkov/drift.db)
+            pr_metadata: Optional PR metadata for PR comment integration
         """
         self.spec_path = spec_path
         self.base_url = base_url.rstrip("/")
@@ -55,6 +57,7 @@ class SpecGuardianDaemon:
         self.total_checks = 0
         self.compliant_checks = 0
         self.all_events: list[DriftEvent] = []
+        self.pr_metadata = pr_metadata or {}
 
         # Playbooks: reusable validation strategies that fire automatically
         self._playbook_registry = PlaybookRegistry()
@@ -133,6 +136,7 @@ class SpecGuardianDaemon:
                 end_time=datetime.now(timezone.utc),
                 total_checks=self.total_checks,
                 compliant_checks=self.compliant_checks,
+                pr_metadata=self.pr_metadata if self.pr_metadata else None,
             )
             self.store.save_report(report)
             self.all_events.extend(cycle_events)
@@ -242,4 +246,5 @@ class SpecGuardianDaemon:
             end_time=datetime.now(timezone.utc),
             total_checks=self.total_checks,
             compliant_checks=self.compliant_checks,
+            pr_metadata=self.pr_metadata if self.pr_metadata else None,
         )

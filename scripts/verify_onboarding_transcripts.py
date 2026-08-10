@@ -141,7 +141,11 @@ def _strip_shell(line: str) -> str:
 
 def _validate_session(path: str, real: dict[str, set[str]]) -> list[str]:
     errors: list[str] = []
-    rel = os.path.relpath(path, _REPO_ROOT)
+    try:
+        rel = os.path.relpath(path, _REPO_ROOT)
+    except ValueError:
+        # Path may be on a different mount (e.g., Windows vs WSL); use absolute path.
+        rel = path
     seen_commands = 0
     external = 0
     for start, block in _iter_bash_blocks(path):
