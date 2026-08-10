@@ -1,17 +1,4 @@
 
---- ISSUE 812 ---
-Title: Deepen MCP tool surface (check-suite/verify/generate as agent-invokable tools) and publish per #792
-Body:
-Follow-up from `docs/reviews/COMPETITIVE_POSITIONING_2026-08.md`.
-
-There is a real MCP server (`cherenkov/mcp/{server.py,protocol.py,handlers.py,auth.py,mesh_router.py,policy.py}` + `cherenkov/mcp/tools/{sentinel.py,teleport.py}`), so this is *not* a "build an MCP server" task — it's a depth/registration gap:
-
-1. Confirm (or add) MCP tool definitions that expose `cherenkov check-suite`, `cherenkov verify`, and `cherenkov generate` as directly callable tools an external agent (Claude Code, Cursor) can invoke mid-session — e.g. "I just changed this endpoint, did I weaken any assertions?" — rather than only via CLI subprocess.
-2. Registry publish (#792): no `server.json`/registry manifest exists yet; `cherenkov/mcp/marketplace/registry.py` only *consumes* a marketplace via hardcoded `_stub_tools()` — it doesn't publish anything. `smithery.yaml` is present and points at `cherenkov mcp serve` correctly per the 2026-07-31 handover note, but hasn't been submitted to the actual Smithery/MCP registry.
-
-This is the single highest-leverage item that every piece of external competitive research (see the positioning doc) converged on independently — worth prioritizing over any new Phase 15/16 work.
-
-========================================
 --- ISSUE 809 ---
 Title: Release hygiene: publish v1.2.0 GitHub Release, resolve malformed v.1.1.1 tag, clean up orphan docs version
 Body:

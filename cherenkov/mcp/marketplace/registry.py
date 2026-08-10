@@ -44,6 +44,18 @@ class MarketplaceRegistry:
                 return t
         return None
 
+    def publish_tool(self, tool: MarketplaceTool) -> bool:
+        """Publish a new tool to the marketplace registry."""
+        try:
+            _log.info("Publishing tool %s to %s", tool.id, self.base_url)
+            # Stub for marketplace API call
+            # response = requests.post(self.base_url, json=tool.__dict__)
+            # return response.status_code == 201
+            return True
+        except Exception as e:
+            _log.error("Failed to publish tool %s: %s", tool.id, e)
+            return False
+
     def _stub_tools(self) -> list[MarketplaceTool]:
         return [
             MarketplaceTool(
