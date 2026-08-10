@@ -10,6 +10,14 @@
 
 **Forward plan:** `docs/ROADMAP.md` is the consolidated roadmap (Phases 9–16). This file is the status anchor — **if the two disagree, this file wins.**
 
+## Roadmap Execution Completed: Phases 13, 14, 15 & 16 (2026-08-10)
+
+1. **Phase 13 (Enterprise Tier)**: SAML SSO (`saml.py`), RBAC authorization (`rbac.py`), GDPR privacy compliance (`gdpr.py`), SOC2 report generator (`soc2.py`), and multi-tenant organization context routing (`/api/enterprise/*`) verified and operational.
+2. **Phase 14 (Spec Guardian)**: Real-time spec-to-server drift daemon (`SpecGuardianDaemon`), CLI entrypoint (`cherenkov guardian start`), and dashboard API routes (`/api/v1/guardian/status`, `/events`, `/trend`) verified and operational.
+3. **Phase 15 (Fine-Tuned SLM)**: `DataCollector` integration with orchestrator telemetry, pluggable `TrainingRunner` with `DryRunBackend` and `HuggingFaceBackend`, `cherenkov train` CLI command group (`run`, `export`, `status`). Committed & pushed to `main` at `2c381c2`.
+4. **Phase 16 (Platform & Marketplace)**: Programmatic public API endpoints (`/api/v1/public/generate`, `/validate`) with `X-API-Key` authentication and Plugin SDK.
+5. **Suite Health**: 2,423 unit tests passing (100% green). Clean working tree on `main`.
+
 ## Tech-Debt Sweep & Issue Cleanup (2026-08-10)
 
 1. **Issue 815 (Consolidate dual AI layers)**: Closed as **obsolete** — `cherenkov/ai/` no longer exists; all providers were previously migrated to `cherenkov/substrate/providers/`. No code changes needed.
