@@ -83,6 +83,7 @@ class DriftReport:
     end_time: datetime
     total_checks: int
     compliant_checks: int
+    pr_metadata: dict[str, Any] | None = None
 
     @property
     def drift_rate(self) -> float:
@@ -113,6 +114,7 @@ class DriftReport:
             "drift_rate": self.drift_rate,
             "critical_count": self.critical_count,
             "warning_count": self.warning_count,
+            "pr_metadata": self.pr_metadata,
         }
 
     @classmethod
@@ -125,4 +127,5 @@ class DriftReport:
             end_time=datetime.fromisoformat(data["end_time"]),
             total_checks=data["total_checks"],
             compliant_checks=data["compliant_checks"],
+            pr_metadata=data.get("pr_metadata"),
         )
