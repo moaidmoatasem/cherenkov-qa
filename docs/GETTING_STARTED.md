@@ -134,6 +134,35 @@ cd target && uvicorn target_api:app --host 127.0.0.1 --port 8000
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--target`, `-t` | *(required)* | The real server target base URL |
+| `--source` | `openapi` | Contract type to plan scenarios from — see below |
+
+##### Protocols beyond REST
+
+`--source` selects which kind of contract scenarios are planned from. Every
+value except `openapi` requires `--spec`.
+
+| `--source` | Spec format | Scenarios per operation |
+|---|---|---|
+| `openapi` *(default)* | OpenAPI JSON/YAML | Spec-derived, per path + method |
+| `graphql` | GraphQL SDL | Per query/mutation |
+| `grpc` | `.proto`, or a Buf Schema Registry module path | Happy path + missing fields |
+| `asyncapi` | AsyncAPI YAML | Happy path, missing required, invalid payload, auth — per channel operation |
+| `accessibility` | Sitemap XML or a newline-delimited URL list | Per page |
+
+```bash
+# GraphQL
+./bin/cherenkov validate --target http://localhost:8000 --source graphql --spec ./schema.graphql
+
+# gRPC — local proto, or fetched from the Buf Schema Registry
+./bin/cherenkov validate --target http://localhost:8000 --source grpc --spec ./orders.proto
+
+# AsyncAPI — plans publish/subscribe scenarios per channel
+./bin/cherenkov validate --target http://localhost:8000 --source asyncapi --spec ./orders.yaml
+```
+
+For AsyncAPI, `$ref`'d messages are resolved before planning, so the required
+fields the generated WebSocket tests assert on come from the referenced payload
+schema rather than the reference itself.
 
 ---
 
