@@ -17,7 +17,11 @@ resume_uc = ResumeSessionUseCase(store)
 
 @click.group(name="teleport")
 def teleport_cmd():
-    """Manage cross-device session teleportation (CC-5)."""
+    """Manage cross-device session teleportation (CC-5).
+
+Returns:
+    None: Command execution result.
+    """
     pass
 
 
@@ -25,7 +29,15 @@ def teleport_cmd():
 @click.argument("session_id")
 @click.argument("state_data_json", required=False, default="{}")
 def push(session_id: str, state_data_json: str):
-    """Push a session state and generate a teleport token."""
+    """Push a session state and generate a teleport token.
+
+Args:
+    session_id (str): Parameter session_id.
+    state_data_json (str): Parameter state_data_json.
+
+Returns:
+    None: Command execution result.
+    """
     try:
         state_data = json.loads(state_data_json)
     except json.JSONDecodeError:
@@ -44,7 +56,14 @@ def push(session_id: str, state_data_json: str):
 @teleport_cmd.command()
 @click.argument("token")
 def pull(token: str):
-    """Pull a session state using a teleport token."""
+    """Pull a session state using a teleport token.
+
+Args:
+    token (str): Parameter token.
+
+Returns:
+    None: Command execution result.
+    """
     snapshot = resume_uc.execute_by_token(token)
     if snapshot:
         click.echo(f"Resumed session '{snapshot.id}'.")
@@ -57,7 +76,11 @@ def pull(token: str):
 
 @teleport_cmd.command()
 def list():
-    """List all available session snapshots."""
+    """List all available session snapshots.
+
+Returns:
+    None: Command execution result.
+    """
     sessions = store.list_sessions()
     if not sessions:
         click.echo("No sessions found.")
@@ -71,7 +94,14 @@ def list():
 @teleport_cmd.command()
 @click.argument("session_id")
 def status(session_id: str):
-    """Get the status of a specific session by ID."""
+    """Get the status of a specific session by ID.
+
+Args:
+    session_id (str): Parameter session_id.
+
+Returns:
+    None: Command execution result.
+    """
     snapshot = store.load(session_id)
     if not snapshot:
         click.echo(f"Session '{session_id}' not found.", err=True)

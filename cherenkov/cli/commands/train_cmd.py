@@ -19,18 +19,21 @@ import click
 def train_cmd() -> None:
     """Fine-tune a custom SLM on captured spec/test telemetry.
 
-    \\b
-    Examples:
-        # Validate the pipeline without any GPU (safe default)
-        cherenkov train run --data telemetry.jsonl
+\b
+Examples:
+    # Validate the pipeline without any GPU (safe default)
+    cherenkov train run --data telemetry.jsonl
 
-        # Real LoRA fine-tune (requires: pip install cherenkov[training])
-        cherenkov train run --data telemetry.jsonl --backend huggingface \\
-            --model qwen2.5-coder:7b --epochs 3
+    # Real LoRA fine-tune (requires: pip install cherenkov[training])
+    cherenkov train run --data telemetry.jsonl --backend huggingface \
+        --model qwen2.5-coder:7b --epochs 3
 
-        # Export telemetry to JSONL then train
-        cherenkov train export --out telemetry.jsonl
-        cherenkov train run   --data telemetry.jsonl
+    # Export telemetry to JSONL then train
+    cherenkov train export --out telemetry.jsonl
+    cherenkov train run   --data telemetry.jsonl
+
+Returns:
+    None: Command execution result.
     """
 
 
@@ -69,7 +72,23 @@ def train_run_cmd(
     output_dir: str | None,
     as_json: bool,
 ) -> None:
-    """Run the fine-tuning pipeline on a JSONL dataset."""
+    """Run the fine-tuning pipeline on a JSONL dataset.
+
+Args:
+    data_path (str): Parameter data_path.
+    backend (str): Parameter backend.
+    base_model (str | None): Parameter base_model.
+    epochs (int): Parameter epochs.
+    batch_size (int): Parameter batch_size.
+    learning_rate (float): Parameter learning_rate.
+    lora_r (int): Parameter lora_r.
+    lora_alpha (int): Parameter lora_alpha.
+    output_dir (str | None): Parameter output_dir.
+    as_json (bool): Parameter as_json.
+
+Returns:
+    None: Command execution result.
+    """
     import json as _json
 
     from cherenkov.training.dataset import TrainingDataset
@@ -141,7 +160,16 @@ def train_run_cmd(
 @click.option("--limit", type=int, default=5000, show_default=True, help="Max records to export.")
 @click.option("--json", "as_json", is_flag=True, default=False, help="Print summary as JSON.")
 def train_export_cmd(out_path: str, limit: int, as_json: bool) -> None:
-    """Export captured telemetry from the local DB to a JSONL file for training."""
+    """Export captured telemetry from the local DB to a JSONL file for training.
+
+Args:
+    out_path (str): Parameter out_path.
+    limit (int): Parameter limit.
+    as_json (bool): Parameter as_json.
+
+Returns:
+    None: Command execution result.
+    """
     import json as _json
 
     from cherenkov.training.collector import DataCollector
@@ -174,7 +202,15 @@ def train_export_cmd(out_path: str, limit: int, as_json: bool) -> None:
 @click.option("--output", "output_dir", default=None, help="Model output directory to inspect.")
 @click.option("--json", "as_json", is_flag=True, default=False, help="Output as JSON.")
 def train_status_cmd(output_dir: str | None, as_json: bool) -> None:
-    """Show the status of the last training run (reads training_run.json)."""
+    """Show the status of the last training run (reads training_run.json).
+
+Args:
+    output_dir (str | None): Parameter output_dir.
+    as_json (bool): Parameter as_json.
+
+Returns:
+    None: Command execution result.
+    """
     import json as _json
 
     from cherenkov.training.collector import DataCollector

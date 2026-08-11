@@ -17,7 +17,14 @@ class MergeStrategy(str, Enum):
 
 @dataclass
 class SubAgentTask:
-    """A decomposed piece of work given to a single sub-agent."""
+    """A decomposed piece of work given to a single sub-agent.
+
+    Attributes:
+        instruction (str): Specific task instruction string.
+        context (dict[str, Any]): Context dictionary. Defaults to empty dict.
+        budget (int): Token budget limit. Defaults to 5000.
+        task_id (str): Unique sub-task identifier. Defaults to UUID.
+    """
 
     instruction: str
     context: dict[str, Any] = field(default_factory=dict)
@@ -27,7 +34,16 @@ class SubAgentTask:
 
 @dataclass
 class SubAgentResult:
-    """The result returned from a single sub-agent."""
+    """The result returned from a single sub-agent.
+
+    Attributes:
+        task_id (str): Associated sub-task identifier.
+        agent_id (str): Identifier of the executing sub-agent.
+        status (str): Outcome status ("success", "failed", "timeout", "budget_exceeded").
+        output (Any): Output payload.
+        tokens_used (int): Tokens consumed during execution. Defaults to 0.
+        error_message (str | None): Optional error details. Defaults to None.
+    """
 
     task_id: str
     agent_id: str
@@ -39,7 +55,16 @@ class SubAgentResult:
 
 @dataclass
 class ConductorTask:
-    """The top-level task given to the Conductor."""
+    """The top-level task given to the Conductor.
+
+    Attributes:
+        objective (str): High-level task objective description.
+        payload (Any): Objective payload or input data.
+        sub_tasks (list[SubAgentTask]): List of decomposed sub-agent tasks. Defaults to empty list.
+        merge_strategy (MergeStrategy): Aggregation strategy. Defaults to UNION.
+        global_timeout_seconds (int): Execution timeout cap in seconds. Defaults to 300.
+        task_id (str): Unique conductor task identifier. Defaults to UUID.
+    """
 
     objective: str
     payload: Any
@@ -51,7 +76,15 @@ class ConductorTask:
 
 @dataclass
 class ConductorResult:
-    """The final aggregated result from the Conductor."""
+    """The final aggregated result from the Conductor.
+
+    Attributes:
+        task_id (str): Associated ConductorTask identifier.
+        status (str): Overall completion status ("success", "partial", "failed").
+        aggregated_output (Any): Merged output from sub-agent results.
+        sub_results (list[SubAgentResult]): List of individual sub-agent results.
+        total_tokens_used (int): Total token count used across all sub-tasks.
+    """
 
     task_id: str
     status: str  # "success", "partial", "failed"
@@ -70,7 +103,19 @@ class StackStrategy(str, Enum):
 
 @dataclass
 class PRSubTask:
-    """A piece of work attached to a specific PR layer in a stack."""
+    """A piece of work attached to a specific PR layer in a stack.
+
+    Attributes:
+        layer_index (int): Index position of PR layer in stack.
+        layer_name (str): Display name for the PR layer.
+        branch_name (str): Git branch name for layer PR.
+        base_branch (str): Base target branch for layer PR.
+        instruction (str): Layer modification instructions.
+        target_paths (list[str]): File paths targeted by layer.
+        sdd_budget (int): Token budget for layer execution. Defaults to 25000.
+        pr_number (int | None): Created PR number if created. Defaults to None.
+        task_id (str): Sub-task UUID. Defaults to UUID.
+    """
 
     layer_index: int
     layer_name: str
@@ -85,7 +130,16 @@ class PRSubTask:
 
 @dataclass
 class StackedPRTask:
-    """Top-level task for coordinating a stack of dependent PRs."""
+    """Top-level task for coordinating a stack of dependent PRs.
+
+    Attributes:
+        epic_issue_id (str): Parent epic GitHub issue identifier.
+        title (str): Stacked PR title summary.
+        strategy (StackStrategy): Stack slicing strategy.
+        layers (list[PRSubTask]): Ordered list of PR sub-tasks.
+        global_sdd_budget (int): Overall token budget cap. Defaults to 100000.
+        stack_id (str): Unique stack identifier string.
+    """
 
     epic_issue_id: str
     title: str
@@ -93,3 +147,4 @@ class StackedPRTask:
     layers: list[PRSubTask]
     global_sdd_budget: int = 100000
     stack_id: str = field(default_factory=lambda: f"stack_{uuid.uuid4().hex[:8]}")
+

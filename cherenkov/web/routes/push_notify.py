@@ -10,7 +10,11 @@ from sse_starlette.sse import EventSourceResponse
 router = APIRouter(prefix="/api/v1/push", tags=["push"])
 
 async def event_generator() -> AsyncGenerator[dict[str, str], None]:
-    """Mock event generator for push notifications."""
+    """Mock event generator for push notifications.
+
+    Yields:
+        Dictionary payloads containing event type and data strings.
+    """
     while True:
         # In a real implementation, this would yield events from a message queue
         await asyncio.sleep(30)
@@ -21,5 +25,9 @@ async def event_generator() -> AsyncGenerator[dict[str, str], None]:
 
 @router.get("/stream")
 async def stream_notifications() -> EventSourceResponse:
-    """SSE endpoint for dashboard push notifications."""
+    """SSE endpoint for dashboard push notifications.
+
+    Returns:
+        EventSourceResponse streaming SSE events to connected clients.
+    """
     return EventSourceResponse(event_generator())

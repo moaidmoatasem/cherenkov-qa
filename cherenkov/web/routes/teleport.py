@@ -15,7 +15,17 @@ resume_uc = ResumeSessionUseCase(store)
 
 @router.get("/qr")
 def get_teleport_qr(token: str) -> dict[str, Any]:
-    """Retrieve session via QR token."""
+    """Retrieve session snapshot via QR token.
+
+    Args:
+        token: QR session token string.
+
+    Returns:
+        Dictionary payload containing status, session ID, and state data snapshot.
+
+    Raises:
+        HTTPException: 404 Not Found if token is invalid or expired.
+    """
     snapshot = resume_uc.execute_by_token(token)
     if not snapshot:
         raise HTTPException(status_code=404, detail="Token not found or expired")

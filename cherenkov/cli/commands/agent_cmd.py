@@ -48,8 +48,11 @@ def _render_block() -> str:
 def upsert_agents_block(existing: str | None) -> str:
     """Return AGENTS.md content with exactly one current CHERENKOV block.
 
-    Replaces an existing block in place (so re-running does not append), and
-    otherwise attaches the block at the end, leaving the rest of the file alone.
+    Args:
+        existing: Existing string content of AGENTS.md, or None if file does not exist.
+
+    Returns:
+        str: Updated AGENTS.md string content with CHERENKOV block attached or replaced.
     """
     block = _render_block()
     if not existing:
@@ -103,7 +106,11 @@ def _install_skills() -> dict[str, object]:
 
 @click.group("agent")
 def agent_cmd():
-    """Set this repository up for coding agents."""
+    """Set this repository up for coding agents.
+
+Returns:
+    None: Command execution result.
+    """
 
 
 @agent_cmd.command("init")
@@ -117,8 +124,18 @@ def agent_cmd():
 def agent_init_cmd(root: Path, skip_agents_md: bool, skip_skills: bool, as_json: bool):
     """Install the public skills and write a CHERENKOV block into AGENTS.md.
 
-    Run once per repository. Idempotent: re-running refreshes the block in place.
+Run once per repository. Idempotent: re-running refreshes the block in place.
+
+Args:
+    root: Path to repository root directory.
+    skip_agents_md: True to skip updating AGENTS.md.
+    skip_skills: True to skip running npx skill installation.
+    as_json: True to output structured JSON status.
+
+Returns:
+    None: Command execution result.
     """
+
     skills = {"status": "skipped", "detail": "--skip-skills"} if skip_skills else _install_skills()
 
     if skip_agents_md:

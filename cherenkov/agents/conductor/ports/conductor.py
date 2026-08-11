@@ -17,5 +17,13 @@ class AgentConductor(Protocol):
     """
 
     def execute(self, task: ConductorTask) -> ConductorResult:
-        """Run the conductor task and return the aggregated result."""
+        """Run the conductor task and return the aggregated result.
+
+        Args:
+            task (ConductorTask): Top-level task containing sub-agent tasks and merge strategy.
+
+        Returns:
+            ConductorResult: Aggregated result from all executed sub-agent tasks.
+        """
         ...
+

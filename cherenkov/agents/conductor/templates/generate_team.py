@@ -13,13 +13,14 @@ def create_generate_team(
     """Create a ConductorTask to generate tests for multiple endpoints in parallel.
 
     Args:
-        openapi_spec: The parsed OpenAPI spec dictionary.
-        endpoints: List of endpoint paths to generate tests for.
-        budget_per_endpoint: Token budget for each endpoint generation.
+        openapi_spec (dict): The parsed OpenAPI spec dictionary.
+        endpoints (list[str]): List of endpoint paths to generate tests for.
+        budget_per_endpoint (int): Token budget for each endpoint generation. Defaults to 15000.
 
     Returns:
-        A ConductorTask configured for parallel test generation.
+        ConductorTask: A ConductorTask configured for parallel test generation.
     """
+
     instruction_template = (
         "Generate a Playwright conformance test for the following endpoint:\n"
         "Endpoint: {item}\n\n"

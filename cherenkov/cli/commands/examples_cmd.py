@@ -6,7 +6,11 @@ import click
 
 @click.command("examples")
 def examples_cmd():
-    """Show a gallery of common CHERENKOV one-liners."""
+    """Show a gallery of common CHERENKOV one-liners.
+
+Returns:
+    None: Command execution result.
+    """
     click.echo(click.style("CHERENKOV Useful One-Liners:", bold=True, fg="blue"))
     click.echo("")
 

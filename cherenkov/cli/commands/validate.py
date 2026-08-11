@@ -1,3 +1,5 @@
+"""cherenkov/cli/validate.py — CLI command module."""
+
 from __future__ import annotations
 
 import glob
@@ -115,7 +117,36 @@ def _findings_report(results: dict):
 @click.option("--artifact-filename", help="Build artifact filename")
 def validate_cmd(target, source, format, workers, no_html, no_cache, spec, output, tests_filter, fail_on_drift, json_summary, json_out, quiet, verbose,
                  pr_number, pr_title, pr_description, commit_sha, head_branch, base_branch, deeplink, artifact_url, artifact_filename):  # noqa: ARG001
-    """Validate E2E test suite against a real server"""
+    """Validate E2E test suite against a real server
+
+Args:
+    target: Parameter target.
+    source: Parameter source.
+    format: Parameter format.
+    workers: Parameter workers.
+    no_html: Parameter no_html.
+    no_cache: Parameter no_cache.
+    spec: Parameter spec.
+    output: Parameter output.
+    tests_filter: Parameter tests_filter.
+    fail_on_drift: Parameter fail_on_drift.
+    json_summary: Parameter json_summary.
+    json_out: Parameter json_out.
+    quiet: Parameter quiet.
+    verbose: Parameter verbose.
+    pr_number: Parameter pr_number.
+    pr_title: Parameter pr_title.
+    pr_description: Parameter pr_description.
+    commit_sha: Parameter commit_sha.
+    head_branch: Parameter head_branch.
+    base_branch: Parameter base_branch.
+    deeplink: Parameter deeplink.
+    artifact_url: Parameter artifact_url.
+    artifact_filename: Parameter artifact_filename.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.core.errors import ExitCode
 
     if spec == "-":

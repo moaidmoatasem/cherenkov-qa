@@ -203,6 +203,9 @@ Please replace with a meaningful description.
 
 :return: <description>"""
 def test_mcp_event_bus_publish_then_list():
+    """Placeholder docstring.
+
+:return: <description>"""
     _fresh_bus()
     result = _call(
         "event_bus_publish",
@@ -226,6 +229,9 @@ Please replace with a meaningful description.
 
 :return: <description>"""
 def test_mcp_event_bus_list_filters_by_category():
+    """Placeholder docstring.
+
+:return: <description>"""
     bus = _fresh_bus()
     publish("stage_start", {"stage": "INGEST"}, run_id="m2")
     bus.publish(
@@ -251,6 +257,9 @@ Please replace with a meaningful description.
 
 :return: <description>"""
 def test_mcp_event_bus_get_returns_event():
+    """Placeholder docstring.
+
+:return: <description>"""
     _fresh_bus()
     pub = _text(_call("event_bus_publish", {"name": "system.health", "payload": {"status": "ok"}}))
     event_id = pub["event_id"]
@@ -270,6 +279,9 @@ Please replace with a meaningful description.
 
 :return: <description>"""
 def test_mcp_event_bus_get_missing_returns_error():
+    """Placeholder docstring.
+
+:return: <description>"""
     _fresh_bus()
     result = _call("event_bus_get", {"event_id": "does-not-exist"})
     assert result["isError"] is True
@@ -285,6 +297,9 @@ Please replace with a meaningful description.
 
 :return: <description>"""
 def test_mcp_event_bus_stats_returns_dict():
+    """Placeholder docstring.
+
+:return: <description>"""
     _fresh_bus()
     payload = _text(_call("event_bus_stats", {}))
     assert payload["ok"] is True
@@ -302,6 +317,9 @@ Please replace with a meaningful description.
 
 :return: <description>"""
 def test_mcp_event_bus_publish_invalid_input_returns_error():
+    """Placeholder docstring.
+
+:return: <description>"""
     _fresh_bus()
     result = _call("event_bus_publish", {"name": ""})
     assert result["isError"] is True

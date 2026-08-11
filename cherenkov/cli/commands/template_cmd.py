@@ -7,13 +7,21 @@ from cherenkov.marketplace.templates import MarketplaceTemplate, TemplateRegistr
 
 @click.group("template")
 def template_cmd() -> None:
-    """Manage and install test templates from the marketplace."""
+    """Manage and install test templates from the marketplace.
+
+Returns:
+    None: Command execution result.
+    """
     pass
 
 
 @template_cmd.command("search")
 def template_search_cmd() -> None:
-    """List available templates from the marketplace."""
+    """List available templates from the marketplace.
+
+Returns:
+    None: Command execution result.
+    """
     registry = TemplateRegistry()
     templates = registry.discover_templates()
     if not templates:
@@ -30,7 +38,11 @@ def template_search_cmd() -> None:
 
 @template_cmd.command("list")
 def template_list_cmd() -> None:
-    """List locally installed templates."""
+    """List locally installed templates.
+
+Returns:
+    None: Command execution result.
+    """
     registry = TemplateRegistry()
     installed = registry.list_installed_templates()
     if not installed:
@@ -45,7 +57,14 @@ def template_list_cmd() -> None:
 @template_cmd.command("install")
 @click.argument("template_id")
 def template_install_cmd(template_id: str) -> None:
-    """Download and install a specific template."""
+    """Download and install a specific template.
+
+Args:
+    template_id (str): Parameter template_id.
+
+Returns:
+    None: Command execution result.
+    """
     registry = TemplateRegistry()
     success = registry.install_template(template_id)
     if success:
@@ -69,7 +88,19 @@ def template_publish_cmd(
     tags: str,
     file_path: str | None,
 ) -> None:
-    """Publish a custom test template to the marketplace."""
+    """Publish a custom test template to the marketplace.
+
+Args:
+    template_id (str): Parameter template_id.
+    name (str): Parameter name.
+    description (str): Parameter description.
+    version (str): Parameter version.
+    tags (str): Parameter tags.
+    file_path (str | None): Parameter file_path.
+
+Returns:
+    None: Command execution result.
+    """
     registry = TemplateRegistry()
     tag_list = [t.strip() for t in tags.split(",") if t.strip()]
     template = MarketplaceTemplate(

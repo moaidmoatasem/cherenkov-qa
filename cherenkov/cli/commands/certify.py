@@ -106,23 +106,38 @@ def certify_cmd(
 ) -> None:
     """Issue a signed verification certificate for a live API.
 
-    \b
-    The certificate carries:
-      · a SHA-256 fingerprint of all fields (tamper-evident offline)
-      · an optional HMAC-SHA256 signature when --signing-key is provided
-      · a human-readable verdict (PASS / WARN / FAIL)
+
+The certificate carries:
+  · a SHA-256 fingerprint of all fields (tamper-evident offline)
+  · an optional HMAC-SHA256 signature when --signing-key is provided
+  · a human-readable verdict (PASS / WARN / FAIL)
 
-    \b
-    Verdict rules:
-      PASS  — zero divergences
-      WARN  — only MEDIUM/LOW divergences found
-      FAIL  — at least one HIGH or CRITICAL divergence
+
+Verdict rules:
+  PASS  — zero divergences
+  WARN  — only MEDIUM/LOW divergences found
+  FAIL  — at least one HIGH or CRITICAL divergence
 
-    \b
-    Examples:
-      cherenkov certify
-      cherenkov certify --url http://localhost:8080 --output cert.json
-      cherenkov certify --verify cert.json
+
+Examples:
+  cherenkov certify
+  cherenkov certify --url http://localhost:8080 --output cert.json
+  cherenkov certify --verify cert.json
+
+Args:
+    url (str | None): Parameter url.
+    spec (str | None): Parameter spec.
+    llm (bool): Parameter llm.
+    output (str | None): Parameter output.
+    signing_key (str | None): Parameter signing_key.
+    fail_on_fail (bool): Parameter fail_on_fail.
+    verify_file (str | None): Parameter verify_file.
+    compliance (bool): Parameter compliance.
+    coverage_report (bool): Parameter coverage_report.
+    as_json (bool): Parameter as_json.
+
+Returns:
+    None: Command execution result.
     """
     # ── verify-only mode ────────────────────────────────────────────────────────
     if verify_file:

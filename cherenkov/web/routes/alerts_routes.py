@@ -15,7 +15,11 @@ def _engine() -> AlertEngine:
 
 @router.get("/policy", operation_id="get_alert_policy")
 async def get_alert_policy():
-    """Return the default alert policy thresholds."""
+    """Return the default alert policy thresholds.
+
+    Returns:
+        Dictionary payload listing default alert threshold values.
+    """
     p = AlertPolicy()
     return {
         "min_divergences": p.min_divergences,
@@ -36,6 +40,15 @@ async def evaluate_alert(
 
     Delivery to configured notifiers (Slack, Teams, webhook, etc.) is driven by
     env vars (`CHERENKOV_*_WEBHOOK_URL`, etc.) via `NotifierRegistry.from_env()`.
+
+    Args:
+        target_url: Target API base URL string to evaluate.
+        min_divergences: Minimum divergence count threshold.
+        min_regressions: Minimum regression count threshold.
+        cooldown_seconds: Cooldown quiet period in seconds.
+
+    Returns:
+        Dictionary summarizing alert evaluation and notification delivery results.
     """
     policy = AlertPolicy(
         min_divergences=max(0, min_divergences),

@@ -12,7 +12,11 @@ router = APIRouter(prefix="/api/v1/perf", tags=["perf"])
 
 @router.get("/metrics", operation_id="get_perf_metrics")
 async def get_perf_metrics() -> List[Dict[str, Any]]:
-    """Return latest performance metrics from SQLite baseline store."""
+    """Return latest performance metrics from SQLite baseline store.
+
+    Returns:
+        List of performance metrics dictionaries per endpoint/method combination.
+    """
     analyzer = PerformanceAnalyzer()
     conn = analyzer._connect()
     
@@ -48,7 +52,14 @@ async def get_perf_metrics() -> List[Dict[str, Any]]:
 
 @router.post("/run", operation_id="run_perf_test")
 async def run_perf_test(target_url: Optional[str] = None) -> Dict[str, Any]:
-    """Execute a k6 performance test and return metrics."""
+    """Execute a k6 performance test and return metrics.
+
+    Args:
+        target_url: Optional target API base URL string to run performance tests against.
+
+    Returns:
+        Dictionary containing performance test execution summary and metrics.
+    """
     runner = K6Runner()
     result = runner.run_k6_validation(api_url=target_url)
     

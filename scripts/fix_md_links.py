@@ -1,3 +1,4 @@
+"""Script to replace and repair broken internal link paths in documentation files."""
 import os
 import re
 from pathlib import Path
@@ -166,19 +167,20 @@ replacements_by_file = {
     ],
 }
 
-total_changed = 0
-for rel_file, replacements in replacements_by_file.items():
-    file_path = repo_root / rel_file
-    if not file_path.exists():
-        print(f"Warning: file {rel_file} does not exist!")
-        continue
-    content = file_path.read_text(encoding="utf-8")
-    orig_content = content
-    for old_str, new_str in replacements:
-        content = content.replace(old_str, new_str)
-    if content != orig_content:
-        file_path.write_text(content, encoding="utf-8")
-        total_changed += 1
-        print(f"Updated {rel_file}")
+def main() -> None:
+    """Repair broken internal Markdown link references across documentation files.
 
-print(f"\nDone updating {total_changed} files.")
+    Returns:
+        None.
+    """
+    total_changed = 0
+    for rel_file, replacements in replacements_by_file.items():
+        file_path = repo_root / rel_file
+        if not file_path.exists():
+            print(f"Warning: file {rel_file} does not exist!")
+            continue
+        content = file_path.read_text(encoding="utf-8")
+        orig_content = content
+        for old_str, new_str in replacements:
+            content = content.replace(old_str, new_str)
+        if content != o

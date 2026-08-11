@@ -163,6 +163,9 @@ def install_error_handlers(app: FastAPI) -> None:
 
     Args:
         app: Target FastAPI application instance to configure.
+
+    Returns:
+        None.
     """
 
     @app.exception_handler(APIError)

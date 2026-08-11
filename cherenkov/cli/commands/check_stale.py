@@ -29,14 +29,24 @@ import click
 def check_stale_cmd(spec, manifest, fail_on_stale, as_json):
     """Check whether generated tests are stale relative to the spec.
 
-    Reads .cherenkov/test_manifest.json (written by `cherenkov validate` or
-    `cherenkov generate`) and compares the stored spec hash against the current
-    file content. Flags missing test files too.
+Reads .cherenkov/test_manifest.json (written by `cherenkov validate` or
+`cherenkov generate`) and compares the stored spec hash against the current
+file content. Flags missing test files too.
 
-    Example:
-        cherenkov check-stale --fail-on-stale
-        cherenkov check-stale --spec openapi.yaml --json
+Example:
+    cherenkov check-stale --fail-on-stale
+    cherenkov check-stale --spec openapi.yaml --json
+
+Args:
+    spec: Path to OpenAPI spec override, or None.
+    manifest: Path to test manifest JSON file.
+    fail_on_stale: True to exit status 1 if tests are stale.
+    as_json: True to output structured JSON response.
+
+Returns:
+    None: Command execution result.
     """
+
     from cherenkov.core.staleness import StalenessManifest
 
     m = StalenessManifest(manifest_path=Path(manifest))

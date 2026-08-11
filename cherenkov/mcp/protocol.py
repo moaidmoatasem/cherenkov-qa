@@ -31,20 +31,48 @@ DispatchTable = dict[str, Callable[[dict[str, Any]], Any]]
 
 
 def _write_response(resp: JsonRpcResponse) -> None:
-    """Serialise and flush one JSON-RPC response to stdout."""
+    """Serialise and flush one JSON-RPC response to stdout.
+
+    Args:
+        resp (JsonRpcResponse): Response object to write.
+
+    Returns:
+        None
+    """
     line = resp.model_dump_json(exclude_none=False)
     sys.stdout.write(line + "\n")
     sys.stdout.flush()
 
+
 def send_notification(method: str, params: dict[str, Any] | None = None) -> None:
-    """Send a JSON-RPC notification to the client."""
+    """Send a JSON-RPC notification to the client.
+
+    Args:
+        method (str): Notification method name string.
+        params (dict[str, Any] | None): Optional parameters dictionary. Defaults to None.
+
+    Returns:
+        None
+    """
     from cherenkov.mcp.contracts import JsonRpcRequest
     req = JsonRpcRequest(method=method, params=params or {})
     line = req.model_dump_json(exclude_none=True)
     sys.stdout.write(line + "\n")
     sys.stdout.flush()
 
+
 def _make_error(id: Any, code: int, message: str, data: Any = None) -> JsonRpcResponse:
+    """Construct an error JsonRpcResponse object.
+
+    Args:
+        id (Any): Request identifier.
+        code (int): JSON-RPC error code.
+        message (str): Error description message.
+        data (Any): Optional additional error data. Defaults to None.
+
+    Returns:
+        JsonRpcResponse: Response object configured with error.
+    """
     from cherenkov.mcp.contracts import JsonRpcError
 
     return JsonRpcResponse(
@@ -53,15 +81,30 @@ def _make_error(id: Any, code: int, message: str, data: Any = None) -> JsonRpcRe
 
 
 def _make_success(id: Any, result: Any) -> JsonRpcResponse:
+    """Construct a successful JsonRpcResponse object.
+
+    Args:
+        id (Any): Request identifier.
+        result (Any): Successful result payload.
+
+    Returns:
+        JsonRpcResponse: Response object configured with result.
+    """
     return JsonRpcResponse(id=id, result=result)
 
 
 def dispatch_one(raw: str, table: DispatchTable) -> JsonRpcResponse | None:
-    """
-    Parse one JSON-RPC 2.0 request line and dispatch to *table*.
+    """Parse one JSON-RPC 2.0 request line and dispatch to *table*.
 
     Returns None for notifications (id is None/absent and we should not reply).
     Returning an error response on parse failures is required by the spec.
+
+    Args:
+        raw (str): Raw JSON-RPC request line string.
+        table (DispatchTable): Mapping of method names to handler functions.
+
+    Returns:
+        JsonRpcResponse | None: JsonRpcResponse object if a response is expected, or None for notifications.
     """
     # ── Parse ────────────────────────────────────────────────────────────────
     try:
@@ -100,13 +143,20 @@ def dispatch_one(raw: str, table: DispatchTable) -> JsonRpcResponse | None:
 
 
 def serve_stdio(table: DispatchTable, *, input_stream=None, output_stream=None) -> None:
-    """
-    Run the JSON-RPC 2.0 stdio server loop.
+    """Run the JSON-RPC 2.0 stdio server loop.
 
     Reads lines from *input_stream* (default: sys.stdin) until EOF.
     Writes responses to *output_stream* (default: sys.stdout).
 
     Both streams can be overridden for testing without monkey-patching globals.
+
+    Args:
+        table (DispatchTable): Mapping of method names to handler callables.
+        input_stream: Optional input text stream. Defaults to sys.stdin.
+        output_stream: Optional output text stream. Defaults to sys.stdout.
+
+    Returns:
+        None
     """
 
     stdin = input_stream or sys.stdin
@@ -125,3 +175,4 @@ def serve_stdio(table: DispatchTable, *, input_stream=None, output_stream=None) 
     finally:
         if output_stream:
             sys.stdout = _orig_stdout
+

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Deprecated launcher script for the dashboard API server."""
 # DEPRECATED: track-b-c-deferred/ was re-integrated and deleted.
 # The dashboard API is now served by cherenkov/web/api.py via uvicorn directly.
 # This script is dead code.

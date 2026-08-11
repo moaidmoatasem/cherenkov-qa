@@ -6,7 +6,7 @@
 ## 🔒 My Identity
 - Archetype: sentinel
 - Working directory: Z:\home\moaid\cherenkov-qa\.agents\sentinel
-- Orchestrator: 777f9ac6-32d5-4707-9ef4-f40269cf9473
+- Orchestrator: 5abe0102-471d-4907-ada5-5f7f4a3b667f
 - Victory Auditor: to be spawned on victory claim
 
 ## 🔒 Key Constraints

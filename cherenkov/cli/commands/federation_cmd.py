@@ -27,7 +27,11 @@ def _save_config(cfg: dict) -> None:
 
 @click.group("federation")
 def federation_cmd() -> None:
-    """Manage federation with remote CHERENKOV instances."""
+    """Manage federation with remote CHERENKOV instances.
+
+Returns:
+    None: Command execution result.
+    """
     pass
 
 
@@ -35,7 +39,15 @@ def federation_cmd() -> None:
 @click.argument("url")
 @click.option("--token", default=None, help="Bearer token for auth.")
 def federation_join_cmd(url: str, token: str) -> None:
-    """Store a remote federation endpoint."""
+    """Store a remote federation endpoint.
+
+Args:
+    url (str): Parameter url.
+    token (str): Parameter token.
+
+Returns:
+    None: Command execution result.
+    """
     cfg = _load_config()
     cfg["remote_url"] = url.rstrip("/")
     cfg["token"] = token
@@ -46,7 +58,14 @@ def federation_join_cmd(url: str, token: str) -> None:
 @federation_cmd.command("query")
 @click.argument("topic")
 def federation_query_cmd(topic: str) -> None:
-    """Query the remote mesh for a topic and display results."""
+    """Query the remote mesh for a topic and display results.
+
+Args:
+    topic (str): Parameter topic.
+
+Returns:
+    None: Command execution result.
+    """
     cfg = _load_config()
     if "remote_url" not in cfg:
         click.echo("No federation endpoint configured. Use 'cherenkov federation join' first.", err=True)
@@ -60,7 +79,15 @@ def federation_query_cmd(topic: str) -> None:
 @click.argument("topic")
 @click.argument("payload", type=click.File("r"))
 def federation_push_cmd(topic: str, payload) -> None:
-    """Push a JSON payload to the remote mesh under a topic."""
+    """Push a JSON payload to the remote mesh under a topic.
+
+Args:
+    topic (str): Parameter topic.
+    payload: Parameter payload.
+
+Returns:
+    None: Command execution result.
+    """
     cfg = _load_config()
     if "remote_url" not in cfg:
         click.echo("No federation endpoint configured. Use 'cherenkov federation join' first.", err=True)

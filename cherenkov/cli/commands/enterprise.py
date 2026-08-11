@@ -18,13 +18,21 @@ from cherenkov.enterprise.rbac import Role, User
 
 @click.group("enterprise")
 def enterprise_cmd():
-    """Enterprise feature commands: org management, SSO, RBAC, audit, compliance."""
+    """Enterprise feature commands: org management, SSO, RBAC, audit, compliance.
+
+Returns:
+    None: Command execution result.
+    """
     pass
 
 
 @enterprise_cmd.group("org")
 def org_group():
-    """Manage organizations and tenants."""
+    """Manage organizations and tenants.
+
+Returns:
+    None: Command execution result.
+    """
     pass
 
 
@@ -32,7 +40,15 @@ def org_group():
 @click.option("--name", required=True, help="Organization name")
 @click.option("--owner", required=True, help="Owner email or user ID")
 def org_create(name, owner):
-    """Create a new multi-tenant organization."""
+    """Create a new multi-tenant organization.
+
+Args:
+    name: Parameter name.
+    owner: Parameter owner.
+
+Returns:
+    None: Command execution result.
+    """
     manager = get_org_manager()
     org = manager.create_org(name, owner)
     click.echo(f"Created Org: {org.name} (ID: {org.id})")
@@ -40,7 +56,11 @@ def org_create(name, owner):
 
 @org_group.command("list")
 def org_list():
-    """List all organizations."""
+    """List all organizations.
+
+Returns:
+    None: Command execution result.
+    """
     manager = get_org_manager()
     orgs = manager.list_orgs()
     if not orgs:
@@ -51,7 +71,11 @@ def org_list():
 
 @enterprise_cmd.group("audit")
 def audit_group():
-    """Access enterprise audit logs."""
+    """Access enterprise audit logs.
+
+Returns:
+    None: Command execution result.
+    """
     pass
 
 
@@ -59,7 +83,15 @@ def audit_group():
 @click.option("--format", "export_format", type=click.Choice(["json", "csv"]), default="json", help="Export format")
 @click.option("--output", required=True, help="Output file path")
 def audit_export(export_format, output):
-    """Export audit log events."""
+    """Export audit log events.
+
+Args:
+    export_format: Parameter export_format.
+    output: Parameter output.
+
+Returns:
+    None: Command execution result.
+    """
     log = get_audit_log()
     if export_format == "json":
         log.export_json(output)
@@ -70,14 +102,25 @@ def audit_export(export_format, output):
 
 @enterprise_cmd.group("compliance")
 def compliance_group():
-    """Generate compliance and governance reports."""
+    """Generate compliance and governance reports.
+
+Returns:
+    None: Command execution result.
+    """
     pass
 
 
 @compliance_group.command("generate")
 @click.option("--output", required=True, help="Output JSON file path")
 def compliance_generate(output):
-    """Generate SOC2 compliance report."""
+    """Generate SOC2 compliance report.
+
+Args:
+    output: Parameter output.
+
+Returns:
+    None: Command execution result.
+    """
     generator = get_soc2()
     report = generator.generate_report("DefaultOrg")
     with open(output, "w", encoding="utf-8") as f:
@@ -87,7 +130,11 @@ def compliance_generate(output):
 
 @enterprise_cmd.group("saml")
 def saml_group():
-    """Configure SAML 2.0 / SSO."""
+    """Configure SAML 2.0 / SSO.
+
+Returns:
+    None: Command execution result.
+    """
     pass
 
 @saml_group.command("configure")
@@ -96,7 +143,17 @@ def saml_group():
 @click.option("--acs-url", default="/api/v1/auth/saml/callback", help="Assertion Consumer Service URL")
 @click.option("--enabled/--disabled", "enabled", default=True, help="Enable or disable SAML SSO")
 def saml_configure(idp_metadata_url, entity_id, acs_url, enabled):
-    """Configure SAML 2.0 / SSO against an IdP metadata endpoint."""
+    """Configure SAML 2.0 / SSO against an IdP metadata endpoint.
+
+Args:
+    idp_metadata_url: Parameter idp_metadata_url.
+    entity_id: Parameter entity_id.
+    acs_url: Parameter acs_url.
+    enabled: Parameter enabled.
+
+Returns:
+    None: Command execution result.
+    """
     config = SAMLConfig(
         idp_metadata_url=idp_metadata_url,
         entity_id=entity_id,
@@ -113,14 +170,26 @@ def saml_configure(idp_metadata_url, entity_id, acs_url, enabled):
 
 @enterprise_cmd.group("rbac")
 def rbac_group():
-    """Manage Role-Based Access Control."""
+    """Manage Role-Based Access Control.
+
+Returns:
+    None: Command execution result.
+    """
     pass
 
 @rbac_group.command("assign")
 @click.option("--user", required=True, help="User ID to assign the role to")
 @click.option("--role", required=True, type=click.Choice([r.value for r in Role]), help="Role to assign")
 def rbac_assign(user, role):
-    """Assign a role to a user in the RBAC engine."""
+    """Assign a role to a user in the RBAC engine.
+
+Args:
+    user: Parameter user.
+    role: Parameter role.
+
+Returns:
+    None: Command execution result.
+    """
     engine = get_rbac()
     target_role = Role(role)
     if engine.get_user(user) is None:

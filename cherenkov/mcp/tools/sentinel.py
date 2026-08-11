@@ -111,9 +111,15 @@ SENTINEL_TOOL_DEFS: list[dict[str, Any]] = [
 # ── Tool handlers ─────────────────────────────────────────────────────────────
 
 def handle_audit_test_file(params: dict[str, Any]) -> dict[str, Any]:
-    """
-    MCP handler for cherenkov/audit-test-file.
+    """MCP handler for cherenkov/audit-test-file.
+
     Wraps the integrity API's audit_test_integrity() function.
+
+    Args:
+        params (dict[str, Any]): Dictionary containing test_content, optional test_format, and optional agent_id.
+
+    Returns:
+        dict[str, Any]: Audit result dictionary including verdict, integrity score, issues, and certificate.
     """
     test_content = params.get("test_content", "")
     test_format = params.get("test_format", "playwright")
@@ -160,9 +166,15 @@ def handle_audit_test_file(params: dict[str, Any]) -> dict[str, Any]:
 
 
 def handle_check_assertion(params: dict[str, Any]) -> dict[str, Any]:
-    """
-    MCP handler for cherenkov/check-assertion.
+    """MCP handler for cherenkov/check-assertion.
+
     Quick single-line assertion strength check for real-time IDE feedback.
+
+    Args:
+        params (dict[str, Any]): Dictionary containing assertion line and format.
+
+    Returns:
+        dict[str, Any]: Assertion strength evaluation result dictionary.
     """
     line = params.get("line", "").strip()
     fmt = params.get("format", "playwright")
@@ -230,10 +242,17 @@ _PYTEST_FIX_TEMPLATES: dict[str, str] = {
 
 
 def handle_suggest_spec_fix(params: dict[str, Any]) -> dict[str, Any]:
-    """
-    MCP handler for cherenkov/suggest-spec-fix.
+    """MCP handler for cherenkov/suggest-spec-fix.
+
     Returns a corrected assertion anchored to the OpenAPI spec.
+
+    Args:
+        params (dict[str, Any]): Dictionary containing original_line, issue_type, and expected_status.
+
+    Returns:
+        dict[str, Any]: Fixed assertion line and explanation payload dictionary.
     """
+
     original_line = params.get("original_line", "")
     issue_type = params.get("issue_type", "")
     expected_status = params.get("expected_status", 200)
