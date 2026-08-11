@@ -21,11 +21,11 @@ Welcome to the Agent Memory Wiki (`agent_memory/`). This directory solves "AI am
 
 ## Agent Skills (MCP Tools)
 The following skills have been re-integrated from Track B/C and are exposed via MCP for openCode clients and autonomous agents:
-- [Visual Diff Baseline](../skills/visual-diff.md)
-- [K6 Perf Runner](../skills/k6-perf.md)
-- [RAG Index Query](../skills/rag-query.md)
-- [Jira Exporter](../skills/jira-exporter.md)
-- [MENA Compliance Scanner](../skills/mena-compliance.md)
+- [Visual Diff Baseline](../skills/visual-diff/SKILL.md)
+- [K6 Perf Runner](../skills/k6-perf/SKILL.md)
+- [RAG Index Query](../skills/rag-query/SKILL.md)
+- [Jira Exporter](../skills/jira-exporter/SKILL.md)
+- [MENA Compliance Scanner](../skills/mena-compliance/SKILL.md)
 
 ## Global Context
 *   **Current Framework Focus**: `PydanticAI` for orchestration, `DeepEval` for testing, `Logfire` for tracing.

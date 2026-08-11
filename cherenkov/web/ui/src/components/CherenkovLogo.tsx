@@ -5,6 +5,9 @@ interface CherenkovLogoProps {
   className?: string;
   size?: number | string;
   glow?: boolean;
+  // AppHeader tints the mark with `style={{ color: 'var(--primary)' }}`; without
+  // this the call site is a type error and `npm run lint` (tsc --noEmit) fails.
+  style?: React.CSSProperties;
 }
 
 export default function CherenkovLogo({
@@ -12,12 +15,13 @@ export default function CherenkovLogo({
   className = '',
   size = 36,
   glow = true,
+  style,
 }: CherenkovLogoProps) {
   // Common aspect ratio is 1:1 for icon and wireframe, but wider for full logo.
   const isFull = variant === 'full';
 
   return (
-    <div className={`inline-flex items-center gap-3.5 select-none ${className}`} id={`cherenkov-logo-${variant}`}>
+    <div className={`inline-flex items-center gap-3.5 select-none ${className}`} style={style} id={`cherenkov-logo-${variant}`}>
       <div className="relative flex items-center justify-center shrink-0">
         {/* Glow backdrop shadow element - match Image 1 and 2 glow atmosphere */}
         {glow && variant !== 'wireframe' && (
