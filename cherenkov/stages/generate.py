@@ -21,6 +21,7 @@ from cherenkov.core.contracts import (
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
 from cherenkov.sources.accessibility.contracts import AccessibilityScenario
+from cherenkov.sources.asyncapi.contracts import AsyncAPIScenario
 from cherenkov.sources.graphql.contracts import GraphQLScenario
 from cherenkov.sources.grpc.contracts import gRPCScenario
 from cherenkov.substrate.client_factory import get_client
@@ -185,7 +186,13 @@ class GenerateStage:
 
     def run(
         self,
-        scenario: Scenario | GraphQLScenario | gRPCScenario | AccessibilityScenario,
+        scenario: (
+            Scenario
+            | GraphQLScenario
+            | gRPCScenario
+            | AsyncAPIScenario
+            | AccessibilityScenario
+        ),
         path: str = "",
         method: str = "",
         operation: dict[str, Any] | None = None,
@@ -234,6 +241,24 @@ class GenerateStage:
                 rpc_name=scenario.rpc_name,
                 input_message=scenario.input_message,
                 proto_content=scenario.proto_content,
+            )
+        elif source_type == "asyncapi":
+            if not isinstance(scenario, AsyncAPIScenario):
+                raise TypeError("source_type 'asyncapi' requires an AsyncAPIScenario")
+            import jinja2
+
+            env = jinja2.Environment(
+                loader=jinja2.FileSystemLoader(
+                    os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))
+                )
+            )
+            template = env.get_template("asyncapi_test.j2")
+            user_prompt = template.render(
+                channel=scenario.channel,
+                operation=scenario.operation,
+                message=scenario.message,
+                scenario_type=scenario.scenario_type,
+                required_fields=scenario.required_fields,
             )
         elif source_type == "accessibility":
             if not isinstance(scenario, AccessibilityScenario):
