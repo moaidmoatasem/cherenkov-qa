@@ -179,12 +179,15 @@ class UserStore:
 
 
     def update_user(self, username: str, role: Role | None = None, organization_id: str | None = None) -> bool:
-        """Update user's role and/or organization_id. Returns True if updated, False otherwise.
+        """Update user's role and/or organization_id.
 
         Args:
             username: Target username.
             role: New Role to set (optional).
             organization_id: New organization ID to set (optional).
+
+        Returns:
+            True if user was found and updated, False otherwise.
         """
         if role is None and organization_id is None:
             return False
