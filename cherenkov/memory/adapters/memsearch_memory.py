@@ -14,6 +14,7 @@ from cherenkov.memory.domain.models import (
     MemoryEntry,
     MemoryPattern,
     MemoryQuery,
+    PromotionRule,
 )
 from cherenkov.memory.ports.repository import MemoryRepository
 

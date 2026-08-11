@@ -93,7 +93,7 @@ class DryRunBackend:
     def save(self, output_dir: Path) -> Path:
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        manifest = {
+        manifest: dict[str, Any] = {
             "backend": "dry_run",
             "base_model": self._last_config["base_model"] if self._last_config else "unknown",
             "dataset_size": self._last_dataset_size,
@@ -137,9 +137,9 @@ class HuggingFaceBackend:
     """
 
     def __init__(self) -> None:
-        self._model = None
-        self._tokenizer = None
-        self._trainer = None
+        self._model: Any = None
+        self._tokenizer: Any = None
+        self._trainer: Any = None
 
     def _check_deps(self) -> None:
         missing = []

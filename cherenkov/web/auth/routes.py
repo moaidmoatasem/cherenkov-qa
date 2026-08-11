@@ -173,7 +173,7 @@ async def saml_callback(SAMLResponse: str = Form(...), RelayState: str = Form(""
     mapped_role = role_map.get(raw_role.lower(), Role.viewer)
 
     store = get_user_store()
-    user = store.get(username)
+    user: User | None = store.get(username)
     if not user:
         # Auto-provision user on first SSO login
         # We don't have a real password since they authenticate via IdP

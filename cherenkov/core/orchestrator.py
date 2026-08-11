@@ -37,9 +37,14 @@ from cherenkov.stages.review import ReviewStage
 from cherenkov.substrate.client_factory import get_accounting_report, get_cache_stats
 
 
-# Expose DataCollector at module level for test patching
+# Expose DataCollector at module level for test patching. Declared as Any first:
+# the name is bound to a class on the happy path and to None when the optional
+# training extra is absent, and mypy rejects rebinding a class name to None.
+DataCollector: Any
 try:
-    from cherenkov.training.collector import DataCollector  # noqa: F401
+    from cherenkov.training.collector import DataCollector as _DataCollector
+
+    DataCollector = _DataCollector
 except Exception:  # pragma: no cover
     DataCollector = None  # placeholder for tests
 
