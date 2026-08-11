@@ -297,10 +297,10 @@ Ask each reviewer to:
 | Automated collector files | `.cherenkov/evidence/{timestamp}_{smoke}.txt` |
 | Reviewer screenshots | Attach to GitHub Issue #115 |
 | Verdict responses | Enter into `docs/QA_DEMO_KIT.md` tracking sheet |
-| 5-QA structured verdicts | [.cherenkov/evidence/validation_gate_pass.json](../../evidence/e0.1_petstore.json) |
+| 5-QA structured verdicts | [docs/evidence/e0.1_petstore.json](../evidence/e0.1_petstore.json) |
 
 **Review and Verification:**
-To verify the auditability of the pass, you can read the structured JSON verdicts directly from [.cherenkov/evidence/validation_gate_pass.json](../../evidence/e0.1_petstore.json). It maps directly to `validate/v1` `ValidationReport` format and ensures validation votes are inspectable.
+To verify the auditability of the pass, you can read the structured JSON verdicts directly from [docs/evidence/e0.1_petstore.json](../evidence/e0.1_petstore.json). It maps directly to `validate/v1` `ValidationReport` format and ensures validation votes are inspectable.
 attach directly to GitHub Issue #115 as a comment.
 
 ---
@@ -342,7 +342,7 @@ Record all verdicts in [`docs/QA_DEMO_KIT.md`](../QA_DEMO_KIT.md) tracking sheet
 |---|---|
 | [`docs/QA_DEMO_KIT.md`](../QA_DEMO_KIT.md) | 7-minute live demo script + tracking sheet + FAQ |
 | [`docs/QA_OUTREACH_TEMPLATES.md`](../QA_OUTREACH_TEMPLATES.md) | Copy-paste Slack/email templates for recruiting reviewers |
-| [`docs/HANDOVER.md`](../../../../HANDOVER.md) | Authoritative project state, Track A/B/C status, roadmap |
+| [`docs/HANDOVER.md`](../../HANDOVER.md) | Authoritative project state, Track A/B/C status, roadmap |
 | [`docs/GETTING_STARTED.md`](../GETTING_STARTED.md) | Full install guide for new contributors |
 | `scripts/collect_evidence.py` | Standalone evidence collector (runs all smokes, saves logs) |
 

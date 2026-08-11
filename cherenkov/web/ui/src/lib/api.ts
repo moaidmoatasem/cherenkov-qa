@@ -882,8 +882,14 @@ export interface PerfMetric {
   endpoint: string;
   method: string;
   latency_ms: number;
+  // Passed straight through from PerformanceAnalyzer.analyze_anomaly(), plus
+  // "initializing" when k6 is absent — kept as `string` rather than a union so
+  // a new analyzer status does not silently become a type error here.
   status: string;
+  // null when no baseline exists yet (perf_routes.py returns None on count == 0).
   baseline_mean?: number | null;
+  baseline_stddev?: number | null;
+  threshold_limit?: number | null;
   message?: string;
 }
 
@@ -1007,33 +1013,6 @@ export async function getCoverageTrend(limit: number = 60): Promise<{ points: Ar
 export async function getCoverageSummary(): Promise<{ coveragePct: number; openIssueCount: number; testedCount: number; totalEndpoints: number }> {
   const res = await fetch(`${API_BASE}/coverage/summary`);
   if (!res.ok) throw new Error(`Failed to fetch coverage summary: ${res.status}`);
-  return res.json();
-}
-
-export interface PerfMetric {
-  endpoint: string;
-  method: string;
-  latency_ms: number;
-  status: 'passed' | 'failed' | 'anomaly_detected' | 'initializing';
-  baseline_mean?: number;
-  baseline_stddev?: number;
-  threshold_limit?: number;
-  message?: string;
-}
-
-export async function getPerfMetrics(): Promise<PerfMetric[]> {
-  const res = await fetch(`${API_BASE}/perf/metrics`);
-  if (!res.ok) return [];
-  return res.json();
-}
-
-export async function runPerfTest(targetUrl?: string): Promise<PerfMetric> {
-  const res = await fetch(`${API_BASE}/perf/run`, {
-    method: 'POST',
-    headers: authHeaders({ 'Content-Type': 'application/json' }),
-    body: JSON.stringify({ target_url: targetUrl }),
-  });
-  if (!res.ok) throw new Error(`Failed to run performance test: ${res.status}`);
   return res.json();
 }
 
