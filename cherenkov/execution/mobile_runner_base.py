@@ -18,8 +18,16 @@ class MobileRunnerBase(ABC):
     def health_check(self) -> bool: ...
 
     def _dry_run_result(self, test_path: str) -> dict:
+        """Result for a flow that was never put on a device.
+
+        Status is ``skipped``, never ``passed``: a flow that did not execute has
+        produced no evidence, and reporting it green is the exact fabrication
+        this project exists to detect.
+        """
         return {
-            "status": "passed",
+            "status": "skipped",
+            "executed": False,
+            "reason": "dry-run (CHERENKOV_MOBILE_DRY_RUN set); no device involved",
             "stdout": f"[DRY-RUN] {test_path}",
             "stderr": "",
             "dry_run": True,

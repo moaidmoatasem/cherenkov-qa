@@ -74,7 +74,7 @@ To view all supported commands and options:
 
 ### Command Groups
 
-The CLI organizes its 40 top-level commands into 7 logical command groups for
+The CLI organizes its 45 top-level commands into 7 logical command groups for
 discoverability. Every command remains available at the top level for backwards
 compatibility, so `cherenkov validate` and `cherenkov pipeline` both
 work. See [CLI_GROUPS.md](CLI_GROUPS.md) for the full group reference.
@@ -92,7 +92,7 @@ Core API conformance pipeline: `validate`, `verify`, `audit`, `check-suite`,
 Human-in-the-loop review workflows: `hitl`, `review`, `ocr`.
 
 #### `model`
-Model / VLM substrate commands: `visual`, `perf`, `mcp`, `examples`.
+Model / VLM substrate commands: `visual`, `perf`, `mobile`, `mcp`, `examples`.
 
 #### `operate`
 Long-running operations and observability: `daemon`, `dashboard`, `explore`,
@@ -134,6 +134,35 @@ cd target && uvicorn target_api:app --host 127.0.0.1 --port 8000
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--target`, `-t` | *(required)* | The real server target base URL |
+| `--source` | `openapi` | Contract type to plan scenarios from — see below |
+
+##### Protocols beyond REST
+
+`--source` selects which kind of contract scenarios are planned from. Every
+value except `openapi` requires `--spec`.
+
+| `--source` | Spec format | Scenarios per operation |
+|---|---|---|
+| `openapi` *(default)* | OpenAPI JSON/YAML | Spec-derived, per path + method |
+| `graphql` | GraphQL SDL | Per query/mutation |
+| `grpc` | `.proto`, or a Buf Schema Registry module path | Happy path + missing fields |
+| `asyncapi` | AsyncAPI YAML | Happy path, missing required, invalid payload, auth — per channel operation |
+| `accessibility` | Sitemap XML or a newline-delimited URL list | Per page |
+
+```bash
+# GraphQL
+./bin/cherenkov validate --target http://localhost:8000 --source graphql --spec ./schema.graphql
+
+# gRPC — local proto, or fetched from the Buf Schema Registry
+./bin/cherenkov validate --target http://localhost:8000 --source grpc --spec ./orders.proto
+
+# AsyncAPI — plans publish/subscribe scenarios per channel
+./bin/cherenkov validate --target http://localhost:8000 --source asyncapi --spec ./orders.yaml
+```
+
+For AsyncAPI, `$ref`'d messages are resolved before planning, so the required
+fields the generated WebSocket tests assert on come from the referenced payload
+schema rather than the reference itself.
 
 ---
 
@@ -586,6 +615,40 @@ outlier regressions once >= 3 runs exist. Degrades gracefully without k6.
 | `--method` | `GET` | HTTP method |
 | `--vus` | `5` | Virtual users |
 | `--duration` | `5` | Test duration in seconds |
+
+---
+
+#### `mobile` (Track B — mobile flow integrity)
+Plans Maestro flows from a recorded mobile source, gates them for assertion
+strength, and executes them on a connected device or emulator via Maestro (or
+Appium with `--runner appium`).
+
+`SOURCE` is a `.hil` interaction trace or an `.apk`. A `.har` is rejected with a
+pointer to `cherenkov verify`: it records network traffic, not screen
+interactions, so no flow can be planned from it.
+
+Two integrity rules apply. A flow whose assertion matches any screen (`.*`,
+`.+`, `*`, empty) fails the gate and never reaches the device — that is a
+weakened assertion, and it can never fail. A flow that never executed is
+reported `not_executed`, never as passing.
+
+```bash
+./bin/cherenkov mobile flows.hil --app-id com.acme.shop
+./bin/cherenkov mobile app.apk --no-execute
+./bin/cherenkov mobile flows.hil --json --fail-on-finding
+./bin/cherenkov mobile --demo
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--app-id` | *(from source)* | Application package id to target |
+| `--out` | `stub/generated_tests/mobile` | Directory for generated flows |
+| `--runner` | `maestro` | Execution backend (`maestro` or `appium`) |
+| `--execute/--no-execute` | `--execute` | Run flows on a device |
+| `--strict/--no-strict` | `--strict` | Fail a flow carrying no assertion |
+| `--demo` | off | Use built-in scenarios; never executed on a device |
+| `--json` | off | Machine-readable output |
+| `--fail-on-finding` | off | Exit non-zero on gate or execution failure |
 
 ---
 

@@ -82,6 +82,7 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.ocr_cmd import ocr_cmd
     from cherenkov.cli.commands.playbook_cmd import playbook_cmd
     from cherenkov.cli.commands.routine_cmd import routine_cmd
+    from cherenkov.stages.mobile_cmd import mobile as mobile_cmd
     from cherenkov.cli.commands.simple import (
         completion_cmd,
         diff_cmd,
@@ -98,7 +99,6 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.federation_cmd import federation_cmd
     from cherenkov.cli.commands.template_cmd import template_cmd
     from cherenkov.cli.groups import build_groups
-    from cherenkov.stages.mobile_cmd import mobile as mobile_cmd
     from cherenkov.synthetic.cmd import synthetic_cmd
 
     cmd_map: dict[str, click.Command] = {}

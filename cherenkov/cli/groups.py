@@ -34,8 +34,8 @@ GROUP_LAYOUT: dict[str, dict] = {
         "commands": ["hitl", "review", "ocr"],
     },
     "model": {
-        "help": "Model / VLM substrate commands: visual, perf, mcp, examples.",
-        "commands": ["visual", "perf", "mcp", "examples"],
+        "help": "Model / VLM substrate commands: visual, perf, mobile, mcp, examples.",
+        "commands": ["visual", "perf", "mobile", "mcp", "examples"],
     },
     "operate": {
         "help": "Long-running operations and observability: daemon, dashboard, teleport.",

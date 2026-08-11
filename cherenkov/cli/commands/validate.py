@@ -51,7 +51,7 @@ def _findings_report(results: dict):
 @click.option("--target", "-t", required=True, help="The real server target base URL")
 @click.option(
     "--source",
-    type=click.Choice(["openapi", "graphql", "grpc", "accessibility"]),
+    type=click.Choice(["openapi", "graphql", "grpc", "asyncapi", "accessibility"]),
     default="openapi",
     help="Source type for ingestion",
 )
@@ -248,6 +248,33 @@ Returns:
                 generated += 1
             except Exception as e:
                 click.echo(click.style(f"  warn: skipped {sc.service}/{sc.rpc_name}: {e}", fg="yellow"), err=True)
+        if not quiet:
+            click.echo(f"Generated {generated}/{len(scenarios)} test files")
+    elif source == "asyncapi":
+        from cherenkov.sources.asyncapi.adapter import AsyncAPISourceAdapter
+        from cherenkov.stages.generate import GenerateStage
+        from cherenkov.stages.plan_asyncapi import AsyncAPIScenarioPlanner
+
+        if not spec:
+            click.echo(click.style("Error: --spec is required for --source asyncapi", fg="red"), err=True)
+            sys.exit(1)
+        if not quiet:
+            click.echo(f"Ingesting AsyncAPI spec: {spec}")
+        async_source = AsyncAPISourceAdapter(spec)
+        scenarios = AsyncAPIScenarioPlanner().plan(async_source)
+        if not quiet:
+            click.echo(
+                f"Planned {len(scenarios)} scenarios from "
+                f"{len({s.channel for s in scenarios})} channels"
+            )
+        generator = GenerateStage("cli_validate")
+        generated = 0
+        for sc in scenarios:
+            try:
+                generator.run(scenario=sc, source_type="asyncapi")
+                generated += 1
+            except Exception as e:
+                click.echo(click.style(f"  warn: skipped {sc.channel}/{sc.scenario_type}: {e}", fg="yellow"), err=True)
         if not quiet:
             click.echo(f"Generated {generated}/{len(scenarios)} test files")
     elif source == "accessibility":

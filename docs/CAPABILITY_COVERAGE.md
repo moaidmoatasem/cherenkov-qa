@@ -17,7 +17,7 @@ user, that is recorded as a gap rather than a feature.
 | **API conformance — OpenAPI** | ✅ Core | `truth/sources/openapi.py`, `validate --source openapi` (default) |
 | **API — GraphQL** | ✅ Wired | `sources/graphql/adapter.py`, `stages/plan_graphql.py`, `validate --source graphql` |
 | **API — gRPC** | ✅ Wired | `stages/plan_grpc.py`, `validate --source grpc` |
-| **API — AsyncAPI** | ⚠️ **Orphaned** | `sources/asyncapi/`, `validate/asyncapi.py`, `stages/plan_asyncapi.py` all exist, but `AsyncAPIScenarioPlanner` is imported **nowhere** and `asyncapi` is absent from `validate --source` choices |
+| **API — AsyncAPI** | ✅ **Fixed here** | `sources/asyncapi/`, `stages/plan_asyncapi.py`, `prompts/asyncapi_test.j2`, `validate --source asyncapi`. **Was orphaned — the planner was imported nowhere, `asyncapi` was absent from `--source`, and `GenerateStage` had no branch to render the template.** Now wired + documented + guarded by tests |
 | **API — SOAP / WebSocket** | ❌ Absent | No modules. Not currently claimed by the roadmap either |
 | **Accessibility testing** | ✅ Present | `validate --source accessibility` |
 | **Performance testing** | ✅ Present | `cherenkov perf`, `cherenkov bench`, `stages/perf/perf_stage.py`, `execution/perf_analyzer.py`, `web/routes/perf_routes.py`, k6 (`stub/generated_tests/k6_perf.js`, CI "Perf Baseline") |
@@ -29,7 +29,7 @@ user, that is recorded as a gap rather than a feature.
 | **GitHub integration** | ✅ Strong | `action.yml`, `web/routes/webhooks_github.py`, `web/pr_comments.py`, `validate/github_exporter.py`, `export_github_ticket` MCP tool, `validate` PR flags (`--pr-number`, `--commit-sha`, `--head-branch`, `--base-branch`, `--deeplink`) |
 | **GitLab integration** | ✅ Present | `ci/gitlab-ci-template.yml` — flags verified against the live CLI |
 | **CircleCI** | ✅ Present | `ci/circleci/orb.yml` — flags verified |
-| **Jenkins** | ⚠️ **Broken path** | `ci/jenkins/vars/cherenkovValidate.groovy` builds `--export-jira`, **which exists on no command**. Setting `exportJira: true` fails, and the catch block reports it as a conformance failure |
+| **Jenkins** | ✅ **Fixed** | `ci/jenkins/vars/cherenkovValidate.groovy` built an `--export-jira` option that exists on no command, and its catch block reported the resulting usage error as a conformance failure. Both corrected; now guarded by `check_cli_flags.py` (F2/F3) |
 | **MCP surface** | ✅ Strong | 25+ tools: `generate`, `check_suite`, `verify`, `auto_heal_code`, `hitl_{list,approve,reject}`, `export_{github,jira,linear}_ticket`, `event_bus_*`, `mcp_registry_{list,publish}`, `policy_list`, chat tools. Plus `mcp/{auth,policy,sandbox,mesh_router}.py` and `server.json` |
 | **Notifier connectors** | ✅ Present | `adapters/notifiers/`: Slack, Teams, PagerDuty, Opsgenie, Linear, generic webhook |
 | **Issue trackers** | ✅ Present | Jira, Linear, GitHub via MCP export tools; Zephyr/Xray/Allure modules present |
@@ -54,31 +54,57 @@ every capability surface resolves on the root CLI.
 **Why nothing caught it:** every existing mobile test exercised the stages directly, never the CLI
 entry point. The new test closes that class of gap for all ten capability commands.
 
-### F2 — Jenkins template passes a flag that does not exist
+### F2 — Jenkins template passed a flag that does not exist (**fixed**)
 
-When `exportJira: true`, `ci/jenkins/vars/cherenkovValidate.groovy` appends an `--export-jira`
+When `exportJira: true`, `ci/jenkins/vars/cherenkovValidate.groovy` appended an `--export-jira`
 option to the `validate` invocation it builds. No command defines that option. The invocation
-fails, and because the call sits inside `try { sh "${cmd}" } catch`, the failure surfaces as
+failed, and because the call sat inside `try { sh "${cmd}" } catch`, the failure surfaced as
 *"CHERENKOV Conformance check failed"* — a usage error misattributed as a conformance result.
 
 This is the same shape as the `action.yml` incident of 2026-08-07 (inert config reporting success).
 Jira export does exist, but as the `export_jira_ticket` MCP tool, not a `validate` flag.
 
-### F3 — The flag guard does not cover `ci/`
+**Fixed:** the option is gone, and passing `exportJira` now emits an explicit notice pointing at the
+MCP tool rather than silently ignoring it. The template also switched from `try/catch` to
+`sh(returnStatus: true)` so the two failure classes are distinguishable — Click exits `2` when it
+rejects an invocation, which is now reported as a usage error, never as drift.
 
-`scripts/check_cli_flags.py` validates documented flags against the live Click tree, but scans only
+### F3 — The flag guard did not cover `ci/` (**fixed**)
+
+`scripts/check_cli_flags.py` validates documented flags against the live Click tree, but scanned only
 `docs/` and `skills/` markdown. Every CI integration template — the GitLab, CircleCI and Jenkins
-files users copy verbatim — is unguarded. F2 is the bug this gap allowed. GitLab and CircleCI were
-checked by hand during this audit and are currently correct; nothing keeps them that way.
+files users copy verbatim — was unguarded. F2 is the bug this gap allowed.
 
-**Fix:** extend the scan to `ci/**` and `action.yml`.
+**Fixed:** the scan now covers `ci/**` (`.yml`, `.yaml`, `.groovy`) and `action.yml`. Three shapes
+had to be handled, each of which defeats naive line-matching:
 
-### F4 — AsyncAPI is built but unreachable
+| Shape | Where | Handling |
+|---|---|---|
+| Backslash continuation — `cherenkov validate \` then 15 flag lines | `action.yml` | Logical lines are joined before matching; otherwise **every** flag there goes unchecked |
+| Conditional append — `cmd += " --export-jira"` | Jenkins | Attributed to the file's command when the file invokes exactly one; multi-command files stay line-local to avoid false positives |
+| Multiple commands in one file — `validate` and `report` | CircleCI orb | Flags resolve per logical line |
 
-`ROADMAP.md` Phase 12 claims "GraphQL, gRPC, and AsyncAPI". The first two are wired into
-`validate --source`; AsyncAPI is not, and `AsyncAPIScenarioPlanner` has no importer. Either wire it
-up (it appears to be a small change — add the choice and the dispatch branch, mirroring the
-GraphQL/gRPC blocks in `cli/commands/validate.py`) or stop claiming it.
+Comments are stripped first. Without that, the prose `// ... assuming cherenkov is installed on the
+agent` parses as a command named `is installed`, which made the Jenkins file look multi-command and
+silently disabled the append check — **the guard passed while the bug it was written for sat two
+lines away.** Verified non-vacuous both ways: it fails on the real `--export-jira`, and still fails
+when a fresh bogus flag is introduced.
+
+### F4 — AsyncAPI is built but unreachable (**fixed**)
+
+`ROADMAP.md` Phase 12 claims "GraphQL, gRPC, and AsyncAPI". The first two were wired into
+`validate --source`; AsyncAPI was not, and `AsyncAPIScenarioPlanner` had no importer.
+
+Wiring it took three changes, because the gap was one step deeper than the missing CLI choice:
+
+1. `asyncapi` added to the `--source` choices and a dispatch branch added in
+   `cli/commands/validate.py`, mirroring the GraphQL/gRPC blocks.
+2. **`GenerateStage` had no `asyncapi` branch at all** — `prompts/asyncapi_test.j2` existed but
+   nothing rendered it, so even a wired CLI would have fallen through to the OpenAPI path and
+   raised `TypeError` on a non-`Scenario`. Added the branch and extended the scenario type union.
+3. `tests/unit/test_asyncapi_support.py` covers the adapter (including `$ref` message resolution),
+   the planner, the generate branch, and the CLI wiring. Verified non-vacuous: removing `asyncapi`
+   from the `--source` choices fails three of them.
 
 ### F5 — Tier integrations claimed but absent
 
