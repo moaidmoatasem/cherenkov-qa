@@ -20,12 +20,12 @@ class PluginManager:
 
     def load_plugins(self) -> None:
         """Load all plugins registered under the entry point group."""
-        try:
-            # For Python 3.10+
-            eps = importlib.metadata.entry_points(group=self.entry_point_group)
-        except TypeError:
-            # Fallback for Python 3.8/3.9
-            eps = importlib.metadata.entry_points().get(self.entry_point_group, [])
+        # The `group=` keyword landed in 3.10 and pyproject sets
+        # requires-python = ">=3.10", so the old
+        # `entry_points().get(group, [])` fallback was unreachable — and it was
+        # the source of the only type error in this module, because the 3.10+
+        # return type is EntryPoints rather than a dict.
+        eps = importlib.metadata.entry_points(group=self.entry_point_group)
 
         for ep in eps:
             try:

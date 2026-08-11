@@ -146,7 +146,7 @@ scenarios:
         return [p.name for p in dest_path.iterdir() if p.is_dir()]
 
     def _load_local_templates(self) -> list[MarketplaceTemplate]:
-        templates = []
+        templates: list[MarketplaceTemplate] = []
         if not self.local_dir.exists():
             return templates
 

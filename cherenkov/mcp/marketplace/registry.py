@@ -145,7 +145,7 @@ class MarketplaceRegistry:
         Returns:
             list[MarketplaceTool]: List of tools loaded from disk.
         """
-        tools = []
+        tools: list[MarketplaceTool] = []
         if not self.local_dir.exists():
             return tools
 
