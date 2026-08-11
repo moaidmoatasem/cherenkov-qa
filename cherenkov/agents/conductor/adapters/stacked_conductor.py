@@ -21,18 +21,27 @@ _log = logging.getLogger(__name__)
 
 
 class StackedPRConductor:
-    """Coordinates multi-layer PR stacks with SDD context inheritance."""
+    """Coordinates multi-layer PR stacks with SDD context inheritance.
+
+    Attributes:
+        repo_root (Path): Root directory of the target project repository.
+        target_tool_name (str): MCP tool name for sub-agent execution.
+        registry (MCPRegistry): Mesh router registry instance.
+    """
 
     def __init__(
         self,
         repo_root: str | None = None,
         mcp_target_tool: str = "run_sub_agent_task",
-    ):
+    ) -> None:
         """Initialize the conductor with repository context.
 
         Args:
-            repo_root: Project root directory (defaults to CHERENKOV_ROOT env var).
-            mcp_target_tool: MCP tool name for sub-agent execution.
+            repo_root (str | None): Project root directory (defaults to CHERENKOV_ROOT env var).
+            mcp_target_tool (str): MCP tool name for sub-agent execution. Defaults to 'run_sub_agent_task'.
+
+        Returns:
+            None
         """
         self.repo_root = Path(repo_root) if repo_root else Path(
             os.environ.get("CHERENKOV_ROOT", Path.cwd().parent)
@@ -46,13 +55,13 @@ class StackedPRConductor:
         """Generate a complete StackedPRTask with topological PR ordering.
 
         Args:
-            epic_issue_id: GitHub issue ID for tracking.
-            title: Human-readable title for the stack.
-            strategy: Stack slicing strategy.
-            layers: Individual layer specifications (must be sorted by layer_index).
+            epic_issue_id (str): GitHub issue ID for tracking.
+            title (str): Human-readable title for the stack.
+            strategy (StackStrategy): Stack slicing strategy.
+            layers (list[PRSubTask]): Individual layer specifications (must be sorted by layer_index).
 
         Returns:
-            A fully configured StackedPRTask ready for execution.
+            StackedPRTask: A fully configured StackedPRTask ready for execution.
         """
         layers = sorted(layers, key=lambda x: x.layer_index)
 
@@ -79,7 +88,14 @@ class StackedPRConductor:
         return stacked_task
 
     def _orchestrate_functional(self, layers: list[PRSubTask]) -> None:
-        """Apply functional layering: contracts -> adapters -> use_cases -> api -> tests."""
+        """Apply functional layering: contracts -> adapters -> use_cases -> api -> tests.
+
+        Args:
+            layers (list[PRSubTask]): List of PR sub-tasks to configure.
+
+        Returns:
+            None
+        """
         for i, layer in enumerate(layers):
             if i == 0:
                 layer.layer_name = "01-contracts"
@@ -91,7 +107,14 @@ class StackedPRConductor:
                 layer.base_branch = f"feat/{i:02d}-functional"
 
     def _orchestrate_refactor_first(self, layers: list[PRSubTask]) -> None:
-        """Interleave refactor and feature layers."""
+        """Interleave refactor and feature layers.
+
+        Args:
+            layers (list[PRSubTask]): List of PR sub-tasks to configure.
+
+        Returns:
+            None
+        """
         refactor_count = sum(1 for l in layers if l.instruction.startswith("refactor"))
         feature_count = len(layers) - refactor_count
 
@@ -106,7 +129,14 @@ class StackedPRConductor:
                 layer.base_branch = f"refactor/{(i if i > 0 else 0):02d}-refactor"
 
     def _orchestrate_risk_isolated(self, layers: list[PRSubTask]) -> None:
-        """Isolate high-risk elements into dedicated layers."""
+        """Isolate high-risk elements into dedicated layers.
+
+        Args:
+            layers (list[PRSubTask]): List of PR sub-tasks to configure.
+
+        Returns:
+            None
+        """
         risk_layers = [l for l in layers if l.instruction.startswith(("auth", "security", "payment"))]
         normal_layers = [l for l in layers if l not in risk_layers]
 
@@ -125,6 +155,12 @@ class StackedPRConductor:
 
         Each layer's sub-task receives the complete context and artifacts from
         the previous layer, preserving full continuity across the stack.
+
+        Args:
+            stacked_task (StackedPRTask): Configured stacked PR task.
+
+        Returns:
+            ConductorResult: Overall conductor execution result object.
         """
         _log.info(
             "Executing StackedPRTask %s with %d layers",
@@ -193,7 +229,16 @@ class StackedPRConductor:
         stacked_task: StackedPRTask,
         previous_outputs: list[dict[str, Any]],
     ) -> dict[str, Any]:
-        """Construct context for the current layer based on previous layers."""
+        """Construct context for the current layer based on previous layers.
+
+        Args:
+            layer (PRSubTask): Current layer PR sub-task.
+            stacked_task (StackedPRTask): Top-level stacked task.
+            previous_outputs (list[dict[str, Any]]): Outputs accumulated from previous layers.
+
+        Returns:
+            dict[str, Any]: Context dictionary for the layer execution.
+        """
         context = {
             "stack_id": stacked_task.stack_id,
             "epic_issue_id": stacked_task.epic_issue_id,
@@ -218,7 +263,14 @@ class StackedPRConductor:
         return context
 
     def _run_sub_agent_task(self, sub_task: SubAgentTask) -> SubAgentResult:
-        """Execute a single sub-agent task via the MCP mesh."""
+        """Execute a single sub-agent task via the MCP mesh.
+
+        Args:
+            sub_task (SubAgentTask): Sub-task to execute.
+
+        Returns:
+            SubAgentResult: Sub-agent task result.
+        """
         arguments = {
             "instruction": sub_task.instruction,
             "context": sub_task.context,
@@ -264,7 +316,19 @@ def create_and_execute_stack(
     layers: list[PRSubTask],
     repo_root: str | None = None,
 ) -> ConductorResult:
-    """High-level convenience function for creating and executing a stack."""
+    """High-level convenience function for creating and executing a stack.
+
+    Args:
+        epic_issue_id (str): Parent epic issue ID.
+        title (str): Stack title.
+        strategy (StackStrategy): Slicing strategy enum.
+        layers (list[PRSubTask]): PR layer sub-tasks.
+        repo_root (str | None): Optional project repo root path string. Defaults to None.
+
+    Returns:
+        ConductorResult: Final aggregated conductor result.
+    """
     conductor = StackedPRConductor(repo_root=repo_root)
     stacked_task = conductor.orchestrate_stack(epic_issue_id, title, strategy, layers)
     return conductor.execute_stack(stacked_task)
+

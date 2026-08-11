@@ -19,7 +19,7 @@ Playwright tests in under 5 minutes.
 2. [CLI Commands & Usage](#-cli-commands--usage)
    - [Command Groups](#command-groups)
    - [Track A Core](#track-a-core)
-   - [Track B/C & Horizon 2](#track-bc--horizon-2)
+   - [Track B/C & Horizon 2](#track-bc-and-horizon-2-built-re-integrated)
 3. [Next steps](#next-steps)
 
 ---

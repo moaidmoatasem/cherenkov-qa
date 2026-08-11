@@ -13,13 +13,14 @@ def create_review_team(
     """Create a ConductorTask that delegates code review to specialized roles.
 
     Args:
-        code_snippet: The code to review.
-        roles: List of reviewer roles. Defaults to Security, Performance, and Style.
-        budget: Token budget per reviewer.
+        code_snippet (str): The code snippet to review.
+        roles (list[str] | None): List of reviewer roles. Defaults to None (Security, Performance, and Style).
+        budget (int): Token budget per reviewer. Defaults to 4000.
 
     Returns:
-        A ConductorTask configured for the review team.
+        ConductorTask: A ConductorTask configured for the review team.
     """
+
     if roles is None:
         roles = ["Security Auditor", "Performance Expert", "Style Consistency Checker"]
 

@@ -17,7 +17,14 @@ from pathlib import Path
 PLACEHOLDER_DESC = "<description>"
 
 def is_public(name: str) -> bool:
-    """Return True if the identifier is considered public (does not start with an underscore)."""
+    """Return True if the identifier is considered public (does not start with an underscore).
+
+    Args:
+        name: Function, class, or symbol name string.
+
+    Returns:
+        True if name is public, False otherwise.
+    """
     return not name.startswith("_")
 
 
@@ -26,6 +33,12 @@ def format_docstring(node: ast.AST) -> str:
     For functions and methods, include ``:param`` lines for each argument (excluding
     ``self``/``cls``) and a ``:return:`` line. For classes, only a generic
     placeholder is used.
+
+    Args:
+        node: AST definition node.
+
+    Returns:
+        Formatted stub docstring string.
     """
     lines = ["Placeholder docstring.", ""]
     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -51,10 +64,14 @@ def format_docstring(node: ast.AST) -> str:
 
 
 def add_docstrings_to_file(filepath: Path) -> bool:
-    """Placeholder docstring.
+    """Scan and add missing docstrings to a Python file.
 
-:param filepath: <description>
-:return: <description>"""
+    Args:
+        filepath: Path instance pointing to target Python file.
+
+    Returns:
+        True if docstrings were inserted, False otherwise.
+    """
     with filepath.open("r", encoding="utf-8") as f:
         source = f.read()
     try:
@@ -89,9 +106,7 @@ def add_docstrings_to_file(filepath: Path) -> bool:
 
 
 def main():
-    """Placeholder docstring.
-
-:return: <description>"""
+    """Main CLI entry point for generating missing docstring stubs."""
     root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
     modified = []
     for dirpath, _, filenames in os.walk(root):

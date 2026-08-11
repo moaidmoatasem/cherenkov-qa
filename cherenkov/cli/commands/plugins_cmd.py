@@ -5,12 +5,20 @@ from cherenkov.plugins.manager import PluginManager
 
 @click.group("plugins")
 def plugins_cmd() -> None:
-    """Manage and inspect CHERENKOV plugins."""
+    """Manage and inspect CHERENKOV plugins.
+
+Returns:
+    None: Command execution result.
+    """
     pass
 
 @plugins_cmd.command("list")
 def plugins_list_cmd() -> None:
-    """List all loaded plugins."""
+    """List all loaded plugins.
+
+Returns:
+    None: Command execution result.
+    """
     manager = PluginManager()
     plugins = manager.list_plugins()
     if not plugins:

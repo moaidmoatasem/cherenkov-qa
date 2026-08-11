@@ -18,7 +18,15 @@ import click
     help="Baseline directory (default: stub/visual_baselines)",
 )
 def visual_cmd(target: str, baseline_dir: str) -> None:
-    """Run optional visual-regression checks against a rendered URL (Track B)."""
+    """Run optional visual-regression checks against a rendered URL (Track B).
+
+Args:
+    target (str): Parameter target.
+    baseline_dir (str): Parameter baseline_dir.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.cli.legacy_reports import print_visual_report
     from cherenkov.core.contracts import VisualSlice
     from cherenkov.core.orchestrator import OrchestrationEngine
@@ -37,7 +45,18 @@ def visual_cmd(target: str, baseline_dir: str) -> None:
 @click.option("--vus", type=int, default=5, help="Virtual users (default: 5)")
 @click.option("--duration", type=int, default=5, help="Duration in seconds (default: 5)")
 def perf_cmd(target: str, endpoint: str, method: str, vus: int, duration: int) -> None:
-    """Run optional performance baseline checks (Track B)."""
+    """Run optional performance baseline checks (Track B).
+
+Args:
+    target (str): Parameter target.
+    endpoint (str): Parameter endpoint.
+    method (str): Parameter method.
+    vus (int): Parameter vus.
+    duration (int): Parameter duration.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.cli.legacy_reports import print_perf_report
     from cherenkov.core.contracts import PerfSlice
     from cherenkov.core.orchestrator import OrchestrationEngine
@@ -60,7 +79,11 @@ def perf_cmd(target: str, endpoint: str, method: str, vus: int, duration: int) -
 
 @click.group("hitl")
 def hitl_cmd() -> None:
-    """Manage the Human-in-the-Loop review queue."""
+    """Manage the Human-in-the-Loop review queue.
+
+Returns:
+    None: Command execution result.
+    """
 
 
 @hitl_cmd.command("list")
@@ -79,7 +102,17 @@ def hitl_cmd() -> None:
 )
 @click.option("--json", "json_out", is_flag=True, help="Emit JSON envelope")
 def hitl_list(status: str, list_all: bool, severity: str | None, json_out: bool) -> None:
-    """List HITL queue items."""
+    """List HITL queue items.
+
+Args:
+    status (str): Parameter status.
+    list_all (bool): Parameter list_all.
+    severity (str | None): Parameter severity.
+    json_out (bool): Parameter json_out.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.hitl.cmd import run_list
 
     sys.exit(run_list(status=None if list_all else status, severity=severity, json_out=json_out))
@@ -89,7 +122,15 @@ def hitl_list(status: str, list_all: bool, severity: str | None, json_out: bool)
 @click.argument("item_id")
 @click.option("--json", "json_out", is_flag=True, help="Emit JSON envelope")
 def hitl_show(item_id: str, json_out: bool) -> None:
-    """Show details of a single HITL item."""
+    """Show details of a single HITL item.
+
+Args:
+    item_id (str): Parameter item_id.
+    json_out (bool): Parameter json_out.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.hitl.cmd import run_show
 
     sys.exit(run_show(item_id=item_id, json_out=json_out))
@@ -100,7 +141,16 @@ def hitl_show(item_id: str, json_out: bool) -> None:
 @click.option("--actor", default=None, help="Reviewer identity (default: $USER)")
 @click.option("--json", "json_out", is_flag=True, help="Emit JSON envelope")
 def hitl_approve(item_id: str, actor: str | None, json_out: bool) -> None:
-    """Approve a pending HITL item."""
+    """Approve a pending HITL item.
+
+Args:
+    item_id (str): Parameter item_id.
+    actor (str | None): Parameter actor.
+    json_out (bool): Parameter json_out.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.hitl.cmd import run_approve
 
     sys.exit(run_approve(item_id=item_id, actor=actor, json_out=json_out))
@@ -121,7 +171,18 @@ def hitl_approve(item_id: str, actor: str | None, json_out: bool) -> None:
 def hitl_reject(
     item_id: str, reason: str, note: str | None, actor: str | None, json_out: bool
 ) -> None:
-    """Reject a HITL item."""
+    """Reject a HITL item.
+
+Args:
+    item_id (str): Parameter item_id.
+    reason (str): Parameter reason.
+    note (str | None): Parameter note.
+    actor (str | None): Parameter actor.
+    json_out (bool): Parameter json_out.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.core.feedback_store import FeedbackStore
     from cherenkov.hitl.cmd import run_reject
 
@@ -152,7 +213,18 @@ def hitl_reject(
 def hitl_classify(
     item_id: str, classification: str, actor: str | None, detail: str, json_out: bool
 ) -> None:
-    """Classify a HITL item (Tier-2)."""
+    """Classify a HITL item (Tier-2).
+
+Args:
+    item_id (str): Parameter item_id.
+    classification (str): Parameter classification.
+    actor (str | None): Parameter actor.
+    detail (str): Parameter detail.
+    json_out (bool): Parameter json_out.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.hitl.cmd import run_classify
 
     sys.exit(
@@ -170,7 +242,15 @@ def hitl_classify(
 @click.argument("item_id")
 @click.option("--json", "json_out", is_flag=True, help="Emit JSON envelope")
 def hitl_explain(item_id: str, json_out: bool) -> None:
-    """Get an AI explanation for why a HITL item was flagged (Tier-3)."""
+    """Get an AI explanation for why a HITL item was flagged (Tier-3).
+
+Args:
+    item_id (str): Parameter item_id.
+    json_out (bool): Parameter json_out.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.hitl.cmd import run_explain
 
     sys.exit(run_explain(item_id=item_id, json_out=json_out))
@@ -187,7 +267,17 @@ def hitl_explain(item_id: str, json_out: bool) -> None:
 @click.option("--demo", is_flag=True, help="Load demo fixture data into HITL queue on startup")
 @click.option("--no-browser", is_flag=True, help="Don't auto-open the dashboard in a browser")
 def review_cmd(host: str, port: int, demo: bool, no_browser: bool) -> None:
-    """Start the review dashboard web UI (FastAPI + prebuilt frontend)."""
+    """Start the review dashboard web UI (FastAPI + prebuilt frontend).
+
+Args:
+    host (str): Parameter host.
+    port (int): Parameter port.
+    demo (bool): Parameter demo.
+    no_browser (bool): Parameter no_browser.
+
+Returns:
+    None: Command execution result.
+    """
     import threading
     import webbrowser
 
@@ -224,12 +314,20 @@ def review_cmd(host: str, port: int, demo: bool, no_browser: bool) -> None:
 
 @click.group("mcp")
 def mcp_cmd() -> None:
-    """Expose CHERENKOV over Model Context Protocol."""
+    """Expose CHERENKOV over Model Context Protocol.
+
+Returns:
+    None: Command execution result.
+    """
 
 
 @mcp_cmd.command("serve")
 def mcp_serve() -> None:
-    """Start the MCP server over stdio."""
+    """Start the MCP server over stdio.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.mcp.server import run_mcp_server
 
     run_mcp_server()
@@ -245,7 +343,19 @@ def mcp_serve() -> None:
 def mcp_publish(
     name: str, url: str, tools: str, resources: str, version: str, attestation: str
 ) -> None:
-    """Register an external MCP server with the mesh registry."""
+    """Register an external MCP server with the mesh registry.
+
+Args:
+    name (str): Parameter name.
+    url (str): Parameter url.
+    tools (str): Parameter tools.
+    resources (str): Parameter resources.
+    version (str): Parameter version.
+    attestation (str): Parameter attestation.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.mcp.mesh_router import get_registry
 
     registry = get_registry()
@@ -269,7 +379,15 @@ def mcp_publish(
 )
 @click.option("--write", is_flag=True, help="Write config file directly")
 def mcp_install(platform: str, write: bool) -> None:
-    """Generate MCP configuration for Claude Desktop, Cursor, Windsurf."""
+    """Generate MCP configuration for Claude Desktop, Cursor, Windsurf.
+
+Args:
+    platform (str): Parameter platform.
+    write (bool): Parameter write.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.mcp.install import MCPConfigGenerator
 
     if write and platform == "all":
@@ -286,7 +404,11 @@ def mcp_install(platform: str, write: bool) -> None:
 
 @mcp_cmd.command("discover")
 def mcp_discover() -> None:
-    """Discover available tools in the MCP Marketplace."""
+    """Discover available tools in the MCP Marketplace.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.mcp.marketplace.registry import MarketplaceRegistry
 
     registry = MarketplaceRegistry()
@@ -303,7 +425,14 @@ def mcp_discover() -> None:
 @mcp_cmd.command("install-tool")
 @click.argument("tool_id")
 def mcp_install_tool(tool_id: str) -> None:
-    """Install a tool from the MCP Marketplace."""
+    """Install a tool from the MCP Marketplace.
+
+Args:
+    tool_id (str): Parameter tool_id.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.mcp.install import install_marketplace_tool
 
     success = install_marketplace_tool(tool_id)
@@ -314,7 +443,14 @@ def mcp_install_tool(tool_id: str) -> None:
 @mcp_cmd.command("remove")
 @click.argument("tool_id")
 def mcp_remove(tool_id: str) -> None:
-    """Remove a marketplace tool."""
+    """Remove a marketplace tool.
+
+Args:
+    tool_id (str): Parameter tool_id.
+
+Returns:
+    None: Command execution result.
+    """
     click.echo(f"Removing {tool_id}...")
     try:
         # In a real scenario, map tool_id to package name

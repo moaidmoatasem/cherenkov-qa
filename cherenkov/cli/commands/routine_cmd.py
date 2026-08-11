@@ -9,13 +9,21 @@ from cherenkov.scheduling.use_cases.manage_routines import create_routine, toggl
 
 @click.group("routine")
 def routine_cmd() -> None:
-    """Manage automated scheduling routines."""
+    """Manage automated scheduling routines.
+
+Returns:
+    None: Command execution result.
+    """
     pass
 
 
 @routine_cmd.command("list")
 def list_routines() -> None:
-    """List all registered routines."""
+    """List all registered routines.
+
+Returns:
+    None: Command execution result.
+    """
     scheduler = APSchedulerAdapter()
     routines = scheduler.list_routines()
     if not routines:
@@ -33,7 +41,18 @@ def list_routines() -> None:
 @click.option("--value", required=True, help="Cron expression or interval seconds")
 @click.option("--target", required=True, help="Module path e.g. 'cherenkov.scheduling.templates.health:run'")
 def create_routine_cli(name: str, description: str, trigger: str, value: str, target: str) -> None:
-    """Create a new routine."""
+    """Create a new routine.
+
+Args:
+    name (str): Parameter name.
+    description (str): Parameter description.
+    trigger (str): Parameter trigger.
+    value (str): Parameter value.
+    target (str): Parameter target.
+
+Returns:
+    None: Command execution result.
+    """
     scheduler = APSchedulerAdapter()
     r = create_routine(scheduler, name, description, trigger, value, target, {})
     click.echo(f"Created routine {r.id}")
@@ -43,7 +62,15 @@ def create_routine_cli(name: str, description: str, trigger: str, value: str, ta
 @click.argument("routine_id")
 @click.argument("enabled", type=bool)
 def toggle_routine_cli(routine_id: str, enabled: bool) -> None:
-    """Enable or disable a routine."""
+    """Enable or disable a routine.
+
+Args:
+    routine_id (str): Parameter routine_id.
+    enabled (bool): Parameter enabled.
+
+Returns:
+    None: Command execution result.
+    """
     scheduler = APSchedulerAdapter()
     toggle_routine(scheduler, routine_id, enabled)
     click.echo(f"Toggled routine {routine_id} to {enabled}")
@@ -52,7 +79,14 @@ def toggle_routine_cli(routine_id: str, enabled: bool) -> None:
 @routine_cmd.command("trigger")
 @click.argument("routine_id")
 def trigger_routine_cli(routine_id: str) -> None:
-    """Trigger a routine immediately."""
+    """Trigger a routine immediately.
+
+Args:
+    routine_id (str): Parameter routine_id.
+
+Returns:
+    None: Command execution result.
+    """
     scheduler = APSchedulerAdapter()
     scheduler.trigger_routine_now(routine_id)
     click.echo(f"Triggered routine {routine_id}")

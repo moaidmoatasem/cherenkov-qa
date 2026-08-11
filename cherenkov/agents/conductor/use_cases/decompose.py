@@ -16,13 +16,13 @@ def split_by_item(
     """Split a task by distributing a list of items to parallel sub-tasks.
 
     Args:
-        instruction_template: The prompt template (must contain `{item}`).
-        items: The list of items to distribute.
-        context: Shared context dictionary.
-        budget_per_item: Token budget for each sub-task.
+        instruction_template (str): The prompt template (must contain `{item}`).
+        items (list[Any]): The list of items to distribute.
+        context (dict[str, Any] | None): Shared context dictionary. Defaults to None.
+        budget_per_item (int): Token budget for each sub-task. Defaults to 5000.
 
     Returns:
-        A list of SubAgentTasks.
+        list[SubAgentTask]: A list of SubAgentTasks.
     """
     ctx = context or {}
     tasks = []
@@ -51,14 +51,15 @@ def split_by_role(
     """Split a task by assigning it to different specialized agent roles.
 
     Args:
-        base_instruction: The core task description.
-        roles: The list of role strings (e.g. "Security Reviewer", "Performance Expert").
-        context: Shared context dictionary.
-        budget_per_role: Token budget for each sub-task.
+        base_instruction (str): The core task description.
+        roles (list[str]): The list of role strings (e.g. "Security Reviewer", "Performance Expert").
+        context (dict[str, Any] | None): Shared context dictionary. Defaults to None.
+        budget_per_role (int): Token budget for each sub-task. Defaults to 5000.
 
     Returns:
-        A list of SubAgentTasks.
+        list[SubAgentTask]: A list of SubAgentTasks.
     """
+
     ctx = context or {}
     tasks = []
     for role in roles:

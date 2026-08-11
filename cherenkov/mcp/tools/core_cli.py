@@ -15,7 +15,14 @@ from typing import Any, Callable
 from cherenkov.mcp.contracts import CheckSuiteInput, VerifyInput, GenerateInput
 
 def handle_check_suite(params: dict[str, Any]) -> dict[str, Any]:
-    """MCP handler for cherenkov/check-suite."""
+    """MCP handler for cherenkov/check-suite tool.
+
+    Args:
+        params (dict[str, Any]): Dictionary of input parameters matching CheckSuiteInput schema.
+
+    Returns:
+        dict[str, Any]: Dictionary containing findings list and verdict string.
+    """
     input_model = CheckSuiteInput.model_validate(params)
     
     from cherenkov.cli.commands.check_suite import check_integrity, _check_typescript
@@ -53,7 +60,14 @@ def handle_check_suite(params: dict[str, Any]) -> dict[str, Any]:
 
 
 def handle_verify(params: dict[str, Any]) -> dict[str, Any]:
-    """MCP handler for cherenkov/verify."""
+    """MCP handler for cherenkov/verify tool.
+
+    Args:
+        params (dict[str, Any]): Dictionary of input parameters matching VerifyInput schema.
+
+    Returns:
+        dict[str, Any]: Dictionary containing verification doc payload and stdout log.
+    """
     input_model = VerifyInput.model_validate(params)
     
     from cherenkov.cli.commands.verify import _verify_impl
@@ -90,8 +104,16 @@ def handle_verify(params: dict[str, Any]) -> dict[str, Any]:
 
 
 def handle_generate(params: dict[str, Any]) -> dict[str, Any]:
-    """MCP handler for cherenkov/generate."""
+    """MCP handler for cherenkov/generate tool.
+
+    Args:
+        params (dict[str, Any]): Dictionary of input parameters matching GenerateInput schema.
+
+    Returns:
+        dict[str, Any]: Dictionary containing list of generated test items or error message.
+    """
     input_model = GenerateInput.model_validate(params)
+
     
     from cherenkov.stages.ingest import IngestStage
     from cherenkov.stages.plan import PlanStage

@@ -9,7 +9,11 @@ import click
 
 @click.command("dashboard")
 def dashboard_cmd() -> None:
-    """Visualise Truth Model + divergences."""
+    """Visualise Truth Model + divergences.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.dashboard.render import run_dashboard
 
     sys.exit(run_dashboard())
@@ -18,7 +22,14 @@ def dashboard_cmd() -> None:
 @click.command("map")
 @click.option("--detailed", "-d", is_flag=True, help="Show full claim details")
 def map_cmd(detailed: bool) -> None:
-    """Build + inspect the Truth Model from configured sources."""
+    """Build + inspect the Truth Model from configured sources.
+
+Args:
+    detailed (bool): Parameter detailed.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.stages.map_cmd import run_map
 
     sys.exit(run_map(detailed=detailed))
@@ -38,7 +49,20 @@ def map_cmd(detailed: bool) -> None:
               default="openapi", help="Source type for guardian mode")
 def daemon_cmd(interval: int, max_loops: int, url: str | None, guardian: bool,
                spec: str | None, target: str | None, source: str) -> None:
-    """Continuously watch sources and rebuild Truth Model, or run Spec Guardian."""
+    """Continuously watch sources and rebuild Truth Model, or run Spec Guardian.
+
+Args:
+    interval (int): Parameter interval.
+    max_loops (int): Parameter max_loops.
+    url (str | None): Parameter url.
+    guardian (bool): Parameter guardian.
+    spec (str | None): Parameter spec.
+    target (str | None): Parameter target.
+    source (str): Parameter source.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.stages.daemon_cmd import run_daemon, run_guardian_daemon
 
     if guardian:
@@ -58,7 +82,16 @@ def daemon_cmd(interval: int, max_loops: int, url: str | None, guardian: bool,
               help="Route to probe (repeatable); default: /")
 @click.option("--method", "-m", default="GET", help="HTTP method (default: GET)")
 def explore_cmd(target: str, paths: tuple[str, ...], method: str) -> None:
-    """Crawl a live surface and print a risk digest."""
+    """Crawl a live surface and print a risk digest.
+
+Args:
+    target (str): Parameter target.
+    paths (tuple[str, ...]): Parameter paths.
+    method (str): Parameter method.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.stages.copilot_cmd import run_explore
 
     sys.exit(run_explore(target, paths=list(paths) or None, method=method))
@@ -70,7 +103,16 @@ def explore_cmd(target: str, paths: tuple[str, ...], method: str) -> None:
               help="Directory to write the .spec.ts test into")
 @click.option("--target", "-t", default="", help="Base URL the flow runs against")
 def author_cmd(intent: str, output: str, target: str) -> None:
-    """Turn plain-language intent into an ejectable Playwright test."""
+    """Turn plain-language intent into an ejectable Playwright test.
+
+Args:
+    intent (str): Parameter intent.
+    output (str): Parameter output.
+    target (str): Parameter target.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.stages.copilot_cmd import run_author
 
     sys.exit(run_author(intent, output=output, target=target))
@@ -80,7 +122,15 @@ def author_cmd(intent: str, output: str, target: str) -> None:
 @click.argument("result_path", type=click.Path(exists=True))
 @click.option("--run-id", default=None, help="Tag enqueued HITL items with this run id")
 def record_cmd(result_path: str, run_id: str | None) -> None:
-    """Ingest live agentic-exploration scenario results into the HITL queue."""
+    """Ingest live agentic-exploration scenario results into the HITL queue.
+
+Args:
+    result_path (str): Parameter result_path.
+    run_id (str | None): Parameter run_id.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.stages.copilot_cmd import run_record
 
     sys.exit(run_record(result_path, run_id=run_id))
@@ -88,14 +138,26 @@ def record_cmd(result_path: str, run_id: str | None) -> None:
 
 @click.group("tokens")
 def tokens_cmd() -> None:
-    """Token consumption monitor — usage, cost, recommendations."""
+    """Token consumption monitor — usage, cost, recommendations.
+
+Returns:
+    None: Command execution result.
+    """
 
 
 @tokens_cmd.command("report")
 @click.option("--days", "-d", type=int, default=30, help="Lookback window in days (default: 30)")
 @click.option("--json", "json_out", is_flag=True, help="Output as JSON")
 def tokens_report(days: int, json_out: bool) -> None:
-    """Full usage report with recommendations."""
+    """Full usage report with recommendations.
+
+Args:
+    days (int): Parameter days.
+    json_out (bool): Parameter json_out.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.stages.tokens_cmd import run_tokens_report
 
     run_tokens_report(days=days, as_json=json_out)
@@ -105,7 +167,15 @@ def tokens_report(days: int, json_out: bool) -> None:
 @click.option("--stage", is_flag=True, help="Break down by stage instead of provider")
 @click.option("--days", "-d", type=int, default=30, help="Lookback window in days (default: 30)")
 def tokens_breakdown(stage: bool, days: int) -> None:
-    """Per-provider or per-stage breakdown."""
+    """Per-provider or per-stage breakdown.
+
+Args:
+    stage (bool): Parameter stage.
+    days (int): Parameter days.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.stages.tokens_cmd import run_tokens_breakdown
 
     run_tokens_breakdown(by_stage=stage, days=days)
@@ -116,7 +186,15 @@ def tokens_breakdown(stage: bool, days: int) -> None:
 @click.option("--trend", "-t", metavar="METRIC", default=None,
               help="Show trend for a metric (health_score, escape_rate, …)")
 def governance_cmd(json_out: bool, trend: str | None) -> None:
-    """Governance KPI panel (escape/FP/coverage/maintenance)."""
+    """Governance KPI panel (escape/FP/coverage/maintenance).
+
+Args:
+    json_out (bool): Parameter json_out.
+    trend (str | None): Parameter trend.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.stages.governance_cmd import run_governance
 
     sys.exit(run_governance(json_out=json_out, trend=trend))
@@ -128,7 +206,15 @@ def governance_cmd(json_out: bool, trend: str | None) -> None:
 @click.option("--rag-report", "-r", "rag_report", is_flag=True,
               help="Show per-item RAG-Triad metrics")
 def certify_cmd(tier: str, rag_report: bool) -> None:
-    """Gold-Set + RAG-Triad model tier certification."""
+    """Gold-Set + RAG-Triad model tier certification.
+
+Args:
+    tier (str): Parameter tier.
+    rag_report (bool): Parameter rag_report.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.stages.certify_cmd import run_certify
 
     sys.exit(run_certify(tier=tier, rag_report=rag_report))
@@ -140,7 +226,15 @@ def certify_cmd(tier: str, rag_report: bool) -> None:
               type=click.Choice(["assisted", "augmented", "agentic", "predictive"]),
               default=None, help="Autonomy level to set")
 def profile_cmd(action: str, level: str | None) -> None:
-    """Autonomy-ladder profile (assisted/augmented/agentic/predictive)."""
+    """Autonomy-ladder profile (assisted/augmented/agentic/predictive).
+
+Args:
+    action (str): Parameter action.
+    level (str | None): Parameter level.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.stages.profile_cmd import run_profile
 
     sys.exit(run_profile(action=action, level=level))

@@ -1,3 +1,4 @@
+"""Script to validate internal Markdown link targets across repository documentation."""
 import os
 import re
 import sys

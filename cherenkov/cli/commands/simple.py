@@ -11,7 +11,16 @@ import click
 @click.option("--after", required=True, type=click.Path(exists=True), help="Path to the modified spec")
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text", help="Output format")
 def diff_cmd(before: str, after: str, fmt: str) -> None:
-    """Compare two OpenAPI specs for breaking changes."""
+    """Compare two OpenAPI specs for breaking changes.
+
+Args:
+    before (str): Parameter before.
+    after (str): Parameter after.
+    fmt (str): Parameter fmt.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.diff.spec_differ import SpecDiffer, print_diff_report
 
     report = SpecDiffer().diff(before, after)
@@ -40,7 +49,15 @@ __all__ = ["report_cmd"]
     ),
 )
 def eject_cmd(output: str, tests_dir: str | None) -> None:
-    """Eject generated tests to a standalone Playwright suite."""
+    """Eject generated tests to a standalone Playwright suite.
+
+Args:
+    output (str): Parameter output.
+    tests_dir (str | None): Parameter tests_dir.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.execution.eject import EjectorEngine
 
     ejector = EjectorEngine("cli_eject", tests_src_dir=tests_dir)
@@ -59,9 +76,12 @@ def eject_cmd(output: str, tests_dir: str | None) -> None:
 def self_test_cmd() -> None:
     """Live smoke test of the core pipeline: real Ollama generation + tsc compile.
 
-    Requires a reachable Ollama daemon and npx/tsc; exits 1 on the first
-    failing step. For environment diagnostics without Ollama, use `doctor`;
-    for an offline demonstration, use `demo`.
+Requires a reachable Ollama daemon and npx/tsc; exits 1 on the first
+failing step. For environment diagnostics without Ollama, use `doctor`;
+for an offline demonstration, use `demo`.
+
+Returns:
+    None: Command execution result.
     """
     from cherenkov.stages.self_test_cmd import run_self_test
 
@@ -71,7 +91,14 @@ def self_test_cmd() -> None:
 @click.command("completion")
 @click.argument("shell", type=click.Choice(["bash", "zsh", "fish"]))
 def completion_cmd(shell: str) -> None:
-    """Generate shell completion scripts."""
+    """Generate shell completion scripts.
+
+Args:
+    shell (str): Parameter shell.
+
+Returns:
+    None: Command execution result.
+    """
     if shell in ("bash", "zsh"):
         click.echo('eval "$(register-python-argcomplete cherenkov)"')
     else:
@@ -84,7 +111,15 @@ def completion_cmd(shell: str) -> None:
               help="Configuration profile (default: autodetect)")
 @click.option("--force", "-f", is_flag=True, help="Overwrite existing cherenkov.toml")
 def init_cmd(profile: str | None, force: bool) -> None:
-    """Zero-config project setup."""
+    """Zero-config project setup.
+
+Args:
+    profile (str | None): Parameter profile.
+    force (bool): Parameter force.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.stages.init_cmd import run_init
 
     sys.exit(run_init(profile=profile, force=force))
@@ -93,7 +128,14 @@ def init_cmd(profile: str | None, force: bool) -> None:
 @click.command("doctor")
 @click.option("--desktop", is_flag=True, help="Include Track C (Desktop/Tauri) checks")
 def doctor_cmd(desktop: bool) -> None:
-    """System health check."""
+    """System health check.
+
+Args:
+    desktop (bool): Parameter desktop.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.stages.doctor_cmd import run_doctor
 
     sys.exit(run_doctor(desktop=desktop))

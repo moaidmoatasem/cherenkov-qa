@@ -17,20 +17,34 @@ _log = logging.getLogger(__name__)
 
 
 class MCPConductor:
-    """AgentConductor that fans out tasks via the MCP mesh router."""
+    """AgentConductor that fans out tasks via the MCP mesh router.
 
-    def __init__(self, target_tool_name: str = "run_sub_agent_task"):
+    Attributes:
+        target_tool_name (str): Tool name invoked for sub-tasks.
+        registry (MCPRegistry): Mesh router registry instance.
+    """
+
+    def __init__(self, target_tool_name: str = "run_sub_agent_task") -> None:
         """Initialize the conductor.
 
         Args:
-            target_tool_name: The MCP tool name to call for each sub-task.
-                The registered MCP server must expose this tool.
+            target_tool_name (str): The MCP tool name to call for each sub-task. Defaults to 'run_sub_agent_task'.
+
+        Returns:
+            None
         """
         self.target_tool_name = target_tool_name
         self.registry = get_registry()
 
     def execute(self, task: ConductorTask) -> ConductorResult:
-        """Run the conductor task and return the aggregated result."""
+        """Run the conductor task and return the aggregated result.
+
+        Args:
+            task (ConductorTask): Top-level task containing sub-agent tasks.
+
+        Returns:
+            ConductorResult: Aggregated result object from sub-agent execution.
+        """
         _log.info(
             "Conductor starting task %r with %d sub-tasks (strategy=%s)",
             task.task_id,
@@ -103,7 +117,15 @@ class MCPConductor:
         )
 
     def _run_sub_task(self, sub_task: SubAgentTask, _timeout: int) -> SubAgentResult:
-        """Execute a single sub-task via the MCP registry."""
+        """Execute a single sub-task via the MCP registry.
+
+        Args:
+            sub_task (SubAgentTask): Sub-task model to execute.
+            _timeout (int): Global timeout setting in seconds.
+
+        Returns:
+            SubAgentResult: Sub-agent execution result model.
+        """
         arguments = {
             "instruction": sub_task.instruction,
             "context": sub_task.context,
@@ -140,3 +162,4 @@ class MCPConductor:
                 output=None,
                 error_message=f"Transport error: {exc}",
             )
+

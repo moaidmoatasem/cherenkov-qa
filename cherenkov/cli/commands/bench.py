@@ -64,16 +64,29 @@ def bench_cmd(
 ) -> None:
     """Benchmark the REVIEW stage against a corpus of generated tests.
 
-    By default runs against the bundled golden fixtures
-    (bench/fixtures/golden_tests/). Pass --dir to include additional
-    directories of .spec.ts files.
+By default runs against the bundled golden fixtures
+(bench/fixtures/golden_tests/). Pass --dir to include additional
+directories of .spec.ts files.
 
-    \b
-    Example:
-      cherenkov bench
-      cherenkov bench --dir stub/generated_tests --no-golden
-      cherenkov bench --threshold-quality 0.90 --output bench_report.json
+
+Example:
+  cherenkov bench
+  cherenkov bench --dir stub/generated_tests --no-golden
+  cherenkov bench --threshold-quality 0.90 --output bench_report.json
+
+Args:
+    test_dirs: Tuple of directory paths containing .spec.ts files.
+    spec_path: Path to OpenAPI spec file for Prism gate evaluation.
+    golden: True to include bundled golden fixture directory.
+    threshold_compile: Minimum required compilation pass rate (0.0-1.0).
+    threshold_quality: Minimum required average quality score (0.0-1.0).
+    output: Optional path to write full JSON report file.
+    verbose: True to enable detailed per-file output logging.
+
+Returns:
+    None: Command execution result.
     """
+
     from cherenkov.bench.report import print_report, write_json
     from cherenkov.bench.runner import run_bench
 

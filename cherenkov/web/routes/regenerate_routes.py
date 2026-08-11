@@ -17,7 +17,11 @@ def _engine() -> AutoRegenerateMode:
 
 @router.get("/policy", operation_id="get_regen_policy")
 async def get_regen_policy():
-    """Return the default auto-regenerate policy."""
+    """Return the default auto-regenerate policy.
+
+    Returns:
+        Dictionary containing policy settings including trigger_on, min_active_divergences, cooldown_seconds, and max_regenerations.
+    """
     p = RegenPolicy()
     return {
         "trigger_on": p.trigger_on,
@@ -41,6 +45,16 @@ async def evaluate_regenerate(
     `regenerate.scheduled` event (consumed by the SpecGuardian daemon, #765).
     Passing a real `CoverageLoop` entrypoint via `AutoRegenerateMode` wires
     synchronous execution instead.
+
+    Args:
+        target_url: Target service URL to inspect.
+        trigger_on: Optional list of event triggers.
+        min_active_divergences: Minimum divergence count to trigger regeneration.
+        cooldown_seconds: Cooldown duration in seconds between regenerations.
+        max_regenerations: Maximum allowed regeneration count.
+
+    Returns:
+        Dictionary payload containing evaluation decision, target URL, reason, and event payload.
     """
     policy = RegenPolicy(
         trigger_on=trigger_on or RegenPolicy().trigger_on,
@@ -69,7 +83,17 @@ async def trigger_regenerate(
     trigger_on: list[str] | None = None,
     max_regenerations: int = 3,
 ):
-    """Manual trigger for an immediate regenerate cycle on ``target_url``."""
+    """Manual trigger for an immediate regenerate cycle on ``target_url``.
+
+    Args:
+        target_url: Target service URL to regenerate.
+        reason: Reason string for manual trigger invocation.
+        trigger_on: Optional list of event triggers.
+        max_regenerations: Maximum allowed regeneration attempts.
+
+    Returns:
+        Dictionary payload containing trigger result, target URL, execution status, and event payload.
+    """
     policy = RegenPolicy(
         trigger_on=trigger_on or RegenPolicy().trigger_on,
         max_regenerations=max(1, max_regenerations),

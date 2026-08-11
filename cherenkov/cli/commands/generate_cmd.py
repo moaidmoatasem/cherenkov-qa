@@ -1,3 +1,5 @@
+"""cherenkov/cli/generate_cmd.py — CLI command module."""
+
 from __future__ import annotations
 
 import os
@@ -12,12 +14,20 @@ _FILENAME_UNSAFE = re.compile(r"[^A-Za-z0-9_.-]+")
 def scenario_spec_filename(endpoint: str, method: str, mutation_id: str) -> str:
     """Build a collision-free ``.spec.ts`` filename for one scenario.
 
-    ``mutation_id`` alone is not unique across scenarios: every endpoint
-    contributes a ``happy_path`` and ``unauthorized`` mutation, so keying the
-    file on mutation_id alone silently overwrites earlier scenarios (the CLI
-    would report "38/38 generated" while only four files persist). Including
-    method + sanitized endpoint path guarantees each scenario gets its own
-    file, e.g. ``POST_pet_happy_path.spec.ts``.
+``mutation_id`` alone is not unique across scenarios: every endpoint
+contributes a ``happy_path`` and ``unauthorized`` mutation, so keying the
+file on mutation_id alone silently overwrites earlier scenarios (the CLI
+would report "38/38 generated" while only four files persist). Including
+method + sanitized endpoint path guarantees each scenario gets its own
+file, e.g. ``POST_pet_happy_path.spec.ts``.
+
+Args:
+    endpoint (str): Parameter endpoint.
+    method (str): Parameter method.
+    mutation_id (str): Parameter mutation_id.
+
+Returns:
+    str: Command execution result.
     """
     path_part = _FILENAME_UNSAFE.sub("_", endpoint.strip("/")).strip("_")
     return f"{method}_{path_part}_{mutation_id}.spec.ts"
@@ -49,10 +59,19 @@ def scenario_spec_filename(endpoint: str, method: str, mutation_id: str) -> str:
 def generate_cmd(spec, output_dir, repair, max_attempts):
     """Generate Playwright E2E tests from an OpenAPI specification.
 
-    Uses the ChatTester-style repair loop by default: each scenario is generated,
-    reviewed against the spec, and repaired up to --max-attempts times before
-    the highest-quality result is written to disk.  Pass --no-repair to skip
-    the review/repair cycle and write the first generation directly.
+Uses the ChatTester-style repair loop by default: each scenario is generated,
+reviewed against the spec, and repaired up to --max-attempts times before
+the highest-quality result is written to disk.  Pass --no-repair to skip
+the review/repair cycle and write the first generation directly.
+
+Args:
+    spec: Parameter spec.
+    output_dir: Parameter output_dir.
+    repair: Parameter repair.
+    max_attempts: Parameter max_attempts.
+
+Returns:
+    None: Command execution result.
     """
     from cherenkov.stages.ingest import IngestStage
     from cherenkov.stages.plan import PlanStage
