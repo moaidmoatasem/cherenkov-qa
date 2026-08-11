@@ -29,7 +29,11 @@ Please replace with a meaningful description.
 
         path = Path(test_path)
         if not path.exists():
-            return {"status": "failed", "error": f"Test file not found: {test_path}"}
+            return {
+                "status": "failed",
+                "executed": False,
+                "error": f"Test file not found: {test_path}",
+            }
 
         result = subprocess.run(
             ["pytest", str(path), f"--appium-server={self.appium_server}"],
@@ -40,6 +44,7 @@ Please replace with a meaningful description.
 
         return {
             "status": "passed" if result.returncode == 0 else "failed",
+            "executed": True,
             "stdout": result.stdout,
             "stderr": result.stderr,
         }

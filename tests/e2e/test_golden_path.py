@@ -249,7 +249,11 @@ def test_gp8_config_validate_exists():
 
 
 def test_gp9_mobile_dry_run(monkeypatch):
-    """GP-9: Mobile testing works in dry-run mode (no ADB required)."""
+    """GP-9: Mobile testing works in dry-run mode (no ADB required).
+
+    Dry run must report ``skipped``, not ``passed`` — no device was involved,
+    so there is no verdict to report.
+    """
     monkeypatch.setenv("CHERENKOV_MOBILE_DRY_RUN", "1")
     try:
         from cherenkov.execution.maestro_runner import MaestroRunner
@@ -257,7 +261,8 @@ def test_gp9_mobile_dry_run(monkeypatch):
         runner = MaestroRunner()
         assert runner.health_check() is True
         result = runner.run_test("/any/path.yaml")
-        assert result["status"] == "passed"
+        assert result["status"] == "skipped"
+        assert result["executed"] is False
     except ImportError:
         pytest.skip("MaestroRunner not importable")
 

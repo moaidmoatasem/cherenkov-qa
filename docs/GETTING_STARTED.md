@@ -589,6 +589,40 @@ outlier regressions once >= 3 runs exist. Degrades gracefully without k6.
 
 ---
 
+#### `mobile` (Track B — mobile flow integrity)
+Plans Maestro flows from a recorded mobile source, gates them for assertion
+strength, and executes them on a connected device or emulator via Maestro (or
+Appium with `--runner appium`).
+
+`SOURCE` is a `.hil` interaction trace or an `.apk`. A `.har` is rejected with a
+pointer to `cherenkov verify`: it records network traffic, not screen
+interactions, so no flow can be planned from it.
+
+Two integrity rules apply. A flow whose assertion matches any screen (`.*`,
+`.+`, `*`, empty) fails the gate and never reaches the device — that is a
+weakened assertion, and it can never fail. A flow that never executed is
+reported `not_executed`, never as passing.
+
+```bash
+./bin/cherenkov mobile flows.hil --app-id com.acme.shop
+./bin/cherenkov mobile app.apk --no-execute
+./bin/cherenkov mobile flows.hil --json --fail-on-finding
+./bin/cherenkov mobile --demo
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--app-id` | *(from source)* | Application package id to target |
+| `--out` | `stub/generated_tests/mobile` | Directory for generated flows |
+| `--runner` | `maestro` | Execution backend (`maestro` or `appium`) |
+| `--execute/--no-execute` | `--execute` | Run flows on a device |
+| `--strict/--no-strict` | `--strict` | Fail a flow carrying no assertion |
+| `--demo` | off | Use built-in scenarios; never executed on a device |
+| `--json` | off | Machine-readable output |
+| `--fail-on-finding` | off | Exit non-zero on gate or execution failure |
+
+---
+
 #### `map` (E2-6 — Truth Model builder)
 Build and inspect the Truth Model from configured sources (OpenAPI specs, traffic
 logs, etc.). Produces a claim graph connecting specifications with code and traces.
