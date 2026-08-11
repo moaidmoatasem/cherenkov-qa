@@ -19,6 +19,12 @@ from cherenkov.adversarial.garak_adapter import is_garak_available, run_garak
 
 
 def run_adversarial_tests(
+    """Placeholder docstring.
+
+:param test_codes: <description>
+:param spec_path: <description>
+:param model: <description>
+:return: <description>"""
     test_codes: dict[str, str],
     spec_path: str | None = None,
     model: str = "static-analysis",
@@ -73,6 +79,10 @@ def run_adversarial_tests(
 
 
 def print_report(report: AdversarialReport) -> None:
+    """Placeholder docstring.
+
+:param report: <description>
+:return: <description>"""
     d = report.to_dict()
     print(f"\n{'='*60}")
     print("  CHERENKOV ADVERSARIAL REPORT")
@@ -103,6 +113,11 @@ def print_report(report: AdversarialReport) -> None:
 
 
 def save_report(report: AdversarialReport, output_path: str = ".cherenkov/adversarial_report.json") -> str:
+    """Placeholder docstring.
+
+:param report: <description>
+:param output_path: <description>
+:return: <description>"""
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(report.to_dict(), indent=2))

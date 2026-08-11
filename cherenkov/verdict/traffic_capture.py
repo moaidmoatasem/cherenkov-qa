@@ -48,6 +48,9 @@ class CapturedInteraction:
     timestamp: float = field(default_factory=time.time)
 
     def to_fixture(self) -> dict:
+        """Placeholder docstring.
+
+:return: <description>"""
         return {
             "id": self.id,
             "method": self.method,
@@ -64,6 +67,9 @@ class CapturedInteraction:
 
 
 @dataclass
+    """Placeholder docstring.
+
+<description>"""
 class TrafficCaptureReport:
     interactions: list[CapturedInteraction] = field(default_factory=list)
     golden_count: int = 0          # spec_conformant interactions promoted
@@ -72,6 +78,9 @@ class TrafficCaptureReport:
 
     @property
     def total(self) -> int:
+        """Placeholder docstring.
+
+:return: <description>"""
         return len(self.interactions)
 
 
@@ -88,6 +97,10 @@ class CapturingWitnessAgent(WitnessAgent):
         self.interactions: list[CapturedInteraction] = []
 
     def reproduce(self, hypothesis: DivergenceHypothesis) -> ReproductionResult:
+        """Placeholder docstring.
+
+:param hypothesis: <description>
+:return: <description>"""
         result = super().reproduce(hypothesis)
         if result.evidence:
             self._record(hypothesis, result)
@@ -239,6 +252,9 @@ class RecordingProxy:
         self.stop()
 
     def start(self) -> None:
+        """Placeholder docstring.
+
+:return: <description>"""
         proxy = self
 
         class _Handler(BaseHTTPRequestHandler):
@@ -279,6 +295,10 @@ class RecordingProxy:
                 self.wfile.write(body)
 
             def log_message(self, *_: object) -> None:
+                """Placeholder docstring.
+
+:param *_: <description>
+:return: <description>"""
                 pass
 
             do_GET = _forward  # noqa: N815
@@ -316,6 +336,9 @@ class RecordingProxy:
                 latency_ms=int((time.monotonic() - started) * 1000),
             )
         )
+        """Placeholder docstring.
+
+:return: <description>"""
     def stop(self) -> None:
         if self._server is not None:
             self._server.shutdown()
@@ -323,6 +346,9 @@ class RecordingProxy:
             self._thread = None
 
     @property
+        """Placeholder docstring.
+
+:return: <description>"""
     def url(self) -> str:
         return f"http://127.0.0.1:{self.port}"
 

@@ -53,7 +53,14 @@ COMMANDS: list[list[str]] = [
 
 
 def run_help(cmd: list[str]) -> str:
-    """Run `cmd --help` and return the stdout."""
+    """Run `cmd --help` and return the stdout.
+
+    Args:
+        cmd: List of command strings to execute.
+
+    Returns:
+        Help output text string from command execution.
+    """
     try:
         result = subprocess.run(
             [*cmd, "--help"],

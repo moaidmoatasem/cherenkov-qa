@@ -72,6 +72,15 @@ class HealingFeedbackStore:
             )
 
     def record_feedback(
+        """Placeholder docstring.
+
+:param item_id: <description>
+:param endpoint: <description>
+:param mutation_id: <description>
+:param classification: <description>
+:param actor: <description>
+:param detail: <description>
+:return: <description>"""
         self,
         item_id: str,
         endpoint: str,
@@ -115,6 +124,10 @@ class HealingFeedbackStore:
             count, dominant_classification, confidence, votes per classification.
         """
         def h(v):
+            """Placeholder docstring.
+
+:param v: <description>
+:return: <description>"""
             return hashlib.sha256(v.encode()).hexdigest()[:12] if v else ""
         hashed_ep = h(endpoint)
         hashed_mut = h(mutation_id)

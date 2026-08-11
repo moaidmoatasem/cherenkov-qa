@@ -46,6 +46,12 @@ class FencedCompletionClient(InferenceClient):
         """Return the raw model text and update `self._token_usage`."""
 
     def complete_code(
+        """Placeholder docstring.
+
+:param system_prompt: <description>
+:param user_prompt: <description>
+:param model: <description>
+:return: <description>"""
         self,
         system_prompt: str,
         user_prompt: str,
@@ -60,6 +66,12 @@ class FencedCompletionClient(InferenceClient):
         return extract_fenced_code(strip_think(raw))
 
     def complete_json(
+        """Placeholder docstring.
+
+:param system_prompt: <description>
+:param user_prompt: <description>
+:param model: <description>
+:return: <description>"""
         self,
         system_prompt: str,
         user_prompt: str,

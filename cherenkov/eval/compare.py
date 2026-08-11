@@ -16,6 +16,9 @@ _GRADE_ORDER = {"A": 5, "B": 4, "C": 3, "D": 2, "F": 1}
 
 @dataclass
 class OperationDelta:
+    """Placeholder docstring.
+
+<description>"""
     operation_id: str
     before_grade: str
     after_grade: str
@@ -25,6 +28,9 @@ class OperationDelta:
     direction: str  # "improved" | "regressed" | "unchanged" | "added" | "removed"
 
     def to_dict(self) -> dict[str, Any]:
+        """Placeholder docstring.
+
+:return: <description>"""
         return {
             "operation_id": self.operation_id,
             "before_grade": self.before_grade,
@@ -37,6 +43,9 @@ class OperationDelta:
 
 
 @dataclass
+    """Placeholder docstring.
+
+<description>"""
 class CompareReport:
     before_grade: str
     after_grade: str
@@ -52,9 +61,15 @@ class CompareReport:
 
     @property
     def has_regressions(self) -> bool:
+        """Placeholder docstring.
+
+:return: <description>"""
         return bool(self.regressed)
 
     def summary(self) -> str:
+        """Placeholder docstring.
+
+:return: <description>"""
         lines = [
             f"overall: {self.before_grade} → {self.after_grade}  "
             f"(Δscore={self.delta_score:+.3f})",
@@ -73,6 +88,9 @@ class CompareReport:
         return "\n".join(lines)
 
     def to_dict(self) -> dict[str, Any]:
+        """Placeholder docstring.
+
+:return: <description>"""
         return {
             "before_grade": self.before_grade,
             "after_grade": self.after_grade,

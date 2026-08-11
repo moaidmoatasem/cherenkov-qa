@@ -5,11 +5,22 @@ from cherenkov.knowledge.ports.repository import KnowledgeMeshRepository
 
 
 class HITLReflectorBridge:
+    """Placeholder docstring.
+
+<description>"""
     def __init__(self, repository: KnowledgeMeshRepository, reflector):
         self.repository = repository
         self.reflector = reflector
 
     def on_hitl_decision(
+        """Placeholder docstring.
+
+:param item_id: <description>
+:param action: <description>
+:param reason: <description>
+:param endpoint: <description>
+:param method: <description>
+:return: <description>"""
         self, item_id: str, action: str, reason: str, endpoint: str, method: str
     ) -> None:
         item = KnowledgeItem(

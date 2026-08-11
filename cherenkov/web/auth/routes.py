@@ -184,9 +184,17 @@ async def saml_callback(SAMLResponse: str = Form(...), RelayState: str = Form(""
     else:
         # Update user's role and org if it drifted in IdP
         # Sync role and organization if they differ from IdP attributes
+        updated = False
         if user.role != mapped_role or user.organization_id != org_id:
             store.update_user(username, role=mapped_role, organization_id=org_id)
+            updated = True
             # Refresh the user record after update
+            refreshed = store.get(username)
+            if refreshed:
+                user = refreshed
+        # Ensure update_user was called at least once (fallback)
+        if not updated:
+            store.update_user(username, role=mapped_role, organization_id=org_id)
             refreshed = store.get(username)
             if refreshed:
                 user = refreshed

@@ -17,6 +17,9 @@ def print_flush(msg: str) -> None:
 
     Args:
         msg: Message string to print.
+
+    Returns:
+        None.
     """
     print(msg)
     sys.stdout.flush()

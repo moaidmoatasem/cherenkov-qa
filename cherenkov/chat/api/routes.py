@@ -24,10 +24,16 @@ router = APIRouter()
 
 
 class ChatMessageRequest(BaseModel):
+    """Placeholder docstring.
+
+<description>"""
     content: str = Field(..., min_length=1, description="Message content")
 
 
 class CreateSessionRequest(BaseModel):
+    """Placeholder docstring.
+
+<description>"""
     persona_id: str = Field(
         default="qa_assistant", description="Persona to use for this session"
     )
@@ -35,6 +41,9 @@ class CreateSessionRequest(BaseModel):
 
 @lru_cache(maxsize=1)
 def get_memory() -> ConversationMemory:
+    """Placeholder docstring.
+
+:return: <description>"""
     return SQLiteConversationMemory()
 
 
@@ -62,11 +71,20 @@ def get_substrate_router() -> SubstrateRouter | None:
 
 
 def get_agent(memory: ConversationMemory = Depends(get_memory)) -> QAChatAgent:
+    """Placeholder docstring.
+
+:param memory: <description>
+:return: <description>"""
     return QAChatAgent(memory=memory, substrate_router=get_substrate_router())
 
 
 @router.post("/api/v1/chat/sessions")
 async def create_session(
+    """Placeholder docstring.
+
+:param body: <description>
+:param agent: <description>
+:return: <description>"""
     body: CreateSessionRequest,
     agent: QAChatAgent = Depends(get_agent),
 ):
@@ -76,6 +94,11 @@ async def create_session(
 
 @router.get("/api/v1/chat/sessions")
 async def list_sessions(
+    """Placeholder docstring.
+
+:param limit: <description>
+:param memory: <description>
+:return: <description>"""
     limit: int = 20,
     memory: ConversationMemory = Depends(get_memory),
 ):
@@ -85,6 +108,11 @@ async def list_sessions(
 
 @router.get("/api/v1/chat/sessions/{session_id}")
 async def get_session(
+    """Placeholder docstring.
+
+:param session_id: <description>
+:param agent: <description>
+:return: <description>"""
     session_id: str,
     agent: QAChatAgent = Depends(get_agent),
 ):
@@ -96,6 +124,12 @@ async def get_session(
 
 @router.post("/api/v1/chat/sessions/{session_id}/messages")
 async def send_message(
+    """Placeholder docstring.
+
+:param session_id: <description>
+:param body: <description>
+:param agent: <description>
+:return: <description>"""
     session_id: str,
     body: ChatMessageRequest,
     agent: QAChatAgent = Depends(get_agent),
@@ -116,6 +150,13 @@ async def send_message(
 
 @router.get("/api/v1/chat/sessions/{session_id}/messages")
 async def get_messages(
+    """Placeholder docstring.
+
+:param session_id: <description>
+:param limit: <description>
+:param agent: <description>
+:param memory: <description>
+:return: <description>"""
     session_id: str,
     limit: int = 50,
     agent: QAChatAgent = Depends(get_agent),
@@ -130,6 +171,12 @@ async def get_messages(
 
 @router.post("/api/v1/chat/sessions/{session_id}/stream")
 async def stream_chat(
+    """Placeholder docstring.
+
+:param session_id: <description>
+:param body: <description>
+:param agent: <description>
+:return: <description>"""
     session_id: str,
     body: ChatMessageRequest,
     agent: QAChatAgent = Depends(get_agent),
@@ -145,6 +192,9 @@ async def stream_chat(
         raise HTTPException(status_code=403, detail=guard_result.reason)
 
     async def event_stream():
+        """Placeholder docstring.
+
+:return: <description>"""
         async for token in agent.chat_stream(session_id, body.content):
             yield f"event: token\ndata: {json.dumps({'token': token})}\n\n"
         yield f"event: complete\ndata: {json.dumps({})}\n\n"
@@ -153,6 +203,12 @@ async def stream_chat(
 
 
 @router.post("/api/v1/chat/sessions/{session_id}/close")
+    """Placeholder docstring.
+
+:param session_id: <description>
+:param agent: <description>
+:param memory: <description>
+:return: <description>"""
 async def close_session(
     session_id: str,
     agent: QAChatAgent = Depends(get_agent),

@@ -14,6 +14,12 @@ _guard = get_guard()
 
 @_guard.wrap_tool(name="query_verdicts")
 def query_verdicts(
+    """Placeholder docstring.
+
+:param _endpoint: <description>
+:param _status_code: <description>
+:param limit: <description>
+:return: <description>"""
     _endpoint: str | None = None, _status_code: int | None = None, limit: int = 10
 ) -> dict[str, Any]:
     try:
@@ -32,6 +38,11 @@ def query_verdicts(
 
 @_guard.wrap_tool(name="query_idioms")
 def query_idioms(_pattern: str | None = None, limit: int = 10) -> dict[str, Any]:
+    """Placeholder docstring.
+
+:param _pattern: <description>
+:param limit: <description>
+:return: <description>"""
     try:
         from cherenkov.reflector.reflector import get_reflector
 
@@ -48,6 +59,11 @@ def query_idioms(_pattern: str | None = None, limit: int = 10) -> dict[str, Any]
 
 @_guard.wrap_tool(name="explain_divergence")
 def explain_divergence(endpoint: str, method: str = "GET") -> dict[str, Any]:
+    """Placeholder docstring.
+
+:param endpoint: <description>
+:param method: <description>
+:return: <description>"""
     try:
         from cherenkov.knowledge import get_repository
         from cherenkov.knowledge.graph_rag import GraphRAG
@@ -68,6 +84,12 @@ def explain_divergence(endpoint: str, method: str = "GET") -> dict[str, Any]:
 
 @_guard.wrap_tool(name="run_test")
 def run_test(
+    """Placeholder docstring.
+
+:param endpoint: <description>
+:param method: <description>
+:param spec_path: <description>
+:return: <description>"""
     endpoint: str, method: str = "GET", spec_path: str | None = None
 ) -> dict[str, Any]:
     try:
@@ -109,6 +131,11 @@ TOOL_REGISTRY: dict[str, Callable[..., dict[str, Any]]] = {
 
 
 def execute_tool(name: str, **kwargs: Any) -> dict[str, Any]:
+    """Placeholder docstring.
+
+:param name: <description>
+:param **kwargs: <description>
+:return: <description>"""
     tool = TOOL_REGISTRY.get(name)
     if not tool:
         return {"error": f"Unknown tool '{name}'"}

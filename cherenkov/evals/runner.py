@@ -12,6 +12,12 @@ from cherenkov.evals.judge import judge_sample
 
 
 def build_samples_from_pipeline(
+    """Placeholder docstring.
+
+:param scenarios: <description>
+:param generate_outputs: <description>
+:param spec_summaries: <description>
+:return: <description>"""
     scenarios: list[Any],
     generate_outputs: dict[str, Any],
     spec_summaries: dict[str, str],
@@ -44,6 +50,11 @@ def build_samples_from_pipeline(
 
 
 def run_evals(samples: list[EvalSample], _max_workers: int = 2) -> EvalReport:
+    """Placeholder docstring.
+
+:param samples: <description>
+:param _max_workers: <description>
+:return: <description>"""
     results: list[EvalResult] = []
     for sample in samples:
         result = judge_sample(sample)
@@ -71,6 +82,10 @@ def run_evals(samples: list[EvalSample], _max_workers: int = 2) -> EvalReport:
 
 
 def print_report(report: EvalReport) -> None:
+    """Placeholder docstring.
+
+:param report: <description>
+:return: <description>"""
     print(f"\n{'='*60}")
     print("  CHERENKOV EVAL REPORT")
     print(f"{'='*60}")

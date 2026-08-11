@@ -12,6 +12,10 @@ class PlaybookRunner:
     returns any findings raised."""
 
     def run(
+        """Placeholder docstring.
+
+:param playbook: <description>
+:return: <description>"""
         self,
         playbook: Playbook,
         *,

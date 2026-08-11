@@ -184,6 +184,17 @@ class GenerateStage:
         )
 
     def run(
+        """Placeholder docstring.
+
+:param scenario: <description>
+:param path: <description>
+:param method: <description>
+:param operation: <description>
+:param schemas: <description>
+:param instruction: <description>
+:param source_type: <description>
+:param strategies_block: <description>
+:return: <description>"""
         self,
         scenario: Scenario | GraphQLScenario | gRPCScenario | AccessibilityScenario,
         path: str = "",

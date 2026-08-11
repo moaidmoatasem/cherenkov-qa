@@ -19,6 +19,13 @@ class PlaywrightEmitter(Emitter):
     """Emits a Playwright test suite from Truth Model endpoints."""
 
     def emit(
+        """Placeholder docstring.
+
+:param truth_model: <description>
+:param output_path: <description>
+:param divergences: <description>
+:param **kwargs: <description>
+:return: <description>"""
         self,
         truth_model: TruthModel,
         output_path: Path,

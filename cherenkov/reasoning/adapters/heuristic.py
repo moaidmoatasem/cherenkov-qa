@@ -52,6 +52,11 @@ class HeuristicReasoner:
     # ── analyze ───────────────────────────────────────────────────────
 
     def analyze(self, artifact: Artifact, depth: Depth) -> AnalysisResult:
+        """Placeholder docstring.
+
+:param artifact: <description>
+:param depth: <description>
+:return: <description>"""
         if artifact.kind == ArtifactKind.OPENAPI_SPEC:
             return self._analyze_spec(artifact, depth)
         return self._analyze_text(artifact, depth)
@@ -125,6 +130,12 @@ class HeuristicReasoner:
     # ── review ────────────────────────────────────────────────────────
 
     def review(
+        """Placeholder docstring.
+
+:param artifact: <description>
+:param analysis: <description>
+:param _depth: <description>
+:return: <description>"""
         self, artifact: Artifact, analysis: AnalysisResult, _depth: Depth
     ) -> list[ReviewFinding]:
         findings: list[ReviewFinding] = []
@@ -175,6 +186,12 @@ class HeuristicReasoner:
     # ── risk assessment ───────────────────────────────────────────────
 
     def assess_risks(
+        """Placeholder docstring.
+
+:param _artifact: <description>
+:param analysis: <description>
+:param _depth: <description>
+:return: <description>"""
         self, _artifact: Artifact, analysis: AnalysisResult, _depth: Depth
     ) -> list[RiskItem]:
         risks: list[RiskItem] = []
@@ -204,6 +221,13 @@ class HeuristicReasoner:
     # ── case design ───────────────────────────────────────────────────
 
     def design_cases(
+        """Placeholder docstring.
+
+:param artifact: <description>
+:param analysis: <description>
+:param risks: <description>
+:param depth: <description>
+:return: <description>"""
         self,
         artifact: Artifact,
         analysis: AnalysisResult,

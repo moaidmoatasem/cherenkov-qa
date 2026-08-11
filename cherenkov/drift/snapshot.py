@@ -33,6 +33,10 @@ def _sha256(text: str) -> str:
 
 
 def spec_hash(spec: dict[str, Any]) -> str:
+    """Placeholder docstring.
+
+:param spec: <description>
+:return: <description>"""
     return _sha256(canonicalize_spec(spec))
 
 
@@ -63,6 +67,12 @@ class SpecSuiteSnapshot:
 
     @classmethod
     def create(
+        """Placeholder docstring.
+
+:param spec: <description>
+:param suite: <description>
+:param generation_profile: <description>
+:return: <description>"""
         cls,
         spec: dict[str, Any],
         suite: dict[str, Any],
@@ -82,6 +92,9 @@ class SpecSuiteSnapshot:
         )
 
     def to_dict(self) -> dict[str, Any]:
+        """Placeholder docstring.
+
+:return: <description>"""
 
         fp = self.fingerprint
         return {
@@ -108,6 +121,10 @@ class SpecSuiteSnapshot:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> SpecSuiteSnapshot:
+        """Placeholder docstring.
+
+:param data: <description>
+:return: <description>"""
         from cherenkov.drift.fingerprint import Fingerprint
 
         fp_data = data["fingerprint"]

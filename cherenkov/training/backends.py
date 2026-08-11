@@ -58,6 +58,12 @@ class DryRunBackend:
         self._last_dataset_size: int = 0
 
     def train(
+        """Placeholder docstring.
+
+:param dataset: <description>
+:param config: <description>
+:param output_dir: <description>
+:return: <description>"""
         self,
         dataset: Any,
         config: Any,
@@ -91,6 +97,10 @@ class DryRunBackend:
         }
 
     def save(self, output_dir: Path) -> Path:
+        """Placeholder docstring.
+
+:param output_dir: <description>
+:return: <description>"""
         output_dir.mkdir(parents=True, exist_ok=True)
 
         manifest = {
@@ -116,6 +126,10 @@ class DryRunBackend:
         return output_dir
 
     def evaluate(self, test_dataset: Any) -> dict[str, Any]:
+        """Placeholder docstring.
+
+:param test_dataset: <description>
+:return: <description>"""
         total = len(test_dataset)
         return {
             "mode": "dry_run",
@@ -155,6 +169,12 @@ class HuggingFaceBackend:
             )
 
     def train(
+        """Placeholder docstring.
+
+:param dataset: <description>
+:param config: <description>
+:param output_dir: <description>
+:return: <description>"""
         self,
         dataset: Any,
         config: Any,
@@ -195,6 +215,10 @@ class HuggingFaceBackend:
         hf_dataset = HFDataset.from_dict({"text": prompts})
 
         def tokenize(batch: dict[str, Any]) -> dict[str, Any]:
+            """Placeholder docstring.
+
+:param batch: <description>
+:return: <description>"""
             return self._tokenizer(
                 batch["text"], truncation=True, max_length=512, padding="max_length"
             )
@@ -224,6 +248,10 @@ class HuggingFaceBackend:
         metrics["mode"] = "huggingface"
         logger.info("[HuggingFace] Training complete: %s", metrics)
         return metrics
+        """Placeholder docstring.
+
+:param output_dir: <description>
+:return: <description>"""
     def save(self, output_dir: Path) -> Path:
         if self._model is None or self._tokenizer is None:
             raise RuntimeError("Must call train() before save()")
@@ -234,6 +262,10 @@ class HuggingFaceBackend:
         (output_dir / "training_run.json").write_text(json.dumps(manifest, indent=2))
         logger.info("[HuggingFace] Model saved to %s", output_dir)
         return output_dir
+        """Placeholder docstring.
+
+:param test_dataset: <description>
+:return: <description>"""
     def evaluate(self, test_dataset: Any) -> dict[str, Any]:
         if self._trainer is None:
             raise RuntimeError("Must call train() before evaluate()")
@@ -243,6 +275,10 @@ class HuggingFaceBackend:
         hf_dataset = HFDataset.from_dict({"text": prompts})
 
         def tokenize(batch: dict[str, Any]) -> dict[str, Any]:
+            """Placeholder docstring.
+
+:param batch: <description>
+:return: <description>"""
             return self._tokenizer(
                 batch["text"], truncation=True, max_length=512, padding="max_length"
             )

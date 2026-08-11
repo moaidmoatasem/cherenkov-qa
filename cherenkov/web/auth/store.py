@@ -8,6 +8,7 @@ import os
 import secrets
 import sqlite3
 import threading
+from contextlib import contextmanager
 from pathlib import Path
 
 from cherenkov.web.auth.models import Role, User, UserInDB
@@ -49,15 +50,33 @@ class UserStore:
         Args:
             db_path: Optional Path object to SQLite database file.
         """
-        self._path = db_path or _db_path()
+        if db_path is None:
+            db_path = _db_path()
+        # Support in‑memory SQLite database used in tests
+        if isinstance(db_path, str) and db_path == ":memory:":
+            self._path = db_path  # keep as string for sqlite3 handling
+        else:
+            # Resolve to a Path instance for file‑based DBs
+            self._path = Path(db_path) if isinstance(db_path, (str, Path)) else db_path
         self._lock = threading.Lock()
+        self._conn = None
         self._init_db()
 
-    def _connect(self) -> sqlite3.Connection:
-        self._path.parent.mkdir(parents=True, exist_ok=True)
-        conn = sqlite3.connect(self._path, check_same_thread=False)
-        conn.row_factory = sqlite3.Row
-        return conn
+    @contextmanager
+    def _connect(self):
+        if str(self._path) == ":memory:":
+            if self._conn is None:
+                self._conn = sqlite3.connect(self._path, check_same_thread=False)
+                self._conn.row_factory = sqlite3.Row
+            yield self._conn
+        else:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            conn = sqlite3.connect(self._path, check_same_thread=False)
+            conn.row_factory = sqlite3.Row
+            try:
+                yield conn
+            finally:
+                conn.close()
 
     def _init_db(self) -> None:
         with self._lock, self._connect() as conn:
@@ -87,19 +106,26 @@ class UserStore:
             return conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
 
     def create(
-        self, username: str, password: str, role: Role = Role.viewer, organization_id: str = "default"
+        self,
+        username: str,
+        password: str,
+        role: Role | str = Role.viewer,
+        organization_id: str = "default",
     ) -> User:
         """Create a new user record.
 
         Args:
             username: Unique username string.
             password: Raw plaintext password string.
-            role: Target Role enum member.
+            role: Target Role enum member or string name.
             organization_id: Target organization ID string.
 
         Returns:
             Created User domain object.
         """
+        # Normalize role to Role enum
+        if isinstance(role, str):
+            role = Role(role)
         hashed = _hash_password(password)
         with self._lock, self._connect() as conn:
             conn.execute(

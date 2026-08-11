@@ -76,6 +76,13 @@ class ReviewStage:
         self._cleanup_scratch = cleanup_scratch
 
     def run(
+        """Placeholder docstring.
+
+:param generate: <description>
+:param spec_path: <description>
+:param operation: <description>
+:param schemas: <description>
+:return: <description>"""
         self,
         generate: GenerateOutput,
         spec_path: str,

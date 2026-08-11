@@ -8,11 +8,17 @@ try:
     from langchain_core.tools import BaseTool
 except ImportError:
     class BaseTool:  # type: ignore
+        """Placeholder docstring.
+
+<description>"""
         pass
 
 from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
 from cherenkov.chat.agent import QAChatAgent
 from cherenkov.substrate.router import SubstrateRouter
+    """Placeholder docstring.
+
+<description>"""
 class CherenkovToolInput(BaseModel):
     query: str = Field(description="The QA or testing query to run through CHERENKOV.")
 

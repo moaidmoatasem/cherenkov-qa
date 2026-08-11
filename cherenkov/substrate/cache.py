@@ -34,6 +34,12 @@ class ResponseCache:
         return f"{model}::{self._hash(system_prompt)}::{self._hash(user_prompt)}"
 
     def get(self, model: str, system_prompt: str, user_prompt: str) -> object | None:
+        """Placeholder docstring.
+
+:param model: <description>
+:param system_prompt: <description>
+:param user_prompt: <description>
+:return: <description>"""
         key = self._make_key(model, system_prompt, user_prompt)
         if key in self._cache:
             ts, value = self._cache[key]
@@ -46,6 +52,13 @@ class ResponseCache:
         return None
 
     def set(
+        """Placeholder docstring.
+
+:param model: <description>
+:param system_prompt: <description>
+:param user_prompt: <description>
+:param value: <description>
+:return: <description>"""
         self, model: str, system_prompt: str, user_prompt: str, value: object
     ) -> None:
         key = self._make_key(model, system_prompt, user_prompt)
@@ -57,6 +70,9 @@ class ResponseCache:
 
     @property
     def stats(self) -> CacheStats:
+        """Placeholder docstring.
+
+:return: <description>"""
         total = self._hits + self._misses
         hit_ratio = self._hits / total if total > 0 else 0.0
         return CacheStats(
@@ -68,6 +84,9 @@ class ResponseCache:
         )
 
     def clear(self) -> None:
+        """Placeholder docstring.
+
+:return: <description>"""
         self._cache.clear()
         self._hits = 0
         self._misses = 0

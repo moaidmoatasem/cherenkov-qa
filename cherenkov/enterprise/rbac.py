@@ -22,6 +22,9 @@ log = get_logger(__name__)
 
 
 class Role(str, Enum):
+    """Placeholder docstring.
+
+<description>"""
     ADMIN = "admin"
     ENGINEER = "engineer"
     VIEWER = "viewer"
@@ -29,6 +32,9 @@ class Role(str, Enum):
 
 
 class Permission(str, Enum):
+    """Placeholder docstring.
+
+<description>"""
     # HITL actions
     HITL_LIST = "hitl:list"
     HITL_APPROVE = "hitl:approve"
@@ -95,6 +101,9 @@ ROLE_PERMISSIONS: dict[Role, set[Permission]] = {
 
 @dataclass
 class User:
+    """Placeholder docstring.
+
+<description>"""
     id: str
     name: str
     email: str
@@ -114,34 +123,64 @@ class RBACEngine:
         self._users: dict[str, User] = {}
 
     def register_user(self, user: User) -> None:
+        """Placeholder docstring.
+
+:param user: <description>
+:return: <description>"""
         self._users[user.id] = user
         log.info("Registered user", user_id=user.id, role=user.role.value)
 
     def get_user(self, user_id: str) -> User | None:
+        """Placeholder docstring.
+
+:param user_id: <description>
+:return: <description>"""
         return self._users.get(user_id)
 
     def remove_user(self, user_id: str) -> bool:
+        """Placeholder docstring.
+
+:param user_id: <description>
+:return: <description>"""
         if user_id in self._users:
             del self._users[user_id]
             return True
         return False
 
     def list_users(self) -> list[User]:
+        """Placeholder docstring.
+
+:return: <description>"""
         return list(self._users.values())
 
     def has_permission(self, user_id: str, permission: Permission) -> bool:
+        """Placeholder docstring.
+
+:param user_id: <description>
+:param permission: <description>
+:return: <description>"""
         user = self._users.get(user_id)
         if user is None:
             return False
         return permission in ROLE_PERMISSIONS.get(user.role, set())
 
     def require_permission(self, user_id: str, permission: Permission) -> None:
+        """Placeholder docstring.
+
+:param user_id: <description>
+:param permission: <description>
+:return: <description>"""
         if not self.has_permission(user_id, permission):
             raise PermissionError(
                 f"User {user_id} lacks required permission: {permission.value}"
             )
 
     def set_role(self, user_id: str, role: Role) -> bool:
+        """Placeholder docstring.
+
+:param user_id: <description>
+:param role: <description>
+:return: <description>"""
         user = self._users.get(user_id)
         if user is None:
             return False
@@ -150,6 +189,14 @@ class RBACEngine:
         return True
 
     def user_has_any(self, user_id: str, permissions: list[Permission]) -> bool:
+        """Placeholder docstring.
+
+:param user_id: <description>
+:param permissions: <description>
+:return: <description>"""
+    """Placeholder docstring.
+
+:return: <description>"""
         return any(self.has_permission(user_id, p) for p in permissions)
 
 

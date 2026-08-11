@@ -32,6 +32,9 @@ class StepContext:
 
 @dataclass
 class StepOutcome:
+    """Placeholder docstring.
+
+<description>"""
     status: StepStatus
     duration_ms: int = 0
     # Shown to the user as "ABORTED: {reason}" when a required step fails.
@@ -40,31 +43,60 @@ class StepOutcome:
 
     @property
     def ok(self) -> bool:
+        """Placeholder docstring.
+
+:return: <description>"""
         return self.status in ("complete", "skipped")
 
 
 StepHandler = Callable[[StepContext], StepOutcome]
+    """Placeholder docstring.
+
+<description>"""
 class StepRegistry:
     def __init__(self) -> None:
         self._handlers: dict[str, StepHandler] = {}
 
     def register(self, kind: str, handler: StepHandler) -> None:
+        """Placeholder docstring.
+
+:param kind: <description>
+:param handler: <description>
+:return: <description>"""
         self._handlers[kind] = handler
 
     def get(self, kind: str) -> StepHandler | None:
+        """Placeholder docstring.
+
+:param kind: <description>
+:return: <description>"""
         return self._handlers.get(kind)
 
     def kinds(self) -> list[str]:
+        """Placeholder docstring.
+
+:return: <description>"""
         return sorted(self._handlers)
+    """Placeholder docstring.
+
+:return: <description>"""
 _registry = StepRegistry()
 
 
 def get_step_registry() -> StepRegistry:
+    """Placeholder docstring.
+
+:param kind: <description>
+:return: <description>"""
     return _registry
 
 
 def register_step(kind: str) -> Callable[[StepHandler], StepHandler]:
     def decorator(handler: StepHandler) -> StepHandler:
+        """Placeholder docstring.
+
+:param handler: <description>
+:return: <description>"""
         _registry.register(kind, handler)
         return handler
     return decorator

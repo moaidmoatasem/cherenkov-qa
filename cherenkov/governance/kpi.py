@@ -12,6 +12,9 @@ from cherenkov.core.errors import get_logger
 
 @dataclass
 class GovernanceKPI:
+    """Placeholder docstring.
+
+<description>"""
     escape_rate: float = 0.0
     false_positive_rate: float = 0.0
     coverage: float = 0.0
@@ -29,6 +32,9 @@ class GovernanceKPI:
 
     @property
     def health_score(self) -> float:
+        """Placeholder docstring.
+
+:return: <description>"""
         weights = {"escape": 0.3, "fp": 0.2, "coverage": 0.3, "maintenance": 0.2}
         score = (
             weights["escape"] * (1.0 - self.escape_rate)
@@ -40,11 +46,17 @@ class GovernanceKPI:
 
 
 @dataclass
+    """Placeholder docstring.
+
+<description>"""
 class GovernanceReport:
     kpi: GovernanceKPI = field(default_factory=GovernanceKPI)
     history: list[dict[str, Any]] = field(default_factory=list)
 
     def render(self) -> str:
+        """Placeholder docstring.
+
+:return: <description>"""
         k = self.kpi
         lines = [
             "E12 Governance KPI Panel",
@@ -60,6 +72,9 @@ class GovernanceReport:
         return "\n".join(lines)
 
     def render_json(self) -> dict[str, Any]:
+        """Placeholder docstring.
+
+:return: <description>"""
         return {
             "health_score": self.kpi.health_score,
             "escape_rate": self.kpi.escape_rate,
@@ -132,6 +147,9 @@ class GovernanceCollector:
         conn.commit()
 
     def collect(self) -> GovernanceReport:
+        """Placeholder docstring.
+
+:return: <description>"""
         kpi = GovernanceKPI()
         kpi.last_run_ts = int(time.time())
 
@@ -265,5 +283,10 @@ class GovernanceCollector:
             return []
 
     def get_trend(self, metric: str = "health_score", limit: int = 10) -> list[float]:
+        """Placeholder docstring.
+
+:param metric: <description>
+:param limit: <description>
+:return: <description>"""
         history = self._get_history(limit=limit)
         return [h.get(metric, 0.0) for h in reversed(history)]

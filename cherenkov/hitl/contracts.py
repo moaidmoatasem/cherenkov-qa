@@ -40,6 +40,13 @@ def _now_iso() -> str:
 
 
 class HitlStatus(str, Enum):
+    """Enumeration of possible HITL item statuses.
+
+    - PENDING: Awaiting review.
+    - APPROVED: Review approved.
+    - REJECTED: Review rejected.
+    - IGNORED: Review ignored.
+    """
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
@@ -69,6 +76,9 @@ class HitlItem(BaseModel):
 
 
 class HitlError(BaseModel):
+    """Placeholder docstring.
+
+<description>"""
     code: str
     message: str
     detail: dict[str, Any] = Field(default_factory=dict)
@@ -85,10 +95,22 @@ class HitlEnvelope(BaseModel):
 
 
 def ok_envelope(command: str, payload: Any) -> HitlEnvelope:
+    """Placeholder docstring.
+
+:param command: <description>
+:param payload: <description>
+:return: <description>"""
     return HitlEnvelope(ok=True, command=command, payload=payload, error=None)
 
 
 def err_envelope(
+    """Placeholder docstring.
+
+:param command: <description>
+:param code: <description>
+:param message: <description>
+:param detail: <description>
+:return: <description>"""
     command: str, code: str, message: str, detail: dict | None = None
 ) -> HitlEnvelope:
     if code not in ERROR_CODES:

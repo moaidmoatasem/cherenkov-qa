@@ -36,6 +36,13 @@ class UnitTestEmitter(Emitter):
         self._core = CoreEmitter(run_id=run_id)
 
     def emit(
+        """Placeholder docstring.
+
+:param truth_model: <description>
+:param output_path: <description>
+:param divergences: <description>
+:param **kwargs: <description>
+:return: <description>"""
         self,
         truth_model: TruthModel,
         output_path: Path,

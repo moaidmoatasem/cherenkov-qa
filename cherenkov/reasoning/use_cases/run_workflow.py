@@ -34,6 +34,12 @@ class QAWorkflow:
         self.reasoner: ReasoningBackend = reasoner or HeuristicReasoner()
 
     def run(
+        """Placeholder docstring.
+
+:param artifact: <description>
+:param stage: <description>
+:param maturity: <description>
+:return: <description>"""
         self,
         artifact: Artifact,
         stage: TestingStage | None = None,

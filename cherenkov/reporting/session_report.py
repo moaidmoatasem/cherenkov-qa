@@ -35,6 +35,9 @@ from cherenkov.core.errors import get_logger
 
 @dataclass
 class SessionFinding:
+    """Placeholder docstring.
+
+<description>"""
     kind: str  # "http_verdict" | "visual_anomaly" | "js_error" | "explorer"
     severity: str  # "low" | "medium" | "high" | "critical"
     title: str
@@ -45,6 +48,10 @@ class SessionFinding:
     suggestions: list[str] = field(default_factory=list)
 
     def to_dict(self, include_screenshots: bool = False) -> dict:
+        """Placeholder docstring.
+
+:param include_screenshots: <description>
+:return: <description>"""
         ev = dict(self.evidence)
         if not include_screenshots:
             ev.pop("screenshot_b64", None)
@@ -61,6 +68,9 @@ class SessionFinding:
 
 
 @dataclass
+    """Placeholder docstring.
+
+<description>"""
 class SessionReport:
     session_id: str
     target_url: str
@@ -71,6 +81,9 @@ class SessionReport:
     metadata: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
+        """Placeholder docstring.
+
+:return: <description>"""
         return {
             "session_id": self.session_id,
             "target_url": self.target_url,
@@ -88,9 +101,17 @@ class SessionReport:
         return d
 
     def to_json(self, indent: int = 2) -> str:
+        """Placeholder docstring.
+
+:param indent: <description>
+:return: <description>"""
         return json.dumps(self.to_dict(), indent=indent, default=str)
 
     def write(self, path: str) -> None:
+        """Placeholder docstring.
+
+:param path: <description>
+:return: <description>"""
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
         with open(path, "w", encoding="utf-8") as fh:
             fh.write(self.to_json())
@@ -112,6 +133,15 @@ class SessionReportBuilder:
     # ── http conformance ──────────────────────────────────────────────────
 
     def add_http_verdict(
+        """Placeholder docstring.
+
+:param url: <description>
+:param method: <description>
+:param expected_status: <description>
+:param actual_status: <description>
+:param response_body: <description>
+:param trace_path: <description>
+:return: <description>"""
         self,
         url: str,
         method: str,
@@ -153,6 +183,15 @@ class SessionReportBuilder:
     # ── visual regression ─────────────────────────────────────────────────
 
     def add_visual_finding(
+        """Placeholder docstring.
+
+:param url: <description>
+:param vlm_kind: <description>
+:param vlm_detail: <description>
+:param vlm_confidence: <description>
+:param screenshot_path: <description>
+:param baseline_path: <description>
+:return: <description>"""
         self,
         url: str,
         vlm_kind: str,
@@ -199,6 +238,11 @@ class SessionReportBuilder:
     # ── JS / browser errors ───────────────────────────────────────────────
 
     def add_js_error(self, url: str, error_text: str) -> SessionReportBuilder:
+        """Placeholder docstring.
+
+:param url: <description>
+:param error_text: <description>
+:return: <description>"""
         self._findings.append(
             SessionFinding(
                 kind="js_error",
@@ -287,6 +331,9 @@ class SessionReportBuilder:
     # ── build ─────────────────────────────────────────────────────────────
 
     def build(self) -> SessionReport:
+        """Placeholder docstring.
+
+:return: <description>"""
         severity_counts = Counter(f.severity for f in self._findings)
         return SessionReport(
             session_id=self.session_id,

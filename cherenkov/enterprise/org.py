@@ -12,12 +12,18 @@ log = get_logger(__name__)
 
 @dataclass
 class Member:
+    """Placeholder docstring.
+
+<description>"""
     user_id: str
     role: str = "member"  # "owner", "admin", "member", "viewer"
 
 
 @dataclass
 class Project:
+    """Placeholder docstring.
+
+<description>"""
     id: str
     name: str
     description: str = ""
@@ -26,6 +32,9 @@ class Project:
 
 @dataclass
 class Team:
+    """Placeholder docstring.
+
+<description>"""
     id: str
     name: str
     members: list[Member] = field(default_factory=list)
@@ -33,6 +42,9 @@ class Team:
 
 @dataclass
 class Organization:
+    """Placeholder docstring.
+
+<description>"""
     id: str
     name: str
     owner_id: str
@@ -51,6 +63,11 @@ class OrgManager:
         self._orgs: dict[str, Organization] = {}
 
     def create_org(self, name: str, owner_id: str) -> Organization:
+        """Placeholder docstring.
+
+:param name: <description>
+:param owner_id: <description>
+:return: <description>"""
         org_id = f"org_{uuid.uuid4().hex[:8]}"
         org = Organization(
             id=org_id,
@@ -63,12 +80,25 @@ class OrgManager:
         return org
 
     def get_org(self, org_id: str) -> Organization | None:
+        """Placeholder docstring.
+
+:param org_id: <description>
+:return: <description>"""
         return self._orgs.get(org_id)
 
     def list_orgs(self) -> list[Organization]:
+        """Placeholder docstring.
+
+:return: <description>"""
         return list(self._orgs.values())
 
     def add_member(self, org_id: str, user_id: str, role: str = "member") -> bool:
+        """Placeholder docstring.
+
+:param org_id: <description>
+:param user_id: <description>
+:param role: <description>
+:return: <description>"""
         org = self.get_org(org_id)
         if not org:
             return False
@@ -81,6 +111,11 @@ class OrgManager:
         return False
 
     def remove_member(self, org_id: str, user_id: str) -> bool:
+        """Placeholder docstring.
+
+:param org_id: <description>
+:param user_id: <description>
+:return: <description>"""
         org = self.get_org(org_id)
         if not org:
             return False
@@ -89,6 +124,11 @@ class OrgManager:
         return len(org.members) < initial_count
 
     def create_team(self, org_id: str, name: str) -> Team | None:
+        """Placeholder docstring.
+
+:param org_id: <description>
+:param name: <description>
+:return: <description>"""
         org = self.get_org(org_id)
         if not org:
             return None
@@ -98,6 +138,11 @@ class OrgManager:
         return team
 
     def create_project(self, org_id: str, name: str) -> Project | None:
+        """Placeholder docstring.
+
+:param org_id: <description>
+:param name: <description>
+:return: <description>"""
         org = self.get_org(org_id)
         if not org:
             return None
@@ -107,9 +152,17 @@ class OrgManager:
         return project
 
     def is_member(self, org_id: str, user_id: str) -> bool:
+        """Placeholder docstring.
+
+:param org_id: <description>
+:param user_id: <description>
+:return: <description>"""
         org = self.get_org(org_id)
         if not org:
             return False
+    """Placeholder docstring.
+
+:return: <description>"""
         return any(m.user_id == user_id for m in org.members)
 
 

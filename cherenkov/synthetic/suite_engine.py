@@ -32,12 +32,18 @@ from cherenkov.synthetic.personas import (
 
 @dataclass
 class PersonaRunResult:
+    """Placeholder docstring.
+
+<description>"""
     persona_name: str
     op_count: int
     test_count: int
     duration_ms: int
 
     def to_dict(self) -> dict[str, Any]:
+        """Placeholder docstring.
+
+:return: <description>"""
         return {
             "persona_name": self.persona_name,
             "op_count": self.op_count,
@@ -46,6 +52,9 @@ class PersonaRunResult:
         }
 
 @dataclass
+    """Placeholder docstring.
+
+<description>"""
 class SuiteEngineResult:
     suite: dict[str, list[dict[str, Any]]]
     persona_runs: list[PersonaRunResult] = field(default_factory=list)
@@ -55,6 +64,9 @@ class SuiteEngineResult:
     grade_report: Any = None  # GradeReport | None
 
     def to_dict(self) -> dict[str, Any]:
+        """Placeholder docstring.
+
+:return: <description>"""
         d: dict[str, Any] = {
             "total_tests": self.total_tests,
             "operations_covered": self.operations_covered,
@@ -96,6 +108,9 @@ class SuiteEngine:
         self.enricher = enricher
 
     def run(self) -> SuiteEngineResult:
+        """Placeholder docstring.
+
+:return: <description>"""
         t0 = time.monotonic()
 
         contexts: dict[str, OperationContext] = build_spec_contexts(self.spec)

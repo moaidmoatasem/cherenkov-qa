@@ -14,12 +14,18 @@ AGENT_DID = "did:cherenkov:chat-agent"
 
 
 class GuardResult:
+    """Placeholder docstring.
+
+<description>"""
     def __init__(self, allowed: bool, reason: str = "", metadata: dict | None = None):
         self.allowed = allowed
         self.reason = reason
         self.metadata = metadata or {}
 
     def to_dict(self) -> dict[str, Any]:
+        """Placeholder docstring.
+
+:return: <description>"""
         return {
             "allowed": self.allowed,
             "reason": self.reason,
@@ -187,6 +193,12 @@ class SafetyGuard:
         return GuardResult(allowed=True)
 
     def record_tool_call(self, name: str, args: dict[str, Any], result: Any) -> None:
+        """Placeholder docstring.
+
+:param name: <description>
+:param args: <description>
+:param result: <description>
+:return: <description>"""
         self._record(
             "tool_call",
             {
@@ -197,6 +209,11 @@ class SafetyGuard:
         )
 
     def record_llm_call(self, messages: list[dict], response: str) -> None:
+        """Placeholder docstring.
+
+:param messages: <description>
+:param response: <description>
+:return: <description>"""
         self._record(
             "llm_call",
             {
@@ -211,8 +228,16 @@ class SafetyGuard:
         """Decorator factory: wrap a tool function with check-then-execute-then-record."""
 
         def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
+            """Placeholder docstring.
+
+:param fn: <description>
+:return: <description>"""
             @functools.wraps(fn)
             def wrapped(**kwargs: Any) -> dict[str, Any]:
+                """Placeholder docstring.
+
+:param **kwargs: <description>
+:return: <description>"""
                 guard_result = self.check_tool_call(name, kwargs)
                 if not guard_result.allowed:
                     return {
@@ -232,12 +257,19 @@ class SafetyGuard:
         """Wrap the LLM call function with recording."""
 
         @functools.wraps(fn)
+            """Placeholder docstring.
+
+:param messages: <description>
+:return: <description>"""
         def wrapped(messages: list[dict]) -> str:
             response = fn(messages)
             self.record_llm_call(messages, response)
             return response
 
         return wrapped
+    """Placeholder docstring.
+
+:return: <description>"""
 
 
 _global_guard: SafetyGuard | None = None

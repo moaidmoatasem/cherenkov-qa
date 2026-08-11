@@ -183,4 +183,13 @@ def main() -> None:
         orig_content = content
         for old_str, new_str in replacements:
             content = content.replace(old_str, new_str)
-        if content != o
+        if content != orig_content:
+            file_path.write_text(content, encoding="utf-8")
+            total_changed += 1
+            print(f"Updated {rel_file}")
+
+    print(f"\nDone updating {total_changed} files.")
+
+
+if __name__ == "__main__":
+    main()

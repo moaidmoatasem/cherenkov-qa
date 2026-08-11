@@ -106,6 +106,12 @@ class CachedInferenceClient(InferenceClient):
         )
 
     def complete_json(
+        """Placeholder docstring.
+
+:param system_prompt: <description>
+:param user_prompt: <description>
+:param model: <description>
+:return: <description>"""
         self,
         system_prompt: str,
         user_prompt: str,
@@ -158,6 +164,12 @@ class CachedInferenceClient(InferenceClient):
         return result
 
     def complete_code(
+        """Placeholder docstring.
+
+:param system_prompt: <description>
+:param user_prompt: <description>
+:param model: <description>
+:return: <description>"""
         self,
         system_prompt: str,
         user_prompt: str,
@@ -209,19 +221,35 @@ class CachedInferenceClient(InferenceClient):
 
     @property
     def cache_stats(self) -> CacheStats:
+        """Placeholder docstring.
+
+:return: <description>"""
         return self._cache.stats
 
     @property
     def accounting_report(self) -> AccountingReport:
+        """Placeholder docstring.
+
+:return: <description>"""
         rep = self._accountant.report
         rep.cache_stats = self._cache.stats
         return rep
 
     @property
     def wrapped_client(self) -> InferenceClient:
+        """Placeholder docstring.
+
+:return: <description>"""
         return self._client
 
     def complete_vision(
+        """Placeholder docstring.
+
+:param system_prompt: <description>
+:param user_prompt: <description>
+:param image_data: <description>
+:param model: <description>
+:return: <description>"""
         self,
         system_prompt: str,
         user_prompt: str,
@@ -273,6 +301,11 @@ class CachedInferenceClient(InferenceClient):
         return result
 
     def chat(
+        """Placeholder docstring.
+
+:param messages: <description>
+:param model: <description>
+:return: <description>"""
         self,
         messages: list[dict],
         model: str,

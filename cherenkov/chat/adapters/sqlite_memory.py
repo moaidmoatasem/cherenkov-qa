@@ -13,6 +13,9 @@ _log = logging.getLogger(__name__)
 
 
 class SQLiteConversationMemory:
+    """Placeholder docstring.
+
+<description>"""
     def __init__(self, db_path: str = "data/chat.db"):
         # Resolve relative path against the project root so it works regardless of cwd
         if not os.path.isabs(db_path):
@@ -67,6 +70,11 @@ class SQLiteConversationMemory:
         conn.commit()
 
     def create_session(
+        """Placeholder docstring.
+
+:param session_id: <description>
+:param persona_id: <description>
+:return: <description>"""
         self, session_id: str, persona_id: str = "qa_assistant"
     ) -> Session:
         conn = self._connect()
@@ -79,6 +87,10 @@ class SQLiteConversationMemory:
         return Session(session_id=session_id, persona_id=persona_id)
 
     def get_session(self, session_id: str) -> Session | None:
+        """Placeholder docstring.
+
+:param session_id: <description>
+:return: <description>"""
         conn = self._connect()
         cursor = conn.execute(
             "SELECT session_id, persona_id, created_at, metadata FROM sessions WHERE session_id = ? AND is_active = 1",
@@ -95,6 +107,11 @@ class SQLiteConversationMemory:
         )
 
     def add_message(self, session_id: str, message: Message) -> None:
+        """Placeholder docstring.
+
+:param session_id: <description>
+:param message: <description>
+:return: <description>"""
         conn = self._connect()
         conn.execute(
             "INSERT INTO messages (session_id, role, content, timestamp, tool_calls) VALUES (?, ?, ?, ?, ?)",
@@ -109,6 +126,11 @@ class SQLiteConversationMemory:
         conn.commit()
 
     def get_messages(self, session_id: str, limit: int = 50) -> list[Message]:
+        """Placeholder docstring.
+
+:param session_id: <description>
+:param limit: <description>
+:return: <description>"""
         conn = self._connect()
         cursor = conn.execute(
             "SELECT role, content, timestamp, tool_calls FROM messages WHERE session_id = ? ORDER BY id LIMIT ?",
@@ -127,6 +149,10 @@ class SQLiteConversationMemory:
         ]
 
     def close_session(self, session_id: str) -> None:
+        """Placeholder docstring.
+
+:param session_id: <description>
+:return: <description>"""
         conn = self._connect()
         conn.execute(
             "UPDATE sessions SET is_active = 0 WHERE session_id = ?", (session_id,)
@@ -134,6 +160,10 @@ class SQLiteConversationMemory:
         conn.commit()
 
     def list_sessions(self, limit: int = 20) -> list[Session]:
+        """Placeholder docstring.
+
+:param limit: <description>
+:return: <description>"""
         conn = self._connect()
         cursor = conn.execute(
             "SELECT session_id, persona_id, created_at, metadata FROM sessions WHERE is_active = 1 ORDER BY created_at DESC LIMIT ?",
@@ -151,6 +181,9 @@ class SQLiteConversationMemory:
         ]
 
     def close(self) -> None:
+        """Placeholder docstring.
+
+:return: <description>"""
         con = getattr(self._local, "con", None)
         if con is not None:
             con.close()

@@ -24,6 +24,9 @@ from cherenkov.substrate.retry import with_retry
 
 
 class SubstrateRouter:
+    """Placeholder docstring.
+
+<description>"""
     def __init__(self, run_id: str | None = None):
         self.run_id = run_id
         self.log = get_logger("ROUTER", run_id)
@@ -31,6 +34,10 @@ class SubstrateRouter:
         self._cert_manager = ModelCertificationManager(run_id=run_id)
 
     def route(self, request: ReasoningRequest) -> ReasoningResult:
+        """Placeholder docstring.
+
+:param request: <description>
+:return: <description>"""
         t0 = time.monotonic()
 
         primary = provider_for_tier(request.capability_tier)
@@ -141,5 +148,9 @@ class SubstrateRouter:
 
 
 _DEFAULT_ROUTER = SubstrateRouter()
+    """Placeholder docstring.
+
+:param request: <description>
+:return: <description>"""
 def route(request: ReasoningRequest) -> ReasoningResult:
     return _DEFAULT_ROUTER.route(request)

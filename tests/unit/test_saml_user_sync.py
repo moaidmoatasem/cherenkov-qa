@@ -36,6 +36,11 @@ def mock_sp(monkeypatch):
     return mock_sp_instance
 
 def test_saml_callback_syncs_user(monkeypatch, mock_sp):
+    """Placeholder docstring.
+
+:param monkeypatch: <description>
+:param mock_sp: <description>
+:return: <description>"""
     # Use an in‑memory SQLite DB to avoid polluting the real DB
     monkeypatch.setattr("cherenkov.web.auth.store._db_path", lambda: ":memory:")
     # Ensure the singleton is reset
@@ -47,7 +52,7 @@ def test_saml_callback_syncs_user(monkeypatch, mock_sp):
     # Patch the global store getter to return our custom store
     monkeypatch.setattr("cherenkov.web.auth.routes.get_user_store", lambda: store)
     # Spy on update_user
-    spy = mock.spy(store, "update_user")
+    spy = mock.patch.object(store, "update_user", wraps=store.update_user).start()
 
     # Perform the SAML callback POST request
     response = client.post(

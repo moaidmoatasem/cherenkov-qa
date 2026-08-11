@@ -39,7 +39,7 @@ A second agent is actively committing to the same branch. It has:
 
 **Rule:** before any commit, run `git diff cherenkov/core/settings.py` and verify
 `_settings_lock` is present. If absent, the concurrent agent stripped it again — reapply
-[`cherenkov/core/settings.py:133-142`](../../../../../../../cherenkov/core/settings.py) using the
+[`cherenkov/core/settings.py:133-142`](../../../../../../../../../cherenkov/core/settings.py) using the
 double-checked locking pattern shown below:
 
 ```python

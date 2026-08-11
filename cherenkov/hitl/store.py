@@ -85,6 +85,9 @@ def _validate_db_path(path: str) -> str:
 
 
 class HitlQueue:
+    """Placeholder docstring.
+
+<description>"""
     def __init__(self, db_path: str | None = None) -> None:
         self.db_path = _validate_db_path(db_path or _default_db_path())
         self._local = threading.local()
@@ -133,6 +136,10 @@ class HitlQueue:
 
     # ── reads ────────────────────────────────────────────────────────────
     def enqueue(self, item: HitlItem) -> HitlItem:
+        """Placeholder docstring.
+
+:param item: <description>
+:return: <description>"""
         # INSERT OR IGNORE — never resurrect/clobber an already-resolved item.
         # After insert, update endpoint/method on still-pending items so re-runs
         # back-fill metadata that was missing on first enqueue.
@@ -182,6 +189,10 @@ class HitlQueue:
         return self.get(item.id) or item
 
     def get(self, item_id: str) -> HitlItem | None:
+        """Placeholder docstring.
+
+:param item_id: <description>
+:return: <description>"""
         con = self._connect()
         try:
             row = con.execute("SELECT * FROM hitl_queue WHERE id=?", (item_id,)).fetchone()
@@ -190,6 +201,11 @@ class HitlQueue:
             con.close()
 
     def list(
+        """Placeholder docstring.
+
+:param status: <description>
+:param severity: <description>
+:return: <description>"""
         self, status: str | None = "pending", severity: str | None = None
     ) -> list[HitlItem]:
         con = self._connect()
@@ -211,6 +227,9 @@ class HitlQueue:
             con.close()
 
     def audit_rows(self) -> builtins.list[dict]:
+        """Placeholder docstring.
+
+:return: <description>"""
         con = self._connect()
         try:
             rows = con.execute("SELECT * FROM audit_log ORDER BY id").fetchall()
@@ -313,11 +332,24 @@ class HitlQueue:
             con.close()
 
     def approve(self, item_id: str, actor: str, source: str = "cli") -> HitlEnvelope:
+        """Placeholder docstring.
+
+:param item_id: <description>
+:param actor: <description>
+:param source: <description>
+:return: <description>"""
         return self._resolve(
             "hitl.approve", item_id, actor, source, HitlStatus.APPROVED, "", ()
         )
 
     def reject(
+        """Placeholder docstring.
+
+:param item_id: <description>
+:param actor: <description>
+:param reason: <description>
+:param source: <description>
+:return: <description>"""
         self, item_id: str, actor: str, reason: str, source: str = "cli"
     ) -> HitlEnvelope:
         return self._resolve(
@@ -331,6 +363,12 @@ class HitlQueue:
         )
 
     def ignore(self, item_id: str, actor: str, source: str = "web") -> HitlEnvelope:
+        """Placeholder docstring.
+
+:param item_id: <description>
+:param actor: <description>
+:param source: <description>
+:return: <description>"""
         return self._resolve(
             "hitl.classify", item_id, actor, source, HitlStatus.IGNORED, "", ()
         )

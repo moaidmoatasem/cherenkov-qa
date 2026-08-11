@@ -38,6 +38,9 @@ from typing import Any
 
 @dataclass
 class SchemaViolation:
+    """Placeholder docstring.
+
+<description>"""
     path: str        # JSONPath-style e.g. "$.items[0].id"
     message: str
     schema_path: str = ""
@@ -45,6 +48,9 @@ class SchemaViolation:
 
 @dataclass
 class SchemaCheckResult:
+    """Placeholder docstring.
+
+<description>"""
     ok: bool
     endpoint: str
     method: str
@@ -55,6 +61,9 @@ class SchemaCheckResult:
 
     @property
     def summary(self) -> str:
+        """Placeholder docstring.
+
+:return: <description>"""
         if self.skipped:
             return f"SKIP  {self.method} {self.endpoint} → {self.skip_reason}"
         status = "PASS" if self.ok else "FAIL"
@@ -226,6 +235,10 @@ class SchemaCheckStage:
 
     @classmethod
     def from_file(cls, spec_path: str) -> SchemaCheckStage:
+        """Placeholder docstring.
+
+:param spec_path: <description>
+:return: <description>"""
         from pathlib import Path
 
         text = Path(spec_path).read_text(encoding="utf-8")
@@ -238,6 +251,13 @@ class SchemaCheckStage:
         return cls(spec)
 
     def check(
+        """Placeholder docstring.
+
+:param endpoint: <description>
+:param method: <description>
+:param status_code: <description>
+:param response_body: <description>
+:return: <description>"""
         self,
         endpoint: str,
         method: str,

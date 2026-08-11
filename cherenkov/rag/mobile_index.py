@@ -13,6 +13,9 @@ from typing import Any
 
 
 class MobileRAGIndex:
+    """Placeholder docstring.
+
+<description>"""
     def __init__(self, index_path: str = "data/mobile_rag.db"):
         self.index_path = index_path
         self._init_db()
@@ -38,6 +41,15 @@ class MobileRAGIndex:
             conn.commit()
 
     def index_app(
+        """Placeholder docstring.
+
+:param app_id: <description>
+:param name: <description>
+:param platform: <description>
+:param description: <description>
+:param screens: <description>
+:param flows: <description>
+:return: <description>"""
         self,
         app_id: str,
         name: str,
@@ -63,6 +75,11 @@ class MobileRAGIndex:
             conn.commit()
 
     def query(self, query: str, limit: int = 10) -> list[dict[str, Any]]:
+        """Placeholder docstring.
+
+:param query: <description>
+:param limit: <description>
+:return: <description>"""
         with closing(self._connect()) as conn:
             cursor = conn.execute(
                 """SELECT * FROM mobile_apps

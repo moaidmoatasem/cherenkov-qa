@@ -113,6 +113,12 @@ class OpenAICompatibleClient(InferenceClient):
     # ── InferenceClient ───────────────────────────────────────────────────────
 
     def complete_json(
+        """Placeholder docstring.
+
+:param system_prompt: <description>
+:param user_prompt: <description>
+:param model: <description>
+:return: <description>"""
         self,
         system_prompt: str,
         user_prompt: str,
@@ -168,6 +174,12 @@ class OpenAICompatibleClient(InferenceClient):
         )
 
     def complete_code(
+        """Placeholder docstring.
+
+:param system_prompt: <description>
+:param user_prompt: <description>
+:param model: <description>
+:return: <description>"""
         self,
         system_prompt: str,
         user_prompt: str,
@@ -216,6 +228,11 @@ class OpenAICompatibleClient(InferenceClient):
         return text
 
     def chat(
+        """Placeholder docstring.
+
+:param messages: <description>
+:param model: <description>
+:return: <description>"""
         self,
         messages: list[dict],
         model: str,

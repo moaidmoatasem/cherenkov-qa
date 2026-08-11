@@ -17,6 +17,9 @@ log = get_logger(__name__)
 
 
 class ControlCategory(str, Enum):
+    """Placeholder docstring.
+
+<description>"""
     SECURITY = "security"
     AVAILABILITY = "availability"
     PROCESSING_INTEGRITY = "processing_integrity"
@@ -25,6 +28,9 @@ class ControlCategory(str, Enum):
 
 
 class ControlStatus(str, Enum):
+    """Placeholder docstring.
+
+<description>"""
     OPERATIONAL = "operational"
     NOT_IMPLEMENTED = "not_implemented"
     PARTIALLY_IMPLEMENTED = "partially_implemented"
@@ -33,6 +39,9 @@ class ControlStatus(str, Enum):
 
 @dataclass
 class Control:
+    """Placeholder docstring.
+
+<description>"""
     id: str
     name: str
     category: ControlCategory
@@ -134,6 +143,9 @@ DEFAULT_CONTROLS: list[Control] = [
 
 @dataclass
 class SOC2Report:
+    """Placeholder docstring.
+
+<description>"""
     report_id: str
     organization: str
     report_date: str
@@ -157,9 +169,19 @@ class SOC2ReportGenerator:
         self._reports: dict[str, SOC2Report] = {}
 
     def get_controls(self) -> list[Control]:
+        """Placeholder docstring.
+
+:return: <description>"""
         return list(self._controls.values())
 
     def update_control(
+        """Placeholder docstring.
+
+:param control_id: <description>
+:param status: <description>
+:param evidence: <description>
+:param owner: <description>
+:return: <description>"""
         self,
         control_id: str,
         status: ControlStatus | None = None,
@@ -179,6 +201,10 @@ class SOC2ReportGenerator:
         return True
 
     def generate_report(self, organization: str) -> SOC2Report:
+        """Placeholder docstring.
+
+:param organization: <description>
+:return: <description>"""
         report_id = f"soc2-{uuid.uuid4().hex[:8]}"
         report_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         period_end = datetime.now(timezone.utc)
@@ -233,15 +259,27 @@ class SOC2ReportGenerator:
         return report
 
     def get_report(self, report_id: str) -> SOC2Report | None:
+        """Placeholder docstring.
+
+:param report_id: <description>
+:return: <description>"""
         return self._reports.get(report_id)
 
     def list_reports(self) -> list[dict[str, str]]:
+        """Placeholder docstring.
+
+:return: <description>"""
         return [
             {"report_id": r.report_id, "date": r.report_date, "status": r.status}
             for r in self._reports.values()
         ]
 
     def export_report(self, report_id: str, path: str) -> str:
+        """Placeholder docstring.
+
+:param report_id: <description>
+:param path: <description>
+:return: <description>"""
         report = self._reports.get(report_id)
         if report is None:
             raise ValueError(f"Report not found: {report_id}")
@@ -251,6 +289,9 @@ class SOC2ReportGenerator:
         return output_path
 
     def get_compliance_summary(self) -> dict[str, Any]:
+        """Placeholder docstring.
+
+:return: <description>"""
         by_category: dict[str, dict[str, int]] = {}
         for c in self._controls.values():
             cat = c.category.value
@@ -267,6 +308,9 @@ class SOC2ReportGenerator:
             }
             for category, v in by_category.items()
         }
+    """Placeholder docstring.
+
+:return: <description>"""
 
 
 # Global singleton

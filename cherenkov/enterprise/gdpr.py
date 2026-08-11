@@ -16,6 +16,9 @@ log = get_logger(__name__)
 
 
 class RetentionPeriod(str, Enum):
+    """Placeholder docstring.
+
+<description>"""
     DAYS_30 = "30d"
     DAYS_90 = "90d"
     DAYS_180 = "180d"
@@ -36,6 +39,9 @@ RETENTION_SECONDS: dict[RetentionPeriod, int] = {
 
 @dataclass
 class GDPRConfig:
+    """Placeholder docstring.
+
+<description>"""
     enabled: bool = False
     data_retention: RetentionPeriod = RetentionPeriod.DAYS_90
     anonymize_on_delete: bool = True
@@ -46,6 +52,9 @@ class GDPRConfig:
 
 @dataclass
 class ConsentRecord:
+    """Placeholder docstring.
+
+<description>"""
     user_id: str
     granted: bool
     timestamp: float = 0.0
@@ -55,6 +64,9 @@ class ConsentRecord:
 
 @dataclass
 class DataSubjectRequest:
+    """Placeholder docstring.
+
+<description>"""
     request_id: str
     user_id: str
     request_type: str  # "access" | "rectification" | "erasure" | "portability"
@@ -81,11 +93,21 @@ class GDPRManager:
         os.makedirs(self.config.data_directory, exist_ok=True)
 
     def is_enabled(self) -> bool:
+        """Placeholder docstring.
+
+:return: <description>"""
         return self.config.enabled
 
     # ── Consent ───────────────────────────────────────────────────────────────
 
     def record_consent(
+        """Placeholder docstring.
+
+:param user_id: <description>
+:param granted: <description>
+:param scope: <description>
+:param ip: <description>
+:return: <description>"""
         self, user_id: str, granted: bool, scope: str = "all", ip: str = ""
     ) -> ConsentRecord:
         record = ConsentRecord(
@@ -100,6 +122,11 @@ class GDPRManager:
         return record
 
     def has_consent(self, user_id: str, scope: str = "all") -> bool:
+        """Placeholder docstring.
+
+:param user_id: <description>
+:param scope: <description>
+:return: <description>"""
         if not self.config.consent_required:
             return True
         record = self._consents.get(user_id)
@@ -108,6 +135,10 @@ class GDPRManager:
         return record.granted and (scope == "all" or record.scope in ("all", scope))
 
     def withdraw_consent(self, user_id: str) -> bool:
+        """Placeholder docstring.
+
+:param user_id: <description>
+:return: <description>"""
         if user_id in self._consents:
             self._consents[user_id].granted = False
             self._persist("consents.json", self._consents)
@@ -117,6 +148,11 @@ class GDPRManager:
     # ── Data Subject Requests ─────────────────────────────────────────────────
 
     def create_request(
+        """Placeholder docstring.
+
+:param user_id: <description>
+:param request_type: <description>
+:return: <description>"""
         self, user_id: str, request_type: str
     ) -> DataSubjectRequest:
         req = DataSubjectRequest(
@@ -130,6 +166,10 @@ class GDPRManager:
         return req
 
     def fulfill_request(self, request_id: str) -> dict[str, Any]:
+        """Placeholder docstring.
+
+:param request_id: <description>
+:return: <description>"""
         req = self._requests.get(request_id)
         if req is None:
             return {"error": "Request not found"}
@@ -179,6 +219,9 @@ class GDPRManager:
     # ── Retention & Purging ───────────────────────────────────────────────────
 
     def get_retention_seconds(self) -> int:
+        """Placeholder docstring.
+
+:return: <description>"""
         return RETENTION_SECONDS.get(self.config.data_retention, 90 * 86400)
 
     def purge_old_data(self) -> int:
@@ -214,6 +257,9 @@ class GDPRManager:
             with open(path, encoding="utf-8") as f:
                 return json.load(f)
         return {}
+    """Placeholder docstring.
+
+:return: <description>"""
 
 
 # Global singleton

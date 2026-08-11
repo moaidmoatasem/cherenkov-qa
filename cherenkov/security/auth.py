@@ -14,6 +14,11 @@ def _constant_time_compare(a: str | None, b: str | None) -> bool:
 
 
 async def verify_api_key(
+    """Placeholder docstring.
+
+:param x_api_key: <description>
+:param authorization: <description>
+:return: <description>"""
     x_api_key: str | None = Header(None),
     authorization: str | None = Header(None),
 ):
@@ -28,6 +33,12 @@ async def verify_api_key(
 
 
 async def verify_write_access(
+    """Placeholder docstring.
+
+:param request: <description>
+:param x_api_key: <description>
+:param authorization: <description>
+:return: <description>"""
     request: Request,
     x_api_key: str | None = Header(None),
     authorization: str | None = Header(None),

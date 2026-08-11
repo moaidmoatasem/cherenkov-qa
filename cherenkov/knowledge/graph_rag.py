@@ -5,10 +5,19 @@ from cherenkov.knowledge.ports.repository import KnowledgeMeshRepository
 
 
 class GraphRAG:
+    """Placeholder docstring.
+
+<description>"""
     def __init__(self, repository: KnowledgeMeshRepository):
         self.repository = repository
 
     def query(
+        """Placeholder docstring.
+
+:param query: <description>
+:param sources: <description>
+:param limit: <description>
+:return: <description>"""
         self, query: str, sources: list[str] | None = None, limit: int = 10
     ) -> list[KnowledgeQueryResult]:
         if sources is None:
@@ -31,6 +40,11 @@ class GraphRAG:
         return results[:limit]
 
     def explain_divergence(self, endpoint: str, method: str) -> KnowledgeQueryResult:
+        """Placeholder docstring.
+
+:param endpoint: <description>
+:param method: <description>
+:return: <description>"""
         verdicts = self.query(f"{endpoint} {method}", sources=["verdicts"], limit=5)
         idioms = self.query(f"{endpoint} {method}", sources=["idioms"], limit=5)
         incidents = self.query(f"{endpoint} {method}", sources=["incidents"], limit=5)

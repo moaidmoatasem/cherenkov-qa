@@ -33,6 +33,9 @@ __all__ = [
 
 
 class OllamaProvider:
+    """Placeholder docstring.
+
+<description>"""
     def __init__(self, client: InferenceClient | None = None):
         self.client = (
             _wrap_with_cache(OllamaInferenceClient(), "ollama")
@@ -41,6 +44,10 @@ class OllamaProvider:
         )
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
+        """Placeholder docstring.
+
+:param request: <description>
+:return: <description>"""
         system_prompt = "You are a logical AI."
         user_prompt = request.task
 
@@ -91,14 +98,23 @@ class OllamaProvider:
         )
 
     def capabilities(self) -> ProviderCapabilities:
+        """Placeholder docstring.
+
+:return: <description>"""
         return ProviderCapabilities(
             capability_tiers=["small", "deep"],
             requires_egress=False,
             provider_name="ollama",
         )
 
+    """Placeholder docstring.
+
+<description>"""
 
 class OpenAIProvider:
+    """Placeholder docstring.
+
+<description>"""
     def __init__(self, client: InferenceClient | None = None):
         self.client = (
             _wrap_with_cache(OpenAIInferenceClient(), "openai")
@@ -107,6 +123,10 @@ class OpenAIProvider:
         )
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
+        """Placeholder docstring.
+
+:param request: <description>
+:return: <description>"""
         system_prompt = "You are a logical AI."
         user_prompt = request.task
 
@@ -153,6 +173,9 @@ class OpenAIProvider:
         )
 
     def capabilities(self) -> ProviderCapabilities:
+        """Placeholder docstring.
+
+:return: <description>"""
         return ProviderCapabilities(
             capability_tiers=["small", "deep"],
             requires_egress=True,
@@ -173,6 +196,10 @@ class GitHubModelsProvider:
         self.client = client
 
     def generate(self, request: ReasoningRequest) -> ReasoningResult:
+        """Placeholder docstring.
+
+:param request: <description>
+:return: <description>"""
         model = (
             get_settings().GITHUB_MODELS_SMALL_MODEL
             if request.capability_tier == "small"
@@ -219,6 +246,9 @@ class GitHubModelsProvider:
         )
 
     def capabilities(self) -> ProviderCapabilities:
+        """Placeholder docstring.
+
+:return: <description>"""
         # Note: Excluded 'vision' tier to avoid breaking get_vlm_provider registry
         return ProviderCapabilities(
             capability_tiers=["small", "deep"],
@@ -226,12 +256,20 @@ class GitHubModelsProvider:
             provider_name="github",
         )
 
+    """Placeholder docstring.
+
+:param name: <description>
+:return: <description>"""
 
 _PROVIDER_CACHE: dict[str, OllamaProvider | OpenAIProvider | GitHubModelsProvider] = {}
 _VLM_CACHE: dict[str, VLMProvider] = {}
 
 
 def get_provider(name: str) -> OllamaProvider | OpenAIProvider | GitHubModelsProvider:
+    """Placeholder docstring.
+
+:param name: <description>
+:return: <description>"""
     if name in _PROVIDER_CACHE:
         return _PROVIDER_CACHE[name]
     if name == "ollama":
@@ -255,12 +293,20 @@ def get_provider(name: str) -> OllamaProvider | OpenAIProvider | GitHubModelsPro
     else:
         raise ValueError(
             f"Unknown provider '{name}'. Expected 'ollama', 'openai', 'github', 'anthropic', 'nemoclaw', or 'airllm'."
+    """Placeholder docstring.
+
+:param name: <description>
+:return: <description>"""
         )
     _PROVIDER_CACHE[name] = p
     return p
 
 
 def get_vlm_provider(name: str | None = None) -> VLMProvider:
+    """Placeholder docstring.
+
+:param name: <description>
+:return: <description>"""
     provider_name = name or get_settings().TIER_VISION_PROVIDER
     if provider_name in _VLM_CACHE:
         return _VLM_CACHE[provider_name]
@@ -281,12 +327,22 @@ def get_vlm_provider(name: str | None = None) -> VLMProvider:
         raise ValueError(
             f"Unknown VLM provider '{provider_name}'. "
             f"Expected 'localai', 'ollama', 'openai', or 'nemoclaw'."
+    """Placeholder docstring.
+
+:param tier: <description>
+:param device_class: <description>
+:return: <description>"""
         )
     _VLM_CACHE[provider_name] = p
     return p
 
 
 def provider_for_tier(
+    """Placeholder docstring.
+
+:param tier: <description>
+:param device_class: <description>
+:return: <description>"""
     tier: str, device_class: str | None = None
 ) -> OllamaProvider | OpenAIProvider | GitHubModelsProvider | VLMProvider:
     if tier == "small":

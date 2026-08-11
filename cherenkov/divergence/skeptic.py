@@ -126,6 +126,12 @@ class SkepticAgent:
         return hypotheses
 
     def mobile_hypothesize(
+        """Placeholder docstring.
+
+:param app_id: <description>
+:param screen_name: <description>
+:param element_id: <description>
+:return: <description>"""
         self, app_id: str, screen_name: str, element_id: str
     ) -> dict:
         from cherenkov.agents.pilot import InMemoryRunner, PilotAgent

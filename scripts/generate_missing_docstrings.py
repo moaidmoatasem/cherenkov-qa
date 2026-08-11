@@ -106,7 +106,11 @@ def add_docstrings_to_file(filepath: Path) -> bool:
 
 
 def main():
-    """Main CLI entry point for generating missing docstring stubs."""
+    """Main CLI entry point for generating missing docstring stubs.
+
+    Returns:
+        None.
+    """
     root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
     modified = []
     for dirpath, _, filenames in os.walk(root):

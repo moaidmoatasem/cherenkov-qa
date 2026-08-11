@@ -4,7 +4,11 @@ import sys
 
 
 def check_gate():
-    """Verify that validation gate conditions are met in the evidence ledger."""
+    """Verify that validation gate conditions are met in the evidence ledger.
+
+    Returns:
+        None.
+    """
     ledger_path = os.path.join(
         os.path.dirname(__file__),
         "..",

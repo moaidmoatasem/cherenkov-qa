@@ -9,6 +9,9 @@ Role = Literal["user", "assistant", "system", "tool"]
 
 @dataclass
 class Message:
+    """Placeholder docstring.
+
+<description>"""
     role: Role
     content: str
     session_id: str = ""
@@ -16,6 +19,9 @@ class Message:
     tool_calls: list[dict] | None = None
 
     def to_dict(self) -> dict:
+        """Placeholder docstring.
+
+:return: <description>"""
         return {
             "role": self.role,
             "content": self.content,
@@ -26,6 +32,9 @@ class Message:
 
 
 @dataclass
+    """Placeholder docstring.
+
+<description>"""
 class Session:
     session_id: str
     persona_id: str = "qa_assistant"
@@ -34,6 +43,9 @@ class Session:
     metadata: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
+        """Placeholder docstring.
+
+:return: <description>"""
         return {
             "session_id": self.session_id,
             "persona_id": self.persona_id,

@@ -86,6 +86,14 @@ class CherenkovTracer:
                 raise
 
     def record_llm_usage(self, span, input_tokens: int, output_tokens: int,
+        """Placeholder docstring.
+
+:param span: <description>
+:param input_tokens: <description>
+:param output_tokens: <description>
+:param model: <description>
+:param cost_usd: <description>
+:return: <description>"""
                          model: str, cost_usd: float | None = None) -> None:
         if span is None:
             return
@@ -96,6 +104,14 @@ class CherenkovTracer:
             span.set_attribute("llm.cost_usd", cost_usd)
 
     def record_conformance(self, span, violations: int, endpoints_tested: int,
+        """Placeholder docstring.
+
+:param span: <description>
+:param violations: <description>
+:param endpoints_tested: <description>
+:param spec_version: <description>
+:param target_url: <description>
+:return: <description>"""
                            spec_version: str, target_url: str) -> None:
         if span is None:
             return

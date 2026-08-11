@@ -128,6 +128,12 @@ class AirLLMInferenceClient(InferenceClient):
         return max(1, len(str(text)) // 4)
 
     def complete_json(
+        """Placeholder docstring.
+
+:param system_prompt: <description>
+:param user_prompt: <description>
+:param model: <description>
+:return: <description>"""
         self,
         system_prompt: str,
         user_prompt: str,
@@ -219,6 +225,12 @@ class AirLLMInferenceClient(InferenceClient):
         )
 
     def complete_code(
+        """Placeholder docstring.
+
+:param system_prompt: <description>
+:param user_prompt: <description>
+:param model: <description>
+:return: <description>"""
         self,
         system_prompt: str,
         user_prompt: str,
@@ -288,6 +300,13 @@ class AirLLMInferenceClient(InferenceClient):
         return text
 
     def complete_vision(
+        """Placeholder docstring.
+
+:param system_prompt: <description>
+:param user_prompt: <description>
+:param image_data: <description>
+:param model: <description>
+:return: <description>"""
         self,
         system_prompt: str,
         user_prompt: str,
@@ -300,6 +319,11 @@ class AirLLMInferenceClient(InferenceClient):
         raise NotImplementedError("Vision not supported by AirLLM provider")
 
     def chat(
+        """Placeholder docstring.
+
+:param messages: <description>
+:param model: <description>
+:return: <description>"""
         self,
         messages: list[dict],
         model: str,
@@ -310,6 +334,9 @@ class AirLLMInferenceClient(InferenceClient):
         raise NotImplementedError("Chat not supported by AirLLM provider")
 
     def health(self) -> bool:
+        """Placeholder docstring.
+
+:return: <description>"""
         try:
             from airllm import AutoModel
             return True

@@ -57,6 +57,9 @@ def _is_meaningful_assertion(assertion: dict[str, Any]) -> bool:
 
 @dataclass
 class OperationGrade:
+    """Placeholder docstring.
+
+<description>"""
     operation_id: str
     test_count: int
     assertion_density: float        # assertions / test
@@ -66,6 +69,9 @@ class OperationGrade:
     grade: str
 
     def to_dict(self) -> dict[str, Any]:
+        """Placeholder docstring.
+
+:return: <description>"""
         return {
             "operation_id": self.operation_id,
             "test_count": self.test_count,
@@ -78,6 +84,9 @@ class OperationGrade:
 
 
 @dataclass
+    """Placeholder docstring.
+
+<description>"""
 class GradeReport:
     spec_op_count: int
     suite_op_count: int
@@ -90,6 +99,9 @@ class GradeReport:
     created_at: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """Placeholder docstring.
+
+:return: <description>"""
         return {
             "spec_op_count": self.spec_op_count,
             "suite_op_count": self.suite_op_count,
@@ -103,10 +115,18 @@ class GradeReport:
         }
 
     def save(self, path: Path) -> None:
+        """Placeholder docstring.
+
+:param path: <description>
+:return: <description>"""
         path.write_text(json.dumps(self.to_dict(), indent=2))
 
     @classmethod
     def load(cls, path: Path) -> GradeReport:
+        """Placeholder docstring.
+
+:param path: <description>
+:return: <description>"""
         data = json.loads(path.read_text())
         ops = [
             OperationGrade(
@@ -154,6 +174,10 @@ class SuiteGrader:
         self._spec_op_ids = _extract_spec_op_ids(spec)
 
     def grade(self, suite: dict[str, Any]) -> GradeReport:
+        """Placeholder docstring.
+
+:param suite: <description>
+:return: <description>"""
         from datetime import datetime, timezone
 
         suite_ops = {k: v for k, v in suite.items() if not k.startswith("_")}

@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 class QAChatAgent:
+    """Placeholder docstring.
+
+<description>"""
     def __init__(
         self,
         memory: ConversationMemory,
@@ -27,13 +30,26 @@ class QAChatAgent:
         self.substrate_router = substrate_router
 
     def create_session(self, persona_id: str = "qa_assistant") -> Session:
+        """Placeholder docstring.
+
+:param persona_id: <description>
+:return: <description>"""
         session_id = str(uuid.uuid4())
         return self.memory.create_session(session_id, persona_id)
 
     def get_session(self, session_id: str) -> Session | None:
+        """Placeholder docstring.
+
+:param session_id: <description>
+:return: <description>"""
         return self.memory.get_session(session_id)
 
     def add_user_message(self, session_id: str, content: str) -> Message:
+        """Placeholder docstring.
+
+:param session_id: <description>
+:param content: <description>
+:return: <description>"""
         msg = Message(role="user", content=content, session_id=session_id)
         self.memory.add_message(session_id, msg)
         return msg
@@ -76,6 +92,11 @@ class QAChatAgent:
         return llm_messages
 
     def chat(self, session_id: str, user_message: str) -> Message:
+        """Placeholder docstring.
+
+:param session_id: <description>
+:param user_message: <description>
+:return: <description>"""
         if not self.memory.get_session(session_id):
             self.memory.create_session(session_id)
         self.add_user_message(session_id, user_message)
@@ -89,6 +110,11 @@ class QAChatAgent:
         return assistant_msg
 
     async def chat_stream(
+        """Placeholder docstring.
+
+:param session_id: <description>
+:param user_message: <description>
+:return: <description>"""
         self, session_id: str, user_message: str
     ) -> AsyncGenerator[str, None]:
         if not self.memory.get_session(session_id):

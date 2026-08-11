@@ -17,6 +17,9 @@ from cherenkov.substrate.providers.ollama_client import complete_json
 
 
 class DiagnosticsOutput(BaseModel):
+    """Placeholder docstring.
+
+<description>"""
     scenario_id: str
     failure_class: str
     error_message: str
@@ -65,6 +68,12 @@ class DiagnosticsStage:
         )
 
     def run(
+        """Placeholder docstring.
+
+:param scenario_id: <description>
+:param failure_class: <description>
+:param error_message: <description>
+:return: <description>"""
         self, scenario_id: str, failure_class: str, error_message: str
     ) -> DiagnosticsOutput:
         t0 = time.monotonic()

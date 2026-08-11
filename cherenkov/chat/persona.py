@@ -6,6 +6,9 @@ from typing import Any
 
 @dataclass
 class Persona:
+    """Placeholder docstring.
+
+<description>"""
     persona_id: str
     name: str
     description: str
@@ -29,21 +32,40 @@ _DEFAULT_PERSONA = Persona(
 
 
 class PersonaRegistry:
+    """Placeholder docstring.
+
+<description>"""
     def __init__(self):
         self._personas: dict[str, Persona] = {
             _DEFAULT_PERSONA.persona_id: _DEFAULT_PERSONA
         }
 
     def get(self, persona_id: str) -> Persona | None:
+        """Placeholder docstring.
+
+:param persona_id: <description>
+:return: <description>"""
         return self._personas.get(persona_id)
 
     def register(self, persona: Persona) -> None:
+        """Placeholder docstring.
+
+:param persona: <description>
+:return: <description>"""
         self._personas[persona.persona_id] = persona
 
     def list_personas(self) -> list[Persona]:
+        """Placeholder docstring.
+
+:return: <description>"""
         return list(self._personas.values())
 
     def compose_prompt(
+        """Placeholder docstring.
+
+:param persona_id: <description>
+:param context: <description>
+:return: <description>"""
         self, persona_id: str, context: dict[str, Any] | None = None
     ) -> str:
         persona = self.get(persona_id)

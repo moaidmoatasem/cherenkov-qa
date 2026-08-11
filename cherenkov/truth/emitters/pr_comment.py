@@ -19,6 +19,13 @@ class PRCommentEmitter(Emitter):
     """Emits a Markdown PR comment summarizing divergences for human review."""
 
     def emit(
+        """Placeholder docstring.
+
+:param truth_model: <description>
+:param output_path: <description>
+:param divergences: <description>
+:param **kwargs: <description>
+:return: <description>"""
         self,
         truth_model: TruthModel,  # noqa: ARG002
         output_path: Path,

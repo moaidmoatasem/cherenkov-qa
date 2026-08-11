@@ -11,6 +11,12 @@ class QueryKnowledgeUseCase:
         self._repository = repository
 
     def execute(
+        """Placeholder docstring.
+
+:param query: <description>
+:param source: <description>
+:param limit: <description>
+:return: <description>"""
         self, query: str, source: str | None = None, limit: int = 10
     ) -> KnowledgeQueryResult:
         q = KnowledgeQuery(query=query, source=source, limit=limit)

@@ -342,7 +342,7 @@ Record all verdicts in [`docs/QA_DEMO_KIT.md`](../QA_DEMO_KIT.md) tracking sheet
 |---|---|
 | [`docs/QA_DEMO_KIT.md`](../QA_DEMO_KIT.md) | 7-minute live demo script + tracking sheet + FAQ |
 | [`docs/QA_OUTREACH_TEMPLATES.md`](../QA_OUTREACH_TEMPLATES.md) | Copy-paste Slack/email templates for recruiting reviewers |
-| [`docs/HANDOVER.md`](../../../../HANDOVER.md) | Authoritative project state, Track A/B/C status, roadmap |
+| [`docs/HANDOVER.md`](../../../../../HANDOVER.md) | Authoritative project state, Track A/B/C status, roadmap |
 | [`docs/GETTING_STARTED.md`](../GETTING_STARTED.md) | Full install guide for new contributors |
 | `scripts/collect_evidence.py` | Standalone evidence collector (runs all smokes, saves logs) |
 

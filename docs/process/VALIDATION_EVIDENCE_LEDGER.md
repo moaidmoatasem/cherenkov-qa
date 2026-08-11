@@ -17,7 +17,7 @@ Human reviews (ledger below) remain optional for additional attributable evidenc
 > **Attributable evidence:** 0 / 5 attributable reviews recorded below.
 > **Owner policy (2026-06-08):** The gate is considered passed to unblock development across all tracks. The evidence infrastructure below remains available for future attributable QA review collection.
 > **Gate target:** ≥ 3 of 5 reviewers answer **"Yes"** to the gate question.
-> **Authority:** This ledger tracks attributable evidence; [STATUS.md](../STATUS.md) and [HANDOVER.md](../../../../HANDOVER.md) are the SSOT for gate status.
+> **Authority:** This ledger tracks attributable evidence; [STATUS.md](../STATUS.md) and [HANDOVER.md](../../../../../HANDOVER.md) are the SSOT for gate status.
 
 ---
 
@@ -72,7 +72,7 @@ A "Yes" means the reviewer would keep the generated tests in their own repo.
    (copy `docs/process/evidence/_TEMPLATE.md`).
 3. Fill their ledger row above with a **reachable** identity and link the evidence file.
 4. Update the **Tally** line and, once ≥3 Yes, flip **Status** at the top to PASSED and
-   update [HANDOVER.md](../../../../HANDOVER.md) in the same commit.
+   update [HANDOVER.md](../../../../../HANDOVER.md) in the same commit.
 5. Commit. The git author + timestamp is itself part of the audit trail.
 
 ## What does NOT count

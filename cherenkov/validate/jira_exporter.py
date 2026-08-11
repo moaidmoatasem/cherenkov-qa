@@ -141,6 +141,11 @@ class JiraExporter:
         return file_path
 
     def create_jira_issue(self, summary: str, description: str) -> str | None:
+        """Placeholder docstring.
+
+:param summary: <description>
+:param description: <description>
+:return: <description>"""
         jira_url = os.environ.get("CHERENKOV_JIRA_URL")
         jira_token = os.environ.get("CHERENKOV_JIRA_TOKEN")
         jira_project = os.environ.get("CHERENKOV_JIRA_PROJECT", "QA")
@@ -222,6 +227,15 @@ class JiraExporter:
         return headers
 
     def create_jira_issue_full(
+        """Placeholder docstring.
+
+:param summary: <description>
+:param description: <description>
+:param labels: <description>
+:param priority: <description>
+:param components: <description>
+:param issuetype: <description>
+:return: <description>"""
         self,
         summary: str,
         description: str,
@@ -287,6 +301,10 @@ class JiraExporter:
             raise
 
     def bulk_create(self, items: list[dict]) -> list[str]:
+        """Placeholder docstring.
+
+:param items: <description>
+:return: <description>"""
         created_keys: list[str] = []
         for item in items:
             try:
@@ -305,6 +323,11 @@ class JiraExporter:
         return created_keys
 
     def add_comment(self, issue_key: str, comment: str) -> bool:
+        """Placeholder docstring.
+
+:param issue_key: <description>
+:param comment: <description>
+:return: <description>"""
         headers = self._build_auth_headers()
         if headers is None:
             self.log.warning("Jira URL or Token not set. Skipping add_comment.")
@@ -341,6 +364,11 @@ class JiraExporter:
             return False
 
     def add_attachment(self, issue_key: str, file_path: str) -> bool:
+        """Placeholder docstring.
+
+:param issue_key: <description>
+:param file_path: <description>
+:return: <description>"""
         if not os.path.isfile(file_path):
             self.log.error("Attachment file not found", file_path=file_path)
             return False

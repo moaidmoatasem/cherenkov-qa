@@ -26,6 +26,12 @@ class ThreadJourneyRunner:
         self._lock = threading.Lock()
 
     def start(self, journey_id: str, spec_path: str, run_id: str) -> str:
+        """Placeholder docstring.
+
+:param journey_id: <description>
+:param spec_path: <description>
+:param run_id: <description>
+:return: <description>"""
         thread = threading.Thread(
             target=self._run,
             args=(journey_id, spec_path, run_id),
@@ -38,6 +44,10 @@ class ThreadJourneyRunner:
         return run_id
 
     def is_running(self, run_id: str) -> bool:
+        """Placeholder docstring.
+
+:param run_id: <description>
+:return: <description>"""
         with self._lock:
             thread = self._threads.get(run_id)
         return bool(thread and thread.is_alive())
@@ -68,6 +78,9 @@ class ThreadJourneyRunner:
 
 
 _runner: ThreadJourneyRunner | None = None
+    """Placeholder docstring.
+
+:return: <description>"""
 
 def get_journey_runner() -> ThreadJourneyRunner:
     global _runner

@@ -39,6 +39,14 @@ class CostAccountant:
         )
 
     def record(
+        """Placeholder docstring.
+
+:param model: <description>
+:param duration_ms: <description>
+:param tokens: <description>
+:param cache_hit: <description>
+:param provider: <description>
+:return: <description>"""
         self,
         model: str,
         duration_ms: int,
@@ -100,6 +108,14 @@ class CostAccountant:
             )
 
     def record_json(
+        """Placeholder docstring.
+
+:param model: <description>
+:param duration_ms: <description>
+:param output: <description>
+:param cache_hit: <description>
+:param provider: <description>
+:return: <description>"""
         self,
         model: str,
         duration_ms: int,
@@ -128,6 +144,14 @@ class CostAccountant:
         )
 
     def record_code(
+        """Placeholder docstring.
+
+:param model: <description>
+:param duration_ms: <description>
+:param output: <description>
+:param cache_hit: <description>
+:param provider: <description>
+:return: <description>"""
         self,
         model: str,
         duration_ms: int,
@@ -157,6 +181,9 @@ class CostAccountant:
 
     @property
     def report(self) -> AccountingReport:
+        """Placeholder docstring.
+
+:return: <description>"""
         entries = list(self._entries)
         return AccountingReport(
             entries=entries,
@@ -167,9 +194,15 @@ class CostAccountant:
         )
 
     def clear(self) -> None:
+        """Placeholder docstring.
+
+:return: <description>"""
         self._entries.clear()
 
     def get_governance_kpis(self) -> dict[str, float | int]:
+        """Placeholder docstring.
+
+:return: <description>"""
         from cherenkov.core.contracts import VerdictOutcome
         from cherenkov.reflector.store import VerdictStore
 

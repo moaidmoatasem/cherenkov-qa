@@ -25,6 +25,9 @@ RunStatus = Literal["running", "complete", "failed", "aborted"]
 
 @dataclass
 class RunRecord:
+    """Placeholder docstring.
+
+<description>"""
     run_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     command: str = ""                     # "verify" | "validate" | "certify" | "pipeline"
     target_url: str = ""
@@ -50,6 +53,9 @@ def _db_path() -> Path:
 
 
 class RunStore:
+    """Placeholder docstring.
+
+<description>"""
     def __init__(self, db_path: Path | None = None):
         self._path = db_path or _db_path()
         self._lock = threading.Lock()
@@ -102,6 +108,10 @@ class RunStore:
             conn.commit()
 
     def save(self, record: RunRecord) -> RunRecord:
+        """Placeholder docstring.
+
+:param record: <description>
+:return: <description>"""
         with self._lock, self._connect() as conn:
             conn.execute(
                 """
@@ -144,11 +154,23 @@ class RunStore:
             conn.commit()
 
     def get(self, run_id: str) -> RunRecord | None:
+        """Placeholder docstring.
+
+:param run_id: <description>
+:return: <description>"""
         with self._lock, self._connect() as conn:
             row = conn.execute("SELECT * FROM runs WHERE run_id=?", (run_id,)).fetchone()
         return _row_to_record(row) if row else None
 
     def list(
+        """Placeholder docstring.
+
+:param target_url: <description>
+:param command: <description>
+:param limit: <description>
+:param status: <description>
+:param journey_id: <description>
+:return: <description>"""
         self,
         target_url: str | None = None,
         command: str | None = None,
@@ -229,6 +251,10 @@ def _row_to_record(row: sqlite3.Row) -> RunRecord:
         step_state_json=row["step_state_json"],
         failure_classification=row["failure_classification"]
     )
+    """Placeholder docstring.
+
+:param spec_bytes: <description>
+:return: <description>"""
 
 
 def spec_hash(spec_bytes: bytes) -> str:
@@ -237,6 +263,9 @@ def spec_hash(spec_bytes: bytes) -> str:
 
 _store: RunStore | None = None
 _store_lock = threading.Lock()
+    """Placeholder docstring.
+
+:return: <description>"""
 
 
 def get_run_store() -> RunStore:
