@@ -98,6 +98,7 @@ This brings up LocalAI (VLM) on `http://localhost:8080` and Redis on `6379`. See
 - [CLI Reference](https://moaidmoatasem.github.io/cherenkov-qa/latest/cli/reference/)
 - [Architecture & Design Decisions](https://moaidmoatasem.github.io/cherenkov-qa/latest/architecture/)
 - [Platform Direction](https://moaidmoatasem.github.io/cherenkov-qa/latest/architecture/system-design/#platform-context-the-independent-quality-layer) — where CHERENKOV is heading as an open Quality Intelligence Platform, with API conformance as the shipped core
+- [Capability Coverage Audit](./docs/CAPABILITY_COVERAGE.md) — code-verified matrix of what is shipped, what is partial, and what is absent, with the file paths behind each claim
 - [Onboarding & Demo Recordings](./docs/recordings/) — 8 Loom scripts with live evidence for developers, QA, managers, and DevOps
 
 ---

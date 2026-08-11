@@ -1,6 +1,6 @@
 # CHERENKOV CLI Command Groups
 
-The CHERENKOV CLI organizes its **40 top-level commands** into **7 logical command
+The CHERENKOV CLI organizes its **45 top-level commands** into **7 logical command
 groups** for discoverability. Every command remains registered at the top level for
 backwards compatibility, so `cherenkov validate` and `cherenkov pipeline`
 both work identically.
@@ -16,7 +16,7 @@ defined in `cherenkov/cli/groups.py` (`GROUP_LAYOUT`).
 |-------|---------|-----------------|
 | [`pipeline`](#pipeline) | Core API conformance pipeline | `validate`, `verify`, `audit`, `check-suite`, `check-stale`, `synthetic`, `generate`, `bench`, `eval`, `drift` |
 | [`review`](#review) | Human-in-the-loop review workflows | `hitl`, `review`, `ocr` |
-| [`model`](#model) | Model / VLM substrate commands | `visual`, `perf`, `mcp`, `examples` |
+| [`model`](#model) | Model / VLM substrate commands | `visual`, `perf`, `mobile`, `mcp`, `examples` |
 | [`operate`](#operate) | Long-running operations and observability | `daemon`, `dashboard`, `explore`, `map`, `author`, `record`, `tokens`, `governance`, `profile`, `teleport` |
 | [`admin`](#admin) | Setup, maintenance, and self-service | `init`, `doctor`, `self-test`, `eject`, `completion`, `report`, `diff`, `demo` |
 | [`enterprise`](#enterprise) | Enterprise integrations and certification | `enterprise`, `certify`, `playbook`, `guardian` |
@@ -48,7 +48,7 @@ cherenkov review hitl list
 
 ## `model`
 
-Model / VLM substrate commands: `visual`, `perf`, `mcp`, `examples`.
+Model / VLM substrate commands: `visual`, `perf`, `mobile`, `mcp`, `examples`.
 
 ```bash
 cherenkov model --help
