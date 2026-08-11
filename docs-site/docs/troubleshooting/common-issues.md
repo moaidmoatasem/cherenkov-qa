@@ -318,7 +318,7 @@ echo "Exit code: $?"
 
 1. Run `cherenkov doctor` and review every line
 2. Check the [FAQ](faq.md) for conceptual questions
-3. Search [GitHub Issues](https://github.com/cherenkov-qa/cherenkov-qa/issues) for your error message
+3. Search [GitHub Issues](https://github.com/moaidmoatasem/cherenkov-qa/issues) for your error message
 4. Open a new issue with `cherenkov doctor` output and the full error message
 
 ---

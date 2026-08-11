@@ -40,6 +40,19 @@ This is the precise failure mode the product exists to detect (`NORTH_STAR.md` �
 
 **Plan contradictions resolved:** `docs/ROADMAP.md` §1 claimed "Phases -1 through 16 are Complete" (false) and §4 described an Open Core model monetizing the Enterprise Tier (contradicted the 2026-08-01 product decision on #754). Both corrected in place with the correction noted inline. Note `docs/ROADMAP_2026H2.md`, still referenced further down this file, was **deleted** in `119d62d` (#946) — the M1-M5 milestone definitions now live only in the GitHub milestones and in the table below.
 
+### CI state on `main` (measured 2026-08-11, from PR #955's checks)
+
+Several gates below are red **on `main` itself**, independent of any branch. Two are stale claims in this very file:
+
+| Check | Cause | Status |
+|---|---|---|
+| `unit-tests` / `Test coverage` | `tests/unit/test_saml_user_sync.py` (added in #951) was **broken as written**: it monkeypatched `_db_path` to the string `":memory:"` while `UserStore._connect()` calls `self._path.parent.mkdir()`, called the non-existent `mock.spy()`, keyed the user off `name_id` when the route keys off `assertion.email`, and passed `role="viewer"` as a `str` where `create()` expects a `Role`. **Fixed** — rewritten against the route's real contract, plus a second test covering the no-drift path. |
+| `check-links` | **The link gate has never run.** `lychee` is invoked with `--base .`, invalid in lychee v2 (*"Base must either be a full URL or an absolute local path"*), so it exits at argument parsing before scanning anything. Same class as the `spec-drift.yml` invalid-YAML bug recorded below: a gate that reports red for an infrastructure reason and therefore guards nothing. **Not fixed** — see below. |
+| `Type check (mypy)` | **Regressed since 2026-08-07.** This file's CI green-up section claims *"mypy now: Success: no issues found in 579 source files"*. It is now **21 errors in 11 files (605 checked)**, e.g. `core/orchestrator.py:44 Cannot assign to a type`, `mcp/tools/core_cli.py:52` Path/str argument mismatches. Treat the "mypy green" claim below as **stale**. |
+| `Verify Docker Build` | `npx vite build` fails at `Dockerfile:7` inside the `ui-build` stage (esbuild error). Frontend build issue, undiagnosed. |
+
+**On the link gate — do not just fix the flag.** Correcting `--base` makes lychee actually run for the first time, and a local scan finds **110 broken relative links out of 821** across the repo's markdown. Fixing the argument without triaging that backlog converts a silently-dead gate into a loudly-red one. Sequence it: land the link cleanup first, then enable the gate. Two of the 110 (`README.md` and this file, both pointing at the deleted `docs/ROADMAP_2026H2.md`) are fixed here as part of the plan-alignment work.
+
 **Date:** 2026-08-02 (round 3 + lead verification)
 **HEAD:** `main` at `d9a161f`. **Certified green: 2064 passed, 2 failed** (pre-existing `test_verify_cmd.py` mock drift, tracked as #819). UI revamp `2e66658` build-verified (vite output matches committed dist hashes).
 **Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"`.
@@ -545,7 +558,7 @@ All Rung 3 items are DONE (merged 2026-06-27):
 
 ## What landed this session (2026-07-30) — spec-shape soundness
 
-Forward plan now lives in [`docs/ROADMAP_2026H2.md`](docs/ROADMAP_2026H2.md) (milestones M0–M5). **M0 is new and gates E0.3.**
+Forward plan now lives in `docs/ROADMAP_2026H2.md` (milestones M0–M5). **M0 is new and gates E0.3.** *(Historical note, 2026-08-11: that file was deleted in `119d62d` (#946). Link removed to keep it resolvable; see the reconciliation section at the top of this file.)*
 
 | SHA | What |
 |---|---|

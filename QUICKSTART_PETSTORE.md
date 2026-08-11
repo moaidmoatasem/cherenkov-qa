@@ -25,7 +25,7 @@ npx playwright install --with-deps chromium
 
 ```bash
 # From source (recommended for development)
-git clone https://github.com/cherenkov-qa/cherenkov-qa
+git clone https://github.com/moaidmoatasem/cherenkov-qa
 cd cherenkov-qa
 pip install -e .
 
@@ -190,6 +190,5 @@ Upload `demo.cast` to [asciinema.org](https://asciinema.org) for embedding in RE
 ## Links
 
 - 📖 [Full Documentation](docs/)
-- 🐛 [Report Issues](https://github.com/cherenkov-qa/cherenkov-qa/issues)
+- 🐛 [Report Issues](https://github.com/moaidmoatasem/cherenkov-qa/issues)
 - 💬 [Discord Community](https://discord.gg/cherenkov)
-- 🐦 [Twitter/X](https://x.com/cherenkov_qa)

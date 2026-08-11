@@ -1,6 +1,6 @@
 # Demo — "Catch the AI Cheating"
 
-> **Purpose:** the single demo that proves the trust-layer thesis. If this lands, the whole "verifiable autonomous quality" positioning is real. Doubles as **Gate G0 / E0.2** evidence. See [../NORTH_STAR.md](../NORTH_STAR.md), [../VISION_AQE_2026.md](../VISION_AQE_2026.md), [../PRODUCT_STRATEGY_ROADMAP.md](../PRODUCT_STRATEGY_ROADMAP.md).
+> **Purpose:** the single demo that proves the trust-layer thesis. If this lands, the whole "verifiable autonomous quality" positioning is real. Doubles as **Gate G0 / E0.2** evidence. See [../NORTH_STAR.md](../NORTH_STAR.md), [../VISION_AQE_2026.md](../VISION_AQE_2026.md), [../PRODUCT_STRATEGY_ROADMAP.md](../ROADMAP.md).
 > **Date:** 2026-06-16 · **Runtime target:** under 90 seconds.
 
 ## The one-line hook

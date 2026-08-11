@@ -1237,6 +1237,24 @@ cherenkov federation query <topic>
 
 ---
 
+#### `mobile`
+Generate mobile tests from an OpenAPI spec via the Maestro pipeline.
+Runs ingest → plan → generate → review in sequence, and reports pass/fail per scenario.
+
+```bash
+# Generate and review mobile scenarios from a spec
+cherenkov mobile openapi.yaml
+
+# Tag the run for logging/correlation
+cherenkov mobile openapi.yaml --run-id nightly-042
+```
+
+Ejects to vanilla Appium or Maestro (`cherenkov/execution/mobile_eject_appium.py`,
+`mobile_eject_maestro.py`), so the generated suites carry no CHERENKOV imports —
+the same anti-lock-in promise as the Playwright path.
+
+---
+
 #### `train`
 Fine-tune a small language model on your own locally collected QA corpus (Phase 15).
 Collection is **opt-in and local** — nothing is uploaded, and the pipeline runs entirely on your machine.
