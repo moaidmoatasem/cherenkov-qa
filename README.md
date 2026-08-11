@@ -48,7 +48,7 @@ AI coding tools are notorious for weakening assertions (e.g., changing `==` to `
 | **Python** (`.py`) | `ast.parse` — compares comparison-operator node types | ✅ per-assertion, baseline-relative | ✅ per-test | ✅ cross-referenced against the spec |
 | **TypeScript** (`.spec.ts`) | regex over Playwright assertion grammar | ⚠️ file-level heuristic only | ⚠️ per-test-name only | ❌ **not implemented** |
 
-The TypeScript path is materially weaker than the Python path, and hallucination detection there is not implemented at all. This is stated plainly because CHERENKOV exists to catch tools that overstate what they verify; it would be self-defeating to do the same. Closing the gap is tracked as M0b in [`docs/ROADMAP_2026H2.md`](docs/ROADMAP_2026H2.md).
+The TypeScript path is materially weaker than the Python path, and hallucination detection there is not implemented at all. This is stated plainly because CHERENKOV exists to catch tools that overstate what they verify; it would be self-defeating to do the same. Closing the gap is tracked as M0b in the [consolidated roadmap](docs/ROADMAP.md) and the GitHub issue tracker. (`docs/ROADMAP_2026H2.md`, the original home of the M-track, was deleted in `119d62d`; the milestone definitions now live in the GitHub milestones.)
 
 ### 2. Hallucination-Resistant Generation
 When CHERENKOV does generate tests, it only uses the LLM to write the *structure*. The *expected values* (status codes, response schemas) are derived strictly from your OpenAPI spec. If the spec says `422`, CHERENKOV ensures the test demands a `422`.

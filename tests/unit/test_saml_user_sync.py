@@ -1,20 +1,27 @@
 # tests/unit/test_saml_user_sync.py
 """Unit test for SAML callback user synchronization.
+
 Ensures that when a user logs in via SAML and their role or organization_id differs
 from the stored values, the `update_user` method on the `UserStore` is invoked and
-the returned JWT reflects the updated attributes.
+the returned token response reflects the updated attributes.
 """
 
-import json
 from unittest import mock
+
 import pytest
 from fastapi.testclient import TestClient
 
-from cherenkov.web.api import app  # FastAPI app definition
-from cherenkov.web.auth.store import UserStore
 from cherenkov.enterprise.saml import SAMLAssertion, SAMLServiceProvider
+from cherenkov.web.api import app  # FastAPI app definition
+from cherenkov.web.auth.models import Role
+from cherenkov.web.auth.store import UserStore
 
 client = TestClient(app)
+
+# The callback keys the user off `assertion.email` (routes.py: `username = assertion.email`),
+# not off `name_id` — the stored user must therefore be created under the email.
+SSO_USERNAME = "test@example.com"
+
 
 @pytest.fixture()
 def mock_sp(monkeypatch):
@@ -23,7 +30,7 @@ def mock_sp(monkeypatch):
     # Build an assertion with known values
     assertion = SAMLAssertion(
         name_id="test-user",
-        email="test@example.com",
+        email=SSO_USERNAME,
         attributes={
             "organization_id": ["org-123"],
             "role": ["admin"],
@@ -35,29 +42,43 @@ def mock_sp(monkeypatch):
     monkeypatch.setattr("cherenkov.web.auth.routes.SAMLServiceProvider", lambda: mock_sp_instance)
     return mock_sp_instance
 
-def test_saml_callback_syncs_user(monkeypatch, mock_sp):
-    # Use an in‑memory SQLite DB to avoid polluting the real DB
-    monkeypatch.setattr("cherenkov.web.auth.store._db_path", lambda: ":memory:")
-    # Ensure the singleton is reset
-    monkeypatch.setattr("cherenkov.web.auth.store._store", None)
-    # Initialise a fresh store
-    store = UserStore()
-    # Create a user with mismatched attributes
-    store.create("test-user", password="pwd", role="viewer", organization_id="old-org")
+
+def test_saml_callback_syncs_user(monkeypatch, mock_sp, tmp_path):
+    # Back the store with a throwaway on-disk DB. `:memory:` cannot be used here:
+    # UserStore._connect() calls `self._path.parent.mkdir(...)`, so the path must be a real Path.
+    store = UserStore(tmp_path / "auth.db")
+    # Create the user with attributes that differ from what the IdP will assert
+    store.create(SSO_USERNAME, password="pwd", role=Role.viewer, organization_id="old-org")
     # Patch the global store getter to return our custom store
     monkeypatch.setattr("cherenkov.web.auth.routes.get_user_store", lambda: store)
-    # Spy on update_user
-    spy = mock.spy(store, "update_user")
 
-    # Perform the SAML callback POST request
-    response = client.post(
-        "/api/v1/auth/saml/callback",
-        data={"SAMLResponse": "dummy", "RelayState": ""},
-    )
+    # Spy on update_user while keeping the real behaviour (stdlib mock has no `spy` helper)
+    with mock.patch.object(store, "update_user", wraps=store.update_user) as spy:
+        response = client.post(
+            "/api/v1/auth/saml/callback",
+            data={"SAMLResponse": "dummy", "RelayState": ""},
+        )
+
     assert response.status_code == 200
     payload = response.json()
-    # The JWT payload should now contain the updated role and organization_id
+    # The token response should now carry the updated role and organization_id
     assert payload["role"] == "admin"
     assert payload["organization_id"] == "org-123"
-    # Verify that update_user was called exactly once with the new values
-    spy.assert_called_once_with("test-user", role=mock.ANY, organization_id=mock.ANY)
+    # Verify that update_user was called exactly once with the IdP-asserted values
+    spy.assert_called_once_with(SSO_USERNAME, role=Role.admin, organization_id="org-123")
+
+
+def test_saml_callback_does_not_update_when_attributes_match(monkeypatch, mock_sp, tmp_path):
+    """No drift means no write — the sync path must not fire on every login."""
+    store = UserStore(tmp_path / "auth.db")
+    store.create(SSO_USERNAME, password="pwd", role=Role.admin, organization_id="org-123")
+    monkeypatch.setattr("cherenkov.web.auth.routes.get_user_store", lambda: store)
+
+    with mock.patch.object(store, "update_user", wraps=store.update_user) as spy:
+        response = client.post(
+            "/api/v1/auth/saml/callback",
+            data={"SAMLResponse": "dummy", "RelayState": ""},
+        )
+
+    assert response.status_code == 200
+    spy.assert_not_called()
