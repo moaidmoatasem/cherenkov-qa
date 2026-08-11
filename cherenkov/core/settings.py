@@ -300,6 +300,8 @@ class CherenkovSettings(BaseSettings):
         Returns:
             None
         """
+        # Pydantic validates on instantiation, so this is mostly a no-op,
+        # but we add port bounds checking for backward compatibility.
         pass
 
     def to_dict(self):
