@@ -48,6 +48,7 @@ Welcome to the Cherenkov QA documentation hub. Content is organized according to
 - [Error Handling Reference](file:///z:/home/moaid/cherenkov-qa/docs/ERROR_HANDLING.md): Standardized error codes, exceptions, and exit codes.
 - [Master Roadmap](file:///z:/home/moaid/cherenkov-qa/docs/ROADMAP.md): Tracking status for Phases -1 through 16.
 - [Architecture Decision Records (ADRs)](file:///z:/home/moaid/cherenkov-qa/docs/adr/INDEX.md): Formal log of design choices.
+- [Agentic Test Plan (2026-08)](TEST_PLAN_AGENTIC_2026-08.md): The eight-axis composite coverage gate, the agent pipeline that reaches it, and the measured baseline it starts from.
 
 ---
 
