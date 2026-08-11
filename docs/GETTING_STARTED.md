@@ -74,7 +74,7 @@ To view all supported commands and options:
 
 ### Command Groups
 
-The CLI organizes its 40 top-level commands into 7 logical command groups for
+The CLI organizes its 45 top-level commands into 7 logical command groups for
 discoverability. Every command remains available at the top level for backwards
 compatibility, so `cherenkov validate` and `cherenkov pipeline` both
 work. See [CLI_GROUPS.md](CLI_GROUPS.md) for the full group reference.
@@ -92,7 +92,7 @@ Core API conformance pipeline: `validate`, `verify`, `audit`, `check-suite`,
 Human-in-the-loop review workflows: `hitl`, `review`, `ocr`.
 
 #### `model`
-Model / VLM substrate commands: `visual`, `perf`, `mcp`, `examples`.
+Model / VLM substrate commands: `visual`, `perf`, `mobile`, `mcp`, `examples`.
 
 #### `operate`
 Long-running operations and observability: `daemon`, `dashboard`, `explore`,
