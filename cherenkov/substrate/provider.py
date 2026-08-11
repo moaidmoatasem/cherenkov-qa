@@ -353,11 +353,6 @@ Please replace with a meaningful description.
 
 
 def provider_for_tier(
-    """Placeholder docstring.
-
-:param tier: <description>
-:param device_class: <description>
-:return: <description>"""
     tier: str, device_class: str | None = None
 ) -> OllamaProvider | OpenAIProvider | GitHubModelsProvider | VLMProvider:
     if tier == "small":
