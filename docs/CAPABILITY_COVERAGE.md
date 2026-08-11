@@ -106,13 +106,29 @@ Wiring it took three changes, because the gap was one step deeper than the missi
    the planner, the generate branch, and the CLI wiring. Verified non-vacuous: removing `asyncapi`
    from the `--source` choices fails three of them.
 
-### F5 — Tier integrations claimed but absent
+### F5 — Tier integrations claimed but absent (**fixed**, #964)
 
-`ROADMAP.md` §3 commits to "25 external systems across 5 tiers". Missing entirely: **SonarQube**
-(Tier 2), **Splunk, Okta, Active Directory** (Tier 4), **JetBrains** (Tier 0). Okta/AD in
-particular read as already-covered because SAML SSO exists — SAML is the *protocol*, and a generic
-SAML SP does cover Okta and AD FS in practice, so the honest statement is "supported via SAML, not
-separately integrated". The §3 list should be reconciled to what exists.
+`ROADMAP.md` §3 committed to "25 external systems across 5 tiers" as a flat roster that read as
+shipped state. It was wrong in **both** directions:
+
+- **Named but absent:** SonarQube (Tier 2), Splunk (Tier 4), Zed and JetBrains (Tier 0).
+- **Shipped but unlisted:** Claude Desktop and Windsurf (`mcp/install.py` generates configs for
+  both, alongside Cursor), CircleCI and Jenkins (`ci/`), Linear, PagerDuty and Opsgenie
+  (`adapters/notifiers/`), and six further LLM providers beyond the four named.
+- **Overstated as direct integrations:** Okta and Active Directory are reached through **SAML 2.0**
+  (`enterprise/saml.py`) — protocol-level, so any conformant IdP works, but there is no
+  vendor-specific SCIM or directory sync. Datadog is reached through **OTLP export**
+  (`observability/otel.py`), which equally serves Grafana and Jaeger. vLLM has no adapter of its
+  own; it is used through `substrate/providers/openai_compat.py`.
+
+§3 now separates shipped from planned and cites the evidence for each row.
+
+**A method note worth keeping:** the first pass of this audit called Cursor and Zed false positives
+because `grep -i cursor` matches database cursors and `zed` matches "normali**zed**"/"authori**zed**".
+Cursor *is* supported — via `cherenkov mcp install` — and was nearly recorded as absent. Grep hits
+prove nothing on their own in either direction; only a reachable code path does. The root
+`.cursor/mcp.json` is likewise not evidence: it is maintainer tooling for developing this repo, not
+a product integration.
 
 ---
 
