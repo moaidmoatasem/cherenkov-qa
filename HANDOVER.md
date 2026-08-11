@@ -1,5 +1,77 @@
 # CHERENKOV -- Session Handover
 
+## CI is green on `main` — all four gates from the 2026-08-11 table are closed (2026-08-11)
+
+Every check in the *"CI state on `main`"* table further down is now fixed. Measured on
+`main` at `45735c9`, not inferred:
+
+```
+mypy cherenkov/ --ignore-missing-imports --no-strict-optional \
+  --exclude 'cherenkov/web/ui' --exclude 'cherenkov/desktop'
+  → Success: no issues found in 605 source files
+
+pytest tests/unit tests/integration            → exit 0
+lychee, the workflow's blocking-mode args      → 0 errors (966 links, 725 OK)
+npx vite build / npx tsc --noEmit              → both exit 0
+scripts/check_cli_flags.py, ci_docs_check.py   → exit 0
+```
+
+| Gate | Was | Now |
+|---|---|---|
+| `unit-tests` / `Test coverage` | broken `test_saml_user_sync.py` | fixed in #957 (not this work) |
+| `check-links` | never executed — invalid `--base .` | **#958.** Flag fixed *and* the 110-link backlog cleared, so the gate is green rather than loudly red |
+| `Verify Docker Build` | "esbuild error, undiagnosed" | **#958.** `src/lib/api.ts` declared `runPerfTest`, `getPerfMetrics` and `PerfMetric` **twice**; esbuild rejects duplicate functions while TypeScript silently merges duplicate interfaces, which is why only the functions errored |
+| `Type check (mypy)` | 21 errors in 11 files | **#967 + #969.** Zero. The *"no issues found in 579 source files"* line further down is true again, now at 605 |
+
+**The link-gate advice in that table was followed.** It said *"do not just fix the flag — sequence it: land the link cleanup first."* Both landed together in #958: 105 broken links repaired, plus exclusions for `docs/_archive` and `docs/archive` (frozen history — rewriting their links would falsify the record they preserve), `cherenkov/web/ui/dist` (build output), and `docs-site`/`landing-page` (separate sites that validate their own links; `docs-site` uses mkdocs `{{ }}` template variables that are not URLs). External URLs moved to the weekly schedule with `fail: false`, feeding the issue-creation step the workflow already had — a PR must not go red because a third party renamed their repository.
+
+### Correction: Phase 13 multi-tenant org management (#756) was **not** working
+
+The reconciliation below lists #756 among "6/8 real". Three `/api/enterprise/*` endpoints
+**raised on first request** until #967:
+
+```
+enterprise_routes.py:76  _org_manager.get_organization(...)     → AttributeError
+enterprise_routes.py:78  _org_manager.create_organization(...)  → AttributeError
+enterprise_routes.py:56  soc2.generate_report(org_name=...)     → TypeError
+```
+
+`OrgManager` provides `get_org`/`create_org` (two arguments, not three); `generate_report`
+takes `organization`. The lookup was wrong beyond the names — it fetched by the fixed id
+`"default-org"`, which `create_org` never assigns, so even with correct method names it
+would have missed every time and minted a fresh organization per request.
+
+**No test had ever issued an HTTP request to that router**; the existing enterprise tests
+exercise the domain classes directly. `tests/unit/test_enterprise_routes.py` now covers it
+(11 tests, 5 of which fail against the unfixed code).
+
+Two more of the same shape, also fixed in #967: the MCP `cherenkov/check-suite` TypeScript
+path passed its arguments in the wrong order, so it reported **every unmodified suite as
+fully deleted** — no test called any handler in `mcp/tools/core_cli.py`, and the
+`check_suite` coverage in `test_mcp_tools_depth.py` targets a different function.
+`web/coverage_map.py` also carried 60 unreachable lines, the tail of `detect_regressions`
+duplicated verbatim after its own `return`.
+
+**Worth knowing:** `test_typescript_weakened_detected` passes with those arguments swapped
+*and* correct — with the candidate reading as empty, "every assertion vanished" also counts
+as one WEAKENED finding. It asserts a count where it needed to assert a class. A
+tautological test in this repo's own suite, which is the failure mode the product exists to
+catch.
+
+**Also fixed in #958, unrelated to any gate:** `github.com/cherenkov-qa/cherenkov-qa`
+appeared 8 times across 5 files under an org that does not exist — including the `git clone`
+line in `QUICKSTART_PETSTORE.md` that a new user runs first. And `docs/adr/INDEX.md`, linked
+from the docs hub, had never been written; it now indexes the 15 existing ADRs.
+
+**Open, not addressed:** the Layer Guard has no exemption mechanism, so any genuinely
+cross-cutting change is unmergeable as a single PR — #967 had to split its five-line
+`core/orchestrator.py` hunk into #969 to satisfy it. That worked because the hunk was tiny;
+a real typing or logging sweep would not split so cleanly. A narrow escape hatch (e.g. skip
+when a diff adds no imports and changes no call signatures) is worth considering, but
+changing an architectural gate deserves its own review.
+
+The plan those fixes came out of is `docs/TEST_PLAN_AGENTIC_2026-08.md` (#956).
+
 ## Mobile surface wired to real execution (2026-08-11)
 
 Audit finding: the mobile pipeline generated Maestro YAML and stopped. `MaestroRunner`/`AppiumRunner` (`cherenkov/execution/`) could shell out for real, but **nothing in `cherenkov/` called them** — the only callers were tests. `cherenkov mobile` was also never registered in the CLI, so `stages/mobile_cmd.py` was unreachable. Generated flows asserted `assertVisible: text: ".*"` — a check that matches any screen and can never fail, i.e. the exact weakened-assertion pattern this product exists to detect. `MobilePlanStage` ignored its input and returned two hardcoded scenarios, and the command's help claimed to plan mobile tests "from an OpenAPI spec" (a spec describes endpoints, not screens).

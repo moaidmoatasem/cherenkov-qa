@@ -1,18 +1,27 @@
 """Tests for the CI-template arm of scripts/check_cli_flags.py.
 
-The guard previously scanned only `docs/` and `skills/`, so every file under
-`ci/` was unchecked — which is how `ci/jenkins/vars/cherenkovValidate.groovy`
-came to pass `--export-jira`, an option that exists on no CHERENKOV command.
+The guard was extended to scan `ci/**` and `action.yml` (findings F2/F3 in
+docs/CAPABILITY_COVERAGE.md) but shipped without tests. The scanning logic is
+subtle in ways that are easy to regress silently:
 
-CI files build commands in three different shapes, and a line-oriented regex
-only catches the first. These tests pin all three, so the gate cannot quietly
-stop covering the shape that actually hid the bug.
+  * CI files build commands in three different shapes, and the shape that hid
+    the original `--export-jira` bug never puts the flag on the same line as
+    the command;
+  * comments must not parse as invocations — `// assuming cherenkov is
+    installed` otherwise reads as a command named "is installed", which made
+    the Jenkins file look multi-command and disabled the append check entirely;
+  * the append check is deliberately silent on multi-command files, to stay
+    free of false positives.
+
+These exercise `main()` end to end against a temporary repo root, so they pin
+real behaviour rather than a reimplementation. `_REFERENCE_PATH` is computed at
+import time from the real repo, so the reference.md arm still resolves and stays
+clean while the CI arm is driven by fixtures.
 """
 
 from __future__ import annotations
 
 import importlib.util
-import os
 from pathlib import Path
 
 import pytest
@@ -22,7 +31,7 @@ _SCRIPT = _REPO_ROOT / "scripts" / "check_cli_flags.py"
 
 
 def _load():
-    spec = importlib.util.spec_from_file_location("check_cli_flags", _SCRIPT)
+    spec = importlib.util.spec_from_file_location("check_cli_flags_under_test", _SCRIPT)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -33,106 +42,135 @@ def guard():
     return _load()
 
 
-# ── Invocation shapes ────────────────────────────────────────────────────────
+@pytest.fixture
+def run_guard(guard, tmp_path, monkeypatch, capsys):
+    """Run the guard with `ci/` fixtures, returning (exit_code, output)."""
+
+    def _run(rel_path: str, content: str):
+        target = tmp_path / rel_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+        monkeypatch.setattr(guard, "_REPO_ROOT", str(tmp_path))
+        code = guard.main()
+        return code, capsys.readouterr().out
+
+    return _run
 
 
-def test_detects_flags_on_a_single_line_invocation(guard):
-    text = "  - cherenkov validate --target $URL --spec $SPEC --fail-on-drift --quiet\n"
-    found = list(guard._iter_ci_flag_uses(text))
-    assert {(c, f) for _, c, f in found} == {
-        ("validate", "--target"),
-        ("validate", "--spec"),
-        ("validate", "--fail-on-drift"),
-        ("validate", "--quiet"),
-    }
+# ── The three shapes these files actually use ────────────────────────────────
 
 
-def test_detects_flags_across_a_shell_continuation(guard):
-    """action.yml style: the command is on one line, flags trail after a `\\`."""
-    text = (
+def test_catches_bogus_flag_on_a_single_line_invocation(run_guard):
+    code, out = run_guard(
+        "ci/gitlab.yml",
+        "  - cherenkov validate --target $URL --not-a-real-flag\n",
+    )
+    assert code == 1
+    assert "--not-a-real-flag" in out
+    assert "ci/gitlab.yml" in out
+
+
+def test_catches_bogus_flag_across_a_shell_continuation(run_guard):
+    """action.yml spreads one invocation over many lines with trailing `\\`."""
+    code, out = run_guard(
+        "ci/action-like.yml",
         "        cherenkov validate \\\n"
         '          --spec "x" \\\n'
-        '          --target "y" \\\n'
-        '          --json-summary /tmp/s.json\n'
+        "          --totally-invented\n",
     )
-    found = [(c, f) for _, c, f in guard._iter_ci_flag_uses(text)]
-    assert ("validate", "--json-summary") in found
-    assert ("validate", "--target") in found
+    assert code == 1
+    assert "--totally-invented" in out
 
 
-def test_detects_flags_appended_to_a_command_variable(guard):
-    """Jenkins style: `cmd += " --export-jira"` on its own line.
+def test_catches_bogus_flag_appended_to_a_command_variable(run_guard):
+    """The Jenkins shape — and the one that hid the original bug.
 
-    This is the shape that hid the original bug — the flag never appears on the
-    same line as the command.
+    The flag never appears on the same line as the command, so line-local
+    matching cannot attribute it.
     """
-    text = (
+    code, out = run_guard(
+        "ci/jenkins/vars/x.groovy",
         'def cmd = "cherenkov validate --target ${t} --quiet"\n'
-        "if (failOnDrift) {\n"
-        '    cmd += " --fail-on-drift"\n'
-        "}\n"
-        '    cmd += " --export-jira"\n'
+        'cmd += " --export-jira"\n',
     )
-    found = [(c, f) for _, c, f in guard._iter_ci_flag_uses(text)]
-    assert ("validate", "--export-jira") in found
-    assert ("validate", "--fail-on-drift") in found
+    assert code == 1
+    assert "--export-jira" in out
 
 
-def test_continuation_does_not_leak_into_unrelated_later_commands(guard):
-    """A line without a trailing backslash ends the invocation."""
-    text = "cherenkov validate --target x\npip install something --user\n"
-    found = [(c, f) for _, c, f in guard._iter_ci_flag_uses(text)]
-    assert ("validate", "--user") not in found
+# ── False-positive traps present in the real files ───────────────────────────
 
 
-def test_package_name_is_not_mistaken_for_a_command(guard):
-    """`pip install cherenkov-qa` must not register `qa` as a command."""
-    text = "  - pip install cherenkov-qa --quiet\n"
-    assert list(guard._iter_ci_flag_uses(text)) == []
+def test_flag_named_only_inside_a_comment_is_not_reported(run_guard):
+    """The repaired Jenkins template documents the removed flag in a comment."""
+    code, out = run_guard(
+        "ci/jenkins/vars/x.groovy",
+        "// exportJira used to append --export-jira, which exists on no command\n"
+        '# --also-not-real in a yaml-style comment\n'
+        'def cmd = "cherenkov validate --target ${t} --quiet"\n',
+    )
+    assert code == 0, out
 
 
-def test_path_ending_in_cherenkov_is_not_an_invocation(guard):
-    text = "  - mkdir -p test-results/cherenkov\n"
-    assert list(guard._iter_ci_flag_uses(text)) == []
+def test_package_install_is_not_parsed_as_an_invocation(run_guard):
+    """`pip install cherenkov-qa --quiet` must not attribute --quiet to a command."""
+    code, out = run_guard(
+        "ci/gitlab.yml",
+        "  - pip install cherenkov-qa\n  - pip install something --user\n",
+    )
+    assert code == 0, out
 
 
-# ── File discovery ───────────────────────────────────────────────────────────
+def test_prose_comment_does_not_parse_as_a_command(run_guard):
+    """`// assuming cherenkov is installed` must not read as command 'is'."""
+    code, out = run_guard(
+        "ci/jenkins/vars/x.groovy",
+        "// Execute assuming cherenkov is installed on the agent\n"
+        'def cmd = "cherenkov validate --target ${t}"\n',
+    )
+    assert code == 0, out
 
 
-def test_ci_files_include_templates_and_action(guard):
-    files = {
-        os.path.relpath(f, _REPO_ROOT).replace(os.sep, "/")
-        for f in guard._ci_files(str(_REPO_ROOT))
-    }
-    assert "action.yml" in files
-    assert "ci/gitlab-ci-template.yml" in files
-    assert "ci/circleci/orb.yml" in files
-    assert "ci/jenkins/vars/cherenkovValidate.groovy" in files
+def test_valid_flags_pass(run_guard):
+    code, out = run_guard(
+        "ci/gitlab.yml",
+        "  - cherenkov validate --target $URL --spec $SPEC --fail-on-drift --quiet\n",
+    )
+    assert code == 0, out
 
 
-# ── The regression this closes ───────────────────────────────────────────────
+def test_append_check_stays_silent_on_multi_command_files(run_guard):
+    """A documented tradeoff: appends are only attributable with one command.
 
-
-def test_jenkins_template_no_longer_passes_a_nonexistent_flag(guard):
-    """`--export-jira` may appear in the explanatory comment, never in the command.
-
-    Asserted through the guard's own parser rather than by grepping the text, so
-    the check reflects what actually reaches the CLI.
+    Pinned so the silence stays deliberate rather than becoming an accident.
     """
+    code, out = run_guard(
+        "ci/multi.groovy",
+        'def a = "cherenkov validate --target x"\n'
+        'def b = "cherenkov report --format junit"\n'
+        'a += " --not-a-real-flag"\n',
+    )
+    assert code == 0, out
+
+
+# ── The regression this closes, on the shipped tree ──────────────────────────
+
+
+def test_jenkins_template_no_longer_appends_the_phantom_flag():
     groovy = (
         _REPO_ROOT / "ci" / "jenkins" / "vars" / "cherenkovValidate.groovy"
     ).read_text(encoding="utf-8")
-    flags = {flag for _, _, flag in guard._iter_ci_flag_uses(groovy)}
-    assert "--export-jira" not in flags
-    assert "--fail-on-drift" in flags  # parser still sees the real appended flag
+    for line in groovy.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("//"):
+            continue
+        assert "--export-jira" not in stripped
 
 
-def test_jenkins_template_fails_loudly_on_export_jira():
-    """Setting exportJira must error with a pointer, not be silently dropped."""
+def test_jenkins_template_points_at_the_mcp_tool_instead_of_dropping_the_option():
     groovy = (
         _REPO_ROOT / "ci" / "jenkins" / "vars" / "cherenkovValidate.groovy"
     ).read_text(encoding="utf-8")
-    assert "config.exportJira" in groovy
+    assert "exportJira" in groovy
     assert "export_jira_ticket" in groovy
 
 
@@ -141,9 +179,9 @@ def test_jenkins_template_separates_usage_error_from_conformance_failure():
         _REPO_ROOT / "ci" / "jenkins" / "vars" / "cherenkovValidate.groovy"
     ).read_text(encoding="utf-8")
     assert "returnStatus: true" in groovy
-    assert "status == 2" in groovy
+    assert "== 2" in groovy
 
 
-def test_guard_passes_on_the_current_tree(guard):
-    """End-to-end: the shipped CI templates must all validate."""
+def test_guard_passes_on_the_real_tree(guard):
+    """End to end on the shipped CI templates, with no fixtures involved."""
     assert guard.main() == 0

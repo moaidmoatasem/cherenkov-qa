@@ -49,7 +49,10 @@ def handle_check_suite(params: dict[str, Any]) -> dict[str, Any]:
         
     if is_ts:
         if baseline:
-            findings.extend(_check_typescript(spec_path_obj, baseline, candidate))
+            # (candidate_code, baseline_code, spec_path) — candidate and spec_path
+            # were swapped here, so the TS path was scanning the spec's *path* as if
+            # it were test code. check_suite.py:304 is the correct call order.
+            findings.extend(_check_typescript(candidate, baseline, spec_path_obj))
     else:
         findings.extend(check_integrity(spec_path_obj, baseline or "", candidate))
         

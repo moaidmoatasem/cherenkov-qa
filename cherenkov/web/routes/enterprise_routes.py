@@ -12,9 +12,12 @@ from cherenkov.enterprise.org import OrgManager
 
 router = APIRouter(prefix="/api/enterprise", tags=["enterprise"])
 
-# Note: In a real environment, OrgManager might be backed by a DB. 
+# Note: In a real environment, OrgManager might be backed by a DB.
 # Here we initialize a mock instance for demonstration in the dashboard.
 _org_manager = OrgManager()
+
+DEFAULT_ORG_NAME = "Cherenkov Enterprise"
+DEFAULT_ORG_OWNER_ID = "admin-1"
 
 @router.get("/gdpr/status")
 def gdpr_status() -> Dict[str, Any]:
@@ -53,7 +56,7 @@ def soc2_report() -> Dict[str, Any]:
     """
     soc2 = get_soc2()
     # Generate a fresh report just in time
-    report = soc2.generate_report(org_name="CherenkovQA Demo")
+    report = soc2.generate_report(organization=DEFAULT_ORG_NAME)
     return report.__dict__
 
 @router.get("/soc2/summary")
@@ -73,9 +76,13 @@ def org_info() -> Dict[str, Any]:
     Returns:
         Dictionary containing organization ID, tier, member count, and user quotas.
     """
-    org = _org_manager.get_organization("default-org")
-    if not org:
-        org = _org_manager.create_organization("default-org", "Cherenkov Enterprise", "admin-1")
+    # OrgManager assigns a generated `org_<uuid>` id, so the default org has to be
+    # looked up by name — there is no fixed id to fetch it by. Doing it this way also
+    # keeps the endpoint idempotent: without the lookup it would mint a new
+    # organization on every request.
+    org = next((o for o in _org_manager.list_orgs() if o.name == DEFAULT_ORG_NAME), None)
+    if org is None:
+        org = _org_manager.create_org(DEFAULT_ORG_NAME, DEFAULT_ORG_OWNER_ID)
     return {
         "id": org.id,
         "name": org.name,

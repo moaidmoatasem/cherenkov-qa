@@ -52,7 +52,7 @@ def resolve_llm_provider(model_name: str) -> CustomLLMProvider | None:
     if plugin_name == "mistral":
         # Ensure plugins are loaded
         if not manager.plugins:
-            manager.discover_plugins()
+            manager.load_plugins()
         for name, inst in manager.plugins.items():
             if name == "mistral" and isinstance(inst, CustomLLMProvider):
                 return inst

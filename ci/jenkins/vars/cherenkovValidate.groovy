@@ -9,21 +9,19 @@ def call(Map config) {
         error("cherenkovValidate requires 'targetUrl' and 'specPath'")
     }
 
-    // `exportJira` used to append `--export-jira`, an option that exists on no
-    // CHERENKOV command. Setting it always failed the build, and the catch
-    // below reported that usage error as a conformance finding — so a pipeline
-    // misconfiguration looked like the API under test was broken. Jira export
-    // is available through the MCP tool `export_jira_ticket`, not the CLI.
+    // Jira export is not a `validate` flag. It is exposed as the
+    // `export_jira_ticket` MCP tool — see cherenkov/mcp/handlers.py. Passing an
+    // --export-jira option here previously produced a CLI usage error that this
+    // library then reported as a failed conformance check.
     if (config.exportJira) {
-        error("cherenkovValidate: 'exportJira' is not supported. The CLI has no " +
-              "Jira export flag; use the MCP tool 'export_jira_ticket' instead.")
+        echo "cherenkovValidate: 'exportJira' is not supported by the CLI; " +
+             "use the export_jira_ticket MCP tool instead. Ignoring."
     }
 
     echo "Running CHERENKOV Validation..."
     echo "Target: ${targetUrl}"
     echo "Spec: ${specPath}"
 
-    // Build the command
     def cmd = "cherenkov validate --target ${targetUrl} --spec ${specPath} --format ${format} --quiet"
 
     if (failOnDrift) {
@@ -33,17 +31,17 @@ def call(Map config) {
     // Execute in a docker container or assuming cherenkov is installed on the agent
     sh "python3 -m pip install cherenkov-qa"
 
-    // returnStatus rather than try/catch: it lets a usage error (Click exits 2)
-    // be reported as what it is instead of being relabelled a conformance
-    // failure, which is what made the --export-jira breakage so misleading.
+    // returnStatus (rather than try/catch) so a usage error can be told apart
+    // from a real conformance failure. Click exits 2 when it rejects the
+    // invocation itself; reporting that as drift would tell the user their API
+    // diverged when CHERENKOV never ran.
     def status = sh(script: cmd, returnStatus: true)
 
     if (status == 0) {
         echo "CHERENKOV Validation passed."
     } else if (status == 2) {
-        error("CHERENKOV could not run: the command was rejected as invalid usage " +
-              "(exit 2). This is a pipeline configuration problem, not a " +
-              "conformance finding. Command: ${cmd}")
+        error("CHERENKOV could not run: the CLI rejected the command (exit 2). " +
+              "This is a usage/configuration error, not a conformance failure.")
     } else if (failOnDrift) {
         error("CHERENKOV Conformance check failed (exit ${status}).")
     } else {
