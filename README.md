@@ -9,7 +9,7 @@ Every API has an OpenAPI spec, but those specs silently drift from the real serv
 
 **CHERENKOV-QA** is an **API Integrity Auditor**. It checks whether your test suite actually enforces your OpenAPI contract, detecting Weakened, Deleted, and Hallucinated assertions with no LLM involved — then provides a spec-derived local LLM engine to generate conformant Playwright tests.
 
-> **The through-line:** CHERENKOV keeps the quality verdict **independent of the AI that produced the work** — policy the agent under test cannot lower for itself. API conformance and test-suite integrity auditing ship today; mobile, performance, and security evidence are the platform's direction. See the [Platform Operating Model](docs/PLATFORM_OPERATING_MODEL.md) and [User Journeys](docs/USER_JOURNEYS.md).
+> **The through-line:** CHERENKOV keeps the quality verdict **independent of the AI that produced the work** — policy the agent under test cannot lower for itself. API conformance and test-suite integrity auditing are the deepest surface; visual/UI regression (`cherenkov visual`), API load testing (`cherenkov perf`), and mobile flows (`cherenkov mobile`) execute for real against a browser, k6, and a device respectively. Security evidence remains direction, not a claim. See the [Platform Operating Model](docs/PLATFORM_OPERATING_MODEL.md) and [User Journeys](docs/USER_JOURNEYS.md).
 
 For **Python** suites the audit is genuine AST analysis: `check-suite` parses with `ast.parse` and decides WEAKENED by comparing comparison-operator node types, so `== 200` → `in (200, 201)` is caught structurally rather than textually. For **TypeScript** suites it is regex-based pattern matching, which is weaker — see [Detection depth by language](#detection-depth-by-language).
 
@@ -88,6 +88,7 @@ This brings up LocalAI (VLM) on `http://localhost:8080` and Redis on `6379`. See
 - **6-Gate Review Pipeline**: Tests are syntax-checked, AST-validated, type-checked, and mock-tested before ever hitting a real server.
 - **OWASP Mutation Engine**: Automatically injects DAST (Dynamic Application Security Testing) payloads to test edge-cases.
 - **Visual Dashboard**: Explore conformance maps and test results across five workspaces in the built-in React UI (`cherenkov dashboard`).
+- **Mobile Flow Integrity**: `cherenkov mobile` plans Maestro flows from a recorded `.hil` trace or an `.apk`, rejects flows whose assertions can never fail, and runs them on a device via Maestro or Appium. A flow that did not execute is reported `not_executed`, never green.
 - **K8s Native Operator**: Deploy the `ConformanceCheck` CRD to run CHERENKOV natively in your Kubernetes CI/CD pipelines.
 
 ---

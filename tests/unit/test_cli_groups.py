@@ -6,7 +6,7 @@ from cherenkov.cli.groups import GROUP_LAYOUT, build_groups
 ALL_TOP_LEVEL = [
     "audit", "verify", "check-suite", "validate", "synthetic", "diff",
     "report", "eject", "self-test", "completion", "init", "doctor",
-    "visual", "perf", "hitl", "review", "mcp", "generate", "dashboard",
+    "visual", "perf", "mobile", "hitl", "review", "mcp", "generate", "dashboard",
     "map", "daemon", "explore", "author", "record", "tokens", "governance",
     "certify", "profile", "bench", "ocr", "check-stale", "drift", "demo",
     "eval", "examples", "routine", "teleport", "enterprise", "playbook",

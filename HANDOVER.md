@@ -1,5 +1,18 @@
 # CHERENKOV -- Session Handover
 
+## Mobile surface wired to real execution (2026-08-11)
+
+Audit finding: the mobile pipeline generated Maestro YAML and stopped. `MaestroRunner`/`AppiumRunner` (`cherenkov/execution/`) could shell out for real, but **nothing in `cherenkov/` called them** — the only callers were tests. `cherenkov mobile` was also never registered in the CLI, so `stages/mobile_cmd.py` was unreachable. Generated flows asserted `assertVisible: text: ".*"` — a check that matches any screen and can never fail, i.e. the exact weakened-assertion pattern this product exists to detect. `MobilePlanStage` ignored its input and returned two hardcoded scenarios, and the command's help claimed to plan mobile tests "from an OpenAPI spec" (a spec describes endpoints, not screens).
+
+Now shipped, verified end-to-end against a stub `maestro` binary:
+
+- **Planning is source-derived.** `mobile_plan.py` builds scenarios from a `.hil` interaction trace or an `.apk` (via `MobileSourceAdapter`), preserving real element text. A flow with no recorded check gets an assertion on its destination screen. Sourceless runs are flagged `source="demo"` and are never put on a device.
+- **Assertions are checkable.** `mobile_generate.py` derives expected text per step and emits no assertion at all rather than a catch-all; `mobile_review.py` fails any flow containing a vacuous assertion (`.*`, `.+`, `*`, empty) and, under `--strict` (CLI default), any flow with no assertion.
+- **Flows execute.** `cherenkov mobile <source>` runs them via Maestro (or `--runner appium`) and reports the device verdict. Registered in `cli/core.py` and the `model` group.
+- **Nothing unexecuted reports green.** `MobileRunnerBase._dry_run_result` now returns `status="skipped"`/`executed=False` instead of `"passed"`; missing runner → `not_executed` plus the exact command to run once a device is attached. Three tests that asserted a dry run was `passed` were corrected, including `test_golden_path.py::test_gp9_mobile_dry_run`.
+
+**Suite:** 2664 passed, 14 skipped, 1 failed under the filter on the line below. The single failure is **pre-existing and unrelated** — `tests/unit/test_saml_user_sync.py::test_saml_callback_syncs_user` (`AttributeError: 'str' object has no attribute 'parent'` at `cherenkov/web/auth/store.py:57`), confirmed failing on a stashed tree. `tests/unit/test_mcp_auth.py` cannot be collected in this environment (`ModuleNotFoundError: _cffi_backend`), also pre-existing.
+
 ## GitHub issues backlog reconciliation (2026-08-11)
 
 The 2026-08-10 "Roadmap Execution Completed: Phases 13, 15 & 16" entry below **overstated completion**. Re-verified against actual code, not assumed:
