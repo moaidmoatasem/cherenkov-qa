@@ -17,7 +17,7 @@ user, that is recorded as a gap rather than a feature.
 | **API conformance — OpenAPI** | ✅ Core | `truth/sources/openapi.py`, `validate --source openapi` (default) |
 | **API — GraphQL** | ✅ Wired | `sources/graphql/adapter.py`, `stages/plan_graphql.py`, `validate --source graphql` |
 | **API — gRPC** | ✅ Wired | `stages/plan_grpc.py`, `validate --source grpc` |
-| **API — AsyncAPI** | ⚠️ **Orphaned** | `sources/asyncapi/`, `validate/asyncapi.py`, `stages/plan_asyncapi.py` all exist, but `AsyncAPIScenarioPlanner` is imported **nowhere** and `asyncapi` is absent from `validate --source` choices |
+| **API — AsyncAPI** | ✅ **Fixed here** | `sources/asyncapi/`, `stages/plan_asyncapi.py`, `prompts/asyncapi_test.j2`, `validate --source asyncapi`. **Was orphaned — the planner was imported nowhere, `asyncapi` was absent from `--source`, and `GenerateStage` had no branch to render the template.** Now wired + documented + guarded by tests |
 | **API — SOAP / WebSocket** | ❌ Absent | No modules. Not currently claimed by the roadmap either |
 | **Accessibility testing** | ✅ Present | `validate --source accessibility` |
 | **Performance testing** | ✅ Present | `cherenkov perf`, `cherenkov bench`, `stages/perf/perf_stage.py`, `execution/perf_analyzer.py`, `web/routes/perf_routes.py`, k6 (`stub/generated_tests/k6_perf.js`, CI "Perf Baseline") |
@@ -90,12 +90,21 @@ silently disabled the append check — **the guard passed while the bug it was w
 lines away.** Verified non-vacuous both ways: it fails on the real `--export-jira`, and still fails
 when a fresh bogus flag is introduced.
 
-### F4 — AsyncAPI is built but unreachable
+### F4 — AsyncAPI is built but unreachable (**fixed**)
 
-`ROADMAP.md` Phase 12 claims "GraphQL, gRPC, and AsyncAPI". The first two are wired into
-`validate --source`; AsyncAPI is not, and `AsyncAPIScenarioPlanner` has no importer. Either wire it
-up (it appears to be a small change — add the choice and the dispatch branch, mirroring the
-GraphQL/gRPC blocks in `cli/commands/validate.py`) or stop claiming it.
+`ROADMAP.md` Phase 12 claims "GraphQL, gRPC, and AsyncAPI". The first two were wired into
+`validate --source`; AsyncAPI was not, and `AsyncAPIScenarioPlanner` had no importer.
+
+Wiring it took three changes, because the gap was one step deeper than the missing CLI choice:
+
+1. `asyncapi` added to the `--source` choices and a dispatch branch added in
+   `cli/commands/validate.py`, mirroring the GraphQL/gRPC blocks.
+2. **`GenerateStage` had no `asyncapi` branch at all** — `prompts/asyncapi_test.j2` existed but
+   nothing rendered it, so even a wired CLI would have fallen through to the OpenAPI path and
+   raised `TypeError` on a non-`Scenario`. Added the branch and extended the scenario type union.
+3. `tests/unit/test_asyncapi_support.py` covers the adapter (including `$ref` message resolution),
+   the planner, the generate branch, and the CLI wiring. Verified non-vacuous: removing `asyncapi`
+   from the `--source` choices fails three of them.
 
 ### F5 — Tier integrations claimed but absent
 
