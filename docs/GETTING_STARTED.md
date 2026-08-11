@@ -1203,6 +1203,32 @@ cherenkov federation query <topic>
 
 ---
 
+#### `train`
+Fine-tune a small language model on your own locally collected QA corpus (Phase 15).
+Collection is **opt-in and local** — nothing is uploaded, and the pipeline runs entirely on your machine.
+
+```bash
+# Export the locally collected corpus to a JSONL dataset
+cherenkov train export --out corpus.jsonl --limit 5000
+
+# Validate the whole pipeline without doing any real computation
+cherenkov train run --data corpus.jsonl --backend dry_run
+
+# Run a real LoRA fine-tune via the HuggingFace backend
+cherenkov train run --data corpus.jsonl --backend huggingface --epochs 3 --batch-size 4
+
+# Inspect the last run (reads training_run.json)
+cherenkov train status --json
+```
+
+Start with `--backend dry_run`: it exercises the full prepare → train → save → evaluate path
+and reports what a real run would do, without requiring GPU or training dependencies.
+
+> **Note:** publishing or serving a trained model is not implemented yet — tracked as #779 (model
+> release) and #780 (self-hosted serving). `cherenkov train` produces local artefacts only.
+
+---
+
 #### `testerarmy`
 TesterArmy-inspired command group.
 

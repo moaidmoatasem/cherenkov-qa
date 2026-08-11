@@ -11,6 +11,22 @@ The 2026-08-10 "Roadmap Execution Completed: Phases 13, 15 & 16" entry below **o
 
 All three phase EPICs (#754, #773, #781) remain **open** — they are genuinely partial, not complete. Full evidence trail (file paths cited) is on each closed/re-opened issue's GitHub comments. **Do not trust the "verified and operational" phrasing in the section below at face value; the per-issue comments are the current source of truth for what's actually shipped vs. stubbed.**
 
+### Round 2 — backlog detail + plan alignment (2026-08-11)
+
+All 10 surviving open issues had one-line bodies ("Part of EPIC #781"). Each has been rewritten with: north-star alignment, verified current state with `file:line`, functional requirements, **UX requirements**, acceptance criteria, and sequencing/gates. `docs/ROADMAP.md` §1 and §4 were corrected to match reality.
+
+**The worst finding, and the one to act on first — the dashboard fabricates data:**
+
+- `SlaDashboard.tsx:87-98` renders the "API Reliability Trend" chart from **`Math.random()`**, with per-bar tooltips asserting `Day N: X% uptime`. The numbers change on every re-render.
+- `enterprise_routes.py:87-102` returns hardcoded `uptime: 99.99 / p99: 145 / 125000 checks` under a "Target: 99.9%" label.
+- `enterprise_routes.py:104-121` returns a UUID and the message *"Enterprise support team has been notified"* — nothing is persisted, nothing is sent, and per the #754 no-paid-tier decision there is no support team to route to.
+
+This is the precise failure mode the product exists to detect (`NORTH_STAR.md` §4, "we don't let the AI cheat"; §6, "a truth ledger, not a vanity dashboard"). Treat #762/#763 as **integrity defects, not missing features** — deleting these surfaces is an accepted resolution.
+
+**Priority guidance now recorded on the issues:** #787 (CHERENKOV Certified) is the only open item that is load-bearing for the north star — it is Rung 3, the platform→standard move, and the certificate *primitives* already exist (`core/certificate.py`, `certify --verify`, open spec `docs/specs/CHERENKOV_CERTIFICATE.md` §§2-4). #789 is a consolidation candidate that may be redundant against the existing `/api/v1/coverage/*` endpoints; #785 is scoped to provider *discovery*, not more providers.
+
+**Plan contradictions resolved:** `docs/ROADMAP.md` §1 claimed "Phases -1 through 16 are Complete" (false) and §4 described an Open Core model monetizing the Enterprise Tier (contradicted the 2026-08-01 product decision on #754). Both corrected in place with the correction noted inline. Note `docs/ROADMAP_2026H2.md`, still referenced further down this file, was **deleted** in `119d62d` (#946) — the M1-M5 milestone definitions now live only in the GitHub milestones and in the table below.
+
 **Date:** 2026-08-02 (round 3 + lead verification)
 **HEAD:** `main` at `d9a161f`. **Certified green: 2064 passed, 2 failed** (pre-existing `test_verify_cmd.py` mock drift, tracked as #819). UI revamp `2e66658` build-verified (vite output matches committed dist hashes).
 **Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"`.
