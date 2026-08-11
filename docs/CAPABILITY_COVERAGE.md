@@ -29,7 +29,7 @@ user, that is recorded as a gap rather than a feature.
 | **GitHub integration** | ✅ Strong | `action.yml`, `web/routes/webhooks_github.py`, `web/pr_comments.py`, `validate/github_exporter.py`, `export_github_ticket` MCP tool, `validate` PR flags (`--pr-number`, `--commit-sha`, `--head-branch`, `--base-branch`, `--deeplink`) |
 | **GitLab integration** | ✅ Present | `ci/gitlab-ci-template.yml` — flags verified against the live CLI |
 | **CircleCI** | ✅ Present | `ci/circleci/orb.yml` — flags verified |
-| **Jenkins** | ⚠️ **Broken path** | `ci/jenkins/vars/cherenkovValidate.groovy` builds `--export-jira`, **which exists on no command**. Setting `exportJira: true` fails, and the catch block reports it as a conformance failure |
+| **Jenkins** | ✅ **Fixed here** | `ci/jenkins/vars/cherenkovValidate.groovy`. **Built `--export-jira`, which exists on no command; setting `exportJira: true` failed and the catch block reported it as a conformance failure.** Now errors with a pointer to the `export_jira_ticket` MCP tool, and distinguishes a usage error (exit 2) from a conformance finding |
 | **MCP surface** | ✅ Strong | 25+ tools: `generate`, `check_suite`, `verify`, `auto_heal_code`, `hitl_{list,approve,reject}`, `export_{github,jira,linear}_ticket`, `event_bus_*`, `mcp_registry_{list,publish}`, `policy_list`, chat tools. Plus `mcp/{auth,policy,sandbox,mesh_router}.py` and `server.json` |
 | **Notifier connectors** | ✅ Present | `adapters/notifiers/`: Slack, Teams, PagerDuty, Opsgenie, Linear, generic webhook |
 | **Issue trackers** | ✅ Present | Jira, Linear, GitHub via MCP export tools; Zephyr/Xray/Allure modules present |
@@ -54,24 +54,42 @@ every capability surface resolves on the root CLI.
 **Why nothing caught it:** every existing mobile test exercised the stages directly, never the CLI
 entry point. The new test closes that class of gap for all ten capability commands.
 
-### F2 — Jenkins template passes a flag that does not exist
+### F2 — Jenkins template passes a flag that does not exist (**fixed**)
 
-When `exportJira: true`, `ci/jenkins/vars/cherenkovValidate.groovy` appends an `--export-jira`
-option to the `validate` invocation it builds. No command defines that option. The invocation
-fails, and because the call sits inside `try { sh "${cmd}" } catch`, the failure surfaces as
+When `exportJira: true`, `ci/jenkins/vars/cherenkovValidate.groovy` appended an `--export-jira`
+option to the `validate` invocation it built. No command defines that option. The invocation
+failed, and because the call sat inside `try { sh "${cmd}" } catch`, the failure surfaced as
 *"CHERENKOV Conformance check failed"* — a usage error misattributed as a conformance result.
 
 This is the same shape as the `action.yml` incident of 2026-08-07 (inert config reporting success).
-Jira export does exist, but as the `export_jira_ticket` MCP tool, not a `validate` flag.
+Jira export does exist, but as the `export_jira_ticket` MCP tool, not a `validate` flag — confirmed
+by walking the live Click tree for any option containing "jira": there is none, on any command.
 
-### F3 — The flag guard does not cover `ci/`
+Both halves are fixed. `exportJira` now fails fast with a message naming the MCP tool, rather than
+being silently dropped — someone who set it wanted Jira tickets and should be told where they live.
+And the `try/catch` is replaced by `sh(script: cmd, returnStatus: true)`, so a Click usage error
+(exit 2) is reported as a pipeline configuration problem instead of being relabelled a conformance
+finding. That relabelling is what made the original bug so misleading.
 
-`scripts/check_cli_flags.py` validates documented flags against the live Click tree, but scans only
-`docs/` and `skills/` markdown. Every CI integration template — the GitLab, CircleCI and Jenkins
-files users copy verbatim — is unguarded. F2 is the bug this gap allowed. GitLab and CircleCI were
-checked by hand during this audit and are currently correct; nothing keeps them that way.
+### F3 — The flag guard does not cover `ci/` (**fixed**)
 
-**Fix:** extend the scan to `ci/**` and `action.yml`.
+`scripts/check_cli_flags.py` validated documented flags against the live Click tree, but scanned
+only `docs/` and `skills/` markdown. Every CI integration template — the GitLab, CircleCI and
+Jenkins files users copy verbatim — was unguarded. F2 is the bug this gap allowed.
+
+The scan now covers `ci/**` (`.yml`, `.yaml`, `.groovy`, `.sh`) and `action.yml`, and the flag count
+it checks rose from 47 to 78. A line-oriented regex was not enough: these files build commands in
+three shapes, and the one that hid F2 never puts the flag on the same line as the command.
+
+| Shape | Example | Where |
+|---|---|---|
+| Single line | `cherenkov validate --target $URL --fail-on-drift` | GitLab, CircleCI |
+| Shell continuation | `cherenkov validate \` then flags on following lines | `action.yml` |
+| Variable append | `cmd += " --export-jira"` | Jenkins |
+
+`tests/unit/test_check_cli_flags_ci.py` pins all three, plus the two false-positive traps in these
+files (`pip install cherenkov-qa`, and paths ending in `/cherenkov`). Verified non-vacuous:
+re-adding the `--export-jira` append makes the gate fail with the exact file and line.
 
 ### F4 — AsyncAPI is built but unreachable (**fixed**)
 
