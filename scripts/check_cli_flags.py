@@ -193,6 +193,100 @@ def main() -> int:
                             f"(has: {sorted(real_opts) if real_opts else 'none'})"
                         )
                         checked += 1
+    # 3. Check CI integration templates — the files users copy verbatim into
+    #    their pipelines. These were previously unguarded, which is how the
+    #    Jenkins shared library shipped a `--export-jira` option that exists on
+    #    no command: the invocation fails, and the surrounding try/catch reports
+    #    it as a conformance failure rather than a usage error.
+    ci_files = sorted(
+        glob.glob(os.path.join(_REPO_ROOT, "ci", "**", "*.yml"), recursive=True)
+        + glob.glob(os.path.join(_REPO_ROOT, "ci", "**", "*.yaml"), recursive=True)
+        + glob.glob(os.path.join(_REPO_ROOT, "ci", "**", "*.groovy"), recursive=True)
+        + glob.glob(os.path.join(_REPO_ROOT, "action.yml"))
+    )
+    # `cherenkov <cmd>` anywhere in the file. The \s+ matters: it keeps
+    # `pip install cherenkov-qa` from parsing as a command invocation.
+    cmd_re = re.compile(r"(?:cherenkov|\./bin/cherenkov)\s+([a-z][\w-]*(?:\s+[a-z][\w-]*)?)")
+    flag_re = re.compile(r"(--[a-z][\w-]+)")
+    # Groovy/shell string appends: `cmd += " --export-jira"`. The flag sits on a
+    # line with no command on it, so line-local matching cannot attribute it.
+    append_re = re.compile(r"\+=\s*[\"'][^\"']*--[a-z]")
+
+    def _strip_comment(line: str) -> str:
+        """Drop comments so prose cannot parse as an invocation.
+
+        Without this, `// ... assuming cherenkov is installed on the agent`
+        reads as a command named "is installed", which made the Jenkins file
+        look multi-command and silently disabled the append check below.
+        """
+        if line.lstrip().startswith(("//", "#")):
+            return ""
+        line = re.sub(r"\s+//(?!/).*$", "", line)  # groovy trailing, keeps http://
+        line = re.sub(r"\s+#\s.*$", "", line)  # yaml trailing
+        return line
+
+    for ci_file in ci_files:
+        rel = os.path.relpath(ci_file, _REPO_ROOT)
+        with open(ci_file, encoding="utf-8", errors="ignore") as f:
+            raw_lines = f.readlines()
+
+        # Join backslash continuations into logical lines, keeping the line
+        # number of the line that started them. action.yml spreads a single
+        # `cherenkov validate \` invocation across 15 lines this way.
+        logical: list[tuple[int, str]] = []
+        buf, start = "", 0
+        for line_no, line in enumerate(raw_lines, 1):
+            stripped = _strip_comment(line.rstrip("\n"))
+            if not buf:
+                start = line_no
+            if stripped.rstrip().endswith("\\"):
+                buf += stripped.rstrip()[:-1] + " "
+                continue
+            logical.append((start, buf + stripped))
+            buf = ""
+        if buf:
+            logical.append((start, buf))
+
+        def _check(command: str, flag: str, line_no: int) -> None:
+            nonlocal checked
+            if flag in _HELP_FLAGS:
+                return
+            real_opts = real.get(command, set())
+            if command not in real:
+                errors.append(f"{rel}:{line_no} uses command '{command}' which doesn't exist.")
+                return
+            checked += 1
+            if flag not in real_opts:
+                errors.append(
+                    f"{rel}:{line_no} uses flag '{flag}' on command '{command}' but it "
+                    f"doesn't exist (has: {sorted(real_opts) if real_opts else 'none'})"
+                )
+
+        commands_in_file: set[str] = set()
+        for line_no, line in logical:
+            match = cmd_re.search(line)
+            if not match:
+                continue
+            # Prefer a two-word command (`train run`) when one exists.
+            tokens = match.group(1).split()
+            command = tokens[0]
+            if len(tokens) == 2 and " ".join(tokens) in real:
+                command = " ".join(tokens)
+            commands_in_file.add(command)
+            # Every flag after the command on this logical line belongs to it.
+            for flag in flag_re.findall(line[match.end(1):]):
+                _check(command, flag, line_no)
+
+        # Appended flags can only be attributed unambiguously when the file
+        # invokes exactly one command. Staying silent otherwise keeps the gate
+        # free of false positives on multi-command templates.
+        if len(commands_in_file) == 1:
+            sole = next(iter(commands_in_file))
+            for line_no, line in enumerate(raw_lines, 1):
+                if append_re.search(line):
+                    for flag in flag_re.findall(line):
+                        _check(sole, flag, line_no)
+
     print(f"Checked {checked} documented flags across the CLI reference.")
     if errors:
         print(f"\n[FAIL] {len(errors)} flag drift issue(s):")
