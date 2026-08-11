@@ -707,6 +707,15 @@ class OrchestrationEngine:
         spec_path: str,
         simulate_fail_stage: str | None = None,
     ) -> bool:
+        """Run the full end-to-end QA pipeline against an OpenAPI spec.
+
+        Args:
+            spec_path (str): Target OpenAPI specification file path.
+            simulate_fail_stage (str | None, optional): Name of stage to simulate failure for testing. Defaults to None.
+
+        Returns:
+            bool: True if the entire pipeline execution succeeded, False otherwise.
+        """
         try:
             return self._run_pipeline_inner(spec_path, simulate_fail_stage)
         finally:
@@ -835,6 +844,15 @@ class OrchestrationEngine:
     def run_visual_stage(
         self, slices: list[VisualSlice], baseline_dir: str = "stub/visual_baselines"
     ) -> list[VisualReport]:
+        """Run the optional VISUAL testing stage across given target slices.
+
+        Args:
+            slices (list[VisualSlice]): Target visual slices to evaluate.
+            baseline_dir (str, optional): Directory containing baseline screenshots. Defaults to "stub/visual_baselines".
+
+        Returns:
+            list[VisualReport]: List of visual evaluation reports per slice.
+        """
         from cherenkov.stages.visual.visual_stage import VisualStage
 
         return self.executor.execute_with_vlm_retry(
@@ -855,6 +873,15 @@ class OrchestrationEngine:
 
     # ── Optional: PERF Stage ───────────────────────────────────────
     def run_perf_stage(self, slices, db_path=None):
+        """Run the optional PERF performance testing stage across given target slices.
+
+        Args:
+            slices (list): Target performance slices to benchmark.
+            db_path (str | None, optional): Path to baseline metrics SQLite database. Defaults to None.
+
+        Returns:
+            list[PerfReport]: List of performance evaluation reports per slice.
+        """
         from cherenkov.core.contracts import PerfReport
         from cherenkov.stages.perf.perf_stage import PerfStage
 
@@ -878,6 +905,15 @@ class OrchestrationEngine:
 
 class TestOrchestrator(OrchestrationEngine):
     """Thin wrapper used by unit tests to expose the orchestration engine."""
+
     def __init__(self, run_id: str | None = None, error_threshold: int = 2, event_callback: Callable[[str, dict], None] | None = None):
+        """Initialize TestOrchestrator test wrapper instance.
+
+        Args:
+            run_id (str | None, optional): Run correlation ID. Defaults to None.
+            error_threshold (int, optional): Failure threshold before breaker trips. Defaults to 2.
+            event_callback (Callable | None, optional): Optional callback for event handling. Defaults to None.
+        """
         super().__init__(run_id=run_id, error_threshold=error_threshold, event_callback=event_callback)
+
 

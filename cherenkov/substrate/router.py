@@ -151,7 +151,5 @@ Please replace with a meaningful description.
 
 
 _DEFAULT_ROUTER = SubstrateRouter()
-
-
 def route(request: ReasoningRequest) -> ReasoningResult:
     return _DEFAULT_ROUTER.route(request)

@@ -1,3 +1,7 @@
+"""
+cherenkov/core/stats_store.py — SQLite persistence layer for pipeline execution metrics and stats.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -20,6 +24,11 @@ class StatsStore:
     """SQLite-backed persistence for pipeline run stats."""
 
     def __init__(self, db_path: str | None = None):
+        """Initialize StatsStore.
+
+        Args:
+            db_path (str | None, optional): SQLite database file path. Defaults to None.
+        """
         self.db_path = db_path or _default_db_path()
         dirname = os.path.dirname(self.db_path)
         if dirname:
@@ -83,6 +92,22 @@ class StatsStore:
         verdict_count: int = 0,
         idiom_count: int = 0,
     ) -> None:
+        """Record run statistics for a completed pipeline run.
+
+        Args:
+            run_id (str): Pipeline run correlation ID.
+            success (bool): Whether the pipeline succeeded.
+            scenarios_passed (int, optional): Count of passed scenarios. Defaults to 0.
+            scenarios_total (int, optional): Total count of scenarios. Defaults to 0.
+            total_duration_ms (int, optional): Total run duration in ms. Defaults to 0.
+            total_cost (float, optional): Total inference cost USD. Defaults to 0.0.
+            cache_hit_ratio (float | None, optional): Cache hit ratio. Defaults to None.
+            verdict_count (int, optional): Reflector verdict count. Defaults to 0.
+            idiom_count (int, optional): Reflector idiom count. Defaults to 0.
+
+        Returns:
+            None
+        """
         try:
             conn = self._connect()
             conn.execute(
@@ -113,6 +138,16 @@ class StatsStore:
         idiom_count: int,
         source: str = "cli",
     ) -> None:
+        """Record a metric snapshot of reflector state.
+
+        Args:
+            verdict_count (int): Count of recorded verdicts.
+            idiom_count (int): Count of recorded idioms.
+            source (str, optional): Trigger source. Defaults to "cli".
+
+        Returns:
+            None
+        """
         try:
             conn = self._connect()
             conn.execute(
@@ -125,6 +160,14 @@ class StatsStore:
             logger.error("failed to record stats snapshot", exc_info=e)
 
     def get_recent_runs(self, limit: int = 20) -> list[dict]:
+        """Retrieve recent pipeline run statistics records.
+
+        Args:
+            limit (int, optional): Maximum number of run records to retrieve. Defaults to 20.
+
+        Returns:
+            list[dict]: List of run record dictionaries.
+        """
         try:
             conn = self._connect()
             cursor = conn.execute(
@@ -137,6 +180,11 @@ class StatsStore:
             return []
 
     def get_run_summary(self) -> dict:
+        """Retrieve aggregated summary of total and successful pipeline runs.
+
+        Returns:
+            dict: Summary dictionary containing 'total_runs' and 'successful_runs'.
+        """
         try:
             conn = self._connect()
             total = conn.execute("SELECT COUNT(*) as c FROM pipeline_runs").fetchone()[
@@ -151,7 +199,13 @@ class StatsStore:
             return {"total_runs": 0, "successful_runs": 0}
 
     def close(self) -> None:
+        """Close the per-thread SQLite database connection if open.
+
+        Returns:
+            None
+        """
         con = getattr(self._local, "con", None)
         if con is not None:
             con.close()
             self._local.con = None
+

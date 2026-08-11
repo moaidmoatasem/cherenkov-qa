@@ -78,12 +78,23 @@ async def list_runs(
     target_url: str | None = Query(default=None),
     command: str | None = Query(default=None),
     limit: int = Query(default=20, ge=1, le=200),
-    # Typed as the store's own literal so an unknown status is rejected at the
-    # boundary with a 422 instead of silently matching no rows.
     status: RunStatus | None = Query(default=None),
     journey_id: str | None = Query(default=None),
     _: Role = Depends(require_role(Role.viewer)),
 ):
+    """List historical run records matching filter criteria.
+
+    Args:
+        target_url: Optional filter by target service URL.
+        command: Optional filter by executed command.
+        limit: Maximum number of records to return (default 20, max 200).
+        status: Optional filter by run status.
+        journey_id: Optional filter by journey ID.
+        _: Authorization role dependency.
+
+    Returns:
+        List of dictionaries containing run record details.
+    """
     store = get_run_store()
     records = await asyncio.to_thread(
         store.list, target_url=target_url, command=command, limit=limit,
@@ -97,6 +108,18 @@ async def get_run(
     run_id: str,
     _: Role = Depends(require_role(Role.viewer)),
 ):
+    """Retrieve details for a specific run ID.
+
+    Args:
+        run_id: Unique identifier of the run.
+        _: Authorization role dependency.
+
+    Returns:
+        Dictionary payload containing run record details.
+
+    Raises:
+        HTTPException: 404 Not Found if run_id does not exist.
+    """
     store = get_run_store()
     record = await asyncio.to_thread(store.get, run_id)
     if not record:
@@ -105,6 +128,7 @@ async def get_run(
 
 
 class ClassificationUpdate(BaseModel):
+    """Payload schema for updating a run's failure classification."""
     classification: str
 
 
@@ -114,6 +138,19 @@ async def update_run_classification(
     payload: ClassificationUpdate,
     _: Role = Depends(require_role(Role.reviewer)),
 ):
+    """Update failure classification for a given run.
+
+    Args:
+        run_id: Unique identifier of the run.
+        payload: ClassificationUpdate containing the classification label string.
+        _: Authorization role dependency.
+
+    Returns:
+        Dictionary status payload.
+
+    Raises:
+        HTTPException: 422 Unprocessable Entity if classification is invalid, 404 Not Found if run_id does not exist.
+    """
     if payload.classification not in ["product_bug", "test_fragility", "flake", ""]:
         raise HTTPException(status_code=422, detail="Invalid classification")
     
@@ -131,7 +168,18 @@ async def get_run_events(
     run_id: str,
     _: Role = Depends(require_role(Role.viewer)),
 ):
-    """Replay the event log for a run, live or finished."""
+    """Replay the event log for a run, live or finished.
+
+    Args:
+        run_id: Unique identifier of the run.
+        _: Authorization role dependency.
+
+    Returns:
+        Dictionary containing run_id, status, and replayed events list.
+
+    Raises:
+        HTTPException: 400 Bad Request if run_id is invalid path, 404 Not Found if run does not exist.
+    """
     if "/" in run_id or "\\" in run_id or run_id in {".", ".."}:
         raise HTTPException(status_code=400, detail="Invalid run id")
     events = await asyncio.to_thread(_read_events, run_id)

@@ -12,12 +12,13 @@ def create_audit_team(
     """Create a ConductorTask to audit an OpenAPI spec across multiple dimensions.
 
     Args:
-        spec_content: The raw OpenAPI spec YAML/JSON string.
-        budget: Token budget per auditor.
+        spec_content (str): The raw OpenAPI spec YAML/JSON string.
+        budget (int): Token budget per auditor. Defaults to 5000.
 
     Returns:
-        A ConductorTask configured for a multi-dimensional spec audit.
+        ConductorTask: A ConductorTask configured for a multi-dimensional spec audit.
     """
+
     roles = [
         "Security Architect (focus on auth, rate limiting, and input validation)",
         "API Designer (focus on REST conventions, naming, and pagination)",

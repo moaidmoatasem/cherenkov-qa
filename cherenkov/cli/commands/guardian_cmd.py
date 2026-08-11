@@ -53,14 +53,17 @@ def _parse_endpoint_opts(raw: tuple[str, ...]) -> list[dict[str, Any]]:
 def guardian_cmd() -> None:
     """Continuously monitor API endpoints for OpenAPI spec drift.
 
-    \b
-    Examples:
-        # Start the drift-monitoring daemon (all concrete GET paths, 60s interval)
-        cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8080
+
+Examples:
+    # Start the drift-monitoring daemon (all concrete GET paths, 60s interval)
+    cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8080
 
-        # Watch one endpoint every 10s, store history elsewhere
-        cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8080 \\
-            --endpoint "GET:/health" --interval 10 --db .cherenkov/guardian.db
+    # Watch one endpoint every 10s, store history elsewhere
+    cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8080 \
+        --endpoint "GET:/health" --interval 10 --db .cherenkov/guardian.db
+
+Returns:
+    None: Command execution result.
     """
 
 
@@ -123,15 +126,35 @@ def guardian_start_cmd(
 ) -> None:
     """Start the Spec Guardian daemon.
 
-    Polls each endpoint against the spec and persists drift events and
-    reports to the drift store until interrupted (SIGINT/SIGTERM) or
-    until --max-loops is reached.
+Polls each endpoint against the spec and persists drift events and
+reports to the drift store until interrupted (SIGINT/SIGTERM) or
+until --max-loops is reached.
 
-    \b
-    Example:
-        cherenkov guardian start --spec openapi.yaml --base-url https://api.example.com
-        cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8000 \\
-            --endpoint GET:/health --max-loops 1
+
+Example:
+    cherenkov guardian start --spec openapi.yaml --base-url https://api.example.com
+    cherenkov guardian start --spec openapi.yaml --base-url http://localhost:8000 \
+        --endpoint GET:/health --max-loops 1
+
+Args:
+    spec (str): Parameter spec.
+    base_url (str): Parameter base_url.
+    interval (int): Parameter interval.
+    raw_endpoints (tuple[str, ...]): Parameter raw_endpoints.
+    max_loops (int): Parameter max_loops.
+    db_path (str | None): Parameter db_path.
+    pr_number (str | None): Parameter pr_number.
+    pr_title (str | None): Parameter pr_title.
+    pr_description (str | None): Parameter pr_description.
+    commit_sha (str | None): Parameter commit_sha.
+    head_branch (str | None): Parameter head_branch.
+    base_branch (str | None): Parameter base_branch.
+    deeplink (str | None): Parameter deeplink.
+    artifact_url (str | None): Parameter artifact_url.
+    artifact_filename (str | None): Parameter artifact_filename.
+
+Returns:
+    None: Command execution result.
     """
     from cherenkov.spec_guardian.daemon import SpecGuardianDaemon
 

@@ -41,24 +41,27 @@ def _ledger(ledger_path: str | None):
 def drift_cmd():
     """Detect and report drift between spec, suite, and live API.
 
-    Run `cherenkov drift --help` for reconcile options, or
-    `cherenkov drift seed --help` to write a new baseline.
+Run `cherenkov drift --help` for reconcile options, or
+`cherenkov drift seed --help` to write a new baseline.
 
-    \b
-    Examples:
-        # Seed a baseline
-        cherenkov drift seed --spec openapi.yaml --suite suite.json
+
+Examples:
+    # Seed a baseline
+    cherenkov drift seed --spec openapi.yaml --suite suite.json
 
-        # Daily reconcile (discovers latest baseline)
-        cherenkov drift reconcile --spec openapi.yaml --suite suite.json
+    # Daily reconcile (discovers latest baseline)
+    cherenkov drift reconcile --spec openapi.yaml --suite suite.json
 
-        # CI-fast (explicit baseline id)
-        cherenkov drift reconcile --spec openapi.yaml --suite suite.json \\
-            --baseline-id 2026-06-25T14:03:11Z
+    # CI-fast (explicit baseline id)
+    cherenkov drift reconcile --spec openapi.yaml --suite suite.json \
+        --baseline-id 2026-06-25T14:03:11Z
 
-        # CI-fastest (downloaded artifact)
-        cherenkov drift reconcile --spec openapi.yaml --suite suite.json \\
-            --baseline-file baseline.json --fail-on-drift
+    # CI-fastest (downloaded artifact)
+    cherenkov drift reconcile --spec openapi.yaml --suite suite.json \
+        --baseline-file baseline.json --fail-on-drift
+
+Returns:
+    None: Command execution result.
     """
 
 
@@ -84,12 +87,22 @@ def drift_cmd():
 def seed_cmd(spec, suite, profile, ledger_path, as_json):
     """Seed a new drift baseline from a spec + suite pair.
 
-    Writes an immutable SpecSuiteSnapshot to the ledger.
-    Idempotent — running twice with identical inputs writes only one record.
+Writes an immutable SpecSuiteSnapshot to the ledger.
+Idempotent — running twice with identical inputs writes only one record.
 
-    \b
-    Example:
-        cherenkov drift seed --spec openapi.yaml --suite suite.json
+
+Example:
+    cherenkov drift seed --spec openapi.yaml --suite suite.json
+
+Args:
+    spec: Parameter spec.
+    suite: Parameter suite.
+    profile: Parameter profile.
+    ledger_path: Parameter ledger_path.
+    as_json: Parameter as_json.
+
+Returns:
+    None: Command execution result.
     """
     spec_dict = load_yaml_or_json(spec, "spec")
     suite_dict = load_json(suite, "suite")
@@ -136,9 +149,18 @@ def seed_cmd(spec, suite, profile, ledger_path, as_json):
 def list_cmd(since, limit, ledger_path, as_json):
     """List drift baseline snapshots (newest first).
 
-    \b
-    Example:
-        cherenkov drift list --limit 5
+
+Example:
+    cherenkov drift list --limit 5
+
+Args:
+    since: Parameter since.
+    limit: Parameter limit.
+    ledger_path: Parameter ledger_path.
+    as_json: Parameter as_json.
+
+Returns:
+    None: Command execution result.
     """
     ledger = _ledger(ledger_path)
     snapshots = ledger.list_snapshots(since=since, limit=limit)
@@ -189,11 +211,19 @@ def list_cmd(since, limit, ledger_path, as_json):
 def export_cmd(snapshot_id, output, ledger_path):
     """Export a baseline snapshot to a standalone JSON file (CI artifact).
 
-    Use the exported file with --baseline-file for zero-DB-latency CI checks.
+Use the exported file with --baseline-file for zero-DB-latency CI checks.
 
-    \b
-    Example:
-        cherenkov drift export -o baseline.json
+
+Example:
+    cherenkov drift export -o baseline.json
+
+Args:
+    snapshot_id: Parameter snapshot_id.
+    output: Parameter output.
+    ledger_path: Parameter ledger_path.
+
+Returns:
+    None: Command execution result.
     """
     ledger = _ledger(ledger_path)
     out_path = ledger.export_snapshot(
@@ -274,25 +304,41 @@ def reconcile_cmd(
 ):
     """Detect drift between a baseline and the current spec+suite.
 
-    Compares the baseline snapshot against the current state using the three
-    drift axes: spec drift (A), suite staleness (B), and optionally contract
-    drift (C, wired in via --violations if available).
+Compares the baseline snapshot against the current state using the three
+drift axes: spec drift (A), suite staleness (B), and optionally contract
+drift (C, wired in via --violations if available).
 
-    Detection is deterministic — no LLM is called during detection.
-    At L2, the maker generates test skeletons from the spec (schema-driven).
+Detection is deterministic — no LLM is called during detection.
+At L2, the maker generates test skeletons from the spec (schema-driven).
 
-    \b
-    Examples:
-        # Interactive (auto-discovers latest baseline)
-        cherenkov drift reconcile --spec openapi.yaml --suite suite.json
+
+Examples:
+    # Interactive (auto-discovers latest baseline)
+    cherenkov drift reconcile --spec openapi.yaml --suite suite.json
 
-        # CI gate — block on any FAIL finding
-        cherenkov drift reconcile --spec openapi.yaml --suite suite.json \\
-            --baseline-file baseline.json --fail-on-drift
+    # CI gate — block on any FAIL finding
+    cherenkov drift reconcile --spec openapi.yaml --suite suite.json \
+        --baseline-file baseline.json --fail-on-drift
 
-        # L2: propose + approve new tests for untested operations
-        cherenkov drift reconcile --spec openapi.yaml --suite suite.json \\
-            --level L2 --suite-out suite-updated.json
+    # L2: propose + approve new tests for untested operations
+    cherenkov drift reconcile --spec openapi.yaml --suite suite.json \
+        --level L2 --suite-out suite-updated.json
+
+Args:
+    spec: Parameter spec.
+    suite: Parameter suite.
+    baseline_id: Parameter baseline_id.
+    baseline_file: Parameter baseline_file.
+    ledger_path: Parameter ledger_path.
+    fail_on_drift: Parameter fail_on_drift.
+    fail_on_warn: Parameter fail_on_warn.
+    as_json: Parameter as_json.
+    level: Parameter level.
+    auto_approve: Parameter auto_approve.
+    suite_out: Parameter suite_out.
+
+Returns:
+    None: Command execution result.
     """
     from cherenkov.drift.loop import DriftLoop
     from cherenkov.drift.reconcile import DriftVerdict

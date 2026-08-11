@@ -1,3 +1,4 @@
+"""Script to validate YAML syntax of GitHub Actions workflow files."""
 import sys
 import yaml
 

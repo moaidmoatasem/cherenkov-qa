@@ -77,7 +77,14 @@ GROUP_LAYOUT: dict[str, dict] = {
 
 
 def build_groups(commands: dict[str, click.Command]) -> list[click.Group]:
-    """Build the nested command groups from the registered command map."""
+    """Build the nested command groups from the registered command map.
+
+    Args:
+        commands: Dictionary mapping command names to click.Command instances.
+
+    Returns:
+        list[click.Group]: List of configured Click command groups.
+    """
     groups: list[click.Group] = []
     for name, layout in GROUP_LAYOUT.items():
         group = click.Group(name=name, help=layout["help"])
@@ -88,3 +95,4 @@ def build_groups(commands: dict[str, click.Command]) -> list[click.Group]:
                 group.add_command(cmd)
         groups.append(group)
     return groups
+

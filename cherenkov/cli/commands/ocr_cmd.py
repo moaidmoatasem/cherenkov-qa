@@ -18,12 +18,20 @@ from cherenkov.review_ocr.stage import ReviewStageOCR
 
 @click.group("ocr")
 def ocr_cmd() -> None:
-    """Alibaba Open Code Review integration."""
+    """Alibaba Open Code Review integration.
+
+Returns:
+    None: Command execution result.
+    """
 
 
 @ocr_cmd.command("status")
 def ocr_status() -> None:
-    """Check OCR binary installation status."""
+    """Check OCR binary installation status.
+
+Returns:
+    None: Command execution result.
+    """
     binary = get_settings().OCR_BINARY or os.environ.get("OCR_BINARY", "ocr")
     try:
         result = subprocess.run([binary, "--version"], capture_output=True, text=True, timeout=5)
@@ -45,7 +53,11 @@ def ocr_status() -> None:
 
 @ocr_cmd.command("test")
 def ocr_test() -> None:
-    """Test OCR review with a sample Playwright test."""
+    """Test OCR review with a sample Playwright test.
+
+Returns:
+    None: Command execution result.
+    """
     ocr_stage = ReviewStageOCR(run_id="cli")
     test_code = (
         'import { test, expect } from "@playwright/test";\n'
@@ -76,7 +88,15 @@ def ocr_test() -> None:
 @click.option("--file", "-f", "filepath", default="", help="Path to file to review")
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text", help="Output format")
 def ocr_review(filepath: str, fmt: str) -> None:
-    """Run OCR review on generated tests or a specific file."""
+    """Run OCR review on generated tests or a specific file.
+
+Args:
+    filepath (str): Parameter filepath.
+    fmt (str): Parameter fmt.
+
+Returns:
+    None: Command execution result.
+    """
     ocr_stage = ReviewStageOCR(run_id="cli")
 
     if filepath:
@@ -131,12 +151,20 @@ def ocr_review(filepath: str, fmt: str) -> None:
 
 @ocr_cmd.group("config")
 def ocr_config() -> None:
-    """Configure OCR provider and models."""
+    """Configure OCR provider and models.
+
+Returns:
+    None: Command execution result.
+    """
 
 
 @ocr_config.command("provider")
 def ocr_config_provider() -> None:
-    """List and set OCR LLM provider."""
+    """List and set OCR LLM provider.
+
+Returns:
+    None: Command execution result.
+    """
     try:
         mgr = OCRProviderManager()
         providers = mgr.list_providers()
@@ -154,7 +182,11 @@ def ocr_config_provider() -> None:
 
 @ocr_config.command("model")
 def ocr_config_model() -> None:
-    """Show or set OCR LLM model."""
+    """Show or set OCR LLM model.
+
+Returns:
+    None: Command execution result.
+    """
     try:
         mgr = OCRProviderManager()
         active = mgr.get_active_provider()
@@ -173,7 +205,15 @@ def ocr_config_model() -> None:
 @click.argument("key")
 @click.argument("value")
 def ocr_config_set(key: str, value: str) -> None:
-    """Set a config key (e.g. provider, model, url, api_key, protocol)."""
+    """Set a config key (e.g. provider, model, url, api_key, protocol).
+
+Args:
+    key (str): Parameter key.
+    value (str): Parameter value.
+
+Returns:
+    None: Command execution result.
+    """
     mgr = OCRProviderManager()
     if key == "provider":
         mgr.set_active_provider(value)
@@ -199,7 +239,14 @@ def ocr_config_set(key: str, value: str) -> None:
 
 
 def _print_output(output, fmt: str = "text") -> None:
+    """Print OCR review output to terminal in text or JSON format.
+
+    Args:
+        output: ReviewStageOutput instance.
+        fmt: Output format string ("text" or "json").
+    """
     if fmt == "json":
+
         click.echo(json.dumps({
             "passed": output.passed,
             "findings": [

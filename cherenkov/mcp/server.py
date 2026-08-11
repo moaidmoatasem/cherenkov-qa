@@ -48,7 +48,14 @@ log = get_logger(__name__)
 
 
 def _handle_initialize(_params: dict[str, Any]) -> dict[str, Any]:
-    """MCP initialize handshake — advertise capabilities."""
+    """MCP initialize handshake — advertise capabilities.
+
+    Args:
+        _params (dict[str, Any]): Initialization parameters dictionary (unused).
+
+    Returns:
+        dict[str, Any]: Serialized MCPInitializeResult dictionary.
+    """
     result = MCPInitializeResult(
         protocolVersion="2024-11-05",
         serverInfo=MCPServerInfo(name="cherenkov", version="1.0.0"),
@@ -62,17 +69,36 @@ def _handle_initialize(_params: dict[str, Any]) -> dict[str, Any]:
 
 
 def _handle_initialized(_params: dict[str, Any]) -> None:
-    """MCP initialized notification — no reply required (notification handler)."""
+    """MCP initialized notification — no reply required (notification handler).
+
+    Args:
+        _params (dict[str, Any]): Notification parameters dictionary (unused).
+
+    Returns:
+        None
+    """
     log.debug("MCP client initialized")
     return
 
 
 def _handle_ping(_params: dict[str, Any]) -> dict[str, Any]:
+    """MCP ping method — returns an empty response payload.
+
+    Args:
+        _params (dict[str, Any]): Ping parameters dictionary (unused).
+
+    Returns:
+        dict[str, Any]: Empty result dictionary.
+    """
     return {}
 
 
 def build_dispatch_table() -> DispatchTable:
-    """Build the full JSON-RPC method → handler mapping."""
+    """Build the full JSON-RPC method → handler mapping.
+
+    Returns:
+        DispatchTable: Dictionary mapping JSON-RPC method strings to handler callables.
+    """
     return {
         # ── MCP lifecycle ──────────────────────────────────────────────────
         "initialize": _handle_initialize,
@@ -92,13 +118,20 @@ def run_mcp_server(
     input_stream=None,
     output_stream=None,
 ) -> None:
-    """
-    Start the MCP stdio server.
+    """Start the MCP stdio server loop.
 
     input_stream / output_stream can be injected for testing without
     touching sys.stdin / sys.stdout.
+
+    Args:
+        input_stream: Optional input text stream. Defaults to None (sys.stdin).
+        output_stream: Optional output text stream. Defaults to None (sys.stdout).
+
+    Returns:
+        None
     """
     log.info("CHERENKOV MCP server starting (mcp/v1, stdio transport)")
     table = build_dispatch_table()
     serve_stdio(table, input_stream=input_stream, output_stream=output_stream)
     log.info("CHERENKOV MCP server stopped (stdin closed)")
+

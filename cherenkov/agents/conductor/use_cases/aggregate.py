@@ -11,12 +11,13 @@ def aggregate_results(results: list[SubAgentResult], strategy: MergeStrategy) ->
     """Aggregate multiple SubAgentResults into a single output based on the strategy.
 
     Args:
-        results: The list of results returned from parallel sub-agents.
-        strategy: The MergeStrategy to apply.
+        results (list[SubAgentResult]): The list of results returned from parallel sub-agents.
+        strategy (MergeStrategy): The MergeStrategy to apply.
 
     Returns:
-        The aggregated output payload.
+        Any: The aggregated output payload.
     """
+
     successful_results = [r for r in results if r.status == "success" and r.output is not None]
 
     if not successful_results:

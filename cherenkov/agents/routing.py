@@ -8,7 +8,14 @@ from cherenkov.plugins.manager import PluginManager
 from cherenkov.plugins.sdk import CustomLLMProvider
 
 def get_model_for_task(task_type: str = "small") -> str:
-    """Return the configured model name for a specific task complexity tier."""
+    """Return the configured model name for a specific task complexity tier.
+
+    Args:
+        task_type: Complexity tier ("vision", "deep", "small").
+
+    Returns:
+        str: Model identifier name configured for the tier.
+    """
     settings = get_settings()
     
     if task_type == "vision":
@@ -21,7 +28,14 @@ def get_model_for_task(task_type: str = "small") -> str:
     return settings.GEN_MODEL
 
 def resolve_llm_provider(model_name: str) -> CustomLLMProvider | None:
-    """Resolve an LLM provider if the model name specifies a plugin (e.g., 'plugin:mistral')."""
+    """Resolve an LLM provider if the model name specifies a plugin (e.g., 'plugin:mistral').
+
+    Args:
+        model_name: Model identifier string or plugin specifier.
+
+    Returns:
+        CustomLLMProvider | None: Resolved provider instance if available, otherwise None.
+    """
     if not model_name.startswith("plugin:"):
         return None
         
@@ -44,3 +58,4 @@ def resolve_llm_provider(model_name: str) -> CustomLLMProvider | None:
                 return inst
     
     return None
+

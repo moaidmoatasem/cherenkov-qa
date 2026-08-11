@@ -79,7 +79,6 @@ Please replace with a meaningful description.
 
 _runner: ThreadJourneyRunner | None = None
 
-
 def get_journey_runner() -> ThreadJourneyRunner:
     global _runner
     if _runner is None:

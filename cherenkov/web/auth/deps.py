@@ -60,6 +60,9 @@ def require_role(minimum: Role):
 
     Returns:
         FastAPI async dependency function verifying user role and organization.
+
+    Raises:
+        HTTPException: 401 if unauthenticated or 403 if role/org authorization fails.
     """
     async def _check(user: User | None = Depends(get_current_user)) -> User | None:
         if not _auth_enabled():

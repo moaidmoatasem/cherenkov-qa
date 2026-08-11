@@ -22,7 +22,15 @@ def _fail(message: str) -> None:
 
 
 def load_json(path: str, label: str) -> dict:
-    """Load a JSON document, exiting with status 1 on any problem."""
+    """Load a JSON document, exiting with status 1 on any problem.
+
+    Args:
+        path (str): Path to the JSON file to load.
+        label (str): Human-readable label for error messages.
+
+    Returns:
+        dict: Parsed JSON dictionary content.
+    """
     p = Path(path)
     if not p.exists():
         _fail(f"{label} not found: {path}")
@@ -34,7 +42,15 @@ def load_json(path: str, label: str) -> dict:
 
 
 def load_yaml_or_json(path: str, label: str) -> dict:
-    """Load a YAML (``.yaml``/``.yml``) or JSON document, exiting on any problem."""
+    """Load a YAML (``.yaml``/``.yml``) or JSON document, exiting on any problem.
+
+    Args:
+        path (str): Path to the YAML or JSON file to load.
+        label (str): Human-readable label for error messages.
+
+    Returns:
+        dict: Parsed YAML/JSON content dictionary.
+    """
     p = Path(path)
     if not p.exists():
         _fail(f"{label} not found: {path}")
@@ -56,8 +72,11 @@ def load_yaml_or_json(path: str, label: str) -> dict:
 def load_spec(spec_path: str) -> dict | None:
     """Load an OpenAPI spec from a local file path or HTTP(S) URL.
 
-    Returns ``None`` (after printing the reason) when the spec cannot be
-    fetched, read, or parsed.
+    Args:
+        spec_path (str): Local file path or HTTP(S) URL pointing to the spec.
+
+    Returns:
+        dict | None: Parsed OpenAPI specification dictionary, or None if reading/parsing failed.
     """
     if spec_path.startswith(("http://", "https://")):
         import requests
@@ -85,3 +104,5 @@ def load_spec(spec_path: str) -> dict | None:
     except Exception as exc:
         click.echo(f"[ERROR] Could not parse spec: {exc}", err=True)
         return None
+
+

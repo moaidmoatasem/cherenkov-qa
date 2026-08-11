@@ -127,20 +127,33 @@ def report_cmd(
 ) -> None:
     """Summarise and diff cherenkov run reports.
 
-    \b
-    Without arguments, shows the latest run from RunStore.
-    With INPUT_FILE, reads a divergence JSON or events.jsonl written by `cherenkov verify --output`.
-    If omitted, CHERENKOV uses RunStore; falls back to .cherenkov/runs/ if the store is empty.
+
+Without arguments, shows the latest run from RunStore.
+With INPUT_FILE, reads a divergence JSON or events.jsonl written by `cherenkov verify --output`.
+If omitted, CHERENKOV uses RunStore; falls back to .cherenkov/runs/ if the store is empty.
 
-    \b
-    Without --diff, prints a formatted summary of all divergences.
-    With --diff <baseline>, shows new / resolved / unchanged counts and lists.
+
+Without --diff, prints a formatted summary of all divergences.
+With --diff <baseline>, shows new / resolved / unchanged counts and lists.
 
-    \b
-    Exit codes:
-      0 — report processed (or no new divergences when --fail-on-new)
-      1 — new divergences found (only with --fail-on-new)
-      2 — file read/parse error or run not found
+
+Exit codes:
+  0 — report processed (or no new divergences when --fail-on-new)
+  1 — new divergences found (only with --fail-on-new)
+  2 — file read/parse error or run not found
+
+Args:
+    input_file (str | None): Parameter input_file.
+    run_id (str | None): Parameter run_id.
+    list_runs (bool): Parameter list_runs.
+    baseline_ref (str | None): Parameter baseline_ref.
+    fmt (str | None): Parameter fmt.
+    output (str | None): Parameter output.
+    fail_on_new (bool): Parameter fail_on_new.
+    as_json (bool): Parameter as_json.
+
+Returns:
+    None: Command execution result.
     """
     if as_json:
         fmt = "json"

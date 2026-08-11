@@ -224,7 +224,6 @@ class HuggingFaceBackend:
         metrics["mode"] = "huggingface"
         logger.info("[HuggingFace] Training complete: %s", metrics)
         return metrics
-
     def save(self, output_dir: Path) -> Path:
         if self._model is None or self._tokenizer is None:
             raise RuntimeError("Must call train() before save()")
@@ -235,7 +234,6 @@ class HuggingFaceBackend:
         (output_dir / "training_run.json").write_text(json.dumps(manifest, indent=2))
         logger.info("[HuggingFace] Model saved to %s", output_dir)
         return output_dir
-
     def evaluate(self, test_dataset: Any) -> dict[str, Any]:
         if self._trainer is None:
             raise RuntimeError("Must call train() before evaluate()")

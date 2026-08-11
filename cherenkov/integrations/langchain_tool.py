@@ -18,8 +18,6 @@ Please replace with a meaningful description.
 from cherenkov.chat.adapters.sqlite_memory import SQLiteConversationMemory
 from cherenkov.chat.agent import QAChatAgent
 from cherenkov.substrate.router import SubstrateRouter
-
-
 class CherenkovToolInput(BaseModel):
     query: str = Field(description="The QA or testing query to run through CHERENKOV.")
 

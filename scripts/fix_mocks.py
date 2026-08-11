@@ -1,3 +1,4 @@
+"""Script to refactor mock data imports in React frontend components to use live API calls."""
 import os
 import re
 

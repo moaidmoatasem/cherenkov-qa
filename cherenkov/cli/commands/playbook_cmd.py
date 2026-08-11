@@ -11,7 +11,11 @@ import click
 
 @click.group("playbook")
 def playbook_cmd():
-    """Manage and run validation playbooks (auto-triggering skill rules)."""
+    """Manage and run validation playbooks (auto-triggering skill rules).
+
+Returns:
+    None: Command execution result.
+    """
 
 
 @playbook_cmd.command("list")
@@ -23,7 +27,15 @@ def playbook_cmd():
 )
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON.")
 def list_cmd(search_dirs: tuple[str, ...], as_json: bool) -> None:
-    """List all loaded playbooks."""
+    """List all loaded playbooks.
+
+Args:
+    search_dirs (tuple[str, ...]): Parameter search_dirs.
+    as_json (bool): Parameter as_json.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.playbooks.registry import PlaybookRegistry
 
     dirs = list(search_dirs) if search_dirs else None
@@ -51,7 +63,15 @@ def list_cmd(search_dirs: tuple[str, ...], as_json: bool) -> None:
 @click.argument("name")
 @click.option("--dir", "search_dirs", multiple=True)
 def show_cmd(name: str, search_dirs: tuple[str, ...]) -> None:
-    """Show full details of a named playbook."""
+    """Show full details of a named playbook.
+
+Args:
+    name (str): Parameter name.
+    search_dirs (tuple[str, ...]): Parameter search_dirs.
+
+Returns:
+    None: Command execution result.
+    """
     from cherenkov.playbooks.registry import PlaybookRegistry
 
     dirs = list(search_dirs) if search_dirs else None
@@ -78,7 +98,19 @@ def run_cmd(
     search_dirs: tuple[str, ...],
     as_json: bool,
 ) -> None:
-    """Fire matching playbooks against a single live endpoint."""
+    """Fire matching playbooks against a single live endpoint.
+
+Args:
+    url (str): Parameter url.
+    endpoint_path (str): Parameter endpoint_path.
+    method (str): Parameter method.
+    extra_headers (tuple[str, ...]): Parameter extra_headers.
+    search_dirs (tuple[str, ...]): Parameter search_dirs.
+    as_json (bool): Parameter as_json.
+
+Returns:
+    None: Command execution result.
+    """
     import requests
 
     from cherenkov.playbooks.matcher import PlaybookMatcher
@@ -150,7 +182,15 @@ def run_cmd(
     help="Directory to write the new playbook file.",
 )
 def new_cmd(name: str, out_dir: str) -> None:
-    """Scaffold a new playbook YAML file."""
+    """Scaffold a new playbook YAML file.
+
+Args:
+    name (str): Parameter name.
+    out_dir (str): Parameter out_dir.
+
+Returns:
+    None: Command execution result.
+    """
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     dest = out / f"{name}.yaml"

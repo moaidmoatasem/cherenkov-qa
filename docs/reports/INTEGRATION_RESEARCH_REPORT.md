@@ -53,7 +53,7 @@ This document presents **complete research findings** on all five requested topi
 6. [Part 5: LLM Wiki Audit](#part-5-llm-wiki-audit)
 7. [Part 6: Cross-Cutting Analysis](#part-6-cross-cutting-analysis)
 8. [Part 7: Integration Roadmap](#part-7-integration-roadmap)
-9. [Appendices](#appendices)
+9. [Appendices](#-appendices)
 
 ---
 

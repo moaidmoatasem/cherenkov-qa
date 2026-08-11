@@ -147,6 +147,17 @@ def check_integrity(
     baseline_code: str,
     candidate_code: str,
 ) -> list[str]:
+    """Check integrity of generated suite against baseline and spec fields.
+
+    Args:
+        spec_path (Path | None): OpenAPI specification path.
+        baseline_code (str): Baseline test code string.
+        candidate_code (str): Candidate test code string.
+
+    Returns:
+        list[str]: List of finding strings.
+    """
+
     findings: list[str] = []
     allowed = _spec_fields(spec_path) if spec_path else set()
     base = _parse_suite(baseline_code)
@@ -235,19 +246,31 @@ def check_suite_cmd(
 ) -> None:
     """Catch AI cheating in a test suite — detect WEAKENED, DELETED, or HALLUCINATED assertions.
 
-    Runs fast static analysis (no execution, no server needed).
+Runs fast static analysis (no execution, no server needed).
 
-    \b
-    Examples:
-      # Check a candidate against a baseline and spec:
-      cherenkov check-suite --candidate candidate.py --baseline baseline.py --spec openapi.yaml
+
+Examples:
+  # Check a candidate against a baseline and spec:
+  cherenkov check-suite --candidate candidate.py --baseline baseline.py --spec openapi.yaml
 
-      # Baseline-only check (hallucinated detection requires --spec):
-      cherenkov check-suite --candidate candidate.py --baseline baseline.py
+  # Baseline-only check (hallucinated detection requires --spec):
+  cherenkov check-suite --candidate candidate.py --baseline baseline.py
 
-      # CI gate mode — fail the build if integrity violations are found:
-      cherenkov check-suite -c candidate.py -b baseline.py -s api.yaml --fail-on-finding
+  # CI gate mode — fail the build if integrity violations are found:
+  cherenkov check-suite -c candidate.py -b baseline.py -s api.yaml --fail-on-finding
+
+Args:
+    candidate: Path to the candidate test suite file.
+    baseline: Path to the baseline test suite file, or None.
+    spec: Path to the OpenAPI specification file, or None.
+    output: Path to write output JSON report file, or None.
+    fail_on_finding: True to exit code 1 when findings are present.
+    as_json: True to emit structured JSON output on stdout.
+
+Returns:
+    None: Command execution result.
     """
+
     cand_path = Path(candidate)
 
     # The `.ts` warning below used to be unreachable: `.ts` sat inside this

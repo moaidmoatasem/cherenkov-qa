@@ -24,25 +24,28 @@ from cherenkov.cli.loaders import load_json, load_yaml_or_json
 def eval_cmd():
     """Evaluate, grade, and optimize your test suite quality.
 
-    Implements a STORM-inspired generate → grade → compare → optimize
-    lifecycle for continuous suite improvement.
+Implements a STORM-inspired generate → grade → compare → optimize
+lifecycle for continuous suite improvement.
 
-    \b
-    Examples:
-        # Generate a suite from an OpenAPI spec using 5 tester personas
-        cherenkov eval generate --spec openapi.yaml --output suite.json
+
+Examples:
+    # Generate a suite from an OpenAPI spec using 5 tester personas
+    cherenkov eval generate --spec openapi.yaml --output suite.json
 
-        # Grade a suite against a spec (no live API needed)
-        cherenkov eval grade --spec openapi.yaml --suite suite.json
+    # Grade a suite against a spec (no live API needed)
+    cherenkov eval grade --spec openapi.yaml --suite suite.json
 
-        # Run suite against a live API and emit a trace
-        cherenkov eval run --suite suite.json --target http://localhost:8080
+    # Run suite against a live API and emit a trace
+    cherenkov eval run --suite suite.json --target http://localhost:8080
 
-        # Compare two grade reports
-        cherenkov eval compare --before grade-v1.json --after grade-v2.json
+    # Compare two grade reports
+    cherenkov eval compare --before grade-v1.json --after grade-v2.json
 
-        # Get improvement suggestions
-        cherenkov eval optimize --grade grade.json
+    # Get improvement suggestions
+    cherenkov eval optimize --grade grade.json
+
+Returns:
+    None: Command execution result.
     """
 
 
@@ -68,12 +71,22 @@ def eval_cmd():
 def grade_cmd(spec, suite, output, as_json, fail_on):
     """Score test suite quality against the OpenAPI spec.
 
-    Measures assertion density, schema conformance, and meaningful assertion
-    ratio — no live API required.
+Measures assertion density, schema conformance, and meaningful assertion
+ratio — no live API required.
 
-    \b
-    Example:
-        cherenkov eval grade --spec openapi.yaml --suite suite.json --output grade.json
+
+Example:
+    cherenkov eval grade --spec openapi.yaml --suite suite.json --output grade.json
+
+Args:
+    spec: Parameter spec.
+    suite: Parameter suite.
+    output: Parameter output.
+    as_json: Parameter as_json.
+    fail_on: Parameter fail_on.
+
+Returns:
+    None: Command execution result.
     """
     from cherenkov.eval.grader import SuiteGrader
 
@@ -164,12 +177,24 @@ def _print_grade_report(report) -> None:
 def run_cmd(suite, spec, target, output, timeout, as_json, fail_on_failure):
     """Execute suite against a live API and emit a JSONL trace.
 
-    Without --target, runs in dry-run mode (no HTTP requests, records metadata only).
-    The JSONL trace is consumed by `cherenkov eval grade` and `eval compare`.
+Without --target, runs in dry-run mode (no HTTP requests, records metadata only).
+The JSONL trace is consumed by `cherenkov eval grade` and `eval compare`.
 
-    \b
-    Example:
-        cherenkov eval run --suite suite.json --target http://localhost:8080 -o run.jsonl
+
+Example:
+    cherenkov eval run --suite suite.json --target http://localhost:8080 -o run.jsonl
+
+Args:
+    suite: Parameter suite.
+    spec: Parameter spec.
+    target: Parameter target.
+    output: Parameter output.
+    timeout: Parameter timeout.
+    as_json: Parameter as_json.
+    fail_on_failure: Parameter fail_on_failure.
+
+Returns:
+    None: Command execution result.
     """
     from cherenkov.drift.snapshot import spec_hash as _spec_hash
     from cherenkov.drift.snapshot import suite_manifest_hash
@@ -261,9 +286,18 @@ def _print_run_summary(trace, out_path: Path, target: str | None) -> None:
 def compare_cmd(before, after, as_json, fail_on_regression):
     """Compare two grade reports to detect regressions and improvements.
 
-    \b
-    Example:
-        cherenkov eval compare --before grade-v1.json --after grade-v2.json
+
+Example:
+    cherenkov eval compare --before grade-v1.json --after grade-v2.json
+
+Args:
+    before: Parameter before.
+    after: Parameter after.
+    as_json: Parameter as_json.
+    fail_on_regression: Parameter fail_on_regression.
+
+Returns:
+    None: Command execution result.
     """
     from cherenkov.eval.compare import compare_grades
     from cherenkov.eval.grader import GradeReport
@@ -345,12 +379,19 @@ def _print_compare_report(cmp) -> None:
 def optimize_cmd(grade_path, as_json):
     """Suggest generation profile improvements from a grade report.
 
-    Analyzes weak areas and outputs actionable recommendations that can be
-    fed back into `cherenkov synthetic` or the drift L2 maker.
+Analyzes weak areas and outputs actionable recommendations that can be
+fed back into `cherenkov synthetic` or the drift L2 maker.
 
-    \b
-    Example:
-        cherenkov eval optimize --grade grade.json
+
+Example:
+    cherenkov eval optimize --grade grade.json
+
+Args:
+    grade_path: Parameter grade_path.
+    as_json: Parameter as_json.
+
+Returns:
+    None: Command execution result.
     """
     from cherenkov.eval.grader import GradeReport
     from cherenkov.eval.optimizer import optimize_profile
@@ -436,19 +477,31 @@ def _print_optimize_suggestion(suggestion) -> None:
 def generate_cmd(spec, output, personas, no_enrich, no_grade, sequential, as_json):
     """Generate a multi-persona test suite from an OpenAPI spec.
 
-    Inspired by STORM's perspective-guided questioning: five built-in tester
-    personas (HappyPath, ErrorPath, SecurityProber, SchemaPedant, BoundarySeeker)
-    each generate tests from their viewpoint in parallel, then the results are
-    merged, deduplicated, and enriched with a polish pass.
+Inspired by STORM's perspective-guided questioning: five built-in tester
+personas (HappyPath, ErrorPath, SecurityProber, SchemaPedant, BoundarySeeker)
+each generate tests from their viewpoint in parallel, then the results are
+merged, deduplicated, and enriched with a polish pass.
 
-    The output is a suite.json compatible with `cherenkov eval grade` and
-    `cherenkov eval run`.
+The output is a suite.json compatible with `cherenkov eval grade` and
+`cherenkov eval run`.
 
-    \b
-    Examples:
-        cherenkov eval generate --spec openapi.yaml --output suite.json
-        cherenkov eval generate --spec openapi.yaml --personas HappyPath,SchemaPedant
-        cherenkov eval generate --spec openapi.yaml | cherenkov eval grade --spec openapi.yaml
+
+Examples:
+    cherenkov eval generate --spec openapi.yaml --output suite.json
+    cherenkov eval generate --spec openapi.yaml --personas HappyPath,SchemaPedant
+    cherenkov eval generate --spec openapi.yaml | cherenkov eval grade --spec openapi.yaml
+
+Args:
+    spec: Parameter spec.
+    output: Parameter output.
+    personas: Parameter personas.
+    no_enrich: Parameter no_enrich.
+    no_grade: Parameter no_grade.
+    sequential: Parameter sequential.
+    as_json: Parameter as_json.
+
+Returns:
+    None: Command execution result.
     """
     from datetime import datetime, timezone
 
@@ -544,17 +597,28 @@ def _print_generate_result(result, out_path: Path, personas) -> None:
 def refine_cmd(spec, suite, grade_path, output, no_grade, as_json):
     """Targeted second-pass generation that improves weak operations.
 
-    Closes the generate → grade → optimize → refine feedback loop.
-    Reads an existing suite and its grade report, identifies weak or
-    uncovered operations, runs focused persona passes on them, and
-    merges the additions back into the suite.
+Closes the generate → grade → optimize → refine feedback loop.
+Reads an existing suite and its grade report, identifies weak or
+uncovered operations, runs focused persona passes on them, and
+merges the additions back into the suite.
 
-    \b
-    Typical workflow:
-        cherenkov eval generate --spec openapi.yaml --output suite.json
-        cherenkov eval grade    --spec openapi.yaml --suite suite.json --output grade.json
-        cherenkov eval refine   --spec openapi.yaml --suite suite.json --grade grade.json
-        cherenkov eval grade    --spec openapi.yaml --suite suite.json   # measure improvement
+
+Typical workflow:
+    cherenkov eval generate --spec openapi.yaml --output suite.json
+    cherenkov eval grade    --spec openapi.yaml --suite suite.json --output grade.json
+    cherenkov eval refine   --spec openapi.yaml --suite suite.json --grade grade.json
+    cherenkov eval grade    --spec openapi.yaml --suite suite.json   # measure improvement
+
+Args:
+    spec: Parameter spec.
+    suite: Parameter suite.
+    grade_path: Parameter grade_path.
+    output: Parameter output.
+    no_grade: Parameter no_grade.
+    as_json: Parameter as_json.
+
+Returns:
+    None: Command execution result.
     """
     from cherenkov.eval.grader import GradeReport
     from cherenkov.synthetic.refiner import refine_suite

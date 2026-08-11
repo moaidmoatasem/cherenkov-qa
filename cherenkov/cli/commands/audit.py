@@ -89,11 +89,23 @@ def audit_cmd(
 ) -> None:
     """Audit a test suite for meaningful assertions.
 
-    Evaluates whether the test suite actually catches regressions by:
-      1. Recording the baseline against the live target.
-      2. Generating spec-derived mutants (status, value, missing, enum).
-      3. Replaying the test suite against the mutants.
+Evaluates whether the test suite actually catches regressions by:
+  1. Recording the baseline against the live target.
+  2. Generating spec-derived mutants (status, value, missing, enum).
+  3. Replaying the test suite against the mutants.
+
+Args:
+    target: Base URL of the live server to record baseline from.
+    spec: Path or URL to the OpenAPI spec JSON/YAML file.
+    test_cmd: Command string used to execute the test suite.
+    proxy_port: Port number for the recording proxy.
+    mock_port: Port number for the mutant mock server.
+    as_json: True to emit structured JSON output instead of plain text.
+
+Returns:
+    None: Command execution result.
     """
+
     if not as_json:
         click.echo("\nCHERENKOV audit (Baseline-Free Oracle)")
         click.echo(f"  Target   : {target}")

@@ -54,8 +54,6 @@ Please replace with a meaningful description.
 
 
 StepHandler = Callable[[StepContext], StepOutcome]
-
-
 class StepRegistry:
     def __init__(self) -> None:
         self._handlers: dict[str, StepHandler] = {}
@@ -68,8 +66,6 @@ class StepRegistry:
 
     def kinds(self) -> list[str]:
         return sorted(self._handlers)
-
-
 _registry = StepRegistry()
 
 

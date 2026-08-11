@@ -156,27 +156,37 @@ _log = logging.getLogger(__name__)
 def verify_cmd(as_json: bool, env: str | None = None, credential: str | None = None, **kwargs) -> None:
     """Verify a live API against its OpenAPI spec -- find spec<->implementation divergences.
 
-    Runs in offline mode by default (no LLM, no Ollama required).  Pass --llm
-    to engage the full Skeptic agent for richer hypothesis generation.
+Runs in offline mode by default (no LLM, no Ollama required).  Pass --llm
+to engage the full Skeptic agent for richer hypothesis generation.
 
-    By default, the full multi-agent verdict engine runs all 5 dimensions in
-    parallel.  Use --simple to fall back to the legacy single-probe summary.
+By default, the full multi-agent verdict engine runs all 5 dimensions in
+parallel.  Use --simple to fall back to the legacy single-probe summary.
 
-    \b
-    Examples:
-      # Zero-config demo against the public Petstore:
-      cherenkov verify --url https://petstore3.swagger.io/api/v3
+ 
+Examples:
+  # Zero-config demo against the public Petstore:
+  cherenkov verify --url https://petstore3.swagger.io/api/v3
 
-      # Use a named environment and credential from cherenkov.toml:
-      cherenkov verify --env staging --credential staging-auth
+  # Use a named environment and credential from cherenkov.toml:
+  cherenkov verify --env staging --credential staging-auth
 
-      # CI gate: fail if divergences are found:
-      cherenkov verify --url http://localhost:8080 --spec ./openapi.json --fail-on-divergence
+  # CI gate: fail if divergences are found:
+  cherenkov verify --url http://localhost:8080 --spec ./openapi.json --fail-on-divergence
 
-      # Machine-readable: document on stdout, progress on stderr:
-      cherenkov verify --url http://localhost:8080 --spec ./openapi.json --json
+  # Machine-readable: document on stdout, progress on stderr:
+  cherenkov verify --url http://localhost:8080 --spec ./openapi.json --json
+
+Args:
+    as_json (bool): Output format as JSON if True.
+    env (str | None): Environment name override from cherenkov.toml.
+    credential (str | None): Credential name override from cherenkov.toml.
+    **kwargs: Additional Click options passed to implementation.
+
+Returns:
+    None: Command execution result.
     """
     from cherenkov.core.settings import get_settings
+
     settings = get_settings()
 
     url = kwargs.get("url")

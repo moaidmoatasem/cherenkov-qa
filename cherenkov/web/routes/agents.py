@@ -20,6 +20,9 @@ async def event_generator() -> AsyncGenerator[str, None]:
 
     In a real implementation, this would yield events from an EventBus.
     For now, it polls the MCPRegistry to yield active server status.
+
+    Yields:
+        Formatted SSE data event strings containing active agent metrics.
     """
     registry = get_registry()
     while True:
@@ -48,7 +51,11 @@ async def event_generator() -> AsyncGenerator[str, None]:
 
 @router.get("/stream")
 async def stream_agent_status() -> StreamingResponse:
-    """SSE endpoint for real-time agent status."""
+    """SSE endpoint for real-time agent status.
+
+    Returns:
+        StreamingResponse object returning SSE event stream.
+    """
     return StreamingResponse(
         event_generator(),
         media_type="text/event-stream",
