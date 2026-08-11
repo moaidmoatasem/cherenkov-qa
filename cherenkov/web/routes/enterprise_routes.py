@@ -19,6 +19,9 @@ _org_manager = OrgManager()
 DEFAULT_ORG_NAME = "Cherenkov Enterprise"
 DEFAULT_ORG_OWNER_ID = "admin-1"
 
+# How many recent runs the SLA view aggregates over.
+_SLA_WINDOW = 500
+
 @router.get("/gdpr/status")
 def gdpr_status() -> Dict[str, Any]:
     """Return GDPR compliance configuration and status.
@@ -98,14 +101,46 @@ def sla_dashboard() -> Dict[str, Any]:
     Returns:
         SLA metrics dictionary including uptime, p99 latency, and check counts.
     """
-    # SLA metrics are typically derived from the run store or external APM.
-    # We provide simulated enterprise SLA data here for the dashboard.
+    # Derived from persisted RunRecords. This endpoint previously returned five
+    # hardcoded constants (uptime 99.99, p99 145ms, 125000 checks, 12 failures,
+    # "operational") with no indication to the caller that none of it was measured.
+    #
+    # Note there is deliberately no `uptime` field any more. CHERENKOV does not
+    # monitor availability of anything, so an uptime percentage could only ever be
+    # invented; `pass_rate_pct` is the thing it actually measures. Renaming rather
+    # than re-deriving avoids swapping one fabrication for a subtler one.
+    from cherenkov.persistence.run_store import get_run_store
+    from cherenkov.web.coverage_map import conformance_summary
+
+    store = get_run_store()
+    records = store.list(limit=_SLA_WINDOW)
+    summary = conformance_summary(store=store)
+
+    total = summary["totalRuns"]
+    durations = sorted(r.duration_ms for r in records if r.duration_ms > 0)
+    p99 = durations[min(int(len(durations) * 0.99), len(durations) - 1)] if durations else None
+
+    latest = (summary["latestVerdict"] or "").upper()
+    status = {
+        "PASS": "operational",
+        "CERTIFIED": "operational",
+        "WARN": "degraded",
+        "FAIL": "failing",
+    }.get(latest, "no_data")
+
     return {
-        "uptime": 99.99,
-        "api_response_p99": 145, # ms
-        "total_checks": 125000,
-        "failed_checks": 12,
-        "status": "operational"
+        # False when no run has been recorded yet, so a caller can render an empty
+        # state instead of showing zeros that look like measurements.
+        "measured": total > 0,
+        "source": "run_store",
+        "total_checks": total,
+        "failed_checks": summary["failCount"],
+        "pass_rate_pct": round(100.0 * summary["passCount"] / total, 2) if total else None,
+        "api_response_p99": p99,
+        "latest_verdict": summary["latestVerdict"],
+        "status": status,
+        # Real per-run history for the trend chart, newest last.
+        "trend": summary["trend"],
     }
 
 @router.post("/support/ticket")
@@ -118,11 +153,18 @@ def create_support_ticket(payload: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         Dictionary status payload including generated ticket ID.
     """
-    # Placeholder for enterprise support portal integration
-    import uuid
-    ticket_id = str(uuid.uuid4())
-    return {
-        "status": "created",
-        "ticket_id": ticket_id,
-        "message": "Enterprise support team has been notified."
-    }
+    # There is no support-portal integration. This used to mint a random UUID and
+    # answer "Enterprise support team has been notified." — a false assurance about
+    # an action that never happened, which is worse than fabricated data: a user who
+    # believed it would not escalate through a channel that actually reaches anyone.
+    #
+    # 501 until a real backend is wired (#763). Returning an error is the honest
+    # answer to a capability that does not exist.
+    raise HTTPException(
+        status_code=501,
+        detail=(
+            "Support ticketing is not wired to a backend. No ticket was created and "
+            "nobody was notified. Open an issue at "
+            "https://github.com/moaidmoatasem/cherenkov-qa/issues instead."
+        ),
+    )
