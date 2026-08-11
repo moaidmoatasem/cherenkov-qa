@@ -281,8 +281,8 @@ cherenkov validate --target http://localhost:8000 --spec your_api.json
 - One next step: run `cherenkov init` in your repo right now — it takes 30 seconds and produces no side effects
 
 **CTAs:**
-- 📖 **[Read the Docs](https://github.com/cherenkov-qa/cherenkov-qa)** — Full documentation
-- ⭐ **[Star on GitHub](https://github.com/cherenkov-qa/cherenkov-qa)** — Show your support
+- 📖 **[Read the Docs](https://github.com/moaidmoatasem/cherenkov-qa)** — Full documentation
+- ⭐ **[Star on GitHub](https://github.com/moaidmoatasem/cherenkov-qa)** — Show your support
 - 💬 **[Join Discord](https://discord.gg/cherenkov)** — Community + support
 
 **Speaker Note:** End with energy. The 60-second promise is the hook — make them believe they can start today. Offer to walk them through their first `cherenkov generate` live right now.
