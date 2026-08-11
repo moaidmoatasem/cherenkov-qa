@@ -130,6 +130,6 @@ python scripts/agent_sync.py compact --force     # force compaction now
 
 ## References
 
-- [Methodology doc](../docs/engineering/SYNC_DRIVEN_DEV.md)
-- [Sync runtime files](../agent_memory/sync/MANIFEST.md)
-- [Sync tool](../scripts/agent_sync.py)
+- [Methodology doc](../../docs/engineering/SYNC_DRIVEN_DEV.md)
+- [Sync runtime files](../../agent_memory/sync/MANIFEST.md)
+- [Sync tool](../../scripts/agent_sync.py)

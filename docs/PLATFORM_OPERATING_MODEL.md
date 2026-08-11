@@ -1,7 +1,7 @@
 # CHERENKOV Platform Operating Model
 
 **Status:** Directional architecture and product contract. Not a delivery roadmap.
-**Related:** [NORTH_STAR.md](NORTH_STAR.md), [PRODUCT_STRATEGY_ROADMAP.md](PRODUCT_STRATEGY_ROADMAP.md), [engineering/SYSTEM_DESIGN.md](engineering/SYSTEM_DESIGN.md)
+**Related:** [NORTH_STAR.md](NORTH_STAR.md), [PRODUCT_STRATEGY_ROADMAP.md](ROADMAP.md), [engineering/SYSTEM_DESIGN.md](engineering/SYSTEM_DESIGN.md)
 
 ## The product in one sentence
 
