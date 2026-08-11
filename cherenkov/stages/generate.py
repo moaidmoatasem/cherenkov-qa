@@ -31,19 +31,26 @@ from cherenkov.substrate.text_utils import strip_think
 def _prompt_template(name: str):
     """Load a prompt template from the repo-root `prompts/` directory.
 
-    Autoescaping is deliberately off. These templates render LLM prompts whose
-    output is TypeScript test code, never HTML served to a browser, and HTML
-    escaping would corrupt the generated code (`&&` becoming `&amp;&amp;`,
-    quotes becoming `&#39;`). Templates that do emit HTML set
-    `autoescape=True` — see `execution/emitters/html_report.py`.
+    Escaping is selected by extension rather than switched off outright. The
+    prompt templates are `.j2` and render LLM prompts whose output is TypeScript
+    test code, never HTML served to a browser — HTML-escaping them would corrupt
+    the generated code (`&&` becoming `&amp;&amp;`, quotes becoming `&#39;`), so
+    `.j2` renders unescaped. Should a `.html` or `.xml` template ever be added
+    here it is escaped automatically, which is why this is `select_autoescape`
+    and not a bare `False`. Templates that emit HTML today set `autoescape=True`
+    directly — see `execution/emitters/html_report.py`.
     """
     import jinja2
 
-    env = jinja2.Environment(  # codeql[py/jinja2-autoescape-false]
+    env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(
             os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))
         ),
-        autoescape=False,
+        autoescape=jinja2.select_autoescape(
+            enabled_extensions=("html", "xml"),
+            default_for_string=False,
+            default=False,
+        ),
     )
     return env.get_template(name)
 
