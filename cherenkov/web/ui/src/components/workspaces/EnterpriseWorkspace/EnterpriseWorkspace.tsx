@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Shield, Activity, Users, Settings } from 'lucide-react';
+import { Shield, Activity } from 'lucide-react';
 import SlaDashboard from './SlaDashboard';
 import CompliancePanel from './CompliancePanel';
-import SupportPortal from './SupportPortal';
 
-type Tab = 'sla' | 'compliance' | 'support';
+type Tab = 'sla' | 'compliance';
 
 const EnterpriseWorkspace: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('sla');
@@ -17,7 +16,7 @@ const EnterpriseWorkspace: React.FC = () => {
           Enterprise Command Center
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
-          Manage SLA, SOC2, GDPR, and Multi-tenant settings for your organization.
+          Run statistics, SOC2, GDPR, and multi-tenant settings for your organization.
         </p>
       </header>
 
@@ -32,7 +31,7 @@ const EnterpriseWorkspace: React.FC = () => {
         >
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4" />
-            SLA Dashboard
+            Run Statistics
           </div>
         </button>
         <button
@@ -48,25 +47,11 @@ const EnterpriseWorkspace: React.FC = () => {
             Compliance (SOC2 / GDPR)
           </div>
         </button>
-        <button
-          onClick={() => setActiveTab('support')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'support'
-              ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            Support Portal
-          </div>
-        </button>
       </div>
 
       <div className="flex-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-6 shadow-sm">
         {activeTab === 'sla' && <SlaDashboard />}
         {activeTab === 'compliance' && <CompliancePanel />}
-        {activeTab === 'support' && <SupportPortal />}
       </div>
     </div>
   );

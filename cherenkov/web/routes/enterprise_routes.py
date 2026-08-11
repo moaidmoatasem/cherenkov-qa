@@ -1,7 +1,16 @@
-"""FastAPI routes for enterprise compliance (GDPR, SOC2, Org, SLA, Support)."""
+"""FastAPI routes for enterprise compliance (GDPR, SOC2, Org, run statistics).
+
+The support-ticket endpoint that used to live here was removed rather than
+implemented: it returned a UUID and the message "Enterprise support team has
+been notified" while persisting nothing and sending nothing, and per the
+no-paid-tier product decision on #754 there is no support team to route to. No
+implementation could have made that message true.
+"""
 from __future__ import annotations
 
+import calendar
 import os
+import time
 from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException
@@ -92,37 +101,72 @@ def org_info() -> Dict[str, Any]:
     }
 
 @router.get("/sla")
-def sla_dashboard() -> Dict[str, Any]:
-    """Return enterprise SLA uptime and performance metrics.
+def sla_dashboard(days: int = 30) -> Dict[str, Any]:
+    """Return run statistics measured from the local run store.
 
-    Returns:
-        SLA metrics dictionary including uptime, p99 latency, and check counts.
-    """
-    # SLA metrics are typically derived from the run store or external APM.
-    # We provide simulated enterprise SLA data here for the dashboard.
-    return {
-        "uptime": 99.99,
-        "api_response_p99": 145, # ms
-        "total_checks": 125000,
-        "failed_checks": 12,
-        "status": "operational"
-    }
+    Every figure here is counted from `RunStore`. Two metrics that used to
+    appear on this endpoint have been removed rather than estimated:
 
-@router.post("/support/ticket")
-def create_support_ticket(payload: Dict[str, Any]) -> Dict[str, Any]:
-    """Create a priority enterprise support ticket.
+      * **uptime** — CHERENKOV runs conformance checks against a target on
+        demand; it is not a monitor and never observes the target between runs,
+        so it cannot know its uptime.
+      * **API response p99** — the run store records how long a CHERENKOV *run*
+        took, which is not the target API's response latency.
+
+    Both were previously served as hardcoded constants (99.99% and 145 ms)
+    beneath a "Target: 99.9%" label. Reporting an unmeasured number as an
+    observation is the exact failure this project exists to detect.
 
     Args:
-        payload: Ticket content dictionary.
+        days: Size of the trailing window, in days.
 
     Returns:
-        Dictionary status payload including generated ticket ID.
+        Counts over the window, plus a per-day series with one entry per day.
     """
-    # Placeholder for enterprise support portal integration
-    import uuid
-    ticket_id = str(uuid.uuid4())
+    from cherenkov.persistence.run_store import get_run_store
+
+    cutoff = time.time() - days * 86_400
+    # `list` is capped; ask for far more than a local store is expected to hold
+    # so the window is not silently truncated.
+    runs = get_run_store().list(limit=100_000)
+
+    def _epoch(stamp: str) -> float:
+        try:
+            return calendar.timegm(time.strptime(stamp, "%Y-%m-%dT%H:%M:%SZ"))
+        except (ValueError, TypeError):
+            return 0.0
+
+    in_window = [r for r in runs if _epoch(r.timestamp) >= cutoff]
+    failed = [r for r in in_window if r.verdict == "FAIL"]
+    completed = [r for r in in_window if r.verdict in ("PASS", "WARN", "FAIL")]
+
+    # One bucket per day, oldest first, so the client renders a real series
+    # instead of inventing bar heights.
+    buckets: Dict[str, Dict[str, int]] = {}
+    for offset in range(days - 1, -1, -1):
+        day = time.strftime("%Y-%m-%d", time.gmtime(time.time() - offset * 86_400))
+        buckets[day] = {"runs": 0, "failed": 0}
+    for record in in_window:
+        day = str(record.timestamp)[:10]
+        if day in buckets:
+            buckets[day]["runs"] += 1
+            if record.verdict == "FAIL":
+                buckets[day]["failed"] += 1
+
+    pass_rate = (
+        round(100.0 * (len(completed) - len(failed)) / len(completed), 2)
+        if completed
+        else None
+    )
+
     return {
-        "status": "created",
-        "ticket_id": ticket_id,
-        "message": "Enterprise support team has been notified."
+        "window_days": days,
+        "total_runs": len(in_window),
+        "failed_runs": len(failed),
+        "pass_rate": pass_rate,
+        "measured": bool(in_window),
+        "trend": [
+            {"date": day, "runs": counts["runs"], "failed": counts["failed"]}
+            for day, counts in buckets.items()
+        ],
     }

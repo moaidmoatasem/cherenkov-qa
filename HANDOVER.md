@@ -1,5 +1,18 @@
 # CHERENKOV -- Session Handover
 
+## Dashboard fabrication removed — #762/#763 closed (2026-08-11)
+
+The "worst finding" recorded below — *the dashboard fabricates data* — is fixed. Both surfaces are resolved as **integrity defects, not missing features**, per the guidance in that entry.
+
+- **`/api/enterprise/sla` now measures.** Every figure is counted from `RunStore`: runs in the window, failed runs (verdict `FAIL`), pass rate, and a real per-day series built from run timestamps. `measured: false` is returned when the store is empty, and the panel says "No runs recorded" rather than rendering zeroes that look like a measurement.
+- **Two metrics were removed rather than estimated.** `uptime` (99.99) and `api_response_p99` (145 ms) are gone: CHERENKOV checks a target on demand and never observes it between runs, so it cannot know uptime, and a run's duration is not the target's response latency. `total_checks: 125000` and `failed_checks: 12` are replaced by real counts.
+- **`SlaDashboard.tsx` no longer draws from `Math.random()`.** The 30-day chart renders the server's per-day series; bars are stable across renders and tooltips state runs and failures, not an invented uptime percentage.
+- **The support-ticket endpoint and portal are deleted.** `POST /api/enterprise/support/ticket` returned a UUID and *"Enterprise support team has been notified"* while persisting nothing and sending nothing. Per the no-paid-tier decision on #754 there is no team to route to, so no implementation could make that message true. `SupportPortal.tsx` and its tab are removed with it.
+
+Guarded by `tests/unit/test_enterprise_sla_is_measured.py` (13 tests), which pins that counts track the data, that the trend is stable across calls, and that the unmeasurable fields stay gone. Verified non-vacuous: re-adding `uptime`/`api_response_p99`/`total_checks` to the response fails three of them.
+
+**Verification:** 2733 passed, 14 skipped, 0 failed. `mypy` clean (605 files). Dashboard `tsc --noEmit` exit 0 and `vite build` succeeds, so the Docker image build is unaffected.
+
 ## CI is green on `main` — all four gates from the 2026-08-11 table are closed (2026-08-11)
 
 Every check in the *"CI state on `main`"* table further down is now fixed. Measured on
