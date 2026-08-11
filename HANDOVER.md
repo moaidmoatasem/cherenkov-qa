@@ -1,5 +1,16 @@
 # CHERENKOV -- Session Handover
 
+## GitHub issues backlog reconciliation (2026-08-11)
+
+The 2026-08-10 "Roadmap Execution Completed: Phases 13, 15 & 16" entry below **overstated completion**. Re-verified against actual code, not assumed:
+
+- **Phase 13 (EPIC #754):** 6/8 real (SAML #755, multi-tenant org mgmt #756, RBAC #757, GDPR #759, compliance report templates #760, BYO-LLM #761 — closed). **#762 (SLA dashboard) is simulated data** (`web/routes/enterprise_routes.py::sla_dashboard` — code comment: "simulated enterprise SLA data"). **#763 (enterprise support portal) is a stub** (code comment: "Placeholder for enterprise support portal integration"). Both left open.
+- **Phase 15 (EPIC #773):** 5/7 real (data pipeline #774, opt-in corpus collection #775, dataset curation #776, fine-tuning run #777, evaluation harness #778 — closed). **#779 (model release) and #780 (enterprise model hosting) have no corresponding code anywhere in the repo.** Left open.
+- **Phase 16 (EPIC #781):** 5/8 real (public API #782, plugin SDK #783, test template marketplace #784, multi-org federation #786, webhook ecosystem #788 — closed). **#785 (LLM provider marketplace), #787 (CHERENKOV Certified), #789 (analytics API) have no corresponding code.** Left open.
+- **#790 (EPIC: Sprint 4 Integrations)** closed — its only remaining child (#792) was already closed 2026-08-09.
+
+All three phase EPICs (#754, #773, #781) remain **open** — they are genuinely partial, not complete. Full evidence trail (file paths cited) is on each closed/re-opened issue's GitHub comments. **Do not trust the "verified and operational" phrasing in the section below at face value; the per-issue comments are the current source of truth for what's actually shipped vs. stubbed.**
+
 **Date:** 2026-08-02 (round 3 + lead verification)
 **HEAD:** `main` at `d9a161f`. **Certified green: 2064 passed, 2 failed** (pre-existing `test_verify_cmd.py` mock drift, tracked as #819). UI revamp `2e66658` build-verified (vite output matches committed dist hashes).
 **Tests:** Run `pytest tests/ -m "not slow and not e2e and not integration and not k8s and not ollama and not mobile"`.
