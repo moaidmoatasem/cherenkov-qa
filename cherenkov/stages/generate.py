@@ -28,6 +28,26 @@ from cherenkov.substrate.client_factory import get_client
 from cherenkov.substrate.text_utils import strip_think
 
 
+def _prompt_template(name: str):
+    """Load a prompt template from the repo-root `prompts/` directory.
+
+    Autoescaping is deliberately off. These templates render LLM prompts whose
+    output is TypeScript test code, never HTML served to a browser, and HTML
+    escaping would corrupt the generated code (`&&` becoming `&amp;&amp;`,
+    quotes becoming `&#39;`). Templates that do emit HTML set
+    `autoescape=True` — see `execution/emitters/html_report.py`.
+    """
+    import jinja2
+
+    env = jinja2.Environment(  # codeql[py/jinja2-autoescape-false]
+        loader=jinja2.FileSystemLoader(
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))
+        ),
+        autoescape=False,
+    )
+    return env.get_template(name)
+
+
 def _is_plausibly_valid_ts(code: str) -> bool:
     """Fast pre-tsc structural gate — rejects obviously malformed output before accepting a generation attempt.
 
@@ -210,14 +230,7 @@ class GenerateStage:
         if source_type == "graphql":
             if not isinstance(scenario, GraphQLScenario):
                 raise TypeError("source_type 'graphql' requires a GraphQLScenario")
-            import jinja2
-
-            env = jinja2.Environment(
-                loader=jinja2.FileSystemLoader(
-                    os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))
-                )
-            )
-            template = env.get_template("graphql_test.j2")
+            template = _prompt_template("graphql_test.j2")
             user_prompt = template.render(
                 operation_name=scenario.operation_name,
                 kind=scenario.kind,
@@ -228,14 +241,7 @@ class GenerateStage:
         elif source_type == "grpc":
             if not isinstance(scenario, gRPCScenario):
                 raise TypeError("source_type 'grpc' requires a gRPCScenario")
-            import jinja2
-
-            env = jinja2.Environment(
-                loader=jinja2.FileSystemLoader(
-                    os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))
-                )
-            )
-            template = env.get_template("grpc_test.j2")
+            template = _prompt_template("grpc_test.j2")
             user_prompt = template.render(
                 service=scenario.service,
                 rpc_name=scenario.rpc_name,
@@ -245,14 +251,7 @@ class GenerateStage:
         elif source_type == "asyncapi":
             if not isinstance(scenario, AsyncAPIScenario):
                 raise TypeError("source_type 'asyncapi' requires an AsyncAPIScenario")
-            import jinja2
-
-            env = jinja2.Environment(
-                loader=jinja2.FileSystemLoader(
-                    os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))
-                )
-            )
-            template = env.get_template("asyncapi_test.j2")
+            template = _prompt_template("asyncapi_test.j2")
             user_prompt = template.render(
                 channel=scenario.channel,
                 operation=scenario.operation,
@@ -263,14 +262,7 @@ class GenerateStage:
         elif source_type == "accessibility":
             if not isinstance(scenario, AccessibilityScenario):
                 raise TypeError("source_type 'accessibility' requires an AccessibilityScenario")
-            import jinja2
-
-            env = jinja2.Environment(
-                loader=jinja2.FileSystemLoader(
-                    os.path.abspath(os.path.join(os.path.dirname(__file__), "../../prompts"))
-                )
-            )
-            template = env.get_template("accessibility_test.j2")
+            template = _prompt_template("accessibility_test.j2")
             user_prompt = template.render(
                 scenario_id=scenario.scenario_id,
                 page_target=scenario.page_target,
