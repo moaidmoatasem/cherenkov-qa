@@ -20,6 +20,14 @@ const SupportPortal: React.FC = () => {
         body: JSON.stringify({ message: ticketMsg }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        // The endpoint answers 501: there is no ticketing backend. It previously
+        // returned a random UUID and this component reported "created successfully",
+        // so the user was told their message had reached someone when it had not.
+        // Surface the server's explanation instead of inventing success.
+        setResult(data?.detail ?? `Support ticketing is unavailable (HTTP ${res.status}).`);
+        return;
+      }
       setResult(`Ticket ${data.ticket_id} created successfully.`);
       setTicketMsg('');
     } catch (e: any) {
