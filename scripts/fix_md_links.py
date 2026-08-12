@@ -1,10 +1,7 @@
 """Script to replace and repair broken internal link paths in documentation files."""
-import os
-import re
 from pathlib import Path
 
 repo_root = Path(__file__).parent.parent.resolve()
-docs_dir = repo_root / "docs"
 
 replacements_by_file = {
     "docs/cli-reference.md": [
@@ -183,4 +180,12 @@ def main() -> None:
         orig_content = content
         for old_str, new_str in replacements:
             content = content.replace(old_str, new_str)
-        if content != o
+        if content != orig_content:
+            file_path.write_text(content, encoding="utf-8")
+            total_changed += 1
+            print(f"Fixed links in {rel_file}")
+    print(f"{total_changed} file(s) updated.")
+
+
+if __name__ == "__main__":
+    main()
