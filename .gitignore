@@ -105,3 +105,7 @@ eject/pet-store-qa-suite/test-results/
 test_pypi_venv/
 cherenkov.egg-info/
 flight-project/
+
+# Brain map: local store and generated Obsidian vault
+.brainmap/
+brain-vault/

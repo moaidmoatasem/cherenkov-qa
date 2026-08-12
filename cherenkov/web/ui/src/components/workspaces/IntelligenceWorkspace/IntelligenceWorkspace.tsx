@@ -5,6 +5,7 @@
 
 import React from 'react';
 import SseChatAssistant from './SseChatAssistant';
+import BrainMapPanel from './BrainMap/BrainMapPanel';
 import KnowledgeGraphExplorer from './KnowledgeGraphExplorer';
 import SddMemoryCockpit from './SddMemoryCockpit';
 import { PageHeader } from '../../ui/PageHeader';
@@ -17,13 +18,16 @@ export const IntelligenceWorkspace: React.FC = () => {
         description="What Cherenkov has learned about your API, plus a chat assistant to ask it questions."
       />
 
-      {/* 1. SSE Streamed AI Chat Copilot */}
+      {/* 1. Brain Map — the codebase itself, mapped and reconciled */}
+      <BrainMapPanel />
+
+      {/* 2. SSE Streamed AI Chat Copilot */}
       <SseChatAssistant />
 
-      {/* 2. Knowledge Graph Explorer */}
+      {/* 3. Knowledge Graph Explorer */}
       <KnowledgeGraphExplorer />
 
-      {/* 3. SDD Memory & Token Cockpit */}
+      {/* 4. SDD Memory & Token Cockpit */}
       <SddMemoryCockpit />
     </div>
   );

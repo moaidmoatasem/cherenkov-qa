@@ -20,3 +20,4 @@ architectural work; this index is the entry point `docs/INDEX.md` links to.
 | [ADR-013](ADR-013-agent-conductor-protocol.md) | Agent Conductor Protocol |
 | [ADR-014](ADR-014-spec-derived-probe-planner.md) | Spec-Derived Probe Planner (offline hypothesis synthesis) |
 | [ADR-015](ADR-015-per-process-limiter.md) | Per-Process Concurrency Limiter |
+| [ADR-016](ADR-016-brain-map.md) | Brain Map (extract → reconcile → publish) |

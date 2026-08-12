@@ -63,3 +63,17 @@ min_faithfulness = 0.8
 
 [credentials.test-auth]
 headers = { Authorization = "Bearer test-token" }
+
+[brainmap]
+# Knowledge cartography (`cherenkov brain`). Every key is optional; these
+# excludes are added to the built-in defaults, not replacing them.
+excludes = [
+  "agent_memory/**",        # synced machine state, not human-facing knowledge
+  ".agents/**",             # per-agent scratch reports
+  "stub/generated_tests/**", # generated fixtures
+  "docs/_archive/**",       # frozen history — links there are meant to rot
+  "docs/archive/**",
+  "**/site-packages/**",
+]
+symbol_depth = "class"      # module | class | function
+vault_path = "brain-vault"

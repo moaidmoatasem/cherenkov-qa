@@ -1124,3 +1124,134 @@ export async function runExplore(payload: {
   }
   return res.json();
 }
+
+// ── Brain Map ────────────────────────────────────────────────────────────────
+// Graph reads are served from the published SQLite map, so they never re-scan
+// the repo; /sync is the only call that does work proportional to repo size.
+
+export interface BrainNode {
+  id: string;
+  kind: string;
+  title: string;
+  summary: string;
+  layer: string;
+  origin: string | null;
+  tags: string[];
+  degree: number;
+  weight: number;
+}
+
+export interface BrainEdge {
+  src: string;
+  dst: string;
+  kind: string;
+  weight: number;
+}
+
+export interface BrainGraph {
+  project: string;
+  built_at: string;
+  nodes: BrainNode[];
+  edges: BrainEdge[];
+  stats: {
+    nodes: number;
+    edges: number;
+    files: number;
+    findings: number;
+    by_kind: Record<string, number>;
+    by_edge_kind: Record<string, number>;
+    by_severity: Record<string, number>;
+    built_at: string;
+    project: string;
+  };
+  truncated: { nodes_hidden: number; edges_hidden: number; matched: number; limit: number };
+  focus?: BrainNode;
+  depth?: number;
+}
+
+export interface BrainFinding {
+  code: string;
+  severity: string;
+  message: string;
+  node_id: string | null;
+  origin: string | null;
+  detail: Record<string, any>;
+}
+
+export interface BrainStatus {
+  exists: boolean;
+  stats: BrainGraph['stats'];
+  profile: Record<string, any>;
+}
+
+export interface BrainSyncReport {
+  busy: boolean;
+  scanned?: number;
+  parsed?: number;
+  skipped?: number;
+  removed?: number;
+  duration_ms?: number;
+  stats?: BrainGraph['stats'];
+  delta?: Record<string, any>;
+  detail?: string;
+}
+
+async function brainGet<T>(path: string, label: string): Promise<T> {
+  const res = await fetch(`${API_BASE}/brainmap${path}`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(`${label} failed: ${res.status}`);
+  return res.json();
+}
+
+export async function getBrainStatus(): Promise<BrainStatus> {
+  return brainGet<BrainStatus>('/status', 'Brain map status');
+}
+
+export async function getBrainGraph(params: {
+  limit?: number;
+  kinds?: string[];
+  layers?: string[];
+  q?: string;
+} = {}): Promise<BrainGraph> {
+  const search = new URLSearchParams();
+  if (params.limit) search.set('limit', String(params.limit));
+  if (params.kinds?.length) search.set('kinds', params.kinds.join(','));
+  if (params.layers?.length) search.set('layers', params.layers.join(','));
+  if (params.q) search.set('q', params.q);
+  return brainGet<BrainGraph>(`/graph?${search}`, 'Brain map graph');
+}
+
+export async function getBrainNeighborhood(nodeId: string, depth = 1): Promise<BrainGraph> {
+  const search = new URLSearchParams({ node_id: nodeId, depth: String(depth) });
+  return brainGet<BrainGraph>(`/neighborhood?${search}`, 'Brain map neighborhood');
+}
+
+export async function getBrainFindings(params: { severity?: string; code?: string; limit?: number } = {}): Promise<{
+  total: number;
+  by_code: Record<string, number>;
+  findings: BrainFinding[];
+}> {
+  const search = new URLSearchParams();
+  if (params.severity) search.set('severity', params.severity);
+  if (params.code) search.set('code', params.code);
+  if (params.limit) search.set('limit', String(params.limit));
+  return brainGet(`/findings?${search}`, 'Brain map findings');
+}
+
+export async function syncBrainMap(full = false): Promise<BrainSyncReport> {
+  const search = new URLSearchParams({ full: String(full), delta: 'true' });
+  const res = await fetch(`${API_BASE}/brainmap/sync?${search}`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(`Brain map sync failed: ${res.status}`);
+  return res.json();
+}
+
+export async function exportBrainVault(): Promise<{ vault: string; notes_written: number; stale_removed: number }> {
+  const res = await fetch(`${API_BASE}/brainmap/export`, { method: 'POST', headers: authHeaders() });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Vault export failed: ${res.status}`);
+  }
+  return res.json();
+}

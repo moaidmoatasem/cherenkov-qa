@@ -10,7 +10,7 @@ ALL_TOP_LEVEL = [
     "map", "daemon", "explore", "author", "record", "tokens", "governance",
     "certify", "profile", "bench", "ocr", "check-stale", "drift", "demo",
     "eval", "examples", "routine", "teleport", "enterprise", "playbook",
-    "guardian",
+    "guardian", "brain",
 ]
 
 

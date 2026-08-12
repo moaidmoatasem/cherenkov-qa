@@ -57,6 +57,7 @@ def _register_commands() -> None:
     from cherenkov.cli.commands.plugins_cmd import plugins_cmd
     from cherenkov.cli.commands.audit import audit_cmd
     from cherenkov.cli.commands.bench import bench_cmd
+    from cherenkov.cli.commands.brain_cmd import brain_cmd
     from cherenkov.cli.commands.certify import certify_cmd
     from cherenkov.cli.commands.check_stale import check_stale_cmd
     from cherenkov.cli.commands.check_suite import check_suite_cmd
@@ -133,6 +134,7 @@ def _register_commands() -> None:
         (certify_cmd, "certify"),
         (profile_cmd, "profile"),
         (bench_cmd, "bench"),
+        (brain_cmd, "brain"),
         (ocr_cmd, "ocr"),
         (check_stale_cmd, "check-stale"),
         (drift_cmd, "drift"),
