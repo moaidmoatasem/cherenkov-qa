@@ -32,12 +32,29 @@ This document serves as the unified source of truth for the Cherenkov QA product
 - **Phase 16 — Platform & Marketplace**: Open the MCP Ecosystem for third-party integrations, custom evaluators, and public test templates.
 
 ## 3. Integration Strategy
-Our goal is to integrate into 25 external systems across 5 tiers:
-1. **Tier 0 (Dev)**: VS Code, Cursor, Zed, JetBrains.
-2. **Tier 1 (Team)**: GitHub, GitLab, Jira, Slack, Teams.
-3. **Tier 2 (Quality)**: SonarQube, Zephyr, Xray, Allure.
-4. **Tier 3 (AI)**: Ollama, LocalAI, vLLM, OpenAI, Anthropic.
-5. **Tier 4 (Enterprise)**: Datadog, Splunk, Okta, Active Directory.
+
+> **Corrected 2026-08-11 (#964).** This section previously listed "25 external systems across 5 tiers" as a flat roster, which read as a description of what ships. Checked against the code, the list was wrong in **both** directions: it named integrations that do not exist (SonarQube, Splunk, Zed, JetBrains) and omitted several that do (Claude Desktop, Windsurf, CircleCI, Jenkins, Linear, PagerDuty, Opsgenie, and six more LLM providers). It is now split into shipped vs. planned, with the evidence for each.
+
+### Shipped
+
+| Tier | Integration | Evidence |
+|---|---|---|
+| **0 — Dev** | VS Code | `vscode/src/extension.ts`, `.github/workflows/vscode-ci.yml` |
+| 0 | Cursor, Claude Desktop, Windsurf | `cherenkov mcp install` generates each config (`mcp/install.py`: `cursor_mcp_config`, `claude_desktop_config`, `windsurf_mcp_config`) |
+| **1 — Team** | GitHub | `action.yml`, `web/routes/webhooks_github.py`, `web/pr_comments.py`, `validate/github_exporter.py`, `export_github_ticket` MCP tool |
+| 1 | GitLab, CircleCI, Jenkins | `ci/gitlab-ci-template.yml`, `ci/circleci/orb.yml`, `ci/jenkins/vars/` — all flag-guarded by `check_cli_flags.py` since #966 |
+| 1 | Jira, Linear | `export_jira_ticket` / `export_linear_ticket` MCP tools |
+| 1 | Slack, Teams, PagerDuty, Opsgenie, generic webhook | `adapters/notifiers/` |
+| **2 — Quality** | Zephyr, Xray | `adapters/zephyr_client.py`, `adapters/xray_client.py` |
+| 2 | Allure, JUnit | `execution/emitters/`, surfaced as `validate --format allure|junit` |
+| **3 — AI** | Ollama, OpenAI, Anthropic, LocalAI, Bedrock, Azure OpenAI, HuggingFace, GitHub Models, AirLLM, NeMo | `substrate/providers/` |
+| 3 | Any OpenAI-compatible server (incl. **vLLM**) | `substrate/providers/openai_compat.py` — no vLLM-specific adapter; it is reached through the compatible endpoint |
+| **4 — Enterprise** | Okta, Active Directory | Via **SAML 2.0** (`enterprise/saml.py`), which is protocol-level. Any conformant IdP works; there is no vendor-specific SCIM or directory-sync integration |
+| 4 | Datadog, Grafana, Jaeger | Via **OTLP export** (`observability/otel.py`), not a Datadog-specific integration |
+
+### Not implemented
+
+**SonarQube** (Tier 2), **Splunk** (Tier 4), **Zed** and **JetBrains** (Tier 0) have no code. They remain aspirations; do not cite them as available. Anything added here should carry a tracking issue, since an unlinked list item is not a plan.
 
 ## 4. Growth & Adoption Strategy
 
