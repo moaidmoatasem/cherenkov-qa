@@ -1,16 +1,7 @@
-"""FastAPI routes for enterprise compliance (GDPR, SOC2, Org, run statistics).
-
-The support-ticket endpoint that used to live here was removed rather than
-implemented: it returned a UUID and the message "Enterprise support team has
-been notified" while persisting nothing and sending nothing, and per the
-no-paid-tier product decision on #754 there is no support team to route to. No
-implementation could have made that message true.
-"""
+"""FastAPI routes for enterprise compliance (GDPR, SOC2, Org, SLA, Support)."""
 from __future__ import annotations
 
-import calendar
 import os
-import time
 from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException
@@ -27,6 +18,9 @@ _org_manager = OrgManager()
 
 DEFAULT_ORG_NAME = "Cherenkov Enterprise"
 DEFAULT_ORG_OWNER_ID = "admin-1"
+
+# How many recent runs the SLA view aggregates over.
+_SLA_WINDOW = 500
 
 @router.get("/gdpr/status")
 def gdpr_status() -> Dict[str, Any]:
@@ -101,72 +95,76 @@ def org_info() -> Dict[str, Any]:
     }
 
 @router.get("/sla")
-def sla_dashboard(days: int = 30) -> Dict[str, Any]:
-    """Return run statistics measured from the local run store.
-
-    Every figure here is counted from `RunStore`. Two metrics that used to
-    appear on this endpoint have been removed rather than estimated:
-
-      * **uptime** — CHERENKOV runs conformance checks against a target on
-        demand; it is not a monitor and never observes the target between runs,
-        so it cannot know its uptime.
-      * **API response p99** — the run store records how long a CHERENKOV *run*
-        took, which is not the target API's response latency.
-
-    Both were previously served as hardcoded constants (99.99% and 145 ms)
-    beneath a "Target: 99.9%" label. Reporting an unmeasured number as an
-    observation is the exact failure this project exists to detect.
-
-    Args:
-        days: Size of the trailing window, in days.
+def sla_dashboard() -> Dict[str, Any]:
+    """Return enterprise SLA uptime and performance metrics.
 
     Returns:
-        Counts over the window, plus a per-day series with one entry per day.
+        SLA metrics dictionary including uptime, p99 latency, and check counts.
     """
+    # Derived from persisted RunRecords. This endpoint previously returned five
+    # hardcoded constants (uptime 99.99, p99 145ms, 125000 checks, 12 failures,
+    # "operational") with no indication to the caller that none of it was measured.
+    #
+    # Note there is deliberately no `uptime` field any more. CHERENKOV does not
+    # monitor availability of anything, so an uptime percentage could only ever be
+    # invented; `pass_rate_pct` is the thing it actually measures. Renaming rather
+    # than re-deriving avoids swapping one fabrication for a subtler one.
     from cherenkov.persistence.run_store import get_run_store
+    from cherenkov.web.coverage_map import conformance_summary
 
-    cutoff = time.time() - days * 86_400
-    # `list` is capped; ask for far more than a local store is expected to hold
-    # so the window is not silently truncated.
-    runs = get_run_store().list(limit=100_000)
+    store = get_run_store()
+    records = store.list(limit=_SLA_WINDOW)
+    summary = conformance_summary(store=store)
 
-    def _epoch(stamp: str) -> float:
-        try:
-            return calendar.timegm(time.strptime(stamp, "%Y-%m-%dT%H:%M:%SZ"))
-        except (ValueError, TypeError):
-            return 0.0
+    total = summary["totalRuns"]
+    durations = sorted(r.duration_ms for r in records if r.duration_ms > 0)
+    p99 = durations[min(int(len(durations) * 0.99), len(durations) - 1)] if durations else None
 
-    in_window = [r for r in runs if _epoch(r.timestamp) >= cutoff]
-    failed = [r for r in in_window if r.verdict == "FAIL"]
-    completed = [r for r in in_window if r.verdict in ("PASS", "WARN", "FAIL")]
-
-    # One bucket per day, oldest first, so the client renders a real series
-    # instead of inventing bar heights.
-    buckets: Dict[str, Dict[str, int]] = {}
-    for offset in range(days - 1, -1, -1):
-        day = time.strftime("%Y-%m-%d", time.gmtime(time.time() - offset * 86_400))
-        buckets[day] = {"runs": 0, "failed": 0}
-    for record in in_window:
-        day = str(record.timestamp)[:10]
-        if day in buckets:
-            buckets[day]["runs"] += 1
-            if record.verdict == "FAIL":
-                buckets[day]["failed"] += 1
-
-    pass_rate = (
-        round(100.0 * (len(completed) - len(failed)) / len(completed), 2)
-        if completed
-        else None
-    )
+    latest = (summary["latestVerdict"] or "").upper()
+    status = {
+        "PASS": "operational",
+        "CERTIFIED": "operational",
+        "WARN": "degraded",
+        "FAIL": "failing",
+    }.get(latest, "no_data")
 
     return {
-        "window_days": days,
-        "total_runs": len(in_window),
-        "failed_runs": len(failed),
-        "pass_rate": pass_rate,
-        "measured": bool(in_window),
-        "trend": [
-            {"date": day, "runs": counts["runs"], "failed": counts["failed"]}
-            for day, counts in buckets.items()
-        ],
+        # False when no run has been recorded yet, so a caller can render an empty
+        # state instead of showing zeros that look like measurements.
+        "measured": total > 0,
+        "source": "run_store",
+        "total_checks": total,
+        "failed_checks": summary["failCount"],
+        "pass_rate_pct": round(100.0 * summary["passCount"] / total, 2) if total else None,
+        "api_response_p99": p99,
+        "latest_verdict": summary["latestVerdict"],
+        "status": status,
+        # Real per-run history for the trend chart, newest last.
+        "trend": summary["trend"],
     }
+
+@router.post("/support/ticket")
+def create_support_ticket(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Create a priority enterprise support ticket.
+
+    Args:
+        payload: Ticket content dictionary.
+
+    Returns:
+        Dictionary status payload including generated ticket ID.
+    """
+    # There is no support-portal integration. This used to mint a random UUID and
+    # answer "Enterprise support team has been notified." — a false assurance about
+    # an action that never happened, which is worse than fabricated data: a user who
+    # believed it would not escalate through a channel that actually reaches anyone.
+    #
+    # 501 until a real backend is wired (#763). Returning an error is the honest
+    # answer to a capability that does not exist.
+    raise HTTPException(
+        status_code=501,
+        detail=(
+            "Support ticketing is not wired to a backend. No ticket was created and "
+            "nobody was notified. Open an issue at "
+            "https://github.com/moaidmoatasem/cherenkov-qa/issues instead."
+        ),
+    )
