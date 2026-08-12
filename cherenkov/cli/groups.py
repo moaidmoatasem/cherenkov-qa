@@ -44,6 +44,7 @@ GROUP_LAYOUT: dict[str, dict] = {
             "dashboard",
             "explore",
             "map",
+            "brain",
             "author",
             "record",
             "tokens",

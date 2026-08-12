@@ -80,6 +80,11 @@ from cherenkov.knowledge.api.routes import router as knowledge_router
 
 app.include_router(knowledge_router)
 
+# ── Brain Map API ──────────────────────────────────────────────────────────────
+from cherenkov.brainmap.api.routes import router as brainmap_router
+
+app.include_router(brainmap_router)
+
 # ── Phase 4: Chat Agent API ────────────────────────────────────────────────────
 from cherenkov.chat.api.routes import router as chat_router
 

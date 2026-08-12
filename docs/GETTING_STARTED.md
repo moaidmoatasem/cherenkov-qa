@@ -667,6 +667,62 @@ logs, etc.). Produces a claim graph connecting specifications with code and trac
 
 ---
 
+#### `brain` (knowledge cartography — the Obsidian brain map)
+Map a codebase as a graph of modules, packages, classes, HTTP routes, CLI
+commands, frontend components, docs and tests — then reconcile every reference
+between them and report what does not resolve. The map is incremental (only
+changed files are re-read), reconciled (a broken link is a finding, not a
+silent omission), and exportable as an Obsidian vault you can open and browse.
+
+Every subcommand takes `--root`, so it maps *any* project, not just this one.
+
+```bash
+# Build the map for the current repository
+./bin/cherenkov brain build
+
+# Update it after some edits — only changed files are parsed
+./bin/cherenkov brain sync --delta
+
+# Write an Obsidian vault, then open that folder as a vault in Obsidian
+./bin/cherenkov brain export -o ./brain-vault
+
+# What did not reconcile?
+./bin/cherenkov brain findings --severity warn
+
+# Map a different repository entirely
+./bin/cherenkov brain build --root ../some-other-service
+
+# Keep it current on every commit
+./bin/cherenkov brain install-hook
+```
+
+| Subcommand | Purpose |
+|------------|---------|
+| `build` | Full rebuild, discarding stored state |
+| `sync` | Incremental update — unchanged files are skipped |
+| `watch` | Re-sync continuously until interrupted |
+| `export` | Write an Obsidian vault (`--format obsidian`) or JSON |
+| `status` | Node/edge/finding counts for the stored map |
+| `findings` | List unresolved references; `--fail-on` makes it a CI gate |
+| `query` | Search the map by title or summary |
+| `install-hook` | Install a git post-commit hook that runs `brain sync` |
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--root` | *(cwd)* | Project root to map |
+| `--project` | *(directory name)* | Map namespace, if you want several per store |
+| `--json` | `false` | Machine-readable output |
+| `--fail-on` | `none` | `error` or `warn` — exit non-zero for CI (`findings`) |
+| `--format` | `obsidian` | `obsidian` or `json` (`export`) |
+| `--delta` | `false` | Also report what changed since the last sync (`sync`) |
+
+Configure it per project with a `[brainmap]` table in `cherenkov.toml` (or a
+standalone `brainmap.toml`): `excludes`, `extractors`, `symbol_depth`,
+`vault_path`, `layers`. The same map is served to the dashboard at
+`/api/v1/brainmap/*` and rendered in the **Knowledge** workspace.
+
+---
+
 #### `daemon` (E4-4 — continuous watcher)
 Continuously watches configured sources and rebuilds the Truth Model on change.
 
