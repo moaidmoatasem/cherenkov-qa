@@ -24,7 +24,7 @@ from cherenkov.brainmap.domain.models import (
     Node,
     make_id,
 )
-from cherenkov.brainmap.extractors.base import first_line, register
+from cherenkov.brainmap.extractors.base import first_line
 from cherenkov.brainmap.ports import ExtractContext
 
 
@@ -227,6 +227,3 @@ def _symbols(
         )
         result.edges.append(Edge(src=module_id, kind=EDGE_DEFINES, dst=symbol_id, origin=rel_path))
     return result
-
-
-register("python", PythonExtractor)

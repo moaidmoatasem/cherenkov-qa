@@ -721,6 +721,19 @@ standalone `brainmap.toml`): `excludes`, `extractors`, `symbol_depth`,
 `vault_path`, `layers`. The same map is served to the dashboard at
 `/api/v1/brainmap/*` and rendered in the **Knowledge** workspace.
 
+An entry in `extractors` is either a bundled name (`python`, `routes`, `cli`,
+`frontend`, `docs`, `tests`) or a dotted spec pointing at your own class, so a
+project can map an artefact CHERENKOV knows nothing about without patching it:
+
+```toml
+[brainmap]
+extractors = ["python", "docs", "my_package.brainmap_ext:TerraformExtractor"]
+```
+
+The class needs two methods — `claims(rel_path) -> bool` and
+`extract(rel_path, text, ctx) -> ExtractionResult` — and must be pure with
+respect to the file it is handed, since unchanged files are skipped on sync.
+
 ---
 
 #### `daemon` (E4-4 — continuous watcher)

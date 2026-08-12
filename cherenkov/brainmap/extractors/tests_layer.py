@@ -22,13 +22,11 @@ import re
 
 from cherenkov.brainmap.domain.models import (
     EDGE_TESTS,
-    KIND_MODULE,
     KIND_TEST,
     Edge,
     ExtractionResult,
     make_id,
 )
-from cherenkov.brainmap.extractors.base import register
 from cherenkov.brainmap.extractors.python_modules import is_test_path
 from cherenkov.brainmap.ports import ExtractContext
 
@@ -146,6 +144,3 @@ def _subject_from_name(rel_path: str) -> str:
     if name.endswith("_test"):
         return name[: -len("_test")]
     return ""
-
-
-register("tests", TestsExtractor)

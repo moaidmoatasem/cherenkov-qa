@@ -1,12 +1,23 @@
-"""Extractor registry and the shared file walk.
+"""Extractor resolution and the shared file walk.
 
-The registry is the extension point: an extractor registers under a name, and a
-profile's ``extractors`` list decides which names run. Registration is by
-factory so that enabling an extractor costs nothing until it is actually used.
+A profile's ``extractors`` list is a list of *names*, and this module turns
+those names into instances. Three sources are consulted, in order:
+
+1. Anything an embedding application registered at runtime via :func:`register`.
+2. The bundled extractors in :data:`BUILTIN_EXTRACTORS`.
+3. A dotted spec — ``some.package.module:ExtractorClass`` — which is how another
+   project adds its own extractor without patching CHERENKOV at all.
+
+Resolution goes through :func:`importlib.import_module` rather than a top-level
+import of each bundled extractor. That is not a workaround: a registry that
+statically imports the modules which import the registry is a genuine import
+cycle, and routing through the name keeps the dependency one-directional
+(extractors → base, never back) while making (3) fall out for free.
 """
 
 from __future__ import annotations
 
+import importlib
 import os
 from pathlib import Path
 from typing import Callable, Iterator
@@ -14,50 +25,83 @@ from typing import Callable, Iterator
 from cherenkov.brainmap.config import BrainMapProfile
 from cherenkov.brainmap.ports import Extractor
 
+# Bundled extractor name → ``module:ClassName``.
+BUILTIN_EXTRACTORS: dict[str, str] = {
+    "python": "cherenkov.brainmap.extractors.python_modules:PythonExtractor",
+    "routes": "cherenkov.brainmap.extractors.http_routes:RouteExtractor",
+    "cli": "cherenkov.brainmap.extractors.cli_commands:CliExtractor",
+    "frontend": "cherenkov.brainmap.extractors.frontend:FrontendExtractor",
+    "docs": "cherenkov.brainmap.extractors.docs:DocsExtractor",
+    "tests": "cherenkov.brainmap.extractors.tests_layer:TestsExtractor",
+}
+
 _REGISTRY: dict[str, Callable[[], Extractor]] = {}
 
 
 def register(name: str, factory: Callable[[], Extractor]) -> None:
     """Register an extractor factory under ``name``.
 
+    For extractors constructed in-process. A project shipping its own extractor
+    in its own package does not need this — it can name the class directly in
+    its profile as ``my.package.module:MyExtractor``.
+
     Args:
-        name (str): Profile-facing name, e.g. ``"python"``.
+        name (str): Profile-facing name, e.g. ``"terraform"``.
         factory (Callable[[], Extractor]): Zero-argument constructor.
     """
     _REGISTRY[name] = factory
 
 
 def registered_names() -> list[str]:
-    """Return every registered extractor name, sorted."""
-    _load_builtins()
-    return sorted(_REGISTRY)
+    """Return every name that resolves without a dotted spec, sorted."""
+    return sorted(set(BUILTIN_EXTRACTORS) | set(_REGISTRY))
 
 
 def build_extractors(names: list[str]) -> list[Extractor]:
-    """Instantiate the named extractors, skipping unknown names.
+    """Instantiate the named extractors, skipping any that will not load.
+
+    An unresolvable name is skipped rather than raised on: a profile naming an
+    extractor from a package that is not installed should map everything else,
+    not refuse to map anything.
 
     Args:
-        names (list[str]): Extractor names from the profile, in run order.
+        names (list[str]): Extractor names or dotted specs, in run order.
 
     Returns:
         list[Extractor]: Instantiated extractors.
     """
-    _load_builtins()
-    return [_REGISTRY[name]() for name in names if name in _REGISTRY]
+    built: list[Extractor] = []
+    for name in names:
+        factory = _REGISTRY.get(name)
+        if factory is not None:
+            built.append(factory())
+            continue
+        spec = BUILTIN_EXTRACTORS.get(name, name if ":" in name else "")
+        if not spec:
+            continue
+        loaded = _load(spec)
+        if loaded is not None:
+            built.append(loaded())
+    return built
 
 
-def _load_builtins() -> None:
-    """Import the bundled extractor modules so they self-register."""
-    if _REGISTRY:
-        return
-    from cherenkov.brainmap.extractors import (  # noqa: F401
-        cli_commands,
-        docs,
-        frontend,
-        http_routes,
-        python_modules,
-        tests_layer,
-    )
+def _load(spec: str) -> Callable[[], Extractor] | None:
+    """Import ``module:ClassName`` and return the class, or ``None``.
+
+    Args:
+        spec (str): Dotted module path and attribute, colon-separated.
+
+    Returns:
+        Callable[[], Extractor] | None: The extractor class, or ``None`` when
+        the module is missing or does not define that attribute.
+    """
+    module_path, _, attr = spec.partition(":")
+    try:
+        module = importlib.import_module(module_path)
+    except ImportError:
+        return None
+    factory = getattr(module, attr, None)
+    return factory if callable(factory) else None
 
 
 def walk_files(profile: BrainMapProfile) -> Iterator[tuple[str, Path]]:

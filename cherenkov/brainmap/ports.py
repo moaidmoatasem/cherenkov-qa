@@ -39,7 +39,6 @@ class Extractor(Protocol):
         Returns:
             bool: True when the file belongs to this extractor.
         """
-        ...
 
     def extract(self, rel_path: str, text: str, ctx: "ExtractContext") -> ExtractionResult:
         """Parse one file into nodes and edges.
@@ -52,7 +51,6 @@ class Extractor(Protocol):
         Returns:
             ExtractionResult: Nodes and edges derived from this file only.
         """
-        ...
 
 
 @runtime_checkable
@@ -61,27 +59,21 @@ class BrainMapStore(Protocol):
 
     def load(self, project: str) -> BrainMap:
         """Load the whole stored map for a project (empty map if unknown)."""
-        ...
 
     def replace_file(self, project: str, source: SourceFile, result: ExtractionResult) -> None:
         """Drop everything derived from ``source.path`` and store ``result``."""
-        ...
 
     def forget_files(self, project: str, paths: list[str]) -> None:
         """Drop every node, edge and scan record owned by these paths."""
-        ...
 
     def known_files(self, project: str) -> dict[str, SourceFile]:
         """Return the scan records from the last sync, keyed by path."""
-        ...
 
     def save_findings(self, project: str, map_: BrainMap) -> None:
         """Persist reconciliation output and the map's build timestamp."""
-        ...
 
     def neighborhood(self, project: str, node_id: str, depth: int) -> BrainMap:
         """Return the subgraph within ``depth`` hops of ``node_id``."""
-        ...
 
 
 @runtime_checkable
@@ -100,7 +92,6 @@ class Exporter(Protocol):
         Returns:
             dict[str, Any]: Summary counts for the CLI/API to report.
         """
-        ...
 
 
 class ExtractContext:

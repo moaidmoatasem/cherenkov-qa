@@ -29,7 +29,6 @@ from cherenkov.brainmap.domain.models import (
     Node,
     make_id,
 )
-from cherenkov.brainmap.extractors.base import register
 from cherenkov.brainmap.ports import ExtractContext
 
 _H1 = re.compile(r"^#\s+(.+)$", re.MULTILINE)
@@ -164,6 +163,3 @@ def _summary(text: str, limit: int = 200) -> str:
             continue
         return stripped[:limit]
     return ""
-
-
-register("docs", DocsExtractor)

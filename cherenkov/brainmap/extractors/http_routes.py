@@ -22,7 +22,6 @@ from cherenkov.brainmap.domain.models import (
     make_id,
 )
 from cherenkov.brainmap.extractors.ast_utils import decorator_calls, dotted, first_docline, literal_str
-from cherenkov.brainmap.extractors.base import register
 from cherenkov.brainmap.ports import ExtractContext
 
 HTTP_VERBS = {"get", "post", "put", "patch", "delete", "head", "options", "websocket", "route"}
@@ -141,6 +140,3 @@ def _join(prefix: str, path: str) -> str:
     if not prefix:
         return path
     return f"{prefix.rstrip('/')}/{path.lstrip('/')}".rstrip("/") or "/"
-
-
-register("routes", RouteExtractor)

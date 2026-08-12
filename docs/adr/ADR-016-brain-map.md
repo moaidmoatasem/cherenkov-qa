@@ -41,8 +41,12 @@ adapters shape, with three separated phases:
 
 **Extract** — per file, pure, pluggable. Each extractor parses one file into nodes and
 edges stamped with their `origin`. Python parsing is AST-only, so mapping a repository
-never executes it. Extractors register by name; a profile's `extractors` list decides
-which run, so a new artefact type is a new module and no other change.
+never executes it. A profile's `extractors` list decides which run; entries are resolved
+lazily through `importlib`, so an entry may be a bundled name *or* a dotted
+`package.module:Class` spec belonging to another project entirely. Lazy resolution is
+also what keeps the dependency one-directional — a registry that statically imports the
+modules which import the registry is a real import cycle, and CodeQL was right to say so
+on the first draft of this subsystem.
 
 **Reconcile** — global. Extractors emit *hints* (an import string, a wikilink, a URL
 literal); reconciliation joins them to real nodes and — the load-bearing part — records

@@ -23,7 +23,6 @@ from cherenkov.brainmap.domain.models import (
     make_id,
 )
 from cherenkov.brainmap.extractors.ast_utils import decorator_calls, dotted, first_docline, kwarg, literal_str
-from cherenkov.brainmap.extractors.base import register
 from cherenkov.brainmap.ports import ExtractContext
 
 
@@ -149,6 +148,3 @@ def _options(stmt: ast.AST) -> list[str]:
                 found.append(value)
                 break
     return found
-
-
-register("cli", CliExtractor)

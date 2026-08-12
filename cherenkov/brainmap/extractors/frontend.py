@@ -28,7 +28,6 @@ from cherenkov.brainmap.domain.models import (
     Node,
     make_id,
 )
-from cherenkov.brainmap.extractors.base import register
 from cherenkov.brainmap.ports import ExtractContext
 
 FRONTEND_SUFFIXES = (".tsx", ".ts", ".jsx", ".js", ".mjs")
@@ -197,6 +196,3 @@ def _api_paths(text: str) -> list[str]:
         if path.startswith("/api") and path not in found:
             found.append(path)
     return found
-
-
-register("frontend", FrontendExtractor)

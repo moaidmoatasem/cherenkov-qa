@@ -16,9 +16,37 @@ from cherenkov.brainmap.adapters.json_export import graph_payload
 from cherenkov.brainmap.adapters.obsidian_vault import GENERATED_KEY, MANIFEST_NAME, ObsidianVaultExporter
 from cherenkov.brainmap.adapters.sqlite_store import SQLiteBrainMapStore
 from cherenkov.brainmap.config import load_profile
-from cherenkov.brainmap.domain.models import BrainMap, Edge, Node, dedupe_edges, make_id
+from cherenkov.brainmap.domain.models import (
+    BrainMap,
+    Edge,
+    ExtractionResult,
+    Node,
+    dedupe_edges,
+    make_id,
+)
+from cherenkov.brainmap.extractors.base import (
+    BUILTIN_EXTRACTORS,
+    _REGISTRY,
+    build_extractors,
+    register,
+    registered_names,
+)
 from cherenkov.brainmap.reconcile import ReconcileOptions, Reconciler, diff_maps
 from cherenkov.brainmap.use_cases.sync import build_engine
+
+
+class ShoutExtractor:
+    """A minimal out-of-tree extractor, used to prove the extension path."""
+
+    name = "shout"
+
+    def claims(self, rel_path: str) -> bool:
+        """Claim nothing — this exists only to be loaded."""
+        return False
+
+    def extract(self, rel_path: str, text: str, ctx) -> ExtractionResult:
+        """Return nothing; loading is the behaviour under test."""
+        return ExtractionResult()
 
 APP_PY = '''"""The service."""
 from fastapi import APIRouter
@@ -384,6 +412,36 @@ def test_vault_manifest_records_what_was_generated(project: Path, tmp_path: Path
     assert manifest["project"] == engine.profile.project
     assert "Brain Map.md" in manifest["extras"]
     assert manifest["notes"]
+
+
+# ── extractor resolution ────────────────────────────────────────────────────
+def test_builtin_extractors_all_resolve():
+    built = build_extractors(list(BUILTIN_EXTRACTORS))
+    assert len(built) == len(BUILTIN_EXTRACTORS)
+    assert {e.name for e in built} == set(BUILTIN_EXTRACTORS)
+
+
+def test_a_third_party_extractor_loads_from_a_dotted_spec():
+    # The class is resolved by import path, so another project ships its own
+    # extractor in its own package without patching this one.
+    built = build_extractors(["tests.unit.test_brainmap_engine:ShoutExtractor"])
+
+    assert len(built) == 1
+    assert built[0].name == "shout"
+
+
+def test_an_unresolvable_extractor_is_skipped_not_raised():
+    built = build_extractors(["python", "no.such.module:Nope", "not-a-name"])
+    assert [e.name for e in built] == ["python"]
+
+
+def test_a_runtime_registered_extractor_wins():
+    register("shout", ShoutExtractor)
+    try:
+        assert build_extractors(["shout"])[0].name == "shout"
+        assert "shout" in registered_names()
+    finally:
+        _REGISTRY.pop("shout", None)
 
 
 # ── profile ─────────────────────────────────────────────────────────────────
