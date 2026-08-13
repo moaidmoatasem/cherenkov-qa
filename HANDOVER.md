@@ -24,6 +24,20 @@ has ever existed, and the claim it was cited for ("the HITL backend is still nas
 citation and bury that, spike #196 now carries a note stating the discrepancy and asking
 for it to be reconciled before the issue is re-opened.
 
+### Resolved — `tests/a11y.spec.ts` rewritten against the shipping IA
+
+**Update (2026-08-13, later):** rewritten rather than archived. Archiving would have
+matched how its siblings were handled but would have left a11y coverage of the current
+UI at zero, which is the actual problem. The new file audits the five shipping
+workspaces plus the navigation rail, with two rules stated in its header: assertions are
+not weakened to make it pass (a violation is a UI bug, not a threshold to raise), and it
+runs through `bootstrapReal` against the real backend so it audits the DOM the user
+gets. `color-contrast` remains excluded — a deliberate property of the dark theme, and
+the exemption the previous file already carried — but it is excluded visibly in one
+helper rather than buried per test.
+
+The original text of this entry is kept below for the record.
+
 ### Open — `tests/a11y.spec.ts` is a legacy spec that was never archived
 
 Now that the suite runs, this file fails: it audits **Projects, Sidebar/TopBar, Review,

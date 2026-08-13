@@ -69,6 +69,7 @@ export const EjectSuitePanel: React.FC = () => {
               type="text"
               value={outputPath}
               onChange={(e) => setOutputPath(e.target.value)}
+              aria-label="Eject output path"
               className="w-full bg-bg-base text-text-primary p-2.5 rounded-lg border border-white/10"
               data-testid="eject-output-path"
             />

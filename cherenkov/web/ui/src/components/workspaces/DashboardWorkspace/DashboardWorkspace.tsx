@@ -76,8 +76,19 @@ export const DashboardWorkspace: React.FC<DashboardWorkspaceProps> = ({
         }
       />
 
+      {/* `Tabs` emits aria-controls="panel-<id>", so the panel must carry that
+          id and the matching tabpanel role — otherwise the reference dangles
+          (axe: aria-valid-attr-value, critical) and a screen reader has no way
+          to associate a tab with the content it switches to. */}
       {activeTab === 'overview' && (
-        <div className="ds-flex-col ds-gap-lg" style={{ animation: 'ds-pulse 0.3s ease-out forwards' }}>
+        <div
+          id="panel-overview"
+          role="tabpanel"
+          aria-labelledby="tab-overview"
+          tabIndex={0}
+          className="ds-flex-col ds-gap-lg"
+          style={{ animation: 'ds-pulse 0.3s ease-out forwards' }}
+        >
           {/* 0. Section Landing Links (N-2) */}
           <div className="ds-flex-row ds-gap-md" style={{ flexWrap: 'wrap' }} data-testid="dashboard-quick-links">
             {quickLinks.map((link) => {
@@ -114,7 +125,14 @@ export const DashboardWorkspace: React.FC<DashboardWorkspaceProps> = ({
       )}
 
       {activeTab === 'signals' && (
-        <div className="ds-flex-col ds-gap-lg" style={{ animation: 'ds-pulse 0.3s ease-out forwards' }}>
+        <div
+          id="panel-signals"
+          role="tabpanel"
+          aria-labelledby="tab-signals"
+          tabIndex={0}
+          className="ds-flex-col ds-gap-lg"
+          style={{ animation: 'ds-pulse 0.3s ease-out forwards' }}
+        >
           {/* 3. Spec Coverage & Risk Signals Heatmap */}
           <IntegrityHeatmap />
 

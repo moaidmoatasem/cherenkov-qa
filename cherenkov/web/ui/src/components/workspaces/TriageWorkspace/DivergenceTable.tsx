@@ -173,6 +173,7 @@ export const DivergenceTable: React.FC<DivergenceTableProps> = ({ onSelectDiverg
           <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
+            aria-label="Filter divergences by severity"
             className="bg-bg-base border border-border-subtle rounded-lg px-2 py-1 text-xs font-mono text-cyan-400"
             data-testid="divergence-severity-filter"
           >

@@ -108,8 +108,9 @@ export const GovernanceSettings: React.FC = () => {
           {/* Egress Policy & Model Tier */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[10px] uppercase text-text-muted">Egress Network Policy</label>
+              <label htmlFor="egress-policy" className="text-[10px] uppercase text-text-muted">Egress Network Policy</label>
               <select
+                id="egress-policy"
                 value={settings.security?.egress_policy || 'internal'}
                 onChange={(e) =>
                   setSettings({
@@ -142,8 +143,9 @@ export const GovernanceSettings: React.FC = () => {
           {/* Copilot Autonomy & Substrate Budgets */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <label className="text-[10px] uppercase text-text-muted">Copilot Autonomy</label>
+              <label htmlFor="copilot-autonomy" className="text-[10px] uppercase text-text-muted">Copilot Autonomy</label>
               <select
+                id="copilot-autonomy"
                 value={settings.copilot?.autonomy || 'assisted'}
                 onChange={(e) =>
                   setSettings({

@@ -127,6 +127,7 @@ export const ModelProviderSettings: React.FC = () => {
                 type="checkbox"
                 checked={airllmEnabled}
                 onChange={(e) => setAirllmEnabled(e.target.checked)}
+                aria-label="Enable AirLLM layered inference"
                 className="w-4 h-4 accent-cyan-400 shrink-0"
                 data-testid="toggle-airllm"
               />

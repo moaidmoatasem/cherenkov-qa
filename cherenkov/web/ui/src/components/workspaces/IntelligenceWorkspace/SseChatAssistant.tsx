@@ -168,6 +168,7 @@ export const SseChatAssistant: React.FC = () => {
         <button
           onClick={handleSend}
           disabled={isStreaming || !input.trim()}
+          aria-label={isStreaming ? 'Assistant is responding' : 'Send message'}
           className="px-4 py-2.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/40 rounded-lg text-xs font-mono font-bold flex items-center justify-center"
           data-testid="chat-send-btn"
         >
