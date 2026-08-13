@@ -81,10 +81,12 @@ Please replace with a meaningful description.
         ...,
         description="Raw content of the test file (Playwright TypeScript or pytest Python)",
         min_length=1,
+        max_length=512_000,
     )
     spec_content: str | None = Field(
         None,
         description="Raw OpenAPI spec YAML/JSON content. If omitted, heuristic analysis only.",
+        max_length=8_000_000,
     )
     test_format: str = Field(
         "playwright",
@@ -284,23 +286,48 @@ def _spec_property_issues(
 
 # ── Playwright (TypeScript) analysis ──────────────────────────────────────────
 
-_TS_STRING = re.compile(r"""(['"`])(?:\\.|(?!\1).)*\1""")
-_TS_COMMENT = re.compile(r"(?<!:)//.*$")
+# `test_content` arrives from an unauthenticated POST, so every pattern here
+# runs on attacker-controlled input. Two rules follow from that:
+#
+#   1. No unbounded `\s*` next to a bracket. Repetition that can fail late
+#      makes `re.search` quadratic in the length of the input. Whitespace runs
+#      in real source are short, so the bounds below cost nothing.
+#   2. No ambiguous alternation. In the string-literal pattern the branches are
+#      disjoint — the negated class excludes the backslash the escape branch
+#      consumes — so a single quote cannot backtrack exponentially.
+_WS = r"\s{0,4}"
 
-_TS_TEST_HEADER = re.compile(r"\b(test|it|describe)(\.\w+)?\s*\(")
-_TS_DISABLED = re.compile(r"\b(test|it|describe)\.(skip|fixme|todo)\s*\(")
-_TS_EXPECT = re.compile(r"\bexpect\s*\(")
-_TS_EXPECT_ARG = re.compile(r"\bexpect\s*\(\s*([^;]*?)\s*\)\s*\.")
-_TS_LITERAL_ARG = re.compile(r"^(true|false|null|undefined|[\d\s+\-*/().]+)$")
-_TS_LESS_THAN = re.compile(r"\.toBeLessThan(?:OrEqual)?\s*\(\s*(-?\d+)\s*\)")
-_TS_GREATER_THAN = re.compile(r"\.toBeGreaterThan(?:OrEqual)?\s*\(\s*(-?\d+)\s*\)")
-_TS_TO_BE_STATUS = re.compile(r"\.toBe\s*\(\s*(\d{3})\s*\)")
-_TS_REQUEST = re.compile(
-    r"\b(?:client|request|api|ctx)\s*\.\s*(get|post|put|patch|delete|head|options|GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s*\(\s*(['\"`])([^'\"`]+)\2"
+_TS_STRING = re.compile(
+    r"'(?:[^'\\\n]|\\.)*'"
+    r'|"(?:[^"\\\n]|\\.)*"'
+    r"|`(?:[^`\\]|\\.)*`"
 )
-_TS_HAS_PROPERTY = re.compile(r"\.toHaveProperty\s*\(\s*['\"`]([^'\"`]+)['\"`]")
+
+_TS_TEST_HEADER = re.compile(r"\b(test|it|describe)(\.\w+)?" + _WS + r"\(")
+_TS_DISABLED = re.compile(r"\b(test|it|describe)\.(skip|fixme|todo)" + _WS + r"\(")
+_TS_EXPECT = re.compile(r"\bexpect" + _WS + r"\(")
+_TS_EXPECT_ARG = re.compile(r"\bexpect" + _WS + r"\(([^;]*?)\)" + _WS + r"\.")
+_TS_LITERAL_ARG = re.compile(r"^(true|false|null|undefined|[\d\s+\-*/().]+)$")
+_TS_LESS_THAN = re.compile(
+    r"\.toBeLessThan(?:OrEqual)?" + _WS + r"\(" + _WS + r"(-?\d+)" + _WS + r"\)"
+)
+_TS_GREATER_THAN = re.compile(
+    r"\.toBeGreaterThan(?:OrEqual)?" + _WS + r"\(" + _WS + r"(-?\d+)" + _WS + r"\)"
+)
+_TS_TO_BE_STATUS = re.compile(r"\.toBe" + _WS + r"\(" + _WS + r"(\d{3})" + _WS + r"\)")
+_TS_REQUEST = re.compile(
+    r"\b(?:client|request|api|ctx)" + _WS + r"\." + _WS
+    + r"(get|post|put|patch|delete|head|options|GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)"
+    + _WS + r"\(" + _WS + r"(['\"`])([^'\"`]+)\2"
+)
+_TS_HAS_PROPERTY = re.compile(
+    r"\.toHaveProperty" + _WS + r"\(" + _WS + r"['\"`]([^'\"`]+)['\"`]"
+)
 _TS_BODY_ATTR = re.compile(
     r"\b(?:" + "|".join(sorted(_BODY_IDENTIFIERS)) + r")(?:\[\d+\])?\.(\w+)"
+)
+_TS_OK_TRUTHY = re.compile(
+    r"\.toBe(Truthy)?" + _WS + r"\(" + _WS + r"(true)?" + _WS + r"\)"
 )
 _TS_THROWS = re.compile(r"\b(throw|rejects|toThrow|fail)\b")
 _TS_BINDING = re.compile(r"\b(?:const|let|var)\s+(?:\{([^}]*)\}|(\w+))\s*=")
@@ -328,8 +355,25 @@ def _ts_binds_body(code_lines: list[str]) -> bool:
 def _mask_ts_strings(line: str) -> str:
     """Blank out string contents, preserving length so offsets stay aligned."""
     return _TS_STRING.sub(
-        lambda m: m.group(1) + "\0" * (len(m.group(0)) - 2) + m.group(1), line
+        lambda m: m.group(0)[0] + "\0" * (len(m.group(0)) - 2) + m.group(0)[0], line
     )
+
+
+def _find_line_comment(masked: str) -> int | None:
+    """Index of a `//` line comment, skipping the `://` inside a URL.
+
+    Scanned rather than matched: a regex with a lookbehind restarts at every
+    offset, which is quadratic on a line of many `//` pairs — and this input is
+    attacker-controlled. `str.find` advances, so this stays linear.
+    """
+    start = 0
+    while True:
+        index = masked.find("//", start)
+        if index == -1:
+            return None
+        if index == 0 or masked[index - 1] != ":":
+            return index
+        start = index + 2
 
 
 def _strip_ts_comments(line: str) -> str:
@@ -339,8 +383,8 @@ def _strip_ts_comments(line: str) -> str:
     not a weakened assertion, and a URL is not a comment. String contents are
     preserved because request paths and property names live inside them.
     """
-    comment = _TS_COMMENT.search(_mask_ts_strings(line))
-    return line[:comment.start()] if comment else line
+    index = _find_line_comment(_mask_ts_strings(line))
+    return line[:index] if index is not None else line
 
 
 def _strip_ts_noise(line: str) -> str:
@@ -348,7 +392,9 @@ def _strip_ts_noise(line: str) -> str:
 
     A brace inside a string literal must not open or close a test body.
     """
-    return _TS_COMMENT.sub("", _TS_STRING.sub(lambda m: m.group(1) * 2, line))
+    without_strings = _TS_STRING.sub(lambda m: m.group(0)[0] * 2, line)
+    index = _find_line_comment(without_strings)
+    return without_strings[:index] if index is not None else without_strings
 
 
 def _ts_blocks(lines: list[str]) -> list[tuple[int, int]]:
@@ -480,7 +526,7 @@ def _analyse_playwright(content: str, spec: SpecFacts | None = None) -> list[Int
                 ))
                 continue
 
-            if re.search(r"\.ok\b", arg) and re.search(r"\.toBe(Truthy)?\s*\(\s*(true)?\s*\)", code):
+            if re.search(r"\.ok\b", arg) and _TS_OK_TRUTHY.search(code):
                 issues.append(_issue(
                     IssueType.WEAKENED_ASSERTION,
                     start + i + 1,

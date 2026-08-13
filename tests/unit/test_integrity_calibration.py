@@ -161,6 +161,45 @@ def test_spec_checks_are_silent_without_a_spec() -> None:
     assert not any(i.issue_type.value == "SPEC_MISMATCH" for i in without_spec.issues)
 
 
+# ── Input hardening ───────────────────────────────────────────────────────────
+# POST /api/v1/integrity/audit is unauthenticated, so test_content is attacker
+# controlled and every pattern in the analyser runs on it. These inputs are the
+# shapes CodeQL flagged as super-linear; each must stay fast.
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        '"' + "\\a" * 4000,          # unterminated string, escape-heavy
+        "//" * 4000,                 # comment-marker run
+        "/" * 8000,                  # slash run
+        ".toBe(" + " " * 8000,       # unterminated call, whitespace run
+        "expect(" + " " * 8000,      # unterminated expect
+        "'" * 8000,                  # quote run
+        "expect(" + "(" * 4000,      # unbalanced nesting
+    ],
+    ids=["escapes", "comments", "slashes", "tobe-ws", "expect-ws", "quotes", "nesting"],
+)
+def test_pathological_input_stays_bounded(payload: str) -> None:
+    """Adversarial input must not push the analyser into super-linear time."""
+    import time
+
+    start = time.monotonic()
+    result = audit_test_integrity(
+        IntegrityAuditRequest(test_content=payload, test_format="playwright")
+    )
+    elapsed = time.monotonic() - start
+    assert result.audit_id
+    assert elapsed < 2.0, f"analysis took {elapsed:.2f}s on adversarial input"
+
+
+def test_oversized_test_content_is_rejected() -> None:
+    """The endpoint bounds what it will scan rather than trusting the caller."""
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        IntegrityAuditRequest(test_content="x" * 512_001, test_format="playwright")
+
+
 def test_malformed_spec_degrades_instead_of_raising() -> None:
     """A broken spec must not take the auditor down with it."""
     result = audit_test_integrity(
