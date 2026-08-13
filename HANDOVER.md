@@ -1,5 +1,45 @@
 # CHERENKOV -- Session Handover
 
+## Brain map is at zero findings; gate wired; a11y specs are stale (2026-08-13)
+
+`cherenkov brain findings` now reports **0 error, 0 warn** — only the 914 `info`
+coverage inventory, which is not a defect list. New workflow
+`.github/workflows/brain-map-gate.yml` runs `brain build` then
+`brain findings --fail-on warn` on every PR, so a doc linking to a file that does not
+exist, an import of a missing module, or frontend code calling an undeclared API path
+fails the PR.
+
+Verified the gate actually fails rather than merely passing: a probe file with one
+broken wikilink drives it to exit 1, and removing the probe returns it to 0. (The first
+attempt at that check was wrong — `brain sync -q` is not a valid flag, so the sync never
+ran and the gate read a stale map. Worth repeating if the gate is ever changed.)
+
+**The last three warns are gone, and none of them was fixed by guessing.**
+`[[fabricated-validation-gate]]` now points at `docs/SCOPE_LEDGER.md`, which defines the
+term in bold and explains what it gates — a target verified to support the claim at each
+link site. `[[openclaw-integration-review]]` had **no valid target**: no such document
+has ever existed, and the claim it was cited for ("the HITL backend is still nascent") is
+**contradicted by `docs/vision/11_CONSOLIDATION_AUDIT.md`**, which records `hitl/` as
+"atomic queue + `hitl/v1` envelope, race-proven 10/10 + 5/5". Rather than invent a
+citation and bury that, spike #196 now carries a note stating the discrepancy and asking
+for it to be reconciled before the issue is re-opened.
+
+### Open — `tests/a11y.spec.ts` is a legacy spec that was never archived
+
+Now that the suite runs, this file fails: it audits **Projects, Sidebar/TopBar, Review,
+Setup, Healing, Governance, Memory, Truth Map, Eject, Devices, Signals and Author**
+screens — the pre-revamp IA. `playwright.config.ts` already has a `testIgnore` list for
+exactly this, commented *"Archived legacy specs: these target screens removed in the UI
+revamp (SetupScreen, ReviewScreen, HealingScreen, Sidebar, TopBar, ...)"* — and
+`tests/a11y.spec.ts` names those very screens but was left off the list. The dead suite
+hid it.
+
+Not resolved here, because it is a test-strategy call rather than a mechanical fix:
+archiving the file matches how its siblings were handled but drops the handful of tests
+that still target live surfaces (Knowledge, Settings, Command Palette); rewriting it
+against the 5-workspace IA is real work. **Whoever picks this up: the a11y coverage of
+the current UI is currently zero, and was zero before this too — it just looked green.**
+
 ## SEVERE — the dashboard's entire Playwright suite was dead; restored (2026-08-13)
 
 `cherenkov/web/ui/tests/api_mocks.ts` is absent from the tree. Ten spec files import

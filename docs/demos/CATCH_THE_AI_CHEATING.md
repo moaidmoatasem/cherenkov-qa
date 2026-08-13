@@ -53,7 +53,8 @@ Fix it for real; re-run; verdict **PASS**; issue a **CHERENKOV Certificate** sta
 - [ ] Three injected-cheat fixtures (weaken / delete / hallucinate).
 
 ## Honesty guardrails (non-negotiable)
-- Use a real generator and a real target; no rigging. If it doesn't catch the cheat, that's a Rung-1 bug to fix, not a script to fudge — see [fabricated-validation-gate] lesson.
+- Use a real generator and a real target; no rigging. If it doesn't catch the cheat, that's a Rung-1 bug to fix, not a script to fudge — see the
+  [fabricated validation gate](../SCOPE_LEDGER.md) lesson.
 - Show `NOT_checked` scope on the certificate. The brand is honesty.
 
 ## Ties to gates
