@@ -165,7 +165,7 @@ def highest_numeric(deployed: list[dict]) -> str | None:
     ]
     if not numeric:
         return None
-    return max(numeric, key=lambda name: version_key(name))  # type: ignore[arg-type]
+    return max(numeric, key=version_key)  # type: ignore[arg-type,return-value]
 
 
 def audit(deployed: list[dict], package_series: str) -> int:
