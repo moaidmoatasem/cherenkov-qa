@@ -1,5 +1,105 @@
 # CHERENKOV -- Session Handover
 
+## `check-suite` could not see the cheat the demo is built around (2026-08-13)
+
+Two defects in the flagship detector, both found by running it rather than
+reading it, both now fixed and gated.
+
+**1. The assertion walker saw one AST shape.** `_parse_suite` tracked only
+`ast.Assert` whose `.test` was an `ast.Compare`. Everything else was invisible:
+`assert a == 1 and b == 2` (a `BoolOp`, so *neither* comparison was seen),
+`assert resp.ok`, `assert not x`, and the entire `unittest`/`TestCase` idiom
+(`self.assertEqual(...)` is a call, not an `Assert`). Measured: a candidate that
+deleted four baseline assertions and weakened the fifth reported
+`PASS — no integrity violations found`. The sharpest form of this — the reason it
+matters rather than being a nice-to-have — is that the cheat `cherenkov demo`
+dramatizes is `assert status == 201 and email present` → `assert status < 500`,
+a `BoolOp` baseline. **The product's marquee example was undetectable by the
+product's marquee static detector.** The demo catches it through
+`MeaningfulAssertionGate` (live differential execution), which is a different
+engine; a user who watched the demo and then put `check-suite --fail-on-finding`
+in CI had bought a guarantee that did not cover the demonstrated case.
+Now decomposed via `_iter_test_expr` / `_iter_unittest_call`, with truthiness
+tracked as a weak comparator so a `== 201` degraded to `assert status` is
+WEAKENED. Same candidate now yields 5 findings.
+
+**2. HALLUCINATED was endpoint-blind.** `_spec_fields` unioned every
+`properties` key anywhere in the document into one flat alphabet, so the check
+asked "does this name exist somewhere in the spec". Measured against
+`petstore.json`: a test on `/pet/1` asserting `shipDate` (Order), `userStatus`
+and `password` (User) — three fields on no Pet response — passed clean. This
+degrades toward a no-op as specs grow, since the union of all property names
+covers most plausible field names. Now `_spec_endpoint_fields` resolves each
+path's response schemas (following `$ref`, `allOf`/`oneOf`/`anyOf`, array
+`items`), `_py_test_paths` / `_ts_test_paths` extract the endpoint each test
+calls, and `_match_path` maps `/pet/1` → `/pet/{petId}`. Ambiguous matches
+resolve to *no* match rather than a guess, and an unresolvable endpoint falls
+back to the whole-document alphabet — visibly, via different finding text
+(`not defined in the spec` vs `not on the endpoint … calls`), so the two are
+distinguishable in output.
+
+### The structural fix — `tests/unit/test_capability_claims.py`
+
+The `.ts` banner announced *"HALLUCINATED is NOT IMPLEMENTED for TypeScript"*
+and *"WEAKENED is a file-level heuristic"* — in the same run that printed
+per-test WEAKENED, DELETED and HALLUCINATED findings. README:49 carried the same
+dead table. `_check_typescript` had been rewritten and its own docstring
+documented the upgrade; nothing propagated it.
+
+The drift pointed at modesty, which makes it feel harmless. It is not. It proves
+**no gate bound a documented capability claim to the code implementing it**, and
+nothing structural made understating the direction it would drift. For a product
+whose thesis is that a verdict must be independent of the thing being judged,
+shipping a self-contradicting verdict about itself is the expensive bug.
+
+The new test executes every cell of the README table against a fixture *and*
+parses the table out of `README.md`. A capability that regresses fails; a table
+that overstates **or understates** fails. Verified in both directions rather
+than assumed: flipping the TS/Hallucinated cell to ❌ fails
+`test_readme_table_matches_reality`; reintroducing the `BoolOp` blindness fails
+four tests across both classes. It also asserts the banner never denies a
+capability the same run demonstrates.
+
+### `layer-guard.yml` was testing a different invariant than the one it named
+
+It failed any PR touching `core/|ports/` **and** `adapters/|web/|cli/`. That is
+a co-change heuristic, not a dependency check, and it was wrong both ways:
+**5 of the 21** commits touching `cherenkov/*.py` in the preceding 50 would have
+failed it (including `Feature/saml sync (#951)`), while the rule it *named* —
+core must not import infrastructure — was never checked, so adding
+`from cherenkov.web import app` to `core/orchestrator.py` passed clean. A gate a
+quarter of merges must route around trains people to bypass it.
+
+Replaced with `scripts/check_layer_imports.py`, which parses imports across the
+whole tree. **The real invariant currently holds: 0 violations** — it was clean
+by luck, not by gate. Proven to fail: injecting one import into
+`core/certificate.py` exits 1. A renamed layer is a loud `CONFIG` failure rather
+than a silent no-op, which is how gates usually die.
+
+Also raised `--cov-fail-under` from 55 to 65 in `ci.yml`; measured coverage is
+**67%** (35,348 statements), so the floor had ~12 points of slack and could not
+catch regression.
+
+### Still open from this pass — not fixed here
+
+- **Weakening detection compares operator strength, not asserted values.** A
+  rewrite keeping `==` but asserting a weaker value is not caught by
+  `check-suite`; that is what the differential engine is for. Stated in README
+  under "Known limits" rather than left implicit.
+- **`cherenkov demo` Beats 1 and 2 are hardcoded `click.echo`** (`demo_cmd.py:118-125`)
+  — no suite is generated and nothing runs. Beats 3–4 are real (two live
+  `BrokenImplServer`s, real HTTP, real verdicts). Narration and measurement are
+  visually indistinguishable in the output; the honest half is carrying the
+  other half's credibility.
+- **Surface sprawl.** 53 top-level CLI commands, 66 subpackages, 238 docs files
+  (55,612 lines, 62% of source LOC), 37 workflows, against a README that says
+  "API conformance is the shipped core". `reporting`, `scheduling` and `daemon`
+  have zero referencing test files. README:90 says five dashboard workspaces,
+  `CAPABILITY_COVERAGE.md:26` says six; the code has six.
+- **`tests/unit/test_mcp_auth.py` cannot be collected in this environment** —
+  `cryptography`'s Rust bindings panic on a missing `_cffi_backend`. Environment,
+  not code, but it means the file is silently unexercised wherever that holds.
+
 ## Brain map is at zero findings; gate wired; a11y specs are stale (2026-08-13)
 
 `cherenkov brain findings` now reports **0 error, 0 warn** — only the 914 `info`

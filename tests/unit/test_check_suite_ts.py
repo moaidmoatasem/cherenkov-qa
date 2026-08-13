@@ -127,13 +127,21 @@ Please replace with a meaningful description.
 
 class TestTypeScriptDisclosure:
     def test_cli_warns_typescript_is_not_ast(self) -> None:
-        """The honest warning existed but was unreachable for `.ts` inputs."""
+        """The warning must disclose the real limitation: regex, not AST.
+
+        This assertion previously pinned the string "NOT IMPLEMENTED", which the
+        banner used to claim about HALLUCINATED — in runs that were emitting
+        HALLUCINATED findings. The test was guarding the disclosure's *wording*
+        rather than its *truth*, so it held a false statement in place. It now
+        checks that the genuine limitation is disclosed;
+        `tests/unit/test_capability_claims.py` checks that nothing false is.
+        """
         result = CliRunner().invoke(
             check_suite_cmd,
             ["-c", str(TS_WEAKENED), "-b", str(TS_GOOD), "-s", str(SPEC)],
         )
-        assert "regex-based detection" in result.output
-        assert "NOT IMPLEMENTED" in result.output
+        assert "regex" in result.output
+        assert "not AST analysis" in result.output
 
     def test_python_path_does_not_emit_the_typescript_warning(self) -> None:
         result = CliRunner().invoke(
@@ -144,4 +152,4 @@ class TestTypeScriptDisclosure:
                 "-s", str(SPEC),
             ],
         )
-        assert "regex-based detection" not in result.output
+        assert "not AST analysis" not in result.output
