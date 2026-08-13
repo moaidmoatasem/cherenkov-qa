@@ -389,7 +389,6 @@ def _analyse_playwright(content: str, spec: SpecFacts | None = None) -> list[Int
     for start, end in blocks:
         body = codes[start:end + 1]
         header = codes[start]
-        line_of = lambda offset: start + offset + 1  # noqa: E731 — 1-based line numbers
 
         if _TS_DISABLED.search(header):
             issues.append(_issue(
@@ -428,7 +427,7 @@ def _analyse_playwright(content: str, spec: SpecFacts | None = None) -> list[Int
                 if not _TS_THROWS.search(tail):
                     issues.append(_issue(
                         IssueType.ALWAYS_PASSING,
-                        line_of(i),
+                        start + i + 1,
                         "expect() throws on failure and this catch discards it — the test "
                         "reports green whatever the API returns.",
                         "Let the assertion propagate, or re-throw in the catch block",
@@ -448,7 +447,7 @@ def _analyse_playwright(content: str, spec: SpecFacts | None = None) -> list[Int
             if arg and _TS_LITERAL_ARG.match(arg):
                 issues.append(_issue(
                     IssueType.EMPTY_ASSERTION,
-                    line_of(i),
+                    start + i + 1,
                     f"expect({arg}) asserts a constant — its truth does not depend on the API.",
                     "Assert a value read from the response instead",
                     "critical",
@@ -461,7 +460,7 @@ def _analyse_playwright(content: str, spec: SpecFacts | None = None) -> list[Int
             if less and (is_status or int(less.group(1)) >= 300):
                 issues.append(_issue(
                     IssueType.WEAKENED_ASSERTION,
-                    line_of(i),
+                    start + i + 1,
                     f"Range assertion accepts any status below {less.group(1)} — 4xx responses "
                     "pass, so the test survives a broken endpoint.",
                     "Assert the exact status the spec documents, e.g. .toBe(200)",
@@ -473,7 +472,7 @@ def _analyse_playwright(content: str, spec: SpecFacts | None = None) -> list[Int
             if greater and int(greater.group(1)) <= 0:
                 issues.append(_issue(
                     IssueType.WEAKENED_ASSERTION,
-                    line_of(i),
+                    start + i + 1,
                     f"Bound of {greater.group(1)} cannot be violated by a length or count — "
                     "this assertion never fails.",
                     "Assert the exact expected count, or assert on specific fields",
@@ -484,7 +483,7 @@ def _analyse_playwright(content: str, spec: SpecFacts | None = None) -> list[Int
             if re.search(r"\.ok\b", arg) and re.search(r"\.toBe(Truthy)?\s*\(\s*(true)?\s*\)", code):
                 issues.append(_issue(
                     IssueType.WEAKENED_ASSERTION,
-                    line_of(i),
+                    start + i + 1,
                     "response.ok is true for any 2xx — a 204 with no body passes a test for a "
                     "documented 200 with a body.",
                     "Assert the exact status code from the spec",
@@ -496,12 +495,12 @@ def _analyse_playwright(content: str, spec: SpecFacts | None = None) -> list[Int
                 status_match = _TS_TO_BE_STATUS.search(code)
                 if status_match:
                     has_status_assertion = True
-                    asserted_statuses.append((line_of(i), status_match.group(1)))
+                    asserted_statuses.append((start + i + 1, status_match.group(1)))
 
             for match in _TS_HAS_PROPERTY.finditer(code):
-                referenced_fields.append((line_of(i), match.group(1)))
+                referenced_fields.append((start + i + 1, match.group(1)))
             for match in _TS_BODY_ATTR.finditer(code):
-                referenced_fields.append((line_of(i), match.group(1)))
+                referenced_fields.append((start + i + 1, match.group(1)))
 
         if requests and not has_status_assertion and not _TS_THROWS.search(" ".join(body)):
             issues.append(_issue(
@@ -658,9 +657,12 @@ def _analyse_pytest(content: str, spec: SpecFacts | None = None) -> list[Integri
         for node in ast.walk(func):
             if not isinstance(node, ast.Try):
                 continue
-            if not any(isinstance(n, ast.Assert) for n in ast.walk(node.body[0]) if node.body):
-                if not any(isinstance(n, ast.Assert) for b in node.body for n in ast.walk(b)):
-                    continue
+            guards_assertion = any(
+                isinstance(n, ast.Assert)
+                for stmt in node.body for n in ast.walk(stmt)
+            )
+            if not guards_assertion:
+                continue
             for handler in node.handlers:
                 if all(isinstance(stmt, _PY_SWALLOW_BODY) for stmt in handler.body):
                     issues.append(_issue(
@@ -705,8 +707,13 @@ def _analyse_pytest(content: str, spec: SpecFacts | None = None) -> list[Integri
                     ))
                     continue
 
-                if _py_is_len_call(left) and isinstance(right, ast.Constant):
-                    bound = right.value
+                if (
+                    _py_is_len_call(left)
+                    and isinstance(right, ast.Constant)
+                    and isinstance(right.value, int)
+                    and not isinstance(right.value, bool)
+                ):
+                    bound: int = right.value
                     if (isinstance(op, ast.GtE) and bound <= 0) or (
                         isinstance(op, ast.Gt) and bound < 0
                     ):
