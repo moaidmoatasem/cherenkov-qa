@@ -1,0 +1,67 @@
+name: "Architecture: Brain Map Reconciliation Gate"
+
+# Fails a PR that introduces an unresolvable reference: a doc linking to a file
+# that does not exist, an import of a module that is not there, or frontend code
+# calling an API path no route declares.
+#
+# This gate is only meaningful because the warn list is clean. It went from 32
+# findings to 0 in #978 by fixing the real defects (a Playwright suite that
+# loaded zero tests) and teaching the map which trees are corpora rather than
+# code. A gate that fires on everything teaches people to ignore it, so if the
+# warn count ever creeps back up, fix the findings — do not raise the threshold.
+#
+# `info` findings (untested_module, orphan_node, undocumented_hub) are a
+# coverage inventory, not defects, and are deliberately not gated.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+concurrency:
+  group: brain-map-gate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  reconcile:
+    name: Brain map reconciles cleanly
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build the map
+        run: python -m cherenkov brain build
+
+      - name: Fail on unresolved references
+        run: python -m cherenkov brain findings --fail-on warn
+
+      - name: Report what the map contains
+        if: always()
+        run: |
+          {
+            echo '## Brain map'
+            echo
+            echo '```'
+            python -m cherenkov brain status || true
+            echo '```'
+            echo
+            echo '<details><summary>Unresolved references (empty when green)</summary>'
+            echo
+            echo '```'
+            python -m cherenkov brain findings --severity warn --limit 50 || true
+            python -m cherenkov brain findings --severity error --limit 50 || true
+            echo '```'
+            echo
+            echo '</details>'
+          } >> "$GITHUB_STEP_SUMMARY"

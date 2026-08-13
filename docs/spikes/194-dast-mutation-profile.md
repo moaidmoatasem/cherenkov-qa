@@ -2,7 +2,7 @@
 
 **Issue:** [#194](https://github.com/moaidmoatasem/cherenkov-qa/issues/194) · `[Horizon V][9c][spike]` · Source: Doc3 B / F7
 **Status:** Spike (design + prototype). Implementation deferred to Phase 3+.
-**Related:** [[fabricated-validation-gate]] (validation gate is the gating milestone before this lands)
+**Related:** [Scope Ledger — the fabricated validation gate](../SCOPE_LEDGER.md) (validation gate is the gating milestone before this lands)
 
 ## Goal
 
