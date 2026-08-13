@@ -62,6 +62,11 @@ class BrainMapProfile:
         doc_roots: Directory prefixes whose markdown is treated as
             documentation rather than incidental prose.
         test_roots: Directory prefixes holding tests.
+        fixture_roots: Directory prefixes holding *corpora* — files that are
+            read as data rather than executed. A generated-test fixture
+            legitimately imports a client module that only exists once the
+            suite is ejected, so an unresolved reference from one of these
+            trees is not a broken link and must not be reported as one.
         layers: Path prefix → layer label, longest prefix wins.
         symbol_depth: How deep the Python extractor descends —
             ``"module"`` (modules only), ``"class"`` (plus classes, the
@@ -82,6 +87,7 @@ class BrainMapProfile:
     source_roots: list[str] = field(default_factory=list)
     doc_roots: list[str] = field(default_factory=lambda: ["docs", "."])
     test_roots: list[str] = field(default_factory=lambda: ["tests", "test"])
+    fixture_roots: list[str] = field(default_factory=list)
     layers: dict[str, str] = field(default_factory=dict)
     symbol_depth: str = "class"
     max_file_bytes: int = 512_000
@@ -112,6 +118,20 @@ class BrainMapProfile:
             if bare and (rel_path == bare or rel_path.startswith(bare + "/")):
                 return True
         return False
+
+    def is_fixture(self, rel_path: str) -> bool:
+        """Whether a path lives in a corpus of files that are read, not run.
+
+        Args:
+            rel_path (str): Repo-relative path.
+
+        Returns:
+            bool: True when unresolved references from this file are expected.
+        """
+        return any(
+            rel_path == root or rel_path.startswith(root.rstrip("/") + "/")
+            for root in self.fixture_roots
+        )
 
     def layer_for(self, rel_path: str) -> str:
         """Return the layer label for a path (longest matching prefix wins)."""
@@ -153,6 +173,7 @@ class BrainMapProfile:
             "source_roots": list(self.source_roots),
             "doc_roots": list(self.doc_roots),
             "test_roots": list(self.test_roots),
+            "fixture_roots": list(self.fixture_roots),
             "layers": dict(self.layers),
             "symbol_depth": self.symbol_depth,
             "max_file_bytes": self.max_file_bytes,

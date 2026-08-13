@@ -190,6 +190,32 @@ export async function unknownBase() {
     assert not any("nope" in call for call in calls)
 
 
+def test_frontend_extractor_ignores_imports_quoted_inside_template_literals(ctx):
+    # The dashboard's pipeline mock embeds a *sample* of generated test code in
+    # a backtick string. Those are quotations, not this file's dependencies.
+    source = """
+import { real } from './real-module';
+
+export const SAMPLE = `
+import { client } from '../clients/api';
+test('x', async () => {});
+`;
+"""
+    result = FrontendExtractor().extract("src/mocks.ts", source, ctx)
+    assert hints(result, EDGE_IMPORTS) == {"src/real-module"}
+
+
+def test_frontend_extractor_still_reads_api_paths_inside_template_literals(ctx):
+    # The same blanking must not hide real call sites, which are template
+    # literals by construction.
+    source = """
+const API_BASE = '/api/v1';
+fetch(`${API_BASE}/runs`);
+"""
+    result = FrontendExtractor().extract("src/api.ts", source, ctx)
+    assert "/api/v1/runs" in hints(result, EDGE_CALLS)
+
+
 def test_frontend_extractor_ignores_package_imports(ctx):
     result = FrontendExtractor().extract("src/a.ts", "import React from 'react';\n", ctx)
     assert not hints(result, EDGE_IMPORTS)

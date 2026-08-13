@@ -77,3 +77,16 @@ excludes = [
 ]
 symbol_depth = "class"      # module | class | function
 vault_path = "brain-vault"
+
+# Corpora: files read as data, never executed. Their generated-suite imports
+# (`../client`) resolve only once a suite is ejected, so unresolved references
+# from these trees are expected rather than broken. Verified: `run_demo.sh`
+# drives the Python suites through integrity_check.py, and bench/runner.py
+# reads every .spec.ts as text — neither ever invokes Playwright on them.
+fixture_roots = [
+  "bench/fixtures",
+  "demos/catch-the-ai-cheating",
+  "demos/live-case-data",
+  "tests/eject_fixtures",
+  "tests/fixtures",
+]

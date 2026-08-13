@@ -414,6 +414,31 @@ def test_vault_manifest_records_what_was_generated(project: Path, tmp_path: Path
     assert manifest["notes"]
 
 
+def test_fixture_corpora_do_not_report_broken_links(project: Path):
+    # A generated-suite fixture imports a client module that only exists once
+    # the suite is ejected. That is correct, not broken — but only where the
+    # profile says the tree is a corpus.
+    (project / "corpus").mkdir()
+    (project / "corpus" / "generated.spec.ts").write_text("import { client } from './client';\n")
+    (project / "app" / "real.ts").write_text("import { thing } from './missing';\n")
+
+    engine = build_engine(
+        project,
+        {"db_path": str(project / ".brainmap" / "map.db"), "fixture_roots": ["corpus"]},
+    )
+    engine.sync(full=True)
+    dangling = [f for f in engine.graph().findings if f.code == "dangling_link"]
+
+    assert not [f for f in dangling if f.origin == "corpus/generated.spec.ts"]
+    assert [f for f in dangling if f.origin == "app/real.ts"]
+
+
+def test_fixture_roots_default_to_empty(project: Path):
+    engine = engine_for(project)
+    assert engine.profile.fixture_roots == []
+    assert not engine.profile.is_fixture("anything/at/all.ts")
+
+
 # ── extractor resolution ────────────────────────────────────────────────────
 def test_builtin_extractors_all_resolve():
     built = build_extractors(list(BUILTIN_EXTRACTORS))

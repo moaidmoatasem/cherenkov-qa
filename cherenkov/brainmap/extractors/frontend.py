@@ -43,6 +43,7 @@ _BASE_CONST = re.compile(
 )
 _LITERAL_PATH = re.compile(r"""['"`](\$\{([A-Za-z_$][\w$]*)\})?(/[A-Za-z0-9_\-./{}$]*)""")
 _TEMPLATE_HOLE = re.compile(r"\$\{[^}]*\}")
+_TEMPLATE_LITERAL = re.compile(r"`[^`]*`", re.DOTALL)
 
 
 class FrontendExtractor:
@@ -108,8 +109,17 @@ class FrontendExtractor:
             )
             result.edges.append(Edge(src=file_id, kind=EDGE_DEFINES, dst=symbol_id, origin=rel_path))
 
+        # Imports are read with template literals blanked out. A file that
+        # embeds a *sample* of generated test code in a backtick string — the
+        # dashboard's pipeline mock does exactly this — otherwise contributes
+        # that sample's imports as if they were its own, and the reconciler
+        # then reports a perfectly healthy file as importing a module that
+        # does not exist. API paths below still scan the raw text, because
+        # `${API_BASE}/runs` is a real call site, not a quotation.
+        import_text = _TEMPLATE_LITERAL.sub(" ", text)
+
         seen: set[str] = set()
-        for match in list(_IMPORT.finditer(text)) + list(_REQUIRE.finditer(text)):
+        for match in list(_IMPORT.finditer(import_text)) + list(_REQUIRE.finditer(import_text)):
             spec = match.group(1)
             if not spec.startswith("."):
                 continue  # package imports are dependencies, not project edges

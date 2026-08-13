@@ -1,5 +1,67 @@
 # CHERENKOV -- Session Handover
 
+## SEVERE — the dashboard's entire Playwright suite was dead; restored (2026-08-13)
+
+`cherenkov/web/ui/tests/api_mocks.ts` is absent from the tree. Ten spec files import
+it. The result, measured, not inferred:
+
+```
+$ cd cherenkov/web/ui && npx playwright test --list
+Error: Cannot find module '.../tests/api_mocks' imported from .../tests/qa/page-objects.ts
+Total: 0 tests in 0 files
+```
+
+**Zero tests. Not zero passing — zero loadable.** `playwright.config.ts` sets
+`testDir: './tests'` with `testMatch: /.*\.spec\.ts/`, so every spec in the tree fails
+at import. That includes `tests/qa/headless-qa-user.spec.ts`, which is the *only* spec
+the nightly `qa-headless` workflow runs — so the nightly job has been exercising nothing.
+
+Nothing caught it because `qa-headless` runs on a schedule, on `workflow_dispatch`, or on
+a PR carrying the `qa-headless` label — never on an ordinary PR. The brain map found it
+as a `dangling_link`, which is the second severe defect that subsystem has surfaced.
+
+Restored from the copy at `b9fe073` (753 lines). It still fits: `tsc` clean against
+today's `src/types`, all six required exports present (`setupApiMocks`,
+`INITIAL_PROJECTS`, `MOCK_ENDPOINTS`, `INITIAL_TESTS`, `INITIAL_FAILURES`,
+`MOCK_DIVERGENCES`), and the suite goes from 0 to **112 tests in 13 files**.
+
+**Do not treat provenance as settled.** This clone's history is truncated at 52
+first-parent commits, so where the file was lost is not soundly knowable from here.
+`git log --diff-filter=D` records no deletion for the path. Worth a look with full
+history — a file that ten specs depend on should not be able to leave without a trace.
+
+**`tests/e2e/*` needs a live backend**, by design — those specs call `bootstrapReal(page)`
+and sit behind the "Backend offline" overlay without one. Run
+`python -m uvicorn cherenkov.web.api:app --port 8001` first.
+
+### Brain map warn findings: 32 → 3
+
+The other 29 were not defects, and the map now says so rather than being ignored:
+
+- **26 were corpora.** `bench/fixtures`, `demos/*`, `tests/eject_fixtures` and
+  `tests/fixtures` are read as *text* — `bench/runner.py` walks them for `.spec.ts`
+  files, `run_demo.sh` drives the Python suites through `integrity_check.py`, and no
+  Playwright config points at any of them. Their `../client` import resolves only after
+  ejection. New `fixture_roots` profile key marks such trees, and `cherenkov.toml`
+  lists this repo's five.
+- **1 was my own extractor's bug.** The restored `api_mocks.ts` embeds a *sample* of
+  generated test code in a backtick string; the frontend extractor read that sample's
+  imports as the file's own. It now blanks template literals before scanning imports —
+  while still scanning raw text for API paths, since `` `${API_BASE}/runs` `` is a real
+  call site. Same class as the docs extractor's inline-code fix.
+- **1 was a real broken doc link**, now a proper markdown link to
+  `docs/spikes/195-semantic-chunking-rag.md`.
+
+**The 3 that remain need a human.** `[[fabricated-validation-gate]]` (×2) and
+`[[openclaw-integration-review]]` in `docs/spikes/194` and `196` point at notes that were
+never written. Plausible targets exist — `docs/process/VALIDATION_EVIDENCE_LEDGER.md`,
+`docs/INTEGRATION_STRATEGY.md` — but guessing what a document *meant* to cite and
+silently rewriting it is how `docs/_archive/ROADMAP_RECONCILIATION.md` came to contain
+fabricated results. Left alone deliberately.
+
+With the noise gone, `cherenkov brain findings --fail-on warn` is now a candidate CI
+gate: it would pass today except for those three.
+
 ## The four unparseable files are fixed, and a gate stops them coming back (2026-08-12)
 
 Follow-up to the brain map entry below, which found them. All four now parse; `cherenkov
