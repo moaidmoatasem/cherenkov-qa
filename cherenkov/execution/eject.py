@@ -24,22 +24,43 @@ def _safe_dest(base_dir: str, filename: str) -> str:
 class EjectorEngine:
     """Manages the lifecycle of standalone Playwright test suite ejection, stripping all CHERENKOV metadata."""
 
-    def __init__(self, run_id: str | None = None, tests_src_dir: str | None = None):
+    def __init__(
+        self,
+        run_id: str | None = None,
+        tests_src_dir: str | None = None,
+        allow_packaged_fixtures: bool = False,
+    ):
         self.run_id = run_id or "eject"
         self.log = get_logger("EJECT", self.run_id)
-        self.stub_dir = str(Path(__file__).parent.parent.parent / "stub")
+        self.package_root = Path(__file__).parent.parent.parent
+        self.stub_dir = str(self.package_root / "stub")
         # `tests_src_dir` lets callers point at wherever `cherenkov generate
         # --output-dir <dir>` actually wrote its output (documented in
-        # docs/GETTING_STARTED.md as a supported combo). Without this override,
-        # eject always read the hardcoded `stub/generated_tests/` default and
-        # silently ignored any custom --output-dir generate was given, ejecting
-        # unrelated tracked fixtures instead of the user's own generated tests
-        # while still printing "successfully ejected" / "runs standalone".
-        self.tests_src_dir = tests_src_dir or str(Path(self.stub_dir) / "generated_tests")
-        # Tracked reference specs. `stub/generated_tests/` is gitignored, so on a
-        # fresh checkout (e.g. CI) it is empty; fall back to these committed
-        # fixtures so the eject path stays exercisable end-to-end.
-        self.fixtures_dir = str(Path(__file__).parent.parent.parent / "tests" / "eject_fixtures")
+        # docs/GETTING_STARTED.md as a supported combo).
+        #
+        # The default must mirror `generate --output-dir`, whose default is the
+        # *relative* path "stub/generated_tests" — i.e. resolved against the
+        # user's cwd. Resolving it against the installed package instead meant
+        # the natural `generate` -> `eject` flow read two different directories:
+        # the user's tests were written under cwd, while eject shipped this
+        # package's own fixtures — including the deliberately sabotaged
+        # demo_weakened / demo_deleted / demo_hallucinated specs — into the
+        # user's repo under a "100% standard, runs standalone" banner.
+        self.tests_src_dir = tests_src_dir or str(Path.cwd() / "stub" / "generated_tests")
+        # Tracked reference specs, used to keep the eject path exercisable
+        # end-to-end in CI. This is a *test* affordance, so it is opt-in: a real
+        # user must never silently receive this package's fixtures in place of
+        # their own generated tests.
+        self.fixtures_dir = str(self.package_root / "tests" / "eject_fixtures")
+        self.allow_packaged_fixtures = allow_packaged_fixtures
+
+    def _is_inside_package(self, directory: str) -> bool:
+        """True when `directory` lives inside the installed cherenkov package."""
+        try:
+            Path(directory).resolve().relative_to(self.package_root.resolve())
+        except ValueError:
+            return False
+        return True
 
     @staticmethod
     def _spec_files_in(directory: str) -> list[str]:
@@ -54,17 +75,38 @@ class EjectorEngine:
         ]
 
     def _resolve_tests_src(self) -> tuple[str | None, list[str]]:
-        """Picks the generated-tests dir, falling back to tracked fixtures when empty."""
+        """Picks the generated-tests dir to eject from.
+
+        Refuses to hand back a directory inside the installed package unless the
+        caller explicitly opted in: those are CHERENKOV's own fixtures, and some
+        of them are deliberately sabotaged. Shipping them into a user's repo
+        under a success banner is the failure this product exists to catch.
+        """
         primary = self._spec_files_in(self.tests_src_dir)
         if primary:
+            if self._is_inside_package(self.tests_src_dir) and not self.allow_packaged_fixtures:
+                self.log.error(
+                    "refusing to eject from inside the cherenkov package — these are "
+                    "CHERENKOV's own test fixtures, not your generated tests",
+                    tests_src_dir=self.tests_src_dir,
+                )
+                return None, []
             return self.tests_src_dir, primary
-        fallback = self._spec_files_in(self.fixtures_dir)
-        if fallback:
-            self.log.warning(
-                "no generated specs found; falling back to tracked eject fixtures",
-                fixtures_dir=self.fixtures_dir,
-            )
-            return self.fixtures_dir, fallback
+
+        if self.allow_packaged_fixtures:
+            fallback = self._spec_files_in(self.fixtures_dir)
+            if fallback:
+                self.log.warning(
+                    "no generated specs found; falling back to tracked eject fixtures",
+                    fixtures_dir=self.fixtures_dir,
+                )
+                return self.fixtures_dir, fallback
+
+        self.log.error(
+            "no generated tests found to eject; run `cherenkov generate` first, or point "
+            "eject at the directory it wrote with --tests-dir",
+            tests_src_dir=self.tests_src_dir,
+        )
         return None, []
 
     def eject_suite(self, output_dir: str) -> bool:
@@ -98,9 +140,17 @@ class EjectorEngine:
                 self.log.info("copied test file", filename=f)
 
             # 3. Copy generated types file (fall back to tracked fixture if stub copy is absent)
-            types_src = os.path.join(self.stub_dir, "generated-types.ts")
-            if not os.path.exists(types_src):
-                types_src = os.path.join(self.fixtures_dir, "generated-types.ts")
+            # Prefer a types file the user generated next to their own tests, then
+            # one under their cwd stub/, before falling back to this package's copy
+            # (which describes CHERENKOV's demo API, not theirs).
+            types_candidates = [
+                os.path.join(os.path.dirname(tests_src_dir), "generated-types.ts"),
+                os.path.join(tests_src_dir, "generated-types.ts"),
+                os.path.join(str(Path.cwd() / "stub"), "generated-types.ts"),
+                os.path.join(self.stub_dir, "generated-types.ts"),
+                os.path.join(self.fixtures_dir, "generated-types.ts"),
+            ]
+            types_src = next((c for c in types_candidates if os.path.exists(c)), types_candidates[-1])
             types_dest = _safe_dest(output_path, "generated-types.ts")
             if os.path.exists(types_src):
                 shutil.copy2(types_src, types_dest)

@@ -237,7 +237,20 @@ is a path a user walks and no test does.
 
 Ordered by severity. Each is reproducible from a clean checkout.
 
-### 1. SEVERE — `eject` ships CHERENKOV's own sabotaged fixtures into the user's repo
+### 1. SEVERE — `eject` ships CHERENKOV's own sabotaged fixtures into the user's repo — **FIXED 2026-08-13**
+
+> **Resolved.** The default now resolves against `Path.cwd()`, matching `generate --output-dir`,
+> and eject **refuses** to ship anything from inside the installed package rather than reporting
+> success. Reproduced before the fix — a clean cwd containing one `orders_flow.spec.ts` ejected
+> **14 files** including `demo_weakened`, `demo_deleted`, `demo_hallucinated`, `golden_weakened`
+> and `golden_deleted`, with the user's own test absent, returning success; after the fix it ejects
+> exactly `orders_flow.spec.ts`. Guarded by `TestEjectDoesNotShipCherenkovsOwnFixtures` plus a
+> corrected default-path assertion, all verified to fail against the original code.
+>
+> Worth recording: `test_default_tests_src_dir_unchanged_when_not_overridden` **asserted the buggy
+> default** (`os.path.join(default_engine.stub_dir, "generated_tests")`), so the suite was pinning
+> the defect in place rather than catching it. The packaged-fixture fallback still exists for CI,
+> but is now opt-in via `allow_packaged_fixtures=True`, which a real user never sets.
 
 ```
 $ cherenkov generate --spec api.yaml --no-repair     # → my 2 tests
