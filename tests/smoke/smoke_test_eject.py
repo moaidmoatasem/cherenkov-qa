@@ -127,6 +127,25 @@ Please replace with a meaningful description.
 
     output_dir = "ejected_suite"
 
+    # `eject` reads `./stub/generated_tests` (cwd-relative, matching
+    # `generate --output-dir`) and refuses to fall back to CHERENKOV's own
+    # packaged fixtures — shipping those into a user's repo was the severe defect
+    # fixed in #983. That directory is gitignored, so on a fresh CI checkout it is
+    # empty and eject correctly exits 1. Seed it the way `generate` would, so this
+    # smoke test exercises the real default path with a real user's tests in place.
+    generated_dir = os.path.join("stub", "generated_tests")
+    fixtures_dir = os.path.join("tests", "eject_fixtures")
+    seeded: list[str] = []
+    os.makedirs(generated_dir, exist_ok=True)
+    for name in os.listdir(fixtures_dir):
+        if not (name.endswith(".spec.ts") or name == "_scores.json"):
+            continue
+        dst = os.path.join(generated_dir, name)
+        if not os.path.exists(dst):
+            shutil.copy2(os.path.join(fixtures_dir, name), dst)
+            seeded.append(dst)
+    print(f"Seeded {len(seeded)} file(s) into {generated_dir} (standing in for `generate`).")
+
     try:
         # 2. Execute eject subcommand CLI
         print(f"Executing eject command to target output: {output_dir}...")
@@ -247,6 +266,14 @@ Please replace with a meaningful description.
             print(f"Cleaning up ejected folder: {output_dir}...")
             shutil.rmtree(output_dir)
             print("Ejected folder cleaned up cleanly.")
+
+        # 9. Remove only what we seeded, so a developer's real generated output
+        #    (this directory is a working scratch dir locally) is left alone.
+        for path in seeded:
+            if os.path.exists(path):
+                os.remove(path)
+        if seeded:
+            print(f"Removed {len(seeded)} seeded file(s) from {generated_dir}.")
 
     print("\n=======================================================")
     print("  ALL PHASE 9 STANDALONE EJECT TESTS PASSED SUCCESSFULLY!")

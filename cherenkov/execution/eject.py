@@ -54,13 +54,28 @@ class EjectorEngine:
         self.fixtures_dir = str(self.package_root / "tests" / "eject_fixtures")
         self.allow_packaged_fixtures = allow_packaged_fixtures
 
-    def _is_inside_package(self, directory: str) -> bool:
-        """True when `directory` lives inside the installed cherenkov package."""
+    @staticmethod
+    def _within(directory: str, base: Path) -> bool:
+        """True when `directory` sits under `base`."""
         try:
-            Path(directory).resolve().relative_to(self.package_root.resolve())
+            Path(directory).resolve().relative_to(Path(base).resolve())
         except ValueError:
             return False
         return True
+
+    def _is_inside_package(self, directory: str) -> bool:
+        """True when `directory` is the package's own, not something the user made.
+
+        "Inside the package" alone is the wrong signal: in a source checkout the
+        package root *is* the repo root, so a developer's own
+        ./stub/generated_tests lives inside it too — and refusing that would stop
+        anyone working in the repo from ejecting their own tests. What actually
+        distinguishes CHERENKOV's fixtures from the user's output is whether the
+        directory sits under the directory the user is working in.
+        """
+        return self._within(directory, self.package_root) and not self._within(
+            directory, Path.cwd()
+        )
 
     @staticmethod
     def _spec_files_in(directory: str) -> list[str]:
