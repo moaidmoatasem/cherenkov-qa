@@ -16,13 +16,17 @@ This is what makes CHERENKOV the "Snyk for test honesty".
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
+import re
 import time
 import uuid
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+import yaml
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
@@ -77,10 +81,12 @@ Please replace with a meaningful description.
         ...,
         description="Raw content of the test file (Playwright TypeScript or pytest Python)",
         min_length=1,
+        max_length=512_000,
     )
     spec_content: str | None = Field(
         None,
         description="Raw OpenAPI spec YAML/JSON content. If omitted, heuristic analysis only.",
+        max_length=8_000_000,
     )
     test_format: str = Field(
         "playwright",
@@ -114,119 +120,759 @@ Please replace with a meaningful description.
     duration_ms: int
 
 
-# ── Analysis patterns ─────────────────────────────────────────────────────────
+# ── Spec facts ────────────────────────────────────────────────────────────────
 
-_PLAYWRIGHT_WEAK_PATTERNS: list[tuple[IssueType, str, str, str, str]] = [
-    (
-        IssueType.WEAKENED_ASSERTION,
-        "toBeLessThan(500)",
-        "Assertion accepts any status < 500 — this will pass on 4xx errors",
-        "Use .toBe(200) or the specific expected status code from the spec",
-        "high",
-    ),
-    (
-        IssueType.WEAKENED_ASSERTION,
-        "toBeLessThan(1000)",
-        "Assertion accepts any status < 1000 — passes on all HTTP responses including errors",
-        "Assert the specific expected status code from the OpenAPI spec",
-        "high",
-    ),
-    (
-        IssueType.WEAKENED_ASSERTION,
-        "toBeGreaterThan(0)",
-        "Assertion only checks response is non-empty, not that it matches the spec contract",
-        "Assert specific fields from the spec response schema",
-        "medium",
-    ),
-    (
-        IssueType.EMPTY_ASSERTION,
-        "expect(true)",
-        "expect(true).toBe(true) is a tautological assertion — always passes regardless of behavior",
-        "Remove and replace with a meaningful check against actual response data",
-        "critical",
-    ),
-    (
-        IssueType.EMPTY_ASSERTION,
-        "expect(1).toBe(1)",
-        "Tautological assertion — always passes",
-        "Assert actual response values instead",
-        "critical",
-    ),
-    (
-        IssueType.ALWAYS_PASSING,
-        "// @ts-ignore",
-        "@ts-ignore suppresses type errors that may indicate real API contract violations",
-        "Fix the underlying type error rather than suppressing it",
-        "medium",
-    ),
-]
+_HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "head", "options", "trace"})
 
-_PYTEST_WEAK_PATTERNS: list[tuple[IssueType, str, str, str, str]] = [
-    (
-        IssueType.WEAKENED_ASSERTION,
-        "assert response.status_code < 500",
-        "Assertion accepts 4xx responses as passing — catches spec drift silently",
-        "Use assert response.status_code == <expected_code>",
-        "high",
-    ),
-    (
-        IssueType.EMPTY_ASSERTION,
-        "assert True",
-        "assert True is a no-op — always passes regardless of API behavior",
-        "Replace with a meaningful assertion against actual response data",
-        "critical",
-    ),
-    (
-        IssueType.WEAKENED_ASSERTION,
-        "assert len(response.json()) >= 0",
-        "len(...) >= 0 is always true — this assertion never fails",
-        "Assert the specific expected count or fields from the spec",
-        "high",
-    ),
-]
+# Identifiers that are transport or language surface rather than schema fields.
+# Reading `.length` off a body is not a claim about the API contract.
+_NON_SCHEMA_NAMES = frozenset({
+    "length", "status", "statusText", "ok", "headers", "url", "json", "text",
+    "body", "data", "response", "size", "type", "keys", "values", "items",
+})
+
+# Names commonly bound to a decoded response body, whose attribute reads are
+# assertions about the schema.
+_BODY_IDENTIFIERS = frozenset({"data", "body", "json", "result", "payload"})
+
+_PATH_PARAM = re.compile(r"\{[^}]*\}")
 
 
-# ── Analysis engine ───────────────────────────────────────────────────────────
+@dataclass(frozen=True)
+class SpecFacts:
+    """The subset of an OpenAPI document the auditor can adjudicate against."""
 
-def _analyse_playwright(content: str) -> list[IntegrityIssue]:
-    """Scan Playwright TypeScript test content for integrity issues."""
-    issues: list[IntegrityIssue] = []
-    lines = content.splitlines()
-    for line_num, line in enumerate(lines, start=1):
-        stripped = line.strip()
-        if stripped.startswith("//"):
+    documented: dict[tuple[str, str], set[str]]  # (METHOD, path template) -> status codes
+    properties: frozenset[str]                   # every property name declared anywhere
+
+    def match_path(self, concrete: str) -> str | None:
+        """Resolve a concrete request path back to its spec template."""
+        cleaned = concrete.split("?")[0]
+        if len(cleaned) > 1:
+            cleaned = cleaned.rstrip("/")
+        templates = {path for _, path in self.documented}
+        if cleaned in templates:
+            return cleaned
+        for template in templates:
+            parts = _PATH_PARAM.split(template)
+            pattern = "^" + "[^/]+".join(re.escape(p) for p in parts) + "$"
+            if re.match(pattern, cleaned):
+                return template
+        return None
+
+
+def _collect_properties(node: Any, out: set[str]) -> None:
+    """Walk a spec collecting every declared property name."""
+    if isinstance(node, dict):
+        props = node.get("properties")
+        if isinstance(props, dict):
+            out.update(k for k in props if isinstance(k, str))
+        for value in node.values():
+            _collect_properties(value, out)
+    elif isinstance(node, list):
+        for value in node:
+            _collect_properties(value, out)
+
+
+def _parse_spec(spec_content: str | None) -> SpecFacts | None:
+    """Parse an OpenAPI spec into the facts the auditor checks against.
+
+    Returns None when no spec was supplied or it cannot be parsed — in that
+    case the audit degrades to structural analysis and makes no spec claims.
+    """
+    if not spec_content or not spec_content.strip():
+        return None
+    try:
+        spec = yaml.safe_load(spec_content)  # also parses JSON
+    except Exception:
+        return None
+    if not isinstance(spec, dict):
+        return None
+
+    documented: dict[tuple[str, str], set[str]] = {}
+    paths = spec.get("paths")
+    if isinstance(paths, dict):
+        for path, operations in paths.items():
+            if not isinstance(path, str) or not isinstance(operations, dict):
+                continue
+            for method, operation in operations.items():
+                if not isinstance(method, str) or method.lower() not in _HTTP_METHODS:
+                    continue
+                if not isinstance(operation, dict):
+                    continue
+                responses = operation.get("responses")
+                if not isinstance(responses, dict):
+                    continue
+                codes = {str(c) for c in responses if str(c).isdigit()}
+                if codes:
+                    documented[(method.upper(), path)] = codes
+
+    properties: set[str] = set()
+    _collect_properties(spec.get("components"), properties)
+    _collect_properties(paths, properties)
+
+    if not documented and not properties:
+        return None
+    return SpecFacts(documented=documented, properties=frozenset(properties))
+
+
+def _issue(
+    issue_type: IssueType,
+    line: int | None,
+    detail: str,
+    suggestion: str,
+    severity: str,
+) -> IntegrityIssue:
+    return IntegrityIssue(
+        issue_type=issue_type,
+        line=line,
+        detail=detail,
+        suggestion=suggestion,
+        severity=severity,
+    )
+
+
+def _spec_status_issues(
+    spec: SpecFacts | None,
+    method: str | None,
+    path: str | None,
+    asserted: list[tuple[int, str]],
+) -> list[IntegrityIssue]:
+    """Flag asserted status codes the spec does not document for this operation."""
+    if spec is None or not method or not path or not asserted:
+        return []
+    template = spec.match_path(path)
+    if template is None:
+        return []
+    documented = spec.documented.get((method.upper(), template))
+    if not documented:
+        return []
+    out: list[IntegrityIssue] = []
+    for line, code in asserted:
+        if code not in documented:
+            out.append(_issue(
+                IssueType.SPEC_MISMATCH,
+                line,
+                f"Test asserts {code} for {method.upper()} {template}, but the spec documents "
+                f"{', '.join(sorted(documented))}. A spec-conformant API fails this test.",
+                f"Assert {sorted(documented)[0]} — the status the spec documents for this operation",
+                "high",
+            ))
+    return out
+
+
+def _spec_property_issues(
+    spec: SpecFacts | None,
+    referenced: list[tuple[int, str]],
+) -> list[IntegrityIssue]:
+    """Flag asserted field names that appear nowhere in the spec."""
+    if spec is None or not spec.properties:
+        return []
+    out: list[IntegrityIssue] = []
+    seen: set[str] = set()
+    for line, name in referenced:
+        if name in _NON_SCHEMA_NAMES or name in spec.properties or name in seen:
             continue
-        for issue_type, pattern, detail, suggestion, severity in _PLAYWRIGHT_WEAK_PATTERNS:
-            if pattern.lower() in stripped.lower():
-                issues.append(IntegrityIssue(
-                    issue_type=issue_type,
-                    line=line_num,
-                    detail=detail,
-                    suggestion=suggestion,
-                    severity=severity,
+        seen.add(name)
+        out.append(_issue(
+            IssueType.HALLUCINATED_VALUE,
+            line,
+            f"Test asserts a field '{name}' that is declared in no schema in the spec.",
+            f"Remove '{name}' or add it to the spec if the API really returns it",
+            "high",
+        ))
+    return out
+
+
+# ── Playwright (TypeScript) analysis ──────────────────────────────────────────
+
+# `test_content` arrives from an unauthenticated POST, so every pattern here
+# runs on attacker-controlled input. Two rules follow from that:
+#
+#   1. No unbounded `\s*` next to a bracket. Repetition that can fail late
+#      makes `re.search` quadratic in the length of the input. Whitespace runs
+#      in real source are short, so the bounds below cost nothing.
+#   2. No ambiguous alternation. In the string-literal pattern the branches are
+#      disjoint — the negated class excludes the backslash the escape branch
+#      consumes — so a single quote cannot backtrack exponentially.
+_WS = r"\s{0,4}"
+
+
+_TS_TEST_HEADER = re.compile(r"\b(test|it|describe)(\.\w+)?" + _WS + r"\(")
+_TS_DISABLED = re.compile(r"\b(test|it|describe)\.(skip|fixme|todo)" + _WS + r"\(")
+_TS_EXPECT = re.compile(r"\bexpect" + _WS + r"\(")
+_TS_EXPECT_ARG = re.compile(r"\bexpect" + _WS + r"\(([^;]*?)\)" + _WS + r"\.")
+_TS_LITERAL_ARG = re.compile(r"^(true|false|null|undefined|[\d\s+\-*/().]+)$")
+_TS_LESS_THAN = re.compile(
+    r"\.toBeLessThan(?:OrEqual)?" + _WS + r"\(" + _WS + r"(-?\d+)" + _WS + r"\)"
+)
+_TS_GREATER_THAN = re.compile(
+    r"\.toBeGreaterThan(?:OrEqual)?" + _WS + r"\(" + _WS + r"(-?\d+)" + _WS + r"\)"
+)
+_TS_TO_BE_STATUS = re.compile(r"\.toBe" + _WS + r"\(" + _WS + r"(\d{3})" + _WS + r"\)")
+_TS_REQUEST = re.compile(
+    r"\b(?:client|request|api|ctx)" + _WS + r"\." + _WS
+    + r"(get|post|put|patch|delete|head|options|GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)"
+    + _WS + r"\(" + _WS + r"(['\"`])([^'\"`]+)\2"
+)
+_TS_HAS_PROPERTY = re.compile(
+    r"\.toHaveProperty" + _WS + r"\(" + _WS + r"['\"`]([^'\"`]+)['\"`]"
+)
+_TS_BODY_ATTR = re.compile(
+    r"\b(?:" + "|".join(sorted(_BODY_IDENTIFIERS)) + r")(?:\[\d+\])?\.(\w+)"
+)
+_TS_OK_TRUTHY = re.compile(
+    r"\.toBe(Truthy)?" + _WS + r"\(" + _WS + r"(true)?" + _WS + r"\)"
+)
+_TS_THROWS = re.compile(r"\b(throw|rejects|toThrow|fail)\b")
+_TS_BINDING = re.compile(r"\b(?:const|let|var)\s+(?:\{([^}]*)\}|(\w+))\s*=")
+_TS_BODY_REF = re.compile(r"\b(?:" + "|".join(sorted(_BODY_IDENTIFIERS)) + r")\b")
+
+
+def _ts_binds_body(code_lines: list[str]) -> bool:
+    """True when the test binds the decoded response body to a variable.
+
+    Binding the body is a statement of intent to check it. A test that binds it
+    and then asserts nothing about it has had its coverage removed.
+    """
+    for line in code_lines:
+        for match in _TS_BINDING.finditer(line):
+            destructured, single = match.group(1), match.group(2)
+            names = (
+                [n.split(":")[-1].strip() for n in destructured.split(",")]
+                if destructured else [single]
+            )
+            if any(name in _BODY_IDENTIFIERS for name in names if name):
+                return True
+    return False
+
+
+def _scan_ts_line(line: str) -> tuple[str, int | None]:
+    """Tokenise one source line in a single linear pass.
+
+    Returns the line with string *contents* blanked to NULs (length preserved,
+    quotes kept) and the index where a `//` line comment starts, if any.
+
+    A scanner rather than a regex on purpose. Any pattern that recognises a
+    quoted string has to be retried at every quote in the input, which is
+    quadratic on a line of escaped quotes — measurably 4.7s at 16k characters,
+    on input that arrives from an unauthenticated endpoint. A single pass has
+    no start positions to retry.
+
+    Tracking string state also makes the URL case exact rather than heuristic:
+    the `//` in `https://x` is skipped because it is inside a string, not
+    because of a guess about the preceding character.
+    """
+    out: list[str] = []
+    index = 0
+    length = len(line)
+    comment_at: int | None = None
+
+    while index < length:
+        char = line[index]
+
+        if char in "'\"`":
+            out.append(char)
+            index += 1
+            while index < length:
+                current = line[index]
+                if current == "\\" and index + 1 < length:
+                    out.append("\0\0")
+                    index += 2
+                    continue
+                if current == char:
+                    out.append(current)
+                    index += 1
+                    break
+                out.append("\0")
+                index += 1
+            continue
+
+        if char == "/" and index + 1 < length and line[index + 1] == "/":
+            comment_at = index
+            out.append(line[index:])
+            break
+
+        out.append(char)
+        index += 1
+
+    return "".join(out), comment_at
+
+
+def _mask_ts_strings(line: str) -> str:
+    """Blank out string contents, preserving length so offsets stay aligned."""
+    return _scan_ts_line(line)[0]
+
+
+def _strip_ts_comments(line: str) -> str:
+    """Drop a trailing line comment, keeping string literals intact.
+
+    A correct assertion whose trailing comment mentions `toBeLessThan(500)` is
+    not a weakened assertion, and a URL is not a comment. String contents are
+    preserved because request paths and property names live inside them.
+    """
+    _, comment_at = _scan_ts_line(line)
+    return line[:comment_at] if comment_at is not None else line
+
+
+def _strip_ts_noise(line: str) -> str:
+    """Remove comments *and* string contents — for brace counting only.
+
+    A brace inside a string literal must not open or close a test body.
+    """
+    masked, comment_at = _scan_ts_line(line)
+    if comment_at is not None:
+        masked = masked[:comment_at]
+    return masked.replace("\0", "")
+
+
+def _ts_blocks(lines: list[str]) -> list[tuple[int, int]]:
+    """Locate test bodies as (start_index, end_index) pairs over `lines`."""
+    blocks: list[tuple[int, int]] = []
+    index = 0
+    while index < len(lines):
+        code = _strip_ts_noise(lines[index])
+        if _TS_TEST_HEADER.search(code):
+            depth = 0
+            opened = False
+            end = index
+            for scan in range(index, len(lines)):
+                scan_code = _strip_ts_noise(lines[scan])
+                depth += scan_code.count("{") - scan_code.count("}")
+                if "{" in scan_code:
+                    opened = True
+                end = scan
+                if opened and depth <= 0:
+                    break
+            blocks.append((index, end))
+            index = end + 1
+            continue
+        index += 1
+    return blocks
+
+
+def _analyse_playwright(content: str, spec: SpecFacts | None = None) -> list[IntegrityIssue]:
+    """Analyse Playwright TypeScript test content for integrity defects."""
+    lines = content.splitlines()
+    codes = [_strip_ts_comments(line) for line in lines]
+    blocks = _ts_blocks(lines)
+    if not blocks and any(_TS_EXPECT.search(c) or _TS_REQUEST.search(c) for c in codes):
+        blocks = [(0, len(lines) - 1)]
+
+    issues: list[IntegrityIssue] = []
+
+    for start, end in blocks:
+        body = codes[start:end + 1]
+        header = codes[start]
+
+        if _TS_DISABLED.search(header):
+            issues.append(_issue(
+                IssueType.ALWAYS_PASSING,
+                start + 1,
+                "Test is disabled (.skip/.fixme/.todo) — it never executes, so its "
+                "assertions cannot fail while it still counts toward suite size.",
+                "Re-enable the test, or delete it so the suite reports real coverage",
+                "critical",
+            ))
+            continue
+
+        expect_lines = [i for i, c in enumerate(body) if _TS_EXPECT.search(c)]
+        requests = [
+            (i, m.group(1).upper(), m.group(3))
+            for i, c in enumerate(body)
+            for m in [_TS_REQUEST.search(c)] if m
+        ]
+
+        if not expect_lines:
+            issues.append(_issue(
+                IssueType.EMPTY_ASSERTION,
+                start + 1,
+                "Test body contains no assertion — it passes regardless of what the API returns.",
+                "Assert the status code and the response fields the spec documents",
+                "critical",
+            ))
+            continue
+
+        # Assertions whose failure is caught and discarded.
+        if any(re.search(r"\bcatch\s*\(", c) for c in body):
+            for i, c in enumerate(body):
+                if not re.search(r"\bcatch\s*\(", c):
+                    continue
+                tail = " ".join(body[i:])
+                if not _TS_THROWS.search(tail):
+                    issues.append(_issue(
+                        IssueType.ALWAYS_PASSING,
+                        start + i + 1,
+                        "expect() throws on failure and this catch discards it — the test "
+                        "reports green whatever the API returns.",
+                        "Let the assertion propagate, or re-throw in the catch block",
+                        "critical",
+                    ))
+                    break
+
+        has_status_assertion = False
+        asserted_statuses: list[tuple[int, str]] = []
+        referenced_fields: list[tuple[int, str]] = []
+
+        for i in expect_lines:
+            code = body[i]
+            arg_match = _TS_EXPECT_ARG.search(code)
+            arg = (arg_match.group(1) if arg_match else "").strip()
+
+            if arg and _TS_LITERAL_ARG.match(arg):
+                issues.append(_issue(
+                    IssueType.EMPTY_ASSERTION,
+                    start + i + 1,
+                    f"expect({arg}) asserts a constant — its truth does not depend on the API.",
+                    "Assert a value read from the response instead",
+                    "critical",
                 ))
-                break
+                continue
+
+            is_status = "status" in arg.lower()
+
+            less = _TS_LESS_THAN.search(code)
+            if less and (is_status or int(less.group(1)) >= 300):
+                issues.append(_issue(
+                    IssueType.WEAKENED_ASSERTION,
+                    start + i + 1,
+                    f"Range assertion accepts any status below {less.group(1)} — 4xx responses "
+                    "pass, so the test survives a broken endpoint.",
+                    "Assert the exact status the spec documents, e.g. .toBe(200)",
+                    "high",
+                ))
+                continue
+
+            greater = _TS_GREATER_THAN.search(code)
+            if greater and int(greater.group(1)) <= 0:
+                issues.append(_issue(
+                    IssueType.WEAKENED_ASSERTION,
+                    start + i + 1,
+                    f"Bound of {greater.group(1)} cannot be violated by a length or count — "
+                    "this assertion never fails.",
+                    "Assert the exact expected count, or assert on specific fields",
+                    "high",
+                ))
+                continue
+
+            if re.search(r"\.ok\b", arg) and _TS_OK_TRUTHY.search(code):
+                issues.append(_issue(
+                    IssueType.WEAKENED_ASSERTION,
+                    start + i + 1,
+                    "response.ok is true for any 2xx — a 204 with no body passes a test for a "
+                    "documented 200 with a body.",
+                    "Assert the exact status code from the spec",
+                    "high",
+                ))
+                continue
+
+            if is_status:
+                status_match = _TS_TO_BE_STATUS.search(code)
+                if status_match:
+                    has_status_assertion = True
+                    asserted_statuses.append((start + i + 1, status_match.group(1)))
+
+            for match in _TS_HAS_PROPERTY.finditer(code):
+                referenced_fields.append((start + i + 1, match.group(1)))
+            for match in _TS_BODY_ATTR.finditer(code):
+                referenced_fields.append((start + i + 1, match.group(1)))
+
+        if requests and not has_status_assertion and not _TS_THROWS.search(" ".join(body)):
+            issues.append(_issue(
+                IssueType.MISSING_STATUS_CHECK,
+                start + 1,
+                "Test issues a request but never asserts its status code.",
+                "Add an assertion on the exact status the spec documents",
+                "low",
+            ))
+
+        body_asserted = any(_TS_BODY_REF.search(body[i]) for i in expect_lines)
+        if _ts_binds_body(body) and not body_asserted:
+            issues.append(_issue(
+                IssueType.WEAKENED_ASSERTION,
+                start + 1,
+                "Test binds the response body but asserts nothing about it — a 200 carrying "
+                "the wrong payload passes. This is the shape left behind when body assertions "
+                "are deleted rather than fixed.",
+                "Assert the fields the spec documents for this response",
+                "high",
+            ))
+
+        if len(requests) == 1:
+            _, method, path = requests[0]
+            issues.extend(_spec_status_issues(spec, method, path, asserted_statuses))
+        issues.extend(_spec_property_issues(spec, referenced_fields))
+
     return issues
 
 
-def _analyse_pytest(content: str) -> list[IntegrityIssue]:
-    """Scan pytest Python test content for integrity issues."""
+# ── pytest (Python) analysis ──────────────────────────────────────────────────
+
+_PY_STATUS_ATTRS = frozenset({"status_code", "status"})
+_PY_REQUEST_METHODS = frozenset({"get", "post", "put", "patch", "delete", "head", "options"})
+_PY_SWALLOW_BODY = (ast.Pass, ast.Expr, ast.Continue, ast.Break)
+
+
+def _py_is_status(node: ast.AST) -> bool:
+    return isinstance(node, ast.Attribute) and node.attr in _PY_STATUS_ATTRS
+
+
+def _py_is_len_call(node: ast.AST) -> bool:
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "len"
+    )
+
+
+def _py_path_literal(node: ast.AST) -> str | None:
+    """Recover a request path from a literal or an f-string."""
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    if isinstance(node, ast.JoinedStr):
+        out = []
+        for part in node.values:
+            if isinstance(part, ast.Constant) and isinstance(part.value, str):
+                out.append(part.value)
+            else:
+                out.append("{x}")
+        return "".join(out)
+    return None
+
+
+def _py_is_disabled(func: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    for decorator in func.decorator_list:
+        target = decorator.func if isinstance(decorator, ast.Call) else decorator
+        name = ast.unparse(target) if hasattr(ast, "unparse") else ""
+        if re.search(r"\b(skip|xfail)\b", name):
+            return True
+    return False
+
+
+def _py_collect_fields(node: ast.AST) -> list[tuple[int, str]]:
+    """Field names the test asserts on the response body."""
+    found: list[tuple[int, str]] = []
+    for child in ast.walk(node):
+        if isinstance(child, ast.Subscript):
+            key = child.slice
+            if isinstance(key, ast.Constant) and isinstance(key.value, str):
+                found.append((getattr(child, "lineno", 0), key.value))
+        elif isinstance(child, ast.Compare) and any(
+            isinstance(op, (ast.In, ast.NotIn)) for op in child.ops
+        ):
+            if isinstance(child.left, ast.Constant) and isinstance(child.left.value, str):
+                found.append((getattr(child, "lineno", 0), child.left.value))
+        elif isinstance(child, ast.Attribute) and isinstance(child.value, ast.Name):
+            if child.value.id in _BODY_IDENTIFIERS:
+                found.append((getattr(child, "lineno", 0), child.attr))
+    return found
+
+
+def _analyse_pytest(content: str, spec: SpecFacts | None = None) -> list[IntegrityIssue]:
+    """Analyse pytest Python test content for integrity defects."""
+    try:
+        tree = ast.parse(content)
+    except SyntaxError:
+        return [_issue(
+            IssueType.ALWAYS_PASSING,
+            None,
+            "Test file does not parse as Python — it cannot execute, so it asserts nothing.",
+            "Fix the syntax error",
+            "critical",
+        )]
+
+    functions = [
+        node for node in ast.walk(tree)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name.startswith("test")
+    ]
     issues: list[IntegrityIssue] = []
-    lines = content.splitlines()
-    for line_num, line in enumerate(lines, start=1):
-        stripped = line.strip()
-        if stripped.startswith("#"):
+
+    for func in functions:
+        if _py_is_disabled(func):
+            issues.append(_issue(
+                IssueType.ALWAYS_PASSING,
+                func.lineno,
+                f"Test '{func.name}' is skipped unconditionally — it never runs, so its "
+                "assertions cannot fail while it still counts toward suite size.",
+                "Re-enable the test, or delete it so the suite reports real coverage",
+                "critical",
+            ))
             continue
-        for issue_type, pattern, detail, suggestion, severity in _PYTEST_WEAK_PATTERNS:
-            if pattern.lower() in stripped.lower():
-                issues.append(IntegrityIssue(
-                    issue_type=issue_type,
-                    line=line_num,
-                    detail=detail,
-                    suggestion=suggestion,
-                    severity=severity,
+
+        asserts = [n for n in ast.walk(func) if isinstance(n, ast.Assert)]
+        raises = [
+            n for n in ast.walk(func)
+            if isinstance(n, ast.Call)
+            and isinstance(n.func, ast.Attribute)
+            and n.func.attr in {"raises", "warns"}
+        ]
+        requests = [
+            (n.lineno, n.func.attr.upper(), _py_path_literal(n.args[0]))
+            for n in ast.walk(func)
+            if isinstance(n, ast.Call)
+            and isinstance(n.func, ast.Attribute)
+            and n.func.attr in _PY_REQUEST_METHODS
+            and n.args
+        ]
+        requests = [r for r in requests if r[2]]
+
+        if not asserts and not raises:
+            issues.append(_issue(
+                IssueType.EMPTY_ASSERTION,
+                func.lineno,
+                f"Test '{func.name}' contains no assertion — it passes regardless of what "
+                "the API returns.",
+                "Assert the status code and the response fields the spec documents",
+                "critical",
+            ))
+            continue
+
+        # Assertions inside a try whose handler discards the failure.
+        for node in ast.walk(func):
+            if not isinstance(node, ast.Try):
+                continue
+            guards_assertion = any(
+                isinstance(n, ast.Assert)
+                for stmt in node.body for n in ast.walk(stmt)
+            )
+            if not guards_assertion:
+                continue
+            for handler in node.handlers:
+                if all(isinstance(stmt, _PY_SWALLOW_BODY) for stmt in handler.body):
+                    issues.append(_issue(
+                        IssueType.ALWAYS_PASSING,
+                        handler.lineno,
+                        "AssertionError is caught and discarded — the test reports green "
+                        "whatever the API returns.",
+                        "Remove the try/except so assertion failures propagate",
+                        "critical",
+                    ))
+                    break
+
+        has_status_assertion = False
+        asserted_statuses: list[tuple[int, str]] = []
+        referenced_fields: list[tuple[int, str]] = []
+
+        for node in asserts:
+            test = node.test
+            line = node.lineno
+
+            if isinstance(test, ast.Constant) and bool(test.value):
+                issues.append(_issue(
+                    IssueType.EMPTY_ASSERTION,
+                    line,
+                    f"assert {ast.unparse(test)} is a no-op — always true regardless of the API.",
+                    "Assert a value read from the response instead",
+                    "critical",
                 ))
-                break
+                continue
+
+            if isinstance(test, ast.Compare) and len(test.comparators) == 1:
+                left, right = test.left, test.comparators[0]
+                op = test.ops[0]
+
+                if ast.dump(left) == ast.dump(right):
+                    issues.append(_issue(
+                        IssueType.EMPTY_ASSERTION,
+                        line,
+                        "Both sides of the comparison are the same expression — always true.",
+                        "Compare the response against the value the spec documents",
+                        "critical",
+                    ))
+                    continue
+
+                if (
+                    _py_is_len_call(left)
+                    and isinstance(right, ast.Constant)
+                    and isinstance(right.value, int)
+                    and not isinstance(right.value, bool)
+                ):
+                    bound: int = right.value
+                    if (isinstance(op, ast.GtE) and bound <= 0) or (
+                        isinstance(op, ast.Gt) and bound < 0
+                    ):
+                        issues.append(_issue(
+                            IssueType.WEAKENED_ASSERTION,
+                            line,
+                            f"A length is never below {bound} — this assertion never fails.",
+                            "Assert the exact expected count, or assert on specific fields",
+                            "high",
+                        ))
+                        continue
+
+                if _py_is_status(left):
+                    if isinstance(op, (ast.Lt, ast.LtE, ast.Gt, ast.GtE)):
+                        issues.append(_issue(
+                            IssueType.WEAKENED_ASSERTION,
+                            line,
+                            "Range assertion on a status code — a status is a discrete value, so "
+                            "a range accepts wrong codes and survives a broken endpoint.",
+                            "Assert the exact status the spec documents, e.g. == 200",
+                            "high",
+                        ))
+                        continue
+                    if isinstance(op, (ast.In, ast.NotIn)) and isinstance(
+                        right, (ast.List, ast.Tuple, ast.Set)
+                    ):
+                        values = [
+                            e.value for e in right.elts
+                            if isinstance(e, ast.Constant) and isinstance(e.value, int)
+                        ]
+                        if any(v < 400 for v in values) and any(v >= 400 for v in values):
+                            issues.append(_issue(
+                                IssueType.WEAKENED_ASSERTION,
+                                line,
+                                "Status membership set spans success and error codes — the "
+                                "assertion holds whether or not the endpoint works.",
+                                "Assert the single status the spec documents for this case",
+                                "high",
+                            ))
+                            continue
+                    if isinstance(op, ast.Eq):
+                        has_status_assertion = True
+                        if isinstance(right, ast.Constant) and isinstance(right.value, int):
+                            asserted_statuses.append((line, str(right.value)))
+
+            referenced_fields.extend(_py_collect_fields(test))
+
+        if requests and not has_status_assertion and not raises:
+            issues.append(_issue(
+                IssueType.MISSING_STATUS_CHECK,
+                func.lineno,
+                f"Test '{func.name}' issues a request but never asserts its status code.",
+                "Add an assertion on the exact status the spec documents",
+                "low",
+            ))
+
+        # Body decoded into a variable, then never asserted on — the shape left
+        # behind when body assertions are deleted rather than fixed.
+        body_names = {
+            target.id
+            for node in ast.walk(func) if isinstance(node, ast.Assign)
+            for target in node.targets if isinstance(target, ast.Name)
+            if isinstance(node.value, ast.Call)
+            and isinstance(node.value.func, ast.Attribute)
+            and node.value.func.attr == "json"
+        }
+        asserted_names = {
+            n.id for a in asserts for n in ast.walk(a) if isinstance(n, ast.Name)
+        }
+        if body_names and not (body_names & asserted_names):
+            issues.append(_issue(
+                IssueType.WEAKENED_ASSERTION,
+                func.lineno,
+                f"Test '{func.name}' decodes the response body but asserts nothing about it — "
+                "a 200 carrying the wrong payload passes.",
+                "Assert the fields the spec documents for this response",
+                "high",
+            ))
+
+        if len(requests) == 1:
+            _, method, path = requests[0]
+            issues.extend(_spec_status_issues(spec, method, path, asserted_statuses))
+        issues.extend(_spec_property_issues(spec, referenced_fields))
+
     return issues
 
 
@@ -263,10 +909,12 @@ def audit_test_integrity(request: IntegrityAuditRequest) -> IntegrityAuditRespon
     t0 = time.monotonic()
     audit_id = str(uuid.uuid4())
 
+    spec = _parse_spec(request.spec_content)
+
     if request.test_format == "playwright":
-        issues = _analyse_playwright(request.test_content)
+        issues = _analyse_playwright(request.test_content, spec)
     else:
-        issues = _analyse_pytest(request.test_content)
+        issues = _analyse_pytest(request.test_content, spec)
 
     total_lines = len(request.test_content.splitlines())
     score = _compute_integrity_score(issues, total_lines)

@@ -1,5 +1,46 @@
 # CHERENKOV -- Session Handover
 
+## The integrity detector had never been measured; it now is (2026-08-13)
+
+`cherenkov/integrity/api.py` — the "Snyk for test honesty", the component that
+tells other agents whether their tests are honest — was nine hardcoded substring
+matches. Measured against a 41-case labelled corpus for the first time:
+
+```
+                     before    after
+recall                17.2%   100.0%
+false positive rate    8.3%     0.0%
+false certificates       24        0
+```
+
+**24 of 29 tests that cannot fail were being handed a signed SHA-256 integrity
+certificate**, including a Playwright test with an empty body. Three of the six
+declared `IssueType` members — `SPEC_MISMATCH`, `HALLUCINATED_VALUE`,
+`MISSING_STATUS_CHECK` — were never emitted by any code path, and `spec_content`
+was accepted on the request and never read. The audit claimed a spec-awareness
+it did not have.
+
+The detector is now AST-based for pytest and comment/string-aware for
+Playwright, and all six issue types fire. Corpus at
+`bench/integrity_corpus/cases.yaml`, harness at `scripts/calibrate_integrity.py`,
+gate at `tests/unit/test_integrity_calibration.py` — deliberately in the ordinary
+unit suite, not a 38th workflow, because a gate that runs only on a schedule is
+exactly how the dead Playwright suite below survived.
+
+**Read the 100% with suspicion.** The corpus was written alongside the detector,
+so it proves only that known evasions stay caught. The load-bearing check is
+`bench/fixtures/golden_tests/`, which predates this work: running against it
+surfaced an evasion class the corpus had missed entirely — status assertion kept,
+body assertions deleted, which is the shape an agent leaves behind when it
+removes a failing check instead of fixing the code. That is now both a rule and a
+corpus class. **Whoever picks this up: the next honest move is more held-out
+data, not more cases written by whoever is also writing the rules.**
+
+Not addressed here: `cherenkov/cli/commands/check_suite.py::check_integrity` is a
+second, independent integrity implementation that does read the spec. Two
+detectors answering the same question is a divergence risk; neither is calibrated
+against the other.
+
 ## Brain map is at zero findings; gate wired; a11y specs are stale (2026-08-13)
 
 `cherenkov brain findings` now reports **0 error, 0 warn** — only the 914 `info`
