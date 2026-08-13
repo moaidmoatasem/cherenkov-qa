@@ -150,6 +150,14 @@ class BrainMapEngine:
                     continue
                 claimed.append(extractor.name)
                 result.extend(extractor.extract(rel, text, ctx))
+            if self.profile.is_fixture(rel):
+                # A corpus file is read, not run: a generated-test fixture
+                # importing the client module that only exists after ejection
+                # is correct, not broken. Mark its references soft at the
+                # source, so the distinction is stored with the evidence
+                # rather than re-derived on every reconciliation.
+                for edge in result.edges:
+                    edge.attrs["soft"] = True
             source = SourceFile(
                 path=rel,
                 sha256=digest,

@@ -113,7 +113,8 @@ if prop_schema.get("type") == "string":
 - **Opt-in only.** Security mutations should be behind a profile flag
   (`--profile security` / config toggle) so default runs stay focused on
   conformance. Injecting 4–6 extra cases per string field on a large spec
-  (Stripe) would balloon the menu otherwise — ties into [[195 chunking spike]].
+  (Stripe) would balloon the menu otherwise — ties into
+  [Spike #195 — Semantic Chunking / RAG for Large Specs](195-semantic-chunking-rag.md).
 - **False reds on legitimate echo.** APIs that legitimately store-and-return a
   field (e.g. a `description`) will "reflect" the payload. The no-reflection
   assertion needs a per-endpoint allowlist, or should be downgraded to a
