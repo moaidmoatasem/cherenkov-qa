@@ -88,12 +88,16 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
         <div style={{ width: '1px', height: '24px', background: 'var(--border-glass)' }} />
 
-        {/* Workspace Title */}
+        {/* Workspace Title — persistent chrome, and a duplicate of the same
+            title rendered by each workspace's PageHeader. Two h1s carrying the
+            same text give a screen-reader user two competing page headings, so
+            this one is a plain element (identical classes, no visual change)
+            and the one inside the main content stays the page's single h1. */}
         <div>
-          <h1 className="ds-title ds-flex-row ds-gap-sm">
+          <div className="ds-title ds-flex-row ds-gap-sm" aria-hidden="true">
             {activeWorkspaceTitle}
-          </h1>
-          <p className="ds-subtitle">{activeWorkspaceSubtitle}</p>
+          </div>
+          <p className="ds-subtitle" aria-hidden="true">{activeWorkspaceSubtitle}</p>
         </div>
       </div>
 
