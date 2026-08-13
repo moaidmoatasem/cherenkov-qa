@@ -233,12 +233,17 @@ def run_init(profile: str | None = None, force: bool = False) -> int:
     print()
     print("-" * 60)
     print("  Next steps:")
-    print("    Run:    ./bin/cherenkov doctor    # verify your setup")
+    # `cherenkov`, not `./bin/cherenkov`: this runs in the user's new project
+    # directory, which has no bin/. A pip-installed user has the console script
+    # on PATH, so the repo-relative path exits 127 for the exact audience this
+    # message is written for.
+    print("    Run:    cherenkov doctor    # verify your setup")
     if spec_files:
-        print("    Run:    ./bin/cherenkov validate --target <url>  # run tests")
+        print("    Run:    cherenkov validate --target <url>  # run tests")
     else:
         print(f"    Edit:   {toml_path} -- add your OpenAPI spec path under [sources]")
-        print("    Then:   ./bin/cherenkov doctor")
+        # Previously repeated `doctor`, which the first line already told them to run.
+        print("    Then:   cherenkov validate --target <url>  # once your spec is set")
     print()
     print("  Defaults: offline, free, deterministic")
     print("  Upgrade:  edit profile in cherenkov.toml, or set CHERENKOV_* env vars")
