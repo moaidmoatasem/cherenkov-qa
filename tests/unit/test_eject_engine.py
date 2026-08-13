@@ -87,7 +87,9 @@ class TestEjectSuite(unittest.TestCase):
     def setUp(self):
         from cherenkov.execution.eject import EjectorEngine
 
-        self.engine = EjectorEngine(run_id="test-run")
+        # allow_packaged_fixtures is the opt-in that keeps this path exercisable
+        # without a generated suite present. A real user never gets it.
+        self.engine = EjectorEngine(run_id="test-run", allow_packaged_fixtures=True)
 
     def test_eject_creates_expected_files(self):
         with tempfile.TemporaryDirectory() as base:
@@ -152,12 +154,33 @@ class TestEjectCustomTestsDir(unittest.TestCase):
                 "eject must read from the custom tests_src_dir, not the hardcoded default",
             )
 
-    def test_default_tests_src_dir_unchanged_when_not_overridden(self):
+    def test_default_tests_src_dir_resolves_against_cwd_not_the_package(self):
+        """The default must match `generate --output-dir`'s default.
+
+        This assertion used to read `os.path.join(default_engine.stub_dir, ...)`
+        — i.e. it pinned the defect in place. `generate --output-dir` defaults to
+        the relative "stub/generated_tests", resolved against the user's cwd,
+        while eject resolved the same name against the installed package. The
+        two commands therefore addressed different directories, and the natural
+        generate -> eject flow silently ejected CHERENKOV's own fixtures.
+        """
         from cherenkov.execution.eject import EjectorEngine
 
-        default_engine = EjectorEngine(run_id="test-run")
-        expected = os.path.join(default_engine.stub_dir, "generated_tests")
-        self.assertEqual(default_engine.tests_src_dir, expected)
+        with tempfile.TemporaryDirectory() as cwd:
+            prev = os.getcwd()
+            os.chdir(cwd)
+            try:
+                default_engine = EjectorEngine(run_id="test-run")
+                self.assertEqual(
+                    default_engine.tests_src_dir,
+                    os.path.join(os.getcwd(), "stub", "generated_tests"),
+                )
+                self.assertFalse(
+                    default_engine._is_inside_package(default_engine.tests_src_dir),
+                    "the default source must not resolve inside the installed package",
+                )
+            finally:
+                os.chdir(prev)
 
     def test_cli_eject_tests_dir_flag_is_wired_through(self):
         """End-to-end: `cherenkov eject --tests-dir <custom>` (the CLI flag,
@@ -201,3 +224,98 @@ class TestEjectCustomTestsDir(unittest.TestCase):
                 eject_cmd, ["--output", out, "--tests-dir", "/no/such/dir"]
             )
             self.assertNotEqual(result.exit_code, 0)
+
+
+class TestEjectDoesNotShipCherenkovsOwnFixtures(unittest.TestCase):
+    """The severe defect from the 2026-08-12 real-user walkthrough.
+
+    `cherenkov generate` wrote the user's tests to ./stub/generated_tests (cwd),
+    but eject resolved the same default against the *installed package*. Driving
+    the documented generate -> eject flow therefore produced 17 files that were
+    CHERENKOV's own fixtures — including the deliberately sabotaged
+    demo_weakened / demo_deleted / demo_hallucinated specs — with the user's own
+    tests absent, under a "100% standard, runs standalone" banner and exit 0.
+
+    For a product whose thesis is catching weakened tests, shipping its own
+    weakened fixtures into a user's repo and calling it success is the worst
+    available failure. These pin the flow shut.
+    """
+
+    SABOTAGED = ("demo_weakened", "demo_deleted", "demo_hallucinated", "golden_weakened")
+
+    def test_default_eject_ships_the_users_own_tests(self):
+        """generate -> eject with no flags: the user's filenames must come out."""
+        from cherenkov.execution.eject import EjectorEngine
+
+        with tempfile.TemporaryDirectory() as cwd, tempfile.TemporaryDirectory() as base:
+            # Stand in for `cherenkov generate --spec api.yaml` run from `cwd`,
+            # which writes to the relative default "stub/generated_tests".
+            gen_dir = os.path.join(cwd, "stub", "generated_tests")
+            os.makedirs(gen_dir)
+            with open(os.path.join(gen_dir, "orders_flow.spec.ts"), "w") as f:
+                f.write("import { test, expect } from '@playwright/test';\n")
+
+            prev = os.getcwd()
+            os.chdir(cwd)
+            try:
+                out = os.path.join(base, "ejected")
+                self.assertTrue(EjectorEngine(run_id="test-run").eject_suite(out))
+            finally:
+                os.chdir(prev)
+
+            ejected = os.listdir(os.path.join(out, "tests"))
+            self.assertIn("orders_flow.spec.ts", ejected, f"user's test missing; got {ejected}")
+            for name in self.SABOTAGED:
+                self.assertFalse(
+                    any(name in f for f in ejected),
+                    f"ejected suite contains CHERENKOV's sabotaged fixture {name}: {ejected}",
+                )
+
+    def test_eject_refuses_rather_than_shipping_package_fixtures(self):
+        """From a cwd with no generated tests, eject must fail — not fall back.
+
+        Exit-code behaviour matters as much as the files: the CLI prints
+        "ejected successfully ... 100% standard and runs standalone" on a True
+        return, so returning True here is what made the defect dangerous.
+        """
+        from cherenkov.execution.eject import EjectorEngine
+
+        with tempfile.TemporaryDirectory() as cwd, tempfile.TemporaryDirectory() as base:
+            prev = os.getcwd()
+            os.chdir(cwd)
+            try:
+                out = os.path.join(base, "ejected")
+                self.assertFalse(
+                    EjectorEngine(run_id="test-run").eject_suite(out),
+                    "eject reported success with no user tests to eject",
+                )
+            finally:
+                os.chdir(prev)
+
+    def test_eject_refuses_a_tests_dir_inside_the_package(self):
+        """Even when pointed at them explicitly, package fixtures are refused."""
+        from cherenkov.execution.eject import EjectorEngine
+
+        engine = EjectorEngine(run_id="test-run")
+        with tempfile.TemporaryDirectory() as base:
+            out = os.path.join(base, "ejected")
+            engine.tests_src_dir = engine.fixtures_dir  # inside the package
+            self.assertFalse(engine.eject_suite(out))
+
+    def test_cli_default_eject_exits_nonzero_instead_of_claiming_success(self):
+        """End-to-end through the CLI, which is where the banner is printed."""
+        from click.testing import CliRunner
+
+        from cherenkov.cli.commands.simple import eject_cmd
+
+        with tempfile.TemporaryDirectory() as cwd, tempfile.TemporaryDirectory() as base:
+            prev = os.getcwd()
+            os.chdir(cwd)
+            try:
+                out = os.path.join(base, "ejected")
+                result = CliRunner().invoke(eject_cmd, ["--output", out])
+            finally:
+                os.chdir(prev)
+
+            self.assertNotEqual(result.exit_code, 0, result.output)
+            self.assertNotIn("runs standalone", result.output)
