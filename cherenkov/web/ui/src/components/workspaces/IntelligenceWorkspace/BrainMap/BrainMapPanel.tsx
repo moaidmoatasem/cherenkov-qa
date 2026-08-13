@@ -11,7 +11,7 @@
  * repository — start somewhere you know, walk outward.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card, EmptyState, Skeleton } from '../../../ui';
 import {
   BrainFinding,
@@ -55,6 +55,10 @@ export const BrainMapPanel: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [live, setLive] = useState(true);
+  const [autoSync, setAutoSync] = useState(false);
+  const [checkedAt, setCheckedAt] = useState<number | null>(null);
+  const [ago, setAgo] = useState(0);
 
   const loadGraph = useCallback(async () => {
     setError(null);
@@ -122,6 +126,48 @@ export const BrainMapPanel: React.FC = () => {
     }
   };
 
+  // ── keeping the view current ──────────────────────────────────────────────
+  // The map is rebuilt by things outside this tab — a git hook, CI, another
+  // engineer's sync — so a panel that only loads once shows a confident,
+  // stale graph. The poll is deliberately asymmetric: /status is cheap and
+  // returns the map's build stamp, and only a *changed* stamp costs a graph
+  // fetch. Re-scanning the repository is a write, so it stays opt-in.
+  const tick = useRef<() => void>(() => {});
+  tick.current = async () => {
+    if (busy) return; // a manual sync or export owns the engine right now
+    try {
+      if (autoSync) {
+        const report = await syncBrainMap(false);
+        if (!report.busy && (report.parsed || report.removed)) {
+          await loadAll();
+          setCheckedAt(Date.now());
+          return;
+        }
+      }
+      const fresh = await getBrainStatus();
+      setCheckedAt(Date.now());
+      if (fresh.stats.built_at !== status?.stats.built_at) {
+        setStatus(fresh);
+        await loadAll();
+      }
+    } catch {
+      // A poll that fails is not worth a banner — the next one may succeed,
+      // and the manual controls surface errors loudly enough.
+    }
+  };
+
+  useEffect(() => {
+    if (!live) return undefined;
+    const id = window.setInterval(() => tick.current(), 15_000);
+    return () => window.clearInterval(id);
+  }, [live]);
+
+  useEffect(() => {
+    if (checkedAt === null) return undefined;
+    const id = window.setInterval(() => setAgo(Math.round((Date.now() - checkedAt) / 1000)), 1000);
+    return () => window.clearInterval(id);
+  }, [checkedAt]);
+
   const stats = status?.stats;
   const availableKinds = useMemo(() => Object.keys(stats?.by_kind || {}).sort(), [stats]);
   const toggleKind = (kind: string) =>
@@ -173,6 +219,36 @@ export const BrainMapPanel: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <label
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/10 text-[11px] font-mono cursor-pointer"
+            title="Poll every 15s and refresh when the stored map changes. Read-only."
+          >
+            <input
+              type="checkbox"
+              checked={live}
+              onChange={(e) => setLive(e.target.checked)}
+              data-testid="brainmap-live"
+              className="accent-cyan-400"
+            />
+            <span className={live ? 'text-cyan-400' : 'text-text-muted'}>Live</span>
+            {live && checkedAt !== null && (
+              <span className="text-text-muted">· {ago}s</span>
+            )}
+          </label>
+          <label
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/10 text-[11px] font-mono cursor-pointer"
+            title="Also re-scan the repository each tick, so edits on disk reach the map. Incremental — unchanged files are skipped."
+          >
+            <input
+              type="checkbox"
+              checked={autoSync}
+              onChange={(e) => setAutoSync(e.target.checked)}
+              disabled={!live}
+              data-testid="brainmap-autosync"
+              className="accent-cyan-400"
+            />
+            <span className={autoSync && live ? 'text-cyan-400' : 'text-text-muted'}>Auto-sync</span>
+          </label>
           <button
             onClick={() => void runSync(false)}
             disabled={busy}
