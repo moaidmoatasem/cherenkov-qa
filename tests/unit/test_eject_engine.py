@@ -4,6 +4,7 @@ import json
 import os
 import tempfile
 import unittest
+from pathlib import Path
 
 
 class TestSpecFilesIn(unittest.TestCase):
@@ -292,15 +293,40 @@ class TestEjectDoesNotShipCherenkovsOwnFixtures(unittest.TestCase):
             finally:
                 os.chdir(prev)
 
-    def test_eject_refuses_a_tests_dir_inside_the_package(self):
-        """Even when pointed at them explicitly, package fixtures are refused."""
+    def test_eject_refuses_package_fixtures_from_a_users_working_directory(self):
+        """The pip-installed case: cwd is the user's project, fixtures are elsewhere.
+
+        The guard deliberately keys off "under the user's cwd", not merely
+        "under the package". In a source checkout those are the same directory,
+        so a blunt inside-the-package check would refuse a developer's own
+        ./stub/generated_tests and make eject unusable in the repo — which is
+        what the eject smoke test caught.
+        """
         from cherenkov.execution.eject import EjectorEngine
 
-        engine = EjectorEngine(run_id="test-run")
+        with tempfile.TemporaryDirectory() as cwd, tempfile.TemporaryDirectory() as base:
+            prev = os.getcwd()
+            os.chdir(cwd)
+            try:
+                engine = EjectorEngine(run_id="test-run")
+                engine.tests_src_dir = engine.fixtures_dir  # packaged, not the user's
+                self.assertFalse(engine.eject_suite(os.path.join(base, "ejected")))
+            finally:
+                os.chdir(prev)
+
+    def test_a_source_checkout_can_still_eject_its_own_generated_tests(self):
+        """Regression on the over-broad first cut of this guard."""
+        from cherenkov.execution.eject import EjectorEngine
+
         with tempfile.TemporaryDirectory() as base:
-            out = os.path.join(base, "ejected")
-            engine.tests_src_dir = engine.fixtures_dir  # inside the package
-            self.assertFalse(engine.eject_suite(out))
+            engine = EjectorEngine(run_id="test-run")
+            # Stand in for a checkout where cwd and the package root coincide.
+            engine.package_root = Path(os.getcwd())
+            gen_dir = os.path.join(os.getcwd(), "stub", "generated_tests")
+            self.assertFalse(
+                engine._is_inside_package(gen_dir),
+                "a developer's own generated tests must not read as package fixtures",
+            )
 
     def test_cli_default_eject_exits_nonzero_instead_of_claiming_success(self):
         """End-to-end through the CLI, which is where the banner is printed."""
