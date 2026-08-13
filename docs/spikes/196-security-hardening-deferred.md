@@ -54,6 +54,40 @@ defined. Anchor launch status to `docs/HANDOVER.md` and the validation gate —
 
 ---
 
+## Resolved: both asks are implemented — this capture is stale (2026-08-13)
+
+This document says **DEFERRED**, *"no code change now"*, and *"do not treat as a gate item"*.
+Both of its asks have since shipped, and the code cites this issue by number.
+
+**1. HITL auth — done.** `cherenkov/web/routes/review_routes.py`:
+
+```python
+@router.post("/api/v1/review/approve")
+async def approve_review_item(payload, _auth=Depends(verify_api_key),
+                              _role=Depends(require_role(Role.reviewer))):
+```
+
+Approve and reject both require an API key *and* the reviewer role. Precisely:
+`require_role` returns early when `AUTH_ENABLED` is false
+(`cherenkov/web/auth/deps.py`), so enforcement is conditional on that setting — which is
+the localhost-first default this document argued for, with the authz designed in rather
+than bolted on.
+
+**2. At-rest encryption — done.** `cherenkov/hitl/store.py`, line 13, naming this issue:
+
+> `[Issue #196] At-rest encryption: set CHERENKOV_DB_KEY to enable SQLCipher-based`
+> `encryption. Falls back to plain SQLite if pysqlcipher3 is not available.`
+
+**And the premise was wrong even when written.** The re-open criteria below rest on the
+HITL backend being nascent. It is 743 lines (`store.py` 344, `cmd.py` 274,
+`contracts.py` 101), and `docs/vision/11_CONSOLIDATION_AUDIT.md` — dated *before* this
+capture — records it as *"atomic queue + `hitl/v1` envelope, race-proven"* with
+*"atomic SQL gatekeeper, race-proven 10/10 + 5/5"*.
+
+Nothing above has been edited: this is a dated capture and rewriting it would destroy the
+record. But it should not be read as current status. Found via `cherenkov brain`, which
+flagged the dangling citation below and led here.
+
 ## Note on a citation that never existed (2026-08-13)
 
 This capture originally cited a wikilink, `openclaw-integration-review`, twice —

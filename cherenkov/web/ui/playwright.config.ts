@@ -12,7 +12,8 @@ export default defineConfig({
   // and tests/qa/e2e-journeys.spec.ts (rewritten against the journey-driven IA
   // and no longer archived).
   testIgnore: [
-    'tests/dashboard_e2e.spec.ts',
+    // 'tests/dashboard_e2e.spec.ts' was deleted in e6b1fc3 and replaced by
+    // tests/e2e/new_dashboard.spec.ts; the ignore entry outlived the file.
     'tests/sdd_cockpit.spec.ts',
     'tests/qa/api-contract-integration.spec.ts',
     'tests/qa/functional-suite.spec.ts',
