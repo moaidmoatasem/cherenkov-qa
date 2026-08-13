@@ -176,8 +176,18 @@ def test_spec_checks_are_silent_without_a_spec() -> None:
         "expect(" + " " * 8000,      # unterminated expect
         "'" * 8000,                  # quote run
         "expect(" + "(" * 4000,      # unbalanced nesting
+        # Escaped-quote runs. The first adversarial set here missed these
+        # entirely and CodeQL had to point them out: they are quadratic against
+        # any regex that recognises a string literal, because the match is
+        # retried at every quote. Kept per quote character.
+        "'" + "\\'" * 8000,
+        '"' + '\\"' * 8000,
+        "`" + "\\`" * 8000,
     ],
-    ids=["escapes", "comments", "slashes", "tobe-ws", "expect-ws", "quotes", "nesting"],
+    ids=[
+        "escapes", "comments", "slashes", "tobe-ws", "expect-ws", "quotes",
+        "nesting", "escaped-single", "escaped-double", "escaped-backtick",
+    ],
 )
 def test_pathological_input_stays_bounded(payload: str) -> None:
     """Adversarial input must not push the analyser into super-linear time."""

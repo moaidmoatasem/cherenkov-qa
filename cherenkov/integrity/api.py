@@ -297,11 +297,6 @@ def _spec_property_issues(
 #      consumes — so a single quote cannot backtrack exponentially.
 _WS = r"\s{0,4}"
 
-_TS_STRING = re.compile(
-    r"'(?:[^'\\\n]|\\.)*'"
-    r'|"(?:[^"\\\n]|\\.)*"'
-    r"|`(?:[^`\\]|\\.)*`"
-)
 
 _TS_TEST_HEADER = re.compile(r"\b(test|it|describe)(\.\w+)?" + _WS + r"\(")
 _TS_DISABLED = re.compile(r"\b(test|it|describe)\.(skip|fixme|todo)" + _WS + r"\(")
@@ -352,28 +347,61 @@ def _ts_binds_body(code_lines: list[str]) -> bool:
     return False
 
 
+def _scan_ts_line(line: str) -> tuple[str, int | None]:
+    """Tokenise one source line in a single linear pass.
+
+    Returns the line with string *contents* blanked to NULs (length preserved,
+    quotes kept) and the index where a `//` line comment starts, if any.
+
+    A scanner rather than a regex on purpose. Any pattern that recognises a
+    quoted string has to be retried at every quote in the input, which is
+    quadratic on a line of escaped quotes — measurably 4.7s at 16k characters,
+    on input that arrives from an unauthenticated endpoint. A single pass has
+    no start positions to retry.
+
+    Tracking string state also makes the URL case exact rather than heuristic:
+    the `//` in `https://x` is skipped because it is inside a string, not
+    because of a guess about the preceding character.
+    """
+    out: list[str] = []
+    index = 0
+    length = len(line)
+    comment_at: int | None = None
+
+    while index < length:
+        char = line[index]
+
+        if char in "'\"`":
+            out.append(char)
+            index += 1
+            while index < length:
+                current = line[index]
+                if current == "\\" and index + 1 < length:
+                    out.append("\0\0")
+                    index += 2
+                    continue
+                if current == char:
+                    out.append(current)
+                    index += 1
+                    break
+                out.append("\0")
+                index += 1
+            continue
+
+        if char == "/" and index + 1 < length and line[index + 1] == "/":
+            comment_at = index
+            out.append(line[index:])
+            break
+
+        out.append(char)
+        index += 1
+
+    return "".join(out), comment_at
+
+
 def _mask_ts_strings(line: str) -> str:
     """Blank out string contents, preserving length so offsets stay aligned."""
-    return _TS_STRING.sub(
-        lambda m: m.group(0)[0] + "\0" * (len(m.group(0)) - 2) + m.group(0)[0], line
-    )
-
-
-def _find_line_comment(masked: str) -> int | None:
-    """Index of a `//` line comment, skipping the `://` inside a URL.
-
-    Scanned rather than matched: a regex with a lookbehind restarts at every
-    offset, which is quadratic on a line of many `//` pairs — and this input is
-    attacker-controlled. `str.find` advances, so this stays linear.
-    """
-    start = 0
-    while True:
-        index = masked.find("//", start)
-        if index == -1:
-            return None
-        if index == 0 or masked[index - 1] != ":":
-            return index
-        start = index + 2
+    return _scan_ts_line(line)[0]
 
 
 def _strip_ts_comments(line: str) -> str:
@@ -383,8 +411,8 @@ def _strip_ts_comments(line: str) -> str:
     not a weakened assertion, and a URL is not a comment. String contents are
     preserved because request paths and property names live inside them.
     """
-    index = _find_line_comment(_mask_ts_strings(line))
-    return line[:index] if index is not None else line
+    _, comment_at = _scan_ts_line(line)
+    return line[:comment_at] if comment_at is not None else line
 
 
 def _strip_ts_noise(line: str) -> str:
@@ -392,9 +420,10 @@ def _strip_ts_noise(line: str) -> str:
 
     A brace inside a string literal must not open or close a test body.
     """
-    without_strings = _TS_STRING.sub(lambda m: m.group(0)[0] * 2, line)
-    index = _find_line_comment(without_strings)
-    return without_strings[:index] if index is not None else without_strings
+    masked, comment_at = _scan_ts_line(line)
+    if comment_at is not None:
+        masked = masked[:comment_at]
+    return masked.replace("\0", "")
 
 
 def _ts_blocks(lines: list[str]) -> list[tuple[int, int]]:
