@@ -111,6 +111,7 @@ export const SpecIngestPanel: React.FC<SpecIngestPanelProps> = ({ onSpecIngested
           </div>
           <select
             value={selectedRepoSpec}
+            aria-label="Select a detected project spec to ingest"
             onChange={(e) => {
               setSelectedRepoSpec(e.target.value);
               if (e.target.value) {
