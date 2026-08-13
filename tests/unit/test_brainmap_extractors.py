@@ -284,3 +284,39 @@ def test_tests_extractor_claims_spec_files(ctx):
     assert extractor.claims("ui/tests/thing.spec.ts")
     assert extractor.claims("tests/test_x.py")
     assert not extractor.claims("src/index.ts")
+
+
+def test_frontend_extractor_resolves_paths_composed_through_a_helper(ctx):
+    # A client that owns the prefix in one helper and passes the rest in at
+    # each call site. Read literally this yields `/api/v1/thing{}` and matches
+    # no route, so every endpoint behind the helper reported as uncalled.
+    source = """
+const API_BASE = '/api/v1';
+
+async function thingGet<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE}/thing${path}`, { headers: {} });
+  return res.json();
+}
+
+export const getStatus = () => thingGet<Status>('/status');
+export const getGraph = () => thingGet<Graph>(`/graph?${search}`);
+"""
+    result = FrontendExtractor().extract("src/lib/api.ts", source, ctx)
+    calls = hints(result, EDGE_CALLS)
+
+    assert "/api/v1/thing/status" in calls
+    # The query string is dropped, exactly as for an inline literal.
+    assert "/api/v1/thing/graph" in calls
+
+
+def test_frontend_extractor_does_not_invent_paths_for_unknown_helpers(ctx):
+    # The prefix comes from another function's return value. Following that
+    # would mean guessing, so the helper contributes nothing.
+    source = """
+async function call(path: string) {
+  return fetch(`${resolveBase()}${path}`);
+}
+export const go = () => call('/status');
+"""
+    result = FrontendExtractor().extract("src/lib/api.ts", source, ctx)
+    assert not [c for c in hints(result, EDGE_CALLS) if "status" in c]

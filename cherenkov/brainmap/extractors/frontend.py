@@ -44,6 +44,12 @@ _BASE_CONST = re.compile(
 _LITERAL_PATH = re.compile(r"""['"`](\$\{([A-Za-z_$][\w$]*)\})?(/[A-Za-z0-9_\-./{}$]*)""")
 _TEMPLATE_HOLE = re.compile(r"\$\{[^}]*\}")
 _TEMPLATE_LITERAL = re.compile(r"`[^`]*`", re.DOTALL)
+_FETCH_TEMPLATE = re.compile(r"fetch\(\s*`([^`]*)`")
+_LEADING_CONST = re.compile(r"\$\{([A-Za-z_$][\w$]*)\}([A-Za-z0-9_\-./]*)")
+_FN_DECL = re.compile(
+    r"""(?:function\s+([A-Za-z_$][\w$]*)|"""
+    r"""(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::[^=\n]+)?=\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>)""",
+)
 
 
 class FrontendExtractor:
@@ -171,6 +177,99 @@ def _header_comment(text: str) -> str:
     return ""
 
 
+def _helper_paths(text: str, bases: dict[str, str]) -> list[str]:
+    """Resolve endpoints reached through a path-composing helper.
+
+    A client module rarely calls ``fetch`` at every site. The common shape is
+    one helper that owns the prefix and takes the rest as an argument::
+
+        async function brainGet<T>(path: string) {
+          const res = await fetch(`${API_BASE}/brainmap${path}`, …);
+        }
+        …
+        return brainGet<BrainStatus>('/status', 'Brain map status');
+
+    Read literally, that yields ``/api/v1/brainmap{}`` and matches no route, so
+    every endpoint behind such a helper reported as *"no frontend code calls
+    this"* — wrong, and wrong in the direction that hides work. This resolves
+    one level of indirection: find helpers whose fetch interpolates one of
+    their own parameters, take the prefix, and re-join it with the string
+    literal each call site passes.
+
+    Deliberately one level and no further. A prefix built from another
+    function's return value is not followed, because guessing there would
+    trade a visible gap for an invented edge.
+
+    Args:
+        text (str): File contents.
+        bases (dict[str, str]): Path-valued constants declared in this file.
+
+    Returns:
+        list[str]: Fully-composed paths, in first-seen order.
+    """
+    resolved: list[str] = []
+    for helper, prefix in _path_helpers(text, bases).items():
+        for call in re.finditer(
+            rf"""\b{re.escape(helper)}\s*(?:<[^<>()]*>)?\s*\(\s*['"`]([^'"`]*)['"`]""", text
+        ):
+            suffix = call.group(1)
+            if not suffix.startswith("/"):
+                continue
+            resolved.append(prefix.rstrip("/") + suffix)
+    return resolved
+
+
+def _path_helpers(text: str, bases: dict[str, str]) -> dict[str, str]:
+    """Return helper name → the path prefix its ``fetch`` composes.
+
+    Args:
+        text (str): File contents.
+        bases (dict[str, str]): Path-valued constants declared in this file.
+
+    Returns:
+        dict[str, str]: One entry per helper whose fetch interpolates a
+        parameter after a resolvable prefix.
+    """
+    helpers: dict[str, str] = {}
+    for fetch in _FETCH_TEMPLATE.finditer(text):
+        literal = fetch.group(1)
+        head, sep, _ = literal.partition("${")
+        if not sep:
+            continue
+        # The prefix may itself start with an interpolated constant.
+        prefix = head
+        leading = _LEADING_CONST.match(literal)
+        if leading:
+            base = bases.get(leading.group(1))
+            if base is None:
+                continue
+            prefix = base.rstrip("/") + leading.group(2)
+            if "${" not in literal[leading.end() :]:
+                continue  # nothing parameterised — the plain scanner has it
+        elif not prefix.startswith("/"):
+            continue
+        owner = _enclosing_function(text, fetch.start())
+        if owner and prefix.startswith("/api"):
+            helpers.setdefault(owner, prefix)
+    return helpers
+
+
+def _enclosing_function(text: str, position: int) -> str:
+    """Return the name of the nearest function declared before ``position``.
+
+    Args:
+        text (str): File contents.
+        position (int): Offset of the ``fetch`` call.
+
+    Returns:
+        str: Function name, or ``""`` when the call is not inside a named one.
+    """
+    best = ""
+    for match in _FN_DECL.finditer(text, 0, position):
+        best = match.group(1) or match.group(2) or best
+    return best
+
+
 def _api_paths(text: str) -> list[str]:
     """Return normalised ``/api/...`` literals referenced by the file.
 
@@ -193,6 +292,10 @@ def _api_paths(text: str) -> list[str]:
     """
     bases = {m.group(1): m.group(2) for m in _BASE_CONST.finditer(text)}
     found: list[str] = []
+    for raw in _helper_paths(text, bases):
+        path = _normalise(raw)
+        if path.startswith("/api") and path not in found:
+            found.append(path)
     for match in _LITERAL_PATH.finditer(text):
         const_name, tail = match.group(2), match.group(3)
         if const_name:
@@ -202,7 +305,16 @@ def _api_paths(text: str) -> list[str]:
             path = base.rstrip("/") + tail
         else:
             path = tail
-        path = _TEMPLATE_HOLE.sub("{}", path).split("?")[0].rstrip("&/")
+        path = _normalise(path)
         if path.startswith("/api") and path not in found:
             found.append(path)
     return found
+
+
+def _normalise(path: str) -> str:
+    """Collapse template holes, drop the query string, trim trailing slashes.
+
+    Both the literal scanner and the helper resolver end here, so a path
+    composed across two hops is shaped exactly like one written inline.
+    """
+    return _TEMPLATE_HOLE.sub("{}", path).split("?")[0].rstrip("&/")
