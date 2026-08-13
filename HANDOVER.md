@@ -79,10 +79,35 @@ today's `src/types`, all six required exports present (`setupApiMocks`,
 `INITIAL_PROJECTS`, `MOCK_ENDPOINTS`, `INITIAL_TESTS`, `INITIAL_FAILURES`,
 `MOCK_DIVERGENCES`), and the suite goes from 0 to **112 tests in 13 files**.
 
-**Do not treat provenance as settled.** This clone's history is truncated at 52
-first-parent commits, so where the file was lost is not soundly knowable from here.
-`git log --diff-filter=D` records no deletion for the path. Worth a look with full
-history — a file that ten specs depend on should not be able to leave without a trace.
+**Provenance — resolved 2026-08-13, and the earlier note here was wrong.** That note
+said the loss was "not soundly knowable" because `git log --diff-filter=D` found no
+deletion. It found none because the clone was shallow at 56 commits. After
+`git fetch --unshallow` (1,142 commits) the deletion is one query away:
+
+```
+$ git log --diff-filter=D --oneline --all -- cherenkov/web/ui/tests/api_mocks.ts
+e6b1fc39 docs: retire cherenkov.py from QA validation runbook (#922) (#932)
+```
+
+**It was deliberate, not an accident.** That docs PR carried a second commit —
+*"test: remove legacy api_mocks and dashboard_e2e, replace with new_dashboard e2e"* —
+which deleted `tests/api_mocks.ts` and `tests/dashboard_e2e.spec.ts` and added
+`tests/e2e/new_dashboard.spec.ts`. A reasonable retirement of two legacy files.
+
+The gap is blast radius, not intent: **ten other specs still imported `api_mocks`**, so
+removing it stopped the whole suite from *loading*, not just the one spec being replaced.
+Nothing caught it because that suite never runs on an ordinary PR.
+
+**This means the #978 restore partly reverses an intended retirement**, and whoever picks
+this up should know that. The restore was the right call for the immediate defect — the
+suite went 0 → 112 tests and the nightly job started exercising something again — but the
+author's direction of travel was to move specs off shared mocks and onto `bootstrapReal`
+against the real backend. The a11y rewrite in #980 follows that direction. Finishing the
+job means migrating the remaining nine importers and *then* deleting `api_mocks.ts`
+deliberately, rather than leaving it restored by default.
+
+Also left behind by that commit and cleaned up here: `playwright.config.ts` still listed
+`tests/dashboard_e2e.spec.ts` in `testIgnore`, a file the same commit deleted.
 
 **`tests/e2e/*` needs a live backend**, by design — those specs call `bootstrapReal(page)`
 and sit behind the "Backend offline" overlay without one. Run
@@ -105,6 +130,21 @@ The other 29 were not defects, and the map now says so rather than being ignored
   call site. Same class as the docs extractor's inline-code fix.
 - **1 was a real broken doc link**, now a proper markdown link to
   `docs/spikes/195-semantic-chunking-rag.md`.
+
+**Resolved 2026-08-13 — spike #196 is stale, and both its asks shipped.** The
+contradiction flagged below was worth chasing. Neither of that capture's two deferred
+items is outstanding, and the code names the issue:
+
+| Ask (marked DEFERRED, "no code change now") | Reality |
+|---|---|
+| HITL auth on review actions | `review_routes.py` — approve *and* reject carry `Depends(verify_api_key)` and `Depends(require_role(Role.reviewer))`. `require_role` short-circuits when `AUTH_ENABLED` is false, i.e. designed in, off by default for localhost. |
+| SQLite at-rest encryption | `hitl/store.py:13` — *"[Issue #196] At-rest encryption: set `CHERENKOV_DB_KEY` to enable SQLCipher-based encryption."* |
+
+The premise was also wrong when written: `cherenkov/hitl/` is 743 lines, and the
+Consolidation Audit — dated *earlier* — already called it race-proven. **A document
+saying "deferred, not a gate item" for work that is done is the same drift class the map
+exists to catch**, and it was the dangling citation that led there. The capture is
+annotated, not rewritten; it is a dated record.
 
 **The 3 that remain need a human.** `[[fabricated-validation-gate]]` (×2) and
 `[[openclaw-integration-review]]` in `docs/spikes/194` and `196` point at notes that were
