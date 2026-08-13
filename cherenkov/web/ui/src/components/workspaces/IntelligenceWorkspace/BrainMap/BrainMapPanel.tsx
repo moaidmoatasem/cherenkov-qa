@@ -281,7 +281,11 @@ export const BrainMapPanel: React.FC = () => {
                     </div>
                     <div className="text-xs font-mono text-text-primary break-all">{selected.title}</div>
                   </div>
-                  <button onClick={() => setSelected(null)} className="text-text-muted hover:text-text-primary">
+                  <button
+                    onClick={() => setSelected(null)}
+                    aria-label="Clear node selection"
+                    className="text-text-muted hover:text-text-primary"
+                  >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>

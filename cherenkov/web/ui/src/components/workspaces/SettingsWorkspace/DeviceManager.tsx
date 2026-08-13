@@ -62,6 +62,7 @@ export const DeviceManager: React.FC = () => {
         </div>
         <button
           onClick={loadDeviceStatus}
+          aria-label="Refresh device status"
           className="p-1.5 rounded-lg border border-border-subtle text-text-muted hover:text-text-primary transition"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
