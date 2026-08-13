@@ -354,7 +354,16 @@ export const BrainMapPanel: React.FC = () => {
             </span>
           ))}
         </div>
-        <div className="rounded-xl border border-white/10 bg-black/20 max-h-56 overflow-y-auto divide-y divide-white/5">
+        {/* Focusable because it scrolls: the findings list has no interactive
+            children, so without a tab stop a keyboard user can see it but
+            never reach the entries below the fold. The node list above needs
+            no such treatment — its rows are buttons. */}
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label="Reconciliation findings"
+          className="rounded-xl border border-white/10 bg-black/20 max-h-56 overflow-y-auto divide-y divide-white/5 focus:outline-none focus:ring-1 focus:ring-cyan-400/60"
+        >
           {findings.length === 0 ? (
             <p className="p-3 text-[11px] font-mono text-text-muted">
               Every reference in this map resolves.

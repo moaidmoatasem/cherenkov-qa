@@ -90,8 +90,9 @@ export const GovernanceSettings: React.FC = () => {
 
           {/* Target Host Settings */}
           <div className="space-y-2">
-            <label className="text-[10px] uppercase text-text-muted">Target Host URL</label>
+            <label htmlFor="setting-target-url" className="text-[10px] uppercase text-text-muted">Target Host URL</label>
             <input
+              id="setting-target-url"
               type="text"
               value={settings.target?.url || ''}
               onChange={(e) =>
@@ -162,8 +163,9 @@ export const GovernanceSettings: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] uppercase text-text-muted">Max Cost USD / Run</label>
+              <label htmlFor="setting-max-cost" className="text-[10px] uppercase text-text-muted">Max Cost USD / Run</label>
               <input
+                id="setting-max-cost"
                 type="number"
                 step="0.1"
                 min="0"
@@ -185,8 +187,9 @@ export const GovernanceSettings: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] uppercase text-text-muted">Max Latency (ms)</label>
+              <label htmlFor="setting-max-latency" className="text-[10px] uppercase text-text-muted">Max Latency (ms)</label>
               <input
+                id="setting-max-latency"
                 type="number"
                 step="1000"
                 min="0"
