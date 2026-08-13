@@ -24,6 +24,23 @@ from cherenkov.stages.ingest import DAST_PAYLOADS
 class TestDASTPayloads(unittest.TestCase):
     """Tests for DAST payload definition."""
 
+    def test_dast_is_off_in_the_shipped_default_settings(self):
+        """README and docs/config_cookbook.md both state "off by default".
+
+        The other tests here patch DAST_ENABLED explicitly, so none of them
+        would notice the shipped default flipping — and a default that silently
+        turned on would start firing hostile payloads at a user's API without
+        them asking. This asserts the real field default, unpatched.
+        """
+        from cherenkov.core.settings import CherenkovSettings
+
+        self.assertIs(
+            CherenkovSettings().DAST_ENABLED,
+            False,
+            "DAST must stay opt-in: the docs promise it is off unless "
+            "CHERENKOV_DAST_ENABLED is set.",
+        )
+
     def test_dast_payloads_defined(self):
         """Placeholder docstring.
 

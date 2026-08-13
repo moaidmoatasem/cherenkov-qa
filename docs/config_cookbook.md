@@ -213,6 +213,37 @@ Every config key can be set via `CHERENKOV_*` env vars. These take precedence ov
 | `CHERENKOV_TIER_DEEP_PROVIDER` | `substrate.tiers.deep.provider` | `export CHERENKOV_TIER_DEEP_PROVIDER=openai` |
 | `CHERENKOV_TIER_DEEP_MODEL` | `substrate.tiers.deep.model` | `export CHERENKOV_TIER_DEEP_MODEL=gpt-4o` |
 | `CHERENKOV_MODE` | `continuity.mode` | `export CHERENKOV_MODE=daemon` |
+| `CHERENKOV_DAST_ENABLED` | `dast_enabled` | `export CHERENKOV_DAST_ENABLED=1` |
+
+---
+
+## OWASP safe-rejection probes (`CHERENKOV_DAST_ENABLED`)
+
+**Off by default.** With it on, planning adds one representative hostile payload per OWASP
+class to every constrained **string field in a request body**:
+
+| Class | Payload |
+|---|---|
+| SQL injection — tautology | `' OR '1'='1` |
+| SQL injection — stacked | `'; DROP TABLE users;--` |
+| XSS — reflected | `<script>alert(1)</script>` |
+| XSS — attribute | `" onmouseover="alert(1)` |
+| Path traversal | `../../../../etc/passwd` |
+| Template injection | `${{7*7}}` |
+
+Each generated case asserts the API answers **4xx — not 5xx, not 2xx** — and that the response
+body does not echo the payload back verbatim. A 5xx means the payload reached something that
+crashed on it; a 2xx means it was accepted.
+
+```bash
+export CHERENKOV_DAST_ENABLED=1
+cherenkov generate --spec ./openapi.yaml
+```
+
+**What this is not.** It is an input-validation hardening check, not a security scanner. It does
+not test authentication, authorization, session handling, rate limiting, or anything outside
+request-body strings — headers, path segments and query parameters are untouched. Treat a clean
+run as "these fields reject hostile input safely", nothing broader.
 
 ---
 
