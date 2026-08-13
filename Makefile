@@ -7,6 +7,7 @@
 #   make docs-lint         Lint all public docs markdown
 #   make docs-check-clean  Check docs for leaked internal tokens
 #   make docs-gen-cli      Auto-generate CLI reference from cherenkov --help
+#   make docs-version-audit  Check the live site's 'latest' alias is current
 #   make test              Run the full test suite
 #   make doctor            Run environment health check
 #
@@ -16,13 +17,20 @@
 #   pip install -r docs-site/docs-requirements.txt
 
 .PHONY: help docs-serve docs-build docs-lint docs-check-clean docs-gen-cli \
-        test doctor docs-version-list docs-deploy-dev
+        test doctor docs-version-list docs-deploy-dev docs-version-audit \
+        docs-deploy-release
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python3
 MKDOCS := $(VENV)/bin/mkdocs
 MIKE := $(VENV)/bin/mike
 DOCS_CFG := docs-site/mkdocs.yml
+
+# Docs version series to publish. Defaults to pyproject.toml's major.minor so a
+# hand-typed VERSION= can't quietly rebuild an older minor from tip-of-main and
+# drag the 'latest' alias backwards with it.
+PKG_SERIES := $(shell sed -n 's/^version = "\([0-9]*\.[0-9]*\).*"/\1/p' pyproject.toml | head -1)
+DOCS_VERSION := $(if $(VERSION),$(VERSION),$(PKG_SERIES))
 
 ##@ Help
 help: ## Show this help
@@ -61,12 +69,17 @@ docs-deploy-dev: ## Deploy docs as 'dev' alias (for testing mike locally)
 	@cd docs-site && $(MIKE) deploy dev
 	@echo "✅ Deployed. Run 'make docs-version-list' to confirm."
 
-docs-deploy-release: ## Deploy docs as a new version (usage: make docs-deploy-release VERSION=1.1.1)
-	@if [ -z "$(VERSION)" ]; then echo "Usage: make docs-deploy-release VERSION=x.y.z"; exit 1; fi
-	@echo "→ Deploying docs as v$(VERSION) and updating 'latest' alias..."
-	@cd docs-site && $(MIKE) deploy --update-aliases $(VERSION) latest
-	@cd docs-site && $(MIKE) set-default $(VERSION)
-	@echo "✅ Deployed v$(VERSION) as latest. Run 'make docs-version-list' to confirm."
+docs-version-audit: ## Check the live site's 'latest' alias points at the current release
+	@$(PYTHON) scripts/check_docs_site_versions.py
+
+docs-deploy-release: ## Deploy docs as a new version (defaults to the pyproject series; FORCE=1 to override the guard)
+	@if [ -z "$(DOCS_VERSION)" ]; then echo "Could not resolve a version to deploy."; exit 1; fi
+	@echo "→ Checking that deploying $(DOCS_VERSION) as 'latest' is not a regression..."
+	@$(PYTHON) scripts/check_docs_site_versions.py --target $(DOCS_VERSION) $(if $(FORCE),--force,)
+	@echo "→ Deploying docs as v$(DOCS_VERSION) and updating 'latest' alias..."
+	@cd docs-site && $(MIKE) deploy --update-aliases $(DOCS_VERSION) latest
+	@cd docs-site && $(MIKE) set-default $(DOCS_VERSION)
+	@echo "✅ Deployed v$(DOCS_VERSION) as latest. Run 'make docs-version-list' to confirm."
 
 ##@ Development
 test: ## Run the full Python + Playwright test suite

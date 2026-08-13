@@ -37,6 +37,62 @@ curl -s https://moaidmoatasem.github.io/cherenkov-qa/ | grep "version"
 
 ---
 
+## 1b. `latest` Points at the Wrong Minor
+
+The most common way this site goes wrong is not a bad build — it's an older
+minor being **redeployed from a `main` checkout after a newer release shipped**.
+`mike deploy --update-aliases 1.2 latest` run from tip-of-main does two damaging
+things at once:
+
+- the `/1.2/` URL now serves *newer* content than `/1.3/` (it was built from
+  main, while `/1.3/` still holds what tag `v1.3.0` published), and
+- the `latest` alias moves **backwards** to 1.2, so every `/latest/` link in the
+  README lands readers on the older minor.
+
+This happened on 2026-08-08 and again on 2026-08-10; the 08-10 deploy also undid
+a manual `Copied 1.3 to latest` fix from the same day. Symptom: `/1.2/` looks
+more current than `/1.3/`.
+
+**Detect it:**
+
+```bash
+make docs-version-audit
+# [FAIL] 'latest' points at 1.2 but 1.3 is deployed — readers landing on
+#        /latest/ get the older minor.
+```
+
+**Fix it (preferred — rebuilds 1.3 from its tag, in CI):**
+
+Actions → **Deploy Docs** → Run workflow, with `version=1.3`, `ref` blank
+(resolves to the highest `v1.3.*` tag), `update_latest=true`.
+
+**Fix it manually** if you must, from a clean checkout of the release tag:
+
+```bash
+git checkout v1.3.0
+cd docs-site
+mike deploy --push --update-aliases 1.3 latest
+mike set-default --push latest
+cd .. && make docs-version-audit   # expect [PASS]
+```
+
+Note that the older minor's directory keeps whatever content was last pushed
+into it. If `/1.2/` was polluted with post-1.2 material, redeploy it from its
+own tag without touching the alias:
+
+```bash
+git checkout v1.2.0
+cd docs-site && mike deploy --push --update-aliases 1.2   # no 'latest'
+```
+
+**Prevention:** `make docs-deploy-release` now defaults `VERSION` to the
+major.minor in `pyproject.toml` and refuses, via
+`scripts/check_docs_site_versions.py`, to move `latest` backwards. Releases are
+deployed by `docs-deploy.yml` from the release tag — deploying a version by hand
+is the exception, not the routine.
+
+---
+
 ## 2. Backport Docs to an Old Minor Version
 
 Example: `v1.0.1` ships a security fix. The `1.0` docs need updating.
