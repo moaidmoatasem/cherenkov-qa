@@ -99,6 +99,56 @@ catch regression.
 - **`tests/unit/test_mcp_auth.py` cannot be collected in this environment** —
   `cryptography`'s Rust bindings panic on a missing `_cffi_backend`. Environment,
   not code, but it means the file is silently unexercised wherever that holds.
+- **Two integrity detectors now coexist.** #989 (merged into `main` while this
+  branch was open) rebuilt `cherenkov/integrity/api.py` on AST analysis and
+  calibrated it to a 41-case corpus; this branch independently rebuilt the AST
+  walker in `cherenkov/cli/commands/check_suite.py`. Both answer "is this test
+  honest", neither is calibrated against the other, and they were fixed in
+  parallel without either seeing the other's corpus. #989's own handover note
+  flags the same divergence from the opposite side. Converging them — or
+  deciding which one is authoritative — is a design call, not a merge fix, so
+  this merge deliberately leaves both standing.
+
+## The integrity detector had never been measured; it now is (2026-08-13)
+
+`cherenkov/integrity/api.py` — the "Snyk for test honesty", the component that
+tells other agents whether their tests are honest — was nine hardcoded substring
+matches. Measured against a 41-case labelled corpus for the first time:
+
+```
+                     before    after
+recall                17.2%   100.0%
+false positive rate    8.3%     0.0%
+false certificates       24        0
+```
+
+**24 of 29 tests that cannot fail were being handed a signed SHA-256 integrity
+certificate**, including a Playwright test with an empty body. Three of the six
+declared `IssueType` members — `SPEC_MISMATCH`, `HALLUCINATED_VALUE`,
+`MISSING_STATUS_CHECK` — were never emitted by any code path, and `spec_content`
+was accepted on the request and never read. The audit claimed a spec-awareness
+it did not have.
+
+The detector is now AST-based for pytest and comment/string-aware for
+Playwright, and all six issue types fire. Corpus at
+`bench/integrity_corpus/cases.yaml`, harness at `scripts/calibrate_integrity.py`,
+gate at `tests/unit/test_integrity_calibration.py` — deliberately in the ordinary
+unit suite, not a 38th workflow, because a gate that runs only on a schedule is
+exactly how the dead Playwright suite below survived.
+
+**Read the 100% with suspicion.** The corpus was written alongside the detector,
+so it proves only that known evasions stay caught. The load-bearing check is
+`bench/fixtures/golden_tests/`, which predates this work: running against it
+surfaced an evasion class the corpus had missed entirely — status assertion kept,
+body assertions deleted, which is the shape an agent leaves behind when it
+removes a failing check instead of fixing the code. That is now both a rule and a
+corpus class. **Whoever picks this up: the next honest move is more held-out
+data, not more cases written by whoever is also writing the rules.**
+
+Not addressed here: `cherenkov/cli/commands/check_suite.py::check_integrity` is a
+second, independent integrity implementation that does read the spec. Two
+detectors answering the same question is a divergence risk; neither is calibrated
+against the other.
 
 ## Brain map is at zero findings; gate wired; a11y specs are stale (2026-08-13)
 

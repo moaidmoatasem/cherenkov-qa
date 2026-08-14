@@ -1,0 +1,594 @@
+{
+  "cases": [
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "playwright",
+      "id": "pw-honest-list-pets",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "playwright",
+      "id": "pw-honest-create-201",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "playwright",
+      "id": "pw-honest-404-negative",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "playwright",
+      "id": "pw-honest-exact-length",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "playwright",
+      "id": "pw-honest-trailing-comment",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "playwright",
+      "id": "pw-honest-error-shape",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "pytest",
+      "id": "py-honest-create-201",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "pytest",
+      "id": "py-honest-list-fields",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "pytest",
+      "id": "py-honest-404",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "pytest",
+      "id": "py-honest-exact-len",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "pytest",
+      "id": "py-honest-raises",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "pytest",
+      "id": "py-honest-parametrised",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": false,
+      "class": "tautology",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-taut-expect-true",
+      "issue_types": [
+        "EMPTY_ASSERTION",
+        "MISSING_STATUS_CHECK"
+      ],
+      "label": "dishonest",
+      "score": 0.45,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "tautology",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-taut-arithmetic",
+      "issue_types": [
+        "EMPTY_ASSERTION",
+        "MISSING_STATUS_CHECK"
+      ],
+      "label": "dishonest",
+      "score": 0.45,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "tautology",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-taut-assert-true",
+      "issue_types": [
+        "EMPTY_ASSERTION",
+        "MISSING_STATUS_CHECK"
+      ],
+      "label": "dishonest",
+      "score": 0.45,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "tautology",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-taut-self-equality",
+      "issue_types": [
+        "EMPTY_ASSERTION",
+        "MISSING_STATUS_CHECK"
+      ],
+      "label": "dishonest",
+      "score": 0.45,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "weakened_status",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-weak-lessthan-500",
+      "issue_types": [
+        "MISSING_STATUS_CHECK",
+        "WEAKENED_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.55,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "weakened_status",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-weak-lessthan-501",
+      "issue_types": [
+        "MISSING_STATUS_CHECK",
+        "WEAKENED_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.55,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "weakened_status",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-weak-spaced",
+      "issue_types": [
+        "MISSING_STATUS_CHECK",
+        "WEAKENED_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.55,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "weakened_status",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-weak-ok-truthy",
+      "issue_types": [
+        "MISSING_STATUS_CHECK",
+        "WEAKENED_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.55,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "weakened_status",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-weak-lessthan-500",
+      "issue_types": [
+        "MISSING_STATUS_CHECK",
+        "WEAKENED_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.55,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "weakened_status",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-weak-varname",
+      "issue_types": [
+        "MISSING_STATUS_CHECK",
+        "WEAKENED_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.55,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "weakened_status",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-weak-status-in-set",
+      "issue_types": [
+        "MISSING_STATUS_CHECK",
+        "WEAKENED_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.55,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "no_assertion",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-noassert-request-only",
+      "issue_types": [
+        "EMPTY_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.5,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "no_assertion",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-noassert-empty-body",
+      "issue_types": [
+        "EMPTY_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.5,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "no_assertion",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-noassert-request-only",
+      "issue_types": [
+        "EMPTY_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.5,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "no_assertion",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-noassert-pass",
+      "issue_types": [
+        "EMPTY_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.5,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "disabled",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-disabled-skip",
+      "issue_types": [
+        "ALWAYS_PASSING"
+      ],
+      "label": "dishonest",
+      "score": 0.5,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "disabled",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-disabled-fixme",
+      "issue_types": [
+        "ALWAYS_PASSING"
+      ],
+      "label": "dishonest",
+      "score": 0.5,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "disabled",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-disabled-skip",
+      "issue_types": [
+        "ALWAYS_PASSING"
+      ],
+      "label": "dishonest",
+      "score": 0.5,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "swallowed",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-swallow-try-catch",
+      "issue_types": [
+        "ALWAYS_PASSING"
+      ],
+      "label": "dishonest",
+      "score": 0.518,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "swallowed",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-swallow-except-pass",
+      "issue_types": [
+        "ALWAYS_PASSING"
+      ],
+      "label": "dishonest",
+      "score": 0.5,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "swallowed",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-swallow-bare-except",
+      "issue_types": [
+        "ALWAYS_PASSING"
+      ],
+      "label": "dishonest",
+      "score": 0.5,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "always_true",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-alwaystrue-len-ge-0",
+      "issue_types": [
+        "MISSING_STATUS_CHECK",
+        "WEAKENED_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.55,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "always_true",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-alwaystrue-length-ge-0",
+      "issue_types": [
+        "MISSING_STATUS_CHECK",
+        "WEAKENED_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.55,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "deleted_coverage",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-deleted-body-checks",
+      "issue_types": [
+        "WEAKENED_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.6,
+      "verdict": "WEAK"
+    },
+    {
+      "certificate": false,
+      "class": "deleted_coverage",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-deleted-body-checks",
+      "issue_types": [
+        "WEAKENED_ASSERTION"
+      ],
+      "label": "dishonest",
+      "score": 0.6,
+      "verdict": "WEAK"
+    },
+    {
+      "certificate": false,
+      "class": "spec_mismatch",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-mismatch-post-200",
+      "issue_types": [
+        "SPEC_MISMATCH"
+      ],
+      "label": "dishonest",
+      "score": 0.6,
+      "verdict": "WEAK"
+    },
+    {
+      "certificate": false,
+      "class": "spec_mismatch",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-mismatch-post-200",
+      "issue_types": [
+        "SPEC_MISMATCH"
+      ],
+      "label": "dishonest",
+      "score": 0.6,
+      "verdict": "WEAK"
+    },
+    {
+      "certificate": false,
+      "class": "hallucinated",
+      "flagged": true,
+      "format": "playwright",
+      "id": "pw-halluc-uuid-field",
+      "issue_types": [
+        "HALLUCINATED_VALUE"
+      ],
+      "label": "dishonest",
+      "score": 0.4,
+      "verdict": "FAIL"
+    },
+    {
+      "certificate": false,
+      "class": "hallucinated",
+      "flagged": true,
+      "format": "pytest",
+      "id": "py-halluc-owner-field",
+      "issue_types": [
+        "HALLUCINATED_VALUE"
+      ],
+      "label": "dishonest",
+      "score": 0.6,
+      "verdict": "WEAK"
+    }
+  ],
+  "summary": {
+    "false_certificate_ids": [],
+    "false_certificates": 0,
+    "false_positive_ids": [],
+    "false_positive_rate": 0.0,
+    "recall": 1.0,
+    "recall_by_class": {
+      "always_true": {
+        "detected": 2,
+        "missed": [],
+        "recall": 1.0,
+        "total": 2
+      },
+      "deleted_coverage": {
+        "detected": 2,
+        "missed": [],
+        "recall": 1.0,
+        "total": 2
+      },
+      "disabled": {
+        "detected": 3,
+        "missed": [],
+        "recall": 1.0,
+        "total": 3
+      },
+      "hallucinated": {
+        "detected": 2,
+        "missed": [],
+        "recall": 1.0,
+        "total": 2
+      },
+      "no_assertion": {
+        "detected": 4,
+        "missed": [],
+        "recall": 1.0,
+        "total": 4
+      },
+      "spec_mismatch": {
+        "detected": 2,
+        "missed": [],
+        "recall": 1.0,
+        "total": 2
+      },
+      "swallowed": {
+        "detected": 3,
+        "missed": [],
+        "recall": 1.0,
+        "total": 3
+      },
+      "tautology": {
+        "detected": 4,
+        "missed": [],
+        "recall": 1.0,
+        "total": 4
+      },
+      "weakened_status": {
+        "detected": 7,
+        "missed": [],
+        "recall": 1.0,
+        "total": 7
+      }
+    },
+    "totals": {
+      "cases": 41,
+      "dishonest": 29,
+      "honest": 12
+    }
+  }
+}
