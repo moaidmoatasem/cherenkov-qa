@@ -45,10 +45,14 @@ AI coding tools are notorious for weakening assertions (e.g., changing `==` to `
 
 | Suite | Engine | Weakened | Deleted | Hallucinated |
 |---|---|---|---|---|
-| **Python** (`.py`) | `ast.parse` — compares comparison-operator node types | ✅ per-assertion, baseline-relative | ✅ per-test | ✅ cross-referenced against the spec |
-| **TypeScript** (`.spec.ts`) | regex over Playwright assertion grammar | ⚠️ file-level heuristic only | ⚠️ per-test-name only | ❌ **not implemented** |
+| **Python** (`.py`) | `ast.parse` — compares comparison-operator node types | ✅ per-assertion, baseline-relative | ✅ per-test and per-assertion | ✅ scoped to the endpoint under test |
+| **TypeScript** (`.spec.ts`) | regex over Playwright assertion grammar | ✅ per-assertion, baseline-relative | ✅ per-test and per-assertion | ✅ scoped to the endpoint under test |
 
-The TypeScript path is materially weaker than the Python path, and hallucination detection there is not implemented at all. This is stated plainly because CHERENKOV exists to catch tools that overstate what they verify; it would be self-defeating to do the same. Closing the gap is tracked as M0b in the [consolidated roadmap](docs/ROADMAP.md) and the GitHub issue tracker. (`docs/ROADMAP_2026H2.md`, the original home of the M-track, was deleted in `119d62d`; the milestone definitions now live in the GitHub milestones.)
+Every cell above is executed by `tests/unit/test_capability_claims.py`, which runs the detector against a fixture per capability **and** parses this table out of this file. A capability that regresses fails CI; so does a table that overstates *or* understates what the code does. That gate exists because this table was previously wrong in the modest direction — it advertised "❌ not implemented" for TypeScript hallucination detection while the CLI was emitting exactly those findings. Understating is the friendlier error but the same defect: nothing was holding the claims to the code.
+
+**What remains genuinely weaker on the TypeScript path:** the parse is regex over the Playwright assertion grammar rather than a syntax tree, so assertions built dynamically, or spanning unusual formatting, can be missed. The Python path parses real AST and does not have that failure mode. Both paths share the same endpoint-scoped spec resolution for hallucination detection.
+
+**Known limits on both paths.** Hallucination scoping falls back to the whole document when a test's target endpoint cannot be resolved from its request calls — a fallback that is reported in the finding text (`not defined in the spec` rather than `not on the endpoint … calls`) so you can tell the two apart. Weakening detection compares operator strength, so a rewrite that keeps `==` while asserting a weaker *value* is not caught by `check-suite`; that is what the differential engine behind `cherenkov demo` and `cherenkov audit` is for.
 
 ### 2. Hallucination-Resistant Generation
 When CHERENKOV does generate tests, it only uses the LLM to write the *structure*. The *expected values* (status codes, response schemas) are derived strictly from your OpenAPI spec. If the spec says `422`, CHERENKOV ensures the test demands a `422`.

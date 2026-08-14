@@ -12,16 +12,6 @@ permissions:
   pull-requests: write
   contents: read
 
-env:
-  # Architecture boundary patterns (real cherenkov/ layout, ADR-004).
-  # Each entry maps a layer name to a list of path prefixes. A change is
-  # classified into the first layer whose prefix matches.
-  # "core" (domain logic + contracts) and "ports" (interfaces) must NOT be
-  # changed in the same PR as "adapters"/"web"/"cli" (infrastructure):
-  # that is the classic clean-architecture layer-bleed this gate exists to catch.
-  CORE_LAYERS: "cherenkov/core|cherenkov/ports"
-  INFRA_LAYERS: "cherenkov/adapters|cherenkov/web|cherenkov/cli"
-
 jobs:
   validate-layer-boundaries:
     runs-on: ubuntu-latest
@@ -29,73 +19,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Fetch changed files
-        id: changes
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          CHANGED_FILES=$(gh pr diff "${{ github.event.pull_request.number }}" --name-only || true)
-          # Fallback for non-PR contexts (e.g. local runs): use HEAD~1..HEAD
-          if [ -z "$CHANGED_FILES" ]; then
-            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD || true)
-          fi
-          echo "changed_files<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$CHANGED_FILES" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
 
+      # Checks the ADR-004 dependency rule by parsing imports, not by inspecting
+      # which files a PR happened to touch. The previous implementation failed
+      # any PR that changed a core/ports file and an adapters/web/cli file
+      # together — a co-change heuristic that blocked legitimate vertical slices
+      # (5 of the 21 commits touching cherenkov/*.py in the 50 preceding this
+      # change would have failed it) while never checking the rule it named: a
+      # core file importing cherenkov.web passed clean if nothing else changed.
       - name: Validate layer boundaries
         id: validate
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          export CHANGED_FILES="${{ steps.changes.outputs.changed_files }}"
-          CORE_LAYERS="${{ env.CORE_LAYERS }}"
-          INFRA_LAYERS="${{ env.INFRA_LAYERS }}"
-          python3 - <<'PYEOF'
-          import os, sys
-
-          core_layers = os.environ["CORE_LAYERS"].split("|")
-          infra_layers = os.environ["INFRA_LAYERS"].split("|")
-          changed = [l for l in os.environ["CHANGED_FILES"].splitlines() if l.strip()]
-
-          # Sanity check: every declared layer prefix must resolve to real files.
-          import pathlib
-          tree = {str(p).replace("\\", "/") for p in pathlib.Path("cherenkov").rglob("*.py")}
-          unresolved = []
-          for p in core_layers + infra_layers:
-              if not any(f.startswith(p) for f in tree):
-                  unresolved.append(p)
-          if unresolved:
-              print("UNRESOLVED LAYER PREFIXES (no files match):")
-              for u in unresolved:
-                  print(f"  - {u}")
-              print("Fix LAYER patterns in this workflow before relying on this gate.")
-              sys.exit(1)
-
-          py_files = [f for f in changed if f.startswith("cherenkov/") and f.endswith(".py")]
-          if not py_files:
-              print("No cherenkov/ python files changed in this PR — nothing to validate.")
-              sys.exit(0)
-
-          core_hit = any(any(f.startswith(p) for p in core_layers) for f in py_files)
-          infra_hit = any(any(f.startswith(p) for p in infra_layers) for f in py_files)
-
-          if core_hit and infra_hit:
-              print("LAYER VIOLATION DETECTED:")
-              print()
-              print(f"Changed python files ({len(py_files)}):")
-              for f in sorted(py_files):
-                  print(f"  - {f}")
-              print()
-              print("This PR changes BOTH a core/ports file (domain logic / interfaces)")
-              print("AND an adapters/web/cli/api file (infrastructure) in the same change.")
-              print("Per ADR-004 clean architecture, core and infrastructure must not")
-              print("evolve together — split into separate PRs.")
-              sys.exit(1)
-
-          print("Layer boundaries validated successfully")
-          print(f"Files checked: {len(py_files)}")
-          PYEOF
+        run: python3 scripts/check_layer_imports.py
 
       - name: Post violation comment to PR
         if: failure() && github.event.pull_request.number != ''
