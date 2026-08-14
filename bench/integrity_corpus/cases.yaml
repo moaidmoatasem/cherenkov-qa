@@ -98,6 +98,61 @@ cases:
         expect(data).toHaveLength(3);
       });
 
+  - id: pw-honest-nonempty-collection
+    format: playwright
+    label: honest
+    rationale: >
+      toBeGreaterThan(0) fails on an empty array, so it is a real assertion.
+      Only the inclusive form, toBeGreaterThanOrEqual(0), cannot be violated.
+      Conflating the two flagged every generated test that asserted a
+      collection was non-empty — found by auditing this repo's own ejected
+      suite, not by this corpus.
+    content: |
+      import { test, expect } from '@playwright/test';
+      import { client } from '../client';
+
+      test('GET /pets returns at least one pet', async () => {
+        const { data, response } = await client.GET('/pets', {});
+        expect(response.status).toBe(200);
+        expect((data as any[]).length).toBeGreaterThan(0);
+      });
+
+  - id: py-honest-unittest-style
+    format: pytest
+    label: honest
+    rationale: >
+      unittest.TestCase assertions are calls, not `assert` statements, so they
+      produce no ast.Assert node. Treating their absence as "no assertion"
+      flagged most of this repo's own 280 pytest files.
+    content: |
+      import unittest
+
+      class TestPets(unittest.TestCase):
+          def test_create_pet(self):
+              response = self.client.post('/pets', json={'name': 'Rex'})
+              self.assertEqual(response.status_code, 201)
+              self.assertIn('id', response.json())
+
+  - id: pw-honest-lifecycle-hook
+    format: playwright
+    label: honest
+    rationale: >
+      A beforeEach hook legitimately contains no assertion. It is setup, not a
+      test, and auditing it as one was the largest false-positive source
+      measured across this repo's 594 real test files.
+    content: |
+      import { test, expect } from '@playwright/test';
+      import { client } from '../client';
+
+      test.beforeEach(async ({ page }) => {
+        await page.goto('/', { waitUntil: 'domcontentloaded' });
+      });
+
+      test('GET /pets returns 200', async () => {
+        const { response } = await client.GET('/pets', {});
+        expect(response.status).toBe(200);
+      });
+
   - id: pw-honest-trailing-comment
     format: playwright
     label: honest

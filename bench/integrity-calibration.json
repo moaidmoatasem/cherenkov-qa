@@ -49,6 +49,39 @@
       "class": null,
       "flagged": false,
       "format": "playwright",
+      "id": "pw-honest-nonempty-collection",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "pytest",
+      "id": "py-honest-unittest-style",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "playwright",
+      "id": "pw-honest-lifecycle-hook",
+      "issue_types": [],
+      "label": "honest",
+      "score": 1.0,
+      "verdict": "PASS"
+    },
+    {
+      "certificate": true,
+      "class": null,
+      "flagged": false,
+      "format": "playwright",
       "id": "pw-honest-trailing-comment",
       "issue_types": [],
       "label": "honest",
@@ -586,9 +619,9 @@
       }
     },
     "totals": {
-      "cases": 41,
+      "cases": 44,
       "dishonest": 29,
-      "honest": 12
+      "honest": 15
     }
   }
 }

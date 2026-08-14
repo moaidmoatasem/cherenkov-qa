@@ -1,80 +1,59 @@
 # CHERENKOV -- Session Handover
 
-## Measuring `check-suite` on held-out data found a 41.7% false positive rate (2026-08-14)
+## Held-out audit found three detector bugs the corpus scored 100% through (2026-08-13)
 
-#989 measured `integrity/api.py`. #990 rebuilt `check_suite.py`. Neither was
-measured against the other's data. Pointing #989's corpus at #990's detector —
-the cheapest thing that produces evidence, and short of deciding which detector
-wins — immediately found a defect that **both** PRs had missed.
+Ran the newly-calibrated integrity detector over **594 real test files** in this
+repo — none written to exercise its rules — via the new
+`scripts/audit_repo_suites.py`. The corpus said 100% recall / 0% false
+positives. The held-out run flagged 38.5% of real files. That gap was the
+detector being wrong, and it exposed three defects:
 
-**`response.status_code` was reported as a hallucinated field.** `_BODY_NAMES`
-contains `response` (because `response["id"]` is a real body idiom), so
-`response.status_code` parsed as a body field named `status_code` and was
-checked against the response *body* schema, where it can never appear. Every
-honest pytest case asserting `response.status_code == 200` was flagged
-HALLUCINATED: **5 of 12 honest cases, a 41.7% false positive rate.**
+1. **Lifecycle hooks audited as tests.** `_TS_TEST_HEADER` used a `(\.\w+)?`
+   wildcard, so `test.beforeEach`, `test.beforeAll` and `test.setTimeout`
+   matched. Hooks correctly contain no assertions, so all were reported empty.
+   `test.describe` matched too and swallowed whole suites as a single block, so
+   the individual tests inside were never analysed separately.
+2. **unittest assertions invisible.** `self.assertEqual(...)` is an `ast.Call`,
+   not an `ast.Assert`. Most of this repo's own 280 pytest files are
+   unittest.TestCase style, so nearly all were reported as having no assertion
+   at all. This one defect accounted for **1041 of 1049** EMPTY_ASSERTION
+   findings.
+3. **`toBeGreaterThan(0)` conflated with `toBeGreaterThanOrEqual(0)`.** Only the
+   inclusive form is unfalsifiable; `> 0` fails on an empty array. Every
+   generated test asserting a non-empty collection was flagged.
 
-Two things about this are worth more than the fix.
+After fixing all three, EMPTY_ASSERTION fell 1041 → 30 and the overall flag rate
+38.5% → 25.8%. Corpus calibration is unchanged at 100% / 0% / 0, now across 44
+cases — the three shapes above were added as honest cases so they cannot
+regress.
 
-**It predates #990 and #990's own evidence hid it.** Running the corpus against
-`068f78b` (the merge base) gives byte-identical rates — 37.9% recall, 41.7% FPR,
-the same five cases. #990 changed the finding *text* and left the defect. And
-#990's PR body claimed *"honest suites stay clean (no false positives bought)"*
-— true of the fixtures written alongside the change, which never used
-`response.status_code`, and false on the first realistic corpus it met. That is
-exactly the failure mode #989's handover warned about: a corpus written by
-whoever is also writing the rules proves only that the rules do what they say.
+**The split that matters**, from `scripts/audit_repo_suites.py`:
 
-**The recall number was mostly an artifact.** Pre-fix recall read 37.9% (11/29),
-but 9 of those 11 "detections" were the *same* spurious `status_code` finding
-landing on a dishonest test by coincidence — right answer, wrong reason. Fixing
-the false positive dropped recall to 3.4%, which looks like a regression and is
-actually the honest number appearing. Anyone reading recall alone would have
-concluded the fix made the detector worse.
+```
+deliberate     85/191   44.5%   fixtures shipped broken on purpose
+ordinary       92/403   22.8%   ordinary tests
+```
 
-Second, smaller defect found the same way: a field behind a method call was
-invisible. `data['owner_email'].endswith(...)` has an `ast.Call` on the left, so
-the `Subscript` carrying the name was never reached — a hallucinated field
-hidden behind a string method. `_response_field` now unwraps calls (method
-receiver and arguments, depth-capped). With both fixed: **`hallucinated` 2/2,
-false positive rate 0%.**
+The detector discriminates in the right direction. On the ordinary side I
+adjudicated a 12-file sample by hand: 11 were genuine (loose
+`toBeLessThan(300)` assertions on setup steps in the ejected suite, plus a
+`test.skip`'d test) and 1 was the `toBeGreaterThan` bug, now fixed. **The other
+~80 ordinary flags are not adjudicated.** Do not quote 22.8% as a false-positive
+rate — it is an upper bound on one, and the sample suggests the true rate is far
+lower.
 
-### What the measurement says about the two detectors
+`audit_repo_suites.py` is deliberately **not** a gate. A nonzero flag rate here
+is correct: the repo ships weakened and cheat fixtures on purpose. A threshold
+would either freeze in today's false positives or pressure someone into
+weakening the detector to make a number go green.
 
-`scripts/calibrate_check_suite.py` reports per-class and partitions by *why* a
-miss happened, because a single averaged recall across the corpus would be a
-dishonest headline for a differential detector:
+Known limit, recorded rather than papered over: assertion detection now trusts
+the *name* of a call (`assert*` in Python, `expect*`/`assert*`/`verify*` in
+TypeScript). An agent could defeat it with a no-op helper named `assert_ok()`.
 
-| scope | classes | meaning |
-|---|---|---|
-| `IMPLEMENTED` | `hallucinated` (2/2) | check-suite claims it; gated |
-| `UNIMPLEMENTED` | `spec_mismatch`, `tautology`, `no_assertion`, `disabled`, `swallowed`, `always_true` (0/18) | a baseline-free detector *could* catch these; `integrity/api.py` does. This is the real overlap between the two detectors |
-| `NEEDS_BASELINE` | `weakened_status`, `deleted_coverage` (0/9) | structurally invisible without a baseline. Not a defect |
-
-So the two detectors are **not** redundant in the way the earlier note implied.
-They intersect on one class out of nine. The honest framing of the convergence
-question is not "which one wins" but "should `check-suite` gain the six
-`UNIMPLEMENTED` classes `integrity/api.py` already has, or should it delegate to
-it for the absolute checks and keep only the differential ones?" That is now a
-decision with numbers behind it rather than a hunch. **Still open — not decided
-here.**
-
-Gate: `tests/unit/test_check_suite_calibration.py`, in the ordinary unit suite
-for the reason #989 gives. It gates zero false positives across *all* classes
-and full recall on `IMPLEMENTED` ones, and fails if a corpus class is added
-without a scope mapping. Both directions verified by injection: disabling the
-response-attribute suppression fails at 41.7% FPR, disabling call-unwrapping
-fails at 50% in-scope recall.
-
-### Still open from this pass
-
-- **The corpus has no `(baseline, candidate)` pairs**, so `check-suite`'s
-  primary path — the differential one, and the one the product's marquee demo
-  exercises — is still **completely unmeasured**. Everything above tests the
-  smaller half of the detector. Building differential cases is the highest-value
-  next step and the honest gap in this work.
-- The `UNIMPLEMENTED`/`NEEDS_BASELINE` split is a judgement encoded in `SCOPE`
-  in `scripts/calibrate_check_suite.py`, not a measurement. Argue with it there.
+Also worth knowing: `eject/pet-store-qa-suite/tests/golden_correct.spec.ts` and
+`correct_petstore.spec.spec.ts` are `test.skip(...)` — fixtures named "correct"
+that never execute.
 
 ## `check-suite` could not see the cheat the demo is built around (2026-08-13)
 
