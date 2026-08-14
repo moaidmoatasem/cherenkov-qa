@@ -43,7 +43,6 @@ sys.path.insert(0, str(REPO / "scripts"))
 
 from calibrate_check_suite import (  # noqa: E402
     CORPUS,
-    SCOPE,
     audit_case,
     load_corpus,
     summarise,
