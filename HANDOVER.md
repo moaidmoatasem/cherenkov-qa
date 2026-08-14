@@ -1,5 +1,60 @@
 # CHERENKOV -- Session Handover
 
+## Held-out audit found three detector bugs the corpus scored 100% through (2026-08-13)
+
+Ran the newly-calibrated integrity detector over **594 real test files** in this
+repo — none written to exercise its rules — via the new
+`scripts/audit_repo_suites.py`. The corpus said 100% recall / 0% false
+positives. The held-out run flagged 38.5% of real files. That gap was the
+detector being wrong, and it exposed three defects:
+
+1. **Lifecycle hooks audited as tests.** `_TS_TEST_HEADER` used a `(\.\w+)?`
+   wildcard, so `test.beforeEach`, `test.beforeAll` and `test.setTimeout`
+   matched. Hooks correctly contain no assertions, so all were reported empty.
+   `test.describe` matched too and swallowed whole suites as a single block, so
+   the individual tests inside were never analysed separately.
+2. **unittest assertions invisible.** `self.assertEqual(...)` is an `ast.Call`,
+   not an `ast.Assert`. Most of this repo's own 280 pytest files are
+   unittest.TestCase style, so nearly all were reported as having no assertion
+   at all. This one defect accounted for **1041 of 1049** EMPTY_ASSERTION
+   findings.
+3. **`toBeGreaterThan(0)` conflated with `toBeGreaterThanOrEqual(0)`.** Only the
+   inclusive form is unfalsifiable; `> 0` fails on an empty array. Every
+   generated test asserting a non-empty collection was flagged.
+
+After fixing all three, EMPTY_ASSERTION fell 1041 → 30 and the overall flag rate
+38.5% → 25.8%. Corpus calibration is unchanged at 100% / 0% / 0, now across 44
+cases — the three shapes above were added as honest cases so they cannot
+regress.
+
+**The split that matters**, from `scripts/audit_repo_suites.py`:
+
+```
+deliberate     85/191   44.5%   fixtures shipped broken on purpose
+ordinary       92/403   22.8%   ordinary tests
+```
+
+The detector discriminates in the right direction. On the ordinary side I
+adjudicated a 12-file sample by hand: 11 were genuine (loose
+`toBeLessThan(300)` assertions on setup steps in the ejected suite, plus a
+`test.skip`'d test) and 1 was the `toBeGreaterThan` bug, now fixed. **The other
+~80 ordinary flags are not adjudicated.** Do not quote 22.8% as a false-positive
+rate — it is an upper bound on one, and the sample suggests the true rate is far
+lower.
+
+`audit_repo_suites.py` is deliberately **not** a gate. A nonzero flag rate here
+is correct: the repo ships weakened and cheat fixtures on purpose. A threshold
+would either freeze in today's false positives or pressure someone into
+weakening the detector to make a number go green.
+
+Known limit, recorded rather than papered over: assertion detection now trusts
+the *name* of a call (`assert*` in Python, `expect*`/`assert*`/`verify*` in
+TypeScript). An agent could defeat it with a no-op helper named `assert_ok()`.
+
+Also worth knowing: `eject/pet-store-qa-suite/tests/golden_correct.spec.ts` and
+`correct_petstore.spec.spec.ts` are `test.skip(...)` — fixtures named "correct"
+that never execute.
+
 ## `check-suite` could not see the cheat the demo is built around (2026-08-13)
 
 Two defects in the flagship detector, both found by running it rather than

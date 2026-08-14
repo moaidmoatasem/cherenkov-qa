@@ -298,16 +298,40 @@ def _spec_property_issues(
 _WS = r"\s{0,4}"
 
 
-_TS_TEST_HEADER = re.compile(r"\b(test|it|describe)(\.\w+)?" + _WS + r"\(")
-_TS_DISABLED = re.compile(r"\b(test|it|describe)\.(skip|fixme|todo)" + _WS + r"\(")
+# A test declaration, and nothing else. The previous `(\.\w+)?` wildcard also
+# matched `test.beforeEach`, `test.beforeAll`, `test.setTimeout` and
+# `test.describe`, so lifecycle hooks — which correctly contain no assertions —
+# were audited as if they were tests. Measured against the 592 real test files
+# in this repo, that was the single largest source of false positives.
+#
+# Requiring a quoted first argument separates the two meanings of `test.skip`:
+#   test.skip('name', async () => {...})   a disabled test      — a defect
+#   test.skip(!backendUp, 'no backend')    a runtime guard      — not a defect
+#
+# `describe` is deliberately absent. It is a container, not a test: leaving it
+# unmatched lets the scanner fall through to the individual tests inside it,
+# which were previously swallowed whole and never analysed separately.
+_TS_TEST_HEADER = re.compile(
+    r"\b(?:test|it)(?:\.(?:only|skip|fixme|todo|fail))?" + _WS + r"\(" + _WS + r"['\"`]"
+)
+_TS_DISABLED = re.compile(
+    r"\b(?:test|it)\.(?:skip|fixme|todo)" + _WS + r"\(" + _WS + r"['\"`]"
+)
 _TS_EXPECT = re.compile(r"\bexpect" + _WS + r"\(")
 _TS_EXPECT_ARG = re.compile(r"\bexpect" + _WS + r"\(([^;]*?)\)" + _WS + r"\.")
 _TS_LITERAL_ARG = re.compile(r"^(true|false|null|undefined|[\d\s+\-*/().]+)$")
 _TS_LESS_THAN = re.compile(
     r"\.toBeLessThan(?:OrEqual)?" + _WS + r"\(" + _WS + r"(-?\d+)" + _WS + r"\)"
 )
+# The two operators have different unfalsifiable points and must not be
+# conflated. For a length or count, which is never negative:
+#   toBeGreaterThanOrEqual(0)  always true      — a defect
+#   toBeGreaterThan(0)         fails when empty — a real assertion
+# Capturing `OrEqual` separately is what keeps the second case out of the
+# results. Merging them cost a false positive on every generated test that
+# asserted a non-empty collection.
 _TS_GREATER_THAN = re.compile(
-    r"\.toBeGreaterThan(?:OrEqual)?" + _WS + r"\(" + _WS + r"(-?\d+)" + _WS + r"\)"
+    r"\.toBeGreaterThan(OrEqual)?" + _WS + r"\(" + _WS + r"(-?\d+)" + _WS + r"\)"
 )
 _TS_TO_BE_STATUS = re.compile(r"\.toBe" + _WS + r"\(" + _WS + r"(\d{3})" + _WS + r"\)")
 _TS_REQUEST = re.compile(
@@ -321,6 +345,10 @@ _TS_HAS_PROPERTY = re.compile(
 _TS_BODY_ATTR = re.compile(
     r"\b(?:" + "|".join(sorted(_BODY_IDENTIFIERS)) + r")(?:\[\d+\])?\.(\w+)"
 )
+# A named helper that claims to assert — `await expectDashboardLoaded(page)`,
+# `assertNoConsoleErrors(page)`. Same reasoning, and same limit, as the pytest
+# `assert*` prefix rule: the name is the claim.
+_TS_ASSERT_HELPER = re.compile(r"\b(?:expect|assert|verify)[A-Z_]\w*" + _WS + r"\(")
 _TS_OK_TRUTHY = re.compile(
     r"\.toBe(Truthy)?" + _WS + r"\(" + _WS + r"(true)?" + _WS + r"\)"
 )
@@ -477,13 +505,14 @@ def _analyse_playwright(content: str, spec: SpecFacts | None = None) -> list[Int
             continue
 
         expect_lines = [i for i, c in enumerate(body) if _TS_EXPECT.search(c)]
+        helper_lines = [i for i, c in enumerate(body) if _TS_ASSERT_HELPER.search(c)]
         requests = [
             (i, m.group(1).upper(), m.group(3))
             for i, c in enumerate(body)
             for m in [_TS_REQUEST.search(c)] if m
         ]
 
-        if not expect_lines:
+        if not expect_lines and not helper_lines:
             issues.append(_issue(
                 IssueType.EMPTY_ASSERTION,
                 start + 1,
@@ -544,16 +573,21 @@ def _analyse_playwright(content: str, spec: SpecFacts | None = None) -> list[Int
                 continue
 
             greater = _TS_GREATER_THAN.search(code)
-            if greater and int(greater.group(1)) <= 0:
-                issues.append(_issue(
-                    IssueType.WEAKENED_ASSERTION,
-                    start + i + 1,
-                    f"Bound of {greater.group(1)} cannot be violated by a length or count — "
-                    "this assertion never fails.",
-                    "Assert the exact expected count, or assert on specific fields",
-                    "high",
-                ))
-                continue
+            if greater:
+                inclusive = greater.group(1) is not None
+                bound = int(greater.group(2))
+                unfalsifiable = bound <= 0 if inclusive else bound < 0
+                if unfalsifiable:
+                    operator = "toBeGreaterThanOrEqual" if inclusive else "toBeGreaterThan"
+                    issues.append(_issue(
+                        IssueType.WEAKENED_ASSERTION,
+                        start + i + 1,
+                        f"{operator}({bound}) cannot be violated by a length or count — "
+                        "this assertion never fails.",
+                        "Assert the exact expected count, or assert on specific fields",
+                        "high",
+                    ))
+                    continue
 
             if re.search(r"\.ok\b", arg) and _TS_OK_TRUTHY.search(code):
                 issues.append(_issue(
@@ -615,6 +649,34 @@ _PY_SWALLOW_BODY = (ast.Pass, ast.Expr, ast.Continue, ast.Break)
 
 def _py_is_status(node: ast.AST) -> bool:
     return isinstance(node, ast.Attribute) and node.attr in _PY_STATUS_ATTRS
+
+
+def _call_name(node: ast.Call) -> str:
+    if isinstance(node.func, ast.Attribute):
+        return node.func.attr
+    if isinstance(node.func, ast.Name):
+        return node.func.id
+    return ""
+
+
+def _py_assertion_calls(func: ast.AST) -> list[ast.Call]:
+    """Assertions expressed as calls rather than as the `assert` statement.
+
+    `self.assertIn(...)`, `mock.assert_called_once_with(...)` and a project's
+    own `_assert_valid(...)` helper are all real assertions that produce no
+    ast.Assert node. Treating their absence as "no assertion" accounted for
+    most of the false positives measured across this repo's own 280 pytest
+    files, which are largely unittest.TestCase style.
+
+    The prefix is the signal: a call named `assert*` claims to assert. That is
+    a name-based judgement and an agent could defeat it with a no-op helper
+    called `assert_ok()` — a known limit, recorded rather than papered over.
+    """
+    return [
+        node for node in ast.walk(func)
+        if isinstance(node, ast.Call)
+        and (_call_name(node).startswith("assert") or _call_name(node) in {"raises", "warns", "fail"})
+    ]
 
 
 def _py_is_len_call(node: ast.AST) -> bool:
@@ -707,6 +769,7 @@ def _analyse_pytest(content: str, spec: SpecFacts | None = None) -> list[Integri
             and isinstance(n.func, ast.Attribute)
             and n.func.attr in {"raises", "warns"}
         ]
+        assertion_calls = _py_assertion_calls(func)
         requests = [
             (n.lineno, n.func.attr.upper(), _py_path_literal(n.args[0]))
             for n in ast.walk(func)
@@ -717,7 +780,7 @@ def _analyse_pytest(content: str, spec: SpecFacts | None = None) -> list[Integri
         ]
         requests = [r for r in requests if r[2]]
 
-        if not asserts and not raises:
+        if not asserts and not raises and not assertion_calls:
             issues.append(_issue(
                 IssueType.EMPTY_ASSERTION,
                 func.lineno,
@@ -836,6 +899,16 @@ def _analyse_pytest(content: str, spec: SpecFacts | None = None) -> list[Integri
 
             referenced_fields.extend(_py_collect_fields(test))
 
+        # A unittest-style test asserts the status through a call, not an
+        # `assert` statement: self.assertEqual(response.status_code, 201).
+        if not has_status_assertion:
+            has_status_assertion = any(
+                _py_is_status(node)
+                for call in assertion_calls
+                for arg in call.args
+                for node in ast.walk(arg)
+            )
+
         if requests and not has_status_assertion and not raises:
             issues.append(_issue(
                 IssueType.MISSING_STATUS_CHECK,
@@ -856,7 +929,9 @@ def _analyse_pytest(content: str, spec: SpecFacts | None = None) -> list[Integri
             and node.value.func.attr == "json"
         }
         asserted_names = {
-            n.id for a in asserts for n in ast.walk(a) if isinstance(n, ast.Name)
+            n.id
+            for node in [*asserts, *assertion_calls]
+            for n in ast.walk(node) if isinstance(n, ast.Name)
         }
         if body_names and not (body_names & asserted_names):
             issues.append(_issue(
