@@ -39,6 +39,10 @@ _TS_WEAK = {
     "not.toBeNull", "not.toBeUndefined", "toBeNull",
 }
 _TS_DATA_NAMES = ("data", "body", "json", "payload")
+# JS intrinsics on the parsed body — `expect(data.length).toBeGreaterThan(0)` is
+# an assertion about the array, not about a spec-defined field called `length`.
+# `status` is absent on purpose: it is a real petstore `Pet` property.
+_TS_NON_FIELD_ATTRS = {"length", "size"}
 _RE_TS_TEST = re.compile(r"""\btest\s*\(\s*['"`](?P<name>[^'"`]+)['"`]""")
 _RE_TS_EXPECT = re.compile(
     r"""expect\(\s*(?P<subj>.*?)\s*\)\s*\.\s*"""
@@ -64,6 +68,23 @@ _WEAK = {
 }
 _BODY_NAMES = {"body", "data", "payload", "json", "resp_json", "response"}
 _JSON_METHODS = {"json", "get_json"}
+
+# Attributes of an HTTP *response object* — never keys of the response *body*.
+# `response` is in `_BODY_NAMES` because `response["id"]` is a real body idiom,
+# but that also made `response.status_code` parse as a body field named
+# `status_code`, which is then checked against the body schema it can never
+# appear in. Measured against `bench/integrity_corpus/`, that single confusion
+# produced a 41.7% false positive rate: every honest pytest case asserting
+# `response.status_code == 200` was reported HALLUCINATED.
+#
+# Deliberately excluded from this list: `status`, `url`, `id`, `name` — all
+# plausible response-body fields (petstore's `Pet` really does have `status`),
+# so suppressing them would buy a lower FPR with false negatives.
+_RESPONSE_ATTRS = {
+    "status_code", "ok", "text", "content", "headers", "cookies", "elapsed",
+    "encoding", "apparent_encoding", "reason", "raw", "history", "is_redirect",
+    "is_permanent_redirect", "request", "links", "next", "connection",
+}
 _HTTP_METHODS = {"get", "put", "post", "delete", "patch", "head", "options", "trace"}
 
 # `unittest`/`TestCase` assertions are method calls, not `assert` statements, so
@@ -286,7 +307,7 @@ def _allowed_fields_for(
         scoped |= endpoint_fields.get(template, set())
     return scoped, True
 
-def _response_field(left: ast.expr) -> str | None:
+def _response_field(left: ast.expr, _depth: int = 0) -> str | None:
     """Extract the response-body field a comparison's left-hand side asserts on.
 
     Recognises the common idioms for reading a JSON response body:
@@ -294,9 +315,31 @@ def _response_field(left: ast.expr) -> str | None:
         ``_BODY_NAMES``
       * a chained ``.json()`` / ``.get_json()`` call — ``resp.json()["f"]``,
         ``client.get(...).json()["f"]``
+      * a field wrapped in a call — ``data["f"].endswith(...)``, ``len(data["f"])``,
+        ``str(data["f"]).strip()``. Without this the field is invisible: the LHS
+        is an ``ast.Call``, so the ``Subscript`` carrying the name is never
+        reached. `bench/integrity_corpus/` case ``py-halluc-owner-field``
+        (`data['owner_email'].endswith(...)`) went undetected for exactly this
+        reason — a hallucinated field hidden behind a string method.
 
     Returns the field name, or ``None`` if the LHS is not a body-field access.
     """
+    if _depth > 4:  # pathological nesting — stop rather than recurse forever
+        return None
+
+    # Unwrap calls: `data["f"].endswith(x)` (method on the field) and
+    # `len(data["f"])` (field as the argument) both hide the subscript.
+    if isinstance(left, ast.Call):
+        if isinstance(left.func, ast.Attribute) and left.func.attr not in _JSON_METHODS:
+            inner = _response_field(left.func.value, _depth + 1)
+            if inner is not None:
+                return inner
+        for arg in left.args:
+            inner = _response_field(arg, _depth + 1)
+            if inner is not None:
+                return inner
+        return None
+
     if isinstance(left, ast.Subscript) and isinstance(left.slice, ast.Constant) and isinstance(left.slice.value, str):
         base = left.value
         if isinstance(base, ast.Name) and base.id in _BODY_NAMES:
@@ -305,6 +348,13 @@ def _response_field(left: ast.expr) -> str | None:
         if isinstance(base, ast.Call) and isinstance(base.func, ast.Attribute) and base.func.attr in _JSON_METHODS:
             return left.slice.value
     elif isinstance(left, ast.Attribute) and isinstance(left.value, ast.Name) and left.value.id in _BODY_NAMES:
+        # `response.status_code` is an attribute of the response object, not a
+        # field of the body — returning it here would have it checked against
+        # the body schema and reported HALLUCINATED on every honest test.
+        # Returning None keeps it a tracked *subject* (so `== 201` degraded to
+        # `< 500` is still WEAKENED) while removing it from the field alphabet.
+        if left.attr in _RESPONSE_ATTRS:
+            return None
         return left.attr
     return None
 
@@ -695,7 +745,9 @@ def _ts_field_of(subject: str) -> str | None:
     for name in _TS_DATA_NAMES:
         m = re.match(rf"^{name}\.([A-Za-z_]\w*)$", subject)
         if m:
-            return m.group(1)
+            # See `_TS_NON_FIELD_ATTRS`: a JS intrinsic is not a spec field, and
+            # reporting it HALLUCINATED punishes an honest length assertion.
+            return None if m.group(1) in _TS_NON_FIELD_ATTRS else m.group(1)
     return None
 
 
