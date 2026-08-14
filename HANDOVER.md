@@ -1,5 +1,81 @@
 # CHERENKOV -- Session Handover
 
+## Measuring `check-suite` on held-out data found a 41.7% false positive rate (2026-08-14)
+
+#989 measured `integrity/api.py`. #990 rebuilt `check_suite.py`. Neither was
+measured against the other's data. Pointing #989's corpus at #990's detector —
+the cheapest thing that produces evidence, and short of deciding which detector
+wins — immediately found a defect that **both** PRs had missed.
+
+**`response.status_code` was reported as a hallucinated field.** `_BODY_NAMES`
+contains `response` (because `response["id"]` is a real body idiom), so
+`response.status_code` parsed as a body field named `status_code` and was
+checked against the response *body* schema, where it can never appear. Every
+honest pytest case asserting `response.status_code == 200` was flagged
+HALLUCINATED: **5 of 12 honest cases, a 41.7% false positive rate.**
+
+Two things about this are worth more than the fix.
+
+**It predates #990 and #990's own evidence hid it.** Running the corpus against
+`068f78b` (the merge base) gives byte-identical rates — 37.9% recall, 41.7% FPR,
+the same five cases. #990 changed the finding *text* and left the defect. And
+#990's PR body claimed *"honest suites stay clean (no false positives bought)"*
+— true of the fixtures written alongside the change, which never used
+`response.status_code`, and false on the first realistic corpus it met. That is
+exactly the failure mode #989's handover warned about: a corpus written by
+whoever is also writing the rules proves only that the rules do what they say.
+
+**The recall number was mostly an artifact.** Pre-fix recall read 37.9% (11/29),
+but 9 of those 11 "detections" were the *same* spurious `status_code` finding
+landing on a dishonest test by coincidence — right answer, wrong reason. Fixing
+the false positive dropped recall to 3.4%, which looks like a regression and is
+actually the honest number appearing. Anyone reading recall alone would have
+concluded the fix made the detector worse.
+
+Second, smaller defect found the same way: a field behind a method call was
+invisible. `data['owner_email'].endswith(...)` has an `ast.Call` on the left, so
+the `Subscript` carrying the name was never reached — a hallucinated field
+hidden behind a string method. `_response_field` now unwraps calls (method
+receiver and arguments, depth-capped). With both fixed: **`hallucinated` 2/2,
+false positive rate 0%.**
+
+### What the measurement says about the two detectors
+
+`scripts/calibrate_check_suite.py` reports per-class and partitions by *why* a
+miss happened, because a single averaged recall across the corpus would be a
+dishonest headline for a differential detector:
+
+| scope | classes | meaning |
+|---|---|---|
+| `IMPLEMENTED` | `hallucinated` (2/2) | check-suite claims it; gated |
+| `UNIMPLEMENTED` | `spec_mismatch`, `tautology`, `no_assertion`, `disabled`, `swallowed`, `always_true` (0/18) | a baseline-free detector *could* catch these; `integrity/api.py` does. This is the real overlap between the two detectors |
+| `NEEDS_BASELINE` | `weakened_status`, `deleted_coverage` (0/9) | structurally invisible without a baseline. Not a defect |
+
+So the two detectors are **not** redundant in the way the earlier note implied.
+They intersect on one class out of nine. The honest framing of the convergence
+question is not "which one wins" but "should `check-suite` gain the six
+`UNIMPLEMENTED` classes `integrity/api.py` already has, or should it delegate to
+it for the absolute checks and keep only the differential ones?" That is now a
+decision with numbers behind it rather than a hunch. **Still open — not decided
+here.**
+
+Gate: `tests/unit/test_check_suite_calibration.py`, in the ordinary unit suite
+for the reason #989 gives. It gates zero false positives across *all* classes
+and full recall on `IMPLEMENTED` ones, and fails if a corpus class is added
+without a scope mapping. Both directions verified by injection: disabling the
+response-attribute suppression fails at 41.7% FPR, disabling call-unwrapping
+fails at 50% in-scope recall.
+
+### Still open from this pass
+
+- **The corpus has no `(baseline, candidate)` pairs**, so `check-suite`'s
+  primary path — the differential one, and the one the product's marquee demo
+  exercises — is still **completely unmeasured**. Everything above tests the
+  smaller half of the detector. Building differential cases is the highest-value
+  next step and the honest gap in this work.
+- The `UNIMPLEMENTED`/`NEEDS_BASELINE` split is a judgement encoded in `SCOPE`
+  in `scripts/calibrate_check_suite.py`, not a measurement. Argue with it there.
+
 ## `check-suite` could not see the cheat the demo is built around (2026-08-13)
 
 Two defects in the flagship detector, both found by running it rather than
