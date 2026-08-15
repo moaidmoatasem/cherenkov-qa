@@ -67,6 +67,13 @@ extra:
   version:
     provider: mike
     default: latest
+    current: "1.4"
+    versions:
+      - "1.0"
+      - "1.1"
+      - "1.2"
+      - "1.3"
+      - "1.4"
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/moaidmoatasem/cherenkov-qa
@@ -81,6 +88,9 @@ extra:
 
 extra_css:
   - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/version-banner.js
 
 # ── Plugins ───────────────────────────────────────────────────────────────────
 plugins:
@@ -182,6 +192,7 @@ nav:
       - Common Issues: troubleshooting/common-issues.md
   - Changelog:
       - Latest: changelog.md
+      - v1.4.0: releases/v1.4.0.md
       - v1.3.0: releases/v1.3.0.md
       - v1.2.0: releases/v1.2.0.md
       - v1.1.2: releases/v1.1.2.md

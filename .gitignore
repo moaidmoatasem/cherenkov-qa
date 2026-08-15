@@ -99,6 +99,9 @@ fetch_issues.py
 desktop/src-tauri/binaries/
 desktop/src-tauri/gen/
 docs-site/site/
+site/
+_test_site/
+docs-site/_test_site/
 test-results/
 stub/test-results/
 eject/pet-store-qa-suite/test-results/

@@ -433,3 +433,101 @@ sequenceDiagram
   CK-->>Dev: certificate.json + fingerprint
   Note over CA,Reg: Certificate is portable — forward to auditors,<br/>CI gates, or marketplaces via fingerprint URL
 ```
+
+---
+
+## 18. Version-Diff Evolution Flow (1.2 → 1.3 → 1.4)
+
+```mermaid
+flowchart TD
+  subgraph V12["Version 1.2.0 (Baseline Foundation)"]
+    direction TB
+    A1["5-Hub Dashboard Architecture<br/>(Overview, Author, Triage, Coverage, Knowledge)"]
+    A2["Live Backend Wiring<br/>(GET /api/v1/divergences, Chat session persistence)"]
+    A3["Initial Extensions Base<br/>(VS Code Beta, GraphQL/gRPC/AsyncAPI support)"]
+    A4["Test Management Hub<br/>(Health trend charts & generated test records)"]
+  end
+
+  subgraph V13["Version 1.3.0 (Enterprise & Agentic Expansion)"]
+    direction TB
+    B1["Spec Guardian CLI<br/>(cherenkov guardian start — background drift daemon)"]
+    B2["Enterprise Security Wiring<br/>(SAML 2.0 SSO, RBAC roles, SOC2 compliance reports)"]
+    B3["MCP Tool Federation<br/>(check-suite, verify, generate tools & registry manifest)"]
+    B4["FTS5 Engine Optimization<br/>(SQLite shadow-table rowid indexing for Second Brain)"]
+  end
+
+  subgraph V14["Version 1.4.0 (Continuous Conformance & Governance)"]
+    direction TB
+    C1["Coverage Map API<br/>(GET /api/v1/coverage/map — per-endpoint coverage matrix)"]
+    C2["Conformance Trend & Regressions<br/>(Automated verdict downgrade & divergence spike detector)"]
+    C3["GitHub PR Coverage Bot<br/>(format_coverage_comment diff bot on PR events)"]
+    C4["Consolidated Documentation 1.4<br/>(Unified Material for MkDocs hierarchy & versioning)"]
+  end
+
+  V12 ==>|"Added Background Daemons, Enterprise SAML, MCP"| V13
+  V13 ==>|"Added Coverage Analytics, Regression Engine, CI Bots"| V14
+
+  classDef v12 fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#f8fafc;
+  classDef v13 fill:#1e293b,stroke:#8b5cf6,stroke-width:2px,color:#f8fafc;
+  classDef v14 fill:#1e293b,stroke:#10b981,stroke-width:2px,color:#f8fafc;
+
+  class A1,A2,A3,A4 v12;
+  class B1,B2,B3,B4 v13;
+  class C1,C2,C3,C4 v14;
+```
+
+---
+
+## 19. 1.4 Consolidated Documentation Site Map
+
+```mermaid
+flowchart TB
+  Root(["CHERENKOV-QA 1.4 Documentation Hub"])
+
+  subgraph Hub1["1. Getting Started & Tutorials"]
+    H1_1["Home & Overview<br/>(index.md)"]
+    H1_2["Quickstart<br/>(quickstart.md)"]
+    H1_3["Installation & Setup<br/>(installation.md)"]
+    H1_4["Configuration & Cost Tiers<br/>(configuration.md / cost-tiers.md)"]
+  end
+
+  subgraph Hub2["2. QA & Conformance Workflows"]
+    H2_1["API Conformance Testing<br/>(api-conformance.md)"]
+    H2_2["Check Suite Integrity Audit<br/>(check-suite.md)"]
+    H2_3["Spec Guardian Daemon<br/>(continuous-monitoring.md)"]
+    H2_4["HITL Review & Certification<br/>(hitl.md / certificates.md)"]
+    H2_5["Dashboard & Docker<br/>(dashboard.md / docker.md)"]
+  end
+
+  subgraph Hub3["3. Architecture & Second Brain"]
+    H3_1["Clean Architecture & System Design<br/>(clean-architecture.md / system-design.md)"]
+    H3_2["Second Brain & Knowledge Mesh<br/>(second-brain.md / ai-pipeline.md)"]
+    H3_3["Platform Operating Model<br/>(platform-operating-model.md)"]
+    H3_4["User Journeys<br/>(user-journeys.md)"]
+    H3_5["Role Guides<br/>(developer, qa-engineer, devops, team-lead)"]
+  end
+
+  subgraph Hub4["4. Ecosystem & Integrations"]
+    H4_1["CI/CD Native Pipelines<br/>(ci-cd.md / github-actions.md)"]
+    H4_2["MCP Protocol & Registry<br/>(mcp.md / langchain.md)"]
+    H4_3["IDE Extensions<br/>(vscode.md)"]
+    H4_4["Notifications<br/>(notifications.md)"]
+  end
+
+  subgraph Hub5["5. Reference & Release Hub"]
+    H5_1["CLI Reference & Completions<br/>(cli/reference.md / cli/completions.md)"]
+    H5_2["Error Handling & FAQ<br/>(troubleshooting/faq.md / common-issues.md)"]
+    H5_3["Release History & Changelog<br/>(releases/v1.4.0.md / changelog.md)"]
+  end
+
+  Root --> Hub1
+  Root --> Hub2
+  Root --> Hub3
+  Root --> Hub4
+  Root --> Hub5
+
+  classDef rootNode fill:#0f172a,stroke:#6366f1,stroke-width:3px,color:#ffffff;
+  classDef hub fill:#1e1b4b,stroke:#818cf8,stroke-width:1.5px,color:#e0e7ff;
+  class Root rootNode;
+  class H1_1,H1_2,H1_3,H1_4,H2_1,H2_2,H2_3,H2_4,H2_5,H3_1,H3_2,H3_3,H3_4,H3_5,H4_1,H4_2,H4_3,H4_4,H5_1,H5_2,H5_3 hub;
+```

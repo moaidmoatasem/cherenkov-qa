@@ -4,6 +4,7 @@ site_author: TesterArmy
 
 theme:
   name: material
+  custom_dir: overrides
   features:
     - navigation.tabs
     - navigation.sections
@@ -27,6 +28,17 @@ theme:
         icon: material/brightness-4
         name: Switch to light mode
 
+extra:
+  version:
+    current: "1.4"
+    versions:
+      - "1.2"
+      - "1.3"
+      - "1.4"
+
+extra_javascript:
+  - javascripts/version-banner.js
+
 markdown_extensions:
   - pymdownx.superfences:
       custom_fences:
@@ -42,19 +54,52 @@ markdown_extensions:
   - attr_list
 
 nav:
-  - Home: INDEX.md
-  - Tutorials:
-      - Getting Started: GETTING_STARTED.md
-      - Petstore Quickstart: QUICKSTART_PETSTORE.md
-  - How-To Guides:
-      - Spec Guardian: guides/spec_guardian.md
-      - SAML SSO: guides/saml_sso.md
-      - SLM Training: guides/slm_training.md
+  - Home: 1.4/index.md
+  - Getting Started:
+      - Overview: 1.4/getting-started/index.md
+      - Quickstart: 1.4/getting-started/quickstart.md
+      - Installation: 1.4/getting-started/installation.md
+      - Configuration: 1.4/getting-started/configuration.md
+      - Cost Tiers: 1.4/getting-started/cost-tiers.md
+  - QA & Testing:
+      - Guides Hub: 1.4/guides/index.md
+      - API Conformance: 1.4/guides/api-conformance.md
+      - Check Suite: 1.4/guides/check-suite.md
+      - Test Generation: 1.4/guides/test-generation.md
+      - Spec Guardian: 1.4/guides/continuous-monitoring.md
+      - Certificates: 1.4/guides/certificates.md
+      - Dashboard: 1.4/guides/dashboard.md
+      - HITL: 1.4/guides/hitl.md
+      - Eject: 1.4/guides/eject.md
+      - Docker: 1.4/guides/docker.md
+      - Security: 1.4/guides/security.md
+  - Architecture:
+      - Overview: 1.4/architecture/index.md
+      - System Design: 1.4/architecture/system-design.md
+      - Operating Model: 1.4/architecture/platform-operating-model.md
+      - User Journeys: 1.4/architecture/user-journeys.md
+      - Clean Architecture: 1.4/architecture/clean-architecture.md
+      - Module Reference: 1.4/architecture/module-reference.md
+      - Second Brain: 1.4/architecture/second-brain.md
+      - Diagrams: 1.4/architecture/diagrams.md
+      - Role Guides:
+          - Developer: 1.4/roles/developer.md
+          - QA Engineer: 1.4/roles/qa-engineer.md
+          - DevOps & SRE: 1.4/roles/devops.md
+          - Team Lead: 1.4/roles/team-lead.md
+  - Ecosystem:
+      - CI/CD: 1.4/guides/ci-cd.md
+      - GitHub Actions: 1.4/integrations/github-actions.md
+      - VS Code: 1.4/integrations/vscode.md
+      - MCP: 1.4/integrations/mcp.md
+      - LangChain: 1.4/integrations/langchain.md
+  - Troubleshooting:
+      - FAQ: 1.4/troubleshooting/faq.md
+      - Common Issues: 1.4/troubleshooting/common-issues.md
   - Reference:
-      - Architecture Map: ARCHITECTURE_MAP.md
-      - CLI Reference: cli-reference.md
-      - Error Handling: ERROR_HANDLING.md
-  - Explanation:
-      - System Design: SYSTEM_DESIGN.md
-      - Master Roadmap: ROADMAP.md
-      - Clean Architecture: adr/ADR-004-clean-architecture.md
+      - CLI Reference: 1.4/cli/reference.md
+      - Completions: 1.4/cli/completions.md
+      - Changelog: 1.4/changelog.md
+      - v1.4.0 Release: 1.4/releases/v1.4.0.md
+      - v1.3.0 Release: 1.4/releases/v1.3.0.md
+      - v1.2.0 Release: 1.4/releases/v1.2.0.md
