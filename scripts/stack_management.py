@@ -37,6 +37,9 @@ def cmd_stack_before(
         strategy: Stack slicing strategy (functional, refactor_first, risk_isolated).
         budget: Token budget per layer (defaults to 25k).
         source: Source identifier for tracking (default: "cherenkov").
+
+    Returns:
+        str: Generated unique stack identifier.
     """
     stack_id = f"stack_{uuid.uuid4().hex[:8]}"
     now = datetime.now(tz=timezone.utc).isoformat()
@@ -90,6 +93,9 @@ def cmd_stack_add_layer(
         instruction: Layer-specific task description.
         target_paths: Files modified/added by this layer.
         budget: Token budget for this layer.
+
+    Returns:
+        str: Layer identifier string of the added layer.
     """
     stack_file = STACK_DIR / f"{stack_id}.json"
     if not stack_file.exists():
@@ -250,7 +256,11 @@ def cmd_stack_status(stack_id: str):
 
 
 def parse_stack_args():
-    """Parse command line arguments for stack subcommands."""
+    """Parse command line arguments for stack subcommands.
+
+    Returns:
+        argparse.Namespace: Parsed CLI options and subcommand arguments.
+    """
     import argparse
 
     parser = argparse.ArgumentParser(description="SDD Stack Management Commands")
