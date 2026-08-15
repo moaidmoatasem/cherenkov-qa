@@ -1,25 +1,18 @@
 {
   "session": {
-    "id": "sess_20260810170403_11bf12",
+    "id": "sess_20260815170217_1a334a",
     "status": "closed",
-    "task": "verification_scripts",
-    "started_at": "2026-08-10T17:04:03.331115+00:00",
-    "ended_at": "2026-08-10T17:06:20.343729+00:00",
-    "findings_count": 0,
+    "task": "alignment",
+    "started_at": "2026-08-15T17:02:17.398596+00:00",
+    "ended_at": "2026-08-15T17:02:19.786161+00:00",
+    "findings_count": 1,
     "token_total": 0,
-    "summary": "Implemented scripts/check_docstrings.py and scripts/check_docs_markdown.py with unit tests and git push",
+    "summary": "Aligned local worktree with latest remote main changes, verified suite integrity, 100% docs-CLI parity, and pushed proof of work.",
     "compacted": true,
-    "task_type": "verification_scripts",
+    "task_type": "alignment",
     "source": "cherenkov"
   },
   "previous_sessions": [
-    {
-      "id": "sess_20260802013724_ca849e",
-      "task": "ui_remediation",
-      "ended_at": "2026-08-02T01:38:58.190145+00:00",
-      "summary": "UI Revamp complete, backend routing fixed, git commit & push verified",
-      "token_total": 0
-    },
     {
       "id": "sess_20260803074400_75e1eb",
       "task": "verify_merge",
@@ -82,7 +75,14 @@
       "ended_at": "2026-08-10T11:03:48.839115+00:00",
       "summary": "Implemented Issue 812 (MCP tool surface and Registry Publish). Added server.json and publish_tool in registry.py, and removed the issue from open_issues.txt.",
       "token_total": 0
+    },
+    {
+      "id": "sess_20260810170403_11bf12",
+      "task": "verification_scripts",
+      "ended_at": "2026-08-10T17:06:20.343729+00:00",
+      "summary": "Implemented scripts/check_docstrings.py and scripts/check_docs_markdown.py with unit tests and git push",
+      "token_total": 0
     }
   ],
-  "sessions_since_compact": 32
+  "sessions_since_compact": 33
 }

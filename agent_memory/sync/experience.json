@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "last_updated": "2026-08-10T17:06:20.362113+00:00",
-  "experience_count": 14,
-  "sessions_contributing": 31,
+  "last_updated": "2026-08-15T17:02:19.816874+00:00",
+  "experience_count": 15,
+  "sessions_contributing": 32,
   "experiences": [
     {
       "id": "exp_seed_001",
@@ -192,6 +192,19 @@
         "Consolidate dual AI routing layers (Issue 815)"
       ],
       "session_id": "sess_20260810105822_dfba61"
+    },
+    {
+      "id": "exp_sess_20260815170217_1a334a_6cc7",
+      "timestamp": "2026-08-15T17:02:19.816874+00:00",
+      "task": "alignment",
+      "action": "decision Aligned local worktree on main with remote commits",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "alignment"
+      ],
+      "session_id": "sess_20260815170217_1a334a"
     }
   ],
   "pattern_index": {
@@ -242,6 +255,9 @@
     ],
     "Consolidate dual AI routing layers (Issue 815)": [
       "exp_sess_20260810105822_dfba61_47fb"
+    ],
+    "alignment": [
+      "exp_sess_20260815170217_1a334a_6cc7"
     ]
   }
 }
