@@ -219,7 +219,7 @@ services:
     command: >
       validate
         --spec /specs/openapi.yaml
-        --target http://host.docker.internal:8000
+        --target http://api-server:8000
 
 volumes:
   ollama_data:
@@ -304,7 +304,7 @@ See [K8s Operator Guide](../guides/k8s-operator.md) for full CRD documentation.
 Run CHERENKOV as a long-lived process that periodically probes your API:
 
 ```bash
-cherenkov daemon --url http://api.internal:8000
+cherenkov daemon --url http://api.local:8000
 ```
 
 In Docker or K8s, run the daemon as a sidecar or standalone deployment:

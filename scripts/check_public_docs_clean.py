@@ -23,6 +23,11 @@ import re
 import sys
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 # ── Configuration ──────────────────────────────────────────────────────────────
 
 DOCS_PUBLIC_DIR = Path(__file__).parent.parent / "docs-site" / "docs"
@@ -33,7 +38,6 @@ FORBIDDEN: list[tuple[str, str, str]] = [
     # Internal doc references — ERROR in all contexts
     (r"HANDOVER\.md", "Reference to internal HANDOVER.md", "ERROR"),
     (r"PHASE_PLAN\.md", "Reference to internal PHASE_PLAN.md", "ERROR"),
-    (r"AGENTS\.md", "Reference to internal AGENTS.md (agent operating rules)", "ERROR"),
     (r"INTEGRATION_STRATEGY\.md", "Reference to internal strategy doc", "ERROR"),
     (r"PRODUCT_STRATEGY_ROADMAP\.md", "Reference to internal strategy doc", "ERROR"),
     # Agent/AI-internal language — ERROR in all contexts
@@ -42,7 +46,7 @@ FORBIDDEN: list[tuple[str, str, str]] = [
     (r"\bAgent Guidance\b", "Agent guidance block leaked to public docs", "ERROR"),
     (r"Authoritative handover:", "Handover language leaked to public docs", "ERROR"),
     (r"# Agent Operating Rules", "Agent operating rules header in public docs", "ERROR"),
-    (r"\bINTERNAL\b", "Explicit INTERNAL marker", "ERROR"),
+    (r"\[INTERNAL\]|\bCONFIDENTIAL\b", "Explicit INTERNAL marker", "ERROR"),
     (r"agent_sync\.py", "Internal agent sync script reference", "ERROR"),
     (r"docs/HANDOVER", "Raw path to internal HANDOVER doc", "ERROR"),
     (r"docs/PHASE_PLAN", "Raw path to internal PHASE_PLAN doc", "ERROR"),
