@@ -1,5 +1,16 @@
 # CHERENKOV -- Session Handover
 
+## Documentation Consolidation, Strict Link Resolution & Live Deployment (2026-08-16)
+
+Full documentation reconciliation, broken link resolution, strict validation, and GitHub Pages live deployment completed.
+
+**Accomplishments:**
+1. **v1.4 Documentation Consolidation**: Reconciled and consolidated documentation versions (1.2, 1.3 into 1.4 hierarchy) with updated `mkdocs.yml` navigation, custom Material theme overrides, version banner JS/CSS, Mermaid diagrams, and screenshots.
+2. **Strict Relative Link Resolution**: Created `scripts/resolve_doc_links.py` to systematically parse and resolve broken relative links across 293 markdown files. Converted external repository-root/code references to canonical repository URLs and corrected multi-level directory relative paths.
+3. **Zero Warning Build Validation**: Validated `mkdocs build --strict` with exit code 0 and 0 warnings.
+4. **Live Deployment**: Deployed live documentation via `mkdocs gh-deploy --force` to GitHub Pages at [https://moaidmoatasem.github.io/cherenkov-qa/](https://moaidmoatasem.github.io/cherenkov-qa/).
+5. **Committed & Pushed**: Commit `9f96cde1` pushed to `origin/main`.
+
 ## Alignment & Test Stabilization Sweep (2026-08-16)
 
 Full tree alignment against `origin/main` following PR #1002 (docs consolidation) and test suite stabilization across Windows/WSL environments.
