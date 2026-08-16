@@ -96,6 +96,9 @@ CHERENKOV Conformance Report
 Summary: 3/4 passed · 1 divergence · Exit code: 1
 ```
 
+![CHERENKOV-QA Quickstart Execution](../assets/getting_started.png)
+*Figure: Live execution of `cherenkov validate` against OpenAPI specification with conformance report output.*
+
 ---
 
 ## 📊 5. Explore in the Dashboard (Optional)

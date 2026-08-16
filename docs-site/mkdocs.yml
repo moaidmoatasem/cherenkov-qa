@@ -97,9 +97,10 @@ plugins:
   - search:
       lang: en
   - git-revision-date-localized:
-      enable_creation_date: true
+      enable_creation_date: false
       type: timeago
       fallback_to_build_date: true
+      enabled: !ENV [CI, false]
 
 # ── Markdown Extensions ───────────────────────────────────────────────────────
 markdown_extensions:
