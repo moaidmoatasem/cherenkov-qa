@@ -210,7 +210,8 @@ def test_validate_asyncapi_requires_spec():
 def test_validate_asyncapi_plans_and_generates(spec_file):
     from cherenkov.cli.commands.validate import validate_cmd
 
-    with patch("cherenkov.stages.generate.GenerateStage.run") as mock_run:
+    with patch("cherenkov.stages.generate.GenerateStage.run") as mock_run, \
+         patch("cherenkov.cli.commands.validate.ValidationEngine.validate_suite", return_value={"reports": [], "passed": True}):
         result = CliRunner().invoke(
             validate_cmd, [*TARGET, "--source", "asyncapi", "--spec", spec_file]
         )

@@ -269,7 +269,7 @@ class TestVerifyCoverageFlag:
             with patch("cherenkov.cli.commands.verify.run_proof", return_value=[]):
                 result = runner.invoke(
                     verify_cmd,
-                    ["--url", "http://localhost:9", "--spec", "spec.json", "--coverage-report"],
+                    ["--url", "http://localhost:9", "--spec", "spec.json", "--coverage-report", "--simple"],
                 )
         assert result.exit_code == 0
         assert "Spec coverage" in result.output
@@ -280,7 +280,7 @@ class TestVerifyCoverageFlag:
         with patch("cherenkov.cli.commands.verify.run_proof", return_value=[]):
             result = runner.invoke(
                 verify_cmd,
-                ["--url", "http://localhost:9", "--coverage-report"],
+                ["--url", "http://localhost:9", "--coverage-report", "--simple"],
             )
         assert result.exit_code == 0
         assert "requires --spec" in result.output
@@ -296,7 +296,7 @@ class TestVerifyCoverageFlag:
             with patch("cherenkov.cli.commands.verify.run_proof", return_value=[report]):
                 result = runner.invoke(
                     verify_cmd,
-                    ["--url", "http://localhost:9", "--spec", "spec.json", "--coverage-report"],
+                    ["--url", "http://localhost:9", "--spec", "spec.json", "--coverage-report", "--simple"],
                 )
         assert "Gap" in result.output
         assert "/pets/{id}" in result.output
@@ -313,10 +313,10 @@ class TestVerifyCoverageFlag:
         ]
         with runner.isolated_filesystem():
             Path("spec.json").write_text(spec)
-            with patch("cherenkov.divergence.proof_run.run_proof", return_value=reports):
+            with patch("cherenkov.cli.commands.verify.run_proof", return_value=reports):
                 result = runner.invoke(
                     verify_cmd,
-                    ["--url", "http://localhost:9", "--spec", "spec.json", "--coverage-report"],
+                    ["--url", "http://localhost:9", "--spec", "spec.json", "--coverage-report", "--simple"],
                 )
         assert "100.0%" in result.output
         assert "All spec endpoints were probed" in result.output
