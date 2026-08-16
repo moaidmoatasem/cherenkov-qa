@@ -120,7 +120,11 @@ class SubprocessHookExecutor:
                         exc_info=True,
                     )
             proc.kill()
-            stdout, stderr = proc.communicate()
+            try:
+                stdout, stderr = proc.communicate(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                stdout, stderr = b"", b""
             duration_ms = int((time.monotonic() - start) * 1000)
             result = HookResult(
                 event=config.event,

@@ -78,6 +78,7 @@ Please replace with a meaningful description.
         assert exc_info.value.event == HookEvent.POST_VALIDATE
         assert exc_info.value.result.exit_code == 2
 
+    @pytest.mark.slow
     def test_timeout_warn_mode_returns_timeout(self) -> None:
         """Placeholder docstring.
 
@@ -92,6 +93,7 @@ Please replace with a meaningful description.
         assert result.status == HookStatus.TIMEOUT
         assert "Timed out" in result.error_message
 
+    @pytest.mark.slow
     def test_timeout_abort_mode_raises(self) -> None:
         """Placeholder docstring.
 
