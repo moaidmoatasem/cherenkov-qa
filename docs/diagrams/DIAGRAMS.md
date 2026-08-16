@@ -476,6 +476,9 @@ flowchart TD
   class C1,C2,C3,C4 v14;
 ```
 
+![Version Evolution Diagram](../assets/version_diff.png)
+*Figure 18: Architectural evolution across CHERENKOV-QA minor versions (v1.2 → v1.3 → v1.4).*
+
 ---
 
 ## 19. 1.4 Consolidated Documentation Site Map
@@ -531,3 +534,7 @@ flowchart TB
   class Root rootNode;
   class H1_1,H1_2,H1_3,H1_4,H2_1,H2_2,H2_3,H2_4,H2_5,H3_1,H3_2,H3_3,H3_4,H3_5,H4_1,H4_2,H4_3,H4_4,H5_1,H5_2,H5_3 hub;
 ```
+
+![Site Map Architecture](../assets/sitemap_architecture.png)
+*Figure 19: Comprehensive 5-Hub Diátaxis structure for CHERENKOV-QA 1.4 documentation.*
+

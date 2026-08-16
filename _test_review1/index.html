@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHERENKOV — API Conformance Testing</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; color: #e2e8f0; background: #0f172a;
+    max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem;
+  }
+  h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+  h1 span { color: #38bdf8; }
+  .subtitle { font-size: 1.15rem; color: #94a3b8; margin-bottom: 2rem; }
+  .tagline {
+    background: #1e293b; border-left: 4px solid #38bdf8;
+    padding: 1rem 1.25rem; border-radius: 0 8px 8px 0; margin-bottom: 2rem;
+    font-size: 1.05rem;
+  }
+  h2 { font-size: 1.3rem; margin: 1.5rem 0 0.75rem; color: #f1f5f9; }
+  p { margin-bottom: 1rem; color: #cbd5e1; }
+  ul { list-style: none; padding: 0; }
+  li { padding: 0.4rem 0; color: #94a3b8; }
+  li::before { content: "✓ "; color: #22c55e; font-weight: 700; }
+  code {
+    background: #1e293b; padding: 0.15rem 0.4rem; border-radius: 4px;
+    font-size: 0.9rem; color: #38bdf8;
+  }
+  .cmd {
+    background: #0f172a; border: 1px solid #334155; padding: 0.75rem 1rem;
+    border-radius: 6px; margin: 0.75rem 0;
+  }
+  .footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #334155; font-size: 0.85rem; color: #64748b; }
+  a { color: #38bdf8; }
+</style>
+</head>
+<body>
+<h1>CHERENKOV<span>.</span></h1>
+<p class="subtitle">API Conformance Test Generator</p>
+
+<div class="tagline">
+  <strong>Spec in → Playwright tests out → zero lock-in.</strong>
+  A local-first tool that reads your OpenAPI spec and generates pure Playwright
+  API tests using a local 7B LLM — no cloud, no API keys, no vendor lock.
+</div>
+
+<h2>How it works</h2>
+<ul>
+  <li>Point at your OpenAPI spec — INGEST parses every endpoint</li>
+  <li>LLM generates Playwright tests with openapi-fetch client</li>
+  <li>6-gate review: syntax, structure, AST, assertions, tsc, Prism dry-run</li>
+  <li>Run against your real server with <code>cherenkov validate</code></li>
+  <li>Eject to standalone Playwright — zero dependency on CHERENKOV</li>
+</ul>
+
+<h2>Quick start</h2>
+<div class="cmd">
+  <code>pip install cherenkov<br>
+  cherenkov init<br>
+  cherenkov validate --spec openapi.yaml --target http://localhost:3000</code>
+</div>
+
+<h2>Key features</h2>
+<ul>
+  <li>Spec-derived expected status codes (catches 422-vs-400 bugs)</li>
+  <li>Suggest-only healing — never auto-edits test code</li>
+  <li>Human-in-the-loop review queue with confidence scoring</li>
+  <li>MCP server for Claude Desktop / Cursor integration</li>
+  <li>SARIF output for GitHub Security tab</li>
+  <li>Desktop app (Tauri), mobile testing (Maestro), K8s operator</li>
+</ul>
+
+<h2>Architecture</h2>
+<p>Local LLM (qwen2.5-coder:7b via Ollama) — GPU or CPU — runs entirely
+on your machine. No telemetry, no API calls, no data leaves your network.
+Enterprise tier adds SSO, RBAC, audit logs.</p>
+
+<h2>License</h2>
+<p>Apache 2.0. Fully open source.</p>
+
+<div class="footer">
+  <a href="https://github.com/moaidmoatasem/cherenkov-qa">GitHub</a> ·
+  <a href="https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/GETTING_STARTED.md">Getting Started</a> ·
+  <a href="https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/CLI_DEMO.md">CLI Demo</a>
+</div>
+</body>
+</html>

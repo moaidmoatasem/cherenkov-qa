@@ -1,88 +1,88 @@
 {
   "session": {
-    "id": "sess_20260815170217_1a334a",
-    "status": "closed",
-    "task": "alignment",
-    "started_at": "2026-08-15T17:02:17.398596+00:00",
-    "ended_at": "2026-08-15T17:02:19.786161+00:00",
+    "id": "sess_20260815235834_9fc477",
+    "status": "open",
+    "task": "challenge_docs_links_banners",
+    "started_at": "2026-08-15T23:58:34.679173+00:00",
+    "ended_at": null,
     "findings_count": 1,
     "token_total": 0,
-    "summary": "Aligned local worktree with latest remote main changes, verified suite integrity, 100% docs-CLI parity, and pushed proof of work.",
-    "compacted": true,
-    "task_type": "alignment",
+    "summary": null,
+    "compacted": false,
+    "task_type": "challenge_docs_links_banners",
     "source": "cherenkov"
   },
   "previous_sessions": [
     {
-      "id": "sess_20260803074400_75e1eb",
-      "task": "verify_merge",
-      "ended_at": "2026-08-03T08:01:20.638634+00:00",
-      "summary": "UI validation work merged to main via PR #852 (4ca14ac9/df307edd). Verified merged main: 48/48 playwright real-backend tests pass, pytest exit 0, tsc exit 0, vite build ok. Fixed stale SSE tests (live substrate streams real tokens, not [MOCK]), eject-test fixture clobbering (unique output path + gitignore), logger json.dumps default=str, tsconfig include src. Parallel agents advanced main to 17059965 (#854-#856); AirLLM WIP left untouched.",
+      "id": "sess_20260815234518_02e80c",
+      "task": "survey_visuals_git",
+      "ended_at": null,
+      "summary": null,
       "token_total": 0
     },
     {
-      "id": "sess_20260803173015_c4d546",
-      "task": "validation",
-      "ended_at": "2026-08-03T17:30:16.730981+00:00",
-      "summary": "Full 48-test gate GREEN on latest main a7b5a166: pytest 0, headless 23/23, e2e 25/25. Local synced to origin. Vite root fixed (ui dir). Ollama 7b OOM env issue worked around via 3b model.",
+      "id": "sess_20260815234523_110053",
+      "task": "survey_docs_content",
+      "ended_at": "2026-08-15T23:45:25.215068+00:00",
+      "summary": "Completed visuals and git survey",
       "token_total": 0
     },
     {
-      "id": "sess_20260804012214_f54efc",
-      "task": "p0-ci-hygiene",
-      "ended_at": "2026-08-04T01:22:51.011595+00:00",
-      "summary": "Executed full P0 CI-hygiene plan: 7 PRs committed on feature branches. PR-1 layer-guard.yml rewritten (context/path/scope/auth/JS fixes + test). PR-2 continue-on-error audit (23 gates hard-failed, 7 advisory retained). PR-3 mypy gate green (9 errors/3 files). PR-4/5 authored WAYS_OF_WORKING + AGENT_COLLABORATION_PROTOCOL. PR-6 SSOT/version hygiene + version-consistency CI gate + HANDOVER root-wins. PR-7 baseline re-cert 2138/2/6.",
+      "id": "sess_20260815234552_8627fb",
+      "task": "survey_docs_content",
+      "ended_at": "2026-08-15T23:45:59.112917+00:00",
+      "summary": "Surveyed docs 1.2 vs 1.3 and produced 1.4 content merge specification",
       "token_total": 0
     },
     {
-      "id": "sess_20260806000536_c6b32f",
-      "task": "documentation",
-      "ended_at": "2026-08-06T00:06:16.677576+00:00",
-      "summary": "Updated docs index and system design to make the platform operating model and user journeys discoverable and architecturally explicit; validated, committed, and pushed to PR #908.",
+      "id": "sess_20260815234714_37ac1b",
+      "task": "consolidate_docs_1_4",
+      "ended_at": "2026-08-15T23:47:17.893982+00:00",
+      "summary": "Completed mkdocs config and banner survey",
       "token_total": 0
     },
     {
-      "id": "sess_20260809003726_9cbc02",
-      "task": "GitHub Actions Integration",
-      "ended_at": "2026-08-09T00:42:34.723177+00:00",
-      "summary": "Verified GitHub Action and MCP tools were completed. Attempted to package VS Code extension via vsce but npm install hangs on environment.",
+      "id": "sess_20260815234833_f4ee0e",
+      "task": "worker_docs_merge_and_banner",
+      "ended_at": null,
+      "summary": null,
       "token_total": 0
     },
     {
-      "id": "sess_20260810105426_b634d5",
-      "task": "Phase 13 Enterprise API & UI",
-      "ended_at": "2026-08-10T10:54:50.984758+00:00",
-      "summary": "Checked for unresolved conflicts on PR 945, found it was already aligned and pushed in previous steps",
+      "id": "sess_20260815234838_424704",
+      "task": "worker_visuals_and_assets",
+      "ended_at": "2026-08-15T23:54:21.974047+00:00",
+      "summary": "Consolidated 1.4 documentation, banner fixes, visualizations, MkDocs configs, and opened PR #1001",
       "token_total": 0
     },
     {
-      "id": "sess_20260810105822_dfba61",
-      "task": "Consolidate dual AI routing layers (Issue 815)",
-      "ended_at": "2026-08-10T11:00:44.439584+00:00",
-      "summary": "Closed Issue 815 as obsolete in open_issues.txt",
+      "id": "sess_20260815235814_0d8b37",
+      "task": "review_docs_1_4",
+      "ended_at": null,
+      "summary": null,
       "token_total": 0
     },
     {
-      "id": "sess_20260810110114_146e5e",
-      "task": "Retire root cherenkov.py (Issue 814)",
-      "ended_at": "2026-08-10T11:01:35.979979+00:00",
-      "summary": "Skipped Issue 814 as it was removed from the open_issues file",
+      "id": "sess_20260815235819_57c31d",
+      "task": "review_visuals_git_1_4",
+      "ended_at": null,
+      "summary": null,
       "token_total": 0
     },
     {
-      "id": "sess_20260810110145_c6d60a",
-      "task": "Deepen MCP tool surface (Issue 812)",
-      "ended_at": "2026-08-10T11:03:48.839115+00:00",
-      "summary": "Implemented Issue 812 (MCP tool surface and Registry Publish). Added server.json and publish_tool in registry.py, and removed the issue from open_issues.txt.",
+      "id": "sess_20260815235824_528f89",
+      "task": "challenge_build_media_pr",
+      "ended_at": null,
+      "summary": null,
       "token_total": 0
     },
     {
-      "id": "sess_20260810170403_11bf12",
-      "task": "verification_scripts",
-      "ended_at": "2026-08-10T17:06:20.343729+00:00",
-      "summary": "Implemented scripts/check_docstrings.py and scripts/check_docs_markdown.py with unit tests and git push",
+      "id": "sess_20260815235828_ac4e67",
+      "task": "forensic_audit_docs_1_4",
+      "ended_at": null,
+      "summary": null,
       "token_total": 0
     }
   ],
-  "sessions_since_compact": 33
+  "sessions_since_compact": 55
 }

@@ -1,0 +1,3799 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Autonomous Quality Fabric">
+      
+      
+        <meta name="author" content="TesterArmy">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>CHERENKOV QA - Integration Research Report - Cherenkov QA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cherenkov-qa-integration-research-report" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  <div class="md-version-warning">
+    <strong>Notice:</strong> You are viewing documentation for an older version of CHERENKOV-QA.
+    <a href="https://moaidmoatasem.github.io/cherenkov-qa/1.4/">Click here for the latest version (v1.4).</a>
+  </div>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cherenkov QA" class="md-header__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cherenkov QA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CHERENKOV QA - Integration Research Report
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../1.4/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/getting-started/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/guides/" class="md-tabs__link">
+          
+  
+  
+  QA & Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/guides/ci-cd/" class="md-tabs__link">
+          
+  
+  
+  Ecosystem
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/troubleshooting/faq/" class="md-tabs__link">
+          
+  
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/cli/reference/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cherenkov QA" class="md-nav__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cherenkov QA
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/cost-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Tiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA & Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    QA & Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides Hub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/api-conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/check-suite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Check Suite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/test-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/continuous-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spec Guardian
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/certificates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Certificates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/hitl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HITL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/eject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eject
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/system-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/platform-operating-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/user-journeys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Journeys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/clean-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/module-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/second-brain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Second Brain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Role Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Role Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/developer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/qa-engineer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA Engineer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/devops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps & SRE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/team-lead/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Team Lead
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/ci-cd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/github-actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/vscode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VS Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/langchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Troubleshooting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/troubleshooting/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/troubleshooting/common-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Issues
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/cli/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/cli/completions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Completions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.4.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.4.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.3.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.2.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cherenkov-qa-integration-research-report">CHERENKOV QA - Integration Research Report</h1>
+<h1 id="complete-analysis-autonomous-agents-external-repos-llm-wiki">Complete Analysis: Autonomous Agents, External Repos, LLM Wiki</h1>
+<p><strong>Document ID:</strong> INTEGRATION-RESEARCH-2026-06-07
+<strong>Author:</strong> Vibe Research Agent
+<strong>Date:</strong> 2026-06-07
+<strong>Status:</strong> COMPLETE
+<strong>Scope:</strong> 5 Topics - Autonomous Agents, mattpocock/skills, claude-elixir-phoenix, MiniGPT, LLM Wiki</p>
+<hr />
+<h2 id="executive-summary">📌 Executive Summary</h2>
+<h3 id="research-completion">✅ Research Completion</h3>
+<p>This document presents <strong>complete research findings</strong> on all five requested topics for integration into CHERENKOV QA:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Topic</th>
+<th>Source</th>
+<th>Status</th>
+<th>Key Finding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Autonomous/Automated Agent Usage</td>
+<td>Internal</td>
+<td>✅ COMPLETE</td>
+<td>E7-E13 roadmap solid, Reflector <strong>ABSENT</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>mattpocock/skills</td>
+<td>https://github.com/mattpocock/skills</td>
+<td>✅ COMPLETE</td>
+<td>120k+ stars, 95% philosophy alignment</td>
+</tr>
+<tr>
+<td>3</td>
+<td>claude-elixir-phoenix</td>
+<td>https://github.com/oliver-kriska/claude-elixir-phoenix</td>
+<td>✅ COMPLETE</td>
+<td>22 agents, Context Supervisor pattern (BRILLIANT)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>MiniGPT</td>
+<td>Vision-CAIR</td>
+<td>✅ COMPLETE</td>
+<td>Local VLM, perfect for E9 Vision</td>
+</tr>
+<tr>
+<td>5</td>
+<td>LLM Wiki</td>
+<td>docs/wiki/</td>
+<td>✅ COMPLETE</td>
+<td>Contains <strong>fabricated claims</strong> - needs cleanup</td>
+</tr>
+</tbody>
+</table>
+<h3 id="top-5-integration-recommendations">🎯 Top 5 Integration Recommendations</h3>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Integration</th>
+<th>Source</th>
+<th>Value</th>
+<th>Effort</th>
+<th>Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>Context Supervisor Pattern</td>
+<td>claude-elixir-phoenix</td>
+<td>Solves multi-agent token explosion</td>
+<td>M (3-5w)</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>Iron Laws Framework</td>
+<td>claude-elixir-phoenix</td>
+<td>Extends D7 invariants</td>
+<td>S (1-2w)</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>MiniGPT VLM Provider</td>
+<td>Vision-CAIR</td>
+<td>Enables E9 Vision, local deployment</td>
+<td>M (3-4w)</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td>CONTEXT.md Pattern</td>
+<td>mattpocock/skills</td>
+<td>75% token savings</td>
+<td>S (1w)</td>
+<td>None</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>Wiki Cleanup</td>
+<td>Internal</td>
+<td>Remove fabrications, restore honesty</td>
+<td>S (3d)</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<h3 id="overall-assessment-scores">📊 Overall Assessment Scores</h3>
+<table>
+<thead>
+<tr>
+<th>Repository/Pattern</th>
+<th>Philosophy</th>
+<th>Technical Fit</th>
+<th>Value</th>
+<th>Effort</th>
+<th>Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mattpocock/skills</td>
+<td>10/10</td>
+<td>9/10</td>
+<td>9/10</td>
+<td>7/10</td>
+<td><strong>8.8/10</strong></td>
+</tr>
+<tr>
+<td>claude-elixir-phoenix</td>
+<td>10/10</td>
+<td>9/10</td>
+<td>10/10</td>
+<td>8/10</td>
+<td><strong>9.2/10</strong></td>
+</tr>
+<tr>
+<td>MiniGPT</td>
+<td>10/10</td>
+<td>10/10</td>
+<td>9/10</td>
+<td>7/10</td>
+<td><strong>9.0/10</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="table-of-contents">🗂️ Table of Contents</h2>
+<ol>
+<li><a href="#-executive-summary">Executive Summary</a></li>
+<li><a href="#part-1-autonomous-agents-in-cherenkov">Part 1: Autonomous Agents in CHERENKOV</a></li>
+<li><a href="#part-2-mattpocockskills-analysis">Part 2: mattpocock/skills Analysis</a></li>
+<li><a href="#part-3-claude-elixir-phoenix-analysis">Part 3: claude-elixir-phoenix Analysis</a></li>
+<li><a href="#part-4-minigpt-analysis">Part 4: MiniGPT Analysis</a></li>
+<li><a href="#part-5-llm-wiki-audit">Part 5: LLM Wiki Audit</a></li>
+<li><a href="#part-6-cross-cutting-analysis">Part 6: Cross-Cutting Analysis</a></li>
+<li><a href="#part-7-integration-roadmap">Part 7: Integration Roadmap</a></li>
+<li><a href="#-appendices">Appendices</a></li>
+</ol>
+<hr />
+<h2 id="part-1-autonomous-agents-in-cherenkov">Part 1: Autonomous Agents in CHERENKOV</h2>
+<h3 id="11-current-state-overview">1.1 Current State Overview</h3>
+<p><strong>✅ BUILT AND PRODUCTION-READY:</strong>
+- L0 Substrate Router (<code>cherenkov/substrate/</code>)
+- L1 Truth Model (<code>cherenkov/core/truth_model.py</code>)
+- L2 Divergence Engine (<code>cherenkov/divergence/</code>)
+- L3 Artifacts + Eject (<code>cherenkov/truth/emitters/</code>, <code>cherenkov/execution/</code>)
+- L4 Continuity (<code>cherenkov/continuity/</code>, <code>cherenkov/stages/daemon_cmd.py</code>)
+- MCP Server (<code>cherenkov/mcp/</code>)
+- Self-Healing (<code>cherenkov/healing/</code>)
+- Perf Baseline (statistical) (<code>cherenkov/stages/perf/</code>)
+- Visual Baseline (pixel) (<code>cherenkov/stages/visual/</code>)
+- Explorer Agent (<code>cherenkov/divergence/explorer.py</code>)
+- Copilot v1 (<code>cherenkov/copilot/</code>)</p>
+<p><strong>❌ GENUINELY ABSENT:</strong>
+- E7: Reflector + Verdict Memory
+- 7 New Agents: Pilot, Loadsmith, Sentinel, Coverager, Adjudicator, Mentor</p>
+<h3 id="12-architecture">1.2 Architecture</h3>
+<h4 id="agent-metabolism">Agent Metabolism</h4>
+<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────────┐
+│                    CHERENKOV Agent Metabolism                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  CURRENT CORE (4 Agents - Working):                              │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
+│  │ Cartographer│→ │  Skeptic │─▶│ Witness  │─▶│  Scribe  │       │
+│  │  (Ingest) │  │ (Hypothesize)│  │ (Prove)  │  │ (Emit)   │       │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘       │
+│                       │                                              │
+│  TARGET (11 Agents - E7-E13):                                     │
+│                       ▼                                              │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
+│  │ Explorer │  │  Pilot   │  │ Loadsmith│  │ Sentinel │       │
+│  │ (Crawl)  │  │ (Vision) │  │ (Perf)   │  │ (ML Watch)│       │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘       │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐                       │
+│  │ Coverager│  │ Adjudicator│  │  Mentor  │                       │
+│  │ (SDET)   │  │ (Judge)   │  │ (Pairing)│                       │
+│  └──────────┘  └──────────┘  └──────────┘                       │
+│                                                                      │
+│  ALL AGENTS:                                                          │
+│  - Emit ReasoningRequest through Substrate Router                   │
+│  - NEVER hardcode model names                                        │
+│  - Write to same Truth Model                                         │
+│  - Honor egress policy                                               │
+└─────────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<h3 id="13-autonomy-ladder">1.3 Autonomy Ladder</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># cherenkov/copilot/autonomy.py</span>
+
+<span class="n">PROFILE_LEVELS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;assisted&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;auto_approve&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;auto_triage&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;deep_rerank&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;auto_remediate&quot;</span><span class="p">:</span> <span class="kc">False</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;augmented&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;auto_approve&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;auto_triage&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;deep_rerank&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;auto_remediate&quot;</span><span class="p">:</span> <span class="kc">False</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;agentic&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;auto_approve&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;auto_triage&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;deep_rerank&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;auto_remediate&quot;</span><span class="p">:</span> <span class="kc">True</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;predictive&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;auto_approve&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;auto_triage&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;deep_rerank&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;auto_remediate&quot;</span><span class="p">:</span> <span class="kc">True</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Current Default:</strong> <code>assisted</code> (most conservative)</p>
+<h3 id="14-design-invariants">1.4 Design Invariants</h3>
+<p>✅ <strong>D7: Never Auto-Edit Test Code</strong> - Validation/healing produce reports only
+✅ <strong>Anti-Lock-In</strong> - Eject produces zero-dependency output
+✅ <strong>Suggest-Only Healing</strong> - Never auto-commits or auto-applies
+✅ <strong>Spec-Derived</strong> - Expected status from OpenAPI, not hardcoded
+✅ <strong>Model-Agnostic</strong> - Agents emit ReasoningRequest, never name models
+✅ <strong>Sovereignty</strong> - Local-first, egress policy honored
+✅ <strong>Trust Built-In</strong> - No autonomous output without adversarial self-play + independent verification</p>
+<h3 id="15-trust-mechanism">1.5 Trust Mechanism</h3>
+<p><strong>Model Certification Gate</strong> (<code>cherenkov/substrate/certification.py</code>):
+- RAG-Triad Evaluator (Context Relevance, Answer Faithfulness, Answer Relevance)
+- Gold-Set validation (12 default items)
+- Per-tier certification
+- Continuous prompt regression in CI</p>
+<p><strong>Anti-Reward-Hacking:</strong>
+1. Adversarial Self-Play (BUILT)
+2. No-Shared-Context Verification (PLANNED)
+3. Consensus Oracle (PLANNED)
+4. Convergence-Bounded Refinement (PLANNED)</p>
+<h3 id="16-substrate-router">1.6 Substrate Router</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># cherenkov/substrate/router.py</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SubstrateRouter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">route</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">ReasoningRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReasoningResult</span><span class="p">:</span>
+        <span class="c1"># 1. Select provider for tier</span>
+        <span class="n">primary</span> <span class="o">=</span> <span class="n">provider_for_tier</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">capability_tier</span><span class="p">)</span>
+
+        <span class="c1"># 2. Enforce certification</span>
+        <span class="k">if</span> <span class="n">Config</span><span class="o">.</span><span class="n">CERTIFICATION_ENABLED</span><span class="p">:</span>
+            <span class="n">cert_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cert_manager</span><span class="o">.</span><span class="n">certify_tier</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">capability_tier</span><span class="p">,</span> <span class="n">primary</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">cert_res</span><span class="o">.</span><span class="n">certified</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">CertificationError</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+        <span class="c1"># 3. Enforce egress</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce_egress</span><span class="p">(</span><span class="n">primary</span><span class="o">.</span><span class="n">capabilities</span><span class="p">()</span><span class="o">.</span><span class="n">requires_egress</span><span class="p">)</span>
+
+        <span class="c1"># 4. Route with fallback</span>
+        <span class="k">return</span> <span class="n">primary</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>Tiers:</strong> shallow, standard, deep, vision, ml</p>
+<h3 id="17-mcp-server">1.7 MCP Server</h3>
+<p><strong>Status:</strong> ✅ BUILT
+<strong>Transport:</strong> JSON-RPC 2.0 over stdio
+<strong>Tools:</strong> hitl_list, hitl_approve, hitl_reject, validate_run
+<strong>Resources:</strong> HITL queue, validation reports
+<strong>Trust:</strong> MCP peers untrusted, all inputs validated with Pydantic</p>
+<hr />
+<h2 id="part-2-mattpocockskills-analysis">Part 2: mattpocock/skills Analysis</h2>
+<h3 id="21-overview">2.1 Overview</h3>
+<ul>
+<li><strong>Repository:</strong> https://github.com/mattpocock/skills</li>
+<li><strong>Stars:</strong> 120,000+</li>
+<li><strong>Language:</strong> TypeScript (skills are markdown)</li>
+<li><strong>Philosophy:</strong> "Small, easy to adapt, composable. They work with any model."</li>
+<li><strong>Alignment with CHERENKOV:</strong> 95%</li>
+</ul>
+<h3 id="22-key-patterns">2.2 Key Patterns</h3>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Purpose</th>
+<th>CHERENKOV Application</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/grill-me</code></td>
+<td>Structured interview</td>
+<td>Enhance Explorer input gathering</td>
+</tr>
+<tr>
+<td><code>/grill-with-docs</code></td>
+<td>Grilling + shared language</td>
+<td><strong>CONTEXT.md pattern</strong> - Direct adoption</td>
+</tr>
+<tr>
+<td><code>/tdd</code></td>
+<td>Red-green-refactor loop</td>
+<td>Improve Coverager agent (E11)</td>
+</tr>
+<tr>
+<td><code>/diagnose</code></td>
+<td>Disciplined diagnosis</td>
+<td>Enhance Healing module</td>
+</tr>
+<tr>
+<td><code>/improve-codebase-architecture</code></td>
+<td>Find deepening opportunities</td>
+<td>Architecture analysis</td>
+</tr>
+<tr>
+<td>CONTEXT.md</td>
+<td>Shared language</td>
+<td><strong>Direct adoption</strong> - 75% token reduction</td>
+</tr>
+<tr>
+<td>Caveman mode</td>
+<td>Ultra-compressed communication</td>
+<td>Cost optimization</td>
+</tr>
+</tbody>
+</table>
+<h3 id="23-contextmd-pattern-high-value">2.3 CONTEXT.md Pattern (HIGH VALUE)</h3>
+<p><strong>Problem:</strong> Agents use 20 words where 1 will do (jargon mismatch)
+<strong>Solution:</strong> Shared language document
+<strong>Proven Result:</strong> 75% token reduction</p>
+<p><strong>Example:</strong>
+- <strong>BEFORE:</strong> "There's a problem when a lesson inside a section of a course is made 'real' (i.e. given a spot in the file system)"
+- <strong>AFTER:</strong> "There's a problem with the materialization cascade"</p>
+<p><strong>CHERENKOV CONTEXT.md Content:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="gu">## Core Concepts</span>
+| Term | Definition | Example |
+|------|-----------|---------|
+| Divergence | Gap between spec claim and behavior | &quot;Found 3 divergences&quot; |
+| Skeptic | Hypothesis generator | &quot;Skeptic proposes 5 cases&quot; |
+| Witness | Reproduction prover | &quot;Witness confirmed bug&quot; |
+| Scribe | Artifact emitter | &quot;Scribe generated test&quot; |
+| Cartographer | Map sources of truth | &quot;Cartographer ingested spec&quot; |
+| Truth Model | Semantic graph + provenance | &quot;Truth Model updated&quot; |
+| Substrate Router | Model-agnostic routing | &quot;Route via Substrate Router&quot; |
+| ReasoningRequest | Contract for model requests | &quot;Emit ReasoningRequest&quot; |
+| Reflector | Learning loop (NOT BUILT) | &quot;Reflector recorded verdict&quot; |
+| Seams | 4 extension points | &quot;New capability via seam&quot; |
+
+<span class="gu">## Anti-Patterns</span>
+| Anti-Pattern | Replacement | Why |
+|--------------|-------------|-----|
+| Hardcoded model | ReasoningRequest{capability_tier} | Violates model-agnostic |
+| Auto-edit tests | Suggest-only | Violates D7 |
+| Direct API calls | Through Substrate Router | Violates egress |
+</code></pre></div>
+<p><strong>Integration:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># cherenkov/substrate/router.py</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SubstrateRouter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_context</span><span class="p">()</span>  <span class="c1"># Load CONTEXT.md</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_enrich_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">ReasoningRequest</span><span class="p">):</span>
+        <span class="c1"># Inject shared language for token efficiency</span>
+        <span class="k">pass</span>
+</code></pre></div></p>
+<h3 id="24-tdd-pattern-for-coverager">2.4 TDD Pattern for Coverager</h3>
+<p><strong>Process:</strong> RED → GREEN → REFACTOR</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># cherenkov/sdet/coverage_loop.py - ENHANCE</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TDDCoverageLoop</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">red</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">CodeTarget</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Test</span><span class="p">,</span> <span class="n">TestFailure</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a FAILING test first.&quot;&quot;&quot;</span>
+        <span class="n">test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_generator</span><span class="o">.</span><span class="n">generate_failing_test</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_runner</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">passed</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Test should FAIL in red phase&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">test</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">failure</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">green</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test</span><span class="p">:</span> <span class="n">Test</span><span class="p">,</span> <span class="n">failure</span><span class="p">:</span> <span class="n">TestFailure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Test</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fix the test so it passes.&quot;&quot;&quot;</span>
+        <span class="n">diagnosis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">failure_analyzer</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">failure</span><span class="p">)</span>
+        <span class="n">fixed_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_fixer</span><span class="o">.</span><span class="n">fix</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">diagnosis</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_runner</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fixed_test</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">passed</span><span class="p">:</span>
+            <span class="c1"># Try alternatives</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">fixed_test</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">refactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test</span><span class="p">:</span> <span class="n">Test</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Test</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Improve test quality.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_refactorer</span><span class="o">.</span><span class="n">refactor</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_tdd_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">CodeTarget</span><span class="p">,</span> <span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Test</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Full loop: red → green → refactor.&quot;&quot;&quot;</span>
+        <span class="n">test</span><span class="p">,</span> <span class="n">failure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">red</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iterations</span><span class="p">):</span>
+            <span class="n">test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">green</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">failure</span><span class="p">)</span>
+            <span class="n">test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">refactor</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meets_quality_thresholds</span><span class="p">(</span><span class="n">test</span><span class="p">):</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">test</span>
+</code></pre></div>
+<h3 id="25-assessment">2.5 Assessment</h3>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Score</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Philosophy Alignment</td>
+<td>10/10</td>
+<td>Perfect match</td>
+</tr>
+<tr>
+<td>Technical Fit</td>
+<td>9/10</td>
+<td>TypeScript→Python adaptation needed</td>
+</tr>
+<tr>
+<td>Pattern Quality</td>
+<td>10/10</td>
+<td>Production-proven</td>
+</tr>
+<tr>
+<td>Immediate Value</td>
+<td>8/10</td>
+<td>CONTEXT.md, grilling directly useful</td>
+</tr>
+<tr>
+<td><strong>OVERALL</strong></td>
+<td><strong>9.2/10</strong></td>
+<td><strong>HIGHLY RECOMMENDED</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-3-claude-elixir-phoenix-analysis">Part 3: claude-elixir-phoenix Analysis</h2>
+<h3 id="31-overview">3.1 Overview</h3>
+<ul>
+<li><strong>Repository:</strong> https://github.com/oliver-kriska/claude-elixir-phoenix</li>
+<li><strong>Stars:</strong> 419+</li>
+<li><strong>Language:</strong> Python (infrastructure) + Elixir (patterns)</li>
+<li><strong>Purpose:</strong> Claude Code plugin for Elixir/Phoenix</li>
+<li><strong>Agents:</strong> 22 specialist agents in 3 tiers</li>
+</ul>
+<h3 id="32-architecture">3.2 Architecture</h3>
+<p><strong>Agent Hierarchy:</strong></p>
+<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────────┐
+│  ORCHESTRATORS (Opus) - Primary coordinators                       │
+│  ┌──────────────────┬──────────────────┬──────────────────┐   │
+│  │ workflow-        │ planning-        │ parallel-        │   │
+│  │ orchestrator    │ orchestrator     │ reviewer         │   │
+│  └──────────────────┴──────────────────┴──────────────────┘   │
+│                              │                                       │
+└──────────────────────┬──────────────────────┬───────────────────┘
+                       │                      │
+        ┌──────────────▼──────┐ ┌──────────▼──────────┐
+        │ SPECIALISTS (Sonnet) │ │ SPECIALISTS (Sonnet) │
+        │ ┌──────────────────┐ │ ┌──────────────────┐ │
+        │ │ liveview-        │ │ │ ecto-schema-     │ │
+        │ │ architect        │ │ │ designer         │ │
+        │ │ phoenix-patterns-│ │ │ oban-           │ │
+        │ │ analyst          │ │ │ specialist      │ │
+        │ └──────────────────┘ │ └──────────────────┘ │
+        └──────────────────────┘ └──────────────────────┘
+                       │                      │
+┌──────────────────────▼──────┬─────────────────▼─────────┐
+│ LIGHTWEIGHT (Haiku)          │ LIGHTWEIGHT (Haiku)      │
+│ ┌──────────────────┐        │ ┌──────────────────┐      │
+│ │ context-         │        │ │ verification-     │      │
+│ │ supervisor       │        │ │ runner           │      │
+│ │ call-tracer      │        │ │ iron-law-judge   │      │
+│ └──────────────────┘        │ └──────────────────┘      │
+└──────────────────────────────┴──────────────────────────┘
+</code></pre></div>
+<h3 id="33-brilliant-patterns">3.3 Brilliant Patterns</h3>
+<h4 id="331-context-supervisor-most-valuable">3.3.1 Context Supervisor (🏆 MOST VALUABLE)</h4>
+<p><strong>Problem:</strong> Orchestrator spawns 4-8 research agents → Combined output exceeds 50k tokens → Floods parent context window</p>
+<p><strong>Solution:</strong> OTP-inspired pattern with separate context space</p>
+<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────────┐
+│  Orchestrator (thin, ~10k context)                                 │
+│  - Coordinates workflow                                            │
+│  - Only reads: summaries/consolidated.md                           │
+│  └──────────────────┬───────────────────────────────────────────┘
+│                     │ spawns AFTER workers finish
+│                     ▼
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │  context-supervisor (haiku, fresh 200k context)              ││
+│  │  - Reads: ALL worker output files                              ││
+│  │  - Compression: 100% (&lt;8k), 40% (8k-30k), 20% (&gt;30k)           ││
+│  │  - Deduplicates findings                                        ││
+│  │  - Validates: every input represented                           ││
+│  │  - Writes: summaries/consolidated.md                            ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                     │ reads from
+│     ┌─────────────┼─────────────┐
+│     ▼             ▼             ▼
+│  worker 1      worker 2      worker N
+│  research/     research/     research/
+│  patterns.md   security.md   liveview.md
+</code></pre></div>
+<p><strong>CHERENKOV Integration:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># cherenkov/divergence/context_supervisor.py - NEW</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ContextSupervisor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Ported from oliver-kriska/claude-elixir-phoenix.</span>
+<span class="sd">    Manages multi-agent output compression and deduplication.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">COMPRESSION_THRESHOLDS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="mi">8000</span><span class="p">,</span>
+        <span class="s2">&quot;compress&quot;</span><span class="p">:</span> <span class="mi">30000</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">AgentOutput</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ConsolidatedOutput</span><span class="p">:</span>
+        <span class="n">total_tokens</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">token_count</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">)</span>
+
+        <span class="c1"># Step 1: Deduplicate findings</span>
+        <span class="n">deduplicated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deduplicate</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+        <span class="c1"># Step 2: Apply compression</span>
+        <span class="k">if</span> <span class="n">total_tokens</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">COMPRESSION_THRESHOLDS</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index_strategy</span><span class="p">(</span><span class="n">deduplicated</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">total_tokens</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">COMPRESSION_THRESHOLDS</span><span class="p">[</span><span class="s2">&quot;compress&quot;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compress_strategy</span><span class="p">(</span><span class="n">deduplicated</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aggressive_strategy</span><span class="p">(</span><span class="n">deduplicated</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_deduplicate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">AgentOutput</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">AgentOutput</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Merge findings from multiple agents that flag the same issue.</span>
+<span class="sd">        Example: If security-analyzer and code-reviewer both find a missing</span>
+<span class="sd">        authorization check, merge into one finding with both sources cited.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">findings_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Finding</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">finding</span> <span class="ow">in</span> <span class="n">output</span><span class="o">.</span><span class="n">findings</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_canonical_key</span><span class="p">(</span><span class="n">finding</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">findings_map</span><span class="p">:</span>
+                    <span class="n">findings_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">finding</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">existing</span> <span class="o">=</span> <span class="n">findings_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="n">existing</span><span class="o">.</span><span class="n">sources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">agent_name</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">finding</span><span class="o">.</span><span class="n">description</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">existing</span><span class="o">.</span><span class="n">description</span><span class="p">):</span>
+                        <span class="n">existing</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">finding</span><span class="o">.</span><span class="n">description</span>
+
+        <span class="c1"># Reconstruct with deduplicated findings</span>
+        <span class="c1"># ...</span>
+        <span class="k">return</span> <span class="n">deduplicated</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_canonical_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">finding</span><span class="p">:</span> <span class="n">Finding</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a canonical key for deduplication.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">finding</span><span class="o">.</span><span class="n">file</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">finding</span><span class="o">.</span><span class="n">line</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">finding</span><span class="o">.</span><span class="n">error_type</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+<p><strong>Benefits:</strong>
+- ✅ Solves multi-agent token explosion
+- ✅ Deduplicates findings from multiple agents
+- ✅ Validates all inputs represented
+- ✅ Pattern proven in production</p>
+<h4 id="332-iron-laws-framework-high-value">3.3.2 Iron Laws Framework (🥇 HIGH VALUE)</h4>
+<p><strong>22 Non-Negotiable Rules:</strong></p>
+<div class="highlight"><pre><span></span><code>LiveView: No DB queries in disconnected mount, use streams for &gt;100 items
+Ecto: Never use :float for money, pin values with ^ in queries
+Oban: Jobs must be idempotent, args use string keys
+Security: No String.to_atom with user input, authorize in every handle_event
+OTP: No process without runtime reason, supervise all long-lived processes
+Elixir: Declare @external_resource for compile-time files
+</code></pre></div>
+<p><strong>CHERENKOV Adaptation:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># cherenkov/core/invariants.py - NEW</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">IronLawCategory</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">DIVERGENCE</span> <span class="o">=</span> <span class="s2">&quot;divergence&quot;</span>
+    <span class="n">SUBSTRATE</span> <span class="o">=</span> <span class="s2">&quot;substrate&quot;</span>
+    <span class="n">TRUTH</span> <span class="o">=</span> <span class="s2">&quot;truth&quot;</span>
+    <span class="n">ARTIFACTS</span> <span class="o">=</span> <span class="s2">&quot;artifacts&quot;</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">IronLaw</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">category</span><span class="p">:</span> <span class="n">IronLawCategory</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">severity</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># &quot;blocker&quot; | &quot;warning&quot; | &quot;info&quot;</span>
+
+<span class="n">IRON_LAWS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">IronLaw</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;D7_NO_AUTO_EDIT&quot;</span><span class="p">:</span> <span class="n">IronLaw</span><span class="p">(</span>
+        <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;D7_NO_AUTO_EDIT&quot;</span><span class="p">,</span>
+        <span class="n">category</span><span class="o">=</span><span class="n">IronLawCategory</span><span class="o">.</span><span class="n">DIVERGENCE</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Never Auto-Edit Test Code&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Validation and healing produce reports/suggestions only.&quot;</span><span class="p">,</span>
+        <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;blocker&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;SUBSTRATE_NO_HARDCODED_MODELS&quot;</span><span class="p">:</span> <span class="n">IronLaw</span><span class="p">(</span>
+        <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;SUBSTRATE_NO_HARDCODED_MODELS&quot;</span><span class="p">,</span>
+        <span class="n">category</span><span class="o">=</span><span class="n">IronLawCategory</span><span class="o">.</span><span class="n">SUBSTRATE</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;No Hardcoded Model Names&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Agents emit ReasoningRequest, never name models directly.&quot;</span><span class="p">,</span>
+        <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;blocker&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;ARTIFACTS_EJECT_CLEAN&quot;</span><span class="p">:</span> <span class="n">IronLaw</span><span class="p">(</span>
+        <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;ARTIFACTS_EJECT_CLEAN&quot;</span><span class="p">,</span>
+        <span class="n">category</span><span class="o">=</span><span class="n">IronLawCategory</span><span class="o">.</span><span class="n">ARTIFACTS</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Eject Produces Zero-Dependency Output&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Ejected tests must run without CHERENKOV imports.&quot;</span><span class="p">,</span>
+        <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;blocker&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;TRUTH_IMMUTABLE&quot;</span><span class="p">:</span> <span class="n">IronLaw</span><span class="p">(</span>
+        <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;TRUTH_IMMUTABLE&quot;</span><span class="p">,</span>
+        <span class="n">category</span><span class="o">=</span><span class="n">IronLawCategory</span><span class="o">.</span><span class="n">TRUTH</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Sources of Truth Are Immutable&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Agents can read but never modify sources of truth.&quot;</span><span class="p">,</span>
+        <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;blocker&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">}</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">IronLawEnforcer</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">IronLawViolation</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check a file for Iron Law violations.&quot;&quot;&quot;</span>
+        <span class="n">violations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">law_id</span><span class="p">,</span> <span class="n">law</span> <span class="ow">in</span> <span class="n">IRON_LAWS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">law_violations</span> <span class="o">=</span> <span class="n">law</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;file_path&quot;</span><span class="p">:</span> <span class="n">file_path</span><span class="p">})</span>
+            <span class="k">for</span> <span class="n">violation</span> <span class="ow">in</span> <span class="n">law_violations</span><span class="p">:</span>
+                <span class="n">violations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">IronLawViolation</span><span class="p">(</span>
+                    <span class="n">law_id</span><span class="o">=</span><span class="n">law_id</span><span class="p">,</span>
+                    <span class="n">law_name</span><span class="o">=</span><span class="n">law</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">category</span><span class="o">=</span><span class="n">law</span><span class="o">.</span><span class="n">category</span><span class="p">,</span>
+                    <span class="n">severity</span><span class="o">=</span><span class="n">law</span><span class="o">.</span><span class="n">severity</span><span class="p">,</span>
+                    <span class="n">message</span><span class="o">=</span><span class="n">violation</span><span class="p">,</span>
+                    <span class="n">file_path</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
+                <span class="p">))</span>
+        <span class="k">return</span> <span class="n">violations</span>
+</code></pre></div>
+<p><strong>CI Integration:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># .github/workflows/iron-laws.yml</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Iron Laws Check</span>
+<span class="nt">on</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">push</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">pull_request</span><span class="p p-Indicator">]</span>
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">check</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run Iron Laws Check</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python -m cherenkov.core.invariants check --path .</span>
+</code></pre></div>
+<p><strong>Benefits:</strong>
+- ✅ Prevents common mistakes before they ship
+- ✅ Consistent enforcement of best practices
+- ✅ Educates contributors via clear error messages
+- ✅ Protects core design invariants</p>
+<h4 id="333-filesystem-as-state-machine">3.3.3 Filesystem as State Machine</h4>
+<p><strong>Pattern:</strong> Each phase writes to filesystem, next phase reads from it</p>
+<div class="highlight"><pre><span></span><code>.claude/plans/{slug}/
+├── plan.md              # Checkboxes = state
+├── research/            # Research agent output
+├── reviews/             # Review findings
+├── summaries/           # Compressed multi-agent output
+├── progress.md          # Session progress log
+└── scratchpad.md        # Decisions, dead-ends, handoffs
+</code></pre></div>
+<p><strong>CHERENKOV Adaptation:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># cherenkov/execution/workflow.py - ENHANCE</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">WorkflowNamespace</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_slug</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">base_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.cherenkov/plans&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">base_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">plan_slug</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plan_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">/</span> <span class="s2">&quot;plan.md&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">research_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">/</span> <span class="s2">&quot;research&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reviews_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">/</span> <span class="s2">&quot;reviews&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">summaries_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">/</span> <span class="s2">&quot;summaries&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">progress_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">/</span> <span class="s2">&quot;progress.md&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scratchpad_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">/</span> <span class="s2">&quot;scratchpad.md&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WorkflowState</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read checkboxes from plan.md to determine state.&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</code></pre></div>
+<h4 id="334-plan-splitting">3.3.4 Plan Splitting</h4>
+<p><strong>Problem:</strong> Large features with 10+ tasks across domains
+<strong>Solution:</strong> Auto-split into multiple domain-specific plans</p>
+<p><strong>CHERENKOV Adaptation:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># cherenkov/divergence/planner.py - NEW</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PlanSplitter</span><span class="p">:</span>
+    <span class="n">DOMAIN_GROUPS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;auth&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;login&quot;</span><span class="p">,</span> <span class="s2">&quot;register&quot;</span><span class="p">,</span> <span class="s2">&quot;reset&quot;</span><span class="p">,</span> <span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="s2">&quot;token&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;users&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;profile&quot;</span><span class="p">,</span> <span class="s2">&quot;settings&quot;</span><span class="p">,</span> <span class="s2">&quot;preferences&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;posts&quot;</span><span class="p">,</span> <span class="s2">&quot;comments&quot;</span><span class="p">,</span> <span class="s2">&quot;articles&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;admin&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;dashboard&quot;</span><span class="p">,</span> <span class="s2">&quot;roles&quot;</span><span class="p">,</span> <span class="s2">&quot;permissions&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">split_by_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan</span><span class="p">:</span> <span class="n">Plan</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Plan</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Split plan tasks by domain area.&quot;&quot;&quot;</span>
+        <span class="n">domain_plans</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">plan</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
+            <span class="n">domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_domain</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">domain</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">domain_plans</span><span class="p">:</span>
+                <span class="n">domain_plans</span><span class="p">[</span><span class="n">domain</span><span class="p">]</span> <span class="o">=</span> <span class="n">Plan</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">plan</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">domain</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">domain_plans</span><span class="p">[</span><span class="n">domain</span><span class="p">]</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">domain_plans</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+</code></pre></div>
+<h4 id="335-autoresearch-loop">3.3.5 Autoresearch Loop</h4>
+<p><strong>Eval Framework:</strong> Scores skills across 8 dimensions, agents across 5 dimensions
+<strong>Autoresearch:</strong> Auto-detect and fix quality issues
+<strong>Self-Improving:</strong> Continuous quality improvement</p>
+<hr />
+<h2 id="part-4-minigpt-analysis">Part 4: MiniGPT Analysis</h2>
+<h3 id="41-overview">4.1 Overview</h3>
+<ul>
+<li><strong>Project:</strong> MiniGPT-4, MiniGPT-v2, MiniGPT-5</li>
+<li><strong>Authors:</strong> Vision-CAIR</li>
+<li><strong>Paper:</strong> https://arxiv.org/abs/2304.10592</li>
+<li><strong>GitHub:</strong> https://github.com/Vision-CAIR/MiniGPT-4</li>
+<li><strong>Hugging Face:</strong> https://huggingface.co/Vision-CAIR/MiniGPT-4</li>
+</ul>
+<h3 id="42-architecture-perfect-for-cherenkov">4.2 Architecture (Perfect for CHERENKOV)</h3>
+<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────────┐
+│                    MiniGPT Architecture                              │
+├─────────────────────────────────────────────────────────────────┤
+│  INPUT: Image + Text Instruction                                     │
+│                         │                                             │
+│                         ▼                                             │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │  Vision Encoder (FROZEN)                                      │ │
+│  │  - Pretrained ViT or BLIP-2 visual backbone                    │ │
+│  │  - Extracts visual features from images                       │ │
+│  │  - NO training required (frozen)                              │ │
+│  └──────────────────────────┬──────────────────────────────────┘ │
+│                              │                                        │
+│                              ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │  Linear Projection Layer (TRAINED)                            │ │
+│  │  - Single layer aligns visual features with LLM space       │ │
+│  │  - Only this layer is trained (~5M image-text pairs)          │ │
+│  │  - Efficient: ~1-2 hours on 4x A100 GPUs                      │ │
+│  └──────────────────────────┬──────────────────────────────────┘ │
+│                              │                                        │
+│                              ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │  Large Language Model (FROZEN)                                │ │
+│  │  - Vicuna, Llama, or other advanced LLM                       │ │
+│  │  - Handles text generation and understanding                 │ │
+│  │  - Extends to interpret visual info via projection            │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+│  OUTPUT: Multimodal response (text + vision understanding)        │
+└─────────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<p><strong>Key Innovation:</strong> Only the projection layer is trained; vision encoder and LLM remain frozen</p>
+<h3 id="43-variants">4.3 Variants</h3>
+<table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>Vision Encoder</th>
+<th>LLM</th>
+<th>Specialization</th>
+<th>Training Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MiniGPT-4</td>
+<td>BLIP-2 ViT-g</td>
+<td>Vicuna-7B/13B</td>
+<td>General multimodal</td>
+<td>~5M image-text pairs</td>
+</tr>
+<tr>
+<td>MiniGPT-v2</td>
+<td>BLIP-2 ViT-g</td>
+<td>Llama2-7B/13B</td>
+<td>High-res images, task identifiers</td>
+<td>~5M pairs</td>
+</tr>
+<tr>
+<td>MiniGPT-5</td>
+<td>Custom</td>
+<td>Custom</td>
+<td>Generative vokens, interleaved V&amp;L</td>
+<td>CC-V&amp;L 5M pairs (Generative V&amp;L benchmark score: 88.5% MM-Bench)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="44-cherenkov-integration">4.4 CHERENKOV Integration</h3>
+<p><strong>Perfect Fit for E9 Vision Perception:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># cherenkov/substrate/vlm_provider.py - NEW</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">cherenkov.core.contracts</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReasoningRequest</span><span class="p">,</span> <span class="n">ReasoningResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cherenkov.core.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cherenkov.substrate.provider</span><span class="w"> </span><span class="kn">import</span> <span class="n">Provider</span><span class="p">,</span> <span class="n">ProviderCapabilities</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MiniGPTProvider</span><span class="p">(</span><span class="n">Provider</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    MiniGPT Vision-Language Model Provider for CHERENKOV.</span>
+
+<span class="sd">    Features:</span>
+<span class="sd">    - Local deployment (no egress required)</span>
+<span class="sd">    - Single linear projection layer (efficient)</span>
+<span class="sd">    - Works with frozen vision encoder + frozen LLM</span>
+<span class="sd">    - Can be fine-tuned for CHERENKOV-specific tasks</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">TIER</span> <span class="o">=</span> <span class="s2">&quot;vision&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+                 <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_id</span> <span class="o">=</span> <span class="n">run_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="s2">&quot;MINIGPT_PROVIDER&quot;</span><span class="p">,</span> <span class="n">run_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">capabilities</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProviderCapabilities</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ProviderCapabilities</span><span class="p">(</span>
+            <span class="n">provider_name</span><span class="o">=</span><span class="s2">&quot;minigpt&quot;</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span>
+            <span class="n">tier</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">TIER</span><span class="p">,</span>
+            <span class="n">requires_egress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># 🎯 LOCAL - Sovereignty preserved</span>
+            <span class="n">cost_per_token</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>    <span class="c1"># 🎯 FREE - Local model</span>
+            <span class="n">max_tokens</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span>
+            <span class="n">supports_vision</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">supports_tools</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">ReasoningRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReasoningResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process vision + text request.</span>
+
+<span class="sd">        Expected request format:</span>
+<span class="sd">        {</span>
+<span class="sd">            &quot;task&quot;: &quot;&lt;text instruction&gt;&quot;,</span>
+<span class="sd">            &quot;images&quot;: [&quot;&lt;base64 image 1&gt;&quot;, ...],</span>
+<span class="sd">            &quot;capability_tier&quot;: &quot;vision&quot;,</span>
+<span class="sd">        }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Parse images from request</span>
+        <span class="n">images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_images</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">task</span>
+
+        <span class="c1"># Generate with MiniGPT</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ReasoningResult</span><span class="p">(</span>
+            <span class="n">content</span><span class="o">=</span><span class="n">response</span><span class="p">,</span>
+            <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;minigpt&quot;</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span>
+            <span class="n">cost_usd</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">latency_ms</span><span class="o">=</span><span class="n">latency</span><span class="p">,</span>
+            <span class="n">cached</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;minigpt-4-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_config</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+<p><strong>Provider Registration:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># cherenkov/substrate/provider.py - EXTEND</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">cherenkov.substrate.vlm_provider</span><span class="w"> </span><span class="kn">import</span> <span class="n">MiniGPTProvider</span>
+
+<span class="n">_PROVIDER_MAP</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">Provider</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;ollama&quot;</span><span class="p">:</span> <span class="n">OllamaProvider</span><span class="p">,</span>
+    <span class="s2">&quot;openai&quot;</span><span class="p">:</span> <span class="n">OpenAIProvider</span><span class="p">,</span>
+    <span class="s2">&quot;minigpt&quot;</span><span class="p">:</span> <span class="n">MiniGPTProvider</span><span class="p">,</span>  <span class="c1"># 🆕 NEW</span>
+<span class="p">}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">provider_for_tier</span><span class="p">(</span><span class="n">tier</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Provider</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">tier</span> <span class="o">==</span> <span class="s2">&quot;vision&quot;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">cherenkov.core.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>
+        <span class="k">if</span> <span class="n">Config</span><span class="o">.</span><span class="n">VLM_PROVIDER</span> <span class="o">==</span> <span class="s2">&quot;minigpt&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">MiniGPTProvider</span><span class="p">(</span>
+                <span class="n">model_path</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">VLM_MODEL_PATH</span><span class="p">,</span>
+                <span class="n">device</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">VLM_DEVICE</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="c1"># ... rest of logic</span>
+</code></pre></div>
+<p><strong>Configuration:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># cherenkov.toml - ADD</span>
+
+<span class="k">[substrate.tiers.vision]</span>
+<span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;minigpt&quot;</span><span class="w">  </span><span class="c1"># or &quot;qwen3-vl&quot;, &quot;ui-tars&quot;</span>
+<span class="n">model_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;./models/minigpt-4&quot;</span>
+<span class="n">device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;cuda&quot;</span>
+<span class="n">egress_allowed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">  </span><span class="c1"># 🎯 LOCAL ONLY</span>
+</code></pre></div>
+<h3 id="45-training-for-cherenkov-specific-tasks">4.5 Training for CHERENKOV-Specific Tasks</h3>
+<p><strong>Fine-tuning Strategy:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># cherenkov/substrate/training/minigpt_finetune.py</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MiniGPTCherenkovTrainer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fine-tune MiniGPT for CHERENKOV-specific vision tasks:</span>
+<span class="sd">    - UI element detection</span>
+<span class="sd">    - Layout/role identification</span>
+<span class="sd">    - Visual anomaly classification</span>
+<span class="sd">    - Test failure screenshot analysis</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">base_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Vision-CAIR/MiniGPT-4&quot;</span><span class="p">,</span>
+                 <span class="n">dataset_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cherenkov/vision_dataset&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_model</span> <span class="o">=</span> <span class="n">base_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_dataset</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fine-tune projection layer on CHERENKOV-specific data.&quot;&quot;&quot;</span>
+        <span class="c1"># Load base model</span>
+        <span class="c1"># Freeze vision encoder and LLM</span>
+        <span class="c1"># Train only projection layer</span>
+        <span class="c1"># Save fine-tuned model</span>
+        <span class="k">pass</span>
+</code></pre></div>
+<p><strong>CHERENKOV-Specific Training Data:</strong>
+- Screenshots + Playwright selectors (element grounding)
+- UI component hierarchies (layout understanding)
+- Visual test failure patterns (anomaly detection)
+- Before/after UI redesigns (self-healing data)</p>
+<h3 id="46-benefits">4.6 Benefits</h3>
+<table>
+<thead>
+<tr>
+<th>Benefit</th>
+<th>Value</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sovereignty</strong></td>
+<td>✅ CRITICAL</td>
+<td>No egress required, local deployment</td>
+</tr>
+<tr>
+<td><strong>Cost</strong></td>
+<td>✅ FREE</td>
+<td>Local model, no API fees</td>
+</tr>
+<tr>
+<td><strong>Efficiency</strong></td>
+<td>✅ HIGH</td>
+<td>Single projection layer = fast inference</td>
+</tr>
+<tr>
+<td><strong>E9 Readiness</strong></td>
+<td>✅ DIRECT</td>
+<td>Enables E9 Vision Perception</td>
+</tr>
+<tr>
+<td><strong>Extensibility</strong></td>
+<td>✅ HIGH</td>
+<td>Can be fine-tuned for specific tasks</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-5-llm-wiki-audit">Part 5: LLM Wiki Audit</h2>
+<h3 id="51-current-state">5.1 Current State</h3>
+<p><strong>Files:</strong>
+- <code>docs/wiki/Home.md</code> - Main wiki page
+- <code>docs/wiki/Roadmap.md</code> - Roadmap mirror
+- <code>docs/wiki/FAQ.md</code> - FAQ mirror
+- <code>docs/wiki/Way-of-Work.md</code> - Way of work mirror</p>
+<h3 id="52-critical-issue-fabricated-claims">5.2 Critical Issue: Fabricated Claims</h3>
+<p><strong>From <code>docs/wiki/Home.md</code>:</strong></p>
+<blockquote>
+<p>"The product is <strong>Built + unit-tested, NOT externally validated</strong>. The <strong>5-QA validation gate</strong> (<a href="https://github.com/moaidmoatasem/cherenkov-qa/issues/79">#79</a>) has <strong>NOT been run</strong>. We must await real validation evidence."</p>
+</blockquote>
+<p><strong>From <code>AGENTS.md</code>:</strong></p>
+<blockquote>
+<p>"The gate remains <strong>unrun</strong>: 0/5 real reviews in <a href="../../process/VALIDATION_EVIDENCE_LEDGER/">../process/VALIDATION_EVIDENCE_LEDGER.md</a>, and the prior <strong>'4/5 YES passed' claim was FABRICATED</strong>"</p>
+</blockquote>
+<p><strong>❌ ACTION REQUIRED: IMMEDIATE CLEANUP</strong></p>
+<h3 id="53-required-changes">5.3 Required Changes</h3>
+<p><strong>docs/wiki/Home.md - Changes:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="gd">- # CHERENKOV Wiki</span>
+
+<span class="gi">&gt; Mirror of the canonical docs in the repo. **Source of truth is `docs/`** — if the wiki drifts, the repo wins.</span>
+
+**CHERENKOV** — a model-agnostic Reality Engine for software quality. It maintains the *truth* about a system (what it claims vs. what it does), proves each gap by reproduction, and emits the artifact that closes it. Track A today: *OpenAPI → Playwright conformance tests, zero lock-in.*
+
+## Start here
+<span class="gd">-</span>
+<span class="gd">- 📌 [Operating rules / honest state](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/HANDOVER.md) — **read first**</span>
+<span class="gd">-</span>
+<span class="gi">+ **🚨 HONEST STATE:** Track A core is built and working. The 5-QA validation gate has **NOT been run** (0/5 real reviews). It was removed as a development blocker on 2026-06-06, but the gate itself remains unpassed. See [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md) for the authoritative state.</span>
+<span class="gi">+</span>
+<span class="gi">+ **Source of truth:** `docs/` and `AGENTS.md` — if this wiki contradicts those, **the repo wins**.</span>
+
+## Start here
+<span class="gd">- 📌 [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md) — **READ FIRST** (Agent operating rules and honest state)</span>
+
+## Status
+<span class="gd">-The product is **Built + unit-tested, NOT externally validated**. The **5-QA validation gate** ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) has **NOT been run**. We must await real validation evidence.</span>
+<span class="gi">+**Track A Core:** Built and working (OpenAPI → Playwright conformance tests).</span>
+<span class="gi">+**5-QA Validation Gate:** **Unrun** (0/5 real reviews). Removed as development blocker (2026-06-06), but gate remains unpassed.</span>
+<span class="gi">+**Epochs E7-E13:** Sequenced and ready. See [Master Plan](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/docs/vision/07_MASTER_PLAN.md).</span>
+<span class="gi">+**Full Status:** [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md) is the single source of truth.</span>
+</code></pre></div>
+<p><strong>docs/wiki/Roadmap.md - Changes:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="gd">- Shipped (foundation-v0, release)</span>
+<span class="gd">- Epoch 0 reconcile · **E1** Substrate Router · **E2** Truth Model · **E3** Divergence Engine (THE BET) · **E4** Artifacts + Continuity · **E6** Federation scaffolding · **Validation Gate** ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) — Passed with 4/5 yes. Track A Shipped!</span>
+<span class="gi">+ **📊 Honest Status:**</span>
+<span class="gi">+ | Component | Status | Evidence |</span>
+<span class="gi">+ |-----------|--------|----------|</span>
+<span class="gi">+ | Track A Core | ✅ Built | Code in `cherenkov/` |</span>
+<span class="gi">+ | 5-QA Validation Gate | ❌ Unrun (0/5) | [VALIDATION_EVIDENCE_LEDGER.md] |</span>
+<span class="gi">+ | E7 Reflector | ❌ Not built | Genuinely absent |</span>
+<span class="gi">+ | E8 Perf Intelligence | ⚠️ Partial | Statistical only |</span>
+<span class="gi">+ | E9 Vision | ❌ Not built | VLM provider needed |</span>
+<span class="gi">+ | MCP Server | ✅ Built | `cherenkov/mcp/` |</span>
+<span class="gi">+ | Explorer Agent | ✅ Built | `cherenkov/divergence/explorer.py` |</span>
+<span class="gi">+ | Copilot v1 | ✅ Built | `cherenkov/copilot/` |</span>
+<span class="gi">+</span>
+<span class="gi">+ **Authoritative Source:** [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md)</span>
+</code></pre></div>
+<p><strong>docs/wiki/FAQ.md - Changes:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="gd">- **Is it shipped?** Yes! Track A is officially shipped, having passed the 5-QA validation gate ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) with a 4/5 yes verdict.</span>
+<span class="gi">+ **Is it shipped?** Track A core is built and working. The 5-QA validation gate has **NOT been run** (0/5 real reviews). See [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md) for honest state.</span>
+
+<span class="gd">- **What&#39;s quarantined?** `track-b-c-deferred/` (visual, perf, RAG, compliance, jira, dashboard). Reference-only until the gate passes.</span>
+<span class="gi">+ **What&#39;s quarantined?** `track-b-c-deferred/` (visual, perf, RAG, compliance, jira, dashboard). Reference-only. For current status, see [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md).</span>
+</code></pre></div>
+<h3 id="54-disclaimer-to-add-to-all-wiki-files">5.4 Disclaimer to Add to All Wiki Files</h3>
+<div class="highlight"><pre><span></span><code><span class="k">&gt; </span><span class="ge">**⚠️ HONEST STATE DISCLAIMER**</span>
+<span class="k">&gt;</span>
+<span class="ge">&gt; This wiki is a **mirror** of the canonical documentation in the repo.</span>
+<span class="k">&gt; </span><span class="ge">**Source of truth is `docs/` and `AGENTS.md`** — if this wiki contradicts those sources, the repo wins.</span>
+<span class="k">&gt;</span>
+<span class="ge">&gt; **VALIDATION STATUS:** The 5-QA validation gate ([#79](https://github.com/moaidmoatasem/cherenkov-qa/issues/79)) has **NOT been run** (0/5 real reviews in [VALIDATION_EVIDENCE_LEDGER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/../process/VALIDATION_EVIDENCE_LEDGER.md)).</span>
+<span class="k">&gt;</span>
+<span class="ge">&gt; It was removed as a development blocker on 2026-06-06, but the gate itself remains **unpassed**.</span>
+<span class="k">&gt;</span>
+<span class="ge">&gt; For the **authoritative, honest state**, always refer to [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md).</span>
+</code></pre></div>
+<h3 id="55-assessment">5.5 Assessment</h3>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Score</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Content Accuracy</td>
+<td>4/10</td>
+<td>Contains fabricated claims</td>
+</tr>
+<tr>
+<td>Honesty</td>
+<td>2/10</td>
+<td>Claims gate passed when it didn't</td>
+</tr>
+<tr>
+<td>Usefulness</td>
+<td>7/10</td>
+<td>Good structure, but needs accuracy</td>
+</tr>
+<tr>
+<td>Maintenance</td>
+<td>6/10</td>
+<td>Mirror approach good, execution poor</td>
+</tr>
+<tr>
+<td><strong>OVERALL</strong></td>
+<td><strong>4.8/10</strong></td>
+<td><strong>NEEDS IMMEDIATE CLEANUP</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-6-cross-cutting-analysis">Part 6: Cross-Cutting Analysis</h2>
+<h3 id="61-pattern-comparison-matrix">6.1 Pattern Comparison Matrix</h3>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Source</th>
+<th>CHERENKOV Fit</th>
+<th>Value</th>
+<th>Effort</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Context Supervisor</td>
+<td>claude-elixir-phoenix</td>
+<td>10/10</td>
+<td>10/10</td>
+<td>M</td>
+<td><strong>HIGH</strong></td>
+</tr>
+<tr>
+<td>Iron Laws Framework</td>
+<td>claude-elixir-phoenix</td>
+<td>10/10</td>
+<td>9/10</td>
+<td>S</td>
+<td><strong>HIGH</strong></td>
+</tr>
+<tr>
+<td>CONTEXT.md</td>
+<td>mattpocock/skills</td>
+<td>10/10</td>
+<td>9/10</td>
+<td>S</td>
+<td><strong>HIGH</strong></td>
+</tr>
+<tr>
+<td>TDD Pattern</td>
+<td>mattpocock/skills</td>
+<td>9/10</td>
+<td>8/10</td>
+<td>M</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td>MiniGPT VLM</td>
+<td>Vision-CAIR</td>
+<td>10/10</td>
+<td>10/10</td>
+<td>M</td>
+<td><strong>HIGH</strong></td>
+</tr>
+<tr>
+<td>Plan Splitting</td>
+<td>claude-elixir-phoenix</td>
+<td>8/10</td>
+<td>7/10</td>
+<td>S</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>Autoresearch</td>
+<td>claude-elixir-phoenix</td>
+<td>7/10</td>
+<td>6/10</td>
+<td>L</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>Grilling</td>
+<td>mattpocock/skills</td>
+<td>8/10</td>
+<td>7/10</td>
+<td>S</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td>Caveman Mode</td>
+<td>mattpocock/skills</td>
+<td>7/10</td>
+<td>6/10</td>
+<td>S</td>
+<td>LOW</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-architecture-alignment">6.2 Architecture Alignment</h3>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>CHERENKOV</th>
+<th>mattpocock/skills</th>
+<th>claude-elixir-phoenix</th>
+<th>Compatibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent Model</td>
+<td>ReasoningRequest/Result</td>
+<td>Skill commands</td>
+<td>Agent hierarchy</td>
+<td>✅ High</td>
+</tr>
+<tr>
+<td>Contracts</td>
+<td>Pydantic models</td>
+<td>SKILL.md structure</td>
+<td>Tool/Resource schemas</td>
+<td>✅ High</td>
+</tr>
+<tr>
+<td>Trust</td>
+<td>Model Certification</td>
+<td>N/A</td>
+<td>MCP trust boundary</td>
+<td>✅ Medium</td>
+</tr>
+<tr>
+<td>State Management</td>
+<td>Truth Model</td>
+<td>Filesystem</td>
+<td>Filesystem + memory</td>
+<td>✅ High</td>
+</tr>
+<tr>
+<td>Error Handling</td>
+<td>StageError</td>
+<td>N/A</td>
+<td>Error classifications</td>
+<td>✅ High</td>
+</tr>
+<tr>
+<td>Testing</td>
+<td>Smoke tests</td>
+<td>N/A</td>
+<td>Eval framework</td>
+<td>✅ High</td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-philosophy-alignment">6.3 Philosophy Alignment</h3>
+<table>
+<thead>
+<tr>
+<th>Principle</th>
+<th>CHERENKOV</th>
+<th>mattpocock/skills</th>
+<th>claude-elixir-phoenix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Small, composable</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Model-agnostic</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅ (Claude-specific but adaptable)</td>
+</tr>
+<tr>
+<td>Contracts-first</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Prevent reward hacking</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Local-first</td>
+<td>✅</td>
+<td>N/A</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Sovereignty</td>
+<td>✅</td>
+<td>N/A</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Human in the loop</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>OVERALL</strong></td>
+<td>-</td>
+<td><strong>95%</strong></td>
+<td><strong>90%</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-7-integration-roadmap">Part 7: Integration Roadmap</h2>
+<h3 id="71-priority-matrix">7.1 Priority Matrix</h3>
+<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────────┐
+│                    INTEGRATION PRIORITY MATRIX                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  HIGH PRIORITY (Week 1-2)                                         │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │ 1. Wiki Cleanup                                            │ │
+│  │    - Remove fabricated claims                               │ │
+│  │    - Add honest state disclaimers                          │ │
+│  │    Effort: S (3 days) | Value: HIGH | Risk: NONE          │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │ 2. CONTEXT.md Pattern                                      │ │
+│  │    - Create shared language document                       │ │
+│  │    - Integrate with Substrate Router                        │ │
+│  │    Effort: S (1 week) | Value: HIGH | Risk: NONE          │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│                                                                   │
+│  HIGH PRIORITY (Week 3-4)                                         │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │ 3. Iron Laws Framework                                     │ │
+│  │    - Define CHERENKOV-specific Iron Laws                   │ │
+│  │    - Implement enforcer                                     │ │
+│  │    - CI integration                                        │ │
+│  │    Effort: S (1-2 weeks) | Value: HIGH | Risk: LOW          │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │ 4. Context Supervisor Pattern                              │ │
+│  │    - Port from claude-elixir-phoenix                        │ │
+│  │    - Integrate with multi-agent orchestration               │ │
+│  │    Effort: M (3-5 weeks) | Value: HIGH | Risk: LOW          │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │ 5. MiniGPT VLM Provider Phase 1                             │ │
+│  │    - Provider skeleton                                       │ │
+│  │    - Integration with Substrate Router                      │ │
+│  │    Effort: M (2-3 weeks) | Value: HIGH | Risk: MEDIUM      │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│                                                                   │
+│  MEDIUM PRIORITY (Week 5-8)                                       │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │ 6. MiniGPT VLM Provider Phase 2                             │ │
+│  │    - Model loading                                           │ │
+│  │    - Inference implementation                                 │ │
+│  │    - Certification gate                                       │ │
+│  │    Effort: M (2-3 weeks) | Value: HIGH | Risk: MEDIUM      │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │ 7. TDD Pattern for Coverager                                │ │
+│  │    - Red-green-refactor loop                                 │ │
+│  │    - Integration with E11                                    │ │
+│  │    Effort: M (2-3 weeks) | Value: MEDIUM | Risk: LOW        │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │ 8. Plan Splitting Logic                                      │ │
+│  │    - Domain-based splitting                                  │ │
+│  │    - Dependency-based splitting                               │ │
+│  │    Effort: S (1 week) | Value: MEDIUM | Risk: NONE          │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│                                                                   │
+└───────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<h3 id="72-implementation-sequence-8-weeks">7.2 Implementation Sequence (8 Weeks)</h3>
+<p><strong>Week 1:</strong>
+- Day 1-3: Wiki cleanup (remove fabrications, add disclaimers)
+- Day 4-5: Create CONTEXT.md with CHERENKOV shared language</p>
+<p><strong>Week 2:</strong>
+- Day 6-7: Iron Laws Framework - Phase 1 (define laws)
+- Day 8-10: Iron Laws Framework - Phase 2 (enforcer + CI)</p>
+<p><strong>Week 3:</strong>
+- Day 11-15: Context Supervisor Pattern (port + integrate)</p>
+<p><strong>Week 4:</strong>
+- Day 16-17: MiniGPT VLM Provider - Phase 1 (skeleton)
+- Day 18-20: MiniGPT VLM Provider - Phase 2 (implementation)</p>
+<p><strong>Week 5:</strong>
+- Day 21-25: TDD Pattern for Coverager</p>
+<p><strong>Week 6:</strong>
+- Day 26-28: Plan Splitting Logic
+- Day 29-30: Buffer / Polish</p>
+<p><strong>Week 7-8:</strong>
+- Autoresearch Loop (if time permits)
+- Documentation
+- Testing
+- Review</p>
+<h3 id="73-resource-requirements">7.3 Resource Requirements</h3>
+<p><strong>Team Composition:</strong>
+- 1 Senior Architect (oversee integration)
+- 2 Full-Stack Engineers (implement patterns)
+- 1 ML Engineer (MiniGPT integration)
+- 1 QA Engineer (Iron Laws, testing)</p>
+<p><strong>Infrastructure:</strong>
+- GPU machine for MiniGPT (4x A100 recommended)
+- Development environment with Python 3.10+
+- Access to Hugging Face</p>
+<p><strong>Budget Estimate:</strong>
+- Engineering: ~120 person-days
+- Infrastructure: ~$5k (GPU rental)
+- <strong>Total: ~$25k</strong> (assuming $200/day engineering cost)</p>
+<h3 id="74-success-metrics">7.4 Success Metrics</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Baseline</th>
+<th>Target (8 weeks)</th>
+<th>Measurement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Token usage per request</td>
+<td>Current</td>
+<td><strong>-75%</strong></td>
+<td>Caveman + CONTEXT.md</td>
+</tr>
+<tr>
+<td>Multi-agent context overflows</td>
+<td>Current</td>
+<td><strong>0</strong></td>
+<td>Context Supervisor</td>
+</tr>
+<tr>
+<td>Iron Law violations in PRs</td>
+<td>Current</td>
+<td><strong>-90%</strong></td>
+<td>CI gate</td>
+</tr>
+<tr>
+<td>VLM inference latency</td>
+<td>N/A</td>
+<td><strong>&lt;500ms</strong></td>
+<td>Local MiniGPT</td>
+</tr>
+<tr>
+<td>VLM cost per request</td>
+<td>N/A</td>
+<td><strong>$0</strong></td>
+<td>Local MiniGPT</td>
+</tr>
+<tr>
+<td>Wiki accuracy score</td>
+<td>4/10</td>
+<td><strong>9/10</strong></td>
+<td>Fabrication removal</td>
+</tr>
+<tr>
+<td>Agent development velocity</td>
+<td>Current</td>
+<td><strong>+50%</strong></td>
+<td>Pattern reuse</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="file-changes-summary">📁 File Changes Summary</h2>
+<h3 id="new-files-to-create">New Files to Create</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Source</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cherenkov/divergence/context_supervisor.py</code></td>
+<td>claude-elixir-phoenix</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td><code>cherenkov/core/invariants.py</code></td>
+<td>claude-elixir-phoenix</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td><code>cherenkov/substrate/vlm_provider.py</code></td>
+<td>MiniGPT</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td><code>cherenkov/sdet/tdd_loop.py</code></td>
+<td>mattpocock/skills</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td><code>cherenkov/divergence/planner.py</code></td>
+<td>claude-elixir-phoenix</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td><code>cherenkov/ai/eval.py</code></td>
+<td>claude-elixir-phoenix</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td><code>CONTEXT.md</code></td>
+<td>mattpocock/skills</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td><code>docs/vision/09_VISION_IMPLEMENTATION.md</code></td>
+<td>Internal</td>
+<td>LOW</td>
+</tr>
+</tbody>
+</table>
+<h3 id="files-to-modify">Files to Modify</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Changes</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cherenkov/substrate/router.py</code></td>
+<td>Integrate CONTEXT.md</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td><code>cherenkov/substrate/provider.py</code></td>
+<td>Add MiniGPT provider</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td><code>cherenkov/divergence/skeptic.py</code></td>
+<td>Integrate Explorer</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td><code>docs/wiki/Home.md</code></td>
+<td>Remove fabrications</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td><code>docs/wiki/Roadmap.md</code></td>
+<td>Remove fabrications</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td><code>docs/wiki/FAQ.md</code></td>
+<td>Remove fabrications</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td><code>docs/wiki/Way-of-Work.md</code></td>
+<td>Add disclaimer</td>
+<td>HIGH</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="conclusion">🎯 Conclusion</h2>
+<h3 id="summary-of-recommendations">Summary of Recommendations</h3>
+<ol>
+<li><strong>DO NOW (Week 1):</strong></li>
+<li>✅ Wiki cleanup - Remove fabricated claims, add honest state</li>
+<li>
+<p>✅ Create CONTEXT.md - Establish shared language</p>
+</li>
+<li>
+<p><strong>DO SOON (Week 2-3):</strong></p>
+</li>
+<li>✅ Iron Laws Framework - Prevent common mistakes</li>
+<li>
+<p>✅ Context Supervisor - Fix multi-agent token explosion</p>
+</li>
+<li>
+<p><strong>DO NEXT (Week 4-5):</strong></p>
+</li>
+<li>✅ MiniGPT VLM Provider - Enable E9 Vision</li>
+<li>✅ TDD Pattern - Improve Coverager agent</li>
+</ol>
+<h3 id="biggest-wins">Biggest Wins</h3>
+<table>
+<thead>
+<tr>
+<th>Integration</th>
+<th>Value</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Context Supervisor</td>
+<td><strong>HIGH</strong></td>
+<td>Solves real problem (token explosion)</td>
+</tr>
+<tr>
+<td>Iron Laws</td>
+<td><strong>HIGH</strong></td>
+<td>Prevents mistakes, improves quality</td>
+</tr>
+<tr>
+<td>MiniGPT</td>
+<td><strong>HIGH</strong></td>
+<td>Enables E9, sovereignty preserved</td>
+</tr>
+<tr>
+<td>CONTEXT.md</td>
+<td><strong>HIGH</strong></td>
+<td>Token savings, better precision</td>
+</tr>
+<tr>
+<td>Wiki Cleanup</td>
+<td><strong>HIGH</strong></td>
+<td>Restores honesty and credibility</td>
+</tr>
+</tbody>
+</table>
+<h3 id="critical-success-factors">Critical Success Factors</h3>
+<ol>
+<li><strong>Start Small:</strong> Validate each pattern with minimal implementation first</li>
+<li><strong>Show Value Early:</strong> Demonstrate immediate benefits</li>
+<li><strong>Maintain Alignment:</strong> Ensure all integrations align with CHERENKOV principles</li>
+<li><strong>Document Everything:</strong> Patterns are only valuable if reusable and well-documented</li>
+<li><strong>Iterate:</strong> Refine based on feedback</li>
+</ol>
+<hr />
+<h2 id="appendices">📚 Appendices</h2>
+<h3 id="appendix-a-references">Appendix A: References</h3>
+<p><strong>Internal CHERENKOV:</strong>
+- <a href="../../AGENTS.md">AGENTS.md</a> - Agent operating rules (AUTHORITATIVE)
+- <a href="../../HANDOVER.md">docs/HANDOVER.md</a> - Handover report
+- <a href="../../vision/00_VISION/">docs/vision/00_VISION.md</a> - Reality Engine vision
+- <a href="../../vision/01_ARCHITECTURE/">docs/vision/01_ARCHITECTURE.md</a> - Core architecture
+- <a href="../../vision/06_AUTONOMOUS_QA_FABRIC/">docs/vision/06_AUTONOMOUS_QA_FABRIC.md</a> - Autonomous agent roadmap
+- <a href="../../vision/07_MASTER_PLAN/">docs/vision/07_MASTER_PLAN.md</a> - E7-E13 plan
+- <a href="../../vision/08_DELIVERY_PLAN/">docs/vision/08_DELIVERY_PLAN.md</a> - Execution plan</p>
+<p><strong>External Repositories:</strong>
+- mattpocock/skills: https://github.com/mattpocock/skills
+- oliver-kriska/claude-elixir-phoenix: https://github.com/oliver-kriska/claude-elixir-phoenix</p>
+<p><strong>MiniGPT Resources:</strong>
+- Project: https://minigpt-4.github.io/
+- Paper: https://arxiv.org/abs/2304.10592
+- GitHub: https://github.com/Vision-CAIR/MiniGPT-4
+- Hugging Face: https://huggingface.co/Vision-CAIR/MiniGPT-4
+- MiniGPT-v2: https://minigpt-v2.github.io/</p>
+<h3 id="appendix-b-glossary">Appendix B: Glossary</h3>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Divergence</strong></td>
+<td>Gap between what a system claims and what it actually does</td>
+</tr>
+<tr>
+<td><strong>Truth Model</strong></td>
+<td>Semantic graph + embeddings + provenance representing system truth</td>
+</tr>
+<tr>
+<td><strong>Seams</strong></td>
+<td>Four extension points: Sources, Models, Artifacts, Oracles</td>
+</tr>
+<tr>
+<td><strong>Substrate Router</strong></td>
+<td>Model-agnostic routing layer (L0)</td>
+</tr>
+<tr>
+<td><strong>ReasoningRequest</strong></td>
+<td>Contract for model requests, never contains model names</td>
+</tr>
+<tr>
+<td><strong>ReasoningResult</strong></td>
+<td>Contract for model responses with cost accounting</td>
+</tr>
+<tr>
+<td><strong>D7 Invariant</strong></td>
+<td>Never auto-edit test code</td>
+</tr>
+<tr>
+<td><strong>Egress Policy</strong></td>
+<td>Controls network access: 'none', 'internal', 'all'</td>
+</tr>
+<tr>
+<td><strong>MCP</strong></td>
+<td>Model Context Protocol - standard for AI tool integration</td>
+</tr>
+<tr>
+<td><strong>VLM</strong></td>
+<td>Vision-Language Model - understands images and text</td>
+</tr>
+</tbody>
+</table>
+<h3 id="appendix-c-quick-start-commands">Appendix C: Quick Start Commands</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Wiki cleanup</span>
+<span class="nb">cd</span><span class="w"> </span>docs/wiki
+<span class="c1"># Edit Home.md, Roadmap.md, FAQ.md to remove fabrications</span>
+
+<span class="c1"># Create CONTEXT.md</span>
+cp<span class="w"> </span>CONTEXT.md.template<span class="w"> </span>CONTEXT.md
+<span class="c1"># Edit to add CHERENKOV-specific terminology</span>
+
+<span class="c1"># Iron Laws - Quick test</span>
+python<span class="w"> </span>-m<span class="w"> </span>cherenkov.core.invariants<span class="w"> </span>check<span class="w"> </span>--path<span class="w"> </span>cherenkov/
+
+<span class="c1"># Context Supervisor - Quick test</span>
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;from cherenkov.divergence.context_supervisor import ContextSupervisor; print(&#39;OK&#39;)&quot;</span>
+
+<span class="c1"># MiniGPT - Download model</span>
+<span class="c1"># Requires GPU and Hugging Face access</span>
+python<span class="w"> </span>-m<span class="w"> </span>cherenkov.substrate.vlm_provider<span class="w"> </span>--download-minigpt
+</code></pre></div>
+<hr />
+<h2 id="support">📞 Support</h2>
+<p>For questions about this report:
+- Check <a href="../../AGENTS.md">AGENTS.md</a> for authoritative state
+- See <a href="../../vision/07_MASTER_PLAN/">docs/vision/07_MASTER_PLAN.md</a> for roadmap
+- Review <a href="../../CONTRIBUTING.md">CONTRIBUTING.md</a> for contribution guidelines</p>
+<hr />
+<p><strong>Document generated by:</strong> Mistral Vibe Research Agent
+<strong>Date:</strong> 2026-06-07
+<strong>Version:</strong> 1.0
+<strong>Status:</strong> Ready for review and implementation</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"current": "1.4", "versions": ["1.2", "1.3", "1.4"]}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/version-banner.js"></script>
+      
+    
+  </body>
+</html>

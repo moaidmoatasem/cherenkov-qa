@@ -1,12 +1,12 @@
-# BRIEFING — 2026-08-10T16:59:22Z
+# BRIEFING — 2026-08-15T23:37:00Z
 
 ## Mission
-100% documentation coverage across the entire Cherenkov QA repository (R1 source code docstrings/comments, R2 user-facing docs clean of placeholders, R3 automated verification scripts). Start/restart Project Orchestrator, run monitoring crons, and trigger mandatory Victory Audit upon completion claim.
+Consolidate the CHERENKOV-QA documentation for versions 1.2 and 1.3 into a single, updated version 1.4, fix warning banner, add visualizations, update MkDocs config, and open PR. Start/restart Project Orchestrator, run monitoring crons, and trigger mandatory Victory Audit upon completion claim.
 
 ## 🔒 My Identity
 - Archetype: sentinel
 - Working directory: Z:\home\moaid\cherenkov-qa\.agents
-- Orchestrator: 5abe0102-471d-4907-ada5-5f7f4a3b667f
+- Orchestrator: cfbb378e-379d-4851-9981-6a225409a99b
 - Victory Auditor: to be spawned on victory claim
 
 ## 🔒 Key Constraints
@@ -14,9 +14,9 @@
 - Victory Audit is MANDATORY before reporting completion
 
 ## User Context
-- **Last user request**: Ensure 100% documentation coverage across Cherenkov QA repository (R1 Python/Go source code docstrings, R2 Markdown docs without TODO/TBD/[], R3 automated verification scripts).
+- **Last user request**: Consolidate CHERENKOV-QA documentation (v1.2 & v1.3 into v1.4), correct version-warning banner, add Mermaid diagrams & screenshots, update mkdocs config, branch & open PR.
 - **Pending clarifications**: none
-- **Delivered results**: Recorded request to ORIGINAL_REQUEST.md, initialized BRIEFING.md, starting Project Orchestrator.
+- **Delivered results**: Re-spawned Project Orchestrator (cfbb378e-379d-4851-9981-6a225409a99b) following previous quota exhaustion. Scheduled Cron 1 (Progress Reporting */8) and Cron 2 (Liveness Check */10) are running.
 
 ## Project Status
 - **Phase**: in progress
@@ -28,4 +28,4 @@
 
 ## Artifact Index
 - ORIGINAL_REQUEST.md — Verbatim user request log
-
+- BRIEFING.md — Sentinel state and situational awareness

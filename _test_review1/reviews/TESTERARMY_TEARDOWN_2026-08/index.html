@@ -1,0 +1,2502 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Autonomous Quality Fabric">
+      
+      
+        <meta name="author" content="TesterArmy">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>TesterArmy teardown — what to steal, what to ignore, what to build - Cherenkov QA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#testerarmy-teardown-what-to-steal-what-to-ignore-what-to-build" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  <div class="md-version-warning">
+    <strong>Notice:</strong> You are viewing documentation for an older version of CHERENKOV-QA.
+    <a href="https://moaidmoatasem.github.io/cherenkov-qa/1.4/">Click here for the latest version (v1.4).</a>
+  </div>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cherenkov QA" class="md-header__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cherenkov QA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              TesterArmy teardown — what to steal, what to ignore, what to build
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../1.4/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/getting-started/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/guides/" class="md-tabs__link">
+          
+  
+  
+  QA & Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/guides/ci-cd/" class="md-tabs__link">
+          
+  
+  
+  Ecosystem
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/troubleshooting/faq/" class="md-tabs__link">
+          
+  
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/cli/reference/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cherenkov QA" class="md-nav__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cherenkov QA
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/cost-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Tiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA & Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    QA & Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides Hub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/api-conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/check-suite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Check Suite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/test-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/continuous-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spec Guardian
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/certificates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Certificates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/hitl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HITL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/eject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eject
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/system-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/platform-operating-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/user-journeys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Journeys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/clean-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/module-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/second-brain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Second Brain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Role Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Role Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/developer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/qa-engineer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA Engineer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/devops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps & SRE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/team-lead/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Team Lead
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/ci-cd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/github-actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/vscode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VS Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/langchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Troubleshooting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/troubleshooting/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/troubleshooting/common-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Issues
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/cli/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/cli/completions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Completions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.4.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.4.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.3.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.2.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="testerarmy-teardown-what-to-steal-what-to-ignore-what-to-build">TesterArmy teardown — what to steal, what to ignore, what to build</h1>
+<p><strong>Date:</strong> 2026-08-07
+<strong>Subject:</strong> <a href="https://tester.army">TesterArmy</a> — <code>testerarmy</code> / <code>ta</code> CLI, npm <strong>v0.9.0</strong>
+<strong>Status of this doc:</strong> a review, not a roadmap. <code>docs/ROADMAP_2026H2.md</code> + <code>HANDOVER.md</code>
+remain the forward plan; every action proposed in §6 maps onto an existing milestone
+(M2, M3, or the T track) rather than opening a new one.</p>
+<hr />
+<h2 id="1-scope-and-method-read-this-before-trusting-anything-below">1. Scope and method — read this before trusting anything below</h2>
+<p>The request was to review <code>https://docs.tester.army/get-started</code>. <strong>That page was never
+read.</strong> <code>docs.tester.army</code>, <code>tester.army</code>, and <code>context7.com</code> are all blocked by this
+environment's network egress policy (the proxy answers <code>403</code> to <code>CONNECT</code>). Only
+<code>github.com</code> / <code>raw.githubusercontent.com</code> / <code>registry.npmjs.org</code> were reachable.</p>
+<p>So the product was reconstructed from what <em>is</em> public and reachable:</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>What it gave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>npm pack testerarmy</code> → <strong>v0.9.0</strong></td>
+<td>The shipped CLI. <code>dist/</code> is obfuscated with <code>js-confuser</code>, but the string table survives intact and yields every command, flag, error message, and — usefully — the entire body of <code>ta docs &lt;topic&gt;</code>, which is the same copy the docs site is built from</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tester-army/cli"><code>tester-army/cli</code></a> README</td>
+<td>Positioning, quickstart, skill-install path</td>
+</tr>
+<tr>
+<td><code>examples/TESTER.md</code> in that repo</td>
+<td>Their scenario file format</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Confidence:</strong> high on <em>what the CLI does</em> (read directly off the shipped artifact),
+lower on <em>what the docs page says</em> (never seen — it may lead or lag v0.9.0). Anything
+below that depends on the docs page specifically is marked as such. Nothing here is
+taken from marketing copy, because none was reachable.</p>
+<p><strong>Maturity note:</strong> they are at <strong>0.9.0</strong>. This is a young product, which makes the
+comparison in §5 sharper, not softer.</p>
+<hr />
+<h2 id="2-what-testerarmy-actually-is">2. What TesterArmy actually is</h2>
+<p><strong>A hosted browser-QA agent. The CLI is a control plane, not the product.</strong> This is
+their framing, not an inference — it is the text <code>ta agent init</code> writes into your
+repo's <code>AGENTS.md</code>:</p>
+<blockquote>
+<p>The CLI is a control plane for the TesterArmy dashboard: use it to manage projects,
+environments, and saved tests, and to queue remote runs that execute in TesterArmy cloud.</p>
+</blockquote>
+<p>and, from <code>ta docs local-run</code>:</p>
+<blockquote>
+<p>The CLI is primarily a dashboard control plane; local runs are for quick exploration only.</p>
+</blockquote>
+<p><strong>Object model:</strong> <code>project → { environments, credentials, files, memories } → tests → groups → runs</code>.
+API surface is <code>/api/v1/{projects,tests,groups,ai}</code>.</p>
+<p><strong>Tests</strong> are plain-language steps, each typed <code>act | assert | login | screenshot</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="s2">&quot;Login flow&quot;</span><span class="p">,</span><span class="nt">&quot;steps&quot;</span><span class="p">:[</span>
+<span class="w">  </span><span class="p">{</span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="s2">&quot;Navigate to /login&quot;</span><span class="p">,</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;act&quot;</span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="s2">&quot;Dashboard loads&quot;</span><span class="p">,</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;assert&quot;</span><span class="p">}]}</span>
+</code></pre></div>
+<p><strong>Engine</strong>, from <code>package.json</code> dependencies: <code>@playwright/mcp@^0.0.68</code>, <code>ai@7.0.2</code>,
+<code>@ai-sdk/gateway@4.0.2</code>, <code>playwright@1.59.0-alpha</code>. So: Playwright driven by an LLM
+through the Playwright MCP server, with inference routed through <em>their</em> AI gateway on
+<em>their</em> key. There is no BYO-LLM path in the bundle.</p>
+<p><strong>Command surface</strong> (reconstructed complete):</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Commands</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>agent</code></td>
+<td><code>init</code></td>
+</tr>
+<tr>
+<td>—</td>
+<td><code>auth</code>, <code>status</code>, <code>docs &lt;topic&gt;</code></td>
+</tr>
+<tr>
+<td><code>projects</code></td>
+<td><code>list</code>, <code>get</code>, <code>create</code>, <code>environments</code>, <code>environments-create</code>, <code>environments-delete</code>, <code>credentials</code>, <code>files</code></td>
+</tr>
+<tr>
+<td><code>memories</code></td>
+<td><code>list</code>, <code>create</code>, <code>delete</code></td>
+</tr>
+<tr>
+<td><code>tests</code></td>
+<td><code>list</code>, <code>get</code>, <code>create</code>, <code>update</code>, <code>delete</code>, <code>run</code></td>
+</tr>
+<tr>
+<td><code>groups</code></td>
+<td><code>list</code>, <code>get</code>, <code>create</code>, <code>add-test</code>, <code>remove</code></td>
+</tr>
+<tr>
+<td><code>runs</code></td>
+<td><code>list</code>, <code>get</code>, <code>wait</code>, <code>cancel</code></td>
+</tr>
+<tr>
+<td>—</td>
+<td><code>ci</code>, <code>run "&lt;prompt&gt;"</code>, <code>pr</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Mobile is real, not a stub:</strong> iOS Simulator <code>.app</code> / <code>.app.zip</code> / <code>.zip</code> and Android
+<code>.apk</code> / <code>.apks</code>, 2 GB cap, with explicit rejections for <code>.ipa</code>, <code>.aab</code>, <code>.xapk</code>, and
+legacy <code>.tar.gz</code> archives. Flags include <code>--device-model</code>, <code>--simulator-region</code>,
+<code>--remove-after</code>, <code>--delete-app-after-run</code>.</p>
+<p><strong>Their agent's browser toolset</strong> — worth reading as a requirements list:</p>
+<div class="highlight"><pre><span></span><code>ui_navigate  ui_click  ui_click_vision  ui_double_click  ui_fill  ui_fill_credential
+ui_type_focused  ui_press  ui_select  ui_check  ui_uncheck  ui_hover  ui_scroll
+ui_drag_and_drop  ui_long_press  ui_dismiss_keyboard  ui_upload_file  ui_tabs
+ui_get_text  ui_verify_text  ui_take_screenshot  ui_get_clipboard
+ui_get_network_requests  ui_console_messages  ui_get_notifications
+browser_evaluate  browser_execute_code  browser_runtime_init
+</code></pre></div>
+<p>Three of those are hard-won and worth noting: <code>ui_click_vision</code> (a vision fallback for
+when ref-based clicking fails — <em>"If the target is visible on the screenshot, click it
+with ui_click_vision instead of retrying the same ref"</em>), <code>ui_get_clipboard</code> (verifying
+copied API keys, invite links, OTPs), and <code>ui_get_notifications</code>.</p>
+<hr />
+<h2 id="3-is-there-any-good-use-of-it-to-us">3. Is there any good use of it <em>to us</em>?</h2>
+<p>Three questions, three different answers.</p>
+<h3 id="3a-should-we-use-testerarmy-on-cherenkov-itself-no">3a. Should we use TesterArmy on CHERENKOV itself? <strong>No.</strong></h3>
+<p>Not on principle — on three concrete grounds:</p>
+<ol>
+<li><strong>It would send our dashboard to their cloud.</strong> Remote is the default and the
+   supported path; <code>--local</code> is explicitly deprecated in their own docs to "quick
+   exploration." Our app-under-test, our fixtures, and our credentials would transit a
+   third-party gateway.</li>
+<li><strong>We already have the coverage.</strong> <code>playwright-suite/</code> + <code>tests/qa/*.spec.ts</code> run 260
+   headed E2E locally with no external dependency. Adding a cloud QA vendor to test the
+   QA tool buys us nothing we don't have.</li>
+<li><strong>It contradicts the 2026-08-01 product decision</strong> (fully open source, self-hosted, no
+   monetization). Depending operationally on a closed hosted competitor is a posture we'd
+   have to explain.</li>
+</ol>
+<h3 id="3b-is-any-piece-of-it-directly-reusable-yes-one-and-it-isnt-theirs">3b. Is any <em>piece</em> of it directly reusable? <strong>Yes — one, and it isn't theirs.</strong></h3>
+<p><code>@playwright/mcp</code> is an open Microsoft package. If <code>agentic-exploration</code> (<code>skills/agentic-exploration/</code>,
+<code>cherenkov record</code>) grows a real browser-driving layer, that is the substrate to build on
+— TesterArmy is simply a worked example of what a good tool surface over it looks like.
+Their own <code>ui_*</code> layer is obfuscated and MIT-licensed-in-name-only in practice (the source
+repo <code>tester-army/tester-army</code> is not public; only <code>tester-army/cli</code> is). Read it for
+ideas; don't vendor it.</p>
+<h3 id="3c-is-it-useful-as-a-reference-implementation-yes-this-is-the-real-value">3c. Is it useful as a <strong>reference implementation</strong>? <strong>Yes. This is the real value.</strong></h3>
+<p>Their agent-onboarding surface (§5.1–5.3) is the best worked example I've seen of
+"make a CLI discoverable to a coding agent that has never heard of it." That pattern is
+free of their cloud architecture, costs us nothing to adopt, and is precisely what M1 and
+M2 need. That is what §6 is a plan for.</p>
+<hr />
+<h2 id="4-where-we-are-ahead-do-not-chase-these">4. Where we are ahead — do not chase these</h2>
+<p>Searched the full 1.2 MB bundle. <strong>There is no integrity check of any kind.</strong> No mutation
+testing, no assertion-meaningfulness gate, no equivalent of <code>check-suite</code>. A TesterArmy
+test that asserts nothing passes forever and nobody finds out. That is the entire
+CHERENKOV thesis (<code>cherenkov/sdet/</code>, <code>cherenkov/divergence/mutant_synth.py</code>,
+<code>demos/catch-the-ai-cheating/</code>) and it is uncontested.</p>
+<p>Also uncontested, and not to be traded away in pursuit of anything in §5:</p>
+<table>
+<thead>
+<tr>
+<th>We have</th>
+<th>They have</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Spec-derived oracles, divergence proof runs, coverage reports</td>
+<td>Plain-language assertions judged by an LLM</td>
+</tr>
+<tr>
+<td>Signed certificates + compliance mapping (<code>cherenkov/core/certificate.py</code>)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>eject</code> to vanilla Playwright, zero lock-in (verified against a real <code>npm install</code>)</td>
+<td>Tests live in their dashboard</td>
+</tr>
+<tr>
+<td>Self-hostable, Apache 2.0, BYO-LLM across 8+ providers (<code>cherenkov/substrate/providers/</code>)</td>
+<td>Their gateway, their key</td>
+</tr>
+<tr>
+<td>API/contract depth</td>
+<td>UI/browser depth, web + mobile</td>
+</tr>
+</tbody>
+</table>
+<p>The last row is the honest summary of the relationship: <strong>we are not really competitors.</strong>
+They test <em>interfaces a human clicks</em>; we test <em>contracts a machine relies on</em>. The
+overlap is the go-to-market surface, not the engine.</p>
+<hr />
+<h2 id="5-what-we-are-missing-ranked-with-evidence">5. What we are missing — ranked, with evidence</h2>
+<h3 id="51-one-command-agent-bootstrap-the-sharpest-gap">5.1 One-command agent bootstrap — <strong>the sharpest gap</strong></h3>
+<p><code>ta agent init</code> does two things in one command: installs a public skill
+(<code>npx skills add tester-army/cli</code>) <em>and</em> writes a delimited block into the host repo's
+<code>AGENTS.md</code>:</p>
+<div class="highlight"><pre><span></span><code>&lt;!-- TESTERARMY:START --&gt;
+This project can use TesterArmy for agent-driven QA coverage and validation.
+- **Auth check:** start with `ta status --json`…
+- **Discover scope:** use `ta projects list --json`…
+&lt;!-- TESTERARMY:END --&gt;
+</code></pre></div>
+<p><strong>Our position:</strong> half-built and we get no credit for it. <code>skills/README.md</code> already
+documents <code>npx skills add moaidmoatasem/cherenkov-qa</code> across 20 skills — the hard part is
+done. What's missing is the bootstrap command and the repo-level discovery block:
+<code>grep -rln 'AGENTS.md' cherenkov/ --include=*.py</code> returns <strong>nothing</strong>. An agent that lands
+cold in a stranger's repo has no way to learn CHERENKOV exists.</p>
+<p><strong>Maps to:</strong> M2 (installable by a stranger).</p>
+<h3 id="52-machine-readable-docs">5.2 Machine-readable docs</h3>
+<p><code>ta docs &lt;topic&gt; --json</code> returns <code>{summary, commands, notes}</code> per topic — docs as data,
+addressable, written <em>at</em> agents. Sample notes, verbatim: <em>"Use IDs exactly as returned"</em>,
+<em>"Do not print real API keys or saved credentials in final messages"</em>, <em>"Before non-trivial
+QA work, list memories for the project."</em></p>
+<p><strong>Our position:</strong> <code>cherenkov examples</code> (<code>cherenkov/cli/commands/examples_cmd.py:8</code>) is a
+flat printed list of one-liners with no <code>--json</code>, no topics, and no agent-directed notes.</p>
+<p><strong>Maps to:</strong> M2.</p>
+<h3 id="53-json-coverage-is-uneven">5.3 <code>--json</code> coverage is uneven</h3>
+<p><strong>10 of 23</strong> command modules define a <code>--json</code> or <code>--format</code> option
+(<code>advanced check_stale drift_cmd enterprise epoch eval_cmd ocr_cmd playbook_cmd simple validate</code>).
+The other 13 — including <code>certify</code>, <code>check-suite</code>, <code>verify</code>, <code>generate_cmd</code>, <code>report</code>,
+<code>audit</code>, <code>guardian_cmd</code> — are human-text only. For a tool whose stated audience includes
+coding agents, that is the line between parseable and not.</p>
+<p><strong>Maps to:</strong> T track.</p>
+<h3 id="54-distribution-is-not-actually-done">5.4 Distribution is not actually done</h3>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Registry</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>testerarmy</code></td>
+<td>npm</td>
+<td><strong>published, 0.9.0</strong></td>
+</tr>
+<tr>
+<td><code>cherenkov</code></td>
+<td>npm</td>
+<td><strong>404</strong></td>
+</tr>
+<tr>
+<td><code>cherenkov-qa</code></td>
+<td>npm</td>
+<td><strong>404</strong></td>
+</tr>
+<tr>
+<td><code>cherenkov-qa</code></td>
+<td>PyPI</td>
+<td><strong>404</strong></td>
+</tr>
+</tbody>
+</table>
+<p>And we carry <em>two</em> divergent unpublished npm package dirs: <code>npm/package.json</code> (name
+<code>cherenkov-qa</code>, v1.0.0) and <code>npm-package/package.json</code> (name <code>cherenkov</code>, v1.0.0, with a
+<code>postinstall</code> shim) — both stale against the project's real 1.3.0. PyPI is correctly gated
+behind M1 per <code>HANDOVER.md</code>; <strong>the npm duplication is not gated by anything</strong> and is
+unblocked cleanup today.</p>
+<p><strong>Maps to:</strong> M2 (#792 sits here).</p>
+<h3 id="55-no-named-environments">5.5 No named environments</h3>
+<p>Theirs: <code>ta tests run &lt;id&gt; --env staging</code>, with environments as first-class project
+children, Production and PR-Preview built in and undeletable, and a clear error when a
+name doesn't resolve (<em>"Available environments: …"</em>).</p>
+<p>Ours: <code>--url &lt;target&gt;</code>, retyped every invocation. The journeys work (2026-08-06,
+<code>cherenkov/journeys/</code>) is the natural home — <code>POST /api/v1/journeys/{id}/runs</code> already
+exists and has nowhere to name a target.</p>
+<p><strong>Maps to:</strong> T track, after M1.</p>
+<h3 id="56-credentials-are-inline">5.6 Credentials are inline</h3>
+<p>They model credentials as first-class objects (<code>kind: login | inbox</code>, with
+<code>label</code> / <code>authInstructions</code> / <code>username</code> / <code>password</code>), referenced from a step by
+<code>credentialId</code> or <code>temporaryEmail</code> — the <code>inbox</code> kind is the OTP path. Their guidance:
+<em>"Use login steps with credentialId or temporaryEmail instead of putting secrets in step text."</em></p>
+<p>Ours: <code>grep -rlniE 'credential' cherenkov/cli/</code> returns <strong>nothing</strong>. E0.3 practitioners
+will point this at authenticated APIs; "paste your token into the command" is friction
+we will read about in the friction log.</p>
+<p><strong>Maps to:</strong> T track. Relevant to M1 prep (#816).</p>
+<h3 id="57-project-memory-is-half-wired">5.7 Project memory is half-wired</h3>
+<p><code>ta memories</code> persists durable app knowledge across runs — categories <code>site_structure</code>,
+<code>test_insights</code>, <code>user_preferences</code>, each with an importance level, consulted <em>before</em>
+non-trivial work.</p>
+<p>We have the Knowledge hub in the dashboard, but <code>grep -rln 'knowledge' cherenkov/cli/</code>
+returns <strong>nothing</strong> — the half agents can reach is the half that's missing.</p>
+<p><strong>Maps to:</strong> T track.</p>
+<h3 id="58-pr-ergonomics">5.8 PR ergonomics</h3>
+<p>M3's PR-comment Action is delivered (#766) and <code>action.yml</code> exists. Theirs goes further:
+<code>--pr-number</code>, <code>--pr-title</code>, <code>--pr-description</code>, <code>--commit-sha</code>, <code>--head-branch</code>,
+<code>--base-branch</code>, plus <code>--deeplink</code> for per-PR dynamic preview environments and
+<code>--artifact-url</code> / <code>--artifact-filename</code> for build artifacts.</p>
+<p>Worth reading as a checklist <em>before</em> M3's remaining items close, not as new scope.</p>
+<p><strong>Maps to:</strong> M3.</p>
+<h3 id="59-uibrowser-depth-noted-not-a-gap-to-close">5.9 UI/browser depth — noted, not a gap to close</h3>
+<p>Their <code>ui_*</code> toolset (§2) is the mature version of what <code>explore</code> / <code>record</code> /
+<code>skills/agentic-exploration/</code> gestures at. This is a <em>different product</em>, and chasing it
+wholesale would be the single fastest way to lose the API-contract focus that makes
+CHERENKOV worth using. Recorded here as a reference spec for if and when
+<code>agentic-exploration</code> is invested in — particularly the vision-click fallback and the
+network/console capture tools.</p>
+<hr />
+<h2 id="6-the-plan">6. The plan</h2>
+<blockquote>
+<p><strong>Status, 2026-08-07:</strong> Phase A is <strong>shipped</strong> (A1 and A2 complete; A3 partial — <code>check-suite</code>
+only). Phase B–D are <strong>not started</strong>. <code>HANDOVER.md</code> carries the current state and wins over this
+section if the two disagree — this doc is a point-in-time review, not a live tracker.</p>
+</blockquote>
+<p>Sequenced by dependency, mapped to existing milestones. Nothing here opens new scope; §6.4
+is explicitly the "don't" list.</p>
+<h3 id="phase-a-agent-installability-m2-unblocked-now">Phase A — agent-installability (M2, unblocked now)</h3>
+<p>The three items in §5.1–5.3 are one coherent piece of work: <em>make CHERENKOV discoverable
+and parseable by an agent that has never heard of it.</em> Do them together.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Deliverable</th>
+<th>Acceptance criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td><code>cherenkov agent init</code> — installs the public skills (<code>npx skills add moaidmoatasem/cherenkov-qa</code>, with a graceful skip + printed fallback when <code>npx</code> is absent or times out) and writes a <code>&lt;!-- CHERENKOV:START --&gt;…&lt;!-- CHERENKOV:END --&gt;</code> block into the repo's <code>AGENTS.md</code>, creating it if absent and replacing the block idempotently if present. <code>--skip-agents-md</code> and <code>--json</code> flags.</td>
+<td>Run twice in a scratch repo → identical <code>AGENTS.md</code>, exit 0 both times. Block names the 4 entry commands and the auth check.</td>
+</tr>
+<tr>
+<td>A2</td>
+<td><code>cherenkov docs &lt;topic&gt;</code> with <code>--json</code>, seeded from <code>examples_cmd.py</code>. Topics: <code>auth</code>, <code>generate</code>, <code>verify</code>, <code>check-suite</code>, <code>certify</code>, <code>eject</code>, <code>journeys</code>, <code>mcp</code>, <code>ci</code>. Each returns <code>{summary, commands[], notes[]}</code>.</td>
+<td><code>cherenkov docs --json \| jq -e '.topics \| length &gt;= 8'</code> passes. Unknown topic exits non-zero listing available topics.</td>
+</tr>
+<tr>
+<td>A3</td>
+<td><code>--json</code> on the 13 modules that lack it, starting with <code>verify</code>, <code>certify</code>, <code>check-suite</code>, <code>report</code>, <code>audit</code> — the five an agent is most likely to call. Shape must be stable and documented.</td>
+<td>Golden-output test per command; no human-text parsing needed to get verdict + exit code.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why together:</strong> A1 without A2/A3 points an agent at commands it can't parse. A3 without
+A1 is invisible.</p>
+<h3 id="phase-b-distribution-hygiene-m2-unblocked-now">Phase B — distribution hygiene (M2, unblocked now)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Deliverable</th>
+<th>Acceptance criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B1</td>
+<td>Resolve <code>npm/</code> vs <code>npm-package/</code> — pick one name, delete the other, sync the version to the real release.</td>
+<td>One package dir; <code>version</code> matches <code>pyproject.toml</code>; a release-check asserts they can't drift.</td>
+</tr>
+<tr>
+<td>B2</td>
+<td>Decide and record the npm story: publish a thin launcher, or delete the dirs and stop implying an npm install exists. <strong>Either is defensible; the current state — two unpublished, divergent, stale package dirs — is not.</strong></td>
+<td>Decision recorded in <code>HANDOVER.md</code>. If publish: <code>npx cherenkov --help</code> works from a clean machine.</td>
+</tr>
+<tr>
+<td>B3</td>
+<td>PyPI publish — <strong>stays gated behind M1.</strong> No action now; listed so it isn't lost.</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-c-run-target-ergonomics-t-track-after-m1-opens">Phase C — run-target ergonomics (T track, after M1 opens)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Deliverable</th>
+<th>Acceptance criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td>Named environments on the journeys model (§5.5): <code>cherenkov ... --env staging</code> resolving through <code>cherenkov.toml</code>, with a resolution error that lists available names.</td>
+<td>Round-trips through both CLI and <code>POST /api/v1/journeys/{id}/runs</code>.</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>Credential references (§5.6): a <code>credentials</code> block keyed by id, referenced as <code>--credential &lt;id&gt;</code>, never echoed in logs or reports.</td>
+<td><code>grep</code> the run log for the secret after an authenticated run → no hit.</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>Surface the Knowledge store to the CLI (§5.7) — a <code>knowledge</code> command with <code>list</code> / <code>add</code> subcommands and JSON output.</td>
+<td>An agent can read prior findings without opening the dashboard.</td>
+</tr>
+</tbody>
+</table>
+<p>C1 and C2 should be validated against the #816 friction log rather than designed in the
+abstract — if practitioners don't hit the pain, they don't earn the complexity.</p>
+<h3 id="phase-d-m3-checklist-review-m3">Phase D — M3 checklist review (M3)</h3>
+<p>D1: read <code>action.yml</code> against §5.8's flag list and file whatever is genuinely missing as
+issues on M3. Not a build item; a 30-minute comparison that either closes cleanly or
+produces two small issues.</p>
+<h3 id="64-explicitly-rejected-do-not-build">6.4 Explicitly rejected — do not build</h3>
+<ul>
+<li><strong>A hosted run backend.</strong> Their whole architecture. Contradicts the 2026-08-01
+  open-source decision.</li>
+<li><strong>Depending on TesterArmy in our own CI</strong> (§3a).</li>
+<li><strong>Vendoring their <code>ui_*</code> layer.</strong> Obfuscated, source not public. <code>@playwright/mcp</code> is
+  the legitimate substrate if we ever need one.</li>
+<li><strong>A mobile testing track.</strong> Their mobile support is genuinely good and entirely outside
+  our thesis.</li>
+<li><strong>Chasing UI/E2E breadth</strong> (§5.9). The overlap with them is go-to-market, not engine —
+  competing on their axis costs us ours.</li>
+</ul>
+<hr />
+<h2 id="7-the-one-line-lesson">7. The one-line lesson</h2>
+<p>They shipped at 0.9.0 with a worse engine and a better front door. <strong>The gap that matters
+isn't capability — it's that a stranger can install their tool in one command and an agent
+can discover it without being told.</strong> Phase A and B close that, and neither requires
+giving up anything in §4.</p>
+<hr />
+<h2 id="provenance">Provenance</h2>
+<ul>
+<li>Reconstructed from <code>testerarmy@0.9.0</code> (npm), <code>tester-army/cli</code> README + <code>examples/TESTER.md</code>.</li>
+<li><code>docs.tester.army</code> was <strong>not</strong> reachable from this environment; no claim here rests on it.</li>
+<li>CHERENKOV-side claims verified by grep against the tree at <code>de2974a</code>, cited inline.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"current": "1.4", "versions": ["1.2", "1.3", "1.4"]}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/version-banner.js"></script>
+      
+    
+  </body>
+</html>

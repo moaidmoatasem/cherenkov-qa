@@ -3,6 +3,55 @@
 **Date:** 2026-08-05
 **Tag:** `v1.4.0`
 
+## Version Evolution (v1.2 → v1.3 → v1.4)
+
+```mermaid
+flowchart TD
+  subgraph V12["Version 1.2.0 (Foundation)"]
+    direction TB
+    A1["Core API Conformance Engine"]
+    A2["Playwright Test Generation"]
+    A3["SQLite Storage (verdicts.db)"]
+    A4["D7 Non-Negotiable Invariants"]
+    A5["CLI Baseline (run, validate, eject)"]
+  end
+
+  subgraph V13["Version 1.3.0 (Autonomous Extensions)"]
+    direction TB
+    B1["Second Brain (Knowledge Mesh / RAG)"]
+    B2["VLM + LocalAI Backend Routing"]
+    B3["Tauri 2 Desktop Host App"]
+    B4["Chat Agent + Persona SSE"]
+    B5["Mobile Engine (Maestro/ADB)"]
+    B6["Kubernetes Operator & CRDs"]
+  end
+
+  subgraph V14["Version 1.4.0 (Consolidated Release - CURRENT)"]
+    direction TB
+    C1["Unified 1.4 Diátaxis Documentation Hub"]
+    C2["Clean Architecture Ports & Adapters (ADR-004)"]
+    C3["MemSearch Semantic Memory & SDD Protocol"]
+    C4["Multi-Agent Conductor & CC-1..CC-6 Suite"]
+    C5["Native CI/CD & Jenkins Shared Library"]
+    C6["Spec Guardian & Portable Test Certificates"]
+    C7["Continuous Conformance Trend & Coverage Maps"]
+  end
+
+  V12 ==>|"Added Background Daemons, Enterprise SAML, MCP"| V13
+  V13 ==>|"Added Coverage Analytics, Regression Engine, CI Bots"| V14
+
+  classDef v12 fill:#1e293b,stroke:#64748b,stroke-width:2px,color:#f8fafc;
+  classDef v13 fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
+  classDef v14 fill:#0c4a6e,stroke:#38bdf8,stroke-width:2.5px,color:#f8fafc;
+
+  class A1,A2,A3,A4,A5 v12;
+  class B1,B2,B3,B4,B5,B6 v13;
+  class C1,C2,C3,C4,C5,C6,C7 v14;
+```
+
+![Version Evolution Diagram](assets/version_diff.png)
+*Figure: Architectural evolution across CHERENKOV-QA minor versions.*
+
 ## What's New Since v1.3.0
 
 ### Features

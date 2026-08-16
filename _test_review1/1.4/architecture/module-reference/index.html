@@ -1,0 +1,4028 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Comprehensive map of every Python module in the cherenkov package, organized by architectural layer.">
+      
+      
+        <meta name="author" content="TesterArmy">
+      
+      
+      
+        <link rel="prev" href="../clean-architecture/">
+      
+      
+        <link rel="next" href="../second-brain/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Module Reference - Cherenkov QA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#module-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  <div class="md-version-warning">
+    <strong>Notice:</strong> You are viewing documentation for an older version of CHERENKOV-QA.
+    <a href="https://moaidmoatasem.github.io/cherenkov-qa/1.4/">Click here for the latest version (v1.4).</a>
+  </div>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Cherenkov QA" class="md-header__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cherenkov QA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Module Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guides/" class="md-tabs__link">
+          
+  
+  
+  QA & Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guides/ci-cd/" class="md-tabs__link">
+          
+  
+  
+  Ecosystem
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../troubleshooting/faq/" class="md-tabs__link">
+          
+  
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../cli/reference/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Cherenkov QA" class="md-nav__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cherenkov QA
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/cost-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Tiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA & Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    QA & Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides Hub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/api-conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/check-suite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Check Suite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/test-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/continuous-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spec Guardian
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/certificates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Certificates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/hitl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HITL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/eject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eject
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../system-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../platform-operating-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-journeys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Journeys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../clean-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dependency-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency Layers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline-stages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline Stages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domain-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Domain Services
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Domain Services">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#healing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Healing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coverage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hitl-human-in-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HITL (Human-in-the-Loop)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#truth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Truth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verdict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verdict
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#divergence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Divergence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oracle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Oracle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#drift" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Drift
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#knowledge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Knowledge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reflector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reflector
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ai-llm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI / LLM
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AI / LLM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#substrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Substrate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reasoning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reasoning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RAG
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mcp-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP Server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#langchain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LangChain
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chat
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#copilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Copilot
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webhooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Webhooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#web" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enterprise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enterprise
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extended-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extended Modules
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Extended Modules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#continuity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daemon-guardian" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Daemon &amp; Guardian
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scheduling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scheduling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#other-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other Modules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#top-level-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Top-Level Files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../second-brain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Second Brain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Role Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Role Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../roles/developer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../roles/qa-engineer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA Engineer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../roles/devops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps & SRE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../roles/team-lead/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Team Lead
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/ci-cd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../integrations/github-actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../integrations/vscode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VS Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../integrations/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../integrations/langchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Troubleshooting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/common-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Issues
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/completions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Completions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v1.4.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.4.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v1.3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.3.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v1.2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.2.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="module-reference">Module Reference</h1>
+<p>This page documents every module in the <code>cherenkov/</code> package, organized by architectural layer. Use it to understand where code lives, what depends on what, and where to make changes.</p>
+<hr />
+<h2 id="dependency-layers">Dependency Layers</h2>
+<pre class="mermaid"><code>flowchart TB
+    subgraph external["External Interfaces"]
+        CLI["CLI\ncli/"]
+        WEB["Web / Dashboard\nweb/"]
+        MCP_MOD["MCP Server\nmcp/"]
+        WEBHOOKS["Webhooks\nwebhooks/"]
+        INTEGRATIONS["Integrations\nintegrations/"]
+    end
+
+    subgraph orchestration["Orchestration"]
+        CORE["Core\ncore/"]
+        STAGES["Pipeline Stages\nstages/"]
+        EXECUTION["Execution\nexecution/"]
+    end
+
+    subgraph domain["Domain Services"]
+        HEALING["Healing\nhealing/"]
+        COVERAGE["Coverage\ncoverage/"]
+        HITL_MOD["HITL\nhitl/"]
+        TRUTH["Truth\ntruth/"]
+        VALIDATE_MOD["Validate\nvalidate/"]
+        VERDICT["Verdict\nverdict/"]
+        DIVERGENCE["Divergence\ndivergence/"]
+        ORACLE["Oracle\noracle/"]
+        DRIFT["Drift\ndrift/"]
+        KNOWLEDGE["Knowledge\nknowledge/"]
+        REFLECTOR["Reflector\nreflector/"]
+    end
+
+    subgraph ai_layer["AI / LLM"]
+        SUBSTRATE["Substrate\nsubstrate/"]
+        REASONING["Reasoning\nreasoning/"]
+        RAG["RAG\nrag/"]
+    end
+
+    subgraph sources_layer["Sources"]
+        SOURCES["Sources\nsources/"]
+    end
+
+    subgraph infra["Infrastructure"]
+        CACHE["Cache\ncache/"]
+        PERSISTENCE["Persistence\npersistence/"]
+        EVENTS["Events\nevents/"]
+        PORTS["Ports\nports/"]
+        OBSERVABILITY["Observability\nobservability/"]
+    end
+
+    CLI --&gt; CORE
+    WEB --&gt; CORE
+    MCP_MOD --&gt; CORE
+    CORE --&gt; STAGES
+    STAGES --&gt; EXECUTION
+    STAGES --&gt; domain
+    domain --&gt; ai_layer
+    domain --&gt; sources_layer
+    domain --&gt; infra
+    EXECUTION --&gt; infra
+    ai_layer --&gt; infra</code></pre>
+<hr />
+<h2 id="core">Core</h2>
+<p>The central orchestration layer. Everything flows through here.</p>
+<p><strong><code>cherenkov/core/</code></strong></p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>orchestrator.py</code></td>
+<td>Main pipeline orchestrator — coordinates ingest, plan, generate, execute</td>
+</tr>
+<tr>
+<td><code>config.py</code></td>
+<td>Configuration model definitions</td>
+</tr>
+<tr>
+<td><code>config_loader.py</code></td>
+<td>Configuration file loading and merging</td>
+</tr>
+<tr>
+<td><code>settings.py</code></td>
+<td>Runtime settings and environment variable handling</td>
+</tr>
+<tr>
+<td><code>contracts.py</code></td>
+<td>Core data contracts (TypedDicts, dataclasses) shared across modules</td>
+</tr>
+<tr>
+<td><code>errors.py</code></td>
+<td>Exception hierarchy for the entire package</td>
+</tr>
+<tr>
+<td><code>error_handling.py</code></td>
+<td>Error formatting, recovery strategies</td>
+</tr>
+<tr>
+<td><code>budget.py</code></td>
+<td>Token and cost budget tracking for LLM calls</td>
+</tr>
+<tr>
+<td><code>flags.py</code></td>
+<td>Feature flags for gating experimental features</td>
+</tr>
+<tr>
+<td><code>certificate.py</code></td>
+<td>Conformance certificate generation and serialization</td>
+</tr>
+<tr>
+<td><code>events.py</code></td>
+<td>Internal event bus for pipeline stage notifications</td>
+</tr>
+<tr>
+<td><code>feedback_store.py</code></td>
+<td>Persistent storage for user feedback on findings</td>
+</tr>
+<tr>
+<td><code>knowledge_result.py</code></td>
+<td>Data model for knowledge base query results</td>
+</tr>
+<tr>
+<td><code>logging_ext.py</code></td>
+<td>Extended logging configuration</td>
+</tr>
+<tr>
+<td><code>migration.py</code></td>
+<td>Config and data migration between versions</td>
+</tr>
+<tr>
+<td><code>shutdown.py</code></td>
+<td>Graceful shutdown coordination</td>
+</tr>
+<tr>
+<td><code>compat.py</code></td>
+<td>Backward compatibility shims</td>
+</tr>
+<tr>
+<td><code>devices.py</code></td>
+<td>Device registry for mobile testing targets</td>
+</tr>
+<tr>
+<td><code>d2_controller.py</code></td>
+<td>D2 diagram generation controller</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="cli">CLI</h2>
+<p>Command-line interface built with Click.</p>
+<p><strong><code>cherenkov/cli/</code></strong></p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>core.py</code></td>
+<td>Root Click group and shared CLI options</td>
+</tr>
+<tr>
+<td><code>groups.py</code></td>
+<td>Command group registration</td>
+</tr>
+<tr>
+<td><code>loaders.py</code></td>
+<td>Lazy command loading for fast CLI startup</td>
+</tr>
+<tr>
+<td><code>legacy_reports.py</code></td>
+<td>Backward-compatible report rendering</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>cherenkov/cli/commands/</code></strong> — Individual CLI commands:</p>
+<p><code>validate</code>, <code>verify</code>, <code>generate</code>, <code>check-suite</code>, <code>eject</code>, <code>certify</code>, <code>daemon</code>, <code>guardian</code>, <code>hitl</code>, <code>demo</code>, <code>doctor</code>, <code>report</code>, <code>dashboard</code>, and others. Each command is a Click command that delegates to the corresponding pipeline stage or domain service.</p>
+<hr />
+<h2 id="pipeline-stages">Pipeline Stages</h2>
+<p>The ordered steps that a validation or generation run passes through.</p>
+<p><strong><code>cherenkov/stages/</code></strong></p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ingest.py</code></td>
+<td>Parse OpenAPI/GraphQL/gRPC spec into internal representation</td>
+</tr>
+<tr>
+<td><code>plan.py</code></td>
+<td>Decide which endpoints to test, generate test plan</td>
+</tr>
+<tr>
+<td><code>plan_accessibility.py</code></td>
+<td>Test planning for accessibility sources</td>
+</tr>
+<tr>
+<td><code>plan_asyncapi.py</code></td>
+<td>Test planning for AsyncAPI sources</td>
+</tr>
+<tr>
+<td><code>generate.py</code></td>
+<td>Generate Playwright test code from plan (calls LLM)</td>
+</tr>
+<tr>
+<td><code>enrich.py</code></td>
+<td>Enrich generated tests with additional assertions</td>
+</tr>
+<tr>
+<td><code>certify_cmd.py</code></td>
+<td>Conformance certificate generation stage</td>
+</tr>
+<tr>
+<td><code>doctor_cmd.py</code></td>
+<td>Environment diagnostics stage</td>
+</tr>
+<tr>
+<td><code>daemon_cmd.py</code></td>
+<td>Daemon mode startup stage</td>
+</tr>
+<tr>
+<td><code>copilot_cmd.py</code></td>
+<td>Copilot integration stage</td>
+</tr>
+<tr>
+<td><code>diagnostics_stage.py</code></td>
+<td>Extended diagnostics collection</td>
+</tr>
+<tr>
+<td><code>governance_cmd.py</code></td>
+<td>Governance report generation</td>
+</tr>
+<tr>
+<td><code>init_cmd.py</code></td>
+<td>Project initialization stage</td>
+</tr>
+<tr>
+<td><code>map_cmd.py</code></td>
+<td>Spec-to-test mapping stage</td>
+</tr>
+<tr>
+<td><code>mobile_cmd.py</code></td>
+<td>Mobile test orchestration</td>
+</tr>
+<tr>
+<td><code>mobile_generate.py</code></td>
+<td>Mobile test generation</td>
+</tr>
+<tr>
+<td><code>mobile_plan.py</code></td>
+<td>Mobile test planning</td>
+</tr>
+<tr>
+<td><code>mobile_review.py</code></td>
+<td>Mobile test review</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>cherenkov/stages/perf/</code></strong> — Performance testing stages.</p>
+<hr />
+<h2 id="execution">Execution</h2>
+<p>Running generated tests and producing results.</p>
+<p><strong><code>cherenkov/execution/</code></strong></p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>playwright_invoke.py</code></td>
+<td>Invoke Playwright to run generated tests</td>
+</tr>
+<tr>
+<td><code>validate.py</code></td>
+<td>Validation execution coordinator</td>
+</tr>
+<tr>
+<td><code>eject.py</code></td>
+<td>Strip CHERENKOV dependencies from tests (eject to standalone Playwright)</td>
+</tr>
+<tr>
+<td><code>demo_mode.py</code></td>
+<td>Built-in demo execution</td>
+</tr>
+<tr>
+<td><code>coverage_report.py</code></td>
+<td>Generate coverage reports from test results</td>
+</tr>
+<tr>
+<td><code>failure_classifier.py</code></td>
+<td>Classify test failures by type (drift, flake, infra)</td>
+</tr>
+<tr>
+<td><code>perf_analyzer.py</code></td>
+<td>Performance test analysis</td>
+</tr>
+<tr>
+<td><code>trace_reader.py</code></td>
+<td>Read Playwright trace files</td>
+</tr>
+<tr>
+<td><code>visual_diff.py</code></td>
+<td>Visual regression diffing</td>
+</tr>
+<tr>
+<td><code>ui_probe.py</code></td>
+<td>UI probe execution</td>
+</tr>
+<tr>
+<td><code>prism_mock.py</code></td>
+<td>Prism mock server integration</td>
+</tr>
+<tr>
+<td><code>k6_runner.py</code></td>
+<td>k6 performance test runner</td>
+</tr>
+<tr>
+<td><code>appium_runner.py</code></td>
+<td>Appium mobile test runner</td>
+</tr>
+<tr>
+<td><code>maestro_runner.py</code></td>
+<td>Maestro mobile test runner</td>
+</tr>
+<tr>
+<td><code>mobile_runner_base.py</code></td>
+<td>Base class for mobile runners</td>
+</tr>
+<tr>
+<td><code>mobile_eject_appium.py</code></td>
+<td>Eject Appium mobile tests</td>
+</tr>
+<tr>
+<td><code>mobile_eject_maestro.py</code></td>
+<td>Eject Maestro mobile tests</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>cherenkov/execution/emitters/</code></strong> — Output format emitters (JUnit XML, SARIF, JSON, HTML).</p>
+<hr />
+<h2 id="domain-services">Domain Services</h2>
+<p>Business logic modules that implement CHERENKOV's core capabilities.</p>
+<h3 id="healing">Healing</h3>
+<p><strong><code>cherenkov/healing/</code></strong> — Suggest-only code repair (never auto-edits).</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>diagnose.py</code></td>
+<td>Analyze test failures and suggest fixes</td>
+</tr>
+<tr>
+<td><code>contract_drift.py</code></td>
+<td>Detect contract drift between spec versions</td>
+</tr>
+<tr>
+<td><code>auth_expiry.py</code></td>
+<td>Handle expired auth token scenarios</td>
+</tr>
+<tr>
+<td><code>sandbox_healer.py</code></td>
+<td>Sandboxed healing suggestion execution</td>
+</tr>
+<tr>
+<td><code>visual_heal.py</code></td>
+<td>Visual regression healing suggestions</td>
+</tr>
+<tr>
+<td><code>providers/</code></td>
+<td>Healing provider implementations</td>
+</tr>
+</tbody>
+</table>
+<h3 id="coverage">Coverage</h3>
+<p><strong><code>cherenkov/coverage/</code></strong> — Track which spec endpoints have test coverage.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>assertion_gate.py</code></td>
+<td>Gate that checks assertion quality</td>
+</tr>
+<tr>
+<td><code>emitter.py</code></td>
+<td>Coverage report generation</td>
+</tr>
+<tr>
+<td><code>loop.py</code></td>
+<td>Coverage gap detection loop</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hitl-human-in-the-loop">HITL (Human-in-the-Loop)</h3>
+<p><strong><code>cherenkov/hitl/</code></strong> — Finding triage queue.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cmd.py</code></td>
+<td>HITL CLI operations (list, approve, reject)</td>
+</tr>
+<tr>
+<td><code>contracts.py</code></td>
+<td>HITL data contracts</td>
+</tr>
+<tr>
+<td><code>store.py</code></td>
+<td>Persistent finding storage</td>
+</tr>
+</tbody>
+</table>
+<h3 id="truth">Truth</h3>
+<p><strong><code>cherenkov/truth/</code></strong> — Source-of-truth resolution.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index.py</code></td>
+<td>Truth source registry and lookup</td>
+</tr>
+<tr>
+<td><code>spec_validator.py</code></td>
+<td>Validate spec correctness and richness</td>
+</tr>
+<tr>
+<td><code>sources/</code></td>
+<td>Truth source implementations (spec, production, etc.)</td>
+</tr>
+<tr>
+<td><code>emitters/</code></td>
+<td>Truth report emitters</td>
+</tr>
+</tbody>
+</table>
+<h3 id="validate">Validate</h3>
+<p><strong><code>cherenkov/validate/</code></strong> — Validation logic and export.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gate.py</code></td>
+<td>Validation gate (pass/fail logic with exit codes)</td>
+</tr>
+<tr>
+<td><code>evidence.py</code></td>
+<td>Evidence collection for validation results</td>
+</tr>
+<tr>
+<td><code>contracts.py</code></td>
+<td>Validation data contracts</td>
+</tr>
+<tr>
+<td><code>asyncapi.py</code></td>
+<td>AsyncAPI validation</td>
+</tr>
+<tr>
+<td><code>buf_registry.py</code></td>
+<td>Buf schema registry integration</td>
+</tr>
+<tr>
+<td><code>github_exporter.py</code></td>
+<td>Export results to GitHub (checks, comments)</td>
+</tr>
+<tr>
+<td><code>jira_exporter.py</code></td>
+<td>Export results to Jira</td>
+</tr>
+<tr>
+<td><code>linear_exporter.py</code></td>
+<td>Export results to Linear</td>
+</tr>
+</tbody>
+</table>
+<h3 id="verdict">Verdict</h3>
+<p><strong><code>cherenkov/verdict/</code></strong> — Final pass/fail decision engine.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>engine.py</code></td>
+<td>Verdict computation engine</td>
+</tr>
+<tr>
+<td><code>models.py</code></td>
+<td>Verdict data models</td>
+</tr>
+<tr>
+<td><code>semantic_judge.py</code></td>
+<td>LLM-based semantic comparison of expected vs actual</td>
+</tr>
+<tr>
+<td><code>mutation_oracle.py</code></td>
+<td>Mutation-based verdict verification</td>
+</tr>
+<tr>
+<td><code>traffic_capture.py</code></td>
+<td>Capture live traffic for verdict analysis</td>
+</tr>
+</tbody>
+</table>
+<h3 id="divergence">Divergence</h3>
+<p><strong><code>cherenkov/divergence/</code></strong> — Detect and analyze API divergences.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>explorer.py</code></td>
+<td>Explore spec surface for divergence candidates</td>
+</tr>
+<tr>
+<td><code>probe_planner.py</code></td>
+<td>Plan targeted probes for suspected divergences</td>
+</tr>
+<tr>
+<td><code>proof_run.py</code></td>
+<td>Execute proof-of-divergence runs</td>
+</tr>
+<tr>
+<td><code>witness.py</code></td>
+<td>Collect divergence evidence</td>
+</tr>
+<tr>
+<td><code>skeptic.py</code></td>
+<td>Skeptical re-evaluation of reported divergences</td>
+</tr>
+<tr>
+<td><code>health.py</code></td>
+<td>Health score computation</td>
+</tr>
+<tr>
+<td><code>coverage.py</code></td>
+<td>Divergence coverage analysis</td>
+</tr>
+<tr>
+<td><code>self_play.py</code></td>
+<td>Self-play divergence detection</td>
+</tr>
+<tr>
+<td><code>mutant_synth.py</code></td>
+<td>Synthesize mutant specs for testing</td>
+</tr>
+<tr>
+<td><code>report_diff.py</code></td>
+<td>Diff reports between runs</td>
+</tr>
+</tbody>
+</table>
+<h3 id="oracle">Oracle</h3>
+<p><strong><code>cherenkov/oracle/</code></strong> — Ground truth comparison.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>interface.py</code></td>
+<td>Oracle interface contract</td>
+</tr>
+<tr>
+<td><code>consensus_oracle.py</code></td>
+<td>Multi-source consensus-based oracle</td>
+</tr>
+<tr>
+<td><code>spec_prism.py</code></td>
+<td>Spec-based oracle using Prism</td>
+</tr>
+<tr>
+<td><code>prod_snapshot.py</code></td>
+<td>Production snapshot oracle</td>
+</tr>
+<tr>
+<td><code>visual_oracle.py</code></td>
+<td>Screenshot-based visual oracle</td>
+</tr>
+<tr>
+<td><code>visual_oracle_vlm.py</code></td>
+<td>VLM-powered visual oracle</td>
+</tr>
+</tbody>
+</table>
+<h3 id="drift">Drift</h3>
+<p><strong><code>cherenkov/drift/</code></strong> — Track API drift over time.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>checker.py</code></td>
+<td>Drift checking logic</td>
+</tr>
+<tr>
+<td><code>detect.py</code></td>
+<td>Drift detection algorithms</td>
+</tr>
+<tr>
+<td><code>fingerprint.py</code></td>
+<td>API behavior fingerprinting</td>
+</tr>
+<tr>
+<td><code>ledger.py</code></td>
+<td>Historical drift ledger</td>
+</tr>
+<tr>
+<td><code>loop.py</code></td>
+<td>Continuous drift detection loop</td>
+</tr>
+<tr>
+<td><code>maker.py</code></td>
+<td>Synthetic drift generation for testing</td>
+</tr>
+<tr>
+<td><code>models.py</code></td>
+<td>Drift data models</td>
+</tr>
+<tr>
+<td><code>reconcile.py</code></td>
+<td>Drift reconciliation (spec vs implementation)</td>
+</tr>
+<tr>
+<td><code>snapshot.py</code></td>
+<td>API state snapshots for drift comparison</td>
+</tr>
+</tbody>
+</table>
+<h3 id="knowledge">Knowledge</h3>
+<p><strong><code>cherenkov/knowledge/</code></strong> — Knowledge base for test generation context.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>graph_rag.py</code></td>
+<td>Graph-based RAG for spec knowledge</td>
+</tr>
+<tr>
+<td><code>rag_index.py</code></td>
+<td>RAG index construction</td>
+</tr>
+<tr>
+<td><code>cli.py</code></td>
+<td>Knowledge base CLI</td>
+</tr>
+<tr>
+<td><code>domain/</code></td>
+<td>Domain models</td>
+</tr>
+<tr>
+<td><code>ports/</code></td>
+<td>Port interfaces</td>
+</tr>
+<tr>
+<td><code>adapters/</code></td>
+<td>Storage and retrieval adapters</td>
+</tr>
+<tr>
+<td><code>api/</code></td>
+<td>Knowledge API</td>
+</tr>
+<tr>
+<td><code>bridges/</code></td>
+<td>Bridges to external knowledge sources</td>
+</tr>
+<tr>
+<td><code>use_cases/</code></td>
+<td>Knowledge use case implementations</td>
+</tr>
+</tbody>
+</table>
+<h3 id="reflector">Reflector</h3>
+<p><strong><code>cherenkov/reflector/</code></strong> — Self-reflection on test quality.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>reflector.py</code></td>
+<td>Core reflection engine</td>
+</tr>
+<tr>
+<td><code>introspect.py</code></td>
+<td>Test introspection utilities</td>
+</tr>
+<tr>
+<td><code>store.py</code></td>
+<td>Reflection result storage</td>
+</tr>
+<tr>
+<td><code>cli.py</code></td>
+<td>Reflector CLI</td>
+</tr>
+<tr>
+<td><code>mobile_extensions.py</code></td>
+<td>Mobile-specific reflection</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ai-llm">AI / LLM</h2>
+<h3 id="substrate">Substrate</h3>
+<p><strong><code>cherenkov/substrate/</code></strong> — LLM provider abstraction layer.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>provider.py</code></td>
+<td>Provider selection and initialization</td>
+</tr>
+<tr>
+<td><code>provider_base.py</code></td>
+<td>Base class for all LLM providers</td>
+</tr>
+<tr>
+<td><code>client_factory.py</code></td>
+<td>Client factory pattern for provider instantiation</td>
+</tr>
+<tr>
+<td><code>interfaces.py</code></td>
+<td>Provider interface contracts</td>
+</tr>
+<tr>
+<td><code>router.py</code></td>
+<td>Multi-provider routing (fallback, load balancing)</td>
+</tr>
+<tr>
+<td><code>retry.py</code></td>
+<td>Retry logic for LLM calls</td>
+</tr>
+<tr>
+<td><code>cache.py</code></td>
+<td>Response caching</td>
+</tr>
+<tr>
+<td><code>accounting.py</code></td>
+<td>Token usage accounting</td>
+</tr>
+<tr>
+<td><code>certification.py</code></td>
+<td>Provider certification checks</td>
+</tr>
+<tr>
+<td><code>doctor.py</code></td>
+<td>Provider health diagnostics</td>
+</tr>
+<tr>
+<td><code>text_utils.py</code></td>
+<td>Text processing utilities</td>
+</tr>
+<tr>
+<td><code>vlm_provider.py</code></td>
+<td>Vision-language model provider</td>
+</tr>
+<tr>
+<td><code>playwright_mcp_client.py</code></td>
+<td>MCP client for Playwright integration</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>cherenkov/substrate/providers/</code></strong> — Provider implementations:</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Module</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ollama (default)</td>
+<td><code>ollama.py</code>, <code>ollama_client.py</code></td>
+</tr>
+<tr>
+<td>OpenAI</td>
+<td><code>openai.py</code>, <code>openai_client.py</code></td>
+</tr>
+<tr>
+<td>Azure OpenAI</td>
+<td><code>azure_openai.py</code></td>
+</tr>
+<tr>
+<td>Anthropic</td>
+<td><code>anthropic.py</code>, <code>anthropic_client.py</code></td>
+</tr>
+<tr>
+<td>AWS Bedrock</td>
+<td><code>bedrock.py</code>, <code>bedrock_client.py</code></td>
+</tr>
+<tr>
+<td>GitHub Models</td>
+<td><code>github_models_client.py</code></td>
+</tr>
+<tr>
+<td>HuggingFace</td>
+<td><code>huggingface_client.py</code></td>
+</tr>
+<tr>
+<td>LocalAI</td>
+<td><code>localai.py</code></td>
+</tr>
+<tr>
+<td>AirLLM</td>
+<td><code>airllm.py</code>, <code>airllm_client.py</code></td>
+</tr>
+<tr>
+<td>NemoClaw</td>
+<td><code>nemoclaw.py</code>, <code>nemoclaw_client.py</code></td>
+</tr>
+<tr>
+<td>Model Runner</td>
+<td><code>model_runner_client.py</code></td>
+</tr>
+<tr>
+<td>Template (no LLM)</td>
+<td><code>template_generator.py</code></td>
+</tr>
+<tr>
+<td>OpenAI-compatible</td>
+<td><code>openai_compat.py</code></td>
+</tr>
+<tr>
+<td>Fenced client</td>
+<td><code>fenced_client.py</code></td>
+</tr>
+<tr>
+<td>VLM</td>
+<td><code>vlm.py</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="reasoning">Reasoning</h3>
+<p><strong><code>cherenkov/reasoning/</code></strong> — LLM reasoning and chain-of-thought.</p>
+<p>Structured as a hexagonal module: <code>domain/</code>, <code>ports/</code>, <code>adapters/</code>, <code>use_cases/</code>.</p>
+<h3 id="rag">RAG</h3>
+<p><strong><code>cherenkov/rag/</code></strong> — Retrieval-augmented generation.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>schema_index.py</code></td>
+<td>Index OpenAPI schemas for retrieval</td>
+</tr>
+<tr>
+<td><code>mobile_index.py</code></td>
+<td>Index mobile test patterns</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="sources">Sources</h2>
+<p><strong><code>cherenkov/sources/</code></strong> — Spec source parsers.</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Directory</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenAPI</td>
+<td><code>sources/</code> (root)</td>
+<td>Default — parse OpenAPI 3.0.x / 3.1.x / 3.2.x</td>
+</tr>
+<tr>
+<td>GraphQL</td>
+<td><code>graphql/</code></td>
+<td>Parse GraphQL schemas and introspection results</td>
+</tr>
+<tr>
+<td>gRPC</td>
+<td><code>grpc/</code></td>
+<td>Parse Protocol Buffer definitions</td>
+</tr>
+<tr>
+<td>AsyncAPI</td>
+<td><code>asyncapi/</code></td>
+<td>Parse AsyncAPI event-driven API specs</td>
+</tr>
+<tr>
+<td>Accessibility</td>
+<td><code>accessibility/</code></td>
+<td>Parse accessibility rules and WCAG criteria</td>
+</tr>
+<tr>
+<td>Mobile</td>
+<td><code>mobile/</code></td>
+<td>Parse mobile app test sources</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="integration">Integration</h2>
+<h3 id="mcp-server">MCP Server</h3>
+<p><strong><code>cherenkov/mcp/</code></strong> — Model Context Protocol server implementation.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>server.py</code></td>
+<td>MCP server entry point</td>
+</tr>
+<tr>
+<td><code>client.py</code></td>
+<td>MCP client for connecting to other servers</td>
+</tr>
+<tr>
+<td><code>protocol.py</code></td>
+<td>MCP protocol implementation</td>
+</tr>
+<tr>
+<td><code>handlers.py</code></td>
+<td>Request handlers</td>
+</tr>
+<tr>
+<td><code>contracts.py</code></td>
+<td>MCP data contracts</td>
+</tr>
+<tr>
+<td><code>auth.py</code></td>
+<td>MCP authentication</td>
+</tr>
+<tr>
+<td><code>policy.py</code></td>
+<td>Access policy enforcement</td>
+</tr>
+<tr>
+<td><code>mesh_router.py</code></td>
+<td>Multi-server mesh routing</td>
+</tr>
+<tr>
+<td><code>install.py</code></td>
+<td>MCP server installation helper</td>
+</tr>
+<tr>
+<td><code>tools/</code></td>
+<td>MCP tool definitions</td>
+</tr>
+<tr>
+<td><code>marketplace/</code></td>
+<td>MCP marketplace integration</td>
+</tr>
+</tbody>
+</table>
+<h3 id="langchain">LangChain</h3>
+<p><strong><code>cherenkov/integrations/langchain/</code></strong> and <strong><code>cherenkov/langchain/</code></strong> — LangChain tool integration.</p>
+<h3 id="chat">Chat</h3>
+<p><strong><code>cherenkov/chat/</code></strong> — Conversational interface.</p>
+<p>Hexagonal architecture: <code>domain/</code>, <code>ports/</code>, <code>adapters/</code>, <code>use_cases/</code>, <code>api/</code>.</p>
+<p>Key modules: <code>agent.py</code> (chat agent), <code>guard.py</code> (safety guardrails), <code>persona.py</code> (persona management), <code>tools.py</code> (chat tool definitions).</p>
+<h3 id="copilot">Copilot</h3>
+<p><strong><code>cherenkov/copilot/</code></strong> — IDE copilot integration.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>autonomy.py</code></td>
+<td>Autonomous operation configuration</td>
+</tr>
+<tr>
+<td><code>digest.py</code></td>
+<td>Change digest generation</td>
+</tr>
+<tr>
+<td><code>intent.py</code></td>
+<td>User intent detection</td>
+</tr>
+<tr>
+<td><code>live_session.py</code></td>
+<td>Live coding session tracking</td>
+</tr>
+<tr>
+<td><code>mentor.py</code></td>
+<td>Mentoring suggestions</td>
+</tr>
+<tr>
+<td><code>triage.py</code></td>
+<td>Issue triage assistant</td>
+</tr>
+</tbody>
+</table>
+<h3 id="webhooks">Webhooks</h3>
+<p><strong><code>cherenkov/webhooks/</code></strong> — Outbound webhook dispatch.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dispatcher.py</code></td>
+<td>Webhook event dispatcher</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="web">Web</h2>
+<p><strong><code>cherenkov/web/</code></strong> — FastAPI backend and React dashboard.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>api.py</code></td>
+<td>FastAPI application factory</td>
+</tr>
+<tr>
+<td><code>errors.py</code></td>
+<td>HTTP error handlers</td>
+</tr>
+<tr>
+<td><code>monitoring.py</code></td>
+<td>Health and readiness endpoints</td>
+</tr>
+<tr>
+<td><code>alerts.py</code></td>
+<td>Alert management</td>
+</tr>
+<tr>
+<td><code>coverage_map.py</code></td>
+<td>Coverage map API</td>
+</tr>
+<tr>
+<td><code>divergences.py</code></td>
+<td>Divergence API</td>
+</tr>
+<tr>
+<td><code>pr_comments.py</code></td>
+<td>PR comment integration</td>
+</tr>
+<tr>
+<td><code>regenerate.py</code></td>
+<td>Test regeneration API</td>
+</tr>
+<tr>
+<td><code>auth/</code></td>
+<td>Authentication (JWT, session management)</td>
+</tr>
+<tr>
+<td><code>middleware/</code></td>
+<td>HTTP middleware (CORS, rate limiting, etc.)</td>
+</tr>
+<tr>
+<td><code>routes/</code></td>
+<td>API route definitions</td>
+</tr>
+<tr>
+<td><code>sdd_auth.py</code></td>
+<td>SDD authentication</td>
+</tr>
+<tr>
+<td><code>sdd_models.py</code></td>
+<td>SDD data models</td>
+</tr>
+<tr>
+<td><code>sdd_routes.py</code></td>
+<td>SDD route definitions</td>
+</tr>
+<tr>
+<td><code>ui/</code></td>
+<td>React frontend build and serving</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="enterprise">Enterprise</h2>
+<p><strong><code>cherenkov/enterprise/</code></strong> — Enterprise features (all free, Apache 2.0).</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>saml.py</code></td>
+<td>SAML SSO authentication</td>
+</tr>
+<tr>
+<td><code>rbac.py</code></td>
+<td>Role-based access control</td>
+</tr>
+<tr>
+<td><code>audit.py</code></td>
+<td>Audit trail logging</td>
+</tr>
+<tr>
+<td><code>org.py</code></td>
+<td>Organization and team management</td>
+</tr>
+<tr>
+<td><code>gdpr.py</code></td>
+<td>GDPR data handling compliance</td>
+</tr>
+<tr>
+<td><code>soc2.py</code></td>
+<td>SOC 2 compliance reporting</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="extended-modules">Extended Modules</h2>
+<h3 id="agents">Agents</h3>
+<p><strong><code>cherenkov/agents/conductor/</code></strong> — Multi-agent orchestration.</p>
+<p><strong><code>cherenkov/agents/pilot.py</code></strong> — Autonomous pilot agent.</p>
+<h3 id="continuity">Continuity</h3>
+<p><strong><code>cherenkov/continuity/</code></strong> — Session persistence and PR workflows.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pr_diff_action.py</code></td>
+<td>PR diff analysis action</td>
+</tr>
+<tr>
+<td><code>sessions/</code></td>
+<td>Session persistence and resumption</td>
+</tr>
+</tbody>
+</table>
+<h3 id="daemon-guardian">Daemon &amp; Guardian</h3>
+<p><strong><code>cherenkov/daemon/</code></strong> — Continuous monitoring daemon.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>trigger_loop.py</code></td>
+<td>Periodic validation trigger</td>
+</tr>
+<tr>
+<td><code>watcher.py</code></td>
+<td>File and event watcher</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>cherenkov/spec_guardian/</code></strong> — Spec file guardian.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>core.py</code></td>
+<td>Guardian core logic</td>
+</tr>
+<tr>
+<td><code>daemon.py</code></td>
+<td>Guardian daemon process</td>
+</tr>
+<tr>
+<td><code>detector.py</code></td>
+<td>Spec change detection</td>
+</tr>
+<tr>
+<td><code>store.py</code></td>
+<td>Guardian state storage</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hooks">Hooks</h3>
+<p><strong><code>cherenkov/hooks/</code></strong> — Lifecycle hooks system.</p>
+<p>Hexagonal architecture: <code>domain/</code>, <code>ports/</code>, <code>adapters/</code>, <code>registry.py</code>.</p>
+<h3 id="memory">Memory</h3>
+<p><strong><code>cherenkov/memory/</code></strong> — Agent memory persistence.</p>
+<p>Hexagonal architecture: <code>domain/</code>, <code>ports/</code>, <code>adapters/</code>, <code>use_cases/</code>.</p>
+<h3 id="scheduling">Scheduling</h3>
+<p><strong><code>cherenkov/scheduling/</code></strong> — Job scheduling.</p>
+<p>Hexagonal architecture: <code>domain/</code>, <code>ports/</code>, <code>adapters/</code>, <code>api/</code>, <code>use_cases/</code>, <code>templates/</code>.</p>
+<hr />
+<h2 id="other-modules">Other Modules</h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>adversarial/</code></td>
+<td>Adversarial testing — prompt injection detection, security fuzzing</td>
+</tr>
+<tr>
+<td><code>analytics/</code></td>
+<td>Telemetry collection (local only, no phone-home)</td>
+</tr>
+<tr>
+<td><code>bench/</code></td>
+<td>Benchmarking framework for CHERENKOV's own performance</td>
+</tr>
+<tr>
+<td><code>cache/</code></td>
+<td>Endpoint response caching</td>
+</tr>
+<tr>
+<td><code>compliance/</code></td>
+<td>Compliance scanning (MENA region regulations)</td>
+</tr>
+<tr>
+<td><code>dashboard/</code></td>
+<td>Dashboard rendering utilities</td>
+</tr>
+<tr>
+<td><code>diff/</code></td>
+<td>Spec diffing between versions</td>
+</tr>
+<tr>
+<td><code>eval/</code></td>
+<td>Evaluation framework (grader, optimizer, runner)</td>
+</tr>
+<tr>
+<td><code>evals/</code></td>
+<td>Evaluation suite (judge, regression, prompt versioning)</td>
+</tr>
+<tr>
+<td><code>events/</code></td>
+<td>Event bridge for cross-module communication</td>
+</tr>
+<tr>
+<td><code>federation/</code></td>
+<td>Multi-instance federation (corpus sharing, cross-checking)</td>
+</tr>
+<tr>
+<td><code>governance/</code></td>
+<td>Generation governance (KPIs, metrics, fine-tune logging)</td>
+</tr>
+<tr>
+<td><code>integrity/</code></td>
+<td>API integrity checking</td>
+</tr>
+<tr>
+<td><code>mobile/</code></td>
+<td>Mobile testing contracts and registry</td>
+</tr>
+<tr>
+<td><code>observability/</code></td>
+<td>OpenTelemetry integration, LLM tracing, token monitoring</td>
+</tr>
+<tr>
+<td><code>openclaw/</code></td>
+<td>OpenClaw feedback protocol</td>
+</tr>
+<tr>
+<td><code>persistence/</code></td>
+<td>Run result storage</td>
+</tr>
+<tr>
+<td><code>playbooks/</code></td>
+<td>Test playbooks (builtin patterns, matcher, runner)</td>
+</tr>
+<tr>
+<td><code>ports/</code></td>
+<td>Port interfaces (event bus, storage, notifier, VLM)</td>
+</tr>
+<tr>
+<td><code>prompts/</code></td>
+<td>Prompt templates (Jinja2)</td>
+</tr>
+<tr>
+<td><code>rag/</code></td>
+<td>Retrieval-augmented generation indexes</td>
+</tr>
+<tr>
+<td><code>reasoning/</code></td>
+<td>LLM reasoning chains</td>
+</tr>
+<tr>
+<td><code>reporting/</code></td>
+<td>Session report generation</td>
+</tr>
+<tr>
+<td><code>review_ocr/</code></td>
+<td>OCR-based review (screenshot → findings)</td>
+</tr>
+<tr>
+<td><code>sdet/</code></td>
+<td>SDET tooling (assertion gating, coverage loops)</td>
+</tr>
+<tr>
+<td><code>security/</code></td>
+<td>Auth handling, secret redaction, Snyk integration</td>
+</tr>
+<tr>
+<td><code>synthetic/</code></td>
+<td>Synthetic test generation (personas, enrichment, refinement)</td>
+</tr>
+<tr>
+<td><code>training/</code></td>
+<td>Training data collection for model fine-tuning</td>
+</tr>
+<tr>
+<td><code>adapters/</code></td>
+<td>External system adapters (Docker, SSH, TestRail, Xray, Zephyr, Postman)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="top-level-files">Top-Level Files</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>__init__.py</code></td>
+<td>Package version and public API</td>
+</tr>
+<tr>
+<td><code>__main__.py</code></td>
+<td><code>python -m cherenkov</code> entry point</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><a href="../system-design/">System Design</a> — high-level architecture and data flow</li>
+<li><a href="../clean-architecture/">Clean Architecture</a> — hexagonal architecture principles used in CHERENKOV</li>
+<li><a href="../ai-pipeline/">AI Pipeline</a> — how the LLM generation pipeline works</li>
+<li><a href="../../cli/reference/">CLI Reference</a> — command documentation</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"current": "1.4", "versions": ["1.2", "1.3", "1.4"]}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../javascripts/version-banner.js"></script>
+      
+    
+  </body>
+</html>

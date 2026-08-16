@@ -122,5 +122,52 @@ Create automated scripts to objectively measure documentation coverage. For exam
 - [ ] A programmatic verification script for Markdown files (checking for broken links, missing references, or empty files) runs and exits with code 0.
 - [ ] `grep -ri "TODO\|TBD\|\[\]" docs/` returns no results, proving all placeholders are resolved.
 
+## Follow-up — 2026-08-15T17:08:50Z
+
+# Teamwork Project Prompt — Draft
+
+> Status: Step 1 — Eliciting project idea
+> Goal: Craft prompt → get user approval → delegate to `teamwork_preview`
+
+**Project description:** Consolidate the CHERENKOV‑QA documentation for versions 1.2 and 1.3 into a single, updated version 1.4. Merge content, fix the version‑warning banner so it correctly points to the newest version, add visualizations (Mermaid diagrams and screenshots) to illustrate version differences and site structure, and update the MkDocs configuration to mark 1.4 as the current release.
+
+**Working directory:** `Z:/home/moaid/cherenkov-qa/docs/consolidate-1.4`
+
+## Requirements
+
+### R1. Merge documentation content
+- Combine all pages from `1.2/` and `1.3/` into a coherent set under the new `1.4/` hierarchy.
+- Resolve duplicate or conflicting sections by keeping the most recent information (prefer 1.3 unless a newer change exists in the repo).
+
+### R2. Correct version‑warning banner
+- All pages must display a banner that indicates they are **older** only when appropriate.
+- The banner on the 1.4 pages must **not** show the warning (it is the latest).
+- Links in the banner should point to the true latest version (`1.4`).
+
+### R3. Add visualizations
+- Generate Mermaid diagrams that show the version‑diff flow and overall site map.
+- Include static PNG/SVG screenshots of key pages (e.g., homepage, getting‑started) for the consolidated docs.
+
+### R4. Update MkDocs configuration
+- Add `extra.version.current: "1.4"` (and list previous versions).
+- Ensure the site builds without errors.
+
+### R5. Git workflow
+- Create a new branch `docs/consolidate-1.4`.
+- Commit all changes and open a PR targeting `main`.
+
+## Acceptance Criteria
+
+- **AC1:** A fully built `docs/1.4/` directory exists with all merged pages and **no** version‑warning banner on any 1.4 page.
+- **AC2:** Mermaid diagrams and screenshots are present and referenced from the documentation.
+- **AC3:** `mkdocs build` succeeds with the updated configuration.
+- **AC4:** A PR titled "Consolidate CHERENKOV‑QA docs into version 1.4" is opened from the new branch.
+- **AC5:** The PR includes a change log summarizing merged content and visual assets.
+
+## Follow-up — 2026-08-16T00:17:29Z
+
+Please resume your work on the documentation consolidation (Milestones 3‑5).
+
+
 
 

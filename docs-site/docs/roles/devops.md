@@ -373,16 +373,16 @@ flowchart LR
 
 Use this checklist when setting up CHERENKOV in your infrastructure:
 
-- [ ] CHERENKOV installed (clone from GitHub + `pip install`)
-- [ ] `cherenkov doctor` passes in your CI environment
-- [ ] Exit codes wired into pipeline pass/fail logic
-- [ ] JUnit XML or SARIF output configured
-- [ ] Ollama available (or using `--no-repair` / `verify` / `check-suite`)
-- [ ] Docker image tested locally
-- [ ] K8s CRD deployed (if using Kubernetes)
-- [ ] OpenTelemetry endpoint configured (if using observability)
-- [ ] Daemon or guardian running for continuous monitoring
-- [ ] Dashboard accessible for triage
+- **Installed**: CHERENKOV installed (clone from GitHub + `pip install`)
+- **Doctor**: `cherenkov doctor` passes in your CI environment
+- **Exit Codes**: Exit codes wired into pipeline pass/fail logic
+- **Reports**: JUnit XML or SARIF output configured
+- **Model / LLM**: Ollama available (or using `--no-repair` / `verify` / `check-suite`)
+- **Container**: Docker image tested locally
+- **Kubernetes**: K8s CRD deployed (if using Kubernetes)
+- **Observability**: OpenTelemetry endpoint configured (if using observability)
+- **Monitoring**: Daemon or guardian running for continuous monitoring
+- **Dashboard**: Dashboard accessible for triage
 
 ---
 

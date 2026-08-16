@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "last_updated": "2026-08-15T17:02:19.816874+00:00",
-  "experience_count": 15,
-  "sessions_contributing": 32,
+  "last_updated": "2026-08-15T23:54:22.187096+00:00",
+  "experience_count": 17,
+  "sessions_contributing": 39,
   "experiences": [
     {
       "id": "exp_seed_001",
@@ -205,6 +205,32 @@
         "alignment"
       ],
       "session_id": "sess_20260815170217_1a334a"
+    },
+    {
+      "id": "exp_sess_20260815234041_576749_3e7c",
+      "timestamp": "2026-08-15T23:41:35.956655+00:00",
+      "task": "survey_visuals_git",
+      "action": "decision Assets located in docs/visuals/ and docs/1.4/assets/ with cross-references in docs-site/docs/assets/",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "survey_visuals_git"
+      ],
+      "session_id": "sess_20260815234041_576749"
+    },
+    {
+      "id": "exp_sess_20260815234041_576749_98b3",
+      "timestamp": "2026-08-15T23:41:35.957161+00:00",
+      "task": "survey_visuals_git",
+      "action": "decision Git workflow uses branch docs/consolidate-1.4 and gh pr create targeting main with AC-compliant changelog",
+      "rationale": "",
+      "outcome": "success",
+      "token_cost": 0,
+      "patterns": [
+        "survey_visuals_git"
+      ],
+      "session_id": "sess_20260815234041_576749"
     }
   ],
   "pattern_index": {
@@ -258,6 +284,10 @@
     ],
     "alignment": [
       "exp_sess_20260815170217_1a334a_6cc7"
+    ],
+    "survey_visuals_git": [
+      "exp_sess_20260815234041_576749_3e7c",
+      "exp_sess_20260815234041_576749_98b3"
     ]
   }
 }

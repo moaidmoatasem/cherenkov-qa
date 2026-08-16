@@ -1,0 +1,3130 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Autonomous Quality Fabric">
+      
+      
+        <meta name="author" content="TesterArmy">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>CHERENKOV-QA Innovation Roadmap v2.0 — "From Integrity Engine to Quality Intelligence Platform" - Cherenkov QA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cherenkov-qa-innovation-roadmap-v20-from-integrity-engine-to-quality-intelligence-platform" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  <div class="md-version-warning">
+    <strong>Notice:</strong> You are viewing documentation for an older version of CHERENKOV-QA.
+    <a href="https://moaidmoatasem.github.io/cherenkov-qa/1.4/">Click here for the latest version (v1.4).</a>
+  </div>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL(".."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Cherenkov QA" class="md-header__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cherenkov QA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CHERENKOV-QA Innovation Roadmap v2.0 — "From Integrity Engine to Quality Intelligence Platform"
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../1.4/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/getting-started/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/guides/" class="md-tabs__link">
+          
+  
+  
+  QA & Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/guides/ci-cd/" class="md-tabs__link">
+          
+  
+  
+  Ecosystem
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/troubleshooting/faq/" class="md-tabs__link">
+          
+  
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/cli/reference/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Cherenkov QA" class="md-nav__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cherenkov QA
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/cost-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Tiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA & Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    QA & Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides Hub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/api-conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/check-suite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Check Suite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/test-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/continuous-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spec Guardian
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/certificates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Certificates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/hitl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HITL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/eject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eject
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/system-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/platform-operating-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/user-journeys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Journeys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/clean-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/module-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/second-brain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Second Brain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Role Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Role Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/roles/developer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/roles/qa-engineer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA Engineer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/roles/devops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps & SRE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/roles/team-lead/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Team Lead
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/ci-cd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/integrations/github-actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/integrations/vscode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VS Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/integrations/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/integrations/langchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Troubleshooting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/troubleshooting/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/troubleshooting/common-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Issues
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/cli/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/cli/completions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Completions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/releases/v1.4.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.4.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/releases/v1.3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.3.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/releases/v1.2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.2.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cherenkov-qa-innovation-roadmap-v20-from-integrity-engine-to-quality-intelligence-platform">CHERENKOV-QA Innovation Roadmap v2.0 — "From Integrity Engine to Quality Intelligence Platform"</h1>
+<p><strong>Date:</strong> July 31, 2026
+<strong>Author:</strong> Product Strategy &amp; Innovation
+<strong>Status:</strong> Approved — Report Finalized
+<strong>Scope:</strong> Product innovation, competitive differentiation, and roadmap evolution</p>
+<hr />
+<h2 id="1-research-synthesis-what-we-know">1. Research Synthesis: What We Know</h2>
+<h3 id="11-market-reality-evidence-based">1.1 Market Reality (Evidence-Based)</h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Data Point</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API testing market</td>
+<td>$4.15B (2024) → $8.5B by 2030, 12.1% CAGR</td>
+<td>Market research</td>
+</tr>
+<tr>
+<td>AI-assisted testing sub-segment</td>
+<td>$0.4B → $8.7B by 2032, <strong>47% CAGR</strong></td>
+<td>Market research</td>
+</tr>
+<tr>
+<td>Manual QA prevalence</td>
+<td><strong>82%</strong> of QA teams still test manually daily</td>
+<td>2025 State of Software Quality</td>
+</tr>
+<tr>
+<td>Full automation adoption</td>
+<td>Only <strong>5%</strong> of organizations fully automated</td>
+<td>Industry surveys</td>
+</tr>
+<tr>
+<td>AI code generation</td>
+<td><strong>53%</strong> of all code is now AI-generated</td>
+<td>Sembi Quality Pulse 2026</td>
+</tr>
+<tr>
+<td>AI cheating on evals</td>
+<td><strong>43x</strong> more common when model sees scoring function</td>
+<td>METR 2026</td>
+</tr>
+<tr>
+<td>QA maintenance burden</td>
+<td><strong>40–60%</strong> of sprint time lost to locator/schema repair</td>
+<td>Industry benchmarks</td>
+</tr>
+<tr>
+<td>Selector repair time</td>
+<td><strong>70–80%</strong> of manual QA time on broken DOM selectors</td>
+<td>Manual QA surveys</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-competitive-landscape-summary-11-tools-evaluated">1.2 Competitive Landscape Summary (11 Tools Evaluated)</h3>
+<div class="highlight"><pre><span></span><code>                        MANUAL TESTS              AUTO-GENERATED TESTS
+                    ┌────────────────────────┬──────────────────────────────┐
+  CLOUD/SAAS        │ Postman, Apidog,        │ Momentic, TestSprite, KushoAI│
+                    │ ReadyAPI, Katalon       │ Testim, Mabl, QA.tech        │
+                    ├────────────────────────┼──────────────────────────────┤
+  LOCAL/PRIVATE     │ Bruno, Hoppscotch,      │ ★ CHERENKOV-QA ★             │
+                    │ REST Assured, Karate    │ Schemathesis (fuzzing only)  │
+                    └────────────────────────┴──────────────────────────────┘
+</code></pre></div>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>CHERENKOV owns the "Local + Auto-Generated + Integrity-Verified" quadrant.</strong> No competitor occupies this space. This is the defensible moat — but only if we execute.</p>
+</blockquote>
+<h3 id="13-the-two-inspirations">1.3 The Two Inspirations</h3>
+<h4 id="momentic-228m-raised-yc-w24">Momentic ($22.8M raised, YC W24)</h4>
+<table>
+<thead>
+<tr>
+<th>What they do brilliantly</th>
+<th>What CHERENKOV can learn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Intent-based natural language</strong> test authoring → stored as YAML in Git</td>
+<td>Lower the entry barrier: tests should be describable in plain English</td>
+</tr>
+<tr>
+<td><strong>Multimodal VLM + DOM</strong> runtime execution (selectorless)</td>
+<td>Visual-first approach resonates with manual QAs who think in screens, not code</td>
+</tr>
+<tr>
+<td><strong>Autonomous exploration</strong> — agents crawl apps to discover user journeys</td>
+<td>Spec-optional mode: explore APIs without requiring an OpenAPI spec upfront</td>
+</tr>
+<tr>
+<td><strong>Non-deterministic assertions</strong> for GenAI feature testing</td>
+<td>Critical for 2026: apps with LLM-generated content need semantic assertions</td>
+</tr>
+<tr>
+<td>Tests stored as <strong>readable YAML in Git</strong></td>
+<td>Not proprietary JSON — version-controlled, PR-reviewable definitions</td>
+</tr>
+</tbody>
+</table>
+<h4 id="testsprite-82m-raised-yc">TestSprite ($8.2M raised, YC)</h4>
+<table>
+<thead>
+<tr>
+<th>What they do brilliantly</th>
+<th>What CHERENKOV can learn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MCP-native IDE integration</strong> (Cursor, Claude Code, Windsurf)</td>
+<td>CHERENKOV already has MCP (~35 tools) — activate it as a first-class surface</td>
+</tr>
+<tr>
+<td><strong>PRD-to-test intent</strong> — derives expectations from product specs, not just code</td>
+<td>Higher-level intent: "what should this API do?" not just "what does the spec say?"</td>
+</tr>
+<tr>
+<td><strong>Closed-loop bug repair</strong> — test failure → fix suggestion → back to IDE</td>
+<td>Complete the feedback loop: don't just report, guide the fix</td>
+</tr>
+<tr>
+<td><strong>Cloud sandbox execution</strong> — ephemeral, isolated, zero-config</td>
+<td>Reduce setup friction: "paste URL, get results in 60 seconds"</td>
+</tr>
+<tr>
+<td>Validates <strong>AI-generated code</strong> specifically</td>
+<td>Position as the integrity layer between AI coders and production</td>
+</tr>
+</tbody>
+</table>
+<h3 id="14-cherenkovs-honest-scoreboard">1.4 CHERENKOV's Honest Scoreboard</h3>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th style="text-align: center;">Current Score</th>
+<th style="text-align: center;">Target</th>
+<th>Gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Genuine Innovation</strong> (integrity audit, eject, spec-derived)</td>
+<td style="text-align: center;">8/10</td>
+<td style="text-align: center;">9/10</td>
+<td>Strengthen AST analysis, add PRD-intent layer</td>
+</tr>
+<tr>
+<td><strong>Market Traction</strong> (stars, users, adoption)</td>
+<td style="text-align: center;">1/10</td>
+<td style="text-align: center;">6/10</td>
+<td>🔴 Critical: 0 stars, 0 external users</td>
+</tr>
+<tr>
+<td><strong>Manual QA Accessibility</strong></td>
+<td style="text-align: center;">4/10</td>
+<td style="text-align: center;">8/10</td>
+<td>🔴 CLI-only, complex setup, developer-centric</td>
+</tr>
+<tr>
+<td><strong>Scope Discipline</strong></td>
+<td style="text-align: center;">5/10</td>
+<td style="text-align: center;">8/10</td>
+<td>🟡 18 packages before validation — cut to core</td>
+</tr>
+<tr>
+<td><strong>Go-to-Market Readiness</strong></td>
+<td style="text-align: center;">3/10</td>
+<td style="text-align: center;">7/10</td>
+<td>No PyPI, no playground, no GH Action</td>
+</tr>
+<tr>
+<td><strong>Competitive Positioning Clarity</strong></td>
+<td style="text-align: center;">4/10</td>
+<td style="text-align: center;">9/10</td>
+<td>Message is muddled — "integrity auditor" gets lost</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-strategic-innovation-thesis">2. Strategic Innovation Thesis</h2>
+<blockquote>
+<p><strong>CHERENKOV-QA should become the "Trust Layer for the Agentic Era" — the independent verification engine that sits between AI coding agents and production, ensuring that AI-generated tests actually test what matters.</strong></p>
+</blockquote>
+<h3 id="the-core-insight">The Core Insight</h3>
+<p>Every competitor is racing to <strong>generate more tests</strong>. Momentic generates E2E tests from natural language. TestSprite generates tests from PRDs. KushoAI generates 800+ tests per endpoint. Schemathesis generates thousands of fuzzing inputs.</p>
+<p><strong>Nobody is verifying whether those generated tests are honest.</strong></p>
+<ul>
+<li>AISI 2026: Every frontier model tried to cheat its evaluations</li>
+<li>METR 2026: Reward hacking is 43x more common when the model sees the scoring function</li>
+<li>Sembi 2026: 53% of all code is AI-generated — including the tests</li>
+</ul>
+<p><strong>CHERENKOV's unique position:</strong> We don't just generate tests. We <strong>audit, verify, and certify</strong> them. The meaningful-assertion gate, AST integrity analysis, and mutation battery prove that a test suite <em>can actually fail when the API breaks</em>. This is a <strong>new category</strong>: <strong>Test Integrity Verification</strong>.</p>
+<h3 id="positioning-evolution">Positioning Evolution</h3>
+<div class="highlight"><pre><span></span><code>BEFORE (current):  &quot;AI-Native API Conformance Testing Platform&quot;
+                    ↓ (developer jargon, competes with 30+ tools)
+
+AFTER (proposed):  &quot;The Trust Layer for AI-Generated Tests&quot;
+                    ↓ (new category, zero direct competitors)
+</code></pre></div>
+<p><strong>Taglines by audience:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Audience</th>
+<th>Message</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CTOs / VPs Engineering</strong></td>
+<td>"AI writes your tests. CHERENKOV proves they're real."</td>
+</tr>
+<tr>
+<td><strong>SDETs / Developers</strong></td>
+<td>"Your AI agent just weakened 3 assertions. CHERENKOV caught it."</td>
+</tr>
+<tr>
+<td><strong>Manual QA Engineers</strong></td>
+<td>"Your API spec says one thing, your server does another. We find the gaps — automatically, in plain English."</td>
+</tr>
+<tr>
+<td><strong>Compliance / Security</strong></td>
+<td>"Cryptographically signed proof that your release was tested against the contract."</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-six-innovation-pillars-what-to-build">3. Six Innovation Pillars (What to Build)</h2>
+<p>These pillars are designed to be <strong>genuinely novel</strong> — not reinventing wheels that Momentic, TestSprite, or Schemathesis already spin.</p>
+<h3 id="pillar-1-intent-based-api-conformance-inspired-by-momentic-testsprite">Pillar 1: Intent-Based API Conformance (Inspired by Momentic + TestSprite)</h3>
+<p><strong>The gap:</strong> CHERENKOV currently requires a complete OpenAPI spec as input. Manual QAs and product teams think in <em>user stories</em>, not YAML schemas.</p>
+<p><strong>The innovation:</strong></p>
+<div class="highlight"><pre><span></span><code>USER INTENT (Natural Language)
+  &quot;A user should be able to register, verify email, login, 
+   update their profile picture, and delete their account&quot;
+        ↓
+  CHERENKOV INTENT ENGINE
+  (Parses intent → maps to API endpoints → generates stateful multi-step flows)
+        ↓
+  SPEC-ANCHORED PLAYWRIGHT TESTS
+  (Expected values still come from the OpenAPI spec — D7 preserved)
+        ↓
+  6-GATE INTEGRITY VERIFICATION
+  (Same pipeline — no shortcuts)
+</code></pre></div>
+<p><strong>What's new vs competitors:</strong>
+- Momentic does intent→UI tests (visual). CHERENKOV does intent→API conformance tests (contract-verified).
+- TestSprite does PRD→tests (code). CHERENKOV does PRD→<em>integrity-verified</em> tests (spec-anchored).
+- Nobody else combines natural language intent with spec-derived expected values and mutation-battery verification.</p>
+<p><strong>Concrete features:</strong>
+- <code>cherenkov author "Test the complete user registration and login flow"</code> → generates multi-step stateful API tests
+- <code>cherenkov author requirements.md</code> → parses PRD/user stories, maps to API endpoints, generates integrity-verified suites
+- Intent-to-spec mapping with human confirmation: "I found 4 endpoints matching your intent. Confirm?"</p>
+<hr />
+<h3 id="pillar-2-closed-loop-ide-integrity-feedback-inspired-by-testsprite">Pillar 2: Closed-Loop IDE Integrity Feedback (Inspired by TestSprite)</h3>
+<p><strong>The gap:</strong> CHERENKOV has an MCP server with ~35 tools, but it's not positioned as a <em>real-time integrity guardian</em> inside AI coding IDEs.</p>
+<p><strong>The innovation:</strong> Transform CHERENKOV's MCP server into a <strong>live integrity sentinel</strong> that runs inside Cursor, Claude Code, and Windsurf — catching AI test-cheating <em>at the moment of code generation</em>, not after CI runs.</p>
+<div class="highlight"><pre><span></span><code>DEVELOPER IN CURSOR / CLAUDE CODE
+  ↓ AI generates test code
+  ↓
+CHERENKOV MCP SENTINEL (background)
+  ├─ Gate 1-4: Instant AST + assertion integrity scan
+  ├─ &quot;⚠️ Warning: AI weakened assertion on line 42 (toBe(200) → toBeLessThan(500))&quot;
+  ├─ &quot;💡 Suggestion: Spec says POST /users returns 201, not 200&quot;
+  └─ &quot;✅ 3/4 tests pass integrity check. 1 needs your review.&quot;
+  ↓
+DEVELOPER SEES INLINE FEEDBACK
+  (CodeLens annotations, gutter icons, Problems panel)
+</code></pre></div>
+<p><strong>What's new vs competitors:</strong>
+- TestSprite runs tests in cloud sandboxes. CHERENKOV audits test <em>integrity</em> locally in the IDE.
+- No competitor provides real-time assertion-integrity feedback during code authoring.
+- This positions CHERENKOV as the "security linter for test quality" — analogous to how ESLint catches code issues, CHERENKOV catches test-honesty issues.</p>
+<p><strong>Concrete features:</strong>
+- MCP tools: <code>cherenkov/audit-test-file</code>, <code>cherenkov/check-assertion-integrity</code>, <code>cherenkov/suggest-spec-fix</code>
+- VS Code extension with CodeLens: shows integrity score per test block
+- Real-time gutter icons: ✅ strong assertion / ⚠️ weak assertion / ❌ hallucinated value</p>
+<hr />
+<h3 id="pillar-3-spec-optional-api-discovery-inspired-by-momentics-autonomous-exploration">Pillar 3: Spec-Optional API Discovery (Inspired by Momentic's Autonomous Exploration)</h3>
+<p><strong>The gap:</strong> CHERENKOV currently requires a complete OpenAPI spec. Many APIs in the real world have no spec, an outdated spec, or only a partial spec.</p>
+<p><strong>The innovation:</strong> Enable CHERENKOV to <em>discover</em> the API surface autonomously, then generate a draft spec and test suite from observed behavior — which the QA engineer validates and locks down.</p>
+<div class="highlight"><pre><span></span><code>INPUT: Just a base URL (https://api.example.com)
+  ↓
+CHERENKOV DISCOVERY AGENT
+  ├─ Crawls common API patterns (/api/v1, /health, /users, etc.)
+  ├─ Uses RecordingProxy to capture request/response pairs
+  ├─ Infers schema shapes from observed responses
+  └─ Generates draft OpenAPI spec + test suite
+  ↓
+HUMAN REVIEW (HITL)
+  ├─ &quot;We discovered 12 endpoints. Review and lock down.&quot;
+  ├─ QA confirms/adjusts expected values
+  └─ Locked spec becomes the SSOT going forward
+  ↓
+STANDARD 6-GATE PIPELINE
+  (From here, same as spec-first flow)
+</code></pre></div>
+<p><strong>What's new vs competitors:</strong>
+- Keploy does traffic recording (needs production traffic). CHERENKOV does active exploration (works pre-launch).
+- Momentic crawls UIs visually. CHERENKOV crawls APIs programmatically.
+- Nobody else combines discovery → spec generation → integrity verification in one flow.</p>
+<hr />
+<h3 id="pillar-4-visual-api-conformance-dashboard-inspired-by-momentics-triage-ux">Pillar 4: Visual API Conformance Dashboard (Inspired by Momentic's Triage UX)</h3>
+<p><strong>The gap:</strong> CHERENKOV's dashboard is "mock-wired, quarantined" per HANDOVER.md. Manual QAs need a visual, non-code experience.</p>
+<p><strong>The innovation:</strong> A production-grade web UI that makes API conformance <em>visual and intuitive</em> — not a developer terminal dump.</p>
+<p><strong>Key screens:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Purpose</th>
+<th>Manual QA Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Spec vs Reality</strong></td>
+<td>Side-by-side visual diff: "Spec says 201, server returned 400"</td>
+<td>Instantly understand what's wrong</td>
+</tr>
+<tr>
+<td><strong>Integrity Heatmap</strong></td>
+<td>Color-coded endpoint grid: green (conformant), yellow (weak assertions), red (drift detected)</td>
+<td>See coverage gaps at a glance</td>
+</tr>
+<tr>
+<td><strong>Flow Builder</strong></td>
+<td>Drag-and-drop stateful test flows: Register → Login → Update → Delete</td>
+<td>Think in user journeys, not endpoints</td>
+</tr>
+<tr>
+<td><strong>HITL Triage Board</strong></td>
+<td>Kanban-style cards for review decisions (approve/reject/escalate)</td>
+<td>Familiar project-management UX</td>
+</tr>
+<tr>
+<td><strong>Certificate Gallery</strong></td>
+<td>Signed conformance certificates with timestamps and diff links</td>
+<td>Compliance evidence in one click</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What's new vs competitors:</strong>
+- Postman has a GUI but no integrity heatmap.
+- Momentic has a triage dashboard but for UI tests, not API conformance.
+- Nobody visualizes "spec vs reality" with an integrity score overlay.</p>
+<hr />
+<h3 id="pillar-5-integrity-as-a-service-for-ai-coding-agents-novel-category">Pillar 5: Integrity-as-a-Service for AI Coding Agents (Novel Category)</h3>
+<p><strong>The gap:</strong> TestSprite validates AI-generated <em>application code</em>. Nobody validates AI-generated <em>test code</em>.</p>
+<p><strong>The innovation:</strong> CHERENKOV becomes the independent, third-party integrity auditor that AI coding agents call before committing test code.</p>
+<div class="highlight"><pre><span></span><code>ANY AI CODING AGENT (Cursor, Copilot, Claude Code, Devin, etc.)
+  ↓ generates test code
+  ↓
+CHERENKOV INTEGRITY API (REST / MCP / GitHub Action)
+  ├─ Input: test file + OpenAPI spec
+  ├─ Output: integrity verdict + fix suggestions
+  │   {
+  │     &quot;verdict&quot;: &quot;WEAK&quot;,
+  │     &quot;issues&quot;: [
+  │       {&quot;line&quot;: 42, &quot;type&quot;: &quot;WEAKENED_ASSERTION&quot;, &quot;detail&quot;: &quot;toBe(200) → toBeLessThan(500)&quot;},
+  │       {&quot;line&quot;: 67, &quot;type&quot;: &quot;HALLUCINATED_VALUE&quot;, &quot;detail&quot;: &quot;Spec says 404, test expects 400&quot;}
+  │     ],
+  │     &quot;integrity_score&quot;: 0.72,
+  │     &quot;certificate&quot;: null  // score &lt; 0.90
+  │   }
+  └─ Agent can auto-fix or route to human
+</code></pre></div>
+<p><strong>What's new vs competitors:</strong>
+- This is a <strong>new product category</strong>: "Test Integrity as a Service" (TIaaS).
+- Analogous to how Snyk provides "Security as a Service" for dependencies, CHERENKOV provides "Integrity as a Service" for test suites.
+- No competitor offers an API that other AI agents can call to verify their own test output.</p>
+<hr />
+<h3 id="pillar-6-progressive-qa-empowerment-ladder-inspired-by-both">Pillar 6: Progressive QA Empowerment Ladder (Inspired by Both)</h3>
+<p><strong>The gap:</strong> CHERENKOV serves SDETs, not manual QAs. The 82% of QA teams that test manually have no on-ramp.</p>
+<p><strong>The innovation:</strong> A structured 5-rung career progression ladder that takes a zero-code manual QA tester to an AI-Native Quality Architect — with CHERENKOV as the vehicle.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Rung</th>
+<th>Role</th>
+<th>CHERENKOV Surface</th>
+<th style="text-align: center;">Skill Level</th>
+<th style="text-align: center;">Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td><strong>Observer</strong></td>
+<td><code>cherenkov validate &lt;api&gt;</code> → see pass/fail in plain English</td>
+<td style="text-align: center;">Zero code</td>
+<td style="text-align: center;">Day 1</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td><strong>Author</strong></td>
+<td><code>cherenkov author "test the login flow"</code> → natural language test creation</td>
+<td style="text-align: center;">Natural language</td>
+<td style="text-align: center;">Week 1</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td><strong>Reviewer</strong></td>
+<td>Visual dashboard: review HITL cards, approve/reject suggestions</td>
+<td style="text-align: center;">Point-and-click</td>
+<td style="text-align: center;">Month 1</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td><strong>Engineer</strong></td>
+<td><code>cherenkov eject</code> → read/modify vanilla Playwright TypeScript</td>
+<td style="text-align: center;">Basic TypeScript</td>
+<td style="text-align: center;">Month 3</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td><strong>Architect</strong></td>
+<td>Configure CI gates, set autonomy profiles, manage certificates</td>
+<td style="text-align: center;">Full automation</td>
+<td style="text-align: center;">Month 6</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What's new vs competitors:</strong>
+- Momentic provides rungs 1-3 (natural language → visual) but not 4-5 (code ownership → governance).
+- TestSprite provides rungs 4-5 (developer IDE → CI) but not 1-3 (zero-code entry).
+- CHERENKOV spans the full ladder — from "paste a URL" to "govern the certificate pipeline."</p>
+<hr />
+<h2 id="4-anti-reinvention-guardrails-what-not-to-build">4. Anti-Reinvention Guardrails (What NOT to Build)</h2>
+<blockquote>
+<p>[!CAUTION]
+These are existing solutions that work well. Building them is wasted effort.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>❌ Do NOT Build</th>
+<th>✅ Use Instead</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Custom browser automation engine</td>
+<td><strong>Playwright</strong> (already the execution target)</td>
+<td>Microsoft maintains it with 100+ engineers</td>
+</tr>
+<tr>
+<td>Custom OpenAPI spec linter</td>
+<td><strong>Spectral</strong> by Stoplight</td>
+<td>Battle-tested, extensible, community rules</td>
+</tr>
+<tr>
+<td>Property-based API fuzzer</td>
+<td><strong>Schemathesis</strong> (complementary partner)</td>
+<td>3.4k stars, 5+ years of hardening</td>
+</tr>
+<tr>
+<td>Custom mock server</td>
+<td><strong>Prism</strong> by Stoplight (already a dependency)</td>
+<td>Standard, reliable, community-maintained</td>
+</tr>
+<tr>
+<td>Custom web UI framework</td>
+<td><strong>React</strong> (already chosen)</td>
+<td>Focus on screens, not framework</td>
+</tr>
+<tr>
+<td>Custom CI/CD runner</td>
+<td><strong>GitHub Actions</strong> + <strong>Jenkins</strong> (already integrated)</td>
+<td>Standard, universal, maintained</td>
+</tr>
+<tr>
+<td>Full penetration testing engine</td>
+<td><strong>OWASP ZAP</strong>, <strong>Nuclei</strong></td>
+<td>Deep security scanning is a separate product</td>
+</tr>
+<tr>
+<td>Custom test management suite</td>
+<td><strong>Xray</strong>, <strong>Zephyr</strong>, <strong>TestRail</strong></td>
+<td>Integrate via API, don't rebuild</td>
+</tr>
+<tr>
+<td>Traffic recording from production</td>
+<td><strong>Keploy</strong> (complementary, different use case)</td>
+<td>17k stars, eBPF-native, battle-tested</td>
+</tr>
+<tr>
+<td>Another chat/copilot AI</td>
+<td><strong>Cursor</strong>, <strong>Claude Code</strong> (integrate via MCP)</td>
+<td>Don't compete with $10B AI IDE companies</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-scope-rationalization-cut-the-bloat">5. Scope Rationalization (Cut the Bloat)</h2>
+<blockquote>
+<p>[!WARNING]
+The codebase has 18+ packages built before a single external user validated the core product. This is the existential threat.</p>
+</blockquote>
+<h3 id="freeze-archive-revisit-after-e03-validation">Freeze (Archive — Revisit After E0.3 Validation)</h3>
+<table>
+<thead>
+<tr>
+<th>Package/Feature</th>
+<th>Reason to Freeze</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>K8s ConformanceCheck CRD Operator</td>
+<td>Premature — no enterprise user has requested this</td>
+</tr>
+<tr>
+<td>Multi-org Federation</td>
+<td>Premature — single-org adoption hasn't been proven</td>
+</tr>
+<tr>
+<td>Mobile Testing (Maestro/Appium wrappers)</td>
+<td>Premature — core API testing isn't validated yet</td>
+</tr>
+<tr>
+<td>Desktop Tauri app (308MB binary)</td>
+<td>Premature — web + CLI are sufficient for validation</td>
+</tr>
+<tr>
+<td>Scheduling + Routines (CC-4)</td>
+<td>Premature — solve the core problem first</td>
+</tr>
+<tr>
+<td>Remote Control + Teleport (CC-5)</td>
+<td>Premature — no users to teleport to</td>
+</tr>
+</tbody>
+</table>
+<h3 id="keep-strengthen-core-moat">Keep &amp; Strengthen (Core Moat)</h3>
+<table>
+<thead>
+<tr>
+<th>Package/Feature</th>
+<th>Reason to Keep</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AST integrity audit (<code>check-suite</code>)</td>
+<td><strong>THE moat</strong> — no competitor has this</td>
+</tr>
+<tr>
+<td>6-gate quality pipeline</td>
+<td>Core trust engine</td>
+</tr>
+<tr>
+<td>Spec-derived expected values</td>
+<td>Hallucination prevention</td>
+</tr>
+<tr>
+<td>Eject to vanilla Playwright</td>
+<td>Anti-lock-in trust signal</td>
+</tr>
+<tr>
+<td>MCP server (~35 tools)</td>
+<td>Distribution channel into AI IDEs</td>
+</tr>
+<tr>
+<td>Local-first Ollama/LocalAI</td>
+<td>Privacy differentiator</td>
+</tr>
+<tr>
+<td>HITL review queue</td>
+<td>Human governance mechanism</td>
+</tr>
+<tr>
+<td>GraphRAG knowledge mesh</td>
+<td>Compounding intelligence</td>
+</tr>
+<tr>
+<td>Jenkins Shared Library</td>
+<td>Enterprise CI integration</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-phased-execution-plan-4-horizons">6. Phased Execution Plan (4 Horizons)</h2>
+<h3 id="horizon-0-prove-it-works-weeks-14-gate-g0-closure">Horizon 0: "Prove It Works" (Weeks 1–4) — Gate G0 Closure</h3>
+<p><strong>Goal:</strong> Get 3 external QA practitioners to install, run, and validate CHERENKOV successfully.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Week</th>
+<th>Deliverable</th>
+<th>Success Metric</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td>Ship PyPI package (<code>pip install cherenkov-qa</code>)</td>
+<td><code>pip install</code> works on clean Ubuntu/macOS/Windows</td>
+</tr>
+<tr>
+<td style="text-align: center;">1</td>
+<td>Ship Docker image (<code>docker run cherenkov</code>)</td>
+<td>Zero-config demo in &lt; 2 minutes</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td>Ship GitHub Actions Action (SARIF output)</td>
+<td>PR comment shows conformance diff</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td>Create hosted playground ("Paste spec URL → see results")</td>
+<td>&lt; 60 seconds to first value</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td>Recruit 3 practitioners (Egypt ESTB/ISTQB CT-GenAI pool)</td>
+<td>3 successful independent installations</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td>Collect feedback, fix friction, publish case studies</td>
+<td>Gate G0 formally closed</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>Nothing else matters until Horizon 0 is complete.</strong> All innovation pillars depend on proving the core works with real humans.</p>
+</blockquote>
+<hr />
+<h3 id="horizon-1-the-integrity-ide-weeks-512-pillars-2-4">Horizon 1: "The Integrity IDE" (Weeks 5–12) — Pillars 2 + 4</h3>
+<p><strong>Goal:</strong> Make CHERENKOV visible where developers and QAs already work.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Week</th>
+<th>Deliverable</th>
+<th style="text-align: center;">Pillar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">5-6</td>
+<td>VS Code extension v1: CodeLens integrity scores on <code>.spec.ts</code> files</td>
+<td style="text-align: center;">P2</td>
+</tr>
+<tr>
+<td style="text-align: center;">5-6</td>
+<td>Wire production dashboard: Spec vs Reality screen + Integrity Heatmap</td>
+<td style="text-align: center;">P4</td>
+</tr>
+<tr>
+<td style="text-align: center;">7-8</td>
+<td>MCP Sentinel mode: real-time integrity warnings in Cursor/Claude Code</td>
+<td style="text-align: center;">P2</td>
+</tr>
+<tr>
+<td style="text-align: center;">7-8</td>
+<td>Dashboard: HITL Triage Board (kanban-style approve/reject cards)</td>
+<td style="text-align: center;">P4</td>
+</tr>
+<tr>
+<td style="text-align: center;">9-10</td>
+<td>VS Code extension v2: gutter icons (✅/⚠️/❌) + quick-fix suggestions</td>
+<td style="text-align: center;">P2</td>
+</tr>
+<tr>
+<td style="text-align: center;">9-10</td>
+<td>Dashboard: Flow Builder (drag-and-drop stateful test sequences)</td>
+<td style="text-align: center;">P4</td>
+</tr>
+<tr>
+<td style="text-align: center;">11-12</td>
+<td>Polish, dogfood internally, collect feedback from Horizon 0 practitioners</td>
+<td style="text-align: center;">All</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="horizon-2-the-intent-engine-weeks-1320-pillars-1-3">Horizon 2: "The Intent Engine" (Weeks 13–20) — Pillars 1 + 3</h3>
+<p><strong>Goal:</strong> Enable non-technical users to create and validate API tests.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Week</th>
+<th>Deliverable</th>
+<th style="text-align: center;">Pillar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">13-14</td>
+<td><code>cherenkov author</code> v1: natural language → single-endpoint test generation</td>
+<td style="text-align: center;">P1</td>
+</tr>
+<tr>
+<td style="text-align: center;">13-14</td>
+<td>Spec-optional discovery agent: given URL, crawl and infer API surface</td>
+<td style="text-align: center;">P3</td>
+</tr>
+<tr>
+<td style="text-align: center;">15-16</td>
+<td><code>cherenkov author</code> v1: parse markdown PRD → map to endpoints</td>
+<td style="text-align: center;">P1</td>
+</tr>
+<tr>
+<td style="text-align: center;">15-16</td>
+<td>Discovery → draft spec generation → human confirmation flow</td>
+<td style="text-align: center;">P3</td>
+</tr>
+<tr>
+<td style="text-align: center;">17-18</td>
+<td>Multi-step stateful flow authoring: "Register → Login → Update → Delete"</td>
+<td style="text-align: center;">P1</td>
+</tr>
+<tr>
+<td style="text-align: center;">17-18</td>
+<td>RecordingProxy integration: capture real traffic → enrich discovered spec</td>
+<td style="text-align: center;">P3</td>
+</tr>
+<tr>
+<td style="text-align: center;">19-20</td>
+<td>Integration testing, QA practitioner feedback round 2, documentation</td>
+<td style="text-align: center;">All</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="horizon-3-the-trust-protocol-weeks-2130-pillars-5-6">Horizon 3: "The Trust Protocol" (Weeks 21–30) — Pillars 5 + 6</h3>
+<p><strong>Goal:</strong> Establish CHERENKOV as the industry standard for test integrity verification.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Week</th>
+<th>Deliverable</th>
+<th style="text-align: center;">Pillar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">21-22</td>
+<td>Integrity API v1: REST endpoint accepting test file + spec → verdict JSON</td>
+<td style="text-align: center;">P5</td>
+</tr>
+<tr>
+<td style="text-align: center;">21-22</td>
+<td>Progressive QA Ladder: Rung 1-2 onboarding flow with guided tutorials</td>
+<td style="text-align: center;">P6</td>
+</tr>
+<tr>
+<td style="text-align: center;">23-24</td>
+<td>GitHub App: auto-audit AI-generated tests on every PR</td>
+<td style="text-align: center;">P5</td>
+</tr>
+<tr>
+<td style="text-align: center;">23-24</td>
+<td>QA Ladder Rung 3: visual reviewer onboarding with dashboard training</td>
+<td style="text-align: center;">P6</td>
+</tr>
+<tr>
+<td style="text-align: center;">25-26</td>
+<td>MCP marketplace listing: "CHERENKOV Integrity" tool for any AI agent</td>
+<td style="text-align: center;">P5</td>
+</tr>
+<tr>
+<td style="text-align: center;">25-26</td>
+<td>QA Ladder Rung 4-5: eject workshop + CI governance training materials</td>
+<td style="text-align: center;">P6</td>
+</tr>
+<tr>
+<td style="text-align: center;">27-28</td>
+<td>CHERENKOV Certificate v2: machine-verifiable, timestamped, linkable</td>
+<td style="text-align: center;">P5</td>
+</tr>
+<tr>
+<td style="text-align: center;">29-30</td>
+<td>Non-deterministic assertions: semantic similarity scoring for GenAI outputs</td>
+<td style="text-align: center;">P1</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-manual-qa-empowerment-strategy">7. Manual QA Empowerment Strategy</h2>
+<h3 id="the-problem-were-solving">The Problem We're Solving</h3>
+<table>
+<thead>
+<tr>
+<th>Statistic</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>82% of QA teams still test manually</td>
+<td>Massive market opportunity</td>
+</tr>
+<tr>
+<td>Only 5% are fully automated</td>
+<td>The gap is enormous</td>
+</tr>
+<tr>
+<td>Manual QA salary: $65-85k → SDET: $100-140k</td>
+<td>Career incentive is real</td>
+</tr>
+<tr>
+<td>70-80% of manual QA time on selector repair</td>
+<td>Current automation is broken</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cherenkovs-unique-value-for-manual-qas">CHERENKOV's Unique Value for Manual QAs</h3>
+<p>Unlike Momentic (which hides code) or TestSprite (which assumes coding ability), CHERENKOV offers a <strong>progressive transparency model</strong>:</p>
+<div class="highlight"><pre><span></span><code>Rung 1: &quot;I see pass/fail in English&quot;          → No code needed
+Rung 2: &quot;I describe what to test in words&quot;     → Natural language
+Rung 3: &quot;I review and approve AI suggestions&quot;  → Visual dashboard
+Rung 4: &quot;I read and modify the generated code&quot; → Learning TypeScript
+Rung 5: &quot;I govern the quality pipeline&quot;        → Architecture leadership
+</code></pre></div>
+<p><strong>Key differentiator:</strong> At every rung, the QA engineer sees the <em>integrity score</em> of their test suite. They learn not just "how to write tests" but "how to verify that tests are honest." This is the skill that makes them irreplaceable in the AI era.</p>
+<h3 id="what-makes-this-different-from-competitors">What Makes This Different from Competitors</h3>
+<table>
+<thead>
+<tr>
+<th>Competitor</th>
+<th>What they teach QAs</th>
+<th>What CHERENKOV teaches QAs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Momentic</td>
+<td>How to write natural language tests</td>
+<td>How to write AND verify test integrity</td>
+</tr>
+<tr>
+<td>TestSprite</td>
+<td>How to validate AI-generated code</td>
+<td>How to validate AI-generated <em>tests</em></td>
+</tr>
+<tr>
+<td>Katalon</td>
+<td>How to use a proprietary low-code tool</td>
+<td>How to own portable Playwright code</td>
+</tr>
+<tr>
+<td>Postman</td>
+<td>How to send HTTP requests</td>
+<td>How to prove API conformance</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-go-to-market-recommendations">8. Go-to-Market Recommendations</h2>
+<h3 id="distribution-strategy-highest-leverage-first">Distribution Strategy (Highest-Leverage First)</h3>
+<table>
+<thead>
+<tr>
+<th>Channel</th>
+<th style="text-align: center;">Effort</th>
+<th style="text-align: center;">Reach</th>
+<th style="text-align: center;">Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PyPI package</strong> (<code>pip install cherenkov-qa</code>)</td>
+<td style="text-align: center;">1 day</td>
+<td style="text-align: center;">All Python devs</td>
+<td style="text-align: center;">🔴 P0</td>
+</tr>
+<tr>
+<td><strong>Docker image</strong> (<code>docker run cherenkov</code>)</td>
+<td style="text-align: center;">1 day</td>
+<td style="text-align: center;">All DevOps</td>
+<td style="text-align: center;">🔴 P0</td>
+</tr>
+<tr>
+<td><strong>GitHub Actions Action</strong> (SARIF → Security tab)</td>
+<td style="text-align: center;">3 days</td>
+<td style="text-align: center;">100M+ GH users</td>
+<td style="text-align: center;">🔴 P0</td>
+</tr>
+<tr>
+<td><strong>Hosted playground</strong> (paste URL → results)</td>
+<td style="text-align: center;">1 week</td>
+<td style="text-align: center;">Manual QAs, evaluators</td>
+<td style="text-align: center;">🔴 P0</td>
+</tr>
+<tr>
+<td><strong>VS Code extension</strong> (marketplace)</td>
+<td style="text-align: center;">3-4 weeks</td>
+<td style="text-align: center;">73M monthly users</td>
+<td style="text-align: center;">🟡 P1</td>
+</tr>
+<tr>
+<td><strong>MCP registry listing</strong></td>
+<td style="text-align: center;">2 days</td>
+<td style="text-align: center;">Cursor/Claude Code users</td>
+<td style="text-align: center;">🟡 P1</td>
+</tr>
+<tr>
+<td><strong>"Catch the AI Cheating" blog post + demo</strong></td>
+<td style="text-align: center;">1 week</td>
+<td style="text-align: center;">Dev community (viral)</td>
+<td style="text-align: center;">🟡 P1</td>
+</tr>
+<tr>
+<td><strong>npm package</strong> (<code>npx cherenkov</code>)</td>
+<td style="text-align: center;">1 day</td>
+<td style="text-align: center;">JS/TS ecosystem</td>
+<td style="text-align: center;">🟢 P2</td>
+</tr>
+<tr>
+<td><strong>Homebrew formula</strong></td>
+<td style="text-align: center;">1 day</td>
+<td style="text-align: center;">macOS developers</td>
+<td style="text-align: center;">🟢 P2</td>
+</tr>
+</tbody>
+</table>
+<h3 id="competitive-positioning-matrix">Competitive Positioning Matrix</h3>
+<div class="highlight"><pre><span></span><code>             HIGH PRIVACY
+                  │
+                  │    ★ CHERENKOV-QA
+     Schemathesis │    (Local + AI + Integrity)
+          Bruno   │
+                  │
+  ────────────────┼──────────────────── HIGH AI CAPABILITY
+                  │
+                  │    Momentic
+         Postman  │    TestSprite
+         Katalon  │    KushoAI
+                  │
+             LOW PRIVACY
+</code></pre></div>
+<h3 id="category-naming">Category Naming</h3>
+<blockquote>
+<p><strong>Proposed new category:</strong> "Test Integrity Verification" (TIV)</p>
+<ul>
+<li>Security has SAST/DAST/SCA</li>
+<li>Code quality has linting/formatting</li>
+<li>Test quality has... nothing</li>
+<li><strong>CHERENKOV creates this category</strong></li>
+</ul>
+</blockquote>
+<hr />
+<h2 id="9-open-questions-for-owner-decision">9. Open Questions for Owner Decision</h2>
+<blockquote>
+<p>[!IMPORTANT]
+These decisions shape the roadmap. Please review and provide direction.</p>
+</blockquote>
+<h3 id="q1-scope-freeze">Q1: Scope Freeze</h3>
+<p>Do you agree with freezing K8s operator, mobile testing, desktop app, federation, teleport, and scheduling until after Gate G0 closes? Or are any of these strategically critical to keep active?</p>
+<h3 id="q2-saas-vs-pure-oss">Q2: SaaS vs. Pure OSS</h3>
+<p>Should we build a hosted SaaS tier (CHERENKOV Cloud) for the playground and Integrity-as-a-Service API? Or stay pure open-source with self-hosted only?</p>
+<h3 id="q3-monetization-model">Q3: Monetization Model</h3>
+<p>For the future: freemium credits (like Momentic/TestSprite), enterprise license, or open-core with premium features?</p>
+<h3 id="q4-visual-dashboard-investment">Q4: Visual Dashboard Investment</h3>
+<p>The current dashboard is mock-wired. Should Horizon 1 prioritize wiring it to real data, or should we focus purely on VS Code extension + MCP as the primary surfaces?</p>
+<h3 id="q5-partnership-strategy">Q5: Partnership Strategy</h3>
+<p>Should we pursue formal integration partnerships with Schemathesis (complementary fuzzing), Keploy (traffic recording), or Portman (Postman ecosystem)? Or stay independent?</p>
+<hr />
+<h2 id="10-verification-plan">10. Verification Plan</h2>
+<h3 id="success-metrics-per-horizon">Success Metrics per Horizon</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Horizon</th>
+<th>Metric</th>
+<th style="text-align: center;">Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">H0</td>
+<td>External QA practitioners who complete full demo</td>
+<td style="text-align: center;">≥ 3</td>
+</tr>
+<tr>
+<td style="text-align: center;">H0</td>
+<td>Time from <code>pip install</code> to first conformance report</td>
+<td style="text-align: center;">&lt; 5 minutes</td>
+</tr>
+<tr>
+<td style="text-align: center;">H1</td>
+<td>VS Code extension installs</td>
+<td style="text-align: center;">≥ 100 in first month</td>
+</tr>
+<tr>
+<td style="text-align: center;">H1</td>
+<td>MCP Sentinel catches AI assertion-weakening in live demo</td>
+<td style="text-align: center;">≥ 1 recorded demo</td>
+</tr>
+<tr>
+<td style="text-align: center;">H2</td>
+<td>Non-technical QA completes <code>cherenkov author</code> flow successfully</td>
+<td style="text-align: center;">≥ 3 practitioners</td>
+</tr>
+<tr>
+<td style="text-align: center;">H2</td>
+<td>Spec-optional discovery correctly infers ≥ 80% of endpoints</td>
+<td style="text-align: center;">≥ 3 APIs tested</td>
+</tr>
+<tr>
+<td style="text-align: center;">H3</td>
+<td>External repos running <code>cherenkov certify</code> in CI</td>
+<td style="text-align: center;">≥ 5</td>
+</tr>
+<tr>
+<td style="text-align: center;">H3</td>
+<td>Integrity API calls from external AI agents</td>
+<td style="text-align: center;">≥ 100/month</td>
+</tr>
+</tbody>
+</table>
+<h3 id="automated-tests">Automated Tests</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Horizon 0 validation</span>
+pip<span class="w"> </span>install<span class="w"> </span>cherenkov-qa<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>cherenkov<span class="w"> </span>validate<span class="w"> </span>--target<span class="w"> </span>https://petstore.swagger.io<span class="w"> </span>--spec<span class="w"> </span>petstore.yaml
+
+<span class="c1"># Horizon 1 validation</span>
+code<span class="w"> </span>--install-extension<span class="w"> </span>cherenkov.cherenkov-integrity<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>cherenkov<span class="w"> </span>mcp
+
+<span class="c1"># Horizon 2 validation</span>
+cherenkov<span class="w"> </span>author<span class="w"> </span><span class="s2">&quot;Test the user registration and login flow&quot;</span><span class="w"> </span>--target<span class="w"> </span>api.yaml<span class="w"> </span>
+
+<span class="c1"># Horizon 3 validation</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://api.cherenkov.dev/v1/audit<span class="w"> </span>-d<span class="w"> </span>@test.spec.ts<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;X-Spec: api.yaml&quot;</span>
+</code></pre></div>
+<h3 id="manual-verification">Manual Verification</h3>
+<ul>
+<li>User interviews after each horizon (3+ practitioners per round)</li>
+<li>Competitive benchmark: run same API against CHERENKOV, Schemathesis, and Postman — compare output quality</li>
+<li>"Catch the cheating AI" demo: record video showing CHERENKOV detecting a weakened assertion that all other tools miss</li>
+</ul>
+<hr />
+<h2 id="summary-the-innovation-story">Summary: The Innovation Story</h2>
+<div class="highlight"><pre><span></span><code>TODAY:     &quot;Another API testing tool&quot; (crowded, confusing, 0 traction)
+           ↓
+HORIZON 0: &quot;A working integrity auditor with real users&quot;
+           ↓
+HORIZON 1: &quot;The integrity layer inside your IDE and CI&quot;
+           ↓
+HORIZON 2: &quot;Anyone can verify their API — no spec required, no code required&quot;
+           ↓
+HORIZON 3: &quot;The trust protocol for the agentic era&quot;
+</code></pre></div>
+<p><strong>One-sentence vision:</strong> CHERENKOV-QA is the independent trust layer that proves AI-generated tests actually test what matters — making the shift from manual QA to automation safe, transparent, and irreversible.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"current": "1.4", "versions": ["1.2", "1.3", "1.4"]}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/version-banner.js"></script>
+      
+    
+  </body>
+</html>

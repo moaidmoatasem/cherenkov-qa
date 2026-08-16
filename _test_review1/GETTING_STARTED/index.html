@@ -1,0 +1,3831 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Autonomous Quality Fabric">
+      
+      
+        <meta name="author" content="TesterArmy">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>CHERENKOV Getting Started Guide - Cherenkov QA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cherenkov-getting-started-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  <div class="md-version-warning">
+    <strong>Notice:</strong> You are viewing documentation for an older version of CHERENKOV-QA.
+    <a href="https://moaidmoatasem.github.io/cherenkov-qa/1.4/">Click here for the latest version (v1.4).</a>
+  </div>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL(".."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Cherenkov QA" class="md-header__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cherenkov QA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CHERENKOV Getting Started Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../1.4/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/getting-started/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/guides/" class="md-tabs__link">
+          
+  
+  
+  QA & Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/guides/ci-cd/" class="md-tabs__link">
+          
+  
+  
+  Ecosystem
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/troubleshooting/faq/" class="md-tabs__link">
+          
+  
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/cli/reference/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Cherenkov QA" class="md-nav__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cherenkov QA
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/cost-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Tiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA & Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    QA & Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides Hub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/api-conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/check-suite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Check Suite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/test-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/continuous-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spec Guardian
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/certificates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Certificates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/hitl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HITL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/eject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eject
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/system-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/platform-operating-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/user-journeys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Journeys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/clean-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/module-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/second-brain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Second Brain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Role Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Role Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/roles/developer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/roles/qa-engineer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA Engineer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/roles/devops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps & SRE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/roles/team-lead/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Team Lead
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/ci-cd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/integrations/github-actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/integrations/vscode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VS Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/integrations/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/integrations/langchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Troubleshooting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/troubleshooting/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/troubleshooting/common-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Issues
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/cli/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/cli/completions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Completions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/releases/v1.4.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.4.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/releases/v1.3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.3.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/releases/v1.2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.2.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cherenkov-getting-started-guide">CHERENKOV Getting Started Guide</h1>
+<p>Welcome to CHERENKOV! This usage-first guide will walk you from initial
+installation to running your first passing test suite and ejecting standalone
+Playwright tests in under 5 minutes.</p>
+<blockquote>
+<p><strong>New here?</strong> This doc is one of three entry points. Pick the one that fits:</p>
+<ul>
+<li><strong><a href="../README.md">../README.md</a></strong> — 2-minute overview.</li>
+<li><strong><a href="../CLI_DEMO/">CLI_DEMO.md</a></strong> — terminal walk-through of the full flow.</li>
+<li>This file — the full install + first run guide.</li>
+</ul>
+<p><strong>Need the project status?</strong> → <a href="../STATUS/">STATUS.md</a>.
+<strong>Lost in the docs?</strong> → <a href="../INDEX/">INDEX.md</a>.</p>
+</blockquote>
+<p><strong>In this guide:</strong></p>
+<ol>
+<li><a href="#-prerequisites--installation">Prerequisites &amp; Installation</a></li>
+<li><a href="#-cli-commands--usage">CLI Commands &amp; Usage</a></li>
+<li><a href="#command-groups">Command Groups</a></li>
+<li><a href="#track-a-core">Track A Core</a></li>
+<li><a href="#track-bc-and-horizon-2-built-re-integrated">Track B/C &amp; Horizon 2</a></li>
+<li><a href="#next-steps">Next steps</a></li>
+</ol>
+<hr />
+<h2 id="prerequisites-installation">🛠️ Prerequisites &amp; Installation</h2>
+<p>Ensure you have the following installed in your environment:
+- Node.js (v18 or higher)
+- Python (v3.10 or higher)</p>
+<h3 id="1-setup-wsllocal-environment">1. Setup WSL/Local Environment</h3>
+<p>Clone this repository and run standard package installations inside the workspace:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Set up Python Virtual Environment and install packages</span>
+python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>target/requirements.txt
+
+<span class="c1"># Set up Node/Playwright in the stub folder</span>
+<span class="nb">cd</span><span class="w"> </span>stub
+npm<span class="w"> </span>install
+npx<span class="w"> </span>playwright<span class="w"> </span>install
+<span class="nb">cd</span><span class="w"> </span>..
+</code></pre></div>
+<h3 id="2-docker-setup-recommended">2. Docker Setup (Recommended)</h3>
+<p>You can run CHERENKOV in a fully containerized environment using Docker Compose. This packages the Python engine, the pre-built React dashboard, the target API, and the Ollama model server automatically.</p>
+<p><div class="highlight"><pre><span></span><code><span class="c1"># Run the complete environment (requires GPU)</span>
+make<span class="w"> </span>full
+
+<span class="c1"># Or run the offline Demo mode (no GPU, no model download)</span>
+make<span class="w"> </span>demo
+</code></pre></div>
+When running <code>make demo</code>, you can view the mock findings in the dashboard at <code>http://localhost:8000</code>.</p>
+<hr />
+<h2 id="cli-commands-usage">🚀 CLI Commands &amp; Usage</h2>
+<p>CHERENKOV exposes all operations natively through a unified CLI tool: <code>./bin/cherenkov</code>.</p>
+<h3 id="display-cli-command-help">Display CLI Command Help</h3>
+<p>To view all supported commands and options:
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>--help
+</code></pre></div></p>
+<hr />
+<h3 id="command-groups">Command Groups</h3>
+<p>The CLI organizes its 45 top-level commands into 7 logical command groups for
+discoverability. Every command remains available at the top level for backwards
+compatibility, so <code>cherenkov validate</code> and <code>cherenkov pipeline</code> both
+work. See <a href="../CLI_GROUPS/">CLI_GROUPS.md</a> for the full group reference.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># List the commands inside a group</span>
+./bin/cherenkov<span class="w"> </span>pipeline<span class="w"> </span>--help
+</code></pre></div>
+<h4 id="pipeline"><code>pipeline</code></h4>
+<p>Core API conformance pipeline: <code>validate</code>, <code>verify</code>, <code>audit</code>, <code>check-suite</code>,
+<code>check-stale</code>, <code>synthetic</code>, <code>generate</code>, <code>bench</code>, <code>eval</code>, <code>drift</code>.</p>
+<h4 id="review"><code>review</code></h4>
+<p>Human-in-the-loop review workflows: <code>hitl</code>, <code>review</code>, <code>ocr</code>.</p>
+<h4 id="model"><code>model</code></h4>
+<p>Model / VLM substrate commands: <code>visual</code>, <code>perf</code>, <code>mobile</code>, <code>mcp</code>, <code>examples</code>.</p>
+<h4 id="operate"><code>operate</code></h4>
+<p>Long-running operations and observability: <code>daemon</code>, <code>dashboard</code>, <code>explore</code>,
+<code>map</code>, <code>author</code>, <code>record</code>, <code>tokens</code>, <code>governance</code>, <code>profile</code>, <code>teleport</code>.</p>
+<h4 id="admin"><code>admin</code></h4>
+<p>Setup, maintenance, and self-service: <code>init</code>, <code>doctor</code>, <code>self-test</code>, <code>eject</code>,
+<code>completion</code>, <code>report</code>, <code>diff</code>, <code>demo</code>.</p>
+<h4 id="enterprise"><code>enterprise</code></h4>
+<p>Enterprise integrations and certification: <code>enterprise</code>, <code>certify</code>, <code>playbook</code>,
+<code>guardian</code>.</p>
+<h4 id="routine"><code>routine</code></h4>
+<p>Scheduled routines: <code>routine</code>.</p>
+<hr />
+<h3 id="track-a-core">Track A Core</h3>
+<p>Core API conformance testing and pipeline operations. These commands are fully
+built, validated, and governed by the CHERENKOV design invariants (D7, anti-lock-in,
+suggest-only, spec-derived).</p>
+<hr />
+<h4 id="validate"><code>validate</code></h4>
+<p>Executes your Playwright test suite against a real server, programmatically parses trace files, compares request vs response payloads, and suggests value assertions.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Command help</span>
+./bin/cherenkov<span class="w"> </span>validate<span class="w"> </span>--help
+
+<span class="c1"># Standard usage</span>
+<span class="nb">cd</span><span class="w"> </span>target<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>uvicorn<span class="w"> </span>target_api:app<span class="w"> </span>--host<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+./bin/cherenkov<span class="w"> </span>validate<span class="w"> </span>--target<span class="w"> </span>http://localhost:8000
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--target</code>, <code>-t</code></td>
+<td><em>(required)</em></td>
+<td>The real server target base URL</td>
+</tr>
+<tr>
+<td><code>--source</code></td>
+<td><code>openapi</code></td>
+<td>Contract type to plan scenarios from — see below</td>
+</tr>
+</tbody>
+</table>
+<h5 id="protocols-beyond-rest">Protocols beyond REST</h5>
+<p><code>--source</code> selects which kind of contract scenarios are planned from. Every
+value except <code>openapi</code> requires <code>--spec</code>.</p>
+<table>
+<thead>
+<tr>
+<th><code>--source</code></th>
+<th>Spec format</th>
+<th>Scenarios per operation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>openapi</code> <em>(default)</em></td>
+<td>OpenAPI JSON/YAML</td>
+<td>Spec-derived, per path + method</td>
+</tr>
+<tr>
+<td><code>graphql</code></td>
+<td>GraphQL SDL</td>
+<td>Per query/mutation</td>
+</tr>
+<tr>
+<td><code>grpc</code></td>
+<td><code>.proto</code>, or a Buf Schema Registry module path</td>
+<td>Happy path + missing fields</td>
+</tr>
+<tr>
+<td><code>asyncapi</code></td>
+<td>AsyncAPI YAML</td>
+<td>Happy path, missing required, invalid payload, auth — per channel operation</td>
+</tr>
+<tr>
+<td><code>accessibility</code></td>
+<td>Sitemap XML or a newline-delimited URL list</td>
+<td>Per page</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="c1"># GraphQL</span>
+./bin/cherenkov<span class="w"> </span>validate<span class="w"> </span>--target<span class="w"> </span>http://localhost:8000<span class="w"> </span>--source<span class="w"> </span>graphql<span class="w"> </span>--spec<span class="w"> </span>./schema.graphql
+
+<span class="c1"># gRPC — local proto, or fetched from the Buf Schema Registry</span>
+./bin/cherenkov<span class="w"> </span>validate<span class="w"> </span>--target<span class="w"> </span>http://localhost:8000<span class="w"> </span>--source<span class="w"> </span>grpc<span class="w"> </span>--spec<span class="w"> </span>./orders.proto
+
+<span class="c1"># AsyncAPI — plans publish/subscribe scenarios per channel</span>
+./bin/cherenkov<span class="w"> </span>validate<span class="w"> </span>--target<span class="w"> </span>http://localhost:8000<span class="w"> </span>--source<span class="w"> </span>asyncapi<span class="w"> </span>--spec<span class="w"> </span>./orders.yaml
+</code></pre></div>
+<p>For AsyncAPI, <code>$ref</code>'d messages are resolved before planning, so the required
+fields the generated WebSocket tests assert on come from the referenced payload
+schema rather than the reference itself.</p>
+<hr />
+<h4 id="verify"><code>verify</code></h4>
+<p>Zero-config entry point that finds spec↔implementation divergences on a live API. Runs in offline mode by default (no LLM, no Ollama required). Use <code>--llm</code> to engage the full Skeptic agent for richer hypothesis generation.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Zero-config demo against the public Petstore</span>
+cherenkov<span class="w"> </span>verify<span class="w"> </span>--url<span class="w"> </span>https://petstore3.swagger.io/api/v3
+
+<span class="c1"># Point at your own API with a local spec</span>
+cherenkov<span class="w"> </span>verify<span class="w"> </span>--url<span class="w"> </span>http://localhost:8080<span class="w"> </span>--spec<span class="w"> </span>./openapi.yaml
+
+<span class="c1"># CI gate: fail the build if any divergences are found</span>
+cherenkov<span class="w"> </span>verify<span class="w"> </span>--url<span class="w"> </span>http://localhost:8080<span class="w"> </span>--spec<span class="w"> </span>./openapi.yaml<span class="w"> </span>--fail-on-divergence
+
+<span class="c1"># Write a JSON report and show spec coverage gap</span>
+cherenkov<span class="w"> </span>verify<span class="w"> </span>--url<span class="w"> </span>http://localhost:8080<span class="w"> </span>--spec<span class="w"> </span>./openapi.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>report.json<span class="w"> </span>--coverage-report
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--url</code> / <code>-u</code></td>
+<td><em>(required)</em></td>
+<td>Base URL of the live server to probe</td>
+</tr>
+<tr>
+<td><code>--spec</code> / <code>-s</code></td>
+<td><em>(built-in Petstore)</em></td>
+<td>Path or URL to the OpenAPI spec</td>
+</tr>
+<tr>
+<td><code>--llm</code></td>
+<td>off</td>
+<td>Use the LLM Skeptic (requires Ollama)</td>
+</tr>
+<tr>
+<td><code>--output</code> / <code>-o</code></td>
+<td><em>(stdout)</em></td>
+<td>Write divergence report to file</td>
+</tr>
+<tr>
+<td><code>--format</code></td>
+<td><code>json</code></td>
+<td>Report format: <code>json</code> or <code>text</code></td>
+</tr>
+<tr>
+<td><code>--fail-on-divergence</code></td>
+<td>off</td>
+<td>Exit 1 if divergences found (CI gate)</td>
+</tr>
+<tr>
+<td><code>--coverage-report</code></td>
+<td>off</td>
+<td>Print endpoint coverage gap analysis</td>
+</tr>
+<tr>
+<td><code>--simple</code></td>
+<td>off</td>
+<td>Use legacy single-probe summary</td>
+</tr>
+<tr>
+<td><code>--no-mutation-oracle</code></td>
+<td>off</td>
+<td>Skip mutation oracle (faster)</td>
+</tr>
+<tr>
+<td><code>--fixture-dir</code></td>
+<td><code>.cherenkov/fixtures</code></td>
+<td>Directory for golden fixtures</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="demo"><code>demo</code></h4>
+<p>60-second offline demo — no Ollama, no API key, no running server required. Demonstrates the core CHERENKOV value proposition: catching an AI-generated test suite that was silently weakened.</p>
+<div class="highlight"><pre><span></span><code>cherenkov<span class="w"> </span>demo
+</code></pre></div>
+<hr />
+<h4 id="generate"><code>generate</code></h4>
+<p>Generate Playwright E2E test files from an OpenAPI specification using the LLM-backed generate→review→repair loop.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Generate tests for a local spec (uses Ollama by default)</span>
+cherenkov<span class="w"> </span>generate<span class="w"> </span>--spec<span class="w"> </span>./openapi.yaml
+
+<span class="c1"># Write to a custom output directory, skip repair loop</span>
+cherenkov<span class="w"> </span>generate<span class="w"> </span>--spec<span class="w"> </span>./openapi.yaml<span class="w"> </span>--output-dir<span class="w"> </span>./tests<span class="w"> </span>--no-repair
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--spec</code></td>
+<td><em>(required)</em></td>
+<td>Path to the OpenAPI spec (JSON/YAML)</td>
+</tr>
+<tr>
+<td><code>--output-dir</code></td>
+<td><code>stub/generated_tests</code></td>
+<td>Directory to write <code>.spec.ts</code> files</td>
+</tr>
+<tr>
+<td><code>--no-repair</code></td>
+<td>off</td>
+<td>Write first generation directly, skip repair</td>
+</tr>
+<tr>
+<td><code>--max-attempts</code></td>
+<td><code>3</code></td>
+<td>Maximum repair attempts per scenario</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="admin_1"><code>admin</code></h4>
+<p>Admin utilities: manage service accounts, rotate keys, and run admin-only maintenance tasks.</p>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>admin<span class="w"> </span>--help
+./bin/cherenkov<span class="w"> </span>admin<span class="w"> </span>rotate-keys
+</code></pre></div>
+<hr />
+<h4 id="model_1"><code>model</code></h4>
+<p>Model management: download, list, and pin models used by CHERENKOV (Ollama/LocalAI integration).</p>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>model<span class="w"> </span>--help
+./bin/cherenkov<span class="w"> </span>model<span class="w"> </span>list
+./bin/cherenkov<span class="w"> </span>model<span class="w"> </span>pin<span class="w"> </span>&lt;model-name&gt;
+</code></pre></div>
+<hr />
+<h4 id="operate_1"><code>operate</code></h4>
+<p>Operational commands for runbook actions and long-running tasks (start/stop/health of agents).</p>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>operate<span class="w"> </span>--help
+./bin/cherenkov<span class="w"> </span>operate<span class="w"> </span>skeptic
+</code></pre></div>
+<hr />
+<h4 id="pipeline_1"><code>pipeline</code></h4>
+<p>Pipeline helpers: orchestrate CI/CD fragments, validate landing zones, and run canary checks.</p>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>pipeline<span class="w"> </span>--help
+./bin/cherenkov<span class="w"> </span>pipeline
+</code></pre></div>
+<hr />
+<h4 id="self-test"><code>self-test</code></h4>
+<p>Run a deterministic dry-run of the pipeline (mocking Ollama and the server).</p>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>self-test<span class="w"> </span>--help
+./bin/cherenkov<span class="w"> </span>self-test
+</code></pre></div>
+<hr />
+<h4 id="report"><code>report</code></h4>
+<p>Generate test coverage and diff reports from run logs.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Generate a report from the latest run</span>
+./bin/cherenkov<span class="w"> </span>report<span class="w"> </span>--output<span class="w"> </span>report.json
+
+<span class="c1"># Diff two reports to detect regressions</span>
+./bin/cherenkov<span class="w"> </span>report<span class="w"> </span>--diff<span class="w"> </span>previous_report.json<span class="w"> </span>--output<span class="w"> </span>report.json
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--output</code>, <code>-o</code></td>
+<td><em>(none)</em></td>
+<td>JSON output file path (e.g. report.json)</td>
+</tr>
+<tr>
+<td><code>--diff</code>, <code>-d</code></td>
+<td><em>(none)</em></td>
+<td>Path to previous report.json for diff comparison</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="eject"><code>eject</code></h4>
+<p>Copies all your generated specs and TypeScript compilation files, emits a clean <code>client.ts</code> completely stripped of trace interception metadata, and generates standard Playwright and package settings.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Eject the suite to a standalone folder</span>
+./bin/cherenkov<span class="w"> </span>eject<span class="w"> </span>--output<span class="w"> </span>ejected_suite
+
+<span class="c1"># If you generated with a custom --output-dir, tell eject where to find it —</span>
+<span class="c1"># otherwise it only ever reads stub/generated_tests and won&#39;t see your tests:</span>
+./bin/cherenkov<span class="w"> </span>eject<span class="w"> </span>--output<span class="w"> </span>ejected_suite<span class="w"> </span>--tests-dir<span class="w"> </span>./tests
+
+<span class="c1"># The ejected folder runs with vanilla Playwright</span>
+<span class="nb">cd</span><span class="w"> </span>ejected_suite
+npm<span class="w"> </span>install
+npx<span class="w"> </span>playwright<span class="w"> </span><span class="nb">test</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--output</code>, <code>-o</code></td>
+<td><em>(required)</em></td>
+<td>Target output directory for the standalone suite</td>
+</tr>
+<tr>
+<td><code>--tests-dir</code>, <code>-t</code></td>
+<td><code>stub/generated_tests</code></td>
+<td>Directory containing the <code>.spec.ts</code> files to eject — must match <code>generate</code>'s <code>--output-dir</code> if you used a custom one</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="init-e5-1-zero-config-project-setup"><code>init</code> (E5-1 — zero-config project setup)</h4>
+<p>Auto-detects OpenAPI specs and generates a sensible <code>cherenkov.toml</code> with defaults that are offline, free, and deterministic.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Auto-detect and generate config</span>
+./bin/cherenkov<span class="w"> </span>init
+
+<span class="c1"># Override profile and force overwrite</span>
+./bin/cherenkov<span class="w"> </span>init<span class="w"> </span>--profile<span class="w"> </span>ci<span class="w"> </span>--force
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--profile</code>, <code>-p</code></td>
+<td><code>autodetect</code></td>
+<td>Configuration profile: <code>laptop</code>, <code>ci</code>, <code>enterprise-vpc</code>, <code>frontier-cloud</code></td>
+</tr>
+<tr>
+<td><code>--force</code>, <code>-f</code></td>
+<td><code>false</code></td>
+<td>Overwrite existing cherenkov.toml</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="doctor-e5-3-system-health-check"><code>doctor</code> (E5-3 — system health check)</h4>
+<p>Reports effective configuration, device health (GPU vs CPU), model availability, egress policy consistency, and environmental dependencies (Node, Playwright, Docker/Prism).</p>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>doctor<span class="w"> </span>--help
+./bin/cherenkov<span class="w"> </span>doctor
+</code></pre></div>
+<hr />
+<h4 id="dashboard-e5-4-truth-model-divergences-view"><code>dashboard</code> (E5-4 — Truth Model + divergences view)</h4>
+<p>Displays the Truth Model claim graph and any open divergences. Uses mock data when no Truth Model has been built.</p>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>dashboard<span class="w"> </span>--help
+./bin/cherenkov<span class="w"> </span>dashboard
+</code></pre></div>
+<hr />
+<h4 id="hitl-human-in-the-loop-review-queue"><code>hitl</code> (Human-In-The-Loop review queue)</h4>
+<p>When a <code>REVIEW</code> stage yields <code>Verdict.HITL</code>, the finding is persisted in a durable
+SQLite queue (<code>.cherenkov/hitl.db</code>). The <code>hitl</code> command lets any reviewer inspect,
+approve, or reject pending items entirely from the terminal — no dashboard required.</p>
+<p>All subcommands accept a <code>--json</code> flag that emits a versioned <strong><code>hitl/v1</code> envelope</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;schema_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hitl/v1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hitl.approve&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>--help
+</code></pre></div>
+<h5 id="hitl-list"><code>hitl list</code></h5>
+<p>List items in the queue (defaults to <code>pending</code> only).</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Show pending items (default)</span>
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>list
+
+<span class="c1"># Show all statuses</span>
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>list<span class="w"> </span>--all
+
+<span class="c1"># Filter by a specific status</span>
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>list<span class="w"> </span>--status<span class="w"> </span>approved
+
+<span class="c1"># Machine-readable hitl/v1 JSON output</span>
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>list<span class="w"> </span>--json
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>list<span class="w"> </span>--all<span class="w"> </span>--json
+</code></pre></div>
+<p><strong>Human output example:</strong>
+<div class="highlight"><pre><span></span><code>HITL queue — pending (1 item(s))
+  id                                    status      info
+  ------------------------------------  ----------  ----
+  ck_abc123-...                         pending     conf=0.72  gate=gate_3_ast  POST /orders
+</code></pre></div></p>
+<p><strong>JSON envelope example (<code>--json</code>):</strong>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;schema_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hitl/v1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hitl.list&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;status_filter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pending&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;items&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ck_abc123-...&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pending&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/orders&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.72</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;review_gate_failed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gate_3_ast&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-06-04T08:00:00+00:00&quot;</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h5 id="hitl-show-id"><code>hitl show &lt;id&gt;</code></h5>
+<p>Display full details of a single queue item.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Human-readable detail view</span>
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>show<span class="w"> </span>ck_abc123-...
+
+<span class="c1"># JSON envelope</span>
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>show<span class="w"> </span>ck_abc123-...<span class="w"> </span>--json
+</code></pre></div>
+<p><strong>Human output example:</strong>
+<div class="highlight"><pre><span></span><code>HITL item: ck_abc123-...
+  id              : ck_abc123-...
+  status          : pending
+  endpoint        : POST /orders
+  mutation_id     : mut_42
+  mutation_label  : Omit required field: email
+  confidence      : 0.72
+  review_gate_failed: gate_3_ast
+  run_id          : run_20260604_001
+  created_at      : 2026-06-04T08:00:00+00:00
+  approved_by     : None
+</code></pre></div></p>
+<h5 id="hitl-approve-id"><code>hitl approve &lt;id&gt;</code></h5>
+<p>Approve a <strong>pending</strong> item. Atomic: only one approver can win on a race; the loser
+receives a truthful <code>conflict</code> error.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Approve (actor defaults to $USER env var)</span>
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>approve<span class="w"> </span>ck_abc123-...
+
+<span class="c1"># Approve with explicit actor identity</span>
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>approve<span class="w"> </span>ck_abc123-...<span class="w"> </span>--actor<span class="w"> </span>@alice
+
+<span class="c1"># Approve and emit JSON envelope</span>
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>approve<span class="w"> </span>ck_abc123-...<span class="w"> </span>--actor<span class="w"> </span>@alice<span class="w"> </span>--json
+</code></pre></div>
+<p><strong>JSON success envelope:</strong>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;schema_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hitl/v1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hitl.approve&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ck_abc123-...&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;approve&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;previous_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pending&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;current_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;approved&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;actor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;@alice&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;actor_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-06-04T08:05:00Z&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;rows_affected&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p><strong>JSON conflict envelope</strong> (item already resolved):
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;schema_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hitl/v1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hitl.approve&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;conflict&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ck_abc123-... no longer pending. Already approved by @alice.&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;current_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;approved&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;current_actor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;@alice&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;current_actor_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-06-04T08:05:00Z&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h5 id="hitl-reject-id"><code>hitl reject &lt;id&gt;</code></h5>
+<p>Reject a <strong>pending</strong> item with a mandatory reason string.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Reject with reason (required)</span>
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>reject<span class="w"> </span>ck_abc123-...<span class="w"> </span>--reason<span class="w"> </span><span class="s2">&quot;incorrect_spec&quot;</span>
+
+<span class="c1"># Reject with explicit actor</span>
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>reject<span class="w"> </span>ck_abc123-...<span class="w"> </span>--reason<span class="w"> </span><span class="s2">&quot;flaky_endpoint&quot;</span><span class="w"> </span>--actor<span class="w"> </span>@bob
+
+<span class="c1"># Reject and emit JSON envelope</span>
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>reject<span class="w"> </span>ck_abc123-...<span class="w"> </span>--reason<span class="w"> </span><span class="s2">&quot;flaky_endpoint&quot;</span><span class="w"> </span>--actor<span class="w"> </span>@bob<span class="w"> </span>--json
+
+<span class="c1"># Reject with a short reason plus a longer free-text elaboration — kept as</span>
+<span class="c1"># separate fields in FeedbackStore (cherenkov/core/feedback_store.py) so the</span>
+<span class="c1"># learning loop can distinguish category from detail</span>
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>reject<span class="w"> </span>ck_abc123-...<span class="w"> </span>--reason<span class="w"> </span>too_noisy<span class="w"> </span>--note<span class="w"> </span><span class="s2">&quot;flaky under load&quot;</span>
+</code></pre></div>
+<h5 id="hitl-classify-id-tier-2"><code>hitl classify &lt;id&gt;</code> (Tier-2)</h5>
+<p>Classify a HITL item as <code>regression</code>, <code>intended</code>, or <code>ignore</code>.</p>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>classify<span class="w"> </span>ck_abc123-...<span class="w"> </span>--classification<span class="w"> </span>regression<span class="w"> </span>--actor<span class="w"> </span>@alice
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>classify<span class="w"> </span>ck_abc123-...<span class="w"> </span>--classification<span class="w"> </span>intended<span class="w"> </span>--detail<span class="w"> </span><span class="s2">&quot;Known flaky endpoint&quot;</span><span class="w"> </span>--json
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--classification</code>, <code>-c</code></td>
+<td><em>(required)</em></td>
+<td>One of: <code>regression</code>, <code>intended</code>, <code>ignore</code></td>
+</tr>
+<tr>
+<td><code>--actor</code></td>
+<td><code>$USER</code></td>
+<td>Reviewer identity</td>
+</tr>
+<tr>
+<td><code>--detail</code>, <code>-d</code></td>
+<td><code>""</code></td>
+<td>Free-text detail</td>
+</tr>
+<tr>
+<td><code>--json</code></td>
+<td><code>false</code></td>
+<td>Emit hitl/v1 JSON envelope</td>
+</tr>
+</tbody>
+</table>
+<h5 id="hitl-explain-id-tier-3"><code>hitl explain &lt;id&gt;</code> (Tier-3)</h5>
+<p>Get an AI explanation for why the HITL item was flagged.</p>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>explain<span class="w"> </span>ck_abc123-...
+./bin/cherenkov<span class="w"> </span>hitl<span class="w"> </span>explain<span class="w"> </span>ck_abc123-...<span class="w"> </span>--json
+</code></pre></div>
+<h5 id="hitlv1-error-codes"><code>hitl/v1</code> Error Codes</h5>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>conflict</code></td>
+<td>Item was already resolved by another actor</td>
+</tr>
+<tr>
+<td><code>not_found</code></td>
+<td>Item ID does not exist in the queue</td>
+</tr>
+<tr>
+<td><code>forbidden</code></td>
+<td>Actor is not authorized to act on this item</td>
+</tr>
+<tr>
+<td><code>invalid_input</code></td>
+<td>Malformed arguments</td>
+</tr>
+<tr>
+<td><code>db_locked</code></td>
+<td>SQLite busy-timeout exceeded</td>
+</tr>
+<tr>
+<td><code>llm_unavailable</code></td>
+<td>LLM backend unavailable (voice path only)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="track-bc-and-horizon-2-built-re-integrated">Track B/C and Horizon 2 (built, re-integrated)</h3>
+<p>These commands extend CHERENKOV beyond core API conformance into visual testing,
+performance benchmarking, truth model management, autonomous exploration, intent-
+driven authoring, governance, certification, autonomy profiling, IDE integration
+(MCP), and the review web UI. They are built, unit-tested, and re-integrated
+into the live tree. Runtime requirements (k6 for <code>perf</code>, <code>adb</code> for some
+mobile paths, <code>cargo</code> for the desktop host) are noted per command below.</p>
+<blockquote>
+<p>Earlier docs described a separate <code>track-b-c-deferred/</code> directory. That
+directory was fully re-integrated into the live tree and <strong>deleted</strong> — see
+<a href="../AGENTS.md">AGENTS.md</a>. If you see a <code>track-b-c-deferred/</code> reference
+elsewhere, treat it as stale and link to <a href="../STATUS/">docs/STATUS.md</a>.</p>
+</blockquote>
+<hr />
+<h4 id="visual-track-b-visual-regression"><code>visual</code> (Track B — visual regression)</h4>
+<p>Runs visual-regression checks against a rendered URL. Auto-initializes a baseline
+on first run; compares against it on subsequent runs.</p>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>visual<span class="w"> </span>--target<span class="w"> </span>http://localhost:3000/checkout
+./bin/cherenkov<span class="w"> </span>visual<span class="w"> </span>--target<span class="w"> </span>http://localhost:3000/checkout<span class="w"> </span>--baseline-dir<span class="w"> </span>stub/visual_baselines
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--target</code>, <code>-t</code></td>
+<td><em>(required)</em></td>
+<td>Absolute URL of the page to snapshot</td>
+</tr>
+<tr>
+<td><code>--baseline-dir</code></td>
+<td><code>stub/visual_baselines</code></td>
+<td>Baseline directory label</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="perf-track-b-performance-baseline"><code>perf</code> (Track B — performance baseline)</h4>
+<p>Runs performance baseline checks against an API endpoint using k6. Records latency
+in a local SQLite store (<code>.cherenkov/perf_metrics.db</code>) and flags standard-deviation
+outlier regressions once &gt;= 3 runs exist. Degrades gracefully without k6.</p>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>perf<span class="w"> </span>--target<span class="w"> </span>http://localhost:8000<span class="w"> </span>--endpoint<span class="w"> </span>/health<span class="w"> </span>--method<span class="w"> </span>GET
+./bin/cherenkov<span class="w"> </span>perf<span class="w"> </span>--target<span class="w"> </span>http://localhost:8000<span class="w"> </span>--endpoint<span class="w"> </span>/users<span class="w"> </span>--method<span class="w"> </span>POST<span class="w"> </span>--vus<span class="w"> </span><span class="m">10</span><span class="w"> </span>--duration<span class="w"> </span><span class="m">10</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--target</code>, <code>-t</code></td>
+<td><em>(required)</em></td>
+<td>Base URL of the API to load test</td>
+</tr>
+<tr>
+<td><code>--endpoint</code></td>
+<td><code>/</code></td>
+<td>Endpoint path</td>
+</tr>
+<tr>
+<td><code>--method</code></td>
+<td><code>GET</code></td>
+<td>HTTP method</td>
+</tr>
+<tr>
+<td><code>--vus</code></td>
+<td><code>5</code></td>
+<td>Virtual users</td>
+</tr>
+<tr>
+<td><code>--duration</code></td>
+<td><code>5</code></td>
+<td>Test duration in seconds</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="mobile-track-b-mobile-flow-integrity"><code>mobile</code> (Track B — mobile flow integrity)</h4>
+<p>Plans Maestro flows from a recorded mobile source, gates them for assertion
+strength, and executes them on a connected device or emulator via Maestro (or
+Appium with <code>--runner appium</code>).</p>
+<p><code>SOURCE</code> is a <code>.hil</code> interaction trace or an <code>.apk</code>. A <code>.har</code> is rejected with a
+pointer to <code>cherenkov verify</code>: it records network traffic, not screen
+interactions, so no flow can be planned from it.</p>
+<p>Two integrity rules apply. A flow whose assertion matches any screen (<code>.*</code>,
+<code>.+</code>, <code>*</code>, empty) fails the gate and never reaches the device — that is a
+weakened assertion, and it can never fail. A flow that never executed is
+reported <code>not_executed</code>, never as passing.</p>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>mobile<span class="w"> </span>flows.hil<span class="w"> </span>--app-id<span class="w"> </span>com.acme.shop
+./bin/cherenkov<span class="w"> </span>mobile<span class="w"> </span>app.apk<span class="w"> </span>--no-execute
+./bin/cherenkov<span class="w"> </span>mobile<span class="w"> </span>flows.hil<span class="w"> </span>--json<span class="w"> </span>--fail-on-finding
+./bin/cherenkov<span class="w"> </span>mobile<span class="w"> </span>--demo
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--app-id</code></td>
+<td><em>(from source)</em></td>
+<td>Application package id to target</td>
+</tr>
+<tr>
+<td><code>--out</code></td>
+<td><code>stub/generated_tests/mobile</code></td>
+<td>Directory for generated flows</td>
+</tr>
+<tr>
+<td><code>--runner</code></td>
+<td><code>maestro</code></td>
+<td>Execution backend (<code>maestro</code> or <code>appium</code>)</td>
+</tr>
+<tr>
+<td><code>--execute/--no-execute</code></td>
+<td><code>--execute</code></td>
+<td>Run flows on a device</td>
+</tr>
+<tr>
+<td><code>--strict/--no-strict</code></td>
+<td><code>--strict</code></td>
+<td>Fail a flow carrying no assertion</td>
+</tr>
+<tr>
+<td><code>--demo</code></td>
+<td>off</td>
+<td>Use built-in scenarios; never executed on a device</td>
+</tr>
+<tr>
+<td><code>--json</code></td>
+<td>off</td>
+<td>Machine-readable output</td>
+</tr>
+<tr>
+<td><code>--fail-on-finding</code></td>
+<td>off</td>
+<td>Exit non-zero on gate or execution failure</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="map-e2-6-truth-model-builder"><code>map</code> (E2-6 — Truth Model builder)</h4>
+<p>Build and inspect the Truth Model from configured sources (OpenAPI specs, traffic
+logs, etc.). Produces a claim graph connecting specifications with code and traces.</p>
+<div class="highlight"><pre><span></span><code>./bin/cherenkov<span class="w"> </span>map
+./bin/cherenkov<span class="w"> </span>map<span class="w"> </span>--detailed
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--detailed</code>, <code>-d</code></td>
+<td><code>false</code></td>
+<td>Show full claim details</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="brain-knowledge-cartography-the-obsidian-brain-map"><code>brain</code> (knowledge cartography — the Obsidian brain map)</h4>
+<p>Map a codebase as a graph of modules, packages, classes, HTTP routes, CLI
+commands, frontend components, docs and tests — then reconcile every reference
+between them and report what does not resolve. The map is incremental (only
+changed files are re-read), reconciled (a broken link is a finding, not a
+silent omission), and exportable as an Obsidian vault you can open and browse.</p>
+<p>Every subcommand takes <code>--root</code>, so it maps <em>any</em> project, not just this one.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Build the map for the current repository</span>
+./bin/cherenkov<span class="w"> </span>brain<span class="w"> </span>build
+
+<span class="c1"># Update it after some edits — only changed files are parsed</span>
+./bin/cherenkov<span class="w"> </span>brain<span class="w"> </span>sync<span class="w"> </span>--delta
+
+<span class="c1"># Write an Obsidian vault, then open that folder as a vault in Obsidian</span>
+./bin/cherenkov<span class="w"> </span>brain<span class="w"> </span><span class="nb">export</span><span class="w"> </span>-o<span class="w"> </span>./brain-vault
+
+<span class="c1"># What did not reconcile?</span>
+./bin/cherenkov<span class="w"> </span>brain<span class="w"> </span>findings<span class="w"> </span>--severity<span class="w"> </span>warn
+
+<span class="c1"># Map a different repository entirely</span>
+./bin/cherenkov<span class="w"> </span>brain<span class="w"> </span>build<span class="w"> </span>--root<span class="w"> </span>../some-other-service
+
+<span class="c1"># Keep it current on every commit</span>
+./bin/cherenkov<span class="w"> </span>brain<span class="w"> </span>install-hook
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Subcommand</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>build</code></td>
+<td>Full rebuild, discarding stored state</td>
+</tr>
+<tr>
+<td><code>sync</code></td>
+<td>Incremental update — unchanged files are skipped</td>
+</tr>
+<tr>
+<td><code>watch</code></td>
+<td>Re-sync continuously until interrupted</td>
+</tr>
+<tr>
+<td><code>export</code></td>
+<td>Write an Obsidian vault (<code>--format obsidian</code>) or JSON</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>Node/edge/finding counts for the stored map</td>
+</tr>
+<tr>
+<td><code>findings</code></td>
+<td>List unresolved references; <code>--fail-on</code> makes it a CI gate</td>
+</tr>
+<tr>
+<td><code>query</code></td>
+<td>Search the map by title or summary</td>
+</tr>
+<tr>
+<td><code>install-hook</code></td>
+<td>Install a git post-commit hook that runs <code>brain sync</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--root</code></td>
+<td><em>(cwd)</em></td>
+<td>Project root to map</td>
+</tr>
+<tr>
+<td><code>--project</code></td>
+<td><em>(directory name)</em></td>
+<td>Map namespace, if you want several per store</td>
+</tr>
+<tr>
+<td><code>--json</code></td>
+<td><code>false</code></td>
+<td>Machine-readable output</td>
+</tr>
+<tr>
+<td><code>--fail-on</code></td>
+<td><code>none</code></td>
+<td><code>error</code> or <code>warn</code> — exit non-zero for CI (<code>findings</code>)</td>
+</tr>
+<tr>
+<td><code>--format</code></td>
+<td><code>obsidian</code></td>
+<td><code>obsidian</code> or <code>json</code> (<code>export</code>)</td>
+</tr>
+<tr>
+<td><code>--delta</code></td>
+<td><code>false</code></td>
+<td>Also report what changed since the last sync (<code>sync</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Configure it per project with a <code>[brainmap]</code> table in <code>cherenkov.toml</code> (or a
+standalone <code>brainmap.toml</code>): <code>excludes</code>, <code>extractors</code>, <code>symbol_depth</code>,
+<code>vault_path</code>, <code>layers</code>. The same map is served to the dashboard at
+<code>/api/v1/brainmap/*</code> and rendered in the <strong>Knowledge</strong> workspace.</p>
+<p>An entry in <code>extractors</code> is either a bundled name (<code>python</code>, <code>routes</code>, <code>cli</code>,
+<code>frontend</code>, <code>docs</code>, <code>tests</code>) or a dotted spec pointing at your own class, so a
+project can map an artefact CHERENKOV knows nothing about without patching it:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[brainmap]</span>
+<span class="n">extractors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;python&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;docs&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;my_package.brainmap_ext:TerraformExtractor&quot;</span><span class="p">]</span>
+</code></pre></div>
+<p>The class needs two methods — <code>claims(rel_path) -&gt; bool</code> and
+<code>extract(rel_path, text, ctx) -&gt; ExtractionResult</code> — and must be pure with
+respect to the file it is handed, since unchanged files are skipped on sync.</p>
+<hr />
+<h4 id="daemon-e4-4-continuous-watcher"><code>daemon</code> (E4-4 — continuous watcher)</h4>
+<p>Continuously watches configured sources and rebuilds the Truth Model on change.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Poll every 60 seconds indefinitely</span>
+./bin/cherenkov<span class="w"> </span>daemon
+
+<span class="c1"># Poll every 30 seconds, max 10 iterations</span>
+./bin/cherenkov<span class="w"> </span>daemon<span class="w"> </span>--interval<span class="w"> </span><span class="m">30</span><span class="w"> </span>--max-loops<span class="w"> </span><span class="m">10</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--interval</code>, <code>-i</code></td>
+<td><code>60</code></td>
+<td>Poll interval in seconds</td>
+</tr>
+<tr>
+<td><code>--max-loops</code>, <code>-n</code></td>
+<td><code>0</code></td>
+<td>Max rebuild iterations (<code>0</code> = infinite)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="explore-e10-autonomous-risk-crawl"><code>explore</code> (E10 — autonomous risk crawl)</h4>
+<p>Crawl a live surface and print a "second pair of eyes" risk digest. Probes
+endpoints for anomalies, console/network exceptions, and security headers.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Crawl a target with default settings</span>
+./bin/cherenkov<span class="w"> </span>explore<span class="w"> </span>--target<span class="w"> </span>http://localhost:3000
+
+<span class="c1"># Probe multiple routes with a custom HTTP method</span>
+./bin/cherenkov<span class="w"> </span>explore<span class="w"> </span>--target<span class="w"> </span>http://localhost:3000<span class="w"> </span>--path<span class="w"> </span>/api/users<span class="w"> </span>--path<span class="w"> </span>/api/orders<span class="w"> </span>--method<span class="w"> </span>POST
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--target</code>, <code>-t</code></td>
+<td><em>(required)</em></td>
+<td>Base URL of the app/API to crawl</td>
+</tr>
+<tr>
+<td><code>--path</code>, <code>-p</code></td>
+<td><code>["/"]</code></td>
+<td>Route to probe (repeatable)</td>
+</tr>
+<tr>
+<td><code>--method</code>, <code>-m</code></td>
+<td><code>GET</code></td>
+<td>HTTP method to probe with</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="author-e10-intent-driven-test-generator"><code>author</code> (E10 — intent-driven test generator)</h4>
+<p>Turn plain-language intent into an ejectable Playwright test. The intent parser
+recognises these action types: <code>navigate</code>, <code>click</code>, <code>fill</code>, <code>expect</code>, <code>request</code>.
+Any unrecognised action emits a warning and is skipped as a comment in the output.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Generate a Playwright test from plain-language intent</span>
+./bin/cherenkov<span class="w"> </span>author<span class="w"> </span><span class="s2">&quot;Register new test user&quot;</span><span class="w"> </span>--output<span class="w"> </span>generated_tests
+
+<span class="c1"># Specify a target base URL</span>
+./bin/cherenkov<span class="w"> </span>author<span class="w"> </span><span class="s2">&quot;Check guest checkout with a discount&quot;</span><span class="w"> </span>--output<span class="w"> </span>generated_tests<span class="w"> </span>--target<span class="w"> </span>http://localhost:8000
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>intent</code></td>
+<td><em>(positional, required)</em></td>
+<td>Plain-language test intent</td>
+</tr>
+<tr>
+<td><code>--output</code>, <code>-o</code></td>
+<td><em>(required)</em></td>
+<td>Directory to write the <code>.spec.ts</code> test into</td>
+</tr>
+<tr>
+<td><code>--target</code>, <code>-t</code></td>
+<td><code>""</code></td>
+<td>Base URL the flow runs against</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="audit-e05h-baseline-free-oracle-suite-audit"><code>audit</code> (E0.5h — Baseline-Free Oracle suite audit)</h4>
+<p>Evaluates whether an existing test suite actually catches regressions by recording
+baseline traffic against a live target, generating spec-derived mutants (status,
+value, missing, enum), and replaying the suite against those mutants.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Audit a Playwright suite against a live API (baseline-free oracle)</span>
+./bin/cherenkov<span class="w"> </span>audit<span class="w"> </span>--target<span class="w"> </span>http://localhost:8000<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--spec<span class="w"> </span>openapi.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--test-cmd<span class="w"> </span><span class="s2">&quot;npx playwright test tests/&quot;</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--target</code>, <code>-t</code></td>
+<td><em>(required)</em></td>
+<td>Base URL of the live server to record the baseline from</td>
+</tr>
+<tr>
+<td><code>--spec</code>, <code>-s</code></td>
+<td><em>(required)</em></td>
+<td>Path or URL to the OpenAPI spec JSON/YAML</td>
+</tr>
+<tr>
+<td><code>--test-cmd</code>, <code>-c</code></td>
+<td><em>(required)</em></td>
+<td>Command to run the test suite (receives <code>API_URL</code> in the environment)</td>
+</tr>
+<tr>
+<td><code>--proxy-port</code></td>
+<td><code>9100</code></td>
+<td>Port for the recording proxy</td>
+</tr>
+<tr>
+<td><code>--mock-port</code></td>
+<td><code>9101</code></td>
+<td>Port for the mutant mock server</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="governance-e12-governance-kpi-panel"><code>governance</code> (E12 — Governance KPI panel)</h4>
+<p>Surfaces escape-rate, false-positive, coverage, and maintenance KPIs over the
+verdict/audit history.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Show the governance KPI panel</span>
+./bin/cherenkov<span class="w"> </span>governance
+
+<span class="c1"># Machine-readable report</span>
+./bin/cherenkov<span class="w"> </span>governance<span class="w"> </span>--json
+
+<span class="c1"># Trend for a single metric</span>
+./bin/cherenkov<span class="w"> </span>governance<span class="w"> </span>--trend<span class="w"> </span>escape_rate
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--json</code></td>
+<td><code>false</code></td>
+<td>Emit machine-readable JSON report</td>
+</tr>
+<tr>
+<td><code>--trend</code>, <code>-t</code></td>
+<td><em>(none)</em></td>
+<td>Metric to trend (<code>health_score</code>, <code>escape_rate</code>, <code>coverage</code>, etc.)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="certify-e12-gold-set-rag-triad-certification"><code>certify</code> (E12 — Gold-Set + RAG-Triad certification)</h4>
+<p>Certifies a capability tier against the gold set using RAG-Triad metrics.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Certify the default (small) tier</span>
+./bin/cherenkov<span class="w"> </span>certify
+
+<span class="c1"># Certify a specific tier with per-item RAG-Triad detail</span>
+./bin/cherenkov<span class="w"> </span>certify<span class="w"> </span>--llm<span class="w"> </span>deep<span class="w"> </span>--rag-report
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--tier</code>, <code>-T</code></td>
+<td><code>small</code></td>
+<td>Capability tier: <code>small</code>, <code>deep</code>, <code>vision</code></td>
+</tr>
+<tr>
+<td><code>--rag-report</code>, <code>-r</code></td>
+<td><code>false</code></td>
+<td>Show per-item RAG-Triad metrics</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="profile-e13-autonomy-ladder-profile"><code>profile</code> (E13 — Autonomy-ladder profile)</h4>
+<p>Shows or sets the autonomy level the pipeline operates at.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Show the current autonomy profile</span>
+./bin/cherenkov<span class="w"> </span>profile
+
+<span class="c1"># Set the autonomy level</span>
+./bin/cherenkov<span class="w"> </span>profile<span class="w"> </span>--level<span class="w"> </span>augmented
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>action</code></td>
+<td><code>show</code></td>
+<td>Sub-action: <code>show</code> or <code>set</code></td>
+</tr>
+<tr>
+<td><code>--level</code>, <code>-l</code></td>
+<td><em>(none)</em></td>
+<td>Autonomy level: <code>assisted</code>, <code>augmented</code>, <code>agentic</code>, <code>predictive</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="record-cc-5-teleport-session-ingestion"><code>record</code> (CC-5 — teleport session ingestion)</h4>
+<p>Ingests live agentic-exploration scenario results into the HITL review queue from a
+result file, optionally tagging the enqueued items with a run id.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Ingest exploration results into the HITL queue</span>
+./bin/cherenkov<span class="w"> </span>record<span class="w"> </span>.cherenkov/explore_results.json
+
+<span class="c1"># Tag enqueued items with a run id</span>
+./bin/cherenkov<span class="w"> </span>record<span class="w"> </span>.cherenkov/explore_results.json<span class="w"> </span>--run-id<span class="w"> </span><span class="m">20260801</span>-120000
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RESULT_PATH</code></td>
+<td><em>(positional, required)</em></td>
+<td>Path to the scenario results file</td>
+</tr>
+<tr>
+<td><code>--run-id</code></td>
+<td><em>(none)</em></td>
+<td>Tag enqueued HITL items with this run id</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="mcp-x4-model-context-protocol-server"><code>mcp</code> (X4 — Model Context Protocol server)</h4>
+<p>Exposes CHERENKOV over the <a href="https://modelcontextprotocol.io">Model Context Protocol</a>
+(JSON-RPC 2.0 over stdio) so Claude Desktop, Open Interpreter, Cursor, and other MCP
+clients can run conformance checks, query drift findings, and manage the HITL queue
+without leaving their editor or terminal.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Start the MCP server (blocks until stdin closes)</span>
+./bin/cherenkov<span class="w"> </span>mcp<span class="w"> </span>serve
+</code></pre></div>
+<p><strong>Resources exposed (read-only):</strong></p>
+<table>
+<thead>
+<tr>
+<th>URI</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cherenkov://hitl/pending</code></td>
+<td>Pending HITL items (<code>hitl/v1</code> envelope)</td>
+</tr>
+<tr>
+<td><code>cherenkov://hitl/item/{id}</code></td>
+<td>Single HITL item detail</td>
+</tr>
+<tr>
+<td><code>cherenkov://validate/latest</code></td>
+<td>Latest <code>validate/v1</code> ValidationReport</td>
+</tr>
+<tr>
+<td><code>cherenkov://validate/evidence</code></td>
+<td>Evidence directory listing</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tools exposed:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run_conformance_check</code></td>
+<td>Trigger <code>cherenkov validate</code> against a target URL; returns report summary</td>
+</tr>
+<tr>
+<td><code>get_last_report</code></td>
+<td>Return last <code>.cherenkov/report.json</code> without a new run</td>
+</tr>
+<tr>
+<td><code>list_drift_findings</code></td>
+<td>Drift findings from the last run, filterable by severity / endpoint</td>
+</tr>
+<tr>
+<td><code>get_tightening_suggestions</code></td>
+<td>OpenAPI spec tightening suggestions for a specific endpoint</td>
+</tr>
+<tr>
+<td><code>explain_finding</code></td>
+<td>LLM natural-language explanation of a finding</td>
+</tr>
+<tr>
+<td><code>hitl_list</code></td>
+<td>List HITL queue items by status</td>
+</tr>
+<tr>
+<td><code>hitl_approve</code></td>
+<td>Approve a pending item (atomic SQL gatekeeper)</td>
+</tr>
+<tr>
+<td><code>hitl_reject</code></td>
+<td>Reject a pending item (atomic SQL gatekeeper)</td>
+</tr>
+<tr>
+<td><code>validate_run_gate</code></td>
+<td>Run the Validation Gate in report-only mode (suggest-only, D7 honored)</td>
+</tr>
+<tr>
+<td><code>chat_explain_divergence</code></td>
+<td>GraphRAG explanation of an endpoint divergence</td>
+</tr>
+<tr>
+<td><code>chat_run_test</code></td>
+<td>Plan test scenarios for an endpoint (suggest-only)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Claude Desktop</strong> (add to <code>claude_desktop_config.json → mcpServers</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;cherenkov&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;python3&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;-m&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cherenkov&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;mcp&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;serve&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;cwd&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/home/you/cherenkov-qa&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Open Interpreter</strong> — one-command setup:</p>
+<div class="highlight"><pre><span></span><code>bash<span class="w"> </span>scripts/setup_oi.sh<span class="w">   </span><span class="c1"># writes ~/.openinterpreter/mcp.json</span>
+interpreter<span class="w">                </span><span class="c1"># cherenkov tools appear automatically</span>
+</code></pre></div>
+<p>See <a href="../guides/OPEN_INTERPRETER_SETUP/">docs/guides/OPEN_INTERPRETER_SETUP.md</a> for full walkthrough and example prompts.</p>
+<p><strong>Cursor / VS Code</strong> (<code>.cursor/mcp.json</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;mcpServers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;cherenkov&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;python3&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;-m&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cherenkov&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;mcp&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;serve&quot;</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;cwd&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/home/you/cherenkov-qa&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<blockquote>
+<p><strong>Trust model:</strong> MCP peers are untrusted. All tool arguments are validated with
+Pydantic before reaching the HITL queue. Writes go through the existing atomic SQL
+gatekeeper — the same path as <code>hitl approve</code> in the terminal. The server never
+reads secrets or env vars from client input.</p>
+</blockquote>
+<hr />
+<h4 id="review-horizon-v-review-dashboard-web-ui"><code>review</code> (Horizon V — review dashboard web UI)</h4>
+<p>Serves the prebuilt web review surface (the HITL/validation review UI) over HTTP
+so verdicts can be inspected and actioned from the browser instead of the terminal.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Serve the prebuilt web UI on the default port (8000)</span>
+./bin/cherenkov<span class="w"> </span>review
+
+<span class="c1"># Bind a custom port</span>
+./bin/cherenkov<span class="w"> </span>review<span class="w"> </span>--port<span class="w"> </span><span class="m">8080</span>
+
+<span class="c1"># Load demo fixture data on startup</span>
+./bin/cherenkov<span class="w"> </span>review<span class="w"> </span>--demo
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--web</code>, <code>-w</code></td>
+<td><code>True</code></td>
+<td>Serve the prebuilt web UI</td>
+</tr>
+<tr>
+<td><code>--port</code>, <code>-p</code></td>
+<td><code>8000</code></td>
+<td>Port to bind</td>
+</tr>
+<tr>
+<td><code>--demo</code></td>
+<td><code>false</code></td>
+<td>Load demo fixture data into HITL queue on startup</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="diff"><code>diff</code></h4>
+<p>Compare two OpenAPI specs for breaking changes.</p>
+<div class="highlight"><pre><span></span><code>cherenkov<span class="w"> </span>diff<span class="w"> </span>--before<span class="w"> </span>old-openapi.yaml<span class="w"> </span>--after<span class="w"> </span>new-openapi.yaml
+cherenkov<span class="w"> </span>diff<span class="w"> </span>--before<span class="w"> </span>old-openapi.yaml<span class="w"> </span>--after<span class="w"> </span>new-openapi.yaml<span class="w"> </span>--format<span class="w"> </span>json
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--before</code></td>
+<td><em>(required)</em></td>
+<td>Path to the original spec</td>
+</tr>
+<tr>
+<td><code>--after</code></td>
+<td><em>(required)</em></td>
+<td>Path to the modified spec</td>
+</tr>
+<tr>
+<td><code>--format</code></td>
+<td><code>text</code></td>
+<td>Output format: <code>text</code> or <code>json</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="completion"><code>completion</code></h4>
+<p>Generate shell completion scripts.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Bash / Zsh</span>
+<span class="nb">eval</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>cherenkov<span class="w"> </span>completion<span class="w"> </span>bash<span class="k">)</span><span class="s2">&quot;</span>
+<span class="nb">eval</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>cherenkov<span class="w"> </span>completion<span class="w"> </span>zsh<span class="k">)</span><span class="s2">&quot;</span>
+
+<span class="c1"># Fish</span>
+cherenkov<span class="w"> </span>completion<span class="w"> </span>fish<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nb">source</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>shell</code></td>
+<td>Shell type: <code>bash</code>, <code>zsh</code>, or <code>fish</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="tokens"><code>tokens</code></h4>
+<p>Token consumption monitor — inspect LLM usage, costs, and recommendations.</p>
+<div class="highlight"><pre><span></span><code>cherenkov<span class="w"> </span>tokens
+cherenkov<span class="w"> </span>tokens<span class="w"> </span>--help
+</code></pre></div>
+<hr />
+<h4 id="playbook"><code>playbook</code></h4>
+<p>Manage and run validation playbooks — named, auto-triggering skill rules that fire against endpoints during daemon check cycles.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># List all loaded playbooks (built-in + project-local)</span>
+cherenkov<span class="w"> </span>playbook<span class="w"> </span>list
+cherenkov<span class="w"> </span>playbook<span class="w"> </span>list<span class="w"> </span>--json
+
+<span class="c1"># Inspect a specific playbook</span>
+cherenkov<span class="w"> </span>playbook<span class="w"> </span>show<span class="w"> </span>auth-strict
+
+<span class="c1"># Fire matching playbooks against a live endpoint</span>
+cherenkov<span class="w"> </span>playbook<span class="w"> </span>run<span class="w"> </span>--url<span class="w"> </span>http://localhost:8080<span class="w"> </span>--path<span class="w"> </span>/health
+
+<span class="c1"># Scaffold a new playbook YAML in .cherenkov/playbooks/</span>
+cherenkov<span class="w"> </span>playbook<span class="w"> </span>new<span class="w"> </span>my-playbook
+</code></pre></div>
+<hr />
+<h4 id="enterprise_1"><code>enterprise</code></h4>
+<p>Enterprise-tier commands for org management, SSO, audit logs, and compliance.</p>
+<div class="highlight"><pre><span></span><code><span class="w"> </span><span class="c1"># Manage organizations and tenants</span>
+<span class="w"> </span>cherenkov<span class="w"> </span>enterprise<span class="w"> </span>org
+
+<span class="w"> </span><span class="c1"># Configure SAML 2.0 / SSO</span>
+<span class="w"> </span>cherenkov<span class="w"> </span>enterprise<span class="w"> </span>saml
+
+<span class="w"> </span><span class="c1"># Manage Role-Based Access Control</span>
+<span class="w"> </span>cherenkov<span class="w"> </span>enterprise<span class="w"> </span>rbac
+
+<span class="w"> </span><span class="c1"># Generate compliance reports</span>
+<span class="w"> </span>cherenkov<span class="w"> </span>enterprise<span class="w"> </span>compliance
+
+<span class="w"> </span><span class="c1"># Access audit logs</span>
+<span class="w"> </span>cherenkov<span class="w"> </span>enterprise<span class="w"> </span>audit
+<span class="w"> </span><span class="sb">```</span>
+
+<span class="w"> </span>---
+
+<span class="c1">#### `guardian`</span>
+<span class="w"> </span>Continuous<span class="w"> </span>spec-drift<span class="w"> </span>monitoring<span class="w"> </span>against<span class="w"> </span>a<span class="w"> </span>live<span class="w"> </span>API.<span class="w"> </span><span class="sb">`</span>guardian<span class="w"> </span>start<span class="sb">`</span><span class="w"> </span>polls<span class="w"> </span>every<span class="w"> </span>endpoint<span class="w"> </span>declared<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>OpenAPI<span class="w"> </span>spec<span class="w"> </span>and<span class="w"> </span>persists<span class="w"> </span>drift<span class="w"> </span>events<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>drift<span class="w"> </span>store<span class="w"> </span><span class="k">until</span><span class="w"> </span>interrupted<span class="w"> </span><span class="o">(</span>SIGINT/SIGTERM<span class="o">)</span>.
+
+<span class="w"> </span><span class="sb">```</span>bash
+<span class="w"> </span><span class="c1"># Monitor all spec paths (every 60s)</span>
+<span class="w"> </span>cherenkov<span class="w"> </span>guardian<span class="w"> </span>start<span class="w"> </span>--spec<span class="w"> </span>openapi.yaml<span class="w"> </span>--base-url<span class="w"> </span>http://localhost:8080
+
+<span class="w"> </span><span class="c1"># Watch a single endpoint every 10s, store history elsewhere</span>
+<span class="w"> </span>cherenkov<span class="w"> </span>guardian<span class="w"> </span>start<span class="w"> </span>--spec<span class="w"> </span>openapi.yaml<span class="w"> </span>--base-url<span class="w"> </span>http://localhost:8080<span class="w"> </span><span class="se">\</span>
+<span class="w">   </span>--endpoint<span class="w"> </span><span class="s2">&quot;GET:/health&quot;</span><span class="w"> </span>--interval<span class="w"> </span><span class="m">10</span><span class="w"> </span>--db<span class="w"> </span>.cherenkov/guardian.db
+<span class="w"> </span><span class="sb">```</span>
+
+---
+
+<span class="c1">#### `check-suite`</span>
+Detect<span class="w"> </span>AI<span class="w"> </span>cheating<span class="w"> </span><span class="k">in</span><span class="w"> </span>a<span class="w"> </span><span class="nb">test</span><span class="w"> </span>suite<span class="w"> </span>—<span class="w"> </span>find<span class="w"> </span>weakened,<span class="w"> </span>deleted,<span class="w"> </span>or<span class="w"> </span>hallucinated<span class="w"> </span>assertions<span class="w"> </span>via<span class="w"> </span>fast<span class="w"> </span>static<span class="w"> </span>analysis<span class="w"> </span><span class="o">(</span>no<span class="w"> </span>execution<span class="w"> </span>required<span class="o">)</span>.
+
+<span class="sb">```</span>bash
+<span class="c1"># Check a candidate suite against a baseline for weakened/deleted assertions</span>
+cherenkov<span class="w"> </span>check-suite<span class="w"> </span>--candidate<span class="w"> </span>suite.py<span class="w"> </span>--baseline<span class="w"> </span>baseline.py
+
+<span class="c1"># Check against a spec for hallucinated field references</span>
+cherenkov<span class="w"> </span>check-suite<span class="w"> </span>--candidate<span class="w"> </span>suite.ts<span class="w"> </span>--spec<span class="w"> </span>openapi.yaml
+
+<span class="c1"># CI gate: exit 1 on any finding, write JSON report</span>
+cherenkov<span class="w"> </span>check-suite<span class="w"> </span>--candidate<span class="w"> </span>suite.ts<span class="w"> </span>--baseline<span class="w"> </span>baseline.ts<span class="w"> </span>--fail-on-finding<span class="w"> </span>--output<span class="w"> </span>findings.json
+</code></pre></div>
+<hr />
+<h4 id="check-stale"><code>check-stale</code></h4>
+<p>Check whether generated tests are stale relative to the spec.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Compare manifest hash against current spec</span>
+cherenkov<span class="w"> </span>check-stale
+
+<span class="c1"># CI gate: exit 1 if stale</span>
+cherenkov<span class="w"> </span>check-stale<span class="w"> </span>--fail-on-stale
+
+<span class="c1"># Override spec path and output JSON</span>
+cherenkov<span class="w"> </span>check-stale<span class="w"> </span>--spec<span class="w"> </span>openapi.yaml<span class="w"> </span>--json
+</code></pre></div>
+<hr />
+<h4 id="bench"><code>bench</code></h4>
+<p>Benchmark generated test quality against golden fixtures.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Run benchmark across the default test directory</span>
+cherenkov<span class="w"> </span>bench
+
+<span class="c1"># Include a custom test directory</span>
+cherenkov<span class="w"> </span>bench<span class="w"> </span>--dir<span class="w"> </span>stub/generated_tests
+
+<span class="c1"># Set pass thresholds and write a JSON report</span>
+cherenkov<span class="w"> </span>bench<span class="w"> </span>--threshold-compile<span class="w"> </span><span class="m">0</span>.95<span class="w"> </span>--threshold-quality<span class="w"> </span><span class="m">0</span>.9<span class="w"> </span>--output<span class="w"> </span>bench.json
+</code></pre></div>
+<hr />
+<h4 id="examples"><code>examples</code></h4>
+<p>Print usage examples for common CHERENKOV workflows.</p>
+<div class="highlight"><pre><span></span><code>cherenkov<span class="w"> </span>examples
+</code></pre></div>
+<hr />
+<h4 id="docs"><code>docs</code></h4>
+<p>Show CLI documentation for a topic, as text or JSON. <code>--json</code> returns
+<code>{summary, commands, notes}</code> per topic, so an agent or script can read the docs
+without scraping help output.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># List every topic</span>
+cherenkov<span class="w"> </span>docs
+
+<span class="c1"># One topic, human-readable</span>
+cherenkov<span class="w"> </span>docs<span class="w"> </span>check-suite
+
+<span class="c1"># Everything, structured</span>
+cherenkov<span class="w"> </span>docs<span class="w"> </span>--json
+</code></pre></div>
+<hr />
+<h4 id="agent"><code>agent</code></h4>
+<p>Make CHERENKOV discoverable to a coding agent working in this repository.
+<code>agent init</code> installs the public skills (<code>npx skills add moaidmoatasem/cherenkov-qa</code>)
+and writes a delimited <code>&lt;!-- CHERENKOV:START --&gt;</code> block into <code>AGENTS.md</code>.</p>
+<p>Run it once per repository. It is idempotent — re-running refreshes the block in
+place rather than appending — and it never fails on a missing <code>npx</code>: the skills
+install degrades to a printed instruction, because the AGENTS.md block is the
+half that matters for discovery. Both steps are local; nothing is uploaded.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># The whole thing</span>
+cherenkov<span class="w"> </span>agent<span class="w"> </span>init
+
+<span class="c1"># Structured result, for a script or agent</span>
+cherenkov<span class="w"> </span>agent<span class="w"> </span>init<span class="w"> </span>--json
+
+<span class="c1"># Either half on its own</span>
+cherenkov<span class="w"> </span>agent<span class="w"> </span>init<span class="w"> </span>--skip-skills
+cherenkov<span class="w"> </span>agent<span class="w"> </span>init<span class="w"> </span>--skip-agents-md
+</code></pre></div>
+<hr />
+<h4 id="synthetic"><code>synthetic</code></h4>
+<p>Generate synthetic test data payloads from an OpenAPI spec.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Generate random payloads for up to 10 endpoints</span>
+cherenkov<span class="w"> </span>synthetic<span class="w"> </span>openapi.yaml
+
+<span class="c1"># Use LLM strategy and write to file</span>
+cherenkov<span class="w"> </span>synthetic<span class="w"> </span>openapi.yaml<span class="w"> </span>--strategy<span class="w"> </span>llm<span class="w"> </span>--output<span class="w"> </span>payloads.json<span class="w"> </span>--endpoints<span class="w"> </span><span class="m">20</span>
+</code></pre></div>
+<hr />
+<h4 id="drift"><code>drift</code></h4>
+<p>Track and reconcile spec-suite drift over time using an immutable ledger.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Seed a new baseline snapshot</span>
+cherenkov<span class="w"> </span>drift<span class="w"> </span>seed<span class="w"> </span>--spec<span class="w"> </span>openapi.yaml<span class="w"> </span>--suite<span class="w"> </span>suite.json
+
+<span class="c1"># List recorded snapshots</span>
+cherenkov<span class="w"> </span>drift<span class="w"> </span>list
+
+<span class="c1"># Reconcile current spec/suite against baseline (CI gate)</span>
+cherenkov<span class="w"> </span>drift<span class="w"> </span>reconcile<span class="w"> </span>--spec<span class="w"> </span>openapi.yaml<span class="w"> </span>--suite<span class="w"> </span>suite.json<span class="w"> </span>--fail-on-drift
+
+<span class="c1"># Export a baseline snapshot for zero-latency CI</span>
+cherenkov<span class="w"> </span>drift<span class="w"> </span><span class="nb">export</span><span class="w"> </span>-o<span class="w"> </span>baseline.json
+</code></pre></div>
+<hr />
+<h4 id="eval"><code>eval</code></h4>
+<p>Evaluate and grade test suite quality (STORM-inspired lifecycle).</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Grade a suite against a spec (no live API needed)</span>
+cherenkov<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>grade<span class="w"> </span>--spec<span class="w"> </span>openapi.yaml<span class="w"> </span>--suite<span class="w"> </span>suite.json
+
+<span class="c1"># Run suite against a live API and emit a trace</span>
+cherenkov<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>run<span class="w"> </span>--suite<span class="w"> </span>suite.json<span class="w"> </span>--target<span class="w"> </span>http://localhost:8080
+
+<span class="c1"># Grade and fail CI below a threshold</span>
+cherenkov<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>grade<span class="w"> </span>--spec<span class="w"> </span>openapi.yaml<span class="w"> </span>--suite<span class="w"> </span>suite.json<span class="w"> </span>--fail-on<span class="w"> </span>C
+</code></pre></div>
+<hr />
+<h4 id="ocr"><code>ocr</code></h4>
+<p>OCR-powered visual review: read and validate text in screenshots.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check OCR provider status</span>
+cherenkov<span class="w"> </span>ocr<span class="w"> </span>status
+
+<span class="c1"># Test OCR on a file</span>
+cherenkov<span class="w"> </span>ocr<span class="w"> </span><span class="nb">test</span>
+
+<span class="c1"># Review a screenshot</span>
+cherenkov<span class="w"> </span>ocr<span class="w"> </span>review<span class="w"> </span>--file<span class="w"> </span>screenshot.png
+</code></pre></div>
+<hr />
+<h4 id="routine_1"><code>routine</code></h4>
+<p>Manage recurring scheduled validation routines.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># List all configured routines</span>
+cherenkov<span class="w"> </span>routine<span class="w"> </span>list
+
+<span class="c1"># Create a new routine</span>
+cherenkov<span class="w"> </span>routine<span class="w"> </span>--name<span class="w"> </span>health-check<span class="w"> </span>--trigger<span class="w"> </span>cron<span class="w"> </span>--value<span class="w"> </span><span class="s2">&quot;0 * * * *&quot;</span><span class="w"> </span>--target<span class="w"> </span>cherenkov.scheduling.templates.health:run
+
+<span class="c1"># Toggle a routine on/off</span>
+cherenkov<span class="w"> </span>routine<span class="w"> </span>toggle<span class="w"> </span>&lt;routine_id&gt;<span class="w"> </span><span class="nb">true</span>
+</code></pre></div>
+<hr />
+<h4 id="teleport"><code>teleport</code></h4>
+<p>Transfer CHERENKOV session state across environments.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Push session state</span>
+cherenkov<span class="w"> </span>teleport<span class="w"> </span>push<span class="w"> </span>&lt;session_id&gt;
+
+<span class="c1"># Pull session state using a token</span>
+cherenkov<span class="w"> </span>teleport<span class="w"> </span>pull<span class="w"> </span>&lt;token&gt;
+
+<span class="c1"># List active sessions</span>
+cherenkov<span class="w"> </span>teleport<span class="w"> </span>list
+
+<span class="c1"># Check session status</span>
+cherenkov<span class="w"> </span>teleport<span class="w"> </span>status<span class="w"> </span>&lt;session_id&gt;
+</code></pre></div>
+<hr />
+<h4 id="plugins"><code>plugins</code></h4>
+<p>Manage and inspect CHERENKOV plugins loaded via entry points.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># List all loaded plugins</span>
+cherenkov<span class="w"> </span>plugins<span class="w"> </span>list
+</code></pre></div>
+<hr />
+<h4 id="template"><code>template</code></h4>
+<p>Manage and install test templates from the marketplace.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Search the marketplace for available templates</span>
+cherenkov<span class="w"> </span>template<span class="w"> </span>search
+
+<span class="c1"># List templates installed locally</span>
+cherenkov<span class="w"> </span>template<span class="w"> </span>list
+
+<span class="c1"># Install a template by id</span>
+cherenkov<span class="w"> </span>template<span class="w"> </span>install<span class="w"> </span>&lt;template_id&gt;
+</code></pre></div>
+<hr />
+<h4 id="federation"><code>federation</code></h4>
+<p>Manage federation with remote CHERENKOV instances.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Store a remote federation endpoint</span>
+cherenkov<span class="w"> </span>federation<span class="w"> </span>join
+
+<span class="c1"># Push a JSON payload to the remote mesh under a topic</span>
+cherenkov<span class="w"> </span>federation<span class="w"> </span>push<span class="w"> </span>&lt;topic&gt;<span class="w"> </span>&lt;payload&gt;
+
+<span class="c1"># Query the remote mesh for a topic and display results</span>
+cherenkov<span class="w"> </span>federation<span class="w"> </span>query<span class="w"> </span>&lt;topic&gt;
+</code></pre></div>
+<hr />
+<h4 id="mobile"><code>mobile</code></h4>
+<p>Generate mobile tests from an OpenAPI spec via the Maestro pipeline.
+Runs ingest → plan → generate → review in sequence, and reports pass/fail per scenario.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Generate and review mobile scenarios from a spec</span>
+cherenkov<span class="w"> </span>mobile<span class="w"> </span>openapi.yaml
+
+<span class="c1"># Tag the run for logging/correlation</span>
+cherenkov<span class="w"> </span>mobile<span class="w"> </span>openapi.yaml<span class="w"> </span>--run-id<span class="w"> </span>nightly-042
+</code></pre></div>
+<p>Ejects to vanilla Appium or Maestro (<code>cherenkov/execution/mobile_eject_appium.py</code>,
+<code>mobile_eject_maestro.py</code>), so the generated suites carry no CHERENKOV imports —
+the same anti-lock-in promise as the Playwright path.</p>
+<hr />
+<h4 id="train"><code>train</code></h4>
+<p>Fine-tune a small language model on your own locally collected QA corpus (Phase 15).
+Collection is <strong>opt-in and local</strong> — nothing is uploaded, and the pipeline runs entirely on your machine.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Export the locally collected corpus to a JSONL dataset</span>
+cherenkov<span class="w"> </span>train<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--out<span class="w"> </span>corpus.jsonl<span class="w"> </span>--limit<span class="w"> </span><span class="m">5000</span>
+
+<span class="c1"># Validate the whole pipeline without doing any real computation</span>
+cherenkov<span class="w"> </span>train<span class="w"> </span>run<span class="w"> </span>--data<span class="w"> </span>corpus.jsonl<span class="w"> </span>--backend<span class="w"> </span>dry_run
+
+<span class="c1"># Run a real LoRA fine-tune via the HuggingFace backend</span>
+cherenkov<span class="w"> </span>train<span class="w"> </span>run<span class="w"> </span>--data<span class="w"> </span>corpus.jsonl<span class="w"> </span>--backend<span class="w"> </span>huggingface<span class="w"> </span>--epochs<span class="w"> </span><span class="m">3</span><span class="w"> </span>--batch-size<span class="w"> </span><span class="m">4</span>
+
+<span class="c1"># Inspect the last run (reads training_run.json)</span>
+cherenkov<span class="w"> </span>train<span class="w"> </span>status<span class="w"> </span>--json
+</code></pre></div>
+<p>Start with <code>--backend dry_run</code>: it exercises the full prepare → train → save → evaluate path
+and reports what a real run would do, without requiring GPU or training dependencies.</p>
+<blockquote>
+<p><strong>Note:</strong> publishing or serving a trained model is not implemented yet — tracked as #779 (model
+release) and #780 (self-hosted serving). <code>cherenkov train</code> produces local artefacts only.</p>
+</blockquote>
+<hr />
+<h4 id="testerarmy"><code>testerarmy</code></h4>
+<p>TesterArmy-inspired command group.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Retrieve documentation for a topic (JSON if requested)</span>
+cherenkov<span class="w"> </span>testerarmy<span class="w"> </span>docs<span class="w"> </span>&lt;topic&gt;<span class="w"> </span>--json
+
+<span class="c1"># List environments</span>
+cherenkov<span class="w"> </span>testerarmy<span class="w"> </span>environments
+
+<span class="c1"># List projects</span>
+cherenkov<span class="w"> </span>testerarmy<span class="w"> </span>projects
+
+<span class="c1"># List runs</span>
+cherenkov<span class="w"> </span>testerarmy<span class="w"> </span>runs
+
+<span class="c1"># List tests</span>
+cherenkov<span class="w"> </span>testerarmy<span class="w"> </span>tests
+</code></pre></div>
+<hr />
+<h2 id="the-anti-lock-in-promise">🔒 The Anti-Lock-In Promise</h2>
+<p>CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (<code>.spec.ts</code>) that imports a pure <code>openapi-fetch</code> client.</p>
+<p>Running <code>eject</code> strips all CHERENKOV-specific trace monkey-patching and hooks cleanly, leaving you with a standard open-source suite.</p>
+<hr />
+<h2 id="next-steps">Next steps</h2>
+<ul>
+<li><strong>Want to see it live?</strong> → <a href="recordings/">recordings/</a> — 8 step-by-step Loom recording scripts with real test data and live evidence.</li>
+<li><strong>Want the project state and roadmap?</strong> → <a href="../STATUS/">STATUS.md</a> and <a href="../PHASE_PLAN/">PHASE_PLAN.md</a>.</li>
+<li><strong>Want the bigger picture?</strong> → <a href="../INDEX/">INDEX.md</a> maps the whole docs tree.</li>
+<li><strong>Lost or hitting an issue?</strong> Search <a href="../wiki/FAQ/">wiki/FAQ.md</a> or open an issue.</li>
+<li><strong>Agent or contributor?</strong> Read <a href="../HANDOVER.md">HANDOVER.md</a> and <a href="../AGENTS.md">AGENTS.md</a> <strong>before</strong> any work.</li>
+</ul>
+<hr />
+<h2 id="verifying-the-core-claim-against-a-real-model">✅ Verifying the core claim against a real model</h2>
+<p>Every automated test mocks the LLM, so the default suite cannot prove "spec in,
+compilable Playwright test out" end-to-end. One opt-in smoke does, by driving the
+<strong>real</strong> model through the GENERATE stage:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Requires a running Ollama with the generation model pulled (qwen2.5-coder:7b).</span>
+<span class="nv">CHERENKOV_LIVE_LLM</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">PYTHONPATH</span><span class="o">=</span>.<span class="w"> </span>python3<span class="w"> </span>smoke_test_generate_live.py
+</code></pre></div>
+<p>It <strong>skips cleanly</strong> (exit 0) when <code>CHERENKOV_LIVE_LLM</code> is unset, and <strong>fails loudly</strong>
+if the flag is set but the model produces empty or structurally invalid output —
+the exact silent-failure mode that mocked tests miss. In CI it runs only via manual
+dispatch on a self-hosted GPU runner (the <code>live-llm-generate</code> job in
+<code>.github/workflows/ci.yml</code>); hosted runners have no GPU and never fake a pass.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"current": "1.4", "versions": ["1.2", "1.3", "1.4"]}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/version-banner.js"></script>
+      
+    
+  </body>
+</html>

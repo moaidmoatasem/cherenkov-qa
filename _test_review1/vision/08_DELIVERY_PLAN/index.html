@@ -1,0 +1,2477 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Autonomous Quality Fabric">
+      
+      
+        <meta name="author" content="TesterArmy">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>CHERENKOV — Consolidated Delivery Plan (across-the-board status of record) - Cherenkov QA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cherenkov-consolidated-delivery-plan-across-the-board-status-of-record" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  <div class="md-version-warning">
+    <strong>Notice:</strong> You are viewing documentation for an older version of CHERENKOV-QA.
+    <a href="https://moaidmoatasem.github.io/cherenkov-qa/1.4/">Click here for the latest version (v1.4).</a>
+  </div>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cherenkov QA" class="md-header__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cherenkov QA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CHERENKOV — Consolidated Delivery Plan (across-the-board status of record)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../1.4/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/getting-started/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/guides/" class="md-tabs__link">
+          
+  
+  
+  QA & Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/guides/ci-cd/" class="md-tabs__link">
+          
+  
+  
+  Ecosystem
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/troubleshooting/faq/" class="md-tabs__link">
+          
+  
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/cli/reference/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cherenkov QA" class="md-nav__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cherenkov QA
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/cost-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Tiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA & Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    QA & Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides Hub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/api-conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/check-suite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Check Suite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/test-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/continuous-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spec Guardian
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/certificates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Certificates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/hitl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HITL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/eject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eject
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/system-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/platform-operating-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/user-journeys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Journeys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/clean-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/module-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/second-brain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Second Brain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Role Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Role Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/developer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/qa-engineer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA Engineer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/devops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps & SRE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/team-lead/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Team Lead
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/ci-cd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/github-actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/vscode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VS Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/langchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Troubleshooting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/troubleshooting/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/troubleshooting/common-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Issues
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/cli/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/cli/completions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Completions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.4.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.4.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.3.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.2.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cherenkov-consolidated-delivery-plan-across-the-board-status-of-record">CHERENKOV — Consolidated Delivery Plan (across-the-board status of record)</h1>
+<blockquote>
+<p>[!WARNING]
+<strong>This document is deprecated.</strong> For the single source of truth on active roadmap progress, completed milestones, and upcoming tasks, please refer to the unified <a href="../../_archive/ROADMAP_RECONCILIATION/">_archive/ROADMAP_RECONCILIATION.md</a>.</p>
+</blockquote>
+<p><strong>Status:</strong> ✅ Built (E0–E13 built, 5-QA gate 0/5 reviews) · <strong>Date:</strong> 2026-06-04
+<strong>Live plan has moved on:</strong> see <a href="../10_HORIZON_2/"><code>10_HORIZON_2.md</code></a> and EPIC #147. This file is kept as the record of how the gate was reached.
+<strong>Supersedes</strong> the open-question framing in <a href="../07_MASTER_PLAN/"><code>07_MASTER_PLAN.md</code></a> §9 (kept as the strategic rationale).
+<strong>Purpose:</strong> one document that reconciles <strong>code reality ↔ GitHub ↔ sequencing</strong> so any agent or human can pick up the next shippable slice without re-deriving context.</p>
+<p>This doc is the bridge between the <em>why</em> (<a href="../00_VISION/"><code>00_VISION</code></a>), the <em>what/when</em> (<a href="../02_ROADMAP/"><code>02_ROADMAP</code></a> E0–E6, <a href="../07_MASTER_PLAN/"><code>07_MASTER_PLAN</code></a> E7–E13) and the <em>now</em> (this file: verified state + the open backlog).</p>
+<hr />
+<h2 id="0-the-one-rule-that-orders-everything">0. The one rule that orders everything</h2>
+<blockquote>
+<p><strong>The Validation Gate eats first.</strong> Track A (OpenAPI → Playwright conformance) must pass a real <strong>5-QA validation gate</strong> before E9–E13 frontier work or any external voice layer (OpenClaw, dashboard authoring) is allowed to consume it. Surfaces past the gate are labelled <code>do-not-extend-until-gate</code> and <code>blocked:validation-gate</code>. See <a href="../../HANDOVER.md"><code>HANDOVER.md</code></a> and <a href="../../AGENTS.md"><code>AGENTS.md</code></a>.</p>
+</blockquote>
+<p>Everything below is sequenced against that gate, not against epoch numbers.</p>
+<hr />
+<h2 id="1-verified-state-against-code-on-main-1eb88da-2026-06-04">1. Verified state (against code on <code>main</code> @ <code>1eb88da</code>, 2026-06-04)</h2>
+<table>
+<thead>
+<tr>
+<th>Layer / Epoch</th>
+<th>Module(s)</th>
+<th>State</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L0 Substrate Router</td>
+<td><code>substrate/</code> (5 files)</td>
+<td>✅ <strong>Done, tested</strong></td>
+<td>E1 milestone closed; tier/egress/cost/cache</td>
+</tr>
+<tr>
+<td>L1 Truth Model</td>
+<td><code>core/truth_model.py</code>, <code>truth/sources/*</code></td>
+<td>✅ Done</td>
+<td>E2 closed</td>
+</tr>
+<tr>
+<td>L2 Divergence Engine</td>
+<td><code>divergence/{skeptic,witness,self_play,proof_run}</code></td>
+<td>✅ <strong>Runnable</strong></td>
+<td>E3 closed</td>
+</tr>
+<tr>
+<td>L3 Artifacts + eject</td>
+<td><code>truth/emitters/*</code>, <code>execution/*</code></td>
+<td>✅ Done</td>
+<td>E4 closed</td>
+</tr>
+<tr>
+<td>L4 Continuity (daemon + PR diff)</td>
+<td><code>continuity/</code>, <code>stages/daemon_cmd</code></td>
+<td>✅ Done</td>
+<td>E4 closed</td>
+</tr>
+<tr>
+<td>Self-healing (suggest-only)</td>
+<td><code>healing/*</code> (6 files)</td>
+<td>✅ Done</td>
+<td>D7 honored</td>
+</tr>
+<tr>
+<td>Perf baseline (statistical)</td>
+<td><code>stages/perf</code></td>
+<td>✅ Done</td>
+<td>E8 #107 anomaly detector merged</td>
+</tr>
+<tr>
+<td>Visual baseline (pixel)</td>
+<td><code>stages/visual</code></td>
+<td>✅ Done</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>E7 Reflector &amp; verdict memory</strong></td>
+<td><code>reflector/*</code> (5 files)</td>
+<td>🟢 <strong>Largely landed</strong></td>
+<td>#103 self-audit · #104 fingerprint suppression · #105 inspect CLI · #106 busy-timeout</td>
+</tr>
+<tr>
+<td><strong>E8 Perf intelligence</strong></td>
+<td><code>stages/perf/anomaly.py</code></td>
+<td>🟡 <strong>Partial</strong></td>
+<td>spike+drift detector landed (#107); generative profiles + LLM metrics + ML tier remain</td>
+</tr>
+<tr>
+<td><strong>E11 Coverage SDET</strong></td>
+<td><code>sdet/*</code> (3 files)</td>
+<td>🟡 <strong>Partial</strong></td>
+<td>#92: coverage loop + assertion gate landed; unit-test emitter remains</td>
+</tr>
+<tr>
+<td><strong>HITL queue backend</strong></td>
+<td><code>hitl/*</code> (3 files)</td>
+<td>🟡 <strong>Built, unmerged</strong></td>
+<td>branch <code>feat/hitl-queue-backend</code>; 2 smokes green (race 10/10, concurrency 5/5)</td>
+</tr>
+<tr>
+<td><strong>Validation Gate</strong></td>
+<td><code>validate/</code></td>
+<td>🔴 <strong>Empty (0 files)</strong></td>
+<td>the critical Track-A ship gate is not yet built</td>
+</tr>
+<tr>
+<td>E9 Vision perception</td>
+<td>—</td>
+<td>🔴 Absent</td>
+<td>VLM provider/oracle not started</td>
+</tr>
+<tr>
+<td>E10 Explorer + Copilot</td>
+<td>—</td>
+<td>🔴 Absent</td>
+<td>manual-QA pillar not started</td>
+</tr>
+<tr>
+<td>E12 Cert + Governance</td>
+<td>partial in <code>copilot/</code></td>
+<td>🔴 Mostly absent</td>
+<td>gold-set gate / KPIs not started</td>
+</tr>
+<tr>
+<td>E13 Copilot v2 + Pairing</td>
+<td>—</td>
+<td>🔴 Absent</td>
+<td>Mentor/idiom-surfacing not started</td>
+</tr>
+<tr>
+<td>Federation</td>
+<td><code>federation/</code> (4 files)</td>
+<td>🟡 Scaffolding</td>
+<td>E6 frontier, deferred</td>
+</tr>
+</tbody>
+</table>
+<p><strong>GitHub state:</strong> 16 milestones (all open, 0 open issues each — 81 issues closed), full label taxonomy present, <code>foundation-v0</code> pre-release tagged, governance/PM kit merged (#98). <strong>Gap: the open backlog is empty</strong> — the roadmap is not actionable as GitHub work until issues are (re)opened. §3 fixes that.</p>
+<hr />
+<h2 id="2-the-critical-path-sequenced-by-the-gate-not-by-epoch-number">2. The critical path (sequenced by the gate, not by epoch number)</h2>
+<pre class="mermaid"><code>flowchart TD
+  H[HITL backend&lt;br/&gt;built · unmerged] --&gt; HC[HITL terminal CLI&lt;br/&gt;+ Verdict.HITL bridge]
+  HC --&gt; VG[**Validation Gate**&lt;br/&gt;build validate/ + 5-QA runbook]
+  E7[E7 Reflector&lt;br/&gt;behavioral exit demo] --&gt; VG
+  VG --&gt;|GATE PASSED| OC[OpenClaw Tier-1&lt;br/&gt;notify + trigger only]
+  VG --&gt; E10[E10 Explorer + Copilot]
+  VG --&gt; E9[E9 Vision]
+  E8p[E8 remaining&lt;br/&gt;profiles/LLM-metrics/ML] -.continuous.-&gt; VG
+  E11e[E11 unit-test emitter] -.continuous.-&gt; VG
+  E9 --&gt; E12[E12 Cert + Governance]
+  E10 --&gt; E13[E13 Copilot v2 + Pairing]
+  style VG fill:#b60205,color:#fff
+  style HC fill:#1f6feb,color:#fff</code></pre>
+<p><strong>Phase A — Make the gate reachable (now):</strong>
+1. Merge HITL backend PR (<code>feat/hitl-queue-backend</code>).
+2. Terminal HITL CLI (<code>cherenkov hitl list|show|approve|reject --json</code>) + <code>Verdict.HITL → enqueue</code> bridge.
+3. <strong>Build the Validation Gate</strong> (<code>validate/</code>): gate criteria, evidence collection, 5-QA runbook.
+4. E7 behavioral exit demo (rejected findings stop recurring + Skeptic hit-rate ↑).</p>
+<p><strong>Phase B — Pass the gate:</strong> run Track A against ≥5 real QA targets; collect evidence; flip <code>blocked:validation-gate</code> issues to ready.</p>
+<p><strong>Phase C — Post-gate frontier (only after B):</strong> OpenClaw Tier-1 → E10/E9 → E12/E13. E8/E11 remainders run continuously, non-gating.</p>
+<hr />
+<h2 id="3-the-open-backlog-what-becomes-github-issues">3. The open backlog (what becomes GitHub issues)</h2>
+<p>Mapped to existing milestones + labels. <code>agent-ready</code> = self-contained, an agent can start now. <code>blocked:validation-gate</code> = do not start until Phase B passes.</p>
+<h3 id="phase-a-gate-reaching-p0p1-agent-ready">Phase A — gate-reaching (P0/P1, <code>agent-ready</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Title</th>
+<th>Milestone</th>
+<th>Labels</th>
+<th>Grows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td>HITL terminal CLI (<code>hitl list/show/approve/reject --json</code>)</td>
+<td>Validation Gate</td>
+<td><code>type:feature</code> <code>agent-ready</code> <code>priority:P1</code></td>
+<td><code>stages/</code>, wraps <code>hitl/store.py</code></td>
+</tr>
+<tr>
+<td>A2</td>
+<td><code>Verdict.HITL → HitlQueue.enqueue</code> bridge in REVIEW</td>
+<td>Validation Gate</td>
+<td><code>type:feature</code> <code>agent-ready</code> <code>priority:P1</code></td>
+<td><code>divergence</code>/REVIEW → <code>hitl/</code></td>
+</tr>
+<tr>
+<td>A3</td>
+<td>HITL <code>GETTING_STARTED.md</code> + CLI demo entry (docs-gate)</td>
+<td>Validation Gate</td>
+<td><code>documentation</code> <code>agent-ready</code></td>
+<td><code>docs/</code></td>
+</tr>
+<tr>
+<td>A4</td>
+<td><strong>Build <code>validate/</code>: Validation Gate criteria + result contract</strong></td>
+<td>Validation Gate</td>
+<td><code>type:contract</code> <code>agent-ready</code> <code>priority:P0</code></td>
+<td>new <code>cherenkov/validate/</code></td>
+</tr>
+<tr>
+<td>A5</td>
+<td>5-QA validation runbook + evidence collector</td>
+<td>Validation Gate</td>
+<td><code>type:proof</code> <code>priority:P0</code> <code>needs-human</code></td>
+<td><code>docs/process/</code>, <code>validate/</code></td>
+</tr>
+<tr>
+<td>A6</td>
+<td>E7 behavioral exit demo (no-recur + hit-rate ↑)</td>
+<td>Epoch 7</td>
+<td><code>type:proof</code> <code>area:reflector</code> <code>agent-ready</code></td>
+<td><code>reflector/</code>, <code>divergence/proof_run</code></td>
+</tr>
+<tr>
+<td>A7</td>
+<td>Wire Reflector into <code>proof_run</code> loop (rerank live)</td>
+<td>Epoch 7</td>
+<td><code>type:feature</code> <code>area:reflector</code> <code>agent-ready</code></td>
+<td><code>divergence/proof_run.py</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-c-post-gate-frontier-blockedvalidation-gate">Phase C — post-gate frontier (<code>blocked:validation-gate</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Title</th>
+<th>Milestone</th>
+<th>Labels</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td>OpenClaw Tier-1 adapter (notify + trigger only, consumes <code>hitl/v1</code>)</td>
+<td>Epoch 13</td>
+<td><code>type:feature</code> <code>blocked:validation-gate</code></td>
+</tr>
+<tr>
+<td>C2</td>
+<td>E8 generative load profiles from <code>truth/sources/traffic.py</code></td>
+<td>Epoch 8</td>
+<td><code>type:feature</code> <code>area:perf</code></td>
+</tr>
+<tr>
+<td>C3</td>
+<td>E8 LLM-aware metrics (TTFT/inter-token/tokens-sec/P95-99/cost)</td>
+<td>Epoch 8</td>
+<td><code>type:feature</code> <code>area:perf</code></td>
+</tr>
+<tr>
+<td>C4</td>
+<td>E8 ML anomaly tier (opt-in; statistical stays default)</td>
+<td>Epoch 8</td>
+<td><code>type:research</code> <code>area:perf</code></td>
+</tr>
+<tr>
+<td>C5</td>
+<td>E11 unit-test emitter (pytest/jest) in <code>truth/emitters/</code></td>
+<td>Epoch 11</td>
+<td><code>type:feature</code> <code>agent-ready</code></td>
+</tr>
+<tr>
+<td>C6</td>
+<td>E9 VLMProvider as <code>[substrate.tiers.vision]</code> (egress-respecting)</td>
+<td>Epoch 9</td>
+<td><code>type:contract</code> <code>area:visual</code> <code>blocked:validation-gate</code></td>
+</tr>
+<tr>
+<td>C7</td>
+<td>E9 semantic visual oracle + element-identity self-heal</td>
+<td>Epoch 9</td>
+<td><code>type:feature</code> <code>area:visual</code> <code>blocked:validation-gate</code></td>
+</tr>
+<tr>
+<td>C8</td>
+<td>E10 Explorer crawl → Skeptic hypotheses (5xx/JS/visual)</td>
+<td>Epoch 10</td>
+<td><code>type:feature</code> <code>area:divergence</code> <code>blocked:validation-gate</code></td>
+</tr>
+<tr>
+<td>C9</td>
+<td>E10 NL-intent → artifact (<code>cherenkov author</code>)</td>
+<td>Epoch 10</td>
+<td><code>type:feature</code> <code>blocked:validation-gate</code></td>
+</tr>
+<tr>
+<td>C10</td>
+<td>E10 "second pair of eyes" pre-session digest + triage UX</td>
+<td>Epoch 10</td>
+<td><code>type:feature</code> <code>blocked:validation-gate</code></td>
+</tr>
+<tr>
+<td>C11</td>
+<td>E12 Gold-Set + RAG-Triad certification gate</td>
+<td>Epoch 12</td>
+<td><code>type:contract</code> <code>blocked:validation-gate</code></td>
+</tr>
+<tr>
+<td>C12</td>
+<td>E12 governance KPI panel (escape/FP/coverage/maintenance)</td>
+<td>Epoch 12</td>
+<td><code>type:feature</code> <code>area:frontend</code> <code>blocked:validation-gate</code></td>
+</tr>
+<tr>
+<td>C13</td>
+<td>E13 Mentor idiom-surfacing during authoring/triage</td>
+<td>Epoch 13</td>
+<td><code>type:feature</code> <code>area:reflector</code> <code>blocked:validation-gate</code></td>
+</tr>
+<tr>
+<td>C14</td>
+<td>E13 autonomy-ladder profiles (<code>assisted→predictive</code>)</td>
+<td>Epoch 13</td>
+<td><code>type:feature</code> <code>blocked:validation-gate</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="cross-cutting-repo-hygiene-continuous">Cross-cutting / repo hygiene (continuous)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Title</th>
+<th>Labels</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>X1</td>
+<td>Prune merged/stale branches (30+ remote branches)</td>
+<td><code>documentation</code> <code>agent-ready</code></td>
+</tr>
+<tr>
+<td>X2</td>
+<td>Apply branch-protection ruleset on <code>main</code> (per <code>GITHUB_PM.md §5</code>)</td>
+<td><code>needs-human</code></td>
+</tr>
+<tr>
+<td>X3</td>
+<td>CI runners for env-dependent smokes (node/k6/playwright)</td>
+<td><code>agent-ready</code></td>
+</tr>
+<tr>
+<td>X4</td>
+<td>MCP server/client (start after E9 exposes something worth serving)</td>
+<td><code>type:research</code> <code>blocked:validation-gate</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-way-of-work-unchanged-restated-so-the-plan-is-self-contained">4. Way of work (unchanged, restated so the plan is self-contained)</h2>
+<ul>
+<li><strong>One epoch in flight.</strong> Each issue is independently shippable. Branch from <code>origin/main</code>, isolated additive files, evidence-first PRs, avoid hot files (<code>core/contracts.py</code>, <code>cherenkov.py</code>) unless the ticket owns them.</li>
+<li><strong>Every seam is a versioned Pydantic contract</strong> local to its package (e.g. <code>hitl/contracts.py</code>), never a core fork.</li>
+<li><strong>Agents never name a model</strong> — route through <code>ReasoningRequest{capability_tier}</code>.</li>
+<li><strong>Sovereignty:</strong> every expensive tier (VLM/ML) is opt-in behind a statistical/pixel default and honors the <code>egress</code> dial.</li>
+<li><strong>Trust:</strong> no autonomous artifact enters a suite without adversarial self-play + no-shared-context verification. D7: never auto-edit test code.</li>
+<li><strong>Testing:</strong> every issue ships <code>test_*.py</code> + <code>smoke_test_*.py</code> + a kill-criteria exit demo; CI green on <code>main</code>.</li>
+<li><strong>PM:</strong> epics are tracking issues (<code>epic</code> label); tasks link to their epic and milestone; releases + CHANGELOG per merged epoch; wiki mirrors <code>docs/wiki/</code>.</li>
+</ul>
+<hr />
+<h2 id="5-standing-risks-flags">5. Standing risks / flags</h2>
+<ol>
+<li>🔐 <strong>Revoke the GitHub PATs pasted in plaintext</strong> earlier — the cached credential is still live.</li>
+<li><strong>Swarm saturation</strong> — every epoch has concurrent agents fixing each other's breakage. Enforce X2 (branch protection) so <code>main</code> stays green by construction; serialize agents per epoch.</li>
+<li><strong>Validation Gate is the keystone risk</strong> — it is empty (<code>validate/</code> 0 files) yet gates all frontier value. Phase A must land it before any C-work is unblocked.</li>
+<li><strong>Reflector = storage not learning</strong> — E7 exit (A6) is behavioral, not "memory exists."</li>
+</ol>
+<hr />
+<h2 id="6-definition-of-done-for-roadmap-ready-across-the-board">6. Definition of done for "roadmap ready across the board"</h2>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Code reality reconciled against <code>main</code> (§1).</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Critical path sequenced by the Validation Gate (§2).</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Open backlog defined and mapped to milestones/labels (§3).</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Backlog opened as GitHub issues (#109–#129) and <strong>all built</strong>.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> HITL backend PR opened + merged (#136).</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Validation Gate pending (0/5 QA reviews; see HANDOVER §5).</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Cross-link finalised + older roadmap docs reconciled → tracked as #155.</li>
+</ul>
+<hr />
+<h2 id="7-whats-next-horizon-2">7. What's next — Horizon 2</h2>
+<p>The vision (E0–E13) is built and the gate is passed, so this plan is complete.
+The live roadmap is now <strong><a href="../10_HORIZON_2/"><code>10_HORIZON_2.md</code></a></strong> (EPIC #147), which
+turns a proven prototype into a tool a team uses daily, across three bets:</p>
+<ol>
+<li><strong>Prove it in the wild</strong> — divergences on real production APIs, not just the
+   Petstore reference (#148).</li>
+<li><strong>Finish the voice</strong> — OpenClaw Tier-2/3: approve HITL from chat, healing
+   notifications + feedback loop, read-only AI triage (#149, #150, #151).</li>
+<li><strong>Make it boring</strong> — federation cross-check (#152), auditable gate evidence
+   (#153), a week of unattended dogfooding (#154), and one honest roadmap
+   reconciliation (#155).</li>
+</ol>
+<p>Still-open cross-cutting from the gate era stays under X1–X4 (#130–#133).
+</content>
+</invoke></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"current": "1.4", "versions": ["1.2", "1.3", "1.4"]}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/version-banner.js"></script>
+      
+    
+  </body>
+</html>
